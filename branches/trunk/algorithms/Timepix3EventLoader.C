@@ -107,7 +107,7 @@ void Timepix3EventLoader::maskPixels(string detectorID, string trimdacfile){
   
   // Open the mask file
   ifstream trimdacs;
-  trimdacs.open(trimdacfile);
+  trimdacs.open(trimdacfile.c_str());
   
   // Ignore the file header
   string line;
