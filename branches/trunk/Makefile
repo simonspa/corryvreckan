@@ -10,7 +10,7 @@ CC = g++
 # Compiler flags
 ROOTCFLAGS   := $(shell root-config --cflags)
 ROOTLIBS     := $(shell root-config --glibs)
-CFLAGS = -fPIC -w -g -W ${ROOTCFLAGS}
+CFLAGS = -fPIC -w -g -W ${ROOTCFLAGS} -std=c++0x
 LFLAGS = -O3 ${ROOTLIBS} -g -lGenVector -lMinuit
 
 # Automatically decide what to compile
