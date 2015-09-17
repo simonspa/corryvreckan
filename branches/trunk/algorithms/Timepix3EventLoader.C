@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 #include <stdio.h>
+#include <stdint.h>
 
 Timepix3EventLoader::Timepix3EventLoader(bool debugging)
 : Algorithm("Timepix3EventLoader"){
