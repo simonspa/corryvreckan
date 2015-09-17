@@ -94,7 +94,7 @@ void Analysis::finaliseAll(){
 // Display timing statistics for each algorithm, over all events and per event
 void Analysis::timing()
 {
-  cout << "===============| Wall-clock timing (seconds) |================" << endl;
+  cout << endl << "===============| Wall-clock timing (seconds) |================" << endl;
   for (int algorithmNumber = 0; algorithmNumber<m_algorithms.size();algorithmNumber++) {
     cout.width(25);
     cout<<m_algorithms[algorithmNumber]->getName()<<"  --  ";

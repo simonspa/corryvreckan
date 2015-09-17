@@ -54,6 +54,9 @@ int BasicTracking::run(Clipboard* clipboard){
     
   }
   
+  // If there are no detectors then stop trying to track
+  if(detectors.size() == 0) return 0;
+  
   // Use the first plane as a seeding plane. For something quick, look a cluster in < 100 ns in the next plane, and continue
   string reference = parameters->reference;
   map<Timepix3Cluster*, bool> used;
