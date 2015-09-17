@@ -1,11 +1,11 @@
 #!/bin/bash
 
-TBCODE=/Users/danielhynds/work/hvcmos/newTBcode
-RUN=${1}
+TBCODE=${PWD}/..
+RUN=25
 
-DATADIR=/Users/danielhynds/work/hvcmos/newTBcode/tpx3data/Run${RUN}
+DATADIR=${TBCODE}/example/Run${RUN}
 CONDFILE=${TBCODE}/cond/cond.dat
-HISTOFILE=${TBCODE}/histos/newHistogramsRun${RUN}.root
+HISTOFILE=${TBCODE}/histos/histogramsRun${RUN}.root
 NEVENTS=20
 
-${TBCODE}/bin/tbAnalysis -d ${DATADIR} -c ${CONDFILE} -n ${NEVENTS} -h ${HISTOFILE} -a
+${TBCODE}/bin/tbAnalysis -d ${DATADIR} -c ${CONDFILE} -n ${NEVENTS} -h ${HISTOFILE}
