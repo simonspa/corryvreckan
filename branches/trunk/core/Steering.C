@@ -12,7 +12,6 @@
 #include "Analysis.h"
 
 // Algorithm list
-#include "EventLoader.h"
 #include "TestAlgorithm.h"
 #include "Timepix3EventLoader.h"
 #include "Timepix3Clustering.h"
