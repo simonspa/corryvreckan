@@ -48,41 +48,9 @@ void Analysis::run(){
       int check = m_algorithms[algorithmNumber]->run(m_clipboard);
       m_algorithms[algorithmNumber]->getStopwatch()->Stop();
       if(check == 0) run = false;
-//      browser->Refresh();
     }
     // Clear objects from this iteration from the clipboard
     m_clipboard->clear();
-    
-    
-    
-    
-    
-//    TCanvas* canv = (TCanvas*)gDirectory->Get("c1");
-//    canv->Update();
-    
-    browser->SetRefreshFlag(true);
-    browser->Refresh();
-//    browser->Dump();
-//    gDirectory->ls();
-    
-    cout<<gROOT->GetListOfCanvases()->GetSize()<<endl;
-//    ((TCanvas*)gROOT->GetListOfCanvases()->At(0))->GetListOfPrimitives()->Print();
-    ((TCanvas*)gROOT->GetListOfCanvases()->At(0))->Paint();
-//    ((TCanvas*)gROOT->GetListOfCanvases()->At(0))->Modified();
-    ((TCanvas*)gROOT->GetListOfCanvases()->At(0))->Update();
-//    ((TPad*)(((TCanvas*)gROOT->GetListOfCanvases()->At(0))->GetPad(0)))->Modified();
-    
-    gSystem->ProcessEvents();
-//    gPad->Dump();
-
-//    cout<<"Sleeping"<<endl;
-//    gSystem->Sleep(10000);
-//    cout<<"Woken up"<<endl;
-    
-    
-    
-    
-    
     // Check if any of the algorithms return a value saying it should stop
     if(!run) break;
     // Check if we have reached the maximum number of events

@@ -27,13 +27,22 @@ public:
   int run(Clipboard*);
   void finalise();
   
-//  void startBrowser();
+  // Canvases to display plots
+  TCanvas* trackCanvas;
+  TCanvas* hitmapCanvas;
+  TCanvas* residualsCanvas;
   
-  TApplication* rootapp;
-  TThread* browserThread;
-  TThread* updateThread;
-  TBrowser* browser;
-  TH3F* eventMap;
+  // Plot holders
+  map<string, TH2F*> hitmap;
+  map<string, TH1F*> residuals;
+  
+  // Thread to allow display to run in separate thread
+  TThread* displayThread;
+  
+  // Misc. member objects
+  int nDetectors;
+  int eventNumber;
+//  TBrowser* browser;
   
 };
 

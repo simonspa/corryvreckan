@@ -28,12 +28,6 @@
 // added. Algorithms have 3 steps: initialise, run and finalise.
 //-------------------------------------------------------------------------------
 
-void runAnalysis(void* analysis){
-  
-  ((Analysis*)analysis)->run();
-
-}
-
 // The analysis object to be used
 Analysis* analysis;
 
@@ -95,28 +89,8 @@ int main(int argc, char *argv[]) {
   if(parameters->eventDisplay) analysis->add(eventDisplay);
   if(parameters->gui) analysis->add(gui);
   
-  TApplication* app = new TApplication("example",0, 0);
-  analysis->browser = new TBrowser();
-//  gPad = ((TPad*)(((TCanvas*)gROOT->GetListOfCanvases()->At(0))->GetPad(0)));
-  
-//  TCanvas* canv = new TCanvas();
-//  canv->Draw();
-//  cout<<gPad<<endl;
-  
-  TThread* anaThread = new TThread("anaThread", runAnalysis, (void*) analysis);
-  anaThread->Run();
-  
-  app->Run(true);
-
-  cout<<"Still running"<<endl;
-  while(1){
-    gSystem->Sleep(5);
-    ((TCanvas*)gROOT->GetListOfCanvases()->At(0))->Modified();
-    ((TCanvas*)gROOT->GetListOfCanvases()->At(0))->Update();
-  }
-
-  
-//  analysis->run();
+  // Run the analysis
+  analysis->run();
 
   return 0;
 
