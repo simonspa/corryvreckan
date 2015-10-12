@@ -30,11 +30,19 @@ void Parameters::readCommandLineOptions(int argc, char *argv[]){
   cout<<endl;
   cout<<"===================| Reading Parameters  |===================="<<endl<<endl;
   int option; char temp[256];
-  while ( (option = getopt(argc, argv, "amd:c:n:h:")) != -1) {
+  while ( (option = getopt(argc, argv, "agemd:c:n:h:")) != -1) {
     switch (option) {
       case 'a':
         align = true;
         cout<<"Alignment flagged to be run"<<endl;
+        break;
+      case 'e':
+        eventDisplay = true;
+        cout<<"Event display flagged to be run"<<endl;
+        break;
+      case 'g':
+        gui = true;
+        cout<<"GUI flagged to be run"<<endl;
         break;
       case 'm':
         produceMask = true;

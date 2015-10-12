@@ -13,7 +13,7 @@ void EventDisplay::initialise(Parameters* par){
   parameters = par;
   
   // Set up histograms
-  eventMap = new TH3F("eventMap","eventMap",100,-5,5,100,-5,5,105,-10,200);
+  eventMap = new TH3F("eventMap","eventMap",100,-10,10,100,-10,10,105,-10,200);
   
 
 }

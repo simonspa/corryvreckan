@@ -6,6 +6,7 @@
 
 #include "TFile.h"
 #include "TDirectory.h"
+#include "TBrowser.h"
 
 #include "Algorithm.h"
 #include "Clipboard.h"
@@ -34,6 +35,8 @@ public:
   void timing();
   void initialiseAll();
   void finaliseAll();
+
+  TBrowser* browser;
 
 protected:
   

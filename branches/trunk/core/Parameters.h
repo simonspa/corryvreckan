@@ -166,6 +166,8 @@ public:
   string dut;
   int nEvents;
   bool align;
+  bool eventDisplay;
+  bool gui;
   bool produceMask;
   
   // Parameters for each detector (stored by detector ID)

@@ -1,4 +1,5 @@
 #include "BasicTracking.h"
+#include "TCanvas.h"
 
 BasicTracking::BasicTracking(bool debugging)
 : Algorithm("BasicTracking"){
@@ -108,7 +109,9 @@ int BasicTracking::run(Clipboard* clipboard){
   
   tcout<<"Made "<<tracks->size()<<" tracks"<<endl;
   clipboard->put("Timepix3","tracks",(TestBeamObjects*)tracks);
-
+//  cout<<gPad<<endl;
+//  trackChi2->Draw();
+//  cout<<gPad<<endl;
   return 1;
 }
   
