@@ -7,6 +7,7 @@
 GUI::GUI(bool debugging)
 : Algorithm("GUI"){
   debug = debugging;
+  updateNumber = 500;
 }
 
 void startDisplay(void* gui){
@@ -40,6 +41,7 @@ void GUI::initialise(Parameters* par){
 	// Make the thread which will run the display
   displayThread = new TThread("displayThread", startDisplay, (void*) this);
   displayThread->Run();
+  sleep(2);
 
   // Loop over all detectors and load the histograms that we will use
   for(int det = 0; det<parameters->nDetectors; det++){
@@ -56,6 +58,8 @@ void GUI::initialise(Parameters* par){
 
 int GUI::run(Clipboard* clipboard){
 
+  gSystem->ProcessEvents();
+  
   //-----------------------------------------
   // Draw the objects on the tracking canvas
   //-----------------------------------------
@@ -65,7 +69,10 @@ int GUI::run(Clipboard* clipboard){
   trackChi2->DrawCopy();
 
   // Update the canvas
-  trackCanvas->Update();
+  if(eventNumber%updateNumber == 0){
+//    sleep(0.5);
+    trackCanvas->Update();
+  }
   
   //-----------------------------------------
   // Draw the objects on the hitmap canvas
@@ -81,8 +88,10 @@ int GUI::run(Clipboard* clipboard){
     }
   }
   // Update the canvas
-  hitmapCanvas->Paint();
-  hitmapCanvas->Update();
+  if(eventNumber%updateNumber == 0) {
+    hitmapCanvas->Paint();
+    hitmapCanvas->Update();
+  }
   
   //-----------------------------------------
   // Draw the objects on the residuals canvas
@@ -98,8 +107,10 @@ int GUI::run(Clipboard* clipboard){
     }
   }
   // Update the canvas
-  residualsCanvas->Paint();
-  residualsCanvas->Update();
+  if(eventNumber%updateNumber == 0){
+    residualsCanvas->Paint();
+    residualsCanvas->Update();
+  }
 
   eventNumber++;
   return 1;
@@ -115,7 +126,7 @@ int GUI::run(Clipboard* clipboard){
 void GUI::finalise(){
 
   // Kill the display thread
-  displayThread->Kill();
+//  displayThread->Kill();
 
 }
 

@@ -42,6 +42,7 @@ public:
   // Misc. member objects
   int nDetectors;
   int eventNumber;
+  int updateNumber;
 //  TBrowser* browser;
   
 };

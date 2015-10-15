@@ -47,20 +47,22 @@ int BasicTracking::run(Clipboard* clipboard){
     Timepix3Clusters* tempClusters = (Timepix3Clusters*)clipboard->get(detectorID,"clusters");
     if(tempClusters == NULL){
       tcout<<"Detector "<<detectorID<<" does not have any clusters on the clipboard"<<endl;
+    }else{
+    	// Store them
+      clusters[detectorID] = tempClusters;
+      detectors.push_back(detectorID);
     }
-    
-    // Store them
-    clusters[detectorID] = tempClusters;
-    detectors.push_back(detectorID);
-    
   }
   
   // If there are no detectors then stop trying to track
-  if(detectors.size() == 0) return 0;
+  if(detectors.size() == 0) return 1;
   
   // Use the first plane as a seeding plane. For something quick, look a cluster in < 100 ns in the next plane, and continue
   string reference = parameters->reference;
   map<Timepix3Cluster*, bool> used;
+  
+  // If no clusters on reference plane, stop
+  if(clusters[reference] == NULL) return 1;
 
   // Loop over all clusters
   for(int iSeedCluster=0;iSeedCluster<clusters[reference]->size();iSeedCluster++){
@@ -86,7 +88,10 @@ int BasicTracking::run(Clipboard* clipboard){
     }
    
     // Now should have a track with one cluster from each plane
-    if(track->nClusters() < 5) continue;
+    if(track->nClusters() < 5){
+      delete track;
+      continue;
+    }
     
     // Fit the track and save it
     track->fit();
@@ -108,10 +113,8 @@ int BasicTracking::run(Clipboard* clipboard){
   }
   
   tcout<<"Made "<<tracks->size()<<" tracks"<<endl;
-  clipboard->put("Timepix3","tracks",(TestBeamObjects*)tracks);
-//  cout<<gPad<<endl;
-//  trackChi2->Draw();
-//  cout<<gPad<<endl;
+  if(tracks->size() > 0) clipboard->put("Timepix3","tracks",(TestBeamObjects*)tracks);
+
   return 1;
 }
   

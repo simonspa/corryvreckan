@@ -53,7 +53,7 @@ int TestAlgorithm::run(Clipboard* clipboard){
   Timepix3Clusters* referenceClusters = (Timepix3Clusters*)clipboard->get(parameters->reference,"clusters");
   if(referenceClusters == NULL){
     tcout<<"Reference detector "<<parameters->reference<<" does not have any clusters on the clipboard"<<endl;
-    return 0;
+    return 1;
   }
   
   // Loop over all Timepix3 and make plots
@@ -67,14 +67,14 @@ int TestAlgorithm::run(Clipboard* clipboard){
     Timepix3Pixels* pixels = (Timepix3Pixels*)clipboard->get(detectorID,"pixels");
     if(pixels == NULL){
       tcout<<"Detector "<<detectorID<<" does not have any pixels on the clipboard"<<endl;
-      return 0;
+      return 1;
     }
     
     // Get the clusters
     Timepix3Clusters* clusters = (Timepix3Clusters*)clipboard->get(detectorID,"clusters");
     if(clusters == NULL){
       tcout<<"Detector "<<detectorID<<" does not have any clusters on the clipboard"<<endl;
-      return 0;
+      return 1;
     }
     
     // Loop over all pixels and make hitmaps

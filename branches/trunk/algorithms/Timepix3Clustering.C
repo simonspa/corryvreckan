@@ -27,7 +27,7 @@ int Timepix3Clustering::run(Clipboard* clipboard){
     Timepix3Pixels* pixels = (Timepix3Pixels*)clipboard->get(detectorID,"pixels");
     if(pixels == NULL){
       tcout<<"Detector "<<detectorID<<" does not have any pixels on the clipboard"<<endl;
-      return 0;
+      return 1;
     }
     if(debug) tcout<<"Picked up "<<pixels->size()<<" pixels for device "<<detectorID<<endl;
 

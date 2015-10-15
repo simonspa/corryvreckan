@@ -63,6 +63,8 @@ void Timepix3EventLoader::initialise(Parameters* par){
       
       // If files were stored, register the detector
       if(m_nFiles.count(detectorID) > 0){
+        
+        tcout<<"Registering detector "<<detectorID<<endl;
         parameters->registerDetector(detectorID);
         
         // Now that we have all of the data files and mask files for this detector, pass the mask file to parameters
@@ -79,6 +81,7 @@ void Timepix3EventLoader::initialise(Parameters* par){
 
 int Timepix3EventLoader::run(Clipboard* clipboard){
   
+  tcout<<"Current time is "<<parameters->currentTime<<endl;
   bool loadedData = false;
   // Loop through all registered detectors
   for(int det = 0; det<parameters->nDetectors; det++){
@@ -88,16 +91,21 @@ int Timepix3EventLoader::run(Clipboard* clipboard){
     // Make a new container for the data
     Timepix3Pixels* deviceData = new Timepix3Pixels();
 		// Load the next chunk of data
+    tcout<<"Loading data from "<<detectorID<<endl;
     bool data = loadData(detectorID,deviceData);
     // If data was loaded then put it on the clipboard
     if(data){
       loadedData = true;
+      tcout<<"Loaded "<<deviceData->size()<<" pixels for device "<<detectorID<<endl;
       clipboard->put(detectorID,"pixels",(TestBeamObjects*)deviceData);
     }
   }
   
+  // Increment the event time
+  parameters->currentTime += parameters->eventLength;
+  
   // If no data was loaded, tell the event loop to stop
-  if(!loadedData) return 0;
+  if(!loadedData) return 2;
   
   // Otherwise tell event loop to keep running
   return 1;
@@ -166,6 +174,8 @@ bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata
     if (retval == 0) continue;
     const UChar_t header = ((pixdata & 0xF000000000000000) >> 60) & 0xF;
     
+    unsigned int headerInt = ((pixdata & 0xF000000000000000) >> 60) & 0xF;
+    tcout<<hex<<headerInt<<dec<<endl;
 //    bitset<64> headerContent(header);
 //    tcout<<"Header is "<<headerContent<<endl;
 
@@ -190,14 +200,25 @@ bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata
 
 //      tcout<<"Pixel time "<<(double)time<<endl;
       time += (long long int)(parameters->detector[detectorID]->timingOffset() * 4096. * 40000000.);
+      tcout<<"Pixel time is "<<((double)time/(4096. * 40000000.))<<endl;
+      bitset<48> timeInt(time);
+      tcout<<" or "<<timeInt<<endl;
+      
+      // If events are loaded based on time intervals, take all hits where the time is within this window
+      if( parameters->eventLength != 0. &&
+         ((double)time/(4096. * 40000000.)) > (parameters->currentTime + parameters->eventLength) ){
+        fseek(m_currentFile[detectorID], -1 * sizeof(ULong64_t), SEEK_CUR);
+        break;
+      }
+      
       Timepix3Pixel* pixel = new Timepix3Pixel(detectorID,row,col,(int)tot,time);
       devicedata->push_back(pixel);
       npixels++;
 
 
     }
-    // Stop when we reach some large number of pixels
-    if(npixels == 2000) break;
+    // Stop when we reach some large number of pixels (if events not based on time)
+    if(parameters->eventLength == 0. && npixels == 2000) break;
     
   }
   

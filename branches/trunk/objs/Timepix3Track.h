@@ -17,7 +17,11 @@ public:
     m_fitterYZ = new TLinearFitter();
     m_fitterYZ->SetFormula("pol1");
   }
-  virtual ~Timepix3Track(){}
+  virtual ~Timepix3Track(){
+    delete m_fitterXZ;
+    delete m_fitterYZ;
+  }
+  
   Timepix3Track(Timepix3Track* track){
     m_fitterXZ = new TLinearFitter();
     m_fitterXZ->SetFormula("pol1");

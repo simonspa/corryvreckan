@@ -13,6 +13,8 @@ Parameters::Parameters(){
   nEvents = 0;
   align = false;
   produceMask = false;
+  currentTime = 0.; // seconds
+  eventLength = 0.000; //seconds (0.1 ms)
 }
 
 void Parameters::help()
@@ -30,7 +32,7 @@ void Parameters::readCommandLineOptions(int argc, char *argv[]){
   cout<<endl;
   cout<<"===================| Reading Parameters  |===================="<<endl<<endl;
   int option; char temp[256];
-  while ( (option = getopt(argc, argv, "agemd:c:n:h:")) != -1) {
+  while ( (option = getopt(argc, argv, "agemd:c:n:h:t:")) != -1) {
     switch (option) {
       case 'a':
         align = true;
@@ -66,6 +68,10 @@ void Parameters::readCommandLineOptions(int argc, char *argv[]){
       case 'n':
         sscanf( optarg, "%d", &nEvents);
         cout<<"Running over "<<nEvents<<" events"<<endl;
+        break;
+      case 't':
+        sscanf( optarg, "%d", &eventLength);
+        cout<<"Event length is "<<eventLength<<" s"<<endl;
         break;
     }
   }

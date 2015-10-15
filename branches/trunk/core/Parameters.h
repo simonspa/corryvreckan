@@ -164,6 +164,8 @@ public:
   int nDetectors;
   string reference;
   string dut;
+  double currentTime;
+  double eventLength;
   int nEvents;
   bool align;
   bool eventDisplay;
