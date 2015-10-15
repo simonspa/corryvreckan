@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
   analysis->add(tpix3EventLoader);
   analysis->add(tpix3Clustering);
   analysis->add(testAlgorithm);
-//  analysis->add(basicTracking);
+  analysis->add(basicTracking);
   
   if(parameters->align) analysis->add(alignment);
   if(parameters->produceMask) analysis->add(tpix3MaskCreator);

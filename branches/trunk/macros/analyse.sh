@@ -9,4 +9,4 @@ HISTOFILE=${TBCODE}/histos/histogramsRun${RUN}.root
 NEVENTS=100
 EVENTTIME=0
 
-${TBCODE}/bin/tbAnalysis -d ${DATADIR} -c ${CONDFILE} -n ${NEVENTS} -h ${HISTOFILE} -t ${EVENTTIME}
+${TBCODE}/bin/tbAnalysis -d ${DATADIR} -c ${CONDFILE} -n ${NEVENTS} -h ${HISTOFILE} -t ${EVENTTIME} -g
