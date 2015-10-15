@@ -1,12 +1,5 @@
 // ROOT include files
 #include "TFile.h"
-#include "TChain.h"
-#include <signal.h>
-#include "TSystem.h"
-#include "TPad.h"
-#include "TCanvas.h"
-#include "TObjectTable.h"
-#include "TROOT.h"
 
 // Local include files
 #include "Analysis.h"
