@@ -56,6 +56,8 @@ void Timepix3EventLoader::initialise(Parameters* par){
         
         // If not a data file, it might be a trimdac file, with the list of masked pixels etc.
         if (string(file->d_name).find("trimdac") != string::npos){
+          // If we have already found the masked trimdac file, use it for preference
+          if(trimdacfile.find("masked") != string::npos) continue;
           trimdacfile = filename;
         }
         
