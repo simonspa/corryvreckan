@@ -70,7 +70,7 @@ void Parameters::readCommandLineOptions(int argc, char *argv[]){
         cout<<"Running over "<<nEvents<<" events"<<endl;
         break;
       case 't':
-        sscanf( optarg, "%d", &eventLength);
+        sscanf( optarg, "%lf", &eventLength);
         cout<<"Event length is "<<eventLength<<" s"<<endl;
         break;
     }
