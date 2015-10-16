@@ -44,6 +44,7 @@ public:
       int nElements = collection->size();
       for(TestBeamObjects::iterator it=collection->begin(); it!=collection->end(); it++) delete (*it);
       delete m_data[m_dataID[i]];
+      m_data.erase(m_dataID[i]);
     }
     m_dataID.clear();
   }

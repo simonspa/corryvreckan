@@ -49,13 +49,6 @@ void TestAlgorithm::initialise(Parameters* par){
 
 int TestAlgorithm::run(Clipboard* clipboard){
   
-  // Get clusters from reference detector
-  Timepix3Clusters* referenceClusters = (Timepix3Clusters*)clipboard->get(parameters->reference,"clusters");
-  if(referenceClusters == NULL){
-    tcout<<"Reference detector "<<parameters->reference<<" does not have any clusters on the clipboard"<<endl;
-    return 1;
-  }
-  
   // Loop over all Timepix3 and make plots
   for(int det = 0; det<parameters->nDetectors; det++){
     
@@ -67,14 +60,14 @@ int TestAlgorithm::run(Clipboard* clipboard){
     Timepix3Pixels* pixels = (Timepix3Pixels*)clipboard->get(detectorID,"pixels");
     if(pixels == NULL){
       tcout<<"Detector "<<detectorID<<" does not have any pixels on the clipboard"<<endl;
-      return 1;
+      continue;
     }
     
     // Get the clusters
     Timepix3Clusters* clusters = (Timepix3Clusters*)clipboard->get(detectorID,"clusters");
     if(clusters == NULL){
       tcout<<"Detector "<<detectorID<<" does not have any clusters on the clipboard"<<endl;
-      return 1;
+      continue;
     }
     
     // Loop over all pixels and make hitmaps
@@ -84,13 +77,20 @@ int TestAlgorithm::run(Clipboard* clipboard){
       Timepix3Pixel* pixel = (*pixels)[iP];
       
       // Hitmap
-      hitmap[detectorID]->Fill(pixel->m_row,pixel->m_column);
+      hitmap[detectorID]->Fill(pixel->m_column,pixel->m_row);
       
       // Timing plots
       eventTimes[detectorID]->Fill((double)pixel->m_timestamp / (4096.*40000000.) );
       
     }
     
+    // Get clusters from reference detector
+    Timepix3Clusters* referenceClusters = (Timepix3Clusters*)clipboard->get(parameters->reference,"clusters");
+    if(referenceClusters == NULL){
+      tcout<<"Reference detector "<<parameters->reference<<" does not have any clusters on the clipboard"<<endl;
+      continue;
+    }
+
     // Loop over all clusters and fill histograms
     for(int iCluster=0;iCluster<clusters->size();iCluster++){
 
@@ -111,8 +111,8 @@ int TestAlgorithm::run(Clipboard* clipboard){
         double timeDifference = (double)(refCluster->timestamp() - cluster->timestamp()) / (4096.*40000000.);
         
         // Correlation plots
-        if( abs(timeDifference) < 0.001 ) correlationX[detectorID]->Fill(refCluster->globalX() - cluster->globalX());
-        if( abs(timeDifference) < 0.001 ) correlationY[detectorID]->Fill(refCluster->globalY() - cluster->globalY());
+        if( abs(timeDifference) < 0.0001 ) correlationX[detectorID]->Fill(refCluster->globalX() - cluster->globalX());
+        if( abs(timeDifference) < 0.0001 ) correlationY[detectorID]->Fill(refCluster->globalY() - cluster->globalY());
         correlationTime[detectorID]->Fill( timeDifference );
         correlationTimeInt[detectorID]->Fill( timeDifferenceInt );
       }

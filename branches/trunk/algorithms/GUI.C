@@ -22,6 +22,8 @@ void startDisplay(void* gui){
 //  ((GUI*)gui)->trackCanvas->Divide();
   ((GUI*)gui)->hitmapCanvas = new TCanvas("HitMapCanvas","Hit map canvas");
   ((GUI*)gui)->hitmapCanvas->Divide(ceil(nDetectors/2.),2);
+  ((GUI*)gui)->globalHitmapCanvas = new TCanvas("GlobalHitmapCanvas","Global hit map canvas");
+  ((GUI*)gui)->globalHitmapCanvas->Divide(ceil(nDetectors/2.),2);
   ((GUI*)gui)->residualsCanvas = new TCanvas("ResidualsCanvas","Residuals canvas");
   ((GUI*)gui)->residualsCanvas->Divide(ceil(nDetectors/2.),2);
 
@@ -50,6 +52,8 @@ void GUI::initialise(Parameters* par){
     hitmap[detectorID] = (TH2F*)gDirectory->Get(hitmapHisto.c_str());
     string residualHisto = "/tbAnalysis/BasicTracking/residualsX_"+detectorID;
     residuals[detectorID] = (TH1F*)gDirectory->Get(residualHisto.c_str());
+    string globalHitmapHisto = "/tbAnalysis/TestAlgorithm/clusterPositionGlobal_"+detectorID;
+    globalHitmap[detectorID] = (TH2F*)gDirectory->Get(globalHitmapHisto.c_str());
   }
 
   // Set event counter
@@ -92,7 +96,26 @@ int GUI::run(Clipboard* clipboard){
     hitmapCanvas->Paint();
     hitmapCanvas->Update();
   }
+
+  //-----------------------------------------
+  // Draw the objects on the globalHitmap canvas
+  //-----------------------------------------
   
+  // Update the canvas
+  if(eventNumber == 0){
+    for(int det = 0; det<parameters->nDetectors; det++){
+      string detectorID = parameters->detectors[det];
+      globalHitmap[detectorID]->SetTitle(detectorID.c_str());
+      globalHitmapCanvas->cd(det+1);
+      globalHitmap[detectorID]->Draw("colz");
+    }
+  }
+  // Update the canvas
+  if(eventNumber%updateNumber == 0) {
+    globalHitmapCanvas->Paint();
+    globalHitmapCanvas->Update();
+  }
+
   //-----------------------------------------
   // Draw the objects on the residuals canvas
   //-----------------------------------------

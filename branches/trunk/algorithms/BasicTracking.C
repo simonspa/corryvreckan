@@ -80,15 +80,16 @@ int BasicTracking::run(Clipboard* clipboard){
     // Loop over each subsequent plane and look for a cluster within 100 ns
     for(int det=0; det<detectors.size(); det++){
       if(detectors[det] == reference) continue;
+      if(clusters[detectors[det]] == NULL) continue;
       Timepix3Cluster* newCluster = getNearestCluster(timestamp, (*clusters[detectors[det]]) );
       if( ((newCluster->timestamp() - timestamp) / (4096.*40000000.)) > (10./1000000000.) ) continue;
       // Check if spatially more than 200 um
-      if( abs(cluster->globalX() - newCluster->globalX()) > 0.3 || abs(cluster->globalY() - newCluster->globalY()) > 0.3 ) continue;
+      if( abs(cluster->globalX() - newCluster->globalX()) > 0.2 || abs(cluster->globalY() - newCluster->globalY()) > 0.2 ) continue;
       track->addCluster(newCluster);
     }
    
     // Now should have a track with one cluster from each plane
-    if(track->nClusters() < 5){
+    if(track->nClusters() < 6){
       delete track;
       continue;
     }

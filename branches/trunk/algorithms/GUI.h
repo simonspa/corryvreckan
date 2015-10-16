@@ -30,10 +30,12 @@ public:
   // Canvases to display plots
   TCanvas* trackCanvas;
   TCanvas* hitmapCanvas;
+  TCanvas* globalHitmapCanvas;
   TCanvas* residualsCanvas;
   
   // Plot holders
   map<string, TH2F*> hitmap;
+  map<string, TH2F*> globalHitmap;
   map<string, TH1F*> residuals;
   
   // Thread to allow display to run in separate thread

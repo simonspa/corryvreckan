@@ -27,9 +27,10 @@ void Analysis::run(){
   
   // Loop over all events, running each algorithm on each "event"
   cout << endl << "========================| Event loop |========================" << endl;
-  m_events=0;
+  m_events=1;
   while(1){
     bool run = true;
+    bool noData = false;
     cout<<"[Analysis] Running over event "<<m_events<<endl;
   	// Run all algorithms
     for(int algorithmNumber = 0; algorithmNumber<m_algorithms.size();algorithmNumber++) {
@@ -39,7 +40,7 @@ void Analysis::run(){
       m_algorithms[algorithmNumber]->getStopwatch()->Start(false);
       int check = m_algorithms[algorithmNumber]->run(m_clipboard);
       m_algorithms[algorithmNumber]->getStopwatch()->Stop();
-      if(check == 2) break; // Nothing to be done in this event
+      if(check == 2){noData = true; break;}// Nothing to be done in this event
       if(check == 0) run = false;
     }
     // Clear objects from this iteration from the clipboard
@@ -49,7 +50,7 @@ void Analysis::run(){
     // Check if we have reached the maximum number of events
     if(m_parameters->nEvents > 0 && m_events == m_parameters->nEvents) break;
     // Increment event number
-    m_events++;
+    if(!noData) m_events++;
   }
   
   // If running the gui, don't close until the user types a command

@@ -22,15 +22,16 @@ int Timepix3Clustering::run(Clipboard* clipboard){
     // Check if they are a Timepix3
     string detectorID = parameters->detectors[det];
     if(parameters->detector[detectorID]->type() != "Timepix3") continue;
-		
+    tcout<<"Looking at detID "<<detectorID<<endl;
     // Get the pixels
     Timepix3Pixels* pixels = (Timepix3Pixels*)clipboard->get(detectorID,"pixels");
     if(pixels == NULL){
       tcout<<"Detector "<<detectorID<<" does not have any pixels on the clipboard"<<endl;
-      return 1;
+      continue;
     }
-    if(debug) tcout<<"Picked up "<<pixels->size()<<" pixels for device "<<detectorID<<endl;
-
+//    if(debug)
+      tcout<<"Picked up "<<pixels->size()<<" pixels for device "<<detectorID<<endl;
+    
     // Make the cluster storage
     Timepix3Clusters* deviceClusters = new Timepix3Clusters();
    
@@ -80,7 +81,7 @@ int Timepix3Clustering::run(Clipboard* clipboard){
     }
     
     // Put the clusters on the clipboard
-    clipboard->put(detectorID,"clusters",(TestBeamObjects*)deviceClusters);
+    if(deviceClusters->size() > 0) clipboard->put(detectorID,"clusters",(TestBeamObjects*)deviceClusters);
     if(debug) tcout<<"Made "<<deviceClusters->size()<<" clusters for device "<<detectorID<<endl;
 
   }
@@ -95,8 +96,8 @@ bool Timepix3Clustering::touching(Timepix3Pixel* neighbour,Timepix3Cluster* clus
   Timepix3Pixels pixels = cluster->pixels();
   for(int iPix=0;iPix<pixels.size();iPix++){
     
-    if( (pixels[iPix]->m_row - neighbour->m_row) <= 1 &&
-       (pixels[iPix]->m_column - neighbour->m_column) <= 1 ) Touching = true;
+    if( abs(pixels[iPix]->m_row - neighbour->m_row) <= 1 &&
+       abs(pixels[iPix]->m_column - neighbour->m_column) <= 1 ) Touching = true;
     
   }
   return Touching;

@@ -83,6 +83,7 @@ void Timepix3EventLoader::initialise(Parameters* par){
 
 int Timepix3EventLoader::run(Clipboard* clipboard){
   
+  int endOfFiles = 0; int devices = 0;
 //  tcout<<"Current time is "<<parameters->currentTime<<endl;
   bool loadedData = false;
   // Loop through all registered detectors
@@ -101,10 +102,16 @@ int Timepix3EventLoader::run(Clipboard* clipboard){
 //      tcout<<"Loaded "<<deviceData->size()<<" pixels for device "<<detectorID<<endl;
       clipboard->put(detectorID,"pixels",(TestBeamObjects*)deviceData);
     }
+    
+    // Check if all devices have reached the end of file
+    devices++;
+    if(feof(m_currentFile[detectorID])) endOfFiles++;
   }
   
   // Increment the event time
   parameters->currentTime += parameters->eventLength;
+  
+  if(endOfFiles == devices) return 0;
   
   // If no data was loaded, tell the event loop to stop
   if(!loadedData) return 2;
@@ -141,8 +148,23 @@ void Timepix3EventLoader::maskPixels(string detectorID, string trimdacfile){
 // Function to load data for a given device, into the relevant container
 bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata ){
 
+//  tcout<<"Loading data for device "<<detectorID<<endl;
+
   // Check if current file is open
-  if(m_currentFile[detectorID] == NULL){
+//  if(m_currentFile[detectorID] == NULL){
+  
+  if(m_currentFile[detectorID] == NULL || feof(m_currentFile[detectorID])){
+//    tcout<<"No current file open "<<endl;
+
+    
+    // If all files are finished, return
+    if(m_fileNumber[detectorID] == m_datafiles[detectorID].size()){
+//      tcout<<"All files have been analysed. There were "<<m_datafiles[detectorID].size()<<endl;
+      return false;
+    }
+    
+//    tcout<<"Opening file "<<m_fileNumber[detectorID]<<endl;
+    
     // Open a new file
     m_currentFile[detectorID] = fopen(m_datafiles[detectorID][m_fileNumber[detectorID]].c_str(),"rb");
     // Mark that this file is done
@@ -167,6 +189,10 @@ bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata
   // Now read the data packets.
   ULong64_t pixdata = 0; UShort_t thr = 0;
   int npixels=0;
+  bool fileNotFinished = false;
+  
+//  tcout<<"Ready to read data"<<endl;
+  
   // Read till the end of file (or till break)
   while (!feof(m_currentFile[detectorID])) {
     const int retval = fread(&pixdata, sizeof(ULong64_t), 1, m_currentFile[detectorID]);
@@ -210,6 +236,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata
       if( parameters->eventLength != 0. &&
          ((double)time/(4096. * 40000000.)) > (parameters->currentTime + parameters->eventLength) ){
         fseek(m_currentFile[detectorID], -1 * sizeof(ULong64_t), SEEK_CUR);
+        fileNotFinished = true;
         break;
       }
       
@@ -220,10 +247,18 @@ bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata
 
     }
     // Stop when we reach some large number of pixels (if events not based on time)
-    if(parameters->eventLength == 0. && npixels == 2000) break;
+    if(parameters->eventLength == 0. && npixels == 2000){
+      fileNotFinished = true;
+      break;
+    }
     
   }
   
+//  if(feof(m_currentFile[detectorID])){
+//    fclose(m_currentFile[detectorID]);
+//    m_currentFile[detectorID] == NULL;
+//    tcout<<"Closing file "<<endl;
+//  }
   if(npixels == 0) return false;
   
   return true;
