@@ -70,8 +70,7 @@ void Alignment::finalise(){
     if(parameters->detector[detectorID]->type() != "Timepix3") continue;
     // Do not align the reference plane
     if(detectorID == parameters->reference) continue;
-    if(detectorID == "W0013_F09") continue;
-    if(detectorID == "W0013_G02") continue;
+    if(parameters->excludedFromTracking.count(detectorID) != 0) continue;
     // Say that this is the detector we align
     detectorToAlign = detectorID;
     detNum=det;
@@ -79,9 +78,9 @@ void Alignment::finalise(){
     residualFitter->SetParameter(det*6+0,(detectorID+"_displacementX").c_str(),parameters->detector[detectorID]->displacementX(),0.01,-50,50);
     residualFitter->SetParameter(det*6+1,(detectorID+"_displacementY").c_str(),parameters->detector[detectorID]->displacementY(),0.01,-50,50);
     residualFitter->SetParameter(det*6+2,(detectorID+"_displacementZ").c_str(),parameters->detector[detectorID]->displacementZ(),0,-10,500);
-    residualFitter->SetParameter(det*6+3,(detectorID+"_rotationX").c_str(),parameters->detector[detectorID]->rotationX(),0.01,-6.30,6.30);
-    residualFitter->SetParameter(det*6+4,(detectorID+"_rotationY").c_str(),parameters->detector[detectorID]->rotationY(),0.01,-6.30,6.30);
-    residualFitter->SetParameter(det*6+5,(detectorID+"_rotationZ").c_str(),parameters->detector[detectorID]->rotationZ(),0.01,-6.30,6.30);
+    residualFitter->SetParameter(det*6+3,(detectorID+"_rotationX").c_str(),parameters->detector[detectorID]->rotationX(),0.001,-6.30,6.30);
+    residualFitter->SetParameter(det*6+4,(detectorID+"_rotationY").c_str(),parameters->detector[detectorID]->rotationY(),0.001,-6.30,6.30);
+    residualFitter->SetParameter(det*6+5,(detectorID+"_rotationZ").c_str(),parameters->detector[detectorID]->rotationZ(),0.001,-6.30,6.30);
     
     // Fit this plane (minimising global track chi2)
 		residualFitter->ExecuteCommand("MIGRAD",arglist,2);
@@ -112,9 +111,8 @@ void Alignment::finalise(){
     if(parameters->detector[detectorID]->type() != "Timepix3") continue;
     // Do not align the reference plane
     if(detectorID == parameters->reference) continue;
-    if(detectorID == "W0013_F09") continue;
-    if(detectorID == "W0013_G02") continue;
-    
+    if(parameters->excludedFromTracking.count(detectorID) != 0) continue;
+
     // Get the alignment parameters
     double displacementX = residualFitter->GetParameter(det*6+0);
     double displacementY = residualFitter->GetParameter(det*6+1);
@@ -145,6 +143,7 @@ void SumDistance2(Int_t &npar, Double_t *grad, Double_t &result, Double_t *par, 
   // Apply new alignment conditions
   globalParameters->detector[detectorToAlign]->update();
 
+//  cout<<"Aligning "<<detectorToAlign<<endl;
 //  cout<<"displacement x "<<par[detNum*6 + 0]<<endl;
 //  cout<<"displacement y "<<par[detNum*6 + 1]<<endl;
 //  cout<<"displacement z "<<par[detNum*6 + 2]<<endl;
