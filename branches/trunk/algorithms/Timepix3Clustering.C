@@ -22,15 +22,13 @@ int Timepix3Clustering::run(Clipboard* clipboard){
     // Check if they are a Timepix3
     string detectorID = parameters->detectors[det];
     if(parameters->detector[detectorID]->type() != "Timepix3") continue;
-    tcout<<"Looking at detID "<<detectorID<<endl;
     // Get the pixels
     Timepix3Pixels* pixels = (Timepix3Pixels*)clipboard->get(detectorID,"pixels");
     if(pixels == NULL){
-      tcout<<"Detector "<<detectorID<<" does not have any pixels on the clipboard"<<endl;
+      if(debug) tcout<<"Detector "<<detectorID<<" does not have any pixels on the clipboard"<<endl;
       continue;
     }
-//    if(debug)
-      tcout<<"Picked up "<<pixels->size()<<" pixels for device "<<detectorID<<endl;
+    if(debug) tcout<<"Picked up "<<pixels->size()<<" pixels for device "<<detectorID<<endl;
     
     // Make the cluster storage
     Timepix3Clusters* deviceClusters = new Timepix3Clusters();
@@ -60,13 +58,13 @@ int Timepix3Clustering::run(Clipboard* clipboard){
         // Loop over all pixels
         for(int iNeighbour=0;iNeighbour<pixels->size();iNeighbour++){
           Timepix3Pixel* neighbour = (*pixels)[iNeighbour];
-          // Check if they have been used
+          // Check if they are compatible in time with the cluster pixels
+          if(!closeInTime(neighbour,cluster)) continue;
+         // Check if they have been used
           if(used[neighbour]) continue;
           // Check if they are touching cluster pixels
           if(!touching(neighbour,cluster)) continue;
-          // Check if they are compatible in time with the cluster pixels
-          if(!closeInTime(neighbour,cluster)) continue;
-          // Add to cluster
+           // Add to cluster
           cluster->addPixel(neighbour);
           used[neighbour] = true;
           if(debug) tcout<<"Adding pixel: "<<neighbour->m_row<<","<<neighbour->m_column<<endl;
