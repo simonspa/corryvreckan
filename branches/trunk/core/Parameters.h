@@ -171,6 +171,8 @@ public:
   bool eventDisplay;
   bool gui;
   bool produceMask;
+  string DUT;
+  map<string, bool> excludedFromTracking;
   
   // Parameters for each detector (stored by detector ID)
   map<string,DetectorParameters*> detector;
