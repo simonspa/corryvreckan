@@ -22,12 +22,21 @@ public:
   int run(Clipboard*);
   void finalise();
   
+//  Timepix3Cluster* getNearestCluster(Timepix3Cluster*, map<Timepix3Cluster*, bool>, Timepix3Clusters*);
   Timepix3Cluster* getNearestCluster(long long int, Timepix3Clusters);
 
   // Member variables
+  
+  // Histograms
   TH1F* trackChi2;
+  TH1F* tracksPerEvent;
   map<string,TH1F*> residualsX;
   map<string,TH1F*> residualsY;
+  
+  // Cuts for tracking
+  double timinigCut;
+  double spatialCut;
+  int minHitsOnTrack;
   
 };
 
