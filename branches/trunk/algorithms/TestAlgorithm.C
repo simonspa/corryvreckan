@@ -59,14 +59,14 @@ int TestAlgorithm::run(Clipboard* clipboard){
     // Get the pixels
     Timepix3Pixels* pixels = (Timepix3Pixels*)clipboard->get(detectorID,"pixels");
     if(pixels == NULL){
-      tcout<<"Detector "<<detectorID<<" does not have any pixels on the clipboard"<<endl;
+      if(debug) tcout<<"Detector "<<detectorID<<" does not have any pixels on the clipboard"<<endl;
       continue;
     }
     
     // Get the clusters
     Timepix3Clusters* clusters = (Timepix3Clusters*)clipboard->get(detectorID,"clusters");
     if(clusters == NULL){
-      tcout<<"Detector "<<detectorID<<" does not have any clusters on the clipboard"<<endl;
+      if(debug) tcout<<"Detector "<<detectorID<<" does not have any clusters on the clipboard"<<endl;
       continue;
     }
     
@@ -87,8 +87,9 @@ int TestAlgorithm::run(Clipboard* clipboard){
     // Get clusters from reference detector
     Timepix3Clusters* referenceClusters = (Timepix3Clusters*)clipboard->get(parameters->reference,"clusters");
     if(referenceClusters == NULL){
-      tcout<<"Reference detector "<<parameters->reference<<" does not have any clusters on the clipboard"<<endl;
-      continue;
+      if(debug)tcout<<"Reference detector "<<parameters->reference<<" does not have any clusters on the clipboard"<<endl;
+      referenceClusters = new Timepix3Clusters();
+//      continue;
     }
 
     // Loop over all clusters and fill histograms
