@@ -45,7 +45,7 @@ void Timepix3EventLoader::initialise(Parameters* par){
         string filename = dataDirName+"/"+file->d_name;
 
         // Check if file has extension .dat
-        if (string(file->d_name).find(".dat") != string::npos){
+        if (string(file->d_name).find("1.dat") != string::npos){
           m_datafiles[detectorID].push_back(filename.c_str());
           m_nFiles[detectorID]++;
 
@@ -167,6 +167,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata
     
     // Open a new file
     m_currentFile[detectorID] = fopen(m_datafiles[detectorID][m_fileNumber[detectorID]].c_str(),"rb");
+    tcout<<"Loading file "<<m_datafiles[detectorID][m_fileNumber[detectorID]]<<endl;
     // Mark that this file is done
     m_fileNumber[detectorID]++;
     // Skip the header
