@@ -104,7 +104,7 @@ public:
   
   void calculateChi2(){
     int nClusters = m_clusters.size();
-    m_ndof = 2.*nClusters-4.;
+    m_ndof = nClusters-2.;
     m_chi2 = 0.; m_chi2ndof = 0.;
     // Loop over all clusters
     for(int iCluster=0;iCluster<nClusters;iCluster++){

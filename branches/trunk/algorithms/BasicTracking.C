@@ -13,6 +13,8 @@ void BasicTracking::initialise(Parameters* par){
   
   // Set up histograms
   trackChi2 = new TH1F("trackChi2","trackChi2",150,0,150);
+  trackChi2ndof = new TH1F("trackChi2ndof","trackChi2ndof",100,0,50);
+  clustersPerTrack = new TH1F("clustersPerTrack","clustersPerTrack",10,0,10);
   tracksPerEvent = new TH1F("tracksPerEvent","tracksPerEvent",100,0,100);
   
   // Loop over all Timepix3
@@ -27,7 +29,7 @@ void BasicTracking::initialise(Parameters* par){
   }
   
   // Default values for cuts
-  timinigCut = 200./1000000000.;		// 10 ns
+  timinigCut = 200./1000000000.;		// 200 ns
   spatialCut = 0.2; 							// 200 um
   minHitsOnTrack = 6;
 
@@ -123,6 +125,8 @@ int BasicTracking::run(Clipboard* clipboard){
     
     // Fill histograms
     trackChi2->Fill(track->chi2());
+    clustersPerTrack->Fill(track->nClusters());
+    trackChi2ndof->Fill(track->chi2ndof());
     
     // Make residuals
     Timepix3Clusters trackClusters = track->clusters();

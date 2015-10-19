@@ -29,6 +29,8 @@ public:
   
   // Histograms
   TH1F* trackChi2;
+  TH1F* clustersPerTrack;
+  TH1F* trackChi2ndof;
   TH1F* tracksPerEvent;
   map<string,TH1F*> residualsX;
   map<string,TH1F*> residualsY;
