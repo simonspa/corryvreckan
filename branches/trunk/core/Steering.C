@@ -63,7 +63,9 @@ int main(int argc, char *argv[]) {
 //  parameters->excludedFromTracking["W0013_G02"] = true;
   parameters->excludedFromTracking["W0005_E02"] = true;
   parameters->excludedFromTracking["W0005_F01"] = true;
-  
+  parameters->excludedFromTracking["W0019_C07"] = true;
+  parameters->excludedFromTracking["W0019_G07"] = true;
+
   
   // Algorithm list
   Timepix3EventLoader*	tpix3EventLoader	= new Timepix3EventLoader(debug);
