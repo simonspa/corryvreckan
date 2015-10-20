@@ -26,7 +26,9 @@ public:
   map<string, vector<string> > m_datafiles;
   map<string, int> m_nFiles;
   map<string, int> m_fileNumber;
+  map<string, long long int> m_syncTime;
   map<string, FILE*> m_currentFile;
+  map<string, bool> m_clearedHeader;
   bool applyTimingCut;
   long long int m_currentTime;
   double m_timingCut;

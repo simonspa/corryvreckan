@@ -6,6 +6,7 @@
 #include <string>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 Timepix3EventLoader::Timepix3EventLoader(bool debugging)
 : Algorithm("Timepix3EventLoader"){
@@ -52,6 +53,8 @@ void Timepix3EventLoader::initialise(Parameters* par){
           // Initialise null values for later
           m_currentFile[detectorID] = NULL;
           m_fileNumber[detectorID] = 0;
+          m_syncTime[detectorID] = 0;
+          m_clearedHeader[detectorID] = false;
         }
         
         // If not a data file, it might be a trimdac file, with the list of masked pixels etc.
@@ -203,12 +206,39 @@ bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata
     if (retval == 0) continue;
     const UChar_t header = ((pixdata & 0xF000000000000000) >> 60) & 0xF;
     
-    unsigned int headerInt = ((pixdata & 0xF000000000000000) >> 60) & 0xF;
+//    unsigned int headerInt = ((pixdata & 0xF000000000000000) >> 60) & 0xF;
 //    tcout<<hex<<headerInt<<dec<<endl;
 //    bitset<64> headerContent(header);
 //    tcout<<"Header is "<<headerContent<<endl;
 
-    if (header == 0xA || header == 0xB) {
+    // Use header 0x4 to get the long timestamps (called syncTime here)
+    if(header == 0x4){
+      
+//      tcout<<"Got timestamp"<<endl;
+      // The 0x4 header tells us that it is part of the timestamp
+      // There is a second 4-bit header that says if it is the most
+      // or least significant part of the timestamp
+      const UChar_t header2 = ((pixdata & 0x0F00000000000000) >> 56) & 0xF;
+//      unsigned int header2Int = ((pixdata & 0x0F00000000000000) >> 56) & 0xF;
+//      tcout<<hex<<header2Int<<dec<<endl;
+
+      if(header2 == 0x4){
+//        tcout<<"Got LSBs"<<endl;
+        // The data is shifted 16 bits to the right, then 12 to the left in order to match the timestamp format (net 4 right)
+        m_syncTime[detectorID] = (m_syncTime[detectorID] & 0xFFFFF00000000000) + ((pixdata & 0x0000FFFFFFFF0000) >> 4);
+      }
+      if(header2 == 0x5){
+//        tcout<<"Got MSBs"<<endl;
+        // The data is shifted 16 bits to the right, then 44 to the left in order to match the timestamp format (net 28 left)
+        m_syncTime[detectorID] = (m_syncTime[detectorID] & 0x00000FFFFFFFFFFF) + ((pixdata & 0x00000000FFFF0000) << 28);
+        if( m_syncTime[detectorID] < 0x0000010000000000 && !m_clearedHeader[detectorID]) m_clearedHeader[detectorID] = true;
+      }
+      
+    }
+    
+    if(!m_clearedHeader[detectorID]) continue;
+    
+    if(header == 0xA || header == 0xB) {
       const UShort_t dcol = ((pixdata & 0x0FE0000000000000) >> 52);
       const UShort_t spix = ((pixdata & 0x001F800000000000) >> 45);
       const UShort_t pix  = ((pixdata & 0x0000700000000000) >> 44);
@@ -218,18 +248,40 @@ bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata
       const UInt_t data = ((pixdata & 0x00000FFFFFFF0000) >> 16);
       const unsigned int tot = (data & 0x00003FF0) >> 4;
 
+      // Check if this pixel is masked
+      if(parameters->detector[detectorID]->masked(col,row)) continue;
+
       const uint64_t spidrTime(pixdata & 0x000000000000FFFF);
       const uint64_t ftoa(data & 0x0000000F);
       const uint64_t toa((data & 0x0FFFC000) >> 14);
       // Calculate the timestamp.
-       uint64_t time = ((spidrTime << 18) + (toa << 4) + (15 - ftoa)) << 8;
-      
-      // Check if this pixel is masked
-      if(parameters->detector[detectorID]->masked(col,row)) continue;
-
+//      uint64_t time = ((spidrTime << 18) + (toa << 4) + (15 - ftoa)) << 8; // original from martin
+      long long int time = (((spidrTime << 18) + (toa << 4) + (15 - ftoa)) << 8) + (m_syncTime[detectorID] & 0xFFFFFC0000000000);
+        
 //      tcout<<"Pixel time "<<(double)time<<endl;
+//      tcout<<"Sync time "<<(double)m_syncTime[detectorID]<<endl;
       time += (long long int)(parameters->detector[detectorID]->timingOffset() * 4096. * 40000000.);
+
+//      // If the counter overflow happens before reading the new heartbeat
+//      while( abs((double)(time-m_syncTime[detectorID])/(4096. * 40000000.)) > 10. ){
+//        tcout<<"=== Increasing pixel time!"<<endl;
+//        tcout<<"Time difference is "<<abs((double)(time-m_syncTime[detectorID])/(4096. * 40000000.))<<endl;
+//        tcout<<"Pixel time is "<<((double)time/(4096. * 40000000.))<<endl;
+//        tcout<<"Sync time is "<<((double)m_syncTime[detectorID]/(4096. * 40000000.))<<endl;
+//        time += 0x0000040000000000;
+//      }
+
+      // If the counter overflow happens before reading the new heartbeat
+      while( abs(m_syncTime[detectorID]-time) > 0x0000020000000000 ){
+//        tcout<<"=== Increasing pixel time!"<<endl;
+//        tcout<<"Time difference is "<<((double)(m_syncTime[detectorID]-time)/(4096. * 40000000.))<<endl;
+//        tcout<<"Pixel time is "<<((double)time/(4096. * 40000000.))<<endl;
+//        tcout<<"Sync time is "<<((double)m_syncTime[detectorID]/(4096. * 40000000.))<<endl;
+        time += 0x0000040000000000;
+      }
+
 //      tcout<<"Pixel time is "<<((double)time/(4096. * 40000000.))<<endl;
+//      tcout<<"Sync time is "<<((double)m_syncTime[detectorID]/(4096. * 40000000.))<<endl;
 //      bitset<48> timeInt(time);
 //      tcout<<" or "<<timeInt<<endl;
       
