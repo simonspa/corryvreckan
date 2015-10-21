@@ -105,11 +105,13 @@ int BasicTracking::run(Clipboard* clipboard){
     for(int det=0; det<detectors.size(); det++){
       if(detectors[det] == reference) continue;
       if(clusters[detectors[det]] == NULL) continue;
-      if(parameters->excludedFromTracking.count(detectors[det]) != 0) continue;
       Timepix3Cluster* newCluster = getNearestCluster(timestamp, (*clusters[detectors[det]]) );
       if( ((newCluster->timestamp() - timestamp) / (4096.*40000000.)) > (10./1000000000.) ) continue;
       // Check if spatially more than 200 um
       if( abs(cluster->globalX() - newCluster->globalX()) > spatialCut || abs(cluster->globalY() - newCluster->globalY()) > spatialCut ) continue;
+
+      // If excluded from tracking, add as an associated cluster, otherwise add it as a real cluster
+      if(parameters->excludedFromTracking.count(detectors[det]) != 0) continue;
       track->addCluster(newCluster);
     }
 
