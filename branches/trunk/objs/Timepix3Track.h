@@ -31,15 +31,19 @@ public:
     for(int iTrackCluster=0; iTrackCluster<trackClusters.size(); iTrackCluster++){
       Timepix3Cluster* trackCluster = trackClusters[iTrackCluster];
       Timepix3Cluster* cluster = new Timepix3Cluster(trackCluster);
-      m_clusters.push_back(cluster);
+      m_trackClusters.push_back(cluster);
     }
   }
   
   // Functions
   // Add a new cluster to the track
   void addCluster(Timepix3Cluster* cluster){
-    m_clusters.push_back(cluster);
+    m_trackClusters.push_back(cluster);
   }
+  void addAssociatedCluster(Timepix3Cluster* cluster){
+    m_associatedClusters.push_back(cluster);
+  }
+  
   // Fit the track
   void fit(){
 
@@ -47,7 +51,7 @@ public:
     m_fitterYZ->ClearPoints();
     
     // Check how many clusters there are
-    int nClusters = m_clusters.size();
+    int nClusters = m_trackClusters.size();
     
     // Make the fitting object
 //    TGraph2DErrors* dataPoints = new TGraph2DErrors(nClusters);
@@ -57,7 +61,7 @@ public:
     // Loop over all clusters
     for(int iCluster=0;iCluster<nClusters;iCluster++){
       // Get the cluster
-      Timepix3Cluster* cluster = m_clusters[iCluster];
+      Timepix3Cluster* cluster = m_trackClusters[iCluster];
 //      double zerror = 1.;
 //      dataPoints->SetPoint(iCluster, cluster->globalX(), cluster->globalY(), cluster->globalZ());
 //      dataPoints->SetPointError(iCluster, cluster->error(), cluster->error(), 1.);
@@ -103,13 +107,13 @@ public:
   }
   
   void calculateChi2(){
-    int nClusters = m_clusters.size();
+    int nClusters = m_trackClusters.size();
     m_ndof = nClusters-2.;
     m_chi2 = 0.; m_chi2ndof = 0.;
     // Loop over all clusters
     for(int iCluster=0;iCluster<nClusters;iCluster++){
       // Get the cluster
-      Timepix3Cluster* cluster = m_clusters[iCluster];
+      Timepix3Cluster* cluster = m_trackClusters[iCluster];
       double error2 = cluster->error() * cluster->error();
       m_chi2+= (this->distance2(cluster)/error2);
     }
@@ -120,8 +124,9 @@ public:
   double chi2(){return m_chi2;}
   double chi2ndof(){return m_chi2ndof;}
   double ndof(){return m_ndof;}
-  Timepix3Clusters clusters(){return m_clusters;}
-  int nClusters(){return m_clusters.size();}
+  Timepix3Clusters clusters(){return m_trackClusters;}
+  Timepix3Clusters associatedClusters(){return m_associatedClusters;}
+  int nClusters(){return m_trackClusters.size();}
   ROOT::Math::XYZPoint intercept(double z){
     ROOT::Math::XYZPoint point = m_state + m_direction*z;
     return point;
@@ -131,7 +136,8 @@ public:
   void setTimestamp(long long int timestamp){m_timestamp=timestamp;}
   
   // Member variables
-  Timepix3Clusters m_clusters;
+  Timepix3Clusters m_trackClusters;
+  Timepix3Clusters m_associatedClusters;
   long long int m_timestamp;
   double m_chi2;
   double m_ndof;
