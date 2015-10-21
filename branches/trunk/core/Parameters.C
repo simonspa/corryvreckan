@@ -32,7 +32,7 @@ void Parameters::readCommandLineOptions(int argc, char *argv[]){
   cout<<endl;
   cout<<"===================| Reading Parameters  |===================="<<endl<<endl;
   int option; char temp[256];
-  while ( (option = getopt(argc, argv, "agemd:c:n:h:t:")) != -1) {
+  while ( (option = getopt(argc, argv, "agemd:c:n:h:t:o:")) != -1) {
     switch (option) {
       case 'a':
         align = true;
@@ -68,6 +68,10 @@ void Parameters::readCommandLineOptions(int argc, char *argv[]){
       case 'n':
         sscanf( optarg, "%d", &nEvents);
         cout<<"Running over "<<nEvents<<" events"<<endl;
+        break;
+      case 'o':
+        sscanf( optarg, "%lf", &currentTime);
+        cout<<"Starting at time: "<<currentTime<<" s"<<endl;
         break;
       case 't':
         sscanf( optarg, "%lf", &eventLength);

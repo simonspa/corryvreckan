@@ -12,7 +12,7 @@ Timepix3EventLoader::Timepix3EventLoader(bool debugging)
 : Algorithm("Timepix3EventLoader"){
   debug = debugging;
   applyTimingCut = false;
-  m_currentTime = 0;
+  m_currentTime = 0.;
 }
 
 
@@ -40,6 +40,9 @@ void Timepix3EventLoader::initialise(Parameters* par){
       string dataDirName = m_inputDirectory+"/"+entry->d_name;
       DIR* dataDir = opendir(dataDirName.c_str());
       string trimdacfile;
+      
+      // Check if this device is to be masked
+      if(parameters->masked.count(detectorID) != 0) continue;
       
       // Get all of the files for this chip
       while (file = readdir(dataDir)){
@@ -99,6 +102,7 @@ int Timepix3EventLoader::run(Clipboard* clipboard){
 		// Load the next chunk of data
 //    tcout<<"Loading data from "<<detectorID<<endl;
     bool data = loadData(detectorID,deviceData);
+    
     // If data was loaded then put it on the clipboard
     if(data){
       loadedData = true;
@@ -208,6 +212,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata
     
 //    unsigned int headerInt = ((pixdata & 0xF000000000000000) >> 60) & 0xF;
 //    tcout<<hex<<headerInt<<dec<<endl;
+
 //    bitset<64> headerContent(header);
 //    tcout<<"Header is "<<headerContent<<endl;
 
@@ -215,6 +220,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata
     if(header == 0x4){
       
 //      tcout<<"Got timestamp"<<endl;
+      
       // The 0x4 header tells us that it is part of the timestamp
       // There is a second 4-bit header that says if it is the most
       // or least significant part of the timestamp
@@ -257,9 +263,10 @@ bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata
       // Calculate the timestamp.
 //      uint64_t time = ((spidrTime << 18) + (toa << 4) + (15 - ftoa)) << 8; // original from martin
       long long int time = (((spidrTime << 18) + (toa << 4) + (15 - ftoa)) << 8) + (m_syncTime[detectorID] & 0xFFFFFC0000000000);
-        
+      
 //      tcout<<"Pixel time "<<(double)time<<endl;
 //      tcout<<"Sync time "<<(double)m_syncTime[detectorID]<<endl;
+      
       time += (long long int)(parameters->detector[detectorID]->timingOffset() * 4096. * 40000000.);
 
 //      // If the counter overflow happens before reading the new heartbeat
@@ -286,6 +293,11 @@ bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata
 //      tcout<<" or "<<timeInt<<endl;
       
       // If events are loaded based on time intervals, take all hits where the time is within this window
+      if( parameters->eventLength != 0. &&
+         ((double)time/(4096. * 40000000.)) < (parameters->currentTime) ){
+        continue;
+      }
+      
       if( parameters->eventLength != 0. &&
          ((double)time/(4096. * 40000000.)) > (parameters->currentTime + parameters->eventLength) ){
         fseek(m_currentFile[detectorID], -1 * sizeof(ULong64_t), SEEK_CUR);

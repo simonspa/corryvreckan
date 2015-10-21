@@ -173,6 +173,7 @@ public:
   bool produceMask;
   string DUT;
   map<string, bool> excludedFromTracking;
+  map<string, bool> masked;
   
   // Parameters for each detector (stored by detector ID)
   map<string,DetectorParameters*> detector;

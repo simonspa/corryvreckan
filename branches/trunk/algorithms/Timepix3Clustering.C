@@ -30,6 +30,7 @@ int Timepix3Clustering::run(Clipboard* clipboard){
     }
     if(debug) tcout<<"Picked up "<<pixels->size()<<" pixels for device "<<detectorID<<endl;
     
+    if(pixels->size() > 500.){tcout<<"Skipping large event with device "<<detectorID<<endl; continue;}
     // Make the cluster storage
     Timepix3Clusters* deviceClusters = new Timepix3Clusters();
    
