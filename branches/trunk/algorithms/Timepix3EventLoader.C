@@ -13,6 +13,7 @@ Timepix3EventLoader::Timepix3EventLoader(bool debugging)
   debug = debugging;
   applyTimingCut = false;
   m_currentTime = 0.;
+  m_minNumberOfPlanes = 1;
 }
 
 
@@ -90,8 +91,8 @@ void Timepix3EventLoader::initialise(Parameters* par){
 int Timepix3EventLoader::run(Clipboard* clipboard){
   
   int endOfFiles = 0; int devices = 0;
-//  tcout<<"Current time is "<<parameters->currentTime<<endl;
-  bool loadedData = false;
+  tcout<<"Current time is "<<parameters->currentTime<<endl;
+  int loadedData = 0;
   // Loop through all registered detectors
   for(int det = 0; det<parameters->nDetectors; det++){
     // Check if they are a Timepix3
@@ -105,7 +106,7 @@ int Timepix3EventLoader::run(Clipboard* clipboard){
     
     // If data was loaded then put it on the clipboard
     if(data){
-      loadedData = true;
+      loadedData++;
 //      tcout<<"Loaded "<<deviceData->size()<<" pixels for device "<<detectorID<<endl;
       clipboard->put(detectorID,"pixels",(TestBeamObjects*)deviceData);
     }
@@ -118,10 +119,11 @@ int Timepix3EventLoader::run(Clipboard* clipboard){
   // Increment the event time
   parameters->currentTime += parameters->eventLength;
   
+  // If all files are finished, tell the event loop to stop
   if(endOfFiles == devices) return 0;
   
-  // If no data was loaded, tell the event loop to stop
-  if(!loadedData) return 2;
+  // If no/not enough data in this run
+  if(loadedData < m_minNumberOfPlanes) return 2;
   
   // Otherwise tell event loop to keep running
   return 1;
