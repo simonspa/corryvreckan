@@ -21,6 +21,7 @@
 #include "Alignment.h"
 #include "EventDisplay.h"
 #include "GUI.h"
+#include "DUTAnalysis.h"
 
 //-------------------------------------------------------------------------------
 // The Steering is effectively the executable. It reads command line
@@ -56,11 +57,9 @@ int main(int argc, char *argv[]) {
   
   // General parameters
   parameters->reference = "W0013_G03";
-//  parameters->DUT = "W0005_E02";
-//  parameters->excludedFromTracking[parameters->DUT] = true;
-//  parameters->excludedFromTracking["W0013_D04"] = true;
-//  parameters->excludedFromTracking["W0013_E03"] = true;
-//  parameters->excludedFromTracking["W0013_G02"] = true;
+  parameters->DUT = "W0019_F07";
+  parameters->detectorToAlign = parameters->DUT;
+
   parameters->excludedFromTracking["W0005_E02"] = true;
   parameters->excludedFromTracking["W0005_F01"] = true;
   parameters->excludedFromTracking["W0019_C07"] = true;
@@ -78,6 +77,7 @@ int main(int argc, char *argv[]) {
   Alignment*	 					alignment					= new Alignment(debug);
   EventDisplay*	 				eventDisplay			= new EventDisplay(debug);
   GUI*	 								gui								= new GUI(debug);
+  DUTAnalysis*	 				dutAnalysis				= new DUTAnalysis(debug);
   
   // =========================================================================
   // Steering file ends
@@ -95,6 +95,7 @@ int main(int argc, char *argv[]) {
   analysis->add(tpix3Clustering);
   analysis->add(testAlgorithm);
   analysis->add(basicTracking);
+  analysis->add(dutAnalysis);
   
   if(parameters->align) analysis->add(alignment);
   if(parameters->produceMask) analysis->add(tpix3MaskCreator);

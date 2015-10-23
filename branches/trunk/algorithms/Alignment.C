@@ -38,13 +38,106 @@ int Alignment::run(Clipboard* clipboard){
 
 }
 
+
+// ========================================
+//  Minimisation functions for Minuit
+// ========================================
+
+
+// This method will move the detector in question, refit all of the tracks, and try to minimise the
+// track chi2. If there were no clusters from this detector on any tracks then it would do nothing!
+void MinimiseTrackChi2(Int_t &npar, Double_t *grad, Double_t &result, Double_t *par, Int_t flag) {
+  
+  // Pick up new alignment conditions
+  globalParameters->detector[detectorToAlign]->displacementX(par[detNum*6 + 0]);
+  globalParameters->detector[detectorToAlign]->displacementY(par[detNum*6 + 1]);
+  globalParameters->detector[detectorToAlign]->displacementZ(par[detNum*6 + 2]);
+  globalParameters->detector[detectorToAlign]->rotationX(par[detNum*6 + 3]);
+  globalParameters->detector[detectorToAlign]->rotationY(par[detNum*6 + 4]);
+  globalParameters->detector[detectorToAlign]->rotationZ(par[detNum*6 + 5]);
+  
+  // Apply new alignment conditions
+  globalParameters->detector[detectorToAlign]->update();
+  
+  // The chi2 value to be returned
+  result = 0.;
+  
+  // Loop over all tracks
+  for(int iTrack=0; iTrack<globalTracks.size(); iTrack++){
+    // Get the track
+    Timepix3Track* track = globalTracks[iTrack];
+    // Get all clusters on the track
+    Timepix3Clusters trackClusters = track->clusters();
+    // Find the cluster that needs to have its position recalculated
+    for(int iTrackCluster=0; iTrackCluster<trackClusters.size(); iTrackCluster++){
+      Timepix3Cluster* trackCluster = trackClusters[iTrackCluster];
+      string detectorID = trackCluster->detectorID();
+      // Recalculate the global position from the local
+      PositionVector3D<Cartesian3D<double> > positionLocal(trackCluster->localX(),trackCluster->localY(),trackCluster->localZ());
+      PositionVector3D<Cartesian3D<double> > positionGlobal = *(globalParameters->detector[detectorID]->m_localToGlobal) * positionLocal;
+      trackCluster->setClusterCentre(positionGlobal.X(), positionGlobal.Y(),positionGlobal.Z());
+    }
+    // Refit the track
+    track->fit();
+    // Add the new chi2
+    result += track->chi2();
+  }
+  
+}
+
+// This method will move the detector in question and try to minimise the (unbiased) residuals. It uses
+// the associated cluster container on the track (no refitting of the track)
+void MinimiseResiduals(Int_t &npar, Double_t *grad, Double_t &result, Double_t *par, Int_t flag) {
+  
+  // Pick up new alignment conditions
+  globalParameters->detector[globalParameters->detectorToAlign]->displacementX(par[0]);
+  globalParameters->detector[globalParameters->detectorToAlign]->displacementY(par[1]);
+  globalParameters->detector[globalParameters->detectorToAlign]->displacementZ(par[2]);
+  globalParameters->detector[globalParameters->detectorToAlign]->rotationX(par[3]);
+  globalParameters->detector[globalParameters->detectorToAlign]->rotationY(par[4]);
+  globalParameters->detector[globalParameters->detectorToAlign]->rotationZ(par[5]);
+  
+  // Apply new alignment conditions
+  globalParameters->detector[globalParameters->detectorToAlign]->update();
+  
+  // The chi2 value to be returned
+  result = 0.;
+  
+  // Loop over all tracks
+  for(int iTrack=0; iTrack<globalTracks.size(); iTrack++){
+    // Get the track
+    Timepix3Track* track = globalTracks[iTrack];
+    // Get all clusters on the track
+    Timepix3Clusters associatedClusters = track->associatedClusters();
+
+    // Find the cluster that needs to have its position recalculated
+    for(int iAssociatedCluster=0; iAssociatedCluster<associatedClusters.size(); iAssociatedCluster++){
+      Timepix3Cluster* associatedCluster = associatedClusters[iAssociatedCluster];
+      string detectorID = associatedCluster->detectorID();
+      if(detectorID != globalParameters->detectorToAlign) continue;
+      // Recalculate the global position from the local
+      PositionVector3D<Cartesian3D<double> > positionLocal(associatedCluster->localX(),associatedCluster->localY(),associatedCluster->localZ());
+      PositionVector3D<Cartesian3D<double> > positionGlobal = *(globalParameters->detector[globalParameters->detectorToAlign]->m_localToGlobal) * positionLocal;
+      // Get the track intercept with the detector
+      ROOT::Math::XYZPoint intercept = track->intercept(positionGlobal.Z());
+      // Calculate the residuals
+      double residualX = intercept.X() - positionGlobal.X();
+      double residualY = intercept.Y() - positionGlobal.Y();
+      double error = associatedCluster->error();
+      // Add the new residual2
+      result += ( (residualX*residualX + residualY*residualY) / (error*error)) ;
+    }
+  }
+}
+
 void Alignment::finalise(){
   
   // Make the fitting object
   TVirtualFitter* residualFitter = TVirtualFitter::Fitter(0,50);
   
   // Tell it what to minimise
-  residualFitter->SetFCN(SumDistance2);
+  if(parameters->alignmentMethod == 0)residualFitter->SetFCN(MinimiseTrackChi2);
+  if(parameters->alignmentMethod == 1)residualFitter->SetFCN(MinimiseResiduals);
   
   // Set the global parameters
   globalTracks = m_alignmenttracks;
@@ -58,6 +151,39 @@ void Alignment::finalise(){
   // Set some fitter parameters
   arglist[0] = 1000; // number of function calls
   arglist[1] = 0.001; // tolerance
+  
+  // This has been inserted in a temporary way. If the alignment method is 1 then it will align the single detector and then
+  // return. This should be made into separate functions.
+  if(parameters->alignmentMethod == 1){
+    
+    // Get the name of the detector to align
+    string detectorID = parameters->detectorToAlign;
+    
+    // Add the parameters to the fitter (z displacement not allowed to move!)
+    residualFitter->SetParameter(0,(detectorID+"_displacementX").c_str(),parameters->detector[detectorID]->displacementX(),0.01,-50,50);
+    residualFitter->SetParameter(1,(detectorID+"_displacementY").c_str(),parameters->detector[detectorID]->displacementY(),0.01,-50,50);
+    residualFitter->SetParameter(2,(detectorID+"_displacementZ").c_str(),parameters->detector[detectorID]->displacementZ(),0,-10,500);
+    residualFitter->SetParameter(3,(detectorID+"_rotationX").c_str(),parameters->detector[detectorID]->rotationX(),0.001,-6.30,6.30);
+    residualFitter->SetParameter(4,(detectorID+"_rotationY").c_str(),parameters->detector[detectorID]->rotationY(),0.001,-6.30,6.30);
+    residualFitter->SetParameter(5,(detectorID+"_rotationZ").c_str(),parameters->detector[detectorID]->rotationZ(),0.001,-6.30,6.30);
+    
+    // Fit this plane (minimising global track chi2)
+    residualFitter->ExecuteCommand("MIGRAD",arglist,2);
+   
+    // Set the alignment parameters of this plane to be the optimised values from the alignment
+    parameters->detector[detectorID]->displacementX(residualFitter->GetParameter(0));
+    parameters->detector[detectorID]->displacementY(residualFitter->GetParameter(1));
+    parameters->detector[detectorID]->displacementZ(residualFitter->GetParameter(2));
+    parameters->detector[detectorID]->rotationX(residualFitter->GetParameter(3));
+    parameters->detector[detectorID]->rotationY(residualFitter->GetParameter(4));
+    parameters->detector[detectorID]->rotationZ(residualFitter->GetParameter(5));
+
+    // Write the output alignment file
+    parameters->writeConditions();
+
+    return;
+  }
+  
   
   // Loop over all planes. For each plane, set the plane alignment parameters which will be varied, and
   // then minimise the track chi2 (sum of biased residuals). This means that tracks are refitted with
@@ -104,6 +230,7 @@ void Alignment::finalise(){
   }
   
   det = 0;
+
   // Now list the new alignment parameters
   for(int ndet = 0; ndet<parameters->nDetectors; ndet++){
     // Check if they are a Timepix3
@@ -130,51 +257,5 @@ void Alignment::finalise(){
   parameters->writeConditions();
 }
 
-void SumDistance2(Int_t &npar, Double_t *grad, Double_t &result, Double_t *par, Int_t flag) {
-  
-//  cout<<"Parameter size "<<par.size()<<endl;
-  // Pick up new alignment conditions
-  globalParameters->detector[detectorToAlign]->displacementX(par[detNum*6 + 0]);
-  globalParameters->detector[detectorToAlign]->displacementY(par[detNum*6 + 1]);
-  globalParameters->detector[detectorToAlign]->displacementZ(par[detNum*6 + 2]);
-  globalParameters->detector[detectorToAlign]->rotationX(par[detNum*6 + 3]);
-  globalParameters->detector[detectorToAlign]->rotationY(par[detNum*6 + 4]);
-  globalParameters->detector[detectorToAlign]->rotationZ(par[detNum*6 + 5]);
-  // Apply new alignment conditions
-  globalParameters->detector[detectorToAlign]->update();
 
-//  cout<<"Aligning "<<detectorToAlign<<endl;
-//  cout<<"displacement x "<<par[detNum*6 + 0]<<endl;
-//  cout<<"displacement y "<<par[detNum*6 + 1]<<endl;
-//  cout<<"displacement z "<<par[detNum*6 + 2]<<endl;
-//  cout<<"rotation x "<<par[detNum*6 + 3]<<endl;
-//  cout<<"rotation y "<<par[detNum*6 + 4]<<endl;
-//  cout<<"rotation z "<<par[detNum*6 + 5]<<endl;
-//  cout<<"Updated alignmnet parameters for detector "<<detectorToAlign<<endl;
-  
-  // The chi2 value to be returned
-  result = 0.;
-
-  // Loop over all tracks
-  for(int iTrack=0; iTrack<globalTracks.size(); iTrack++){
-		// Get the track
-    Timepix3Track* track = globalTracks[iTrack];
-    // Get all clusters on the track
-    Timepix3Clusters trackClusters = track->clusters();
-    // Find the cluster that needs to have its position recalculated
-    for(int iTrackCluster=0; iTrackCluster<trackClusters.size(); iTrackCluster++){
-      Timepix3Cluster* trackCluster = trackClusters[iTrackCluster];
-      string detectorID = trackCluster->detectorID();
-      // Recalculate the global position from the local
-      PositionVector3D<Cartesian3D<double> > positionLocal(trackCluster->localX(),trackCluster->localY(),trackCluster->localZ());
-      PositionVector3D<Cartesian3D<double> > positionGlobal = *(globalParameters->detector[detectorID]->m_localToGlobal) * positionLocal;
-      trackCluster->setClusterCentre(positionGlobal.X(), positionGlobal.Y(),positionGlobal.Z());
-    }
-    // Refit the track
-    track->fit();
-    // Add the new chi2
-    result += track->chi2();
-  }
-//  cout<<"Chi2: "<<result<<endl;
-}
 

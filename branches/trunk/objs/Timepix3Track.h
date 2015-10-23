@@ -33,6 +33,14 @@ public:
       Timepix3Cluster* cluster = new Timepix3Cluster(trackCluster);
       m_trackClusters.push_back(cluster);
     }
+    Timepix3Clusters associatedClusters = track->associatedClusters();
+    for(int iAssociatedCluster=0; iAssociatedCluster<associatedClusters.size(); iAssociatedCluster++){
+      Timepix3Cluster* associatedCluster = associatedClusters[iAssociatedCluster];
+      Timepix3Cluster* cluster = new Timepix3Cluster(associatedCluster);
+      m_associatedClusters.push_back(cluster);
+    }
+    m_state = track->m_state;
+    m_direction = track->m_direction;
   }
   
   // Functions
@@ -124,6 +132,7 @@ public:
   double chi2(){return m_chi2;}
   double chi2ndof(){return m_chi2ndof;}
   double ndof(){return m_ndof;}
+  long long int timestamp(){return m_timestamp;}
   Timepix3Clusters clusters(){return m_trackClusters;}
   Timepix3Clusters associatedClusters(){return m_associatedClusters;}
   int nClusters(){return m_trackClusters.size();}

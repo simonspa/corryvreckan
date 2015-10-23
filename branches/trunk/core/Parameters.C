@@ -32,11 +32,12 @@ void Parameters::readCommandLineOptions(int argc, char *argv[]){
   cout<<endl;
   cout<<"===================| Reading Parameters  |===================="<<endl<<endl;
   int option; char temp[256];
-  while ( (option = getopt(argc, argv, "agemd:c:n:h:t:o:")) != -1) {
+  while ( (option = getopt(argc, argv, "gema:d:c:n:h:t:o:")) != -1) {
     switch (option) {
       case 'a':
         align = true;
-        cout<<"Alignment flagged to be run"<<endl;
+        sscanf( optarg, "%d", &alignmentMethod);
+        cout<<"Alignment flagged to be run. Running method "<<alignmentMethod<<endl;
         break;
       case 'e':
         eventDisplay = true;

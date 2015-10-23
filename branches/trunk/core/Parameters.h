@@ -174,6 +174,8 @@ public:
   string DUT;
   map<string, bool> excludedFromTracking;
   map<string, bool> masked;
+  string detectorToAlign;
+  int alignmentMethod;
   
   // Parameters for each detector (stored by detector ID)
   map<string,DetectorParameters*> detector;
