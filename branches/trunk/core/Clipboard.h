@@ -24,13 +24,21 @@ public:
   Clipboard(){}
   virtual ~Clipboard(){}
   
-  // Add objects to clipboard
+  // Add objects to clipboard - with name or name + type
+  void put(string name, TestBeamObjects* objects){
+    m_dataID.push_back(name);
+    m_data[name] = objects;
+  }
   void put(string name, string type, TestBeamObjects* objects){
     m_dataID.push_back(name+type);
     m_data[name+type] = objects;
   }
-
-  // Get objects from clipboard
+  
+  // Get objects from clipboard - with name or name + type
+  TestBeamObjects* get(string name){
+    if(m_data.count(name) == 0) return NULL;
+    return m_data[name];
+  }
   TestBeamObjects* get(string name, string type){
     if(m_data.count(name+type) == 0) return NULL;
     return m_data[name+type];
