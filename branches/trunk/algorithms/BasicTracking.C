@@ -81,6 +81,7 @@ int BasicTracking::run(Clipboard* clipboard){
     Timepix3Cluster* cluster = (*clusters[reference])[iSeedCluster];
     // Add the cluster to the track
     track->addCluster(cluster);
+    track->setTimestamp(cluster->timestamp());
     used[cluster] = true;
 		// Get the cluster time
     long long int timestamp = cluster->timestamp();
