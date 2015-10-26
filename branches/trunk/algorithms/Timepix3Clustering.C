@@ -14,6 +14,11 @@ void Timepix3Clustering::initialise(Parameters* par){
   
 }
 
+// Sort function for pixels from low to high times
+bool sortByTime(Timepix3Pixel* pixel1, Timepix3Pixel* pixel2){
+  return (pixel1->m_timestamp < pixel2->m_timestamp);
+}
+
 int Timepix3Clustering::run(Clipboard* clipboard){
 
   // Loop over all Timepix3 and for each device perform the clustering
@@ -22,6 +27,7 @@ int Timepix3Clustering::run(Clipboard* clipboard){
     // Check if they are a Timepix3
     string detectorID = parameters->detectors[det];
     if(parameters->detector[detectorID]->type() != "Timepix3") continue;
+    
     // Get the pixels
     Timepix3Pixels* pixels = (Timepix3Pixels*)clipboard->get(detectorID,"pixels");
     if(pixels == NULL){
@@ -30,7 +36,11 @@ int Timepix3Clustering::run(Clipboard* clipboard){
     }
     if(debug) tcout<<"Picked up "<<pixels->size()<<" pixels for device "<<detectorID<<endl;
     
-    if(pixels->size() > 500.){tcout<<"Skipping large event with device "<<detectorID<<endl; continue;}
+//    if(pixels->size() > 100.){tcout<<"Skipping large event with "<<pixels->size()<<" pixels for device "<<detectorID<<endl; continue;}
+    
+    // Sort the pixels from low to high timestamp
+    std::sort(pixels->begin(),pixels->end(),sortByTime);
+
     // Make the cluster storage
     Timepix3Clusters* deviceClusters = new Timepix3Clusters();
    
@@ -40,7 +50,7 @@ int Timepix3Clustering::run(Clipboard* clipboard){
     // Start to cluster
     for(int iP=0;iP<pixels->size();iP++){
       Timepix3Pixel* pixel = (*pixels)[iP];
-      
+
       // Check if pixel is used
       if(used[pixel]) continue;
       
@@ -57,10 +67,10 @@ int Timepix3Clustering::run(Clipboard* clipboard){
         
         nPixels = cluster->size();
         // Loop over all pixels
-        for(int iNeighbour=0;iNeighbour<pixels->size();iNeighbour++){
+        for(int iNeighbour=(iP+1);iNeighbour<pixels->size();iNeighbour++){
           Timepix3Pixel* neighbour = (*pixels)[iNeighbour];
           // Check if they are compatible in time with the cluster pixels
-          if(!closeInTime(neighbour,cluster)) continue;
+          if(!closeInTime(neighbour,cluster)) break;
          // Check if they have been used
           if(used[neighbour]) continue;
           // Check if they are touching cluster pixels
