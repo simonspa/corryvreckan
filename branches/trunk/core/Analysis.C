@@ -3,6 +3,7 @@
 
 // Local include files
 #include "Analysis.h"
+#include "Timepix3Track.h"
 
 // Default constructor
 Analysis::Analysis(Parameters* parameters){
@@ -21,7 +22,8 @@ void Analysis::run(){
   // Create histogram output file
   m_histogramFile = new TFile(m_parameters->histogramFile.c_str(), "RECREATE");
   m_directory = m_histogramFile->mkdir("tbAnalysis");
-
+  int nTracks = 0;
+  
   // Loop over all algorithms and initialise them
   initialiseAll();
   
@@ -31,7 +33,7 @@ void Analysis::run(){
   while(1){
     bool run = true;
     bool noData = false;
-    cout<<"[Analysis] Running over event "<<m_events<<endl;
+  	cout<<"\r[Analysis] Current time is "<<m_parameters->currentTime<<". Produced "<<nTracks<<" tracks"<<flush;
   	// Run all algorithms
     for(int algorithmNumber = 0; algorithmNumber<m_algorithms.size();algorithmNumber++) {
       // Change to the output file directory
@@ -43,6 +45,10 @@ void Analysis::run(){
       if(check == 2){noData = true; break;}// Nothing to be done in this event
       if(check == 0) run = false;
     }
+    // Count number of tracks produced
+    Timepix3Tracks* tracks = (Timepix3Tracks*)m_clipboard->get("Timepix3","tracks");
+    if(tracks != NULL) nTracks += tracks->size();
+
     // Clear objects from this iteration from the clipboard
     m_clipboard->clear();
     // Check if any of the algorithms return a value saying it should stop
