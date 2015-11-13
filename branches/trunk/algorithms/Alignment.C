@@ -130,6 +130,11 @@ void MinimiseResiduals(Int_t &npar, Double_t *grad, Double_t &result, Double_t *
   }
 }
 
+
+// ==================================================================
+//  The finalise function - effectively the brains of the alignment!
+// ==================================================================
+
 void Alignment::finalise(){
   
   // Make the fitting object
@@ -183,7 +188,6 @@ void Alignment::finalise(){
 
     return;
   }
-  
   
   // Loop over all planes. For each plane, set the plane alignment parameters which will be varied, and
   // then minimise the track chi2 (sum of biased residuals). This means that tracks are refitted with
