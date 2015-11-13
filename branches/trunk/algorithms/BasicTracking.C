@@ -22,8 +22,8 @@ void BasicTracking::initialise(Parameters* par){
   trackChi2ndof = new TH1F("trackChi2ndof","trackChi2ndof",100,0,50);
   clustersPerTrack = new TH1F("clustersPerTrack","clustersPerTrack",10,0,10);
   tracksPerEvent = new TH1F("tracksPerEvent","tracksPerEvent",100,0,100);
-  trackAngleX = new TH1F("trackAngleX","trackAngleX",2000,-1.,1.);
-  trackAngleY = new TH1F("trackAngleY","trackAngleY",2000,-1.,1.);
+  trackAngleX = new TH1F("trackAngleX","trackAngleX",2000,-0.01,0.01);
+  trackAngleY = new TH1F("trackAngleY","trackAngleY",2000,-0.01,0.01);
   
   // Loop over all Timepix3
   for(int det = 0; det<parameters->nDetectors; det++){
