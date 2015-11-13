@@ -37,11 +37,14 @@ void DUTAnalysis::initialise(Parameters* par){
 int DUTAnalysis::run(Clipboard* clipboard){
   
   // Timing cut for association
-  double timingCut = 100./1000000000.;
+  double timingCut = 200./1000000000.; // 200 ns
   long long int timingCutInt = (timingCut * 4096. * 40000000.);
   
   // Spatial cut
-  double spatialCut = 0.2; // 75 um
+  double spatialCut = 0.2; // 200 um
+
+  // Track chi2/ndof cut
+  double chi2ndofCut = 7.;
 
   // Get the tracks from the clipboard
   Timepix3Tracks* tracks = (Timepix3Tracks*)clipboard->get("Timepix3","tracks");
@@ -62,6 +65,14 @@ int DUTAnalysis::run(Clipboard* clipboard){
     
     // Get the track pointer
     Timepix3Track* track = (*tracks)[itTrack];
+    
+    // Check if it intercepts the DUT
+//    if(!intercept(track,parameters->DUT)) continue;
+    
+    // Cut on the chi2/ndof
+    if(track->chi2ndof() > chi2ndofCut) continue;
+    
+    
     tracksVersusTime->Fill( (double)track->timestamp() / (4096.*40000000.) );
     
     // Loop over all DUT clusters
@@ -107,3 +118,16 @@ void DUTAnalysis::finalise(){
   if(debug) tcout<<"Analysed "<<m_eventNumber<<" events"<<endl;
   
 }
+
+// Function to check if a track goes through a given device
+//bool DUTAnalysis::intercept(Timepix3Track*, string device){
+//  
+//  // Get the global intercept of the track and the device
+//  ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
+//
+//  // Transform to the local co-ordinates
+//  
+//  // Check if the row/column number is outside the acceptable range
+//  
+//  
+//}
