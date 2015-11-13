@@ -48,6 +48,9 @@ int main(int argc, char *argv[]) {
   // New parameters object
   Parameters* parameters = new Parameters();
   
+  // Global debug flag
+  bool debug = false;
+
   // Algorithm list
   Timepix3EventLoader*	tpix3EventLoader	= new Timepix3EventLoader(debug);
   Timepix3Clustering*		tpix3Clustering		= new Timepix3Clustering(debug);
@@ -62,9 +65,6 @@ int main(int argc, char *argv[]) {
   // =========================================================================
   // Steering file begins
   // =========================================================================
-
-  // Global debug flag
-  bool debug = false;
   
   // General parameters
   parameters->reference = "W0013_G03";
