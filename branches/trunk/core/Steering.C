@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
   
   // General parameters
   parameters->reference = "W0013_G03";
-  parameters->DUT = "W0019_F07";
+  parameters->DUT = "W0019_L08";
   parameters->detectorToAlign = parameters->DUT;
 
   parameters->excludedFromTracking["W0005_E02"] = true;
