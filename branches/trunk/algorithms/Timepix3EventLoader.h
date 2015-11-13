@@ -3,6 +3,7 @@
 
 #include "Algorithm.h"
 #include "Timepix3Pixel.h"
+#include "SpidrSignal.h"
 #include <stdio.h>
 
 class Timepix3EventLoader : public Algorithm {
@@ -18,7 +19,7 @@ public:
   void finalise();
   
   // Extra functions
-  bool loadData(string, Timepix3Pixels*);
+  bool loadData(string, Timepix3Pixels*, SpidrSignals*);
   void maskPixels(string, string);
 
   // Member variables
