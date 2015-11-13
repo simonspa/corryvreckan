@@ -33,7 +33,7 @@ void Analysis::run(){
   while(1){
     bool run = true;
     bool noData = false;
-  	cout<<"\r[Analysis] Current time is "<<m_parameters->currentTime<<". Produced "<<nTracks<<" tracks"<<flush;
+  	cout<<"\r[Analysis] Current time is "<<fixed<<setw(10)<<m_parameters->currentTime<<". Produced "<<nTracks<<" tracks"<<flush;
   	// Run all algorithms
     for(int algorithmNumber = 0; algorithmNumber<m_algorithms.size();algorithmNumber++) {
       // Change to the output file directory
