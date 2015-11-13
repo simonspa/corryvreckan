@@ -233,6 +233,11 @@ bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata
       // or least significant part of the timestamp
       const UChar_t header2 = ((pixdata & 0x0F00000000000000) >> 56) & 0xF;
 
+      // This is a bug fix. There appear to be errant packets with garbage data - source to be tracked down.
+      // Between the data and the header the intervening bits should all be 0, check if this is the case
+      const UChar_t intermediateBits = ((pixdata & 0x00FFF00000000000) >> 44) & 0xFFF;
+      if(intermediateBits != 0x000) continue;
+      
       // 0x4 is the least significant part of the timestamp
       if(header2 == 0x4){
         // The data is shifted 16 bits to the right, then 12 to the left in order to match the timestamp format (net 4 right)
