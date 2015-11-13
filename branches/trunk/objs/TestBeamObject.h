@@ -25,14 +25,12 @@ public:
 
   // Methods to set member variables
   void setDetectorID(std::string detectorID){m_detectorID = detectorID;}
-//  void setTimeStamp(double timeStamp){m_timeStamp = timeStamp;}
   
   // ROOT I/O class definition - update version number when you change this class!
   ClassDef(TestBeamObject,1)
     
   // Member variables
   std::string m_detectorID;
-//  double m_timeStamp;
   
 };
 

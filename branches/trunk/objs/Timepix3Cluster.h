@@ -10,6 +10,7 @@ public:
   // Constructors and destructors
   Timepix3Cluster(){}
   virtual ~Timepix3Cluster(){}
+  // Copy constructor
   Timepix3Cluster(Timepix3Cluster* cluster){
     m_globalX = cluster->globalX();
     m_globalY = cluster->globalY();

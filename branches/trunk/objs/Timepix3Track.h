@@ -22,6 +22,7 @@ public:
     delete m_fitterYZ;
   }
   
+  // Copy constructor (also copies clusters from the original track)
   Timepix3Track(Timepix3Track* track){
     m_fitterXZ = new TLinearFitter();
     m_fitterXZ->SetFormula("pol1");
@@ -43,7 +44,10 @@ public:
     m_direction = track->m_direction;
   }
   
+  // -----------
   // Functions
+  // -----------
+  
   // Add a new cluster to the track
   void addCluster(Timepix3Cluster* cluster){
     m_trackClusters.push_back(cluster);
@@ -61,23 +65,15 @@ public:
     // Check how many clusters there are
     int nClusters = m_trackClusters.size();
     
-    // Make the fitting object
-//    TGraph2DErrors* dataPoints = new TGraph2DErrors(nClusters);
-
-    double* z = new double[0];
-
     // Loop over all clusters
+    double* z = new double[0];
     for(int iCluster=0;iCluster<nClusters;iCluster++){
       // Get the cluster
       Timepix3Cluster* cluster = m_trackClusters[iCluster];
-//      double zerror = 1.;
-//      dataPoints->SetPoint(iCluster, cluster->globalX(), cluster->globalY(), cluster->globalZ());
-//      dataPoints->SetPointError(iCluster, cluster->error(), cluster->error(), 1.);
-
+			// Add it to the fitter
       z[0] = cluster->globalZ();
       m_fitterXZ->AddPoint(z,cluster->globalX(),cluster->error());
       m_fitterYZ->AddPoint(z,cluster->globalY(),cluster->error());
-
     }
 
     // Fit the two lines
@@ -90,6 +86,7 @@ public:
     double interceptYZ = m_fitterYZ->GetParameter(0);
     double slopeYZ = m_fitterYZ->GetParameter(1);
     
+    // Set the track state and direction
     m_state.SetX(interceptXZ);
     m_state.SetY(interceptYZ);
     m_state.SetZ(0.);
@@ -100,31 +97,43 @@ public:
     
     this->calculateChi2();
     
-  }//*/
+  }
   
+  // Calculate the 2D distance^2 between the fitted track and a cluster
   double distance2(Timepix3Cluster* cluster){
   	
+    // Get the track X and Y at the cluster z position
     double trackX = m_state.X() + m_direction.X()*cluster->globalZ();
     double trackY = m_state.Y() + m_direction.Y()*cluster->globalZ();
     
+    // Calculate the 1D residuals
     double dx = (trackX - cluster->globalX());
     double dy = (trackY - cluster->globalY());
     
+    // Return the distance^2
     return (dx*dx + dy*dy);
-    
   }
   
+  // Calculate the chi2 of the track
   void calculateChi2(){
+    
+    // Get the number of clusters
     int nClusters = m_trackClusters.size();
     m_ndof = nClusters-2.;
     m_chi2 = 0.; m_chi2ndof = 0.;
+    
     // Loop over all clusters
     for(int iCluster=0;iCluster<nClusters;iCluster++){
+      
       // Get the cluster
       Timepix3Cluster* cluster = m_trackClusters[iCluster];
+      
+      // Get the distance^2 and the error^2
       double error2 = cluster->error() * cluster->error();
       m_chi2+= (this->distance2(cluster)/error2);
     }
+    
+    // Store also the chi2/degrees of freedom
     m_chi2ndof = m_chi2/m_ndof;
   }
   
@@ -156,7 +165,6 @@ public:
   ROOT::Math::XYZPoint m_state;
   ROOT::Math::XYZVector m_direction;
 
-  
   // ROOT I/O class definition - update version number when you change this class!
   ClassDef(Timepix3Track,1)
 
