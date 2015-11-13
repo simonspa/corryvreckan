@@ -1,0 +1,4 @@
+Bias voltage dut [V]          -14.9815
+Bias voltage tele [V]          50.0176
+Fine threshold          365
+Coarse threshold          7
