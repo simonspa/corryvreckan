@@ -48,6 +48,17 @@ int main(int argc, char *argv[]) {
   // New parameters object
   Parameters* parameters = new Parameters();
   
+  // Algorithm list
+  Timepix3EventLoader*	tpix3EventLoader	= new Timepix3EventLoader(debug);
+  Timepix3Clustering*		tpix3Clustering		= new Timepix3Clustering(debug);
+  TestAlgorithm* 				testAlgorithm			= new TestAlgorithm(debug);
+  Timepix3MaskCreator*	tpix3MaskCreator	= new Timepix3MaskCreator(debug);
+  BasicTracking* 				basicTracking			= new BasicTracking(debug);
+  Alignment*	 					alignment					= new Alignment(debug);
+  EventDisplay*	 				eventDisplay			= new EventDisplay(debug);
+  GUI*	 								gui								= new GUI(debug);
+  DUTAnalysis*	 				dutAnalysis				= new DUTAnalysis(debug);
+
   // =========================================================================
   // Steering file begins
   // =========================================================================
@@ -67,17 +78,6 @@ int main(int argc, char *argv[]) {
   parameters->excludedFromTracking["W0019_F07"] = true;
   parameters->excludedFromTracking["W0019_L08"] = true;
   parameters->excludedFromTracking["W0005_H03"] = true;
-
-  // Algorithm list
-  Timepix3EventLoader*	tpix3EventLoader	= new Timepix3EventLoader(debug);
-  Timepix3Clustering*		tpix3Clustering		= new Timepix3Clustering(debug);
-  TestAlgorithm* 				testAlgorithm			= new TestAlgorithm(debug);
-  Timepix3MaskCreator*	tpix3MaskCreator	= new Timepix3MaskCreator(debug);
-  BasicTracking* 				basicTracking			= new BasicTracking(debug);
-  Alignment*	 					alignment					= new Alignment(debug);
-  EventDisplay*	 				eventDisplay			= new EventDisplay(debug);
-  GUI*	 								gui								= new GUI(debug);
-  DUTAnalysis*	 				dutAnalysis				= new DUTAnalysis(debug);
   
   // =========================================================================
   // Steering file ends
