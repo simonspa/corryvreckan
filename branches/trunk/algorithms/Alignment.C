@@ -5,6 +5,7 @@
 Alignment::Alignment(bool debugging)
 : Algorithm("Alignment"){
   debug = debugging;
+  m_numberOfTracksForAlignment = 8000;
 }
 
 // Global container declarations
@@ -34,6 +35,10 @@ int Alignment::run(Clipboard* clipboard){
     m_alignmenttracks.push_back(alignmentTrack);
   }
   
+  // If we have enough tracks for the alignment, tell the event loop to finish
+  if(m_alignmenttracks.size() >= m_numberOfTracksForAlignment) return 0;
+  
+  // Otherwise keep going
   return 1;
 
 }

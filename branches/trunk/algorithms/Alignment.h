@@ -23,6 +23,7 @@ public:
   // Member variables
   Timepix3Tracks m_alignmenttracks;
   int nIterations;
+  int m_numberOfTracksForAlignment;
 
 };
 
