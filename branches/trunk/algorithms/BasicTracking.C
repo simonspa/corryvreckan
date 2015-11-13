@@ -4,6 +4,12 @@
 BasicTracking::BasicTracking(bool debugging)
 : Algorithm("BasicTracking"){
   debug = debugging;
+  
+  // Default values for cuts
+  timinigCut = 200./1000000000.;		// 200 ns
+  spatialCut = 0.2; 							// 200 um
+  minHitsOnTrack = 5;
+
 }
 
 
@@ -16,6 +22,8 @@ void BasicTracking::initialise(Parameters* par){
   trackChi2ndof = new TH1F("trackChi2ndof","trackChi2ndof",100,0,50);
   clustersPerTrack = new TH1F("clustersPerTrack","clustersPerTrack",10,0,10);
   tracksPerEvent = new TH1F("tracksPerEvent","tracksPerEvent",100,0,100);
+  trackAngleX = new TH1F("trackAngleX","trackAngleX",2000,-1.,1.);
+  trackAngleY = new TH1F("trackAngleY","trackAngleY",2000,-1.,1.);
   
   // Loop over all Timepix3
   for(int det = 0; det<parameters->nDetectors; det++){
@@ -28,11 +36,6 @@ void BasicTracking::initialise(Parameters* par){
     residualsY[detectorID] = new TH1F(name.c_str(),name.c_str(),400,-0.2,0.2);
   }
   
-  // Default values for cuts
-  timinigCut = 200./1000000000.;		// 200 ns
-  spatialCut = 0.2; 							// 200 um
-  minHitsOnTrack = 6;
-
 }
 
 int BasicTracking::run(Clipboard* clipboard){
@@ -130,6 +133,8 @@ int BasicTracking::run(Clipboard* clipboard){
     trackChi2->Fill(track->chi2());
     clustersPerTrack->Fill(track->nClusters());
     trackChi2ndof->Fill(track->chi2ndof());
+    trackAngleX->Fill(atan(track->m_direction.X()));
+    trackAngleY->Fill(atan(track->m_direction.Y()));
     
     // Make residuals
     Timepix3Clusters trackClusters = track->clusters();
@@ -143,7 +148,7 @@ int BasicTracking::run(Clipboard* clipboard){
     
   }
   
-  tcout<<"Made "<<tracks->size()<<" tracks"<<endl;
+//  tcout<<"Made "<<tracks->size()<<" tracks"<<endl;
   if(tracks->size() > 0){
     clipboard->put("Timepix3","tracks",(TestBeamObjects*)tracks);
     tracksPerEvent->Fill(tracks->size());

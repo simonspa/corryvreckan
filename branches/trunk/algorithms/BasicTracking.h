@@ -32,6 +32,8 @@ public:
   TH1F* clustersPerTrack;
   TH1F* trackChi2ndof;
   TH1F* tracksPerEvent;
+  TH1F* trackAngleX;
+  TH1F* trackAngleY;
   map<string,TH1F*> residualsX;
   map<string,TH1F*> residualsY;
   
