@@ -36,11 +36,15 @@ int Timepix3Clustering::run(Clipboard* clipboard){
     }
     if(debug) tcout<<"Picked up "<<pixels->size()<<" pixels for device "<<detectorID<<endl;
     
-//    if(pixels->size() > 100.){tcout<<"Skipping large event with "<<pixels->size()<<" pixels for device "<<detectorID<<endl; continue;}
+//    if(pixels->size() > 500.){
+//      if(debug) tcout<<"Skipping large event with "<<pixels->size()<<" pixels for device "<<detectorID<<endl;
+//      continue;
+//    }
     
     // Sort the pixels from low to high timestamp
     std::sort(pixels->begin(),pixels->end(),sortByTime);
-
+    int totalPixels = pixels->size();
+    
     // Make the cluster storage
     Timepix3Clusters* deviceClusters = new Timepix3Clusters();
    
@@ -60,6 +64,7 @@ int Timepix3Clustering::run(Clipboard* clipboard){
       
       // Keep adding hits to the cluster until no more are found
       cluster->addPixel(pixel);
+      long long int clusterTime = pixel->m_timestamp;
       used[pixel] = true;
       if(debug) tcout<<"Adding pixel: "<<pixel->m_row<<","<<pixel->m_column<<endl;
       int nPixels = 0;
@@ -67,16 +72,18 @@ int Timepix3Clustering::run(Clipboard* clipboard){
         
         nPixels = cluster->size();
         // Loop over all pixels
-        for(int iNeighbour=(iP+1);iNeighbour<pixels->size();iNeighbour++){
+        for(int iNeighbour=(iP+1);iNeighbour<totalPixels;iNeighbour++){
           Timepix3Pixel* neighbour = (*pixels)[iNeighbour];
           // Check if they are compatible in time with the cluster pixels
-          if(!closeInTime(neighbour,cluster)) break;
+          if( (neighbour->m_timestamp - clusterTime) > timingCutInt ) break;
+//          if(!closeInTime(neighbour,cluster)) break;
          // Check if they have been used
           if(used[neighbour]) continue;
           // Check if they are touching cluster pixels
           if(!touching(neighbour,cluster)) continue;
            // Add to cluster
           cluster->addPixel(neighbour);
+          clusterTime = neighbour->m_timestamp;
           used[neighbour] = true;
           if(debug) tcout<<"Adding pixel: "<<neighbour->m_row<<","<<neighbour->m_column<<endl;
         }
@@ -106,8 +113,10 @@ bool Timepix3Clustering::touching(Timepix3Pixel* neighbour,Timepix3Cluster* clus
   for(int iPix=0;iPix<pixels.size();iPix++){
     
     if( abs(pixels[iPix]->m_row - neighbour->m_row) <= 1 &&
-       abs(pixels[iPix]->m_column - neighbour->m_column) <= 1 ) Touching = true;
-    
+       abs(pixels[iPix]->m_column - neighbour->m_column) <= 1 ){
+      Touching = true;
+      break;
+    }
   }
   return Touching;
 }
