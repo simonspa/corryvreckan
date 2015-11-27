@@ -33,7 +33,6 @@ void Analysis::run(){
   while(1){
     bool run = true;
     bool noData = false;
-  	cout<<"\r[Analysis] Current time is "<<fixed<<setw(10)<<m_parameters->currentTime<<". Produced "<<nTracks<<" tracks"<<flush;
   	// Run all algorithms
     for(int algorithmNumber = 0; algorithmNumber<m_algorithms.size();algorithmNumber++) {
       // Change to the output file directory
@@ -48,6 +47,8 @@ void Analysis::run(){
     // Count number of tracks produced
     Timepix3Tracks* tracks = (Timepix3Tracks*)m_clipboard->get("Timepix3","tracks");
     if(tracks != NULL) nTracks += tracks->size();
+
+    cout<<"\r[Analysis] Current time is "<<fixed<<setw(10)<<m_parameters->currentTime<<". Produced "<<nTracks<<" tracks"<<flush;
 
     // Clear objects from this iteration from the clipboard
     m_clipboard->clear();
