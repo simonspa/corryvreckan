@@ -40,11 +40,11 @@ void BasicTracking::initialise(Parameters* par){
 
 int BasicTracking::run(Clipboard* clipboard){
   
-  // Container for all clusters
+  // Container for all clusters, and detectors in tracking
   map<string,Timepix3Clusters*> clusters;
   vector<string> detectors;
   
-  // Track container
+  // Output track container
   Timepix3Tracks* tracks = new Timepix3Tracks();
 
   // Loop over all Timepix3 and get clusters
@@ -68,7 +68,7 @@ int BasicTracking::run(Clipboard* clipboard){
   // If there are no detectors then stop trying to track
   if(detectors.size() == 0) return 1;
   
-  // Use the first plane as a seeding plane. For something quick, look a cluster in < 100 ns in the next plane, and continue
+  // Use the first plane as a seeding plane. For something quick, look a cluster in < 200 ns in the next plane, and continue
   string reference = parameters->reference;
   map<Timepix3Cluster*, bool> used;
   
@@ -109,13 +109,13 @@ int BasicTracking::run(Clipboard* clipboard){
     for(int det=0; det<detectors.size(); det++){
       if(detectors[det] == reference) continue;
       if(clusters[detectors[det]] == NULL) continue;
+      // If excluded from tracking ignore this plane
+      if(parameters->excludedFromTracking.count(detectors[det]) != 0) continue;
       Timepix3Cluster* newCluster = getNearestCluster(timestamp, (*clusters[detectors[det]]) );
       if( ((newCluster->timestamp() - timestamp) / (4096.*40000000.)) > (10./1000000000.) ) continue;
       // Check if spatially more than 200 um
       if( abs(cluster->globalX() - newCluster->globalX()) > spatialCut || abs(cluster->globalY() - newCluster->globalY()) > spatialCut ) continue;
-
-      // If excluded from tracking, add as an associated cluster, otherwise add it as a real cluster
-      if(parameters->excludedFromTracking.count(detectors[det]) != 0) continue;
+      // Add the cluster to the track
       track->addCluster(newCluster);
     }
 
@@ -148,7 +148,7 @@ int BasicTracking::run(Clipboard* clipboard){
     
   }
   
-//  tcout<<"Made "<<tracks->size()<<" tracks"<<endl;
+  // Save the tracks on the clipboard
   if(tracks->size() > 0){
     clipboard->put("Timepix3","tracks",(TestBeamObjects*)tracks);
     tracksPerEvent->Fill(tracks->size());
