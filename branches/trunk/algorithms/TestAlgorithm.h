@@ -34,6 +34,8 @@ public:
   map<string, TH1F*> correlationTime;
   map<string, TH1F*> correlationTimeInt;
 
+  // Parameters which can be set by user
+  bool makeCorrelations;
 };
 
 #endif // TESTALGORITHM_H

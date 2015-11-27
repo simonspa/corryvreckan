@@ -5,6 +5,7 @@
 TestAlgorithm::TestAlgorithm(bool debugging)
 : Algorithm("TestAlgorithm"){
   debug = debugging;
+  makeCorrelations = false;
 }
 
 
@@ -104,6 +105,7 @@ int TestAlgorithm::run(Clipboard* clipboard){
       clusterPositionGlobal[detectorID]->Fill(cluster->globalX(),cluster->globalY());
       
       // Loop over reference plane pixels to make correlation plots
+      if(!makeCorrelations) continue;
       for(int iRefCluster=0;iRefCluster<referenceClusters->size();iRefCluster++){
         Timepix3Cluster* refCluster = (*referenceClusters)[iRefCluster];
          
@@ -116,7 +118,7 @@ int TestAlgorithm::run(Clipboard* clipboard){
         if( abs(timeDifference) < 0.000001 ) correlationY[detectorID]->Fill(refCluster->globalY() - cluster->globalY());
         correlationTime[detectorID]->Fill( timeDifference );
         correlationTimeInt[detectorID]->Fill( timeDifferenceInt );
-      }
+      }//*/
     }
     
     
