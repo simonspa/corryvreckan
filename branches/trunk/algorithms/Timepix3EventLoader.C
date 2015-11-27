@@ -168,6 +168,9 @@ void Timepix3EventLoader::maskPixels(string detectorID, string trimdacfile){
 // Function to load data for a given device, into the relevant container
 bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata, SpidrSignals* spidrData){
 
+//  if(detectorID == "W0019_F07") debug = true;
+//  if(detectorID != "W0019_F07") debug = false;
+  
   if(debug) tcout<<"Loading data for device "<<detectorID<<endl;
 
   // Check if current file is open
@@ -260,11 +263,17 @@ bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata
 
       // 0x6 is power on
       if(header2 == 0x6){
-        if(debug) tcout<<"Turned on power!"<<endl;
+        const uint64_t time( (pixdata & 0x0000000FFFFFFFFF) << 12 );
+        SpidrSignal* signal = new SpidrSignal("powerOn",time);
+        spidrData->push_back(signal);
+        if(debug) tcout<<"Turned on power! Time: "<<(double)time/(4096. * 40000000.)<<endl;
        }
       // 0x7 is power off
       if(header2 == 0x7){
-        if(debug) tcout<<"Turned off power!"<<endl;
+        const uint64_t time( (pixdata & 0x0000000FFFFFFFFF) << 12 );
+        SpidrSignal* signal = new SpidrSignal("powerOff",time);
+        spidrData->push_back(signal);
+        if(debug) tcout<<"Turned off power! Time: "<<(double)time/(4096. * 40000000.)<<endl;
       }
     }
     
@@ -296,8 +305,8 @@ bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata
       
       // Calculate the timestamp.
       long long int time = (((spidrTime << 18) + (toa << 4) + (15 - ftoa)) << 8) + (m_syncTime[detectorID] & 0xFFFFFC0000000000);
-      if(debug) tcout<<"Pixel time "<<(double)time<<endl;
-      if(debug) tcout<<"Sync time "<<(double)m_syncTime[detectorID]<<endl;
+      if(debug) tcout<<"Pixel time "<<(double)time/(4096. * 40000000.)<<endl;
+      if(debug) tcout<<"Sync time "<<(double)m_syncTime[detectorID]/(4096. * 40000000.)<<endl;
       
       // Add the timing offset from the coniditions file (if any)
       time += (long long int)(parameters->detector[detectorID]->timingOffset() * 4096. * 40000000.);
