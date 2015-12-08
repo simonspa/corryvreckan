@@ -95,6 +95,7 @@ public:
     m_direction.SetY(slopeYZ);
     m_direction.SetZ(1.);
     
+    delete z;
     this->calculateChi2();
     
   }
