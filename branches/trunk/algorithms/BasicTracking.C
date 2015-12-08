@@ -1,4 +1,5 @@
 #include "BasicTracking.h"
+#include "KDTreeTimepix3.h"
 #include "TCanvas.h"
 
 BasicTracking::BasicTracking(bool debugging)
@@ -6,7 +7,7 @@ BasicTracking::BasicTracking(bool debugging)
   debug = debugging;
   
   // Default values for cuts
-  timinigCut = 200./1000000000.;		// 200 ns
+  timingCut = 200./1000000000.;		// 200 ns
   spatialCut = 0.2; 							// 200 um
   minHitsOnTrack = 5;
 
@@ -41,8 +42,10 @@ void BasicTracking::initialise(Parameters* par){
 int BasicTracking::run(Clipboard* clipboard){
   
   // Container for all clusters, and detectors in tracking
-  map<string,Timepix3Clusters*> clusters;
+//  map<string,Timepix3Clusters*> clusters;
+  map<string,KDTreeTimepix3> trees;
   vector<string> detectors;
+  Timepix3Clusters* referenceClusters;
   
   // Output track container
   Timepix3Tracks* tracks = new Timepix3Tracks();
@@ -53,14 +56,17 @@ int BasicTracking::run(Clipboard* clipboard){
     // Check if they are a Timepix3
     string detectorID = parameters->detectors[det];
     if(parameters->detector[detectorID]->type() != "Timepix3") continue;
-		
+    
 		// Get the clusters
     Timepix3Clusters* tempClusters = (Timepix3Clusters*)clipboard->get(detectorID,"clusters");
     if(tempClusters == NULL){
       if(debug) tcout<<"Detector "<<detectorID<<" does not have any clusters on the clipboard"<<endl;
     }else{
     	// Store them
-      clusters[detectorID] = tempClusters;
+//      clusters[detectorID] = tempClusters;
+      if(detectorID == parameters->reference) referenceClusters = tempClusters;
+      KDTreeTimepix3 clusterTree(*tempClusters);
+      trees[detectorID] = clusterTree;
       detectors.push_back(detectorID);
     }
   }
@@ -73,15 +79,16 @@ int BasicTracking::run(Clipboard* clipboard){
   map<Timepix3Cluster*, bool> used;
   
   // If no clusters on reference plane, stop
-  if(clusters[reference] == NULL) return 1;
-
+  if(trees.count(reference) == 0) return 1;
+  
   // Loop over all clusters
-  for(int iSeedCluster=0;iSeedCluster<clusters[reference]->size();iSeedCluster++){
+  int nSeedClusters = referenceClusters->size();
+  for(int iSeedCluster=0;iSeedCluster<nSeedClusters;iSeedCluster++){
 
     // Make a new track
     Timepix3Track* track = new Timepix3Track();
     // Get the cluster
-    Timepix3Cluster* cluster = (*clusters[reference])[iSeedCluster];
+    Timepix3Cluster* cluster = (*referenceClusters)[iSeedCluster];
     // Add the cluster to the track
     track->addCluster(cluster);
     track->setTimestamp(cluster->timestamp());
@@ -105,6 +112,7 @@ int BasicTracking::run(Clipboard* clipboard){
 //      used[newCluster] = true;
 //    }
 
+    /*
     // Loop over each subsequent plane and look for a cluster within 100 ns
     for(int det=0; det<detectors.size(); det++){
       if(detectors[det] == reference) continue;
@@ -117,8 +125,39 @@ int BasicTracking::run(Clipboard* clipboard){
       if( abs(cluster->globalX() - newCluster->globalX()) > spatialCut || abs(cluster->globalY() - newCluster->globalY()) > spatialCut ) continue;
       // Add the cluster to the track
       track->addCluster(newCluster);
-    }
+    }//*/
 
+    // Loop over each subsequent plane and look for a cluster within 100 ns
+    for(int det=0; det<detectors.size(); det++){
+      if(detectors[det] == reference) continue;
+      if(trees.count(detectors[det]) == 0) continue;
+      // If excluded from tracking ignore this plane
+      if(parameters->excludedFromTracking.count(detectors[det]) != 0) continue;
+      
+      // Get all neighbours within 200 ns
+
+      Timepix3Cluster* closestCluster = NULL; double closestClusterDistance = spatialCut;
+//      tcout<<"About to get nearest neighbours in window: "<<timingCut<<endl;
+      Timepix3Clusters neighbours = trees[detectors[det]].getAllClustersInTimeWindow(cluster,timingCut);
+      for(int ne=0;ne<neighbours.size();ne++){
+        Timepix3Cluster* newCluster = neighbours[ne];
+
+        double distance = sqrt((cluster->globalX() - newCluster->globalX())*(cluster->globalX() - newCluster->globalX()) + (cluster->globalY() - newCluster->globalY())*(cluster->globalY() - newCluster->globalY()));
+        
+        if(distance < closestClusterDistance){
+          closestClusterDistance = distance;
+          closestCluster = newCluster;
+        }
+
+      }
+      
+      if(closestCluster == NULL) continue;
+      
+      // Add the cluster to the track
+      track->addCluster(closestCluster);
+    }//*/
+
+    
     // Now should have a track with one cluster from each plane
     if(track->nClusters() < minHitsOnTrack){
       delete track;
@@ -153,6 +192,12 @@ int BasicTracking::run(Clipboard* clipboard){
     clipboard->put("Timepix3","tracks",(TestBeamObjects*)tracks);
     tracksPerEvent->Fill(tracks->size());
   }
+
+  // Clean up tree objects
+//  for(int det = 0; det<parameters->nDetectors; det++){
+//    string detectorID = parameters->detectors[det];
+//		if(trees.count(detectorID) != 0) delete trees[detectorID];
+//  }
 
   return 1;
 }

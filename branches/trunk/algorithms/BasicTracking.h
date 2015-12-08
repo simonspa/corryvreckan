@@ -38,7 +38,7 @@ public:
   map<string,TH1F*> residualsY;
   
   // Cuts for tracking
-  double timinigCut;
+  double timingCut;
   double spatialCut;
   int minHitsOnTrack;
   
