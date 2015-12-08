@@ -2,6 +2,7 @@
 #define TIMEPIX3CLUSTER_H 1
 
 #include "Timepix3Pixel.h"
+#include <iostream>
 
 class Timepix3Cluster : public TestBeamObject {
   
