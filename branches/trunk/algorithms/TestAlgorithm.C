@@ -89,7 +89,6 @@ int TestAlgorithm::run(Clipboard* clipboard){
     Timepix3Clusters* referenceClusters = (Timepix3Clusters*)clipboard->get(parameters->reference,"clusters");
     if(referenceClusters == NULL){
       if(debug)tcout<<"Reference detector "<<parameters->reference<<" does not have any clusters on the clipboard"<<endl;
-      referenceClusters = new Timepix3Clusters();
 //      continue;
     }
 
@@ -106,6 +105,7 @@ int TestAlgorithm::run(Clipboard* clipboard){
       
       // Loop over reference plane pixels to make correlation plots
       if(!makeCorrelations) continue;
+      if(referenceClusters == NULL) continue;
       for(int iRefCluster=0;iRefCluster<referenceClusters->size();iRefCluster++){
         Timepix3Cluster* refCluster = (*referenceClusters)[iRefCluster];
          
