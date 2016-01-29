@@ -39,16 +39,16 @@ void Analysis::run(){
       m_directory->cd(m_algorithms[algorithmNumber]->getName().c_str());
       // Run the algorithms with timing enabled
       m_algorithms[algorithmNumber]->getStopwatch()->Start(false);
-      int check = m_algorithms[algorithmNumber]->run(m_clipboard);
+      StatusCode check = m_algorithms[algorithmNumber]->run(m_clipboard);
       m_algorithms[algorithmNumber]->getStopwatch()->Stop();
-      if(check == 2){noData = true; break;}// Nothing to be done in this event
-      if(check == 0) run = false;
+      if(check == NoData){noData = true; break;}// Nothing to be done in this event
+      if(check == Failure) run = false;
     }
     // Count number of tracks produced
-    Timepix3Tracks* tracks = (Timepix3Tracks*)m_clipboard->get("Timepix3","tracks");
-    if(tracks != NULL) nTracks += tracks->size();
+//    Timepix3Tracks* tracks = (Timepix3Tracks*)m_clipboard->get("Timepix3","tracks");
+//    if(tracks != NULL) nTracks += tracks->size();
 
-    cout<<"\r[Analysis] Current time is "<<fixed<<setw(10)<<m_parameters->currentTime<<". Produced "<<nTracks<<" tracks"<<flush;
+//    cout<<"\r[Analysis] Current time is "<<fixed<<setw(10)<<m_parameters->currentTime<<". Produced "<<nTracks<<" tracks"<<flush;
 
     // Clear objects from this iteration from the clipboard
     m_clipboard->clear();
@@ -76,7 +76,7 @@ void Analysis::initialiseAll(){
     m_directory->cd();
     m_directory->mkdir(m_algorithms[algorithmNumber]->getName().c_str());
     m_directory->cd(m_algorithms[algorithmNumber]->getName().c_str());
-    cout<<"["<<m_algorithms[algorithmNumber]->getName()<<"] initialising"<<endl;
+    cout<<"["<<m_algorithms[algorithmNumber]->getName()<<"] Initialising"<<endl;
     // Initialise the algorithm
     m_algorithms[algorithmNumber]->initialise(m_parameters);
   }
