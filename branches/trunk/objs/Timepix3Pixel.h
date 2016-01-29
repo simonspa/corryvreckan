@@ -18,7 +18,6 @@ public:
   }
 
   // Member variables
-  long long int m_timestamp;
   int m_row;
   int m_column;
   int m_adc;
