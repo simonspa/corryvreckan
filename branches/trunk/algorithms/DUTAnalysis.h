@@ -16,7 +16,7 @@ public:
 
   // Functions
   void initialise(Parameters*);
-  int run(Clipboard*);
+  StatusCode run(Clipboard*);
   void finalise();
   
   // Histograms
@@ -26,9 +26,16 @@ public:
   TH1F* residualsY;
   TH1F* residualsTime;
   
+  TH1F* tracksVersusPowerOnTime;
+  TH1F* associatedTracksVersusPowerOnTime;
+  
   // Member variables
   int m_eventNumber;
   int m_nAlignmentClusters;
+//  bool m_powerOn;
+  long long int m_powerOnTime;
+  long long int m_powerOffTime;
+  
   
 };
 
