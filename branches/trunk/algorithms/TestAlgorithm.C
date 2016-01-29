@@ -48,7 +48,7 @@ void TestAlgorithm::initialise(Parameters* par){
 
 }
 
-int TestAlgorithm::run(Clipboard* clipboard){
+StatusCode TestAlgorithm::run(Clipboard* clipboard){
   
   // Loop over all Timepix3 and make plots
   for(int det = 0; det<parameters->nDetectors; det++){
@@ -125,7 +125,7 @@ int TestAlgorithm::run(Clipboard* clipboard){
     
   }
 
-  return 1;
+  return Success;
 }
 
 void TestAlgorithm::finalise(){
