@@ -19,7 +19,7 @@ public:
 
   // Functions
   void initialise(Parameters*);
-  int run(Clipboard*);
+  StatusCode run(Clipboard*);
   void finalise();
   
 //  Timepix3Cluster* getNearestCluster(Timepix3Cluster*, map<Timepix3Cluster*, bool>, Timepix3Clusters*);

@@ -39,7 +39,7 @@ void BasicTracking::initialise(Parameters* par){
   
 }
 
-int BasicTracking::run(Clipboard* clipboard){
+StatusCode BasicTracking::run(Clipboard* clipboard){
   
   // Container for all clusters, and detectors in tracking
 //  map<string,Timepix3Clusters*> clusters;
@@ -72,14 +72,14 @@ int BasicTracking::run(Clipboard* clipboard){
   }
   
   // If there are no detectors then stop trying to track
-  if(detectors.size() == 0) return 1;
+  if(detectors.size() == 0) return Success;
   
   // Use the first plane as a seeding plane. For something quick, look a cluster in < 200 ns in the next plane, and continue
   string reference = parameters->reference;
   map<Timepix3Cluster*, bool> used;
   
   // If no clusters on reference plane, stop
-  if(trees.count(reference) == 0) return 1;
+  if(trees.count(reference) == 0) return Success;
   
   // Loop over all clusters
   int nSeedClusters = referenceClusters->size();
@@ -199,7 +199,7 @@ int BasicTracking::run(Clipboard* clipboard){
 //		if(trees.count(detectorID) != 0) delete trees[detectorID];
 //  }
 
-  return 1;
+  return Success;
 }
 
 Timepix3Cluster* BasicTracking::getNearestCluster(long long int timestamp, Timepix3Clusters clusters){
