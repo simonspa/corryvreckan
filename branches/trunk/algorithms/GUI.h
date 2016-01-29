@@ -24,7 +24,7 @@ public:
 
   // Functions
   void initialise(Parameters*);
-  int run(Clipboard*);
+  StatusCode run(Clipboard*);
   void finalise();
   
   // Canvases to display plots

@@ -60,7 +60,7 @@ void GUI::initialise(Parameters* par){
   eventNumber = 0;
 }
 
-int GUI::run(Clipboard* clipboard){
+StatusCode GUI::run(Clipboard* clipboard){
 
   gSystem->ProcessEvents();
   
@@ -136,7 +136,7 @@ int GUI::run(Clipboard* clipboard){
   }
 
   eventNumber++;
-  return 1;
+  return Success;
   
   // Old code to allow updating of a TBrowser (TBrowser in 5.34 not thread safe, so removed)
   //  ((TCanvas*)gROOT->GetListOfCanvases()->At(0))->Paint();
