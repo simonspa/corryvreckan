@@ -34,7 +34,7 @@ void GenericAlgorithm::initialise(Parameters* par){
   m_eventNumber = 0;
 }
 
-int GenericAlgorithm::run(Clipboard* clipboard){
+StatusCode GenericAlgorithm::run(Clipboard* clipboard){
   
   // Loop over all Timepix3 and make plots
   for(int det = 0; det<parameters->nDetectors; det++){
@@ -77,7 +77,7 @@ int GenericAlgorithm::run(Clipboard* clipboard){
   m_eventNumber++;
   
   // Return value telling analysis to keep running
-  return 1;
+  return Success;
 }
 
 void GenericAlgorithm::finalise(){
