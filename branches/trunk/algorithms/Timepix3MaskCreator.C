@@ -29,7 +29,7 @@ void Timepix3MaskCreator::initialise(Parameters* par){
   
 }
 
-int Timepix3MaskCreator::run(Clipboard* clipboard){
+StatusCode Timepix3MaskCreator::run(Clipboard* clipboard){
 
   // Loop over all Timepix3 and for each device perform the clustering
   for(int det = 0; det<parameters->nDetectors; det++){
@@ -42,7 +42,7 @@ int Timepix3MaskCreator::run(Clipboard* clipboard){
     Timepix3Pixels* pixels = (Timepix3Pixels*)clipboard->get(detectorID,"pixels");
     if(pixels == NULL){
       tcout<<"Detector "<<detectorID<<" does not have any pixels on the clipboard"<<endl;
-      return 0;
+      return Failure;
     }
     if(debug) tcout<<"Picked up "<<pixels->size()<<" pixels for device "<<detectorID<<endl;
     
@@ -56,7 +56,7 @@ int Timepix3MaskCreator::run(Clipboard* clipboard){
     }
   }
 
-  return 1;
+  return Success;
 }
 
 void Timepix3MaskCreator::finalise(){

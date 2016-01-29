@@ -19,7 +19,7 @@ bool sortByTime(Timepix3Pixel* pixel1, Timepix3Pixel* pixel2){
   return (pixel1->m_timestamp < pixel2->m_timestamp);
 }
 
-int Timepix3Clustering::run(Clipboard* clipboard){
+StatusCode Timepix3Clustering::run(Clipboard* clipboard){
 
   // Loop over all Timepix3 and for each device perform the clustering
   for(int det = 0; det<parameters->nDetectors; det++){
@@ -102,7 +102,7 @@ int Timepix3Clustering::run(Clipboard* clipboard){
 
   }
 
-  return 1;
+  return Success;
 }
 
 // Check if a pixel touches any of the pixels in a cluster

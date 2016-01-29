@@ -18,7 +18,7 @@ public:
 
   // Functions
   void initialise(Parameters*);
-  int run(Clipboard*);
+  StatusCode run(Clipboard*);
   void finalise();
   void calculateClusterCentre(Timepix3Cluster*);
   bool touching(Timepix3Pixel*,Timepix3Cluster*);

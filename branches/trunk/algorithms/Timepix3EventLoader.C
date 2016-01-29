@@ -91,7 +91,7 @@ void Timepix3EventLoader::initialise(Parameters* par){
   }
 }
 
-int Timepix3EventLoader::run(Clipboard* clipboard){
+StatusCode Timepix3EventLoader::run(Clipboard* clipboard){
   
   // This will loop through each timepix3 registered, and load data from each of them. This can
   // be done in one of two ways: by taking all data in the time interval (t,t+delta), or by
@@ -131,13 +131,13 @@ int Timepix3EventLoader::run(Clipboard* clipboard){
   parameters->currentTime += parameters->eventLength;
   
   // If all files are finished, tell the event loop to stop
-  if(endOfFiles == devices) return 0;
+  if(endOfFiles == devices) return Failure;
   
   // If no/not enough data in this event then tell the event loop to directly skip to the next event
-  if(loadedData < m_minNumberOfPlanes) return 2;
+  if(loadedData < m_minNumberOfPlanes) return NoData;
   
   // Otherwise tell event loop to keep running
-  return 1;
+  return Success;
 }
 
 // Function to load the pixel mask file

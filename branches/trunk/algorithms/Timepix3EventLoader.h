@@ -15,7 +15,7 @@ public:
 
   // Standard algorithm functions
   void initialise(Parameters*);
-  int run(Clipboard*);
+  StatusCode run(Clipboard*);
   void finalise();
   
   // Extra functions
