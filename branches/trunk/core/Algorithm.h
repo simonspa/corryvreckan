@@ -16,6 +16,12 @@
 // algorithm name) and the stopwatch for timing measurements.
 //-------------------------------------------------------------------------------
 
+enum StatusCode {
+  Success,
+  NoData,
+  Failure,
+} ;
+
 class Algorithm{
 
 public:
@@ -31,7 +37,7 @@ public:
   
   // Three main functions - initialise, run and finalise. Called for every algorithm
   virtual void initialise(Parameters*){}
-  virtual int run(Clipboard*){}
+  virtual StatusCode run(Clipboard*){}
   virtual void finalise(){}
   
   // Methods to get member variables
@@ -49,5 +55,6 @@ protected:
   bool debug;
   
 };
+
 
 #endif
