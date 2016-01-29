@@ -6,7 +6,7 @@
 
 Parameters::Parameters(){
   
-  histogramFile = "output.root";
+  histogramFile = "outputHistograms.root";
   inputFile = "G02.dat";
   conditionsFile = "cond.dat";
 	inputDirectory = "";
@@ -28,6 +28,12 @@ void Parameters::help()
 
 // Read command line options and set appropriate variables
 void Parameters::readCommandLineOptions(int argc, char *argv[]){
+  
+  // If there are no input parameters then display the help function
+  if(argc == 1){
+    help();
+    return;
+  }
   
   cout<<endl;
   cout<<"===================| Reading Parameters  |===================="<<endl<<endl;
@@ -136,6 +142,9 @@ bool Parameters::readConditions(){
     // Save the detector parameters in memory
     DetectorParameters* detectorSummary = new DetectorParameters(detectorType,nPixelsX,nPixelsY,pitchX,pitchY,x,y,z,Rx,Ry,Rz,timingOffset);
     detector[detectorID] = detectorSummary;
+    
+    // Temp: register detector
+    registerDetector(detectorID);
     
     cout<<"Device parameters: "<<line<<endl;
     
