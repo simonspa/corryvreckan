@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include "TObject.h"
+#include "TTree.h"
 
 //-------------------------------------------------------------------------------
 // Generic base class. Every class which inherits from TestBeamObject can be
@@ -12,26 +13,34 @@
 //-------------------------------------------------------------------------------
 
 class TestBeamObject : public TObject{
-
+  
 public:
   
   // Constructors and destructors
   TestBeamObject(){}
-  virtual ~TestBeamObject(){}
+  virtual ~TestBeamObject(){
+    m_timestamp = 0;
+  }
   
   // Methods to get member variables
   std::string getDetectorID(){return m_detectorID;}
-//  double getTimeStamp(){return m_timeStamp;}
-
+  long long int timestamp(){return m_timestamp;}
+  void timestamp(long long int time){m_timestamp = time;}
+  
   // Methods to set member variables
   void setDetectorID(std::string detectorID){m_detectorID = detectorID;}
+
+  // Function to get instantiation of inherited class (given a string, give back an object of type 'daughter')
+  static TestBeamObject* Factory(std::string);
+  static TestBeamObject* Factory(std::string, std::string);
   
-  // ROOT I/O class definition - update version number when you change this class!
-  ClassDef(TestBeamObject,1)
-    
   // Member variables
   std::string m_detectorID;
-  
+  long long int m_timestamp;
+
+  // ROOT I/O class definition - update version number when you change this class!
+  ClassDef(TestBeamObject,1)
+
 };
 
 // Vector type declaration
