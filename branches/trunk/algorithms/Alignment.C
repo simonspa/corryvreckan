@@ -21,12 +21,12 @@ void Alignment::initialise(Parameters* par){
   
 }
 
-int Alignment::run(Clipboard* clipboard){
+StatusCode Alignment::run(Clipboard* clipboard){
  
   // Get the tracks
   Timepix3Tracks* tracks = (Timepix3Tracks*)clipboard->get("Timepix3","tracks");
   if(tracks == NULL){
-    return 1;
+    return Success;
   }
   
   // Make a local copy and store it 
@@ -37,10 +37,10 @@ int Alignment::run(Clipboard* clipboard){
   }
   
   // If we have enough tracks for the alignment, tell the event loop to finish
-  if(m_alignmenttracks.size() >= m_numberOfTracksForAlignment) return 0;
+  if(m_alignmenttracks.size() >= m_numberOfTracksForAlignment) return Failure;
   
   // Otherwise keep going
-  return 1;
+  return Success;
 
 }
 
