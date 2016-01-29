@@ -18,13 +18,13 @@ void EventDisplay::initialise(Parameters* par){
 
 }
 
-int EventDisplay::run(Clipboard* clipboard){
+StatusCode EventDisplay::run(Clipboard* clipboard){
   
 
   // Get the tracks
   Timepix3Tracks* tracks = (Timepix3Tracks*)clipboard->get("Timepix3","tracks");
   if(tracks == NULL){
-    return 1;
+    return Success;
   }
   
   TApplication* rootapp = new TApplication("example",0, 0);
@@ -60,7 +60,7 @@ int EventDisplay::run(Clipboard* clipboard){
     eventMap->DrawCopy("same,box");
 		canv->Update();
     rootapp->Run();
-    return 1;
+    return Success;
 }
   
 
