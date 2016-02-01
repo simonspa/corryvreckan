@@ -137,9 +137,12 @@ StatusCode FileReader::run(Clipboard* clipboard){
           m_currentPosition[objectID]++;
           
           // Make a copy of the object from the tree, and place it in the object container
-          TestBeamObject* object = TestBeamObject::Factory(detectorType, objectType);
-          (*object) = (*m_objects[objectID]);
+          TestBeamObject* object = TestBeamObject::Factory(detectorType, objectType, m_objects[objectID]);
           objectContainer->push_back(object);
+          
+          // Simple test
+//          Timepix1Pixel* test = (Timepix1Pixel*)object;
+//          tcout<<"==> pixel read in with row, col: "<<test->m_row<<","<<test->m_column<<endl;
           
         }
         
