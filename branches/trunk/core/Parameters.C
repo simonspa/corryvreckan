@@ -25,6 +25,11 @@ void Parameters::help()
   cout << endl;
 }
 
+// Sort function for detectors from low to high z
+map<string,DetectorParameters*> globalDetector;
+bool sortByZ(string detector1, string detector2){
+  return (globalDetector[detector1]->displacementZ() < globalDetector[detector2]->displacementZ());
+}
 
 // Read command line options and set appropriate variables
 void Parameters::readCommandLineOptions(int argc, char *argv[]){
@@ -161,6 +166,11 @@ bool Parameters::readConditions(){
     }
   }
   if(unregisteredDetector) return false;
+  
+  // Finally, sort the list of detectors by z position (from lowest to highest)
+  globalDetector = detector;
+  std::sort(detectors.begin(),detectors.end(),sortByZ);
+
   return true;
   
 }
