@@ -32,7 +32,7 @@ public:
 
   // Function to get instantiation of inherited class (given a string, give back an object of type 'daughter')
   static TestBeamObject* Factory(std::string);
-  static TestBeamObject* Factory(std::string, std::string);
+  static TestBeamObject* Factory(std::string, std::string, TestBeamObject* object = NULL);
   
   // Member variables
   std::string m_detectorID;

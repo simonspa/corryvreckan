@@ -17,18 +17,18 @@ TestBeamObject* TestBeamObject::Factory(std::string objectType){
 }
 
 //Return class type for objects which change with detector type
-TestBeamObject* TestBeamObject::Factory(std::string detectorType, std::string objectType){
+TestBeamObject* TestBeamObject::Factory(std::string detectorType, std::string objectType, TestBeamObject* object){
   
   // Timepix1 class types
   if(detectorType == "Timepix1"){
-    if(objectType == "pixels") return new Timepix1Pixel();
-    if(objectType == "clusters") return new Timepix1Cluster();
+    if(objectType == "pixels") return (object == NULL) ? new Timepix1Pixel() : new Timepix1Pixel(*(Timepix1Pixel*)object);
+    if(objectType == "clusters") return (object == NULL) ? new Timepix1Cluster() : new Timepix1Cluster(*(Timepix1Cluster*)object);
   }
   
   // Timepix3 class types
   if(detectorType == "Timepix3"){
-    if(objectType == "pixels") return new Timepix3Pixel();
-    if(objectType == "clusters") return new Timepix3Cluster();
+    if(objectType == "pixels") return (object == NULL) ? new Timepix3Pixel() : new Timepix3Pixel(*(Timepix3Pixel*)object);
+    if(objectType == "clusters") return (object == NULL) ? new Timepix3Cluster() : new Timepix3Cluster(*(Timepix3Cluster*)object);
   }
   
 }
