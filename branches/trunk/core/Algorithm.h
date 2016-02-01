@@ -46,13 +46,14 @@ public:
   
   // Simple cout replacement
   tee tcout;
+  bool debug;
+
 protected:
 
   // Member variables
   Parameters* parameters;
   TStopwatch* m_stopwatch;
   string m_name;
-  bool debug;
   
 };
 
