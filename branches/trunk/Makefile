@@ -10,8 +10,8 @@ CC = g++
 # Compiler flags
 ROOTCFLAGS   := $(shell root-config --cflags)
 ROOTLIBS     := $(shell root-config --glibs)
-CFLAGS = -fPIC -w -g -W ${ROOTCFLAGS} #-std=c++0x
-LFLAGS = -O3 ${ROOTLIBS} -g -lGenVector -lMinuit
+CFLAGS = -fPIC -w -g -W ${ROOTCFLAGS} -O3 #-std=c++0x
+LFLAGS = ${ROOTLIBS} -g -lGenVector -lMinuit -O3
 
 # Automatically decide what to compile
 CORE = $(notdir $(wildcard core/*.C))
