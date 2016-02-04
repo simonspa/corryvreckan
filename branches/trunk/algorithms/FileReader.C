@@ -98,6 +98,7 @@ StatusCode FileReader::run(Clipboard* clipboard){
   
   cout<<"\rRunning over event "<<m_eventNumber<<flush;
   
+  bool newEvent = true;
   // Loop over all objects read from file, and place the objects on the Clipboard
   bool dataLoaded = false;
 	for(unsigned int itList=0;itList<m_objectList.size();itList++){
@@ -121,6 +122,7 @@ StatusCode FileReader::run(Clipboard* clipboard){
         
         // Create the container that will go on the clipboard
         TestBeamObjects* objectContainer = new TestBeamObjects();
+        if(debug) tcout<<"Looking for "<<objectType<<" on detector "<<detectorID<<endl;
         
         // Continue looping over this device while there is still data
         while(m_currentPosition[objectID]<m_inputTrees[objectID]->GetEntries()){
@@ -130,8 +132,13 @@ StatusCode FileReader::run(Clipboard* clipboard){
           
           // If the event is outwith the current time window, stop loading data
           if( (m_time - m_currentTime) > m_timeWindow ){
-            if(detectorID == parameters->reference) m_currentTime = m_time;
-            break;
+//            if(detectorID == parameters->reference) m_currentTime = m_time;
+            if(newEvent){
+              m_currentTime = m_time;
+              newEvent = false;
+            }else{
+              break;
+            }
           }
           dataLoaded = true;
           m_currentPosition[objectID]++;
