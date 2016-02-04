@@ -35,6 +35,7 @@ public:
   int m_eventNumber;
   double spatialCut;
   int minHitsOnTrack;
+  double nTracksTotal;
   
 };
 

@@ -6,7 +6,7 @@
 SpatialTracking::SpatialTracking(bool debugging)
 : Algorithm("SpatialTracking"){
   debug = debugging;
-  spatialCut = 0.05;
+  spatialCut = 0.2;
   minHitsOnTrack = 6;
 }
 
@@ -37,13 +37,16 @@ void SpatialTracking::initialise(Parameters* par){
     string detectorID = parameters->detectors[det];
     if(parameters->detector[detectorID]->type() != "Timepix1") continue;
     string name = "residualsX_"+detectorID;
-    residualsX[detectorID] = new TH1F(name.c_str(),name.c_str(),400,-0.2,0.2);
+    residualsX[detectorID] = new TH1F(name.c_str(),name.c_str(),400,-0.05,0.05);
     name = "residualsY_"+detectorID;
-    residualsY[detectorID] = new TH1F(name.c_str(),name.c_str(),400,-0.2,0.2);
+    residualsY[detectorID] = new TH1F(name.c_str(),name.c_str(),400,-0.05,0.05);
+    
+    tcout<<"Detector "<<detectorID<<": (x,y,z) = ("<<parameters->detector[detectorID]->displacementX()<<","<<parameters->detector[detectorID]->displacementY()<<","<<parameters->detector[detectorID]->displacementZ()<<") (rx,ry,rz) = ("<<parameters->detector[detectorID]->rotationX()<<","<<parameters->detector[detectorID]->rotationY()<<","<<parameters->detector[detectorID]->rotationZ()<<")"<<endl;
   }
   
   // Initialise member variables
   m_eventNumber = 0;
+  nTracksTotal = 0.;
 }
 
 StatusCode SpatialTracking::run(Clipboard* clipboard){
@@ -106,7 +109,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
     track->addCluster(cluster);
     used[cluster] = true;
     
-    if(cluster->tot() == 0) continue;
+//    if(cluster->tot() == 0) continue;
     // Loop over each subsequent planes. For each plane, if extrapolate
     // the hit from the previous plane along the z axis, and look for
     // a neighbour on the new plane. We started on the most upstream
@@ -119,10 +122,11 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
       if(parameters->excludedFromTracking.count(detectors[det]) != 0) continue;
       
       // Get the closest neighbour
+      if(debug)tcout<<"- looking for nearest cluster on device "<<detectors[det]<<endl;
       Timepix1Cluster* closestCluster = trees[detectors[det]].getClosestNeighbour(cluster);
 
       // If it is used do nothing
-      if(used[closestCluster]) continue;
+//      if(used[closestCluster]) continue;
       
       // Check if it is within the spatial window
       double distance = sqrt((cluster->globalX() - closestCluster->globalX())*(cluster->globalX() - closestCluster->globalX()) + (cluster->globalY() - closestCluster->globalY())*(cluster->globalY() - closestCluster->globalY()));
@@ -132,7 +136,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
       // Add the cluster to the track
       track->addCluster(closestCluster);
       cluster = closestCluster;
-      if(debug) tcout<<"- added cluster to track"<<endl;
+      if(debug) tcout<<"- added cluster to track. Distance is "<<distance<<endl;
       
     }
     
@@ -166,10 +170,12 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
   }
   
   // Save the tracks on the clipboard
+  nTracksTotal+=tracks->size();
+  cout<<", produced "<<nTracksTotal<<" tracks";
   if(debug) tcout<<"- produced "<<tracks->size()<<" tracks"<<endl;
+  tracksPerEvent->Fill(tracks->size());
   if(tracks->size() > 0){
     clipboard->put("Timepix1","tracks",(TestBeamObjects*)tracks);
-    tracksPerEvent->Fill(tracks->size());
   }
 
   return Success;
