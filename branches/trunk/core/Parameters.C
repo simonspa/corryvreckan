@@ -136,7 +136,7 @@ bool Parameters::readConditions(){
     }
     
     // Make default values for detector parameters
-    string detectorID(""), detectorType(""); int nPixelsX(0), nPixelsY(0); double pitchX(0), pitchY(0), x(0), y(0), z(0), Rx(0), Ry(0), Rz(0);
+    string detectorID(""), detectorType(""); double nPixelsX(0), nPixelsY(0); double pitchX(0), pitchY(0), x(0), y(0), z(0), Rx(0), Ry(0), Rz(0);
     double timingOffset(0.);
     
     // Grab the line and parse the data into the relevant variables

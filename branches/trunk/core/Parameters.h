@@ -30,7 +30,7 @@ public:
   
   // Constructors and desctructors
   DetectorParameters(){}
-  DetectorParameters(string detectorType, int nPixelsX, int nPixelsY, double pitchX, double pitchY,
+  DetectorParameters(string detectorType, double nPixelsX, double nPixelsY, double pitchX, double pitchY,
                      double x, double y, double z, double Rx, double Ry, double Rz, double timingOffset){
     
     m_detectorType = detectorType;
@@ -112,8 +112,8 @@ public:
   string m_detectorType;
   double m_pitchX;
   double m_pitchY;
-  int m_nPixelsX;
-  int m_nPixelsY;
+  double m_nPixelsX;
+  double m_nPixelsY;
   double m_timingOffset;
   
   // Displacement and rotation in x,y,z
