@@ -79,6 +79,7 @@ StatusCode Timepix1Clustering::run(Clipboard* clipboard){
       used[pixel] = true;
       addedPixel = true;
 
+      // NEED TO CHECK WHERE MORE THAN 1 NEIGHBOUR ADDED WE DONT FORGET TO LOOK FOR TOUCHING PIXELS TO BOTH!!!
       // Now we check the neighbours and keep adding more hits while there are connected pixels
       while(addedPixel){
       
@@ -115,7 +116,7 @@ StatusCode Timepix1Clustering::run(Clipboard* clipboard){
     }
   
     clipboard->put(detectorID,"clusters",deviceClusters);
-//    tcout<<"Put "<<deviceClusters->size()<<" clusters on the clipboard for detector "<<detectorID<<". From "<<pixels->size()<<" pixels"<<endl;
+    if(debug)tcout<<"Put "<<deviceClusters->size()<<" clusters on the clipboard for detector "<<detectorID<<". From "<<pixels->size()<<" pixels"<<endl;
     
   }
   
@@ -139,6 +140,7 @@ void Timepix1Clustering::finalise(){
 */
 void Timepix1Clustering::calculateClusterCentre(Timepix1Cluster* cluster){
   
+  if(debug)tcout<<"== Making cluster centre"<<endl;
   // Empty variables to calculate cluster position
   double row(0), column(0), tot(0);
   
@@ -146,22 +148,26 @@ void Timepix1Clustering::calculateClusterCentre(Timepix1Cluster* cluster){
   Timepix1Pixels pixels = cluster->pixels();
   string detectorID = pixels[0]->m_detectorID;
   
+  if(debug)tcout<<"- cluster has "<<pixels.size()<<" pixels"<<endl;
   // Loop over all pixels
   for(int pix=0; pix<pixels.size(); pix++){
     tot += pixels[pix]->m_adc;
     row += (pixels[pix]->m_row * pixels[pix]->m_adc);
     column += (pixels[pix]->m_column * pixels[pix]->m_adc);
+    if(debug)tcout<<"- pixel row, col: "<<pixels[pix]->m_row<<","<<pixels[pix]->m_column<<endl;
   }
   
   // Row and column positions are tot-weighted
   row /= tot;
   column /= tot;
   
+  if(debug)tcout<<"- cluster row, col: "<<row<<","<<column<<endl;
+
   // Create object with local cluster position
   PositionVector3D<Cartesian3D<double> > positionLocal(parameters->detector[detectorID]->pitchX() *
-                                                       (column-parameters->detector[detectorID]->nPixelsX()/2),
+                                                       (column-parameters->detector[detectorID]->nPixelsX()/2.),
                                                        parameters->detector[detectorID]->pitchY() *
-                                                       (row-parameters->detector[detectorID]->nPixelsY()/2),
+                                                       (row-parameters->detector[detectorID]->nPixelsY()/2.),
                                                        0);
   // Calculate global cluster position
   PositionVector3D<Cartesian3D<double> > positionGlobal = *(parameters->detector[detectorID]->m_localToGlobal) * positionLocal;
