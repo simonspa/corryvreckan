@@ -20,6 +20,10 @@ public:
   void finalise();
 
   // Histograms for several devices
+  map<string, TH2F*> hitmaps;
+  map<string, TH2F*> hitmapsGlobal;
+  map<string, TH1F*> clusterSize;
+  map<string, TH1F*> clustersPerEvent;
   map<string, TH1F*> correlationPlotsX;
   map<string, TH1F*> correlationPlotsY;
   

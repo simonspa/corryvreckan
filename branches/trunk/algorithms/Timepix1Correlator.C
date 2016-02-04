@@ -22,10 +22,25 @@ void Timepix1Correlator::initialise(Parameters* par){
     
     // Simple histogram per device
     string name = "correlationsX_"+detectorID;
-    correlationPlotsX[detectorID] = new TH1F(name.c_str(),name.c_str(),1000,-5,5);
+    correlationPlotsX[detectorID] = new TH1F(name.c_str(),name.c_str(),500,-3,3);
 
     name = "correlationsY_"+detectorID;
-    correlationPlotsY[detectorID] = new TH1F(name.c_str(),name.c_str(),1000,-5,5);
+    correlationPlotsY[detectorID] = new TH1F(name.c_str(),name.c_str(),500,-3,3);
+
+    int nPixelsRow = parameters->detector[detectorID]->nPixelsY();
+    int nPixelsCol = parameters->detector[detectorID]->nPixelsX();
+    name = "hitmaps_"+detectorID;
+    hitmaps[detectorID] = new TH2F(name.c_str(),name.c_str(),nPixelsCol,0,nPixelsCol,nPixelsRow,0,nPixelsRow);
+
+    name = "hitmapsGlobal_"+detectorID;
+    hitmapsGlobal[detectorID] = new TH2F(name.c_str(),name.c_str(),200,-10.,10.,200,-10.,10.);
+    
+    name = "clusterSize_"+detectorID;
+    clusterSize[detectorID] = new TH1F(name.c_str(),name.c_str(),25,0,25);
+
+    name = "clustersPerEvent_"+detectorID;
+    clustersPerEvent[detectorID] = new TH1F(name.c_str(),name.c_str(),200,0,200);
+
 
   }
   
@@ -59,18 +74,25 @@ StatusCode Timepix1Correlator::run(Clipboard* clipboard){
     
     // Loop over all clusters and make correlations
     for(int itCluster=0;itCluster<clusters->size();itCluster++){
+
+      // Get the cluster
+      Timepix1Cluster* cluster = (*clusters)[itCluster];
+
       for(int itRefCluster=0;itRefCluster<referenceClusters->size();itRefCluster++){
       
-      	// Get the clusters
-        Timepix1Cluster* cluster = (*clusters)[itCluster];
+      	// Get the reference cluster
         Timepix1Cluster* refCluster = (*referenceClusters)[itRefCluster];
       
         // Fill the plots for this device
-        correlationPlotsX[detectorID]->Fill(cluster->globalX()-refCluster->globalX());
-        correlationPlotsY[detectorID]->Fill(cluster->globalY()-refCluster->globalY());
-
+        if(fabs(cluster->globalY()-refCluster->globalY()) < 1.) correlationPlotsX[detectorID]->Fill(cluster->globalX()-refCluster->globalX());
+        if(fabs(cluster->globalX()-refCluster->globalX()) < 1.) correlationPlotsY[detectorID]->Fill(cluster->globalY()-refCluster->globalY());
       }
+      
+      hitmaps[detectorID]->Fill(cluster->column(),cluster->row());
+      hitmapsGlobal[detectorID]->Fill(cluster->globalX(),cluster->globalY());
+      clusterSize[detectorID]->Fill(cluster->size());
     }
+    clustersPerEvent[detectorID]->Fill(m_eventNumber,clusters->size());
   }
   
   // Increment event counter
