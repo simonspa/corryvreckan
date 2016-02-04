@@ -9,6 +9,13 @@ public:
   // Constructors and destructors
   Pixel(){}
   virtual ~Pixel(){}
+  Pixel(std::string detectorID, int row, int col, int tot){
+    m_detectorID = detectorID;
+    m_row = row;
+    m_column = col;
+    m_adc = tot;
+    m_timestamp = 0;
+  }
 
   // Member variables
   int m_row;
