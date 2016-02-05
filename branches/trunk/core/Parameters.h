@@ -7,11 +7,13 @@
 #include <map>
 #include <iostream>
 #include <vector>
-//#include "DetectorParameters.h"
+// Root includes
 #include "Math/Translation3D.h"
 #include "Math/Rotation3D.h"
 #include "Math/RotationZYX.h"
 #include "Math/Transform3D.h"
+// Local includes
+#include "Track.h"
 
 using namespace std;
 using namespace ROOT::Math;
@@ -89,12 +91,22 @@ public:
   
   // Function to initialise transforms
   void initialise(){
+    
+    // Make the local to global transform, built from a displacement and rotation
     m_translations = new Translation3D(m_displacementX,m_displacementY,m_displacementZ);
     RotationZYX zyxRotation(m_rotationZ, m_rotationY, m_rotationX);
     m_rotations = new Rotation3D(zyxRotation);
     m_localToGlobal = new Transform3D(*m_rotations,*m_translations);
     m_globalToLocal = new Transform3D();
     (*m_globalToLocal) = m_localToGlobal->Inverse();
+    
+    // Find the normal to the detector surface
+    PositionVector3D<Cartesian3D<double> > m_origin(0.,0.,0.);
+    m_origin = (*m_localToGlobal) * m_origin;
+    PositionVector3D<Cartesian3D<double> > localZ(0.,0.,1.);
+    localZ = (*m_localToGlobal) * localZ;
+    PositionVector3D<Cartesian3D<double> > m_normal( localZ.X()-m_origin.X(), localZ.Y()-m_origin.Y(), localZ.Z()-m_origin.Z() );
+    
   }
   
   // Function to update transforms (such as during alignment)
@@ -131,6 +143,10 @@ public:
   // Transforms from local to global and back
   Transform3D* m_localToGlobal;
   Transform3D* m_globalToLocal;
+  
+  // Normal to the detector surface and point on the surface
+  ROOT::Math::XYZVector m_normal;
+  ROOT::Math::XYZPoint m_origin;
   
   // List of masked channels
   map<int,bool> m_masked;
