@@ -1,6 +1,5 @@
 #include "Timepix1Clustering.h"
-#include "Timepix1Pixel.h"
-#include "Timepix1Cluster.h"
+#include "Pixel.h"
 
 Timepix1Clustering::Timepix1Clustering(bool debugging)
 : Algorithm("Timepix1Clustering"){
@@ -43,7 +42,7 @@ StatusCode Timepix1Clustering::run(Clipboard* clipboard){
     if(parameters->detector[detectorID]->type() != "Timepix1") continue;
 		
     // Get the pixels
-    Timepix1Pixels* pixels = (Timepix1Pixels*)clipboard->get(detectorID,"pixels");
+    Pixels* pixels = (Pixels*)clipboard->get(detectorID,"pixels");
     if(pixels == NULL){
       if(debug) tcout<<"Detector "<<detectorID<<" does not have any pixels on the clipboard"<<endl;
       continue;
@@ -51,8 +50,8 @@ StatusCode Timepix1Clustering::run(Clipboard* clipboard){
     
     // Make the cluster container and the maps for clustering
     TestBeamObjects* deviceClusters = new TestBeamObjects();
-    map<Timepix1Pixel*,bool> used;
-    map<int, map<int,Timepix1Pixel*> > hitmap;
+    map<Pixel*,bool> used;
+    map<int, map<int,Pixel*> > hitmap;
     bool addedPixel;
     
     // Get the device dimensions
@@ -61,7 +60,7 @@ StatusCode Timepix1Clustering::run(Clipboard* clipboard){
     
     // Fill the hitmap with pixels
     for(int iP=0;iP<pixels->size();iP++){
-      Timepix1Pixel* pixel = (Timepix1Pixel*)(*pixels)[iP];
+      Pixel* pixel = (Pixel*)(*pixels)[iP];
       hitmap[pixel->m_row][pixel->m_column] = pixel;
     }
     
@@ -69,12 +68,12 @@ StatusCode Timepix1Clustering::run(Clipboard* clipboard){
     for(int iP=0;iP<pixels->size();iP++){
       
       // Get the pixel. If it is already used then do nothing
-      Timepix1Pixel* pixel = (Timepix1Pixel*)(*pixels)[iP];
+      Pixel* pixel = (Pixel*)(*pixels)[iP];
 //      tcout<<"==> seed pixel row, col: "<<pixel->m_row<<","<<pixel->m_column<<endl;
       if(used[pixel]) continue;
       
       // New pixel => new cluster
-      Timepix1Cluster* cluster = new Timepix1Cluster();
+      Cluster* cluster = new Cluster();
       cluster->addPixel(pixel);
       used[pixel] = true;
       addedPixel = true;
@@ -110,7 +109,6 @@ StatusCode Timepix1Clustering::run(Clipboard* clipboard){
      
       // Finalise the cluster and save it
       calculateClusterCentre(cluster);
-//      tcout<<"cluster size "<<cluster->size()<<endl;
       deviceClusters->push_back(cluster);
 
     }
@@ -138,17 +136,17 @@ void Timepix1Clustering::finalise(){
  Function to calculate the centre of gravity of a cluster.
  Sets the local and global cluster positions as well.
 */
-void Timepix1Clustering::calculateClusterCentre(Timepix1Cluster* cluster){
+void Timepix1Clustering::calculateClusterCentre(Cluster* cluster){
   
   if(debug)tcout<<"== Making cluster centre"<<endl;
   // Empty variables to calculate cluster position
   double row(0), column(0), tot(0);
   
   // Get the pixels on this cluster
-  Timepix1Pixels pixels = cluster->pixels();
+  Pixels pixels = cluster->pixels();
   string detectorID = pixels[0]->m_detectorID;
-  
   if(debug)tcout<<"- cluster has "<<pixels.size()<<" pixels"<<endl;
+  
   // Loop over all pixels
   for(int pix=0; pix<pixels.size(); pix++){
     tot += pixels[pix]->m_adc;

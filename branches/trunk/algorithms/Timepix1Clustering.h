@@ -6,7 +6,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TCanvas.h"
-#include "Timepix1Cluster.h"
+#include "Cluster.h"
 
 class Timepix1Clustering : public Algorithm {
   
@@ -20,7 +20,7 @@ public:
   StatusCode run(Clipboard*);
   void finalise();
 
-  void calculateClusterCentre(Timepix1Cluster*);
+  void calculateClusterCentre(Cluster*);
 
   // Member variables
   int m_eventNumber;

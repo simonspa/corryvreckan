@@ -6,8 +6,8 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TCanvas.h"
-#include "Timepix1Cluster.h"
-#include "Timepix1Track.h"
+#include "Cluster.h"
+#include "Track.h"
 
 class SpatialTracking : public Algorithm {
   

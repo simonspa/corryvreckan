@@ -1,7 +1,7 @@
 #include "Timepix1Correlator.h"
-#include "Timepix1Pixel.h"
-#include "Timepix1Cluster.h"
-#include "Timepix1Track.h"
+#include "Pixel.h"
+#include "Cluster.h"
+#include "Track.h"
 
 Timepix1Correlator::Timepix1Correlator(bool debugging)
 : Algorithm("Timepix1Correlator"){
@@ -52,7 +52,7 @@ StatusCode Timepix1Correlator::run(Clipboard* clipboard){
 
   // Get the clusters for the reference detector
   string referenceDetector = parameters->reference;
-  Timepix1Clusters* referenceClusters = (Timepix1Clusters*)clipboard->get(referenceDetector,"clusters");
+  Clusters* referenceClusters = (Clusters*)clipboard->get(referenceDetector,"clusters");
   if(referenceClusters == NULL){
     if(debug) tcout<<"Detector "<<referenceDetector<<" does not have any clusters on the clipboard"<<endl;
     return Success;
@@ -61,12 +61,12 @@ StatusCode Timepix1Correlator::run(Clipboard* clipboard){
   // Loop over all Timepix1 and make plots
   for(int det = 0; det<parameters->nDetectors; det++){
     
-    // Check if they are a Timepix3
+    // Check if they are a Timepix1
     string detectorID = parameters->detectors[det];
     if(parameters->detector[detectorID]->type() != "Timepix1") continue;
     
     // Get the clusters
-    Timepix1Clusters* clusters = (Timepix1Clusters*)clipboard->get(detectorID,"clusters");
+    Clusters* clusters = (Clusters*)clipboard->get(detectorID,"clusters");
     if(clusters == NULL){
       if(debug) tcout<<"Detector "<<detectorID<<" does not have any clusters on the clipboard"<<endl;
       continue;
@@ -76,12 +76,12 @@ StatusCode Timepix1Correlator::run(Clipboard* clipboard){
     for(int itCluster=0;itCluster<clusters->size();itCluster++){
 
       // Get the cluster
-      Timepix1Cluster* cluster = (*clusters)[itCluster];
+      Cluster* cluster = (*clusters)[itCluster];
 
       for(int itRefCluster=0;itRefCluster<referenceClusters->size();itRefCluster++){
       
       	// Get the reference cluster
-        Timepix1Cluster* refCluster = (*referenceClusters)[itRefCluster];
+        Cluster* refCluster = (*referenceClusters)[itRefCluster];
       
         // Fill the plots for this device
         if(fabs(cluster->globalY()-refCluster->globalY()) < 1.) correlationPlotsX[detectorID]->Fill(cluster->globalX()-refCluster->globalX());
