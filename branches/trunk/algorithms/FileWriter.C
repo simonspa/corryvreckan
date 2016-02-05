@@ -3,9 +3,9 @@
 FileWriter::FileWriter(bool debugging)
 : Algorithm("FileWriter"){
   debug = debugging;
-  m_writePixels = true;
+  m_writePixels = false;
   m_writeClusters = false;
-  m_writeTracks = false;
+  m_writeTracks = true;
   m_fileName = "outputTuples.root";
 }
 
@@ -70,7 +70,7 @@ void FileWriter::initialise(Parameters* par){
         
       }
     }
-    // If not an object to be written per pixel
+    // If not an object to be written per detector
     else{
       // Make the tree
       string treeName = objectType;
@@ -88,7 +88,6 @@ void FileWriter::initialise(Parameters* par){
 
 StatusCode FileWriter::run(Clipboard* clipboard){
 
-  
   // Loop over all objects to be written to file, and get the objects currently
   // held on the Clipboard
   for(unsigned int itList=0;itList<m_objectList.size();itList++){
@@ -125,6 +124,23 @@ StatusCode FileWriter::run(Clipboard* clipboard){
     } // If object is not written per device
     else{
       
+      // Get the objects, if they don't exist then continue
+      if(debug) tcout<<"Checking for "<<objectType<<endl;
+      TestBeamObjects* objects = clipboard->get(objectType);
+      if(objects == NULL) continue;
+      if(debug) tcout<<"Picked up "<<objects->size()<<" "<<objectType<<endl;
+      
+      // Check if the output tree exists
+      if(!m_outputTrees[objectType]) continue;
+      
+      // Fill the objects into the tree
+      for(int itObject=0;itObject<objects->size();itObject++){
+        m_objects[objectType] = (*objects)[itObject];
+        m_time = m_objects[objectType]->timestamp();
+        m_outputTrees[objectType]->Fill();
+      }
+      if(debug) tcout<<"Written "<<objectType<<" to file"<<endl;
+
     }
   }
 
@@ -171,6 +187,18 @@ void FileWriter::finalise(){
     }// Write trees for devices which are not detector dependent
     else{
       
+      // If there is no output tree then do nothing
+      if(!m_outputTrees[objectType]) continue;
+      
+      // Move to the write output file
+      m_outputFile->cd();
+      m_outputFile->cd(objectType.c_str());
+      m_outputTrees[objectType]->Write();
+      
+      // Clean up the tree and remove object pointer
+      delete m_outputTrees[objectType];
+      m_objects[objectType] = 0;
+
     }
   }
   

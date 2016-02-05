@@ -132,7 +132,6 @@ StatusCode FileReader::run(Clipboard* clipboard){
           
           // If the event is outwith the current time window, stop loading data
           if( (m_time - m_currentTime) > m_timeWindow ){
-//            if(detectorID == parameters->reference) m_currentTime = m_time;
             if(newEvent){
               m_currentTime = m_time;
               newEvent = false;
@@ -147,10 +146,6 @@ StatusCode FileReader::run(Clipboard* clipboard){
           TestBeamObject* object = TestBeamObject::Factory(detectorType, objectType, m_objects[objectID]);
           objectContainer->push_back(object);
           
-          // Simple test
-//          Timepix1Pixel* test = (Timepix1Pixel*)object;
-//          tcout<<"==> pixel read in with row, col: "<<test->m_row<<","<<test->m_column<<endl;
-          
         }
         
         // Put the data on the clipboard
@@ -160,7 +155,42 @@ StatusCode FileReader::run(Clipboard* clipboard){
       }
     } // If object is not written per device
     else{
+     
+      // If there is no data for this device, continue
+      if(!m_inputTrees[objectType]) continue;
       
+      // Create the container that will go on the clipboard
+      TestBeamObjects* objectContainer = new TestBeamObjects();
+      if(debug) tcout<<"Looking for "<<objectType<<endl;
+      
+      // Continue looping over this device while there is still data
+      while(m_currentPosition[objectType]<m_inputTrees[objectType]->GetEntries()){
+        
+        // Get the new event from the tree
+        m_inputTrees[objectType]->GetEvent(m_currentPosition[objectType]);
+        
+        // If the event is outwith the current time window, stop loading data
+        if( (m_time - m_currentTime) > m_timeWindow ){
+          if(newEvent){
+            m_currentTime = m_time;
+            newEvent = false;
+          }else{
+            break;
+          }
+        }
+        dataLoaded = true;
+        m_currentPosition[objectType]++;
+        
+        // Make a copy of the object from the tree, and place it in the object container
+        TestBeamObject* object = TestBeamObject::Factory(objectType, m_objects[objectType]);
+        objectContainer->push_back(object);
+        
+      }
+      
+      // Put the data on the clipboard
+      clipboard->put(objectType,objectContainer);
+      if(debug) tcout<<"Picked up "<<objectContainer->size()<<" "<<objectType<<endl;
+
     }
   }
 
