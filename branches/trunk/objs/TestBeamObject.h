@@ -31,7 +31,7 @@ public:
   void setDetectorID(std::string detectorID){m_detectorID = detectorID;}
 
   // Function to get instantiation of inherited class (given a string, give back an object of type 'daughter')
-  static TestBeamObject* Factory(std::string);
+  static TestBeamObject* Factory(std::string, TestBeamObject* object = NULL);
   static TestBeamObject* Factory(std::string, std::string, TestBeamObject* object = NULL);
   
   // Member variables

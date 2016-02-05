@@ -5,14 +5,15 @@
 #include "Timepix3Cluster.h"
 #include "Timepix3Pixel.h"
 #include "Timepix3Track.h"
+#include "Track.h"
 
 ClassImp(TestBeamObject)
 
 // Return class type for fixed object types (that don't depend on detector type)
-TestBeamObject* TestBeamObject::Factory(std::string objectType){
+TestBeamObject* TestBeamObject::Factory(std::string objectType, TestBeamObject* object){
   
-  // Timepix3 track class
-  if(objectType == "timepix3track") return new Timepix3Track();
+  // Track class
+  if(objectType == "tracks") return (object == NULL) ? new Track() : new Track(*(Track*)object);
   
 }
 
