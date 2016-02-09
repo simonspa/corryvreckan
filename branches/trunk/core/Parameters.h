@@ -12,6 +12,8 @@
 #include "Math/Rotation3D.h"
 #include "Math/RotationZYX.h"
 #include "Math/Transform3D.h"
+#include "Math/Point3D.h"
+#include "Math/Vector3D.h"
 // Local includes
 #include "Track.h"
 
@@ -116,6 +118,22 @@ public:
     delete m_localToGlobal;
     delete m_globalToLocal;
     this->initialise();
+  }
+  
+  // Function to get global intercept with a track
+  PositionVector3D<Cartesian3D<double> > getIntercept(Track* track){
+    
+    // Get the distance from the plane to the track initial state
+    double distance = (m_origin.X() - track->m_state.X()) * m_normal.X();
+    distance += (m_origin.Y() - track->m_state.Y()) * m_normal.Y();
+    distance += (m_origin.Z() - track->m_state.Z()) * m_normal.Z();
+    distance /= (track->m_direction.X()*m_normal.X() + track->m_direction.Y()*m_normal.Y() + track->m_direction.Z()*m_normal.Z());
+    
+    // Propagate the track
+    PositionVector3D< Cartesian3D<double> > globalIntercept(track->m_state.X() + distance*track->m_direction.X(),
+                                                            track->m_state.Y() + distance*track->m_direction.Y(),
+                                                            track->m_state.Z() + distance*track->m_direction.Z());
+    return globalIntercept;
   }
   
   // Member variables
