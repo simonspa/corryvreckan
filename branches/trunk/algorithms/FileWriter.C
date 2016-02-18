@@ -27,6 +27,7 @@ void FileWriter::initialise(Parameters* par){
  
   // Pick up the global parameters
   parameters = par;
+  m_fileName = parameters->outputTupleFile;
 
   // Decide what objects will be written out
   if(m_writePixels) m_objectList.push_back("pixels");
