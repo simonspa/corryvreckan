@@ -1,5 +1,5 @@
 #include "Timepix1EventLoader.h"
-#include "Timepix1Pixel.h"
+#include "Pixel.h"
 #include <dirent.h>
 
 Timepix1EventLoader::Timepix1EventLoader(bool debugging)
@@ -7,7 +7,9 @@ Timepix1EventLoader::Timepix1EventLoader(bool debugging)
   debug = debugging;
 }
 
-// This algorithm loads data from Timepix1-like devices and places it on the clipboard
+/*
+ This algorithm loads data from Timepix1-like devices and places it on the clipboard
+*/
 
 bool sortByTime(string filename1, string filename2){
   
@@ -136,7 +138,7 @@ StatusCode Timepix1EventLoader::run(Clipboard* clipboard){
       // load the real event data, and make a new pixel object
       istringstream detectorData(data);
       detectorData >> col >> row >> tot;
-      Timepix1Pixel* pixel = new Timepix1Pixel(m_currentDevice,row,col,tot);
+      Pixel* pixel = new Pixel(m_currentDevice,row,col,tot);
       pixel->timestamp(m_eventTime);
       dataContainers[m_currentDevice]->push_back(pixel);
     }
