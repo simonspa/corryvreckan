@@ -93,10 +93,7 @@ int main(int argc, char *argv[]) {
   parameters->excludedFromTracking["W0019_F07"] = true;
   parameters->excludedFromTracking["W0019_L08"] = true;
   parameters->excludedFromTracking["W0005_H03"] = true;
- 
-
-  fileWriter->m_fileName = "tracks.root";
-  
+   
   // =========================================================================
   // Steering file ends
   // =========================================================================
