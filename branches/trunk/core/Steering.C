@@ -28,6 +28,7 @@
 #include "FileWriter.h"
 #include "FileReader.h"
 #include "Timepix1Correlator.h"
+#include "ClicpixAnalysis.h"
 
 //-------------------------------------------------------------------------------
 // The Steering is effectively the executable. It reads command line
@@ -73,20 +74,18 @@ int main(int argc, char *argv[]) {
   FileWriter*	 					fileWriter				= new FileWriter(debug);
   FileReader*	 					fileReader				= new FileReader(debug);
   Timepix1Correlator*	 	correlator				= new Timepix1Correlator(debug);
+  ClicpixAnalysis*	 		clicpixAnalysis		= new ClicpixAnalysis(debug);
 
   // =========================================================================
   // Steering file begins
   // =========================================================================
   
   // General parameters
-//  parameters->reference = "W0013_G03";
-//  parameters->DUT = "W0019_L08";
-//  parameters->DUT = "W0019_F07";
-  parameters->reference = "Mim-osa03";
+  parameters->reference = "Mim-osa02";
   parameters->DUT = "CLi-CPix";
-  
   parameters->detectorToAlign = parameters->DUT;
-
+  parameters->excludedFromTracking[parameters->DUT] = true;
+  
   parameters->excludedFromTracking["W0005_E02"] = true;
   parameters->excludedFromTracking["W0005_F01"] = true;
   parameters->excludedFromTracking["W0019_C07"] = true;
@@ -94,8 +93,10 @@ int main(int argc, char *argv[]) {
   parameters->excludedFromTracking["W0019_F07"] = true;
   parameters->excludedFromTracking["W0019_L08"] = true;
   parameters->excludedFromTracking["W0005_H03"] = true;
+ 
+
+  fileWriter->m_fileName = "tracks.root";
   
-  spatialTracking->debug = true;
   // =========================================================================
   // Steering file ends
   // =========================================================================
@@ -109,7 +110,6 @@ int main(int argc, char *argv[]) {
   // Initialise the analysis object and add algorithms to run
   analysis = new Analysis(parameters);
   analysis->add(tpix1EventLoader);
-  analysis->add(fileWriter);
 //  analysis->add(fileReader);
 //  analysis->add(tpix1Clustering);
 //  analysis->add(spatialTracking);
@@ -119,6 +119,8 @@ int main(int argc, char *argv[]) {
 //  analysis->add(testAlgorithm);
 //  analysis->add(basicTracking);
 //  analysis->add(dutAnalysis);
+//  analysis->add(clicpixAnalysis);
+  analysis->add(fileWriter);
   
   if(parameters->align) analysis->add(alignment);
   if(parameters->produceMask) analysis->add(tpix3MaskCreator);
