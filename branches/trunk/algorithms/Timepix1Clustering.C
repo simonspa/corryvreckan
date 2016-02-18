@@ -62,6 +62,7 @@ StatusCode Timepix1Clustering::run(Clipboard* clipboard){
     for(int iP=0;iP<pixels->size();iP++){
       Pixel* pixel = (Pixel*)(*pixels)[iP];
       hitmap[pixel->m_row][pixel->m_column] = pixel;
+      (pixel->m_adc)++; // temp fix for clicpix data
     }
     
     // Loop over all pixels and make clusters
@@ -69,7 +70,6 @@ StatusCode Timepix1Clustering::run(Clipboard* clipboard){
       
       // Get the pixel. If it is already used then do nothing
       Pixel* pixel = (Pixel*)(*pixels)[iP];
-//      tcout<<"==> seed pixel row, col: "<<pixel->m_row<<","<<pixel->m_column<<endl;
       if(used[pixel]) continue;
       
       // New pixel => new cluster
@@ -77,8 +77,9 @@ StatusCode Timepix1Clustering::run(Clipboard* clipboard){
       cluster->addPixel(pixel);
       used[pixel] = true;
       addedPixel = true;
+      // Somewhere to store found neighbours
+      Pixels neighbours;
 
-      // NEED TO CHECK WHERE MORE THAN 1 NEIGHBOUR ADDED WE DONT FORGET TO LOOK FOR TOUCHING PIXELS TO BOTH!!!
       // Now we check the neighbours and keep adding more hits while there are connected pixels
       while(addedPixel){
       
@@ -90,19 +91,22 @@ StatusCode Timepix1Clustering::run(Clipboard* clipboard){
             // If out of bounds for column
             if(col<0 || col >= nCols) continue;
             
-//            tcout<<"- looking at row, col: "<<row<<","<<col<<endl;
             // If no pixel in this position, or is already in a cluster, do nothing
             if(!hitmap[row][col]) continue;
             if(used[hitmap[row][col]]) continue;
             
-            // Otherwise add the pixel to the cluster
+            // Otherwise add the pixel to the cluster and store it as a found neighbour
             cluster->addPixel(hitmap[row][col]);
-//            tcout<<"- added pixel!"<<endl;
             used[hitmap[row][col]] = true;
-            addedPixel = true;
-            pixel = hitmap[row][col];
-            
+            neighbours.push_back(hitmap[row][col]);
           }
+        }
+       
+        // If we have neighbours that have not yet been checked, continue looking for more pixels
+        if(neighbours.size() > 0){
+        	addedPixel = true;
+        	pixel = neighbours.back();
+          neighbours.pop_back();
         }
         
       }
