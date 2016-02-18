@@ -3,9 +3,9 @@
 FileWriter::FileWriter(bool debugging)
 : Algorithm("FileWriter"){
   debug = debugging;
-  m_writePixels = false;
+  m_writePixels = true;
   m_writeClusters = false;
-  m_writeTracks = true;
+  m_writeTracks = false;
   m_fileName = "outputTuples.root";
 }
 
