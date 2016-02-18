@@ -33,7 +33,8 @@ void FileReader::initialise(Parameters* par){
  
   // Pick up the global parameters
   parameters = par;
-  
+  m_fileName = parameters->outputTupleFile;
+
   // Decide what objects will be read in
   if(m_readPixels) m_objectList.push_back("pixels");
   if(m_readClusters) m_objectList.push_back("clusters");
