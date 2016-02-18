@@ -227,6 +227,7 @@ public:
   string inputFile;
   string inputDirectory;
   string conditionsFile;
+  string outputTupleFile;
   vector<string> detectors;
   int nDetectors;
   string reference;
