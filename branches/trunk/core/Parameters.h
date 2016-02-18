@@ -102,13 +102,14 @@ public:
     m_globalToLocal = new Transform3D();
     (*m_globalToLocal) = m_localToGlobal->Inverse();
     
-    // Find the normal to the detector surface
-    PositionVector3D<Cartesian3D<double> > m_origin(0.,0.,0.);
+    // Find the normal to the detector surface. Build two points, the origin and a unit step in z,
+    // transform these points to the global co-ordinate frame and then make a vector pointing between them
+    m_origin = PositionVector3D<Cartesian3D<double> >(0.,0.,0.);
     m_origin = (*m_localToGlobal) * m_origin;
     PositionVector3D<Cartesian3D<double> > localZ(0.,0.,1.);
     localZ = (*m_localToGlobal) * localZ;
-    PositionVector3D<Cartesian3D<double> > m_normal( localZ.X()-m_origin.X(), localZ.Y()-m_origin.Y(), localZ.Z()-m_origin.Z() );
-    
+    m_normal = PositionVector3D<Cartesian3D<double> >( localZ.X()-m_origin.X(), localZ.Y()-m_origin.Y(), localZ.Z()-m_origin.Z() );
+
   }
   
   // Function to update transforms (such as during alignment)
@@ -134,6 +135,38 @@ public:
                                                             track->m_state.Y() + distance*track->m_direction.Y(),
                                                             track->m_state.Z() + distance*track->m_direction.Z());
     return globalIntercept;
+  }
+  
+  // Functions to get row and column from local position
+  double getRow(PositionVector3D<Cartesian3D<double> > localPosition){
+    double row = (localPosition.Y()/m_pitchY) + m_nPixelsY/2.;
+    return row;
+  }
+  double getColumn(PositionVector3D<Cartesian3D<double> > localPosition){
+    double column = (localPosition.X()/m_pitchX) + m_nPixelsX/2.;
+    return column;
+  }
+  
+  // Function to get local position from row and column
+  PositionVector3D<Cartesian3D<double> > getLocalPosition(double row, double column){
+    
+    PositionVector3D<Cartesian3D<double> > positionLocal(m_pitchX * (column-m_nPixelsX/2.),
+                                                         m_pitchY * (row-m_nPixelsY/2.),
+                                                         0.);
+    
+    return positionLocal;
+  }
+  
+  // Functiona to get in-pixel position
+  double inPixelX(PositionVector3D<Cartesian3D<double> > localPosition){
+    double column = getColumn(localPosition);
+    double inPixelX = m_pitchX * (column + m_pitchX/2. - floor(column + m_pitchX/2.));
+    return 1000.*inPixelX;
+  }
+  double inPixelY(PositionVector3D<Cartesian3D<double> > localPosition){
+    double row = getRow(localPosition);
+    double inPixelY = m_pitchY * (row + m_pitchY/2. - floor(row + m_pitchY/2.));
+    return 1000.*inPixelY;
   }
   
   // Member variables
@@ -163,8 +196,8 @@ public:
   Transform3D* m_globalToLocal;
   
   // Normal to the detector surface and point on the surface
-  ROOT::Math::XYZVector m_normal;
-  ROOT::Math::XYZPoint m_origin;
+  PositionVector3D<Cartesian3D<double> > m_normal;
+  PositionVector3D<Cartesian3D<double> > m_origin;
   
   // List of masked channels
   map<int,bool> m_masked;
