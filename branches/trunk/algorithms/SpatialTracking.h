@@ -1,11 +1,16 @@
 #ifndef SpatialTracking_H
 #define SpatialTracking_H 1
 
-#include "Algorithm.h"
+// Includes
 #include <iostream>
+// ROOT includes
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TCanvas.h"
+#include "Minuit2/Minuit2Minimizer.h"
+#include "Math/Functor.h"
+// Local includes
+#include "Algorithm.h"
 #include "Cluster.h"
 #include "Track.h"
 
@@ -36,6 +41,9 @@ public:
   double spatialCut;
   int minHitsOnTrack;
   double nTracksTotal;
+  
+  ROOT::Minuit2::Minuit2Minimizer trackFitter;
+
   
 };
 

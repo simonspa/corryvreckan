@@ -43,6 +43,18 @@ void SpatialTracking::initialise(Parameters* par){
   // Initialise member variables
   m_eventNumber = 0;
   nTracksTotal = 0.;
+  
+  // Make the fitting object
+  trackFitter.SetMaxFunctionCalls(1000000);
+  trackFitter.SetMaxIterations(100000);
+  trackFitter.SetPrecision(1e-10);
+  trackFitter.SetPrintLevel(0);
+  trackFitter.SetVariable(0,"gradientXZ", 0., 0.1);
+  trackFitter.SetVariable(1,"interceptXZ", 0., 0.1);
+  trackFitter.SetVariable(2,"gradientYZ", 0., 0.1);
+  trackFitter.SetVariable(3,"interceptYZ", 0., 0.1);
+  gErrorIgnoreLevel=kWarning;
+
 }
 
 StatusCode SpatialTracking::run(Clipboard* clipboard){
@@ -98,7 +110,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
 
     // Make a new track
     Track* track = new Track();
-    
+
     // Get the cluster
     Cluster* cluster = (*referenceClusters)[iSeedCluster];
     
@@ -106,7 +118,6 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
     track->addCluster(cluster);
     used[cluster] = true;
     
-//    if(cluster->tot() == 0) continue;
     // Loop over each subsequent planes. For each plane, if extrapolate
     // the hit from the previous plane along the z axis, and look for
     // a neighbour on the new plane. We started on the most upstream
@@ -143,8 +154,20 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
       continue;
     }
     
-    // Fit the track and save it
-    track->fit();
+    // Fit the track
+    Track* track2 = new Track(track);
+    ROOT::Math::Functor FCNFunction(*track2,4);
+    trackFitter.SetFunction(FCNFunction);
+    trackFitter.Minimize();
+    
+    // Now set the track parameters to the fitted values (it gets left in an undefined state)
+    track->m_direction.SetX(trackFitter.X()[0]);
+    track->m_state.SetX(trackFitter.X()[1]);
+    track->m_direction.SetY(trackFitter.X()[2]);
+    track->m_state.SetY(trackFitter.X()[3]);
+    track->calculateChi2();
+    
+    // Save the track
     tracks->push_back(track);
     
     // Fill histograms

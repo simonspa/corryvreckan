@@ -20,22 +20,26 @@ public:
   
   // Constructors and destructors
   Track(){
-    m_fitterXZ = new TLinearFitter();
-    m_fitterXZ->SetFormula("pol1");
-    m_fitterYZ = new TLinearFitter();
-    m_fitterYZ->SetFormula("pol1");
+//    m_fitterXZ = new TLinearFitter();
+//    m_fitterXZ->SetFormula("pol1");
+//    m_fitterYZ = new TLinearFitter();
+//    m_fitterYZ->SetFormula("pol1");
+    m_direction.SetZ(1.);
+    m_state.SetZ(0.);
+
   }
   virtual ~Track(){
-    delete m_fitterXZ;
-    delete m_fitterYZ;
+//    std::cout<<"deleting track"<<std::endl;
+//    delete m_fitterXZ;
+//    delete m_fitterYZ;
   }
   
   // Copy constructor (also copies clusters from the original track)
   Track(Track* track){
-    m_fitterXZ = new TLinearFitter();
-    m_fitterXZ->SetFormula("pol1");
-    m_fitterYZ = new TLinearFitter();
-    m_fitterYZ->SetFormula("pol1");
+//    m_fitterXZ = new TLinearFitter();
+//    m_fitterXZ->SetFormula("pol1");
+//    m_fitterYZ = new TLinearFitter();
+//    m_fitterYZ->SetFormula("pol1");
     Clusters trackClusters = track->clusters();
     for(int iTrackCluster=0; iTrackCluster<trackClusters.size(); iTrackCluster++){
       Cluster* trackCluster = trackClusters[iTrackCluster];
@@ -66,7 +70,7 @@ public:
   }
   
   // Fit the track
-  void fit(){
+ /* void fit(){
 
     // Remove previous points from the fitters
     m_fitterXZ->ClearPoints();
@@ -109,7 +113,7 @@ public:
     this->calculateChi2();
     
   }
-  
+  */
   // Calculate the 2D distance^2 between the fitted track and a cluster
   double distance2(Cluster* cluster){
   	
@@ -148,6 +152,24 @@ public:
     m_chi2ndof = m_chi2/m_ndof;
   }
   
+  // Minimisation operator used by Minuit. Minuit passes the current iteration of
+  // the parameters and checks if the chi2 is better or worse
+  double operator()(const double *parameters){
+    
+    // Update the track gradient and intercept
+    this->m_direction.SetX(parameters[0]);
+    this->m_state.SetX(parameters[1]);
+    this->m_direction.SetY(parameters[2]);
+    this->m_state.SetY(parameters[3]);
+
+    // Calculate the chi2
+    this->calculateChi2();
+    
+    // Return this to minuit
+    return (const double)m_chi2;
+    
+  }
+  
   // Retrieve track parameters
   double chi2(){return m_chi2;}
   double chi2ndof(){return m_chi2ndof;}
@@ -171,8 +193,8 @@ public:
   double m_chi2;
   double m_ndof;
   double m_chi2ndof;
-  TLinearFitter* m_fitterXZ;
-  TLinearFitter* m_fitterYZ;
+//  TLinearFitter* m_fitterXZ;
+//  TLinearFitter* m_fitterYZ;
   ROOT::Math::XYZPoint m_state;
   ROOT::Math::XYZVector m_direction;
 
