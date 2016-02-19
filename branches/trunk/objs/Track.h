@@ -20,26 +20,13 @@ public:
   
   // Constructors and destructors
   Track(){
-//    m_fitterXZ = new TLinearFitter();
-//    m_fitterXZ->SetFormula("pol1");
-//    m_fitterYZ = new TLinearFitter();
-//    m_fitterYZ->SetFormula("pol1");
     m_direction.SetZ(1.);
     m_state.SetZ(0.);
-
   }
-  virtual ~Track(){
-//    std::cout<<"deleting track"<<std::endl;
-//    delete m_fitterXZ;
-//    delete m_fitterYZ;
-  }
+  virtual ~Track(){}
   
   // Copy constructor (also copies clusters from the original track)
   Track(Track* track){
-//    m_fitterXZ = new TLinearFitter();
-//    m_fitterXZ->SetFormula("pol1");
-//    m_fitterYZ = new TLinearFitter();
-//    m_fitterYZ->SetFormula("pol1");
     Clusters trackClusters = track->clusters();
     for(int iTrackCluster=0; iTrackCluster<trackClusters.size(); iTrackCluster++){
       Cluster* trackCluster = trackClusters[iTrackCluster];
@@ -69,51 +56,6 @@ public:
     m_associatedClusters.push_back(cluster);
   }
   
-  // Fit the track
- /* void fit(){
-
-    // Remove previous points from the fitters
-    m_fitterXZ->ClearPoints();
-    m_fitterYZ->ClearPoints();
-    
-    // Check how many clusters there are
-    int nClusters = m_trackClusters.size();
-    
-    // Loop over all clusters
-    double* z = new double[0];
-    for(int iCluster=0;iCluster<nClusters;iCluster++){
-      // Get the cluster
-      Cluster* cluster = m_trackClusters[iCluster];
-			// Add it to the fitter
-      z[0] = cluster->globalZ();
-      m_fitterXZ->AddPoint(z,cluster->globalX(),cluster->error());
-      m_fitterYZ->AddPoint(z,cluster->globalY(),cluster->error());
-    }
-
-    // Fit the two lines
-    m_fitterXZ->Eval();
-    m_fitterYZ->Eval();
-    
-    // Get the slope and intercept
-    double interceptXZ = m_fitterXZ->GetParameter(0);
-    double slopeXZ = m_fitterXZ->GetParameter(1);
-    double interceptYZ = m_fitterYZ->GetParameter(0);
-    double slopeYZ = m_fitterYZ->GetParameter(1);
-    
-    // Set the track state and direction
-    m_state.SetX(interceptXZ);
-    m_state.SetY(interceptYZ);
-    m_state.SetZ(0.);
-
-    m_direction.SetX(slopeXZ);
-    m_direction.SetY(slopeYZ);
-    m_direction.SetZ(1.);
-    
-    delete z;
-    this->calculateChi2();
-    
-  }
-  */
   // Calculate the 2D distance^2 between the fitted track and a cluster
   double distance2(Cluster* cluster){
   	
@@ -193,8 +135,6 @@ public:
   double m_chi2;
   double m_ndof;
   double m_chi2ndof;
-//  TLinearFitter* m_fitterXZ;
-//  TLinearFitter* m_fitterYZ;
   ROOT::Math::XYZPoint m_state;
   ROOT::Math::XYZVector m_direction;
 
