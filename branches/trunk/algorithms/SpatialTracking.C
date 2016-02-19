@@ -155,8 +155,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
     }
     
     // Fit the track
-    Track* track2 = new Track(track);
-    ROOT::Math::Functor FCNFunction(*track2,4);
+    ROOT::Math::Functor FCNFunction(*track,4);
     trackFitter.SetFunction(FCNFunction);
     trackFitter.Minimize();
     
