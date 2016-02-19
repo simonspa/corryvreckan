@@ -1,9 +1,13 @@
 #ifndef ALIGNMENT_H
 #define ALIGNMENT_H 1
 
+// ROOT includes
+#include "Minuit2/Minuit2Minimizer.h"
+#include "Math/Functor.h"
+// Local includes
 #include "Algorithm.h"
-#include "Timepix3Cluster.h"
-#include "Timepix3Track.h"
+#include "Cluster.h"
+#include "Track.h"
 
 // Fitting function for minuit
 void SumDistance2(Int_t &, Double_t *, Double_t &, Double_t *, Int_t );
@@ -21,7 +25,7 @@ public:
   void finalise();
   
   // Member variables
-  Timepix3Tracks m_alignmenttracks;
+  Tracks m_alignmenttracks;
   int nIterations;
   int m_numberOfTracksForAlignment;
 

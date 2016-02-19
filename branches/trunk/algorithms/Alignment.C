@@ -10,29 +10,42 @@ Alignment::Alignment(bool debugging)
 }
 
 // Global container declarations
-Timepix3Tracks globalTracks;
+Tracks globalTracks;
 string detectorToAlign;
 Parameters* globalParameters;
 int detNum;
+ROOT::Minuit2::Minuit2Minimizer trackFitter;
 
 void Alignment::initialise(Parameters* par){
- 
+
+  // Pick up the global parameters
   parameters = par;
   
+  // Make the fitting object
+  trackFitter.SetMaxFunctionCalls(1000000);
+  trackFitter.SetMaxIterations(100000);
+  trackFitter.SetPrecision(1e-10);
+  trackFitter.SetPrintLevel(0);
+  trackFitter.SetVariable(0,"gradientXZ", 0., 0.1);
+  trackFitter.SetVariable(1,"interceptXZ", 0., 0.1);
+  trackFitter.SetVariable(2,"gradientYZ", 0., 0.1);
+  trackFitter.SetVariable(3,"interceptYZ", 0., 0.1);
+  gErrorIgnoreLevel=kWarning;
+
 }
 
 StatusCode Alignment::run(Clipboard* clipboard){
  
   // Get the tracks
-  Timepix3Tracks* tracks = (Timepix3Tracks*)clipboard->get("Timepix3","tracks");
+  Tracks* tracks = (Tracks*)clipboard->get("tracks");
   if(tracks == NULL){
     return Success;
   }
   
   // Make a local copy and store it 
   for(int iTrack=0; iTrack<tracks->size(); iTrack++){
-    Timepix3Track* track = (*tracks)[iTrack];
-    Timepix3Track* alignmentTrack = new Timepix3Track(track);
+    Track* track = (*tracks)[iTrack];
+    Track* alignmentTrack = new Track(track);
     m_alignmenttracks.push_back(alignmentTrack);
   }
   
@@ -71,20 +84,30 @@ void MinimiseTrackChi2(Int_t &npar, Double_t *grad, Double_t &result, Double_t *
   // Loop over all tracks
   for(int iTrack=0; iTrack<globalTracks.size(); iTrack++){
     // Get the track
-    Timepix3Track* track = globalTracks[iTrack];
+    Track* track = globalTracks[iTrack];
     // Get all clusters on the track
-    Timepix3Clusters trackClusters = track->clusters();
+    Clusters trackClusters = track->clusters();
     // Find the cluster that needs to have its position recalculated
     for(int iTrackCluster=0; iTrackCluster<trackClusters.size(); iTrackCluster++){
-      Timepix3Cluster* trackCluster = trackClusters[iTrackCluster];
+      Cluster* trackCluster = trackClusters[iTrackCluster];
       string detectorID = trackCluster->detectorID();
       // Recalculate the global position from the local
       PositionVector3D<Cartesian3D<double> > positionLocal(trackCluster->localX(),trackCluster->localY(),trackCluster->localZ());
       PositionVector3D<Cartesian3D<double> > positionGlobal = *(globalParameters->detector[detectorID]->m_localToGlobal) * positionLocal;
       trackCluster->setClusterCentre(positionGlobal.X(), positionGlobal.Y(),positionGlobal.Z());
     }
+
     // Refit the track
-    track->fit();
+    ROOT::Math::Functor FCNFunction(*track,4);
+    trackFitter.SetFunction(FCNFunction);
+    trackFitter.Minimize();
+    // Now set the track parameters to the fitted values (it gets left in an undefined state)
+    track->m_direction.SetX(trackFitter.X()[0]);
+    track->m_state.SetX(trackFitter.X()[1]);
+    track->m_direction.SetY(trackFitter.X()[2]);
+    track->m_state.SetY(trackFitter.X()[3]);
+    track->calculateChi2();
+    
     // Add the new chi2
     result += track->chi2();
   }
@@ -112,13 +135,13 @@ void MinimiseResiduals(Int_t &npar, Double_t *grad, Double_t &result, Double_t *
   // Loop over all tracks
   for(int iTrack=0; iTrack<globalTracks.size(); iTrack++){
     // Get the track
-    Timepix3Track* track = globalTracks[iTrack];
+    Track* track = globalTracks[iTrack];
     // Get all clusters on the track
-    Timepix3Clusters associatedClusters = track->associatedClusters();
+    Clusters associatedClusters = track->associatedClusters();
 
     // Find the cluster that needs to have its position recalculated
     for(int iAssociatedCluster=0; iAssociatedCluster<associatedClusters.size(); iAssociatedCluster++){
-      Timepix3Cluster* associatedCluster = associatedClusters[iAssociatedCluster];
+      Cluster* associatedCluster = associatedClusters[iAssociatedCluster];
       string detectorID = associatedCluster->detectorID();
       if(detectorID != globalParameters->detectorToAlign) continue;
       // Recalculate the global position from the local
@@ -208,9 +231,7 @@ void Alignment::finalise(){
 
     det = 0;
     for(int ndet = 0; ndet<parameters->nDetectors; ndet++){
-      // Check if they are a Timepix3
       string detectorID = parameters->detectors[ndet];
-      if(parameters->detector[detectorID]->type() != "Timepix3") continue;
       // Do not align the reference plane
       if(detectorID == parameters->reference) continue;
       if(parameters->excludedFromTracking.count(detectorID) != 0) continue;
@@ -252,9 +273,7 @@ void Alignment::finalise(){
 
   // Now list the new alignment parameters
   for(int ndet = 0; ndet<parameters->nDetectors; ndet++){
-    // Check if they are a Timepix3
     string detectorID = parameters->detectors[ndet];
-    if(parameters->detector[detectorID]->type() != "Timepix3") continue;
     // Do not align the reference plane
     if(detectorID == parameters->reference) continue;
     if(parameters->excludedFromTracking.count(detectorID) != 0) continue;
