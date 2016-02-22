@@ -2,7 +2,6 @@
 #define TRACK_H 1
 
 #include "Cluster.h"
-#include "TLinearFitter.h"
 #include "Math/Point3D.h"
 #include "Math/Vector3D.h"
 
