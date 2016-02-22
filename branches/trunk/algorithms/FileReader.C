@@ -6,9 +6,10 @@
 FileReader::FileReader(bool debugging)
 : Algorithm("FileReader"){
   debug = debugging;
+  m_onlyDUT = true;
   m_readPixels = true;
   m_readClusters = false;
-  m_readTracks = false;
+  m_readTracks = true;
   m_fileName = "outputTuples.root";
   m_timeWindow = 1.;
   m_currentTime = 0.;
@@ -61,6 +62,9 @@ void FileReader::initialise(Parameters* par){
         string detectorID = parameters->detectors[det];
         string detectorType = parameters->detector[detectorID]->type();
         
+        // If only reading information for the DUT
+        if(m_onlyDUT && detectorID != parameters->DUT) continue;
+
         if(debug) tcout<<"Looking for "<<objectType<<" for device "<<detectorID<<endl;
 
         // Get the tree
@@ -118,6 +122,9 @@ StatusCode FileReader::run(Clipboard* clipboard){
         string detectorType = parameters->detector[detectorID]->type();
         string objectID = detectorID + "_" + objectType;
         
+        // If only writing information for the DUT
+        if(m_onlyDUT && detectorID != parameters->DUT) continue;
+
         // If there is no data for this device, continue
         if(!m_inputTrees[objectID]) continue;
         

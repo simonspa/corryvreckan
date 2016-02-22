@@ -31,6 +31,7 @@ public:
   bool m_writeClusters;
   bool m_writePixels;
   bool m_writeTracks;
+  bool m_onlyDUT;
   
   // Map of trees which holds the output objects
   map<string, TTree*> m_outputTrees;

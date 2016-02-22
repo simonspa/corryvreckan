@@ -31,6 +31,7 @@ public:
   bool m_readClusters;
   bool m_readPixels;
   bool m_readTracks;
+  bool m_onlyDUT;
   
   // Map of trees which holds the output objects
   map<string, TTree*> m_inputTrees;

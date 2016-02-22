@@ -3,9 +3,10 @@
 FileWriter::FileWriter(bool debugging)
 : Algorithm("FileWriter"){
   debug = debugging;
+  m_onlyDUT = true;
   m_writePixels = true;
   m_writeClusters = false;
-  m_writeTracks = false;
+  m_writeTracks = true;
   m_fileName = "outputTuples.root";
 }
 
@@ -58,6 +59,9 @@ void FileWriter::initialise(Parameters* par){
         string detectorID = parameters->detectors[det];
         string detectorType = parameters->detector[detectorID]->type();
         
+        // If only writing information for the DUT
+        if(m_onlyDUT && detectorID != parameters->DUT) continue;
+        
         // Create the tree
         string objectID = detectorID + "_" + objectType;
         string treeName = detectorID + "_" + detectorType + "_" + objectType;
@@ -106,6 +110,9 @@ StatusCode FileWriter::run(Clipboard* clipboard){
         string detectorID = parameters->detectors[det];
         string objectID = detectorID + "_" + objectType;
         
+        // If only writing information for the DUT
+        if(m_onlyDUT && detectorID != parameters->DUT) continue;
+
         // Get the objects, if they don't exist then continue
         if(debug) tcout<<"Checking for "<<objectType<<" on device "<<detectorID<<endl;
         TestBeamObjects* objects = clipboard->get(detectorID,objectType);
