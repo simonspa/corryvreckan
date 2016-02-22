@@ -130,7 +130,6 @@ public:
   // Member variables
   Clusters m_trackClusters;
   Clusters m_associatedClusters;
-  long long int m_timestamp;
   double m_chi2;
   double m_ndof;
   double m_chi2ndof;
