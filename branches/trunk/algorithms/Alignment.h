@@ -4,6 +4,7 @@
 // ROOT includes
 #include "Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
+#include "TError.h"
 // Local includes
 #include "Algorithm.h"
 #include "Cluster.h"
