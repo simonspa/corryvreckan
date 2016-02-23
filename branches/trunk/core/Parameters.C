@@ -85,10 +85,6 @@ void Parameters::readCommandLineOptions(int argc, char *argv[]){
         cout<<"Starting at time: "<<currentTime<<" s"<<endl;
         break;
       case 't':
-        sscanf( optarg, "%lf", &eventLength);
-        cout<<"Event length is "<<eventLength<<" s"<<endl;
-        break;
-      case 't':
         sscanf( optarg, "%s", &temp);
         inputTupleFile = (string)temp;
         cout<<"Reading tuples from: "<<inputTupleFile<<endl;
