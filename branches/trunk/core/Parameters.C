@@ -7,7 +7,6 @@
 Parameters::Parameters(){
   
   histogramFile = "outputHistograms.root";
-  inputFile = "G02.dat";
   conditionsFile = "cond.dat";
 	inputDirectory = "";
   nEvents = 0;
@@ -21,7 +20,7 @@ void Parameters::help()
 {
   cout << "********************************************************************" << endl;
   cout << "Typical 'tbAnalysis' executions are:" << endl;
-  cout << " ~> bin/tbAnalysis -d directory" << endl;
+  cout << " => bin/tbAnalysis -d directory" << endl;
   cout << endl;
 }
 
@@ -43,7 +42,7 @@ void Parameters::readCommandLineOptions(int argc, char *argv[]){
   cout<<endl;
   cout<<"===================| Reading Parameters  |===================="<<endl<<endl;
   int option; char temp[256];
-  while ( (option = getopt(argc, argv, "gema:d:c:n:h:t:o:f:")) != -1) {
+  while ( (option = getopt(argc, argv, "gema:d:c:n:h:t:o:f:t:")) != -1) {
     switch (option) {
       case 'a':
         align = true;
@@ -89,12 +88,16 @@ void Parameters::readCommandLineOptions(int argc, char *argv[]){
         sscanf( optarg, "%lf", &eventLength);
         cout<<"Event length is "<<eventLength<<" s"<<endl;
         break;
+      case 't':
+        sscanf( optarg, "%s", &temp);
+        inputTupleFile = (string)temp;
+        cout<<"Reading tuples from: "<<inputTupleFile<<endl;
+        break;
       case 'f':
         sscanf( optarg, "%s", &temp);
         outputTupleFile = (string)temp;
         cout<<"Writing output tuples to: "<<outputTupleFile<<endl;
         break;
-
     }
   }
   cout<<endl;

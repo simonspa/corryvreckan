@@ -157,7 +157,7 @@ public:
     return positionLocal;
   }
   
-  // Functiona to get in-pixel position
+  // Function to get in-pixel position (value returned in microns)
   double inPixelX(PositionVector3D<Cartesian3D<double> > localPosition){
     double column = getColumn(localPosition);
     double inPixelX = m_pitchX * (column + m_pitchX/2. - floor(column + m_pitchX/2.));
@@ -223,11 +223,11 @@ public:
   }
   
   // Member variables
-  string histogramFile;
-  string inputFile;
-  string inputDirectory;
   string conditionsFile;
+  string inputTupleFile;
+  string inputDirectory;
   string outputTupleFile;
+  string histogramFile;
   vector<string> detectors;
   int nDetectors;
   string reference;
