@@ -14,20 +14,23 @@ CFLAGS = -fPIC -w -g -W ${ROOTCFLAGS} -O3 #-std=c++0x
 LFLAGS = ${ROOTLIBS} -g -lGenVector -lMinuit -O3 -lMinuit2
 
 # Automatically decide what to compile
+# Core parts of the framework
 CORE = $(notdir $(wildcard core/*.C))
 OBJS = $(CORE:.C=.o)
 OBJS := $(addprefix ${BINDIR}, ${OBJS})
 
-ALGORITHMS = $(notdir $(wildcard algorithms/*.C))
-ALGOBJS = $(ALGORITHMS:.C=.ao)
-ALGOBJS := $(addprefix ${BINDIR}, ${ALGOBJS})
-
+# Data classes
 DATAOBJS = $(wildcard ${PWD}/objs/*.h) 
-
 DATACLASS = $(notdir $(wildcard ${PWD}/objs/*.C))
 DATACLASSOBJS = $(DATACLASS:.C=.do)
 DATACLASSOBJS := $(addprefix ${BINDIR}, ${DATACLASSOBJS})
 
+# User algorithms
+ALGORITHMS = $(notdir $(wildcard algorithms/*.C))
+ALGOBJS = $(ALGORITHMS:.C=.ao)
+ALGOBJS := $(addprefix ${BINDIR}, ${ALGOBJS})
+
+# Executable
 EXE = ${BINDIR}tbAnalysis
 
 # Compile core, user algorithms and make an executable for each user algorithm
