@@ -166,6 +166,9 @@ void MinimiseResiduals(Int_t &npar, Double_t *grad, Double_t &result, Double_t *
 
 void Alignment::finalise(){
   
+  // If not enough tracks were produced, do nothing
+  if(m_alignmenttracks.size() < m_numberOfTracksForAlignment) return;
+
   // Make the fitting object
   TVirtualFitter* residualFitter = TVirtualFitter::Fitter(0,50);
   
