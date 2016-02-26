@@ -5,7 +5,7 @@
 Alignment::Alignment(bool debugging)
 : Algorithm("Alignment"){
   debug = debugging;
-  m_numberOfTracksForAlignment = 100000;
+  m_numberOfTracksForAlignment = 20000;
   nIterations = 5;
 }
 
@@ -14,23 +14,11 @@ Tracks globalTracks;
 string detectorToAlign;
 Parameters* globalParameters;
 int detNum;
-ROOT::Minuit2::Minuit2Minimizer trackFitter;
 
 void Alignment::initialise(Parameters* par){
 
   // Pick up the global parameters
   parameters = par;
-  
-  // Make the fitting object
-  trackFitter.SetMaxFunctionCalls(1000000);
-  trackFitter.SetMaxIterations(100000);
-  trackFitter.SetPrecision(1e-10);
-  trackFitter.SetPrintLevel(0);
-  trackFitter.SetVariable(0,"gradientXZ", 0., 0.1);
-  trackFitter.SetVariable(1,"interceptXZ", 0., 0.1);
-  trackFitter.SetVariable(2,"gradientYZ", 0., 0.1);
-  trackFitter.SetVariable(3,"interceptYZ", 0., 0.1);
-  gErrorIgnoreLevel=kWarning;
 
 }
 
@@ -91,6 +79,7 @@ void MinimiseTrackChi2(Int_t &npar, Double_t *grad, Double_t &result, Double_t *
     for(int iTrackCluster=0; iTrackCluster<trackClusters.size(); iTrackCluster++){
       Cluster* trackCluster = trackClusters[iTrackCluster];
       string detectorID = trackCluster->detectorID();
+      if(detectorID != detectorToAlign) continue;
       // Recalculate the global position from the local
       PositionVector3D<Cartesian3D<double> > positionLocal(trackCluster->localX(),trackCluster->localY(),trackCluster->localZ());
       PositionVector3D<Cartesian3D<double> > positionGlobal = *(globalParameters->detector[detectorID]->m_localToGlobal) * positionLocal;
@@ -98,15 +87,7 @@ void MinimiseTrackChi2(Int_t &npar, Double_t *grad, Double_t &result, Double_t *
     }
 
     // Refit the track
-    ROOT::Math::Functor FCNFunction(*track,4);
-    trackFitter.SetFunction(FCNFunction);
-    trackFitter.Minimize();
-    // Now set the track parameters to the fitted values (it gets left in an undefined state)
-    track->m_direction.SetX(trackFitter.X()[0]);
-    track->m_state.SetX(trackFitter.X()[1]);
-    track->m_direction.SetY(trackFitter.X()[2]);
-    track->m_state.SetY(trackFitter.X()[3]);
-    track->calculateChi2();
+    track->fit();
     
     // Add the new chi2
     result += track->chi2();
