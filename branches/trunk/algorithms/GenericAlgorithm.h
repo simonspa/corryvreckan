@@ -6,6 +6,9 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TCanvas.h"
+#include "Pixel.h"
+#include "Cluster.h"
+#include "Track.h"
 
 class GenericAlgorithm : public Algorithm {
   
