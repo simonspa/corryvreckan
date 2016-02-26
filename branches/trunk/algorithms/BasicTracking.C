@@ -143,7 +143,6 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
       if(debug) tcout<<"Searching for neighbouring cluster on "<<detectors[det]<<endl;
       if(debug) tcout<<"- cluster time is "<<cluster->timestamp()<<endl;
       Cluster* closestCluster = NULL; double closestClusterDistance = spatialCut;
-//      tcout<<"About to get nearest neighbours in window: "<<timingCut<<endl;
       Clusters neighbours = trees[detectors[det]].getAllClustersInTimeWindow(cluster,timingCut);
     	
       if(debug) tcout<<"- found "<<neighbours.size()<<" neighbours"<<endl;
@@ -203,7 +202,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
   }
 
   nTracksTotal+=tracks->size();
-//  cout<<", produced "<<nTracksTotal<<" tracks";
+  cout<<", produced "<<nTracksTotal<<" tracks";
 
   // Clean up tree objects
 //  for(int det = 0; det<parameters->nDetectors; det++){

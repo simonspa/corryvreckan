@@ -82,9 +82,11 @@ public:
     
     // Get iterators of all clusters within the time window
     std::vector<int> results;
-    double* time;
-    time[0] = double(cluster->timestamp())/(4096. * 40000000.);
-    timeKdtree->FindInRange(time,timeWindow,results);
+//    double* time;
+//    time[0] = double(cluster->timestamp())/(4096. * 40000000.);
+    
+    double time = double(cluster->timestamp())/(4096. * 40000000.);
+    timeKdtree->FindInRange(&time,timeWindow,results);
     
 //    std::cout<<" -- found: "<<results.size()<<std::endl;
 

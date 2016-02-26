@@ -42,7 +42,7 @@ void Parameters::readCommandLineOptions(int argc, char *argv[]){
   cout<<endl;
   cout<<"===================| Reading Parameters  |===================="<<endl<<endl;
   int option; char temp[256];
-  while ( (option = getopt(argc, argv, "gema:d:c:n:h:t:o:f:t:")) != -1) {
+  while ( (option = getopt(argc, argv, "gema:d:c:n:h:t:o:f:t:p:")) != -1) {
     switch (option) {
       case 'a':
         align = true;
@@ -93,6 +93,10 @@ void Parameters::readCommandLineOptions(int argc, char *argv[]){
         sscanf( optarg, "%s", &temp);
         outputTupleFile = (string)temp;
         cout<<"Writing output tuples to: "<<outputTupleFile<<endl;
+        break;
+      case 'p':
+        sscanf( optarg, "%lf", &eventLength);
+        cout<<"Running with an event length of: "<<eventLength<<" s"<<endl;
         break;
     }
   }

@@ -98,7 +98,7 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard){
   // loading a fixed number of pixels (ie. 2000 at a time)
   
   int endOfFiles = 0; int devices = 0; int loadedData = 0;
-  cout<<"\rCurrent time: "<<parameters->currentTime<<flush;
+  cout<<"\rCurrent time: "<<std::setprecision(7)<<parameters->currentTime<<flush;
 
   // Loop through all registered detectors
   for(int det = 0; det<parameters->nDetectors; det++){
