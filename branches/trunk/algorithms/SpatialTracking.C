@@ -43,17 +43,6 @@ void SpatialTracking::initialise(Parameters* par){
   // Initialise member variables
   m_eventNumber = 0;
   nTracksTotal = 0.;
-  
-  // Make the fitting object
-  trackFitter.SetMaxFunctionCalls(1000000);
-  trackFitter.SetMaxIterations(100000);
-  trackFitter.SetPrecision(1e-10);
-  trackFitter.SetPrintLevel(0);
-  trackFitter.SetVariable(0,"gradientXZ", 0., 0.1);
-  trackFitter.SetVariable(1,"interceptXZ", 0., 0.1);
-  trackFitter.SetVariable(2,"gradientYZ", 0., 0.1);
-  trackFitter.SetVariable(3,"interceptYZ", 0., 0.1);
-  gErrorIgnoreLevel=kWarning;
 
 }
 
@@ -155,16 +144,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
     }
     
     // Fit the track
-    ROOT::Math::Functor FCNFunction(*track,4);
-    trackFitter.SetFunction(FCNFunction);
-    trackFitter.Minimize();
-    
-    // Now set the track parameters to the fitted values (it gets left in an undefined state)
-    track->m_direction.SetX(trackFitter.X()[0]);
-    track->m_state.SetX(trackFitter.X()[1]);
-    track->m_direction.SetY(trackFitter.X()[2]);
-    track->m_state.SetY(trackFitter.X()[3]);
-    track->calculateChi2();
+    track->fit();
     
     // Save the track
     tracks->push_back(track);

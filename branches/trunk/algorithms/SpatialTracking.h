@@ -42,9 +42,6 @@ public:
   int minHitsOnTrack;
   double nTracksTotal;
   
-  ROOT::Minuit2::Minuit2Minimizer trackFitter;
-
-  
 };
 
 #endif // SpatialTracking_H

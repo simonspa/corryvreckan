@@ -111,6 +111,64 @@ public:
     
   }
   
+  // Fit the track (linear regression)
+  void fit(){
+    
+    double vecx[2] = {0., 0.};
+    double vecy[2] = {0., 0.};
+    double matx[2][2] = {{0., 0.}, {0., 0.}};
+    double maty[2][2] = {{0., 0.}, {0., 0.}};
+
+    // Loop over all clusters and fill the matrices
+    for(int iCluster=0;iCluster<m_trackClusters.size();iCluster++){
+      // Get the cluster
+      Cluster* cluster = m_trackClusters[iCluster];
+    	// Get the global point details
+      double x = cluster->globalX();
+      double y = cluster->globalY();
+      double z = cluster->globalZ();
+      double er2 = cluster->error()*cluster->error();
+      // Fill the matrices
+      vecx[0] += x / er2;
+      vecx[1] += x * z / er2;
+      vecy[0] += y / er2;
+      vecy[1] += y * z / er2;
+      matx[0][0] += 1. / er2;
+      matx[1][0] += z / er2;
+      matx[1][1] += z * z / er2;
+      maty[0][0] += 1. / er2;
+      maty[1][0] += z / er2;
+      maty[1][1] += z * z / er2;
+    }
+  
+    // Invert the matrices
+    double detx = matx[0][0] * matx[1][1] - matx[1][0] * matx[1][0];
+    double dety = maty[0][0] * maty[1][1] - maty[1][0] * maty[1][0];
+    
+    // Check for singularities.
+    if (detx == 0. || dety == 0.) return;
+    
+    // Get the track parameters
+    double slopex = (vecx[1] * matx[0][0] - vecx[0] * matx[1][0]) / detx;
+    double slopey = (vecy[1] * maty[0][0] - vecy[0] * maty[1][0]) / dety;
+    
+    double interceptx = (vecx[0] * matx[1][1] - vecx[1] * matx[1][0]) / detx;
+    double intercepty = (vecy[0] * maty[1][1] - vecy[1] * maty[1][0]) / dety;
+
+    // Set the track parameters
+    m_state.SetX(interceptx);
+    m_state.SetY(intercepty);
+    m_state.SetZ(0.);
+
+    m_direction.SetX(slopex);
+    m_direction.SetY(slopey);
+    m_direction.SetZ(1.);
+    
+    // Calculate the chi2
+    this->calculateChi2();
+
+  }
+
   // Retrieve track parameters
   double chi2(){return m_chi2;}
   double chi2ndof(){return m_chi2ndof;}
