@@ -5,10 +5,6 @@
 #include <iostream>
 #include "TTree.h"
 #include "TFile.h"
-#include "Timepix1Cluster.h"
-#include "Timepix3Cluster.h"
-#include "Timepix1Pixel.h"
-#include "Timepix3Pixel.h"
 
 class FileReader : public Algorithm {
   
