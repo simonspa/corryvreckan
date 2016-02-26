@@ -11,9 +11,9 @@
 #include "TThread.h"
 #include "TApplication.h"
 
-#include "Timepix3Pixel.h"
-#include "Timepix3Cluster.h"
-#include "Timepix3Track.h"
+#include "Pixel.h"
+#include "Cluster.h"
+#include "Track.h"
 
 class GUI : public Algorithm {
   
