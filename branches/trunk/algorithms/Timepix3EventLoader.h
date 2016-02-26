@@ -2,7 +2,7 @@
 #define TIMEPIX3EVENTLOADER_H 1
 
 #include "Algorithm.h"
-#include "Timepix3Pixel.h"
+#include "Pixel.h"
 #include "SpidrSignal.h"
 #include <stdio.h>
 
@@ -19,7 +19,7 @@ public:
   void finalise();
   
   // Extra functions
-  bool loadData(string, Timepix3Pixels*, SpidrSignals*);
+  bool loadData(string, Pixels*, SpidrSignals*);
   void maskPixels(string, string);
 
   // Member variables

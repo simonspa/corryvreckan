@@ -1,7 +1,7 @@
 #ifndef TIMEPIX3MASKCREATOR_H
 #define TIMEPIX3MASKCREATOR_H 1
 
-#include "Timepix3Pixel.h"
+#include "Pixel.h"
 #include "Algorithm.h"
 #include <iostream>
 #include "TH1F.h"

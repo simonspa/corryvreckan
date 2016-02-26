@@ -6,9 +6,9 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TCanvas.h"
-#include "Timepix3Pixel.h"
-#include "Timepix3Cluster.h"
-#include "Timepix3Track.h"
+#include "Pixel.h"
+#include "Cluster.h"
+#include "Track.h"
 
 class BasicTracking : public Algorithm {
   
@@ -22,8 +22,8 @@ public:
   StatusCode run(Clipboard*);
   void finalise();
   
-//  Timepix3Cluster* getNearestCluster(Timepix3Cluster*, map<Timepix3Cluster*, bool>, Timepix3Clusters*);
-  Timepix3Cluster* getNearestCluster(long long int, Timepix3Clusters);
+//  Cluster* getNearestCluster(Cluster*, map<Cluster*, bool>, Clusters*);
+  Cluster* getNearestCluster(long long int, Clusters);
 
   // Member variables
   
@@ -41,6 +41,7 @@ public:
   double timingCut;
   double spatialCut;
   int minHitsOnTrack;
+  double nTracksTotal;
   
 };
 

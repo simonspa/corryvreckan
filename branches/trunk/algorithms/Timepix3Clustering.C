@@ -15,7 +15,7 @@ void Timepix3Clustering::initialise(Parameters* par){
 }
 
 // Sort function for pixels from low to high times
-bool sortByTime(Timepix3Pixel* pixel1, Timepix3Pixel* pixel2){
+bool sortByTime(Pixel* pixel1, Pixel* pixel2){
   return (pixel1->m_timestamp < pixel2->m_timestamp);
 }
 
@@ -29,7 +29,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard){
     if(parameters->detector[detectorID]->type() != "Timepix3") continue;
     
     // Get the pixels
-    Timepix3Pixels* pixels = (Timepix3Pixels*)clipboard->get(detectorID,"pixels");
+    Pixels* pixels = (Pixels*)clipboard->get(detectorID,"pixels");
     if(pixels == NULL){
       if(debug) tcout<<"Detector "<<detectorID<<" does not have any pixels on the clipboard"<<endl;
       continue;
@@ -46,20 +46,20 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard){
     int totalPixels = pixels->size();
     
     // Make the cluster storage
-    Timepix3Clusters* deviceClusters = new Timepix3Clusters();
+    Clusters* deviceClusters = new Clusters();
    
     // Keep track of which pixels are used
-    map<Timepix3Pixel*, bool> used;
+    map<Pixel*, bool> used;
     
     // Start to cluster
     for(int iP=0;iP<pixels->size();iP++){
-      Timepix3Pixel* pixel = (*pixels)[iP];
+      Pixel* pixel = (*pixels)[iP];
 
       // Check if pixel is used
       if(used[pixel]) continue;
       
       // Make the new cluster object
-      Timepix3Cluster* cluster = new Timepix3Cluster();
+      Cluster* cluster = new Cluster();
       if(debug) tcout<<"==== New cluster"<<endl;
       
       // Keep adding hits to the cluster until no more are found
@@ -73,7 +73,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard){
         nPixels = cluster->size();
         // Loop over all pixels
         for(int iNeighbour=(iP+1);iNeighbour<totalPixels;iNeighbour++){
-          Timepix3Pixel* neighbour = (*pixels)[iNeighbour];
+          Pixel* neighbour = (*pixels)[iNeighbour];
           // Check if they are compatible in time with the cluster pixels
           if( (neighbour->m_timestamp - clusterTime) > timingCutInt ) break;
 //          if(!closeInTime(neighbour,cluster)) break;
@@ -106,10 +106,10 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard){
 }
 
 // Check if a pixel touches any of the pixels in a cluster
-bool Timepix3Clustering::touching(Timepix3Pixel* neighbour,Timepix3Cluster* cluster){
+bool Timepix3Clustering::touching(Pixel* neighbour,Cluster* cluster){
   
   bool Touching = false;
-  Timepix3Pixels pixels = cluster->pixels();
+  Pixels pixels = cluster->pixels();
   for(int iPix=0;iPix<pixels.size();iPix++){
     
     if( abs(pixels[iPix]->m_row - neighbour->m_row) <= 1 &&
@@ -122,11 +122,11 @@ bool Timepix3Clustering::touching(Timepix3Pixel* neighbour,Timepix3Cluster* clus
 }
 
 // Check if a pixel is close in time to the pixels of a cluster
-bool Timepix3Clustering::closeInTime(Timepix3Pixel* neighbour,Timepix3Cluster* cluster){
+bool Timepix3Clustering::closeInTime(Pixel* neighbour,Cluster* cluster){
   
   bool CloseInTime = false;
   
-  Timepix3Pixels pixels = cluster->pixels();
+  Pixels pixels = cluster->pixels();
   for(int iPix=0;iPix<pixels.size();iPix++){
 
     long long int timeDifference = abs(neighbour->m_timestamp - pixels[iPix]->m_timestamp);
@@ -137,14 +137,14 @@ bool Timepix3Clustering::closeInTime(Timepix3Pixel* neighbour,Timepix3Cluster* c
 }
 
 
-void Timepix3Clustering::calculateClusterCentre(Timepix3Cluster* cluster){
+void Timepix3Clustering::calculateClusterCentre(Cluster* cluster){
   
   // Empty variables to calculate cluster position
   double row(0), column(0), tot(0);
   long long int timestamp;
 
 	// Get the pixels on this cluster
-  Timepix3Pixels pixels = cluster->pixels();
+  Pixels pixels = cluster->pixels();
   string detectorID = pixels[0]->m_detectorID;
   timestamp = pixels[0]->m_timestamp;
   

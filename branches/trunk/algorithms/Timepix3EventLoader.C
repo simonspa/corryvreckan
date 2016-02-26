@@ -77,7 +77,7 @@ void Timepix3EventLoader::initialise(Parameters* par){
         
         tcout<<"Registering detector "<<detectorID<<endl;
         if(parameters->detector.count(detectorID) == 0){tcout<<"Detector "<<detectorID<<" has no alignment/conditions loaded. Please check that it is in the alignment file"<<endl; return;}
-        parameters->registerDetector(detectorID);
+//        parameters->registerDetector(detectorID);
         
         // Now that we have all of the data files and mask files for this detector, pass the mask file to parameters
         tcout<<"Set mask file "<<trimdacfile<<endl;
@@ -98,7 +98,8 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard){
   // loading a fixed number of pixels (ie. 2000 at a time)
   
   int endOfFiles = 0; int devices = 0; int loadedData = 0;
-  
+  cout<<"\rCurrent time: "<<parameters->currentTime<<flush;
+
   // Loop through all registered detectors
   for(int det = 0; det<parameters->nDetectors; det++){
     
@@ -107,7 +108,7 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard){
     if(parameters->detector[detectorID]->type() != "Timepix3") continue;
     
     // Make a new container for the data
-    Timepix3Pixels* deviceData = new Timepix3Pixels();
+    Pixels* deviceData = new Pixels();
     SpidrSignals* spidrData = new SpidrSignals();
 
 		// Load the next chunk of data
@@ -166,7 +167,7 @@ void Timepix3EventLoader::maskPixels(string detectorID, string trimdacfile){
 }
 
 // Function to load data for a given device, into the relevant container
-bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata, SpidrSignals* spidrData){
+bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrSignals* spidrData){
 
 //  if(detectorID == "W0019_F07") debug = true;
 //  if(detectorID != "W0019_F07") debug = false;
@@ -337,7 +338,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Timepix3Pixels* devicedata
       }
       
       // Otherwise create a new pixel object
-      Timepix3Pixel* pixel = new Timepix3Pixel(detectorID,row,col,(int)tot,time);
+      Pixel* pixel = new Pixel(detectorID,row,col,(int)tot,time);
       devicedata->push_back(pixel);
       npixels++;
 

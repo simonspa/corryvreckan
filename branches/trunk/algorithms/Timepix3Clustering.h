@@ -1,8 +1,8 @@
 #ifndef TIMEPIX3CLUSTERING_H
 #define TIMEPIX3CLUSTERING_H 1
 
-#include "Timepix3Pixel.h"
-#include "Timepix3Cluster.h"
+#include "Pixel.h"
+#include "Cluster.h"
 #include "Algorithm.h"
 #include <iostream>
 #include "TH1F.h"
@@ -20,9 +20,9 @@ public:
   void initialise(Parameters*);
   StatusCode run(Clipboard*);
   void finalise();
-  void calculateClusterCentre(Timepix3Cluster*);
-  bool touching(Timepix3Pixel*,Timepix3Cluster*);
-  bool closeInTime(Timepix3Pixel*,Timepix3Cluster*);
+  void calculateClusterCentre(Cluster*);
+  bool touching(Pixel*,Cluster*);
+  bool closeInTime(Pixel*,Cluster*);
   
   double timingCut;
   long long int timingCutInt;

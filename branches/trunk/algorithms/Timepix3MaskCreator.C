@@ -39,7 +39,7 @@ StatusCode Timepix3MaskCreator::run(Clipboard* clipboard){
     if(parameters->detector[detectorID]->type() != "Timepix3") continue;
 		
     // Get the pixels
-    Timepix3Pixels* pixels = (Timepix3Pixels*)clipboard->get(detectorID,"pixels");
+    Pixels* pixels = (Pixels*)clipboard->get(detectorID,"pixels");
     if(pixels == NULL){
       tcout<<"Detector "<<detectorID<<" does not have any pixels on the clipboard"<<endl;
       return Failure;
@@ -48,7 +48,7 @@ StatusCode Timepix3MaskCreator::run(Clipboard* clipboard){
     
     // Loop over all pixels
     for(int iP=0;iP<pixels->size();iP++){
-      Timepix3Pixel* pixel = (*pixels)[iP];
+      Pixel* pixel = (*pixels)[iP];
       
       // Enter another pixel hit for this channel
       int channelID = pixel->m_row + 256*pixel->m_column;      
