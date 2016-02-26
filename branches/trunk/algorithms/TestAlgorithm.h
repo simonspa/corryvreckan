@@ -6,6 +6,8 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TCanvas.h"
+#include "Pixel.h"
+#include "Cluster.h"
 
 class TestAlgorithm : public Algorithm {
   

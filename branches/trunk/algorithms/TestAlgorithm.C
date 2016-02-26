@@ -1,6 +1,4 @@
 #include "TestAlgorithm.h"
-#include "Timepix3Pixel.h"
-#include "Timepix3Cluster.h"
 
 TestAlgorithm::TestAlgorithm(bool debugging)
 : Algorithm("TestAlgorithm"){
@@ -58,7 +56,7 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard){
     if(parameters->detector[detectorID]->type() != "Timepix3") continue;
 		
     // Get the pixels
-    Timepix3Pixels* pixels = (Timepix3Pixels*)clipboard->get(detectorID,"pixels");
+    Pixels* pixels = (Pixels*)clipboard->get(detectorID,"pixels");
     if(pixels == NULL){
       if(debug) tcout<<"Detector "<<detectorID<<" does not have any pixels on the clipboard"<<endl;
       continue;
@@ -68,7 +66,7 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard){
     for(int iP=0;iP<pixels->size();iP++){
       
       // Get the pixel
-      Timepix3Pixel* pixel = (*pixels)[iP];
+      Pixel* pixel = (*pixels)[iP];
       
       // Hitmap
       hitmap[detectorID]->Fill(pixel->m_column,pixel->m_row);
@@ -79,14 +77,14 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard){
     }
 
     // Get the clusters
-    Timepix3Clusters* clusters = (Timepix3Clusters*)clipboard->get(detectorID,"clusters");
+    Clusters* clusters = (Clusters*)clipboard->get(detectorID,"clusters");
     if(clusters == NULL){
       if(debug) tcout<<"Detector "<<detectorID<<" does not have any clusters on the clipboard"<<endl;
       continue;
     }
     
     // Get clusters from reference detector
-    Timepix3Clusters* referenceClusters = (Timepix3Clusters*)clipboard->get(parameters->reference,"clusters");
+    Clusters* referenceClusters = (Clusters*)clipboard->get(parameters->reference,"clusters");
     if(referenceClusters == NULL){
       if(debug)tcout<<"Reference detector "<<parameters->reference<<" does not have any clusters on the clipboard"<<endl;
 //      continue;
@@ -96,7 +94,7 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard){
     for(int iCluster=0;iCluster<clusters->size();iCluster++){
 
       // Get the cluster
-      Timepix3Cluster* cluster = (*clusters)[iCluster];
+      Cluster* cluster = (*clusters)[iCluster];
 
       // Fill cluster histograms
       clusterSize[detectorID]->Fill(cluster->size());
@@ -107,7 +105,7 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard){
       if(!makeCorrelations) continue;
       if(referenceClusters == NULL) continue;
       for(int iRefCluster=0;iRefCluster<referenceClusters->size();iRefCluster++){
-        Timepix3Cluster* refCluster = (*referenceClusters)[iRefCluster];
+        Cluster* refCluster = (*referenceClusters)[iRefCluster];
          
         long long int timeDifferenceInt =(refCluster->timestamp() - cluster->timestamp()) / 4096;
         
