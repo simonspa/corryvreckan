@@ -202,7 +202,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
   }
 
   nTracksTotal+=tracks->size();
-  cout<<", produced "<<nTracksTotal<<" tracks";
+  cout<<", produced "<<(int)nTracksTotal<<" tracks";
 
   // Clean up tree objects
 //  for(int det = 0; det<parameters->nDetectors; det++){
