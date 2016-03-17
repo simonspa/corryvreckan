@@ -112,7 +112,8 @@ void ClicpixAnalysis::initialise(Parameters* par){
   hInterceptClusterSize4 = new TH2F("hInterceptClusterSize4","hInterceptClusterSize4",50,0,50,25,0,25);
   
   // Initialise member variables
-  m_eventNumber = 0; m_triggerNumber = 0;
+  m_eventNumber = 0; m_triggerNumber = 0; dutID = parameters->DUT;
+
 }
 
 StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
@@ -125,7 +126,6 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
   }
 
   // Get the clicpix clusters in this event
-  string dutID = parameters->DUT;
   Clusters* clusters = (Clusters*)clipboard->get(dutID,"clusters");
   if(clusters == NULL){
     if(debug) tcout<<"No clusters for "<<dutID<<" on the clipboard"<<endl;
@@ -147,10 +147,8 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
   
   // Loop over tracks, and compare with Clicpix clusters
   Tracks::iterator itTrack;
-  
   for (itTrack = tracks->begin(); itTrack != tracks->end(); itTrack++) {
     
-//    tcout<<"new track"<<endl;
     // Get the track
     Track* track = (*itTrack);
     if (!track) continue;
@@ -227,6 +225,9 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
       
       // Some test plots of pixel response function
 //      fillResponseHistos(chipInterceptRow,chipInterceptCol,trackIntercept.X(),trackIntercept.Y(),(*bestCluster));
+      
+      // Add this cluster to the list of associated clusters held by this track. This will allow alignment to take place
+      track->addAssociatedCluster(*bestCluster);
       
       // Now fill all of the histograms/efficiency counters that we want
       hTrackInterceptsAssociated->Fill(trackIntercept.X(),trackIntercept.Y());
@@ -318,3 +319,28 @@ void ClicpixAnalysis::finalise(){
   if(debug) tcout<<"Analysed "<<m_eventNumber<<" events"<<endl;
   
 }
+
+// Check if a track has gone through or near a masked pixel
+bool ClicpixAnalysis::checkMasked(double chipInterceptRow, double chipInterceptCol){
+
+  // Get the pixel row and column number
+  int rowNumber = ceil(chipInterceptRow);
+  int colNumber = ceil(chipInterceptCol);
+  
+  // Check if that pixel is masked, or the neighbour to the left, right, etc...
+  if(parameters->detector[dutID]->masked(colNumber-1,rowNumber-1)) return true;
+  if(parameters->detector[dutID]->masked(colNumber,rowNumber-1)) return true;
+  if(parameters->detector[dutID]->masked(colNumber+1,rowNumber-1)) return true;
+  if(parameters->detector[dutID]->masked(colNumber-1,rowNumber)) return true;
+  if(parameters->detector[dutID]->masked(colNumber,rowNumber)) return true;
+  if(parameters->detector[dutID]->masked(colNumber+1,rowNumber)) return true;
+  if(parameters->detector[dutID]->masked(colNumber-1,rowNumber+1)) return true;
+  if(parameters->detector[dutID]->masked(colNumber,rowNumber+1)) return true;
+  if(parameters->detector[dutID]->masked(colNumber+1,rowNumber+1)) return true;
+
+  // If not masked
+  return false;
+}
+
+
+

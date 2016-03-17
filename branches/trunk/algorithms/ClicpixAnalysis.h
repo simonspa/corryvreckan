@@ -18,6 +18,7 @@ public:
   void initialise(Parameters*);
   StatusCode run(Clipboard*);
   void finalise();
+  bool checkMasked(double, double);
 
   // Cluster/pixel histograms
   TH2F* hHitPixels;
@@ -106,6 +107,7 @@ public:
   // Member variables
   int m_eventNumber;
   int m_triggerNumber;
+  string dutID;
   
 };
 
