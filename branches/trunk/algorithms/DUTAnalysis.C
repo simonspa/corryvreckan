@@ -86,7 +86,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
   }
   
   // Get the tracks from the clipboard
-  Timepix3Tracks* tracks = (Timepix3Tracks*)clipboard->get("Timepix3","tracks");
+  Timepix3Tracks* tracks = (Timepix3Tracks*)clipboard->get("tracks");
   if(tracks == NULL){
     if(debug) tcout<<"No tracks on the clipboard"<<endl;
     return Success;
