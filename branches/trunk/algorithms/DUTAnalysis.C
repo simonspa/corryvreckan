@@ -1,7 +1,7 @@
 #include "DUTAnalysis.h"
-#include "Timepix3Pixel.h"
-#include "Timepix3Cluster.h"
-#include "Timepix3Track.h"
+#include "Pixel.h"
+#include "Cluster.h"
+#include "Track.h"
 #include "SpidrSignal.h"
 
 DUTAnalysis::DUTAnalysis(bool debugging)
@@ -12,16 +12,8 @@ DUTAnalysis::DUTAnalysis(bool debugging)
 
 void DUTAnalysis::initialise(Parameters* par){
  
+  // Pick up a copy of the parameters
   parameters = par;
-
-  // Initialise histograms per device
-  for(int det = 0; det<parameters->nDetectors; det++){
-    
-    // Check if they are a Timepix3
-    string detectorID = parameters->detectors[det];
-    if(parameters->detector[detectorID]->type() != "Timepix3") continue;
-    
-  }
 
   // Initialise single histograms
   tracksVersusTime = new TH1F("tracksVersusTime","tracksVersusTime",6000000,0,60);
@@ -29,6 +21,7 @@ void DUTAnalysis::initialise(Parameters* par){
   residualsX = new TH1F("residualsX","residualsX",400,-0.2,0.2);
   residualsY = new TH1F("residualsY","residualsY",400,-0.2,0.2);
   residualsTime = new TH1F("residualsTime","residualsTime",2000,-0.000001,0.000001);
+  clusterToTVersusTime = new TH2F("clusterToTVersusTime","clusterToTVersusTime",10010,-0.01,10.,200,0,1000);
   
   tracksVersusPowerOnTime = new TH1F("tracksVersusPowerOnTime","tracksVersusPowerOnTime",1200000,-0.01,0.11);
   associatedTracksVersusPowerOnTime = new TH1F("associatedTracksVersusPowerOnTime","associatedTracksVersusPowerOnTime",1200000,-0.01,0.11);
@@ -86,14 +79,14 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
   }
   
   // Get the tracks from the clipboard
-  Timepix3Tracks* tracks = (Timepix3Tracks*)clipboard->get("tracks");
+  Tracks* tracks = (Tracks*)clipboard->get("tracks");
   if(tracks == NULL){
     if(debug) tcout<<"No tracks on the clipboard"<<endl;
     return Success;
   }
 
   // Get the DUT clusters from the clipboard
-  Timepix3Clusters* clusters = (Timepix3Clusters*)clipboard->get(parameters->DUT,"clusters");
+  Clusters* clusters = (Clusters*)clipboard->get(parameters->DUT,"clusters");
   if(clusters == NULL){
     if(debug) tcout<<"No DUT clusters on the clipboard"<<endl;
     return Success;
@@ -103,7 +96,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
   for(int itTrack=0;itTrack<tracks->size();itTrack++){
     
     // Get the track pointer
-    Timepix3Track* track = (*tracks)[itTrack];
+    Track* track = (*tracks)[itTrack];
     
     // Check if it intercepts the DUT
 //    if(!intercept(track,parameters->DUT)) continue;
@@ -124,7 +117,10 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
     for(int itCluster=0;itCluster<clusters->size();itCluster++){
 
       // Get the cluster pointer
-      Timepix3Cluster* cluster = (*clusters)[itCluster];
+      Cluster* cluster = (*clusters)[itCluster];
+      
+      // Fill the tot histograms on the first run
+      if(itTrack == 0) clusterToTVersusTime->Fill((double)cluster->timestamp() / (4096.*40000000.), cluster->tot());
       
       // Check if the cluster is close in time
       if( abs(cluster->timestamp() - track->timestamp()) > timingCutInt ) continue;
@@ -171,7 +167,7 @@ void DUTAnalysis::finalise(){
 }
 
 // Function to check if a track goes through a given device
-//bool DUTAnalysis::intercept(Timepix3Track*, string device){
+//bool DUTAnalysis::intercept(Track*, string device){
 //  
 //  // Get the global intercept of the track and the device
 //  ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
