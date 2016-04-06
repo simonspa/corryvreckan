@@ -110,6 +110,8 @@ public:
   int m_triggerNumber;
   string dutID;
   map<int,double> m_hitPixels;
+  double m_associationCut;
+  double m_proximityCut;
   
 };
 

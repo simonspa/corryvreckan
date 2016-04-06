@@ -6,6 +6,8 @@
 ClicpixAnalysis::ClicpixAnalysis(bool debugging)
 : Algorithm("ClicpixAnalysis"){
   debug = debugging;
+  m_associationCut = 0.3; // 300 um
+  m_proximityCut = 0.3; // 300 um
 }
 
 
@@ -176,7 +178,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
       
       // Look if this cluster can be considered associated.
       // Cut on the distance from the track in x and y
-      if ( fabs(ycorr) > 0.3 || fabs(xcorr) > 0.3) continue;
+      if ( fabs(ycorr) > m_associationCut || fabs(xcorr) > m_associationCut) continue;
       
       // Found a matching cluster
       matched=true;
