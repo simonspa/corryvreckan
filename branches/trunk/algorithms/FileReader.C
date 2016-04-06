@@ -6,10 +6,10 @@
 FileReader::FileReader(bool debugging)
 : Algorithm("FileReader"){
   debug = debugging;
-  m_onlyDUT = true;
+  m_onlyDUT = false;
   m_readPixels = true;
   m_readClusters = false;
-  m_readTracks = true;
+  m_readTracks = false;
   m_fileName = "outputTuples.root";
   m_timeWindow = 1.;
   m_currentTime = 0.;
