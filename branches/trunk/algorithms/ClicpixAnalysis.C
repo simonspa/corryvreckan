@@ -7,7 +7,7 @@ ClicpixAnalysis::ClicpixAnalysis(bool debugging)
 : Algorithm("ClicpixAnalysis"){
   debug = debugging;
   m_associationCut = 0.3; // 300 um
-  m_proximityCut = 0.3; // 300 um
+  m_proximityCut = 0.125; // 125 um
 }
 
 
@@ -280,11 +280,11 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
       bool pixelMatch = false; int size=0;
       for (itc = clusters->begin(); itc != clusters->end(); ++itc) {
         if (!(*itc)) continue; //if(matched) continue;
-        std::string chip = (*itc)->detectorId();
+        string chip = (*itc)->detectorId();
         // Only look at the clicpix
         if(chip != "CLi-CPix") continue;
         // Loop over pixels
-        std::vector<RowColumnEntry*>::const_iterator ith;
+        vector<RowColumnEntry*>::const_iterator ith;
         for (ith = (*itc)->hits()->begin(); ith != (*itc)->hits()->end(); ++ith) {
           
           // Check if this pixel is within the search window
@@ -320,6 +320,21 @@ void ClicpixAnalysis::finalise(){
   
   if(debug) tcout<<"Analysed "<<m_eventNumber<<" events"<<endl;
   
+  // Compare number of valid tracks, and number of clusters associated in order to get global efficiency
+  double nTracks = hTrackIntercepts->GetEntries();
+  double nClusters = hGlobalAssociatedClusterPositions->GetEntries();
+  double efficiency = nClusters/nTracks;
+  double errorEfficiency = (1./nTracks) * sqrt(nClusters*(1-efficiency));
+  
+  if(nTracks == 0){ efficiency = 0.; errorEfficiency = 1.;}
+  
+  tcout<<"***** Clicpix efficiency calculation *****"<<endl;
+  tcout<<"***** ntracks: "<<(int)nTracks<<", nclusters "<<(int)nClusters<<endl;
+  tcout<<"***** Efficiency: "<<100.*efficiency<<" +/- "<<100.*errorEfficiency<<" %"<<endl;
+  
+  tcout<<endl;
+//  tcout<<"***** If including the "<<(int)m_lostHits<<" lost pixel hits, this becomes "<<100.*(m_lostHits+nClusters)/nTracks<<" %"<<endl;
+
 }
 
 // Check if a track has gone through or near a masked pixel
