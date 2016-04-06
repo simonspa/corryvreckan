@@ -81,8 +81,12 @@ int main(int argc, char *argv[]) {
   // =========================================================================
   
   // General parameters
-  parameters->reference = "Mim-osa02";
-  parameters->DUT = "CLi-CPix";
+//  parameters->reference = "Mim-osa02";
+//  parameters->DUT = "CLi-CPix";
+  parameters->reference = "W0013_G03";
+//  parameters->DUT = "W0019_L08";
+  parameters->DUT = "W0019_F07";
+
   parameters->detectorToAlign = parameters->DUT;
   parameters->excludedFromTracking[parameters->DUT] = true;
   
@@ -93,7 +97,7 @@ int main(int argc, char *argv[]) {
   parameters->excludedFromTracking["W0019_F07"] = true;
   parameters->excludedFromTracking["W0019_L08"] = true;
   parameters->excludedFromTracking["W0005_H03"] = true;
-   
+  
   // =========================================================================
   // Steering file ends
   // =========================================================================
@@ -104,20 +108,23 @@ int main(int argc, char *argv[]) {
   // Load alignment parameters
   if(!parameters->readConditions()) return 0;
   
+  // Load mask file for the dut (if specified)
+  parameters->readDutMask();
+  
   // Initialise the analysis object and add algorithms to run
   analysis = new Analysis(parameters);
-  analysis->add(tpix1EventLoader);
-//  analysis->add(fileReader);
-//  analysis->add(tpix1Clustering);
-//  analysis->add(spatialTracking);
-//  analysis->add(correlator);
+//  analysis->add(tpix1EventLoader);
+  analysis->add(fileReader);
+  analysis->add(tpix1Clustering);
+  analysis->add(spatialTracking);
+  analysis->add(correlator);
 //  analysis->add(tpix3EventLoader);
 //  analysis->add(tpix3Clustering);
 //  analysis->add(testAlgorithm);
 //  analysis->add(basicTracking);
 //  analysis->add(dutAnalysis);
-//  analysis->add(clicpixAnalysis);
-  analysis->add(fileWriter);
+  analysis->add(clicpixAnalysis);
+//  analysis->add(fileWriter);
   
   if(parameters->align) analysis->add(alignment);
   if(parameters->produceMask) analysis->add(tpix3MaskCreator);

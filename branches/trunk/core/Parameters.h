@@ -1,4 +1,4 @@
-#ifndef PARAMETERS_H 
+#ifndef PARAMETERS_H
 #define PARAMETERS_H 1
 
 // Include files
@@ -217,17 +217,21 @@ public:
   bool readConditions();
   bool writeConditions();
   void readCommandLineOptions(int, char**);
+  void readDutMask();
+  void maskDutColumn(int);
+  void maskDutRow(int);
   void registerDetector(string detectorID){
     nDetectors++;
     detectors.push_back(detectorID);
   }
-  
+
   // Member variables
   string conditionsFile;
   string inputTupleFile;
   string inputDirectory;
   string outputTupleFile;
   string histogramFile;
+  string dutMaskFile;
   vector<string> detectors;
   int nDetectors;
   string reference;
