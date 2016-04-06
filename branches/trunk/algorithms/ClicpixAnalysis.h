@@ -20,6 +20,7 @@ public:
   void finalise();
   bool checkMasked(double, double);
   void fillClusterHistos(Clusters*);
+  bool checkProximity(Track*, Tracks*);
 
   // Cluster/pixel histograms
   TH2F* hHitPixels;

@@ -209,12 +209,12 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
        chipInterceptRow > (parameters->detector[dutID]->nPixelsY()-0.5) ) continue;
     
     // Check if the hit is near a masked pixel
-//    bool hitMasked = checkMasked(chipInterceptRow,chipInterceptCol);
-//    if(hitMasked) continue;
+    bool hitMasked = checkMasked(chipInterceptRow,chipInterceptCol);
+    if(hitMasked) continue;
     
     // Check there are no other tracks nearby
-//    bool proximityCut = checkProximity(track,tracks);
-//    if(proximityCut) continue;
+    bool proximityCut = checkProximity(track,tracks);
+    if(proximityCut) continue;
     
     // Now have tracks that went through the device
     hTrackIntercepts->Fill(trackIntercept.X(),trackIntercept.Y());
@@ -342,6 +342,31 @@ bool ClicpixAnalysis::checkMasked(double chipInterceptRow, double chipInterceptC
 
   // If not masked
   return false;
+}
+
+// Check if there is another track close to the selected track.
+// "Close" is defined as the intercept at the clicpix
+bool ClicpixAnalysis::checkProximity(Track* track, Tracks* tracks){
+  
+  // Get the intercept of the interested track at the dut
+  bool close = false;
+  PositionVector3D< Cartesian3D<double> > trackIntercept = parameters->detector[dutID]->getIntercept(track);
+  
+  // Loop over all other tracks and check if they intercept close to the track we are considering
+  Tracks::iterator itTrack;
+  for (itTrack = tracks->begin(); itTrack != tracks->end(); itTrack++) {
+    
+    // Get the track
+    Track* track2 = (*itTrack);
+    // Get the track intercept with the clicpix plane (global co-ordinates)
+    PositionVector3D< Cartesian3D<double> > trackIntercept2 = parameters->detector[dutID]->getIntercept(track2);
+    // If track == track2 do nothing
+    if(trackIntercept.X() == trackIntercept2.X() && trackIntercept.Y() == trackIntercept2.Y()) continue;
+    if( fabs(trackIntercept.X() - trackIntercept2.X()) <= m_proximityCut ||
+       fabs(trackIntercept.Y() - trackIntercept2.Y()) <= m_proximityCut ) close = true;
+    
+  }
+  return close;
 }
 
 // Small sub-routine to fill histograms that only need clusters
