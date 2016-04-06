@@ -5,7 +5,7 @@
 Alignment::Alignment(bool debugging)
 : Algorithm("Alignment"){
   debug = debugging;
-  m_numberOfTracksForAlignment = 20000;
+  m_numberOfTracksForAlignment = 400000;
   nIterations = 5;
 }
 
