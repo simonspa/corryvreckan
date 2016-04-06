@@ -25,7 +25,8 @@ public:
   TH1F* residualsX;
   TH1F* residualsY;
   TH1F* residualsTime;
-  
+  TH2F* clusterToTVersusTime;
+
   TH1F* tracksVersusPowerOnTime;
   TH1F* associatedTracksVersusPowerOnTime;
   

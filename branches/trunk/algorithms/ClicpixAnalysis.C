@@ -6,6 +6,8 @@
 ClicpixAnalysis::ClicpixAnalysis(bool debugging)
 : Algorithm("ClicpixAnalysis"){
   debug = debugging;
+  m_associationCut = 0.3; // 300 um
+  m_proximityCut = 0.3; // 300 um
 }
 
 
@@ -132,7 +134,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
     return Success;
   }
   
-  // If this is the first or last trigger don't use the data (trigger number set in fillClusterHistos routine)
+  // If this is the first or last trigger don't use the data
   if( m_triggerNumber == 0 || m_triggerNumber == 19){
     m_eventNumber++;
     m_triggerNumber++;
@@ -140,7 +142,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
   }
   
   // Fill the histograms that only need clusters/pixels
-//  fillClusterHistos(clusters);
+  fillClusterHistos(clusters);
   
   //Set counters
   double nClustersAssociated=0, nValidTracks=0;
@@ -176,7 +178,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
       
       // Look if this cluster can be considered associated.
       // Cut on the distance from the track in x and y
-      if ( fabs(ycorr) > 0.3 || fabs(xcorr) > 0.3) continue;
+      if ( fabs(ycorr) > m_associationCut || fabs(xcorr) > m_associationCut) continue;
       
       // Found a matching cluster
       matched=true;
@@ -207,12 +209,12 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
        chipInterceptRow > (parameters->detector[dutID]->nPixelsY()-0.5) ) continue;
     
     // Check if the hit is near a masked pixel
-//    bool hitMasked = checkMasked(chipInterceptRow,chipInterceptCol);
-//    if(hitMasked) continue;
+    bool hitMasked = checkMasked(chipInterceptRow,chipInterceptCol);
+    if(hitMasked) continue;
     
     // Check there are no other tracks nearby
-//    bool proximityCut = checkProximity(track,tracks);
-//    if(proximityCut) continue;
+    bool proximityCut = checkProximity(track,tracks);
+    if(proximityCut) continue;
     
     // Now have tracks that went through the device
     hTrackIntercepts->Fill(trackIntercept.X(),trackIntercept.Y());
@@ -342,5 +344,71 @@ bool ClicpixAnalysis::checkMasked(double chipInterceptRow, double chipInterceptC
   return false;
 }
 
+// Check if there is another track close to the selected track.
+// "Close" is defined as the intercept at the clicpix
+bool ClicpixAnalysis::checkProximity(Track* track, Tracks* tracks){
+  
+  // Get the intercept of the interested track at the dut
+  bool close = false;
+  PositionVector3D< Cartesian3D<double> > trackIntercept = parameters->detector[dutID]->getIntercept(track);
+  
+  // Loop over all other tracks and check if they intercept close to the track we are considering
+  Tracks::iterator itTrack;
+  for (itTrack = tracks->begin(); itTrack != tracks->end(); itTrack++) {
+    
+    // Get the track
+    Track* track2 = (*itTrack);
+    // Get the track intercept with the clicpix plane (global co-ordinates)
+    PositionVector3D< Cartesian3D<double> > trackIntercept2 = parameters->detector[dutID]->getIntercept(track2);
+    // If track == track2 do nothing
+    if(trackIntercept.X() == trackIntercept2.X() && trackIntercept.Y() == trackIntercept2.Y()) continue;
+    if( fabs(trackIntercept.X() - trackIntercept2.X()) <= m_proximityCut ||
+       fabs(trackIntercept.Y() - trackIntercept2.Y()) <= m_proximityCut ) close = true;
+    
+  }
+  return close;
+}
+
+// Small sub-routine to fill histograms that only need clusters
+void ClicpixAnalysis::fillClusterHistos(Clusters* clusters){
+  
+	// Pick up column to generate unique pixel id
+  int nCols = parameters->detector[dutID]->nPixelsX();
+  Clusters::iterator itc;
+  
+  // Check if this is a new clicpix frame (each frame may be in several events) and
+  // fill histograms
+  bool newFrame = false;
+  for (itc = clusters->begin(); itc != clusters->end(); ++itc) {
+
+    // Loop over pixels and check if there are pixels not known
+    Pixels pixels = (*itc)->pixels();
+    Pixels::iterator itp;
+    for (itp = pixels.begin(); itp != pixels.end(); itp++) {
+      // Check if this clicpix frame is still the current
+      int pixelID = (*itp)->m_column + nCols*(*itp)->m_row;
+      if( m_hitPixels[pixelID] != (*itp)->m_adc){
+        // New frame! Reset the stored pixels and trigger number
+        if(!newFrame){m_hitPixels.clear(); newFrame=true;}
+        m_hitPixels[pixelID] = (*itp)->m_adc;
+        m_triggerNumber=0;
+      }
+      hHitPixels->Fill((*itp)->m_column,(*itp)->m_row);
+      hColumnHits->Fill((*itp)->m_column);
+      hRowHits->Fill((*itp)->m_row);
+    }
+    
+    // Fill cluster histograms
+    hClusterSizeAll->Fill((*itc)->size());
+    hClusterTOTAll->Fill((*itc)->tot());
+    hGlobalClusterPositions->Fill((*itc)->globalX(),(*itc)->globalY());
+    
+  }
+  
+  hClustersPerEvent->Fill(clusters->size());
+  hClustersVersusEventNo->Fill(m_eventNumber,clusters->size());
+  
+  return;
+}
 
 

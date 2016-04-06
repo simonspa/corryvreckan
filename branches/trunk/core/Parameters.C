@@ -8,6 +8,7 @@ Parameters::Parameters(){
   
   histogramFile = "outputHistograms.root";
   conditionsFile = "cond.dat";
+  dutMaskFile = "defaultMask.dat";
 	inputDirectory = "";
   nEvents = 0;
   align = false;
@@ -126,7 +127,6 @@ bool Parameters::writeConditions(){
   
 }
 
-
 bool Parameters::readConditions(){
  
   // Open the conditions file to read detector information
@@ -183,5 +183,42 @@ bool Parameters::readConditions(){
   return true;
   
 }
+
+void Parameters::readDutMask() {
+  // If no masked file set, do nothing
+  if(dutMaskFile == "defaultMask.dat") return;
+  detector[this->DUT]->setMaskFile(dutMaskFile);
+  // Open the file with masked pixels
+  std::fstream inputMaskFile(dutMaskFile.c_str(), std::ios::in);
+  int row,col; std::string id;
+  std::string line;
+  // loop over all lines and apply masks
+  while(getline(inputMaskFile,line)){
+    inputMaskFile >> id >> row >> col;
+    if(id == "c") maskDutColumn(col); // Flag to mask a column
+    if(id == "r") maskDutRow(row); // Flag to mask a row
+    if(id == "p") detector[this->DUT]->maskChannel(col,row); // Flag to mask a pixel
+  }
+  return;
+}
+
+// The masking of pixels on the dut uses a map with unique
+// id for each pixel given by column + row*numberColumns
+void Parameters::maskDutColumn(int column){
+  int nRows = detector[this->DUT]->nPixelsY();
+  for(int row=0;row<nRows;row++) detector[this->DUT]->maskChannel(column,row);
+}
+void Parameters::maskDutRow(int row){
+  int nColumns = detector[this->DUT]->nPixelsX();
+  for(int column=0;column<nColumns;column++) detector[this->DUT]->maskChannel(column,row);
+}
+
+
+
+
+
+
+
+
 
 

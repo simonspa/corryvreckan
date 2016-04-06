@@ -19,6 +19,8 @@ public:
   StatusCode run(Clipboard*);
   void finalise();
   bool checkMasked(double, double);
+  void fillClusterHistos(Clusters*);
+  bool checkProximity(Track*, Tracks*);
 
   // Cluster/pixel histograms
   TH2F* hHitPixels;
@@ -108,6 +110,9 @@ public:
   int m_eventNumber;
   int m_triggerNumber;
   string dutID;
+  map<int,double> m_hitPixels;
+  double m_associationCut;
+  double m_proximityCut;
   
 };
 
