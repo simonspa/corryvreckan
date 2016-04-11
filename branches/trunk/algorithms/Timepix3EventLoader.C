@@ -52,7 +52,7 @@ void Timepix3EventLoader::initialise(Parameters* par){
         string filename = dataDirName+"/"+file->d_name;
 
         // Check if file has extension .dat
-        if (string(file->d_name).find("1.dat") != string::npos){
+        if (string(file->d_name).find("-1.dat") != string::npos){
           m_datafiles[detectorID].push_back(filename.c_str());
           m_nFiles[detectorID]++;
 
