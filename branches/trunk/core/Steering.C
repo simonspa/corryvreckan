@@ -15,7 +15,6 @@
 // Algorithm list
 #include "TestAlgorithm.h"
 #include "Timepix3EventLoader.h"
-#include "Timepix1EventLoader.h"
 #include "Timepix3Clustering.h"
 #include "Timepix1Clustering.h"
 #include "Timepix3MaskCreator.h"
@@ -60,7 +59,6 @@ int main(int argc, char *argv[]) {
 
   // Algorithm list
   Timepix3EventLoader*	tpix3EventLoader	= new Timepix3EventLoader(debug);
-  Timepix1EventLoader*	tpix1EventLoader	= new Timepix1EventLoader(debug);
   Timepix3Clustering*		tpix3Clustering		= new Timepix3Clustering(debug);
   Timepix1Clustering*		tpix1Clustering		= new Timepix1Clustering(debug);
   TestAlgorithm* 				testAlgorithm			= new TestAlgorithm(debug);
@@ -81,7 +79,7 @@ int main(int argc, char *argv[]) {
   // =========================================================================
   
   // General parameters
-  parameters->reference = "Mim-osa02";
+  parameters->reference = "W0005_J02";
   parameters->DUT = "CLi-CPix";
 //  parameters->reference = "W0013_G03";
 //  parameters->DUT = "W0019_L08";
@@ -114,16 +112,16 @@ int main(int argc, char *argv[]) {
   // Initialise the analysis object and add algorithms to run
   analysis = new Analysis(parameters);
 //  analysis->add(tpix1EventLoader);
-  analysis->add(fileReader);
-  analysis->add(tpix1Clustering);
-  analysis->add(spatialTracking);
-  analysis->add(correlator);
-//  analysis->add(tpix3EventLoader);
-//  analysis->add(tpix3Clustering);
-//  analysis->add(testAlgorithm);
+//  analysis->add(fileReader);
+//  analysis->add(tpix1Clustering);
+//  analysis->add(spatialTracking);
+//  analysis->add(correlator);
+  analysis->add(tpix3EventLoader);
+  analysis->add(tpix3Clustering);
+  analysis->add(testAlgorithm);
 //  analysis->add(basicTracking);
 //  analysis->add(dutAnalysis);
-  analysis->add(clicpixAnalysis);
+//  analysis->add(clicpixAnalysis);
 //  analysis->add(fileWriter);
   
   if(parameters->align) analysis->add(alignment);

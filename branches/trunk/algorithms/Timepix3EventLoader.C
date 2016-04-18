@@ -264,10 +264,24 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
 
       // 0x6 is power on
       if(header2 == 0x6){
+//        const uint64_t time( (pixdata & 0x0000000FFFFFFFFF) << 12 );
+//        SpidrSignal* signal = new SpidrSignal("powerOn",time);
+//        spidrData->push_back(signal);
+//        if(debug) tcout<<"Turned on power! Time: "<<(double)time/(4096. * 40000000.)<<endl;
+        
+        // New implementation from Adrian
         const uint64_t time( (pixdata & 0x0000000FFFFFFFFF) << 12 );
-        SpidrSignal* signal = new SpidrSignal("powerOn",time);
-        spidrData->push_back(signal);
-        if(debug) tcout<<"Turned on power! Time: "<<(double)time/(4096. * 40000000.)<<endl;
+        
+        const UChar_t tempbits = ((pixdata & 0x00F0000000000000) >> 52) & 0xF;
+
+        const UChar_t powerOn = ((tempbits & 0x2) >> 1);
+        const UChar_t shutterStop = ((tempbits & 0x1));
+        
+        
+        tcout<<"Shutter stop: "<<(double)shutterStop<<", power on: "<<(double)powerOn<<" Time: "<<(double)time/(4096. * 40000000.)<<endl;
+        tcout<<std::hex<<pixdata<<std::dec<<endl;
+        
+        
        }
       // 0x7 is power off
       if(header2 == 0x7){
