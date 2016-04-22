@@ -98,7 +98,6 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard){
   // loading a fixed number of pixels (ie. 2000 at a time)
   
   int endOfFiles = 0; int devices = 0; int loadedData = 0;
-  cout<<"\rCurrent time: "<<std::setprecision(4)<<std::fixed<<parameters->currentTime<<flush;
 
   // Loop through all registered detectors
   for(int det = 0; det<parameters->nDetectors; det++){
@@ -138,6 +137,7 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard){
   if(loadedData < m_minNumberOfPlanes) return NoData;
   
   // Otherwise tell event loop to keep running
+  cout<<"\rCurrent time: "<<std::setprecision(4)<<std::fixed<<parameters->currentTime<<flush;
   return Success;
 }
 
