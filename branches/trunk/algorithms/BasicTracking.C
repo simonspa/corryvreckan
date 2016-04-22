@@ -9,7 +9,7 @@ BasicTracking::BasicTracking(bool debugging)
   // Default values for cuts
   timingCut = 200./1000000000.;		// 200 ns
   spatialCut = 0.2; 							// 200 um
-  minHitsOnTrack = 5;
+  minHitsOnTrack = 4;
 
 }
 
@@ -53,6 +53,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
   Tracks* tracks = new Tracks();
 
   // Loop over all Timepix3 and get clusters
+  bool firstDetector = true; int seedPlane=0;
   for(int det = 0; det<parameters->nDetectors; det++){
     
     // Check if they are a Timepix3
@@ -65,9 +66,9 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
       if(debug) tcout<<"Detector "<<detectorID<<" does not have any clusters on the clipboard"<<endl;
     }else{
     	// Store them
-//      clusters[detectorID] = tempClusters;
       if(debug) tcout<<"Picked up "<<tempClusters->size()<<" clusters from "<<detectorID<<endl;
-      if(detectorID == parameters->reference) referenceClusters = tempClusters;
+      if(firstDetector){referenceClusters = tempClusters; seedPlane = det;}
+      firstDetector = false;
       KDTree clusterTree;
       clusterTree.buildTimeTree(*tempClusters);
       trees[detectorID] = clusterTree;
@@ -134,7 +135,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
 
     // Loop over each subsequent plane and look for a cluster within 100 ns
     for(int det=0; det<detectors.size(); det++){
-      if(detectors[det] == reference) continue;
+      if(det == seedPlane) continue;
       if(trees.count(detectors[det]) == 0) continue;
       // If excluded from tracking ignore this plane
       if(parameters->excludedFromTracking.count(detectors[det]) != 0) continue;
@@ -146,16 +147,31 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
       Clusters neighbours = trees[detectors[det]].getAllClustersInTimeWindow(cluster,timingCut);
     	
       if(debug) tcout<<"- found "<<neighbours.size()<<" neighbours"<<endl;
+      
+      // Now look for the spatially closest cluster on the next plane
+      double interceptX, interceptY;
+      if(track->nClusters() > 1){
+        track->fit();
+        PositionVector3D<Cartesian3D<double> > interceptPoint = parameters->detector[detectors[det]]->getIntercept(track);
+        interceptX = interceptPoint.X();
+        interceptY = interceptPoint.Y();
+      }else{
+        interceptX = cluster->globalX();
+        interceptY = cluster->globalY();
+      }
+      
+      // Loop over each neighbour in time
       for(int ne=0;ne<neighbours.size();ne++){
         Cluster* newCluster = neighbours[ne];
 
-        double distance = sqrt((cluster->globalX() - newCluster->globalX())*(cluster->globalX() - newCluster->globalX()) + (cluster->globalY() - newCluster->globalY())*(cluster->globalY() - newCluster->globalY()));
+        // Calculate the distance to the previous plane's cluster/intercept
+        double distance = sqrt((interceptX - newCluster->globalX())*(interceptX - newCluster->globalX()) + (interceptY - newCluster->globalY())*(interceptY - newCluster->globalY()));
         
+        // If this is the closest keep it
         if(distance < closestClusterDistance){
           closestClusterDistance = distance;
           closestCluster = newCluster;
         }
-
       }
       
       if(closestCluster == NULL) continue;
