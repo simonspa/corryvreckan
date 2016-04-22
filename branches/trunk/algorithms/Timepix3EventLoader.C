@@ -98,7 +98,7 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard){
   // loading a fixed number of pixels (ie. 2000 at a time)
   
   int endOfFiles = 0; int devices = 0; int loadedData = 0;
-  cout<<"\rCurrent time: "<<std::setprecision(7)<<std::fixed<<parameters->currentTime<<flush;
+  cout<<"\rCurrent time: "<<std::setprecision(4)<<std::fixed<<parameters->currentTime<<flush;
 
   // Loop through all registered detectors
   for(int det = 0; det<parameters->nDetectors; det++){
@@ -239,8 +239,8 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
 
       // This is a bug fix. There appear to be errant packets with garbage data - source to be tracked down.
       // Between the data and the header the intervening bits should all be 0, check if this is the case
-      const UChar_t intermediateBits = ((pixdata & 0x00FFF00000000000) >> 44) & 0xFFF;
-      if(intermediateBits != 0x000) continue;
+      const UChar_t intermediateBits = ((pixdata & 0x00FF000000000000) >> 48) & 0xFF;
+      if(intermediateBits != 0x00) continue;
       
       // 0x4 is the least significant part of the timestamp
       if(header2 == 0x4){
