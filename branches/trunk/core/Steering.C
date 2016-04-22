@@ -79,8 +79,8 @@ int main(int argc, char *argv[]) {
   // =========================================================================
   
   // General parameters
-  parameters->reference = "W0005_J02";
-  parameters->DUT = "CLi-CPix";
+  parameters->reference = "W0013_G03";
+  parameters->DUT = "W0005_E02";
 //  parameters->reference = "W0013_G03";
 //  parameters->DUT = "W0019_L08";
 //  parameters->DUT = "W0019_F07";
@@ -95,7 +95,10 @@ int main(int argc, char *argv[]) {
   parameters->excludedFromTracking["W0019_F07"] = true;
   parameters->excludedFromTracking["W0019_L08"] = true;
   parameters->excludedFromTracking["W0005_H03"] = true;
-  
+
+  parameters->excludedFromTracking["W0013_F09"] = true;
+  //tpix3EventLoader->debug = true;
+  //testAlgorithm->makeCorrelations = true;  
   // =========================================================================
   // Steering file ends
   // =========================================================================
@@ -119,7 +122,7 @@ int main(int argc, char *argv[]) {
   analysis->add(tpix3EventLoader);
   analysis->add(tpix3Clustering);
   analysis->add(testAlgorithm);
-//  analysis->add(basicTracking);
+  analysis->add(basicTracking);
 //  analysis->add(dutAnalysis);
 //  analysis->add(clicpixAnalysis);
 //  analysis->add(fileWriter);
