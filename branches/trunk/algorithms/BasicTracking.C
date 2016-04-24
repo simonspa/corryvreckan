@@ -45,7 +45,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
   
   if(debug) tcout<<"Start of event"<<endl;
   // Container for all clusters, and detectors in tracking
-  map<string,KDTree> trees;
+  map<string,KDTree*> trees;
   vector<string> detectors;
   Clusters* referenceClusters;
   
@@ -69,8 +69,9 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
       if(debug) tcout<<"Picked up "<<tempClusters->size()<<" clusters from "<<detectorID<<endl;
       if(firstDetector){referenceClusters = tempClusters; seedPlane = det;}
       firstDetector = false;
-      KDTree clusterTree;
-      clusterTree.buildTimeTree(*tempClusters);
+      if(tempClusters->size() == 0) continue;
+      KDTree* clusterTree = new KDTree();
+      clusterTree->buildTimeTree(*tempClusters);
       trees[detectorID] = clusterTree;
       detectors.push_back(detectorID);
     }
@@ -78,16 +79,10 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
   
   // If there are no detectors then stop trying to track
   if(detectors.size() == 0) return Success;
-  
-  // Use the first plane as a seeding plane. For something quick, look a cluster in < 200 ns in the next plane, and continue
-  string reference = parameters->reference;
-  map<Cluster*, bool> used;
-  
-  // If no clusters on reference plane, stop
-  if(trees.count(reference) == 0) return Success;
-  
+
   // Loop over all clusters
   int nSeedClusters = referenceClusters->size();
+  map<Cluster*, bool> used;
   for(int iSeedCluster=0;iSeedCluster<nSeedClusters;iSeedCluster++){
 
     // Make a new track
@@ -144,7 +139,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
       if(debug) tcout<<"Searching for neighbouring cluster on "<<detectors[det]<<endl;
       if(debug) tcout<<"- cluster time is "<<cluster->timestamp()<<endl;
       Cluster* closestCluster = NULL; double closestClusterDistance = spatialCut;
-      Clusters neighbours = trees[detectors[det]].getAllClustersInTimeWindow(cluster,timingCut);
+      Clusters neighbours = trees[detectors[det]]->getAllClustersInTimeWindow(cluster,timingCut);
     	
       if(debug) tcout<<"- found "<<neighbours.size()<<" neighbours"<<endl;
       
@@ -221,10 +216,10 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
   cout<<", produced "<<(int)nTracksTotal<<" tracks";
 
   // Clean up tree objects
-//  for(int det = 0; det<parameters->nDetectors; det++){
-//    string detectorID = parameters->detectors[det];
-//		if(trees.count(detectorID) != 0) delete trees[detectorID];
-//  }
+  for(int det = 0; det<parameters->nDetectors; det++){
+    string detectorID = parameters->detectors[det];
+		if(trees.count(detectorID) != 0) delete trees[detectorID];
+  }
 
   if(debug) tcout<<"End of event"<<endl;
   return Success;
