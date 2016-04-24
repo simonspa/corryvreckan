@@ -24,8 +24,12 @@ public:
   TH1F* associatedTracksVersusTime;
   TH1F* residualsX;
   TH1F* residualsY;
+  TH1F* hTrackCorrelationX;
+  TH1F* hTrackCorrelationY;
+  TH1F* hTrackCorrelationTime;
   TH1F* residualsTime;
   TH2F* clusterToTVersusTime;
+  TH2F* residualsTimeVsTime;
 
   TH1F* tracksVersusPowerOnTime;
   TH1F* associatedTracksVersusPowerOnTime;
