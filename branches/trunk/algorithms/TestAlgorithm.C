@@ -41,7 +41,7 @@ void TestAlgorithm::initialise(Parameters* par){
     
     // Timing plots
     name = "eventTimes_"+detectorID;
-    eventTimes[detectorID] = new TH1F(name.c_str(),name.c_str(),3000000,0,30);
+    eventTimes[detectorID] = new TH1F(name.c_str(),name.c_str(),3000000,0,300);
   }
 
 }
