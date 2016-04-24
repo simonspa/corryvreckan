@@ -18,8 +18,14 @@ class KDTree : public TestBeamObject {
   
 public:
   // Constructors and destructors
-  KDTree(){}
-  virtual ~KDTree(){}
+  KDTree(){
+    timeKdtree = NULL;
+    positionKdtree = NULL;
+  }
+  ~KDTree(){
+    delete timeKdtree;
+    delete positionKdtree;
+  }
 
 // Build a tree sorted by cluster times
   void buildTimeTree(Clusters inputClusters){
