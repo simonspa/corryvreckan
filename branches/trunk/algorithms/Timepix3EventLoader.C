@@ -15,6 +15,7 @@ Timepix3EventLoader::Timepix3EventLoader(bool debugging)
   applyTimingCut = false;
   m_currentTime = 0.;
   m_minNumberOfPlanes = 1;
+  m_prevTime = 0;
 }
 
 
@@ -172,6 +173,10 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
 //  if(detectorID == "W0019_F07") debug = true;
 //  if(detectorID != "W0019_F07") debug = false;
   
+  bool extra = false; //temp
+  if(detectorID == parameters->DUT) extra = true;
+//  if(detectorID == "W0002_J05") extra = true;
+  
   if(debug) tcout<<"Loading data for device "<<detectorID<<endl;
 
   // Check if current file is open
@@ -254,6 +259,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
         if( m_syncTime[detectorID] < 0x0000010000000000 && !m_clearedHeader[detectorID]) m_clearedHeader[detectorID] = true;
       }
       
+//      if(extra) tcout<<"Updating heartbeat. Now syncTime = "<<(double)m_syncTime[detectorID]/(4096. * 40000000.)<<endl;
     }
     
     // Header 0x06 and 0x07 are the start and stop signals for power pulsing
@@ -262,27 +268,33 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
       // Get the second part of the header
       const UChar_t header2 = ((pixdata & 0x0F00000000000000) >> 56) & 0xF;
 
-      // 0x6 is power on
+      // New implementation of power pulsing signals from Adrian
       if(header2 == 0x6){
-//        const uint64_t time( (pixdata & 0x0000000FFFFFFFFF) << 12 );
-//        SpidrSignal* signal = new SpidrSignal("powerOn",time);
-//        spidrData->push_back(signal);
-//        if(debug) tcout<<"Turned on power! Time: "<<(double)time/(4096. * 40000000.)<<endl;
-        
-        // New implementation from Adrian
         const uint64_t time( (pixdata & 0x0000000FFFFFFFFF) << 12 );
         
-        const UChar_t tempbits = ((pixdata & 0x00F0000000000000) >> 52) & 0xF;
+        const UChar_t controlbits = ((pixdata & 0x00F0000000000000) >> 52) & 0xF;
 
-        const UChar_t powerOn = ((tempbits & 0x2) >> 1);
-        const UChar_t shutterStop = ((tempbits & 0x1));
+        const UChar_t powerOn = ((controlbits & 0x2) >> 1);
+        const UChar_t shutterStop = ((controlbits & 0x1));
         
+        SpidrSignal* signal = (powerOn ? new SpidrSignal("powerOn",time) : new SpidrSignal("powerOff",time));
+        spidrData->push_back(signal);
+        if(debug) tcout<<"Turned "<< (powerOn ? "on" : "off") <<"power! Time: "<<(double)time/(4096. * 40000000.)<<endl;
         
-        tcout<<"Shutter stop: "<<(double)shutterStop<<", power on: "<<(double)powerOn<<" Time: "<<(double)time/(4096. * 40000000.)<<endl;
-        tcout<<std::hex<<pixdata<<std::dec<<endl;
+//        tcout<<"Shutter stop: "<<(double)shutterStop<<", power on: "<<(double)powerOn<<" Time: "<<(double)time/(4096. * 40000000.)<<endl;
+//        tcout<<std::hex<<pixdata<<std::dec<<endl;
         
         
        }
+      
+      /*
+      // 0x6 is power on
+      if(header2 == 0x6){
+        const uint64_t time( (pixdata & 0x0000000FFFFFFFFF) << 12 );
+        SpidrSignal* signal = new SpidrSignal("powerOn",time);
+        spidrData->push_back(signal);
+        if(debug) tcout<<"Turned on power! Time: "<<(double)time/(4096. * 40000000.)<<endl;
+      }
       // 0x7 is power off
       if(header2 == 0x7){
         const uint64_t time( (pixdata & 0x0000000FFFFFFFFF) << 12 );
@@ -290,6 +302,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
         spidrData->push_back(signal);
         if(debug) tcout<<"Turned off power! Time: "<<(double)time/(4096. * 40000000.)<<endl;
       }
+       */
     }
     
     // In data taking during 2015 there was sometimes still data left in the buffers at the start of
@@ -331,8 +344,15 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
       // time has wrapped back around to 0
       
       // If the counter overflow happens before reading the new heartbeat
-      while( abs(m_syncTime[detectorID]-time) > 0x0000020000000000 ){
-        time += 0x0000040000000000;
+//      while( abs(m_syncTime[detectorID]-time) > 0x0000020000000000 ){
+      if(!extra){
+        while( m_syncTime[detectorID]-time > 0x0000020000000000 ){
+          time += 0x0000040000000000;
+        }
+      }else{
+        while( m_prevTime - time > 0x0000020000000000){
+          time += 0x0000040000000000;
+        }
       }
 
       // If events are loaded based on time intervals, take all hits where the time is within this window
@@ -355,6 +375,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
       Pixel* pixel = new Pixel(detectorID,row,col,(int)tot,time);
       devicedata->push_back(pixel);
       npixels++;
+      m_prevTime = time;
 
     }
     

@@ -34,6 +34,7 @@ public:
   bool applyTimingCut;
   long long int m_currentTime;
   double m_timingCut;
+  long long int m_prevTime;
   
 };
 
