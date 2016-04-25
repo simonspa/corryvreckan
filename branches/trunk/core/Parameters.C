@@ -43,7 +43,7 @@ void Parameters::readCommandLineOptions(int argc, char *argv[]){
   cout<<endl;
   cout<<"===================| Reading Parameters  |===================="<<endl<<endl;
   int option; char temp[256];
-  while ( (option = getopt(argc, argv, "gema:d:c:n:h:t:o:f:t:p:")) != -1) {
+  while ( (option = getopt(argc, argv, "gema:d:c:n:h:t:o:f:t:p:s:")) != -1) {
     switch (option) {
       case 'a':
         align = true;
@@ -99,6 +99,11 @@ void Parameters::readCommandLineOptions(int argc, char *argv[]){
         sscanf( optarg, "%lf", &eventLength);
         cout<<"Running with an event length of: "<<eventLength<<" s"<<endl;
         break;
+      case 's':
+        sscanf( optarg, "%s", &temp);
+        dutMaskFile = (string)temp;
+        cout<<"Taking dut mask from: "<<dutMaskFile<<endl;
+
     }
   }
   cout<<endl;

@@ -16,13 +16,19 @@ void DUTAnalysis::initialise(Parameters* par){
   parameters = par;
 
   // Initialise single histograms
-  tracksVersusTime = new TH1F("tracksVersusTime","tracksVersusTime",6000000,0,60);
-  associatedTracksVersusTime = new TH1F("associatedTracksVersusTime","associatedTracksVersusTime",6000000,0,60);
+  tracksVersusTime = new TH1F("tracksVersusTime","tracksVersusTime",300000,0,300);
+  associatedTracksVersusTime = new TH1F("associatedTracksVersusTime","associatedTracksVersusTime",300000,0,300);
   residualsX = new TH1F("residualsX","residualsX",400,-0.2,0.2);
   residualsY = new TH1F("residualsY","residualsY",400,-0.2,0.2);
-  residualsTime = new TH1F("residualsTime","residualsTime",2000,-0.000001,0.000001);
-  clusterToTVersusTime = new TH2F("clusterToTVersusTime","clusterToTVersusTime",10010,-0.01,10.,200,0,1000);
+  residualsTime = new TH1F("residualsTime","residualsTime",2000,-0.001,0.001);
   
+  hTrackCorrelationX = new TH1F("hTrackCorrelationX","hTrackCorrelationX",4000,-10.,10.);
+  hTrackCorrelationY = new TH1F("hTrackCorrelationY","hTrackCorrelationY",4000,-10.,10.);
+  hTrackCorrelationTime = new TH1F("hTrackCorrelationTime","hTrackCorrelationTime",2000000,-0.005,0.005);
+  clusterToTVersusTime = new TH2F("clusterToTVersusTime","clusterToTVersusTime",300000,0.,300.,200,0,1000);
+  
+  residualsTimeVsTime = new TH2F("residualsTimeVsTime","residualsTimeVsTime",10000,14,24,2000,-0.001,0.001);
+
   tracksVersusPowerOnTime = new TH1F("tracksVersusPowerOnTime","tracksVersusPowerOnTime",1200000,-0.01,0.11);
   associatedTracksVersusPowerOnTime = new TH1F("associatedTracksVersusPowerOnTime","associatedTracksVersusPowerOnTime",1200000,-0.01,0.11);
 
@@ -84,7 +90,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
     if(debug) tcout<<"No tracks on the clipboard"<<endl;
     return Success;
   }
-
+  
   // Get the DUT clusters from the clipboard
   Clusters* clusters = (Clusters*)clipboard->get(parameters->DUT,"clusters");
   if(clusters == NULL){
@@ -111,6 +117,30 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
         m_powerOnTime != 0 && (m_powerOffTime - track->timestamp()) > 0){
       timeSincePowerOn = (double)(track->timestamp() - m_powerOnTime) / (4096.*40000000.);
       tracksVersusPowerOnTime->Fill(timeSincePowerOn);
+    }
+
+    // Correlation plot
+    for(int itCluster=0;itCluster<clusters->size();itCluster++){
+      
+      // Get the cluster pointer
+      Cluster* cluster = (*clusters)[itCluster];
+      
+      // Check if the cluster is close in time
+//      if( abs(cluster->timestamp() - track->timestamp()) > timingCutInt ) continue;
+
+      // Check distance between track and cluster
+      ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
+
+      // Fill the correlation plot
+      hTrackCorrelationX->Fill(intercept.X() - cluster->globalX());
+      hTrackCorrelationY->Fill(intercept.Y() - cluster->globalY());
+      hTrackCorrelationTime->Fill( (double)(track->timestamp() - cluster->timestamp()) / (4096.*40000000.));
+      
+      if( fabs(intercept.X() - cluster->globalX()) < 0.1 &&
+          fabs(intercept.Y() - cluster->globalY()) < 0.1){
+        residualsTime->Fill((double)(track->timestamp() - cluster->timestamp()) / (4096.*40000000.));
+        residualsTimeVsTime->Fill( (double)track->timestamp() / (4096.*40000000.), (double)(track->timestamp() - cluster->timestamp()) / (4096.*40000000.));
+      }
     }
     
     // Loop over all DUT clusters

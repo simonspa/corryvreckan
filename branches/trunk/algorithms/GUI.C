@@ -7,7 +7,7 @@
 GUI::GUI(bool debugging)
 : Algorithm("GUI"){
   debug = debugging;
-  updateNumber = 1;
+  updateNumber = 200;
 }
 
 void startDisplay(void* gui){

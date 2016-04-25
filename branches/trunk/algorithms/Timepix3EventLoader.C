@@ -52,7 +52,7 @@ void Timepix3EventLoader::initialise(Parameters* par){
         string filename = dataDirName+"/"+file->d_name;
 
         // Check if file has extension .dat
-        if (string(file->d_name).find("1.dat") != string::npos){
+        if (string(file->d_name).find("-1.dat") != string::npos){
           m_datafiles[detectorID].push_back(filename.c_str());
           m_nFiles[detectorID]++;
 
@@ -98,7 +98,6 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard){
   // loading a fixed number of pixels (ie. 2000 at a time)
   
   int endOfFiles = 0; int devices = 0; int loadedData = 0;
-  cout<<"\rCurrent time: "<<std::setprecision(7)<<std::fixed<<parameters->currentTime<<flush;
 
   // Loop through all registered detectors
   for(int det = 0; det<parameters->nDetectors; det++){
@@ -138,6 +137,7 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard){
   if(loadedData < m_minNumberOfPlanes) return NoData;
   
   // Otherwise tell event loop to keep running
+  cout<<"\rCurrent time: "<<std::setprecision(4)<<std::fixed<<parameters->currentTime<<flush;
   return Success;
 }
 
@@ -239,8 +239,8 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
 
       // This is a bug fix. There appear to be errant packets with garbage data - source to be tracked down.
       // Between the data and the header the intervening bits should all be 0, check if this is the case
-      const UChar_t intermediateBits = ((pixdata & 0x00FFF00000000000) >> 44) & 0xFFF;
-      if(intermediateBits != 0x000) continue;
+      const UChar_t intermediateBits = ((pixdata & 0x00FF000000000000) >> 48) & 0xFF;
+      if(intermediateBits != 0x00) continue;
       
       // 0x4 is the least significant part of the timestamp
       if(header2 == 0x4){
@@ -264,10 +264,24 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
 
       // 0x6 is power on
       if(header2 == 0x6){
+//        const uint64_t time( (pixdata & 0x0000000FFFFFFFFF) << 12 );
+//        SpidrSignal* signal = new SpidrSignal("powerOn",time);
+//        spidrData->push_back(signal);
+//        if(debug) tcout<<"Turned on power! Time: "<<(double)time/(4096. * 40000000.)<<endl;
+        
+        // New implementation from Adrian
         const uint64_t time( (pixdata & 0x0000000FFFFFFFFF) << 12 );
-        SpidrSignal* signal = new SpidrSignal("powerOn",time);
-        spidrData->push_back(signal);
-        if(debug) tcout<<"Turned on power! Time: "<<(double)time/(4096. * 40000000.)<<endl;
+        
+        const UChar_t tempbits = ((pixdata & 0x00F0000000000000) >> 52) & 0xF;
+
+        const UChar_t powerOn = ((tempbits & 0x2) >> 1);
+        const UChar_t shutterStop = ((tempbits & 0x1));
+        
+        
+        tcout<<"Shutter stop: "<<(double)shutterStop<<", power on: "<<(double)powerOn<<" Time: "<<(double)time/(4096. * 40000000.)<<endl;
+        tcout<<std::hex<<pixdata<<std::dec<<endl;
+        
+        
        }
       // 0x7 is power off
       if(header2 == 0x7){

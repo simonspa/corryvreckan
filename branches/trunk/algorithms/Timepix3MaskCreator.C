@@ -41,8 +41,8 @@ StatusCode Timepix3MaskCreator::run(Clipboard* clipboard){
     // Get the pixels
     Pixels* pixels = (Pixels*)clipboard->get(detectorID,"pixels");
     if(pixels == NULL){
-      tcout<<"Detector "<<detectorID<<" does not have any pixels on the clipboard"<<endl;
-      return Failure;
+      if(debug) tcout<<"Detector "<<detectorID<<" does not have any pixels on the clipboard"<<endl;
+      continue;
     }
     if(debug) tcout<<"Picked up "<<pixels->size()<<" pixels for device "<<detectorID<<endl;
     
@@ -103,7 +103,7 @@ void Timepix3MaskCreator::finalise(){
     for(int col=0;col<256;col++){
       for(int row=0;row<256;row++){
         int channelID =row + 256*col;
-        if(pixelhits[detectorID][channelID] > 100){
+        if(pixelhits[detectorID][channelID] > 1000){
           trimdacs >> t_col >> t_row >> t_trim >> t_mask >> t_tpen;
           newtrimdacs << t_col << "\t" << t_row << "\t" << t_trim << "\t" << "1" << "\t" << t_tpen << endl;
           tcout<<"Masking pixel "<<col<<","<<row<<" on detector "<<detectorID<<endl;
