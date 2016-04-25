@@ -28,6 +28,7 @@
 #include "FileReader.h"
 #include "Timepix1Correlator.h"
 #include "ClicpixAnalysis.h"
+#include "DataDump.h"
 
 //-------------------------------------------------------------------------------
 // The Steering is effectively the executable. It reads command line
@@ -73,6 +74,7 @@ int main(int argc, char *argv[]) {
   FileReader*	 					fileReader				= new FileReader(debug);
   Timepix1Correlator*	 	correlator				= new Timepix1Correlator(debug);
   ClicpixAnalysis*	 		clicpixAnalysis		= new ClicpixAnalysis(debug);
+  DataDump*	 						dataDump					= new DataDump(debug);
 
   // =========================================================================
   // Steering file begins
@@ -80,10 +82,11 @@ int main(int argc, char *argv[]) {
   
   // General parameters
   parameters->reference = "W0013_G03";
-  parameters->DUT = "W0005_E02";
+//  parameters->DUT = "W0005_E02";
+//  parameters->DUT = "W0002_J05";
 //  parameters->reference = "W0013_G03";
 //  parameters->DUT = "W0019_L08";
-//  parameters->DUT = "W0019_F07";
+  parameters->DUT = "W0019_F07";
 
   parameters->detectorToAlign = parameters->DUT;
   parameters->excludedFromTracking[parameters->DUT] = true;
@@ -98,7 +101,8 @@ int main(int argc, char *argv[]) {
 
   parameters->excludedFromTracking["W0013_F09"] = true;
   //tpix3EventLoader->debug = true;
-  //testAlgorithm->makeCorrelations = true;  
+  //testAlgorithm->makeCorrelations = true;
+  dataDump->m_detector = parameters->DUT;
   // =========================================================================
   // Steering file ends
   // =========================================================================
@@ -123,10 +127,11 @@ int main(int argc, char *argv[]) {
   analysis->add(tpix3Clustering);
   analysis->add(testAlgorithm);
   analysis->add(basicTracking);
-//  analysis->add(dutAnalysis);
+  analysis->add(dutAnalysis);
 //  analysis->add(clicpixAnalysis);
 //  analysis->add(fileWriter);
-  
+//  analysis->add(dataDump);
+
   if(parameters->align) analysis->add(alignment);
   if(parameters->produceMask) analysis->add(tpix3MaskCreator);
   if(parameters->eventDisplay) analysis->add(eventDisplay);
