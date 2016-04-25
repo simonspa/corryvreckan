@@ -27,7 +27,7 @@ void DUTAnalysis::initialise(Parameters* par){
   hTrackCorrelationTime = new TH1F("hTrackCorrelationTime","hTrackCorrelationTime",2000000,-0.005,0.005);
   clusterToTVersusTime = new TH2F("clusterToTVersusTime","clusterToTVersusTime",300000,0.,300.,200,0,1000);
   
-  residualsTimeVsTime = new TH2F("residualsTimeVsTime","residualsTimeVsTime",10000,14,24,2000,-0.001,0.001);
+  residualsTimeVsTime = new TH2F("residualsTimeVsTime","residualsTimeVsTime",20000,0,200,400,-0.0005,0.0005);
 
   tracksVersusPowerOnTime = new TH1F("tracksVersusPowerOnTime","tracksVersusPowerOnTime",1200000,-0.01,0.11);
   associatedTracksVersusPowerOnTime = new TH1F("associatedTracksVersusPowerOnTime","associatedTracksVersusPowerOnTime",1200000,-0.01,0.11);
