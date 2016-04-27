@@ -62,11 +62,12 @@ ${BINDIR}EventDict.o :		${DATAOBJS}
 
 ${EXE} :			${BINDIR}EventDict.o ${OBJS} ${DATACLASSOBJS} ${ALGOBJS}
 				@echo "Making executable tbAnalysis"
-				@$(CC) -o ${BINDIR}tbAnalysis $(OBJS) ${DATACLASSOBJS} ${ALGOBJS} $(LFLAGS) 
+				@$(CC) -o ${BINDIR}tbAnalysis $(OBJS) ${DATACLASSOBJS} ${ALGOBJS} ${BINDIR}EventDict.o $(LFLAGS) 
 
 # Remove all executables and object files
 clean:
 				@rm -f ${BINDIR}*
+				@rm -f core/EventDict*
 				@echo "Cleaned"
 
 
