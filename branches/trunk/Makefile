@@ -59,6 +59,7 @@ ${BINDIR}EventDict.o :		${DATAOBJS}
 				@rm -f core/EventDict.C core/EventDict.h
 				@rootcint core/EventDict.C -c ${DATAOBJS} 
 				@$(CC) $(CFLAGS) ${INCLUDE_PATH} -c core/EventDict.C -o ${BINDIR}EventDict.o
+				@rm -f core/EventDict.C core/EventDict.h
 
 ${EXE} :			${BINDIR}EventDict.o ${OBJS} ${DATACLASSOBJS} ${ALGOBJS}
 				@echo "Making executable tbAnalysis"
