@@ -17,7 +17,7 @@ class Cluster : public TestBeamObject {
 public:
   
   // Constructors and destructors
-  Cluster(){}
+  Cluster(){m_columnWidth=0.;m_rowWidth=0.;}
   virtual ~Cluster(){}
   // Copy constructor
   Cluster(Cluster* cluster){
@@ -30,12 +30,17 @@ public:
     m_error = cluster->error();
     m_detectorID = cluster->detectorID();
     m_timestamp = cluster->timestamp();
+    m_columnWidth=0.;m_rowWidth=0.;
   }
 
   // Functions
   // Add a new pixel to the cluster
   void addPixel(Pixel* pixel){
     m_pixels.push_back(pixel);
+    if(m_columnHits.count(pixel->m_column) != 0) m_columnWidth++;
+    if(m_rowHits.count(pixel->m_row) != 0) m_rowWidth++;
+    m_columnHits[pixel->m_column] = true;
+    m_rowHits[pixel->m_row] = true;
   }
   // Retrieve cluster parameters
   double row(){return m_row;}
@@ -49,6 +54,8 @@ public:
   double localY(){return m_localY;}
   double localZ(){return m_localZ;}
   int size(){return m_pixels.size();}
+  int columnWidth(){return m_columnWidth;}
+  int rowWidth(){return m_rowWidth;}
   long long int timestamp(){return m_timestamp;}
   std::string detectorID(){return m_detectorID;}
   Pixels pixels(){return m_pixels;}
@@ -77,6 +84,8 @@ public:
   double m_column;
   double m_tot;
   double m_error;
+  double m_columnWidth;
+  double m_rowWidth;
   long long int m_timestamp;
   double m_globalX;
   double m_globalY;
@@ -85,6 +94,8 @@ public:
   double m_localY;
   double m_localZ;
   std::string m_detectorID;
+  std::map<int,bool> m_rowHits;
+  std::map<int,bool> m_columnHits;
   
   // ROOT I/O class definition - update version number when you change this class!
   ClassDef(Cluster,1)
