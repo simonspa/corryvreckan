@@ -137,6 +137,53 @@ public:
     return globalIntercept;
   }
   
+  // Function to check if a track intercepts with a plane
+  bool hasIntercept(Track* track, double pixelTolerance=0.){
+    
+    // First, get the track intercept in global co-ordinates with the plane
+    PositionVector3D<Cartesian3D<double> > globalIntercept = this->getIntercept(track);
+    
+    // Convert to local co-ordinates
+    PositionVector3D<Cartesian3D<double> > localIntercept = *(this->m_globalToLocal) * globalIntercept;
+    
+    // Get the row and column numbers
+    double row = this->getRow(localIntercept);
+    double column = this->getColumn(localIntercept);
+    
+    // Check if the row and column are outside of the chip
+    bool intercept = true;
+    if(row < ( pixelTolerance-0.5) ||
+       row > (this->m_nPixelsY - 0.5 - pixelTolerance) ||
+       column < ( pixelTolerance-0.5) ||
+       column > (this->m_nPixelsX - 0.5 - pixelTolerance)) intercept = false;
+    
+    return intercept;
+  }
+  
+  // Function to check if a track goes through/near a masked pixel
+  bool hitMasked(Track* track, int tolerance=0.){
+    
+    // First, get the track intercept in global co-ordinates with the plane
+    PositionVector3D<Cartesian3D<double> > globalIntercept = this->getIntercept(track);
+    
+    // Convert to local co-ordinates
+    PositionVector3D<Cartesian3D<double> > localIntercept = *(this->m_globalToLocal) * globalIntercept;
+    
+    // Get the row and column numbers
+    int row = floor(this->getRow(localIntercept)+0.5);
+    int column = floor(this->getColumn(localIntercept)+0.5);
+    
+    // Check if the pixels around this pixel are masked
+    bool hitmasked = false;
+    for(int r=(row-tolerance); r<=(row+tolerance); r++){
+      for(int c=(column-tolerance); c<=(column+tolerance); c++){
+        if(this->masked(c,r)) hitmasked = true;
+      }
+    }
+    
+    return hitmasked;
+  }
+
   // Functions to get row and column from local position
   double getRow(PositionVector3D<Cartesian3D<double> > localPosition){
     double row = (localPosition.Y()/m_pitchY) + m_nPixelsY/2.;
