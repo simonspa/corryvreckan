@@ -7,6 +7,7 @@
 DUTAnalysis::DUTAnalysis(bool debugging)
 : Algorithm("DUTAnalysis"){
   debug = debugging;
+  m_digitalPowerPulsing = false;
 }
 
 
@@ -20,7 +21,7 @@ void DUTAnalysis::initialise(Parameters* par){
   associatedTracksVersusTime = new TH1F("associatedTracksVersusTime","associatedTracksVersusTime",300000,0,300);
   residualsX = new TH1F("residualsX","residualsX",400,-0.2,0.2);
   residualsY = new TH1F("residualsY","residualsY",400,-0.2,0.2);
-  residualsTime = new TH1F("residualsTime","residualsTime",2000,-0.001,0.001);
+  residualsTime = new TH1F("residualsTime","residualsTime",2000,-0.000001,0.000001);
   
   hTrackCorrelationX = new TH1F("hTrackCorrelationX","hTrackCorrelationX",4000,-10.,10.);
   hTrackCorrelationY = new TH1F("hTrackCorrelationY","hTrackCorrelationY",4000,-10.,10.);
@@ -32,11 +33,16 @@ void DUTAnalysis::initialise(Parameters* par){
   tracksVersusPowerOnTime = new TH1F("tracksVersusPowerOnTime","tracksVersusPowerOnTime",1200000,-0.01,0.11);
   associatedTracksVersusPowerOnTime = new TH1F("associatedTracksVersusPowerOnTime","associatedTracksVersusPowerOnTime",1200000,-0.01,0.11);
 
+  hAssociatedTracksGlobalPosition = new TH2F("hAssociatedTracksGlobalPosition","hAssociatedTracksGlobalPosition",200,-10,10,200,-10,10);
+  hUnassociatedTracksGlobalPosition = new TH2F("hUnassociatedTracksGlobalPosition","hUnassociatedTracksGlobalPosition",200,-10,10,200,-10,10);
+
   // Initialise member variables
   m_eventNumber = 0;
   m_nAlignmentClusters = 0;
   m_powerOnTime = 0;
   m_powerOffTime = 0;
+  m_shutterOpenTime = 0;
+  m_shutterCloseTime = 0;
 
 }
 
@@ -46,6 +52,10 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
 //  tcout<<"Power off time: "<<m_powerOffTime/(4096. * 40000000.)<<endl;
 //  tcout<<endl;
   
+  cout<<std::setprecision(10);
+  
+  if(parameters->currentTime < 13.5) return Success;
+  
   // Timing cut for association
   double timingCut = 200./1000000000.; // 200 ns
   long long int timingCutInt = (timingCut * 4096. * 40000000.);
@@ -54,14 +64,14 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
   double spatialCut = 0.2; // 200 um
 
   // Track chi2/ndof cut
-  double chi2ndofCut = 7.;
+  double chi2ndofCut = 3.;
 
   // Power pulsing variable initialisation - get signals from SPIDR for this device
   double timeSincePowerOn = 0.;
   
   // If the power was switched off/on in the last event we no longer have a power on/off time
-  if(m_powerOffTime != 0 && m_powerOffTime > m_powerOnTime) m_powerOnTime = 0;
-  if(m_powerOnTime != 0 && m_powerOnTime > m_powerOffTime) m_powerOffTime = 0;
+  if(m_shutterCloseTime != 0 && m_shutterCloseTime > m_shutterOpenTime) m_shutterOpenTime = 0;
+  if(m_shutterOpenTime != 0 && m_shutterOpenTime > m_shutterCloseTime) m_shutterCloseTime = 0;
   
   // Now update the power pulsing with any new signals
   SpidrSignals* spidrData = (SpidrSignals*)clipboard->get(parameters->DUT,"SpidrSignals");
@@ -72,14 +82,19 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
     for(int iSig=0;iSig<nSignals;iSig++){
       // Get the signal
       SpidrSignal* signal = (*spidrData)[iSig];
-    	// Register the power on or power off time
-      if(signal->type() == "powerOn"){
-        m_powerOnTime = signal->timestamp();
-//        tcout<<"Power on time: "<<m_powerOnTime/(4096. * 40000000.)<<endl;
+    	// Register the power on or power off time, and whether the shutter is open or not
+      if(signal->type() == "shutterOpen"){
+        // There may be multiple power on/off in 1 time window. At the moment, take earliest if within 1ms
+        if( fabs( double(signal->timestamp()-m_shutterOpenTime)/(4096. * 40000000.)) < 0.001 ) continue;
+        m_shutterOpenTime = signal->timestamp();
+//        tcout<<"Shutter opened at "<<double(m_shutterOpenTime)/(4096.*40000000.)<<endl;
       }
-      if(signal->type() == "powerOff"){
-        m_powerOffTime = signal->timestamp();
-//        tcout<<"Power off time: "<<m_powerOffTime/(4096. * 40000000.)<<endl;
+      if(signal->type() == "shutterClosed"){
+        // There may be multiple power on/off in 1 time window. At the moment, take earliest if within 1ms
+        if( fabs( double(signal->timestamp()-m_shutterCloseTime)/(4096. * 40000000.)) < 0.001 ) continue;
+        m_shutterCloseTime = signal->timestamp();
+//        cout<<endl;
+//        tcout<<"Shutter closed at "<<double(m_shutterCloseTime)/(4096.*40000000.)<<endl;
       }
     }
   }
@@ -95,7 +110,6 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
   Clusters* clusters = (Clusters*)clipboard->get(parameters->DUT,"clusters");
   if(clusters == NULL){
     if(debug) tcout<<"No DUT clusters on the clipboard"<<endl;
-    return Success;
   }
 
   // Loop over all tracks
@@ -104,21 +118,43 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
     // Get the track pointer
     Track* track = (*tracks)[itTrack];
     
-    // Check if it intercepts the DUT
-//    if(!intercept(track,parameters->DUT)) continue;
-    
     // Cut on the chi2/ndof
     if(track->chi2ndof() > chi2ndofCut) continue;
+    
+    // Check if it intercepts the DUT
+    PositionVector3D<Cartesian3D<double> > globalIntercept = parameters->detector[parameters->DUT]->getIntercept(track);
+    if(!parameters->detector[parameters->DUT]->hasIntercept(track,1.)) continue;
+    
+    // Check that it doesn't go through/near a masked pixel
+    if(parameters->detector[parameters->DUT]->hitMasked(track,1.)) continue;
+
     tracksVersusTime->Fill( (double)track->timestamp() / (4096.*40000000.) );
     
-    // Check time since power on (if power pulsing).
-    // If power off time not known it will be 0. If it is known, then the track should arrive before the power goes off
-    if( m_powerOnTime != 0 && m_powerOffTime == 0 ||
-        m_powerOnTime != 0 && (m_powerOffTime - track->timestamp()) > 0){
-      timeSincePowerOn = (double)(track->timestamp() - m_powerOnTime) / (4096.*40000000.);
-      tracksVersusPowerOnTime->Fill(timeSincePowerOn);
+    
+    timeSincePowerOn = (double)(track->timestamp() - m_shutterOpenTime) / (4096.*40000000.);
+    if(timeSincePowerOn > 0. && timeSincePowerOn < 0.0002){
+//      cout<<endl;
+//      tcout<<"Track at time "<<double(track->timestamp())/(4096.*40000000.)<<" has time shutter open of "<<timeSincePowerOn<<endl;
+//      tcout<<"Shutter open time is "<<double(m_shutterOpenTime)/(4096.*40000000.)<<", shutter close time is "<<double(m_shutterCloseTime)/(4096.*40000000.)<<endl;
     }
 
+    // Check time since power on (if power pulsing).
+    // If power off time not known it will be 0. If it is known, then the track should arrive before the power goes off
+    if( (m_shutterOpenTime != 0 && m_shutterCloseTime == 0) ||
+        (m_shutterOpenTime != 0 && ( (m_shutterCloseTime > m_shutterOpenTime && m_shutterCloseTime - track->timestamp() > 0) ||
+                                     (m_shutterOpenTime > m_shutterCloseTime && track->timestamp() - m_shutterOpenTime >= 0) ))) {
+      timeSincePowerOn = (double)(track->timestamp() - m_shutterOpenTime) / (4096.*40000000.);
+      tracksVersusPowerOnTime->Fill(timeSincePowerOn);
+//      if(timeSincePowerOn < (0.0002)){
+//        cout<<endl;
+//        tcout<<"Track at time "<<parameters->currentTime<<" has time shutter open of "<<timeSincePowerOn<<endl;
+//        tcout<<"Shutter open time is "<<double(m_shutterOpenTime)/(4096.*40000000.)<<", shutter close time is "<<double(m_shutterCloseTime)/(4096.*40000000.)<<endl;
+//      }
+    }
+
+    // If no DUT clusters then continue to the next track
+    if(clusters == NULL) continue;
+    /*
     // Correlation plot
     for(int itCluster=0;itCluster<clusters->size();itCluster++){
       
@@ -142,8 +178,10 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
         residualsTimeVsTime->Fill( (double)track->timestamp() / (4096.*40000000.), (double)(track->timestamp() - cluster->timestamp()) / (4096.*40000000.));
       }
     }
+    */
     
     // Loop over all DUT clusters
+    bool associated = false;
     for(int itCluster=0;itCluster<clusters->size();itCluster++){
 
       // Get the cluster pointer
@@ -153,7 +191,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
       if(itTrack == 0) clusterToTVersusTime->Fill((double)cluster->timestamp() / (4096.*40000000.), cluster->tot());
       
       // Check if the cluster is close in time
-      if( abs(cluster->timestamp() - track->timestamp()) > timingCutInt ) continue;
+      if( !m_digitalPowerPulsing && abs(cluster->timestamp() - track->timestamp()) > timingCutInt ) continue;
       
       // Check distance between track and cluster
       ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
@@ -163,15 +201,19 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
       if( abs(ydistance) > spatialCut) continue;
  
       // We now have an associated cluster! Fill plots
+      associated = true;
+//      tcout<<"Found associated cluster"<<endl;
       associatedTracksVersusTime->Fill( (double)track->timestamp() / (4096.*40000000.) );
       residualsX->Fill(xdistance);
       residualsY->Fill(ydistance);
       track->addAssociatedCluster(cluster);
       m_nAlignmentClusters++;
+      hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(),globalIntercept.Y());
       
       // Fill power pulsing response
-      if( m_powerOnTime != 0 && m_powerOffTime == 0 ||
-         m_powerOnTime != 0 && (m_powerOffTime - track->timestamp()) > 0){
+      if( (m_shutterOpenTime != 0 && m_shutterCloseTime == 0) ||
+         (m_shutterOpenTime != 0 && ( (m_shutterCloseTime > m_shutterOpenTime && m_shutterCloseTime - track->timestamp() > 0) ||
+                                     (m_shutterOpenTime > m_shutterCloseTime && track->timestamp() - m_shutterOpenTime >= 0) ))) {
         associatedTracksVersusPowerOnTime->Fill(timeSincePowerOn);
       }
 
@@ -179,6 +221,8 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
       break;
       
     }
+    
+    if(!associated) hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(),globalIntercept.Y());
     
   }
 

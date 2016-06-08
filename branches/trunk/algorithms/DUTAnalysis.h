@@ -31,17 +31,21 @@ public:
   TH2F* clusterToTVersusTime;
   TH2F* residualsTimeVsTime;
 
+  TH2F* hAssociatedTracksGlobalPosition;
+  TH2F* hUnassociatedTracksGlobalPosition;
+
   TH1F* tracksVersusPowerOnTime;
   TH1F* associatedTracksVersusPowerOnTime;
   
   // Member variables
   int m_eventNumber;
   int m_nAlignmentClusters;
-//  bool m_powerOn;
   long long int m_powerOnTime;
   long long int m_powerOffTime;
-  
-  
+  long long int m_shutterOpenTime;
+  long long int m_shutterCloseTime;
+  bool m_digitalPowerPulsing;
+
 };
 
 #endif // DUTAnalysis_H
