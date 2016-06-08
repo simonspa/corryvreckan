@@ -16,6 +16,7 @@ Timepix3EventLoader::Timepix3EventLoader(bool debugging)
   m_currentTime = 0.;
   m_minNumberOfPlanes = 1;
   m_prevTime = 0;
+  m_shutterOpen = false;
 }
 
 
@@ -98,6 +99,7 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard){
   // be done in one of two ways: by taking all data in the time interval (t,t+delta), or by
   // loading a fixed number of pixels (ie. 2000 at a time)
   
+//  tcout<<"== New event"<<endl;
   int endOfFiles = 0; int devices = 0; int loadedData = 0;
 
   // Loop through all registered detectors
@@ -139,6 +141,7 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard){
   
   // Otherwise tell event loop to keep running
   cout<<"\rCurrent time: "<<std::setprecision(4)<<std::fixed<<parameters->currentTime<<flush;
+//  cout<<endl;
   return Success;
 }
 
@@ -174,7 +177,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
 //  if(detectorID != "W0019_F07") debug = false;
   
   bool extra = false; //temp
-  if(detectorID == parameters->DUT) extra = true;
+//  if(detectorID == parameters->DUT) extra = true;
 //  if(detectorID == "W0002_J05") extra = true;
   
   if(debug) tcout<<"Loading data for device "<<detectorID<<endl;
@@ -265,6 +268,9 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
     // Header 0x06 and 0x07 are the start and stop signals for power pulsing
     if(header == 0x0){
       
+      // Only want to read these packets from the DUT
+      if(detectorID != parameters->DUT) continue;
+
       // Get the second part of the header
       const UChar_t header2 = ((pixdata & 0x0F00000000000000) >> 56) & 0xF;
 
@@ -272,18 +278,50 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
       if(header2 == 0x6){
         const uint64_t time( (pixdata & 0x0000000FFFFFFFFF) << 12 );
         
-        const UChar_t controlbits = ((pixdata & 0x00F0000000000000) >> 52) & 0xF;
+        const uint64_t controlbits = ((pixdata & 0x00F0000000000000) >> 52) & 0xF;
 
-        const UChar_t powerOn = ((controlbits & 0x2) >> 1);
-        const UChar_t shutterStop = ((controlbits & 0x1));
+        const uint64_t powerOn = ((controlbits & 0x2) >> 1);
+        const uint64_t shutterClosed = ((controlbits & 0x1));
         
-        SpidrSignal* signal = (powerOn ? new SpidrSignal("powerOn",time) : new SpidrSignal("powerOff",time));
-        spidrData->push_back(signal);
-        if(debug) tcout<<"Turned "<< (powerOn ? "on" : "off") <<"power! Time: "<<(double)time/(4096. * 40000000.)<<endl;
         
-//        tcout<<"Shutter stop: "<<(double)shutterStop<<", power on: "<<(double)powerOn<<" Time: "<<(double)time/(4096. * 40000000.)<<endl;
-//        tcout<<std::hex<<pixdata<<std::dec<<endl;
+        // Ignore packets if they arrive before the current event window
+        if( parameters->eventLength != 0. && ((double)time/(4096. * 40000000.)) < (parameters->currentTime) ){
+          continue;
+        }
         
+        // Stop looking at data if the signal is after the current event window (and rewind the file
+        // reader so that we start with this signal next event)
+        if( parameters->eventLength != 0. &&
+           ((double)time/(4096. * 40000000.)) > (parameters->currentTime + parameters->eventLength) ){
+          fseek(m_currentFile[detectorID], -1 * sizeof(ULong64_t), SEEK_CUR);
+          fileNotFinished = true;
+          break;
+        }
+
+        
+        
+        
+        SpidrSignal* powerSignal = (powerOn ? new SpidrSignal("powerOn",time) : new SpidrSignal("powerOff",time));
+        spidrData->push_back(powerSignal);
+        if(debug) tcout<<"Power is "<< (powerOn ? "on" : "off") <<" power! Time: "<<std::setprecision(10)<<(double)time/(4096. * 40000000.)<<endl;
+        
+//				cout<<endl;
+//				tcout<<"Shutter closed: "<<hex<<shutterClosed<<dec<<endl;
+        
+        SpidrSignal* shutterSignal = (shutterClosed ? new SpidrSignal("shutterClosed",time) : new SpidrSignal("shutterOpen",time));
+        if(!shutterClosed){
+          spidrData->push_back(shutterSignal);
+          m_shutterOpen = true;
+//          tcout<<"Have opened shutter with signal "<<shutterSignal->type()<<" at time "<<(double)time/(4096. * 40000000.)<<endl;
+        }
+        
+        if(shutterClosed && m_shutterOpen){
+          spidrData->push_back(shutterSignal);
+          m_shutterOpen = false;
+//          tcout<<"Have closed shutter with signal "<<shutterSignal->type()<<" at time "<<(double)time/(4096. * 40000000.)<<endl;
+        }
+        
+        if(debug) tcout<<"Shutter is "<< (shutterClosed ? "closed" : "open") <<". Time: "<<std::setprecision(10)<<(double)time/(4096. * 40000000.)<<endl;
         
        }
       
