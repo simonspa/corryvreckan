@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
   parameters->excludedFromTracking["W0005_H03"] = true;
   parameters->excludedFromTracking["W0013_F09"] = true;
   
-  spatialTracking->debug = true;
+//  spatialTracking->debug = true;
   //testAlgorithm->makeCorrelations = true;
   //dataDump->m_detector = parameters->DUT;
   
@@ -135,7 +135,7 @@ int main(int argc, char *argv[]) {
 //  analysis->add(testAlgorithm);
 //  analysis->add(basicTracking);
 //  analysis->add(dutAnalysis);
-//  analysis->add(clicpixAnalysis);
+  analysis->add(clicpixAnalysis);
 //  analysis->add(fileWriter);
 //  analysis->add(dataDump);
 
