@@ -226,7 +226,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
     if(matched){
       
       // Some test plots of pixel response function
-//      fillResponseHistos(chipInterceptRow,chipInterceptCol,trackIntercept.X(),trackIntercept.Y(),(*bestCluster));
+      fillResponseHistos(trackIntercept.X(),trackIntercept.Y(),(*bestCluster));
       
       // Add this cluster to the list of associated clusters held by this track. This will allow alignment to take place
       track->addAssociatedCluster(*bestCluster);
@@ -422,6 +422,29 @@ void ClicpixAnalysis::fillClusterHistos(Clusters* clusters){
   
   hClustersPerEvent->Fill(clusters->size());
   hClustersVersusEventNo->Fill(m_eventNumber,clusters->size());
+  
+  return;
+}
+
+// Sub-routine to look at pixel response, ie. how far from the pixel is the track intercept for the pixel to still see charge
+void ClicpixAnalysis::fillResponseHistos(double trackInterceptX, double trackInterceptY, Cluster* cluster){
+  
+  // Loop over pixels in the cluster and show their distance from the track intercept
+  Pixels pixels = cluster->pixels();
+  Pixels::iterator itp;
+  for (itp = pixels.begin(); itp != pixels.end(); itp++) {
+    
+    // Get the pixel
+    Pixel* pixel = (*itp);
+    // Get the pixel local then global position
+    PositionVector3D<Cartesian3D<double> > pixelPositionLocal = parameters->detector[dutID]->getLocalPosition(pixel->m_row,pixel->m_column);
+    PositionVector3D<Cartesian3D<double> > pixelPositionGlobal = *(parameters->detector[dutID]->m_localToGlobal) * pixelPositionLocal;
+
+    // Fill the response histograms
+    hPixelResponseX->Fill( pixelPositionGlobal.X() - trackInterceptX );
+    hPixelResponseY->Fill( pixelPositionGlobal.Y() - trackInterceptY );
+    
+  }
   
   return;
 }
