@@ -16,6 +16,7 @@
 #include "TestAlgorithm.h"
 #include "Timepix3EventLoader.h"
 #include "Timepix3Clustering.h"
+#include "Timepix1EventLoader.h"
 #include "Timepix1Clustering.h"
 #include "Timepix3MaskCreator.h"
 #include "BasicTracking.h"
@@ -61,6 +62,7 @@ int main(int argc, char *argv[]) {
   // Algorithm list
   Timepix3EventLoader*	tpix3EventLoader	= new Timepix3EventLoader(debug);
   Timepix3Clustering*		tpix3Clustering		= new Timepix3Clustering(debug);
+  Timepix1EventLoader*	tpix1EventLoader	= new Timepix1EventLoader(debug);
   Timepix1Clustering*		tpix1Clustering		= new Timepix1Clustering(debug);
   TestAlgorithm* 				testAlgorithm			= new TestAlgorithm(debug);
   Timepix3MaskCreator*	tpix3MaskCreator	= new Timepix3MaskCreator(debug);
@@ -81,12 +83,16 @@ int main(int argc, char *argv[]) {
   // =========================================================================
   
   // General parameters
-  parameters->reference = "W0013_G03";
+//  parameters->reference = "W0013_G03";
 //  parameters->DUT = "W0005_E02";
 //  parameters->DUT = "W0002_J05";
 //  parameters->reference = "W0013_G03";
 //  parameters->DUT = "W0019_L08";
-  parameters->DUT = "W0019_F07";
+//  parameters->DUT = "W0019_F07";
+
+  // Clicpix parameters
+  parameters->reference = "Mim-osa02";
+  parameters->DUT = "CLi-CPix";
 
   parameters->detectorToAlign = parameters->DUT;
   parameters->excludedFromTracking[parameters->DUT] = true;
@@ -98,11 +104,12 @@ int main(int argc, char *argv[]) {
   parameters->excludedFromTracking["W0019_F07"] = true;
   parameters->excludedFromTracking["W0019_L08"] = true;
   parameters->excludedFromTracking["W0005_H03"] = true;
-
   parameters->excludedFromTracking["W0013_F09"] = true;
-  //tpix3EventLoader->debug = true;
+  
+  spatialTracking->debug = true;
   //testAlgorithm->makeCorrelations = true;
-  dataDump->m_detector = parameters->DUT;
+  //dataDump->m_detector = parameters->DUT;
+  
   // =========================================================================
   // Steering file ends
   // =========================================================================
@@ -119,15 +126,15 @@ int main(int argc, char *argv[]) {
   // Initialise the analysis object and add algorithms to run
   analysis = new Analysis(parameters);
 //  analysis->add(tpix1EventLoader);
-//  analysis->add(fileReader);
-//  analysis->add(tpix1Clustering);
-//  analysis->add(spatialTracking);
+  analysis->add(fileReader);
+  analysis->add(tpix1Clustering);
+  analysis->add(spatialTracking);
 //  analysis->add(correlator);
-  analysis->add(tpix3EventLoader);
-  analysis->add(tpix3Clustering);
-  analysis->add(testAlgorithm);
-  analysis->add(basicTracking);
-  analysis->add(dutAnalysis);
+//  analysis->add(tpix3EventLoader);
+//  analysis->add(tpix3Clustering);
+//  analysis->add(testAlgorithm);
+//  analysis->add(basicTracking);
+//  analysis->add(dutAnalysis);
 //  analysis->add(clicpixAnalysis);
 //  analysis->add(fileWriter);
 //  analysis->add(dataDump);
