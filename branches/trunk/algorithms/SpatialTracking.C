@@ -49,7 +49,7 @@ void SpatialTracking::initialise(Parameters* par){
 StatusCode SpatialTracking::run(Clipboard* clipboard){
   
   // Container for all clusters, and detectors in tracking
-  map<string,KDTree> trees;
+  map<string,KDTree*> trees;
   vector<string> detectors;
   Clusters* referenceClusters;
 
@@ -77,8 +77,8 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
       if(tempClusters->size() == 0) continue;
       
       // Make trees of the clusters on each plane
-      KDTree clusterTree;
-      clusterTree.buildSpatialTree(*tempClusters);
+      KDTree* clusterTree = new KDTree();
+      clusterTree->buildSpatialTree(*tempClusters);
       trees[detectorID] = clusterTree;
       detectors.push_back(detectorID);
       if(debug) tcout<<"Picked up "<<tempClusters->size()<<" clusters on device "<<detectorID<<endl;
@@ -120,8 +120,9 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
       
       // Get the closest neighbour
       if(debug)tcout<<"- looking for nearest cluster on device "<<detectors[det]<<endl;
-      Cluster* closestCluster = trees[detectors[det]].getClosestNeighbour(cluster);
+      Cluster* closestCluster = trees[detectors[det]]->getClosestNeighbour(cluster);
 
+      if(debug) tcout <<"still alive"<<endl;
       // If it is used do nothing
 //      if(used[closestCluster]) continue;
       
@@ -175,6 +176,12 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
   tracksPerEvent->Fill(tracks->size());
   if(tracks->size() > 0){
     clipboard->put("tracks",(TestBeamObjects*)tracks);
+  }
+  
+  // Clean up tree objects
+  for(int det = 0; det<parameters->nDetectors; det++){
+    string detectorID = parameters->detectors[det];
+    if(trees.count(detectorID) != 0) delete trees[detectorID];
   }
 
   return Success;
