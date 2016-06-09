@@ -98,7 +98,7 @@ public:
   std::map<int,bool> m_columnHits;
   
   // ROOT I/O class definition - update version number when you change this class!
-  ClassDef(Cluster,1)
+  ClassDef(Cluster,2)
 
 };
 
