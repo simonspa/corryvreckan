@@ -6,7 +6,7 @@
 ClicpixAnalysis::ClicpixAnalysis(bool debugging)
 : Algorithm("ClicpixAnalysis"){
   debug = debugging;
-  m_associationCut = 0.3; // 300 um
+  m_associationCut = 0.1; // 100 um
   m_proximityCut = 0.125; // 125 um
 }
 
@@ -114,7 +114,7 @@ void ClicpixAnalysis::initialise(Parameters* par){
   hInterceptClusterSize4 = new TH2F("hInterceptClusterSize4","hInterceptClusterSize4",50,0,50,25,0,25);
   
   // Initialise member variables
-  m_eventNumber = 0; m_triggerNumber = 0; dutID = parameters->DUT;
+  m_eventNumber = 0; m_triggerNumber = 0; dutID = parameters->DUT; m_lostHits = 0.;
 
 }
 
@@ -275,23 +275,26 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
         hInterceptClusterSize4->Fill(pixelInterceptX,pixelInterceptY);
       }
     }else{
-      /*
-      // Search for lost hits. Basically loop through all pixels in all clusters and see if any are close
+      
+      // Search for lost hits. Basically loop through all pixels in all clusters and see if any are close.
+      // Large clusters (such as from deltas) can pull the cluster centre sufficiently far from the track
       bool pixelMatch = false; int size=0;
-      for (itc = clusters->begin(); itc != clusters->end(); ++itc) {
-        if (!(*itc)) continue; //if(matched) continue;
-        string chip = (*itc)->detectorId();
-        // Only look at the clicpix
-        if(chip != "CLi-CPix") continue;
+      for (itCorrelate = clusters->begin(); itCorrelate != clusters->end(); ++itCorrelate) {
+        if(pixelMatch) break;
         // Loop over pixels
-        vector<RowColumnEntry*>::const_iterator ith;
-        for (ith = (*itc)->hits()->begin(); ith != (*itc)->hits()->end(); ++ith) {
+        Pixels::const_iterator itPixel;
+        for (itPixel = (*itCorrelate)->pixels().begin(); itPixel != (*itCorrelate)->pixels().end(); itPixel++) {
           
-          // Check if this pixel is within the search window
-          if( fabs((*ith)->column()-chipInterceptCol) > (residualmaxx/parameters->pixelPitchX["CLi-CPix"]) ||
-             fabs((*ith)->row()-chipInterceptRow)    > (residualmaxy/parameters->pixelPitchY["CLi-CPix"]) ) continue;
+          // Get the pixel global position
+          PositionVector3D<Cartesian3D<double> > pixelPositionLocal = parameters->detector[dutID]->getLocalPosition((*itPixel)->m_row,(*itPixel)->m_column);
+          PositionVector3D<Cartesian3D<double> > pixelPositionGlobal = *(parameters->detector[dutID]->m_localToGlobal) * pixelPositionLocal;
+          
+          // Check if it is close to the track
+          if( fabs( pixelPositionGlobal.X() - trackIntercept.X() ) > m_associationCut ||
+              fabs( pixelPositionGlobal.Y() - trackIntercept.Y() ) > m_associationCut ) continue;
           
           pixelMatch=true;
+          break;
         }
       }
       // Increment counter for number of hits found this way
@@ -299,7 +302,6 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
         m_lostHits++;
         hTrackInterceptsChipLost->Fill(chipInterceptCol,chipInterceptRow);
       }
-           */
     }
   }
   
@@ -331,9 +333,8 @@ void ClicpixAnalysis::finalise(){
   tcout<<"***** Clicpix efficiency calculation *****"<<endl;
   tcout<<"***** ntracks: "<<(int)nTracks<<", nclusters "<<(int)nClusters<<endl;
   tcout<<"***** Efficiency: "<<100.*efficiency<<" +/- "<<100.*errorEfficiency<<" %"<<endl;
-  
+  tcout<<"***** If including the "<<(int)m_lostHits<<" lost pixel hits, this becomes "<<100.*(m_lostHits+nClusters)/nTracks<<" %"<<endl;
   tcout<<endl;
-//  tcout<<"***** If including the "<<(int)m_lostHits<<" lost pixel hits, this becomes "<<100.*(m_lostHits+nClusters)/nTracks<<" %"<<endl;
 
 }
 
