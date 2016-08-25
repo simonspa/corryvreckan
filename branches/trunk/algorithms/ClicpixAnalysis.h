@@ -115,6 +115,7 @@ public:
   double m_associationCut;
   double m_proximityCut;
   double m_lostHits;
+  bool timepix3Telescope;
   
 };
 

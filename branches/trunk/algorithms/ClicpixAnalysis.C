@@ -8,6 +8,7 @@ ClicpixAnalysis::ClicpixAnalysis(bool debugging)
   debug = debugging;
   m_associationCut = 0.1; // 100 um
   m_proximityCut = 0.125; // 125 um
+  timepix3Telescope = false;
 }
 
 
@@ -135,7 +136,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
   }
   
   // If this is the first or last trigger don't use the data
-  if( m_triggerNumber == 0 || m_triggerNumber == 19){
+  if( (m_triggerNumber == 0 || m_triggerNumber == 19) && !timepix3Telescope){
     m_eventNumber++;
     m_triggerNumber++;
     return Success;
