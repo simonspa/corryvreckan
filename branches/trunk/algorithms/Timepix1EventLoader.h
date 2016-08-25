@@ -8,6 +8,7 @@
 #include "TCanvas.h"
 #include <sstream>
 #include <fstream>
+#include <string>
 
 class Timepix1EventLoader : public Algorithm {
   

@@ -13,8 +13,18 @@ Timepix1EventLoader::Timepix1EventLoader(bool debugging)
 
 bool sortByTime(string filename1, string filename2){
   
-  double filetime1 = stod(filename1.substr(filename1.length()-13,9));
-  double filetime2 = stod(filename2.substr(filename2.length()-13,9));
+  //double filetime1 = stod(filename1.substr(filename1.length()-13,9));
+  //double filetime2 = stod(filename2.substr(filename2.length()-13,9));
+  
+  string timestring1 = filename1.substr(filename1.length()-13,9);
+  string timestring2 = filename2.substr(filename2.length()-13,9);
+  
+  std::istringstream timestream1(timestring1);
+  std::istringstream timestream2(timestring2);
+
+  double filetime1, filetime2;
+  timestream1 >> filetime1;
+  timestream2 >> filetime2;
 
   return (filetime1 < filetime2);
 }
@@ -171,7 +181,12 @@ StatusCode Timepix1EventLoader::run(Clipboard* clipboard){
 }
 
 void Timepix1EventLoader::processHeader(string header, string& device, long long int& time){
-  time = stod(header.substr(header.find("Start time : ")+13,13));
+  //time = stod(header.substr(header.find("Start time : ")+13,13));
+  
+  string timestring = header.substr(header.find("Start time : ")+13,13);
+  std::istringstream timestream(timestring);
+  timestream >> time;
+
   device = header.substr(header.find("ChipboardID : ")+14,header.find(" # DACs")-(header.find("ChipboardID : ")+14));
 }
 
