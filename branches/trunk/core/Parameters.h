@@ -186,11 +186,11 @@ public:
 
   // Functions to get row and column from local position
   double getRow(PositionVector3D<Cartesian3D<double> > localPosition){
-    double row = (localPosition.Y()/m_pitchY) + m_nPixelsY/2.;
+    double row = ((localPosition.Y() + m_pitchY/2.)/m_pitchY) + m_nPixelsY/2.;
     return row;
   }
   double getColumn(PositionVector3D<Cartesian3D<double> > localPosition){
-    double column = (localPosition.X()/m_pitchX) + m_nPixelsX/2.;
+    double column = ((localPosition.X()+ m_pitchY/2.)/m_pitchX) + m_nPixelsX/2.;
     return column;
   }
   
@@ -207,12 +207,12 @@ public:
   // Function to get in-pixel position (value returned in microns)
   double inPixelX(PositionVector3D<Cartesian3D<double> > localPosition){
     double column = getColumn(localPosition);
-    double inPixelX = m_pitchX * (column + m_pitchX/2. - floor(column + m_pitchX/2.));
+    double inPixelX = m_pitchX * (column - floor(column));
     return 1000.*inPixelX;
   }
   double inPixelY(PositionVector3D<Cartesian3D<double> > localPosition){
     double row = getRow(localPosition);
-    double inPixelY = m_pitchY * (row + m_pitchY/2. - floor(row + m_pitchY/2.));
+    double inPixelY = m_pitchY * (row - floor(row));
     return 1000.*inPixelY;
   }
   
