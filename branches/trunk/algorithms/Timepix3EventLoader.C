@@ -48,6 +48,10 @@ void Timepix3EventLoader::initialise(Parameters* par){
       
       // Check if this device is to be masked
       if(parameters->masked.count(detectorID) != 0) continue;
+
+      // Check if this device has conditions loaded and is a Timepix3
+      if(parameters->detector.count(detectorID) == 0) continue;
+      if(parameters->detector[detectorID]->m_detectorType != "Timepix3") continue;
       
       // Get all of the files for this chip
       while (file = readdir(dataDir)){
