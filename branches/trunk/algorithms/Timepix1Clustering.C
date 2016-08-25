@@ -24,7 +24,7 @@ void Timepix1Clustering::initialise(Parameters* par){
     
     // Check if they are a Timepix1
     string detectorID = parameters->detectors[det];
-    if(parameters->detector[detectorID]->type() != "Timepix1") continue;
+    if(parameters->detector[detectorID]->type() != "Timepix1" && parameters->detector[detectorID]->type() != "CLICpix") continue;
     
   }
 
@@ -39,7 +39,8 @@ StatusCode Timepix1Clustering::run(Clipboard* clipboard){
     
     // Check if they are a Timepix1
     string detectorID = parameters->detectors[det];
-    if(parameters->detector[detectorID]->type() != "Timepix1") continue;
+    if(parameters->detector[detectorID]->type() != "Timepix1" &&
+       parameters->detector[detectorID]->type() != "CLICpix") continue;
 		
     // Get the pixels
     Pixels* pixels = (Pixels*)clipboard->get(detectorID,"pixels");
