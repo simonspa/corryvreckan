@@ -12,6 +12,7 @@
 #include <dirent.h>
 #include <sstream>
 #include <fstream>
+#include <stdint.h>
 
 class DataDump : public Algorithm {
   
