@@ -7,7 +7,7 @@ ClicpixAnalysis::ClicpixAnalysis(bool debugging)
 : Algorithm("ClicpixAnalysis"){
   debug = debugging;
   m_associationCut = 0.1; // 100 um
-  m_proximityCut = 0.125; // 125 um
+  m_proximityCut = 0.00001; // 125 um
   timepix3Telescope = false;
 }
 
@@ -103,6 +103,7 @@ void ClicpixAnalysis::initialise(Parameters* par){
   hTrackInterceptsPixelAssociated = new TH2F("hTrackInterceptsPixelAssociated","hTrackInterceptsPixelAssociated",50,0,50,25,0,25);
   hTrackInterceptsChip = new TH2F("hTrackInterceptsChip","hTrackInterceptsChip",65,-0.5,64.5,65,-0.5,64.5);
   hTrackInterceptsChipAssociated = new TH2F("hTrackInterceptsChipAssociated","hTrackInterceptsChipAssociated",65,-0.5,64.5,65,-0.5,64.5);
+  hTrackInterceptsChipUnassociated = new TH2F("hTrackInterceptsChipUnassociated","hTrackInterceptsChipUnassociated",65,-0.5,64.5,65,-0.5,64.5);
   hTrackInterceptsChipLost = new TH2F("hTrackInterceptsChipLost","hTrackInterceptsChipLost",65,-0.5,64.5,65,-0.5,64.5);
   
   hPixelEfficiencyMap = new TH2F("hPixelEfficiencyMap","hPixelEfficiencyMap",50,0,50,25,0,25);
@@ -121,13 +122,6 @@ void ClicpixAnalysis::initialise(Parameters* par){
 
 StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
   
-	// Get the tracks in this event
-  Tracks* tracks = (Tracks*)clipboard->get("tracks");
-  if(tracks == NULL){
-    if(debug) tcout<<"No tracks on the clipboard"<<endl;
-    return Success;
-  }
-
   // Get the clicpix clusters in this event
   Clusters* clusters = (Clusters*)clipboard->get(dutID,"clusters");
   if(clusters == NULL){
@@ -144,6 +138,13 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
   
   // Fill the histograms that only need clusters/pixels
   fillClusterHistos(clusters);
+  
+  // Get the tracks in this event
+  Tracks* tracks = (Tracks*)clipboard->get("tracks");
+  if(tracks == NULL){
+    if(debug) tcout<<"No tracks on the clipboard"<<endl;
+    return Success;
+  }
   
   //Set counters
   double nClustersAssociated=0, nValidTracks=0;
@@ -280,13 +281,15 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
       // Search for lost hits. Basically loop through all pixels in all clusters and see if any are close.
       // Large clusters (such as from deltas) can pull the cluster centre sufficiently far from the track
       bool pixelMatch = false; int size=0;
-      for (itCorrelate = clusters->begin(); itCorrelate != clusters->end(); ++itCorrelate) {
+/*      for (itCorrelate = clusters->begin(); itCorrelate != clusters->end(); ++itCorrelate) {
         if(pixelMatch) break;
         // Loop over pixels
         Pixels::const_iterator itPixel;
         for (itPixel = (*itCorrelate)->pixels().begin(); itPixel != (*itCorrelate)->pixels().end(); itPixel++) {
           
           // Get the pixel global position
+          tcout<<"New pixel"<<endl;
+          tcout<<"Row = "<<(*itPixel)->m_row<<", column = "<<(*itPixel)->m_column<<endl;
           PositionVector3D<Cartesian3D<double> > pixelPositionLocal = parameters->detector[dutID]->getLocalPosition((*itPixel)->m_row,(*itPixel)->m_column);
           PositionVector3D<Cartesian3D<double> > pixelPositionGlobal = *(parameters->detector[dutID]->m_localToGlobal) * pixelPositionLocal;
           
@@ -302,7 +305,9 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
       if(pixelMatch){
         m_lostHits++;
         hTrackInterceptsChipLost->Fill(chipInterceptCol,chipInterceptRow);
-      }
+      }*/
+      
+      if(!pixelMatch) hTrackInterceptsChipUnassociated->Fill(chipInterceptCol,chipInterceptRow);
     }
   }
   
