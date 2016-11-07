@@ -8,11 +8,11 @@ CLICpixEventLoader::CLICpixEventLoader(bool debugging)
 
 
 void CLICpixEventLoader::initialise(Parameters* par){
- 
+  
   parameters = par;
   
   // File structure is RunX/CLICpix/RunX.dat
-
+  
   // Take input directory from global parameters
   string inputDirectory = parameters->inputDirectory + "/CLICpix";
   
@@ -35,11 +35,18 @@ void CLICpixEventLoader::initialise(Parameters* par){
   
   // Open the data file for later
   m_file.open(m_filename.c_str());
+  
+  // Make histograms for debugging
+  hHitMap = new TH2F("hitMap","hitMap",64,0,64,64,0,64);
+  hPixelToT = new TH1F("pixelToT","pixelToT",20,0,20);
+  hShutterLength = new TH1F("shutterLength","shutterLength",3000,0,0.3);
+  hPixelsPerFrame = new TH1F("pixelsPerFrame","pixelsPerFrame",4100,0,4100);
 }
 
 
 StatusCode CLICpixEventLoader::run(Clipboard* clipboard){
   
+//  tcout<<"Running"<<endl;
   // Assume that the CLICpix is the DUT (if running this algorithm
   string detectorID = parameters->DUT;
 		
@@ -52,15 +59,18 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard){
   // Otherwise load a new frame
   
   // Pixel container, shutter information
-  Pixels* pixels;
+  Pixels* pixels = new Pixels();
   long double shutterStartTime, shutterStopTime;
   string data;
   
+  int npixels=0;
   // Read file and load data
-	while(getline(m_file,data)){
+  while(getline(m_file,data)){
+    
+//    tcout<<"Data: "<<data<<endl;
     
     // If line is empty then we have finished this event, stop looping
-    if(data.length() == 0) break;
+    if(data.length() < 5) break;
     
     // Check if this is a header/shutter/power info
     if(data.find("PWR_RISE") != string::npos || data.find("PWR_FALL") != string::npos) continue;
@@ -69,7 +79,8 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard){
       long int timeInt; string name;
       istringstream header(data);
       header >> name >> timeInt;
-      shutterStartTime = (double)timeInt/(4096. * 40000000.);
+      shutterStartTime = (double)timeInt/(40000000.);
+//      tcout<<"Shutter rise time: "<<shutterStartTime<<endl;
       continue;
     }
     if(data.find("SHT_FALL") != string::npos){
@@ -77,27 +88,43 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard){
       long int timeInt; string name;
       istringstream header(data);
       header >> name >> timeInt;
-      shutterStopTime = (double)timeInt/(4096. * 40000000.);
+      shutterStopTime = (double)timeInt/(40000000.);
+//      tcout<<"Shutter fall time: "<<shutterStopTime<<endl;
       continue;
     }
     
     // Otherwise load data
-    int row, col, tot;
+    int row, col, counter, tot(0);
     long int time;
+//    tcout<<"Pixel data: "<<data<<endl;
     istringstream pixelData(data);
-    pixelData >> col >> row >> tot;
-    Pixel* pixel = new Pixel(detectorID,row,col,tot);
-    pixels->push_back(pixel);
+    pixelData >> col >> row >> counter >> tot;
+    tot++;
+    row=63-row;
+//    tcout<<"New pixe: "<<col<<","<<row<<" with tot "<<tot<<endl;
 
+    // If this pixel is masked, do not save it
+    if(parameters->detector[detectorID]->masked(col,row)) continue;
+    Pixel* pixel = new Pixel(detectorID,row,col,tot,0);
+    pixels->push_back(pixel);
+    npixels++;
+    hHitMap->Fill(col,row);
+    hPixelToT->Fill(tot);
+    
   }
   
   // Now set the event time so that the Timepix3 data is loaded correctly
   parameters->currentTime = shutterStartTime;
   parameters->eventLength = (shutterStopTime-shutterStartTime);
-
+  
+//  tcout<<"Loaded "<<npixels<<" pixels"<<endl;
   // Put the data on the clipboard
-  clipboard->put(detectorID,"pixels",(TestBeamObjects*)pixels);
-
+  if(pixels->size() > 0) clipboard->put(detectorID,"pixels",(TestBeamObjects*)pixels);
+  
+  // Fill histograms
+  hPixelsPerFrame->Fill(npixels);
+  hShutterLength->Fill(shutterStopTime-shutterStartTime);
+  
   // Return value telling analysis to keep running
   return Success;
 }

@@ -98,6 +98,7 @@ public:
   TH2F* hTrackInterceptsPixelAssociated;
   TH2F* hTrackInterceptsChip;
   TH2F* hTrackInterceptsChipAssociated;
+  TH2F* hTrackInterceptsChipUnassociated;
   TH2F* hTrackInterceptsChipLost;
   TH2F* hPixelEfficiencyMap;
   TH2F* hChipEfficiencyMap;

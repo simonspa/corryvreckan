@@ -194,6 +194,7 @@ void Parameters::readDutMask() {
   if(dutMaskFile == "defaultMask.dat") return;
   detector[this->DUT]->setMaskFile(dutMaskFile);
   // Open the file with masked pixels
+  std::cout<<"Reading DUT mask file from "<<dutMaskFile<<std::endl;
   std::fstream inputMaskFile(dutMaskFile.c_str(), std::ios::in);
   int row,col; std::string id;
   std::string line;

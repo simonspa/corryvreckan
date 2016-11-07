@@ -9,7 +9,7 @@ BasicTracking::BasicTracking(bool debugging)
   // Default values for cuts
   timingCut = 200./1000000000.;		// 200 ns
   spatialCut = 0.2; 							// 200 um
-  minHitsOnTrack = 4;
+  minHitsOnTrack = 6;
 
 }
 

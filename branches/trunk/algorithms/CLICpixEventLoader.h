@@ -31,6 +31,11 @@ public:
   string m_filename;
   ifstream m_file;
   
+  TH2F* hHitMap;
+  TH1F* hPixelToT;
+  TH1F* hShutterLength;
+  TH1F* hPixelsPerFrame;
+  
 };
 
 #endif // CLICpixEventLoader_H

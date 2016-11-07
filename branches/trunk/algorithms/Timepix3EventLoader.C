@@ -263,11 +263,16 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
       if(header2 == 0x5){
         // The data is shifted 16 bits to the right, then 44 to the left in order to match the timestamp format (net 28 left)
         m_syncTime[detectorID] = (m_syncTime[detectorID] & 0x00000FFFFFFFFFFF) + ((pixdata & 0x00000000FFFF0000) << 28);
-        if( m_syncTime[detectorID] < 0x0000010000000000 && !m_clearedHeader[detectorID]) m_clearedHeader[detectorID] = true;
+//        if( m_syncTime[detectorID] < 0x0000010000000000 && !m_clearedHeader[detectorID]) m_clearedHeader[detectorID] = true;
+        if(!m_clearedHeader[detectorID] && (double)m_syncTime[detectorID]/(4096. * 40000000.) < 6.) m_clearedHeader[detectorID] = true;
       }
+//      if(detectorID == "W0019_F07") tcout<<"Updating heartbeat. Now syncTime = "<<(double)m_syncTime[detectorID]/(4096. * 40000000.)<<endl;
       
-//      if(extra) tcout<<"Updating heartbeat. Now syncTime = "<<(double)m_syncTime[detectorID]/(4096. * 40000000.)<<endl;
+       //tcout<<"Updating heartbeat. Now syncTime = "<<(double)m_syncTime[detectorID]/(4096. * 40000000.)<<" for detector "<<detectorID<<endl;
     }
+    
+    if(!m_clearedHeader[detectorID]) continue;
+
     
     // Header 0x06 and 0x07 are the start and stop signals for power pulsing
     if(header == 0x0){
@@ -293,12 +298,14 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
           continue;
         }
         
+        
         // Stop looking at data if the signal is after the current event window (and rewind the file
         // reader so that we start with this signal next event)
         if( parameters->eventLength != 0. &&
            ((double)time/(4096. * 40000000.)) > (parameters->currentTime + parameters->eventLength) ){
           fseek(m_currentFile[detectorID], -1 * sizeof(ULong64_t), SEEK_CUR);
           fileNotFinished = true;
+//          if(debug) tcout<<"Signal has a time beyond the current event: "<<(double)time/(4096. * 40000000.)<<endl;
           break;
         }
 
@@ -428,6 +435,8 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
     }
     
   }
+  
+  debug = false;
   
   // If no data was loaded, return false
   if(npixels == 0) return false;
