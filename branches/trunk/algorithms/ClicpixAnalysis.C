@@ -11,11 +11,20 @@ ClicpixAnalysis::ClicpixAnalysis(bool debugging)
   timepix3Telescope = false;
 }
 
+template <typename T>
+std::string convertToString(T number) {
+  std::ostringstream ss;
+  ss << number;
+  return ss.str();
+}
 
 void ClicpixAnalysis::initialise(Parameters* par){
  
   parameters = par;
   
+  // Initialise member variables
+  m_eventNumber = 0; m_triggerNumber = 0; dutID = parameters->DUT; m_lostHits = 0.;
+
   // Cluster/pixel histograms
   hHitPixels = new TH2F("hHitPixels","hHitPixels",64,0,64,64,0,64);
   hColumnHits = new TH1F("hColumnHits","hColumnHits",64,0,64);
@@ -23,7 +32,7 @@ void ClicpixAnalysis::initialise(Parameters* par){
   
   hClusterSizeAll = new TH1F("hClusterSizeAll","hClusterSizeAll",20,0,20);
   hClusterTOTAll = new TH1F("hClusterTOTAll","hClusterTOTAll",50,0,50);
-  hClustersPerEvent = new TH1F("hClustersPerEvent","hClustersPerEvent",50,0,50);
+  hClustersPerEvent = new TH1F("hClustersPerEvent","hClustersPerEvent",500,0,500);
   hClustersVersusEventNo = new TH1F("hClustersVersusEventNo","hClustersVersusEventNo",60000,0,60000);
   hGlobalClusterPositions = new TH2F("hGlobalClusterPositions","hGlobalClusterPositions",200,-2.0,2.0,300,-1.,2);
   
@@ -47,6 +56,9 @@ void ClicpixAnalysis::initialise(Parameters* par){
   hGlobalResidualsYversusColWidth = new TH2F("hGlobalResidualsYversusColWidth","hGlobalResidualsYversusColWidth",30,0,30,600,-0.3,0.3);
   hGlobalResidualsYversusRowWidth = new TH2F("hGlobalResidualsYversusRowWidth","hGlobalResidualsYversusRowWidth",30,0,30,600,-0.3,0.3);
   
+  hTrackInterceptRow = new TH1F("hTrackInterceptRow","hTrackInterceptRow",660,-1.,65.);
+  hTrackInterceptCol = new TH1F("hTrackInterceptCol","hTrackInterceptCol",660,-1.,65.);
+
   hAbsoluteResidualMap = new TH2F("hAbsoluteResidualMap","hAbsoluteResidualMap",50,0,50,25,0,25);
   hXresidualVersusYresidual = new TH2F("hXresidualVersusYresidual","hXresidualVersusYresidual",600,-0.3,0.3,600,-0.3,0.3);
   
@@ -115,9 +127,20 @@ void ClicpixAnalysis::initialise(Parameters* par){
   hInterceptClusterSize3 = new TH2F("hInterceptClusterSize3","hInterceptClusterSize3",50,0,50,25,0,25);
   hInterceptClusterSize4 = new TH2F("hInterceptClusterSize4","hInterceptClusterSize4",50,0,50,25,0,25);
   
-  // Initialise member variables
-  m_eventNumber = 0; m_triggerNumber = 0; dutID = parameters->DUT; m_lostHits = 0.;
-
+  m_nBinsX=32; m_nBinsY=32;
+  hMapClusterSizeAssociated = new TH2F("hMapClusterSizeAssociated","hMapClusterSizeAssociated",m_nBinsX,0,parameters->detector[dutID]->nPixelsX(),m_nBinsY,0,parameters->detector[dutID]->nPixelsY());
+  
+  for(int x=0;x<m_nBinsX;x++){
+    for(int y=0;y<m_nBinsY;y++){
+      int id = x+y*m_nBinsX;
+      std::string name = "hMapClusterTOTAssociated1pix"+convertToString(id);
+      TH1F* hMapEntryClusterTOTAssociated1pix = new TH1F(name.c_str(),name.c_str(),50,0,50);
+      hMapClusterTOTAssociated1pix[id] = hMapEntryClusterTOTAssociated1pix;
+    }
+  }
+  
+  
+  
 }
 
 StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
@@ -259,10 +282,14 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
       hClusterSizeAssociated->Fill((*bestCluster)->size());
 //      hClusterWidthColAssociated->Fill((*bestCluster)->colWidth());
 //      hClusterWidthRowAssociated->Fill((*bestCluster)->rowWidth());
+            
+      hMapClusterSizeAssociated->Fill(chipInterceptCol,chipInterceptRow,(*bestCluster)->tot());
       
       if((*bestCluster)->size() == 1){
         hClusterTOTAssociated1pix->Fill((*bestCluster)->tot());
         hInterceptClusterSize1->Fill(pixelInterceptX,pixelInterceptY);
+        int id = floor(chipInterceptCol*m_nBinsX/parameters->detector[dutID]->nPixelsX())+floor(chipInterceptRow*m_nBinsY/parameters->detector[dutID]->nPixelsY())*m_nBinsX;
+        hMapClusterTOTAssociated1pix[id]->Fill((*bestCluster)->tot());
       }
       if((*bestCluster)->size() == 2){
         hClusterTOTAssociated2pix->Fill((*bestCluster)->tot());
@@ -302,10 +329,10 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
         }
       }
       // Increment counter for number of hits found this way
-      if(pixelMatch){
+*/      if(pixelMatch){
         m_lostHits++;
         hTrackInterceptsChipLost->Fill(chipInterceptCol,chipInterceptRow);
-      }*/
+      }//*/
       
       if(!pixelMatch) hTrackInterceptsChipUnassociated->Fill(chipInterceptCol,chipInterceptRow);
     }

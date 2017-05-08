@@ -3,6 +3,7 @@
 
 #include "Algorithm.h"
 #include <iostream>
+#include <sstream>
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TCanvas.h"
@@ -49,6 +50,8 @@ public:
   TH2F* hGlobalResidualsXversusRowWidth;
   TH2F* hGlobalResidualsYversusColWidth;
   TH2F* hGlobalResidualsYversusRowWidth;
+  TH1F* hTrackInterceptRow;
+  TH1F* hTrackInterceptCol;
   TH2F* hAbsoluteResidualMap;
   TH2F* hXresidualVersusYresidual;
   TH1F* hAssociatedClustersPerEvent;
@@ -108,6 +111,10 @@ public:
   TH2F* hInterceptClusterSize3;
   TH2F* hInterceptClusterSize4;
   
+  TH2F* hMapClusterSizeAssociated;
+  int m_nBinsX; int m_nBinsY;
+  std::map<int, TH1F*> hMapClusterTOTAssociated1pix;
+
   // Member variables
   int m_eventNumber;
   int m_triggerNumber;
