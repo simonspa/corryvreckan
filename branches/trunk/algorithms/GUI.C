@@ -7,14 +7,13 @@
 GUI::GUI(bool debugging)
 : Algorithm("GUI"){
   debug = debugging;
-  updateNumber = 200;
+  updateNumber = 500;
 }
 
 void startDisplay(void* gui){
   
   // Make the TApplicaitons to allow canvases to stay open (for some reason we need two instances for it to work...)
-  TApplication* app1 = new TApplication("example",0, 0);
-  TApplication* app2 = new TApplication("example",0, 0);
+  TApplication* app = new TApplication("example",0, 0);
   
   // Create the new canvases
   double nDetectors = ((GUI*)gui)->nDetectors;
@@ -26,9 +25,9 @@ void startDisplay(void* gui){
   ((GUI*)gui)->globalHitmapCanvas->Divide(ceil(nDetectors/2.),2);
   ((GUI*)gui)->residualsCanvas = new TCanvas("ResidualsCanvas","Residuals canvas");
   ((GUI*)gui)->residualsCanvas->Divide(ceil(nDetectors/2.),2);
-
+  
   // Run the TApplication
-  app2->Run(true);
+  ((GUI*)gui)->app->Run(true);
   
 }
 
@@ -40,11 +39,21 @@ void GUI::initialise(Parameters* par){
   // Check the number of devices
   nDetectors = parameters->nDetectors;
   
+  app = new TApplication("example",0, 0);
+
+//  trackCanvas = new TCanvas("TrackCanvas","Track canvas");
+//  hitmapCanvas = new TCanvas("HitMapCanvas","Hit map canvas");
+//  hitmapCanvas->Divide(ceil(nDetectors/2.),2);
+//  globalHitmapCanvas = new TCanvas("GlobalHitmapCanvas","Global hit map canvas");
+//  globalHitmapCanvas->Divide(ceil(nDetectors/2.),2);
+//  residualsCanvas = new TCanvas("ResidualsCanvas","Residuals canvas");
+//  residualsCanvas->Divide(ceil(nDetectors/2.),2);
+
 	// Make the thread which will run the display
   displayThread = new TThread("displayThread", startDisplay, (void*) this);
   displayThread->Run();
   sleep(2);
-
+  
   // Loop over all detectors and load the histograms that we will use
   for(int det = 0; det<parameters->nDetectors; det++){
     string detectorID = parameters->detectors[det];
@@ -62,19 +71,17 @@ void GUI::initialise(Parameters* par){
 
 StatusCode GUI::run(Clipboard* clipboard){
 
-  gSystem->ProcessEvents();
-  
+    
   //-----------------------------------------
   // Draw the objects on the tracking canvas
   //-----------------------------------------
 
   trackCanvas->cd();
   TH1F* trackChi2 = (TH1F*)gDirectory->Get("/tbAnalysis/BasicTracking/trackChi2");
-  trackChi2->DrawCopy();
+  trackChi2->Draw();
 
   // Update the canvas
   if(eventNumber%updateNumber == 0){
-//    sleep(0.5);
     trackCanvas->Update();
   }
   
@@ -112,7 +119,7 @@ StatusCode GUI::run(Clipboard* clipboard){
   }
   // Update the canvas
   if(eventNumber%updateNumber == 0) {
-    globalHitmapCanvas->Paint();
+//    globalHitmapCanvas->Paint();
     globalHitmapCanvas->Update();
   }
 
@@ -133,6 +140,7 @@ StatusCode GUI::run(Clipboard* clipboard){
   if(eventNumber%updateNumber == 0){
     residualsCanvas->Paint();
     residualsCanvas->Update();
+//      gSystem->ProcessEvents();
   }
 
   eventNumber++;
@@ -142,14 +150,16 @@ StatusCode GUI::run(Clipboard* clipboard){
   //  ((TCanvas*)gROOT->GetListOfCanvases()->At(0))->Paint();
   //  ((TCanvas*)gROOT->GetListOfCanvases()->At(0))->Update();
   //  gSystem->ProcessEvents();
-
+//*/
 }
   
 
 void GUI::finalise(){
 
   // Kill the display thread
-//  displayThread->Kill();
+    cout<<"Killing thread"<<endl;
+  displayThread->Kill();
+    cout<<"Killed"<<endl;
 
 }
 

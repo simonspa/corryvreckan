@@ -27,6 +27,8 @@ public:
   StatusCode run(Clipboard*);
   void finalise();
   
+  TApplication* app;
+  
   // Canvases to display plots
   TCanvas* trackCanvas;
   TCanvas* hitmapCanvas;
@@ -45,6 +47,7 @@ public:
   int nDetectors;
   int eventNumber;
   int updateNumber;
+
 //  TBrowser* browser;
   
 };
