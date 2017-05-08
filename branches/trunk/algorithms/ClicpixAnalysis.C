@@ -431,9 +431,9 @@ void ClicpixAnalysis::fillClusterHistos(Clusters* clusters){
   for (itc = clusters->begin(); itc != clusters->end(); ++itc) {
 
     // Loop over pixels and check if there are pixels not known
-    Pixels pixels = (*itc)->pixels();
+    Pixels* pixels = (*itc)->pixels();
     Pixels::iterator itp;
-    for (itp = pixels.begin(); itp != pixels.end(); itp++) {
+    for (itp = pixels->begin(); itp != pixels->end(); itp++) {
       // Check if this clicpix frame is still the current
       int pixelID = (*itp)->m_column + nCols*(*itp)->m_row;
       if( m_hitPixels[pixelID] != (*itp)->m_adc){
@@ -464,9 +464,9 @@ void ClicpixAnalysis::fillClusterHistos(Clusters* clusters){
 void ClicpixAnalysis::fillResponseHistos(double trackInterceptX, double trackInterceptY, Cluster* cluster){
   
   // Loop over pixels in the cluster and show their distance from the track intercept
-  Pixels pixels = cluster->pixels();
+  Pixels* pixels = cluster->pixels();
   Pixels::iterator itp;
-  for (itp = pixels.begin(); itp != pixels.end(); itp++) {
+  for (itp = pixels->begin(); itp != pixels->end(); itp++) {
     
     // Get the pixel
     Pixel* pixel = (*itp);

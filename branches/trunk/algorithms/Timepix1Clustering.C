@@ -148,16 +148,16 @@ void Timepix1Clustering::calculateClusterCentre(Cluster* cluster){
   double row(0), column(0), tot(0);
   
   // Get the pixels on this cluster
-  Pixels pixels = cluster->pixels();
-  string detectorID = pixels[0]->m_detectorID;
-  if(debug)tcout<<"- cluster has "<<pixels.size()<<" pixels"<<endl;
+  Pixels* pixels = cluster->pixels();
+  string detectorID = (*pixels)[0]->m_detectorID;
+  if(debug)tcout<<"- cluster has "<<(*pixels).size()<<" pixels"<<endl;
   
   // Loop over all pixels
-  for(int pix=0; pix<pixels.size(); pix++){
-    tot += pixels[pix]->m_adc;
-    row += (pixels[pix]->m_row * pixels[pix]->m_adc);
-    column += (pixels[pix]->m_column * pixels[pix]->m_adc);
-    if(debug)tcout<<"- pixel row, col: "<<pixels[pix]->m_row<<","<<pixels[pix]->m_column<<endl;
+  for(int pix=0; pix<pixels->size(); pix++){
+    tot += (*pixels)[pix]->m_adc;
+    row += ((*pixels)[pix]->m_row * (*pixels)[pix]->m_adc);
+    column += ((*pixels)[pix]->m_column * (*pixels)[pix]->m_adc);
+    if(debug)tcout<<"- pixel row, col: "<<(*pixels)[pix]->m_row<<","<<(*pixels)[pix]->m_column<<endl;
   }
   
   // Row and column positions are tot-weighted
