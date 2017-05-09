@@ -6,8 +6,8 @@
 ClicpixAnalysis::ClicpixAnalysis(bool debugging)
 : Algorithm("ClicpixAnalysis"){
   debug = debugging;
-  m_associationCut = 0.1; // 100 um
-  m_proximityCut = 0.00001; // 125 um
+  m_associationCut = 0.05; // 100 um
+  m_proximityCut = 0.0005; // 125 um
   timepix3Telescope = false;
 }
 
@@ -122,10 +122,10 @@ void ClicpixAnalysis::initialise(Parameters* par){
   hChipEfficiencyMap = new TH2F("hChipEfficiencyMap","hChipEfficiencyMap",65,-0.5,64.5,65,-0.5,64.5);
   hGlobalEfficiencyMap = new TH2F("hGlobalEfficiencyMap","hGlobalEfficiencyMap",200,-2.0,2.0,300,-1.,2);
   
-  hInterceptClusterSize1 = new TH2F("hInterceptClusterSize1","hInterceptClusterSize1",50,0,50,25,0,25);
-  hInterceptClusterSize2 = new TH2F("hInterceptClusterSize2","hInterceptClusterSize2",50,0,50,25,0,25);
-  hInterceptClusterSize3 = new TH2F("hInterceptClusterSize3","hInterceptClusterSize3",50,0,50,25,0,25);
-  hInterceptClusterSize4 = new TH2F("hInterceptClusterSize4","hInterceptClusterSize4",50,0,50,25,0,25);
+  hInterceptClusterSize1 = new TH2F("hInterceptClusterSize1","hInterceptClusterSize1",25,0,25,25,0,25);
+  hInterceptClusterSize2 = new TH2F("hInterceptClusterSize2","hInterceptClusterSize2",25,0,25,25,0,25);
+  hInterceptClusterSize3 = new TH2F("hInterceptClusterSize3","hInterceptClusterSize3",25,0,25,25,0,25);
+  hInterceptClusterSize4 = new TH2F("hInterceptClusterSize4","hInterceptClusterSize4",25,0,25,25,0,25);
   
   m_nBinsX=32; m_nBinsY=32;
   hMapClusterSizeAssociated = new TH2F("hMapClusterSizeAssociated","hMapClusterSizeAssociated",m_nBinsX,0,parameters->detector[dutID]->nPixelsX(),m_nBinsY,0,parameters->detector[dutID]->nPixelsY());
@@ -180,6 +180,9 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
     Track* track = (*itTrack);
     if (!track) continue;
     
+    // Cut on the track chi2/ndof
+    if(track->chi2ndof() < 3.0) continue;
+
     // Get the track intercept with the clicpix plane (global and local co-ordinates)
     PositionVector3D< Cartesian3D<double> > trackIntercept = parameters->detector[dutID]->getIntercept(track);
     PositionVector3D< Cartesian3D<double> > trackInterceptLocal = *(parameters->detector[dutID]->m_globalToLocal) * trackIntercept;
