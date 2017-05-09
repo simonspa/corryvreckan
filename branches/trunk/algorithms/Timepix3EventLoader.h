@@ -36,6 +36,9 @@ public:
   double m_timingCut;
   long long int m_prevTime;
   bool m_shutterOpen;
+  map<string, Pixels*> bufferedData;
+  map<string, SpidrSignals*> bufferedSignals;
+  
   
 };
 

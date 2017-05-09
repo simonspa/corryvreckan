@@ -82,7 +82,18 @@ StatusCode DataDump::run(Clipboard* clipboard){
       // Read one 64-bit chunk of data
       ULong64_t pixdata = 0;
       const int retval = fread(&pixdata, sizeof(ULong64_t), 1, currentFile);
-      dataDumpFile << hex << pixdata << dec << endl;
+
+      // Check if this is a trigger packet for Adrian
+      const UChar_t header = ((pixdata & 0xF000000000000000) >> 60) & 0xF;
+   
+     // Use header 0x4 to get the long timestamps (called syncTime here)
+     if(header == 0x6){
+      const UChar_t header2 = ((pixdata & 0x0F00000000000000) >> 56) & 0xF;
+      if(header2 == 0xF){
+        dataDumpFile << hex << pixdata << dec << endl;
+        } 
+      }
+      //dataDumpFile << hex << pixdata << dec << endl;
     }
     
   }
