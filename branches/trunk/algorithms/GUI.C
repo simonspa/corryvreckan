@@ -32,23 +32,28 @@ void GUI::initialise(Parameters* par){
   TCanvas* residualsCanvas = new TCanvas("ResidualsCanvas","Residuals canvas");
   addCanvas(residualsCanvas);
 
+  TCanvas* chargeCanvas = new TCanvas("chargeCanvas","Charge deposit canvas");
+  addCanvas(chargeCanvas);
+
   //========= Add each histogram =========//
   
   // Individual plots
-  TH1F* trackChi2 = (TH1F*)gDirectory->Get("/tbAnalysis/BasicTracking/trackChi2");
-  addPlot(trackCanvas,(TH1*)trackChi2);
-    
+  addPlot(trackCanvas,"/tbAnalysis/BasicTracking/trackChi2");
+  addPlot(trackCanvas,"/tbAnalysis/BasicTracking/trackAngleX");
+  
   // Per detector histograms
   for(int det = 0; det<parameters->nDetectors; det++){
     string detectorID = parameters->detectors[det];
     
-    string hitmapHisto = "/tbAnalysis/TestAlgorithm/hitmap_"+detectorID;
-    TH2F* hitmap = (TH2F*)gDirectory->Get(hitmapHisto.c_str());
+    string hitmap = "/tbAnalysis/TestAlgorithm/hitmap_"+detectorID;
     addPlot(hitmapCanvas,hitmap,"colz");
     
     string residualHisto = "/tbAnalysis/BasicTracking/residualsX_"+detectorID;
-    TH1F* residuals = (TH1F*)gDirectory->Get(residualHisto.c_str());
-    addPlot(residualsCanvas,residuals);
+    if(detectorID == parameters->DUT) residualHisto = "/tbAnalysis/DUTAnalysis/residualsX";
+    addPlot(residualsCanvas,residualHisto);
+    
+    string chargeHisto = "/tbAnalysis/TestAlgorithm/clusterTot_"+detectorID;
+    addPlot(chargeCanvas,chargeHisto);
 
   }
 
@@ -101,7 +106,8 @@ void GUI::addCanvas(TCanvas* canvas){
   canvases.push_back(canvas);
 }
 
-void GUI::addPlot(TCanvas* canvas, TH1* histogram, std::string style){
+void GUI::addPlot(TCanvas* canvas, string histoName, std::string style){
+  TH1* histogram = (TH1*)gDirectory->Get(histoName.c_str());
   histograms[canvas].push_back(histogram);
   styles[histogram] = style;
 }

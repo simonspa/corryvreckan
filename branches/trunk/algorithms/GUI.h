@@ -33,7 +33,7 @@ public:
   map<TH1*,string> styles;
   
   // Add plots and canvases
-  void addPlot(TCanvas*, TH1*, string style = "");
+  void addPlot(TCanvas*, string, string style = "");
   void addCanvas(TCanvas*);
   
   // Application to allow display of canvases
