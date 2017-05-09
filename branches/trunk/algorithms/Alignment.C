@@ -5,7 +5,7 @@
 Alignment::Alignment(bool debugging)
 : Algorithm("Alignment"){
   debug = debugging;
-  m_numberOfTracksForAlignment = 400000;
+  m_numberOfTracksForAlignment = 200000;
   nIterations = 5;
 }
 
@@ -19,6 +19,8 @@ void Alignment::initialise(Parameters* par){
 
   // Pick up the global parameters
   parameters = par;
+
+  if(parameters->alignmentMethod == 1) m_numberOfTracksForAlignment*=10;
 
 }
 
@@ -148,7 +150,7 @@ void MinimiseResiduals(Int_t &npar, Double_t *grad, Double_t &result, Double_t *
 void Alignment::finalise(){
   
   // If not enough tracks were produced, do nothing
-  if(m_alignmenttracks.size() < m_numberOfTracksForAlignment) return;
+  //if(m_alignmenttracks.size() < m_numberOfTracksForAlignment) return;
 
   // Make the fitting object
   TVirtualFitter* residualFitter = TVirtualFitter::Fitter(0,50);
