@@ -10,9 +10,6 @@
 #include "Cluster.h"
 #include "Track.h"
 
-// Fitting function for minuit
-void SumDistance2(Int_t &, Double_t *, Double_t &, Double_t *, Int_t );
-
 class Alignment : public Algorithm {
   
 public:

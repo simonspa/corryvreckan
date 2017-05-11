@@ -16,14 +16,11 @@ Parameters* globalParameters;
 int detNum;
 
 void Alignment::initialise(Parameters* par){
-
   // Pick up the global parameters
   parameters = par;
-
-  if(parameters->alignmentMethod == 1) m_numberOfTracksForAlignment*=10;
-
 }
 
+// During run, just pick up tracks and save them till the end
 StatusCode Alignment::run(Clipboard* clipboard){
  
   // Get the tracks
@@ -52,7 +49,7 @@ StatusCode Alignment::run(Clipboard* clipboard){
 //  Minimisation functions for Minuit
 // ========================================
 
-
+// METHOD 0
 // This method will move the detector in question, refit all of the tracks, and try to minimise the
 // track chi2. If there were no clusters from this detector on any tracks then it would do nothing!
 void MinimiseTrackChi2(Int_t &npar, Double_t *grad, Double_t &result, Double_t *par, Int_t flag) {
@@ -97,6 +94,7 @@ void MinimiseTrackChi2(Int_t &npar, Double_t *grad, Double_t &result, Double_t *
   
 }
 
+// METHOD 1
 // This method will move the detector in question and try to minimise the (unbiased) residuals. It uses
 // the associated cluster container on the track (no refitting of the track)
 void MinimiseResiduals(Int_t &npar, Double_t *grad, Double_t &result, Double_t *par, Int_t flag) {
