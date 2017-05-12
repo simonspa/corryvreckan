@@ -8,8 +8,8 @@ RUN=${1}
 CONDFILE=${TBCODE}/cond/Alignment${RUN}.dat
 HISTOFILE=${TBCODE}/histos/histogramsRun${RUN}test.root
 INPUTFILE=${TBCODE}/pixels/pixelsRun${RUN}.root
-INPUTFOLDER=${TBCODE}/example/Run${RUN}
-EVENTTIME=0.005
+INPUTFOLDER=/example/Run${RUN}
+EVENTTIME=0.0005
 NEVENTS=-1
 
 # If the alignment file for this run does not exist, get it from the DB
@@ -26,5 +26,5 @@ then
 fi
 
 # Launch the testbeam analysis and replace the original alignment file with the new one
-${TBCODE}/bin/tbAnalysis -c ${CONDFILE} -n ${NEVENTS} -h ${HISTOFILE} -t ${INPUTFILE} -s ${TBCODE}/masks/maskedPixels11044.dat
-#${TBCODE}/bin/tbAnalysis -c ${CONDFILE} -h ${HISTOFILE} -d ${INPUTFOLDER} -p ${EVENTTIME}
+#${TBCODE}/bin/tbAnalysis -c ${CONDFILE} -n ${NEVENTS} -h ${HISTOFILE} -t ${INPUTFILE} -s ${TBCODE}/masks/maskedPixels11044.dat
+${TBCODE}/bin/tbAnalysis -c ${CONDFILE} -h ${HISTOFILE} -d ${INPUTFOLDER} -p ${EVENTTIME} -g

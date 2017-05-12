@@ -29,7 +29,7 @@ public:
   
   // Plot holders
   vector<TCanvas*> canvases;
-  map<TCanvas*,vector<TH1*>> histograms;
+  map<TCanvas*,vector<TH1*> > histograms;
   map<TH1*,string> styles;
   
   // Add plots and canvases

@@ -78,7 +78,7 @@ void GUI::initialise(Parameters* par){
   }
   
   // Set event counter
-  eventNumber = 0;
+  eventNumber = 1;
   
 }
 
@@ -90,9 +90,15 @@ StatusCode GUI::run(Clipboard* clipboard){
       canvases[iCanvas]->Paint();
       canvases[iCanvas]->Update();
     }
+    eventNumber++;
   }
   gSystem->ProcessEvents();
-  
+
+    // Get the tracks from the clipboard
+  Tracks* tracks = (Tracks*)clipboard->get("tracks");
+  if(tracks == NULL) return Success;
+
+  // Otherwise increase the event number
   eventNumber++;
   return Success;
   

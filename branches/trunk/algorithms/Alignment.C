@@ -5,8 +5,8 @@
 Alignment::Alignment(bool debugging)
 : Algorithm("Alignment"){
   debug = debugging;
-  m_numberOfTracksForAlignment = 200000;
-  nIterations = 5;
+  m_numberOfTracksForAlignment = 20000;
+  nIterations = 3;
 }
 
 // Global container declarations

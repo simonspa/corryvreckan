@@ -84,7 +84,8 @@ int main(int argc, char *argv[]) {
   // =========================================================================
   
   // General parameters
-//  parameters->reference = "W0013_G03";
+  parameters->reference = "W0013_G03";
+  parameters->DUT = "W0039_C08";
 //  parameters->DUT = "W0005_E02";
 //  parameters->DUT = "W0002_J05";
   parameters->reference = "W0013_G03";
@@ -95,9 +96,14 @@ int main(int argc, char *argv[]) {
 //  parameters->reference = "Mim-osa02";
 //  parameters->DUT = "CLi-CPix";
 
+  //parameters->reference = "Mim-osa02";
+  //parameters->DUT = "CLi-CPix";
+ 
+//  parameters->DUT = "W0013_J05";
   parameters->detectorToAlign = parameters->DUT;
   parameters->excludedFromTracking[parameters->DUT] = true;
-  
+ 
+ 
   parameters->excludedFromTracking["W0005_E02"] = true;
   parameters->excludedFromTracking["W0005_F01"] = true;
   parameters->excludedFromTracking["W0019_C07"] = true;
@@ -105,10 +111,22 @@ int main(int argc, char *argv[]) {
   parameters->excludedFromTracking["W0019_F07"] = true;
   parameters->excludedFromTracking["W0019_L08"] = true;
   parameters->excludedFromTracking["W0005_H03"] = true;
-  parameters->excludedFromTracking["W0013_F09"] = true;
   
   clicpixAnalysis->timepix3Telescope = true;
 //  spatialTracking->debug = true;
+  parameters->masked["W0039_C08"] = true;
+ 
+//  parameters->masked["W0013_D04"] = true;
+//  parameters->masked["W0013_E03"] = true;
+//  parameters->masked["W0013_G02"] = true;
+
+//  parameters->masked["W0013_J05"] = true;
+//  parameters->masked["W0013_L09"] = true;
+//  parameters->masked["W0013_F09"] = true;
+
+
+  //tpix3EventLoader->debug = true;
+  basicTracking->minHitsOnTrack = 7;
   //testAlgorithm->makeCorrelations = true;
   //dataDump->m_detector = parameters->DUT;
   
@@ -145,7 +163,7 @@ int main(int argc, char *argv[]) {
   if(parameters->align) analysis->add(alignment);
   if(parameters->produceMask) analysis->add(tpix3MaskCreator);
   if(parameters->eventDisplay) analysis->add(eventDisplay);
-  if(parameters->gui) analysis->add(gui);
+  if(parameters->gui) analysis->add(onlineMonitor);
   
   // Run the analysis
   analysis->run();
