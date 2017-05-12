@@ -159,7 +159,6 @@ int main(int argc, char *argv[]) {
 //  analysis->add(fileWriter);
 //  analysis->add(dataDump);
 
-  analysis->add(onlineMonitor);
   if(parameters->align) analysis->add(alignment);
   if(parameters->produceMask) analysis->add(tpix3MaskCreator);
   if(parameters->eventDisplay) analysis->add(eventDisplay);
