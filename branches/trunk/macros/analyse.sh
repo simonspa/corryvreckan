@@ -8,7 +8,7 @@ RUN=${1}
 CONDFILE=${TBCODE}/cond/Alignment${RUN}.dat
 HISTOFILE=${TBCODE}/histos/histogramsRun${RUN}test.root
 INPUTFILE=${TBCODE}/pixels/pixelsRun${RUN}.root
-INPUTFOLDER=/example/Run${RUN}
+INPUTFOLDER=${TBCODE}/example/Run${RUN}
 EVENTTIME=0.0005
 NEVENTS=-1
 

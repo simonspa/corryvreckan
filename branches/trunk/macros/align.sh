@@ -25,5 +25,5 @@ fi
 
 # Launch the testbeam analysis and replace the original alignment file with the new one
 ${TBCODE}/bin/tbAnalysis -c ${CONDFILE} -n ${NEVENTS} -h ${HISTOFILE} -t ${INPUTFILE} -a 0
-mv alignmentOutput.dat ${CONDFILE}
+#mv alignmentOutput.dat ${CONDFILE}
  
