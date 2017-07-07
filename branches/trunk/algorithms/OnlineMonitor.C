@@ -26,10 +26,10 @@ void OnlineMonitor::initialise(Parameters* par){
   // Add canvases and histograms
 
   // Track canvas
-//  AddCanvas("TrackCanvas");
-//  AddButton("Tracking","TrackCanvas");
-//  AddHisto("TrackCanvas","/tbAnalysis/BasicTracking/trackChi2");
-//  AddHisto("TrackCanvas","/tbAnalysis/BasicTracking/trackAngleX");
+  AddCanvas("TrackCanvas");
+  AddButton("Tracking","TrackCanvas");
+  AddHisto("TrackCanvas","/tbAnalysis/BasicTracking/trackChi2");
+  AddHisto("TrackCanvas","/tbAnalysis/BasicTracking/trackAngleX");
 
   // Hitmap canvas
   AddCanvas("HitmapCanvas");
@@ -43,15 +43,15 @@ void OnlineMonitor::initialise(Parameters* par){
   for(int det = 0; det<parameters->nDetectors; det++){
     string detectorID = parameters->detectors[det];
     
-    string hitmap = "/tbAnalysis/TestAlgorithm/hitmap_"+detectorID;
-    AddHisto("HitmapCanvas",hitmap,"colz");
+//    string hitmap = "/tbAnalysis/TestAlgorithm/hitmap_"+detectorID;
+//    AddHisto("HitmapCanvas",hitmap,"colz");
     
 //    string chargeHisto = "/tbAnalysis/TestAlgorithm/clusterTot_"+detectorID;
 //    AddHisto("HitmapCanvas",chargeHisto);
     
-//    if(parameters->excludedFromTracking[detectorID]) continue;
-//    string residualHisto = "/tbAnalysis/BasicTracking/residualsX_"+detectorID;
-//    AddHisto(residualsCanvas,residualHisto);
+    if(parameters->excludedFromTracking.count(detectorID) != 0) continue;
+    string residualHisto = "/tbAnalysis/BasicTracking/residualsX_"+detectorID;
+    AddHisto("HitmapCanvas",residualHisto);
     
   }
 
@@ -76,12 +76,18 @@ StatusCode OnlineMonitor::run(Clipboard* clipboard){
       gui->canvasVector[i]->GetCanvas()->Paint();
       gui->canvasVector[i]->GetCanvas()->Update();
     }
+    eventNumber++;
   }
   gSystem->ProcessEvents();
   
+  // Get the tracks from the clipboard
+  Tracks* tracks = (Tracks*)clipboard->get("tracks");
+  if(tracks == NULL) return Success;
+  
+  // Otherwise increase the event number
   eventNumber++;
   return Success;
-
+  
 }
 
 void OnlineMonitor::finalise(){
