@@ -1,7 +1,11 @@
 #ifndef GUIDISPLAY_H
 #define GUIDISPLAY_H 1
 
+// Local includes
 #include "TestBeamObject.h"
+
+// Global includes
+#include "signal.h"
 
 // ROOT includes
 #include "TH1F.h"
@@ -29,22 +33,21 @@ public:
 
   // Graphics associated with GUI
   TGMainFrame*														m_mainFrame;
-  vector<TRootEmbeddedCanvas*> 						canvasVector;
-  map<string, TRootEmbeddedCanvas*> 			canvases;
-  map<TRootEmbeddedCanvas*, vector<TH1*>> histograms;
+  TRootEmbeddedCanvas*										canvas;
+  map<string, vector<TH1*>> 							histograms;
   map<TH1*,string> 												styles;
   map<string, TGTextButton*> 							buttons;
   map<TRootEmbeddedCanvas*, bool>					stackedCanvas;
+  TGHorizontalFrame* 											buttonMenu;
 
-  
   // Button functions
-  inline void Display(char* canvasName){
-    if(canvases.count(canvasName) == 0){
-      cout<<"Canvas does not exist, exiting"<<endl;
+  inline void Display(char* canvasNameC){
+    string canvasName(canvasNameC);
+    if(histograms[canvasName].size() == 0){
+      cout<<"Canvas does not have any histograms, exiting"<<endl;
       return;
     }
-    TRootEmbeddedCanvas* canvas = canvases[canvasName];
-    int nHistograms = histograms[canvas].size();
+    int nHistograms = histograms[canvasName].size();
     canvas->GetCanvas()->Clear();
     canvas->GetCanvas()->cd();
     if(!stackedCanvas[canvas]){
@@ -53,16 +56,21 @@ public:
     }
     for(int i=0;i<nHistograms;i++){
       if(!stackedCanvas[canvas]) canvas->GetCanvas()->cd(i+1);
-      string style = styles[histograms[canvas][i]];
+      string style = styles[histograms[canvasName][i]];
       if(stackedCanvas[canvas]){
         style = "same";
-        histograms[canvas][i]->SetLineColor(i+1);
+        histograms[canvasName][i]->SetLineColor(i+1);
       }
-      histograms[canvas][i]->Draw(style.c_str());
+      histograms[canvasName][i]->Draw(style.c_str());
     }
-    canvases[canvasName]->GetCanvas()->Paint();
-    canvases[canvasName]->GetCanvas()->Update();
+    canvas->GetCanvas()->Paint();
+    canvas->GetCanvas()->Update();
   };
+  
+  // Exit the monitoring
+  inline void Exit(){
+    raise(SIGQUIT);
+  }
 
   
   // ROOT I/O class definition - update version number when you change this class!

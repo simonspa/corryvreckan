@@ -19,49 +19,79 @@ void OnlineMonitor::initialise(Parameters* par){
   gui = new GuiDisplay();
   
   // Make the main window object and set the attributes
-  gui->m_mainFrame = new TGMainFrame(gClient->GetRoot(), 400, 400);
+  gui->m_mainFrame = new TGMainFrame(gClient->GetRoot(), 800, 600);
+  gui->buttonMenu = new TGHorizontalFrame(gui->m_mainFrame,800,50);
+  gui->canvas = new TRootEmbeddedCanvas("canvas", gui->m_mainFrame, 800, 600);
+  gui->m_mainFrame->AddFrame( gui->canvas, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10, 10, 10, 10));
   gui->m_mainFrame->SetCleanup(kDeepCleanup);
   gui->m_mainFrame->DontCallClose();
   
   // Add canvases and histograms
+  
+  //=== Overview canvas
+  AddButton("Overview","OverviewCanvas");
+  // track chi2
+  AddHisto("OverviewCanvas","/tbAnalysis/BasicTracking/trackChi2");
+  // reference plane map, residuals
+  string reference = parameters->reference;
+  string tot = "/tbAnalysis/TestAlgorithm/clusterTot_"+reference;
+  AddHisto("OverviewCanvas",tot);
+  string hitmap = "/tbAnalysis/TestAlgorithm/hitmap_"+reference;
+  AddHisto("OverviewCanvas",hitmap,"colz");
+  string residuals = "/tbAnalysis/BasicTracking/residualsX_"+reference;
+  AddHisto("OverviewCanvas",residuals);
 
-  // Track canvas
-  AddCanvas("TrackCanvas");
+  //=== Track canvas
   AddButton("Tracking","TrackCanvas");
   AddHisto("TrackCanvas","/tbAnalysis/BasicTracking/trackChi2");
   AddHisto("TrackCanvas","/tbAnalysis/BasicTracking/trackAngleX");
 
-  // Hitmap canvas
-  AddCanvas("HitmapCanvas");
-  AddButton("HitMap","HitmapCanvas");
+  //=== Per detector canvases
+  AddButton("HitMaps","HitmapCanvas");
+  AddButton("Residuals","ResidualCanvas");
+  AddButton("EventTimes","EventTimeCanvas");
+  AddButton("ChargeDistributions","ChargeDistributionCanvas");
   
-//  AddHisto("HitmapCanvas","/tbAnalysis/TestAlgorithm/clusterTot_W0013_G03");
-//  AddHisto("HitmapCanvas","/tbAnalysis/TestAlgorithm/eventTimes_W0013_G03");
-//  AddHisto("HitmapCanvas","/tbAnalysis/TestAlgorithm/hitmap_W0013_G03","colz");
-
   // Per detector histograms
   for(int det = 0; det<parameters->nDetectors; det++){
     string detectorID = parameters->detectors[det];
     
-//    string hitmap = "/tbAnalysis/TestAlgorithm/hitmap_"+detectorID;
-//    AddHisto("HitmapCanvas",hitmap,"colz");
+    string hitmap = "/tbAnalysis/TestAlgorithm/hitmap_"+detectorID;
+    AddHisto("HitmapCanvas",hitmap,"colz");
     
-//    string chargeHisto = "/tbAnalysis/TestAlgorithm/clusterTot_"+detectorID;
-//    AddHisto("HitmapCanvas",chargeHisto);
+    string chargeHisto = "/tbAnalysis/TestAlgorithm/clusterTot_"+detectorID;
+    AddHisto("ChargeDistributionCanvas",chargeHisto);
     
+    string eventTimeHisto = "/tbAnalysis/TestAlgorithm/eventTimes_"+detectorID;
+    AddHisto("EventTimeCanvas",eventTimeHisto);
+
     if(parameters->excludedFromTracking.count(detectorID) != 0) continue;
     string residualHisto = "/tbAnalysis/BasicTracking/residualsX_"+detectorID;
-    AddHisto("HitmapCanvas",residualHisto);
+    AddHisto("ResidualCanvas",residualHisto);
     
   }
 
   // Set up the main frame before drawing
+  
+  // Exit button
+  string exitButton = "StopMonitoring";
+  gui->buttons[exitButton] = new TGTextButton(gui->buttonMenu, exitButton.c_str());
+  gui->buttonMenu->AddFrame(gui->buttons[exitButton], new TGLayoutHints(kLHintsLeft, 10,10,10,10));
+  gui->buttons[exitButton]->Connect("Pressed()", "GuiDisplay", gui, "Exit()");
+
+  // Main frame resizing
+  gui->m_mainFrame->AddFrame(gui->buttonMenu, new TGLayoutHints(kLHintsLeft,10,10,10,10));
   gui->m_mainFrame->SetWindowName("CLIC Tesbeam Monitoring");
   gui->m_mainFrame->MapSubwindows();
-  gui->m_mainFrame->Resize();
+  gui->m_mainFrame->Resize(gui->m_mainFrame->GetDefaultSize());
   
   // Draw the main frame
   gui->m_mainFrame->MapWindow();
+  
+  // Plot the overview tab (if it exists)
+  if(gui->histograms["OverviewCanvas"].size() != 0){
+    gui->Display("OverviewCanvas");
+  }
   
   // Initialise member variables
   eventNumber = 0;
@@ -71,11 +101,8 @@ StatusCode OnlineMonitor::run(Clipboard* clipboard){
   
   // Draw all histograms
   if(eventNumber%updateNumber == 0){
-    int nCanvases = gui->canvasVector.size();
-    for(int i=0;i<nCanvases;i++){
-      gui->canvasVector[i]->GetCanvas()->Paint();
-      gui->canvasVector[i]->GetCanvas()->Update();
-    }
+    gui->canvas->GetCanvas()->Paint();
+    gui->canvas->GetCanvas()->Update();
     eventNumber++;
   }
   gSystem->ProcessEvents();
@@ -96,32 +123,16 @@ void OnlineMonitor::finalise(){
   
 }
 
-void OnlineMonitor::AddCanvas(string canvasName){
-  
-  gui->canvases[canvasName] = new TRootEmbeddedCanvas(canvasName.c_str(), gui->m_mainFrame, 600, 400);
-  gui->canvasVector.push_back(gui->canvases[canvasName]);
-  gui->m_mainFrame->AddFrame(gui->canvases[canvasName],
-                             new TGLayoutHints(kLHintsCenterX | kLHintsExpandX | kLHintsExpandY, 10, 10, 10, 10));
-
-}
-
-void OnlineMonitor::AddStackedCanvas(string canvasName){
-  
-  this->AddCanvas(canvasName);
-  gui->stackedCanvas[gui->canvases[canvasName]] = true;
-  
-}
-
 void OnlineMonitor::AddHisto(string canvasName, string histoName, string style){
   
-  gui->histograms[gui->canvases[canvasName]].push_back((TH1*)gDirectory->Get(histoName.c_str()));
-  gui->styles[gui->histograms[gui->canvases[canvasName]].back()] = style;
+  gui->histograms[canvasName].push_back((TH1*)gDirectory->Get(histoName.c_str()));
+  gui->styles[gui->histograms[canvasName].back()] = style;
 
 }
 
 void OnlineMonitor::AddButton(string buttonName, string canvasName){
-  gui->buttons[buttonName] = new TGTextButton(gui->m_mainFrame, buttonName.c_str());
-  gui->m_mainFrame->AddFrame(gui->buttons[buttonName], new TGLayoutHints(kLHintsLeft, 10, 10, 10, 1));
+  gui->buttons[buttonName] = new TGTextButton(gui->buttonMenu, buttonName.c_str());
+  gui->buttonMenu->AddFrame(gui->buttons[buttonName], new TGLayoutHints(kLHintsLeft, 10,10,10,10));
   string command = "Display(=\"" + canvasName + "\")";
   tcout<<"Connecting button with command "<<command.c_str()<<endl;
   gui->buttons[buttonName]->Connect("Pressed()", "GuiDisplay", gui, command.c_str());

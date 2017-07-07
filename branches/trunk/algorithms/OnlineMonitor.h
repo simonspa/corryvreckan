@@ -39,8 +39,6 @@ public:
   TApplication* app;
   GuiDisplay* gui;
   
-  void AddCanvas(string);
-  void AddStackedCanvas(string);
   void AddHisto(string, string, string style="");
   void AddButton(string, string);
   
