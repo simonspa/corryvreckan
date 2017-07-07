@@ -6,6 +6,7 @@
 
 // Global includes
 #include "signal.h"
+#include <iostream>
 
 // ROOT includes
 #include "TH1F.h"
