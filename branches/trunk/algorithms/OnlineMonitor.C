@@ -125,8 +125,13 @@ void OnlineMonitor::finalise(){
 
 void OnlineMonitor::AddHisto(string canvasName, string histoName, string style){
   
-  gui->histograms[canvasName].push_back((TH1*)gDirectory->Get(histoName.c_str()));
-  gui->styles[gui->histograms[canvasName].back()] = style;
+  TH1* histogram = (TH1*)gDirectory->Get(histoName.c_str());
+  if(histogram){
+    gui->histograms[canvasName].push_back((TH1*)gDirectory->Get(histoName.c_str()));
+    gui->styles[gui->histograms[canvasName].back()] = style;
+  }else{
+    tcout<<"Histogram "<<histoName<<" does not exist"<<std::endl;
+  }
 
 }
 
