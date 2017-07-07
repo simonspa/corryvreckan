@@ -50,6 +50,8 @@ void OnlineMonitor::initialise(Parameters* par){
   AddButton("HitMaps","HitmapCanvas");
   AddButton("Residuals","ResidualCanvas");
   AddButton("EventTimes","EventTimeCanvas");
+  AddButton("CorrelationsX","CorrelationXCanvas");
+  AddButton("CorrelationsY","CorrelationYCanvas");
   AddButton("ChargeDistributions","ChargeDistributionCanvas");
   
   // Per detector histograms
@@ -64,6 +66,12 @@ void OnlineMonitor::initialise(Parameters* par){
     
     string eventTimeHisto = "/tbAnalysis/TestAlgorithm/eventTimes_"+detectorID;
     AddHisto("EventTimeCanvas",eventTimeHisto);
+
+    string correlationXHisto = "/tbAnalysis/TestAlgorithm/correlationX_"+detectorID;
+    AddHisto("CorrelationXCanvas",correlationXHisto);
+
+    string correlationYHisto = "/tbAnalysis/TestAlgorithm/correlationY_"+detectorID;
+    AddHisto("CorrelationYCanvas",correlationYHisto);
 
     if(parameters->excludedFromTracking.count(detectorID) != 0) continue;
     string residualHisto = "/tbAnalysis/BasicTracking/residualsX_"+detectorID;
