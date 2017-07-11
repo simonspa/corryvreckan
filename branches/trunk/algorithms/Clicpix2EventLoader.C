@@ -59,9 +59,11 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard){
   
   // Pixel container, shutter information
   Pixels* pixels = new Pixels();
+  long long int shutterStartTimeInt, shutterStopTimeInt;
   long double shutterStartTime, shutterStopTime;
   string data; int npixels=0;
-  
+  bool shutterOpen = false;
+
   // Read file and load data
   while(getline(m_file,data)){
     
@@ -78,6 +80,23 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard){
     if(strcmp(&c,"=") == 0) break;
     
     // Otherwise load data
+    
+    // If there is a colon, then this is a timestamp
+    if(data.find(":") != string::npos){
+      istringstream timestamp(data);
+      char colon; int value; long long int time;
+      timestamp >> value >> colon >> time;
+      if(value == 3){
+        shutterOpen = true;
+        shutterStartTimeInt = time;
+      }else if(value == 1 && shutterOpen){
+        shutterOpen = false;
+        shutterStopTimeInt = time;
+      }
+      continue;
+    }
+    
+    // Otherwise pixel data
     int row(0), col(0), hitFlag(0), tot(0), toa(0); char comma; long int time;
     istringstream pixelData(data);
     pixelData >> col >> comma >> row >> comma >> hitFlag >> comma >> tot >> comma >> toa;
@@ -94,8 +113,11 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard){
   }
   
   // Now set the event time so that the Timepix3 data is loaded correctly
-//  parameters->currentTime = shutterStartTime;
-//  parameters->eventLength = (shutterStopTime-shutterStartTime);
+  shutterStartTime = shutterStartTimeInt * 25./1000000000.;
+  shutterStopTime = shutterStopTimeInt * 25./1000000000.;
+  
+  parameters->currentTime = shutterStartTime;
+  parameters->eventLength = (shutterStopTime-shutterStartTime);
   
   // Put the data on the clipboard
   if(pixels->size() > 0) clipboard->put(detectorID,"pixels",(TestBeamObjects*)pixels);
