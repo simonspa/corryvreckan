@@ -58,7 +58,7 @@ public:
   int rowWidth(){return m_rowWidth;}
   long long int timestamp(){return m_timestamp;}
   std::string detectorID(){return m_detectorID;}
-  Pixels pixels(){return m_pixels;}
+  Pixels* pixels(){return (&m_pixels);}
 
 	// Set cluster parameters
   void setRow(double row){m_row = row;}
@@ -98,7 +98,7 @@ public:
   std::map<int,bool> m_columnHits;
   
   // ROOT I/O class definition - update version number when you change this class!
-  ClassDef(Cluster,2)
+  ClassDef(Cluster,3)
 
 };
 

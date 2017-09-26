@@ -109,11 +109,11 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard){
 bool Timepix3Clustering::touching(Pixel* neighbour,Cluster* cluster){
   
   bool Touching = false;
-  Pixels pixels = cluster->pixels();
-  for(int iPix=0;iPix<pixels.size();iPix++){
+  Pixels* pixels = cluster->pixels();
+  for(int iPix=0;iPix<pixels->size();iPix++){
     
-    if( abs(pixels[iPix]->m_row - neighbour->m_row) <= 1 &&
-       abs(pixels[iPix]->m_column - neighbour->m_column) <= 1 ){
+    if( abs((*pixels)[iPix]->m_row - neighbour->m_row) <= 1 &&
+       abs((*pixels)[iPix]->m_column - neighbour->m_column) <= 1 ){
       Touching = true;
       break;
     }
@@ -126,10 +126,10 @@ bool Timepix3Clustering::closeInTime(Pixel* neighbour,Cluster* cluster){
   
   bool CloseInTime = false;
   
-  Pixels pixels = cluster->pixels();
-  for(int iPix=0;iPix<pixels.size();iPix++){
+  Pixels* pixels = cluster->pixels();
+  for(int iPix=0;iPix<pixels->size();iPix++){
 
-    long long int timeDifference = abs(neighbour->m_timestamp - pixels[iPix]->m_timestamp);
+    long long int timeDifference = abs(neighbour->m_timestamp - (*pixels)[iPix]->m_timestamp);
     if(timeDifference < timingCutInt) CloseInTime = true;
     
   }
@@ -144,16 +144,16 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster){
   long long int timestamp;
 
 	// Get the pixels on this cluster
-  Pixels pixels = cluster->pixels();
-  string detectorID = pixels[0]->m_detectorID;
-  timestamp = pixels[0]->m_timestamp;
+  Pixels* pixels = cluster->pixels();
+  string detectorID = (*pixels)[0]->m_detectorID;
+  timestamp = (*pixels)[0]->m_timestamp;
   
   // Loop over all pixels
-  for(int pix=0; pix<pixels.size(); pix++){
-    tot += pixels[pix]->m_adc;
-    row += (pixels[pix]->m_row * pixels[pix]->m_adc);
-    column += (pixels[pix]->m_column * pixels[pix]->m_adc);
-    if(pixels[pix]->m_timestamp < timestamp) timestamp = pixels[pix]->m_timestamp;
+  for(int pix=0; pix<pixels->size(); pix++){
+    tot += (*pixels)[pix]->m_adc;
+    row += ((*pixels)[pix]->m_row * (*pixels)[pix]->m_adc);
+    column += ((*pixels)[pix]->m_column * (*pixels)[pix]->m_adc);
+    if((*pixels)[pix]->m_timestamp < timestamp) timestamp = (*pixels)[pix]->m_timestamp;
   }
   // Row and column positions are tot-weighted
   row /= tot;

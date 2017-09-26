@@ -27,25 +27,22 @@ public:
   StatusCode run(Clipboard*);
   void finalise();
   
-  // Canvases to display plots
-  TCanvas* trackCanvas;
-  TCanvas* hitmapCanvas;
-  TCanvas* globalHitmapCanvas;
-  TCanvas* residualsCanvas;
-  
   // Plot holders
-  map<string, TH2F*> hitmap;
-  map<string, TH2F*> globalHitmap;
-  map<string, TH1F*> residuals;
+  vector<TCanvas*> canvases;
+  map<TCanvas*,vector<TH1*> > histograms;
+  map<TH1*,string> styles;
   
-  // Thread to allow display to run in separate thread
-  TThread* displayThread;
+  // Add plots and canvases
+  void addPlot(TCanvas*, string, string style = "");
+  void addCanvas(TCanvas*);
+  
+  // Application to allow display of canvases
+  TApplication* app;
   
   // Misc. member objects
   int nDetectors;
   int eventNumber;
   int updateNumber;
-//  TBrowser* browser;
   
 };
 

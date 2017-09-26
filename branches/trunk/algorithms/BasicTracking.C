@@ -32,9 +32,9 @@ void BasicTracking::initialise(Parameters* par){
     string detectorID = parameters->detectors[det];
     if(parameters->detector[detectorID]->type() != "Timepix3") continue;
     string name = "residualsX_"+detectorID;
-    residualsX[detectorID] = new TH1F(name.c_str(),name.c_str(),400,-0.2,0.2);
+    residualsX[detectorID] = new TH1F(name.c_str(),name.c_str(),100,-0.02,0.02);
     name = "residualsY_"+detectorID;
-    residualsY[detectorID] = new TH1F(name.c_str(),name.c_str(),400,-0.2,0.2);
+    residualsY[detectorID] = new TH1F(name.c_str(),name.c_str(),100,-0.02,0.02);
   }
   
   nTracksTotal = 0.;

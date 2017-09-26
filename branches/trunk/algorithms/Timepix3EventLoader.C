@@ -112,13 +112,14 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard){
     // Check if they are a Timepix3
     string detectorID = parameters->detectors[det];
     if(parameters->detector[detectorID]->type() != "Timepix3") continue;
+    if(parameters->masked.count(detectorID)) continue;
     
     // Make a new container for the data
     Pixels* deviceData = new Pixels();
     SpidrSignals* spidrData = new SpidrSignals();
 
 		// Load the next chunk of data
-    if(debug) tcout<<"Loading data from "<<detectorID<<endl;
+    //if(debug) tcout<<"Loading data from "<<detectorID<<endl;
     bool data = loadData(detectorID,deviceData,spidrData);
     
     // If data was loaded then put it on the clipboard
@@ -258,17 +259,19 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
       if(header2 == 0x4){
         // The data is shifted 16 bits to the right, then 12 to the left in order to match the timestamp format (net 4 right)
         m_syncTime[detectorID] = (m_syncTime[detectorID] & 0xFFFFF00000000000) + ((pixdata & 0x0000FFFFFFFF0000) >> 4);
+//        if(detectorID == "W0019_F07") tcout<<"Updating heartbeat part 1. Now syncTime = "<<(double)m_syncTime[detectorID]/(4096. * 40000000.)<<endl;
       }
 			// 0x5 is the most significant part of the timestamp
       if(header2 == 0x5){
         // The data is shifted 16 bits to the right, then 44 to the left in order to match the timestamp format (net 28 left)
         m_syncTime[detectorID] = (m_syncTime[detectorID] & 0x00000FFFFFFFFFFF) + ((pixdata & 0x00000000FFFF0000) << 28);
+//        if(detectorID == "W0019_F07") tcout<<"Updating heartbeat part 2. Now syncTime = "<<(double)m_syncTime[detectorID]/(4096. * 40000000.)<<endl;
 //        if( m_syncTime[detectorID] < 0x0000010000000000 && !m_clearedHeader[detectorID]) m_clearedHeader[detectorID] = true;
         if(!m_clearedHeader[detectorID] && (double)m_syncTime[detectorID]/(4096. * 40000000.) < 6.) m_clearedHeader[detectorID] = true;
       }
 //      if(detectorID == "W0019_F07") tcout<<"Updating heartbeat. Now syncTime = "<<(double)m_syncTime[detectorID]/(4096. * 40000000.)<<endl;
       
-       //tcout<<"Updating heartbeat. Now syncTime = "<<(double)m_syncTime[detectorID]/(4096. * 40000000.)<<" for detector "<<detectorID<<endl;
+//       tcout<<"Updating heartbeat. Now syncTime = "<<(double)m_syncTime[detectorID]/(4096. * 40000000.)<<" for detector "<<detectorID<<endl;
     }
     
     if(!m_clearedHeader[detectorID]) continue;
@@ -294,9 +297,9 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
         
         
         // Ignore packets if they arrive before the current event window
-        if( parameters->eventLength != 0. && ((double)time/(4096. * 40000000.)) < (parameters->currentTime) ){
-          continue;
-        }
+//        if( parameters->eventLength != 0. && ((double)time/(4096. * 40000000.)) < (parameters->currentTime) ){
+//          continue;
+//        }
         
         
         // Stop looking at data if the signal is after the current event window (and rewind the file
@@ -382,8 +385,8 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
       
       // Calculate the timestamp.
       long long int time = (((spidrTime << 18) + (toa << 4) + (15 - ftoa)) << 8) + (m_syncTime[detectorID] & 0xFFFFFC0000000000);
-      if(debug) tcout<<"Pixel time "<<(double)time/(4096. * 40000000.)<<endl;
-      if(debug) tcout<<"Sync time "<<(double)m_syncTime[detectorID]/(4096. * 40000000.)<<endl;
+      //if(debug) tcout<<"Pixel time "<<(double)time/(4096. * 40000000.)<<endl;
+      //if(debug) tcout<<"Sync time "<<(double)m_syncTime[detectorID]/(4096. * 40000000.)<<endl;
       
       // Add the timing offset from the coniditions file (if any)
       time += (long long int)(parameters->detector[detectorID]->timingOffset() * 4096. * 40000000.);
@@ -407,9 +410,9 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
       // If events are loaded based on time intervals, take all hits where the time is within this window
       
       // Ignore pixels if they arrive before the current event window
-      if( parameters->eventLength != 0. && ((double)time/(4096. * 40000000.)) < (parameters->currentTime) ){
-        continue;
-      }
+//      if( parameters->eventLength != 0. && ((double)time/(4096. * 40000000.)) < (parameters->currentTime) ){
+//        continue;
+//      }
       
       // Stop looking at data if the pixel is after the current event window (and rewind the file
       // reader so that we start with this pixel next event)
@@ -423,6 +426,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
       // Otherwise create a new pixel object
       Pixel* pixel = new Pixel(detectorID,row,col,(int)tot,time);
       devicedata->push_back(pixel);
+//      bufferedData[detectorID]->push_back(pixel);
       npixels++;
       m_prevTime = time;
 
@@ -436,7 +440,10 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
     
   }
   
-  debug = false;
+  // Now we have data buffered into the temporary storage. We will sort this by time, and then load
+  // the data from one event onto it.
+  
+  //debug = false;
   
   // If no data was loaded, return false
   if(npixels == 0) return false;

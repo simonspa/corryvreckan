@@ -7,29 +7,7 @@
 GUI::GUI(bool debugging)
 : Algorithm("GUI"){
   debug = debugging;
-  updateNumber = 200;
-}
-
-void startDisplay(void* gui){
-  
-  // Make the TApplicaitons to allow canvases to stay open (for some reason we need two instances for it to work...)
-  TApplication* app1 = new TApplication("example",0, 0);
-  TApplication* app2 = new TApplication("example",0, 0);
-  
-  // Create the new canvases
-  double nDetectors = ((GUI*)gui)->nDetectors;
-  ((GUI*)gui)->trackCanvas = new TCanvas("TrackCanvas","Track canvas");
-//  ((GUI*)gui)->trackCanvas->Divide();
-  ((GUI*)gui)->hitmapCanvas = new TCanvas("HitMapCanvas","Hit map canvas");
-  ((GUI*)gui)->hitmapCanvas->Divide(ceil(nDetectors/2.),2);
-  ((GUI*)gui)->globalHitmapCanvas = new TCanvas("GlobalHitmapCanvas","Global hit map canvas");
-  ((GUI*)gui)->globalHitmapCanvas->Divide(ceil(nDetectors/2.),2);
-  ((GUI*)gui)->residualsCanvas = new TCanvas("ResidualsCanvas","Residuals canvas");
-  ((GUI*)gui)->residualsCanvas->Divide(ceil(nDetectors/2.),2);
-
-  // Run the TApplication
-  app2->Run(true);
-  
+  updateNumber = 500;
 }
 
 void GUI::initialise(Parameters* par){
@@ -40,116 +18,109 @@ void GUI::initialise(Parameters* par){
   // Check the number of devices
   nDetectors = parameters->nDetectors;
   
-	// Make the thread which will run the display
-  displayThread = new TThread("displayThread", startDisplay, (void*) this);
-  displayThread->Run();
-  sleep(2);
+  // TApplication keeps the canvases persistent
+  app = new TApplication("example",0, 0);
+    
+  //========= Add each canvas that is wanted =========//
+  
+  TCanvas* trackCanvas = new TCanvas("TrackCanvas","Track canvas");
+  addCanvas(trackCanvas);
 
-  // Loop over all detectors and load the histograms that we will use
+  TCanvas* hitmapCanvas = new TCanvas("HitMapCanvas","Hit map canvas");
+  addCanvas(hitmapCanvas);
+
+  TCanvas* residualsCanvas = new TCanvas("ResidualsCanvas","Residuals canvas");
+  addCanvas(residualsCanvas);
+
+  TCanvas* chargeCanvas = new TCanvas("chargeCanvas","Charge deposit canvas");
+  addCanvas(chargeCanvas);
+
+  //========= Add each histogram =========//
+  
+  // Individual plots
+  addPlot(trackCanvas,"/tbAnalysis/BasicTracking/trackChi2");
+  addPlot(trackCanvas,"/tbAnalysis/BasicTracking/trackAngleX");
+  
+  // Per detector histograms
   for(int det = 0; det<parameters->nDetectors; det++){
     string detectorID = parameters->detectors[det];
-    string hitmapHisto = "/tbAnalysis/TestAlgorithm/hitmap_"+detectorID;
-    hitmap[detectorID] = (TH2F*)gDirectory->Get(hitmapHisto.c_str());
+    
+    string hitmap = "/tbAnalysis/TestAlgorithm/hitmap_"+detectorID;
+    addPlot(hitmapCanvas,hitmap,"colz");
+    
     string residualHisto = "/tbAnalysis/BasicTracking/residualsX_"+detectorID;
-    residuals[detectorID] = (TH1F*)gDirectory->Get(residualHisto.c_str());
-    string globalHitmapHisto = "/tbAnalysis/TestAlgorithm/clusterPositionGlobal_"+detectorID;
-    globalHitmap[detectorID] = (TH2F*)gDirectory->Get(globalHitmapHisto.c_str());
+    if(detectorID == parameters->DUT) residualHisto = "/tbAnalysis/DUTAnalysis/residualsX";
+    addPlot(residualsCanvas,residualHisto);
+    
+    string chargeHisto = "/tbAnalysis/TestAlgorithm/clusterTot_"+detectorID;
+    addPlot(chargeCanvas,chargeHisto);
+
   }
 
+  // Divide the canvases if needed
+  for(int iCanvas=0;iCanvas<canvases.size();iCanvas++){
+    int nHistograms = histograms[canvases[iCanvas]].size();
+    if(nHistograms == 1) continue;
+    if(nHistograms < 4) canvases[iCanvas]->Divide(nHistograms);
+    else canvases[iCanvas]->Divide(ceil(nHistograms/2.),2);
+  }
+  
+  // Draw all histograms
+  for(int iCanvas=0;iCanvas<canvases.size();iCanvas++){
+    canvases[iCanvas]->cd();
+    vector<TH1*> histos = histograms[canvases[iCanvas]];
+    int nHistograms = histos.size();
+    for(int iHisto=0;iHisto<nHistograms;iHisto++){
+      canvases[iCanvas]->cd(iHisto+1);
+      string style = styles[histos[iHisto]];
+      histos[iHisto]->Draw(style.c_str());
+    }
+  }
+  
   // Set event counter
-  eventNumber = 0;
+  eventNumber = 1;
+  
 }
 
 StatusCode GUI::run(Clipboard* clipboard){
 
+  // Draw all histograms
+  if(eventNumber%updateNumber == 0){
+    for(int iCanvas=0;iCanvas<canvases.size();iCanvas++){
+      canvases[iCanvas]->Paint();
+      canvases[iCanvas]->Update();
+    }
+    eventNumber++;
+  }
   gSystem->ProcessEvents();
-  
-  //-----------------------------------------
-  // Draw the objects on the tracking canvas
-  //-----------------------------------------
 
-  trackCanvas->cd();
-  TH1F* trackChi2 = (TH1F*)gDirectory->Get("/tbAnalysis/BasicTracking/trackChi2");
-  trackChi2->DrawCopy();
+    // Get the tracks from the clipboard
+  Tracks* tracks = (Tracks*)clipboard->get("tracks");
+  if(tracks == NULL) return Success;
 
-  // Update the canvas
-  if(eventNumber%updateNumber == 0){
-//    sleep(0.5);
-    trackCanvas->Update();
-  }
-  
-  //-----------------------------------------
-  // Draw the objects on the hitmap canvas
-  //-----------------------------------------
-  
-  // Update the canvas
-  if(eventNumber == 0){
-    for(int det = 0; det<parameters->nDetectors; det++){
-      string detectorID = parameters->detectors[det];
-    	hitmap[detectorID]->SetTitle(detectorID.c_str());
-    	hitmapCanvas->cd(det+1);
-      hitmap[detectorID]->Draw("colz");
-    }
-  }
-  // Update the canvas
-  if(eventNumber%updateNumber == 0) {
-    hitmapCanvas->Paint();
-    hitmapCanvas->Update();
-  }
-
-  //-----------------------------------------
-  // Draw the objects on the globalHitmap canvas
-  //-----------------------------------------
-  
-  // Update the canvas
-  if(eventNumber == 0){
-    for(int det = 0; det<parameters->nDetectors; det++){
-      string detectorID = parameters->detectors[det];
-      globalHitmap[detectorID]->SetTitle(detectorID.c_str());
-      globalHitmapCanvas->cd(det+1);
-      globalHitmap[detectorID]->Draw("colz");
-    }
-  }
-  // Update the canvas
-  if(eventNumber%updateNumber == 0) {
-    globalHitmapCanvas->Paint();
-    globalHitmapCanvas->Update();
-  }
-
-  //-----------------------------------------
-  // Draw the objects on the residuals canvas
-  //-----------------------------------------
-  
-  // Loop over all detectors and load the hitmap
-  if(eventNumber == 0){
-    for(int det = 0; det<parameters->nDetectors; det++){
-      string detectorID = parameters->detectors[det];
-      residuals[detectorID]->SetTitle(detectorID.c_str());
-      residualsCanvas->cd(det+1);
-      residuals[detectorID]->Draw();
-    }
-  }
-  // Update the canvas
-  if(eventNumber%updateNumber == 0){
-    residualsCanvas->Paint();
-    residualsCanvas->Update();
-  }
-
+  // Otherwise increase the event number
   eventNumber++;
   return Success;
   
-  // Old code to allow updating of a TBrowser (TBrowser in 5.34 not thread safe, so removed)
-  //  ((TCanvas*)gROOT->GetListOfCanvases()->At(0))->Paint();
-  //  ((TCanvas*)gROOT->GetListOfCanvases()->At(0))->Update();
-  //  gSystem->ProcessEvents();
-
 }
   
 
 void GUI::finalise(){
-
-  // Kill the display thread
-//  displayThread->Kill();
-
 }
+
+void GUI::addCanvas(TCanvas* canvas){
+  canvases.push_back(canvas);
+}
+
+void GUI::addPlot(TCanvas* canvas, string histoName, std::string style){
+  TH1* histogram = (TH1*)gDirectory->Get(histoName.c_str());
+  histograms[canvas].push_back(histogram);
+  styles[histogram] = style;
+}
+
+
+
+
+
+
 
