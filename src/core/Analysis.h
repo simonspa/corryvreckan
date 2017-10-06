@@ -24,22 +24,28 @@
 class Analysis {
 
 public:
-  
+
   // Constructors and destructors
+  Analysis(std::string config_file_name) {};
   Analysis(Parameters*);
   virtual ~Analysis(){};
 
   // Member functions
   void add(Algorithm*);
+  void load() {};
+
   void run();
   void timing();
   void initialiseAll();
   void finaliseAll();
 
+  void reset() {};
+  void terminate() {};
+
   TBrowser* browser;
 
 protected:
-  
+
   // Member variables
   Parameters* m_parameters;
   Clipboard* m_clipboard;
