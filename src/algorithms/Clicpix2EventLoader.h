@@ -1,7 +1,7 @@
 #ifndef Clicpix2EventLoader_H
 #define Clicpix2EventLoader_H 1
 
-#include "core/Algorithm.h"
+#include "core/algorithm/Algorithm.h"
 #include <iostream>
 #include "TH1F.h"
 #include "TH2F.h"

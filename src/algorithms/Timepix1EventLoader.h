@@ -1,7 +1,7 @@
 #ifndef Timepix1EventLoader_H
 #define Timepix1EventLoader_H 1
 
-#include "core/Algorithm.h"
+#include "core/algorithm/Algorithm.h"
 #include <iostream>
 #include "TH1F.h"
 #include "TH2F.h"

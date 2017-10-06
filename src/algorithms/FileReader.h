@@ -1,7 +1,7 @@
 #ifndef FileReader_H
 #define FileReader_H 1
 
-#include "core/Algorithm.h"
+#include "core/algorithm/Algorithm.h"
 #include <iostream>
 #include "TTree.h"
 #include "TFile.h"

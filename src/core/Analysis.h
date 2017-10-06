@@ -8,7 +8,7 @@
 #include "TDirectory.h"
 #include "TBrowser.h"
 
-#include "Algorithm.h"
+#include "algorithm/Algorithm.h"
 #include "Clipboard.h"
 #include "Parameters.h"
 #include "config/Configuration.hpp"

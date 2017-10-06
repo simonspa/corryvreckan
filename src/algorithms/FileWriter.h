@@ -1,7 +1,7 @@
 #ifndef FileWriter_H
 #define FileWriter_H 1
 
-#include "core/Algorithm.h"
+#include "core/algorithm/Algorithm.h"
 #include <iostream>
 #include "TTree.h"
 #include "TFile.h"
