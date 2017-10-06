@@ -10,7 +10,7 @@
 #include "Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
 // Local includes
-#include "core/algorithm/Algorithm.h"
+#include "core/Algorithm.h"
 #include "objects/Cluster.h"
 #include "objects/Track.h"
 

@@ -1,7 +1,7 @@
 #ifndef ClicpixAnalysis_H
 #define ClicpixAnalysis_H 1
 
-#include "core/algorithm/Algorithm.h"
+#include "core/Algorithm.h"
 #include <iostream>
 #include <sstream>
 #include "TH1F.h"

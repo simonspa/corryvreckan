@@ -1,7 +1,7 @@
 #ifndef Clicpix2Correlator_H
 #define Clicpix2Correlator_H 1
 
-#include "core/algorithm/Algorithm.h"
+#include "core/Algorithm.h"
 #include <iostream>
 #include "TH1F.h"
 #include "TH2F.h"

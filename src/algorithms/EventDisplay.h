@@ -1,7 +1,7 @@
 #ifndef EVENTDISPLAY_H
 #define EVENTDISPLAY_H 1
 
-#include "core/algorithm/Algorithm.h"
+#include "core/Algorithm.h"
 #include <iostream>
 #include "TH1F.h"
 #include "TH2F.h"

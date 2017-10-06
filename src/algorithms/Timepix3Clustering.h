@@ -3,7 +3,7 @@
 
 #include "objects/Pixel.h"
 #include "objects/Cluster.h"
-#include "core/algorithm/Algorithm.h"
+#include "core/Algorithm.h"
 #include <iostream>
 #include "TH1F.h"
 #include "TH2F.h"

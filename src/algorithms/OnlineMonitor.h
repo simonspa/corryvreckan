@@ -1,7 +1,7 @@
 #ifndef OnlineMonitor_H
 #define OnlineMonitor_H 1
 
-#include "core/algorithm/Algorithm.h"
+#include "core/Algorithm.h"
 #include <iostream>
 #include "objects/Pixel.h"
 #include "objects/Cluster.h"

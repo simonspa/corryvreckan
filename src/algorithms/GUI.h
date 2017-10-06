@@ -1,7 +1,7 @@
 #ifndef GUI_H
 #define GUI_H 1
 
-#include "core/algorithm/Algorithm.h"
+#include "core/Algorithm.h"
 #include <iostream>
 #include "TH1F.h"
 #include "TH2F.h"

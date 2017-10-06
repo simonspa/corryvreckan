@@ -1,12 +1,12 @@
-#ifndef ALGORITHM_H
+#ifndef ALGORITHM_H 
 #define ALGORITHM_H 1
 
 // Include files
 #include <string>
 #include "TStopwatch.h"
-#include "core/Clipboard.h"
-#include "core/Parameters.h"
-#include "core/Tee.h"
+#include "Clipboard.h"
+#include "Parameters.h"
+#include "Tee.h"
 
 //-------------------------------------------------------------------------------
 // The algorithm class is the base class that all user algorithms are built on. It
@@ -34,16 +34,16 @@ public:
     tcout.m_algorithmName = m_name;
   }
   virtual ~Algorithm(){}
-
+  
   // Three main functions - initialise, run and finalise. Called for every algorithm
   virtual void initialise(Parameters*){}
   virtual StatusCode run(Clipboard*){}
   virtual void finalise(){}
-
+  
   // Methods to get member variables
   string getName(){return m_name;}
   TStopwatch* getStopwatch(){return m_stopwatch;}
-
+  
   // Simple cout replacement
   tee tcout;
   bool debug;
@@ -54,7 +54,7 @@ protected:
   Parameters* parameters;
   TStopwatch* m_stopwatch;
   string m_name;
-
+  
 };
 
 
