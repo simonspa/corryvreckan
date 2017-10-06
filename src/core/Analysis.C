@@ -1,10 +1,17 @@
 // ROOT include files
 #include "TFile.h"
+#include <TSystem.h>
 
 // Local include files
 #include "Analysis.h"
 #include "objects/Timepix3Track.h"
 #include "utils/log.h"
+
+#include <dlfcn.h>
+#include <fstream>
+
+#define CORRYVRECKAN_ALGORITHM_PREFIX "libCorryvreckanAlgorithm"
+#define CORRYVRECKAN_GENERATOR_FUNCTION "corryvreckan_module_generator"
 
 using namespace corryvreckan;
 
@@ -72,6 +79,147 @@ void Analysis::add(Algorithm* algorithm){
   m_algorithms.push_back(algorithm);
 }
 
+void Analysis::load() {
+
+  std::vector<Configuration> configs = conf_mgr_->getConfigurations();
+  Configuration global_config_ = conf_mgr_->getGlobalConfiguration();
+
+  // Create histogram output file
+  m_histogramFile = new TFile(m_parameters->histogramFile.c_str(), "RECREATE");
+  m_directory = m_histogramFile->mkdir("corryvreckan");
+  if(m_histogramFile->IsZombie()) {
+    throw RuntimeError("Cannot create main ROOT file " + std::string(m_parameters->histogramFile.c_str()));
+  }
+
+  // Loop through all non-global configurations
+  for(auto& config : configs) {
+    // Load library for each module. Libraries are named (by convention + CMAKE) libAllpixModule Name.suffix
+    std::string lib_name = std::string(CORRYVRECKAN_ALGORITHM_PREFIX).append(config.getName()).append(SHARED_LIBRARY_SUFFIX);
+    LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loading algorithm " << config.getName();
+
+    void* lib = nullptr;
+    bool load_error = false;
+    dlerror();
+    if(loaded_libraries_.count(lib_name) == 0) {
+      // If library is not loaded then try to load it first from the config directories
+      if(global_config_.has("library_directories")) {
+        std::vector<std::string> lib_paths = global_config_.getPathArray("library_directories", true);
+        for(auto& lib_path : lib_paths) {
+          std::string full_lib_path = lib_path;
+          full_lib_path += "/";
+          full_lib_path += lib_name;
+
+          // Check if the absolute file exists and try to load if it exists
+          std::ifstream check_file(full_lib_path);
+          if(check_file.good()) {
+            lib = dlopen(full_lib_path.c_str(), RTLD_NOW);
+            if(lib != nullptr) {
+              LOG(DEBUG) << "Found library in configuration specified directory at " << full_lib_path;
+            } else {
+              load_error = true;
+            }
+            break;
+          }
+        }
+      }
+
+      // Otherwise try to load from the standard paths if not found already
+      if(!load_error && lib == nullptr) {
+        lib = dlopen(lib_name.c_str(), RTLD_NOW);
+
+        if(lib != nullptr) {
+          Dl_info dl_info;
+          dl_info.dli_fname = "";
+
+          // workaround to get the location of the library
+          int ret = dladdr(dlsym(lib, ALLPIX_UNIQUE_FUNCTION), &dl_info);
+          if(ret != 0) {
+            LOG(DEBUG) << "Found library during global search in runtime paths at " << dl_info.dli_fname;
+          } else {
+            LOG(WARNING)
+            << "Found library during global search but could not deduce location, likely broken library";
+          }
+        } else {
+          load_error = true;
+        }
+      }
+    } else {
+      // Otherwise just fetch it from the cache
+      lib = loaded_libraries_[lib_name];
+    }
+
+    // If library did not load then throw exception
+    if(load_error) {
+      const char* lib_error = dlerror();
+
+      // Find the name of the loaded library if it exists
+      std::string lib_error_str = lib_error;
+      size_t end_pos = lib_error_str.find(':');
+      std::string problem_lib;
+      if(end_pos != std::string::npos) {
+        problem_lib = lib_error_str.substr(0, end_pos);
+      }
+
+      // FIXME is checking the error in this way portable?
+      if(lib_error != nullptr && std::strstr(lib_error, "cannot allocate memory in static TLS block") != nullptr) {
+        LOG(ERROR) << "Library could not be loaded: not enough thread local storage available" << std::endl
+        << "Try one of below workarounds:" << std::endl
+        << "- Rerun library with the environmental variable LD_PRELOAD='" << problem_lib << "'"
+        << std::endl
+        << "- Recompile the library " << problem_lib << " with tls-model=global-dynamic";
+      } else if(lib_error != nullptr && std::strstr(lib_error, "cannot open shared object file") != nullptr &&
+      problem_lib.find(ALLPIX_MODULE_PREFIX) == std::string::npos) {
+        LOG(ERROR) << "Library could not be loaded: one of its dependencies is missing" << std::endl
+        << "The name of the missing library is " << problem_lib << std::endl
+        << "Please make sure the library is properly initialized and try again";
+      } else {
+        LOG(ERROR) << "Library could not be loaded: it is not available" << std::endl
+        << " - Did you enable the library during building? " << std::endl
+        << " - Did you spell the library name correctly (case-sensitive)? ";
+        if(lib_error != nullptr) {
+          LOG(DEBUG) << "Detailed error: " << lib_error;
+        }
+      }
+
+      throw corryvreckan::RuntimeError("Error loading " + config.getName());
+    }
+    // Remember that this library was loaded
+    loaded_libraries_[lib_name] = lib;
+
+
+    // Add the global internal parameters to the configuration
+    std::string global_dir = gSystem->pwd();
+    config.set<std::string>("_global_dir", global_dir);
+
+    // Create the algorithms from the library
+    m_algorithms.emplace_back(create_algorithm(loaded_libraries_[lib_name], config, m_clipboard));
+
+  }
+  LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loaded " << configs.size() << " modules";
+}
+
+Algorithm* Analysis::create_algorithm(void* library, Configuration config, Clipboard* clipboard) {
+    // Make the vector to return
+    std::string algorithm_name = config.getName();
+
+    // Get the generator function for this module
+    void* generator = dlsym(library, CORRYVRECKAN_GENERATOR_FUNCTION);
+    // If the generator function was not found, throw an error
+    if(generator == nullptr) {
+        LOG(ERROR) << "Algorithm library is invalid or outdated: required interface function not found!";
+        throw corryvreckan::RuntimeError("Error instantiating algorithm from " + config.getName());
+    }
+
+    // Convert to correct generator function
+    auto algorithm_generator = reinterpret_cast<Algorithm* (*)(std::string, Configuration, Clipboard*)>(generator); // NOLINT
+
+    // Build algorithm
+    Algorithm* algorithm = algorithm_generator(config.getName(), config, clipboard);
+
+    // Return the algorithm to the analysis
+    return algorithm;
+}
+
 // Run the analysis loop - this initialises, runs and finalises all algorithms
 void Analysis::run(){
 
@@ -114,9 +262,6 @@ void Analysis::run(){
 
 // Initalise all algorithms
 void Analysis::initialiseAll(){
-  // Create histogram output file
-  m_histogramFile = new TFile(m_parameters->histogramFile.c_str(), "RECREATE");
-  m_directory = m_histogramFile->mkdir("corryvreckan");
   int nTracks = 0;
 
   // Loop over all algorithms and initialise them

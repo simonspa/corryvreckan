@@ -33,7 +33,7 @@ public:
 
   // Member functions
   void add(Algorithm*);
-  void load() {};
+  void load();
 
   void run();
   void timing();
@@ -45,6 +45,7 @@ public:
   TBrowser* browser;
 
 protected:
+  Algorithm* create_algorithm(void* library, corryvreckan::Configuration config, Clipboard* clipboard);
 
   // Member variables
   Parameters* m_parameters;
@@ -53,6 +54,7 @@ protected:
   vector<Algorithm*> m_algorithms;
   TFile* m_histogramFile;
   TDirectory* m_directory;
+  std::map<std::string, void*> loaded_libraries_;
   int m_events;
 };
 
