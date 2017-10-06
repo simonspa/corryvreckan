@@ -41,11 +41,13 @@ Analysis::Analysis(std::string config_file_name){
     m_parameters->masked[m] = true;
   }
 
-// FIXME Loading of additional values:
   // Load alignment parameters
-  if(!m_parameters->readConditions()) throw ConfigFileUnavailableError("conditions");
+  std::string conditionsFile = global_config.get<std::string>("conditionsFile");
+  m_parameters->conditionsFile = conditionsFile;
+  if(!m_parameters->readConditions()) throw ConfigFileUnavailableError(conditionsFile);
 
   // Load mask file for the dut (if specified)
+  m_parameters->dutMaskFile = global_config.get<std::string>("dutMaskFile", "defaultMask.dat");
   m_parameters->readDutMask();
 
 
