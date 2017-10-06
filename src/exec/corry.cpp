@@ -153,6 +153,7 @@ int main(int argc, const char* argv[]) {
 
         // Finalize modules (post-run)
         corry->finaliseAll();
+
     } catch(ConfigurationError& e) {
         LOG(FATAL) << "Error in the configuration file:" << std::endl
                    << " " << e.what() << std::endl

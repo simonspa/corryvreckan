@@ -11,6 +11,8 @@
 #include "Algorithm.h"
 #include "Clipboard.h"
 #include "Parameters.h"
+#include "config/Configuration.hpp"
+#include "config/ConfigManager.hpp"
 
 //-------------------------------------------------------------------------------
 // The analysis class is the core class which allows the event processing to
@@ -46,10 +48,12 @@ protected:
 
   // Member variables
   Parameters* m_parameters;
+  std::unique_ptr<corryvreckan::ConfigManager> conf_mgr_;
   Clipboard* m_clipboard;
   vector<Algorithm*> m_algorithms;
   TFile* m_histogramFile;
   TDirectory* m_directory;
   int m_events;
 };
+
 #endif // ANALYSIS_H

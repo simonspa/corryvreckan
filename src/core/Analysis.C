@@ -5,9 +5,58 @@
 #include "Analysis.h"
 #include "objects/Timepix3Track.h"
 
+using namespace corryvreckan;
+
 // Default constructor
 Analysis::Analysis(std::string config_file_name){
+
+  // Load the global configuration
+  conf_mgr_ = std::make_unique<corryvreckan::ConfigManager>(std::move(config_file_name));
+
+  // Configure the standard special sections
+  conf_mgr_->setGlobalHeaderName("Corryvreckan");
+  conf_mgr_->addGlobalHeaderName("");
+  conf_mgr_->addIgnoreHeaderName("Ignore");
+
+  // Fetch the global configuration
+  corryvreckan::Configuration global_config = conf_mgr_->getGlobalConfiguration();
+
+  // FIXME translate new configuration to parameters:
   m_parameters = new Parameters();
+
+  // Define DUT and reference
+  m_parameters->DUT = global_config.get<std::string>("DUT");
+  m_parameters->reference = global_config.get<std::string>("reference");
+
+  m_parameters->detectorToAlign = m_parameters->DUT;
+  m_parameters->excludedFromTracking[m_parameters->DUT] = true;
+
+  std::vector<std::string> excluding = global_config.getArray<std::string>("excludeFromTracking");
+  for(auto& ex : excluding) {
+    m_parameters->excludedFromTracking[ex] = true;
+  }
+
+  std::vector<std::string> masking = global_config.getArray<std::string>("masked");
+  for(auto& m : masking) {
+    m_parameters->masked[m] = true;
+  }
+
+// FIXME Loading of additional values:
+  // Load alignment parameters
+  if(!m_parameters->readConditions()) throw ConfigFileUnavailableError("conditions");
+
+  // Load mask file for the dut (if specified)
+  m_parameters->readDutMask();
+
+
+  // FIXME per-algorithm settings:
+  //   basicTracking->minHitsOnTrack = 7;
+  //clicpixAnalysis->timepix3Telescope = true;
+  //  spatialTracking->debug = true;
+  //testAlgorithm->makeCorrelations = true;
+  //dataDump->m_detector = parameters->DUT;
+
+  // New clipboard for storage:
   m_clipboard = new Clipboard();
 }
 
@@ -18,14 +67,6 @@ void Analysis::add(Algorithm* algorithm){
 
 // Run the analysis loop - this initialises, runs and finalises all algorithms
 void Analysis::run(){
-
-  // Create histogram output file
-  m_histogramFile = new TFile(m_parameters->histogramFile.c_str(), "RECREATE");
-  m_directory = m_histogramFile->mkdir("tbAnalysis");
-  int nTracks = 0;
-
-  // Loop over all algorithms and initialise them
-  initialiseAll();
 
   // Loop over all events, running each algorithm on each "event"
   cout << endl << "========================| Event loop |========================" << endl;
@@ -62,14 +103,16 @@ void Analysis::run(){
 
   // If running the gui, don't close until the user types a command
   if(m_parameters->gui) cin.ignore();
-
-  // Loop over all algorithms and finalise them
-  finaliseAll();
-
 }
 
 // Initalise all algorithms
 void Analysis::initialiseAll(){
+  // Create histogram output file
+  m_histogramFile = new TFile(m_parameters->histogramFile.c_str(), "RECREATE");
+  m_directory = m_histogramFile->mkdir("corryvreckan");
+  int nTracks = 0;
+
+  // Loop over all algorithms and initialise them
   cout << endl << "=================| Initialising algorithms |==================" << endl;
   for(int algorithmNumber = 0; algorithmNumber<m_algorithms.size();algorithmNumber++) {
     // Make a new folder in the output file
@@ -85,6 +128,7 @@ void Analysis::initialiseAll(){
 // Finalise all algorithms
 void Analysis::finaliseAll(){
 
+  // Loop over all algorithms and finalise them
   for(int algorithmNumber = 0; algorithmNumber<m_algorithms.size();algorithmNumber++) {
     // Change to the output file directory
     m_directory->cd(m_algorithms[algorithmNumber]->getName().c_str());
