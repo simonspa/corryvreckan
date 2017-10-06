@@ -1,8 +1,8 @@
 #include "DUTAnalysis.h"
-#include "Pixel.h"
-#include "Cluster.h"
-#include "Track.h"
-#include "SpidrSignal.h"
+#include "objects/Pixel.h"
+#include "objects/Cluster.h"
+#include "objects/Track.h"
+#include "objects/SpidrSignal.h"
 
 DUTAnalysis::DUTAnalysis(bool debugging)
 : Algorithm("DUTAnalysis"){
@@ -12,7 +12,7 @@ DUTAnalysis::DUTAnalysis(bool debugging)
 
 
 void DUTAnalysis::initialise(Parameters* par){
- 
+
   // Pick up a copy of the parameters
   parameters = par;
 
@@ -22,12 +22,12 @@ void DUTAnalysis::initialise(Parameters* par){
   residualsX = new TH1F("residualsX","residualsX",400,-0.2,0.2);
   residualsY = new TH1F("residualsY","residualsY",400,-0.2,0.2);
   residualsTime = new TH1F("residualsTime","residualsTime",2000,-0.000001,0.000001);
-  
+
   hTrackCorrelationX = new TH1F("hTrackCorrelationX","hTrackCorrelationX",4000,-10.,10.);
   hTrackCorrelationY = new TH1F("hTrackCorrelationY","hTrackCorrelationY",4000,-10.,10.);
   hTrackCorrelationTime = new TH1F("hTrackCorrelationTime","hTrackCorrelationTime",2000000,-0.005,0.005);
   clusterToTVersusTime = new TH2F("clusterToTVersusTime","clusterToTVersusTime",300000,0.,300.,200,0,1000);
-  
+
   residualsTimeVsTime = new TH2F("residualsTimeVsTime","residualsTimeVsTime",20000,0,200,400,-0.0005,0.0005);
 
   tracksVersusPowerOnTime = new TH1F("tracksVersusPowerOnTime","tracksVersusPowerOnTime",1200000,-0.01,0.11);
@@ -47,19 +47,19 @@ void DUTAnalysis::initialise(Parameters* par){
 }
 
 StatusCode DUTAnalysis::run(Clipboard* clipboard){
-  
+
 //  tcout<<"Power on time: "<<m_powerOnTime/(4096. * 40000000.)<<endl;
 //  tcout<<"Power off time: "<<m_powerOffTime/(4096. * 40000000.)<<endl;
 //  tcout<<endl;
-  
+
   cout<<std::setprecision(10);
-  
+
   if(parameters->currentTime < 13.5) return Success;
-  
+
   // Timing cut for association
   double timingCut = 200./1000000000.; // 200 ns
   long long int timingCutInt = (timingCut * 4096. * 40000000.);
-  
+
   // Spatial cut
   double spatialCut = 0.2; // 200 um
 
@@ -68,11 +68,11 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
 
   // Power pulsing variable initialisation - get signals from SPIDR for this device
   double timeSincePowerOn = 0.;
-  
+
   // If the power was switched off/on in the last event we no longer have a power on/off time
   if(m_shutterCloseTime != 0 && m_shutterCloseTime > m_shutterOpenTime) m_shutterOpenTime = 0;
   if(m_shutterOpenTime != 0 && m_shutterOpenTime > m_shutterCloseTime) m_shutterCloseTime = 0;
-  
+
   // Now update the power pulsing with any new signals
   SpidrSignals* spidrData = (SpidrSignals*)clipboard->get(parameters->DUT,"SpidrSignals");
   // If there are new signals
@@ -98,14 +98,14 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
       }
     }
   }
-  
+
   // Get the tracks from the clipboard
   Tracks* tracks = (Tracks*)clipboard->get("tracks");
   if(tracks == NULL){
     if(debug) tcout<<"No tracks on the clipboard"<<endl;
     return Success;
   }
-  
+
   // Get the DUT clusters from the clipboard
   Clusters* clusters = (Clusters*)clipboard->get(parameters->DUT,"clusters");
   if(clusters == NULL){
@@ -114,23 +114,23 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
 
   // Loop over all tracks
   for(int itTrack=0;itTrack<tracks->size();itTrack++){
-    
+
     // Get the track pointer
     Track* track = (*tracks)[itTrack];
-    
+
     // Cut on the chi2/ndof
     if(track->chi2ndof() > chi2ndofCut) continue;
-    
+
     // Check if it intercepts the DUT
     PositionVector3D<Cartesian3D<double> > globalIntercept = parameters->detector[parameters->DUT]->getIntercept(track);
     if(!parameters->detector[parameters->DUT]->hasIntercept(track,1.)) continue;
-    
+
     // Check that it doesn't go through/near a masked pixel
     if(parameters->detector[parameters->DUT]->hitMasked(track,1.)) continue;
 
     tracksVersusTime->Fill( (double)track->timestamp() / (4096.*40000000.) );
-    
-    
+
+
     timeSincePowerOn = (double)(track->timestamp() - m_shutterOpenTime) / (4096.*40000000.);
     if(timeSincePowerOn > 0. && timeSincePowerOn < 0.0002){
 //      cout<<endl;
@@ -157,10 +157,10 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
     /*
     // Correlation plot
     for(int itCluster=0;itCluster<clusters->size();itCluster++){
-      
+
       // Get the cluster pointer
       Cluster* cluster = (*clusters)[itCluster];
-      
+
       // Check if the cluster is close in time
 //      if( abs(cluster->timestamp() - track->timestamp()) > timingCutInt ) continue;
 
@@ -171,7 +171,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
       hTrackCorrelationX->Fill(intercept.X() - cluster->globalX());
       hTrackCorrelationY->Fill(intercept.Y() - cluster->globalY());
       hTrackCorrelationTime->Fill( (double)(track->timestamp() - cluster->timestamp()) / (4096.*40000000.));
-      
+
       if( fabs(intercept.X() - cluster->globalX()) < 0.1 &&
           fabs(intercept.Y() - cluster->globalY()) < 0.1){
         residualsTime->Fill((double)(track->timestamp() - cluster->timestamp()) / (4096.*40000000.));
@@ -179,27 +179,27 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
       }
     }
     */
-    
+
     // Loop over all DUT clusters
     bool associated = false;
     for(int itCluster=0;itCluster<clusters->size();itCluster++){
 
       // Get the cluster pointer
       Cluster* cluster = (*clusters)[itCluster];
-      
+
       // Fill the tot histograms on the first run
       if(itTrack == 0) clusterToTVersusTime->Fill((double)cluster->timestamp() / (4096.*40000000.), cluster->tot());
-      
+
       // Check if the cluster is close in time
       if( !m_digitalPowerPulsing && abs(cluster->timestamp() - track->timestamp()) > timingCutInt ) continue;
-      
+
       // Check distance between track and cluster
       ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
       double xdistance = intercept.X() - cluster->globalX();
       double ydistance = intercept.Y() - cluster->globalY();
       if( abs(xdistance) > spatialCut) continue;
       if( abs(ydistance) > spatialCut) continue;
- 
+
       // We now have an associated cluster! Fill plots
       associated = true;
 //      tcout<<"Found associated cluster"<<endl;
@@ -209,7 +209,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
       track->addAssociatedCluster(cluster);
       m_nAlignmentClusters++;
       hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(),globalIntercept.Y());
-      
+
       // Fill power pulsing response
       if( (m_shutterOpenTime != 0 && m_shutterCloseTime == 0) ||
          (m_shutterOpenTime != 0 && ( (m_shutterCloseTime > m_shutterOpenTime && m_shutterCloseTime - track->timestamp() > 0) ||
@@ -219,36 +219,36 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
 
       // Only allow one associated cluster per track
       break;
-      
+
     }
-    
+
     if(!associated) hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(),globalIntercept.Y());
-    
+
   }
 
   // Increment event counter
   m_eventNumber++;
-  
+
 //  if(m_nAlignmentClusters > 10000) return Failure;
   // Return value telling analysis to keep running
   return Success;
 }
 
 void DUTAnalysis::finalise(){
-  
+
   if(debug) tcout<<"Analysed "<<m_eventNumber<<" events"<<endl;
-  
+
 }
 
 // Function to check if a track goes through a given device
 //bool DUTAnalysis::intercept(Track*, string device){
-//  
+//
 //  // Get the global intercept of the track and the device
 //  ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
 //
 //  // Transform to the local co-ordinates
-//  
+//
 //  // Check if the row/column number is outside the acceptable range
-//  
-//  
+//
+//
 //}
