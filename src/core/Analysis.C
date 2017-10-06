@@ -4,6 +4,7 @@
 // Local include files
 #include "Analysis.h"
 #include "objects/Timepix3Track.h"
+#include "utils/log.h"
 
 using namespace corryvreckan;
 
@@ -41,6 +42,10 @@ Analysis::Analysis(std::string config_file_name){
     m_parameters->masked[m] = true;
   }
 
+  // FIXME Read remaining parametes from command line:
+  // Overwrite steering file values from command line
+  //parameters->readCommandLineOptions(argc,argv);
+
   // Load alignment parameters
   std::string conditionsFile = global_config.get<std::string>("conditionsFile");
   m_parameters->conditionsFile = conditionsFile;
@@ -71,7 +76,7 @@ void Analysis::add(Algorithm* algorithm){
 void Analysis::run(){
 
   // Loop over all events, running each algorithm on each "event"
-  cout << endl << "========================| Event loop |========================" << endl;
+  LOG(STATUS) << "========================| Event loop |========================";
   m_events=1;
   while(1){
     bool run = true;
@@ -91,7 +96,7 @@ void Analysis::run(){
 //    Timepix3Tracks* tracks = (Timepix3Tracks*)m_clipboard->get("Timepix3","tracks");
 //    if(tracks != NULL) nTracks += tracks->size();
 
-//    cout<<"\r[Analysis] Current time is "<<fixed<<setw(10)<<m_parameters->currentTime<<". Produced "<<nTracks<<" tracks"<<flush;
+//    LOG(DEBUG) << "\r[Analysis] Current time is "<<fixed<<setw(10)<<m_parameters->currentTime<<". Produced "<<nTracks<<" tracks"<<flush;
 
     // Clear objects from this iteration from the clipboard
     m_clipboard->clear();
@@ -115,13 +120,13 @@ void Analysis::initialiseAll(){
   int nTracks = 0;
 
   // Loop over all algorithms and initialise them
-  cout << endl << "=================| Initialising algorithms |==================" << endl;
+  LOG(STATUS) << "=================| Initialising algorithms |==================";
   for(int algorithmNumber = 0; algorithmNumber<m_algorithms.size();algorithmNumber++) {
     // Make a new folder in the output file
     m_directory->cd();
     m_directory->mkdir(m_algorithms[algorithmNumber]->getName().c_str());
     m_directory->cd(m_algorithms[algorithmNumber]->getName().c_str());
-    cout<<"["<<m_algorithms[algorithmNumber]->getName()<<"] Initialising"<<endl;
+    LOG(INFO) << "Initialising \"" << m_algorithms[algorithmNumber]->getName() << "\"";
     // Initialise the algorithm
     m_algorithms[algorithmNumber]->initialise(m_parameters);
   }
@@ -151,12 +156,11 @@ void Analysis::finaliseAll(){
 // Display timing statistics for each algorithm, over all events and per event
 void Analysis::timing()
 {
-  cout << endl << "===============| Wall-clock timing (seconds) |================" << endl;
+  LOG(INFO) << "===============| Wall-clock timing (seconds) |================";
   for (int algorithmNumber = 0; algorithmNumber<m_algorithms.size();algorithmNumber++) {
-    cout.width(25);
-    cout<<m_algorithms[algorithmNumber]->getName()<<"  --  ";
-    cout<<m_algorithms[algorithmNumber]->getStopwatch()->RealTime()<<" = ";
-    cout<<m_algorithms[algorithmNumber]->getStopwatch()->RealTime()/m_events<<" s/evt"<<endl;
+    LOG(INFO) << m_algorithms[algorithmNumber]->getName() << "  --  "
+              << m_algorithms[algorithmNumber]->getStopwatch()->RealTime() << " = "
+              << m_algorithms[algorithmNumber]->getStopwatch()->RealTime()/m_events << " s/evt";
   }
-  cout << "==============================================================\n" << endl;
+  LOG(INFO) << "==============================================================";
 }

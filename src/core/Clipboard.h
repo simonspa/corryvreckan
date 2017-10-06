@@ -8,6 +8,7 @@
 
 #include "objects/TestBeamObject.h"
 #include "Parameters.h"
+#include "utils/log.h"
 
 //-------------------------------------------------------------------------------
 // The Clipboard class is used to transfer information between algorithms during
@@ -59,7 +60,7 @@ public:
 
   // Quick function to check what is currently held by the clipboard
   void checkCollections(){
-    for(int name=0;name<m_dataID.size();name++) cout<<"Data held: "<<m_dataID[name]<<endl;
+    for(int name=0;name<m_dataID.size();name++) LOG(DEBUG) << "Data held: " << m_dataID[name];
   }
 
 private:
