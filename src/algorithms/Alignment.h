@@ -6,12 +6,12 @@
 #include "Math/Functor.h"
 #include "TError.h"
 // Local includes
-#include "Algorithm.h"
-#include "Cluster.h"
-#include "Track.h"
+#include "core/Algorithm.h"
+#include "objects/Cluster.h"
+#include "objects/Track.h"
 
 class Alignment : public Algorithm {
-  
+
 public:
   // Constructors and destructors
   Alignment(bool);
@@ -21,7 +21,7 @@ public:
   void initialise(Parameters*);
   StatusCode run(Clipboard*);
   void finalise();
-  
+
   // Member variables
   Tracks m_alignmenttracks;
   int nIterations;

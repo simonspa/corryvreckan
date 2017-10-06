@@ -1,7 +1,7 @@
 #ifndef ClicpixAnalysis_H
 #define ClicpixAnalysis_H 1
 
-#include "Algorithm.h"
+#include "core/Algorithm.h"
 #include <iostream>
 #include <sstream>
 #include "TH1F.h"
@@ -9,7 +9,7 @@
 #include "TCanvas.h"
 
 class ClicpixAnalysis : public Algorithm {
-  
+
 public:
   // Constructors and destructors
   ClicpixAnalysis(bool);
@@ -28,14 +28,14 @@ public:
   TH2F* hHitPixels;
   TH1F* hColumnHits;
   TH1F* hRowHits;
-  
+
   TH1F* hClusterSizeAll;
   TH1F* hClusterTOTAll;
   TH1F* hClustersPerEvent;
   TH1F* hClustersVersusEventNo;
   TH1F* hClusterWidthRow;
   TH1F* hClusterWidthCol;
-  
+
   // Track histograms
   TH1F* hGlobalTrackDifferenceX;
   TH1F* hGlobalTrackDifferenceY;
@@ -90,8 +90,8 @@ public:
   TH1F* hClusterTOTRatioCol2pix;
   TH2F* hResidualsLocalRow2pixClusterTOT;
   TH2F* hResidualsLocalRow2pixPixelIntercept;
-  
-  
+
+
   // Maps
   TH2F* hTrackIntercepts;
   TH2F* hTrackInterceptsAssociated;
@@ -110,7 +110,7 @@ public:
   TH2F* hInterceptClusterSize2;
   TH2F* hInterceptClusterSize3;
   TH2F* hInterceptClusterSize4;
-  
+
   TH2F* hMapClusterSizeAssociated;
   int m_nBinsX; int m_nBinsY;
   std::map<int, TH1F*> hMapClusterTOTAssociated1pix;
@@ -124,7 +124,7 @@ public:
   double m_proximityCut;
   double m_lostHits;
   bool timepix3Telescope;
-  
+
 };
 
 #endif // ClicpixAnalysis_H

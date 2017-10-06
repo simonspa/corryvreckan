@@ -3,7 +3,7 @@
 
 // Local include files
 #include "Analysis.h"
-#include "Timepix3Track.h"
+#include "objects/Timepix3Track.h"
 
 // Default constructor
 Analysis::Analysis(Parameters* parameters){
@@ -23,10 +23,10 @@ void Analysis::run(){
   m_histogramFile = new TFile(m_parameters->histogramFile.c_str(), "RECREATE");
   m_directory = m_histogramFile->mkdir("tbAnalysis");
   int nTracks = 0;
-  
+
   // Loop over all algorithms and initialise them
   initialiseAll();
-  
+
   // Loop over all events, running each algorithm on each "event"
   cout << endl << "========================| Event loop |========================" << endl;
   m_events=1;
@@ -59,13 +59,13 @@ void Analysis::run(){
     // Increment event number
     if(!noData) m_events++;
   }
-  
+
   // If running the gui, don't close until the user types a command
   if(m_parameters->gui) cin.ignore();
-  
+
   // Loop over all algorithms and finalise them
   finaliseAll();
-  
+
 }
 
 // Initalise all algorithms
@@ -91,12 +91,12 @@ void Analysis::finaliseAll(){
     // Finalise the algorithm
     m_algorithms[algorithmNumber]->finalise();
   }
-  
+
   // Write the output histogram file
   m_directory->cd();
   m_directory->Write();
   m_histogramFile->Close();
-  
+
   // Check the timing for all events
   timing();
 

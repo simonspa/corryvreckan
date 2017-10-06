@@ -1,12 +1,12 @@
 #ifndef OnlineMonitor_H
 #define OnlineMonitor_H 1
 
-#include "Algorithm.h"
+#include "core/Algorithm.h"
 #include <iostream>
-#include "Pixel.h"
-#include "Cluster.h"
-#include "Track.h"
-#include "GuiDisplay.h"
+#include "objects/Pixel.h"
+#include "objects/Cluster.h"
+#include "objects/Track.h"
+#include "objects/GuiDisplay.h"
 
 // ROOT includes
 #include "TH1F.h"
@@ -24,7 +24,7 @@
 #include "TRootEmbeddedCanvas.h"
 
 class OnlineMonitor : public Algorithm {
-  
+
 public:
   // Constructors and destructors
   OnlineMonitor(bool);
@@ -34,18 +34,18 @@ public:
   void initialise(Parameters*);
   StatusCode run(Clipboard*);
   void finalise();
-  
+
   // Application to allow display persistancy
   TApplication* app;
   GuiDisplay* gui;
-  
+
   void AddHisto(string, string, string style="");
   void AddButton(string, string);
-  
+
   // Member variables
   int eventNumber;
   int updateNumber;
-  
+
 };
 
 #endif // OnlineMonitor_H

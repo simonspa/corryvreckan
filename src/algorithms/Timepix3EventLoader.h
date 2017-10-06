@@ -1,13 +1,13 @@
 #ifndef TIMEPIX3EVENTLOADER_H
 #define TIMEPIX3EVENTLOADER_H 1
 
-#include "Algorithm.h"
-#include "Pixel.h"
-#include "SpidrSignal.h"
+#include "core/Algorithm.h"
+#include "objects/Pixel.h"
+#include "objects/SpidrSignal.h"
 #include <stdio.h>
 
 class Timepix3EventLoader : public Algorithm {
-  
+
 public:
   // Constructors and destructors
   Timepix3EventLoader(bool);
@@ -17,7 +17,7 @@ public:
   void initialise(Parameters*);
   StatusCode run(Clipboard*);
   void finalise();
-  
+
   // Extra functions
   bool loadData(string, Pixels*, SpidrSignals*);
   void maskPixels(string, string);
@@ -38,8 +38,8 @@ public:
   bool m_shutterOpen;
   map<string, Pixels*> bufferedData;
   map<string, SpidrSignals*> bufferedSignals;
-  
-  
+
+
 };
 
 #endif // TIMEPIX3EVENTLOADER_H

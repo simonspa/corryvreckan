@@ -1,7 +1,7 @@
 #ifndef Timepix1EventLoader_H
 #define Timepix1EventLoader_H 1
 
-#include "Algorithm.h"
+#include "core/Algorithm.h"
 #include <iostream>
 #include "TH1F.h"
 #include "TH2F.h"
@@ -11,7 +11,7 @@
 #include <string>
 
 class Timepix1EventLoader : public Algorithm {
-  
+
 public:
   // Constructors and destructors
   Timepix1EventLoader(bool);
@@ -23,7 +23,7 @@ public:
   void finalise();
 
   void processHeader(string,string&,long long int&);
-  
+
   // Member variables
   int m_eventNumber;
   string m_inputDirectory;

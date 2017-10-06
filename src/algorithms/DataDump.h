@@ -1,21 +1,21 @@
 #ifndef DataDump_H
 #define DataDump_H 1
 
-#include "Algorithm.h"
+#include "core/Algorithm.h"
 #include <iostream>
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TCanvas.h"
-#include "Pixel.h"
-#include "Cluster.h"
-#include "Track.h"
+#include "objects/Pixel.h"
+#include "objects/Cluster.h"
+#include "objects/Track.h"
 #include <dirent.h>
 #include <sstream>
 #include <fstream>
 #include <stdint.h>
 
 class DataDump : public Algorithm {
-  
+
 public:
   // Constructors and destructors
   DataDump(bool);
@@ -29,7 +29,7 @@ public:
   // Member variables
   int m_eventNumber;
   string m_detector;
-  
+
 };
 
 #endif // DataDump_H

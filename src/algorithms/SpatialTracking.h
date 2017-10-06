@@ -10,12 +10,12 @@
 #include "Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
 // Local includes
-#include "Algorithm.h"
-#include "Cluster.h"
-#include "Track.h"
+#include "core/Algorithm.h"
+#include "objects/Cluster.h"
+#include "objects/Track.h"
 
 class SpatialTracking : public Algorithm {
-  
+
 public:
   // Constructors and destructors
   SpatialTracking(bool);
@@ -35,13 +35,13 @@ public:
   TH1F* trackAngleY;
   map<string,TH1F*> residualsX;
   map<string,TH1F*> residualsY;
-  
+
   // Member variables
   int m_eventNumber;
   double spatialCut;
   int minHitsOnTrack;
   double nTracksTotal;
-  
+
 };
 
 #endif // SpatialTracking_H

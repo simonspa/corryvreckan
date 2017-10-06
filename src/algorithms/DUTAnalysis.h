@@ -1,14 +1,14 @@
 #ifndef DUTAnalysis_H
 #define DUTAnalysis_H 1
 
-#include "Algorithm.h"
+#include "core/Algorithm.h"
 #include <iostream>
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TCanvas.h"
 
 class DUTAnalysis : public Algorithm {
-  
+
 public:
   // Constructors and destructors
   DUTAnalysis(bool);
@@ -18,7 +18,7 @@ public:
   void initialise(Parameters*);
   StatusCode run(Clipboard*);
   void finalise();
-  
+
   // Histograms
   TH1F* tracksVersusTime;
   TH1F* associatedTracksVersusTime;
@@ -36,7 +36,7 @@ public:
 
   TH1F* tracksVersusPowerOnTime;
   TH1F* associatedTracksVersusPowerOnTime;
-  
+
   // Member variables
   int m_eventNumber;
   int m_nAlignmentClusters;

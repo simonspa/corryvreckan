@@ -13,24 +13,24 @@
 #include "Analysis.h"
 
 // Algorithm list
-#include "TestAlgorithm.h"
-#include "Timepix3EventLoader.h"
-#include "Timepix3Clustering.h"
-#include "Timepix1EventLoader.h"
-#include "Timepix1Clustering.h"
-#include "Timepix3MaskCreator.h"
-#include "BasicTracking.h"
-#include "SpatialTracking.h"
-#include "Alignment.h"
-#include "EventDisplay.h"
-#include "GUI.h"
-#include "DUTAnalysis.h"
-#include "FileWriter.h"
-#include "FileReader.h"
-#include "Timepix1Correlator.h"
-#include "ClicpixAnalysis.h"
-#include "DataDump.h"
-#include "OnlineMonitor.h"
+#include "algorithms/TestAlgorithm.h"
+#include "algorithms/Timepix3EventLoader.h"
+#include "algorithms/Timepix3Clustering.h"
+#include "algorithms/Timepix1EventLoader.h"
+#include "algorithms/Timepix1Clustering.h"
+#include "algorithms/Timepix3MaskCreator.h"
+#include "algorithms/BasicTracking.h"
+#include "algorithms/SpatialTracking.h"
+#include "algorithms/Alignment.h"
+#include "algorithms/EventDisplay.h"
+#include "algorithms/GUI.h"
+#include "algorithms/DUTAnalysis.h"
+#include "algorithms/FileWriter.h"
+#include "algorithms/FileReader.h"
+#include "algorithms/Timepix1Correlator.h"
+#include "algorithms/ClicpixAnalysis.h"
+#include "algorithms/DataDump.h"
+#include "algorithms/OnlineMonitor.h"
 
 //-------------------------------------------------------------------------------
 // The Steering is effectively the executable. It reads command line
@@ -50,13 +50,13 @@ void userException(int sig){
 }
 
 int main(int argc, char *argv[]) {
- 
+
   // Register escape behaviour (^\)
   signal(SIGQUIT, userException);
 
   // New parameters object
   Parameters* parameters = new Parameters();
-  
+
   // Global debug flag
   bool debug = false;
 
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
   // =========================================================================
   // Steering file begins
   // =========================================================================
-  
+
   // General parameters
   parameters->reference = "W0013_G03";
   parameters->DUT = "W0039_C08";
@@ -98,12 +98,12 @@ int main(int argc, char *argv[]) {
 
   //parameters->reference = "Mim-osa02";
   //parameters->DUT = "CLi-CPix";
- 
+
 //  parameters->DUT = "W0013_J05";
   parameters->detectorToAlign = parameters->DUT;
   parameters->excludedFromTracking[parameters->DUT] = true;
- 
- 
+
+
   parameters->excludedFromTracking["W0005_E02"] = true;
   parameters->excludedFromTracking["W0005_F01"] = true;
   parameters->excludedFromTracking["W0019_C07"] = true;
@@ -111,11 +111,11 @@ int main(int argc, char *argv[]) {
   parameters->excludedFromTracking["W0019_F07"] = true;
   parameters->excludedFromTracking["W0019_L08"] = true;
   parameters->excludedFromTracking["W0005_H03"] = true;
-  
+
   clicpixAnalysis->timepix3Telescope = true;
 //  spatialTracking->debug = true;
   parameters->masked["W0039_C08"] = true;
- 
+
 //  parameters->masked["W0013_D04"] = true;
 //  parameters->masked["W0013_E03"] = true;
 //  parameters->masked["W0013_G02"] = true;
@@ -129,20 +129,20 @@ int main(int argc, char *argv[]) {
   basicTracking->minHitsOnTrack = 7;
   //testAlgorithm->makeCorrelations = true;
   //dataDump->m_detector = parameters->DUT;
-  
+
   // =========================================================================
   // Steering file ends
   // =========================================================================
-  
+
   // Overwrite steering file values from command line
   parameters->readCommandLineOptions(argc,argv);
 
   // Load alignment parameters
   if(!parameters->readConditions()) return 0;
-  
+
   // Load mask file for the dut (if specified)
   parameters->readDutMask();
-  
+
   // Initialise the analysis object and add algorithms to run
   analysis = new Analysis(parameters);
 //  analysis->add(tpix1EventLoader);
@@ -163,7 +163,7 @@ int main(int argc, char *argv[]) {
   if(parameters->produceMask) analysis->add(tpix3MaskCreator);
   if(parameters->eventDisplay) analysis->add(eventDisplay);
   if(parameters->gui) analysis->add(onlineMonitor);
-  
+
   // Run the analysis
   analysis->run();
 
