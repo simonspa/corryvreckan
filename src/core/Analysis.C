@@ -6,8 +6,8 @@
 #include "objects/Timepix3Track.h"
 
 // Default constructor
-Analysis::Analysis(Parameters* parameters){
-  m_parameters = parameters;
+Analysis::Analysis(std::string config_file_name){
+  m_parameters = new Parameters();
   m_clipboard = new Clipboard();
 }
 

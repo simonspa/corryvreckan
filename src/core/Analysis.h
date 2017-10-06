@@ -26,8 +26,7 @@ class Analysis {
 public:
 
   // Constructors and destructors
-  Analysis(std::string config_file_name) {};
-  Analysis(Parameters*);
+  Analysis(std::string config_file_name);
   virtual ~Analysis(){};
 
   // Member functions
@@ -40,7 +39,6 @@ public:
   void finaliseAll();
 
   void reset() {};
-  void terminate() {};
 
   TBrowser* browser;
 
