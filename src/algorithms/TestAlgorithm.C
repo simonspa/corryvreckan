@@ -4,7 +4,8 @@ using namespace corryvreckan;
 using namespace std;
 
 TestAlgorithm::TestAlgorithm(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
-    makeCorrelations = false;
+    makeCorrelations = m_config.get<bool>("makeCorrelations", false);
+    LOG(DEBUG) << "Setting makeCorrelations to: " << makeCorrelations;
 }
 
 void TestAlgorithm::initialise(Parameters* par) {

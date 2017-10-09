@@ -79,9 +79,11 @@ Analysis::Analysis(std::string config_file_name) : m_terminate(false) {
     m_parameters->detectorToAlign = m_parameters->DUT;
     m_parameters->excludedFromTracking[m_parameters->DUT] = true;
 
-    std::vector<std::string> excluding = global_config.getArray<std::string>("excludeFromTracking");
-    for(auto& ex : excluding) {
-        m_parameters->excludedFromTracking[ex] = true;
+    if(global_config.has("excludeFromTracking")) {
+        std::vector<std::string> excluding = global_config.getArray<std::string>("excludeFromTracking");
+        for(auto& ex : excluding) {
+            m_parameters->excludedFromTracking[ex] = true;
+        }
     }
 
     std::vector<std::string> masking = global_config.getArray<std::string>("masked");
