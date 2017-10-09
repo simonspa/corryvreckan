@@ -2,6 +2,7 @@
 #include "objects/Pixel.h"
 
 using namespace corryvreckan;
+using namespace std;
 
 Timepix1Clustering::Timepix1Clustering(Configuration config, Clipboard* clipboard)
     : Algorithm(std::move(config), clipboard) {}

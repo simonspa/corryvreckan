@@ -1,6 +1,7 @@
 #include "Clicpix2EventLoader.h"
 
 using namespace corryvreckan;
+using namespace std;
 
 Clicpix2EventLoader::Clicpix2EventLoader(Configuration config, Clipboard* clipboard)
     : Algorithm(std::move(config), clipboard) {}

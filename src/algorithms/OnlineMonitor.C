@@ -2,6 +2,7 @@
 #include "OnlineMonitor.h"
 
 using namespace corryvreckan;
+using namespace std;
 
 OnlineMonitor::OnlineMonitor(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
     updateNumber = 500;

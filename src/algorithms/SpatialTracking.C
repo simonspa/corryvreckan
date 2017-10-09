@@ -2,6 +2,7 @@
 #include "objects/KDTree.h"
 
 using namespace corryvreckan;
+using namespace std;
 
 SpatialTracking::SpatialTracking(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
     spatialCut = 0.2;

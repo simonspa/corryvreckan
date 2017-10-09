@@ -3,6 +3,7 @@
 #include <TVirtualFitter.h>
 
 using namespace corryvreckan;
+using namespace std;
 
 Alignment::Alignment(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
     m_numberOfTracksForAlignment = 20000;

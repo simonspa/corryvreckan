@@ -29,15 +29,15 @@ namespace corryvreckan {
         void finalise();
 
         // Histograms for several devices
-        map<string, TH2F*> plotPerDevice;
+        std::map<std::string, TH2F*> plotPerDevice;
 
         // Single histograms
         TH1F* singlePlot;
 
         // Member variables
         int m_eventNumber;
-        string m_filename;
-        ifstream m_file;
+        std::string m_filename;
+        std::ifstream m_file;
 
         TH2F* hHitMap;
         TH1F* hPixelToT;

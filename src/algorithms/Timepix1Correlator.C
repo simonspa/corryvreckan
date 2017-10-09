@@ -4,6 +4,7 @@
 #include "objects/Track.h"
 
 using namespace corryvreckan;
+using namespace std;
 
 Timepix1Correlator::Timepix1Correlator(Configuration config, Clipboard* clipboard)
     : Algorithm(std::move(config), clipboard) {}

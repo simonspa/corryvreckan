@@ -29,8 +29,8 @@ namespace corryvreckan {
 
         // Member variables
         int m_eventNumber;
-        string m_filename;
-        ifstream m_file;
+        std::string m_filename;
+        std::ifstream m_file;
 
         TH2F* hHitMap;
         TH1F* hPixelToT;

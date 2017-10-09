@@ -119,8 +119,8 @@ namespace corryvreckan {
         // Member variables
         int m_eventNumber;
         int m_triggerNumber;
-        string dutID;
-        map<int, double> m_hitPixels;
+        std::string dutID;
+        std::map<int, double> m_hitPixels;
         double m_associationCut;
         double m_proximityCut;
         double m_lostHits;

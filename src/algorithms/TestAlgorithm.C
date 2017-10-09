@@ -1,6 +1,7 @@
 #include "TestAlgorithm.h"
 
 using namespace corryvreckan;
+using namespace std;
 
 TestAlgorithm::TestAlgorithm(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
     makeCorrelations = false;

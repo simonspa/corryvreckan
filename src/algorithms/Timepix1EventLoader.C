@@ -3,6 +3,7 @@
 #include "objects/Pixel.h"
 
 using namespace corryvreckan;
+using namespace std;
 
 Timepix1EventLoader::Timepix1EventLoader(Configuration config, Clipboard* clipboard)
     : Algorithm(std::move(config), clipboard) {}

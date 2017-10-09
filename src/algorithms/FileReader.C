@@ -4,6 +4,7 @@
 #include "objects/Timepix3Track.h"
 
 using namespace corryvreckan;
+using namespace std;
 
 FileReader::FileReader(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
     m_onlyDUT = false;

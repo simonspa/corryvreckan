@@ -10,6 +10,7 @@
 #include <string>
 
 using namespace corryvreckan;
+using namespace std;
 
 Timepix3EventLoader::Timepix3EventLoader(Configuration config, Clipboard* clipboard)
     : Algorithm(std::move(config), clipboard) {
@@ -35,6 +36,9 @@ void Timepix3EventLoader::initialise(Parameters* par) {
         LOG(ERROR) << "Directory " << m_inputDirectory << " does not exist";
         return;
     }
+    else {
+      LOG(TRACE) << "Found directory " << m_inputDirectory;
+    }
     dirent* entry;
     dirent* file;
 
@@ -44,6 +48,8 @@ void Timepix3EventLoader::initialise(Parameters* par) {
         // If these are folders then the name is the chip ID
         if(entry->d_type == DT_DIR) {
 
+            LOG(DEBUG) << "Found directory for detector ID " << entry->d_name;
+
             // Open the folder for this device
             string detectorID = entry->d_name;
             string dataDirName = m_inputDirectory + "/" + entry->d_name;
@@ -51,14 +57,21 @@ void Timepix3EventLoader::initialise(Parameters* par) {
             string trimdacfile;
 
             // Check if this device is to be masked
-            if(parameters->masked.count(detectorID) != 0)
+            if(parameters->masked.count(detectorID) != 0) {
+                LOG(DEBUG) << "Device with detector ID " << entry->d_name << " is masked.";
                 continue;
+            }
 
             // Check if this device has conditions loaded and is a Timepix3
-            if(parameters->detector.count(detectorID) == 0)
+            if(parameters->detector.count(detectorID) == 0) {
+                LOG(DEBUG) << "Device with detector ID " << entry->d_name << " does not have conditions loaded.";
                 continue;
-            if(parameters->detector[detectorID]->m_detectorType != "Timepix3")
+            }
+
+            if(parameters->detector[detectorID]->m_detectorType != "Timepix3") {
+                LOG(DEBUG) << "Device with detector ID " << entry->d_name << " is not of type Timepix3.";
                 continue;
+            }
 
             // Get all of the files for this chip
             while(file = readdir(dataDir)) {
@@ -257,10 +270,9 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
 
         // Read one 64-bit chunk of data
         const int retval = fread(&pixdata, sizeof(ULong64_t), 1, m_currentFile[detectorID]);
-        IFLOG(DEBUG) {
+        IFLOG(TRACE) {
             bitset<64> packetContent(pixdata);
-            LOG(DEBUG) << hex << pixdata << dec;
-            LOG(DEBUG) << pixdata;
+            LOG(TRACE) << "0x" << hex << pixdata << dec << " - " << pixdata;
         }
         if(retval == 0)
             continue;

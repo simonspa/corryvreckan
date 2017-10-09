@@ -23,19 +23,19 @@ namespace corryvreckan {
         void finalise();
 
         // Pixel histograms
-        map<string, TH2F*> hitmap;
-        map<string, TH1F*> eventTimes;
+        std::map<std::string, TH2F*> hitmap;
+        std::map<std::string, TH1F*> eventTimes;
 
         // Cluster histograms
-        map<string, TH1F*> clusterSize;
-        map<string, TH1F*> clusterTot;
-        map<string, TH2F*> clusterPositionGlobal;
+        std::map<std::string, TH1F*> clusterSize;
+        std::map<std::string, TH1F*> clusterTot;
+        std::map<std::string, TH2F*> clusterPositionGlobal;
 
         // Correlation plots
-        map<string, TH1F*> correlationX;
-        map<string, TH1F*> correlationY;
-        map<string, TH1F*> correlationTime;
-        map<string, TH1F*> correlationTimeInt;
+        std::map<std::string, TH1F*> correlationX;
+        std::map<std::string, TH1F*> correlationY;
+        std::map<std::string, TH1F*> correlationTime;
+        std::map<std::string, TH1F*> correlationTimeInt;
 
         // Parameters which can be set by user
         bool makeCorrelations;

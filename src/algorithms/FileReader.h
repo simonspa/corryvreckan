@@ -21,7 +21,7 @@ namespace corryvreckan {
 
         // Member variables
         int m_eventNumber;
-        string m_fileName;
+        std::string m_fileName;
         TFile* m_inputFile;
 
         // Flags for which data types to write out
@@ -31,19 +31,19 @@ namespace corryvreckan {
         bool m_onlyDUT;
 
         // Map of trees which holds the output objects
-        map<string, TTree*> m_inputTrees;
+        std::map<std::string, TTree*> m_inputTrees;
 
         // Objects which the trees will point to (when
         // the branch address is set
         long long int m_time;
-        map<string, TestBeamObject*> m_objects;
+        std::map<std::string, TestBeamObject*> m_objects;
 
         // List of objects to write out
-        vector<string> m_objectList;
+        std::vector<std::string> m_objectList;
 
         // Variables to keep track of time and file reading
         long long int m_currentTime;
-        map<string, long long int> m_currentPosition;
+        std::map<std::string, long long int> m_currentPosition;
         double m_timeWindow;
     };
 }

@@ -26,14 +26,14 @@ namespace corryvreckan {
 
         // Member variables
         int m_eventNumber;
-        string dutID;
-        map<int, Clusters> m_eventClusters;
-        map<int, Tracks> m_eventTracks;
+        std::string dutID;
+        std::map<int, Clusters> m_eventClusters;
+        std::map<int, Tracks> m_eventTracks;
         double angleStart, angleStop, angleStep;
 
         // Histograms
-        map<string, TH1F*> hTrackDiffX;
-        map<string, TH1F*> hTrackDiffY;
+        std::map<std::string, TH1F*> hTrackDiffX;
+        std::map<std::string, TH1F*> hTrackDiffY;
     };
 }
 #endif // Clicpix2Correlator_H

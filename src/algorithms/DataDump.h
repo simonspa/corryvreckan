@@ -29,7 +29,7 @@ namespace corryvreckan {
 
         // Member variables
         int m_eventNumber;
-        string m_detector;
+        std::string m_detector;
     };
 }
 #endif // DataDump_H

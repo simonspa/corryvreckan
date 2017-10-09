@@ -3,6 +3,7 @@
 #include "objects/KDTree.h"
 
 using namespace corryvreckan;
+using namespace std;
 
 BasicTracking::BasicTracking(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
     // Default values for cuts
@@ -229,7 +230,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
     }
 
     nTracksTotal += tracks->size();
-    cout << ", produced " << (int)nTracksTotal << " tracks";
+    LOG_PROGRESS(STATUS, "basic_tracking") << "Produced " << (int)nTracksTotal << " tracks";
 
     // Clean up tree objects
     for(int det = 0; det < parameters->nDetectors; det++) {

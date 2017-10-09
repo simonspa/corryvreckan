@@ -1,6 +1,7 @@
 #include "GenericAlgorithm.h"
 
 using namespace corryvreckan;
+using namespace std;
 
 GenericAlgorithm::GenericAlgorithm(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {}
 

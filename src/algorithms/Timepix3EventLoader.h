@@ -20,25 +20,25 @@ namespace corryvreckan {
         void finalise();
 
         // Extra functions
-        bool loadData(string, Pixels*, SpidrSignals*);
-        void maskPixels(string, string);
+        bool loadData(std::string, Pixels*, SpidrSignals*);
+        void maskPixels(std::string, std::string);
 
         // Member variables
-        string m_inputDirectory;
-        map<string, vector<string>> m_datafiles;
-        map<string, int> m_nFiles;
-        map<string, int> m_fileNumber;
-        map<string, long long int> m_syncTime;
-        map<string, FILE*> m_currentFile;
-        map<string, bool> m_clearedHeader;
+        std::string m_inputDirectory;
+        std::map<std::string, std::vector<std::string>> m_datafiles;
+        std::map<std::string, int> m_nFiles;
+        std::map<std::string, int> m_fileNumber;
+        std::map<std::string, long long int> m_syncTime;
+        std::map<std::string, FILE*> m_currentFile;
+        std::map<std::string, bool> m_clearedHeader;
         int m_minNumberOfPlanes;
         bool applyTimingCut;
         long long int m_currentTime;
         double m_timingCut;
         long long int m_prevTime;
         bool m_shutterOpen;
-        map<string, Pixels*> bufferedData;
-        map<string, SpidrSignals*> bufferedSignals;
+        std::map<std::string, Pixels*> bufferedData;
+        std::map<std::string, SpidrSignals*> bufferedSignals;
     };
 }
 #endif // TIMEPIX3EVENTLOADER_H

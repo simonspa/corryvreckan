@@ -29,12 +29,12 @@ namespace corryvreckan {
         void finalise();
 
         // Plot holders
-        vector<TCanvas*> canvases;
-        map<TCanvas*, vector<TH1*>> histograms;
-        map<TH1*, string> styles;
+        std::vector<TCanvas*> canvases;
+        std::map<TCanvas*, std::vector<TH1*>> histograms;
+        std::map<TH1*, std::string> styles;
 
         // Add plots and canvases
-        void addPlot(TCanvas*, string, string style = "");
+        void addPlot(TCanvas*, std::string, std::string style = "");
         void addCanvas(TCanvas*);
 
         // Application to allow display of canvases

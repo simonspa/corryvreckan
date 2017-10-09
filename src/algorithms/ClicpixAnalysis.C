@@ -4,6 +4,7 @@
 #include "objects/Track.h"
 
 using namespace corryvreckan;
+using namespace std;
 
 ClicpixAnalysis::ClicpixAnalysis(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
     m_associationCut = 0.05; // 100 um

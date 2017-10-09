@@ -40,8 +40,8 @@ namespace corryvreckan {
         TApplication* app;
         GuiDisplay* gui;
 
-        void AddHisto(string, string, string style = "");
-        void AddButton(string, string);
+        void AddHisto(std::string, std::string, std::string style = "");
+        void AddButton(std::string, std::string);
 
         // Member variables
         int eventNumber;

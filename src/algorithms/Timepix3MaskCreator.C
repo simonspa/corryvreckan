@@ -32,7 +32,7 @@ StatusCode Timepix3MaskCreator::run(Clipboard* clipboard) {
     for(int det = 0; det < parameters->nDetectors; det++) {
 
         // Check if they are a Timepix3
-        string detectorID = parameters->detectors[det];
+        std::string detectorID = parameters->detectors[det];
         if(parameters->detector[detectorID]->type() != "Timepix3")
             continue;
 
@@ -63,12 +63,12 @@ void Timepix3MaskCreator::finalise() {
     for(int det = 0; det < parameters->nDetectors; det++) {
 
         // Check if they are a Timepix3
-        string detectorID = parameters->detectors[det];
+        std::string detectorID = parameters->detectors[det];
         if(parameters->detector[detectorID]->type() != "Timepix3")
             continue;
 
         // Get the trimdac file
-        string trimdacfile = parameters->detector[detectorID]->maskFile();
+        std::string trimdacfile = parameters->detector[detectorID]->maskFile();
 
         // Calculate what the mean number of hits was
         double meanHits = 0;
@@ -81,21 +81,21 @@ void Timepix3MaskCreator::finalise() {
         meanHits /= (256. * 256.);
 
         // Make the new file name
-        string newtrimdacfile = trimdacfile;
+        std::string newtrimdacfile = trimdacfile;
         newtrimdacfile.replace(newtrimdacfile.end() - 4, newtrimdacfile.end(), "_masked.txt");
 
         // Open the old mask file
-        ifstream trimdacs;
+        std::ifstream trimdacs;
         trimdacs.open(trimdacfile.c_str());
 
         // Open the new mask file for writing
-        ofstream newtrimdacs;
+        std::ofstream newtrimdacs;
         newtrimdacs.open(newtrimdacfile.c_str());
 
         // Copy the header from the old to the new file
-        string line;
+        std::string line;
         getline(trimdacs, line);
-        newtrimdacs << line << endl;
+        newtrimdacs << line << std::endl;
         int t_col, t_row, t_trim, t_mask, t_tpen;
 
         // Loop again and mask any pixels which are noisy
@@ -106,13 +106,13 @@ void Timepix3MaskCreator::finalise() {
                     trimdacs >> t_col >> t_row >> t_trim >> t_mask >> t_tpen;
                     newtrimdacs << t_col << "\t" << t_row << "\t" << t_trim << "\t"
                                 << "1"
-                                << "\t" << t_tpen << endl;
+                                << "\t" << t_tpen << std::endl;
                     LOG(INFO) << "Masking pixel " << col << "," << row << " on detector " << detectorID;
                     LOG(INFO) << "Number of counts: " << pixelhits[detectorID][channelID];
                 } else {
                     // Just copy the existing line
                     trimdacs >> t_col >> t_row >> t_trim >> t_mask >> t_tpen;
-                    newtrimdacs << t_col << "\t" << t_row << "\t" << t_trim << "\t" << t_mask << "\t" << t_tpen << endl;
+                    newtrimdacs << t_col << "\t" << t_row << "\t" << t_trim << "\t" << t_mask << "\t" << t_tpen << std::endl;
                 }
             }
         }
@@ -128,7 +128,7 @@ void Timepix3MaskCreator::finalise() {
         // In fact we want to replace the old file. So we now check if this is the
         // case, and move the
         // new file where we want it
-        if(trimdacfile.find("trimdac_masked") != string::npos) {
+        if(trimdacfile.find("trimdac_masked") != std::string::npos) {
             int result = rename(newtrimdacfile.c_str(), trimdacfile.c_str());
             if(result == 0)
                 LOG(INFO) << "Trimdac file " << trimdacfile << " updated";

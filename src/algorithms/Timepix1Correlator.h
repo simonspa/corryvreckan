@@ -21,12 +21,12 @@ namespace corryvreckan {
         void finalise();
 
         // Histograms for several devices
-        map<string, TH2F*> hitmaps;
-        map<string, TH2F*> hitmapsGlobal;
-        map<string, TH1F*> clusterSize;
-        map<string, TH1F*> clustersPerEvent;
-        map<string, TH1F*> correlationPlotsX;
-        map<string, TH1F*> correlationPlotsY;
+        std::map<std::string, TH2F*> hitmaps;
+        std::map<std::string, TH2F*> hitmapsGlobal;
+        std::map<std::string, TH1F*> clusterSize;
+        std::map<std::string, TH1F*> clustersPerEvent;
+        std::map<std::string, TH1F*> correlationPlotsX;
+        std::map<std::string, TH1F*> correlationPlotsY;
 
         // Member variables
         int m_eventNumber;

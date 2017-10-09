@@ -1,6 +1,7 @@
 #include "Timepix3Clustering.h"
 
 using namespace corryvreckan;
+using namespace std;
 
 Timepix3Clustering::Timepix3Clustering(Configuration config, Clipboard* clipboard)
     : Algorithm(std::move(config), clipboard) {

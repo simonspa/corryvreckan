@@ -1,6 +1,7 @@
 #include "Clicpix2Correlator.h"
 
 using namespace corryvreckan;
+using namespace std;
 
 Clicpix2Correlator::Clicpix2Correlator(Configuration config, Clipboard* clipboard)
     : Algorithm(std::move(config), clipboard) {}

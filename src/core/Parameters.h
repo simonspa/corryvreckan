@@ -19,7 +19,6 @@
 
 #include "DetectorParameters.h"
 
-using namespace std;
 using namespace ROOT::Math;
 
 //-------------------------------------------------------------------------------

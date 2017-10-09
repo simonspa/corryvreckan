@@ -1,6 +1,7 @@
 #include "DataDump.h"
 
 using namespace corryvreckan;
+using namespace std;
 
 DataDump::DataDump(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
     m_detector = "DeviceToDumpData";

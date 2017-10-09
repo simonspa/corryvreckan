@@ -35,8 +35,8 @@ namespace corryvreckan {
         TH1F* tracksPerEvent;
         TH1F* trackAngleX;
         TH1F* trackAngleY;
-        map<string, TH1F*> residualsX;
-        map<string, TH1F*> residualsY;
+        std::map<std::string, TH1F*> residualsX;
+        std::map<std::string, TH1F*> residualsY;
 
         // Cuts for tracking
         double timingCut;

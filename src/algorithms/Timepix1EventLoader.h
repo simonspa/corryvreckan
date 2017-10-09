@@ -23,19 +23,19 @@ namespace corryvreckan {
         StatusCode run(Clipboard*);
         void finalise();
 
-        void processHeader(string, string&, long long int&);
+        void processHeader(std::string, std::string&, long long int&);
 
         // Member variables
         int m_eventNumber;
-        string m_inputDirectory;
-        vector<string> m_inputFilenames;
+        std::string m_inputDirectory;
+        std::vector<std::string> m_inputFilenames;
         bool m_fileOpen;
         int m_fileNumber;
         long long int m_eventTime;
-        ifstream m_currentFile;
-        string m_currentDevice;
+        std::ifstream m_currentFile;
+        std::string m_currentDevice;
         bool m_newFrame;
-        string m_prevHeader;
+        std::string m_prevHeader;
     };
 }
 #endif // Timepix1EventLoader_H

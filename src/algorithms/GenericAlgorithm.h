@@ -24,7 +24,7 @@ namespace corryvreckan {
         void finalise();
 
         // Histograms for several devices
-        map<string, TH2F*> plotPerDevice;
+        std::map<std::string, TH2F*> plotPerDevice;
 
         // Single histograms
         TH1F* singlePlot;
