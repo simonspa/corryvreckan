@@ -12,7 +12,6 @@ Parameters::Parameters() {
     conditionsFile = "cond.dat";
     dutMaskFile = "defaultMask.dat";
     inputDirectory = "";
-    nEvents = 0;
     align = false;
     produceMask = false;
     currentTime = 0.;    // seconds
@@ -76,10 +75,6 @@ void Parameters::readCommandLineOptions(int argc, char* argv[]) {
             sscanf(optarg, "%s", &temp);
             histogramFile = (string)temp;
             LOG(INFO) << "Writing histograms to: " << histogramFile;
-            break;
-        case 'n':
-            sscanf(optarg, "%d", &nEvents);
-            LOG(INFO) << "Running over " << nEvents << " events";
             break;
         case 'o':
             sscanf(optarg, "%lf", &currentTime);
@@ -145,8 +140,7 @@ bool Parameters::readConditions() {
     conditions.open(conditionsFile.c_str());
     string line;
 
-    LOG(INFO) << "---------------------------------------------------------------"
-                 "----------------------------------------------------";
+    LOG(INFO) << "-------------------------------------------- Reading conditions ---------------------------------------------------";
     // Loop over file
     while(getline(conditions, line)) {
 

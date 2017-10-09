@@ -52,8 +52,8 @@ namespace corryvreckan {
 
         // Member variables
         Parameters* m_parameters;
-        std::unique_ptr<corryvreckan::ConfigManager> conf_mgr_;
         Clipboard* m_clipboard;
+        Configuration m_config;
         vector<Algorithm*> m_algorithms;
         TFile* m_histogramFile;
         TDirectory* m_directory;
@@ -62,6 +62,7 @@ namespace corryvreckan {
 
     private:
         std::atomic<bool> m_terminate;
+        std::unique_ptr<corryvreckan::ConfigManager> conf_mgr_;
     };
 }
 #endif // ANALYSIS_H

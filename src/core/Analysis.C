@@ -27,24 +27,24 @@ Analysis::Analysis(std::string config_file_name) : m_terminate(false) {
     conf_mgr_->addIgnoreHeaderName("Ignore");
 
     // Fetch the global configuration
-    corryvreckan::Configuration global_config = conf_mgr_->getGlobalConfiguration();
+    m_config = conf_mgr_->getGlobalConfiguration();
 
     // FIXME translate new configuration to parameters:
     m_parameters = new Parameters();
 
     // Define DUT and reference
-    m_parameters->DUT = global_config.get<std::string>("DUT");
-    m_parameters->reference = global_config.get<std::string>("reference");
+    m_parameters->DUT = m_config.get<std::string>("DUT");
+    m_parameters->reference = m_config.get<std::string>("reference");
 
     m_parameters->detectorToAlign = m_parameters->DUT;
     m_parameters->excludedFromTracking[m_parameters->DUT] = true;
 
-    std::vector<std::string> excluding = global_config.getArray<std::string>("excludeFromTracking");
+    std::vector<std::string> excluding = m_config.getArray<std::string>("excludeFromTracking");
     for(auto& ex : excluding) {
         m_parameters->excludedFromTracking[ex] = true;
     }
 
-    std::vector<std::string> masking = global_config.getArray<std::string>("masked");
+    std::vector<std::string> masking = m_config.getArray<std::string>("masked");
     for(auto& m : masking) {
         m_parameters->masked[m] = true;
     }
@@ -54,13 +54,13 @@ Analysis::Analysis(std::string config_file_name) : m_terminate(false) {
     // parameters->readCommandLineOptions(argc,argv);
 
     // Load alignment parameters
-    std::string conditionsFile = global_config.get<std::string>("conditionsFile");
+    std::string conditionsFile = m_config.get<std::string>("conditionsFile");
     m_parameters->conditionsFile = conditionsFile;
     if(!m_parameters->readConditions())
         throw ConfigFileUnavailableError(conditionsFile);
 
     // Load mask file for the dut (if specified)
-    m_parameters->dutMaskFile = global_config.get<std::string>("dutMaskFile", "defaultMask.dat");
+    m_parameters->dutMaskFile = m_config.get<std::string>("dutMaskFile", "defaultMask.dat");
     m_parameters->readDutMask();
 
     // FIXME per-algorithm settings:
@@ -82,7 +82,7 @@ void Analysis::add(Algorithm* algorithm) {
 void Analysis::load() {
 
     std::vector<Configuration> configs = conf_mgr_->getConfigurations();
-    Configuration global_config_ = conf_mgr_->getGlobalConfiguration();
+    Configuration m_config_ = conf_mgr_->getGlobalConfiguration();
 
     // Create histogram output file
     m_histogramFile = new TFile(m_parameters->histogramFile.c_str(), "RECREATE");
@@ -106,8 +106,8 @@ void Analysis::load() {
         if(loaded_libraries_.count(lib_name) == 0) {
             // If library is not loaded then try to load it first from the config
             // directories
-            if(global_config_.has("library_directories")) {
-                std::vector<std::string> lib_paths = global_config_.getPathArray("library_directories", true);
+            if(m_config_.has("library_directories")) {
+                std::vector<std::string> lib_paths = m_config_.getPathArray("library_directories", true);
                 for(auto& lib_path : lib_paths) {
                     std::string full_lib_path = lib_path;
                     full_lib_path += "/";
@@ -233,6 +233,9 @@ Algorithm* Analysis::create_algorithm(void* library, Configuration config, Clipb
 // Run the analysis loop - this initialises, runs and finalises all algorithms
 void Analysis::run() {
 
+    // Check if we have an event limit:
+    int number_of_events = m_config.get<int>("number_of_events", 0);
+
     // Loop over all events, running each algorithm on each "event"
     LOG(STATUS) << "========================| Event loop |========================";
     m_events = 1;
@@ -269,7 +272,7 @@ void Analysis::run() {
         if(!run)
             break;
         // Check if we have reached the maximum number of events
-        if(m_parameters->nEvents > 0 && m_events == m_parameters->nEvents)
+        if(number_of_events > 0 && m_events >= number_of_events)
             break;
         // Increment event number
         if(!noData)

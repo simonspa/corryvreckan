@@ -298,7 +298,6 @@ public:
     string dut;
     double currentTime;
     double eventLength;
-    int nEvents;
     bool align;
     bool eventDisplay;
     bool gui;
