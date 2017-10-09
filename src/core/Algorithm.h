@@ -42,9 +42,9 @@ namespace corryvreckan {
 
         // Three main functions - initialise, run and finalise. Called for every
         // algorithm
-        virtual void initialise(Parameters*) {}
-        virtual StatusCode run(Clipboard*) {}
-        virtual void finalise() {}
+        virtual void initialise(Parameters*) = 0;
+        virtual StatusCode run(Clipboard*) = 0;
+        virtual void finalise() = 0;
 
         // Methods to get member variables
         std::string getName() { return m_name; }
