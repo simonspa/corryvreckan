@@ -1,36 +1,36 @@
 // Global includes
 #include <iostream>
-#include <string>
 #include <signal.h>
+#include <string>
 
 // ROOT includes
-#include "TROOT.h"
 #include "TApplication.h"
+#include "TROOT.h"
 //#include "TPad.h"
 
 // Local includes
-#include "Parameters.h"
 #include "Analysis.h"
+#include "Parameters.h"
 
 // Algorithm list
-#include "algorithms/TestAlgorithm.h"
-#include "algorithms/Timepix3EventLoader.h"
-#include "algorithms/Timepix3Clustering.h"
-#include "algorithms/Timepix1EventLoader.h"
-#include "algorithms/Timepix1Clustering.h"
-#include "algorithms/Timepix3MaskCreator.h"
-#include "algorithms/BasicTracking.h"
-#include "algorithms/SpatialTracking.h"
 #include "algorithms/Alignment.h"
-#include "algorithms/EventDisplay.h"
-#include "algorithms/GUI.h"
-#include "algorithms/DUTAnalysis.h"
-#include "algorithms/FileWriter.h"
-#include "algorithms/FileReader.h"
-#include "algorithms/Timepix1Correlator.h"
+#include "algorithms/BasicTracking.h"
 #include "algorithms/ClicpixAnalysis.h"
+#include "algorithms/DUTAnalysis.h"
 #include "algorithms/DataDump.h"
+#include "algorithms/EventDisplay.h"
+#include "algorithms/FileReader.h"
+#include "algorithms/FileWriter.h"
+#include "algorithms/GUI.h"
 #include "algorithms/OnlineMonitor.h"
+#include "algorithms/SpatialTracking.h"
+#include "algorithms/TestAlgorithm.h"
+#include "algorithms/Timepix1Clustering.h"
+#include "algorithms/Timepix1Correlator.h"
+#include "algorithms/Timepix1EventLoader.h"
+#include "algorithms/Timepix3Clustering.h"
+#include "algorithms/Timepix3EventLoader.h"
+#include "algorithms/Timepix3MaskCreator.h"
 
 //-------------------------------------------------------------------------------
 // The Steering is effectively the executable. It reads command line
@@ -43,130 +43,132 @@ Analysis* analysis;
 
 // Handle user interruption
 // This allows you to ^\ to exit at any point in a controlled way
-void userException(int sig){
-  cout<<endl<<"User interrupted"<<endl;
-  analysis->finaliseAll();
-  exit(1);
+void userException(int sig) {
+    cout << endl << "User interrupted" << endl;
+    analysis->finaliseAll();
+    exit(1);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
 
-  // Register escape behaviour (^\)
-  signal(SIGQUIT, userException);
+    // Register escape behaviour (^\)
+    signal(SIGQUIT, userException);
 
-  // New parameters object
-  Parameters* parameters = new Parameters();
+    // New parameters object
+    Parameters* parameters = new Parameters();
 
-  // Global debug flag
-  bool debug = false;
+    // Global debug flag
+    bool debug = false;
 
-  // Algorithm list
-  Timepix3EventLoader*	tpix3EventLoader	= new Timepix3EventLoader(debug);
-  Timepix3Clustering*		tpix3Clustering		= new Timepix3Clustering(debug);
-  Timepix1EventLoader*	tpix1EventLoader	= new Timepix1EventLoader(debug);
-  Timepix1Clustering*		tpix1Clustering		= new Timepix1Clustering(debug);
-  TestAlgorithm* 				testAlgorithm			= new TestAlgorithm(debug);
-  Timepix3MaskCreator*	tpix3MaskCreator	= new Timepix3MaskCreator(debug);
-  BasicTracking* 				basicTracking			= new BasicTracking(debug);
-  SpatialTracking* 			spatialTracking		= new SpatialTracking(debug);
-  Alignment*	 					alignment					= new Alignment(debug);
-  EventDisplay*	 				eventDisplay			= new EventDisplay(debug);
-  GUI*	 								gui								= new GUI(debug);
-  DUTAnalysis*	 				dutAnalysis				= new DUTAnalysis(debug);
-  FileWriter*	 					fileWriter				= new FileWriter(debug);
-  FileReader*	 					fileReader				= new FileReader(debug);
-  Timepix1Correlator*	 	correlator				= new Timepix1Correlator(debug);
-  ClicpixAnalysis*	 		clicpixAnalysis		= new ClicpixAnalysis(debug);
-  DataDump*	 						dataDump					= new DataDump(debug);
-  OnlineMonitor*			onlineMonitor = new OnlineMonitor(debug);
-  // =========================================================================
-  // Steering file begins
-  // =========================================================================
+    // Algorithm list
+    Timepix3EventLoader* tpix3EventLoader = new Timepix3EventLoader(debug);
+    Timepix3Clustering* tpix3Clustering = new Timepix3Clustering(debug);
+    Timepix1EventLoader* tpix1EventLoader = new Timepix1EventLoader(debug);
+    Timepix1Clustering* tpix1Clustering = new Timepix1Clustering(debug);
+    TestAlgorithm* testAlgorithm = new TestAlgorithm(debug);
+    Timepix3MaskCreator* tpix3MaskCreator = new Timepix3MaskCreator(debug);
+    BasicTracking* basicTracking = new BasicTracking(debug);
+    SpatialTracking* spatialTracking = new SpatialTracking(debug);
+    Alignment* alignment = new Alignment(debug);
+    EventDisplay* eventDisplay = new EventDisplay(debug);
+    GUI* gui = new GUI(debug);
+    DUTAnalysis* dutAnalysis = new DUTAnalysis(debug);
+    FileWriter* fileWriter = new FileWriter(debug);
+    FileReader* fileReader = new FileReader(debug);
+    Timepix1Correlator* correlator = new Timepix1Correlator(debug);
+    ClicpixAnalysis* clicpixAnalysis = new ClicpixAnalysis(debug);
+    DataDump* dataDump = new DataDump(debug);
+    OnlineMonitor* onlineMonitor = new OnlineMonitor(debug);
+    // =========================================================================
+    // Steering file begins
+    // =========================================================================
 
-  // General parameters
-  parameters->reference = "W0013_G03";
-  parameters->DUT = "W0039_C08";
-//  parameters->DUT = "W0005_E02";
-//  parameters->DUT = "W0002_J05";
-  parameters->reference = "W0013_G03";
-//  parameters->DUT = "W0019_L08";
-  parameters->DUT = "W0019_F07";
+    // General parameters
+    parameters->reference = "W0013_G03";
+    parameters->DUT = "W0039_C08";
+    //  parameters->DUT = "W0005_E02";
+    //  parameters->DUT = "W0002_J05";
+    parameters->reference = "W0013_G03";
+    //  parameters->DUT = "W0019_L08";
+    parameters->DUT = "W0019_F07";
 
-  // Clicpix parameters
-//  parameters->reference = "Mim-osa02";
-//  parameters->DUT = "CLi-CPix";
+    // Clicpix parameters
+    //  parameters->reference = "Mim-osa02";
+    //  parameters->DUT = "CLi-CPix";
 
-  //parameters->reference = "Mim-osa02";
-  //parameters->DUT = "CLi-CPix";
+    // parameters->reference = "Mim-osa02";
+    // parameters->DUT = "CLi-CPix";
 
-//  parameters->DUT = "W0013_J05";
-  parameters->detectorToAlign = parameters->DUT;
-  parameters->excludedFromTracking[parameters->DUT] = true;
+    //  parameters->DUT = "W0013_J05";
+    parameters->detectorToAlign = parameters->DUT;
+    parameters->excludedFromTracking[parameters->DUT] = true;
 
+    parameters->excludedFromTracking["W0005_E02"] = true;
+    parameters->excludedFromTracking["W0005_F01"] = true;
+    parameters->excludedFromTracking["W0019_C07"] = true;
+    parameters->excludedFromTracking["W0019_G07"] = true;
+    parameters->excludedFromTracking["W0019_F07"] = true;
+    parameters->excludedFromTracking["W0019_L08"] = true;
+    parameters->excludedFromTracking["W0005_H03"] = true;
 
-  parameters->excludedFromTracking["W0005_E02"] = true;
-  parameters->excludedFromTracking["W0005_F01"] = true;
-  parameters->excludedFromTracking["W0019_C07"] = true;
-  parameters->excludedFromTracking["W0019_G07"] = true;
-  parameters->excludedFromTracking["W0019_F07"] = true;
-  parameters->excludedFromTracking["W0019_L08"] = true;
-  parameters->excludedFromTracking["W0005_H03"] = true;
+    clicpixAnalysis->timepix3Telescope = true;
+    //  spatialTracking->debug = true;
+    parameters->masked["W0039_C08"] = true;
 
-  clicpixAnalysis->timepix3Telescope = true;
-//  spatialTracking->debug = true;
-  parameters->masked["W0039_C08"] = true;
+    //  parameters->masked["W0013_D04"] = true;
+    //  parameters->masked["W0013_E03"] = true;
+    //  parameters->masked["W0013_G02"] = true;
 
-//  parameters->masked["W0013_D04"] = true;
-//  parameters->masked["W0013_E03"] = true;
-//  parameters->masked["W0013_G02"] = true;
+    //  parameters->masked["W0013_J05"] = true;
+    //  parameters->masked["W0013_L09"] = true;
+    //  parameters->masked["W0013_F09"] = true;
 
-//  parameters->masked["W0013_J05"] = true;
-//  parameters->masked["W0013_L09"] = true;
-//  parameters->masked["W0013_F09"] = true;
+    // tpix3EventLoader->debug = true;
+    basicTracking->minHitsOnTrack = 7;
+    // testAlgorithm->makeCorrelations = true;
+    // dataDump->m_detector = parameters->DUT;
 
+    // =========================================================================
+    // Steering file ends
+    // =========================================================================
 
-  //tpix3EventLoader->debug = true;
-  basicTracking->minHitsOnTrack = 7;
-  //testAlgorithm->makeCorrelations = true;
-  //dataDump->m_detector = parameters->DUT;
+    // Overwrite steering file values from command line
+    parameters->readCommandLineOptions(argc, argv);
 
-  // =========================================================================
-  // Steering file ends
-  // =========================================================================
+    // Load alignment parameters
+    if(!parameters->readConditions())
+        return 0;
 
-  // Overwrite steering file values from command line
-  parameters->readCommandLineOptions(argc,argv);
+    // Load mask file for the dut (if specified)
+    parameters->readDutMask();
 
-  // Load alignment parameters
-  if(!parameters->readConditions()) return 0;
+    // Initialise the analysis object and add algorithms to run
+    analysis = new Analysis(parameters);
+    //  analysis->add(tpix1EventLoader);
+    //  analysis->add(fileReader);
+    //  analysis->add(tpix1Clustering);
+    //  analysis->add(spatialTracking);
+    //  analysis->add(correlator);
+    analysis->add(tpix3EventLoader);
+    analysis->add(tpix3Clustering);
+    analysis->add(testAlgorithm);
+    analysis->add(basicTracking);
+    analysis->add(dutAnalysis);
+    //  analysis->add(clicpixAnalysis);
+    //  analysis->add(fileWriter);
+    //  analysis->add(dataDump);
 
-  // Load mask file for the dut (if specified)
-  parameters->readDutMask();
+    if(parameters->align)
+        analysis->add(alignment);
+    if(parameters->produceMask)
+        analysis->add(tpix3MaskCreator);
+    if(parameters->eventDisplay)
+        analysis->add(eventDisplay);
+    if(parameters->gui)
+        analysis->add(onlineMonitor);
 
-  // Initialise the analysis object and add algorithms to run
-  analysis = new Analysis(parameters);
-//  analysis->add(tpix1EventLoader);
-//  analysis->add(fileReader);
-//  analysis->add(tpix1Clustering);
-//  analysis->add(spatialTracking);
-//  analysis->add(correlator);
-  analysis->add(tpix3EventLoader);
-  analysis->add(tpix3Clustering);
-  analysis->add(testAlgorithm);
-  analysis->add(basicTracking);
-  analysis->add(dutAnalysis);
-//  analysis->add(clicpixAnalysis);
-//  analysis->add(fileWriter);
-//  analysis->add(dataDump);
+    // Run the analysis
+    analysis->run();
 
-  if(parameters->align) analysis->add(alignment);
-  if(parameters->produceMask) analysis->add(tpix3MaskCreator);
-  if(parameters->eventDisplay) analysis->add(eventDisplay);
-  if(parameters->gui) analysis->add(onlineMonitor);
-
-  // Run the analysis
-  analysis->run();
-
-  return 0;
-
+    return 0;
 }

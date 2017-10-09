@@ -2,8 +2,10 @@
  * @file
  * @brief Implementation of config reader
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * This software is distributed under the terms of the MIT License, copied
+ * verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities
+ * granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -43,9 +45,11 @@ void ConfigReader::copy_init_map() {
 }
 
 /**
- * @throws ConfigParseError If an error occurred during the parsing of the stream
+ * @throws ConfigParseError If an error occurred during the parsing of the
+ * stream
  *
- * The configuration is immediately parsed and all of its configurations are available after the functions returns.
+ * The configuration is immediately parsed and all of its configurations are
+ * available after the functions returns.
  */
 void ConfigReader::add(std::istream& stream, std::string file_name) {
     LOG(TRACE) << "Parsing configuration file " << file_name;

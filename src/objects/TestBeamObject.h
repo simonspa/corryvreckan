@@ -2,8 +2,8 @@
 #define TESTBEAMOBJECT_H 1
 
 // Include files
-#include <vector>
 #include <string>
+#include <vector>
 #include "TObject.h"
 #include "TTree.h"
 
@@ -12,35 +12,33 @@
 // placed on the clipboard and written out to file.
 //-------------------------------------------------------------------------------
 
-class TestBeamObject : public TObject{
-  
+class TestBeamObject : public TObject {
+
 public:
-  
-  // Constructors and destructors
-  TestBeamObject(){}
-  virtual ~TestBeamObject(){
-    m_timestamp = 0;
-  }
-  
-  // Methods to get member variables
-  std::string getDetectorID(){return m_detectorID;}
-  long long int timestamp(){return m_timestamp;}
-  void timestamp(long long int time){m_timestamp = time;}
-  
-  // Methods to set member variables
-  void setDetectorID(std::string detectorID){m_detectorID = detectorID;}
+    // Constructors and destructors
+    TestBeamObject() {}
+    virtual ~TestBeamObject() { m_timestamp = 0; }
 
-  // Function to get instantiation of inherited class (given a string, give back an object of type 'daughter')
-  static TestBeamObject* Factory(std::string, TestBeamObject* object = NULL);
-  static TestBeamObject* Factory(std::string, std::string, TestBeamObject* object = NULL);
-  
-  // Member variables
-  std::string m_detectorID;
-  long long int m_timestamp;
+    // Methods to get member variables
+    std::string getDetectorID() { return m_detectorID; }
+    long long int timestamp() { return m_timestamp; }
+    void timestamp(long long int time) { m_timestamp = time; }
 
-  // ROOT I/O class definition - update version number when you change this class!
-  ClassDef(TestBeamObject,1)
+    // Methods to set member variables
+    void setDetectorID(std::string detectorID) { m_detectorID = detectorID; }
 
+    // Function to get instantiation of inherited class (given a string, give back
+    // an object of type 'daughter')
+    static TestBeamObject* Factory(std::string, TestBeamObject* object = NULL);
+    static TestBeamObject* Factory(std::string, std::string, TestBeamObject* object = NULL);
+
+    // Member variables
+    std::string m_detectorID;
+    long long int m_timestamp;
+
+    // ROOT I/O class definition - update version number when you change this
+    // class!
+    ClassDef(TestBeamObject, 1)
 };
 
 // Vector type declaration

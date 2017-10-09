@@ -1,49 +1,48 @@
 #ifndef BASICTRACKING_H
 #define BASICTRACKING_H 1
 
-#include "core/Algorithm.h"
 #include <iostream>
+#include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TCanvas.h"
-#include "objects/Pixel.h"
+#include "core/Algorithm.h"
 #include "objects/Cluster.h"
+#include "objects/Pixel.h"
 #include "objects/Track.h"
 
 namespace corryvreckan {
-  class BasicTracking : public Algorithm {
+    class BasicTracking : public Algorithm {
 
-  public:
-    // Constructors and destructors
-    BasicTracking(Configuration config, Clipboard* clipboard);
-    ~BasicTracking(){}
+    public:
+        // Constructors and destructors
+        BasicTracking(Configuration config, Clipboard* clipboard);
+        ~BasicTracking() {}
 
-    // Functions
-    void initialise(Parameters*);
-    StatusCode run(Clipboard*);
-    void finalise();
+        // Functions
+        void initialise(Parameters*);
+        StatusCode run(Clipboard*);
+        void finalise();
 
-    //  Cluster* getNearestCluster(Cluster*, map<Cluster*, bool>, Clusters*);
-    Cluster* getNearestCluster(long long int, Clusters);
+        //  Cluster* getNearestCluster(Cluster*, map<Cluster*, bool>, Clusters*);
+        Cluster* getNearestCluster(long long int, Clusters);
 
-    // Member variables
+        // Member variables
 
-    // Histograms
-    TH1F* trackChi2;
-    TH1F* clustersPerTrack;
-    TH1F* trackChi2ndof;
-    TH1F* tracksPerEvent;
-    TH1F* trackAngleX;
-    TH1F* trackAngleY;
-    map<string,TH1F*> residualsX;
-    map<string,TH1F*> residualsY;
+        // Histograms
+        TH1F* trackChi2;
+        TH1F* clustersPerTrack;
+        TH1F* trackChi2ndof;
+        TH1F* tracksPerEvent;
+        TH1F* trackAngleX;
+        TH1F* trackAngleY;
+        map<string, TH1F*> residualsX;
+        map<string, TH1F*> residualsY;
 
-    // Cuts for tracking
-    double timingCut;
-    double spatialCut;
-    int minHitsOnTrack;
-    double nTracksTotal;
-
-  };
+        // Cuts for tracking
+        double timingCut;
+        double spatialCut;
+        int minHitsOnTrack;
+        double nTracksTotal;
+    };
 }
 #endif // BASICTRACKING_H

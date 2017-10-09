@@ -2,34 +2,33 @@
 #define SPIDRSIGNAL_H 1
 
 class SpidrSignal : public TestBeamObject {
-  
+
 public:
-  
-  // Constructors and destructors
-  SpidrSignal(){}
-  SpidrSignal(string type, long long int timestamp){
-    m_type = type;
-    m_timestamp = timestamp;
-  }
-  virtual ~SpidrSignal(){}
+    // Constructors and destructors
+    SpidrSignal() {}
+    SpidrSignal(string type, long long int timestamp) {
+        m_type = type;
+        m_timestamp = timestamp;
+    }
+    virtual ~SpidrSignal() {}
 
-  // Functions
+    // Functions
 
-  // Set properties
-  void timestamp(long long int timestamp){m_timestamp = timestamp;}
-  void type(string type){m_type = type;}
+    // Set properties
+    void timestamp(long long int timestamp) { m_timestamp = timestamp; }
+    void type(string type) { m_type = type; }
 
-  // Retrieve properties
-  long long int timestamp(){return m_timestamp;}
-  string type(){return m_type;}
-  
-  // Member variables
-  long long int m_timestamp;
-  std::string m_type;
-  
-  // ROOT I/O class definition - update version number when you change this class!
-  ClassDef(SpidrSignal,1)
+    // Retrieve properties
+    long long int timestamp() { return m_timestamp; }
+    string type() { return m_type; }
 
+    // Member variables
+    long long int m_timestamp;
+    std::string m_type;
+
+    // ROOT I/O class definition - update version number when you change this
+    // class!
+    ClassDef(SpidrSignal, 1)
 };
 
 // Vector type declaration

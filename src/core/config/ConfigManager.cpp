@@ -2,8 +2,10 @@
  * @file
  * @brief Implementation of config manager
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * This software is distributed under the terms of the MIT License, copied
+ * verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities
+ * granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -22,7 +24,8 @@
 using namespace corryvreckan;
 
 /**
- * @throws ConfigFileUnavailableError If the main configuration file cannot be accessed
+ * @throws ConfigFileUnavailableError If the main configuration file cannot be
+ * accessed
  */
 ConfigManager::ConfigManager(std::string file_name) : file_name_(std::move(file_name)) {
     LOG(TRACE) << "Using " << file_name_ << " as main configuration file";
@@ -54,7 +57,8 @@ void ConfigManager::addGlobalHeaderName(std::string name) {
 }
 
 /**
- * The global configuration is the combination of all sections with a global header.
+ * The global configuration is the combination of all sections with a global
+ * header.
  */
 Configuration ConfigManager::getGlobalConfiguration() {
     Configuration global_config(global_default_name_, file_name_);
@@ -76,8 +80,10 @@ bool ConfigManager::hasConfiguration(const std::string& name) {
 }
 
 /**
- * All special global and ignored sections are removed before returning the rest of the configurations. The list of normal
- * sections is used by the ModuleManager to instantiate all the required modules.
+ * All special global and ignored sections are removed before returning the rest
+ * of the configurations. The list of normal
+ * sections is used by the ModuleManager to instantiate all the required
+ * modules.
  */
 std::vector<Configuration> ConfigManager::getConfigurations() const {
     std::vector<Configuration> result;

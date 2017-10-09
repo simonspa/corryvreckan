@@ -27,7 +27,8 @@ std::atomic<bool> cv_ready{false};
 
 /**
  * @brief Handle user abort (CTRL+\) which should stop the framework immediately
- * @note This handler is actually not fully reliable (but otherwise crashing is okay...)
+ * @note This handler is actually not fully reliable (but otherwise crashing is
+ * okay...)
  */
 void abort_handler(int) {
     // Output interrupt message and clean
@@ -40,7 +41,8 @@ void abort_handler(int) {
 }
 
 /**
- * @brief Handle termination request (CTRL+C) as soon as possible while keeping the program flow
+ * @brief Handle termination request (CTRL+C) as soon as possible while keeping
+ * the program flow
  */
 void interrupt_handler(int) {
     // Stop the framework if it is loaded
@@ -129,7 +131,8 @@ int main(int argc, const char* argv[]) {
     if(!log_file_name.empty()) {
         log_file.open(log_file_name, std::ios_base::out | std::ios_base::trunc);
         if(!log_file.good()) {
-            LOG(FATAL) << "Cannot write to provided log file! Check if permissions are sufficient.";
+            LOG(FATAL) << "Cannot write to provided log file! Check if permissions "
+                          "are sufficient.";
             clean();
             return 1;
         }

@@ -3,8 +3,10 @@
  * @brief Collection of all configuration exceptions
  *
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * This software is distributed under the terms of the MIT License, copied
+ * verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities
+ * granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -41,7 +43,8 @@ namespace corryvreckan {
 
     /**
      * @ingroup Exceptions
-     * @brief Indicates a problem converting the value of a configuration key to the value it should represent
+     * @brief Indicates a problem converting the value of a configuration key to the
+     * value it should represent
      */
     // TODO [doc] this should be InvalidValueTypeError (see below)
     class InvalidKeyError : public ConfigurationError {
@@ -120,7 +123,8 @@ namespace corryvreckan {
      * @brief Indicates an error with the contents of value
      * @note Only configuration error that should be called directly from modules
      *
-     * Should be raised if the data contains valid data for its type (otherwise an \ref InvalidKeyError should have been
+     * Should be raised if the data contains valid data for its type (otherwise an
+     * \ref InvalidKeyError should have been
      * raised earlier), but the value is not in the range of allowed values.
      */
     class InvalidValueError : public ConfigurationError {

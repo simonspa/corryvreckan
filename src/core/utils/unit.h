@@ -2,8 +2,10 @@
  * @file
  * @brief System to support units in the framework
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * This software is distributed under the terms of the MIT License, copied
+ * verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities
+ * granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -24,9 +26,12 @@ namespace corryvreckan {
      * @brief Static class to access units
      * @see The list of framework units defined in \ref corryvreckan::add_units
      *
-     * Units are short, unique and case-insensitive strings that indicate a particular multiplication factor from the base
-     * unit in the framework. The unit system can convert external types to the system units and vise-versa for displaying
-     * purposes. Inside the framework only the defaults unit should be used, either directly or through a direct conversion.
+     * Units are short, unique and case-insensitive strings that indicate a
+     * particular multiplication factor from the base
+     * unit in the framework. The unit system can convert external types to the
+     * system units and vise-versa for displaying
+     * purposes. Inside the framework only the defaults unit should be used, either
+     * directly or through a direct conversion.
      */
     class Units {
     public:
@@ -75,7 +80,8 @@ namespace corryvreckan {
          * @brief Get value of a unit in the base units
          * @param str Name of the unit
          * @return Value in the base unit
-         * @warning Conversions should not be done with the result of this function. The \ref get(std::string) version should
+         * @warning Conversions should not be done with the result of this function.
+         * The \ref get(std::string) version should
          *          be used for that purpose instead.
          */
         static UnitType get(std::string str);
@@ -129,10 +135,13 @@ namespace corryvreckan {
     // TODO [doc] Move these to a separate template implementation file?
 
     /**
-     * @throws std::overflow_error If the converted unit overflows the requested type
+     * @throws std::overflow_error If the converted unit overflows the requested
+     * type
      *
-     * The unit type is internally converted to the type \ref Units::UnitType. After multiplying the unit, the output is
-     * checked for overflow problems before the type is converted back to the original type.
+     * The unit type is internally converted to the type \ref Units::UnitType. After
+     * multiplying the unit, the output is
+     * checked for overflow problems before the type is converted back to the
+     * original type.
      */
     template <typename T> T Units::get(T inp, std::string str) {
         UnitType out = static_cast<UnitType>(inp) * get(std::move(str));

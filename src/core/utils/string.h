@@ -2,11 +2,14 @@
  * @file
  * @brief Collection of string utilities
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * This software is distributed under the terms of the MIT License, copied
+ * verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities
+ * granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  *
- * Used extensively for parsing the configuration in the \ref allpix::ConfigReader.
+ * Used extensively for parsing the configuration in the \ref
+ * allpix::ConfigReader.
  */
 
 /**
@@ -33,7 +36,8 @@ namespace corryvreckan {
     /**
      * @brief Trims leading and trailing characters from a string
      * @param str String that should be trimmed
-     * @param delims List of delimiters to trim from the string (defaults to all whitespace)
+     * @param delims List of delimiters to trim from the string (defaults to all
+     * whitespace)
      */
     inline std::string trim(const std::string& str, const std::string& delims = " \t\n\r\v") {
         size_t b = str.find_first_not_of(delims);
@@ -49,8 +53,10 @@ namespace corryvreckan {
      * @param str String to convert
      * @see StringConversions
      *
-     * The matching converter function is automatically found if available. To add a new conversion the \ref from_string_impl
-     * function should be overloaded. The string is passed as first argument to this function, the second argument should be
+     * The matching converter function is automatically found if available. To add a
+     * new conversion the \ref from_string_impl
+     * function should be overloaded. The string is passed as first argument to this
+     * function, the second argument should be
      * an \ref corryvreckan::type_tag with the type to convert to.
      *
      */
@@ -86,15 +92,18 @@ namespace corryvreckan {
     template <typename T, typename = std::enable_if_t<!std::is_arithmetic<T>::value>, typename = void>
     constexpr T from_string_impl(const std::string&, type_tag<T>) {
         static_assert(std::is_same<T, void>::value,
-                      "Conversion to this type is not implemented: an overload should be added to support this conversion");
+                      "Conversion to this type is not implemented: an overload "
+                      "should be added to support this conversion");
         return T();
     }
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for all arithmetic types
-     * @throws std::invalid_argument If the string cannot be converted to the required arithmetic type
+     * @throws std::invalid_argument If the string cannot be converted to the
+     * required arithmetic type
      *
-     * The unit system is used through \ref Units::get to parse unit suffixes and convert the values to the appropriate
+     * The unit system is used through \ref Units::get to parse unit suffixes and
+     * convert the values to the appropriate
      * standard framework unit.
      */
     template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
@@ -129,17 +138,21 @@ namespace corryvreckan {
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for strings
-     * @throws std::invalid_argument If the string has no closing quotation mark as last character after an opening quotation
+     * @throws std::invalid_argument If the string has no closing quotation mark as
+     * last character after an opening quotation
      * mark
-     * @throws std::invalid_argument If the string has no enclosing quotation marks but contains more data after whitespace
+     * @throws std::invalid_argument If the string has no enclosing quotation marks
+     * but contains more data after whitespace
      * is found
      *
-     * If a pair of enclosing double quotation marks is found, the whole string within the quotation marks is returned.
+     * If a pair of enclosing double quotation marks is found, the whole string
+     * within the quotation marks is returned.
      * Otherwise only the first part is read until whitespace is encountered.
      */
     inline std::string from_string_impl(std::string str, type_tag<std::string>) {
         str = trim(str);
-        // If there are "" then we should take the whole string (FIXME: '' should also be supported)
+        // If there are "" then we should take the whole string (FIXME: '' should also
+        // be supported)
         if(!str.empty() && str[0] == '\"') {
             if(str.find('\"', 1) != str.size() - 1) {
                 throw std::invalid_argument("remaining data at end");
@@ -153,9 +166,11 @@ namespace corryvreckan {
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for booleans
-     * @throws std::invalid_argument If the string cannot be converted to a boolean type
+     * @throws std::invalid_argument If the string cannot be converted to a boolean
+     * type
      *
-     * Converts both numerical (0, 1) and textual representations ("false", "true") are supported. No enclosing quotation
+     * Converts both numerical (0, 1) and textual representations ("false", "true")
+     * are supported. No enclosing quotation
      * marks should be used.
      */
     inline bool from_string_impl(std::string str, type_tag<bool>) {
@@ -181,9 +196,12 @@ namespace corryvreckan {
      * @brief Converts any type to a string
      * @note C-strings are not supported due to allocation issues
      *
-     * The matching converter function is automatically found if available. To add a new conversion the \ref to_string_impl
-     * function should be overloaded. The string is passed as first argument to this function, the second argument should be
-     * an \ref corryvreckan::empty_tag (needed to search in the corryvreckan namespace).
+     * The matching converter function is automatically found if available. To add a
+     * new conversion the \ref to_string_impl
+     * function should be overloaded. The string is passed as first argument to this
+     * function, the second argument should be
+     * an \ref corryvreckan::empty_tag (needed to search in the corryvreckan
+     * namespace).
      */
     template <typename T> std::string to_string(T inp) {
         // Use tag dispatch to select the correct implementation
@@ -199,7 +217,8 @@ namespace corryvreckan {
     template <typename T, typename = std::enable_if_t<!std::is_arithmetic<T>::value>, typename = void>
     constexpr void to_string_impl(T, empty_tag) {
         static_assert(std::is_same<T, void>::value,
-                      "Conversion to this type is not implemented: an overload should be added to support this conversion");
+                      "Conversion to this type is not implemented: an overload "
+                      "should be added to support this conversion");
     }
     /**
      * @ingroup StringConversions
@@ -218,7 +237,8 @@ namespace corryvreckan {
      * @brief Conversion handler for strings
      * @note Overloaded for different types of strings
      *
-     * Adds enclosing double quotation marks to properly store strings containing whitespace.
+     * Adds enclosing double quotation marks to properly store strings containing
+     * whitespace.
      */
     inline std::string to_string_impl(const std::string& inp, empty_tag) { return '"' + inp + '"'; }
     inline std::string to_string_impl(const char* inp, empty_tag) { return '"' + std::string(inp) + '"'; }

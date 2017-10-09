@@ -2,15 +2,18 @@
  * @file
  * @brief Template implementation of configuration
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * This software is distributed under the terms of the MIT License, copied
+ * verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities
+ * granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 namespace corryvreckan {
     /**
      * @throws MissingKeyError If the requested key is not defined
-     * @throws InvalidKeyError If the conversion to the requested type did not succeed
+     * @throws InvalidKeyError If the conversion to the requested type did not
+     * succeed
      * @throws InvalidKeyError If an overflow happened while converting the key
      */
     template <typename T> T Configuration::get(const std::string& key) const {
@@ -25,7 +28,8 @@ namespace corryvreckan {
         }
     }
     /**
-     * @throws InvalidKeyError If the conversion to the requested type did not succeed
+     * @throws InvalidKeyError If the conversion to the requested type did not
+     * succeed
      * @throws InvalidKeyError If an overflow happened while converting the key
      */
     template <typename T> T Configuration::get(const std::string& key, const T& def) const {
@@ -37,7 +41,8 @@ namespace corryvreckan {
 
     /**
      * @throws MissingKeyError If the requested key is not defined
-     * @throws InvalidKeyError If the conversion to the requested type did not succeed
+     * @throws InvalidKeyError If the conversion to the requested type did not
+     * succeed
      * @throws InvalidKeyError If an overflow happened while converting the key
      */
     template <typename T> std::vector<T> Configuration::getArray(const std::string& key) const {

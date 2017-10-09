@@ -3,10 +3,9 @@
 
 using namespace corryvreckan;
 
-SpatialTracking::SpatialTracking(Configuration config, Clipboard* clipboard)
-: Algorithm(std::move(config), clipboard){
-  spatialCut = 0.2;
-  minHitsOnTrack = 6;
+SpatialTracking::SpatialTracking(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
+    spatialCut = 0.2;
+    minHitsOnTrack = 6;
 }
 
 /*
@@ -18,179 +17,184 @@ SpatialTracking::SpatialTracking(Configuration config, Clipboard* clipboard)
 
  */
 
-void SpatialTracking::initialise(Parameters* par){
+void SpatialTracking::initialise(Parameters* par) {
 
-  parameters = par;
+    parameters = par;
 
-  // Set up histograms
-  trackChi2 = new TH1F("trackChi2","trackChi2",150,0,150);
-  trackChi2ndof = new TH1F("trackChi2ndof","trackChi2ndof",100,0,50);
-  clustersPerTrack = new TH1F("clustersPerTrack","clustersPerTrack",10,0,10);
-  tracksPerEvent = new TH1F("tracksPerEvent","tracksPerEvent",100,0,100);
-  trackAngleX = new TH1F("trackAngleX","trackAngleX",2000,-0.01,0.01);
-  trackAngleY = new TH1F("trackAngleY","trackAngleY",2000,-0.01,0.01);
+    // Set up histograms
+    trackChi2 = new TH1F("trackChi2", "trackChi2", 150, 0, 150);
+    trackChi2ndof = new TH1F("trackChi2ndof", "trackChi2ndof", 100, 0, 50);
+    clustersPerTrack = new TH1F("clustersPerTrack", "clustersPerTrack", 10, 0, 10);
+    tracksPerEvent = new TH1F("tracksPerEvent", "tracksPerEvent", 100, 0, 100);
+    trackAngleX = new TH1F("trackAngleX", "trackAngleX", 2000, -0.01, 0.01);
+    trackAngleY = new TH1F("trackAngleY", "trackAngleY", 2000, -0.01, 0.01);
 
-  // Loop over all Timepix1
-  for(int det = 0; det<parameters->nDetectors; det++){
-    // Check if they are a Timepix3
-    string detectorID = parameters->detectors[det];
-    if(parameters->detector[detectorID]->type() != "Timepix1") continue;
-    string name = "residualsX_"+detectorID;
-    residualsX[detectorID] = new TH1F(name.c_str(),name.c_str(),400,-0.05,0.05);
-    name = "residualsY_"+detectorID;
-    residualsY[detectorID] = new TH1F(name.c_str(),name.c_str(),400,-0.05,0.05);
-  }
+    // Loop over all Timepix1
+    for(int det = 0; det < parameters->nDetectors; det++) {
+        // Check if they are a Timepix3
+        string detectorID = parameters->detectors[det];
+        if(parameters->detector[detectorID]->type() != "Timepix1")
+            continue;
+        string name = "residualsX_" + detectorID;
+        residualsX[detectorID] = new TH1F(name.c_str(), name.c_str(), 400, -0.05, 0.05);
+        name = "residualsY_" + detectorID;
+        residualsY[detectorID] = new TH1F(name.c_str(), name.c_str(), 400, -0.05, 0.05);
+    }
 
-  // Initialise member variables
-  m_eventNumber = 0;
-  nTracksTotal = 0.;
-
+    // Initialise member variables
+    m_eventNumber = 0;
+    nTracksTotal = 0.;
 }
 
-StatusCode SpatialTracking::run(Clipboard* clipboard){
+StatusCode SpatialTracking::run(Clipboard* clipboard) {
 
-  // Container for all clusters, and detectors in tracking
-  map<string,KDTree*> trees;
-  vector<string> detectors;
-  Clusters* referenceClusters;
+    // Container for all clusters, and detectors in tracking
+    map<string, KDTree*> trees;
+    vector<string> detectors;
+    Clusters* referenceClusters;
 
-  // Output track container
-  Tracks* tracks = new Tracks();
+    // Output track container
+    Tracks* tracks = new Tracks();
 
-  // Loop over all Timepix1 and get clusters
-  double minZ = 1000.;
-  for(int det = 0; det<parameters->nDetectors; det++){
+    // Loop over all Timepix1 and get clusters
+    double minZ = 1000.;
+    for(int det = 0; det < parameters->nDetectors; det++) {
 
-    // Check if they are a Timepix1
-    string detectorID = parameters->detectors[det];
-    if(parameters->detector[detectorID]->type() != "Timepix1") continue;
+        // Check if they are a Timepix1
+        string detectorID = parameters->detectors[det];
+        if(parameters->detector[detectorID]->type() != "Timepix1")
+            continue;
 
-    // Get the clusters
-    Clusters* tempClusters = (Clusters*)clipboard->get(detectorID,"clusters");
-    if(tempClusters == NULL){
-      LOG(DEBUG) <<"Detector "<<detectorID<<" does not have any clusters on the clipboard";
-    }else{
-      // Store the clusters of the first plane in Z as the reference
-      if(parameters->detector[detectorID]->displacementZ() < minZ){
-        referenceClusters = tempClusters;
-        minZ = parameters->detector[detectorID]->displacementZ();
-      }
-      if(tempClusters->size() == 0) continue;
+        // Get the clusters
+        Clusters* tempClusters = (Clusters*)clipboard->get(detectorID, "clusters");
+        if(tempClusters == NULL) {
+            LOG(DEBUG) << "Detector " << detectorID << " does not have any clusters on the clipboard";
+        } else {
+            // Store the clusters of the first plane in Z as the reference
+            if(parameters->detector[detectorID]->displacementZ() < minZ) {
+                referenceClusters = tempClusters;
+                minZ = parameters->detector[detectorID]->displacementZ();
+            }
+            if(tempClusters->size() == 0)
+                continue;
 
-      // Make trees of the clusters on each plane
-      KDTree* clusterTree = new KDTree();
-      clusterTree->buildSpatialTree(*tempClusters);
-      trees[detectorID] = clusterTree;
-      detectors.push_back(detectorID);
-      LOG(DEBUG) <<"Picked up "<<tempClusters->size()<<" clusters on device "<<detectorID;
-    }
-  }
-
-  // If there are no detectors then stop trying to track
-  if(detectors.size() == 0) return Success;
-
-  // Keep a note of which clusters have been used
-  map<Cluster*, bool> used;
-
-  // Loop over all clusters
-  int nSeedClusters = referenceClusters->size();
-  for(int iSeedCluster=0;iSeedCluster<nSeedClusters;iSeedCluster++){
-
-    LOG(DEBUG) <<"==> seed cluster "<<iSeedCluster;
-
-    // Make a new track
-    Track* track = new Track();
-
-    // Get the cluster
-    Cluster* cluster = (*referenceClusters)[iSeedCluster];
-
-    // Add the cluster to the track
-    track->addCluster(cluster);
-    used[cluster] = true;
-
-    // Loop over each subsequent planes. For each plane, if extrapolate
-    // the hit from the previous plane along the z axis, and look for
-    // a neighbour on the new plane. We started on the most upstream
-    // plane, so first detector is 1 (not 0)
-    for(int det=1; det<detectors.size(); det++){
-
-      if(trees.count(detectors[det]) == 0) continue;
-
-      // If excluded from tracking ignore this plane
-      if(parameters->excludedFromTracking.count(detectors[det]) != 0) continue;
-
-      // Get the closest neighbour
-      LOG(DEBUG) <<"- looking for nearest cluster on device "<<detectors[det];
-      Cluster* closestCluster = trees[detectors[det]]->getClosestNeighbour(cluster);
-
-      LOG(DEBUG) <<"still alive";
-      // If it is used do nothing
-//      if(used[closestCluster]) continue;
-
-      // Check if it is within the spatial window
-      double distance = sqrt((cluster->globalX() - closestCluster->globalX())*(cluster->globalX() - closestCluster->globalX()) + (cluster->globalY() - closestCluster->globalY())*(cluster->globalY() - closestCluster->globalY()));
-
-      if(distance > spatialCut) continue;
-
-      // Add the cluster to the track
-      track->addCluster(closestCluster);
-      cluster = closestCluster;
-      LOG(DEBUG) <<"- added cluster to track. Distance is "<<distance;
-
+            // Make trees of the clusters on each plane
+            KDTree* clusterTree = new KDTree();
+            clusterTree->buildSpatialTree(*tempClusters);
+            trees[detectorID] = clusterTree;
+            detectors.push_back(detectorID);
+            LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters on device " << detectorID;
+        }
     }
 
-    // Now should have a track with one cluster from each plane
-    if(track->nClusters() < minHitsOnTrack){
-      delete track;
-      continue;
+    // If there are no detectors then stop trying to track
+    if(detectors.size() == 0)
+        return Success;
+
+    // Keep a note of which clusters have been used
+    map<Cluster*, bool> used;
+
+    // Loop over all clusters
+    int nSeedClusters = referenceClusters->size();
+    for(int iSeedCluster = 0; iSeedCluster < nSeedClusters; iSeedCluster++) {
+
+        LOG(DEBUG) << "==> seed cluster " << iSeedCluster;
+
+        // Make a new track
+        Track* track = new Track();
+
+        // Get the cluster
+        Cluster* cluster = (*referenceClusters)[iSeedCluster];
+
+        // Add the cluster to the track
+        track->addCluster(cluster);
+        used[cluster] = true;
+
+        // Loop over each subsequent planes. For each plane, if extrapolate
+        // the hit from the previous plane along the z axis, and look for
+        // a neighbour on the new plane. We started on the most upstream
+        // plane, so first detector is 1 (not 0)
+        for(int det = 1; det < detectors.size(); det++) {
+
+            if(trees.count(detectors[det]) == 0)
+                continue;
+
+            // If excluded from tracking ignore this plane
+            if(parameters->excludedFromTracking.count(detectors[det]) != 0)
+                continue;
+
+            // Get the closest neighbour
+            LOG(DEBUG) << "- looking for nearest cluster on device " << detectors[det];
+            Cluster* closestCluster = trees[detectors[det]]->getClosestNeighbour(cluster);
+
+            LOG(DEBUG) << "still alive";
+            // If it is used do nothing
+            //      if(used[closestCluster]) continue;
+
+            // Check if it is within the spatial window
+            double distance =
+                sqrt((cluster->globalX() - closestCluster->globalX()) * (cluster->globalX() - closestCluster->globalX()) +
+                     (cluster->globalY() - closestCluster->globalY()) * (cluster->globalY() - closestCluster->globalY()));
+
+            if(distance > spatialCut)
+                continue;
+
+            // Add the cluster to the track
+            track->addCluster(closestCluster);
+            cluster = closestCluster;
+            LOG(DEBUG) << "- added cluster to track. Distance is " << distance;
+        }
+
+        // Now should have a track with one cluster from each plane
+        if(track->nClusters() < minHitsOnTrack) {
+            delete track;
+            continue;
+        }
+
+        // Fit the track
+        track->fit();
+
+        // Save the track
+        tracks->push_back(track);
+
+        // Fill histograms
+        trackChi2->Fill(track->chi2());
+        clustersPerTrack->Fill(track->nClusters());
+        trackChi2ndof->Fill(track->chi2ndof());
+        trackAngleX->Fill(atan(track->m_direction.X()));
+        trackAngleY->Fill(atan(track->m_direction.Y()));
+
+        // Make residuals
+        Clusters trackClusters = track->clusters();
+        for(int iTrackCluster = 0; iTrackCluster < trackClusters.size(); iTrackCluster++) {
+            Cluster* trackCluster = trackClusters[iTrackCluster];
+            string detectorID = trackCluster->detectorID();
+            ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->globalZ());
+            residualsX[detectorID]->Fill(intercept.X() - trackCluster->globalX());
+            residualsY[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
+        }
     }
 
-    // Fit the track
-    track->fit();
-
-    // Save the track
-    tracks->push_back(track);
-
-    // Fill histograms
-    trackChi2->Fill(track->chi2());
-    clustersPerTrack->Fill(track->nClusters());
-    trackChi2ndof->Fill(track->chi2ndof());
-    trackAngleX->Fill(atan(track->m_direction.X()));
-    trackAngleY->Fill(atan(track->m_direction.Y()));
-
-    // Make residuals
-    Clusters trackClusters = track->clusters();
-    for(int iTrackCluster=0; iTrackCluster<trackClusters.size(); iTrackCluster++){
-      Cluster* trackCluster = trackClusters[iTrackCluster];
-      string detectorID = trackCluster->detectorID();
-      ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->globalZ());
-      residualsX[detectorID]->Fill(intercept.X() - trackCluster->globalX());
-      residualsY[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
+    // Save the tracks on the clipboard
+    nTracksTotal += tracks->size();
+    cout << ", produced " << nTracksTotal << " tracks";
+    LOG(DEBUG) << "- produced " << tracks->size() << " tracks";
+    tracksPerEvent->Fill(tracks->size());
+    if(tracks->size() > 0) {
+        clipboard->put("tracks", (TestBeamObjects*)tracks);
     }
 
-  }
+    // Clean up tree objects
+    for(int det = 0; det < parameters->nDetectors; det++) {
+        string detectorID = parameters->detectors[det];
+        if(trees.count(detectorID) != 0)
+            delete trees[detectorID];
+    }
 
-  // Save the tracks on the clipboard
-  nTracksTotal+=tracks->size();
-  cout<<", produced "<<nTracksTotal<<" tracks";
-  LOG(DEBUG) <<"- produced "<<tracks->size()<<" tracks";
-  tracksPerEvent->Fill(tracks->size());
-  if(tracks->size() > 0){
-    clipboard->put("tracks",(TestBeamObjects*)tracks);
-  }
-
-  // Clean up tree objects
-  for(int det = 0; det<parameters->nDetectors; det++){
-    string detectorID = parameters->detectors[det];
-    if(trees.count(detectorID) != 0) delete trees[detectorID];
-  }
-
-  return Success;
-
+    return Success;
 }
 
-void SpatialTracking::finalise(){
+void SpatialTracking::finalise() {
 
-  LOG(DEBUG) <<"Analysed "<<m_eventNumber<<" events";
-
+    LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }

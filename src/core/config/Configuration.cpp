@@ -2,8 +2,10 @@
  * @file
  * @brief Implementation of configuration
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * This software is distributed under the terms of the MIT License, copied
+ * verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities
+ * granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -50,9 +52,11 @@ std::string Configuration::getText(const std::string& key, const std::string& de
 }
 
 /**
- * @throws InvalidValueError If the path did not exists while the check_exists parameter is given
+ * @throws InvalidValueError If the path did not exists while the check_exists
+ * parameter is given
  *
- * For a relative path the absolute path of the configuration file is preprended. Absolute paths are not changed.
+ * For a relative path the absolute path of the configuration file is
+ * preprended. Absolute paths are not changed.
  */
 // TODO [doc] Document canonicalizing behaviour
 std::string Configuration::getPath(const std::string& key, bool check_exists) const {
@@ -63,9 +67,11 @@ std::string Configuration::getPath(const std::string& key, bool check_exists) co
     }
 }
 /**
- * @throws InvalidValueError If the path did not exists while the check_exists parameter is given
+ * @throws InvalidValueError If the path did not exists while the check_exists
+ * parameter is given
  *
- * For all relative paths the absolute path of the configuration file is preprended. Absolute paths are not changed.
+ * For all relative paths the absolute path of the configuration file is
+ * preprended. Absolute paths are not changed.
  */
 // TODO [doc] Document canonicalizing behaviour
 std::vector<std::string> Configuration::getPathArray(const std::string& key, bool check_exists) const {
@@ -125,7 +131,8 @@ unsigned int Configuration::countSettings() const {
 }
 
 /**
- * All keys that are already defined earlier in this configuration are not changed.
+ * All keys that are already defined earlier in this configuration are not
+ * changed.
  */
 void Configuration::merge(const Configuration& other) {
     for(auto config_pair : other.config_) {

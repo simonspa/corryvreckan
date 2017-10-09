@@ -1,9 +1,12 @@
 /**
  * @file
- * @brief Interface to the main configuration and its normal and special sections
+ * @brief Interface to the main configuration and its normal and special
+ * sections
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * This software is distributed under the terms of the MIT License, copied
+ * verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities
+ * granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -21,12 +24,16 @@ namespace corryvreckan {
 
     /**
      * @ingroup Managers
-     * @brief Manager responsible for loading and providing access to the main configuration
+     * @brief Manager responsible for loading and providing access to the main
+     * configuration
      *
-     * The main configuration is the single most important source of configuration. It is split up in:
-     * - Global headers that are combined into a single global (not module specific) configuration
+     * The main configuration is the single most important source of configuration.
+     * It is split up in:
+     * - Global headers that are combined into a single global (not module specific)
+     * configuration
      * - Ignored headers that are not used at all (mainly useful for debugging)
-     * - All other headers representing all modules that have to be instantiated by the ModuleManager
+     * - All other headers representing all modules that have to be instantiated by
+     * the ModuleManager
      *
      * Configuration sections are always case-sensitive.
      */

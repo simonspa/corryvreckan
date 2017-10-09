@@ -2,8 +2,10 @@
  * @file
  * @brief Base exceptions used in the framework
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * This software is distributed under the terms of the MIT License, copied
+ * verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities
+ * granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -21,7 +23,8 @@
 #include "type.h"
 
 namespace corryvreckan {
-    // NOTE: asserts are used inside the framework for internal errors that should be impossible for modules
+    // NOTE: asserts are used inside the framework for internal errors that should
+    // be impossible for modules
 
     /**
      * @ingroup Exceptions
@@ -43,7 +46,8 @@ namespace corryvreckan {
 
     protected:
         /**
-         * @brief Internal constructor for exceptions setting the error message indirectly
+         * @brief Internal constructor for exceptions setting the error message
+         * indirectly
          */
         Exception() = default;
 
@@ -66,7 +70,8 @@ namespace corryvreckan {
 
     protected:
         /**
-         * @brief Internal constructor for exceptions setting the error message indirectly
+         * @brief Internal constructor for exceptions setting the error message
+         * indirectly
          */
         RuntimeError() = default;
     };
@@ -75,7 +80,8 @@ namespace corryvreckan {
      * @ingroup Exceptions
      * @brief Errors related to logical problems in the code structure
      *
-     * Problems that could also have been detected at compile time by specialized software
+     * Problems that could also have been detected at compile time by specialized
+     * software
      */
     class LogicError : public Exception {
         /**
@@ -86,7 +92,8 @@ namespace corryvreckan {
 
     protected:
         /**
-         * @brief Internal constructor for exceptions setting the error message indirectly
+         * @brief Internal constructor for exceptions setting the error message
+         * indirectly
          */
         LogicError() = default;
     };

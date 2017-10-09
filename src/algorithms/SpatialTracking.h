@@ -4,45 +4,44 @@
 // Includes
 #include <iostream>
 // ROOT includes
+#include "Math/Functor.h"
+#include "Minuit2/Minuit2Minimizer.h"
+#include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TCanvas.h"
-#include "Minuit2/Minuit2Minimizer.h"
-#include "Math/Functor.h"
 // Local includes
 #include "core/Algorithm.h"
 #include "objects/Cluster.h"
 #include "objects/Track.h"
 
 namespace corryvreckan {
-  class SpatialTracking : public Algorithm {
+    class SpatialTracking : public Algorithm {
 
-  public:
-    // Constructors and destructors
-    SpatialTracking(Configuration config, Clipboard* clipboard);
-    ~SpatialTracking(){}
+    public:
+        // Constructors and destructors
+        SpatialTracking(Configuration config, Clipboard* clipboard);
+        ~SpatialTracking() {}
 
-    // Functions
-    void initialise(Parameters*);
-    StatusCode run(Clipboard*);
-    void finalise();
+        // Functions
+        void initialise(Parameters*);
+        StatusCode run(Clipboard*);
+        void finalise();
 
-    // Histograms
-    TH1F* trackChi2;
-    TH1F* clustersPerTrack;
-    TH1F* trackChi2ndof;
-    TH1F* tracksPerEvent;
-    TH1F* trackAngleX;
-    TH1F* trackAngleY;
-    map<string,TH1F*> residualsX;
-    map<string,TH1F*> residualsY;
+        // Histograms
+        TH1F* trackChi2;
+        TH1F* clustersPerTrack;
+        TH1F* trackChi2ndof;
+        TH1F* tracksPerEvent;
+        TH1F* trackAngleX;
+        TH1F* trackAngleY;
+        map<string, TH1F*> residualsX;
+        map<string, TH1F*> residualsY;
 
-    // Member variables
-    int m_eventNumber;
-    double spatialCut;
-    int minHitsOnTrack;
-    double nTracksTotal;
-
-  };
+        // Member variables
+        int m_eventNumber;
+        double spatialCut;
+        int minHitsOnTrack;
+        double nTracksTotal;
+    };
 }
 #endif // SpatialTracking_H
