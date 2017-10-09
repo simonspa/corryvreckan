@@ -215,10 +215,10 @@ Algorithm* Analysis::create_algorithm(void* library, Configuration config, Clipb
   }
 
   // Convert to correct generator function
-  auto algorithm_generator = reinterpret_cast<Algorithm* (*)(std::string, Configuration, Clipboard*)>(generator); // NOLINT
+  auto algorithm_generator = reinterpret_cast<Algorithm* (*)(Configuration, Clipboard*)>(generator); // NOLINT
 
   // Build algorithm
-  Algorithm* algorithm = algorithm_generator(config.getName(), config, clipboard);
+  Algorithm* algorithm = algorithm_generator(config, clipboard);
 
   // Return the algorithm to the analysis
   return algorithm;
