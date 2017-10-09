@@ -6,6 +6,8 @@
 
 #include "utils/log.h"
 
+using namespace corryvreckan;
+
 Parameters::Parameters() {
 
     histogramFile = "outputHistograms.root";
