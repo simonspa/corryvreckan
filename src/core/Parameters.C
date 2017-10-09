@@ -145,10 +145,8 @@ bool Parameters::readConditions() {
 
     // Now check that all devices which are registered have parameters as well
     bool unregisteredDetector = false;
-    LOG(WARNING) << "det: " << detectors.size() << " -- " << nDetectors;
     // Loop over all registered detectors
     for(int det = 0; det < nDetectors; det++) {
-        LOG(WARNING) << "det: " << detectors.size() << " ? " << det;
         if(detector.count(detectors[det]) == 0) {
             //LOG(INFO) << "Detector " << detectors[det] << " has no conditions loaded";
             unregisteredDetector = true;
