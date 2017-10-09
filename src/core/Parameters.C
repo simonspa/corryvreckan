@@ -18,12 +18,6 @@ Parameters::Parameters() {
     eventLength = 0.000; // seconds (0.1 ms)
 }
 
-void Parameters::help() {
-    LOG(INFO) << "********************************************************************";
-    LOG(INFO) << "Typical 'tbAnalysis' executions are:";
-    LOG(INFO) << " => bin/tbAnalysis -d directory";
-}
-
 // Sort function for detectors from low to high z
 map<string, DetectorParameters*> globalDetector;
 bool sortByZ(string detector1, string detector2) {
@@ -32,12 +26,6 @@ bool sortByZ(string detector1, string detector2) {
 
 // Read command line options and set appropriate variables
 void Parameters::readCommandLineOptions(int argc, char* argv[]) {
-
-    // If there are no input parameters then display the help function
-    if(argc == 1) {
-        help();
-        return;
-    }
 
     LOG(STATUS) << "===================| Reading Parameters  |====================";
     int option;
