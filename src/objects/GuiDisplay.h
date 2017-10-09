@@ -3,6 +3,7 @@
 
 // Local includes
 #include "TestBeamObject.h"
+#include "core/utils/log.h"
 
 // Global includes
 #include <iostream>
@@ -35,17 +36,17 @@ public:
     // Graphics associated with GUI
     TGMainFrame* m_mainFrame;
     TRootEmbeddedCanvas* canvas;
-    map<string, vector<TH1*>> histograms;
-    map<TH1*, string> styles;
-    map<string, TGTextButton*> buttons;
-    map<TRootEmbeddedCanvas*, bool> stackedCanvas;
+    std::map<std::string, std::vector<TH1*>> histograms;
+    std::map<TH1*, std::string> styles;
+    std::map<std::string, TGTextButton*> buttons;
+    std::map<TRootEmbeddedCanvas*, bool> stackedCanvas;
     TGHorizontalFrame* buttonMenu;
 
     // Button functions
     inline void Display(char* canvasNameC) {
-        string canvasName(canvasNameC);
+        std::string canvasName(canvasNameC);
         if(histograms[canvasName].size() == 0) {
-            cout << "Canvas does not have any histograms, exiting" << endl;
+            LOG(ERROR) << "Canvas does not have any histograms, exiting";
             return;
         }
         int nHistograms = histograms[canvasName].size();
@@ -60,7 +61,7 @@ public:
         for(int i = 0; i < nHistograms; i++) {
             if(!stackedCanvas[canvas])
                 canvas->GetCanvas()->cd(i + 1);
-            string style = styles[histograms[canvasName][i]];
+            std::string style = styles[histograms[canvasName][i]];
             if(stackedCanvas[canvas]) {
                 style = "same";
                 histograms[canvasName][i]->SetLineColor(i + 1);

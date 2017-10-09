@@ -5,7 +5,7 @@
 #include "Cluster.h"
 #include "TKDTree.h"
 #include "TestBeamObject.h"
-
+#include "core/utils/log.h"
 /*
 
  This class is effectively just a wrapper for the root TKDTree class that
@@ -79,9 +79,7 @@ public:
     // Function to get back all clusters within a given time period
     Clusters getAllClustersInTimeWindow(Cluster* cluster, double timeWindow) {
 
-        //    std::cout<<"Getting all clusters in time window"<<std::endl;
-
-        //    std::cout<<" -- time window: "<<timeWindow<<std::endl;
+        LOG(TRACE) << "Getting all clusters in time window" << timeWindow;
         // Find out which iterator number this cluster corresponds to
         //    int iterator = iteratorNumber[cluster];
 
@@ -93,7 +91,7 @@ public:
         double time = double(cluster->timestamp()) / (4096. * 40000000.);
         timeKdtree->FindInRange(&time, timeWindow, results);
 
-        //    std::cout<<" -- found: "<<results.size()<<std::endl;
+        LOG(TRACE) <<" -- found: "<<results.size();
 
         // Turn this into a vector of clusters
         Clusters resultClusters;

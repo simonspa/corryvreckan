@@ -6,7 +6,7 @@ class SpidrSignal : public TestBeamObject {
 public:
     // Constructors and destructors
     SpidrSignal() {}
-    SpidrSignal(string type, long long int timestamp) {
+    SpidrSignal(std::string type, long long int timestamp) {
         m_type = type;
         m_timestamp = timestamp;
     }
@@ -16,11 +16,11 @@ public:
 
     // Set properties
     void timestamp(long long int timestamp) { m_timestamp = timestamp; }
-    void type(string type) { m_type = type; }
+    void type(std::string type) { m_type = type; }
 
     // Retrieve properties
     long long int timestamp() { return m_timestamp; }
-    string type() { return m_type; }
+    std::string type() { return m_type; }
 
     // Member variables
     long long int m_timestamp;
