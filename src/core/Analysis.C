@@ -11,7 +11,7 @@
 #include <fstream>
 
 #define CORRYVRECKAN_ALGORITHM_PREFIX "libCorryvreckanAlgorithm"
-#define CORRYVRECKAN_GENERATOR_FUNCTION "corryvreckan_module_generator"
+#define CORRYVRECKAN_GENERATOR_FUNCTION "corryvreckan_algorithm_generator"
 
 using namespace corryvreckan;
 
@@ -129,6 +129,7 @@ void Analysis::load() {
         lib = dlopen(lib_name.c_str(), RTLD_NOW);
 
         if(lib != nullptr) {
+          LOG(TRACE) << "Opened library";
           Dl_info dl_info;
           dl_info.dli_fname = "";
 
@@ -200,25 +201,27 @@ void Analysis::load() {
 }
 
 Algorithm* Analysis::create_algorithm(void* library, Configuration config, Clipboard* clipboard) {
-    // Make the vector to return
-    std::string algorithm_name = config.getName();
+  LOG(TRACE) << "Creating algorithm " << config.getName() << ", using generator \"" << CORRYVRECKAN_GENERATOR_FUNCTION << "\"";
 
-    // Get the generator function for this module
-    void* generator = dlsym(library, CORRYVRECKAN_GENERATOR_FUNCTION);
-    // If the generator function was not found, throw an error
-    if(generator == nullptr) {
-        LOG(ERROR) << "Algorithm library is invalid or outdated: required interface function not found!";
-        throw corryvreckan::RuntimeError("Error instantiating algorithm from " + config.getName());
-    }
+  // Make the vector to return
+  std::string algorithm_name = config.getName();
 
-    // Convert to correct generator function
-    auto algorithm_generator = reinterpret_cast<Algorithm* (*)(std::string, Configuration, Clipboard*)>(generator); // NOLINT
+  // Get the generator function for this module
+  void* generator = dlsym(library, CORRYVRECKAN_GENERATOR_FUNCTION);
+  // If the generator function was not found, throw an error
+  if(generator == nullptr) {
+    LOG(ERROR) << "Algorithm library is invalid or outdated: required interface function not found!";
+    throw corryvreckan::RuntimeError("Error instantiating algorithm from " + config.getName());
+  }
 
-    // Build algorithm
-    Algorithm* algorithm = algorithm_generator(config.getName(), config, clipboard);
+  // Convert to correct generator function
+  auto algorithm_generator = reinterpret_cast<Algorithm* (*)(std::string, Configuration, Clipboard*)>(generator); // NOLINT
 
-    // Return the algorithm to the analysis
-    return algorithm;
+  // Build algorithm
+  Algorithm* algorithm = algorithm_generator(config.getName(), config, clipboard);
+
+  // Return the algorithm to the analysis
+  return algorithm;
 }
 
 // Run the analysis loop - this initialises, runs and finalises all algorithms
@@ -230,7 +233,7 @@ void Analysis::run(){
   while(1){
     bool run = true;
     bool noData = false;
-  	// Run all algorithms
+    // Run all algorithms
     for(int algorithmNumber = 0; algorithmNumber<m_algorithms.size();algorithmNumber++) {
       // Change to the output file directory
       m_directory->cd(m_algorithms[algorithmNumber]->getName().c_str());
