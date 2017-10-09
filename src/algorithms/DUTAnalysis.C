@@ -120,10 +120,8 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
     }
 
     // Loop over all tracks
-    for(int itTrack = 0; itTrack < tracks->size(); itTrack++) {
-
-        // Get the track pointer
-        Track* track = (*tracks)[itTrack];
+    bool first_track = true;
+    for(auto& track : (*tracks)) {
 
         // Cut on the chi2/ndof
         if(track->chi2ndof() > chi2ndofCut)
@@ -202,13 +200,10 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
 
         // Loop over all DUT clusters
         bool associated = false;
-        for(int itCluster = 0; itCluster < clusters->size(); itCluster++) {
-
-            // Get the cluster pointer
-            Cluster* cluster = (*clusters)[itCluster];
+        for(auto& cluster : (*clusters)) {
 
             // Fill the tot histograms on the first run
-            if(itTrack == 0)
+            if(first_track == 0)
                 clusterToTVersusTime->Fill((double)cluster->timestamp() / (4096. * 40000000.), cluster->tot());
 
             // Check if the cluster is close in time
@@ -248,6 +243,8 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
 
         if(!associated)
             hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
+
+        first_track = false;
     }
 
     // Increment event counter
