@@ -20,54 +20,8 @@ Parameters::Parameters() {
 
 // Sort function for detectors from low to high z
 map<string, DetectorParameters*> globalDetector;
-bool sortByZ(string detector1, string detector2) {
+bool corryvreckan::sortByZ(string detector1, string detector2) {
     return (globalDetector[detector1]->displacementZ() < globalDetector[detector2]->displacementZ());
-}
-
-// Read command line options and set appropriate variables
-void Parameters::readCommandLineOptions(int argc, char* argv[]) {
-
-    LOG(STATUS) << "===================| Reading Parameters  |====================";
-    int option;
-    char temp[256];
-    while((option = getopt(argc, argv, "gema:d:c:n:h:t:o:f:t:p:s:")) != -1) {
-        switch(option) {
-        case 'd':
-            sscanf(optarg, "%s", &temp);
-            inputDirectory = (string)temp;
-            LOG(INFO) << "Taking data from: " << inputDirectory;
-            break;
-        case 'c':
-            sscanf(optarg, "%s", &temp);
-            conditionsFile = (string)temp;
-            LOG(INFO) << "Picking up conditions file: " << conditionsFile;
-            break;
-        case 'h':
-            sscanf(optarg, "%s", &temp);
-            histogramFile = (string)temp;
-            LOG(INFO) << "Writing histograms to: " << histogramFile;
-            break;
-        case 'o':
-            sscanf(optarg, "%lf", &currentTime);
-            LOG(INFO) << "Starting at time: " << currentTime << " s";
-            break;
-        case 't':
-            sscanf(optarg, "%s", &temp);
-            inputTupleFile = (string)temp;
-            LOG(INFO) << "Reading tuples from: " << inputTupleFile;
-            break;
-        case 'f':
-            sscanf(optarg, "%s", &temp);
-            outputTupleFile = (string)temp;
-            LOG(INFO) << "Writing output tuples to: " << outputTupleFile;
-            break;
-        case 's':
-            sscanf(optarg, "%s", &temp);
-            dutMaskFile = (string)temp;
-            LOG(INFO) << "Taking dut mask from: " << dutMaskFile;
-        }
-    }
-    LOG(INFO) << endl;
 }
 
 bool Parameters::writeConditions() {

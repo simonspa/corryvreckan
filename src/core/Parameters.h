@@ -44,7 +44,6 @@ namespace corryvreckan {
         // Functions
         bool readConditions();
         bool writeConditions();
-        void readCommandLineOptions(int, char**);
         void readDutMask();
         void maskDutColumn(int);
         void maskDutRow(int);
