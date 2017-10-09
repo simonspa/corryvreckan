@@ -8,9 +8,9 @@
 
 ClassImp(TestBeamObject)
 
-// Return class type for fixed object types (that don't depend on detector
-// type)
-TestBeamObject* TestBeamObject::Factory(std::string objectType, TestBeamObject* object) {
+    // Return class type for fixed object types (that don't depend on detector
+    // type)
+    TestBeamObject* TestBeamObject::Factory(std::string objectType, TestBeamObject* object) {
 
     // Track class
     if(objectType == "tracks") {
@@ -26,9 +26,9 @@ TestBeamObject* TestBeamObject::Factory(std::string detectorType, std::string ob
     // Timepix types both use generic classes
     if(detectorType == "Timepix1" || detectorType == "Timepix3") {
         if(objectType == "pixels")
-        return (object == NULL) ? new Pixel() : new Pixel(*static_cast<Pixel*>(object));
+            return (object == NULL) ? new Pixel() : new Pixel(*static_cast<Pixel*>(object));
         if(objectType == "clusters")
-        return (object == NULL) ? new Cluster() : new Cluster(*static_cast<Cluster*>(object));
+            return (object == NULL) ? new Cluster() : new Cluster(*static_cast<Cluster*>(object));
     }
 
     return new TestBeamObject();

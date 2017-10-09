@@ -9,7 +9,7 @@ using namespace std;
 
 GUI::GUI(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
     // Update every X events:
-    updateNumber = m_config.get<int>("updateNumber",500);
+    updateNumber = m_config.get<int>("updateNumber", 500);
 }
 
 void GUI::initialise(Parameters* par) {
@@ -76,7 +76,8 @@ void GUI::initialise(Parameters* par) {
         for(int iHisto = 0; iHisto < nHistograms; iHisto++) {
             canvas->cd(iHisto + 1);
             string style = styles[histos[iHisto]];
-            if(histos[iHisto] != nullptr) histos[iHisto]->Draw(style.c_str());
+            if(histos[iHisto] != nullptr)
+                histos[iHisto]->Draw(style.c_str());
         }
     }
 

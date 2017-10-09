@@ -91,7 +91,7 @@ public:
         double time = double(cluster->timestamp()) / (4096. * 40000000.);
         timeKdtree->FindInRange(&time, timeWindow, results);
 
-        LOG(TRACE) <<" -- found: "<<results.size();
+        LOG(TRACE) << " -- found: " << results.size();
 
         // Turn this into a vector of clusters
         Clusters resultClusters;

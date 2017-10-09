@@ -32,7 +32,7 @@ public:
         }
 
         Clusters associatedClusters = track->associatedClusters();
-        for(auto & assoc_cluster : associatedClusters) {
+        for(auto& assoc_cluster : associatedClusters) {
             Cluster* cluster = new Cluster(assoc_cluster);
             m_associatedClusters.push_back(cluster);
         }
@@ -73,7 +73,7 @@ public:
         m_chi2ndof = 0.;
 
         // Loop over all clusters
-        for(auto &cluster : m_trackClusters) {
+        for(auto& cluster : m_trackClusters) {
             // Get the distance^2 and the error^2
             double error2 = cluster->error() * cluster->error();
             m_chi2 += (this->distance2(cluster) / error2);
@@ -110,7 +110,7 @@ public:
         double maty[2][2] = {{0., 0.}, {0., 0.}};
 
         // Loop over all clusters and fill the matrices
-        for(auto & cluster : m_trackClusters) {
+        for(auto& cluster : m_trackClusters) {
             // Get the global point details
             double x = cluster->globalX();
             double y = cluster->globalY();

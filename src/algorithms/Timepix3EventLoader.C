@@ -18,8 +18,8 @@ Timepix3EventLoader::Timepix3EventLoader(Configuration config, Clipboard* clipbo
     // Take input directory from global parameters
     m_inputDirectory = m_config.get<std::string>("inputDirectory");
 
-    applyTimingCut = m_config.get<bool>("applyTimingCut",false);
-    m_timingCut = m_config.get<double>("timingCut",0.0);
+    applyTimingCut = m_config.get<bool>("applyTimingCut", false);
+    m_timingCut = m_config.get<double>("timingCut", 0.0);
     m_minNumberOfPlanes = m_config.get<int>("minNumerOfPlanes", 1);
 
     m_currentTime = 0.;
@@ -38,9 +38,8 @@ void Timepix3EventLoader::initialise(Parameters* par) {
     if(directory == NULL) {
         LOG(ERROR) << "Directory " << m_inputDirectory << " does not exist";
         return;
-    }
-    else {
-      LOG(TRACE) << "Found directory " << m_inputDirectory;
+    } else {
+        LOG(TRACE) << "Found directory " << m_inputDirectory;
     }
     dirent* entry;
     dirent* file;
@@ -367,8 +366,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
                 // Stop looking at data if the signal is after the current event window
                 // (and rewind the file
                 // reader so that we start with this signal next event)
-                if(eventLength != 0. &&
-                   ((double)time / (4096. * 40000000.)) > (parameters->currentTime + eventLength)) {
+                if(eventLength != 0. && ((double)time / (4096. * 40000000.)) > (parameters->currentTime + eventLength)) {
                     fseek(m_currentFile[detectorID], -1 * sizeof(ULong64_t), SEEK_CUR);
                     fileNotFinished = true;
                     //          LOG(DEBUG) <<"Signal has a time beyond the current event:
@@ -493,8 +491,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
             // Stop looking at data if the pixel is after the current event window
             // (and rewind the file
             // reader so that we start with this pixel next event)
-            if(eventLength != 0. &&
-               ((double)time / (4096. * 40000000.)) > (parameters->currentTime + eventLength)) {
+            if(eventLength != 0. && ((double)time / (4096. * 40000000.)) > (parameters->currentTime + eventLength)) {
                 fseek(m_currentFile[detectorID], -1 * sizeof(ULong64_t), SEEK_CUR);
                 fileNotFinished = true;
                 break;

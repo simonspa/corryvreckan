@@ -48,7 +48,7 @@ public:
 
     // Clear items on the clipboard
     void clear() {
-        for(auto & id : m_dataID) {
+        for(auto& id : m_dataID) {
             TestBeamObjects* collection = m_data[id];
             for(TestBeamObjects::iterator it = collection->begin(); it != collection->end(); it++)
                 delete(*it);
@@ -60,7 +60,7 @@ public:
 
     // Quick function to check what is currently held by the clipboard
     void checkCollections() {
-        for(auto &name : m_dataID)
+        for(auto& name : m_dataID)
             LOG(DEBUG) << "Data held: " << name;
     }
 

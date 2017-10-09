@@ -8,8 +8,8 @@
 #include "utils/log.h"
 
 #include <dlfcn.h>
-#include <iomanip>
 #include <fstream>
+#include <iomanip>
 
 #define CORRYVRECKAN_ALGORITHM_PREFIX "libCorryvreckanAlgorithm"
 #define CORRYVRECKAN_GENERATOR_FUNCTION "corryvreckan_algorithm_generator"
@@ -343,7 +343,7 @@ void Analysis::run() {
 
         // Check for user termination and stop the event loop:
         if(m_terminate) {
-          break;
+            break;
         }
     }
 
@@ -418,9 +418,9 @@ void Analysis::finaliseAll() {
 void Analysis::timing() {
     LOG(STATUS) << "===============| Wall-clock timing (seconds) |================";
     for(auto& algorithm : m_algorithms) {
-        LOG(STATUS) << std::setw(25) << algorithm->getName() << "  --  "
-                  << std::fixed << std::setprecision(5) << algorithm->getStopwatch()->RealTime() << " = "
-                  << std::setprecision(9) << algorithm->getStopwatch()->RealTime() / m_events << " s/evt";
+        LOG(STATUS) << std::setw(25) << algorithm->getName() << "  --  " << std::fixed << std::setprecision(5)
+                    << algorithm->getStopwatch()->RealTime() << " = " << std::setprecision(9)
+                    << algorithm->getStopwatch()->RealTime() / m_events << " s/evt";
     }
     LOG(STATUS) << "==============================================================";
 }

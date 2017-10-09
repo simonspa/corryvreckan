@@ -1,9 +1,9 @@
 #ifndef ANALYSIS_H
 #define ANALYSIS_H 1
 
+#include <fstream>
 #include <map>
 #include <vector>
-#include <fstream>
 
 #include "TBrowser.h"
 #include "TDirectory.h"

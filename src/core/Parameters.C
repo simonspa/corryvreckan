@@ -15,7 +15,7 @@ Parameters::Parameters() {
     conditionsFile = "cond.dat";
     dutMaskFile = "defaultMask.dat";
     inputDirectory = "";
-    currentTime = 0.;    // seconds
+    currentTime = 0.; // seconds
 }
 
 // Sort function for detectors from low to high z
@@ -61,7 +61,8 @@ bool Parameters::readConditions() {
     conditions.open(conditionsFile.c_str());
     string line;
 
-    LOG(INFO) << "-------------------------------------------- Reading conditions ---------------------------------------------------";
+    LOG(INFO) << "-------------------------------------------- Reading conditions "
+                 "---------------------------------------------------";
     // Loop over file
     while(getline(conditions, line)) {
 
@@ -102,7 +103,7 @@ bool Parameters::readConditions() {
     // Loop over all registered detectors
     for(auto& det : detectors) {
         if(detector.count(det) == 0) {
-            //LOG(INFO) << "Detector " << detectors[det] << " has no conditions loaded";
+            // LOG(INFO) << "Detector " << detectors[det] << " has no conditions loaded";
             unregisteredDetector = true;
         }
     }

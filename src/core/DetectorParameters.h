@@ -1,5 +1,5 @@
-#include <string>
 #include <map>
+#include <string>
 
 // Root includes
 #include "Math/Point3D.h"
@@ -17,7 +17,18 @@ namespace corryvreckan {
     public:
         // Constructors and desctructors
         DetectorParameters() {}
-        DetectorParameters(std::string detectorType, int nPixelsX, int nPixelsY, double pitchX, double pitchY, double x, double y, double z, double Rx, double Ry, double Rz, double timingOffset) {
+        DetectorParameters(std::string detectorType,
+                           int nPixelsX,
+                           int nPixelsY,
+                           double pitchX,
+                           double pitchY,
+                           double x,
+                           double y,
+                           double z,
+                           double Rx,
+                           double Ry,
+                           double Rz,
+                           double timingOffset) {
             m_detectorType = detectorType;
             m_nPixelsX = nPixelsX;
             m_nPixelsY = nPixelsY;
@@ -69,7 +80,7 @@ namespace corryvreckan {
         bool masked(int chX, int chY) {
             int channelID = chX + m_nPixelsX * chY;
             if(m_masked.count(channelID) > 0)
-            return true;
+                return true;
             return false;
         }
 
@@ -93,7 +104,8 @@ namespace corryvreckan {
             m_origin = (*m_localToGlobal) * m_origin;
             PositionVector3D<Cartesian3D<double>> localZ(0., 0., 1.);
             localZ = (*m_localToGlobal) * localZ;
-            m_normal = PositionVector3D<Cartesian3D<double>>(localZ.X() - m_origin.X(), localZ.Y() - m_origin.Y(), localZ.Z() - m_origin.Z());
+            m_normal = PositionVector3D<Cartesian3D<double>>(
+                localZ.X() - m_origin.X(), localZ.Y() - m_origin.Y(), localZ.Z() - m_origin.Z());
         }
 
         // Function to update transforms (such as during alignment)
@@ -113,12 +125,12 @@ namespace corryvreckan {
             distance += (m_origin.Y() - track->m_state.Y()) * m_normal.Y();
             distance += (m_origin.Z() - track->m_state.Z()) * m_normal.Z();
             distance /= (track->m_direction.X() * m_normal.X() + track->m_direction.Y() * m_normal.Y() +
-            track->m_direction.Z() * m_normal.Z());
+                         track->m_direction.Z() * m_normal.Z());
 
             // Propagate the track
             PositionVector3D<Cartesian3D<double>> globalIntercept(track->m_state.X() + distance * track->m_direction.X(),
-            track->m_state.Y() + distance * track->m_direction.Y(),
-            track->m_state.Z() + distance * track->m_direction.Z());
+                                                                  track->m_state.Y() + distance * track->m_direction.Y(),
+                                                                  track->m_state.Z() + distance * track->m_direction.Z());
             return globalIntercept;
         }
 
@@ -138,8 +150,8 @@ namespace corryvreckan {
             // Check if the row and column are outside of the chip
             bool intercept = true;
             if(row < (pixelTolerance - 0.5) || row > (this->m_nPixelsY - 0.5 - pixelTolerance) ||
-            column < (pixelTolerance - 0.5) || column > (this->m_nPixelsX - 0.5 - pixelTolerance))
-            intercept = false;
+               column < (pixelTolerance - 0.5) || column > (this->m_nPixelsX - 0.5 - pixelTolerance))
+                intercept = false;
 
             return intercept;
         }
@@ -162,7 +174,7 @@ namespace corryvreckan {
             for(int r = (row - tolerance); r <= (row + tolerance); r++) {
                 for(int c = (column - tolerance); c <= (column + tolerance); c++) {
                     if(this->masked(c, r))
-                    hitmasked = true;
+                        hitmasked = true;
                 }
             }
 
@@ -182,7 +194,8 @@ namespace corryvreckan {
         // Function to get local position from row and column
         PositionVector3D<Cartesian3D<double>> getLocalPosition(double row, double column) {
 
-            PositionVector3D<Cartesian3D<double>> positionLocal(m_pitchX * (column - m_nPixelsX / 2.), m_pitchY * (row - m_nPixelsY / 2.), 0.);
+            PositionVector3D<Cartesian3D<double>> positionLocal(
+                m_pitchX * (column - m_nPixelsX / 2.), m_pitchY * (row - m_nPixelsY / 2.), 0.);
 
             return positionLocal;
         }
