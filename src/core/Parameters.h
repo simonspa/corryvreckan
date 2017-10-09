@@ -58,7 +58,7 @@ namespace corryvreckan {
         std::string histogramFile;
         std::string dutMaskFile;
         std::vector<std::string> detectors;
-        int nDetectors;
+        int nDetectors{0};
         std::string reference;
         std::string dut;
         double currentTime;
