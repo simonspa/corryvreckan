@@ -8,7 +8,8 @@ using namespace corryvreckan;
 using namespace std;
 
 GUI::GUI(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
-    updateNumber = 500;
+    // Update every X events:
+    updateNumber = m_config.get<int>("updateNumber",500);
 }
 
 void GUI::initialise(Parameters* par) {
@@ -39,45 +40,43 @@ void GUI::initialise(Parameters* par) {
     //========= Add each histogram =========//
 
     // Individual plots
-    addPlot(trackCanvas, "/tbAnalysis/BasicTracking/trackChi2");
-    addPlot(trackCanvas, "/tbAnalysis/BasicTracking/trackAngleX");
+    addPlot(trackCanvas, "/corryvreckan/BasicTracking/trackChi2");
+    addPlot(trackCanvas, "/corryvreckan/BasicTracking/trackAngleX");
 
     // Per detector histograms
-    for(int det = 0; det < parameters->nDetectors; det++) {
-        string detectorID = parameters->detectors[det];
-
-        string hitmap = "/tbAnalysis/TestAlgorithm/hitmap_" + detectorID;
+    for(auto detectorID : parameters->detectors) {
+        string hitmap = "/corryvreckan/TestAlgorithm/hitmap_" + detectorID;
         addPlot(hitmapCanvas, hitmap, "colz");
 
-        string residualHisto = "/tbAnalysis/BasicTracking/residualsX_" + detectorID;
+        string residualHisto = "/corryvreckan/BasicTracking/residualsX_" + detectorID;
         if(detectorID == parameters->DUT)
-            residualHisto = "/tbAnalysis/DUTAnalysis/residualsX";
+            residualHisto = "/corryvreckan/DUTAnalysis/residualsX";
         addPlot(residualsCanvas, residualHisto);
 
-        string chargeHisto = "/tbAnalysis/TestAlgorithm/clusterTot_" + detectorID;
+        string chargeHisto = "/corryvreckan/TestAlgorithm/clusterTot_" + detectorID;
         addPlot(chargeCanvas, chargeHisto);
     }
 
     // Divide the canvases if needed
-    for(int iCanvas = 0; iCanvas < canvases.size(); iCanvas++) {
-        int nHistograms = histograms[canvases[iCanvas]].size();
+    for(auto& canvas : canvases) {
+        int nHistograms = histograms[canvas].size();
         if(nHistograms == 1)
             continue;
         if(nHistograms < 4)
-            canvases[iCanvas]->Divide(nHistograms);
+            canvas->Divide(nHistograms);
         else
-            canvases[iCanvas]->Divide(ceil(nHistograms / 2.), 2);
+            canvas->Divide(ceil(nHistograms / 2.), 2);
     }
 
     // Draw all histograms
-    for(int iCanvas = 0; iCanvas < canvases.size(); iCanvas++) {
-        canvases[iCanvas]->cd();
-        vector<TH1*> histos = histograms[canvases[iCanvas]];
+    for(auto& canvas : canvases) {
+        canvas->cd();
+        vector<TH1*> histos = histograms[canvas];
         int nHistograms = histos.size();
         for(int iHisto = 0; iHisto < nHistograms; iHisto++) {
-            canvases[iCanvas]->cd(iHisto + 1);
+            canvas->cd(iHisto + 1);
             string style = styles[histos[iHisto]];
-            histos[iHisto]->Draw(style.c_str());
+            if(histos[iHisto] != nullptr) histos[iHisto]->Draw(style.c_str());
         }
     }
 
