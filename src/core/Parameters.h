@@ -46,36 +46,34 @@ namespace corryvreckan {
         void readDutMask();
         void maskDutColumn(int);
         void maskDutRow(int);
-        void registerDetector(string detectorID) {
+        void registerDetector(std::string detectorID) {
             nDetectors++;
             detectors.push_back(detectorID);
         }
 
         // Member variables
-        string conditionsFile;
-        string inputTupleFile;
-        string inputDirectory;
-        string outputTupleFile;
-        string histogramFile;
-        string dutMaskFile;
-        vector<string> detectors;
+        std::string conditionsFile;
+        std::string inputTupleFile;
+        std::string inputDirectory;
+        std::string outputTupleFile;
+        std::string histogramFile;
+        std::string dutMaskFile;
+        std::vector<std::string> detectors;
         int nDetectors;
-        string reference;
-        string dut;
+        std::string reference;
+        std::string dut;
         double currentTime;
         double eventLength;
-        bool align;
         bool eventDisplay;
-        bool gui;
         bool produceMask;
-        string DUT;
-        map<string, bool> excludedFromTracking;
-        map<string, bool> masked;
-        string detectorToAlign;
+        std::string DUT;
+        std::map<std::string, bool> excludedFromTracking;
+        std::map<std::string, bool> masked;
+        std::string detectorToAlign;
         int alignmentMethod;
 
         // Parameters for each detector (stored by detector ID)
-        map<string, DetectorParameters*> detector;
+        std::map<std::string, DetectorParameters*> detector;
     };
 }
 #endif // PARAMETERS_H

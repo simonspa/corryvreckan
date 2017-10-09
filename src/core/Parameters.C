@@ -7,6 +7,7 @@
 #include "utils/log.h"
 
 using namespace corryvreckan;
+using namespace std;
 
 Parameters::Parameters() {
 
@@ -14,7 +15,6 @@ Parameters::Parameters() {
     conditionsFile = "cond.dat";
     dutMaskFile = "defaultMask.dat";
     inputDirectory = "";
-    align = false;
     produceMask = false;
     currentTime = 0.;    // seconds
     eventLength = 0.000; // seconds (0.1 ms)
@@ -34,18 +34,9 @@ void Parameters::readCommandLineOptions(int argc, char* argv[]) {
     char temp[256];
     while((option = getopt(argc, argv, "gema:d:c:n:h:t:o:f:t:p:s:")) != -1) {
         switch(option) {
-        case 'a':
-            align = true;
-            sscanf(optarg, "%d", &alignmentMethod);
-            LOG(INFO) << "Alignment flagged to be run. Running method " << alignmentMethod;
-            break;
         case 'e':
             eventDisplay = true;
             LOG(INFO) << "Event display flagged to be run";
-            break;
-        case 'g':
-            gui = true;
-            LOG(INFO) << "GUI flagged to be run";
             break;
         case 'm':
             produceMask = true;

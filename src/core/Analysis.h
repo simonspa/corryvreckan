@@ -52,7 +52,7 @@ namespace corryvreckan {
         Parameters* m_parameters;
         Clipboard* m_clipboard;
         Configuration m_config;
-        vector<Algorithm*> m_algorithms;
+        std::vector<Algorithm*> m_algorithms;
         TFile* m_histogramFile;
         TDirectory* m_directory;
         std::map<std::string, void*> loaded_libraries_;

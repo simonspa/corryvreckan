@@ -25,22 +25,22 @@ public:
     virtual ~Clipboard() {}
 
     // Add objects to clipboard - with name or name + type
-    void put(string name, TestBeamObjects* objects) {
+    void put(std::string name, TestBeamObjects* objects) {
         m_dataID.push_back(name);
         m_data[name] = objects;
     }
-    void put(string name, string type, TestBeamObjects* objects) {
+    void put(std::string name, std::string type, TestBeamObjects* objects) {
         m_dataID.push_back(name + type);
         m_data[name + type] = objects;
     }
 
     // Get objects from clipboard - with name or name + type
-    TestBeamObjects* get(string name) {
+    TestBeamObjects* get(std::string name) {
         if(m_data.count(name) == 0)
             return NULL;
         return m_data[name];
     }
-    TestBeamObjects* get(string name, string type) {
+    TestBeamObjects* get(std::string name, std::string type) {
         if(m_data.count(name + type) == 0)
             return NULL;
         return m_data[name + type];
@@ -68,8 +68,8 @@ public:
 
 private:
     // Container for data, list of all data held
-    map<string, TestBeamObjects*> m_data;
-    vector<string> m_dataID;
+    std::map<std::string, TestBeamObjects*> m_data;
+    std::vector<std::string> m_dataID;
 };
 
 #endif // CLIPBOARD_H

@@ -47,7 +47,7 @@ namespace corryvreckan {
         virtual void finalise() {}
 
         // Methods to get member variables
-        string getName() { return m_name; }
+        std::string getName() { return m_name; }
         Configuration getConfig() { return m_config; }
         TStopwatch* getStopwatch() { return m_stopwatch; }
 
@@ -55,7 +55,7 @@ namespace corryvreckan {
         // Member variables
         Parameters* parameters;
         TStopwatch* m_stopwatch;
-        string m_name;
+        std::string m_name;
         Configuration m_config;
         Clipboard* m_clipboard;
     };
