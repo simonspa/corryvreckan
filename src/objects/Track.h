@@ -26,15 +26,14 @@ public:
     // Copy constructor (also copies clusters from the original track)
     Track(Track* track) {
         Clusters trackClusters = track->clusters();
-        for(int iTrackCluster = 0; iTrackCluster < trackClusters.size(); iTrackCluster++) {
-            Cluster* trackCluster = trackClusters[iTrackCluster];
-            Cluster* cluster = new Cluster(trackCluster);
+        for(auto& track_cluster : trackClusters) {
+            Cluster* cluster = new Cluster(track_cluster);
             m_trackClusters.push_back(cluster);
         }
+
         Clusters associatedClusters = track->associatedClusters();
-        for(int iAssociatedCluster = 0; iAssociatedCluster < associatedClusters.size(); iAssociatedCluster++) {
-            Cluster* associatedCluster = associatedClusters[iAssociatedCluster];
-            Cluster* cluster = new Cluster(associatedCluster);
+        for(auto & assoc_cluster : associatedClusters) {
+            Cluster* cluster = new Cluster(assoc_cluster);
             m_associatedClusters.push_back(cluster);
         }
         m_state = track->m_state;
@@ -69,17 +68,12 @@ public:
     void calculateChi2() {
 
         // Get the number of clusters
-        int nClusters = m_trackClusters.size();
-        m_ndof = nClusters - 2.;
+        m_ndof = static_cast<double>(m_trackClusters.size()) - 2.;
         m_chi2 = 0.;
         m_chi2ndof = 0.;
 
         // Loop over all clusters
-        for(int iCluster = 0; iCluster < nClusters; iCluster++) {
-
-            // Get the cluster
-            Cluster* cluster = m_trackClusters[iCluster];
-
+        for(auto &cluster : m_trackClusters) {
             // Get the distance^2 and the error^2
             double error2 = cluster->error() * cluster->error();
             m_chi2 += (this->distance2(cluster) / error2);
@@ -104,7 +98,7 @@ public:
         this->calculateChi2();
 
         // Return this to minuit
-        return (const double)m_chi2;
+        return m_chi2;
     }
 
     // Fit the track (linear regression)
@@ -116,9 +110,7 @@ public:
         double maty[2][2] = {{0., 0.}, {0., 0.}};
 
         // Loop over all clusters and fill the matrices
-        for(int iCluster = 0; iCluster < m_trackClusters.size(); iCluster++) {
-            // Get the cluster
-            Cluster* cluster = m_trackClusters[iCluster];
+        for(auto & cluster : m_trackClusters) {
             // Get the global point details
             double x = cluster->globalX();
             double y = cluster->globalY();
@@ -172,7 +164,7 @@ public:
     long long int timestamp() { return m_timestamp; }
     Clusters clusters() { return m_trackClusters; }
     Clusters associatedClusters() { return m_associatedClusters; }
-    int nClusters() { return m_trackClusters.size(); }
+    size_t nClusters() { return m_trackClusters.size(); }
     ROOT::Math::XYZPoint intercept(double z) {
         ROOT::Math::XYZPoint point = m_state + m_direction * z;
         return point;

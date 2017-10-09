@@ -27,16 +27,14 @@ public:
         m_fitterXZ->SetFormula("pol1");
         m_fitterYZ = new TLinearFitter();
         m_fitterYZ->SetFormula("pol1");
-        Timepix3Clusters trackClusters = track->clusters();
-        for(int iTrackCluster = 0; iTrackCluster < trackClusters.size(); iTrackCluster++) {
-            Timepix3Cluster* trackCluster = trackClusters[iTrackCluster];
-            Timepix3Cluster* cluster = new Timepix3Cluster(trackCluster);
+
+        for(auto& track_cluster : track->clusters()) {
+            Timepix3Cluster* cluster = new Timepix3Cluster(track_cluster);
             m_trackClusters.push_back(cluster);
         }
-        Timepix3Clusters associatedClusters = track->associatedClusters();
-        for(int iAssociatedCluster = 0; iAssociatedCluster < associatedClusters.size(); iAssociatedCluster++) {
-            Timepix3Cluster* associatedCluster = associatedClusters[iAssociatedCluster];
-            Timepix3Cluster* cluster = new Timepix3Cluster(associatedCluster);
+
+        for(auto& assoc_cluster : track->associatedClusters()) {
+            Timepix3Cluster* cluster = new Timepix3Cluster(assoc_cluster);
             m_associatedClusters.push_back(cluster);
         }
         m_state = track->m_state;
@@ -57,14 +55,9 @@ public:
         m_fitterXZ->ClearPoints();
         m_fitterYZ->ClearPoints();
 
-        // Check how many clusters there are
-        int nClusters = m_trackClusters.size();
-
         // Loop over all clusters
         double* z = new double[0];
-        for(int iCluster = 0; iCluster < nClusters; iCluster++) {
-            // Get the cluster
-            Timepix3Cluster* cluster = m_trackClusters[iCluster];
+        for(auto& cluster : m_trackClusters) {
             // Add it to the fitter
             z[0] = cluster->globalZ();
             m_fitterXZ->AddPoint(z, cluster->globalX(), cluster->error());
@@ -112,18 +105,12 @@ public:
     // Calculate the chi2 of the track
     void calculateChi2() {
 
-        // Get the number of clusters
-        int nClusters = m_trackClusters.size();
-        m_ndof = nClusters - 2.;
+        m_ndof = static_cast<double>(m_trackClusters.size()) - 2.;
         m_chi2 = 0.;
         m_chi2ndof = 0.;
 
         // Loop over all clusters
-        for(int iCluster = 0; iCluster < nClusters; iCluster++) {
-
-            // Get the cluster
-            Timepix3Cluster* cluster = m_trackClusters[iCluster];
-
+        for(auto& cluster : m_trackClusters) {
             // Get the distance^2 and the error^2
             double error2 = cluster->error() * cluster->error();
             m_chi2 += (this->distance2(cluster) / error2);
@@ -140,7 +127,7 @@ public:
     long long int timestamp() { return m_timestamp; }
     Timepix3Clusters clusters() { return m_trackClusters; }
     Timepix3Clusters associatedClusters() { return m_associatedClusters; }
-    int nClusters() { return m_trackClusters.size(); }
+    size_t nClusters() { return m_trackClusters.size(); }
     ROOT::Math::XYZPoint intercept(double z) {
         ROOT::Math::XYZPoint point = m_state + m_direction * z;
         return point;

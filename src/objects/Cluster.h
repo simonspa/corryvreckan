@@ -58,9 +58,9 @@ public:
     double localX() { return m_localX; }
     double localY() { return m_localY; }
     double localZ() { return m_localZ; }
-    int size() { return m_pixels.size(); }
-    int columnWidth() { return m_columnWidth; }
-    int rowWidth() { return m_rowWidth; }
+    size_t size() { return m_pixels.size(); }
+    double columnWidth() { return m_columnWidth; }
+    double rowWidth() { return m_rowWidth; }
     long long int timestamp() { return m_timestamp; }
     std::string detectorID() { return m_detectorID; }
     Pixels* pixels() { return (&m_pixels); }
@@ -83,6 +83,7 @@ public:
     void setTimestamp(long long int timestamp) { m_timestamp = timestamp; }
     void setDetectorID(std::string detectorID) { m_detectorID = detectorID; }
 
+private:
     // Member variables
     Pixels m_pixels;
     double m_row;

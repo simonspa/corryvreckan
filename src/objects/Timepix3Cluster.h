@@ -37,7 +37,7 @@ public:
     double localX() { return m_localX; }
     double localY() { return m_localY; }
     double localZ() { return m_localZ; }
-    int size() { return m_pixels.size(); }
+    size_t size() { return m_pixels.size(); }
     long long int timestamp() { return m_timestamp; }
     std::string detectorID() { return m_detectorID; }
     Timepix3Pixels pixels() { return m_pixels; }
