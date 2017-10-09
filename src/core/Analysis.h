@@ -23,39 +23,41 @@
 // processing will stop.
 //-------------------------------------------------------------------------------
 
-class Analysis {
+namespace corryvreckan {
+  class Analysis {
 
-public:
+  public:
 
-  // Constructors and destructors
-  Analysis(std::string config_file_name);
-  virtual ~Analysis(){};
+    // Constructors and destructors
+    Analysis(std::string config_file_name);
+    virtual ~Analysis(){};
 
-  // Member functions
-  void add(Algorithm*);
-  void load();
+    // Member functions
+    void add(Algorithm*);
+    void load();
 
-  void run();
-  void timing();
-  void initialiseAll();
-  void finaliseAll();
+    void run();
+    void timing();
+    void initialiseAll();
+    void finaliseAll();
 
-  void reset() {};
+    void reset() {};
 
-  TBrowser* browser;
+    TBrowser* browser;
 
-protected:
-  Algorithm* create_algorithm(void* library, corryvreckan::Configuration config, Clipboard* clipboard);
+  protected:
+    Algorithm* create_algorithm(void* library, corryvreckan::Configuration config, Clipboard* clipboard);
 
-  // Member variables
-  Parameters* m_parameters;
-  std::unique_ptr<corryvreckan::ConfigManager> conf_mgr_;
-  Clipboard* m_clipboard;
-  vector<Algorithm*> m_algorithms;
-  TFile* m_histogramFile;
-  TDirectory* m_directory;
-  std::map<std::string, void*> loaded_libraries_;
-  int m_events;
-};
+    // Member variables
+    Parameters* m_parameters;
+    std::unique_ptr<corryvreckan::ConfigManager> conf_mgr_;
+    Clipboard* m_clipboard;
+    vector<Algorithm*> m_algorithms;
+    TFile* m_histogramFile;
+    TDirectory* m_directory;
+    std::map<std::string, void*> loaded_libraries_;
+    int m_events;
+  };
 
+}
 #endif // ANALYSIS_H
