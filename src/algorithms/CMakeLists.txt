@@ -24,6 +24,14 @@ MACRO(corryvreckan_algorithm name)
   # Add the current directory as include directory
   TARGET_INCLUDE_DIRECTORIES(${LIBNAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
+  # Set the special header flags and add the special dynamic implementation file
+  TARGET_COMPILE_DEFINITIONS(${LIBNAME} PRIVATE CORRYVRECKAN_ALGORITHM_NAME=${name})
+  TARGET_COMPILE_DEFINITIONS(${LIBNAME} PRIVATE CORRYVRECKAN_ALGORITHM_HEADER="${name}.h")
+
+  TARGET_SOURCES(${LIBNAME} PRIVATE "${PROJECT_SOURCE_DIR}/src/core/dynamic_algorithm_impl.cpp")
+  SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/dynamic_algorithm_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${name}.h")
+  SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/Algorithm.C" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${name}.h")
+
   # Link the standard allpix libraries
   TARGET_LINK_LIBRARIES(${LIBNAME} ${CORRYVRECKAN_LIBRARIES} ${CORRYVRECKAN_DEPS_LIBRARIES})
 
