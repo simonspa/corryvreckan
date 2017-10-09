@@ -357,8 +357,6 @@ void Analysis::terminate() {
 
 // Initalise all algorithms
 void Analysis::initialiseAll() {
-    int nTracks = 0;
-
     // Loop over all algorithms and initialise them
     LOG(STATUS) << "=================| Initialising algorithms |==================";
     for(auto& algorithm : m_algorithms) {

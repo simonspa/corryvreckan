@@ -17,7 +17,7 @@ namespace corryvreckan {
     public:
         // Constructors and desctructors
         DetectorParameters() {}
-        DetectorParameters(std::string detectorType, double nPixelsX, double nPixelsY, double pitchX, double pitchY, double x, double y, double z, double Rx, double Ry, double Rz, double timingOffset) {
+        DetectorParameters(std::string detectorType, int nPixelsX, int nPixelsY, double pitchX, double pitchY, double x, double y, double z, double Rx, double Ry, double Rz, double timingOffset) {
             m_detectorType = detectorType;
             m_nPixelsX = nPixelsX;
             m_nPixelsY = nPixelsY;
@@ -154,8 +154,8 @@ namespace corryvreckan {
             PositionVector3D<Cartesian3D<double>> localIntercept = *(this->m_globalToLocal) * globalIntercept;
 
             // Get the row and column numbers
-            int row = floor(this->getRow(localIntercept) + 0.5);
-            int column = floor(this->getColumn(localIntercept) + 0.5);
+            int row = static_cast<int>(floor(this->getRow(localIntercept) + 0.5));
+            int column = static_cast<int>(floor(this->getColumn(localIntercept) + 0.5));
 
             // Check if the pixels around this pixel are masked
             bool hitmasked = false;
@@ -205,8 +205,8 @@ namespace corryvreckan {
         std::string m_detectorType;
         double m_pitchX;
         double m_pitchY;
-        double m_nPixelsX;
-        double m_nPixelsY;
+        int m_nPixelsX;
+        int m_nPixelsY;
         double m_timingOffset;
 
         // Displacement and rotation in x,y,z

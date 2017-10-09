@@ -82,8 +82,7 @@ bool Parameters::writeConditions() {
                << "Z" << setw(11) << "Rx" << setw(11) << "Ry" << setw(11) << "Rz" << setw(14) << "tOffset" << endl;
 
     // Loop over all detectors
-    for(int det = 0; det < this->nDetectors; det++) {
-        string detectorID = this->detectors[det];
+    for(auto& detectorID : this->detectors) {
         DetectorParameters* detectorParameters = this->detector[detectorID];
         // Write information to file
         conditions << std::left << setw(12) << detectorID << setw(14) << detectorParameters->type() << setw(10)
@@ -98,6 +97,7 @@ bool Parameters::writeConditions() {
 
     // Close the file
     conditions.close();
+    return true;
 }
 
 bool Parameters::readConditions() {
@@ -119,7 +119,7 @@ bool Parameters::readConditions() {
 
         // Make default values for detector parameters
         string detectorID(""), detectorType("");
-        double nPixelsX(0), nPixelsY(0);
+        int nPixelsX(0), nPixelsY(0);
         double pitchX(0), pitchY(0), x(0), y(0), z(0), Rx(0), Ry(0), Rz(0);
         double timingOffset(0.);
 
@@ -146,8 +146,8 @@ bool Parameters::readConditions() {
     // Now check that all devices which are registered have parameters as well
     bool unregisteredDetector = false;
     // Loop over all registered detectors
-    for(int det = 0; det < nDetectors; det++) {
-        if(detector.count(detectors[det]) == 0) {
+    for(auto& det : detectors) {
+        if(detector.count(det) == 0) {
             //LOG(INFO) << "Detector " << detectors[det] << " has no conditions loaded";
             unregisteredDetector = true;
         }

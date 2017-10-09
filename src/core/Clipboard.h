@@ -48,22 +48,20 @@ public:
 
     // Clear items on the clipboard
     void clear() {
-        int nCollections = m_dataID.size();
-        for(int i = 0; i < nCollections; i++) {
-            TestBeamObjects* collection = m_data[m_dataID[i]];
-            int nElements = collection->size();
+        for(auto & id : m_dataID) {
+            TestBeamObjects* collection = m_data[id];
             for(TestBeamObjects::iterator it = collection->begin(); it != collection->end(); it++)
                 delete(*it);
-            delete m_data[m_dataID[i]];
-            m_data.erase(m_dataID[i]);
+            delete m_data[id];
+            m_data.erase(id);
         }
         m_dataID.clear();
     }
 
     // Quick function to check what is currently held by the clipboard
     void checkCollections() {
-        for(int name = 0; name < m_dataID.size(); name++)
-            LOG(DEBUG) << "Data held: " << m_dataID[name];
+        for(auto &name : m_dataID)
+            LOG(DEBUG) << "Data held: " << name;
     }
 
 private:

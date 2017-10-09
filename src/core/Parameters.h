@@ -31,6 +31,9 @@ using namespace ROOT::Math;
 //-------------------------------------------------------------------------------
 
 namespace corryvreckan {
+
+    bool sortByZ(std::string detector1, std::string detector2);
+
     class Parameters {
 
     public:
