@@ -42,6 +42,7 @@ namespace corryvreckan {
         void initialiseAll();
         void finaliseAll();
 
+        void terminate();
         void reset(){};
 
         TBrowser* browser;
@@ -58,6 +59,9 @@ namespace corryvreckan {
         TDirectory* m_directory;
         std::map<std::string, void*> loaded_libraries_;
         int m_events;
+
+    private:
+        std::atomic<bool> m_terminate;
     };
 }
 #endif // ANALYSIS_H

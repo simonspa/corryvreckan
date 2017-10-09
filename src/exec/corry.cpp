@@ -48,7 +48,7 @@ void interrupt_handler(int) {
     // Stop the framework if it is loaded
     if(cv_ready) {
         LOG(STATUS) << "Interrupted! Finishing up current event...";
-        corry->finaliseAll();
+        corry->terminate();
     }
 }
 

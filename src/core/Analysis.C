@@ -16,7 +16,7 @@
 using namespace corryvreckan;
 
 // Default constructor
-Analysis::Analysis(std::string config_file_name) {
+Analysis::Analysis(std::string config_file_name) : m_terminate(false) {
 
     // Load the global configuration
     conf_mgr_ = std::make_unique<corryvreckan::ConfigManager>(std::move(config_file_name));
@@ -274,11 +274,20 @@ void Analysis::run() {
         // Increment event number
         if(!noData)
             m_events++;
+
+        // Check for user termination and stop the event loop:
+        if(m_terminate) {
+          break;
+        }
     }
 
     // If running the gui, don't close until the user types a command
     if(m_parameters->gui)
         cin.ignore();
+}
+
+void Analysis::terminate() {
+    m_terminate = true;
 }
 
 // Initalise all algorithms
