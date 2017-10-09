@@ -157,13 +157,16 @@ void Alignment::finalise() {
     // If not enough tracks were produced, do nothing
     // if(m_alignmenttracks.size() < m_numberOfTracksForAlignment) return;
 
+    // Get alignment method:
+    int alignmentMethod = m_config.get<int>("alignmentMethod");
+
     // Make the fitting object
     TVirtualFitter* residualFitter = TVirtualFitter::Fitter(0, 50);
 
     // Tell it what to minimise
-    if(parameters->alignmentMethod == 0)
+    if(alignmentMethod == 0)
         residualFitter->SetFCN(MinimiseTrackChi2);
-    if(parameters->alignmentMethod == 1)
+    if(alignmentMethod == 1)
         residualFitter->SetFCN(MinimiseResiduals);
 
     // Set the global parameters
@@ -182,7 +185,7 @@ void Alignment::finalise() {
     // This has been inserted in a temporary way. If the alignment method is 1
     // then it will align the single detector and then
     // return. This should be made into separate functions.
-    if(parameters->alignmentMethod == 1) {
+    if(alignmentMethod == 1) {
 
         // Get the name of the detector to align
         string detectorID = parameters->detectorToAlign;

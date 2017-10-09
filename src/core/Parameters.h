@@ -68,7 +68,6 @@ namespace corryvreckan {
         std::map<std::string, bool> excludedFromTracking;
         std::map<std::string, bool> masked;
         std::string detectorToAlign;
-        int alignmentMethod;
 
         // Parameters for each detector (stored by detector ID)
         std::map<std::string, DetectorParameters*> detector;
