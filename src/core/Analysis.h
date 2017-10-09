@@ -48,8 +48,6 @@ namespace corryvreckan {
         TBrowser* browser;
 
     protected:
-        Algorithm* create_algorithm(void* library, corryvreckan::Configuration config, Clipboard* clipboard);
-
         // Member variables
         Parameters* m_parameters;
         Clipboard* m_clipboard;
@@ -63,6 +61,10 @@ namespace corryvreckan {
     private:
         std::atomic<bool> m_terminate;
         std::unique_ptr<corryvreckan::ConfigManager> conf_mgr_;
+
+        Algorithm* create_algorithm(void* library, corryvreckan::Configuration config, Clipboard* clipboard);
+        std::tuple<LogLevel, LogFormat> set_algorithm_before(const std::string&, const Configuration& config);
+        void set_algorithm_after(std::tuple<LogLevel, LogFormat> prev);
     };
 }
 #endif // ANALYSIS_H

@@ -48,6 +48,7 @@ namespace corryvreckan {
 
         // Methods to get member variables
         string getName() { return m_name; }
+        Configuration getConfig() { return m_config; }
         TStopwatch* getStopwatch() { return m_stopwatch; }
 
     protected:

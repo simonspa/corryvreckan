@@ -223,8 +223,18 @@ Algorithm* Analysis::create_algorithm(void* library, Configuration config, Clipb
     // Convert to correct generator function
     auto algorithm_generator = reinterpret_cast<Algorithm* (*)(Configuration, Clipboard*)>(generator); // NOLINT
 
+    // Set the log section header
+    std::string old_section_name = Log::getSection();
+    std::string section_name = "C:";
+    section_name += config.getName();
+    Log::setSection(section_name);
+    // Set module specific log settings
+    auto old_settings = set_algorithm_before(config.getName(), config);
     // Build algorithm
     Algorithm* algorithm = algorithm_generator(config, clipboard);
+    // Reset log
+    Log::setSection(old_section_name);
+    set_algorithm_after(old_settings);
 
     // Return the algorithm to the analysis
     return algorithm;
@@ -242,14 +252,25 @@ void Analysis::run() {
     while(1) {
         bool run = true;
         bool noData = false;
+
         // Run all algorithms
-        for(int algorithmNumber = 0; algorithmNumber < m_algorithms.size(); algorithmNumber++) {
+        for(auto& algorithm : m_algorithms) {
+            // Set run module section header
+            std::string old_section_name = Log::getSection();
+            std::string section_name = "R:";
+            section_name += algorithm->getName();
+            Log::setSection(section_name);
+            // Set module specific settings
+            auto old_settings = set_algorithm_before(algorithm->getName(), algorithm->getConfig());
             // Change to the output file directory
-            m_directory->cd(m_algorithms[algorithmNumber]->getName().c_str());
+            m_directory->cd(algorithm->getName().c_str());
             // Run the algorithms with timing enabled
-            m_algorithms[algorithmNumber]->getStopwatch()->Start(false);
-            StatusCode check = m_algorithms[algorithmNumber]->run(m_clipboard);
-            m_algorithms[algorithmNumber]->getStopwatch()->Stop();
+            algorithm->getStopwatch()->Start(false);
+            StatusCode check = algorithm->run(m_clipboard);
+            algorithm->getStopwatch()->Stop();
+            // Reset logging
+            Log::setSection(old_section_name);
+            set_algorithm_after(old_settings);
             if(check == NoData) {
                 noData = true;
                 break;
@@ -299,14 +320,26 @@ void Analysis::initialiseAll() {
 
     // Loop over all algorithms and initialise them
     LOG(STATUS) << "=================| Initialising algorithms |==================";
-    for(int algorithmNumber = 0; algorithmNumber < m_algorithms.size(); algorithmNumber++) {
+    for(auto& algorithm : m_algorithms) {
+        // Set init module section header
+        std::string old_section_name = Log::getSection();
+        std::string section_name = "I:";
+        section_name += algorithm->getName();
+        Log::setSection(section_name);
+        // Set module specific settings
+        auto old_settings = set_algorithm_before(algorithm->getName(), algorithm->getConfig());
+
         // Make a new folder in the output file
         m_directory->cd();
-        m_directory->mkdir(m_algorithms[algorithmNumber]->getName().c_str());
-        m_directory->cd(m_algorithms[algorithmNumber]->getName().c_str());
-        LOG(INFO) << "Initialising \"" << m_algorithms[algorithmNumber]->getName() << "\"";
+        m_directory->mkdir(algorithm->getName().c_str());
+        m_directory->cd(algorithm->getName().c_str());
+        LOG(INFO) << "Initialising \"" << algorithm->getName() << "\"";
         // Initialise the algorithm
-        m_algorithms[algorithmNumber]->initialise(m_parameters);
+        algorithm->initialise(m_parameters);
+
+        // Reset logging
+        Log::setSection(old_section_name);
+        set_algorithm_after(old_settings);
     }
 }
 
@@ -314,11 +347,22 @@ void Analysis::initialiseAll() {
 void Analysis::finaliseAll() {
 
     // Loop over all algorithms and finalise them
-    for(int algorithmNumber = 0; algorithmNumber < m_algorithms.size(); algorithmNumber++) {
+    for(auto& algorithm : m_algorithms) {
+        // Set init module section header
+        std::string old_section_name = Log::getSection();
+        std::string section_name = "I:";
+        section_name += algorithm->getName();
+        Log::setSection(section_name);
+        // Set module specific settings
+        auto old_settings = set_algorithm_before(algorithm->getName(), algorithm->getConfig());
+
         // Change to the output file directory
-        m_directory->cd(m_algorithms[algorithmNumber]->getName().c_str());
+        m_directory->cd(algorithm->getName().c_str());
         // Finalise the algorithm
-        m_algorithms[algorithmNumber]->finalise();
+        algorithm->finalise();
+        // Reset logging
+        Log::setSection(old_section_name);
+        set_algorithm_after(old_settings);
     }
 
     // Write the output histogram file
@@ -333,10 +377,64 @@ void Analysis::finaliseAll() {
 // Display timing statistics for each algorithm, over all events and per event
 void Analysis::timing() {
     LOG(INFO) << "===============| Wall-clock timing (seconds) |================";
-    for(int algorithmNumber = 0; algorithmNumber < m_algorithms.size(); algorithmNumber++) {
-        LOG(INFO) << m_algorithms[algorithmNumber]->getName() << "  --  "
-                  << m_algorithms[algorithmNumber]->getStopwatch()->RealTime() << " = "
-                  << m_algorithms[algorithmNumber]->getStopwatch()->RealTime() / m_events << " s/evt";
+    for(auto& algorithm : m_algorithms) {
+        LOG(INFO) << algorithm->getName() << "  --  "
+                  << algorithm->getStopwatch()->RealTime() << " = "
+                  << algorithm->getStopwatch()->RealTime() / m_events << " s/evt";
     }
     LOG(INFO) << "==============================================================";
+}
+
+// Helper functions to set the module specific log settings if necessary
+std::tuple<LogLevel, LogFormat> Analysis::set_algorithm_before(const std::string&, const Configuration& config) {
+    // Set new log level if necessary
+    LogLevel prev_level = Log::getReportingLevel();
+    if(config.has("log_level")) {
+        std::string log_level_string = config.get<std::string>("log_level");
+        std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
+        try {
+            LogLevel log_level = Log::getLevelFromString(log_level_string);
+            if(log_level != prev_level) {
+                LOG(TRACE) << "Local log level is set to " << log_level_string;
+                Log::setReportingLevel(log_level);
+            }
+        } catch(std::invalid_argument& e) {
+            throw InvalidValueError(config, "log_level", e.what());
+        }
+    }
+
+    // Set new log format if necessary
+    LogFormat prev_format = Log::getFormat();
+    if(config.has("log_format")) {
+        std::string log_format_string = config.get<std::string>("log_format");
+        std::transform(log_format_string.begin(), log_format_string.end(), log_format_string.begin(), ::toupper);
+        try {
+            LogFormat log_format = Log::getFormatFromString(log_format_string);
+            if(log_format != prev_format) {
+                LOG(TRACE) << "Local log format is set to " << log_format_string;
+                Log::setFormat(log_format);
+            }
+        } catch(std::invalid_argument& e) {
+            throw InvalidValueError(config, "log_format", e.what());
+        }
+    }
+
+    return std::make_tuple(prev_level, prev_format);
+}
+void Analysis::set_algorithm_after(std::tuple<LogLevel, LogFormat> prev) {
+    // Reset the previous log level
+    LogLevel cur_level = Log::getReportingLevel();
+    LogLevel old_level = std::get<0>(prev);
+    if(cur_level != old_level) {
+        Log::setReportingLevel(old_level);
+        LOG(TRACE) << "Reset log level to global level of " << Log::getStringFromLevel(old_level);
+    }
+
+    // Reset the previous log format
+    LogFormat cur_format = Log::getFormat();
+    LogFormat old_format = std::get<1>(prev);
+    if(cur_format != old_format) {
+        Log::setFormat(old_format);
+        LOG(TRACE) << "Reset log format to global level of " << Log::getStringFromFormat(old_format);
+    }
 }
