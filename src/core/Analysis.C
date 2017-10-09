@@ -27,24 +27,64 @@ Analysis::Analysis(std::string config_file_name) : m_terminate(false) {
     conf_mgr_->addIgnoreHeaderName("Ignore");
 
     // Fetch the global configuration
-    m_config = conf_mgr_->getGlobalConfiguration();
+    global_config = conf_mgr_->getGlobalConfiguration();
+
+    // Set the log level from config if not specified earlier
+    std::string log_level_string;
+    if(Log::getReportingLevel() == LogLevel::NONE) {
+        log_level_string = global_config.get<std::string>("log_level", "INFO");
+        std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
+        try {
+            LogLevel log_level = Log::getLevelFromString(log_level_string);
+            Log::setReportingLevel(log_level);
+        } catch(std::invalid_argument& e) {
+            LOG(ERROR) << "Log level \"" << log_level_string
+                       << "\" specified in the configuration is invalid, defaulting to INFO instead";
+            Log::setReportingLevel(LogLevel::INFO);
+        }
+    } else {
+        log_level_string = Log::getStringFromLevel(Log::getReportingLevel());
+    }
+
+    // Set the log format from config
+    std::string log_format_string = global_config.get<std::string>("log_format", "DEFAULT");
+    std::transform(log_format_string.begin(), log_format_string.end(), log_format_string.begin(), ::toupper);
+    try {
+        LogFormat log_format = Log::getFormatFromString(log_format_string);
+        Log::setFormat(log_format);
+    } catch(std::invalid_argument& e) {
+        LOG(ERROR) << "Log format \"" << log_format_string
+                   << "\" specified in the configuration is invalid, using DEFAULT instead";
+        Log::setFormat(LogFormat::DEFAULT);
+    }
+
+    // Open log file to write output to
+    if(global_config.has("log_file")) {
+        // NOTE: this stream should be available for the duration of the logging
+        log_file_.open(global_config.getPath("log_file"), std::ios_base::out | std::ios_base::trunc);
+        Log::addStream(log_file_);
+    }
+
+    // Wait for the first detailed messages until level and format are properly set
+    LOG(TRACE) << "Global log level is set to " << log_level_string;
+    LOG(TRACE) << "Global log format is set to " << log_format_string;
 
     // FIXME translate new configuration to parameters:
     m_parameters = new Parameters();
 
     // Define DUT and reference
-    m_parameters->DUT = m_config.get<std::string>("DUT");
-    m_parameters->reference = m_config.get<std::string>("reference");
+    m_parameters->DUT = global_config.get<std::string>("DUT");
+    m_parameters->reference = global_config.get<std::string>("reference");
 
     m_parameters->detectorToAlign = m_parameters->DUT;
     m_parameters->excludedFromTracking[m_parameters->DUT] = true;
 
-    std::vector<std::string> excluding = m_config.getArray<std::string>("excludeFromTracking");
+    std::vector<std::string> excluding = global_config.getArray<std::string>("excludeFromTracking");
     for(auto& ex : excluding) {
         m_parameters->excludedFromTracking[ex] = true;
     }
 
-    std::vector<std::string> masking = m_config.getArray<std::string>("masked");
+    std::vector<std::string> masking = global_config.getArray<std::string>("masked");
     for(auto& m : masking) {
         m_parameters->masked[m] = true;
     }
@@ -54,13 +94,13 @@ Analysis::Analysis(std::string config_file_name) : m_terminate(false) {
     // parameters->readCommandLineOptions(argc,argv);
 
     // Load alignment parameters
-    std::string conditionsFile = m_config.get<std::string>("conditionsFile");
+    std::string conditionsFile = global_config.get<std::string>("conditionsFile");
     m_parameters->conditionsFile = conditionsFile;
     if(!m_parameters->readConditions())
         throw ConfigFileUnavailableError(conditionsFile);
 
     // Load mask file for the dut (if specified)
-    m_parameters->dutMaskFile = m_config.get<std::string>("dutMaskFile", "defaultMask.dat");
+    m_parameters->dutMaskFile = global_config.get<std::string>("dutMaskFile", "defaultMask.dat");
     m_parameters->readDutMask();
 
     // FIXME per-algorithm settings:
@@ -82,7 +122,6 @@ void Analysis::add(Algorithm* algorithm) {
 void Analysis::load() {
 
     std::vector<Configuration> configs = conf_mgr_->getConfigurations();
-    Configuration m_config_ = conf_mgr_->getGlobalConfiguration();
 
     // Create histogram output file
     m_histogramFile = new TFile(m_parameters->histogramFile.c_str(), "RECREATE");
@@ -106,8 +145,8 @@ void Analysis::load() {
         if(loaded_libraries_.count(lib_name) == 0) {
             // If library is not loaded then try to load it first from the config
             // directories
-            if(m_config_.has("library_directories")) {
-                std::vector<std::string> lib_paths = m_config_.getPathArray("library_directories", true);
+            if(global_config.has("library_directories")) {
+                std::vector<std::string> lib_paths = global_config.getPathArray("library_directories", true);
                 for(auto& lib_path : lib_paths) {
                     std::string full_lib_path = lib_path;
                     full_lib_path += "/";
@@ -244,7 +283,7 @@ Algorithm* Analysis::create_algorithm(void* library, Configuration config, Clipb
 void Analysis::run() {
 
     // Check if we have an event limit:
-    int number_of_events = m_config.get<int>("number_of_events", 0);
+    int number_of_events = global_config.get<int>("number_of_events", 0);
 
     // Loop over all events, running each algorithm on each "event"
     LOG(STATUS) << "========================| Event loop |========================";
@@ -306,7 +345,7 @@ void Analysis::run() {
     }
 
     // If running the gui, don't close until the user types a command
-    if(m_config.get<bool>("gui", false))
+    if(global_config.get<bool>("gui", false))
         std::cin.ignore();
 }
 

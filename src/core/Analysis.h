@@ -3,6 +3,7 @@
 
 #include <map>
 #include <vector>
+#include <fstream>
 
 #include "TBrowser.h"
 #include "TDirectory.h"
@@ -51,7 +52,7 @@ namespace corryvreckan {
         // Member variables
         Parameters* m_parameters;
         Clipboard* m_clipboard;
-        Configuration m_config;
+        Configuration global_config;
         std::vector<Algorithm*> m_algorithms;
         TFile* m_histogramFile;
         TDirectory* m_directory;
@@ -59,6 +60,9 @@ namespace corryvreckan {
         int m_events;
 
     private:
+        // Log file if specified
+        std::ofstream log_file_;
+
         std::atomic<bool> m_terminate;
         std::unique_ptr<corryvreckan::ConfigManager> conf_mgr_;
 
