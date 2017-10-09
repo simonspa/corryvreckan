@@ -91,6 +91,7 @@ void Analysis::load() {
     throw RuntimeError("Cannot create main ROOT file " + std::string(m_parameters->histogramFile.c_str()));
   }
 
+  LOG(DEBUG) << "Start loading algorithms, have " << configs.size() << " configurations.";
   // Loop through all non-global configurations
   for(auto& config : configs) {
     // Load library for each module. Libraries are named (by convention + CMAKE) libAllpixModule Name.suffix
@@ -132,7 +133,7 @@ void Analysis::load() {
           dl_info.dli_fname = "";
 
           // workaround to get the location of the library
-          int ret = dladdr(dlsym(lib, ALLPIX_UNIQUE_FUNCTION), &dl_info);
+          int ret = dladdr(dlsym(lib, CORRYVRECKAN_GENERATOR_FUNCTION), &dl_info);
           if(ret != 0) {
             LOG(DEBUG) << "Found library during global search in runtime paths at " << dl_info.dli_fname;
           } else {
@@ -168,7 +169,7 @@ void Analysis::load() {
         << std::endl
         << "- Recompile the library " << problem_lib << " with tls-model=global-dynamic";
       } else if(lib_error != nullptr && std::strstr(lib_error, "cannot open shared object file") != nullptr &&
-      problem_lib.find(ALLPIX_MODULE_PREFIX) == std::string::npos) {
+      problem_lib.find(CORRYVRECKAN_ALGORITHM_PREFIX) == std::string::npos) {
         LOG(ERROR) << "Library could not be loaded: one of its dependencies is missing" << std::endl
         << "The name of the missing library is " << problem_lib << std::endl
         << "Please make sure the library is properly initialized and try again";

@@ -1,4 +1,4 @@
-#ifndef ALGORITHM_H 
+#ifndef ALGORITHM_H
 #define ALGORITHM_H 1
 
 // Include files
