@@ -14,9 +14,15 @@ using namespace std;
 
 Timepix3EventLoader::Timepix3EventLoader(Configuration config, Clipboard* clipboard)
     : Algorithm(std::move(config), clipboard) {
-    applyTimingCut = false;
+
+    // Take input directory from global parameters
+    m_inputDirectory = m_config.get<std::string>("inputDirectory");
+
+    applyTimingCut = m_config.get<bool>("applyTimingCut",false);
+    m_timingCut = m_config.get<double>("timingCut",0.0);
+    m_minNumberOfPlanes = m_config.get<int>("minNumerOfPlanes", 1);
+
     m_currentTime = 0.;
-    m_minNumberOfPlanes = 1;
     m_prevTime = 0;
     m_shutterOpen = false;
 }
@@ -24,9 +30,6 @@ Timepix3EventLoader::Timepix3EventLoader(Configuration config, Clipboard* clipbo
 void Timepix3EventLoader::initialise(Parameters* par) {
 
     parameters = par;
-
-    // Take input directory from global parameters
-    m_inputDirectory = m_config.get<std::string>("inputDirectory");
 
     // File structure is RunX/ChipID/files.dat
 
