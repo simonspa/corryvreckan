@@ -1,10 +1,10 @@
 #include "Timepix1Clustering.h"
 #include "objects/Pixel.h"
 
-Timepix1Clustering::Timepix1Clustering(bool debugging)
-: Algorithm("Timepix1Clustering"){
-  debug = debugging;
-}
+using namespace corryvreckan;
+
+Timepix1Clustering::Timepix1Clustering(Configuration config, Clipboard* clipboard)
+: Algorithm(std::move(config), clipboard){}
 
 /*
 
@@ -45,7 +45,7 @@ StatusCode Timepix1Clustering::run(Clipboard* clipboard){
     // Get the pixels
     Pixels* pixels = (Pixels*)clipboard->get(detectorID,"pixels");
     if(pixels == NULL){
-      if(debug) tcout<<"Detector "<<detectorID<<" does not have any pixels on the clipboard"<<endl;
+      LOG(DEBUG) <<"Detector "<<detectorID<<" does not have any pixels on the clipboard";
       continue;
     }
 
@@ -119,7 +119,7 @@ StatusCode Timepix1Clustering::run(Clipboard* clipboard){
     }
 
     clipboard->put(detectorID,"clusters",deviceClusters);
-    if(debug)tcout<<"Put "<<deviceClusters->size()<<" clusters on the clipboard for detector "<<detectorID<<". From "<<pixels->size()<<" pixels"<<endl;
+    LOG(DEBUG) <<"Put "<<deviceClusters->size()<<" clusters on the clipboard for detector "<<detectorID<<". From "<<pixels->size()<<" pixels";
 
   }
 
@@ -133,7 +133,7 @@ StatusCode Timepix1Clustering::run(Clipboard* clipboard){
 
 void Timepix1Clustering::finalise(){
 
-  if(debug) tcout<<"Analysed "<<m_eventNumber<<" events"<<endl;
+  LOG(DEBUG) <<"Analysed "<<m_eventNumber<<" events";
 
 }
 
@@ -143,28 +143,28 @@ void Timepix1Clustering::finalise(){
 */
 void Timepix1Clustering::calculateClusterCentre(Cluster* cluster){
 
-  if(debug)tcout<<"== Making cluster centre"<<endl;
+  LOG(DEBUG) <<"== Making cluster centre";
   // Empty variables to calculate cluster position
   double row(0), column(0), tot(0);
 
   // Get the pixels on this cluster
   Pixels* pixels = cluster->pixels();
   string detectorID = (*pixels)[0]->m_detectorID;
-  if(debug)tcout<<"- cluster has "<<(*pixels).size()<<" pixels"<<endl;
+  LOG(DEBUG) <<"- cluster has "<<(*pixels).size()<<" pixels";
 
   // Loop over all pixels
   for(int pix=0; pix<pixels->size(); pix++){
     tot += (*pixels)[pix]->m_adc;
     row += ((*pixels)[pix]->m_row * (*pixels)[pix]->m_adc);
     column += ((*pixels)[pix]->m_column * (*pixels)[pix]->m_adc);
-    if(debug)tcout<<"- pixel row, col: "<<(*pixels)[pix]->m_row<<","<<(*pixels)[pix]->m_column<<endl;
+    LOG(DEBUG) <<"- pixel row, col: "<<(*pixels)[pix]->m_row<<","<<(*pixels)[pix]->m_column;
   }
 
   // Row and column positions are tot-weighted
   row /= tot;
   column /= tot;
 
-  if(debug)tcout<<"- cluster row, col: "<<row<<","<<column<<endl;
+  LOG(DEBUG) <<"- cluster row, col: "<<row<<","<<column;
 
   // Create object with local cluster position
   PositionVector3D<Cartesian3D<double> > positionLocal(parameters->detector[detectorID]->pitchX() *

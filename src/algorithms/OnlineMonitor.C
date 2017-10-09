@@ -1,23 +1,24 @@
 #include "OnlineMonitor.h"
 #include <TVirtualPadEditor.h>
 
-OnlineMonitor::OnlineMonitor(bool debugging)
-: Algorithm("OnlineMonitor"){
-  debug = debugging;
+using namespace corryvreckan;
+
+OnlineMonitor::OnlineMonitor(Configuration config, Clipboard* clipboard)
+: Algorithm(std::move(config), clipboard){
   updateNumber = 500;
 }
 
 void OnlineMonitor::initialise(Parameters* par){
-  
+
   // Make the local pointer to the global parameters
   parameters = par;
 
   // TApplication keeps the canvases persistent
   app = new TApplication("example",0, 0);
-  
+
   // Make the GUI
   gui = new GuiDisplay();
-  
+
   // Make the main window object and set the attributes
   gui->m_mainFrame = new TGMainFrame(gClient->GetRoot(), 800, 600);
   gui->buttonMenu = new TGHorizontalFrame(gui->m_mainFrame,800,50);
@@ -25,9 +26,9 @@ void OnlineMonitor::initialise(Parameters* par){
   gui->m_mainFrame->AddFrame( gui->canvas, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10, 10, 10, 10));
   gui->m_mainFrame->SetCleanup(kDeepCleanup);
   gui->m_mainFrame->DontCallClose();
-  
+
   // Add canvases and histograms
-  
+
   //=== Overview canvas
   AddButton("Overview","OverviewCanvas");
   // track chi2
@@ -53,17 +54,17 @@ void OnlineMonitor::initialise(Parameters* par){
   AddButton("CorrelationsX","CorrelationXCanvas");
   AddButton("CorrelationsY","CorrelationYCanvas");
   AddButton("ChargeDistributions","ChargeDistributionCanvas");
-  
+
   // Per detector histograms
   for(int det = 0; det<parameters->nDetectors; det++){
     string detectorID = parameters->detectors[det];
-    
+
     string hitmap = "/tbAnalysis/TestAlgorithm/hitmap_"+detectorID;
     AddHisto("HitmapCanvas",hitmap,"colz");
-    
+
     string chargeHisto = "/tbAnalysis/TestAlgorithm/clusterTot_"+detectorID;
     AddHisto("ChargeDistributionCanvas",chargeHisto);
-    
+
     string eventTimeHisto = "/tbAnalysis/TestAlgorithm/eventTimes_"+detectorID;
     AddHisto("EventTimeCanvas",eventTimeHisto);
 
@@ -76,11 +77,11 @@ void OnlineMonitor::initialise(Parameters* par){
     if(parameters->excludedFromTracking.count(detectorID) != 0) continue;
     string residualHisto = "/tbAnalysis/BasicTracking/residualsX_"+detectorID;
     AddHisto("ResidualCanvas",residualHisto);
-    
+
   }
 
   // Set up the main frame before drawing
-  
+
   // Exit button
   string exitButton = "StopMonitoring";
   gui->buttons[exitButton] = new TGTextButton(gui->buttonMenu, exitButton.c_str());
@@ -92,21 +93,21 @@ void OnlineMonitor::initialise(Parameters* par){
   gui->m_mainFrame->SetWindowName("CLIC Tesbeam Monitoring");
   gui->m_mainFrame->MapSubwindows();
   gui->m_mainFrame->Resize(gui->m_mainFrame->GetDefaultSize());
-  
+
   // Draw the main frame
   gui->m_mainFrame->MapWindow();
-  
+
   // Plot the overview tab (if it exists)
   if(gui->histograms["OverviewCanvas"].size() != 0){
     gui->Display("OverviewCanvas");
   }
-  
+
   // Initialise member variables
   eventNumber = 0;
 }
 
 StatusCode OnlineMonitor::run(Clipboard* clipboard){
-  
+
   // Draw all histograms
   if(eventNumber%updateNumber == 0){
     gui->canvas->GetCanvas()->Paint();
@@ -114,31 +115,31 @@ StatusCode OnlineMonitor::run(Clipboard* clipboard){
     eventNumber++;
   }
   gSystem->ProcessEvents();
-  
+
   // Get the tracks from the clipboard
   Tracks* tracks = (Tracks*)clipboard->get("tracks");
   if(tracks == NULL) return Success;
-  
+
   // Otherwise increase the event number
   eventNumber++;
   return Success;
-  
+
 }
 
 void OnlineMonitor::finalise(){
-  
-  if(debug) tcout<<"Analysed "<<eventNumber<<" events"<<endl;
-  
+
+  LOG(DEBUG) <<"Analysed "<<eventNumber<<" events";
+
 }
 
 void OnlineMonitor::AddHisto(string canvasName, string histoName, string style){
-  
+
   TH1* histogram = (TH1*)gDirectory->Get(histoName.c_str());
   if(histogram){
     gui->histograms[canvasName].push_back((TH1*)gDirectory->Get(histoName.c_str()));
     gui->styles[gui->histograms[canvasName].back()] = style;
   }else{
-    tcout<<"Histogram "<<histoName<<" does not exist"<<std::endl;
+    LOG(WARNING)<<"Histogram "<<histoName<<" does not exist";
   }
 
 }
@@ -147,8 +148,6 @@ void OnlineMonitor::AddButton(string buttonName, string canvasName){
   gui->buttons[buttonName] = new TGTextButton(gui->buttonMenu, buttonName.c_str());
   gui->buttonMenu->AddFrame(gui->buttons[buttonName], new TGLayoutHints(kLHintsLeft, 10,10,10,10));
   string command = "Display(=\"" + canvasName + "\")";
-  tcout<<"Connecting button with command "<<command.c_str()<<endl;
+  LOG(INFO) <<"Connecting button with command "<<command.c_str();
   gui->buttons[buttonName]->Connect("Pressed()", "GuiDisplay", gui, command.c_str());
 }
-
-

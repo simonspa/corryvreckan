@@ -4,25 +4,26 @@
 #include "TSystem.h"
 #include "TROOT.h"
 
-GUI::GUI(bool debugging)
-: Algorithm("GUI"){
-  debug = debugging;
+using namespace corryvreckan;
+
+GUI::GUI(Configuration config, Clipboard* clipboard)
+: Algorithm(std::move(config), clipboard){
   updateNumber = 500;
 }
 
 void GUI::initialise(Parameters* par){
- 
+
   // Make the local pointer to the global parameters
   parameters = par;
-  
+
   // Check the number of devices
   nDetectors = parameters->nDetectors;
-  
+
   // TApplication keeps the canvases persistent
   app = new TApplication("example",0, 0);
-    
+
   //========= Add each canvas that is wanted =========//
-  
+
   TCanvas* trackCanvas = new TCanvas("TrackCanvas","Track canvas");
   addCanvas(trackCanvas);
 
@@ -36,22 +37,22 @@ void GUI::initialise(Parameters* par){
   addCanvas(chargeCanvas);
 
   //========= Add each histogram =========//
-  
+
   // Individual plots
   addPlot(trackCanvas,"/tbAnalysis/BasicTracking/trackChi2");
   addPlot(trackCanvas,"/tbAnalysis/BasicTracking/trackAngleX");
-  
+
   // Per detector histograms
   for(int det = 0; det<parameters->nDetectors; det++){
     string detectorID = parameters->detectors[det];
-    
+
     string hitmap = "/tbAnalysis/TestAlgorithm/hitmap_"+detectorID;
     addPlot(hitmapCanvas,hitmap,"colz");
-    
+
     string residualHisto = "/tbAnalysis/BasicTracking/residualsX_"+detectorID;
     if(detectorID == parameters->DUT) residualHisto = "/tbAnalysis/DUTAnalysis/residualsX";
     addPlot(residualsCanvas,residualHisto);
-    
+
     string chargeHisto = "/tbAnalysis/TestAlgorithm/clusterTot_"+detectorID;
     addPlot(chargeCanvas,chargeHisto);
 
@@ -64,7 +65,7 @@ void GUI::initialise(Parameters* par){
     if(nHistograms < 4) canvases[iCanvas]->Divide(nHistograms);
     else canvases[iCanvas]->Divide(ceil(nHistograms/2.),2);
   }
-  
+
   // Draw all histograms
   for(int iCanvas=0;iCanvas<canvases.size();iCanvas++){
     canvases[iCanvas]->cd();
@@ -76,10 +77,10 @@ void GUI::initialise(Parameters* par){
       histos[iHisto]->Draw(style.c_str());
     }
   }
-  
+
   // Set event counter
   eventNumber = 1;
-  
+
 }
 
 StatusCode GUI::run(Clipboard* clipboard){
@@ -101,9 +102,9 @@ StatusCode GUI::run(Clipboard* clipboard){
   // Otherwise increase the event number
   eventNumber++;
   return Success;
-  
+
 }
-  
+
 
 void GUI::finalise(){
 }
@@ -117,10 +118,3 @@ void GUI::addPlot(TCanvas* canvas, string histoName, std::string style){
   histograms[canvas].push_back(histogram);
   styles[histogram] = style;
 }
-
-
-
-
-
-
-

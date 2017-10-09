@@ -11,29 +11,30 @@
 #include "objects/Track.h"
 #include <sstream>
 
-class Clicpix2Correlator : public Algorithm {
+namespace corryvreckan {
+  class Clicpix2Correlator : public Algorithm {
 
-public:
-  // Constructors and destructors
-  Clicpix2Correlator(bool);
-  ~Clicpix2Correlator(){}
+  public:
+    // Constructors and destructors
+    Clicpix2Correlator(Configuration config, Clipboard* clipboard);
+    ~Clicpix2Correlator(){}
 
-  // Functions
-  void initialise(Parameters*);
-  StatusCode run(Clipboard*);
-  void finalise();
+    // Functions
+    void initialise(Parameters*);
+    StatusCode run(Clipboard*);
+    void finalise();
 
-  // Member variables
-  int m_eventNumber;
-  string dutID;
-  map<int, Clusters> m_eventClusters;
-  map<int, Tracks> m_eventTracks;
-  double angleStart, angleStop, angleStep;
+    // Member variables
+    int m_eventNumber;
+    string dutID;
+    map<int, Clusters> m_eventClusters;
+    map<int, Tracks> m_eventTracks;
+    double angleStart, angleStop, angleStep;
 
-  // Histograms
-  map<string,TH1F*> hTrackDiffX;
-  map<string,TH1F*> hTrackDiffY;
+    // Histograms
+    map<string,TH1F*> hTrackDiffX;
+    map<string,TH1F*> hTrackDiffY;
 
-};
-
+  };
+}
 #endif // Clicpix2Correlator_H

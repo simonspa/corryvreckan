@@ -2,9 +2,10 @@
 #include "objects/Pixel.h"
 #include <dirent.h>
 
-Timepix1EventLoader::Timepix1EventLoader(bool debugging)
-: Algorithm("Timepix1EventLoader"){
-  debug = debugging;
+using namespace corryvreckan;
+
+Timepix1EventLoader::Timepix1EventLoader(Configuration config, Clipboard* clipboard)
+: Algorithm(std::move(config), clipboard){
 }
 
 /*
@@ -40,7 +41,7 @@ void Timepix1EventLoader::initialise(Parameters* par){
 
   // Open the directory
   DIR* directory = opendir(m_inputDirectory.c_str());
-  if (directory == NULL){tcout<<"Directory "<<m_inputDirectory<<" does not exist"<<endl; return;}
+  if (directory == NULL){LOG(ERROR) <<"Directory "<<m_inputDirectory<<" does not exist"; return;}
   dirent* entry; dirent* file;
 
   // Read the entries in the folder
@@ -54,7 +55,7 @@ void Timepix1EventLoader::initialise(Parameters* par){
 
       // Push back this filename to the list of files to be included
       m_inputFilenames.push_back(m_inputDirectory+"/"+filename);
-      if(debug) tcout<<"Added file: "<<filename<<endl;
+      LOG(DEBUG) <<"Added file: "<<filename;
     }
   }
 
@@ -73,7 +74,7 @@ void Timepix1EventLoader::initialise(Parameters* par){
 // In each event, load one frame of data from all devices
 StatusCode Timepix1EventLoader::run(Clipboard* clipboard){
 
-  cout<<"\rRunning over event "<<m_eventNumber<<flush;
+  LOG_PROGRESS(INFO, "tpx_loader") <<"\rRunning over event "<<m_eventNumber;
 
   // Make the container object for pixels. Some devices may not have
   // any hits, so each event we have to check which detectors are present
@@ -87,13 +88,12 @@ StatusCode Timepix1EventLoader::run(Clipboard* clipboard){
     if(m_fileNumber < m_inputFilenames.size()){
       // Open the file
       m_currentFile.open(m_inputFilenames[m_fileNumber].c_str());
-      if(debug) tcout<<"Opened file: "<<m_inputFilenames[m_fileNumber]<<endl;
+      LOG(DEBUG) <<"Opened file: "<<m_inputFilenames[m_fileNumber];
       m_fileOpen = true;
       m_fileNumber++;
       newFile = true;
     }else{
       // Finished looking at all files
-      cout<<endl;
       return Failure;
     }
   }
@@ -110,7 +110,7 @@ StatusCode Timepix1EventLoader::run(Clipboard* clipboard){
     detectors.push_back(device);
     m_currentDevice = device;
     dataContainers[device] = new TestBeamObjects();
-    if(debug) tcout<<"Detector: "<<device<<", time: "<<time<<endl;
+    LOG(DEBUG) <<"Detector: "<<device<<", time: "<<time;
   }
 
   // Then continue with the file
@@ -130,7 +130,7 @@ StatusCode Timepix1EventLoader::run(Clipboard* clipboard){
 
       // If this event is in the future, stop loading data and say that the file is still open
       if(time > m_eventTime){
-        if(debug) tcout<<"- jumping to next event since new event time is "<<time<<endl;
+        LOG(DEBUG) <<"- jumping to next event since new event time is "<<time;
         m_eventTime = time;
         m_prevHeader = data;
         fileFinished = false;
@@ -141,7 +141,7 @@ StatusCode Timepix1EventLoader::run(Clipboard* clipboard){
       detectors.push_back(device);
       m_currentDevice = device;
       dataContainers[device] = new TestBeamObjects();
-      if(debug) tcout<<"Detector: "<<device<<", time: "<<time<<endl;
+      LOG(DEBUG) <<"Detector: "<<device<<", time: "<<time;
 
     }else{
 
@@ -169,10 +169,10 @@ StatusCode Timepix1EventLoader::run(Clipboard* clipboard){
 
     // Put the pixels on the clipboard
     clipboard->put(detID,"pixels",dataContainers[detID]);
-    if(debug) tcout<<"Loaded "<<dataContainers[detID]->size()<<" pixels from device "<<detID<<endl;
+    LOG(DEBUG) <<"Loaded "<<dataContainers[detID]->size()<<" pixels from device "<<detID;
   }
 
-  if(debug) tcout<<"Loaded "<<detectors.size()<<" detectors in this event"<<endl;
+  LOG(DEBUG) <<"Loaded "<<detectors.size()<<" detectors in this event";
 
   // Increment the event number
   m_eventNumber++;
@@ -192,6 +192,6 @@ void Timepix1EventLoader::processHeader(string header, string& device, long long
 
 void Timepix1EventLoader::finalise(){
 
-  if(debug) tcout<<"Analysed "<<m_eventNumber<<" events"<<endl;
+  LOG(DEBUG) <<"Analysed "<<m_eventNumber<<" events";
 
 }

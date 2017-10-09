@@ -2,15 +2,14 @@
 #include "objects/KDTree.h"
 #include "TCanvas.h"
 
-BasicTracking::BasicTracking(bool debugging)
-: Algorithm("BasicTracking"){
-  debug = false;
+using namespace corryvreckan;
 
+BasicTracking::BasicTracking(Configuration config, Clipboard* clipboard)
+: Algorithm(std::move(config), clipboard){
   // Default values for cuts
   timingCut = 200./1000000000.;		// 200 ns
   spatialCut = 0.2; 							// 200 um
   minHitsOnTrack = 6;
-
 }
 
 
@@ -43,7 +42,7 @@ void BasicTracking::initialise(Parameters* par){
 
 StatusCode BasicTracking::run(Clipboard* clipboard){
 
-  if(debug) tcout<<"Start of event"<<endl;
+  LOG(DEBUG) <<"Start of event";
   // Container for all clusters, and detectors in tracking
   map<string,KDTree*> trees;
   vector<string> detectors;
@@ -63,10 +62,10 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
 		// Get the clusters
     Clusters* tempClusters = (Clusters*)clipboard->get(detectorID,"clusters");
     if(tempClusters == NULL){
-      if(debug) tcout<<"Detector "<<detectorID<<" does not have any clusters on the clipboard"<<endl;
+      LOG(DEBUG) <<"Detector "<<detectorID<<" does not have any clusters on the clipboard";
     }else{
     	// Store them
-      if(debug) tcout<<"Picked up "<<tempClusters->size()<<" clusters from "<<detectorID<<endl;
+      LOG(DEBUG) <<"Picked up "<<tempClusters->size()<<" clusters from "<<detectorID;
       if(firstDetector){referenceClusters = tempClusters; seedPlane = det;}
       firstDetector = false;
       if(tempClusters->size() == 0) continue;
@@ -86,7 +85,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
   for(int iSeedCluster=0;iSeedCluster<nSeedClusters;iSeedCluster++){
 
     // Make a new track
-    if(debug) tcout<<"Looking at seed cluster "<<iSeedCluster<<endl;
+    LOG(DEBUG) <<"Looking at seed cluster "<<iSeedCluster;
     Track* track = new Track();
     // Get the cluster
     Cluster* cluster = (*referenceClusters)[iSeedCluster];
@@ -136,12 +135,12 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
       if(parameters->excludedFromTracking.count(detectors[det]) != 0) continue;
 
       // Get all neighbours within 200 ns
-      if(debug) tcout<<"Searching for neighbouring cluster on "<<detectors[det]<<endl;
-      if(debug) tcout<<"- cluster time is "<<cluster->timestamp()<<endl;
+      LOG(DEBUG)<<"Searching for neighbouring cluster on "<<detectors[det];
+      LOG(DEBUG) <<"- cluster time is "<<cluster->timestamp();
       Cluster* closestCluster = NULL; double closestClusterDistance = spatialCut;
       Clusters neighbours = trees[detectors[det]]->getAllClustersInTimeWindow(cluster,timingCut);
 
-      if(debug) tcout<<"- found "<<neighbours.size()<<" neighbours"<<endl;
+      LOG(DEBUG) <<"- found "<<neighbours.size()<<" neighbours";
 
       // Now look for the spatially closest cluster on the next plane
       double interceptX, interceptY;
@@ -172,7 +171,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
       if(closestCluster == NULL) continue;
 
       // Add the cluster to the track
-      if(debug) tcout<<"- added cluster to track"<<endl;
+      LOG(DEBUG) <<"- added cluster to track";
       track->addCluster(closestCluster);
     }//*/
 
@@ -221,7 +220,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard){
 		if(trees.count(detectorID) != 0) delete trees[detectorID];
   }
 
-  if(debug) tcout<<"End of event"<<endl;
+  LOG(DEBUG) <<"End of event";
   return Success;
 }
 

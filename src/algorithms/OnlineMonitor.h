@@ -23,29 +23,30 @@
 #include "TSystem.h"
 #include "TRootEmbeddedCanvas.h"
 
-class OnlineMonitor : public Algorithm {
+namespace corryvreckan {
+  class OnlineMonitor : public Algorithm {
 
-public:
-  // Constructors and destructors
-  OnlineMonitor(bool);
-  ~OnlineMonitor(){}
+  public:
+    // Constructors and destructors
+    OnlineMonitor(Configuration config, Clipboard* clipboard);
+    ~OnlineMonitor(){}
 
-  // Functions
-  void initialise(Parameters*);
-  StatusCode run(Clipboard*);
-  void finalise();
+    // Functions
+    void initialise(Parameters*);
+    StatusCode run(Clipboard*);
+    void finalise();
 
-  // Application to allow display persistancy
-  TApplication* app;
-  GuiDisplay* gui;
+    // Application to allow display persistancy
+    TApplication* app;
+    GuiDisplay* gui;
 
-  void AddHisto(string, string, string style="");
-  void AddButton(string, string);
+    void AddHisto(string, string, string style="");
+    void AddButton(string, string);
 
-  // Member variables
-  int eventNumber;
-  int updateNumber;
+    // Member variables
+    int eventNumber;
+    int updateNumber;
 
-};
-
+  };
+}
 #endif // OnlineMonitor_H

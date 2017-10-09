@@ -14,22 +14,23 @@
 #include <fstream>
 #include <stdint.h>
 
-class DataDump : public Algorithm {
+namespace corryvreckan {
+  class DataDump : public Algorithm {
 
-public:
-  // Constructors and destructors
-  DataDump(bool);
-  ~DataDump(){}
+  public:
+    // Constructors and destructors
+    DataDump(Configuration config, Clipboard* clipboard);
+    ~DataDump(){}
 
-  // Functions
-  void initialise(Parameters*);
-  StatusCode run(Clipboard*);
-  void finalise();
+    // Functions
+    void initialise(Parameters*);
+    StatusCode run(Clipboard*);
+    void finalise();
 
-  // Member variables
-  int m_eventNumber;
-  string m_detector;
+    // Member variables
+    int m_eventNumber;
+    string m_detector;
 
-};
-
+  };
+}
 #endif // DataDump_H

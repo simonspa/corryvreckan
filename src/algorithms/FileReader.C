@@ -3,9 +3,10 @@
 #include "objects/Timepix3Cluster.h"
 #include "objects/Timepix3Track.h"
 
-FileReader::FileReader(bool debugging)
-: Algorithm("FileReader"){
-  debug = debugging;
+using namespace corryvreckan;
+
+FileReader::FileReader(Configuration config, Clipboard* clipboard)
+: Algorithm(std::move(config), clipboard){
   m_onlyDUT = false;
   m_readPixels = true;
   m_readClusters = false;
@@ -42,7 +43,7 @@ void FileReader::initialise(Parameters* par){
   if(m_readTracks) m_objectList.push_back("tracks");
 
   // Get input file
-  tcout<<"Opening file "<<m_fileName<<endl;
+  LOG(INFO) << "Opening file " << m_fileName;
   m_inputFile = new TFile(m_fileName.c_str(),"READ");
   m_inputFile->cd();
 
@@ -65,7 +66,7 @@ void FileReader::initialise(Parameters* par){
         // If only reading information for the DUT
         if(m_onlyDUT && detectorID != parameters->DUT) continue;
 
-        if(debug) tcout<<"Looking for "<<objectType<<" for device "<<detectorID<<endl;
+        LOG(DEBUG) << "Looking for " << objectType << " for device " << detectorID;
 
         // Get the tree
         string objectID = detectorID + "_" + objectType;
@@ -101,7 +102,7 @@ void FileReader::initialise(Parameters* par){
 
 StatusCode FileReader::run(Clipboard* clipboard){
 
-  cout<<"\rRunning over event "<<m_eventNumber<<flush;
+  LOG_PROGRESS(INFO, "file_reader") << "Running over event " << m_eventNumber;
 
   bool newEvent = true;
   // Loop over all objects read from file, and place the objects on the Clipboard
@@ -130,7 +131,7 @@ StatusCode FileReader::run(Clipboard* clipboard){
 
         // Create the container that will go on the clipboard
         TestBeamObjects* objectContainer = new TestBeamObjects();
-        if(debug) tcout<<"Looking for "<<objectType<<" on detector "<<detectorID<<endl;
+        LOG(DEBUG) <<"Looking for "<<objectType<<" on detector "<<detectorID;
 
         // Continue looping over this device while there is still data
         while(m_currentPosition[objectID]<m_inputTrees[objectID]->GetEntries()){
@@ -158,7 +159,7 @@ StatusCode FileReader::run(Clipboard* clipboard){
 
         // Put the data on the clipboard
         clipboard->put(detectorID,objectType,objectContainer);
-        if(debug) tcout<<"Picked up "<<objectContainer->size()<<" "<<objectType<<" from device "<<detectorID<<endl;
+        LOG(DEBUG) <<"Picked up "<<objectContainer->size()<<" "<<objectType<<" from device "<<detectorID;
 
       }
     } // If object is not written per device
@@ -169,7 +170,7 @@ StatusCode FileReader::run(Clipboard* clipboard){
 
       // Create the container that will go on the clipboard
       TestBeamObjects* objectContainer = new TestBeamObjects();
-      if(debug) tcout<<"Looking for "<<objectType<<endl;
+      LOG(DEBUG) <<"Looking for "<<objectType;
 
       // Continue looping over this device while there is still data
       while(m_currentPosition[objectType]<m_inputTrees[objectType]->GetEntries()){
@@ -197,14 +198,13 @@ StatusCode FileReader::run(Clipboard* clipboard){
 
       // Put the data on the clipboard
       clipboard->put(objectType,objectContainer);
-      if(debug) tcout<<"Picked up "<<objectContainer->size()<<" "<<objectType<<endl;
+      LOG(DEBUG) <<"Picked up "<<objectContainer->size()<<" "<<objectType;
 
     }
   }
 
   // If no data was loaded then do nothing
   if(!dataLoaded && m_eventNumber!=0){
-    cout<<endl;
     return Failure;
   }
 
@@ -221,6 +221,6 @@ void FileReader::finalise(){
   // Close the input file
   m_inputFile->Close();
 
-  if(debug) tcout<<"Analysed "<<m_eventNumber<<" events"<<endl;
+  LOG(DEBUG) <<"Analysed "<<m_eventNumber<<" events";
 
 }

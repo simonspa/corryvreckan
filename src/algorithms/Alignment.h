@@ -10,23 +10,24 @@
 #include "objects/Cluster.h"
 #include "objects/Track.h"
 
-class Alignment : public Algorithm {
+namespace corryvreckan {
+  class Alignment : public Algorithm {
 
-public:
-  // Constructors and destructors
-  Alignment(bool);
-  ~Alignment(){}
+  public:
+    // Constructors and destructors
+    Alignment(Configuration config, Clipboard* clipboard);
+    ~Alignment(){}
 
-  // Functions
-  void initialise(Parameters*);
-  StatusCode run(Clipboard*);
-  void finalise();
+    // Functions
+    void initialise(Parameters*);
+    StatusCode run(Clipboard*);
+    void finalise();
 
-  // Member variables
-  Tracks m_alignmenttracks;
-  int nIterations;
-  int m_numberOfTracksForAlignment;
+    // Member variables
+    Tracks m_alignmenttracks;
+    int nIterations;
+    int m_numberOfTracksForAlignment;
 
-};
-
+  };
+}
 #endif // ALIGNMENT_H

@@ -3,9 +3,10 @@
 #include "objects/Cluster.h"
 #include "objects/Track.h"
 
-ClicpixAnalysis::ClicpixAnalysis(bool debugging)
-: Algorithm("ClicpixAnalysis"){
-  debug = debugging;
+using namespace corryvreckan;
+
+ClicpixAnalysis::ClicpixAnalysis(Configuration config, Clipboard* clipboard)
+: Algorithm(std::move(config), clipboard){
   m_associationCut = 0.05; // 100 um
   m_proximityCut = 0.0005; // 125 um
   timepix3Telescope = false;
@@ -148,7 +149,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
   // Get the clicpix clusters in this event
   Clusters* clusters = (Clusters*)clipboard->get(dutID,"clusters");
   if(clusters == NULL){
-    if(debug) tcout<<"No clusters for "<<dutID<<" on the clipboard"<<endl;
+    LOG(DEBUG) <<"No clusters for "<<dutID<<" on the clipboard";
     return Success;
   }
 
@@ -165,7 +166,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
   // Get the tracks in this event
   Tracks* tracks = (Tracks*)clipboard->get("tracks");
   if(tracks == NULL){
-    if(debug) tcout<<"No tracks on the clipboard"<<endl;
+    LOG(DEBUG) <<"No tracks on the clipboard";
     return Success;
   }
 
@@ -318,8 +319,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
         for (itPixel = (*itCorrelate)->pixels().begin(); itPixel != (*itCorrelate)->pixels().end(); itPixel++) {
 
           // Get the pixel global position
-          tcout<<"New pixel"<<endl;
-          tcout<<"Row = "<<(*itPixel)->m_row<<", column = "<<(*itPixel)->m_column<<endl;
+          LOG(TRACE) <<"New pixel, row = "<<(*itPixel)->m_row<<", column = "<<(*itPixel)->m_column;
           PositionVector3D<Cartesian3D<double> > pixelPositionLocal = parameters->detector[dutID]->getLocalPosition((*itPixel)->m_row,(*itPixel)->m_column);
           PositionVector3D<Cartesian3D<double> > pixelPositionGlobal = *(parameters->detector[dutID]->m_localToGlobal) * pixelPositionLocal;
 
@@ -356,7 +356,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard){
 
 void ClicpixAnalysis::finalise(){
 
-  if(debug) tcout<<"Analysed "<<m_eventNumber<<" events"<<endl;
+  LOG(DEBUG) <<"Analysed "<<m_eventNumber<<" events";
 
   // Compare number of valid tracks, and number of clusters associated in order to get global efficiency
   double nTracks = hTrackIntercepts->GetEntries();
@@ -366,11 +366,10 @@ void ClicpixAnalysis::finalise(){
 
   if(nTracks == 0){ efficiency = 0.; errorEfficiency = 1.;}
 
-  tcout<<"***** Clicpix efficiency calculation *****"<<endl;
-  tcout<<"***** ntracks: "<<(int)nTracks<<", nclusters "<<(int)nClusters<<endl;
-  tcout<<"***** Efficiency: "<<100.*efficiency<<" +/- "<<100.*errorEfficiency<<" %"<<endl;
-  tcout<<"***** If including the "<<(int)m_lostHits<<" lost pixel hits, this becomes "<<100.*(m_lostHits+nClusters)/nTracks<<" %"<<endl;
-  tcout<<endl;
+  LOG(INFO) << "***** Clicpix efficiency calculation *****";
+  LOG(INFO) <<"***** ntracks: "<<(int)nTracks<<", nclusters "<<(int)nClusters;
+  LOG(INFO) <<"***** Efficiency: "<<100.*efficiency<<" +/- "<<100.*errorEfficiency<<" %";
+  LOG(INFO) <<"***** If including the "<<(int)m_lostHits<<" lost pixel hits, this becomes "<<100.*(m_lostHits+nClusters)/nTracks<<" %";
 
 }
 

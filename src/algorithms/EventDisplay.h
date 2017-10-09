@@ -11,20 +11,21 @@
 #include "objects/Timepix3Cluster.h"
 #include "objects/Timepix3Track.h"
 
-class EventDisplay : public Algorithm {
+namespace corryvreckan {
+  class EventDisplay : public Algorithm {
 
-public:
-  // Constructors and destructors
-  EventDisplay(bool);
-  ~EventDisplay(){}
+  public:
+    // Constructors and destructors
+    EventDisplay(Configuration config, Clipboard* clipboard);
+    ~EventDisplay(){}
 
-  // Functions
-  void initialise(Parameters*);
-  StatusCode run(Clipboard*);
-  void finalise();
+    // Functions
+    void initialise(Parameters*);
+    StatusCode run(Clipboard*);
+    void finalise();
 
-  TH3F* eventMap;
+    TH3F* eventMap;
 
-};
-
+  };
+}
 #endif // EVENTDISPLAY_H

@@ -10,27 +10,28 @@
 #include "objects/Cluster.h"
 #include "objects/Track.h"
 
-class GenericAlgorithm : public Algorithm {
+namespace corryvreckan {
+  class GenericAlgorithm : public Algorithm {
 
-public:
-  // Constructors and destructors
-  GenericAlgorithm(bool);
-  ~GenericAlgorithm(){}
+  public:
+    // Constructors and destructors
+    GenericAlgorithm(Configuration config, Clipboard* clipboard);
+    ~GenericAlgorithm(){}
 
-  // Functions
-  void initialise(Parameters*);
-  StatusCode run(Clipboard*);
-  void finalise();
+    // Functions
+    void initialise(Parameters*);
+    StatusCode run(Clipboard*);
+    void finalise();
 
-  // Histograms for several devices
-  map<string, TH2F*> plotPerDevice;
+    // Histograms for several devices
+    map<string, TH2F*> plotPerDevice;
 
-  // Single histograms
-  TH1F* singlePlot;
+    // Single histograms
+    TH1F* singlePlot;
 
-  // Member variables
-  int m_eventNumber;
+    // Member variables
+    int m_eventNumber;
 
-};
-
+  };
+}
 #endif // GenericAlgorithm_H

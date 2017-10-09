@@ -9,24 +9,25 @@
 #include "TH2F.h"
 #include "TCanvas.h"
 
-class Timepix3Clustering : public Algorithm {
+namespace corryvreckan {
+  class Timepix3Clustering : public Algorithm {
 
-public:
-  // Constructors and destructors
-  Timepix3Clustering(bool);
-  ~Timepix3Clustering(){}
+  public:
+    // Constructors and destructors
+    Timepix3Clustering(Configuration config, Clipboard* clipboard);
+    ~Timepix3Clustering(){}
 
-  // Functions
-  void initialise(Parameters*);
-  StatusCode run(Clipboard*);
-  void finalise();
-  void calculateClusterCentre(Cluster*);
-  bool touching(Pixel*,Cluster*);
-  bool closeInTime(Pixel*,Cluster*);
+    // Functions
+    void initialise(Parameters*);
+    StatusCode run(Clipboard*);
+    void finalise();
+    void calculateClusterCentre(Cluster*);
+    bool touching(Pixel*,Cluster*);
+    bool closeInTime(Pixel*,Cluster*);
 
-  double timingCut;
-  long long int timingCutInt;
+    double timingCut;
+    long long int timingCutInt;
 
-};
-
+  };
+}
 #endif // TIMEPIX3CLUSTERING_H

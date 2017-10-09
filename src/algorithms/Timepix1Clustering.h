@@ -8,23 +8,24 @@
 #include "TCanvas.h"
 #include "objects/Cluster.h"
 
-class Timepix1Clustering : public Algorithm {
+namespace corryvreckan {
+  class Timepix1Clustering : public Algorithm {
 
-public:
-  // Constructors and destructors
-  Timepix1Clustering(bool);
-  ~Timepix1Clustering(){}
+  public:
+    // Constructors and destructors
+    Timepix1Clustering(Configuration config, Clipboard* clipboard);
+    ~Timepix1Clustering(){}
 
-  // Functions
-  void initialise(Parameters*);
-  StatusCode run(Clipboard*);
-  void finalise();
+    // Functions
+    void initialise(Parameters*);
+    StatusCode run(Clipboard*);
+    void finalise();
 
-  void calculateClusterCentre(Cluster*);
+    void calculateClusterCentre(Cluster*);
 
-  // Member variables
-  int m_eventNumber;
+    // Member variables
+    int m_eventNumber;
 
-};
-
+  };
+}
 #endif // Timepix1Clustering_H

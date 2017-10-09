@@ -3,10 +3,10 @@
 #include "objects/Cluster.h"
 #include "objects/Track.h"
 
-Timepix1Correlator::Timepix1Correlator(bool debugging)
-: Algorithm("Timepix1Correlator"){
-  debug = debugging;
-}
+using namespace corryvreckan;
+
+Timepix1Correlator::Timepix1Correlator(Configuration config, Clipboard* clipboard)
+: Algorithm(std::move(config), clipboard){}
 
 
 void Timepix1Correlator::initialise(Parameters* par){
@@ -54,7 +54,7 @@ StatusCode Timepix1Correlator::run(Clipboard* clipboard){
   string referenceDetector = parameters->reference;
   Clusters* referenceClusters = (Clusters*)clipboard->get(referenceDetector,"clusters");
   if(referenceClusters == NULL){
-    if(debug) tcout<<"Detector "<<referenceDetector<<" does not have any clusters on the clipboard"<<endl;
+    LOG(DEBUG) <<"Detector "<<referenceDetector<<" does not have any clusters on the clipboard";
     return Success;
   }
 
@@ -68,7 +68,7 @@ StatusCode Timepix1Correlator::run(Clipboard* clipboard){
     // Get the clusters
     Clusters* clusters = (Clusters*)clipboard->get(detectorID,"clusters");
     if(clusters == NULL){
-      if(debug) tcout<<"Detector "<<detectorID<<" does not have any clusters on the clipboard"<<endl;
+      LOG(DEBUG) <<"Detector "<<detectorID<<" does not have any clusters on the clipboard";
       continue;
     }
 
@@ -104,6 +104,6 @@ StatusCode Timepix1Correlator::run(Clipboard* clipboard){
 
 void Timepix1Correlator::finalise(){
 
-  if(debug) tcout<<"Analysed "<<m_eventNumber<<" events"<<endl;
+  LOG(DEBUG) <<"Analysed "<<m_eventNumber<<" events";
 
 }

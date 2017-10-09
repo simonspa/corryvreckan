@@ -14,34 +14,35 @@
 #include "objects/Cluster.h"
 #include "objects/Track.h"
 
-class SpatialTracking : public Algorithm {
+namespace corryvreckan {
+  class SpatialTracking : public Algorithm {
 
-public:
-  // Constructors and destructors
-  SpatialTracking(bool);
-  ~SpatialTracking(){}
+  public:
+    // Constructors and destructors
+    SpatialTracking(Configuration config, Clipboard* clipboard);
+    ~SpatialTracking(){}
 
-  // Functions
-  void initialise(Parameters*);
-  StatusCode run(Clipboard*);
-  void finalise();
+    // Functions
+    void initialise(Parameters*);
+    StatusCode run(Clipboard*);
+    void finalise();
 
-  // Histograms
-  TH1F* trackChi2;
-  TH1F* clustersPerTrack;
-  TH1F* trackChi2ndof;
-  TH1F* tracksPerEvent;
-  TH1F* trackAngleX;
-  TH1F* trackAngleY;
-  map<string,TH1F*> residualsX;
-  map<string,TH1F*> residualsY;
+    // Histograms
+    TH1F* trackChi2;
+    TH1F* clustersPerTrack;
+    TH1F* trackChi2ndof;
+    TH1F* tracksPerEvent;
+    TH1F* trackAngleX;
+    TH1F* trackAngleY;
+    map<string,TH1F*> residualsX;
+    map<string,TH1F*> residualsY;
 
-  // Member variables
-  int m_eventNumber;
-  double spatialCut;
-  int minHitsOnTrack;
-  double nTracksTotal;
+    // Member variables
+    int m_eventNumber;
+    double spatialCut;
+    int minHitsOnTrack;
+    double nTracksTotal;
 
-};
-
+  };
+}
 #endif // SpatialTracking_H

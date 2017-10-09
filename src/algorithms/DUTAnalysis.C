@@ -4,12 +4,12 @@
 #include "objects/Track.h"
 #include "objects/SpidrSignal.h"
 
-DUTAnalysis::DUTAnalysis(bool debugging)
-: Algorithm("DUTAnalysis"){
-  debug = debugging;
+using namespace corryvreckan;
+
+DUTAnalysis::DUTAnalysis(Configuration config, Clipboard* clipboard)
+: Algorithm(std::move(config), clipboard){
   m_digitalPowerPulsing = false;
 }
-
 
 void DUTAnalysis::initialise(Parameters* par){
 
@@ -48,11 +48,8 @@ void DUTAnalysis::initialise(Parameters* par){
 
 StatusCode DUTAnalysis::run(Clipboard* clipboard){
 
-//  tcout<<"Power on time: "<<m_powerOnTime/(4096. * 40000000.)<<endl;
-//  tcout<<"Power off time: "<<m_powerOffTime/(4096. * 40000000.)<<endl;
-//  tcout<<endl;
-
-  cout<<std::setprecision(10);
+  LOG(TRACE) <<"Power on time: "<<m_powerOnTime/(4096. * 40000000.);
+  LOG(TRACE) <<"Power off time: "<<m_powerOffTime/(4096. * 40000000.);
 
   if(parameters->currentTime < 13.5) return Success;
 
@@ -87,14 +84,13 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
         // There may be multiple power on/off in 1 time window. At the moment, take earliest if within 1ms
         if( fabs( double(signal->timestamp()-m_shutterOpenTime)/(4096. * 40000000.)) < 0.001 ) continue;
         m_shutterOpenTime = signal->timestamp();
-//        tcout<<"Shutter opened at "<<double(m_shutterOpenTime)/(4096.*40000000.)<<endl;
+        LOG(TRACE) <<"Shutter opened at "<<double(m_shutterOpenTime)/(4096.*40000000.);
       }
       if(signal->type() == "shutterClosed"){
         // There may be multiple power on/off in 1 time window. At the moment, take earliest if within 1ms
         if( fabs( double(signal->timestamp()-m_shutterCloseTime)/(4096. * 40000000.)) < 0.001 ) continue;
         m_shutterCloseTime = signal->timestamp();
-//        cout<<endl;
-//        tcout<<"Shutter closed at "<<double(m_shutterCloseTime)/(4096.*40000000.)<<endl;
+        LOG(TRACE) <<"Shutter closed at "<<double(m_shutterCloseTime)/(4096.*40000000.);
       }
     }
   }
@@ -102,14 +98,14 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
   // Get the tracks from the clipboard
   Tracks* tracks = (Tracks*)clipboard->get("tracks");
   if(tracks == NULL){
-    if(debug) tcout<<"No tracks on the clipboard"<<endl;
+    LOG(DEBUG) <<"No tracks on the clipboard";
     return Success;
   }
 
   // Get the DUT clusters from the clipboard
   Clusters* clusters = (Clusters*)clipboard->get(parameters->DUT,"clusters");
   if(clusters == NULL){
-    if(debug) tcout<<"No DUT clusters on the clipboard"<<endl;
+    LOG(DEBUG) <<"No DUT clusters on the clipboard";
   }
 
   // Loop over all tracks
@@ -133,9 +129,8 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
 
     timeSincePowerOn = (double)(track->timestamp() - m_shutterOpenTime) / (4096.*40000000.);
     if(timeSincePowerOn > 0. && timeSincePowerOn < 0.0002){
-//      cout<<endl;
-//      tcout<<"Track at time "<<double(track->timestamp())/(4096.*40000000.)<<" has time shutter open of "<<timeSincePowerOn<<endl;
-//      tcout<<"Shutter open time is "<<double(m_shutterOpenTime)/(4096.*40000000.)<<", shutter close time is "<<double(m_shutterCloseTime)/(4096.*40000000.)<<endl;
+      LOG(TRACE) <<"Track at time "<<double(track->timestamp())/(4096.*40000000.)<<" has time shutter open of "<<timeSincePowerOn;
+      LOG(TRACE) <<"Shutter open time is "<<double(m_shutterOpenTime)/(4096.*40000000.)<<", shutter close time is "<<double(m_shutterCloseTime)/(4096.*40000000.);
     }
 
     // Check time since power on (if power pulsing).
@@ -146,9 +141,8 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
       timeSincePowerOn = (double)(track->timestamp() - m_shutterOpenTime) / (4096.*40000000.);
       tracksVersusPowerOnTime->Fill(timeSincePowerOn);
 //      if(timeSincePowerOn < (0.0002)){
-//        cout<<endl;
-//        tcout<<"Track at time "<<parameters->currentTime<<" has time shutter open of "<<timeSincePowerOn<<endl;
-//        tcout<<"Shutter open time is "<<double(m_shutterOpenTime)/(4096.*40000000.)<<", shutter close time is "<<double(m_shutterCloseTime)/(4096.*40000000.)<<endl;
+//        LOG(TRACE) <<"Track at time "<<parameters->currentTime<<" has time shutter open of "<<timeSincePowerOn;
+//        LOG(TRACE) <<"Shutter open time is "<<double(m_shutterOpenTime)/(4096.*40000000.)<<", shutter close time is "<<double(m_shutterCloseTime)/(4096.*40000000.);
 //      }
     }
 
@@ -202,7 +196,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
 
       // We now have an associated cluster! Fill plots
       associated = true;
-//      tcout<<"Found associated cluster"<<endl;
+      LOG(TRACE) <<"Found associated cluster";
       associatedTracksVersusTime->Fill( (double)track->timestamp() / (4096.*40000000.) );
       residualsX->Fill(xdistance);
       residualsY->Fill(ydistance);
@@ -236,7 +230,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard){
 
 void DUTAnalysis::finalise(){
 
-  if(debug) tcout<<"Analysed "<<m_eventNumber<<" events"<<endl;
+  LOG(DEBUG) <<"Analysed "<<m_eventNumber<<" events";
 
 }
 

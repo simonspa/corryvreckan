@@ -1,9 +1,10 @@
 #include "SpatialTracking.h"
 #include "objects/KDTree.h"
 
-SpatialTracking::SpatialTracking(bool debugging)
-: Algorithm("SpatialTracking"){
-  debug = debugging;
+using namespace corryvreckan;
+
+SpatialTracking::SpatialTracking(Configuration config, Clipboard* clipboard)
+: Algorithm(std::move(config), clipboard){
   spatialCut = 0.2;
   minHitsOnTrack = 6;
 }
@@ -67,7 +68,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
     // Get the clusters
     Clusters* tempClusters = (Clusters*)clipboard->get(detectorID,"clusters");
     if(tempClusters == NULL){
-      if(debug) tcout<<"Detector "<<detectorID<<" does not have any clusters on the clipboard"<<endl;
+      LOG(DEBUG) <<"Detector "<<detectorID<<" does not have any clusters on the clipboard";
     }else{
       // Store the clusters of the first plane in Z as the reference
       if(parameters->detector[detectorID]->displacementZ() < minZ){
@@ -81,7 +82,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
       clusterTree->buildSpatialTree(*tempClusters);
       trees[detectorID] = clusterTree;
       detectors.push_back(detectorID);
-      if(debug) tcout<<"Picked up "<<tempClusters->size()<<" clusters on device "<<detectorID<<endl;
+      LOG(DEBUG) <<"Picked up "<<tempClusters->size()<<" clusters on device "<<detectorID;
     }
   }
 
@@ -95,7 +96,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
   int nSeedClusters = referenceClusters->size();
   for(int iSeedCluster=0;iSeedCluster<nSeedClusters;iSeedCluster++){
 
-    if(debug) tcout<<"==> seed cluster "<<iSeedCluster<<endl;
+    LOG(DEBUG) <<"==> seed cluster "<<iSeedCluster;
 
     // Make a new track
     Track* track = new Track();
@@ -119,10 +120,10 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
       if(parameters->excludedFromTracking.count(detectors[det]) != 0) continue;
 
       // Get the closest neighbour
-      if(debug)tcout<<"- looking for nearest cluster on device "<<detectors[det]<<endl;
+      LOG(DEBUG) <<"- looking for nearest cluster on device "<<detectors[det];
       Cluster* closestCluster = trees[detectors[det]]->getClosestNeighbour(cluster);
 
-      if(debug) tcout <<"still alive"<<endl;
+      LOG(DEBUG) <<"still alive";
       // If it is used do nothing
 //      if(used[closestCluster]) continue;
 
@@ -134,7 +135,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
       // Add the cluster to the track
       track->addCluster(closestCluster);
       cluster = closestCluster;
-      if(debug) tcout<<"- added cluster to track. Distance is "<<distance<<endl;
+      LOG(DEBUG) <<"- added cluster to track. Distance is "<<distance;
 
     }
 
@@ -172,7 +173,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
   // Save the tracks on the clipboard
   nTracksTotal+=tracks->size();
   cout<<", produced "<<nTracksTotal<<" tracks";
-  if(debug) tcout<<"- produced "<<tracks->size()<<" tracks"<<endl;
+  LOG(DEBUG) <<"- produced "<<tracks->size()<<" tracks";
   tracksPerEvent->Fill(tracks->size());
   if(tracks->size() > 0){
     clipboard->put("tracks",(TestBeamObjects*)tracks);
@@ -190,6 +191,6 @@ StatusCode SpatialTracking::run(Clipboard* clipboard){
 
 void SpatialTracking::finalise(){
 
-  if(debug) tcout<<"Analysed "<<m_eventNumber<<" events"<<endl;
+  LOG(DEBUG) <<"Analysed "<<m_eventNumber<<" events";
 
 }
