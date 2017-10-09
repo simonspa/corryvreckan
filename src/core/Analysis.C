@@ -8,6 +8,7 @@
 #include "utils/log.h"
 
 #include <dlfcn.h>
+#include <iomanip>
 #include <fstream>
 
 #define CORRYVRECKAN_ALGORITHM_PREFIX "libCorryvreckanAlgorithm"
@@ -415,13 +416,13 @@ void Analysis::finaliseAll() {
 
 // Display timing statistics for each algorithm, over all events and per event
 void Analysis::timing() {
-    LOG(INFO) << "===============| Wall-clock timing (seconds) |================";
+    LOG(STATUS) << "===============| Wall-clock timing (seconds) |================";
     for(auto& algorithm : m_algorithms) {
-        LOG(INFO) << algorithm->getName() << "  --  "
-                  << algorithm->getStopwatch()->RealTime() << " = "
-                  << algorithm->getStopwatch()->RealTime() / m_events << " s/evt";
+        LOG(STATUS) << std::setw(25) << algorithm->getName() << "  --  "
+                  << std::fixed << std::setprecision(5) << algorithm->getStopwatch()->RealTime() << " = "
+                  << std::setprecision(9) << algorithm->getStopwatch()->RealTime() / m_events << " s/evt";
     }
-    LOG(INFO) << "==============================================================";
+    LOG(STATUS) << "==============================================================";
 }
 
 // Helper functions to set the module specific log settings if necessary
