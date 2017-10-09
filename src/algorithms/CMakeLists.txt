@@ -1,42 +1,45 @@
+MACRO(corryvreckan_algorithm name)
+  # Get the list of sources
+  SET(_list_var "${ARGN}")
+  LIST(REMOVE_ITEM _list_var ${name})
+
+  # Include directories for dependencies
+  INCLUDE_DIRECTORIES(SYSTEM ${CORRYVRECKAN_DEPS_INCLUDE_DIRS})
+
+  # Build all modules by default if not specified otherwise
+  OPTION(BUILD_${name} "Build algorithm ${name}?" ON)
+
+  # Put message
+  MESSAGE(STATUS "Building algorithm: " ${name} )
+
+  # Prepend with the allpix module prefix to create the name of the module
+  SET(LIBNAME "CorryvreckanAlgorithm${name}")
+
+  # Save the module library for prelinking in the executable (NOTE: see exec folder)
+  SET(CORRYVRECKAN_ALGORITHM_LIBRARIES ${CORRYVRECKAN_ALGORITHM_LIBRARIES} ${LIBNAME} CACHE INTERNAL "Algorithm libraries")
+
+  # Define the library
+  ADD_LIBRARY(${LIBNAME} SHARED ${_list_var})
+
+  # Add the current directory as include directory
+  TARGET_INCLUDE_DIRECTORIES(${LIBNAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+  # Link the standard allpix libraries
+  TARGET_LINK_LIBRARIES(${LIBNAME} ${CORRYVRECKAN_LIBRARIES} ${CORRYVRECKAN_DEPS_LIBRARIES})
+
+  INSTALL(TARGETS ${LIBNAME}
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
+ENDMACRO()
+
 # Include the dependencies
-INCLUDE_DIRECTORIES(SYSTEM ${CORRYVRECKAN_DEPS_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(SYSTEM ${_DEPS_INCLUDE_DIRS})
 
-# Create Algorithms library
-ADD_LIBRARY(CorryvreckanAlgorithms SHARED
-    Alignment.C
-    BasicTracking.C
-    Clicpix2Correlator.C
-    Clicpix2EventLoader.C
-    ClicpixAnalysis.C
-    CLICpixEventLoader.C
-    DataDump.C
-    DUTAnalysis.C
-    EventDisplay.C
-    FileReader.C
-    FileWriter.C
-    GenericAlgorithm.C
-    GUI.C
-    OnlineMonitor.C
-    SpatialTracking.C
-    TestAlgorithm.C
-    Timepix1Clustering.C
-    Timepix1Correlator.C
-    Timepix1EventLoader.C
-    Timepix3Clustering.C
-    Timepix3EventLoader.C
-    Timepix3MaskCreator.C
-)
-
-# Link the dependencies
-TARGET_LINK_LIBRARIES(CorryvreckanAlgorithms ${CORRYVRECKANX_DEPS_LIBRARIES})
-TARGET_LINK_LIBRARIES(CorryvreckanAlgorithms ${CORRYVRECKAN_LIBRARIES})
-
-# Define compile-time library extension
-TARGET_COMPILE_DEFINITIONS(CorryvreckanAlgorithms PRIVATE SHARED_LIBRARY_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}")
-# Link the DL libraries
-TARGET_LINK_LIBRARIES(CorryvreckanAlgorithms ${CMAKE_DL_LIBS})
-
-# Create standard install target
-INSTALL(TARGETS CorryvreckanAlgorithms
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib)
+# Build all the modules
+FILE(GLOB srcfiles ${CMAKE_CURRENT_SOURCE_DIR}/*.C)
+FOREACH(src ${srcfiles})
+  GET_FILENAME_COMPONENT(name ${src} NAME_WE)
+  # Add the library
+  CORRYVRECKAN_ALGORITHM(${name} ${src})
+ENDFOREACH()
