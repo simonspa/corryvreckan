@@ -15,7 +15,6 @@ Parameters::Parameters() {
     conditionsFile = "cond.dat";
     dutMaskFile = "defaultMask.dat";
     inputDirectory = "";
-    produceMask = false;
     currentTime = 0.;    // seconds
     eventLength = 0.000; // seconds (0.1 ms)
 }
@@ -34,14 +33,6 @@ void Parameters::readCommandLineOptions(int argc, char* argv[]) {
     char temp[256];
     while((option = getopt(argc, argv, "gema:d:c:n:h:t:o:f:t:p:s:")) != -1) {
         switch(option) {
-        case 'e':
-            eventDisplay = true;
-            LOG(INFO) << "Event display flagged to be run";
-            break;
-        case 'm':
-            produceMask = true;
-            LOG(INFO) << "Will update masked pixel files";
-            break;
         case 'd':
             sscanf(optarg, "%s", &temp);
             inputDirectory = (string)temp;
