@@ -62,7 +62,6 @@ namespace corryvreckan {
         std::string reference;
         std::string dut;
         double currentTime;
-        double eventLength;
         std::string DUT;
         std::map<std::string, bool> excludedFromTracking;
         std::map<std::string, bool> masked;

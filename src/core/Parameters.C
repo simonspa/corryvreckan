@@ -16,7 +16,6 @@ Parameters::Parameters() {
     dutMaskFile = "defaultMask.dat";
     inputDirectory = "";
     currentTime = 0.;    // seconds
-    eventLength = 0.000; // seconds (0.1 ms)
 }
 
 // Sort function for detectors from low to high z
@@ -61,10 +60,6 @@ void Parameters::readCommandLineOptions(int argc, char* argv[]) {
             sscanf(optarg, "%s", &temp);
             outputTupleFile = (string)temp;
             LOG(INFO) << "Writing output tuples to: " << outputTupleFile;
-            break;
-        case 'p':
-            sscanf(optarg, "%lf", &eventLength);
-            LOG(INFO) << "Running with an event length of: " << eventLength << " s";
             break;
         case 's':
             sscanf(optarg, "%s", &temp);
@@ -150,10 +145,12 @@ bool Parameters::readConditions() {
 
     // Now check that all devices which are registered have parameters as well
     bool unregisteredDetector = false;
+    LOG(WARNING) << "det: " << detectors.size() << " -- " << nDetectors;
     // Loop over all registered detectors
     for(int det = 0; det < nDetectors; det++) {
+        LOG(WARNING) << "det: " << detectors.size() << " ? " << det;
         if(detector.count(detectors[det]) == 0) {
-            LOG(INFO) << "Detector " << detectors[det] << " has no conditions loaded";
+            //LOG(INFO) << "Detector " << detectors[det] << " has no conditions loaded";
             unregisteredDetector = true;
         }
     }

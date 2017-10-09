@@ -122,6 +122,9 @@ void Timepix3EventLoader::initialise(Parameters* par) {
             }
         }
     }
+
+    // Read event length
+    eventLength = m_config.get<double>("eventLength", 0.0);
 }
 
 StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
@@ -152,7 +155,6 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
         SpidrSignals* spidrData = new SpidrSignals();
 
         // Load the next chunk of data
-        LOG(DEBUG) << "Loading data from " << detectorID;
         bool data = loadData(detectorID, deviceData, spidrData);
 
         // If data was loaded then put it on the clipboard
@@ -170,7 +172,7 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
     }
 
     // Increment the event time
-    parameters->currentTime += parameters->eventLength;
+    parameters->currentTime += eventLength;
 
     // If all files are finished, tell the event loop to stop
     if(endOfFiles == devices)
@@ -354,7 +356,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
                 const uint64_t shutterClosed = ((controlbits & 0x1));
 
                 // Ignore packets if they arrive before the current event window
-                //        if( parameters->eventLength != 0. && ((double)time/(4096. *
+                //        if(eventLength != 0. && ((double)time/(4096. *
                 //        40000000.)) < (parameters->currentTime) ){
                 //          continue;
                 //        }
@@ -362,8 +364,8 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
                 // Stop looking at data if the signal is after the current event window
                 // (and rewind the file
                 // reader so that we start with this signal next event)
-                if(parameters->eventLength != 0. &&
-                   ((double)time / (4096. * 40000000.)) > (parameters->currentTime + parameters->eventLength)) {
+                if(eventLength != 0. &&
+                   ((double)time / (4096. * 40000000.)) > (parameters->currentTime + eventLength)) {
                     fseek(m_currentFile[detectorID], -1 * sizeof(ULong64_t), SEEK_CUR);
                     fileNotFinished = true;
                     //          LOG(DEBUG) <<"Signal has a time beyond the current event:
@@ -480,7 +482,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
             // time is within this window
 
             // Ignore pixels if they arrive before the current event window
-            //      if( parameters->eventLength != 0. && ((double)time/(4096. *
+            //      if(eventLength != 0. && ((double)time/(4096. *
             //      40000000.)) < (parameters->currentTime) ){
             //        continue;
             //      }
@@ -488,8 +490,8 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
             // Stop looking at data if the pixel is after the current event window
             // (and rewind the file
             // reader so that we start with this pixel next event)
-            if(parameters->eventLength != 0. &&
-               ((double)time / (4096. * 40000000.)) > (parameters->currentTime + parameters->eventLength)) {
+            if(eventLength != 0. &&
+               ((double)time / (4096. * 40000000.)) > (parameters->currentTime + eventLength)) {
                 fseek(m_currentFile[detectorID], -1 * sizeof(ULong64_t), SEEK_CUR);
                 fileNotFinished = true;
                 break;
@@ -505,7 +507,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
 
         // Stop when we reach some large number of pixels (if events not based on
         // time)
-        if(parameters->eventLength == 0. && npixels == 2000) {
+        if(eventLength == 0. && npixels == 2000) {
             fileNotFinished = true;
             break;
         }

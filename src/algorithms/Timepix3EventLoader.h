@@ -39,6 +39,8 @@ namespace corryvreckan {
         bool m_shutterOpen;
         std::map<std::string, Pixels*> bufferedData;
         std::map<std::string, SpidrSignals*> bufferedSignals;
+
+        double eventLength{0};
     };
 }
 #endif // TIMEPIX3EVENTLOADER_H
