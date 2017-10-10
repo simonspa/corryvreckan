@@ -19,13 +19,9 @@ ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/Cluster.h
     ${CMAKE_CURRENT_SOURCE_DIR}/GuiDisplay.h
     ${CMAKE_CURRENT_SOURCE_DIR}/KDTree.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/KDTreeTimepix3.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.h
     ${CMAKE_CURRENT_SOURCE_DIR}/SpidrSignal.h
     ${CMAKE_CURRENT_SOURCE_DIR}/TestBeamObject.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Timepix3Cluster.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Timepix3Pixel.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Timepix3Track.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Track.h
     MODULE
     CorryvreckanObjects

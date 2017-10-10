@@ -1,7 +1,4 @@
 #include "FileReader.h"
-#include "objects/Timepix3Cluster.h"
-#include "objects/Timepix3Pixel.h"
-#include "objects/Timepix3Track.h"
 
 using namespace corryvreckan;
 using namespace std;
@@ -81,7 +78,6 @@ void FileReader::initialise(Parameters* par) {
                 m_inputTrees[objectID]->SetBranchAddress("time", &m_time);
 
                 // Cast the TestBeamObject as a specific type using a Factory
-                // This will return a Timepix1Pixel*, Timepix3Pixel* etc.
                 m_objects[objectID] = TestBeamObject::Factory(detectorType, objectType);
                 m_inputTrees[objectID]->SetBranchAddress(objectType.c_str(), &m_objects[objectID]);
                 m_currentPosition[objectID] = 0;

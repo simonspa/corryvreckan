@@ -4,7 +4,6 @@
 
 // Local include files
 #include "Analysis.h"
-#include "objects/Timepix3Track.h"
 #include "utils/log.h"
 
 #include <dlfcn.h>
@@ -320,14 +319,6 @@ void Analysis::run() {
             if(check == Failure)
                 run = false;
         }
-        // Count number of tracks produced
-        //    Timepix3Tracks* tracks =
-        //    (Timepix3Tracks*)m_clipboard->get("Timepix3","tracks");
-        //    if(tracks != NULL) nTracks += tracks->size();
-
-        //    LOG(DEBUG) << "\r[Analysis] Current time is
-        //    "<<fixed<<setw(10)<<m_parameters->currentTime<<". Produced
-        //    "<<nTracks<<" tracks"<<flush;
 
         // Clear objects from this iteration from the clipboard
         m_clipboard->clear();
