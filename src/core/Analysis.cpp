@@ -95,28 +95,12 @@ Analysis::Analysis(std::string config_file_name) : m_terminate(false) {
         m_parameters->masked[m] = true;
     }
 
-    // FIXME Read remaining parametes from command line:
-    // Overwrite steering file values from command line
-    // parameters->readCommandLineOptions(argc,argv);
-
     // Load mask file for the dut (if specified)
     m_parameters->dutMaskFile = global_config.get<std::string>("dutMaskFile", "defaultMask.dat");
     m_parameters->readDutMask();
 
-    // FIXME per-algorithm settings:
-    //   basicTracking->minHitsOnTrack = 7;
-    // clicpixAnalysis->timepix3Telescope = true;
-    //  spatialTracking->debug = true;
-    // testAlgorithm->makeCorrelations = true;
-    // dataDump->m_detector = parameters->DUT;
-
     // New clipboard for storage:
     m_clipboard = new Clipboard();
-}
-
-// Add an algorithm to the list of algorithms to run
-void Analysis::add(Algorithm* algorithm) {
-    m_algorithms.push_back(algorithm);
 }
 
 void Analysis::load() {

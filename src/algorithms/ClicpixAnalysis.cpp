@@ -7,9 +7,10 @@ using namespace corryvreckan;
 using namespace std;
 
 ClicpixAnalysis::ClicpixAnalysis(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
-    m_associationCut = 0.05; // 100 um
-    m_proximityCut = 0.0005; // 125 um
-    timepix3Telescope = false;
+
+    m_associationCut = m_config.get<double>("associationCut", 0.05); // 100 um
+    m_proximityCut = m_config.get<double>("proximityCut", 0.0005);   // 125 um
+    timepix3Telescope = m_config.get<bool>("timepix3Telescope", false);
 }
 
 template <typename T> std::string convertToString(T number) {

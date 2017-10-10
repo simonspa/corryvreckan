@@ -36,7 +36,6 @@ namespace corryvreckan {
         virtual ~Analysis(){};
 
         // Member functions
-        void add(Algorithm*);
         void load();
 
         void run();

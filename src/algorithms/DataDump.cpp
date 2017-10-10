@@ -4,7 +4,7 @@ using namespace corryvreckan;
 using namespace std;
 
 DataDump::DataDump(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
-    m_detector = "DeviceToDumpData";
+    m_detector = m_config.get<std::string>("detector", "DeviceToDumpData");
 }
 
 void DataDump::initialise(Parameters* par) {
