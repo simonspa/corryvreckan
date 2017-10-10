@@ -3,8 +3,8 @@ INCLUDE_DIRECTORIES(SYSTEM ${CORRYVRECKAN_DEPS_INCLUDE_DIRS})
 
 # Create core library
 ADD_LIBRARY(CorryvreckanCore SHARED
-    Analysis.C
-    Parameters.C
+    Analysis.cpp
+    Parameters.cpp
     utils/log.cpp
     utils/unit.cpp
     config/ConfigManager.cpp

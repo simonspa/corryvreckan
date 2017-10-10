@@ -30,7 +30,6 @@ MACRO(corryvreckan_algorithm name)
 
   TARGET_SOURCES(${LIBNAME} PRIVATE "${PROJECT_SOURCE_DIR}/src/core/dynamic_algorithm_impl.cpp")
   SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/dynamic_algorithm_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${name}.h")
-  SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/Algorithm.C" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${name}.h")
 
   # Link the standard allpix libraries
   TARGET_LINK_LIBRARIES(${LIBNAME} ${CORRYVRECKAN_LIBRARIES} ${CORRYVRECKAN_DEPS_LIBRARIES})
@@ -45,7 +44,7 @@ ENDMACRO()
 INCLUDE_DIRECTORIES(SYSTEM ${_DEPS_INCLUDE_DIRS})
 
 # Build all the modules
-FILE(GLOB srcfiles ${CMAKE_CURRENT_SOURCE_DIR}/*.C)
+FILE(GLOB srcfiles ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 FOREACH(src ${srcfiles})
   GET_FILENAME_COMPONENT(name ${src} NAME_WE)
   # Add the library

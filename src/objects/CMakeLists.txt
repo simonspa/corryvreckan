@@ -42,7 +42,7 @@ ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDiction
 
 # Define the library adding the object file created above
 ADD_LIBRARY(CorryvreckanObjects SHARED
-    TestBeamObject.C
+    TestBeamObject.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx.o
 )
 

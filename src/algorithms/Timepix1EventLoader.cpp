@@ -1,5 +1,5 @@
-#include <dirent.h>
 #include "Timepix1EventLoader.h"
+#include <dirent.h>
 #include "objects/Pixel.h"
 
 using namespace corryvreckan;

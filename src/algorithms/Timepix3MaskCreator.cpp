@@ -1,6 +1,6 @@
+#include "Timepix3MaskCreator.h"
 #include <fstream>
 #include <istream>
-#include "Timepix3MaskCreator.h"
 
 using namespace corryvreckan;
 

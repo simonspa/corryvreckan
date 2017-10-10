@@ -1,5 +1,5 @@
-#include <TVirtualPadEditor.h>
 #include "OnlineMonitor.h"
+#include <TVirtualPadEditor.h>
 
 using namespace corryvreckan;
 using namespace std;
