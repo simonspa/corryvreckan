@@ -12,7 +12,6 @@ using namespace std;
 Parameters::Parameters() {
 
     histogramFile = "outputHistograms.root";
-    conditionsFile = "cond.dat";
     dutMaskFile = "defaultMask.dat";
     inputDirectory = "";
     currentTime = 0.; // seconds

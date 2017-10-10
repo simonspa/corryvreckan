@@ -52,7 +52,6 @@ namespace corryvreckan {
         }
 
         // Member variables
-        std::string conditionsFile;
         std::string inputTupleFile;
         std::string inputDirectory;
         std::string outputTupleFile;

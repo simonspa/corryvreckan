@@ -11,6 +11,7 @@
 
 #include "Algorithm.h"
 #include "Clipboard.h"
+#include "DetectorParameters.h"
 #include "Parameters.h"
 #include "config/ConfigManager.hpp"
 #include "config/Configuration.hpp"
@@ -53,11 +54,7 @@ namespace corryvreckan {
         Parameters* m_parameters;
         Clipboard* m_clipboard;
         Configuration global_config;
-        std::vector<Algorithm*> m_algorithms;
-        TFile* m_histogramFile;
-        TDirectory* m_directory;
-        std::map<std::string, void*> loaded_libraries_;
-        int m_events;
+        std::map<std::string, DetectorParameters*> detectors;
 
     private:
         void load_detectors();
@@ -65,6 +62,13 @@ namespace corryvreckan {
 
         // Log file if specified
         std::ofstream log_file_;
+
+        TFile* m_histogramFile;
+        TDirectory* m_directory;
+        int m_events;
+
+        std::vector<Algorithm*> m_algorithms;
+        std::map<std::string, void*> loaded_libraries_;
 
         std::atomic<bool> m_terminate;
         std::unique_ptr<corryvreckan::ConfigManager> conf_mgr_;

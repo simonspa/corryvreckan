@@ -1,3 +1,6 @@
+#ifndef DET_PARAMETERS_H
+#define DET_PARAMETERS_H 1
+
 #include <map>
 #include <string>
 
@@ -257,3 +260,5 @@ namespace corryvreckan {
         std::string m_maskfile;
     };
 }
+
+#endif // DET_PARAMETERS_H
