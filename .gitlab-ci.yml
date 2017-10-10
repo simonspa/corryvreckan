@@ -1,0 +1,107 @@
+stages:
+    - compilation
+
+#######################
+# Compilation targets #
+#######################
+
+cmp:slc6-gcc:
+    stage: compilation
+    tags:
+        - docker
+    image: clicdp/slc6-base
+    script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - mkdir build
+        - cd build
+        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS ..
+        - ninja
+        - ninja install
+    artifacts:
+        paths:
+            - build
+            - bin
+            - lib
+        expire_in: 3 hour
+
+cmp:slc6-llvm:
+    stage: compilation
+    tags:
+        - docker
+    image: clicdp/slc6-base
+    script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - mkdir build
+        - cd build
+        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS ..
+        - ninja
+        - ninja install
+    artifacts:
+        paths:
+            - build
+            - bin
+            - lib
+        expire_in: 3 hour
+
+cmp:cc7-gcc:
+    stage: compilation
+    tags:
+        - docker
+    image: clicdp/cc7-base
+    script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - mkdir build
+        - cd build
+        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS ..
+        - ninja
+        - ninja install
+    artifacts:
+        paths:
+            - build
+            - bin
+            - lib
+        expire_in: 3 hour
+
+cmp:cc7-llvm:
+    stage: compilation
+    tags:
+        - docker
+    image: clicdp/cc7-base
+    script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - mkdir build
+        - cd build
+        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS ..
+        - ninja
+        - ninja install
+    artifacts:
+        paths:
+            - build
+            - bin
+            - lib
+        expire_in: 3 hour
+
+cmp:mac1012-clang:
+    stage: compilation
+    tags:
+        - mac
+    script:
+        - source .gitlab-ci.d/init_mac.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - mkdir build
+        - cd build
+        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DCMAKE_USE_RELATIVE_PATHS=TRUE ..
+        - ninja
+        - ninja install
+    artifacts:
+        paths:
+            - build
+            - bin
+            - lib
+        expire_in: 3 hour
