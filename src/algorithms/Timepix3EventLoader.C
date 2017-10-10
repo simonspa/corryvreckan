@@ -48,7 +48,7 @@ void Timepix3EventLoader::initialise(Parameters* par) {
     while(entry = readdir(directory)) {
 
         // If these are folders then the name is the chip ID
-        if(entry->d_type == DT_DIR) {
+        if(entry->d_type == DT_DIR || (entry->d_type == DT_UNKNOWN && std::string(entry->d_name).at(0) == 'W')) {
 
             LOG(DEBUG) << "Found directory for detector ID " << entry->d_name;
 
