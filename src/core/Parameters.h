@@ -42,7 +42,6 @@ namespace corryvreckan {
         virtual ~Parameters(){};
 
         // Functions
-        bool readConditions();
         bool writeConditions();
         void readDutMask();
         void maskDutColumn(int);

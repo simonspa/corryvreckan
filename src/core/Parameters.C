@@ -48,68 +48,6 @@ bool Parameters::writeConditions() {
     return true;
 }
 
-bool Parameters::readConditions() {
-
-    // Open the conditions file to read detector information
-    ifstream conditions;
-    conditions.open(conditionsFile.c_str());
-    string line;
-
-    LOG(INFO) << "-------------------------------------------- Reading conditions "
-                 "---------------------------------------------------";
-    // Loop over file
-    while(getline(conditions, line)) {
-
-        // Ignore header
-        if(line.find("DetectorID") != string::npos) {
-            LOG(INFO) << "Device parameters: " << line;
-            continue;
-        }
-
-        // Make default values for detector parameters
-        string detectorID(""), detectorType("");
-        int nPixelsX(0), nPixelsY(0);
-        double pitchX(0), pitchY(0), x(0), y(0), z(0), Rx(0), Ry(0), Rz(0);
-        double timingOffset(0.);
-
-        // Grab the line and parse the data into the relevant variables
-        istringstream detectorInfo(line);
-        detectorInfo >> detectorID >> detectorType >> nPixelsX >> nPixelsY >> pitchX >> pitchY >> x >> y >> z >> Rx >> Ry >>
-            Rz >> timingOffset;
-        if(detectorID == "")
-            continue;
-
-        // Save the detector parameters in memory
-        DetectorParameters* detectorSummary =
-            new DetectorParameters(detectorType, nPixelsX, nPixelsY, pitchX, pitchY, x, y, z, Rx, Ry, Rz, timingOffset);
-        detector[detectorID] = detectorSummary;
-
-        // Temp: register detector
-        registerDetector(detectorID);
-
-        LOG(INFO) << "Device parameters: " << line;
-    }
-    LOG(INFO) << "---------------------------------------------------------------"
-                 "----------------------------------------------------";
-
-    // Now check that all devices which are registered have parameters as well
-    bool unregisteredDetector = false;
-    // Loop over all registered detectors
-    for(auto& det : detectors) {
-        if(detector.count(det) == 0) {
-            // LOG(INFO) << "Detector " << detectors[det] << " has no conditions loaded";
-            unregisteredDetector = true;
-        }
-    }
-    if(unregisteredDetector)
-        return false;
-
-    // Finally, sort the list of detectors by z position (from lowest to highest)
-    // FIXME reimplement
-    //
-    return true;
-}
-
 void Parameters::readDutMask() {
     // If no masked file set, do nothing
     if(dutMaskFile == "defaultMask.dat")
