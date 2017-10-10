@@ -60,11 +60,15 @@ namespace corryvreckan {
         int m_events;
 
     private:
+        void load_detectors();
+        void load_algorithms();
+
         // Log file if specified
         std::ofstream log_file_;
 
         std::atomic<bool> m_terminate;
         std::unique_ptr<corryvreckan::ConfigManager> conf_mgr_;
+        std::unique_ptr<corryvreckan::ConfigManager> det_mgr_;
 
         Algorithm* create_algorithm(void* library, corryvreckan::Configuration config, Clipboard* clipboard);
         std::tuple<LogLevel, LogFormat> set_algorithm_before(const std::string&, const Configuration& config);

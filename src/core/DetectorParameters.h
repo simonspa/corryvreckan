@@ -9,6 +9,8 @@
 #include "Math/Translation3D.h"
 #include "Math/Vector3D.h"
 
+#include "utils/log.h"
+
 using namespace ROOT::Math;
 
 namespace corryvreckan {
@@ -43,6 +45,14 @@ namespace corryvreckan {
             m_timingOffset = timingOffset;
 
             this->initialise();
+
+            LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixelsX << "x" << m_nPixelsY << " px, pitch of "
+                       << m_pitchX << "/" << m_pitchY << "mm";
+            LOG(TRACE) << "Position:    " << m_displacementX << "," << m_displacementY << "," << m_displacementZ;
+            LOG(TRACE) << "Orientation: " << m_rotationX << "," << m_rotationY << "," << m_rotationZ;
+            if(m_timingOffset > 0.) {
+                LOG(TRACE) << "Timing offset: " << m_timingOffset;
+            }
         }
         ~DetectorParameters() {}
 

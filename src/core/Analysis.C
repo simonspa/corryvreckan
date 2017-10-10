@@ -1,9 +1,13 @@
 // ROOT include files
+#include <Math/DisplacementVector2D.h>
+#include <Math/Vector2D.h>
+#include <Math/Vector3D.h>
+#include <TFile.h>
 #include <TSystem.h>
-#include "TFile.h"
 
 // Local include files
 #include "Analysis.h"
+#include "utils/ROOT.h"
 #include "utils/log.h"
 
 #include <dlfcn.h>
@@ -95,12 +99,6 @@ Analysis::Analysis(std::string config_file_name) : m_terminate(false) {
     // Overwrite steering file values from command line
     // parameters->readCommandLineOptions(argc,argv);
 
-    // Load alignment parameters
-    std::string conditionsFile = global_config.get<std::string>("conditionsFile");
-    m_parameters->conditionsFile = conditionsFile;
-    if(!m_parameters->readConditions())
-        throw ConfigFileUnavailableError(conditionsFile);
-
     // Load mask file for the dut (if specified)
     m_parameters->dutMaskFile = global_config.get<std::string>("dutMaskFile", "defaultMask.dat");
     m_parameters->readDutMask();
@@ -122,7 +120,61 @@ void Analysis::add(Algorithm* algorithm) {
 }
 
 void Analysis::load() {
+    load_detectors();
+    load_algorithms();
+}
 
+void Analysis::load_detectors() {
+    std::string detectors_file = global_config.getPath("detectors_file");
+
+    // Load the detector configuration
+    det_mgr_ = std::make_unique<corryvreckan::ConfigManager>(detectors_file);
+
+    for(auto& detector : det_mgr_->getConfigurations()) {
+        LOG(INFO) << "Detector: " << detector.getName();
+
+        // Get information from the conditions file:
+        auto position = detector.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
+        auto orientation = detector.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
+        // Number of pixels
+        auto npixels = detector.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
+        // Size of the pixels
+        auto pitch = detector.get<ROOT::Math::XYVector>("pixel_pitch");
+
+        DetectorParameters* det_parm = new DetectorParameters(detector.get<std::string>("type"),
+                                                              npixels.x(),
+                                                              npixels.y(),
+                                                              pitch.x(),
+                                                              pitch.y(),
+                                                              position.x(),
+                                                              position.y(),
+                                                              position.z(),
+                                                              orientation.x(),
+                                                              orientation.y(),
+                                                              orientation.z(),
+                                                              detector.get<double>("time_offset", 0.0));
+        m_parameters->detector[detector.getName()] = det_parm;
+        m_parameters->registerDetector(detector.getName());
+    }
+
+    // Now check that all devices which are registered have parameters as well
+    bool unregisteredDetector = false;
+    // Loop over all registered detectors
+    for(auto& det : m_parameters->detectors) {
+        if(m_parameters->detector.count(det) == 0) {
+            LOG(INFO) << "Detector " << det << " has no conditions loaded";
+            unregisteredDetector = true;
+        }
+    }
+    if(unregisteredDetector) {
+        throw RuntimeError("Detector missing conditions.");
+    }
+
+    // Finally, sort the list of detectors by z position (from lowest to highest)
+    // FIXME reimplement - std::sort(m_parameters->detectors.begin(), m_parameters->detectors.end(), sortByZ);
+}
+
+void Analysis::load_algorithms() {
     std::vector<Configuration> configs = conf_mgr_->getConfigurations();
 
     // Create histogram output file

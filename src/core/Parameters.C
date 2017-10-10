@@ -18,12 +18,6 @@ Parameters::Parameters() {
     currentTime = 0.; // seconds
 }
 
-// Sort function for detectors from low to high z
-map<string, DetectorParameters*> globalDetector;
-bool corryvreckan::sortByZ(string detector1, string detector2) {
-    return (globalDetector[detector1]->displacementZ() < globalDetector[detector2]->displacementZ());
-}
-
 bool Parameters::writeConditions() {
 
     // Open the conditions file to write detector information
@@ -111,9 +105,8 @@ bool Parameters::readConditions() {
         return false;
 
     // Finally, sort the list of detectors by z position (from lowest to highest)
-    globalDetector = detector;
-    std::sort(detectors.begin(), detectors.end(), sortByZ);
-
+    // FIXME reimplement
+    //
     return true;
 }
 
