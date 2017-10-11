@@ -91,7 +91,7 @@ void OnlineMonitor::initialise(Parameters* par) {
 
     // Main frame resizing
     gui->m_mainFrame->AddFrame(gui->buttonMenu, new TGLayoutHints(kLHintsLeft, 10, 10, 10, 10));
-    gui->m_mainFrame->SetWindowName("CLIC Tesbeam Monitoring");
+    gui->m_mainFrame->SetWindowName("Corryvreckan Testbeam Monitor");
     gui->m_mainFrame->MapSubwindows();
     gui->m_mainFrame->Resize(gui->m_mainFrame->GetDefaultSize());
 
