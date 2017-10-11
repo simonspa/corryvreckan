@@ -7,8 +7,11 @@ using namespace std;
 
 Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
-    m_numberOfTracksForAlignment = 20000;
-    nIterations = 3;
+    m_numberOfTracksForAlignment = m_config.get<int>("number_of_tracks", 20000);
+    nIterations = m_config.get<int>("iterations", 3);
+
+    // Get alignment method:
+    alignmentMethod = m_config.get<int>("alignmentMethod");
 }
 
 // Global container declarations
@@ -39,8 +42,10 @@ StatusCode Alignment::run(Clipboard* clipboard) {
     }
 
     // If we have enough tracks for the alignment, tell the event loop to finish
-    if(m_alignmenttracks.size() >= m_numberOfTracksForAlignment)
+    if(m_alignmenttracks.size() >= m_numberOfTracksForAlignment) {
+        LOG(STATUS) << "Accumulated " << m_alignmenttracks.size() << " tracks, interrupting processing.";
         return Failure;
+    }
 
     // Otherwise keep going
     return Success;
@@ -157,9 +162,6 @@ void Alignment::finalise() {
 
     // If not enough tracks were produced, do nothing
     // if(m_alignmenttracks.size() < m_numberOfTracksForAlignment) return;
-
-    // Get alignment method:
-    int alignmentMethod = m_config.get<int>("alignmentMethod");
 
     // Make the fitting object
     TVirtualFitter* residualFitter = TVirtualFitter::Fitter(0, 50);

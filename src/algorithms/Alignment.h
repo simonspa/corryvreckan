@@ -27,6 +27,7 @@ namespace corryvreckan {
         Tracks m_alignmenttracks;
         int nIterations;
         int m_numberOfTracksForAlignment;
+        int alignmentMethod;
     };
 }
 #endif // ALIGNMENT_H
