@@ -19,11 +19,10 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
-        // Extra functions
-        bool loadData(std::string, Pixels*, SpidrSignals*);
-        void maskPixels(std::string, std::string);
-
     private:
+        bool loadData(Detector* detector, Pixels*, SpidrSignals*);
+        void maskPixels(Detector*, std::string);
+
         // cofngiuration paramaters:
         bool applyTimingCut;
         double m_timingCut;

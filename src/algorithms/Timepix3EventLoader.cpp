@@ -58,20 +58,25 @@ void Timepix3EventLoader::initialise(Parameters* par) {
             DIR* dataDir = opendir(dataDirName.c_str());
             string trimdacfile;
 
+            // Check if this device has conditions loaded and is a Timepix3
+            auto it = find_if(
+                m_detectors.begin(), m_detectors.end(), [&detectorID](Detector* obj) { return obj->name() == detectorID; });
+
+            if(it == m_detectors.end()) {
+                LOG(DEBUG) << "Device with detector ID " << entry->d_name << " is not registered.";
+                continue;
+            }
+
+            Detector* detector = *it;
+
             // Check if this device is to be masked
             if(parameters->masked.count(detectorID) != 0) {
                 LOG(DEBUG) << "Device with detector ID " << entry->d_name << " is masked.";
                 continue;
             }
 
-            // Check if this device has conditions loaded and is a Timepix3
-            if(parameters->detector.count(detectorID) == 0) {
-                LOG(DEBUG) << "Device with detector ID " << entry->d_name << " does not have conditions loaded.";
-                continue;
-            }
-
-            if(parameters->detector[detectorID]->m_detectorType != "Timepix3") {
-                LOG(DEBUG) << "Device with detector ID " << entry->d_name << " is not of type Timepix3.";
+            if(detector->type() != "Timepix3") {
+                LOG(WARNING) << "Device with detector ID " << entry->d_name << " is not of type Timepix3.";
                 continue;
             }
 
@@ -107,20 +112,14 @@ void Timepix3EventLoader::initialise(Parameters* par) {
             if(m_nFiles.count(detectorID) > 0) {
 
                 LOG(INFO) << "Registering detector " << detectorID;
-                if(parameters->detector.count(detectorID) == 0) {
-                    LOG(ERROR) << "Detector " << detectorID << " has no alignment/conditions loaded. Please check "
-                                                               "that it is in the alignment file";
-                    return;
-                }
-                //        parameters->registerDetector(detectorID);
 
                 // Now that we have all of the data files and mask files for this
                 // detector, pass the mask file to parameters
                 LOG(INFO) << "Set mask file " << trimdacfile;
-                parameters->detector[detectorID]->setMaskFile(trimdacfile);
+                detector->setMaskFile(trimdacfile);
 
                 // Apply the pixel masking
-                maskPixels(detectorID, trimdacfile);
+                maskPixels(detector, trimdacfile);
             }
         }
     }
@@ -143,11 +142,11 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
     int loadedData = 0;
 
     // Loop through all registered detectors
-    for(int det = 0; det < parameters->nDetectors; det++) {
+    for(auto& detector : m_detectors) {
 
         // Check if they are a Timepix3
-        string detectorID = parameters->detectors[det];
-        if(parameters->detector[detectorID]->type() != "Timepix3")
+        string detectorID = detector->name();
+        if(detector->type() != "Timepix3")
             continue;
         if(parameters->masked.count(detectorID))
             continue;
@@ -157,7 +156,7 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
         SpidrSignals* spidrData = new SpidrSignals();
 
         // Load the next chunk of data
-        bool data = loadData(detectorID, deviceData, spidrData);
+        bool data = loadData(detector, deviceData, spidrData);
 
         // If data was loaded then put it on the clipboard
         if(data) {
@@ -169,7 +168,7 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
 
         // Check if all devices have reached the end of file
         devices++;
-        if(feof(m_currentFile[detectorID]))
+        if(m_currentFile[detectorID] != NULL && feof(m_currentFile[detectorID]))
             endOfFiles++;
     }
 
@@ -191,7 +190,7 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
 }
 
 // Function to load the pixel mask file
-void Timepix3EventLoader::maskPixels(string detectorID, string trimdacfile) {
+void Timepix3EventLoader::maskPixels(Detector* detector, string trimdacfile) {
 
     // Open the mask file
     ifstream trimdacs;
@@ -207,7 +206,7 @@ void Timepix3EventLoader::maskPixels(string detectorID, string trimdacfile) {
         for(int row = 0; row < 256; row++) {
             trimdacs >> t_col >> t_row >> t_trim >> t_mask >> t_tpen;
             if(t_mask)
-                parameters->detector[detectorID]->maskChannel(t_col, t_row);
+                detector->maskChannel(t_col, t_row);
         }
     }
 
@@ -216,7 +215,9 @@ void Timepix3EventLoader::maskPixels(string detectorID, string trimdacfile) {
 }
 
 // Function to load data for a given device, into the relevant container
-bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrSignals* spidrData) {
+bool Timepix3EventLoader::loadData(Detector* detector, Pixels* devicedata, SpidrSignals* spidrData) {
+
+    string detectorID = detector->name();
 
     //  if(detectorID == "W0019_F07") debug = true;
     //  if(detectorID != "W0019_F07") debug = false;
@@ -440,7 +441,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
             const UShort_t row = (spix + (pix & 0x3));
 
             // Check if this pixel is masked
-            if(parameters->detector[detectorID]->masked(col, row))
+            if(detector->masked(col, row))
                 continue;
 
             // Get the rest of the data from the pixel
@@ -459,7 +460,7 @@ bool Timepix3EventLoader::loadData(string detectorID, Pixels* devicedata, SpidrS
             // 40000000.);
 
             // Add the timing offset from the coniditions file (if any)
-            time += (long long int)(parameters->detector[detectorID]->timingOffset() * 4096. * 40000000.);
+            time += (long long int)(detector->timingOffset() * 4096. * 40000000.);
 
             // The time from the pixels has a maximum value of ~26 seconds. We compare
             // the pixel time
