@@ -102,52 +102,13 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
         // Get the cluster time
         long long int timestamp = cluster->timestamp();
 
-        //    // Loop over each subsequent plane and look for the closest cluster in
-        //    a given time window
-        //    for(int det=0; det<detectors.size(); det++){
-        //      string detectorID = detectors[det];
-        //      // Don't look for clusters if there are none, or if it is the
-        //      reference device
-        //      if(detectorID == reference) continue;
-        //      if(clusters[detectorID] == NULL) continue;
-        //      // If the detector is excluded from tracking ignore it
-        //      if(parameters->excludedFromTracking.count(detectorID) != 0)
-        //      continue;
-        //      // Get the closest cluster
-        //      Cluster* newCluster = getNearestCluster(cluster, used,
-        //      clusters[detectorID]);
-        //      if(newCluster == NULL) continue;
-        //			// Add the cluster to the track
-        //      track->addCluster(newCluster);
-        //      used[newCluster] = true;
-        //    }
-
-        /*
-        // Loop over each subsequent plane and look for a cluster within 100 ns
-        for(int det=0; det<detectors.size(); det++){
-          if(detectors[det] == reference) continue;
-          if(clusters[detectors[det]] == NULL) continue;
-          // If excluded from tracking ignore this plane
-          if(parameters->excludedFromTracking.count(detectors[det]) != 0) continue;
-          Cluster* newCluster = getNearestCluster(timestamp,
-        (*clusters[detectors[det]]) );
-          if( ((newCluster->timestamp() - timestamp) / (4096.*40000000.)) >
-        (10./1000000000.) ) continue;
-          // Check if spatially more than 200 um
-          if( abs(cluster->globalX() - newCluster->globalX()) > spatialCut ||
-        abs(cluster->globalY() - newCluster->globalY()) > spatialCut ) continue;
-          // Add the cluster to the track
-          track->addCluster(newCluster);
-        }//*/
-
         // Loop over each subsequent plane and look for a cluster within 100 ns
         for(auto& detectorID : detectors) {
+            // FIXME TODO check that it is obvious we are by default including all detectors!
+            // if(detectorID == parameters->DUT) continue;
             if(detectorID == seedPlane)
                 continue;
             if(trees.count(detectorID) == 0)
-                continue;
-            // If excluded from tracking ignore this plane
-            if(parameters->excludedFromTracking.count(detectorID) != 0)
                 continue;
 
             // Get all neighbours within 200 ns
