@@ -17,17 +17,13 @@ SpatialClustering::SpatialClustering(Configuration config, std::vector<Detector*
 
 */
 
-void SpatialClustering::initialise(Parameters* par) {
-
-    parameters = par;
+void SpatialClustering::initialise(Parameters*) {
 
     // Initialise histograms per device
-    for(int det = 0; det < parameters->nDetectors; det++) {
+    for(auto& detector : m_detectors) {
 
         // Check if they are a Timepix1
-        string detectorID = parameters->detectors[det];
-        if(parameters->detector[detectorID]->type() != "ATLASpix" &&
-           parameters->detector[detectorID]->type() != "Timepix1" && parameters->detector[detectorID]->type() != "CLICpix")
+        if(detector->type() != "ATLASpix" && detector->type() != "Timepix1" && detector->type() != "CLICpix")
             continue;
     }
 
@@ -37,19 +33,18 @@ void SpatialClustering::initialise(Parameters* par) {
 
 StatusCode SpatialClustering::run(Clipboard* clipboard) {
 
-    // Loop over all Timepix1 and make plots
-    for(int det = 0; det < parameters->nDetectors; det++) {
+    // Loop over all detectors of this algorithm:
+    for(auto& detector : m_detectors) {
+        LOG(TRACE) << "Executing loop for detector " << detector->name();
 
         // Check if they are a Timepix1
-        string detectorID = parameters->detectors[det];
-        if(parameters->detector[detectorID]->type() != "ATLASpix" &&
-           parameters->detector[detectorID]->type() != "Timepix1" && parameters->detector[detectorID]->type() != "CLICpix")
+        if(detector->type() != "ATLASpix" && detector->type() != "Timepix1" && detector->type() != "CLICpix")
             continue;
 
         // Get the pixels
-        Pixels* pixels = (Pixels*)clipboard->get(detectorID, "pixels");
+        Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
         if(pixels == NULL) {
-            LOG(DEBUG) << "Detector " << detectorID << " does not have any pixels on the clipboard";
+            LOG(DEBUG) << "Detector " << detector->name() << " does not have any pixels on the clipboard";
             continue;
         }
 
@@ -60,8 +55,8 @@ StatusCode SpatialClustering::run(Clipboard* clipboard) {
         bool addedPixel;
 
         // Get the device dimensions
-        int nRows = parameters->detector[detectorID]->nPixelsY();
-        int nCols = parameters->detector[detectorID]->nPixelsX();
+        int nRows = detector->nPixelsY();
+        int nCols = detector->nPixelsX();
 
         // Fill the hitmap with pixels
         for(int iP = 0; iP < pixels->size(); iP++) {
@@ -125,12 +120,12 @@ StatusCode SpatialClustering::run(Clipboard* clipboard) {
             }
 
             // Finalise the cluster and save it
-            calculateClusterCentre(cluster);
+            calculateClusterCentre(detector, cluster);
             deviceClusters->push_back(cluster);
         }
 
-        clipboard->put(detectorID, "clusters", deviceClusters);
-        LOG(DEBUG) << "Put " << deviceClusters->size() << " clusters on the clipboard for detector " << detectorID
+        clipboard->put(detector->name(), "clusters", deviceClusters);
+        LOG(DEBUG) << "Put " << deviceClusters->size() << " clusters on the clipboard for detector " << detector->name()
                    << ". From " << pixels->size() << " pixels";
     }
 
@@ -150,7 +145,7 @@ void SpatialClustering::finalise() {
  Function to calculate the centre of gravity of a cluster.
  Sets the local and global cluster positions as well.
 */
-void SpatialClustering::calculateClusterCentre(Cluster* cluster) {
+void SpatialClustering::calculateClusterCentre(Detector* detector, Cluster* cluster) {
 
     LOG(DEBUG) << "== Making cluster centre";
     // Empty variables to calculate cluster position
@@ -176,13 +171,11 @@ void SpatialClustering::calculateClusterCentre(Cluster* cluster) {
     LOG(DEBUG) << "- cluster row, col: " << row << "," << column;
 
     // Create object with local cluster position
-    PositionVector3D<Cartesian3D<double>> positionLocal(
-        parameters->detector[detectorID]->pitchX() * (column - parameters->detector[detectorID]->nPixelsX() / 2.),
-        parameters->detector[detectorID]->pitchY() * (row - parameters->detector[detectorID]->nPixelsY() / 2.),
-        0);
+    PositionVector3D<Cartesian3D<double>> positionLocal(detector->pitchX() * (column - detector->nPixelsX() / 2.),
+                                                        detector->pitchY() * (row - detector->nPixelsY() / 2.),
+                                                        0);
     // Calculate global cluster position
-    PositionVector3D<Cartesian3D<double>> positionGlobal =
-        *(parameters->detector[detectorID]->m_localToGlobal) * positionLocal;
+    PositionVector3D<Cartesian3D<double>> positionGlobal = *(detector->m_localToGlobal) * positionLocal;
 
     // Set the cluster parameters
     cluster->setRow(row);

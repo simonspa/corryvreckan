@@ -21,7 +21,7 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
-        void calculateClusterCentre(Cluster*);
+        void calculateClusterCentre(Detector* detector, Cluster*);
 
         // Member variables
         int m_eventNumber;
