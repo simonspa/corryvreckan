@@ -30,7 +30,7 @@ bool Parameters::writeConditions() {
 
     // Loop over all detectors
     for(auto& detectorID : this->detectors) {
-        DetectorParameters* detectorParameters = this->detector[detectorID];
+        Detector* detectorParameters = this->detector[detectorID];
         // Write information to file
         conditions << std::left << setw(12) << detectorID << setw(14) << detectorParameters->type() << setw(10)
                    << detectorParameters->nPixelsX() << setw(10) << detectorParameters->nPixelsY() << setw(8)

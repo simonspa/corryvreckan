@@ -102,18 +102,19 @@ void Analysis::load_detectors() {
         // Size of the pixels
         auto pitch = detector.get<ROOT::Math::XYVector>("pixel_pitch");
 
-        DetectorParameters* det_parm = new DetectorParameters(detector.get<std::string>("type"),
-                                                              npixels.x(),
-                                                              npixels.y(),
-                                                              pitch.x(),
-                                                              pitch.y(),
-                                                              position.x(),
-                                                              position.y(),
-                                                              position.z(),
-                                                              orientation.x(),
-                                                              orientation.y(),
-                                                              orientation.z(),
-                                                              detector.get<double>("time_offset", 0.0));
+        Detector* det_parm = new Detector(detector.getName(),
+                                          detector.get<std::string>("type"),
+                                          npixels.x(),
+                                          npixels.y(),
+                                          pitch.x(),
+                                          pitch.y(),
+                                          position.x(),
+                                          position.y(),
+                                          position.z(),
+                                          orientation.x(),
+                                          orientation.y(),
+                                          orientation.z(),
+                                          detector.get<double>("time_offset", 0.0));
 
         if(detector.has("mask_file")) {
             std::string mask_file = detector.getPath("mask_file");
@@ -335,6 +336,20 @@ Algorithm* Analysis::create_algorithm(void* library, Configuration config, Clipb
 
     // Convert to correct generator function
     auto algorithm_generator = reinterpret_cast<Algorithm* (*)(Configuration, Clipboard*)>(generator); // NOLINT
+
+    // Figure out which detectors should run on this algorithm:
+    std::vector<Detector*> algorithm_det;
+    if(!config.has("detectors")) {
+        algorithm_det = detectors;
+    } else {
+        std::vector<std::string> det_list = config.getArray<std::string>("detectors");
+
+        for(auto& d : detectors) {
+            if(std::find(det_list.begin(), det_list.end(), d->name()) != det_list.end()) {
+                algorithm_det.push_back(d);
+            }
+        }
+    }
 
     // Set the log section header
     std::string old_section_name = Log::getSection();

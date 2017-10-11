@@ -53,7 +53,7 @@ namespace corryvreckan {
         Parameters* m_parameters;
         Clipboard* m_clipboard;
         Configuration global_config;
-        std::map<std::string, DetectorParameters*> detectors;
+        std::vector<Detector*> detectors;
 
     private:
         void load_detectors();

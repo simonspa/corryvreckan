@@ -65,7 +65,7 @@ namespace corryvreckan {
         std::string detectorToAlign;
 
         // Parameters for each detector (stored by detector ID)
-        std::map<std::string, DetectorParameters*> detector;
+        std::map<std::string, Detector*> detector;
     };
 }
 #endif // PARAMETERS_H

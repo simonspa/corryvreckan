@@ -18,22 +18,24 @@ using namespace ROOT::Math;
 
 namespace corryvreckan {
     // Class containing just the detector parameters
-    class DetectorParameters {
+    class Detector {
     public:
         // Constructors and desctructors
-        DetectorParameters() {}
-        DetectorParameters(std::string detectorType,
-                           int nPixelsX,
-                           int nPixelsY,
-                           double pitchX,
-                           double pitchY,
-                           double x,
-                           double y,
-                           double z,
-                           double Rx,
-                           double Ry,
-                           double Rz,
-                           double timingOffset) {
+        Detector() {}
+        Detector(std::string detectorName,
+                 std::string detectorType,
+                 int nPixelsX,
+                 int nPixelsY,
+                 double pitchX,
+                 double pitchY,
+                 double x,
+                 double y,
+                 double z,
+                 double Rx,
+                 double Ry,
+                 double Rz,
+                 double timingOffset) {
+            m_detectorName = detectorName;
             m_detectorType = detectorType;
             m_nPixelsX = nPixelsX;
             m_nPixelsY = nPixelsY;
@@ -57,10 +59,11 @@ namespace corryvreckan {
                 LOG(TRACE) << "Timing offset: " << m_timingOffset;
             }
         }
-        ~DetectorParameters() {}
+        ~Detector() {}
 
         // Functions to retrieve basic information
         std::string type() { return m_detectorType; }
+        std::string name() { return m_detectorName; }
         double pitchX() { return m_pitchX; }
         double pitchY() { return m_pitchY; }
         int nPixelsX() { return m_nPixelsX; }
@@ -229,6 +232,7 @@ namespace corryvreckan {
 
         // Detector information
         std::string m_detectorType;
+        std::string m_detectorName;
         double m_pitchX;
         double m_pitchY;
         int m_nPixelsX;
