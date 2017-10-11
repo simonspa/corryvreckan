@@ -26,10 +26,10 @@ void BasicTracking::initialise(Parameters* par) {
     trackAngleY = new TH1F("trackAngleY", "trackAngleY", 2000, -0.01, 0.01);
 
     // Loop over all Timepix3
-    for(int det = 0; det < parameters->nDetectors; det++) {
+    for(auto& detector : m_detectors) {
         // Check if they are a Timepix3
-        string detectorID = parameters->detectors[det];
-        if(parameters->detector[detectorID]->type() != "Timepix3")
+        string detectorID = detector->name();
+        if(detector->type() != "Timepix3")
             continue;
         string name = "residualsX_" + detectorID;
         residualsX[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
@@ -53,12 +53,12 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
 
     // Loop over all Timepix3 and get clusters
     bool firstDetector = true;
-    int seedPlane = 0;
-    for(int det = 0; det < parameters->nDetectors; det++) {
+    std::string seedPlane;
+    for(auto& detector : m_detectors) {
 
         // Check if they are a Timepix3
-        string detectorID = parameters->detectors[det];
-        if(parameters->detector[detectorID]->type() != "Timepix3")
+        string detectorID = detector->name();
+        if(detector->type() != "Timepix3")
             continue;
 
         // Get the clusters
@@ -70,7 +70,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
             LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters from " << detectorID;
             if(firstDetector) {
                 referenceClusters = tempClusters;
-                seedPlane = det;
+                seedPlane = detector->name();
             }
             firstDetector = false;
             if(tempClusters->size() == 0)
@@ -89,13 +89,12 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
     // Loop over all clusters
     int nSeedClusters = referenceClusters->size();
     map<Cluster*, bool> used;
-    for(int iSeedCluster = 0; iSeedCluster < nSeedClusters; iSeedCluster++) {
+    for(auto& cluster : (*referenceClusters)) {
 
         // Make a new track
-        LOG(DEBUG) << "Looking at seed cluster " << iSeedCluster;
+        LOG(DEBUG) << "Looking next seed cluster";
+
         Track* track = new Track();
-        // Get the cluster
-        Cluster* cluster = (*referenceClusters)[iSeedCluster];
         // Add the cluster to the track
         track->addCluster(cluster);
         track->setTimestamp(cluster->timestamp());
@@ -142,21 +141,21 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
         }//*/
 
         // Loop over each subsequent plane and look for a cluster within 100 ns
-        for(int det = 0; det < detectors.size(); det++) {
-            if(det == seedPlane)
+        for(auto& detectorID : detectors) {
+            if(detectorID == seedPlane)
                 continue;
-            if(trees.count(detectors[det]) == 0)
+            if(trees.count(detectorID) == 0)
                 continue;
             // If excluded from tracking ignore this plane
-            if(parameters->excludedFromTracking.count(detectors[det]) != 0)
+            if(parameters->excludedFromTracking.count(detectorID) != 0)
                 continue;
 
             // Get all neighbours within 200 ns
-            LOG(DEBUG) << "Searching for neighbouring cluster on " << detectors[det];
+            LOG(DEBUG) << "Searching for neighbouring cluster on " << detectorID;
             LOG(DEBUG) << "- cluster time is " << cluster->timestamp();
             Cluster* closestCluster = NULL;
             double closestClusterDistance = spatialCut;
-            Clusters neighbours = trees[detectors[det]]->getAllClustersInTimeWindow(cluster, timingCut);
+            Clusters neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut);
 
             LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
 
@@ -164,8 +163,12 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
             double interceptX, interceptY;
             if(track->nClusters() > 1) {
                 track->fit();
-                PositionVector3D<Cartesian3D<double>> interceptPoint =
-                    parameters->detector[detectors[det]]->getIntercept(track);
+
+                // Get the detector
+                auto it = find_if(m_detectors.begin(), m_detectors.end(), [&detectorID](Detector* obj) {
+                    return obj->name() == detectorID;
+                });
+                PositionVector3D<Cartesian3D<double>> interceptPoint = (*it)->getIntercept(track);
                 interceptX = interceptPoint.X();
                 interceptY = interceptPoint.Y();
             } else {
@@ -215,8 +218,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
 
         // Make residuals
         Clusters trackClusters = track->clusters();
-        for(int iTrackCluster = 0; iTrackCluster < trackClusters.size(); iTrackCluster++) {
-            Cluster* trackCluster = trackClusters[iTrackCluster];
+        for(auto& trackCluster : trackClusters) {
             string detectorID = trackCluster->detectorID();
             ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->globalZ());
             residualsX[detectorID]->Fill(intercept.X() - trackCluster->globalX());
@@ -234,10 +236,9 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
     LOG_PROGRESS(STATUS, "basic_tracking") << "Produced " << (int)nTracksTotal << " tracks";
 
     // Clean up tree objects
-    for(int det = 0; det < parameters->nDetectors; det++) {
-        string detectorID = parameters->detectors[det];
-        if(trees.count(detectorID) != 0)
-            delete trees[detectorID];
+    for(auto& detector : m_detectors) {
+        if(trees.count(detector->name()) != 0)
+            delete trees[detector->name()];
     }
 
     LOG(DEBUG) << "End of event";
