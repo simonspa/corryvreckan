@@ -76,29 +76,6 @@ Analysis::Analysis(std::string config_file_name) : m_terminate(false) {
     // FIXME translate new configuration to parameters:
     m_parameters = new Parameters();
 
-    // Define DUT and reference
-    m_parameters->DUT = global_config.get<std::string>("DUT");
-    m_parameters->reference = global_config.get<std::string>("reference");
-
-    m_parameters->detectorToAlign = m_parameters->DUT;
-    m_parameters->excludedFromTracking[m_parameters->DUT] = true;
-
-    if(global_config.has("excludeFromTracking")) {
-        std::vector<std::string> excluding = global_config.getArray<std::string>("excludeFromTracking");
-        for(auto& ex : excluding) {
-            m_parameters->excludedFromTracking[ex] = true;
-        }
-    }
-
-    std::vector<std::string> masking = global_config.getArray<std::string>("masked");
-    for(auto& m : masking) {
-        m_parameters->masked[m] = true;
-    }
-
-    // Load mask file for the dut (if specified)
-    m_parameters->dutMaskFile = global_config.get<std::string>("dutMaskFile", "defaultMask.dat");
-    m_parameters->readDutMask();
-
     // New clipboard for storage:
     m_clipboard = new Clipboard();
 }
@@ -137,6 +114,45 @@ void Analysis::load_detectors() {
                                                               orientation.y(),
                                                               orientation.z(),
                                                               detector.get<double>("time_offset", 0.0));
+
+        if(detector.has("mask_file")) {
+            std::string mask_file = detector.getPath("mask_file");
+            LOG(DEBUG) << "Adding mask to detector \"" << detector.getName() << "\", reading from " << mask_file;
+
+            det_parm->setMaskFile(mask_file);
+            // Open the file with masked pixels
+            std::ifstream inputMaskFile(mask_file, std::ios::in);
+            if(!inputMaskFile.is_open()) {
+                LOG(ERROR) << "Could not open mask file " << mask_file;
+            } else {
+                int row = 0, col = 0;
+                std::string id;
+                std::string line;
+                // loop over all lines and apply masks
+                while(inputMaskFile >> id >> row >> col) {
+                    if(id == "c") {
+                        LOG(TRACE) << "Masking column " << col;
+                        int nRows = det_parm->nPixelsY();
+                        for(int r = 0; r < nRows; r++) {
+                            det_parm->maskChannel(col, r);
+                        }
+                    } else if(id == "r") {
+                        LOG(TRACE) << "Masking row " << row;
+                        int nColumns = det_parm->nPixelsX();
+                        for(int c = 0; c < nColumns; c++) {
+                            det_parm->maskChannel(c, row);
+                        }
+                    } else if(id == "p") {
+                        LOG(TRACE) << "Masking pixel " << col << " " << row;
+                        det_parm->maskChannel(col, row); // Flag to mask a pixel
+                    } else {
+                        LOG(WARNING) << "Could not parse mask entry (id \"" << id << "\", col " << col << " row " << row
+                                     << ")";
+                    }
+                }
+            }
+        }
+
         m_parameters->detector[detector.getName()] = det_parm;
         m_parameters->registerDetector(detector.getName());
     }
@@ -156,6 +172,26 @@ void Analysis::load_detectors() {
 
     // Finally, sort the list of detectors by z position (from lowest to highest)
     // FIXME reimplement - std::sort(m_parameters->detectors.begin(), m_parameters->detectors.end(), sortByZ);
+    //
+
+    // Define DUT and reference
+    m_parameters->DUT = global_config.get<std::string>("DUT");
+    m_parameters->reference = global_config.get<std::string>("reference");
+
+    m_parameters->detectorToAlign = m_parameters->DUT;
+    m_parameters->excludedFromTracking[m_parameters->DUT] = true;
+
+    if(global_config.has("excludeFromTracking")) {
+        std::vector<std::string> excluding = global_config.getArray<std::string>("excludeFromTracking");
+        for(auto& ex : excluding) {
+            m_parameters->excludedFromTracking[ex] = true;
+        }
+    }
+
+    std::vector<std::string> masking = global_config.getArray<std::string>("masked");
+    for(auto& m : masking) {
+        m_parameters->masked[m] = true;
+    }
 }
 
 void Analysis::load_algorithms() {

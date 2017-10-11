@@ -43,9 +43,6 @@ namespace corryvreckan {
 
         // Functions
         bool writeConditions();
-        void readDutMask();
-        void maskDutColumn(int);
-        void maskDutRow(int);
         void registerDetector(std::string detectorID) {
             nDetectors++;
             detectors.push_back(detectorID);
