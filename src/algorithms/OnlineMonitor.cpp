@@ -33,20 +33,20 @@ void OnlineMonitor::initialise(Parameters* par) {
     //=== Overview canvas
     AddButton("Overview", "OverviewCanvas");
     // track chi2
-    AddHisto("OverviewCanvas", "/tbAnalysis/BasicTracking/trackChi2");
+    AddHisto("OverviewCanvas", "/corryvreckan/BasicTracking/trackChi2");
     // reference plane map, residuals
     string reference = parameters->reference;
-    string tot = "/tbAnalysis/TestAlgorithm/clusterTot_" + reference;
+    string tot = "/corryvreckan/TestAlgorithm/clusterTot_" + reference;
     AddHisto("OverviewCanvas", tot);
-    string hitmap = "/tbAnalysis/TestAlgorithm/hitmap_" + reference;
+    string hitmap = "/corryvreckan/TestAlgorithm/hitmap_" + reference;
     AddHisto("OverviewCanvas", hitmap, "colz");
-    string residuals = "/tbAnalysis/BasicTracking/residualsX_" + reference;
+    string residuals = "/corryvreckan/BasicTracking/residualsX_" + reference;
     AddHisto("OverviewCanvas", residuals);
 
     //=== Track canvas
     AddButton("Tracking", "TrackCanvas");
-    AddHisto("TrackCanvas", "/tbAnalysis/BasicTracking/trackChi2");
-    AddHisto("TrackCanvas", "/tbAnalysis/BasicTracking/trackAngleX");
+    AddHisto("TrackCanvas", "/corryvreckan/BasicTracking/trackChi2");
+    AddHisto("TrackCanvas", "/corryvreckan/BasicTracking/trackAngleX");
 
     //=== Per detector canvases
     AddButton("HitMaps", "HitmapCanvas");
@@ -57,27 +57,27 @@ void OnlineMonitor::initialise(Parameters* par) {
     AddButton("ChargeDistributions", "ChargeDistributionCanvas");
 
     // Per detector histograms
-    for(int det = 0; det < parameters->nDetectors; det++) {
-        string detectorID = parameters->detectors[det];
+    for(auto& detector : m_detectors) {
+        string detectorID = detector->name();
 
-        string hitmap = "/tbAnalysis/TestAlgorithm/hitmap_" + detectorID;
+        string hitmap = "/corryvreckan/TestAlgorithm/hitmap_" + detectorID;
         AddHisto("HitmapCanvas", hitmap, "colz");
 
-        string chargeHisto = "/tbAnalysis/TestAlgorithm/clusterTot_" + detectorID;
+        string chargeHisto = "/corryvreckan/TestAlgorithm/clusterTot_" + detectorID;
         AddHisto("ChargeDistributionCanvas", chargeHisto);
 
-        string eventTimeHisto = "/tbAnalysis/TestAlgorithm/eventTimes_" + detectorID;
+        string eventTimeHisto = "/corryvreckan/TestAlgorithm/eventTimes_" + detectorID;
         AddHisto("EventTimeCanvas", eventTimeHisto);
 
-        string correlationXHisto = "/tbAnalysis/TestAlgorithm/correlationX_" + detectorID;
+        string correlationXHisto = "/corryvreckan/TestAlgorithm/correlationX_" + detectorID;
         AddHisto("CorrelationXCanvas", correlationXHisto);
 
-        string correlationYHisto = "/tbAnalysis/TestAlgorithm/correlationY_" + detectorID;
+        string correlationYHisto = "/corryvreckan/TestAlgorithm/correlationY_" + detectorID;
         AddHisto("CorrelationYCanvas", correlationYHisto);
 
         if(parameters->excludedFromTracking.count(detectorID) != 0)
             continue;
-        string residualHisto = "/tbAnalysis/BasicTracking/residualsX_" + detectorID;
+        string residualHisto = "/corryvreckan/BasicTracking/residualsX_" + detectorID;
         AddHisto("ResidualCanvas", residualHisto);
     }
 
