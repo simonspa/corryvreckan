@@ -49,7 +49,6 @@ namespace corryvreckan {
         }
 
         // Member variables
-        std::string inputTupleFile;
         std::string inputDirectory;
         std::string outputTupleFile;
         std::string histogramFile;

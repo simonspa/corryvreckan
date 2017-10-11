@@ -5,12 +5,14 @@ using namespace std;
 
 FileReader::FileReader(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
-    m_onlyDUT = false;
-    m_readPixels = true;
-    m_readClusters = false;
-    m_readTracks = false;
-    m_fileName = "outputTuples.root";
-    m_timeWindow = 1.;
+
+    m_onlyDUT = m_config.get<bool>("onlyDUT", false);
+    m_readPixels = m_config.get<bool>("readPixels", true);
+    m_readClusters = m_config.get<bool>("readClusters", false);
+    m_readTracks = m_config.get<bool>("readTracks", false);
+    m_fileName = m_config.get<std::string>("fileName", "outputTuples.root");
+    m_timeWindow = m_config.get<double>("timeWindow", 1.);
+
     m_currentTime = 0.;
 }
 
@@ -33,7 +35,6 @@ void FileReader::initialise(Parameters* par) {
 
     // Pick up the global parameters
     parameters = par;
-    m_fileName = parameters->inputTupleFile;
 
     // Decide what objects will be read in
     if(m_readPixels)
@@ -58,11 +59,11 @@ void FileReader::initialise(Parameters* par) {
         if(objectType == "pixels" || objectType == "clusters") {
 
             // Loop over all detectors and search for data
-            for(int det = 0; det < parameters->nDetectors; det++) {
+            for(auto& detector : m_detectors) {
 
                 // Get the detector ID and type
-                string detectorID = parameters->detectors[det];
-                string detectorType = parameters->detector[detectorID]->type();
+                string detectorID = detector->name();
+                string detectorType = detector->type();
 
                 // If only reading information for the DUT
                 if(m_onlyDUT && detectorID != parameters->DUT)
@@ -117,11 +118,11 @@ StatusCode FileReader::run(Clipboard* clipboard) {
         if(objectType == "pixels" || objectType == "clusters") {
 
             // Loop over all detectors
-            for(int det = 0; det < parameters->nDetectors; det++) {
+            for(auto& detector : m_detectors) {
 
                 // Get the detector and object ID
-                string detectorID = parameters->detectors[det];
-                string detectorType = parameters->detector[detectorID]->type();
+                string detectorID = detector->name();
+                string detectorType = detector->type();
                 string objectID = detectorID + "_" + objectType;
 
                 // If only writing information for the DUT
