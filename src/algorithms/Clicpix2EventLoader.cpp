@@ -13,7 +13,7 @@ void Clicpix2EventLoader::initialise(Parameters* par) {
     // File structure is RunX/CLICpix2/data.csv
 
     // Take input directory from global parameters
-    string inputDirectory = parameters->inputDirectory + "/CLICpix2";
+    string inputDirectory = m_config.get<std::string>("inputDirectory") + "/CLICpix2";
 
     // Open the root directory
     DIR* directory = opendir(inputDirectory.c_str());
