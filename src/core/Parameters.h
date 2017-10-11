@@ -49,7 +49,6 @@ namespace corryvreckan {
         }
 
         // Member variables
-        std::string histogramFile;
         std::vector<std::string> detectors;
         int nDetectors{0};
         std::string reference;

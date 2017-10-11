@@ -11,7 +11,6 @@ using namespace std;
 
 Parameters::Parameters() {
 
-    histogramFile = "outputHistograms.root";
     currentTime = 0.; // seconds
 }
 

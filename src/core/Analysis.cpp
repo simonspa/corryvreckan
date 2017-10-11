@@ -201,10 +201,11 @@ void Analysis::load_algorithms() {
     std::vector<Configuration> configs = conf_mgr_->getConfigurations();
 
     // Create histogram output file
-    m_histogramFile = new TFile(m_parameters->histogramFile.c_str(), "RECREATE");
+    std::string histogramFile = global_config.getPath("histogramFile");
+    m_histogramFile = new TFile(histogramFile.c_str(), "RECREATE");
     m_directory = m_histogramFile->mkdir("corryvreckan");
     if(m_histogramFile->IsZombie()) {
-        throw RuntimeError("Cannot create main ROOT file " + std::string(m_parameters->histogramFile.c_str()));
+        throw RuntimeError("Cannot create main ROOT file " + histogramFile);
     }
 
     LOG(DEBUG) << "Start loading algorithms, have " << configs.size() << " configurations.";
