@@ -42,9 +42,9 @@ void ATLASpixEventLoader::initialise(Parameters* par) {
     m_file.open(m_filename.c_str());
 
     // Make histograms for debugging
-    hHitMap = new TH2F("hitMap", "hitMap", 128, 0, 128, 128, 0, 128);
+    hHitMap = new TH2F("hitMap", "hitMap", 128, 0, 128, 400, 0, 400);
     hPixelToT = new TH1F("pixelToT", "pixelToT", 100, 0, 100);
-    hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 1000, 0, 1000);
+    hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 200, 0, 200);
 
     // Initialise member variables
     m_eventNumber = 0;
