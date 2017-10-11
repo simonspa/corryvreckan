@@ -41,7 +41,6 @@ namespace corryvreckan {
         TApplication* app;
 
         // Misc. member objects
-        int nDetectors;
         int eventNumber;
         int updateNumber;
     };

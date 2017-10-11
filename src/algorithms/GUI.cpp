@@ -17,9 +17,6 @@ void GUI::initialise(Parameters* par) {
     // Make the local pointer to the global parameters
     parameters = par;
 
-    // Check the number of devices
-    nDetectors = parameters->nDetectors;
-
     // TApplication keeps the canvases persistent
     app = new TApplication("example", 0, 0);
 
@@ -44,16 +41,16 @@ void GUI::initialise(Parameters* par) {
     addPlot(trackCanvas, "/corryvreckan/BasicTracking/trackAngleX");
 
     // Per detector histograms
-    for(auto detectorID : parameters->detectors) {
-        string hitmap = "/corryvreckan/TestAlgorithm/hitmap_" + detectorID;
+    for(auto& detector : m_detectors) {
+        string hitmap = "/corryvreckan/TestAlgorithm/hitmap_" + detector->name();
         addPlot(hitmapCanvas, hitmap, "colz");
 
-        string residualHisto = "/corryvreckan/BasicTracking/residualsX_" + detectorID;
-        if(detectorID == parameters->DUT)
+        string residualHisto = "/corryvreckan/BasicTracking/residualsX_" + detector->name();
+        if(detector->name() == parameters->DUT)
             residualHisto = "/corryvreckan/DUTAnalysis/residualsX";
         addPlot(residualsCanvas, residualHisto);
 
-        string chargeHisto = "/corryvreckan/TestAlgorithm/clusterTot_" + detectorID;
+        string chargeHisto = "/corryvreckan/TestAlgorithm/clusterTot_" + detector->name();
         addPlot(chargeCanvas, chargeHisto);
     }
 
