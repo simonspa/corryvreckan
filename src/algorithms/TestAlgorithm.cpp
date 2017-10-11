@@ -9,18 +9,24 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::vector<Detector*> detect
     LOG(DEBUG) << "Setting makeCorrelations to: " << makeCorrelations;
 }
 
-void TestAlgorithm::initialise(Parameters*) {
+void TestAlgorithm::initialise(Parameters* par) {
+
+    parameters = par;
 
     // Make histograms for each Timepix3
     for(auto& detector : m_detectors) {
-
-        // Check if they are a Timepix3
-        if(detector->type() != "Timepix3")
-            continue;
+        LOG(DEBUG) << "Booking histograms for detector " << detector->name();
 
         // Simple hit map
         string name = "hitmap_" + detector->name();
-        hitmap[detector->name()] = new TH2F(name.c_str(), name.c_str(), 256, 0, 256, 256, 0, 256);
+        hitmap[detector->name()] = new TH2F(name.c_str(),
+                                            name.c_str(),
+                                            detector->nPixelsX(),
+                                            0,
+                                            detector->nPixelsX(),
+                                            detector->nPixelsY(),
+                                            0,
+                                            detector->nPixelsY());
 
         // Cluster plots
         name = "clusterSize_" + detector->name();
@@ -50,11 +56,6 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
 
     // Loop over all Timepix3 and make plots
     for(auto& detector : m_detectors) {
-
-        // Check if they are a Timepix3
-        if(detector->type() != "Timepix3")
-            continue;
-
         // Get the pixels
         Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
         if(pixels == NULL) {
@@ -63,14 +64,9 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
         }
 
         // Loop over all pixels and make hitmaps
-        for(int iP = 0; iP < pixels->size(); iP++) {
-
-            // Get the pixel
-            Pixel* pixel = (*pixels)[iP];
-
+        for(auto& pixel : (*pixels)) {
             // Hitmap
             hitmap[detector->name()]->Fill(pixel->m_column, pixel->m_row);
-
             // Timing plots
             eventTimes[detector->name()]->Fill((double)pixel->m_timestamp / (4096. * 40000000.));
         }
@@ -90,11 +86,7 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
         }
 
         // Loop over all clusters and fill histograms
-        for(int iCluster = 0; iCluster < clusters->size(); iCluster++) {
-
-            // Get the cluster
-            Cluster* cluster = (*clusters)[iCluster];
-
+        for(auto& cluster : (*clusters)) {
             // Fill cluster histograms
             clusterSize[detector->name()]->Fill(cluster->size());
             clusterTot[detector->name()]->Fill(cluster->tot());
@@ -105,9 +97,8 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
                 continue;
             if(referenceClusters == NULL)
                 continue;
-            for(int iRefCluster = 0; iRefCluster < referenceClusters->size(); iRefCluster++) {
-                Cluster* refCluster = (*referenceClusters)[iRefCluster];
 
+            for(auto& refCluster : (*referenceClusters)) {
                 long long int timeDifferenceInt = (refCluster->timestamp() - cluster->timestamp()) / 4096;
 
                 double timeDifference = (double)(refCluster->timestamp() - cluster->timestamp()) / (4096. * 40000000.);
