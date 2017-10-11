@@ -11,16 +11,15 @@ void GenericAlgorithm::initialise(Parameters* par) {
     parameters = par;
 
     // Initialise histograms per device
-    for(int det = 0; det < parameters->nDetectors; det++) {
+    for(auto& detector : m_detectors) {
 
         // Check if they are a Timepix3
-        string detectorID = parameters->detectors[det];
-        if(parameters->detector[detectorID]->type() != "Timepix3")
+        if(detector->type() != "Timepix3")
             continue;
 
         // Simple histogram per device
-        string name = "plotForDevice_" + detectorID;
-        plotPerDevice[detectorID] = new TH2F(name.c_str(), name.c_str(), 256, 0, 256, 256, 0, 256);
+        string name = "plotForDevice_" + detector->name();
+        plotPerDevice[detector->name()] = new TH2F(name.c_str(), name.c_str(), 256, 0, 256, 256, 0, 256);
     }
 
     // Initialise single histograms
@@ -34,35 +33,30 @@ void GenericAlgorithm::initialise(Parameters* par) {
 StatusCode GenericAlgorithm::run(Clipboard* clipboard) {
 
     // Loop over all Timepix3 and make plots
-    for(int det = 0; det < parameters->nDetectors; det++) {
+    for(auto& detector : m_detectors) {
 
         // Check if they are a Timepix3
-        string detectorID = parameters->detectors[det];
-        if(parameters->detector[detectorID]->type() != "Timepix3")
+        if(detector->type() != "Timepix3")
             continue;
 
         // Get the pixels
-        Pixels* pixels = (Pixels*)clipboard->get(detectorID, "pixels");
+        Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
         if(pixels == NULL) {
-            LOG(DEBUG) << "Detector " << detectorID << " does not have any pixels on the clipboard";
+            LOG(DEBUG) << "Detector " << detector->name() << " does not have any pixels on the clipboard";
             continue;
         }
 
         // Get the clusters
-        Clusters* clusters = (Clusters*)clipboard->get(detectorID, "clusters");
+        Clusters* clusters = (Clusters*)clipboard->get(detector->name(), "clusters");
         if(clusters == NULL) {
-            LOG(DEBUG) << "Detector " << detectorID << " does not have any clusters on the clipboard";
+            LOG(DEBUG) << "Detector " << detector->name() << " does not have any clusters on the clipboard";
             continue;
         }
 
         // Loop over all pixels and make hitmaps
-        for(int iP = 0; iP < pixels->size(); iP++) {
-
-            // Get the pixel
-            Pixel* pixel = (*pixels)[iP];
-
+        for(auto& pixel : (*pixels)) {
             // Fill the plots for this device
-            plotPerDevice[detectorID]->Fill(pixel->m_column, pixel->m_row);
+            plotPerDevice[detector->name()]->Fill(pixel->m_column, pixel->m_row);
         }
     }
 
