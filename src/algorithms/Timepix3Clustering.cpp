@@ -22,24 +22,23 @@ bool sortByTime(Pixel* pixel1, Pixel* pixel2) {
 StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
 
     // Loop over all Timepix3 and for each device perform the clustering
-    for(int det = 0; det < parameters->nDetectors; det++) {
+    for(auto& detector : m_detectors) {
 
         // Check if they are a Timepix3
-        string detectorID = parameters->detectors[det];
-        if(parameters->detector[detectorID]->type() != "Timepix3")
+        if(detector->type() != "Timepix3")
             continue;
 
         // Get the pixels
-        Pixels* pixels = (Pixels*)clipboard->get(detectorID, "pixels");
+        Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
         if(pixels == NULL) {
-            LOG(DEBUG) << "Detector " << detectorID << " does not have any pixels on the clipboard";
+            LOG(DEBUG) << "Detector " << detector->name() << " does not have any pixels on the clipboard";
             continue;
         }
-        LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << detectorID;
+        LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << detector->name();
 
         //    if(pixels->size() > 500.){
         //      LOG(DEBUG) <<"Skipping large event with "<<pixels->size()<<" pixels
-        //      for device "<<detectorID;
+        //      for device "<<detector->name();
         //      continue;
         //    }
 
@@ -102,8 +101,8 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
 
         // Put the clusters on the clipboard
         if(deviceClusters->size() > 0)
-            clipboard->put(detectorID, "clusters", (TestBeamObjects*)deviceClusters);
-        LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << detectorID;
+            clipboard->put(detector->name(), "clusters", (TestBeamObjects*)deviceClusters);
+        LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << detector->name();
     }
 
     return Success;
