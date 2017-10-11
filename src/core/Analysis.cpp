@@ -154,6 +154,8 @@ void Analysis::load_detectors() {
             }
         }
 
+        // Add the new detector to the global list:
+        detectors.push_back(det_parm);
         m_parameters->detector[detector.getName()] = det_parm;
         m_parameters->registerDetector(detector.getName());
     }

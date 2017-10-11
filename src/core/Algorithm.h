@@ -40,7 +40,7 @@ namespace corryvreckan {
             IFLOG(TRACE) {
                 std::stringstream det;
                 for(auto& d : m_detectors) {
-                    det << d->name();
+                    det << d->name() << ", ";
                 }
                 LOG(TRACE) << "Algorithm determined to run on detectors: " << det.str();
             }
