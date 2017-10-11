@@ -11,12 +11,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Timepix3EventLoader(Configuration config, Clipboard* clipboard);
+        Timepix3EventLoader(Configuration config, std::vector<Detector*> detectors);
         ~Timepix3EventLoader() {}
 
         // Standard algorithm functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         // Extra functions

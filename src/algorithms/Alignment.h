@@ -15,12 +15,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Alignment(Configuration config, Clipboard* clipboard);
+        Alignment(Configuration config, std::vector<Detector*> detectors);
         ~Alignment() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         // Member variables

@@ -3,8 +3,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-Timepix3Clustering::Timepix3Clustering(Configuration config, Clipboard* clipboard)
-    : Algorithm(std::move(config), clipboard) {
+Timepix3Clustering::Timepix3Clustering(Configuration config, std::vector<Detector*> detectors)
+    : Algorithm(std::move(config), std::move(detectors)) {
     timingCut = m_config.get<double>("timingCut", 0.0000001); // 100 ns
 }
 

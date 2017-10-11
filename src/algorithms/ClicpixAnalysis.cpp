@@ -6,7 +6,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-ClicpixAnalysis::ClicpixAnalysis(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
+ClicpixAnalysis::ClicpixAnalysis(Configuration config, std::vector<Detector*> detectors)
+    : Algorithm(std::move(config), std::move(detectors)) {
 
     m_associationCut = m_config.get<double>("associationCut", 0.05); // 100 um
     m_proximityCut = m_config.get<double>("proximityCut", 0.0005);   // 125 um

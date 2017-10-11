@@ -20,12 +20,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        GUI(Configuration config, Clipboard* clipboard);
+        GUI(Configuration config, std::vector<Detector*> detectors);
         ~GUI() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         // Plot holders

@@ -20,12 +20,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        ATLASpixEventLoader(Configuration config, Clipboard* clipboard);
+        ATLASpixEventLoader(Configuration config, std::vector<Detector*> detectors);
         ~ATLASpixEventLoader() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         // Histograms for several devices

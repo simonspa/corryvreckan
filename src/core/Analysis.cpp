@@ -313,12 +313,12 @@ void Analysis::load_algorithms() {
         config.set<std::string>("_global_dir", global_dir);
 
         // Create the algorithms from the library
-        m_algorithms.emplace_back(create_algorithm(loaded_libraries_[lib_name], config, m_clipboard));
+        m_algorithms.emplace_back(create_algorithm(loaded_libraries_[lib_name], config));
     }
     LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loaded " << configs.size() << " modules";
 }
 
-Algorithm* Analysis::create_algorithm(void* library, Configuration config, Clipboard* clipboard) {
+Algorithm* Analysis::create_algorithm(void* library, Configuration config) {
     LOG(TRACE) << "Creating algorithm " << config.getName() << ", using generator \"" << CORRYVRECKAN_GENERATOR_FUNCTION
                << "\"";
 
@@ -335,7 +335,7 @@ Algorithm* Analysis::create_algorithm(void* library, Configuration config, Clipb
     }
 
     // Convert to correct generator function
-    auto algorithm_generator = reinterpret_cast<Algorithm* (*)(Configuration, Clipboard*)>(generator); // NOLINT
+    auto algorithm_generator = reinterpret_cast<Algorithm* (*)(Configuration, std::vector<Detector*>)>(generator); // NOLINT
 
     // Figure out which detectors should run on this algorithm:
     std::vector<Detector*> algorithm_det;
@@ -359,7 +359,7 @@ Algorithm* Analysis::create_algorithm(void* library, Configuration config, Clipb
     // Set module specific log settings
     auto old_settings = set_algorithm_before(config.getName(), config);
     // Build algorithm
-    Algorithm* algorithm = algorithm_generator(config, clipboard);
+    Algorithm* algorithm = algorithm_generator(config, algorithm_det);
     // Reset log
     Log::setSection(old_section_name);
     set_algorithm_after(old_settings);

@@ -15,12 +15,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        BasicTracking(Configuration config, Clipboard* clipboard);
+        BasicTracking(Configuration config, std::vector<Detector*> detectors);
         ~BasicTracking() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         //  Cluster* getNearestCluster(Cluster*, map<Cluster*, bool>, Clusters*);

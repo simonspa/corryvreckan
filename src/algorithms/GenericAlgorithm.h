@@ -15,12 +15,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        GenericAlgorithm(Configuration config, Clipboard* clipboard);
+        GenericAlgorithm(Configuration config, std::vector<Detector*> detectors);
         ~GenericAlgorithm() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         // Histograms for several devices

@@ -12,12 +12,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Timepix3MaskCreator(Configuration config, Clipboard* clipboard);
+        Timepix3MaskCreator(Configuration config, std::vector<Detector*> detectors);
         ~Timepix3MaskCreator() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         // Member variables

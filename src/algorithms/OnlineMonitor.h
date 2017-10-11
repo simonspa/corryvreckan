@@ -28,12 +28,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        OnlineMonitor(Configuration config, Clipboard* clipboard);
+        OnlineMonitor(Configuration config, std::vector<Detector*> detectors);
         ~OnlineMonitor() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         // Application to allow display persistancy

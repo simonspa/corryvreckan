@@ -4,7 +4,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-OnlineMonitor::OnlineMonitor(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
+OnlineMonitor::OnlineMonitor(Configuration config, std::vector<Detector*> detectors)
+    : Algorithm(std::move(config), std::move(detectors)) {
     updateNumber = 500;
 }
 

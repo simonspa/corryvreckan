@@ -3,7 +3,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-FileWriter::FileWriter(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
+FileWriter::FileWriter(Configuration config, std::vector<Detector*> detectors)
+    : Algorithm(std::move(config), std::move(detectors)) {
     m_onlyDUT = true;
     m_writePixels = true;
     m_writeClusters = false;

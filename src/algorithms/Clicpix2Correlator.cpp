@@ -3,8 +3,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-Clicpix2Correlator::Clicpix2Correlator(Configuration config, Clipboard* clipboard)
-    : Algorithm(std::move(config), clipboard) {}
+Clicpix2Correlator::Clicpix2Correlator(Configuration config, std::vector<Detector*> detectors)
+    : Algorithm(std::move(config), std::move(detectors)) {}
 
 template <typename T> std::string makeString(T number) {
     std::ostringstream ss;

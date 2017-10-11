@@ -4,7 +4,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-SpatialTracking::SpatialTracking(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
+SpatialTracking::SpatialTracking(Configuration config, std::vector<Detector*> detectors)
+    : Algorithm(std::move(config), std::move(detectors)) {
     spatialCut = 0.2;
     minHitsOnTrack = 6;
 }

@@ -6,7 +6,8 @@
 
 using namespace corryvreckan;
 
-DUTAnalysis::DUTAnalysis(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
+DUTAnalysis::DUTAnalysis(Configuration config, std::vector<Detector*> detectors)
+    : Algorithm(std::move(config), std::move(detectors)) {
     m_digitalPowerPulsing = false;
 }
 

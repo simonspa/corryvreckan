@@ -19,12 +19,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        CLICpixEventLoader(Configuration config, Clipboard* clipboard);
+        CLICpixEventLoader(Configuration config, std::vector<Detector*> detectors);
         ~CLICpixEventLoader() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         // Member variables

@@ -32,11 +32,18 @@ namespace corryvreckan {
     public:
         // Constructors and destructors
         Algorithm() {}
-        Algorithm(Configuration config, Clipboard* clipboard) {
+        Algorithm(Configuration config, std::vector<Detector*> detectors) {
             m_name = config.getName();
             m_config = config;
-            m_clipboard = clipboard;
+            m_detectors = detectors;
             m_stopwatch = new TStopwatch();
+            IFLOG(TRACE) {
+                std::stringstream det;
+                for(auto& d : m_detectors) {
+                    det << d->name();
+                }
+                LOG(TRACE) << "Algorithm determined to run on detectors: " << det.str();
+            }
         }
         virtual ~Algorithm() {}
 
@@ -57,7 +64,7 @@ namespace corryvreckan {
         TStopwatch* m_stopwatch;
         std::string m_name;
         Configuration m_config;
-        Clipboard* m_clipboard;
+        std::vector<Detector*> m_detectors;
     };
 }
 #endif

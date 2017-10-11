@@ -3,7 +3,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-TestAlgorithm::TestAlgorithm(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
+TestAlgorithm::TestAlgorithm(Configuration config, std::vector<Detector*> detectors)
+    : Algorithm(std::move(config), std::move(detectors)) {
     makeCorrelations = m_config.get<bool>("makeCorrelations", false);
     LOG(DEBUG) << "Setting makeCorrelations to: " << makeCorrelations;
 }

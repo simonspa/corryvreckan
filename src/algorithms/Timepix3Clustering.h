@@ -14,12 +14,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Timepix3Clustering(Configuration config, Clipboard* clipboard);
+        Timepix3Clustering(Configuration config, std::vector<Detector*> detectors);
         ~Timepix3Clustering() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
         void calculateClusterCentre(Cluster*);
         bool touching(Pixel*, Cluster*);

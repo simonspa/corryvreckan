@@ -12,8 +12,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-Timepix3EventLoader::Timepix3EventLoader(Configuration config, Clipboard* clipboard)
-    : Algorithm(std::move(config), clipboard) {
+Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<Detector*> detectors)
+    : Algorithm(std::move(config), std::move(detectors)) {
 
     // Take input directory from global parameters
     m_inputDirectory = m_config.get<std::string>("inputDirectory");

@@ -12,12 +12,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Timepix1Correlator(Configuration config, Clipboard* clipboard);
+        Timepix1Correlator(Configuration config, std::vector<Detector*> detectors);
         ~Timepix1Correlator() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         // Histograms for several devices

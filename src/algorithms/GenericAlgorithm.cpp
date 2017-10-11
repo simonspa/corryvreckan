@@ -3,7 +3,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-GenericAlgorithm::GenericAlgorithm(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {}
+GenericAlgorithm::GenericAlgorithm(Configuration config, std::vector<Detector*> detectors)
+    : Algorithm(std::move(config), std::move(detectors)) {}
 
 void GenericAlgorithm::initialise(Parameters* par) {
 

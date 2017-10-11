@@ -16,12 +16,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Clicpix2Correlator(Configuration config, Clipboard* clipboard);
+        Clicpix2Correlator(Configuration config, std::vector<Detector*> detectors);
         ~Clicpix2Correlator() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         // Member variables

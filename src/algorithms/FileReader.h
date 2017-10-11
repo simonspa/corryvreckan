@@ -11,12 +11,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        FileReader(Configuration config, Clipboard* clipboard);
+        FileReader(Configuration config, std::vector<Detector*> detectors);
         ~FileReader() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         // Member variables

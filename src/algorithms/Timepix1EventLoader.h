@@ -15,12 +15,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Timepix1EventLoader(Configuration config, Clipboard* clipboard);
+        Timepix1EventLoader(Configuration config, std::vector<Detector*> detectors);
         ~Timepix1EventLoader() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         void processHeader(std::string, std::string&, long long int&);

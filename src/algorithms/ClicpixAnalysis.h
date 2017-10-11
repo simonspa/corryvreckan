@@ -13,12 +13,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        ClicpixAnalysis(Configuration config, Clipboard* clipboard);
+        ClicpixAnalysis(Configuration config, std::vector<Detector*> detectors);
         ~ClicpixAnalysis() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
         bool checkMasked(double, double);
         void fillClusterHistos(Clusters*);

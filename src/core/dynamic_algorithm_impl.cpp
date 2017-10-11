@@ -29,9 +29,9 @@
 
 namespace corryvreckan {
     extern "C" {
-    Algorithm* corryvreckan_algorithm_generator(Configuration config, Clipboard* clipboard);
-    Algorithm* corryvreckan_algorithm_generator(Configuration config, Clipboard* clipboard) {
-        auto algorithm = new CORRYVRECKAN_ALGORITHM_NAME(std::move(config), clipboard); // NOLINT
+    Algorithm* corryvreckan_algorithm_generator(Configuration config, std::vector<Detector*> detectors);
+    Algorithm* corryvreckan_algorithm_generator(Configuration config, std::vector<Detector*> detectors) {
+        auto algorithm = new CORRYVRECKAN_ALGORITHM_NAME(std::move(config), std::move(detectors)); // NOLINT
         return static_cast<Algorithm*>(algorithm);
     }
     }

@@ -19,12 +19,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        DataDump(Configuration config, Clipboard* clipboard);
+        DataDump(Configuration config, std::vector<Detector*> detectors);
         ~DataDump() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         // Member variables

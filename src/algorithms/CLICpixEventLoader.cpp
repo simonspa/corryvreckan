@@ -3,8 +3,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-CLICpixEventLoader::CLICpixEventLoader(Configuration config, Clipboard* clipboard)
-    : Algorithm(std::move(config), clipboard) {
+CLICpixEventLoader::CLICpixEventLoader(Configuration config, std::vector<Detector*> detectors)
+    : Algorithm(std::move(config), std::move(detectors)) {
     m_filename = "";
 }
 

@@ -12,12 +12,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        DUTAnalysis(Configuration config, Clipboard* clipboard);
+        DUTAnalysis(Configuration config, std::vector<Detector*> detectors);
         ~DUTAnalysis() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         // Histograms

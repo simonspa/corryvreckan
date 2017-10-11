@@ -5,7 +5,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-Alignment::Alignment(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
+Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
+    : Algorithm(std::move(config), std::move(detectors)) {
     m_numberOfTracksForAlignment = 20000;
     nIterations = 3;
 }

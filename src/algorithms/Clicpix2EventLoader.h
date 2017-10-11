@@ -20,12 +20,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Clicpix2EventLoader(Configuration config, Clipboard* clipboard);
+        Clicpix2EventLoader(Configuration config, std::vector<Detector*> detectors);
         ~Clicpix2EventLoader() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         // Histograms for several devices

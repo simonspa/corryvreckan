@@ -5,8 +5,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-Timepix1EventLoader::Timepix1EventLoader(Configuration config, Clipboard* clipboard)
-    : Algorithm(std::move(config), clipboard) {}
+Timepix1EventLoader::Timepix1EventLoader(Configuration config, std::vector<Detector*> detectors)
+    : Algorithm(std::move(config), std::move(detectors)) {}
 
 /*
  This algorithm loads data from Timepix1-like devices and places it on the

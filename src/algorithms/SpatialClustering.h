@@ -13,12 +13,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        SpatialClustering(Configuration config, Clipboard* clipboard);
+        SpatialClustering(Configuration config, std::vector<Detector*> detectors);
         ~SpatialClustering() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         void calculateClusterCentre(Cluster*);

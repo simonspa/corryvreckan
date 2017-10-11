@@ -14,12 +14,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        TestAlgorithm(Configuration config, Clipboard* clipboard);
+        TestAlgorithm(Configuration config, std::vector<Detector*> detectors);
         ~TestAlgorithm() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         // Pixel histograms

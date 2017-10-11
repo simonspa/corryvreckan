@@ -73,7 +73,7 @@ namespace corryvreckan {
         std::unique_ptr<corryvreckan::ConfigManager> conf_mgr_;
         std::unique_ptr<corryvreckan::ConfigManager> det_mgr_;
 
-        Algorithm* create_algorithm(void* library, corryvreckan::Configuration config, Clipboard* clipboard);
+        Algorithm* create_algorithm(void* library, corryvreckan::Configuration config);
         std::tuple<LogLevel, LogFormat> set_algorithm_before(const std::string&, const Configuration& config);
         void set_algorithm_after(std::tuple<LogLevel, LogFormat> prev);
     };

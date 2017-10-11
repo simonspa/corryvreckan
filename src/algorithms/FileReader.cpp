@@ -3,7 +3,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-FileReader::FileReader(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
+FileReader::FileReader(Configuration config, std::vector<Detector*> detectors)
+    : Algorithm(std::move(config), std::move(detectors)) {
     m_onlyDUT = false;
     m_readPixels = true;
     m_readClusters = false;

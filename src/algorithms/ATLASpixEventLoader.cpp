@@ -4,8 +4,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, Clipboard* clipboard)
-    : Algorithm(std::move(config), clipboard) {}
+ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<Detector*> detectors)
+    : Algorithm(std::move(config), std::move(detectors)) {}
 
 void ATLASpixEventLoader::initialise(Parameters* par) {
 

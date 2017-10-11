@@ -5,7 +5,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-BasicTracking::BasicTracking(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {
+BasicTracking::BasicTracking(Configuration config, std::vector<Detector*> detectors)
+    : Algorithm(std::move(config), std::move(detectors)) {
     // Default values for cuts
     timingCut = 200. / 1000000000.; // 200 ns
     spatialCut = 0.2;               // 200 um

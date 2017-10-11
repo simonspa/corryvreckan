@@ -19,12 +19,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        SpatialTracking(Configuration config, Clipboard* clipboard);
+        SpatialTracking(Configuration config, std::vector<Detector*> detectors);
         ~SpatialTracking() {}
 
         // Functions
         void initialise(Parameters*);
-        StatusCode run(Clipboard*);
+        StatusCode run(Clipboard* clipboard);
         void finalise();
 
         // Histograms
