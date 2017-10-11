@@ -119,10 +119,8 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
 
             if(trees.count(detectorID) == 0)
                 continue;
-
-            // If excluded from tracking ignore this plane
-            if(parameters->excludedFromTracking.count(detectorID) != 0)
-                continue;
+            // FIXME TODO check that it is obvious we are by default including all detectors!
+            // if(detectorID == parameters->DUT) continue;
 
             // Get the closest neighbour
             LOG(DEBUG) << "- looking for nearest cluster on device " << detectorID;
