@@ -19,7 +19,7 @@ void DataDump::initialise(Parameters* par) {
 StatusCode DataDump::run(Clipboard* clipboard) {
 
     // Take input directory from global parameters
-    string inputDirectory = parameters->inputDirectory + "/" + m_detector;
+    string inputDirectory = m_config.get<std::string>("inputDirectory") + "/" + m_detector;
 
     // File structure is RunX/ChipID/files.dat
 

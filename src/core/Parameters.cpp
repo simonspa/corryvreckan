@@ -13,7 +13,6 @@ Parameters::Parameters() {
 
     histogramFile = "outputHistograms.root";
     dutMaskFile = "defaultMask.dat";
-    inputDirectory = "";
     currentTime = 0.; // seconds
 }
 

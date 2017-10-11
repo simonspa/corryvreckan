@@ -15,7 +15,7 @@ void CLICpixEventLoader::initialise(Parameters* par) {
     // File structure is RunX/CLICpix/RunX.dat
 
     // Take input directory from global parameters
-    string inputDirectory = parameters->inputDirectory + "/CLICpix";
+    string inputDirectory = m_config.get<std::string>("inputDirectory") + "/CLICpix";
 
     // Open the root directory
     DIR* directory = opendir(inputDirectory.c_str());

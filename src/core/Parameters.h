@@ -49,7 +49,6 @@ namespace corryvreckan {
         }
 
         // Member variables
-        std::string inputDirectory;
         std::string histogramFile;
         std::string dutMaskFile;
         std::vector<std::string> detectors;
