@@ -1,11 +1,10 @@
-#include "Timepix1Clustering.h"
+#include "SpatialClustering.h"
 #include "objects/Pixel.h"
 
 using namespace corryvreckan;
 using namespace std;
 
-Timepix1Clustering::Timepix1Clustering(Configuration config, Clipboard* clipboard)
-    : Algorithm(std::move(config), clipboard) {}
+SpatialClustering::SpatialClustering(Configuration config, Clipboard* clipboard) : Algorithm(std::move(config), clipboard) {}
 
 /*
 
@@ -17,7 +16,7 @@ Timepix1Clustering::Timepix1Clustering(Configuration config, Clipboard* clipboar
 
 */
 
-void Timepix1Clustering::initialise(Parameters* par) {
+void SpatialClustering::initialise(Parameters* par) {
 
     parameters = par;
 
@@ -35,7 +34,7 @@ void Timepix1Clustering::initialise(Parameters* par) {
     m_eventNumber = 0;
 }
 
-StatusCode Timepix1Clustering::run(Clipboard* clipboard) {
+StatusCode SpatialClustering::run(Clipboard* clipboard) {
 
     // Loop over all Timepix1 and make plots
     for(int det = 0; det < parameters->nDetectors; det++) {
@@ -141,7 +140,7 @@ StatusCode Timepix1Clustering::run(Clipboard* clipboard) {
     return Success;
 }
 
-void Timepix1Clustering::finalise() {
+void SpatialClustering::finalise() {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }
@@ -150,7 +149,7 @@ void Timepix1Clustering::finalise() {
  Function to calculate the centre of gravity of a cluster.
  Sets the local and global cluster positions as well.
 */
-void Timepix1Clustering::calculateClusterCentre(Cluster* cluster) {
+void SpatialClustering::calculateClusterCentre(Cluster* cluster) {
 
     LOG(DEBUG) << "== Making cluster centre";
     // Empty variables to calculate cluster position

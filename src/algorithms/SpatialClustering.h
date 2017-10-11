@@ -1,5 +1,5 @@
-#ifndef Timepix1Clustering_H
-#define Timepix1Clustering_H 1
+#ifndef SpatialClustering_H
+#define SpatialClustering_H 1
 
 #include <iostream>
 #include "TCanvas.h"
@@ -9,12 +9,12 @@
 #include "objects/Cluster.h"
 
 namespace corryvreckan {
-    class Timepix1Clustering : public Algorithm {
+    class SpatialClustering : public Algorithm {
 
     public:
         // Constructors and destructors
-        Timepix1Clustering(Configuration config, Clipboard* clipboard);
-        ~Timepix1Clustering() {}
+        SpatialClustering(Configuration config, Clipboard* clipboard);
+        ~SpatialClustering() {}
 
         // Functions
         void initialise(Parameters*);
@@ -27,4 +27,4 @@ namespace corryvreckan {
         int m_eventNumber;
     };
 }
-#endif // Timepix1Clustering_H
+#endif // SpatialClustering_H
