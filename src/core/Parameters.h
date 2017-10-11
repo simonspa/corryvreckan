@@ -52,7 +52,6 @@ namespace corryvreckan {
         std::vector<std::string> detectors;
         int nDetectors{0};
         std::string reference;
-        std::string dut;
         double currentTime;
         std::string DUT;
         std::map<std::string, bool> excludedFromTracking;
