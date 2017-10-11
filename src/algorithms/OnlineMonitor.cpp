@@ -75,8 +75,6 @@ void OnlineMonitor::initialise(Parameters* par) {
         string correlationYHisto = "/corryvreckan/TestAlgorithm/correlationY_" + detectorID;
         AddHisto("CorrelationYCanvas", correlationYHisto);
 
-        if(parameters->excludedFromTracking.count(detectorID) != 0)
-            continue;
         string residualHisto = "/corryvreckan/BasicTracking/residualsX_" + detectorID;
         AddHisto("ResidualCanvas", residualHisto);
     }
