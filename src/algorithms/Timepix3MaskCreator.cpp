@@ -12,15 +12,14 @@ void Timepix3MaskCreator::initialise(Parameters* par) {
     parameters = par;
     //
     //  // Make histograms for each Timepix3
-    //  for(int det = 0; det<parameters->nDetectors; det++){
+    //  for(auto& detector : m_detectors){
     //
     //    // Check if they are a Timepix3
-    //    string detectorID = parameters->detectors[det];
-    //    if(parameters->detector[detectorID]->type() != "Timepix3") continue;
+    //    if(detector->type() != "Timepix3") continue;
     //
     //    // Simple hit map to look for hit pixels
-    //    string name = "pixelhits_"+detectorID;
-    //    pixelhits[detectorID] = new
+    //    string name = "pixelhits_"+detector->name();
+    //    pixelhits[detector->name()] = new
     //    TH2F(name.c_str(),name.c_str(),256,0,256,256,0,256);
     //
     //  }
@@ -29,20 +28,19 @@ void Timepix3MaskCreator::initialise(Parameters* par) {
 StatusCode Timepix3MaskCreator::run(Clipboard* clipboard) {
 
     // Loop over all Timepix3 and for each device perform the clustering
-    for(int det = 0; det < parameters->nDetectors; det++) {
+    for(auto& detector : m_detectors) {
 
         // Check if they are a Timepix3
-        std::string detectorID = parameters->detectors[det];
-        if(parameters->detector[detectorID]->type() != "Timepix3")
+        if(detector->type() != "Timepix3")
             continue;
 
         // Get the pixels
-        Pixels* pixels = (Pixels*)clipboard->get(detectorID, "pixels");
+        Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
         if(pixels == NULL) {
-            LOG(DEBUG) << "Detector " << detectorID << " does not have any pixels on the clipboard";
+            LOG(DEBUG) << "Detector " << detector->name() << " does not have any pixels on the clipboard";
             continue;
         }
-        LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << detectorID;
+        LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << detector->name();
 
         // Loop over all pixels
         for(int iP = 0; iP < pixels->size(); iP++) {
@@ -50,7 +48,7 @@ StatusCode Timepix3MaskCreator::run(Clipboard* clipboard) {
 
             // Enter another pixel hit for this channel
             int channelID = pixel->m_row + 256 * pixel->m_column;
-            pixelhits[detectorID][channelID]++;
+            pixelhits[detector->name()][channelID]++;
         }
     }
 
@@ -60,22 +58,21 @@ StatusCode Timepix3MaskCreator::run(Clipboard* clipboard) {
 void Timepix3MaskCreator::finalise() {
 
     // Loop through all registered detectors
-    for(int det = 0; det < parameters->nDetectors; det++) {
+    for(auto& detector : m_detectors) {
 
         // Check if they are a Timepix3
-        std::string detectorID = parameters->detectors[det];
-        if(parameters->detector[detectorID]->type() != "Timepix3")
+        if(detector->type() != "Timepix3")
             continue;
 
         // Get the trimdac file
-        std::string trimdacfile = parameters->detector[detectorID]->maskFile();
+        std::string trimdacfile = detector->maskFile();
 
         // Calculate what the mean number of hits was
         double meanHits = 0;
         for(int col = 0; col < 256; col++) {
             for(int row = 0; row < 256; row++) {
                 int channelID = row + 256 * col;
-                meanHits += pixelhits[detectorID][channelID];
+                meanHits += pixelhits[detector->name()][channelID];
             }
         }
         meanHits /= (256. * 256.);
@@ -102,13 +99,13 @@ void Timepix3MaskCreator::finalise() {
         for(int col = 0; col < 256; col++) {
             for(int row = 0; row < 256; row++) {
                 int channelID = row + 256 * col;
-                if(pixelhits[detectorID][channelID] > 10 * meanHits) {
+                if(pixelhits[detector->name()][channelID] > 10 * meanHits) {
                     trimdacs >> t_col >> t_row >> t_trim >> t_mask >> t_tpen;
                     newtrimdacs << t_col << "\t" << t_row << "\t" << t_trim << "\t"
                                 << "1"
                                 << "\t" << t_tpen << std::endl;
-                    LOG(INFO) << "Masking pixel " << col << "," << row << " on detector " << detectorID;
-                    LOG(INFO) << "Number of counts: " << pixelhits[detectorID][channelID];
+                    LOG(INFO) << "Masking pixel " << col << "," << row << " on detector " << detector->name();
+                    LOG(INFO) << "Number of counts: " << pixelhits[detector->name()][channelID];
                 } else {
                     // Just copy the existing line
                     trimdacs >> t_col >> t_row >> t_trim >> t_mask >> t_tpen;
