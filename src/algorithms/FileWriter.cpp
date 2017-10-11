@@ -5,11 +5,12 @@ using namespace std;
 
 FileWriter::FileWriter(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
-    m_onlyDUT = true;
-    m_writePixels = true;
-    m_writeClusters = false;
-    m_writeTracks = true;
-    m_fileName = "outputTuples.root";
+
+    m_onlyDUT = m_config.get<bool>("onlyDUT", true);
+    m_writePixels = m_config.get<bool>("writePixels", true);
+    m_writeClusters = m_config.get<bool>("writeClusters", false);
+    m_writeTracks = m_config.get<bool>("writeTracks", true);
+    m_fileName = m_config.get<std::string>("fileName", "outputTuples.root");
 }
 
 /*
@@ -29,7 +30,6 @@ void FileWriter::initialise(Parameters* par) {
 
     // Pick up the global parameters
     parameters = par;
-    m_fileName = parameters->outputTupleFile;
 
     // Decide what objects will be written out
     if(m_writePixels)
@@ -57,11 +57,11 @@ void FileWriter::initialise(Parameters* par) {
         if(objectType == "pixels" || objectType == "clusters") {
 
             // Loop over all detectors and make trees for data
-            for(int det = 0; det < parameters->nDetectors; det++) {
+            for(auto& detector : m_detectors) {
 
                 // Get the detector ID and type
-                string detectorID = parameters->detectors[det];
-                string detectorType = parameters->detector[detectorID]->type();
+                string detectorID = detector->name();
+                string detectorType = detector->type();
 
                 // If only writing information for the DUT
                 if(m_onlyDUT && detectorID != parameters->DUT)
@@ -108,10 +108,10 @@ StatusCode FileWriter::run(Clipboard* clipboard) {
         if(objectType == "pixels" || objectType == "clusters") {
 
             // Loop over all detectors
-            for(int det = 0; det < parameters->nDetectors; det++) {
+            for(auto& detector : m_detectors) {
 
                 // Get the detector and object ID
-                string detectorID = parameters->detectors[det];
+                string detectorID = detector->name();
                 string objectID = detectorID + "_" + objectType;
 
                 // If only writing information for the DUT
@@ -181,10 +181,10 @@ void FileWriter::finalise() {
         if(objectType == "pixels" || objectType == "clusters") {
 
             // Loop over all detectors
-            for(int det = 0; det < parameters->nDetectors; det++) {
+            for(auto& detector : m_detectors) {
 
                 // Get the detector and object ID
-                string detectorID = parameters->detectors[det];
+                string detectorID = detector->name();
                 string objectID = detectorID + "_" + objectType;
 
                 // If there is no output tree then do nothing
