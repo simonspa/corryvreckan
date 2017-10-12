@@ -20,9 +20,9 @@ Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
     alignmentMethod = m_config.get<int>("alignmentMethod");
 
     if(m_config.has("detectorToAlign")) {
-        detectorToAlign = m_config.get<int>("detectorToAlign");
+        detectorToAlign = m_config.get<std::string>("detectorToAlign");
     } else {
-        detectorToAlign = m_config.get<int>("DUT");
+        detectorToAlign = m_config.get<std::string>("DUT");
     }
     LOG(INFO) << "Aligning detector \"" << detectorToAlign << "\"";
 }
