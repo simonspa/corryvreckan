@@ -8,9 +8,10 @@ using namespace std;
 BasicTracking::BasicTracking(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
     // Default values for cuts
-    timingCut = 200. / 1000000000.; // 200 ns
-    spatialCut = 0.2;               // 200 um
+    timingCut = m_config.get<double>("timingCut", 200. / 1000000000.); // 200 ns
+    spatialCut = m_config.get<double>("spatialCut", 0.2);              // 200 um
     minHitsOnTrack = m_config.get<int>("minHitsOnTrack", 6);
+    excludeDUT = m_config.get<bool>("excludeDUT", true);
 }
 
 void BasicTracking::initialise(Parameters* par) {
@@ -104,8 +105,9 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
 
         // Loop over each subsequent plane and look for a cluster within 100 ns
         for(auto& detectorID : detectors) {
-            // FIXME TODO check that it is obvious we are by default including all detectors!
-            // if(detectorID == parameters->DUT) continue;
+            // Check if the DUT should be excluded and obey:
+            if(excludeDUT && detectorID == m_config.get<std::string>("DUT"))
+                continue;
             if(detectorID == seedPlane)
                 continue;
             if(trees.count(detectorID) == 0)

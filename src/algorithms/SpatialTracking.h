@@ -42,6 +42,7 @@ namespace corryvreckan {
         double spatialCut;
         int minHitsOnTrack;
         double nTracksTotal;
+        bool excludeDUT;
     };
 }
 #endif // SpatialTracking_H

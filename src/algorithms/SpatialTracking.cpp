@@ -6,8 +6,9 @@ using namespace std;
 
 SpatialTracking::SpatialTracking(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
-    spatialCut = 0.2;
-    minHitsOnTrack = 6;
+    spatialCut = m_config.get<double>("spatialCut", 0.2); // 200 um
+    minHitsOnTrack = m_config.get<int>("minHitsOnTrack", 6);
+    excludeDUT = m_config.get<bool>("excludeDUT", true);
 }
 
 /*
@@ -119,8 +120,10 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
 
             if(trees.count(detectorID) == 0)
                 continue;
-            // FIXME TODO check that it is obvious we are by default including all detectors!
-            // if(detectorID == parameters->DUT) continue;
+
+            // Check if the DUT should be excluded and obey:
+            if(excludeDUT && detectorID == m_config.get<std::string>("DUT"))
+                continue;
 
             // Get the closest neighbour
             LOG(DEBUG) << "- looking for nearest cluster on device " << detectorID;
