@@ -5,6 +5,12 @@
 using namespace corryvreckan;
 using namespace std;
 
+// Global container declarations
+Tracks globalTracks;
+std::string detectorToAlign;
+Parameters* globalParameters;
+int detNum;
+
 Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
     m_numberOfTracksForAlignment = m_config.get<int>("number_of_tracks", 20000);
@@ -12,13 +18,14 @@ Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
 
     // Get alignment method:
     alignmentMethod = m_config.get<int>("alignmentMethod");
-}
 
-// Global container declarations
-Tracks globalTracks;
-string detectorToAlign;
-Parameters* globalParameters;
-int detNum;
+    if(m_config.has("detectorToAlign")) {
+        detectorToAlign = m_config.get<int>("detectorToAlign");
+    } else {
+        detectorToAlign = m_config.get<int>("DUT");
+    }
+    LOG(INFO) << "Aligning detector \"" << detectorToAlign << "\"";
+}
 
 void Alignment::initialise(Parameters* par) {
     // Pick up the global parameters
@@ -60,7 +67,7 @@ StatusCode Alignment::run(Clipboard* clipboard) {
 // try to minimise the
 // track chi2. If there were no clusters from this detector on any tracks then
 // it would do nothing!
-void MinimiseTrackChi2(Int_t& npar, Double_t* grad, Double_t& result, Double_t* par, Int_t flag) {
+void Alignment::MinimiseTrackChi2(Int_t& npar, Double_t* grad, Double_t& result, Double_t* par, Int_t flag) {
 
     // Pick up new alignment conditions
     globalParameters->detector[detectorToAlign]->displacementX(par[detNum * 6 + 0]);
@@ -108,18 +115,18 @@ void MinimiseTrackChi2(Int_t& npar, Double_t* grad, Double_t& result, Double_t* 
 // This method will move the detector in question and try to minimise the
 // (unbiased) residuals. It uses
 // the associated cluster container on the track (no refitting of the track)
-void MinimiseResiduals(Int_t& npar, Double_t* grad, Double_t& result, Double_t* par, Int_t flag) {
+void Alignment::MinimiseResiduals(Int_t& npar, Double_t* grad, Double_t& result, Double_t* par, Int_t flag) {
 
     // Pick up new alignment conditions
-    globalParameters->detector[globalParameters->detectorToAlign]->displacementX(par[0]);
-    globalParameters->detector[globalParameters->detectorToAlign]->displacementY(par[1]);
-    globalParameters->detector[globalParameters->detectorToAlign]->displacementZ(par[2]);
-    globalParameters->detector[globalParameters->detectorToAlign]->rotationX(par[3]);
-    globalParameters->detector[globalParameters->detectorToAlign]->rotationY(par[4]);
-    globalParameters->detector[globalParameters->detectorToAlign]->rotationZ(par[5]);
+    globalParameters->detector[detectorToAlign]->displacementX(par[0]);
+    globalParameters->detector[detectorToAlign]->displacementY(par[1]);
+    globalParameters->detector[detectorToAlign]->displacementZ(par[2]);
+    globalParameters->detector[detectorToAlign]->rotationX(par[3]);
+    globalParameters->detector[detectorToAlign]->rotationY(par[4]);
+    globalParameters->detector[detectorToAlign]->rotationZ(par[5]);
 
     // Apply new alignment conditions
-    globalParameters->detector[globalParameters->detectorToAlign]->update();
+    globalParameters->detector[detectorToAlign]->update();
 
     // The chi2 value to be returned
     result = 0.;
@@ -135,13 +142,13 @@ void MinimiseResiduals(Int_t& npar, Double_t* grad, Double_t& result, Double_t* 
         for(int iAssociatedCluster = 0; iAssociatedCluster < associatedClusters.size(); iAssociatedCluster++) {
             Cluster* associatedCluster = associatedClusters[iAssociatedCluster];
             string detectorID = associatedCluster->detectorID();
-            if(detectorID != globalParameters->detectorToAlign)
+            if(detectorID != detectorToAlign)
                 continue;
             // Recalculate the global position from the local
             PositionVector3D<Cartesian3D<double>> positionLocal(
                 associatedCluster->localX(), associatedCluster->localY(), associatedCluster->localZ());
             PositionVector3D<Cartesian3D<double>> positionGlobal =
-                *(globalParameters->detector[globalParameters->detectorToAlign]->m_localToGlobal) * positionLocal;
+                *(globalParameters->detector[detectorToAlign]->m_localToGlobal) * positionLocal;
             // Get the track intercept with the detector
             ROOT::Math::XYZPoint intercept = track->intercept(positionGlobal.Z());
             // Calculate the residuals
@@ -190,22 +197,43 @@ void Alignment::finalise() {
     // return. This should be made into separate functions.
     if(alignmentMethod == 1) {
 
-        // Get the name of the detector to align
-        string detectorID = parameters->detectorToAlign;
-
         // Add the parameters to the fitter (z displacement not allowed to move!)
-        residualFitter->SetParameter(
-            0, (detectorID + "_displacementX").c_str(), parameters->detector[detectorID]->displacementX(), 0.01, -50, 50);
-        residualFitter->SetParameter(
-            1, (detectorID + "_displacementY").c_str(), parameters->detector[detectorID]->displacementY(), 0.01, -50, 50);
-        residualFitter->SetParameter(
-            2, (detectorID + "_displacementZ").c_str(), parameters->detector[detectorID]->displacementZ(), 0, -10, 500);
-        residualFitter->SetParameter(
-            3, (detectorID + "_rotationX").c_str(), parameters->detector[detectorID]->rotationX(), 0.001, -6.30, 6.30);
-        residualFitter->SetParameter(
-            4, (detectorID + "_rotationY").c_str(), parameters->detector[detectorID]->rotationY(), 0.001, -6.30, 6.30);
-        residualFitter->SetParameter(
-            5, (detectorID + "_rotationZ").c_str(), parameters->detector[detectorID]->rotationZ(), 0.001, -6.30, 6.30);
+        residualFitter->SetParameter(0,
+                                     (detectorToAlign + "_displacementX").c_str(),
+                                     parameters->detector[detectorToAlign]->displacementX(),
+                                     0.01,
+                                     -50,
+                                     50);
+        residualFitter->SetParameter(1,
+                                     (detectorToAlign + "_displacementY").c_str(),
+                                     parameters->detector[detectorToAlign]->displacementY(),
+                                     0.01,
+                                     -50,
+                                     50);
+        residualFitter->SetParameter(2,
+                                     (detectorToAlign + "_displacementZ").c_str(),
+                                     parameters->detector[detectorToAlign]->displacementZ(),
+                                     0,
+                                     -10,
+                                     500);
+        residualFitter->SetParameter(3,
+                                     (detectorToAlign + "_rotationX").c_str(),
+                                     parameters->detector[detectorToAlign]->rotationX(),
+                                     0.001,
+                                     -6.30,
+                                     6.30);
+        residualFitter->SetParameter(4,
+                                     (detectorToAlign + "_rotationY").c_str(),
+                                     parameters->detector[detectorToAlign]->rotationY(),
+                                     0.001,
+                                     -6.30,
+                                     6.30);
+        residualFitter->SetParameter(5,
+                                     (detectorToAlign + "_rotationZ").c_str(),
+                                     parameters->detector[detectorToAlign]->rotationZ(),
+                                     0.001,
+                                     -6.30,
+                                     6.30);
 
         for(int iteration = 0; iteration < nIterations; iteration++) {
 
@@ -214,12 +242,12 @@ void Alignment::finalise() {
 
             // Set the alignment parameters of this plane to be the optimised values
             // from the alignment
-            parameters->detector[detectorID]->displacementX(residualFitter->GetParameter(0));
-            parameters->detector[detectorID]->displacementY(residualFitter->GetParameter(1));
-            parameters->detector[detectorID]->displacementZ(residualFitter->GetParameter(2));
-            parameters->detector[detectorID]->rotationX(residualFitter->GetParameter(3));
-            parameters->detector[detectorID]->rotationY(residualFitter->GetParameter(4));
-            parameters->detector[detectorID]->rotationZ(residualFitter->GetParameter(5));
+            parameters->detector[detectorToAlign]->displacementX(residualFitter->GetParameter(0));
+            parameters->detector[detectorToAlign]->displacementY(residualFitter->GetParameter(1));
+            parameters->detector[detectorToAlign]->displacementZ(residualFitter->GetParameter(2));
+            parameters->detector[detectorToAlign]->rotationX(residualFitter->GetParameter(3));
+            parameters->detector[detectorToAlign]->rotationY(residualFitter->GetParameter(4));
+            parameters->detector[detectorToAlign]->rotationZ(residualFitter->GetParameter(5));
         }
 
         // Write the output alignment file

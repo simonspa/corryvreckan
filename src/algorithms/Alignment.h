@@ -23,6 +23,10 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
+    private:
+        static void MinimiseTrackChi2(Int_t& npar, Double_t* grad, Double_t& result, Double_t* par, Int_t flag);
+        static void MinimiseResiduals(Int_t& npar, Double_t* grad, Double_t& result, Double_t* par, Int_t flag);
+
         // Member variables
         Tracks m_alignmenttracks;
         int nIterations;
