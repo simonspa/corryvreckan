@@ -2,7 +2,7 @@
 #define TIMEPIX3EVENTLOADER_H 1
 
 #include <stdio.h>
-#include "core/Algorithm.h"
+#include "core/algorithm/Algorithm.h"
 #include "objects/Pixel.h"
 #include "objects/SpidrSignal.h"
 

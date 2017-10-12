@@ -9,7 +9,7 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "core/Algorithm.h"
+#include "core/algorithm/Algorithm.h"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
 #include "objects/Track.h"

@@ -4,7 +4,7 @@
 #include <iostream>
 #include "TH1F.h"
 #include "TH2F.h"
-#include "core/Algorithm.h"
+#include "core/algorithm/Algorithm.h"
 #include "objects/Pixel.h"
 
 namespace corryvreckan {

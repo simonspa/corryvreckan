@@ -6,7 +6,7 @@
 #include "Minuit2/Minuit2Minimizer.h"
 #include "TError.h"
 // Local includes
-#include "core/Algorithm.h"
+#include "core/algorithm/Algorithm.h"
 #include "objects/Cluster.h"
 #include "objects/Track.h"
 

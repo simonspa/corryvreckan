@@ -10,7 +10,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 // Local includes
-#include "core/Algorithm.h"
+#include "core/algorithm/Algorithm.h"
 #include "objects/Cluster.h"
 #include "objects/Track.h"
 

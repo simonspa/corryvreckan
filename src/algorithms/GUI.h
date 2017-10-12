@@ -9,7 +9,7 @@
 #include "TH2F.h"
 #include "TH3F.h"
 #include "TThread.h"
-#include "core/Algorithm.h"
+#include "core/algorithm/Algorithm.h"
 
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"

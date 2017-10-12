@@ -7,6 +7,7 @@
 
 // Local include files
 #include "Analysis.h"
+#include "algorithm/exceptions.h"
 #include "utils/ROOT.h"
 #include "utils/log.h"
 

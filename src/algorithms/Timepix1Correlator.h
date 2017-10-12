@@ -5,7 +5,7 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "core/Algorithm.h"
+#include "core/algorithm/Algorithm.h"
 
 namespace corryvreckan {
     class Timepix1Correlator : public Algorithm {

@@ -9,10 +9,10 @@
 #include "TDirectory.h"
 #include "TFile.h"
 
-#include "Algorithm.h"
 #include "Clipboard.h"
 #include "DetectorParameters.h"
 #include "Parameters.h"
+#include "algorithm/Algorithm.h"
 #include "config/ConfigManager.hpp"
 #include "config/Configuration.hpp"
 

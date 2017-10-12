@@ -3,10 +3,11 @@
 
 // Include files
 #include <string>
-#include "Clipboard.h"
-#include "Parameters.h"
 #include "TStopwatch.h"
-#include "config/Configuration.hpp"
+#include "core/Clipboard.h"
+#include "core/Parameters.h"
+#include "core/config/Configuration.hpp"
+#include "exceptions.h"
 
 //-------------------------------------------------------------------------------
 // The algorithm class is the base class that all user algorithms are built on.

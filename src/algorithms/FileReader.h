@@ -4,7 +4,7 @@
 #include <iostream>
 #include "TFile.h"
 #include "TTree.h"
-#include "core/Algorithm.h"
+#include "core/algorithm/Algorithm.h"
 
 namespace corryvreckan {
     class FileReader : public Algorithm {

@@ -2,7 +2,7 @@
 #define OnlineMonitor_H 1
 
 #include <iostream>
-#include "core/Algorithm.h"
+#include "core/algorithm/Algorithm.h"
 #include "objects/Cluster.h"
 #include "objects/GuiDisplay.h"
 #include "objects/Pixel.h"
