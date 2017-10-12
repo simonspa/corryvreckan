@@ -186,11 +186,6 @@ void Analysis::load_detectors() {
             m_parameters->excludedFromTracking[ex] = true;
         }
     }
-
-    std::vector<std::string> masking = global_config.getArray<std::string>("masked");
-    for(auto& m : masking) {
-        m_parameters->masked[m] = true;
-    }
 }
 
 void Analysis::load_algorithms() {

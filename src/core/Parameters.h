@@ -53,7 +53,6 @@ namespace corryvreckan {
         int nDetectors{0};
         double currentTime;
         std::map<std::string, bool> excludedFromTracking;
-        std::map<std::string, bool> masked;
         std::string detectorToAlign;
 
         // Parameters for each detector (stored by detector ID)

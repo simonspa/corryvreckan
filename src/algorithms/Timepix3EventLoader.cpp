@@ -69,12 +69,6 @@ void Timepix3EventLoader::initialise(Parameters* par) {
 
             Detector* detector = *it;
 
-            // Check if this device is to be masked
-            if(parameters->masked.count(detectorID) != 0) {
-                LOG(DEBUG) << "Device with detector ID " << entry->d_name << " is masked.";
-                continue;
-            }
-
             if(detector->type() != "Timepix3") {
                 LOG(WARNING) << "Device with detector ID " << entry->d_name << " is not of type Timepix3.";
                 continue;
@@ -147,8 +141,6 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
         // Check if they are a Timepix3
         string detectorID = detector->name();
         if(detector->type() != "Timepix3")
-            continue;
-        if(parameters->masked.count(detectorID))
             continue;
 
         // Make a new container for the data
