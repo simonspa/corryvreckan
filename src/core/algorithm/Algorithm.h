@@ -61,7 +61,6 @@ namespace corryvreckan {
 
     protected:
         // Member variables
-        Parameters* parameters;
         TStopwatch* m_stopwatch;
         std::string m_name;
         Configuration m_config;

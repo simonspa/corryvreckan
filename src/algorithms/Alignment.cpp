@@ -8,7 +8,6 @@ using namespace std;
 // Global container declarations
 Tracks globalTracks;
 std::string detectorToAlign;
-Parameters* globalParameters;
 Detector* globalDetector;
 int detNum;
 
@@ -28,10 +27,7 @@ Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
     LOG(INFO) << "Aligning detector \"" << detectorToAlign << "\"";
 }
 
-void Alignment::initialise(Parameters* par) {
-    // Pick up the global parameters
-    parameters = par;
-}
+void Alignment::initialise(Parameters* par) {}
 
 // During run, just pick up tracks and save them till the end
 StatusCode Alignment::run(Clipboard* clipboard) {
@@ -93,14 +89,13 @@ void Alignment::MinimiseTrackChi2(Int_t& npar, Double_t* grad, Double_t& result,
         // Find the cluster that needs to have its position recalculated
         for(int iTrackCluster = 0; iTrackCluster < trackClusters.size(); iTrackCluster++) {
             Cluster* trackCluster = trackClusters[iTrackCluster];
-            string detectorID = trackCluster->detectorID();
-            if(detectorID != detectorToAlign)
+            if(globalDetector->name() != trackCluster->detectorID()) {
                 continue;
+            }
             // Recalculate the global position from the local
             PositionVector3D<Cartesian3D<double>> positionLocal(
                 trackCluster->localX(), trackCluster->localY(), trackCluster->localZ());
-            PositionVector3D<Cartesian3D<double>> positionGlobal =
-                *(globalParameters->detector[detectorID]->m_localToGlobal) * positionLocal;
+            PositionVector3D<Cartesian3D<double>> positionGlobal = *(globalDetector->m_localToGlobal) * positionLocal;
             trackCluster->setClusterCentre(positionGlobal.X(), positionGlobal.Y(), positionGlobal.Z());
         }
 
@@ -181,7 +176,6 @@ void Alignment::finalise() {
 
     // Set the global parameters
     globalTracks = m_alignmenttracks;
-    globalParameters = parameters;
 
     // Set the printout arguments of the fitter
     Double_t arglist[10];
@@ -224,7 +218,7 @@ void Alignment::finalise() {
         }
 
         // Write the output alignment file
-        parameters->writeConditions();
+        // FIXME parameters->writeConditions();
 
         return;
     }
@@ -322,5 +316,5 @@ void Alignment::finalise() {
     }
 
     // Write the output alignment file
-    parameters->writeConditions();
+    // FIXME parameters->writeConditions();
 }
