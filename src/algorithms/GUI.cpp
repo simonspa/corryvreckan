@@ -46,7 +46,7 @@ void GUI::initialise(Parameters* par) {
         addPlot(hitmapCanvas, hitmap, "colz");
 
         string residualHisto = "/corryvreckan/BasicTracking/residualsX_" + detector->name();
-        if(detector->name() == parameters->DUT)
+        if(detector->name() == m_config.get<std::string>("DUT"))
             residualHisto = "/corryvreckan/DUTAnalysis/residualsX";
         addPlot(residualsCanvas, residualHisto);
 

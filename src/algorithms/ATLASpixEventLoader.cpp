@@ -16,6 +16,9 @@ void ATLASpixEventLoader::initialise(Parameters* par) {
     // Take input directory from global parameters
     string inputDirectory = m_config.get<std::string>("inputDirectory") + "/ATLASpix";
 
+    // Assume that the ATLASpix is the DUT (if running this algorithm
+    string detectorID = m_config.get<std::string>("DUT");
+
     // Open the root directory
     DIR* directory = opendir(inputDirectory.c_str());
     if(directory == NULL) {
@@ -52,9 +55,6 @@ void ATLASpixEventLoader::initialise(Parameters* par) {
 
 StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
 
-    // Assume that the CLICpix is the DUT (if running this algorithm
-    string detectorID = parameters->DUT;
-
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
         m_file.close();
@@ -89,8 +89,10 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
             int tot = std::stoi(sm[4]);
             int trg_index = std::stoi(sm[7]);
 
+            auto detector = (*find_if(
+                m_detectors.begin(), m_detectors.end(), [this](Detector* obj) { return obj->name() == detectorID; }));
             // If this pixel is masked, do not save it
-            if(parameters->detector[detectorID]->masked(col, row)) {
+            if(detector->masked(col, row)) {
                 continue;
             }
 

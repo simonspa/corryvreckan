@@ -36,6 +36,7 @@ namespace corryvreckan {
 
         // Member variables
         int m_eventNumber;
+        std::string detectorID;
         std::string m_filename;
         std::ifstream m_file;
 

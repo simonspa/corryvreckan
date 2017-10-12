@@ -66,7 +66,7 @@ void FileReader::initialise(Parameters* par) {
                 string detectorType = detector->type();
 
                 // If only reading information for the DUT
-                if(m_onlyDUT && detectorID != parameters->DUT)
+                if(m_onlyDUT && detectorID != m_config.get<std::string>("DUT"))
                     continue;
 
                 LOG(DEBUG) << "Looking for " << objectType << " for device " << detectorID;
@@ -126,7 +126,7 @@ StatusCode FileReader::run(Clipboard* clipboard) {
                 string objectID = detectorID + "_" + objectType;
 
                 // If only writing information for the DUT
-                if(m_onlyDUT && detectorID != parameters->DUT)
+                if(m_onlyDUT && detectorID != m_config.get<std::string>("DUT"))
                     continue;
 
                 // If there is no data for this device, continue

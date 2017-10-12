@@ -8,7 +8,8 @@ using namespace corryvreckan;
 
 DUTAnalysis::DUTAnalysis(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
-    m_digitalPowerPulsing = false;
+    m_digitalPowerPulsing = m_config.get<bool>("digitalPowerPulsing", false);
+    m_DUT = m_config.get<std::string>("DUT");
 }
 
 void DUTAnalysis::initialise(Parameters* par) {
@@ -78,7 +79,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
         m_shutterCloseTime = 0;
 
     // Now update the power pulsing with any new signals
-    SpidrSignals* spidrData = (SpidrSignals*)clipboard->get(parameters->DUT, "SpidrSignals");
+    SpidrSignals* spidrData = (SpidrSignals*)clipboard->get(m_DUT, "SpidrSignals");
     // If there are new signals
     if(spidrData != NULL) {
         // Loop over all signals registered
@@ -115,7 +116,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
     }
 
     // Get the DUT clusters from the clipboard
-    Clusters* clusters = (Clusters*)clipboard->get(parameters->DUT, "clusters");
+    Clusters* clusters = (Clusters*)clipboard->get(m_DUT, "clusters");
     if(clusters == NULL) {
         LOG(DEBUG) << "No DUT clusters on the clipboard";
     }
@@ -125,17 +126,23 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
     for(auto& track : (*tracks)) {
 
         // Cut on the chi2/ndof
-        if(track->chi2ndof() > chi2ndofCut)
+        if(track->chi2ndof() > chi2ndofCut) {
             continue;
+        }
 
+        // Get the DUT detector:
+        auto detector =
+            (*find_if(m_detectors.begin(), m_detectors.end(), [this](Detector* obj) { return obj->name() == m_DUT; }));
         // Check if it intercepts the DUT
-        PositionVector3D<Cartesian3D<double>> globalIntercept = parameters->detector[parameters->DUT]->getIntercept(track);
-        if(!parameters->detector[parameters->DUT]->hasIntercept(track, 1.))
+        PositionVector3D<Cartesian3D<double>> globalIntercept = detector->getIntercept(track);
+        if(!detector->hasIntercept(track, 1.)) {
             continue;
+        }
 
         // Check that it doesn't go through/near a masked pixel
-        if(parameters->detector[parameters->DUT]->hitMasked(track, 1.))
+        if(detector->hitMasked(track, 1.)) {
             continue;
+        }
 
         tracksVersusTime->Fill((double)track->timestamp() / (4096. * 40000000.));
 

@@ -39,6 +39,7 @@ namespace corryvreckan {
         TH1F* associatedTracksVersusPowerOnTime;
 
         // Member variables
+        std::string m_DUT;
         int m_eventNumber;
         int m_nAlignmentClusters;
         long long int m_powerOnTime;

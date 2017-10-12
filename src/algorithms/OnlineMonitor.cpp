@@ -35,7 +35,7 @@ void OnlineMonitor::initialise(Parameters* par) {
     // track chi2
     AddHisto("OverviewCanvas", "/corryvreckan/BasicTracking/trackChi2");
     // reference plane map, residuals
-    string reference = parameters->reference;
+    string reference = m_config.get<std::string>("reference");
     string tot = "/corryvreckan/TestAlgorithm/clusterTot_" + reference;
     AddHisto("OverviewCanvas", tot);
     string hitmap = "/corryvreckan/TestAlgorithm/hitmap_" + reference;

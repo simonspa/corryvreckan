@@ -53,7 +53,7 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
 
     //  LOG(TRACE) <<"Running";
     // Assume that the CLICpix is the DUT (if running this algorithm
-    string detectorID = parameters->DUT;
+    string detectorID = m_config.get<std::string>("DUT");
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {

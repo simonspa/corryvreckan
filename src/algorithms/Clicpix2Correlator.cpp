@@ -11,7 +11,7 @@ void Clicpix2Correlator::initialise(Parameters* par) {
     parameters = par;
 
     // Get the DUT ID
-    dutID = parameters->DUT;
+    dutID = m_config.get<std::string>("DUT");
 
     // Initialise histograms
     hTrackDiffX["standard"] = new TH1F("hTrackDiffX_standard", "hTrackDiffX_standard", 4000, -20, 20);

@@ -223,7 +223,7 @@ bool Timepix3EventLoader::loadData(Detector* detector, Pixels* devicedata, Spidr
     //  if(detectorID != "W0019_F07") debug = false;
 
     bool extra = false; // temp
-    //  if(detectorID == parameters->DUT) extra = true;
+    //  if(detectorID == m_config.get<std::string>("DUT")) extra = true;
     //  if(detectorID == "W0002_J05") extra = true;
 
     LOG(DEBUG) << "Loading data for device " << detectorID;
@@ -343,7 +343,7 @@ bool Timepix3EventLoader::loadData(Detector* detector, Pixels* devicedata, Spidr
         if(header == 0x0) {
 
             // Only want to read these packets from the DUT
-            if(detectorID != parameters->DUT)
+            if(detectorID != m_config.get<std::string>("DUT"))
                 continue;
 
             // Get the second part of the header

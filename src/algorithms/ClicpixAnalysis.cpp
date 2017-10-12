@@ -27,7 +27,7 @@ void ClicpixAnalysis::initialise(Parameters* par) {
     // Initialise member variables
     m_eventNumber = 0;
     m_triggerNumber = 0;
-    dutID = parameters->DUT;
+    dutID = m_config.get<std::string>("DUT");
     m_lostHits = 0.;
 
     // Cluster/pixel histograms
@@ -152,16 +152,19 @@ void ClicpixAnalysis::initialise(Parameters* par) {
     hInterceptClusterSize3 = new TH2F("hInterceptClusterSize3", "hInterceptClusterSize3", 25, 0, 25, 25, 0, 25);
     hInterceptClusterSize4 = new TH2F("hInterceptClusterSize4", "hInterceptClusterSize4", 25, 0, 25, 25, 0, 25);
 
+    // Get the DUT detector:
+    auto detector =
+        (*find_if(m_detectors.begin(), m_detectors.end(), [this](Detector* obj) { return obj->name() == dutID; }));
     m_nBinsX = 32;
     m_nBinsY = 32;
     hMapClusterSizeAssociated = new TH2F("hMapClusterSizeAssociated",
                                          "hMapClusterSizeAssociated",
                                          m_nBinsX,
                                          0,
-                                         parameters->detector[dutID]->nPixelsX(),
+                                         detector->nPixelsX(),
                                          m_nBinsY,
                                          0,
-                                         parameters->detector[dutID]->nPixelsY());
+                                         detector->nPixelsY());
 
     for(int x = 0; x < m_nBinsX; x++) {
         for(int y = 0; y < m_nBinsY; y++) {
@@ -208,18 +211,22 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
 
         // Get the track
         Track* track = (*itTrack);
-        if(!track)
+        if(!track) {
             continue;
+        }
 
         // Cut on the track chi2/ndof
-        if(track->chi2ndof() < 3.0)
+        if(track->chi2ndof() < 3.0) {
             continue;
+        }
 
+        // Get the DUT detector:
+        auto detector =
+            (*find_if(m_detectors.begin(), m_detectors.end(), [this](Detector* obj) { return obj->name() == dutID; }));
         // Get the track intercept with the clicpix plane (global and local
         // co-ordinates)
-        PositionVector3D<Cartesian3D<double>> trackIntercept = parameters->detector[dutID]->getIntercept(track);
-        PositionVector3D<Cartesian3D<double>> trackInterceptLocal =
-            *(parameters->detector[dutID]->m_globalToLocal) * trackIntercept;
+        PositionVector3D<Cartesian3D<double>> trackIntercept = detector->getIntercept(track);
+        PositionVector3D<Cartesian3D<double>> trackInterceptLocal = *(detector->m_globalToLocal) * trackIntercept;
 
         // Plot the difference between track intercepts and all clicpix clusters
         // Also record which cluster is the closest
@@ -260,18 +267,17 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
         }
 
         // Get the track intercept position along the chip
-        double chipInterceptCol = parameters->detector[dutID]->getColumn(trackInterceptLocal);
-        double chipInterceptRow = parameters->detector[dutID]->getRow(trackInterceptLocal);
+        double chipInterceptCol = detector->getColumn(trackInterceptLocal);
+        double chipInterceptRow = detector->getRow(trackInterceptLocal);
 
         // Get the track intercept position along the pixel
-        double pixelInterceptX = parameters->detector[dutID]->inPixelX(trackInterceptLocal);
-        double pixelInterceptY = parameters->detector[dutID]->inPixelY(trackInterceptLocal);
+        double pixelInterceptX = detector->inPixelX(trackInterceptLocal);
+        double pixelInterceptY = detector->inPixelY(trackInterceptLocal);
 
         // Cut on the track intercept - this makes sure that it actually went
         // through the chip
-        if(chipInterceptCol < 0.5 || chipInterceptRow < 0.5 ||
-           chipInterceptCol > (parameters->detector[dutID]->nPixelsX() - 0.5) ||
-           chipInterceptRow > (parameters->detector[dutID]->nPixelsY() - 0.5))
+        if(chipInterceptCol < 0.5 || chipInterceptRow < 0.5 || chipInterceptCol > (detector->nPixelsX() - 0.5) ||
+           chipInterceptRow > (detector->nPixelsY() - 0.5))
             continue;
 
         // Check if the hit is near a masked pixel
@@ -333,8 +339,8 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
             if((*bestCluster)->size() == 1) {
                 hClusterTOTAssociated1pix->Fill((*bestCluster)->tot());
                 hInterceptClusterSize1->Fill(pixelInterceptX, pixelInterceptY);
-                int id = floor(chipInterceptCol * m_nBinsX / parameters->detector[dutID]->nPixelsX()) +
-                         floor(chipInterceptRow * m_nBinsY / parameters->detector[dutID]->nPixelsY()) * m_nBinsX;
+                int id = floor(chipInterceptCol * m_nBinsX / detector->nPixelsX()) +
+                         floor(chipInterceptRow * m_nBinsY / detector->nPixelsY()) * m_nBinsX;
                 hMapClusterTOTAssociated1pix[id]->Fill((*bestCluster)->tot());
             }
             if((*bestCluster)->size() == 2) {
@@ -427,6 +433,10 @@ void ClicpixAnalysis::finalise() {
 
 // Check if a track has gone through or near a masked pixel
 bool ClicpixAnalysis::checkMasked(double chipInterceptRow, double chipInterceptCol) {
+
+    // Get the DUT detector:
+    auto detector =
+        (*find_if(m_detectors.begin(), m_detectors.end(), [this](Detector* obj) { return obj->name() == dutID; }));
 
     // Get the pixel row and column number
     int rowNumber = ceil(chipInterceptRow);

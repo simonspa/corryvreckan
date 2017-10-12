@@ -177,12 +177,8 @@ void Analysis::load_detectors() {
     // FIXME reimplement - std::sort(m_parameters->detectors.begin(), m_parameters->detectors.end(), sortByZ);
     //
 
-    // Define DUT and reference
-    m_parameters->DUT = global_config.get<std::string>("DUT");
-    m_parameters->reference = global_config.get<std::string>("reference");
-
-    m_parameters->detectorToAlign = m_parameters->DUT;
-    m_parameters->excludedFromTracking[m_parameters->DUT] = true;
+    m_parameters->detectorToAlign = global_config.get<std::string>("DUT");
+    m_parameters->excludedFromTracking[global_config.get<std::string>("DUT")] = true;
 
     if(global_config.has("excludeFromTracking")) {
         std::vector<std::string> excluding = global_config.getArray<std::string>("excludeFromTracking");

@@ -241,7 +241,7 @@ void Alignment::finalise() {
         for(int ndet = 0; ndet < parameters->nDetectors; ndet++) {
             string detectorID = parameters->detectors[ndet];
             // Do not align the reference plane
-            if(detectorID == parameters->reference)
+            if(detectorID == m_config.get<std::string>("reference"))
                 continue;
             if(parameters->excludedFromTracking.count(detectorID) != 0)
                 continue;
@@ -326,7 +326,7 @@ void Alignment::finalise() {
     for(int ndet = 0; ndet < parameters->nDetectors; ndet++) {
         string detectorID = parameters->detectors[ndet];
         // Do not align the reference plane
-        if(detectorID == parameters->reference)
+        if(detectorID == m_config.get<std::string>("reference"))
             continue;
         if(parameters->excludedFromTracking.count(detectorID) != 0)
             continue;
