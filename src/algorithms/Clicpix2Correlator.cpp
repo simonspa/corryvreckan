@@ -6,12 +6,6 @@ using namespace std;
 Clicpix2Correlator::Clicpix2Correlator(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {}
 
-template <typename T> std::string makeString(T number) {
-    std::ostringstream ss;
-    ss << number;
-    return ss.str();
-}
-
 void Clicpix2Correlator::initialise(Parameters* par) {
 
     parameters = par;
@@ -32,7 +26,7 @@ void Clicpix2Correlator::initialise(Parameters* par) {
     angleStop = 2. * M_PI;
 
     for(double angle = angleStart; angle < angleStop; angle += angleStep) {
-        string name = "rotated" + makeString(angle);
+        string name = "rotated" + std::to_string(angle);
         string histo = "hTrackDiffX_" + name;
         hTrackDiffX[name] = new TH1F(histo.c_str(), histo.c_str(), 4000, -20, 20);
     }
@@ -118,7 +112,7 @@ void Clicpix2Correlator::finalise() {
                     double ycorr = cluster->globalY() - trackIntercept.Y();
 
                     // Fill histograms on correlations
-                    string name = "rotated" + makeString(angle);
+                    string name = "rotated" + std::to_string(angle);
                     hTrackDiffX[name]->Fill(xcorr);
                     hTrackDiffY[name]->Fill(ycorr);
                 }
