@@ -9,10 +9,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-Parameters::Parameters() {
-
-    currentTime = 0.; // seconds
-}
+Parameters::Parameters() {}
 
 bool Parameters::writeConditions() {
 

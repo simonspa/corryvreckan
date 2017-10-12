@@ -20,7 +20,7 @@ namespace corryvreckan {
         void finalise();
 
     private:
-        bool loadData(Detector* detector, Pixels*, SpidrSignals*);
+        bool loadData(Clipboard* clipboard, Detector* detector, Pixels*, SpidrSignals*);
         void maskPixels(Detector*, std::string);
 
         // cofngiuration paramaters:

@@ -148,7 +148,7 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
         SpidrSignals* spidrData = new SpidrSignals();
 
         // Load the next chunk of data
-        bool data = loadData(detector, deviceData, spidrData);
+        bool data = loadData(clipboard, detector, deviceData, spidrData);
 
         // If data was loaded then put it on the clipboard
         if(data) {
@@ -165,7 +165,7 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
     }
 
     // Increment the event time
-    parameters->currentTime += eventLength;
+    clipboard->put_persistent("currentTime", clipboard->get_persistent("currentTime") + eventLength);
 
     // If all files are finished, tell the event loop to stop
     if(endOfFiles == devices)
@@ -177,7 +177,8 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
         return NoData;
 
     // Otherwise tell event loop to keep running
-    LOG_PROGRESS(INFO, "tpx3_loader") << "Current time: " << std::setprecision(4) << std::fixed << parameters->currentTime;
+    LOG_PROGRESS(INFO, "tpx3_loader") << "Current time: " << std::setprecision(4) << std::fixed
+                                      << clipboard->get_persistent("currentTime");
     return Success;
 }
 
@@ -207,7 +208,7 @@ void Timepix3EventLoader::maskPixels(Detector* detector, string trimdacfile) {
 }
 
 // Function to load data for a given device, into the relevant container
-bool Timepix3EventLoader::loadData(Detector* detector, Pixels* devicedata, SpidrSignals* spidrData) {
+bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pixels* devicedata, SpidrSignals* spidrData) {
 
     string detectorID = detector->name();
 
@@ -359,7 +360,8 @@ bool Timepix3EventLoader::loadData(Detector* detector, Pixels* devicedata, Spidr
                 // Stop looking at data if the signal is after the current event window
                 // (and rewind the file
                 // reader so that we start with this signal next event)
-                if(eventLength != 0. && ((double)time / (4096. * 40000000.)) > (parameters->currentTime + eventLength)) {
+                if(eventLength != 0. &&
+                   ((double)time / (4096. * 40000000.)) > (clipboard->get_persistent("currentTime") + eventLength)) {
                     fseek(m_currentFile[detectorID], -1 * sizeof(ULong64_t), SEEK_CUR);
                     fileNotFinished = true;
                     //          LOG(DEBUG) <<"Signal has a time beyond the current event:
@@ -484,7 +486,8 @@ bool Timepix3EventLoader::loadData(Detector* detector, Pixels* devicedata, Spidr
             // Stop looking at data if the pixel is after the current event window
             // (and rewind the file
             // reader so that we start with this pixel next event)
-            if(eventLength != 0. && ((double)time / (4096. * 40000000.)) > (parameters->currentTime + eventLength)) {
+            if(eventLength != 0. &&
+               ((double)time / (4096. * 40000000.)) > (clipboard->get_persistent("currentTime") + eventLength)) {
                 fseek(m_currentFile[detectorID], -1 * sizeof(ULong64_t), SEEK_CUR);
                 fileNotFinished = true;
                 break;

@@ -51,7 +51,6 @@ namespace corryvreckan {
         // Member variables
         std::vector<std::string> detectors;
         int nDetectors{0};
-        double currentTime;
         std::map<std::string, bool> excludedFromTracking;
 
         // Parameters for each detector (stored by detector ID)

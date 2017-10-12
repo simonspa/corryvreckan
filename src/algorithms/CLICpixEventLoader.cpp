@@ -123,7 +123,7 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
     }
 
     // Now set the event time so that the Timepix3 data is loaded correctly
-    parameters->currentTime = shutterStartTime;
+    clipboard->put_persistent("currentTime", shutterStartTime);
     m_config.set<double>("eventLength", (shutterStopTime - shutterStartTime));
 
     LOG(TRACE) << "Loaded " << npixels << " pixels";

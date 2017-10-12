@@ -128,7 +128,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
     shutterStartTime = shutterStartTimeInt * 25. / 1000000000.;
     shutterStopTime = shutterStopTimeInt * 25. / 1000000000.;
 
-    parameters->currentTime = shutterStartTime;
+    clipboard->put_persistent("currentTime", shutterStartTime);
     m_config.set<double>("eventLength", (shutterStopTime - shutterStartTime));
 
     // Put the data on the clipboard
