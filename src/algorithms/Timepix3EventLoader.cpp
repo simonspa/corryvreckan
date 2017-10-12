@@ -154,9 +154,12 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
         clipboard->put(detectorID, "SpidrSignals", (TestBeamObjects*)spidrData);
 
         // Check if all devices have reached the end of file
-        devices++;
-        if(m_currentFile[detectorID] != NULL && feof(m_currentFile[detectorID]))
-            endOfFiles++;
+        if(m_currentFile[detectorID] != NULL) {
+            devices++;
+            if(feof(m_currentFile[detectorID])) {
+                endOfFiles++;
+            }
+        }
     }
 
     // Increment the event time
