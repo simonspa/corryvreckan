@@ -443,23 +443,23 @@ bool ClicpixAnalysis::checkMasked(double chipInterceptRow, double chipInterceptC
     int colNumber = ceil(chipInterceptCol);
 
     // Check if that pixel is masked, or the neighbour to the left, right, etc...
-    if(parameters->detector[dutID]->masked(colNumber - 1, rowNumber - 1))
+    if(detector->masked(colNumber - 1, rowNumber - 1))
         return true;
-    if(parameters->detector[dutID]->masked(colNumber, rowNumber - 1))
+    if(detector->masked(colNumber, rowNumber - 1))
         return true;
-    if(parameters->detector[dutID]->masked(colNumber + 1, rowNumber - 1))
+    if(detector->masked(colNumber + 1, rowNumber - 1))
         return true;
-    if(parameters->detector[dutID]->masked(colNumber - 1, rowNumber))
+    if(detector->masked(colNumber - 1, rowNumber))
         return true;
-    if(parameters->detector[dutID]->masked(colNumber, rowNumber))
+    if(detector->masked(colNumber, rowNumber))
         return true;
-    if(parameters->detector[dutID]->masked(colNumber + 1, rowNumber))
+    if(detector->masked(colNumber + 1, rowNumber))
         return true;
-    if(parameters->detector[dutID]->masked(colNumber - 1, rowNumber + 1))
+    if(detector->masked(colNumber - 1, rowNumber + 1))
         return true;
-    if(parameters->detector[dutID]->masked(colNumber, rowNumber + 1))
+    if(detector->masked(colNumber, rowNumber + 1))
         return true;
-    if(parameters->detector[dutID]->masked(colNumber + 1, rowNumber + 1))
+    if(detector->masked(colNumber + 1, rowNumber + 1))
         return true;
 
     // If not masked
