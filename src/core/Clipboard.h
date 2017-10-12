@@ -33,6 +33,7 @@ public:
         m_dataID.push_back(name + type);
         m_data[name + type] = objects;
     }
+    void put_persistent(std::string name, double value) { m_persistent_data[name] = value; }
 
     // Get objects from clipboard - with name or name + type
     TestBeamObjects* get(std::string name) {
@@ -45,6 +46,8 @@ public:
             return NULL;
         return m_data[name + type];
     }
+
+    double get_persistent(std::string name) { return m_persistent_data[name]; }
 
     // Clear items on the clipboard
     void clear() {
@@ -68,6 +71,7 @@ private:
     // Container for data, list of all data held
     std::map<std::string, TestBeamObjects*> m_data;
     std::vector<std::string> m_dataID;
+    std::map<std::string, double> m_persistent_data;
 };
 
 #endif // CLIPBOARD_H
