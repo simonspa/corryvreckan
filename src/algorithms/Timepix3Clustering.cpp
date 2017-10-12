@@ -8,7 +8,7 @@ Timepix3Clustering::Timepix3Clustering(Configuration config, std::vector<Detecto
     timingCut = m_config.get<double>("timingCut", 0.0000001); // 100 ns
 }
 
-void Timepix3Clustering::initialise(Parameters* par) {
+void Timepix3Clustering::initialise() {
 
     timingCutInt = (timingCut * 4096. * 40000000.);
 }

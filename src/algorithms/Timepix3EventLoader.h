@@ -15,7 +15,7 @@ namespace corryvreckan {
         ~Timepix3EventLoader() {}
 
         // Standard algorithm functions
-        void initialise(Parameters*);
+        void initialise();
         StatusCode run(Clipboard* clipboard);
         void finalise();
 

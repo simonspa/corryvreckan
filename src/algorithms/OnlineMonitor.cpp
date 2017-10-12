@@ -9,7 +9,7 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<Detector*> detect
     updateNumber = 500;
 }
 
-void OnlineMonitor::initialise(Parameters* par) {
+void OnlineMonitor::initialise() {
 
     // TApplication keeps the canvases persistent
     app = new TApplication("example", 0, 0);

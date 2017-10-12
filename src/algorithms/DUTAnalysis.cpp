@@ -12,7 +12,7 @@ DUTAnalysis::DUTAnalysis(Configuration config, std::vector<Detector*> detectors)
     m_DUT = m_config.get<std::string>("DUT");
 }
 
-void DUTAnalysis::initialise(Parameters* par) {
+void DUTAnalysis::initialise() {
 
     // Initialise single histograms
     tracksVersusTime = new TH1F("tracksVersusTime", "tracksVersusTime", 300000, 0, 300);

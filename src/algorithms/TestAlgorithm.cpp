@@ -9,7 +9,7 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::vector<Detector*> detect
     LOG(DEBUG) << "Setting makeCorrelations to: " << makeCorrelations;
 }
 
-void TestAlgorithm::initialise(Parameters* par) {
+void TestAlgorithm::initialise() {
 
     // Make histograms for each Timepix3
     for(auto& detector : get_detectors()) {

@@ -6,7 +6,7 @@ using namespace std;
 GenericAlgorithm::GenericAlgorithm(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {}
 
-void GenericAlgorithm::initialise(Parameters* par) {
+void GenericAlgorithm::initialise() {
 
     // Initialise histograms per device
     for(auto& detector : get_detectors()) {

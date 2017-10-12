@@ -24,7 +24,7 @@ namespace corryvreckan {
         ~Clicpix2EventLoader() {}
 
         // Functions
-        void initialise(Parameters*);
+        void initialise();
         StatusCode run(Clipboard* clipboard);
         void finalise();
 

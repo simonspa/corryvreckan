@@ -16,7 +16,7 @@ namespace corryvreckan {
         ~Timepix1Correlator() {}
 
         // Functions
-        void initialise(Parameters*);
+        void initialise();
         StatusCode run(Clipboard* clipboard);
         void finalise();
 

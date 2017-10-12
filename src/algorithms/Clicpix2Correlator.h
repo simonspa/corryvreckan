@@ -20,7 +20,7 @@ namespace corryvreckan {
         ~Clicpix2Correlator() {}
 
         // Functions
-        void initialise(Parameters*);
+        void initialise();
         StatusCode run(Clipboard* clipboard);
         void finalise();
 

@@ -16,7 +16,7 @@ namespace corryvreckan {
         ~Timepix3MaskCreator() {}
 
         // Functions
-        void initialise(Parameters*);
+        void initialise();
         StatusCode run(Clipboard* clipboard);
         void finalise();
 

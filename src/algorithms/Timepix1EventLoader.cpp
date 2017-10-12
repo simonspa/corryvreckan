@@ -31,7 +31,7 @@ bool sortByTime(string filename1, string filename2) {
     return (filetime1 < filetime2);
 }
 
-void Timepix1EventLoader::initialise(Parameters* par) {
+void Timepix1EventLoader::initialise() {
 
     // Take input directory from global parameters
     m_inputDirectory = m_config.get<std::string>("inputDirectory");

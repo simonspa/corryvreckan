@@ -14,7 +14,7 @@ BasicTracking::BasicTracking(Configuration config, std::vector<Detector*> detect
     excludeDUT = m_config.get<bool>("excludeDUT", true);
 }
 
-void BasicTracking::initialise(Parameters* par) {
+void BasicTracking::initialise() {
 
     // Set up histograms
     trackChi2 = new TH1F("trackChi2", "trackChi2", 150, 0, 150);

@@ -8,7 +8,7 @@ CLICpixEventLoader::CLICpixEventLoader(Configuration config, std::vector<Detecto
     m_filename = "";
 }
 
-void CLICpixEventLoader::initialise(Parameters* par) {
+void CLICpixEventLoader::initialise() {
 
     // File structure is RunX/CLICpix/RunX.dat
 

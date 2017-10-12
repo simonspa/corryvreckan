@@ -7,7 +7,7 @@ using namespace std;
 ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {}
 
-void ATLASpixEventLoader::initialise(Parameters* par) {
+void ATLASpixEventLoader::initialise() {
 
     // File structure is RunX/ATLASpix/data.dat
 

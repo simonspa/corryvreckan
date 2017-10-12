@@ -19,7 +19,7 @@ namespace corryvreckan {
         ~Timepix1EventLoader() {}
 
         // Functions
-        void initialise(Parameters*);
+        void initialise();
         StatusCode run(Clipboard* clipboard);
         void finalise();
 

@@ -18,7 +18,7 @@ namespace corryvreckan {
         ~Timepix3Clustering() {}
 
         // Functions
-        void initialise(Parameters*);
+        void initialise();
         StatusCode run(Clipboard* clipboard);
         void finalise();
         void calculateClusterCentre(Cluster*);

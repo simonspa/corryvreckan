@@ -12,6 +12,7 @@
 #include "Math/Translation3D.h"
 #include "Math/Vector3D.h"
 
+#include "objects/Track.h"
 #include "utils/log.h"
 
 using namespace ROOT::Math;

@@ -17,7 +17,7 @@ SpatialClustering::SpatialClustering(Configuration config, std::vector<Detector*
 
 */
 
-void SpatialClustering::initialise(Parameters*) {
+void SpatialClustering::initialise() {
 
     // Initialise histograms per device
     for(auto& detector : get_detectors()) {

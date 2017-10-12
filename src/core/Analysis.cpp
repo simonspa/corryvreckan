@@ -74,9 +74,6 @@ Analysis::Analysis(std::string config_file_name) : m_terminate(false) {
     LOG(TRACE) << "Global log level is set to " << log_level_string;
     LOG(TRACE) << "Global log format is set to " << log_format_string;
 
-    // FIXME translate new configuration to parameters:
-    m_parameters = new Parameters();
-
     // New clipboard for storage:
     m_clipboard = new Clipboard();
 }
@@ -157,35 +154,11 @@ void Analysis::load_detectors() {
 
         // Add the new detector to the global list:
         detectors.push_back(det_parm);
-        m_parameters->detector[detector.getName()] = det_parm;
-        m_parameters->registerDetector(detector.getName());
-    }
-
-    // Now check that all devices which are registered have parameters as well
-    bool unregisteredDetector = false;
-    // Loop over all registered detectors
-    for(auto& det : m_parameters->detectors) {
-        if(m_parameters->detector.count(det) == 0) {
-            LOG(INFO) << "Detector " << det << " has no conditions loaded";
-            unregisteredDetector = true;
-        }
-    }
-    if(unregisteredDetector) {
-        throw RuntimeError("Detector missing conditions.");
     }
 
     // Finally, sort the list of detectors by z position (from lowest to highest)
     // FIXME reimplement - std::sort(m_parameters->detectors.begin(), m_parameters->detectors.end(), sortByZ);
     //
-
-    m_parameters->excludedFromTracking[global_config.get<std::string>("DUT")] = true;
-
-    if(global_config.has("excludeFromTracking")) {
-        std::vector<std::string> excluding = global_config.getArray<std::string>("excludeFromTracking");
-        for(auto& ex : excluding) {
-            m_parameters->excludedFromTracking[ex] = true;
-        }
-    }
 }
 
 void Analysis::load_algorithms() {
@@ -464,7 +437,7 @@ void Analysis::initialiseAll() {
         m_directory->cd(algorithm->getName().c_str());
         LOG(INFO) << "Initialising \"" << algorithm->getName() << "\"";
         // Initialise the algorithm
-        algorithm->initialise(m_parameters);
+        algorithm->initialise();
 
         // Reset logging
         Log::setSection(old_section_name);

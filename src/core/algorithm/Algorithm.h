@@ -5,7 +5,7 @@
 #include <string>
 #include "TStopwatch.h"
 #include "core/Clipboard.h"
-#include "core/Parameters.h"
+#include "core/DetectorParameters.h"
 #include "core/config/Configuration.hpp"
 #include "exceptions.h"
 
@@ -50,7 +50,7 @@ namespace corryvreckan {
 
         // Three main functions - initialise, run and finalise. Called for every
         // algorithm
-        virtual void initialise(Parameters*) = 0;
+        virtual void initialise() = 0;
         virtual StatusCode run(Clipboard*) = 0;
         virtual void finalise() = 0;
 

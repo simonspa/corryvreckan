@@ -6,7 +6,7 @@ using namespace std;
 Clicpix2Correlator::Clicpix2Correlator(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {}
 
-void Clicpix2Correlator::initialise(Parameters* par) {
+void Clicpix2Correlator::initialise() {
 
     // Get the DUT ID
     dutID = m_config.get<std::string>("DUT");

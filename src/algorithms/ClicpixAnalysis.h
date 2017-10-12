@@ -17,7 +17,7 @@ namespace corryvreckan {
         ~ClicpixAnalysis() {}
 
         // Functions
-        void initialise(Parameters*);
+        void initialise();
         StatusCode run(Clipboard* clipboard);
         void finalise();
         bool checkMasked(double, double);

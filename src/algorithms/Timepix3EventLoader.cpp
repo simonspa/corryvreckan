@@ -27,7 +27,7 @@ Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<Detec
     m_shutterOpen = false;
 }
 
-void Timepix3EventLoader::initialise(Parameters* par) {
+void Timepix3EventLoader::initialise() {
 
     // File structure is RunX/ChipID/files.dat
 

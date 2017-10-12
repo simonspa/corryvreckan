@@ -6,7 +6,7 @@ using namespace std;
 Clicpix2EventLoader::Clicpix2EventLoader(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {}
 
-void Clicpix2EventLoader::initialise(Parameters* par) {
+void Clicpix2EventLoader::initialise() {
 
     // File structure is RunX/CLICpix2/data.csv
 

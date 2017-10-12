@@ -12,7 +12,7 @@ GUI::GUI(Configuration config, std::vector<Detector*> detectors) : Algorithm(std
     updateNumber = m_config.get<int>("updateNumber", 500);
 }
 
-void GUI::initialise(Parameters* par) {
+void GUI::initialise() {
 
     // TApplication keeps the canvases persistent
     app = new TApplication("example", 0, 0);

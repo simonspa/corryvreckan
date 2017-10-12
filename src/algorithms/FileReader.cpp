@@ -31,7 +31,7 @@ FileReader::FileReader(Configuration config, std::vector<Detector*> detectors)
 
  */
 
-void FileReader::initialise(Parameters* par) {
+void FileReader::initialise() {
 
     // Decide what objects will be read in
     if(m_readPixels)

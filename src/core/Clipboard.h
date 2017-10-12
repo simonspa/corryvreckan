@@ -6,7 +6,6 @@
 #include <map>
 #include <string>
 
-#include "Parameters.h"
 #include "objects/TestBeamObject.h"
 #include "utils/log.h"
 

@@ -11,7 +11,6 @@
 
 #include "Clipboard.h"
 #include "DetectorParameters.h"
-#include "Parameters.h"
 #include "algorithm/Algorithm.h"
 #include "config/ConfigManager.hpp"
 #include "config/Configuration.hpp"
@@ -50,7 +49,6 @@ namespace corryvreckan {
 
     protected:
         // Member variables
-        Parameters* m_parameters;
         Clipboard* m_clipboard;
         Configuration global_config;
         std::vector<Detector*> detectors;

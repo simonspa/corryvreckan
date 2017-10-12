@@ -27,7 +27,7 @@ Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
     LOG(INFO) << "Aligning detector \"" << detectorToAlign << "\"";
 }
 
-void Alignment::initialise(Parameters* par) {}
+void Alignment::initialise() {}
 
 // During run, just pick up tracks and save them till the end
 StatusCode Alignment::run(Clipboard* clipboard) {

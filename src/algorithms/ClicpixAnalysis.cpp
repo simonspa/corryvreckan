@@ -20,7 +20,7 @@ template <typename T> std::string convertToString(T number) {
     return ss.str();
 }
 
-void ClicpixAnalysis::initialise(Parameters* par) {
+void ClicpixAnalysis::initialise() {
 
     // Initialise member variables
     m_eventNumber = 0;

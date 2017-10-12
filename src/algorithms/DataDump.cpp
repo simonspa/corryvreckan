@@ -8,7 +8,7 @@ DataDump::DataDump(Configuration config, std::vector<Detector*> detectors)
     m_detector = m_config.get<std::string>("detector", "DeviceToDumpData");
 }
 
-void DataDump::initialise(Parameters* par) {
+void DataDump::initialise() {
     // Initialise member variables
     m_eventNumber = 0;
 }
