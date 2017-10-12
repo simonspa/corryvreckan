@@ -357,6 +357,20 @@ Algorithm* Analysis::create_algorithm(void* library, Configuration config) {
         }
     }
 
+    // Check for potentially masked detectors:
+    if(config.has("masked")) {
+        std::vector<std::string> mask_list = config.getArray<std::string>("masked");
+
+        for(auto it = algorithm_det.begin(); it != algorithm_det.end();) {
+            // Remove detectors which are masked:
+            if(std::find(mask_list.begin(), mask_list.end(), (*it)->name()) != mask_list.end()) {
+                it = algorithm_det.erase(it);
+            } else {
+                it++;
+            }
+        }
+    }
+
     // Set the log section header
     std::string old_section_name = Log::getSection();
     std::string section_name = "C:";
