@@ -20,7 +20,7 @@ SpatialClustering::SpatialClustering(Configuration config, std::vector<Detector*
 void SpatialClustering::initialise(Parameters*) {
 
     // Initialise histograms per device
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
 
         // Check if they are a Timepix1
         if(detector->type() != "ATLASpix" && detector->type() != "Timepix1" && detector->type() != "CLICpix")
@@ -34,7 +34,7 @@ void SpatialClustering::initialise(Parameters*) {
 StatusCode SpatialClustering::run(Clipboard* clipboard) {
 
     // Loop over all detectors of this algorithm:
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
         LOG(TRACE) << "Executing loop for detector " << detector->name();
 
         // Check if they are a Timepix1

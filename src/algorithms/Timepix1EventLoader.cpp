@@ -172,17 +172,19 @@ StatusCode Timepix1EventLoader::run(Clipboard* clipboard) {
         m_fileOpen = false;
     }
 
-    // Store all of the data on the clipboard
-    for(int nDetector = 0; nDetector < detectors.size(); nDetector++) {
+    // Loop over all detectors found and store the data on the clipboard
+    for(auto& detID : detectors) {
 
-        // Check if this detector has been seen before, if not then register it
-        string detID = detectors[nDetector];
-        if(std::find(parameters->detectors.begin(), parameters->detectors.end(), detID) == parameters->detectors.end())
-            parameters->registerDetector(detID);
+        // Check if this detector has been seen before
+        try {
+            auto detector = get_detector(detID);
 
-        // Put the pixels on the clipboard
-        clipboard->put(detID, "pixels", dataContainers[detID]);
-        LOG(DEBUG) << "Loaded " << dataContainers[detID]->size() << " pixels from device " << detID;
+            // Put the pixels on the clipboard
+            clipboard->put(detID, "pixels", dataContainers[detID]);
+            LOG(DEBUG) << "Loaded " << dataContainers[detID]->size() << " pixels from device " << detID;
+        } catch(AlgorithmError& e) {
+            LOG(WARNING) << "Unknown detector \"" << detID << "\"";
+        }
     }
 
     LOG(DEBUG) << "Loaded " << detectors.size() << " detectors in this event";

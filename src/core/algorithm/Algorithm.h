@@ -77,6 +77,7 @@ namespace corryvreckan {
             return (*it);
         }
 
+    private:
         std::vector<Detector*> m_detectors;
     };
 }

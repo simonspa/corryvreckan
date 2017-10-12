@@ -113,7 +113,7 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
         LOG(TRACE) << "New pixel: " << col << "," << row << " with tot " << tot;
 
         // If this pixel is masked, do not save it
-        if(parameters->detector[detectorID]->masked(col, row))
+        if(get_detector(detectorID)->masked(col, row))
             continue;
         Pixel* pixel = new Pixel(detectorID, row, col, tot, 0);
         pixels->push_back(pixel);

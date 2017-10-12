@@ -14,7 +14,7 @@ void Timepix1Correlator::initialise(Parameters* par) {
     parameters = par;
 
     // Initialise histograms per device
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
 
         // Check if they are a Timepix3
         string detectorID = detector->name();
@@ -58,7 +58,7 @@ StatusCode Timepix1Correlator::run(Clipboard* clipboard) {
     }
 
     // Loop over all Timepix1 and make plots
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
 
         // Check if they are a Timepix1
         string detectorID = detector->name();

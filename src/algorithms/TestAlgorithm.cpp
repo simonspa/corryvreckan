@@ -14,7 +14,7 @@ void TestAlgorithm::initialise(Parameters* par) {
     parameters = par;
 
     // Make histograms for each Timepix3
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
         LOG(DEBUG) << "Booking histograms for detector " << detector->name();
 
         // Simple hit map
@@ -55,7 +55,7 @@ void TestAlgorithm::initialise(Parameters* par) {
 StatusCode TestAlgorithm::run(Clipboard* clipboard) {
 
     // Loop over all Timepix3 and make plots
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
         // Get the pixels
         Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
         if(pixels == NULL) {

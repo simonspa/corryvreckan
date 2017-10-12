@@ -41,7 +41,7 @@ void GUI::initialise(Parameters* par) {
     addPlot(trackCanvas, "/corryvreckan/BasicTracking/trackAngleX");
 
     // Per detector histograms
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
         string hitmap = "/corryvreckan/TestAlgorithm/hitmap_" + detector->name();
         addPlot(hitmapCanvas, hitmap, "colz");
 

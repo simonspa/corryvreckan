@@ -22,7 +22,7 @@ bool sortByTime(Pixel* pixel1, Pixel* pixel2) {
 StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
 
     // Loop over all Timepix3 and for each device perform the clustering
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
 
         // Check if they are a Timepix3
         if(detector->type() != "Timepix3")
@@ -162,14 +162,13 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
     row /= tot;
     column /= tot;
 
+    auto detector = get_detector(detectorID);
+
     // Create object with local cluster position
     PositionVector3D<Cartesian3D<double>> positionLocal(
-        parameters->detector[detectorID]->pitchX() * (column - parameters->detector[detectorID]->nPixelsX() / 2),
-        parameters->detector[detectorID]->pitchY() * (row - parameters->detector[detectorID]->nPixelsY() / 2),
-        0);
+        detector->pitchX() * (column - detector->nPixelsX() / 2), detector->pitchY() * (row - detector->nPixelsY() / 2), 0);
     // Calculate global cluster position
-    PositionVector3D<Cartesian3D<double>> positionGlobal =
-        *(parameters->detector[detectorID]->m_localToGlobal) * positionLocal;
+    PositionVector3D<Cartesian3D<double>> positionGlobal = *(detector->m_localToGlobal) * positionLocal;
 
     // Set the cluster parameters
     cluster->setRow(row);

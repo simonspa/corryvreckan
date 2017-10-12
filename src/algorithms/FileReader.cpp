@@ -59,7 +59,7 @@ void FileReader::initialise(Parameters* par) {
         if(objectType == "pixels" || objectType == "clusters") {
 
             // Loop over all detectors and search for data
-            for(auto& detector : m_detectors) {
+            for(auto& detector : get_detectors()) {
 
                 // Get the detector ID and type
                 string detectorID = detector->name();
@@ -118,7 +118,7 @@ StatusCode FileReader::run(Clipboard* clipboard) {
         if(objectType == "pixels" || objectType == "clusters") {
 
             // Loop over all detectors
-            for(auto& detector : m_detectors) {
+            for(auto& detector : get_detectors()) {
 
                 // Get the detector and object ID
                 string detectorID = detector->name();

@@ -115,7 +115,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
         tot++;
 
         // If this pixel is masked, do not save it
-        if(parameters->detector[detectorID]->masked(col, row))
+        if(get_detector(detectorID)->masked(col, row))
             continue;
         Pixel* pixel = new Pixel(detectorID, row, col, tot, 0);
         pixels->push_back(pixel);

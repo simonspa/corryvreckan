@@ -26,7 +26,7 @@ void BasicTracking::initialise(Parameters* par) {
     trackAngleY = new TH1F("trackAngleY", "trackAngleY", 2000, -0.01, 0.01);
 
     // Loop over all Timepix3
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
         // Check if they are a Timepix3
         string detectorID = detector->name();
         if(detector->type() != "Timepix3")
@@ -54,7 +54,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
     // Loop over all Timepix3 and get clusters
     bool firstDetector = true;
     std::string seedPlane;
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
 
         // Check if they are a Timepix3
         string detectorID = detector->name();
@@ -195,7 +195,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
     LOG_PROGRESS(STATUS, "basic_tracking") << "Produced " << (int)nTracksTotal << " tracks";
 
     // Clean up tree objects
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
         if(trees.count(detector->name()) != 0)
             delete trees[detector->name()];
     }

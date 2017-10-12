@@ -32,7 +32,7 @@ void SpatialTracking::initialise(Parameters* par) {
     trackAngleY = new TH1F("trackAngleY", "trackAngleY", 2000, -0.01, 0.01);
 
     // Loop over all Timepix1
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
         // Check if they are a Timepix3
         // if(detector->type() != "Timepix1")
         //     continue;
@@ -59,7 +59,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
 
     // Loop over all Timepix1 and get clusters
     double minZ = 1000.;
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
 
         // Check if they are a Timepix1
         string detectorID = detector->name();
@@ -183,7 +183,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
     }
 
     // Clean up tree objects
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
         if(trees.count(detector->name()) != 0)
             delete trees[detector->name()];
     }

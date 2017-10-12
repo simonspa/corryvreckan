@@ -133,7 +133,7 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
     int loadedData = 0;
 
     // Loop through all registered detectors
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
 
         // Check if they are a Timepix3
         string detectorID = detector->name();

@@ -82,8 +82,8 @@ void Clicpix2Correlator::finalise() {
     for(double angle = angleStart; angle < angleStop; angle += angleStep) {
 
         // Set the angle
-        parameters->detector[dutID]->rotationX(angle);
-        parameters->detector[dutID]->update();
+        get_detector(dutID)->rotationX(angle);
+        get_detector(dutID)->update();
 
         int event;
         for(event = 0; event < m_eventNumber; event++) {
@@ -98,7 +98,7 @@ void Clicpix2Correlator::finalise() {
                 Track* track = tracks[iTrack];
 
                 // Get the track intercept with the clicpix plane (global co-ordinates)
-                PositionVector3D<Cartesian3D<double>> trackIntercept = parameters->detector[dutID]->getIntercept(track);
+                PositionVector3D<Cartesian3D<double>> trackIntercept = get_detector(dutID)->getIntercept(track);
 
                 // Loop over all clusters from this event
                 for(int iCluster = 0; iCluster < clusters.size(); iCluster++) {

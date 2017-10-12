@@ -11,7 +11,7 @@ void GenericAlgorithm::initialise(Parameters* par) {
     parameters = par;
 
     // Initialise histograms per device
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
 
         // Check if they are a Timepix3
         if(detector->type() != "Timepix3")
@@ -33,7 +33,7 @@ void GenericAlgorithm::initialise(Parameters* par) {
 StatusCode GenericAlgorithm::run(Clipboard* clipboard) {
 
     // Loop over all Timepix3 and make plots
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
 
         // Check if they are a Timepix3
         if(detector->type() != "Timepix3")

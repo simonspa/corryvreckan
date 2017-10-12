@@ -12,7 +12,7 @@ void Timepix3MaskCreator::initialise(Parameters* par) {
     parameters = par;
     //
     //  // Make histograms for each Timepix3
-    //  for(auto& detector : m_detectors){
+    //  for(auto& detector : get_detectors()){
     //
     //    // Check if they are a Timepix3
     //    if(detector->type() != "Timepix3") continue;
@@ -28,7 +28,7 @@ void Timepix3MaskCreator::initialise(Parameters* par) {
 StatusCode Timepix3MaskCreator::run(Clipboard* clipboard) {
 
     // Loop over all Timepix3 and for each device perform the clustering
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
 
         // Check if they are a Timepix3
         if(detector->type() != "Timepix3")
@@ -58,7 +58,7 @@ StatusCode Timepix3MaskCreator::run(Clipboard* clipboard) {
 void Timepix3MaskCreator::finalise() {
 
     // Loop through all registered detectors
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
 
         // Check if they are a Timepix3
         if(detector->type() != "Timepix3")

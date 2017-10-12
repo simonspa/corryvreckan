@@ -57,7 +57,7 @@ void OnlineMonitor::initialise(Parameters* par) {
     AddButton("ChargeDistributions", "ChargeDistributionCanvas");
 
     // Per detector histograms
-    for(auto& detector : m_detectors) {
+    for(auto& detector : get_detectors()) {
         string detectorID = detector->name();
 
         string hitmap = "/corryvreckan/TestAlgorithm/hitmap_" + detectorID;

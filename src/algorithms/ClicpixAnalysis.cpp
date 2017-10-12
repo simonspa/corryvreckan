@@ -369,8 +369,8 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
 
           // Get the pixel global position
           LOG(TRACE) <<"New pixel, row = "<<(*itPixel)->m_row<<", column = "<<(*itPixel)->m_column;
-          PositionVector3D<Cartesian3D<double> > pixelPositionLocal = parameters->detector[dutID]->getLocalPosition((*itPixel)->m_row,(*itPixel)->m_column);
-          PositionVector3D<Cartesian3D<double> > pixelPositionGlobal = *(parameters->detector[dutID]->m_localToGlobal) * pixelPositionLocal;
+          PositionVector3D<Cartesian3D<double> > pixelPositionLocal = get_detector(dutID)->getLocalPosition((*itPixel)->m_row,(*itPixel)->m_column);
+          PositionVector3D<Cartesian3D<double> > pixelPositionGlobal = *(get_detector(dutID)->m_localToGlobal) * pixelPositionLocal;
 
           // Check if it is close to the track
           if( fabs( pixelPositionGlobal.X() - trackIntercept.X() ) > m_associationCut ||
@@ -467,9 +467,10 @@ bool ClicpixAnalysis::checkMasked(double chipInterceptRow, double chipInterceptC
 // "Close" is defined as the intercept at the clicpix
 bool ClicpixAnalysis::checkProximity(Track* track, Tracks* tracks) {
 
+    auto detector = get_detector(dutID);
     // Get the intercept of the interested track at the dut
     bool close = false;
-    PositionVector3D<Cartesian3D<double>> trackIntercept = parameters->detector[dutID]->getIntercept(track);
+    PositionVector3D<Cartesian3D<double>> trackIntercept = detector->getIntercept(track);
 
     // Loop over all other tracks and check if they intercept close to the track
     // we are considering
@@ -479,7 +480,7 @@ bool ClicpixAnalysis::checkProximity(Track* track, Tracks* tracks) {
         // Get the track
         Track* track2 = (*itTrack);
         // Get the track intercept with the clicpix plane (global co-ordinates)
-        PositionVector3D<Cartesian3D<double>> trackIntercept2 = parameters->detector[dutID]->getIntercept(track2);
+        PositionVector3D<Cartesian3D<double>> trackIntercept2 = detector->getIntercept(track2);
         // If track == track2 do nothing
         if(trackIntercept.X() == trackIntercept2.X() && trackIntercept.Y() == trackIntercept2.Y())
             continue;
@@ -494,7 +495,7 @@ bool ClicpixAnalysis::checkProximity(Track* track, Tracks* tracks) {
 void ClicpixAnalysis::fillClusterHistos(Clusters* clusters) {
 
     // Pick up column to generate unique pixel id
-    int nCols = parameters->detector[dutID]->nPixelsX();
+    int nCols = get_detector(dutID)->nPixelsX();
     Clusters::iterator itc;
 
     // Check if this is a new clicpix frame (each frame may be in several events)
@@ -539,6 +540,7 @@ void ClicpixAnalysis::fillClusterHistos(Clusters* clusters) {
 // track intercept for the pixel to still see charge
 void ClicpixAnalysis::fillResponseHistos(double trackInterceptX, double trackInterceptY, Cluster* cluster) {
 
+    auto detector = get_detector(dutID);
     // Loop over pixels in the cluster and show their distance from the track
     // intercept
     Pixels* pixels = cluster->pixels();
@@ -548,10 +550,8 @@ void ClicpixAnalysis::fillResponseHistos(double trackInterceptX, double trackInt
         // Get the pixel
         Pixel* pixel = (*itp);
         // Get the pixel local then global position
-        PositionVector3D<Cartesian3D<double>> pixelPositionLocal =
-            parameters->detector[dutID]->getLocalPosition(pixel->m_row, pixel->m_column);
-        PositionVector3D<Cartesian3D<double>> pixelPositionGlobal =
-            *(parameters->detector[dutID]->m_localToGlobal) * pixelPositionLocal;
+        PositionVector3D<Cartesian3D<double>> pixelPositionLocal = detector->getLocalPosition(pixel->m_row, pixel->m_column);
+        PositionVector3D<Cartesian3D<double>> pixelPositionGlobal = *(detector->m_localToGlobal) * pixelPositionLocal;
 
         // Fill the response histograms
         hPixelResponseX->Fill(pixelPositionGlobal.X() - trackInterceptX);
