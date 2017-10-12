@@ -315,6 +315,9 @@ void Analysis::load_algorithms() {
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
 
+        // Merge the global configuration into the algorithms config:
+        config.merge(global_config);
+
         // Create the algorithms from the library
         m_algorithms.emplace_back(create_algorithm(loaded_libraries_[lib_name], config));
     }
