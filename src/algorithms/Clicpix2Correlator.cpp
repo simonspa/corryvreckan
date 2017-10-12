@@ -8,8 +8,6 @@ Clicpix2Correlator::Clicpix2Correlator(Configuration config, std::vector<Detecto
 
 void Clicpix2Correlator::initialise(Parameters* par) {
 
-    parameters = par;
-
     // Get the DUT ID
     dutID = m_config.get<std::string>("DUT");
 

@@ -14,9 +14,6 @@ DUTAnalysis::DUTAnalysis(Configuration config, std::vector<Detector*> detectors)
 
 void DUTAnalysis::initialise(Parameters* par) {
 
-    // Pick up a copy of the parameters
-    parameters = par;
-
     // Initialise single histograms
     tracksVersusTime = new TH1F("tracksVersusTime", "tracksVersusTime", 300000, 0, 300);
     associatedTracksVersusTime = new TH1F("associatedTracksVersusTime", "associatedTracksVersusTime", 300000, 0, 300);
@@ -163,7 +160,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             timeSincePowerOn = (double)(track->timestamp() - m_shutterOpenTime) / (4096. * 40000000.);
             tracksVersusPowerOnTime->Fill(timeSincePowerOn);
             //      if(timeSincePowerOn < (0.0002)){
-            //        LOG(TRACE) <<"Track at time "<<parameters->currentTime<<" has
+            //        LOG(TRACE) <<"Track at time "<<clipboard->get_persistent("currentTime")<<" has
             //        time shutter open of "<<timeSincePowerOn;
             //        LOG(TRACE) <<"Shutter open time is
             //        "<<double(m_shutterOpenTime)/(4096.*40000000.)<<", shutter close

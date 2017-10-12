@@ -29,8 +29,6 @@ Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<Detec
 
 void Timepix3EventLoader::initialise(Parameters* par) {
 
-    parameters = par;
-
     // File structure is RunX/ChipID/files.dat
 
     // Open the root directory
@@ -350,7 +348,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
 
                 // Ignore packets if they arrive before the current event window
                 //        if(eventLength != 0. && ((double)time/(4096. *
-                //        40000000.)) < (parameters->currentTime) ){
+                //        40000000.)) < (clipboard->get_persistent("currentTime")) ){
                 //          continue;
                 //        }
 
@@ -476,7 +474,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
 
             // Ignore pixels if they arrive before the current event window
             //      if(eventLength != 0. && ((double)time/(4096. *
-            //      40000000.)) < (parameters->currentTime) ){
+            //      40000000.)) < (clipboard->get_persistent("currentTime")) ){
             //        continue;
             //      }
 

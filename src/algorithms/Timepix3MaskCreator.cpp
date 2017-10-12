@@ -9,7 +9,6 @@ Timepix3MaskCreator::Timepix3MaskCreator(Configuration config, std::vector<Detec
 
 void Timepix3MaskCreator::initialise(Parameters* par) {
 
-    parameters = par;
     //
     //  // Make histograms for each Timepix3
     //  for(auto& detector : get_detectors()){

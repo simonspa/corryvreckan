@@ -28,9 +28,6 @@ FileWriter::FileWriter(Configuration config, std::vector<Detector*> detectors)
 
 void FileWriter::initialise(Parameters* par) {
 
-    // Pick up the global parameters
-    parameters = par;
-
     // Decide what objects will be written out
     if(m_writePixels)
         m_objectList.push_back("pixels");

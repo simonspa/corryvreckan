@@ -22,8 +22,6 @@ template <typename T> std::string convertToString(T number) {
 
 void ClicpixAnalysis::initialise(Parameters* par) {
 
-    parameters = par;
-
     // Initialise member variables
     m_eventNumber = 0;
     m_triggerNumber = 0;

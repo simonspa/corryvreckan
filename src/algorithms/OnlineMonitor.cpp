@@ -11,9 +11,6 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<Detector*> detect
 
 void OnlineMonitor::initialise(Parameters* par) {
 
-    // Make the local pointer to the global parameters
-    parameters = par;
-
     // TApplication keeps the canvases persistent
     app = new TApplication("example", 0, 0);
 

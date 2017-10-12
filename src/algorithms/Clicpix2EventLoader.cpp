@@ -8,8 +8,6 @@ Clicpix2EventLoader::Clicpix2EventLoader(Configuration config, std::vector<Detec
 
 void Clicpix2EventLoader::initialise(Parameters* par) {
 
-    parameters = par;
-
     // File structure is RunX/CLICpix2/data.csv
 
     // Take input directory from global parameters

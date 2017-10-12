@@ -9,8 +9,6 @@ ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<Detec
 
 void ATLASpixEventLoader::initialise(Parameters* par) {
 
-    parameters = par;
-
     // File structure is RunX/ATLASpix/data.dat
 
     // Take input directory from global parameters

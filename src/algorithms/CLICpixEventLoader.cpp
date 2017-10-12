@@ -10,8 +10,6 @@ CLICpixEventLoader::CLICpixEventLoader(Configuration config, std::vector<Detecto
 
 void CLICpixEventLoader::initialise(Parameters* par) {
 
-    parameters = par;
-
     // File structure is RunX/CLICpix/RunX.dat
 
     // Take input directory from global parameters

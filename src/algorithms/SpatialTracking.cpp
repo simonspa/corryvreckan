@@ -22,8 +22,6 @@ SpatialTracking::SpatialTracking(Configuration config, std::vector<Detector*> de
 
 void SpatialTracking::initialise(Parameters* par) {
 
-    parameters = par;
-
     // Set up histograms
     trackChi2 = new TH1F("trackChi2", "trackChi2", 150, 0, 150);
     trackChi2ndof = new TH1F("trackChi2ndof", "trackChi2ndof", 100, 0, 50);

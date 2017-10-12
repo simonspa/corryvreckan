@@ -11,8 +11,6 @@ Timepix1Correlator::Timepix1Correlator(Configuration config, std::vector<Detecto
 
 void Timepix1Correlator::initialise(Parameters* par) {
 
-    parameters = par;
-
     // Initialise histograms per device
     for(auto& detector : get_detectors()) {
 

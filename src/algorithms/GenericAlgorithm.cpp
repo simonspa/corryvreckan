@@ -8,8 +8,6 @@ GenericAlgorithm::GenericAlgorithm(Configuration config, std::vector<Detector*> 
 
 void GenericAlgorithm::initialise(Parameters* par) {
 
-    parameters = par;
-
     // Initialise histograms per device
     for(auto& detector : get_detectors()) {
 

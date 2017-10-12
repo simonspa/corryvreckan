@@ -9,9 +9,6 @@ DataDump::DataDump(Configuration config, std::vector<Detector*> detectors)
 }
 
 void DataDump::initialise(Parameters* par) {
-
-    parameters = par;
-
     // Initialise member variables
     m_eventNumber = 0;
 }

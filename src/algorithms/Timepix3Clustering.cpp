@@ -10,7 +10,6 @@ Timepix3Clustering::Timepix3Clustering(Configuration config, std::vector<Detecto
 
 void Timepix3Clustering::initialise(Parameters* par) {
 
-    parameters = par;
     timingCutInt = (timingCut * 4096. * 40000000.);
 }
 
