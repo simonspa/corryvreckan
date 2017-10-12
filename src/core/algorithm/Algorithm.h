@@ -65,6 +65,18 @@ namespace corryvreckan {
         TStopwatch* m_stopwatch;
         std::string m_name;
         Configuration m_config;
+
+        std::vector<Detector*> get_detectors() { return m_detectors; };
+        Detector* get_detector(std::string name) {
+            auto it =
+                find_if(m_detectors.begin(), m_detectors.end(), [&name](Detector* obj) { return obj->name() == name; });
+            if(it == m_detectors.end()) {
+                throw AlgorithmError("Device with detector ID " + name + " is not registered.");
+            }
+
+            return (*it);
+        }
+
         std::vector<Detector*> m_detectors;
     };
 }

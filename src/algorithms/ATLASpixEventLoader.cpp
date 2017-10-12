@@ -89,8 +89,7 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
             int tot = std::stoi(sm[4]);
             int trg_index = std::stoi(sm[7]);
 
-            auto detector = (*find_if(
-                m_detectors.begin(), m_detectors.end(), [this](Detector* obj) { return obj->name() == detectorID; }));
+            auto detector = get_detector(detectorID);
             // If this pixel is masked, do not save it
             if(detector->masked(col, row)) {
                 continue;

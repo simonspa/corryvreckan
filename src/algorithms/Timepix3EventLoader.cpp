@@ -59,15 +59,12 @@ void Timepix3EventLoader::initialise(Parameters* par) {
             string trimdacfile;
 
             // Check if this device has conditions loaded and is a Timepix3
-            auto it = find_if(
-                m_detectors.begin(), m_detectors.end(), [&detectorID](Detector* obj) { return obj->name() == detectorID; });
-
-            if(it == m_detectors.end()) {
-                LOG(DEBUG) << "Device with detector ID " << entry->d_name << " is not registered.";
-                continue;
+            Detector* detector;
+            try {
+                detector = get_detector(detectorID);
+            } catch(AlgorithmError& e) {
+                LOG(WARNING) << e.what();
             }
-
-            Detector* detector = *it;
 
             if(detector->type() != "Timepix3") {
                 LOG(WARNING) << "Device with detector ID " << entry->d_name << " is not of type Timepix3.";

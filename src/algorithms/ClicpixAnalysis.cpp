@@ -153,8 +153,7 @@ void ClicpixAnalysis::initialise(Parameters* par) {
     hInterceptClusterSize4 = new TH2F("hInterceptClusterSize4", "hInterceptClusterSize4", 25, 0, 25, 25, 0, 25);
 
     // Get the DUT detector:
-    auto detector =
-        (*find_if(m_detectors.begin(), m_detectors.end(), [this](Detector* obj) { return obj->name() == dutID; }));
+    auto detector = get_detector(dutID);
     m_nBinsX = 32;
     m_nBinsY = 32;
     hMapClusterSizeAssociated = new TH2F("hMapClusterSizeAssociated",
@@ -221,8 +220,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
         }
 
         // Get the DUT detector:
-        auto detector =
-            (*find_if(m_detectors.begin(), m_detectors.end(), [this](Detector* obj) { return obj->name() == dutID; }));
+        auto detector = get_detector(dutID);
         // Get the track intercept with the clicpix plane (global and local
         // co-ordinates)
         PositionVector3D<Cartesian3D<double>> trackIntercept = detector->getIntercept(track);
@@ -435,8 +433,7 @@ void ClicpixAnalysis::finalise() {
 bool ClicpixAnalysis::checkMasked(double chipInterceptRow, double chipInterceptCol) {
 
     // Get the DUT detector:
-    auto detector =
-        (*find_if(m_detectors.begin(), m_detectors.end(), [this](Detector* obj) { return obj->name() == dutID; }));
+    auto detector = get_detector(dutID);
 
     // Get the pixel row and column number
     int rowNumber = ceil(chipInterceptRow);

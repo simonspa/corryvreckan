@@ -126,10 +126,8 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
                 track->fit();
 
                 // Get the detector
-                auto it = find_if(m_detectors.begin(), m_detectors.end(), [&detectorID](Detector* obj) {
-                    return obj->name() == detectorID;
-                });
-                PositionVector3D<Cartesian3D<double>> interceptPoint = (*it)->getIntercept(track);
+                auto det = get_detector(detectorID);
+                PositionVector3D<Cartesian3D<double>> interceptPoint = det->getIntercept(track);
                 interceptX = interceptPoint.X();
                 interceptY = interceptPoint.Y();
             } else {

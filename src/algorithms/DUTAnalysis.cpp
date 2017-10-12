@@ -131,8 +131,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
         }
 
         // Get the DUT detector:
-        auto detector =
-            (*find_if(m_detectors.begin(), m_detectors.end(), [this](Detector* obj) { return obj->name() == m_DUT; }));
+        auto detector = get_detector(m_DUT);
         // Check if it intercepts the DUT
         PositionVector3D<Cartesian3D<double>> globalIntercept = detector->getIntercept(track);
         if(!detector->hasIntercept(track, 1.)) {
