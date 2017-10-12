@@ -297,7 +297,7 @@ void Analysis::load_algorithms() {
                 }
             }
 
-            throw corryvreckan::RuntimeError("Error loading " + config.getName());
+            throw corryvreckan::DynamicLibraryError("Error loading " + config.getName());
         }
         // Remember that this library was loaded
         loaded_libraries_[lib_name] = lib;
