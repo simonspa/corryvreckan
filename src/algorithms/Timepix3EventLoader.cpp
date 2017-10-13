@@ -22,6 +22,9 @@ Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<Detec
     m_timingCut = m_config.get<double>("timingCut", 0.0);
     m_minNumberOfPlanes = m_config.get<int>("minNumerOfPlanes", 1);
 
+    // Read event length
+    eventLength = m_config.get<double>("eventLength", 0.0);
+
     m_currentTime = 0.;
     m_prevTime = 0;
     m_shutterOpen = false;
@@ -45,15 +48,17 @@ void Timepix3EventLoader::initialise() {
     // Read the entries in the folder
     while(entry = readdir(directory)) {
 
+        // Ignore UNIX functional directories:
+        if(std::string(entry->d_name).at(0) == '.') {
+            continue;
+        }
+
         // If these are folders then the name is the chip ID
+        // For some file systems, dirent only returns DT_UNKNOWN - in this case, check the dir. entry starts with "W"
         if(entry->d_type == DT_DIR || (entry->d_type == DT_UNKNOWN && std::string(entry->d_name).at(0) == 'W')) {
 
             LOG(DEBUG) << "Found directory for detector ID " << entry->d_name;
 
-            // Ignore UNIX functional directories:
-            if(std::string(entry->d_name).at(0) == '.') {
-                continue;
-            }
             // Open the folder for this device
             string detectorID = entry->d_name;
             string dataDirName = m_inputDirectory + "/" + entry->d_name;
@@ -117,9 +122,6 @@ void Timepix3EventLoader::initialise() {
             }
         }
     }
-
-    // Read event length
-    eventLength = m_config.get<double>("eventLength", 0.0);
 }
 
 StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
