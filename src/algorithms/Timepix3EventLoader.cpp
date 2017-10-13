@@ -57,7 +57,7 @@ void Timepix3EventLoader::initialise() {
         // For some file systems, dirent only returns DT_UNKNOWN - in this case, check the dir. entry starts with "W"
         if(entry->d_type == DT_DIR || (entry->d_type == DT_UNKNOWN && std::string(entry->d_name).at(0) == 'W')) {
 
-            LOG(DEBUG) << "Found directory for detector ID " << entry->d_name;
+            LOG(DEBUG) << "Found directory for detector " << entry->d_name;
 
             // Open the folder for this device
             string detectorID = entry->d_name;
@@ -109,8 +109,6 @@ void Timepix3EventLoader::initialise() {
             // If files were stored, register the detector (check that it has
             // alignment data)
             if(m_nFiles.count(detectorID) > 0) {
-
-                LOG(INFO) << "Registering detector " << detectorID;
 
                 // Now that we have all of the data files and mask files for this
                 // detector, pass the mask file to parameters
@@ -266,7 +264,6 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
     ULong64_t pixdata = 0;
     UShort_t thr = 0;
     int npixels = 0;
-    bool fileNotFinished = false;
 
     // Read till the end of file (or till break)
     while(!feof(m_currentFile[detectorID])) {
@@ -368,7 +365,6 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 if(eventLength != 0. &&
                    ((double)time / (4096. * 40000000.)) > (clipboard->get_persistent("currentTime") + eventLength)) {
                     fseek(m_currentFile[detectorID], -1 * sizeof(ULong64_t), SEEK_CUR);
-                    fileNotFinished = true;
                     //          LOG(DEBUG) <<"Signal has a time beyond the current event:
                     //          "<<(double)time/(4096. * 40000000.);
                     break;
@@ -494,7 +490,6 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             if(eventLength != 0. &&
                ((double)time / (4096. * 40000000.)) > (clipboard->get_persistent("currentTime") + eventLength)) {
                 fseek(m_currentFile[detectorID], -1 * sizeof(ULong64_t), SEEK_CUR);
-                fileNotFinished = true;
                 break;
             }
 
@@ -509,7 +504,6 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
         // Stop when we reach some large number of pixels (if events not based on
         // time)
         if(eventLength == 0. && npixels == 2000) {
-            fileNotFinished = true;
             break;
         }
     }
