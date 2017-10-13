@@ -50,6 +50,10 @@ void Timepix3EventLoader::initialise() {
 
             LOG(DEBUG) << "Found directory for detector ID " << entry->d_name;
 
+            // Ignore UNIX functional directories:
+            if(std::string(entry->d_name).at(0) == '.') {
+                continue;
+            }
             // Open the folder for this device
             string detectorID = entry->d_name;
             string dataDirName = m_inputDirectory + "/" + entry->d_name;
@@ -62,6 +66,7 @@ void Timepix3EventLoader::initialise() {
                 detector = get_detector(detectorID);
             } catch(AlgorithmError& e) {
                 LOG(WARNING) << e.what();
+                continue;
             }
 
             if(detector->type() != "Timepix3") {
