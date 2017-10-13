@@ -1,10 +1,14 @@
 #ifndef DET_PARAMETERS_H
 #define DET_PARAMETERS_H 1
 
+#include <fstream>
 #include <map>
 #include <string>
 
 // Root includes
+#include <Math/DisplacementVector2D.h>
+#include <Math/Vector2D.h>
+#include <Math/Vector3D.h>
 #include "Math/Point3D.h"
 #include "Math/Rotation3D.h"
 #include "Math/RotationZYX.h"
@@ -12,7 +16,9 @@
 #include "Math/Translation3D.h"
 #include "Math/Vector3D.h"
 
+#include "config/Configuration.hpp"
 #include "objects/Track.h"
+#include "utils/ROOT.h"
 #include "utils/log.h"
 
 using namespace ROOT::Math;
@@ -23,6 +29,77 @@ namespace corryvreckan {
     public:
         // Constructors and desctructors
         Detector() {}
+        Detector(const Configuration& config) {
+            // Get information from the conditions file:
+            auto position = config.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
+            auto orientation = config.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
+            // Number of pixels
+            auto npixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
+            // Size of the pixels
+            auto pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
+
+            m_detectorName = config.getName();
+            m_detectorType = config.get<std::string>("type");
+            m_nPixelsX = npixels.x();
+            m_nPixelsY = npixels.y();
+            m_pitchX = pitch.x() / 1000.;
+            m_pitchY = pitch.y() / 1000.;
+            m_displacementX = position.x();
+            m_displacementY = position.y();
+            m_displacementZ = position.z();
+            m_rotationX = orientation.x();
+            m_rotationY = orientation.y();
+            m_rotationZ = orientation.z();
+            m_timingOffset = config.get<double>("time_offset", 0.0);
+
+            this->initialise();
+
+            LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixelsX << "x" << m_nPixelsY << " px, pitch of "
+                       << m_pitchX << "/" << m_pitchY << "mm";
+            LOG(TRACE) << "Position:    " << m_displacementX << "," << m_displacementY << "," << m_displacementZ;
+            LOG(TRACE) << "Orientation: " << m_rotationX << "," << m_rotationY << "," << m_rotationZ;
+            if(m_timingOffset > 0.) {
+                LOG(TRACE) << "Timing offset: " << m_timingOffset;
+            }
+
+            if(config.has("mask_file")) {
+                std::string mask_file = config.getPath("mask_file");
+                LOG(DEBUG) << "Adding mask to detector \"" << config.getName() << "\", reading from " << mask_file;
+
+                setMaskFile(mask_file);
+                // Open the file with masked pixels
+                std::ifstream inputMaskFile(mask_file, std::ios::in);
+                if(!inputMaskFile.is_open()) {
+                    LOG(ERROR) << "Could not open mask file " << mask_file;
+                } else {
+                    int row = 0, col = 0;
+                    std::string id;
+                    std::string line;
+                    // loop over all lines and apply masks
+                    while(inputMaskFile >> id >> row >> col) {
+                        if(id == "c") {
+                            LOG(TRACE) << "Masking column " << col;
+                            int nRows = nPixelsY();
+                            for(int r = 0; r < nRows; r++) {
+                                maskChannel(col, r);
+                            }
+                        } else if(id == "r") {
+                            LOG(TRACE) << "Masking row " << row;
+                            int nColumns = nPixelsX();
+                            for(int c = 0; c < nColumns; c++) {
+                                maskChannel(c, row);
+                            }
+                        } else if(id == "p") {
+                            LOG(TRACE) << "Masking pixel " << col << " " << row;
+                            maskChannel(col, row); // Flag to mask a pixel
+                        } else {
+                            LOG(WARNING) << "Could not parse mask entry (id \"" << id << "\", col " << col << " row " << row
+                                         << ")";
+                        }
+                    }
+                }
+            }
+        }
         Detector(std::string detectorName,
                  std::string detectorType,
                  int nPixelsX,

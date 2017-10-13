@@ -8,7 +8,6 @@
 // Local include files
 #include "Analysis.h"
 #include "algorithm/exceptions.h"
-#include "utils/ROOT.h"
 #include "utils/log.h"
 
 #include <dlfcn.h>
@@ -91,66 +90,7 @@ void Analysis::load_detectors() {
 
     for(auto& detector : det_mgr_->getConfigurations()) {
         LOG(INFO) << "Detector: " << detector.getName();
-
-        // Get information from the conditions file:
-        auto position = detector.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
-        auto orientation = detector.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
-        // Number of pixels
-        auto npixels = detector.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
-        // Size of the pixels
-        auto pitch = detector.get<ROOT::Math::XYVector>("pixel_pitch");
-
-        Detector* det_parm = new Detector(detector.getName(),
-                                          detector.get<std::string>("type"),
-                                          npixels.x(),
-                                          npixels.y(),
-                                          pitch.x(),
-                                          pitch.y(),
-                                          position.x(),
-                                          position.y(),
-                                          position.z(),
-                                          orientation.x(),
-                                          orientation.y(),
-                                          orientation.z(),
-                                          detector.get<double>("time_offset", 0.0));
-
-        if(detector.has("mask_file")) {
-            std::string mask_file = detector.getPath("mask_file");
-            LOG(DEBUG) << "Adding mask to detector \"" << detector.getName() << "\", reading from " << mask_file;
-
-            det_parm->setMaskFile(mask_file);
-            // Open the file with masked pixels
-            std::ifstream inputMaskFile(mask_file, std::ios::in);
-            if(!inputMaskFile.is_open()) {
-                LOG(ERROR) << "Could not open mask file " << mask_file;
-            } else {
-                int row = 0, col = 0;
-                std::string id;
-                std::string line;
-                // loop over all lines and apply masks
-                while(inputMaskFile >> id >> row >> col) {
-                    if(id == "c") {
-                        LOG(TRACE) << "Masking column " << col;
-                        int nRows = det_parm->nPixelsY();
-                        for(int r = 0; r < nRows; r++) {
-                            det_parm->maskChannel(col, r);
-                        }
-                    } else if(id == "r") {
-                        LOG(TRACE) << "Masking row " << row;
-                        int nColumns = det_parm->nPixelsX();
-                        for(int c = 0; c < nColumns; c++) {
-                            det_parm->maskChannel(c, row);
-                        }
-                    } else if(id == "p") {
-                        LOG(TRACE) << "Masking pixel " << col << " " << row;
-                        det_parm->maskChannel(col, row); // Flag to mask a pixel
-                    } else {
-                        LOG(WARNING) << "Could not parse mask entry (id \"" << id << "\", col " << col << " row " << row
-                                     << ")";
-                    }
-                }
-            }
-        }
+        Detector* det_parm = new Detector(detector);
 
         // Add the new detector to the global list:
         detectors.push_back(det_parm);
