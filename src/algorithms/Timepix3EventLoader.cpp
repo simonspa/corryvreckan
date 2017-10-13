@@ -120,14 +120,17 @@ void Timepix3EventLoader::initialise() {
             }
         }
     }
+
+    // Set the file iterator to the first file for every detector:
+    for(auto& detector : m_files) {
+        m_file_iterator[detector.first] = detector.second.begin();
+    }
 }
 
 StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
 
-    // This will loop through each timepix3 registered, and load data from each of
-    // them. This can
-    // be done in one of two ways: by taking all data in the time interval
-    // (t,t+delta), or by
+    // This will loop through each timepix3 registered, and load data from each of them. This can
+    // be done in one of two ways: by taking all data in the time interval (t,t+delta), or by
     // loading a fixed number of pixels (ie. 2000 at a time)
 
     LOG(TRACE) << "== New event";
@@ -215,12 +218,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
 
     string detectorID = detector->name();
 
-    //  if(detectorID == "W0019_F07") debug = true;
-    //  if(detectorID != "W0019_F07") debug = false;
-
     bool extra = false; // temp
-    //  if(detectorID == m_config.get<std::string>("DUT")) extra = true;
-    //  if(detectorID == "W0002_J05") extra = true;
 
     LOG(DEBUG) << "Loading data for device " << detectorID;
 
@@ -303,9 +301,6 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 // order to match the timestamp format (net 4 right)
                 m_syncTime[detectorID] =
                     (m_syncTime[detectorID] & 0xFFFFF00000000000) + ((pixdata & 0x0000FFFFFFFF0000) >> 4);
-                //        if(detectorID == "W0019_F07") LOG(TRACE) <<"Updating heartbeat
-                //        part 1. Now syncTime =
-                //        "<<(double)m_syncTime[detectorID]/(4096. * 40000000.);
             }
             // 0x5 is the most significant part of the timestamp
             if(header2 == 0x5) {
@@ -313,22 +308,9 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 // order to match the timestamp format (net 28 left)
                 m_syncTime[detectorID] =
                     (m_syncTime[detectorID] & 0x00000FFFFFFFFFFF) + ((pixdata & 0x00000000FFFF0000) << 28);
-                //        if(detectorID == "W0019_F07") LOG(TRACE) <<"Updating heartbeat
-                //        part 2. Now syncTime =
-                //        "<<(double)m_syncTime[detectorID]/(4096. * 40000000.);
-                //        if( m_syncTime[detectorID] < 0x0000010000000000 &&
-                //        !m_clearedHeader[detectorID]) m_clearedHeader[detectorID] =
-                //        true;
                 if(!m_clearedHeader[detectorID] && (double)m_syncTime[detectorID] / (4096. * 40000000.) < 6.)
                     m_clearedHeader[detectorID] = true;
             }
-            //      if(detectorID == "W0019_F07") LOG(TRACE) <<"Updating heartbeat.
-            //      Now syncTime = "<<(double)m_syncTime[detectorID]/(4096. *
-            //      40000000.);
-
-            //       LOG(TRACE) <<"Updating heartbeat. Now syncTime =
-            //       "<<(double)m_syncTime[detectorID]/(4096. * 40000000.)<<" for
-            //       detector "<<detectorID;
         }
 
         if(!m_clearedHeader[detectorID])
@@ -365,8 +347,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 if(eventLength != 0. &&
                    ((double)time / (4096. * 40000000.)) > (clipboard->get_persistent("currentTime") + eventLength)) {
                     fseek(m_currentFile[detectorID], -1 * sizeof(ULong64_t), SEEK_CUR);
-                    //          LOG(DEBUG) <<"Signal has a time beyond the current event:
-                    //          "<<(double)time/(4096. * 40000000.);
+                    LOG(TRACE) << "Signal has a time beyond the current event: " << (double)time / (4096. * 40000000.);
                     break;
                 }
 
@@ -508,11 +489,8 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
         }
     }
 
-    // Now we have data buffered into the temporary storage. We will sort this by
-    // time, and then load
+    // Now we have data buffered into the temporary storage. We will sort this by time, and then load
     // the data from one event onto it.
-
-    // debug = false;
 
     // If no data was loaded, return false
     if(npixels == 0)
