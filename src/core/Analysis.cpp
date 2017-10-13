@@ -412,6 +412,24 @@ void Analysis::finaliseAll() {
     m_directory->Write();
     m_histogramFile->Close();
 
+    // Write out update detectors file:
+    if(global_config.has("detectors_file_updated")) {
+        std::string file_name = global_config.getPath("detectors_file_updated");
+        // Check if the file exists
+        std::ofstream file(file_name);
+        if(!file) {
+            throw ConfigFileUnavailableError(file_name);
+        }
+
+        ConfigReader final_detectors;
+        for(auto& detector : detectors) {
+            final_detectors.addConfiguration(detector->getConfiguration());
+        }
+
+        final_detectors.write(file);
+        LOG(STATUS) << "Wrote updated detector configuration to " << file_name;
+    }
+
     // Check the timing for all events
     timing();
 }
