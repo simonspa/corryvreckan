@@ -100,43 +100,6 @@ namespace corryvreckan {
                 }
             }
         }
-        Detector(std::string detectorName,
-                 std::string detectorType,
-                 int nPixelsX,
-                 int nPixelsY,
-                 double pitchX,
-                 double pitchY,
-                 double x,
-                 double y,
-                 double z,
-                 double Rx,
-                 double Ry,
-                 double Rz,
-                 double timingOffset) {
-            m_detectorName = detectorName;
-            m_detectorType = detectorType;
-            m_nPixelsX = nPixelsX;
-            m_nPixelsY = nPixelsY;
-            m_pitchX = pitchX / 1000.;
-            m_pitchY = pitchY / 1000.;
-            m_displacementX = x;
-            m_displacementY = y;
-            m_displacementZ = z;
-            m_rotationX = Rx;
-            m_rotationY = Ry;
-            m_rotationZ = Rz;
-            m_timingOffset = timingOffset;
-
-            this->initialise();
-
-            LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixelsX << "x" << m_nPixelsY << " px, pitch of "
-                       << m_pitchX << "/" << m_pitchY << "mm";
-            LOG(TRACE) << "Position:    " << m_displacementX << "," << m_displacementY << "," << m_displacementZ;
-            LOG(TRACE) << "Orientation: " << m_rotationX << "," << m_rotationY << "," << m_rotationZ;
-            if(m_timingOffset > 0.) {
-                LOG(TRACE) << "Timing offset: " << m_timingOffset;
-            }
-        }
         ~Detector() {}
 
         // Functions to retrieve basic information
