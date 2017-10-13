@@ -43,6 +43,7 @@ Detector::Detector(const Configuration& config) : Detector() {
     }
 
     if(config.has("mask_file")) {
+        m_maskfile_name = config.get<std::string>("mask_file");
         std::string mask_file = config.getPath("mask_file");
         LOG(DEBUG) << "Adding mask to detector \"" << config.getName() << "\", reading from " << mask_file;
         setMaskFile(mask_file);
@@ -128,6 +129,33 @@ void Detector::update() {
     delete m_localToGlobal;
     delete m_globalToLocal;
     this->initialise();
+}
+
+Configuration Detector::getConfiguration() {
+
+    Configuration config(name());
+    config.set("type", m_detectorType);
+
+    auto position = ROOT::Math::XYZPoint(m_displacementX, m_displacementY, m_displacementZ);
+    config.set("position", position);
+    auto orientation = ROOT::Math::XYZVector(m_rotationX, m_rotationY, m_rotationZ);
+    config.set("orientation", orientation);
+    auto npixels = ROOT::Math::DisplacementVector2D<Cartesian2D<int>>(m_nPixelsX, m_nPixelsY);
+    config.set("number_of_pixels", npixels);
+
+    // Size of the pixels
+    auto pitch = ROOT::Math::XYVector(m_pitchX * 1000., m_pitchY * 1000.);
+    config.set("pixel_pitch", pitch);
+
+    if(m_timingOffset != 0.) {
+        config.set("time_offset", m_timingOffset);
+    }
+
+    if(!m_maskfile_name.empty()) {
+        config.set("mask_file", m_maskfile_name);
+    }
+
+    return config;
 }
 
 // Function to get global intercept with a track

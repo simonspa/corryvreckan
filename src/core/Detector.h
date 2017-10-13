@@ -35,6 +35,9 @@ namespace corryvreckan {
         // Functions to retrieve basic information
         std::string type() { return m_detectorType; }
         std::string name() { return m_detectorName; }
+
+        Configuration getConfiguration();
+
         double pitchX() { return m_pitchX; }
         double pitchY() { return m_pitchY; }
         int nPixelsX() { return m_nPixelsX; }
@@ -123,6 +126,7 @@ namespace corryvreckan {
         // List of masked channels
         std::map<int, bool> m_masked;
         std::string m_maskfile;
+        std::string m_maskfile_name;
     };
 }
 
