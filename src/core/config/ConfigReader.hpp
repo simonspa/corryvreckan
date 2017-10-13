@@ -54,6 +54,12 @@ namespace corryvreckan {
         void add(std::istream&, std::string file_name = "");
 
         /**
+         * @brief Writes all configurations held to the stream provided
+         * @param stream Stream to write configuration to
+         */
+        void write(std::ostream& stream);
+
+        /**
          * @brief Directly add a configuration object to the reader
          * @param config Configuration object to add
          */

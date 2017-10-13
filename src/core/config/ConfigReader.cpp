@@ -125,6 +125,17 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
     addConfiguration(conf);
 }
 
+void ConfigReader::write(std::ostream& stream) {
+
+    for(auto& conf : conf_array_) {
+        stream << "[" << conf.getName() << "]" << std::endl;
+        for(auto& key : conf.getAll()) {
+            stream << key.first << " = " << key.second << std::endl;
+        }
+        stream << std::endl;
+    }
+}
+
 void ConfigReader::addConfiguration(Configuration config) {
     conf_array_.push_back(std::move(config));
 
