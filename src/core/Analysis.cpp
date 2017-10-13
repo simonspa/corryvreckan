@@ -296,7 +296,7 @@ Algorithm* Analysis::create_algorithm(void* library, Configuration config) {
 void Analysis::run() {
 
     // Check if we have an event limit:
-    int number_of_events = global_config.get<int>("number_of_events", 0);
+    int number_of_events = global_config.get<int>("number_of_events", -1);
 
     // Loop over all events, running each algorithm on each "event"
     LOG(STATUS) << "========================| Event loop |========================";
@@ -304,6 +304,10 @@ void Analysis::run() {
     while(1) {
         bool run = true;
         bool noData = false;
+
+        // Check if we have reached the maximum number of events
+        if(number_of_events > -1 && m_events >= number_of_events)
+            break;
 
         // Run all algorithms
         for(auto& algorithm : m_algorithms) {
@@ -335,9 +339,6 @@ void Analysis::run() {
         m_clipboard->clear();
         // Check if any of the algorithms return a value saying it should stop
         if(!run)
-            break;
-        // Check if we have reached the maximum number of events
-        if(number_of_events > 0 && m_events >= number_of_events)
             break;
         // Increment event number
         if(!noData)
