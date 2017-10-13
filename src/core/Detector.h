@@ -62,6 +62,8 @@ namespace corryvreckan {
 
         // Functions to set and check channel masking
         void setMaskFile(std::string file);
+        void processMaskFile();
+
         std::string maskFile() { return m_maskfile; }
         void maskChannel(int chX, int chY);
         bool masked(int chX, int chY);

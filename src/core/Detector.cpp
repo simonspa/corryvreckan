@@ -47,13 +47,16 @@ Detector::Detector(const Configuration& config) : Detector() {
         std::string mask_file = config.getPath("mask_file");
         LOG(DEBUG) << "Adding mask to detector \"" << config.getName() << "\", reading from " << mask_file;
         setMaskFile(mask_file);
+        processMaskFile();
     }
 }
 
 // Functions to set and check channel masking
 void Detector::setMaskFile(std::string file) {
     m_maskfile = file;
+}
 
+void Detector::processMaskFile() {
     // Open the file with masked pixels
     std::ifstream inputMaskFile(m_maskfile, std::ios::in);
     if(!inputMaskFile.is_open()) {
