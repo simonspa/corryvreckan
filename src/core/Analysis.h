@@ -10,7 +10,7 @@
 #include "TFile.h"
 
 #include "Clipboard.h"
-#include "DetectorParameters.h"
+#include "Detector.h"
 #include "algorithm/Algorithm.h"
 #include "config/ConfigManager.hpp"
 #include "config/Configuration.hpp"

@@ -5,7 +5,7 @@
 #include <string>
 #include "TStopwatch.h"
 #include "core/Clipboard.h"
-#include "core/DetectorParameters.h"
+#include "core/Detector.h"
 #include "core/config/Configuration.hpp"
 #include "exceptions.h"
 
