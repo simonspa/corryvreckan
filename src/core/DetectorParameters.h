@@ -29,7 +29,7 @@ namespace corryvreckan {
     public:
         // Constructors and desctructors
         Detector() {}
-        Detector(const Configuration& config) {
+        Detector(const Configuration& config) : Detector() {
             // Get information from the conditions file:
             auto position = config.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
             auto orientation = config.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
@@ -65,39 +65,7 @@ namespace corryvreckan {
             if(config.has("mask_file")) {
                 std::string mask_file = config.getPath("mask_file");
                 LOG(DEBUG) << "Adding mask to detector \"" << config.getName() << "\", reading from " << mask_file;
-
                 setMaskFile(mask_file);
-                // Open the file with masked pixels
-                std::ifstream inputMaskFile(mask_file, std::ios::in);
-                if(!inputMaskFile.is_open()) {
-                    LOG(ERROR) << "Could not open mask file " << mask_file;
-                } else {
-                    int row = 0, col = 0;
-                    std::string id;
-                    std::string line;
-                    // loop over all lines and apply masks
-                    while(inputMaskFile >> id >> row >> col) {
-                        if(id == "c") {
-                            LOG(TRACE) << "Masking column " << col;
-                            int nRows = nPixelsY();
-                            for(int r = 0; r < nRows; r++) {
-                                maskChannel(col, r);
-                            }
-                        } else if(id == "r") {
-                            LOG(TRACE) << "Masking row " << row;
-                            int nColumns = nPixelsX();
-                            for(int c = 0; c < nColumns; c++) {
-                                maskChannel(c, row);
-                            }
-                        } else if(id == "p") {
-                            LOG(TRACE) << "Masking pixel " << col << " " << row;
-                            maskChannel(col, row); // Flag to mask a pixel
-                        } else {
-                            LOG(WARNING) << "Could not parse mask entry (id \"" << id << "\", col " << col << " row " << row
-                                         << ")";
-                        }
-                    }
-                }
             }
         }
         ~Detector() {}
@@ -128,7 +96,42 @@ namespace corryvreckan {
         double rotationZ() { return m_rotationZ; }
 
         // Functions to set and check channel masking
-        void setMaskFile(std::string file) { m_maskfile = file; }
+        void setMaskFile(std::string file) {
+            m_maskfile = file;
+
+            // Open the file with masked pixels
+            std::ifstream inputMaskFile(m_maskfile, std::ios::in);
+            if(!inputMaskFile.is_open()) {
+                LOG(ERROR) << "Could not open mask file " << m_maskfile;
+            } else {
+                int row = 0, col = 0;
+                std::string id;
+                std::string line;
+                // loop over all lines and apply masks
+                while(inputMaskFile >> id >> row >> col) {
+                    if(id == "c") {
+                        LOG(TRACE) << "Masking column " << col;
+                        int nRows = nPixelsY();
+                        for(int r = 0; r < nRows; r++) {
+                            maskChannel(col, r);
+                        }
+                    } else if(id == "r") {
+                        LOG(TRACE) << "Masking row " << row;
+                        int nColumns = nPixelsX();
+                        for(int c = 0; c < nColumns; c++) {
+                            maskChannel(c, row);
+                        }
+                    } else if(id == "p") {
+                        LOG(TRACE) << "Masking pixel " << col << " " << row;
+                        maskChannel(col, row); // Flag to mask a pixel
+                    } else {
+                        LOG(WARNING) << "Could not parse mask entry (id \"" << id << "\", col " << col << " row " << row
+                                     << ")";
+                    }
+                }
+            }
+        }
+
         std::string maskFile() { return m_maskfile; }
         void maskChannel(int chX, int chY) {
             int channelID = chX + m_nPixelsX * chY;
