@@ -8,7 +8,7 @@
  */
 
 #ifndef CORRYVRECKAN_ROOT_H
-#define CORRYVRECKEN_ROOT_H
+#define CORRYVRECKAN_ROOT_H
 
 #include <ostream>
 #include <stdexcept>
