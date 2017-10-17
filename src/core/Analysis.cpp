@@ -95,6 +95,7 @@ void Analysis::load_detectors() {
         // Add the new detector to the global list:
         detectors.push_back(det_parm);
     }
+    LOG(STATUS) << "Loaded " << detectors.size() << " detectors from " << detectors_files.size() << " files";
 
     // Finally, sort the list of detectors by z position (from lowest to highest)
     // FIXME reimplement - std::sort(m_parameters->detectors.begin(), m_parameters->detectors.end(), sortByZ);
@@ -225,7 +226,7 @@ void Analysis::load_algorithms() {
         // Create the algorithms from the library
         m_algorithms.emplace_back(create_algorithm(loaded_libraries_[lib_name], config));
     }
-    LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loaded " << configs.size() << " modules";
+    LOG(STATUS) << "Loaded " << configs.size() << " modules";
 }
 
 Algorithm* Analysis::create_algorithm(void* library, Configuration config) {
