@@ -15,6 +15,9 @@ void TestAlgorithm::initialise() {
     for(auto& detector : get_detectors()) {
         LOG(DEBUG) << "Booking histograms for detector " << detector->name();
 
+        // get the reference detector:
+        Detector* reference = get_detector(m_config.get<std::string>("reference"));
+
         // Simple hit map
         string name = "hitmap_" + detector->name();
         hitmap[detector->name()] = new TH2F(name.c_str(),
@@ -43,6 +46,26 @@ void TestAlgorithm::initialise() {
         correlationTime[detector->name()] = new TH1F(name.c_str(), name.c_str(), 2000000, -0.5, 0.5);
         name = "correlationTimeInt_" + detector->name();
         correlationTimeInt[detector->name()] = new TH1F(name.c_str(), name.c_str(), 8000, -40000, 40000);
+
+        // 2D correlation plots (pixel-by-pixel):
+        name = "correlationX2D_" + detector->name();
+        correlationX2D[detector->name()] = new TH2F(name.c_str(),
+                                                    name.c_str(),
+                                                    detector->nPixelsX(),
+                                                    0,
+                                                    detector->nPixelsX(),
+                                                    reference->nPixelsX(),
+                                                    0,
+                                                    reference->nPixelsX());
+        name = "correlationY2D_" + detector->name();
+        correlationY2D[detector->name()] = new TH2F(name.c_str(),
+                                                    name.c_str(),
+                                                    detector->nPixelsY(),
+                                                    0,
+                                                    detector->nPixelsY(),
+                                                    reference->nPixelsY(),
+                                                    0,
+                                                    reference->nPixelsY());
 
         // Timing plots
         name = "eventTimes_" + detector->name();
@@ -103,10 +126,14 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
                 double timeDifference = (double)(refCluster->timestamp() - cluster->timestamp()) / (4096. * 40000000.);
 
                 // Correlation plots
-                if(abs(timeDifference) < 0.000001)
+                if(abs(timeDifference) < 0.000001) {
                     correlationX[detector->name()]->Fill(refCluster->globalX() - cluster->globalX());
-                if(abs(timeDifference) < 0.000001)
+                    correlationX2D[detector->name()]->Fill(cluster->column(), refCluster->column());
+                }
+                if(abs(timeDifference) < 0.000001) {
                     correlationY[detector->name()]->Fill(refCluster->globalY() - cluster->globalY());
+                    correlationY2D[detector->name()]->Fill(cluster->row(), refCluster->row());
+                }
                 correlationTime[detector->name()]->Fill(timeDifference);
                 correlationTimeInt[detector->name()]->Fill(timeDifferenceInt);
             } //*/

@@ -34,6 +34,8 @@ namespace corryvreckan {
         // Correlation plots
         std::map<std::string, TH1F*> correlationX;
         std::map<std::string, TH1F*> correlationY;
+        std::map<std::string, TH2F*> correlationX2D;
+        std::map<std::string, TH2F*> correlationY2D;
         std::map<std::string, TH1F*> correlationTime;
         std::map<std::string, TH1F*> correlationTimeInt;
 
