@@ -284,8 +284,10 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             // Between the data and the header the intervening bits should all be 0,
             // check if this is the case
             const UChar_t intermediateBits = ((pixdata & 0x00FF000000000000) >> 48) & 0xFF;
-            if(intermediateBits != 0x00)
+            if(intermediateBits != 0x00) {
+                LOG(DEBUG) << "Detector " << detectorID << ": intermediateBits error";
                 continue;
+            }
 
             // 0x4 is the least significant part of the timestamp
             if(header2 == 0x4) {
@@ -305,15 +307,17 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             }
         }
 
-        if(!m_clearedHeader[detectorID])
+        if(!m_clearedHeader[detectorID]) {
             continue;
+        }
 
         // Header 0x06 and 0x07 are the start and stop signals for power pulsing
         if(header == 0x0) {
 
             // Only want to read these packets from the DUT
-            if(detectorID != m_config.get<std::string>("DUT"))
+            if(detectorID != m_config.get<std::string>("DUT")) {
                 continue;
+            }
 
             // Get the second part of the header
             const UChar_t header2 = ((pixdata & 0x0F00000000000000) >> 56) & 0xF;
@@ -389,8 +393,9 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
         // a run. For that reason we keep skipping data until this "header" data has
         // been cleared, when
         // the heart beat signal starts from a low number (~few seconds max)
-        if(!m_clearedHeader[detectorID])
+        if(!m_clearedHeader[detectorID]) {
             continue;
+        }
 
         // Header 0xA and 0xB indicate pixel data
         if(header == 0xA || header == 0xB) {
@@ -403,8 +408,10 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             const UShort_t row = (spix + (pix & 0x3));
 
             // Check if this pixel is masked
-            if(detector->masked(col, row))
+            if(detector->masked(col, row)) {
+                LOG(DEBUG) << "Detector " << detectorID << ": pixel " << col << "," << row << " masked";
                 continue;
+            }
 
             // Get the rest of the data from the pixel
             const UShort_t pixno = col * 256 + row;
@@ -478,8 +485,9 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
     // the data from one event onto it.
 
     // If no data was loaded, return false
-    if(devicedata->empty())
+    if(devicedata->empty()) {
         return false;
+    }
 
     return true;
 }
