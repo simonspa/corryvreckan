@@ -30,11 +30,10 @@ namespace corryvreckan {
         int m_minNumberOfPlanes;
 
         // Member variables
-        std::map<std::string, std::vector<std::string>> m_datafiles;
-        std::map<std::string, int> m_nFiles;
-        std::map<std::string, int> m_fileNumber;
+        std::map<std::string, std::vector<std::unique_ptr<std::ifstream>>> m_files;
+        std::map<std::string, std::vector<std::unique_ptr<std::ifstream>>::iterator> m_file_iterator;
+
         std::map<std::string, long long int> m_syncTime;
-        std::map<std::string, FILE*> m_currentFile;
         std::map<std::string, bool> m_clearedHeader;
         long long int m_currentTime;
 

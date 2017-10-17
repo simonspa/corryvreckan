@@ -84,15 +84,39 @@ void Timepix3EventLoader::initialise() {
                 string filename = dataDirName + "/" + file->d_name;
 
                 // Check if file has extension .dat
-                if(string(file->d_name).find("-1.dat") != string::npos) {
-                    m_datafiles[detectorID].push_back(filename.c_str());
-                    m_nFiles[detectorID]++;
-
+                if(string(file->d_name).find(".dat") != string::npos) {
                     // Initialise null values for later
-                    m_currentFile[detectorID] = NULL;
-                    m_fileNumber[detectorID] = 0;
                     m_syncTime[detectorID] = 0;
                     m_clearedHeader[detectorID] = false;
+
+                    auto new_file = std::make_unique<std::ifstream>(filename);
+                    if(new_file->is_open()) {
+                        LOG(TRACE) << "Opened data file for " << detectorID << ": " << filename;
+
+                        // FIXME check if header is repeated in next data file
+                        // otherwise only read and skip if(m_files[detectorID].empty())
+
+                        // Skip the header - first read how big it is
+                        uint32_t headerID;
+                        if(!new_file->read(reinterpret_cast<char*>(&headerID), sizeof headerID)) {
+                            throw AlgorithmError("Cannot read header ID for " + detectorID + " in file " + filename);
+                        }
+
+                        // Skip the rest of the file header
+                        uint32_t headerSize;
+                        if(!new_file->read(reinterpret_cast<char*>(&headerSize), sizeof headerSize)) {
+                            throw AlgorithmError("Cannot read header size for " + detectorID + " in file " + filename);
+                        }
+
+                        // Skip the full header:
+                        new_file->seekg(headerSize);
+                        LOG(TRACE) << "Skipped header of " << detectorID << " (" << headerSize << "b) in " << filename;
+
+                        // Store the file in the data vector:
+                        m_files[detectorID].push_back(std::move(new_file));
+                    } else {
+                        throw AlgorithmError("Could not open data file " + filename);
+                    }
                 }
 
                 // If not a data file, it might be a trimdac file, with the list of
@@ -106,12 +130,10 @@ void Timepix3EventLoader::initialise() {
                 }
             }
 
-            // If files were stored, register the detector (check that it has
-            // alignment data)
-            if(m_nFiles.count(detectorID) > 0) {
+            // If files were stored, register the detector (check that it has alignment data)
+            if(!m_files[detectorID].empty()) {
 
-                // Now that we have all of the data files and mask files for this
-                // detector, pass the mask file to parameters
+                // Now that we have all of the data files and mask files for this detector, pass the mask file to parameters
                 LOG(INFO) << "Set mask file " << trimdacfile;
                 detector->setMaskFile(trimdacfile);
 
@@ -138,13 +160,24 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
     int devices = 0;
     int loadedData = 0;
 
+    // End the loop as soon as all detector files are finished:
+    StatusCode returnvalue = Failure;
+
     // Loop through all registered detectors
     for(auto& detector : get_detectors()) {
 
         // Check if they are a Timepix3
-        string detectorID = detector->name();
         if(detector->type() != "Timepix3")
             continue;
+
+        string detectorID = detector->name();
+        // If all files for this detector have been read, ignore it:
+        if(m_file_iterator[detectorID] == m_files[detectorID].end()) {
+            continue;
+        }
+
+        // This detector has data left:
+        returnvalue = Success;
 
         // Make a new container for the data
         Pixels* deviceData = new Pixels();
@@ -160,32 +193,19 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
             clipboard->put(detectorID, "pixels", (TestBeamObjects*)deviceData);
         }
         clipboard->put(detectorID, "SpidrSignals", (TestBeamObjects*)spidrData);
-
-        // Check if all devices have reached the end of file
-        if(m_currentFile[detectorID] != NULL) {
-            devices++;
-            if(feof(m_currentFile[detectorID])) {
-                endOfFiles++;
-            }
-        }
     }
 
     // Increment the event time
     clipboard->put_persistent("currentTime", clipboard->get_persistent("currentTime") + eventLength);
 
-    // If all files are finished, tell the event loop to stop
-    if(endOfFiles == devices)
-        return Failure;
-
-    // If no/not enough data in this event then tell the event loop to directly
-    // skip to the next event
+    // If no/not enough data in this event then tell the event loop to directly skip to the next event
     if(loadedData < m_minNumberOfPlanes)
         return NoData;
 
     // Otherwise tell event loop to keep running
     LOG_PROGRESS(INFO, "tpx3_loader") << "Current time: " << std::setprecision(4) << std::fixed
                                       << clipboard->get_persistent("currentTime");
-    return Success;
+    return returnvalue;
 }
 
 // Function to load the pixel mask file
@@ -222,58 +242,30 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
 
     LOG(DEBUG) << "Loading data for device " << detectorID;
 
-    // Check if current file is open
-    if(m_currentFile[detectorID] == NULL || feof(m_currentFile[detectorID])) {
-        LOG(DEBUG) << "No current file open ";
-
-        // If all files are finished, return
-        if(m_fileNumber[detectorID] == m_datafiles[detectorID].size()) {
-            LOG(DEBUG) << "All files have been analysed. There were " << m_datafiles[detectorID].size();
-            return false;
+    while(1) {
+        // Check if the last file is finished:
+        if(m_file_iterator[detectorID] == m_files[detectorID].end()) {
+            LOG(INFO) << "EOF for all files of " << detectorID;
+            break;
         }
 
-        // Open a new file
-        m_currentFile[detectorID] = fopen(m_datafiles[detectorID][m_fileNumber[detectorID]].c_str(), "rb");
-        LOG(DEBUG) << "Loading file " << m_datafiles[detectorID][m_fileNumber[detectorID]];
-
-        // Mark that this file is done
-        m_fileNumber[detectorID]++;
-
-        // Skip the header - first read how big it is
-        uint32_t headerID;
-        if(fread(&headerID, sizeof(headerID), 1, m_currentFile[detectorID]) == 0) {
-            LOG(ERROR) << "Cannot read header ID for device " << detectorID;
-            return false;
+        // Check if current file is at its end and move to the next:
+        if((*m_file_iterator[detectorID])->eof()) {
+            m_file_iterator[detectorID]++;
+            LOG(INFO) << "Starting to read next file for " << detectorID;
         }
 
-        // Skip the rest of the file header
-        uint32_t headerSize;
-        if(fread(&headerSize, sizeof(headerSize), 1, m_currentFile[detectorID]) == 0) {
-            LOG(ERROR) << "Cannot read header size for device " << detectorID;
-            return false;
-        }
+        // Now read the data packets.
+        ULong64_t pixdata = 0;
+        UShort_t thr = 0;
 
-        // Finally skip the header
-        rewind(m_currentFile[detectorID]);
-        fseek(m_currentFile[detectorID], headerSize, SEEK_SET);
-    }
-
-    // Now read the data packets.
-    ULong64_t pixdata = 0;
-    UShort_t thr = 0;
-    int npixels = 0;
-
-    // Read till the end of file (or till break)
-    while(!feof(m_currentFile[detectorID])) {
-
-        // Read one 64-bit chunk of data
-        const int retval = fread(&pixdata, sizeof(ULong64_t), 1, m_currentFile[detectorID]);
-        IFLOG(TRACE) {
-            bitset<64> packetContent(pixdata);
-            LOG(TRACE) << "0x" << hex << pixdata << dec << " - " << pixdata;
-        }
-        if(retval == 0)
+        // If we can't read data anymore, jump to begin of loop:
+        if(!(*m_file_iterator[detectorID])->read(reinterpret_cast<char*>(&pixdata), sizeof pixdata)) {
+            LOG(INFO) << "No more data in current file for " << detectorID;
             continue;
+        }
+
+        LOG(TRACE) << "0x" << hex << pixdata << dec << " - " << pixdata;
 
         // Get the header (first 4 bits) and do things depending on what it is
         // 0x4 is the "heartbeat" signal, 0xA and 0xB are pixel data
@@ -340,7 +332,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 // reader so that we start with this signal next event)
                 if(eventLength != 0. &&
                    ((double)time / (4096. * 40000000.)) > (clipboard->get_persistent("currentTime") + eventLength)) {
-                    fseek(m_currentFile[detectorID], -1 * sizeof(ULong64_t), SEEK_CUR);
+                    (*m_file_iterator[detectorID])->seekg(-1 * sizeof(pixdata), std::ios_base::cur);
                     LOG(TRACE) << "Signal has a time beyond the current event: " << (double)time / (4096. * 40000000.);
                     break;
                 }
@@ -464,7 +456,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             // reader so that we start with this pixel next event)
             if(eventLength != 0. &&
                ((double)time / (4096. * 40000000.)) > (clipboard->get_persistent("currentTime") + eventLength)) {
-                fseek(m_currentFile[detectorID], -1 * sizeof(ULong64_t), SEEK_CUR);
+                (*m_file_iterator[detectorID])->seekg(-1 * sizeof(pixdata), std::ios_base::cur);
                 break;
             }
 
