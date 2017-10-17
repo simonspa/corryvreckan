@@ -95,7 +95,7 @@ void Analysis::load_detectors() {
         // Add the new detector to the global list:
         detectors.push_back(det_parm);
     }
-    LOG(STATUS) << "Loaded " << detectors.size() << " detectors from " << detectors_files.size() << " files";
+    LOG(STATUS) << "Loaded " << detectors.size() << " detectors";
 
     // Finally, sort the list of detectors by z position (from lowest to highest)
     // FIXME reimplement - std::sort(m_parameters->detectors.begin(), m_parameters->detectors.end(), sortByZ);
