@@ -36,6 +36,7 @@ namespace corryvreckan {
         std::map<std::string, long long int> m_syncTime;
         std::map<std::string, bool> m_clearedHeader;
         long long int m_currentTime;
+        long long int m_currentEvent;
 
         long long int m_prevTime;
         bool m_shutterOpen;

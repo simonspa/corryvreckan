@@ -26,6 +26,7 @@ Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<Detec
     eventLength = m_config.get<double>("eventLength", 0.0);
 
     m_currentTime = 0.;
+    m_currentEvent = 0;
     m_prevTime = 0;
     m_shutterOpen = false;
 }
@@ -156,8 +157,6 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
     // loading a fixed number of pixels (ie. 2000 at a time)
 
     LOG(TRACE) << "== New event";
-    int endOfFiles = 0;
-    int devices = 0;
     int loadedData = 0;
 
     // End the loop as soon as all detector files are finished:
@@ -198,13 +197,21 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
     // Increment the event time
     clipboard->put_persistent("currentTime", clipboard->get_persistent("currentTime") + eventLength);
 
-    // If no/not enough data in this event then tell the event loop to directly skip to the next event
-    if(loadedData < m_minNumberOfPlanes)
-        return NoData;
-
     // Otherwise tell event loop to keep running
-    LOG_PROGRESS(INFO, "tpx3_loader") << "Current time: " << std::setprecision(4) << std::fixed
-                                      << clipboard->get_persistent("currentTime");
+    IFLOG(INFO) {
+        if(eventLength == 0.) {
+            LOG_PROGRESS(INFO, "tpx3_loader") << "Current event: " << m_currentEvent;
+        } else {
+            LOG_PROGRESS(INFO, "tpx3_loader")
+                << "Current time: " << std::setprecision(4) << std::fixed << clipboard->get_persistent("currentTime");
+        }
+    }
+
+    // If no/not enough data in this event then tell the event loop to directly skip to the next event
+    if(returnvalue == Success && loadedData < m_minNumberOfPlanes) {
+        return NoData;
+    }
+
     return returnvalue;
 }
 
@@ -241,18 +248,17 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
     bool extra = false; // temp
 
     LOG(DEBUG) << "Loading data for device " << detectorID;
-
     while(1) {
+        // Check if current file is at its end and move to the next:
+        if((*m_file_iterator[detectorID])->eof()) {
+            m_file_iterator[detectorID]++;
+            LOG(INFO) << "Starting to read next file for " << detectorID << ": " << (*m_file_iterator[detectorID]).get();
+        }
+
         // Check if the last file is finished:
         if(m_file_iterator[detectorID] == m_files[detectorID].end()) {
             LOG(INFO) << "EOF for all files of " << detectorID;
             break;
-        }
-
-        // Check if current file is at its end and move to the next:
-        if((*m_file_iterator[detectorID])->eof()) {
-            m_file_iterator[detectorID]++;
-            LOG(INFO) << "Starting to read next file for " << detectorID;
         }
 
         // Now read the data packets.
@@ -261,7 +267,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
 
         // If we can't read data anymore, jump to begin of loop:
         if(!(*m_file_iterator[detectorID])->read(reinterpret_cast<char*>(&pixdata), sizeof pixdata)) {
-            LOG(INFO) << "No more data in current file for " << detectorID;
+            LOG(INFO) << "No more data in current file for " << detectorID << ": " << (*m_file_iterator[detectorID]).get();
             continue;
         }
 
@@ -489,6 +495,8 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
         return false;
     }
 
+    // Count events:
+    m_currentEvent++;
     return true;
 }
 
