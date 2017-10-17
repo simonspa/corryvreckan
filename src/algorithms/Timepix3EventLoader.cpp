@@ -335,12 +335,6 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 const uint64_t powerOn = ((controlbits & 0x2) >> 1);
                 const uint64_t shutterClosed = ((controlbits & 0x1));
 
-                // Ignore packets if they arrive before the current event window
-                //        if(eventLength != 0. && ((double)time/(4096. *
-                //        40000000.)) < (clipboard->get_persistent("currentTime")) ){
-                //          continue;
-                //        }
-
                 // Stop looking at data if the signal is after the current event window
                 // (and rewind the file
                 // reader so that we start with this signal next event)
@@ -478,13 +472,12 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             Pixel* pixel = new Pixel(detectorID, row, col, (int)tot, time);
             devicedata->push_back(pixel);
             //      bufferedData[detectorID]->push_back(pixel);
-            npixels++;
             m_prevTime = time;
         }
 
         // Stop when we reach some large number of pixels (if events not based on
         // time)
-        if(eventLength == 0. && npixels == 2000) {
+        if(eventLength == 0. && devicedata->size() == 2000) {
             break;
         }
     }
@@ -493,7 +486,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
     // the data from one event onto it.
 
     // If no data was loaded, return false
-    if(npixels == 0)
+    if(devicedata->empty())
         return false;
 
     return true;
