@@ -47,25 +47,29 @@ void TestAlgorithm::initialise() {
         name = "correlationTimeInt_" + detector->name();
         correlationTimeInt[detector->name()] = new TH1F(name.c_str(), name.c_str(), 8000, -40000, 40000);
 
-        // 2D correlation plots (pixel-by-pixel):
-        name = "correlationX2D_" + detector->name();
-        correlationX2D[detector->name()] = new TH2F(name.c_str(),
-                                                    name.c_str(),
-                                                    detector->nPixelsX(),
-                                                    0,
-                                                    detector->nPixelsX(),
-                                                    reference->nPixelsX(),
-                                                    0,
-                                                    reference->nPixelsX());
-        name = "correlationY2D_" + detector->name();
-        correlationY2D[detector->name()] = new TH2F(name.c_str(),
-                                                    name.c_str(),
-                                                    detector->nPixelsY(),
-                                                    0,
-                                                    detector->nPixelsY(),
-                                                    reference->nPixelsY(),
-                                                    0,
-                                                    reference->nPixelsY());
+        // 2D correlation plots (pixel-by-pixel, local coordinates):
+        name = "correlationX_2Dlocal_" + detector->name();
+        correlationX2Dlocal[detector->name()] = new TH2F(name.c_str(),
+                                                         name.c_str(),
+                                                         detector->nPixelsX(),
+                                                         0,
+                                                         detector->nPixelsX(),
+                                                         reference->nPixelsX(),
+                                                         0,
+                                                         reference->nPixelsX());
+        name = "correlationY_2Dlocal_" + detector->name();
+        correlationY2Dlocal[detector->name()] = new TH2F(name.c_str(),
+                                                         name.c_str(),
+                                                         detector->nPixelsY(),
+                                                         0,
+                                                         detector->nPixelsY(),
+                                                         reference->nPixelsY(),
+                                                         0,
+                                                         reference->nPixelsY());
+        name = "correlationX_2D_" + detector->name();
+        correlationX2D[detector->name()] = new TH2F(name.c_str(), name.c_str(), 100, -10., 10., 100, -10., 10.);
+        name = "correlationY_2D_" + detector->name();
+        correlationY2D[detector->name()] = new TH2F(name.c_str(), name.c_str(), 100, -10., 10., 100, -10., 10.);
 
         // Timing plots
         name = "eventTimes_" + detector->name();
@@ -128,11 +132,13 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
                 // Correlation plots
                 if(abs(timeDifference) < 0.000001) {
                     correlationX[detector->name()]->Fill(refCluster->globalX() - cluster->globalX());
-                    correlationX2D[detector->name()]->Fill(cluster->column(), refCluster->column());
+                    correlationX2D[detector->name()]->Fill(cluster->globalX(), refCluster->globalX());
+                    correlationX2Dlocal[detector->name()]->Fill(cluster->column(), refCluster->column());
                 }
                 if(abs(timeDifference) < 0.000001) {
                     correlationY[detector->name()]->Fill(refCluster->globalY() - cluster->globalY());
-                    correlationY2D[detector->name()]->Fill(cluster->row(), refCluster->row());
+                    correlationY2D[detector->name()]->Fill(cluster->globalY(), refCluster->globalY());
+                    correlationY2Dlocal[detector->name()]->Fill(cluster->row(), refCluster->row());
                 }
                 correlationTime[detector->name()]->Fill(timeDifference);
                 correlationTimeInt[detector->name()]->Fill(timeDifferenceInt);
