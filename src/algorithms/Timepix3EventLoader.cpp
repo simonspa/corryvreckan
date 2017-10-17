@@ -13,7 +13,8 @@ using namespace corryvreckan;
 using namespace std;
 
 Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Algorithm(std::move(config), std::move(detectors)), temporalSplit(false), m_currentTime(0), m_currentEvent(0),
+      m_prevTime(0), m_shutterOpen(false) {
 
     // Take input directory from global parameters
     m_inputDirectory = m_config.get<std::string>("inputDirectory");
@@ -22,16 +23,20 @@ Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<Detec
     m_timingCut = m_config.get<double>("timingCut", 0.0);
     m_minNumberOfPlanes = m_config.get<int>("minNumerOfPlanes", 1);
 
-    // Read event length
-    eventLength = m_config.get<double>("eventLength", 0.0);
-
-    m_currentTime = 0.;
-    m_currentEvent = 0;
-    m_prevTime = 0;
-    m_shutterOpen = false;
+    // Check whether event length or pixel count should be used to separate events:
+    m_eventLength = m_config.get<double>("eventLength", 0.0);
+    m_numberPixelHits = m_config.get<int>("number_of_pixelhits", 2000);
 }
 
 void Timepix3EventLoader::initialise() {
+
+    if(m_config.has("eventLength")) {
+        LOG(INFO) << "Event length set, splitting events by time.";
+        temporalSplit = true;
+    } else {
+        LOG(INFO) << "Splitting events by number of pixel hits on detector plane.";
+        temporalSplit = false;
+    }
 
     // File structure is RunX/ChipID/files.dat
 
@@ -195,15 +200,15 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
     }
 
     // Increment the event time
-    clipboard->put_persistent("currentTime", clipboard->get_persistent("currentTime") + eventLength);
+    clipboard->put_persistent("currentTime", clipboard->get_persistent("currentTime") + m_eventLength);
 
     // Otherwise tell event loop to keep running
     IFLOG(INFO) {
-        if(eventLength == 0.) {
-            LOG_PROGRESS(INFO, "tpx3_loader") << "Current event: " << m_currentEvent;
-        } else {
+        if(temporalSplit) {
             LOG_PROGRESS(INFO, "tpx3_loader")
                 << "Current time: " << std::setprecision(4) << std::fixed << clipboard->get_persistent("currentTime");
+        } else {
+            LOG_PROGRESS(INFO, "tpx3_loader") << "Current event: " << m_currentEvent;
         }
     }
 
@@ -340,8 +345,8 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 // Stop looking at data if the signal is after the current event window
                 // (and rewind the file
                 // reader so that we start with this signal next event)
-                if(eventLength != 0. &&
-                   ((double)time / (4096. * 40000000.)) > (clipboard->get_persistent("currentTime") + eventLength)) {
+                if(temporalSplit &&
+                   ((double)time / (4096. * 40000000.)) > (clipboard->get_persistent("currentTime") + m_eventLength)) {
                     (*m_file_iterator[detectorID])->seekg(-1 * sizeof(pixdata), std::ios_base::cur);
                     LOG(TRACE) << "Signal has a time beyond the current event: " << (double)time / (4096. * 40000000.);
                     break;
@@ -459,7 +464,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             // time is within this window
 
             // Ignore pixels if they arrive before the current event window
-            //      if(eventLength != 0. && ((double)time/(4096. *
+            //      if(temporalSplit && ((double)time/(4096. *
             //      40000000.)) < (clipboard->get_persistent("currentTime")) ){
             //        continue;
             //      }
@@ -467,8 +472,8 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             // Stop looking at data if the pixel is after the current event window
             // (and rewind the file
             // reader so that we start with this pixel next event)
-            if(eventLength != 0. &&
-               ((double)time / (4096. * 40000000.)) > (clipboard->get_persistent("currentTime") + eventLength)) {
+            if(temporalSplit &&
+               ((double)time / (4096. * 40000000.)) > (clipboard->get_persistent("currentTime") + m_eventLength)) {
                 (*m_file_iterator[detectorID])->seekg(-1 * sizeof(pixdata), std::ios_base::cur);
                 break;
             }
@@ -482,7 +487,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
 
         // Stop when we reach some large number of pixels (if events not based on
         // time)
-        if(eventLength == 0. && devicedata->size() == 2000) {
+        if(!temporalSplit && devicedata->size() >= m_numberPixelHits) {
             break;
         }
     }
