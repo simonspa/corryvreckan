@@ -128,15 +128,12 @@ void Alignment::MinimiseResiduals(Int_t& npar, Double_t* grad, Double_t& result,
     result = 0.;
 
     // Loop over all tracks
-    for(int iTrack = 0; iTrack < globalTracks.size(); iTrack++) {
-        // Get the track
-        Track* track = globalTracks[iTrack];
+    for(auto& track : globalTracks) {
         // Get all clusters on the track
         Clusters associatedClusters = track->associatedClusters();
 
         // Find the cluster that needs to have its position recalculated
-        for(int iAssociatedCluster = 0; iAssociatedCluster < associatedClusters.size(); iAssociatedCluster++) {
-            Cluster* associatedCluster = associatedClusters[iAssociatedCluster];
+        for(auto& associatedCluster : associatedClusters) {
             string detectorID = associatedCluster->detectorID();
             if(detectorID != detectorToAlign)
                 continue;
@@ -217,8 +214,9 @@ void Alignment::finalise() {
             detector->rotationZ(residualFitter->GetParameter(5));
         }
 
-        // Write the output alignment file
-        // FIXME parameters->writeConditions();
+        LOG(INFO) << " Detector " << detectorToAlign << " new alignment parameters: T(" << detector->displacementX() << ","
+                  << detector->displacementY() << "," << detector->displacementZ() << ") R(" << detector->rotationX() << ","
+                  << detector->rotationY() << "," << detector->rotationZ() << ")";
 
         return;
     }
