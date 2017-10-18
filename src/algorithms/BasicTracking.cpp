@@ -35,8 +35,6 @@ void BasicTracking::initialise() {
         name = "residualsY_" + detectorID;
         residualsY[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
     }
-
-    nTracksTotal = 0.;
 }
 
 StatusCode BasicTracking::run(Clipboard* clipboard) {
@@ -190,9 +188,6 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
         clipboard->put("tracks", (TestBeamObjects*)tracks);
         tracksPerEvent->Fill(tracks->size());
     }
-
-    nTracksTotal += tracks->size();
-    LOG_PROGRESS(STATUS, "basic_tracking") << "Produced " << (int)nTracksTotal << " tracks";
 
     // Clean up tree objects
     for(auto& detector : get_detectors()) {
