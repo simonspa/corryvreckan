@@ -44,6 +44,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
     map<string, KDTree*> trees;
     vector<string> detectors;
     Clusters* referenceClusters;
+    Clusters dutClusters;
 
     // Output track container
     Tracks* tracks = new Tracks();
@@ -102,8 +103,11 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
         // Loop over each subsequent plane and look for a cluster within 100 ns
         for(auto& detectorID : detectors) {
             // Check if the DUT should be excluded and obey:
-            if(excludeDUT && detectorID == m_config.get<std::string>("DUT"))
+            if(excludeDUT && detectorID == m_config.get<std::string>("DUT")) {
+                // Keep all DUT clusters, so we can add them as associated clusters later:
+                dutClusters = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut);
                 continue;
+            }
             if(detectorID == seedPlane)
                 continue;
             if(trees.count(detectorID) == 0)
@@ -180,6 +184,22 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
             ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->globalZ());
             residualsX[detectorID]->Fill(intercept.X() - trackCluster->globalX());
             residualsY[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
+        }
+
+        // Add potential associated clusters from the DUT:
+        for(auto& dutcluster : dutClusters) {
+
+            // Check distance between track and cluster
+            ROOT::Math::XYZPoint intercept = track->intercept(dutcluster->globalZ());
+            double xdistance = intercept.X() - dutcluster->globalX();
+            double ydistance = intercept.Y() - dutcluster->globalY();
+            if(abs(xdistance) > spatialCut)
+                continue;
+            if(abs(ydistance) > spatialCut)
+                continue;
+
+            LOG(DEBUG) << "Found associated cluster";
+            track->addAssociatedCluster(dutcluster);
         }
     }
 
