@@ -407,7 +407,7 @@ void Analysis::finaliseAll() {
     for(auto& algorithm : m_algorithms) {
         // Set init module section header
         std::string old_section_name = Log::getSection();
-        std::string section_name = "I:";
+        std::string section_name = "F:";
         section_name += algorithm->getName();
         Log::setSection(section_name);
         // Set module specific settings
