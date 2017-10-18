@@ -99,8 +99,7 @@ void Timepix3EventLoader::initialise() {
                     if(new_file->is_open()) {
                         LOG(TRACE) << "Opened data file for " << detectorID << ": " << filename;
 
-                        // FIXME check if header is repeated in next data file
-                        // otherwise only read and skip if(m_files[detectorID].empty())
+                        // The header is repeated in every new data file, thus skip it for all.
 
                         // Skip the header - first read how big it is
                         uint32_t headerID;
