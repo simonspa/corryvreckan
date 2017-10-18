@@ -188,6 +188,8 @@ void Alignment::finalise() {
     // return. This should be made into separate functions.
     if(alignmentMethod == 1) {
         auto detector = get_detector(detectorToAlign);
+        globalDetector = detector;
+
         // Add the parameters to the fitter (z displacement not allowed to move!)
         residualFitter->SetParameter(
             0, (detectorToAlign + "_displacementX").c_str(), detector->displacementX(), 0.01, -50, 50);
