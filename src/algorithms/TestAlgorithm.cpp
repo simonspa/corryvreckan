@@ -104,9 +104,9 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
         }
 
         // Get clusters from reference detector
-        Clusters* referenceClusters = (Clusters*)clipboard->get(m_config.get<std::string>("DUT"), "clusters");
+        Clusters* referenceClusters = (Clusters*)clipboard->get(m_config.get<std::string>("reference"), "clusters");
         if(referenceClusters == NULL) {
-            LOG(DEBUG) << "Reference detector " << m_config.get<std::string>("DUT")
+            LOG(DEBUG) << "Reference detector " << m_config.get<std::string>("reference")
                        << " does not have any clusters on the clipboard";
             //      continue;
         }
