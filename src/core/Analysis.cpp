@@ -302,6 +302,9 @@ void Analysis::run() {
     // Loop over all events, running each algorithm on each "event"
     LOG(STATUS) << "========================| Event loop |========================";
     m_events = 1;
+    m_tracks = 0;
+    int skipped = 0;
+
     while(1) {
         bool run = true;
         bool noData = false;
@@ -330,10 +333,20 @@ void Analysis::run() {
             set_algorithm_after(old_settings);
             if(check == NoData) {
                 noData = true;
+                skipped++;
                 break;
             } // Nothing to be done in this event
             if(check == Failure)
                 run = false;
+        }
+
+        // Print statistics:
+        Tracks* tracks = (Tracks*)m_clipboard->get("tracks");
+        m_tracks += (tracks == NULL ? 0 : tracks->size());
+        if(m_events % 100 == 0 || skipped % 1000 == 0) {
+            LOG_PROGRESS(STATUS, "event_loop")
+                << "Events processed: " << m_events << ", skipped: " << skipped << " Tracks found: " << m_tracks << " ("
+                << ((double)m_tracks / m_events) << " tr/ev)";
         }
 
         // Clear objects from this iteration from the clipboard

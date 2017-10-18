@@ -63,6 +63,7 @@ namespace corryvreckan {
         TFile* m_histogramFile;
         TDirectory* m_directory;
         int m_events;
+        int m_tracks;
 
         std::vector<Algorithm*> m_algorithms;
         std::map<std::string, void*> loaded_libraries_;
