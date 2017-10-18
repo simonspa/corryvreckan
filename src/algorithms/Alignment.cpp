@@ -176,7 +176,7 @@ void Alignment::finalise() {
 
     // Set the printout arguments of the fitter
     Double_t arglist[10];
-    arglist[0] = 3;
+    arglist[0] = -1;
     residualFitter->ExecuteCommand("SET PRINT", arglist, 1);
 
     // Set some fitter parameters
@@ -216,18 +216,15 @@ void Alignment::finalise() {
             detector->rotationZ(residualFitter->GetParameter(5));
         }
 
-        LOG(INFO) << " Detector " << detectorToAlign << " new alignment parameters: T(" << detector->displacementX() << ","
-                  << detector->displacementY() << "," << detector->displacementZ() << ") R(" << detector->rotationX() << ","
-                  << detector->rotationY() << "," << detector->rotationZ() << ")";
+        LOG(INFO) << detectorToAlign << " new alignment: T(" << detector->displacementX() << "," << detector->displacementY()
+                  << "," << detector->displacementZ() << ") R(" << detector->rotationX() << "," << detector->rotationY()
+                  << "," << detector->rotationZ() << ")";
 
         return;
     }
 
-    // Loop over all planes. For each plane, set the plane alignment parameters
-    // which will be varied, and
-    // then minimise the track chi2 (sum of biased residuals). This means that
-    // tracks are refitted with
-    // each minimisation step.
+    // Loop over all planes. For each plane, set the plane alignment parameters which will be varied, and then minimise the
+    // track chi2 (sum of biased residuals). This means that tracks are refitted with each minimisation step.
 
     int det = 0;
     for(int iteration = 0; iteration < nIterations; iteration++) {
@@ -235,9 +232,14 @@ void Alignment::finalise() {
         det = 0;
         for(auto& detector : get_detectors()) {
             string detectorID = detector->name();
+
             // Do not align the reference plane
-            if(detectorID == m_config.get<std::string>("reference"))
+            if(detectorID == m_config.get<std::string>("reference")) {
                 continue;
+            }
+
+            LOG_PROGRESS(STATUS, "alignment_track")
+                << "Alignment iteration " << (iteration + 1) << " of " << nIterations << ", detector " << detectorID;
 
             // Say that this is the detector we align
             detectorToAlign = detectorID;
@@ -309,8 +311,8 @@ void Alignment::finalise() {
         double rotationY = residualFitter->GetParameter(det * 6 + 4);
         double rotationZ = residualFitter->GetParameter(det * 6 + 5);
 
-        LOG(INFO) << " Detector " << detectorID << " new alignment parameters: T(" << displacementX << "," << displacementY
-                  << "," << displacementZ << ") R(" << rotationX << "," << rotationY << "," << rotationZ << ")";
+        LOG(INFO) << detectorID << " new alignment: T(" << displacementX << "," << displacementY << "," << displacementZ
+                  << ") R(" << rotationX << "," << rotationY << "," << rotationZ << ")";
 
         det++;
     }
