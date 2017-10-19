@@ -120,15 +120,6 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
             LOG(DEBUG) << "Detector " << detector->name() << " does not have any clusters on the clipboard";
             continue;
         }
-
-        // Get clusters from reference detector
-        Clusters* referenceClusters = (Clusters*)clipboard->get(m_config.get<std::string>("DUT"), "clusters");
-        if(referenceClusters == NULL) {
-            LOG(DEBUG) << "Reference detector " << m_config.get<std::string>("DUT")
-                       << " does not have any clusters on the clipboard";
-            //      continue;
-        }
-
         // Loop over all clusters and fill histograms
         for(auto& cluster : (*clusters)) {
             // Fill cluster histograms
