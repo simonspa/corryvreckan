@@ -29,14 +29,6 @@ void TestAlgorithm::initialise() {
                                             0,
                                             detector->nPixelsY());
 
-        // Cluster plots
-        name = "clusterSize_" + detector->name();
-        clusterSize[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
-        name = "clusterTot_" + detector->name();
-        clusterTot[detector->name()] = new TH1F(name.c_str(), name.c_str(), 200, 0, 1000);
-        name = "clusterPositionGlobal_" + detector->name();
-        clusterPositionGlobal[detector->name()] = new TH2F(name.c_str(), name.c_str(), 400, -10., 10., 400, -10., 10.);
-
         // Correlation plots
         name = "correlationX_" + detector->name();
         correlationX[detector->name()] = new TH1F(name.c_str(), name.c_str(), 1000, -10., 10.);
@@ -112,37 +104,33 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
         }
 
         // Loop over all clusters and fill histograms
-        for(auto& cluster : (*clusters)) {
-            // Fill cluster histograms
-            clusterSize[detector->name()]->Fill(cluster->size());
-            clusterTot[detector->name()]->Fill(cluster->tot());
-            clusterPositionGlobal[detector->name()]->Fill(cluster->globalX(), cluster->globalY());
+        if(!makeCorrelations) {
+            for(auto& cluster : (*clusters)) {
+                // Loop over reference plane pixels to make correlation plots
 
-            // Loop over reference plane pixels to make correlation plots
-            if(!makeCorrelations)
-                continue;
-            if(referenceClusters == NULL)
-                continue;
+                if(referenceClusters == NULL)
+                    continue;
 
-            for(auto& refCluster : (*referenceClusters)) {
-                long long int timeDifferenceInt = (refCluster->timestamp() - cluster->timestamp()) / 4096;
+                for(auto& refCluster : (*referenceClusters)) {
+                    long long int timeDifferenceInt = (refCluster->timestamp() - cluster->timestamp()) / 4096;
 
-                double timeDifference = (double)(refCluster->timestamp() - cluster->timestamp()) / (4096. * 40000000.);
+                    double timeDifference = (double)(refCluster->timestamp() - cluster->timestamp()) / (4096. * 40000000.);
 
-                // Correlation plots
-                if(abs(timeDifference) < 0.000001) {
-                    correlationX[detector->name()]->Fill(refCluster->globalX() - cluster->globalX());
-                    correlationX2D[detector->name()]->Fill(cluster->globalX(), refCluster->globalX());
-                    correlationX2Dlocal[detector->name()]->Fill(cluster->column(), refCluster->column());
-                }
-                if(abs(timeDifference) < 0.000001) {
-                    correlationY[detector->name()]->Fill(refCluster->globalY() - cluster->globalY());
-                    correlationY2D[detector->name()]->Fill(cluster->globalY(), refCluster->globalY());
-                    correlationY2Dlocal[detector->name()]->Fill(cluster->row(), refCluster->row());
-                }
-                correlationTime[detector->name()]->Fill(timeDifference);
-                correlationTimeInt[detector->name()]->Fill(timeDifferenceInt);
-            } //*/
+                    // Correlation plots
+                    if(abs(timeDifference) < 0.000001) {
+                        correlationX[detector->name()]->Fill(refCluster->globalX() - cluster->globalX());
+                        correlationX2D[detector->name()]->Fill(cluster->globalX(), refCluster->globalX());
+                        correlationX2Dlocal[detector->name()]->Fill(cluster->column(), refCluster->column());
+                    }
+                    if(abs(timeDifference) < 0.000001) {
+                        correlationY[detector->name()]->Fill(refCluster->globalY() - cluster->globalY());
+                        correlationY2D[detector->name()]->Fill(cluster->globalY(), refCluster->globalY());
+                        correlationY2Dlocal[detector->name()]->Fill(cluster->row(), refCluster->row());
+                    }
+                    correlationTime[detector->name()]->Fill(timeDifference);
+                    correlationTimeInt[detector->name()]->Fill(timeDifferenceInt);
+                } //*/
+            }
         }
     }
 

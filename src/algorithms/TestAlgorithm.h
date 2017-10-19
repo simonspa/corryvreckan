@@ -26,11 +26,6 @@ namespace corryvreckan {
         std::map<std::string, TH2F*> hitmap;
         std::map<std::string, TH1F*> eventTimes;
 
-        // Cluster histograms
-        std::map<std::string, TH1F*> clusterSize;
-        std::map<std::string, TH1F*> clusterTot;
-        std::map<std::string, TH2F*> clusterPositionGlobal;
-
         // Correlation plots
         std::map<std::string, TH1F*> correlationX;
         std::map<std::string, TH1F*> correlationY;
