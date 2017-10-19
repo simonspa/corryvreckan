@@ -104,32 +104,33 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
         }
 
         // Loop over all clusters and fill histograms
-        for(auto& cluster : (*clusters)) {
-            // Loop over reference plane pixels to make correlation plots
-            if(!makeCorrelations)
-                continue;
-            if(referenceClusters == NULL)
-                continue;
+        if(!makeCorrelations) {
+            for(auto& cluster : (*clusters)) {
+                // Loop over reference plane pixels to make correlation plots
 
-            for(auto& refCluster : (*referenceClusters)) {
-                long long int timeDifferenceInt = (refCluster->timestamp() - cluster->timestamp()) / 4096;
+                if(referenceClusters == NULL)
+                    continue;
 
-                double timeDifference = (double)(refCluster->timestamp() - cluster->timestamp()) / (4096. * 40000000.);
+                for(auto& refCluster : (*referenceClusters)) {
+                    long long int timeDifferenceInt = (refCluster->timestamp() - cluster->timestamp()) / 4096;
 
-                // Correlation plots
-                if(abs(timeDifference) < 0.000001) {
-                    correlationX[detector->name()]->Fill(refCluster->globalX() - cluster->globalX());
-                    correlationX2D[detector->name()]->Fill(cluster->globalX(), refCluster->globalX());
-                    correlationX2Dlocal[detector->name()]->Fill(cluster->column(), refCluster->column());
-                }
-                if(abs(timeDifference) < 0.000001) {
-                    correlationY[detector->name()]->Fill(refCluster->globalY() - cluster->globalY());
-                    correlationY2D[detector->name()]->Fill(cluster->globalY(), refCluster->globalY());
-                    correlationY2Dlocal[detector->name()]->Fill(cluster->row(), refCluster->row());
-                }
-                correlationTime[detector->name()]->Fill(timeDifference);
-                correlationTimeInt[detector->name()]->Fill(timeDifferenceInt);
-            } //*/
+                    double timeDifference = (double)(refCluster->timestamp() - cluster->timestamp()) / (4096. * 40000000.);
+
+                    // Correlation plots
+                    if(abs(timeDifference) < 0.000001) {
+                        correlationX[detector->name()]->Fill(refCluster->globalX() - cluster->globalX());
+                        correlationX2D[detector->name()]->Fill(cluster->globalX(), refCluster->globalX());
+                        correlationX2Dlocal[detector->name()]->Fill(cluster->column(), refCluster->column());
+                    }
+                    if(abs(timeDifference) < 0.000001) {
+                        correlationY[detector->name()]->Fill(refCluster->globalY() - cluster->globalY());
+                        correlationY2D[detector->name()]->Fill(cluster->globalY(), refCluster->globalY());
+                        correlationY2Dlocal[detector->name()]->Fill(cluster->row(), refCluster->row());
+                    }
+                    correlationTime[detector->name()]->Fill(timeDifference);
+                    correlationTimeInt[detector->name()]->Fill(timeDifferenceInt);
+                } //*/
+            }
         }
     }
 
