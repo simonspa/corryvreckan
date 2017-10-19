@@ -10,16 +10,16 @@ Timepix3Clustering::Timepix3Clustering(Configuration config, std::vector<Detecto
 
 void Timepix3Clustering::initialise() {
 
-  timingCutInt = (timingCut * 4096. * 40000000.);
-  for(auto& detector : get_detectors()) {
-    // Cluster plots
-    string name = "clusterSize_" + detector->name();
-    clusterSize[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
-    name = "clusterTot_" + detector->name();
-    clusterTot[detector->name()] = new TH1F(name.c_str(), name.c_str(), 200, 0, 1000);
-    name = "clusterPositionGlobal_" + detector->name();
-    clusterPositionGlobal[detector->name()] = new TH2F(name.c_str(), name.c_str(), 400, -10., 10., 400, -10., 10.);
-  }
+    timingCutInt = (timingCut * 4096. * 40000000.);
+    for(auto& detector : get_detectors()) {
+        // Cluster plots
+        string name = "clusterSize_" + detector->name();
+        clusterSize[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
+        name = "clusterTot_" + detector->name();
+        clusterTot[detector->name()] = new TH1F(name.c_str(), name.c_str(), 200, 0, 1000);
+        name = "clusterPositionGlobal_" + detector->name();
+        clusterPositionGlobal[detector->name()] = new TH2F(name.c_str(), name.c_str(), 400, -10., 10., 400, -10., 10.);
+    }
 }
 
 // Sort function for pixels from low to high times
@@ -114,30 +114,30 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
     }
 
     for(auto& detector : get_detectors()) {
-      // Get the clusters
-      Clusters* clusters = (Clusters*)clipboard->get(detector->name(), "clusters");
-      if(clusters == NULL) {
-	LOG(DEBUG) << "Detector " << detector->name() << " does not have any clusters on the clipboard";
-	continue;
-      }
-      
-      // Get clusters from reference detector
-      Clusters* referenceClusters = (Clusters*)clipboard->get(m_config.get<std::string>("DUT"), "clusters");
-      if(referenceClusters == NULL) {
-	LOG(DEBUG) << "Reference detector " << m_config.get<std::string>("DUT")
-		   << " does not have any clusters on the clipboard";
-	//      continue;
-      }
-      
-      // Loop over all clusters and fill histograms
-      for(auto& cluster : (*clusters)) {
-	// Fill cluster histograms
-	clusterSize[detector->name()]->Fill(cluster->size());
-	clusterTot[detector->name()]->Fill(cluster->tot());
-	clusterPositionGlobal[detector->name()]->Fill(cluster->globalX(), cluster->globalY());
-      }
+        // Get the clusters
+        Clusters* clusters = (Clusters*)clipboard->get(detector->name(), "clusters");
+        if(clusters == NULL) {
+            LOG(DEBUG) << "Detector " << detector->name() << " does not have any clusters on the clipboard";
+            continue;
+        }
+
+        // Get clusters from reference detector
+        Clusters* referenceClusters = (Clusters*)clipboard->get(m_config.get<std::string>("DUT"), "clusters");
+        if(referenceClusters == NULL) {
+            LOG(DEBUG) << "Reference detector " << m_config.get<std::string>("DUT")
+                       << " does not have any clusters on the clipboard";
+            //      continue;
+        }
+
+        // Loop over all clusters and fill histograms
+        for(auto& cluster : (*clusters)) {
+            // Fill cluster histograms
+            clusterSize[detector->name()]->Fill(cluster->size());
+            clusterTot[detector->name()]->Fill(cluster->tot());
+            clusterPositionGlobal[detector->name()]->Fill(cluster->globalX(), cluster->globalY());
+        }
     }
-    
+
     return Success;
 }
 
@@ -214,6 +214,4 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
     cluster->setClusterCentreLocal(positionLocal.X(), positionLocal.Y(), positionLocal.Z());
 }
 
-void Timepix3Clustering::finalise() {
-
-}
+void Timepix3Clustering::finalise() {}
