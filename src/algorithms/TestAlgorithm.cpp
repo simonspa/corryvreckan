@@ -29,14 +29,6 @@ void TestAlgorithm::initialise() {
                                             0,
                                             detector->nPixelsY());
 
-        // Cluster plots
-        name = "clusterSize_" + detector->name();
-        clusterSize[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
-        name = "clusterTot_" + detector->name();
-        clusterTot[detector->name()] = new TH1F(name.c_str(), name.c_str(), 200, 0, 1000);
-        name = "clusterPositionGlobal_" + detector->name();
-        clusterPositionGlobal[detector->name()] = new TH2F(name.c_str(), name.c_str(), 400, -10., 10., 400, -10., 10.);
-
         // Correlation plots
         name = "correlationX_" + detector->name();
         correlationX[detector->name()] = new TH1F(name.c_str(), name.c_str(), 1000, -10., 10.);
@@ -113,11 +105,6 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
 
         // Loop over all clusters and fill histograms
         for(auto& cluster : (*clusters)) {
-            // Fill cluster histograms
-            clusterSize[detector->name()]->Fill(cluster->size());
-            clusterTot[detector->name()]->Fill(cluster->tot());
-            clusterPositionGlobal[detector->name()]->Fill(cluster->globalX(), cluster->globalY());
-
             // Loop over reference plane pixels to make correlation plots
             if(!makeCorrelations)
                 continue;
