@@ -29,11 +29,6 @@ namespace corryvreckan {
         std::map<std::string, TH2F*> correlationY2Dlocal;
         std::map<std::string, TH2F*> correlationX2D;
         std::map<std::string, TH2F*> correlationY2D;
-        std::map<std::string, TH1F*> correlationTime;
-        std::map<std::string, TH1F*> correlationTimeInt;
-
-        // Parameters which can be set by user
-        bool makeCorrelations;
     };
 }
 #endif // PREALIGNMENT_H

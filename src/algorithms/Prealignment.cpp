@@ -21,11 +21,6 @@ void Prealignment::initialise() {
         correlationX[detector->name()] = new TH1F(name.c_str(), name.c_str(), 1000, -10., 10.);
         name = "correlationY_" + detector->name();
         correlationY[detector->name()] = new TH1F(name.c_str(), name.c_str(), 1000, -10., 10.);
-        name = "correlationTime_" + detector->name();
-        correlationTime[detector->name()] = new TH1F(name.c_str(), name.c_str(), 2000000, -0.5, 0.5);
-        name = "correlationTimeInt_" + detector->name();
-        correlationTimeInt[detector->name()] = new TH1F(name.c_str(), name.c_str(), 8000, -40000, 40000);
-
         // 2D correlation plots (pixel-by-pixel, local coordinates):
         name = "correlationX_2Dlocal_" + detector->name();
         correlationX2Dlocal[detector->name()] = new TH2F(name.c_str(),
@@ -78,8 +73,6 @@ StatusCode Prealignment::run(Clipboard* clipboard) {
                 continue;
 
             for(auto& refCluster : (*referenceClusters)) {
-                long long int timeDifferenceInt = (refCluster->timestamp() - cluster->timestamp()) / 4096;
-
                 double timeDifference = (double)(refCluster->timestamp() - cluster->timestamp()) / (4096. * 40000000.);
 
                 // Correlation plots
@@ -93,8 +86,6 @@ StatusCode Prealignment::run(Clipboard* clipboard) {
                     correlationY2D[detector->name()]->Fill(cluster->globalY(), refCluster->globalY());
                     correlationY2Dlocal[detector->name()]->Fill(cluster->row(), refCluster->row());
                 }
-                correlationTime[detector->name()]->Fill(timeDifference);
-                correlationTimeInt[detector->name()]->Fill(timeDifferenceInt);
             } //*/
         }
     }
@@ -103,13 +94,18 @@ StatusCode Prealignment::run(Clipboard* clipboard) {
 }
 
 void Prealignment::finalise() {
-    Detector* reference = get_detector(m_config.get<std::string>("reference"));
     for(auto& detector : get_detectors()) {
-        if(detector != reference) {
+        double rmsX = correlationX[detector->name()]->GetRMS();
+        double rmsY = correlationY[detector->name()]->GetRMS();
+        if(rmsX > 6 or rmsY > 6) {
+            LOG(ERROR) << "Detector " << detector->name() << ": RMS is too wide for prealignment shifts";
+            LOG(ERROR) << "Detector " << detector->name() << ": RMS X = " << rmsX << " , RMS Y = " << rmsY;
+        }
+        if(detector->name() != m_config.get<std::string>("reference")) {
             double mean_X = correlationX[detector->name()]->GetMean();
             double mean_Y = correlationY[detector->name()]->GetMean();
-            LOG(DEBUG) << "Detector " << detector->name() << ": x = " << mean_X << " , y = " << mean_Y;
-            LOG(DEBUG) << "Move in x by = " << mean_X * 0.8 << " , and in y by = " << mean_Y * 0.8;
+            LOG(INFO) << "Detector " << detector->name() << ": x = " << mean_X << " , y = " << mean_Y;
+            LOG(INFO) << "Move in x by = " << mean_X * 0.8 << " , and in y by = " << mean_Y * 0.8;
             detector->displacementX(0.8 * mean_X);
             detector->displacementY(0.8 * mean_Y);
         }
