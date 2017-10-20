@@ -24,6 +24,8 @@
 #include "TRootEmbeddedCanvas.h"
 #include "TSystem.h"
 
+using namespace corryvreckan;
+
 class GuiDisplay : public TestBeamObject {
 
     RQ_OBJECT("GuiDisplay")

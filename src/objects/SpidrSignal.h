@@ -1,6 +1,8 @@
 #ifndef SPIDRSIGNAL_H
 #define SPIDRSIGNAL_H 1
 
+using namespace corryvreckan;
+
 class SpidrSignal : public TestBeamObject {
 
 public:
@@ -10,7 +12,7 @@ public:
         m_type = type;
         m_timestamp = timestamp;
     }
-    virtual ~SpidrSignal() {}
+//    virtual ~SpidrSignal() {}
 
     // Functions
 
