@@ -1,10 +1,12 @@
 // local
 #include "TestBeamObject.h"
-#include "Cluster.h"
 #include "Pixel.h"
+#include "Cluster.h"
 #include "Track.h"
 
 #include "core/utils/exceptions.h"
+
+using namespace corryvreckan;
 
 ClassImp(TestBeamObject)
 

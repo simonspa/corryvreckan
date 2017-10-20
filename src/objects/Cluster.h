@@ -12,6 +12,8 @@
 
  */
 
+using namespace corryvreckan;
+
 class Cluster : public TestBeamObject {
 
 public:

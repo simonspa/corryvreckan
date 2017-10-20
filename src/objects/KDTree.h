@@ -14,6 +14,8 @@
 
 */
 
+using namespace corryvreckan;
+
 class KDTree : public TestBeamObject {
 
 public:

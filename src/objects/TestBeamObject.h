@@ -12,6 +12,8 @@
 // placed on the clipboard and written out to file.
 //-------------------------------------------------------------------------------
 
+namespace corryvreckan {
+
 class TestBeamObject : public TObject {
 
 public:
@@ -44,4 +46,5 @@ public:
 // Vector type declaration
 typedef std::vector<TestBeamObject*> TestBeamObjects;
 
+}
 #endif // TESTBEAMOBJECT_H

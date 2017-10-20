@@ -16,6 +16,8 @@
 // clipboard is wiped clean.
 //-------------------------------------------------------------------------------
 
+using namespace corryvreckan;
+
 class Clipboard {
 
 public:
