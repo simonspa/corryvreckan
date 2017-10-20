@@ -6,6 +6,10 @@ using namespace std;
 Prealignment::Prealignment(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
     LOG(INFO) << "Starting prealignment of detectors";
+    max_correlation_rms = m_config.get<double>("max_correlation_rms", 6.0);
+    damping_factor = m_config.get<double>("damping_factor", 0.8);
+    LOG(DEBUG) << "Setting max_correlation_rms to : " << max_correlation_rms;
+    LOG(DEBUG) << "Setting damping_factor to : " << damping_factor;
 }
 
 void Prealignment::initialise() {
@@ -63,15 +67,12 @@ StatusCode Prealignment::run(Clipboard* clipboard) {
         if(referenceClusters == NULL) {
             LOG(DEBUG) << "Reference detector " << m_config.get<std::string>("reference")
                        << " does not have any clusters on the clipboard";
-            //      continue;
+            continue;
         }
 
         // Loop over all clusters and fill histograms
         for(auto& cluster : (*clusters)) {
             // Loop over reference plane pixels to make correlation plots
-            if(referenceClusters == NULL)
-                continue;
-
             for(auto& refCluster : (*referenceClusters)) {
                 double timeDifference = (double)(refCluster->timestamp() - cluster->timestamp()) / (4096. * 40000000.);
 
@@ -86,7 +87,7 @@ StatusCode Prealignment::run(Clipboard* clipboard) {
                     correlationY2D[detector->name()]->Fill(cluster->globalY(), refCluster->globalY());
                     correlationY2Dlocal[detector->name()]->Fill(cluster->row(), refCluster->row());
                 }
-            } //*/
+            }
         }
     }
 
@@ -97,7 +98,7 @@ void Prealignment::finalise() {
     for(auto& detector : get_detectors()) {
         double rmsX = correlationX[detector->name()]->GetRMS();
         double rmsY = correlationY[detector->name()]->GetRMS();
-        if(rmsX > 6 or rmsY > 6) {
+        if(rmsX > max_correlation_rms or rmsY > max_correlation_rms) {
             LOG(ERROR) << "Detector " << detector->name() << ": RMS is too wide for prealignment shifts";
             LOG(ERROR) << "Detector " << detector->name() << ": RMS X = " << rmsX << " , RMS Y = " << rmsY;
         }
@@ -105,9 +106,9 @@ void Prealignment::finalise() {
             double mean_X = correlationX[detector->name()]->GetMean();
             double mean_Y = correlationY[detector->name()]->GetMean();
             LOG(INFO) << "Detector " << detector->name() << ": x = " << mean_X << " , y = " << mean_Y;
-            LOG(INFO) << "Move in x by = " << mean_X * 0.8 << " , and in y by = " << mean_Y * 0.8;
-            detector->displacementX(0.8 * mean_X);
-            detector->displacementY(0.8 * mean_Y);
+            LOG(INFO) << "Move in x by = " << mean_X * damping_factor << " , and in y by = " << mean_Y * damping_factor;
+            detector->displacementX(damping_factor * mean_X);
+            detector->displacementY(damping_factor * mean_Y);
         }
     }
 }

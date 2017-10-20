@@ -29,6 +29,10 @@ namespace corryvreckan {
         std::map<std::string, TH2F*> correlationY2Dlocal;
         std::map<std::string, TH2F*> correlationX2D;
         std::map<std::string, TH2F*> correlationY2D;
+
+        // Parameters which can be set by user
+        double max_correlation_rms;
+        double damping_factor;
     };
 }
 #endif // PREALIGNMENT_H
