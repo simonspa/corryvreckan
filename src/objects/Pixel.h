@@ -3,14 +3,14 @@
 
 #include "TestBeamObject.h"
 
-using namespace corryvreckan;
+namespace corryvreckan{
 
 class Pixel : public TestBeamObject {
 
 public:
     // Constructors and destructors
   	Pixel() = default;
-//    virtual ~Pixel() {}
+    virtual ~Pixel() {}
     Pixel(std::string detectorID, int row, int col, int tot) {
         m_detectorID = detectorID;
         m_row = row;
@@ -38,5 +38,7 @@ public:
 
 // Vector type declaration
 typedef std::vector<Pixel*> Pixels;
+
+}
 
 #endif // PIXEL_H
