@@ -51,8 +51,8 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
     LOG(TRACE) << "Power on time: " << m_powerOnTime / (4096. * 40000000.);
     LOG(TRACE) << "Power off time: " << m_powerOffTime / (4096. * 40000000.);
 
-    if(clipboard->get_persistent("currentTime") < 13.5)
-        return Success;
+//    if(clipboard->get_persistent("currentTime") < 13.5)
+//        return Success;
 
     // Timing cut for association
     double timingCut = 200. / 1000000000.; // 200 ns
