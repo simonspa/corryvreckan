@@ -100,7 +100,6 @@ void Analysis::load_detectors() {
     // Finally, sort the list of detectors by z position (from lowest to highest)
   std::sort(detectors.begin(), detectors.end(), [](Detector* det1, Detector* det2){ return det1->displacementZ() < det2->displacementZ();});
   
-  for(auto& detector : detectors) LOG(WARNING) << detector->name();
 }
 
 void Analysis::load_algorithms() {
