@@ -183,6 +183,10 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
             timestamp = (*pixels)[pix]->m_timestamp;
     }
     // Row and column positions are tot-weighted
+  if(tot == 0){
+    LOG(WARNING) << "Cluster with ToT 0!";
+    tot = 1.;
+  }
     row /= tot;
     column /= tot;
 
