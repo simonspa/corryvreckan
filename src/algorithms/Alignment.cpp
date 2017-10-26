@@ -313,8 +313,10 @@ void Alignment::finalise() {
     for(auto& detector : get_detectors()) {
         string detectorID = detector->name();
         // Do not align the reference plane
-        if(detectorID == m_config.get<std::string>("reference"))
-            continue;
+      if(detectorID == m_config.get<std::string>("reference") ||
+         detectorID == m_config.get<std::string>("DUT")) {
+        continue;
+      }
 
         // Get the alignment parameters
         double displacementX = residualFitter->GetParameter(det * 6 + 0);
