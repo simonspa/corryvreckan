@@ -124,29 +124,16 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
         }
 
         // Check if section header or key-value pair
-        if(line.front() == '[') {
-            // Line should be a section header with an alphanumeric name
-            size_t idx = 1;
-            for(; idx < line.length() - 1; ++idx) {
-                if(isalnum(line[idx]) == 0) {
-                    break;
-                }
+        if(line.front() == '[' && line[line.length() - 1] == ']') {
+            // Ignore empty sections if they contain no configurations
+            if(!conf.getName().empty() || conf.countSettings() > 0) {
+                // Add previous section
+                addConfiguration(std::move(conf));
             }
-            std::string remain = corryvreckan::trim(line.substr(idx + 1));
-            if(line[idx] == ']' && (remain.empty() || remain.front() == '#')) {
-                // Ignore empty sections if they contain no configurations
-                if(!conf.getName().empty() || conf.countSettings() > 0) {
-                    // Add previous section
-                    addConfiguration(std::move(conf));
-                }
 
-                // Begin new section
-                section_name = std::string(line, 1, idx - 1);
-                conf = Configuration(section_name, file_name);
-            } else {
-                // Section header is not valid
-                throw ConfigParseError(file_name, line_num);
-            }
+            // Begin new section
+            section_name = std::string(line, 1, line.length() - 2);
+            conf = Configuration(section_name, file_name);
         } else if(isalpha(line.front()) != 0) {
             // Line should be a key / value pair with an equal sign
             try {
