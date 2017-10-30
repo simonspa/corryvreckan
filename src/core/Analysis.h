@@ -31,7 +31,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Analysis(std::string config_file_name);
+        explicit Analysis(std::string config_file_name, std::vector<std::string> options = std::vector<std::string>());
         virtual ~Analysis(){};
 
         // Member functions

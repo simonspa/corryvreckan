@@ -86,6 +86,7 @@ int main(int argc, const char* argv[]) {
     // Parse arguments
     std::string config_file_name;
     std::string log_file_name;
+    std::vector<std::string> options;
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
@@ -100,6 +101,8 @@ int main(int argc, const char* argv[]) {
             config_file_name = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
             log_file_name = std::string(argv[++i]);
+        } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
+            options.emplace_back(std::string(argv[++i]));
         } else {
             LOG(ERROR) << "Unrecognized command line argument \"" << argv[i] << "\"";
             print_help = true;
@@ -110,10 +113,10 @@ int main(int argc, const char* argv[]) {
     // Print help if requested or no arguments given
     if(print_help) {
         std::cout << "Usage: corry -c <config> [-v <level>]" << std::endl;
-        std::cout << "\t -c <file>    configuration file to be used" << std::endl;
-        std::cout << "\t -l <file>    file to log to besides standard output" << std::endl;
-        std::cout << "\t -v <level>   verbosity level overwrites global level,\n"
-                  << "\t              but not the per-module configuration." << std::endl;
+        std::cout << "  -c <file>    configuration file to be used" << std::endl;
+        std::cout << "  -l <file>    file to log to besides standard output" << std::endl;
+        std::cout << "  -o <option>  extra configuration option(s) to pass" << std::endl;
+        std::cout << "  -v <level>   verbosity level, overwriting the global level" << std::endl;
         clean();
         return return_code;
     }
@@ -142,7 +145,7 @@ int main(int argc, const char* argv[]) {
 
     try {
         // Construct main Allpix object
-        corry = std::make_unique<Analysis>(config_file_name);
+        corry = std::make_unique<Analysis>(config_file_name, options);
         cv_ready = true;
 
         // Load modules

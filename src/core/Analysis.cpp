@@ -20,7 +20,7 @@
 using namespace corryvreckan;
 
 // Default constructor
-Analysis::Analysis(std::string config_file_name) : m_terminate(false) {
+Analysis::Analysis(std::string config_file_name, std::vector<std::string> options) : m_terminate(false) {
 
     // Load the global configuration
     conf_mgr_ = std::make_unique<corryvreckan::ConfigManager>(std::move(config_file_name));
@@ -29,6 +29,11 @@ Analysis::Analysis(std::string config_file_name) : m_terminate(false) {
     conf_mgr_->setGlobalHeaderName("Corryvreckan");
     conf_mgr_->addGlobalHeaderName("");
     conf_mgr_->addIgnoreHeaderName("Ignore");
+
+    // Parse all command line options
+    for(auto& option : options) {
+        conf_mgr_->parseOption(option);
+    }
 
     // Fetch the global configuration
     global_config = conf_mgr_->getGlobalConfiguration();
