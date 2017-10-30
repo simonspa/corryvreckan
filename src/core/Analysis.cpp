@@ -220,6 +220,9 @@ void Analysis::load_algorithms() {
         // Remember that this library was loaded
         loaded_libraries_[lib_name] = lib;
 
+        // Apply the module specific options to the module configuration
+        conf_mgr_->applyOptions(config.getName(), config);
+
         // Add the global internal parameters to the configuration
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
