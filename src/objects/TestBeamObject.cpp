@@ -1,7 +1,7 @@
 // local
 #include "TestBeamObject.h"
-#include "Pixel.h"
 #include "Cluster.h"
+#include "Pixel.h"
 #include "Track.h"
 
 #include "core/utils/exceptions.h"

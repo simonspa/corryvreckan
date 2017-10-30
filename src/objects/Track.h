@@ -23,7 +23,7 @@ public:
         m_direction.SetZ(1.);
         m_state.SetZ(0.);
     }
-//    virtual ~Track() {}
+    //    virtual ~Track() {}
 
     // Copy constructor (also copies clusters from the original track)
     Track(Track* track) {

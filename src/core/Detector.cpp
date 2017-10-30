@@ -107,8 +107,7 @@ void Detector::initialise() {
     // Make the local to global transform, built from a displacement and
     // rotation
     m_translations = new Translation3D(m_displacementX, m_displacementY, m_displacementZ);
-  	m_rotations = new Rotation3D(ROOT::Math::RotationZ(m_rotationZ) *
-                                 ROOT::Math::RotationY(m_rotationY) *
+    m_rotations = new Rotation3D(ROOT::Math::RotationZ(m_rotationZ) * ROOT::Math::RotationY(m_rotationY) *
                                  ROOT::Math::RotationX(m_rotationX));
 
     m_localToGlobal = new Transform3D(*m_rotations, *m_translations);

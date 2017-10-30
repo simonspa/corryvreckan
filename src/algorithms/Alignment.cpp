@@ -234,8 +234,7 @@ void Alignment::finalise() {
             string detectorID = detector->name();
 
             // Do not align the reference plane
-            if(detectorID == m_config.get<std::string>("reference") ||
-               detectorID == m_config.get<std::string>("DUT")) {
+            if(detectorID == m_config.get<std::string>("reference") || detectorID == m_config.get<std::string>("DUT")) {
                 continue;
             }
 

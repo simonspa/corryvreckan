@@ -12,7 +12,7 @@ public:
         m_type = type;
         m_timestamp = timestamp;
     }
-//    virtual ~SpidrSignal() {}
+    //    virtual ~SpidrSignal() {}
 
     // Functions
 
