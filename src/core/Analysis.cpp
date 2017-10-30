@@ -89,11 +89,10 @@ void Analysis::load() {
 
 void Analysis::load_detectors() {
     std::string detectors_file = global_config.getPath("detectors_file");
+    std::fstream file(detectors_file);
+    ConfigReader reader(file, detectors_file);
 
-    // Load the detector configuration
-    det_mgr_ = std::make_unique<corryvreckan::ConfigManager>(detectors_file);
-
-    for(auto& detector : det_mgr_->getConfigurations()) {
+    for(auto& detector : reader.getConfigurations()) {
         LOG(INFO) << "Detector: " << detector.getName();
         Detector* det_parm = new Detector(detector);
 
