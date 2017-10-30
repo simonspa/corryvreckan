@@ -3,10 +3,8 @@
  * @brief Collection of all configuration exceptions
  *
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied
- * verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities
- * granted to it by virtue of its status as an
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -43,8 +41,7 @@ namespace corryvreckan {
 
     /**
      * @ingroup Exceptions
-     * @brief Indicates a problem converting the value of a configuration key to the
-     * value it should represent
+     * @brief Indicates a problem converting the value of a configuration key to the value it should represent
      */
     // TODO [doc] this should be InvalidValueTypeError (see below)
     class InvalidKeyError : public ConfigurationError {
@@ -68,7 +65,7 @@ namespace corryvreckan {
                 section_str = "in empty section";
             }
 
-            error_message_ = "Could not convert value '" + value + "' of key '" + key + "' " + section_str + " to type " +
+            error_message_ = "Could not convert value '" + value + "' from key '" + key + "' " + section_str + " to type " +
                              corryvreckan::demangle(type.name());
             if(!reason.empty()) {
                 error_message_ += ": " + reason;
@@ -99,13 +96,30 @@ namespace corryvreckan {
 
     /**
      * @ingroup Exceptions
+     * @brief Indicates an error while parsing a key / value pair
+     */
+    class KeyValueParseError : public ConfigurationError {
+    public:
+        /**
+         * @brief Construct an error for a invalid key value pair
+         * @param key_value Key value pair which is trying to be parsed
+         * @param line_num Line number where the problem occurred
+         */
+        KeyValueParseError(const std::string& key_value, const std::string& reason) {
+            error_message_ = "Could not parse key / value pair '";
+            error_message_ += key_value;
+            error_message_ += ": " + reason;
+        }
+    };
+
+    /**
+     * @ingroup Exceptions
      * @brief Indicates an error while parsing a configuration file
      */
-    // TODO [doc] Rename to ConfigurationError
     class ConfigParseError : public ConfigurationError {
     public:
         /**
-         * @brief Construct an error for a missing key
+         * @brief Construct an error for a invalid configuration file
          * @param file_name Name of the configuration file
          * @param line_num Line number where the problem occurred
          */
@@ -113,7 +127,7 @@ namespace corryvreckan {
             error_message_ = "Could not parse line ";
             error_message_ += std::to_string(line_num);
             error_message_ += " in file '" + file_name + "'";
-            error_message_ += ": not a section header, key/value pair or comment";
+            error_message_ += ": not a valid section header, key/value pair or comment";
         }
     };
 
@@ -123,8 +137,7 @@ namespace corryvreckan {
      * @brief Indicates an error with the contents of value
      * @note Only configuration error that should be called directly from modules
      *
-     * Should be raised if the data contains valid data for its type (otherwise an
-     * \ref InvalidKeyError should have been
+     * Should be raised if the data contains valid data for its type (otherwise an \ref InvalidKeyError should have been
      * raised earlier), but the value is not in the range of allowed values.
      */
     class InvalidValueError : public ConfigurationError {

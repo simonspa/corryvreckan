@@ -1,12 +1,9 @@
 /**
  * @file
- * @brief Interface to the main configuration and its normal and special
- * sections
+ * @brief Interface to the main configuration and its normal and special sections
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied
- * verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities
- * granted to it by virtue of its status as an
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -24,16 +21,12 @@ namespace corryvreckan {
 
     /**
      * @ingroup Managers
-     * @brief Manager responsible for loading and providing access to the main
-     * configuration
+     * @brief Manager responsible for loading and providing access to the main configuration
      *
-     * The main configuration is the single most important source of configuration.
-     * It is split up in:
-     * - Global headers that are combined into a single global (not module specific)
-     * configuration
+     * The main configuration is the single most important source of configuration. It is split up in:
+     * - Global headers that are combined into a single global (not module specific) configuration
      * - Ignored headers that are not used at all (mainly useful for debugging)
-     * - All other headers representing all modules that have to be instantiated by
-     * the ModuleManager
+     * - All other headers representing all modules that have to be instantiated by the ModuleManager
      *
      * Configuration sections are always case-sensitive.
      */
@@ -92,6 +85,20 @@ namespace corryvreckan {
         void addIgnoreHeaderName(std::string name);
 
         /**
+         * @brief Parse an extra configuration option
+         * @param line Line with the option
+         */
+        void parseOption(std::string line);
+
+        /**
+         * @brief Apply all relevant options to the passed configuration
+         * @param identifier Identifier to select the options to apply
+         * @param config Configuration option where the options should be applied to
+         * @return True if the configuration was changed because of applied options
+         */
+        bool applyOptions(const std::string& identifier, Configuration& config);
+
+        /**
          * @brief Return if section with given name exists
          * @param name Name of the section
          * @return True if at least one section with that name exists, false otherwise
@@ -109,9 +116,13 @@ namespace corryvreckan {
 
         ConfigReader reader_;
 
-        std::string global_default_name_;
-        std::set<std::string> global_names_;
-        std::set<std::string> ignore_names_;
+        Configuration global_base_config_;
+        std::string global_default_name_{};
+        std::set<std::string> global_names_{};
+
+        std::set<std::string> ignore_names_{};
+
+        std::map<std::string, std::vector<std::pair<std::string, std::string>>> identifier_options_{};
     };
 } // namespace corryvreckan
 

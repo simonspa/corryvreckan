@@ -2,10 +2,8 @@
  * @file
  * @brief Provides a reader for configuration files
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied
- * verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities
- * granted to it by virtue of its status as an
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -25,11 +23,9 @@ namespace corryvreckan {
     /**
      * @brief Reader of configuration files
      *
-     * Read the internal configuration file format used in the framework. The format
-     * contains
+     * Read the internal configuration file format used in the framework. The format contains
      * - A set of section header between [ and ] brackets
-     * - Key/value pairs linked to the last defined section (or the empty section if
-     * none has been defined yet)
+     * - Key/value pairs linked to the last defined section (or the empty section if none has been defined yet)
      */
     class ConfigReader {
     public:
@@ -40,24 +36,23 @@ namespace corryvreckan {
         /**
          * @brief Constructs a config reader with a single attached stream
          * @param stream Stream to read configuration from
-         * @param file_name Name of the file related to the stream or empty if not
-         * linked to a file
+         * @param file_name Name of the file related to the stream or empty if not linked to a file
          */
         explicit ConfigReader(std::istream& stream, std::string file_name = "");
 
         /**
-         * @brief Adds a configuration stream to read
-         * @param stream Stream to read configuration from
-         * @param file_name Name of the file related to the stream or empty if not
-         * linked to a file
+         * @brief Parse a line as key-value pair
+         * @param line Line to interpret
+         * @return Pair of the key and the value
          */
-        void add(std::istream&, std::string file_name = "");
+        static std::pair<std::string, std::string> parseKeyValue(std::string line);
 
         /**
-         * @brief Writes all configurations held to the stream provided
-         * @param stream Stream to write configuration to
+         * @brief Adds a configuration stream to read
+         * @param stream Stream to read configuration from
+         * @param file_name Name of the file related to the stream or empty if not linked to a file
          */
-        void write(std::ostream& stream);
+        void add(std::istream&, std::string file_name = "");
 
         /**
          * @brief Directly add a configuration object to the reader
@@ -89,8 +84,7 @@ namespace corryvreckan {
         /**
          * @brief Check if a configuration exists
          * @param name Name of a configuration header to search for
-         * @return True if at least a single configuration with this name exists,
-         * false otherwise
+         * @return True if at least a single configuration with this name exists, false otherwise
          */
         bool hasConfiguration(std::string name) const;
         /**
@@ -101,8 +95,7 @@ namespace corryvreckan {
         unsigned int countConfigurations(std::string name) const;
 
         /**
-         * @brief Get cmobined configuration of all empty sections (usually the
-         * header)
+         * @brief Get cmobined configuration of all empty sections (usually the header)
          * @note Typically this is only the section at the top of the file
          * @return Configuration object for the empty section
          */
@@ -120,6 +113,12 @@ namespace corryvreckan {
          * @return List of all configurations
          */
         std::vector<Configuration> getConfigurations() const;
+
+        /**
+         * @brief Writes all configurations held to the stream provided
+         * @param stream Stream to write configuration to
+         */
+        void write(std::ostream& stream);
 
     private:
         /**

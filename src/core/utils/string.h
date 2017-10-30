@@ -2,14 +2,11 @@
  * @file
  * @brief Collection of string utilities
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied
- * verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities
- * granted to it by virtue of its status as an
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  *
- * Used extensively for parsing the configuration in the \ref
- * allpix::ConfigReader.
+ * Used extensively for parsing the configuration in the \ref allpix::ConfigReader.
  */
 
 /**
@@ -36,8 +33,7 @@ namespace corryvreckan {
     /**
      * @brief Trims leading and trailing characters from a string
      * @param str String that should be trimmed
-     * @param delims List of delimiters to trim from the string (defaults to all
-     * whitespace)
+     * @param delims List of delimiters to trim from the string (defaults to all whitespace)
      */
     inline std::string trim(const std::string& str, const std::string& delims = " \t\n\r\v") {
         size_t b = str.find_first_not_of(delims);
@@ -53,10 +49,8 @@ namespace corryvreckan {
      * @param str String to convert
      * @see StringConversions
      *
-     * The matching converter function is automatically found if available. To add a
-     * new conversion the \ref from_string_impl
-     * function should be overloaded. The string is passed as first argument to this
-     * function, the second argument should be
+     * The matching converter function is automatically found if available. To add a new conversion the \ref from_string_impl
+     * function should be overloaded. The string is passed as first argument to this function, the second argument should be
      * an \ref corryvreckan::type_tag with the type to convert to.
      *
      */
@@ -92,18 +86,15 @@ namespace corryvreckan {
     template <typename T, typename = std::enable_if_t<!std::is_arithmetic<T>::value>, typename = void>
     constexpr T from_string_impl(const std::string&, type_tag<T>) {
         static_assert(std::is_same<T, void>::value,
-                      "Conversion to this type is not implemented: an overload "
-                      "should be added to support this conversion");
+                      "Conversion to this type is not implemented: an overload should be added to support this conversion");
         return T();
     }
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for all arithmetic types
-     * @throws std::invalid_argument If the string cannot be converted to the
-     * required arithmetic type
+     * @throws std::invalid_argument If the string cannot be converted to the required arithmetic type
      *
-     * The unit system is used through \ref Units::get to parse unit suffixes and
-     * convert the values to the appropriate
+     * The unit system is used through \ref Units::get to parse unit suffixes and convert the values to the appropriate
      * standard framework unit.
      */
     template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
@@ -138,23 +129,19 @@ namespace corryvreckan {
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for strings
-     * @throws std::invalid_argument If the string has no closing quotation mark as
-     * last character after an opening quotation
+     * @throws std::invalid_argument If the string has no closing quotation mark as last character after an opening quotation
      * mark
-     * @throws std::invalid_argument If the string has no enclosing quotation marks
-     * but contains more data after whitespace
+     * @throws std::invalid_argument If the string has no enclosing quotation marks but contains more data after whitespace
      * is found
      *
-     * If a pair of enclosing double quotation marks is found, the whole string
-     * within the quotation marks is returned.
+     * If a pair of enclosing double quotation marks is found, the whole string within the quotation marks is returned.
      * Otherwise only the first part is read until whitespace is encountered.
      */
     inline std::string from_string_impl(std::string str, type_tag<std::string>) {
         str = trim(str);
-        // If there are "" then we should take the whole string (FIXME: '' should also
-        // be supported)
-        if(!str.empty() && str[0] == '\"') {
-            if(str.find('\"', 1) != str.size() - 1) {
+        // If there are "" then we should take the whole string
+        if(!str.empty() && (str.front() == '\"' || str.front() == '\'')) {
+            if(str.find(str.front(), 1) != str.size() - 1) {
                 throw std::invalid_argument("remaining data at end");
             }
             return str.substr(1, str.size() - 2);
@@ -166,11 +153,9 @@ namespace corryvreckan {
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for booleans
-     * @throws std::invalid_argument If the string cannot be converted to a boolean
-     * type
+     * @throws std::invalid_argument If the string cannot be converted to a boolean type
      *
-     * Converts both numerical (0, 1) and textual representations ("false", "true")
-     * are supported. No enclosing quotation
+     * Converts both numerical (0, 1) and textual representations ("false", "true") are supported. No enclosing quotation
      * marks should be used.
      */
     inline bool from_string_impl(std::string str, type_tag<bool>) {
@@ -178,7 +163,7 @@ namespace corryvreckan {
 
         std::istringstream sstream(str);
         bool ret_value = false;
-        if(isalpha(str.back())) {
+        if(isalpha(str.back()) != 0) {
             sstream >> std::boolalpha >> ret_value;
         } else {
             sstream >> ret_value;
@@ -196,12 +181,9 @@ namespace corryvreckan {
      * @brief Converts any type to a string
      * @note C-strings are not supported due to allocation issues
      *
-     * The matching converter function is automatically found if available. To add a
-     * new conversion the \ref to_string_impl
-     * function should be overloaded. The string is passed as first argument to this
-     * function, the second argument should be
-     * an \ref corryvreckan::empty_tag (needed to search in the corryvreckan
-     * namespace).
+     * The matching converter function is automatically found if available. To add a new conversion the \ref to_string_impl
+     * function should be overloaded. The string is passed as first argument to this function, the second argument should be
+     * an \ref corryvreckan::empty_tag (needed to search in the corryvreckan namespace).
      */
     template <typename T> std::string to_string(T inp) {
         // Use tag dispatch to select the correct implementation
@@ -217,8 +199,7 @@ namespace corryvreckan {
     template <typename T, typename = std::enable_if_t<!std::is_arithmetic<T>::value>, typename = void>
     constexpr void to_string_impl(T, empty_tag) {
         static_assert(std::is_same<T, void>::value,
-                      "Conversion to this type is not implemented: an overload "
-                      "should be added to support this conversion");
+                      "Conversion to this type is not implemented: an overload should be added to support this conversion");
     }
     /**
      * @ingroup StringConversions
@@ -237,8 +218,7 @@ namespace corryvreckan {
      * @brief Conversion handler for strings
      * @note Overloaded for different types of strings
      *
-     * Adds enclosing double quotation marks to properly store strings containing
-     * whitespace.
+     * Adds enclosing double quotation marks to properly store strings containing whitespace.
      */
     inline std::string to_string_impl(const std::string& inp, empty_tag) { return '"' + inp + '"'; }
     inline std::string to_string_impl(const char* inp, empty_tag) { return '"' + std::string(inp) + '"'; }
@@ -246,14 +226,12 @@ namespace corryvreckan {
     ///@}
 
     /**
-     * @brief Splits string into substrings at delimiters not inside quotation marks
+     * @brief Splits string into substrings at delimiters
      * @param str String to split
      * @param delims Delimiters to split at
-     * @return List of all the substrings with all empty substrings removed
-     * @warning The string is not split at locations inside quotation marks
+     * @return List of all the substrings with all empty substrings ignored (thus removed)
      */
-    // TODO [doc] single quotiation marks should be removed
-    template <typename T> std::vector<T> split(std::string str, std::string delims = " ,") {
+    template <typename T> std::vector<T> split(std::string str, const std::string& delims = " \t,") {
         str = trim(str, delims);
 
         // If the input string is empty, simply return empty container
@@ -264,28 +242,9 @@ namespace corryvreckan {
         // Else we have data, clear the default elements and chop the string:
         std::vector<T> elems;
 
-        // Add the string identifiers as special delimiters
-        delims += "\'\"";
-
         // Loop through the string
-        std::size_t prev = 0, sprev = 0, pos;
-        char ins = 0;
-        while((pos = str.find_first_of(delims, sprev)) != std::string::npos) {
-            sprev = pos + 1;
-
-            // FIXME: handle escape
-            if(str[pos] == '\'' || str[pos] == '\"') {
-                if(!ins) {
-                    ins = str[pos];
-                } else if(ins == str[pos]) {
-                    ins = 0;
-                }
-                continue;
-            }
-            if(ins) {
-                continue;
-            }
-
+        std::size_t prev = 0, pos;
+        while((pos = str.find_first_of(delims, prev)) != std::string::npos) {
             if(pos > prev) {
                 elems.push_back(from_string<T>(str.substr(prev, pos - prev)));
             }
