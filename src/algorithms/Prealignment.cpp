@@ -107,8 +107,10 @@ void Prealignment::finalise() {
             double mean_Y = correlationY[detector->name()]->GetMean();
             LOG(INFO) << "Detector " << detector->name() << ": x = " << mean_X << " , y = " << mean_Y;
             LOG(INFO) << "Move in x by = " << mean_X * damping_factor << " , and in y by = " << mean_Y * damping_factor;
-            detector->displacementX(damping_factor * mean_X);
-            detector->displacementY(damping_factor * mean_Y);
+            double x = detector->displacementX();
+            double y = detector->displacementY();
+            detector->displacementX(x + damping_factor * mean_X);
+            detector->displacementY(y + damping_factor * mean_Y);
         }
     }
 }
