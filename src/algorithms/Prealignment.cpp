@@ -7,7 +7,7 @@ Prealignment::Prealignment(Configuration config, std::vector<Detector*> detector
     : Algorithm(std::move(config), std::move(detectors)) {
     LOG(INFO) << "Starting prealignment of detectors";
     max_correlation_rms = m_config.get<double>("max_correlation_rms", 6.0);
-    damping_factor = m_config.get<double>("damping_factor", 0.8);
+    damping_factor = m_config.get<double>("damping_factor", 1.0);
     LOG(DEBUG) << "Setting max_correlation_rms to : " << max_correlation_rms;
     LOG(DEBUG) << "Setting damping_factor to : " << damping_factor;
 }
