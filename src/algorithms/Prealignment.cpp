@@ -7,7 +7,7 @@ Prealignment::Prealignment(Configuration config, std::vector<Detector*> detector
     : Algorithm(std::move(config), std::move(detectors)) {
     LOG(INFO) << "Starting prealignment of detectors";
     max_correlation_rms = m_config.get<double>("max_correlation_rms", 6.0);
-    damping_factor = m_config.get<double>("damping_factor", 0.8);
+    damping_factor = m_config.get<double>("damping_factor", 1.0);
     LOG(DEBUG) << "Setting max_correlation_rms to : " << max_correlation_rms;
     LOG(DEBUG) << "Setting damping_factor to : " << damping_factor;
 }
@@ -107,8 +107,10 @@ void Prealignment::finalise() {
             double mean_Y = correlationY[detector->name()]->GetMean();
             LOG(INFO) << "Detector " << detector->name() << ": x = " << mean_X << " , y = " << mean_Y;
             LOG(INFO) << "Move in x by = " << mean_X * damping_factor << " , and in y by = " << mean_Y * damping_factor;
-            detector->displacementX(damping_factor * mean_X);
-            detector->displacementY(damping_factor * mean_Y);
+            double x = detector->displacementX();
+            double y = detector->displacementY();
+            detector->displacementX(x + damping_factor * mean_X);
+            detector->displacementY(y + damping_factor * mean_Y);
         }
     }
 }
