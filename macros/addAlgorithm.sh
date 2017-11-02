@@ -1,21 +1,21 @@
 #!/bin/bash
 
-# Check that only one argument was given
-ARGS=1
-if [ $# -ne "$ARGS" ]
-then
-  echo "Please enter the new algorithm name"
-  exit
-fi
+# Ask for the name of the new algorithm
+read -p "Name of the new algorithm: " NEWALGORITHM
 
 # Copy the GenericAlgorithm and replace the name with the new algorithm name
-NEWALGORITHM=$1
-cp ../algorithms/GenericAlgorithm.C ../algorithms/${NEWALGORITHM}.C
-cp ../algorithms/GenericAlgorithm.h ../algorithms/${NEWALGORITHM}.h
-# If running on mac, use this sed command
-sed -i "" s/"GenericAlgorithm"/"${NEWALGORITHM}"/g ../algorithms/${NEWALGORITHM}.C
-sed -i "" s/"GenericAlgorithm"/"${NEWALGORITHM}"/g ../algorithms/${NEWALGORITHM}.h
-# If running on linux, use this command
-#sed -i s/"GenericAlgorithm"/"${NEWALGORITHM}"/g ../algorithms/${NEWALGORITHM}.C
-#sed -i s/"GenericAlgorithm"/"${NEWALGORITHM}"/g ../algorithms/${NEWALGORITHM}.C
- 
+echo "Creating ${NEWALGORITHM}.cpp"
+cp ../src/algorithms/GenericAlgorithm.cpp ../src/algorithms/${NEWALGORITHM}.cpp
+echo "Creating ${NEWALGORITHM}.h"
+cp ../src/algorithms/GenericAlgorithm.h ../src/algorithms/${NEWALGORITHM}.h
+
+# Check mac or linux platform
+platform=`uname`
+if [ "$platform" == "Darwin" ]
+then 
+  sed -i "" s/"GenericAlgorithm"/"${NEWALGORITHM}"/g ../src/algorithms/${NEWALGORITHM}.cpp
+  sed -i "" s/"GenericAlgorithm"/"${NEWALGORITHM}"/g ../src/algorithms/${NEWALGORITHM}.h
+else
+  sed -i s/"GenericAlgorithm"/"${NEWALGORITHM}"/g ../src/algorithms/${NEWALGORITHM}.cpp
+  sed -i s/"GenericAlgorithm"/"${NEWALGORITHM}"/g ../src/algorithms/${NEWALGORITHM}.h
+fi
