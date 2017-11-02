@@ -90,7 +90,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
     for(auto& cluster : (*referenceClusters)) {
 
         // Make a new track
-        LOG(DEBUG) << "Looking next seed cluster";
+        LOG(DEBUG) << "Looking at next seed cluster";
 
         Track* track = new Track();
         // Add the cluster to the track
@@ -162,6 +162,8 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
 
         // Now should have a track with one cluster from each plane
         if(track->nClusters() < minHitsOnTrack) {
+            LOG(DEBUG) << "Not enough clusters on the track, found " << track->nClusters() << " but " << minHitsOnTrack
+                       << " required.";
             delete track;
             continue;
         }
