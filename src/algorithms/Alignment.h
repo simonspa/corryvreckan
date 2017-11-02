@@ -5,6 +5,7 @@
 #include "Math/Functor.h"
 #include "Minuit2/Minuit2Minimizer.h"
 #include "TError.h"
+#include "TGraph.h"
 // Local includes
 #include "core/algorithm/Algorithm.h"
 #include "objects/Cluster.h"
@@ -32,6 +33,13 @@ namespace corryvreckan {
         int nIterations;
         int m_numberOfTracksForAlignment;
         int alignmentMethod;
+
+        std::map<std::string, TGraph*> align_correction_shiftX;
+        std::map<std::string, TGraph*> align_correction_shiftY;
+        std::map<std::string, TGraph*> align_correction_shiftZ;
+        std::map<std::string, TGraph*> align_correction_rotX;
+        std::map<std::string, TGraph*> align_correction_rotY;
+        std::map<std::string, TGraph*> align_correction_rotZ;
     };
 }
 #endif // ALIGNMENT_H
