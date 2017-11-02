@@ -1,6 +1,7 @@
 #include "Alignment.h"
 
 #include <TVirtualFitter.h>
+#include <numeric>
 
 using namespace corryvreckan;
 using namespace std;
@@ -235,6 +236,14 @@ void Alignment::finalise() {
         return;
     }
 
+    // Store the alignment shifts per detector:
+    std::map<std::string, std::vector<double>> shiftsX;
+    std::map<std::string, std::vector<double>> shiftsY;
+    std::map<std::string, std::vector<double>> shiftsZ;
+    std::map<std::string, std::vector<double>> rotX;
+    std::map<std::string, std::vector<double>> rotY;
+    std::map<std::string, std::vector<double>> rotZ;
+
     // Loop over all planes. For each plane, set the plane alignment parameters which will be varied, and then minimise the
     // track chi2 (sum of biased residuals). This means that tracks are refitted with each minimisation step.
 
@@ -283,6 +292,14 @@ void Alignment::finalise() {
             auto rotationY = residualFitter->GetParameter(det * 6 + 4);
             auto rotationZ = residualFitter->GetParameter(det * 6 + 5);
 
+            // Store corrections:
+            shiftsX[detectorID].push_back(detector->displacementX() - displacementX);
+            shiftsY[detectorID].push_back(detector->displacementY() - displacementY);
+            shiftsZ[detectorID].push_back(detector->displacementZ() - displacementZ);
+            rotX[detectorID].push_back(detector->rotationX() - rotationX);
+            rotY[detectorID].push_back(detector->rotationY() - rotationY);
+            rotZ[detectorID].push_back(detector->rotationZ() - rotationZ);
+
             LOG(INFO) << detector->name() << "/" << iteration << " dT(" << (detector->displacementX() - displacementX) << ","
                       << (detector->displacementY() - displacementY) << "," << (detector->displacementZ() - displacementZ)
                       << ") dR(" << (detector->rotationX() - rotationX) << "," << (detector->rotationY() - rotationY) << ","
@@ -323,5 +340,39 @@ void Alignment::finalise() {
         LOG(INFO) << detector->name() << " new alignment: T(" << detector->displacementX() << ","
                   << detector->displacementY() << "," << detector->displacementZ() << ") R(" << detector->rotationX() << ","
                   << detector->rotationY() << "," << detector->rotationZ() << ")";
+
+        // Fill the alignment convergence graphs:
+        std::vector<double> iterations(nIterations);
+        std::iota(std::begin(iterations), std::end(iterations), 0);
+
+        std::string name = "alignment_correction_displacementX_" + detector->name();
+        align_correction_shiftX[detector->name()] =
+            new TGraph(shiftsX[detector->name()].size(), &iterations[0], &shiftsX[detector->name()][0]);
+        align_correction_shiftX[detector->name()]->Write(name.c_str());
+
+        name = "alignment_correction_displacementY_" + detector->name();
+        align_correction_shiftY[detector->name()] =
+            new TGraph(shiftsY[detector->name()].size(), &iterations[0], &shiftsY[detector->name()][0]);
+        align_correction_shiftY[detector->name()]->Write(name.c_str());
+
+        name = "alignment_correction_displacementZ_" + detector->name();
+        align_correction_shiftZ[detector->name()] =
+            new TGraph(shiftsZ[detector->name()].size(), &iterations[0], &shiftsZ[detector->name()][0]);
+        align_correction_shiftZ[detector->name()]->Write(name.c_str());
+
+        name = "alignment_correction_rotationX_" + detector->name();
+        align_correction_rotX[detector->name()] =
+            new TGraph(rotX[detector->name()].size(), &iterations[0], &rotX[detector->name()][0]);
+        align_correction_rotX[detector->name()]->Write(name.c_str());
+
+        name = "alignment_correction_rotationY_" + detector->name();
+        align_correction_rotY[detector->name()] =
+            new TGraph(rotY[detector->name()].size(), &iterations[0], &rotY[detector->name()][0]);
+        align_correction_rotY[detector->name()]->Write(name.c_str());
+
+        name = "alignment_correction_rotationZ_" + detector->name();
+        align_correction_rotZ[detector->name()] =
+            new TGraph(rotZ[detector->name()].size(), &iterations[0], &rotZ[detector->name()][0]);
+        align_correction_rotZ[detector->name()]->Write(name.c_str());
     }
 }
