@@ -296,6 +296,7 @@ void Alignment::finalise() {
     }
     det = 0;
 
+    LOG_PROGRESS(STATUS, "alignment_track") << "Alignment finished, " << nIterations << " iteration.";
     // Now list the new alignment parameters
     for(auto& detector : get_detectors()) {
         string detectorID = detector->name();

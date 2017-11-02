@@ -411,6 +411,7 @@ void Analysis::initialiseAll() {
 void Analysis::finaliseAll() {
 
     // Loop over all algorithms and finalise them
+    LOG(STATUS) << "===================| Finalising algorithms |===================";
     for(auto& algorithm : m_algorithms) {
         // Set init module section header
         std::string old_section_name = Log::getSection();
