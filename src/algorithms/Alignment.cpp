@@ -219,14 +219,27 @@ void Alignment::finalise() {
             // Fit this plane (minimising global track chi2)
             residualFitter->ExecuteCommand("MIGRAD", arglist, 2);
 
+            // Retrieve fit results:
+            auto displacementX = residualFitter->GetParameter(0);
+            auto displacementY = residualFitter->GetParameter(1);
+            auto displacementZ = residualFitter->GetParameter(2);
+            auto rotationX = residualFitter->GetParameter(3);
+            auto rotationY = residualFitter->GetParameter(4);
+            auto rotationZ = residualFitter->GetParameter(5);
+
+            LOG(INFO) << detector->name() << "/" << iteration << " dT(" << (detector->displacementX() - displacementX) << ","
+                      << (detector->displacementY() - displacementY) << "," << (detector->displacementZ() - displacementZ)
+                      << ") dR(" << (detector->rotationX() - rotationX) << "," << (detector->rotationY() - rotationY) << ","
+                      << (detector->rotationZ() - rotationZ) << ")";
+
             // Set the alignment parameters of this plane to be the optimised values
             // from the alignment
-            detector->displacementX(residualFitter->GetParameter(0));
-            detector->displacementY(residualFitter->GetParameter(1));
-            detector->displacementZ(residualFitter->GetParameter(2));
-            detector->rotationX(residualFitter->GetParameter(3));
-            detector->rotationY(residualFitter->GetParameter(4));
-            detector->rotationZ(residualFitter->GetParameter(5));
+            detector->displacementX(displacementX);
+            detector->displacementY(displacementY);
+            detector->displacementZ(displacementZ);
+            detector->rotationX(rotationX);
+            detector->rotationY(rotationY);
+            detector->rotationZ(rotationZ);
         }
 
         LOG(INFO) << detectorToAlign << " new alignment: T(" << detector->displacementX() << "," << detector->displacementY()
