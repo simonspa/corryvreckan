@@ -275,33 +275,36 @@ void Alignment::finalise() {
             // Fit this plane (minimising global track chi2)
             residualFitter->ExecuteCommand("MIGRAD", arglist, 2);
 
+            // Retrieve fit results:
+            auto displacementX = residualFitter->GetParameter(det * 6 + 0);
+            auto displacementY = residualFitter->GetParameter(det * 6 + 1);
+            auto displacementZ = residualFitter->GetParameter(det * 6 + 2);
+            auto rotationX = residualFitter->GetParameter(det * 6 + 3);
+            auto rotationY = residualFitter->GetParameter(det * 6 + 4);
+            auto rotationZ = residualFitter->GetParameter(det * 6 + 5);
+
+            LOG(INFO) << detector->name() << "/" << iteration << " dT(" << (detector->displacementX() - displacementX) << ","
+                      << (detector->displacementY() - displacementY) << "," << (detector->displacementZ() - displacementZ)
+                      << ") dR(" << (detector->rotationX() - rotationX) << "," << (detector->rotationY() - rotationY) << ","
+                      << (detector->rotationZ() - rotationZ) << ")";
+
             // Now that this device is fitted, set parameter errors to 0 so that they
             // are not fitted again
-            residualFitter->SetParameter(
-                det * 6 + 0, (detectorID + "_displacementX").c_str(), residualFitter->GetParameter(det * 6 + 0), 0, -50, 50);
-            residualFitter->SetParameter(
-                det * 6 + 1, (detectorID + "_displacementY").c_str(), residualFitter->GetParameter(det * 6 + 1), 0, -50, 50);
-            residualFitter->SetParameter(det * 6 + 2,
-                                         (detectorID + "_displacementZ").c_str(),
-                                         residualFitter->GetParameter(det * 6 + 2),
-                                         0,
-                                         -10,
-                                         500);
-            residualFitter->SetParameter(
-                det * 6 + 3, (detectorID + "_rotationX").c_str(), residualFitter->GetParameter(det * 6 + 3), 0, -6.30, 6.30);
-            residualFitter->SetParameter(
-                det * 6 + 4, (detectorID + "_rotationY").c_str(), residualFitter->GetParameter(det * 6 + 4), 0, -6.30, 6.30);
-            residualFitter->SetParameter(
-                det * 6 + 5, (detectorID + "_rotationZ").c_str(), residualFitter->GetParameter(det * 6 + 5), 0, -6.30, 6.30);
+            residualFitter->SetParameter(det * 6 + 0, (detectorID + "_displacementX").c_str(), displacementX, 0, -50, 50);
+            residualFitter->SetParameter(det * 6 + 1, (detectorID + "_displacementY").c_str(), displacementY, 0, -50, 50);
+            residualFitter->SetParameter(det * 6 + 2, (detectorID + "_displacementZ").c_str(), displacementZ, 0, -10, 500);
+            residualFitter->SetParameter(det * 6 + 3, (detectorID + "_rotationX").c_str(), rotationX, 0, -6.30, 6.30);
+            residualFitter->SetParameter(det * 6 + 4, (detectorID + "_rotationY").c_str(), rotationY, 0, -6.30, 6.30);
+            residualFitter->SetParameter(det * 6 + 5, (detectorID + "_rotationZ").c_str(), rotationZ, 0, -6.30, 6.30);
 
             // Set the alignment parameters of this plane to be the optimised values
             // from the alignment
-            detector->displacementX(residualFitter->GetParameter(det * 6 + 0));
-            detector->displacementY(residualFitter->GetParameter(det * 6 + 1));
-            detector->displacementZ(residualFitter->GetParameter(det * 6 + 2));
-            detector->rotationX(residualFitter->GetParameter(det * 6 + 3));
-            detector->rotationY(residualFitter->GetParameter(det * 6 + 4));
-            detector->rotationZ(residualFitter->GetParameter(det * 6 + 5));
+            detector->displacementX(displacementX);
+            detector->displacementY(displacementY);
+            detector->displacementZ(displacementZ);
+            detector->rotationX(rotationX);
+            detector->rotationY(rotationY);
+            detector->rotationZ(rotationZ);
             detector->update();
             det++;
         }
