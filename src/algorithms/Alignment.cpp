@@ -306,31 +306,19 @@ void Alignment::finalise() {
             det++;
         }
     }
-    det = 0;
 
     LOG_PROGRESS(STATUS, "alignment_track") << "Alignment finished, " << nIterations << " iteration.";
+
     // Now list the new alignment parameters
     for(auto& detector : get_detectors()) {
-        string detectorID = detector->name();
         // Do not align the reference plane
-        if(detectorID == m_config.get<std::string>("reference") || detectorID == m_config.get<std::string>("DUT")) {
+        if(detector->name() == m_config.get<std::string>("reference") ||
+           detector->name() == m_config.get<std::string>("DUT")) {
             continue;
         }
 
-        // Get the alignment parameters
-        double displacementX = residualFitter->GetParameter(det * 6 + 0);
-        double displacementY = residualFitter->GetParameter(det * 6 + 1);
-        double displacementZ = residualFitter->GetParameter(det * 6 + 2);
-        double rotationX = residualFitter->GetParameter(det * 6 + 3);
-        double rotationY = residualFitter->GetParameter(det * 6 + 4);
-        double rotationZ = residualFitter->GetParameter(det * 6 + 5);
-
-        LOG(INFO) << detectorID << " new alignment: T(" << displacementX << "," << displacementY << "," << displacementZ
-                  << ") R(" << rotationX << "," << rotationY << "," << rotationZ << ")";
-
-        det++;
+        LOG(INFO) << detector->name() << " new alignment: T(" << detector->displacementX() << ","
+                  << detector->displacementY() << "," << detector->displacementZ() << ") R(" << detector->rotationX() << ","
+                  << detector->rotationY() << "," << detector->rotationZ() << ")";
     }
-
-    // Write the output alignment file
-    // FIXME parameters->writeConditions();
 }
