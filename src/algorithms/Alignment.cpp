@@ -123,14 +123,21 @@ void Alignment::MinimiseResiduals(Int_t& npar, Double_t* grad, Double_t& result,
 
     // Apply new alignment conditions
     globalDetector->update();
+  LOG(DEBUG) << "Updated parameters for "<<detectorToAlign;
 
     // The chi2 value to be returned
     result = 0.;
+
+  LOG(DEBUG) << "Looping over "<<globalTracks.size()<<" tracks";
 
     // Loop over all tracks
     for(auto& track : globalTracks) {
         // Get all clusters on the track
         Clusters associatedClusters = track->associatedClusters();
+
+      LOG(DEBUG) << "- track has chi2 "<<track->chi2();
+      LOG(DEBUG) << "- track has gradient x "<<track->m_direction.X();
+      LOG(DEBUG) << "- track has gradient y "<<track->m_direction.Y();
 
         // Find the cluster that needs to have its position recalculated
         for(auto& associatedCluster : associatedClusters) {
@@ -147,8 +154,13 @@ void Alignment::MinimiseResiduals(Int_t& npar, Double_t* grad, Double_t& result,
             double residualX = intercept.X() - positionGlobal.X();
             double residualY = intercept.Y() - positionGlobal.Y();
             double error = associatedCluster->error();
+          LOG(DEBUG) << "- track has intercept ("<<intercept.X()<<","<<intercept.Y()<<")";
+          LOG(DEBUG) << "- cluster has position ("<<positionGlobal.X()<<","<<positionGlobal.Y()<<")";
+          double deltachi2 = ((residualX * residualX + residualY * residualY) / (error * error));
+          LOG(DEBUG) << "- delta chi2 = "<<deltachi2;
             // Add the new residual2
-            result += ((residualX * residualX + residualY * residualY) / (error * error));
+            result += deltachi2;
+          LOG(DEBUG) << "- result is now "<<result;
         }
     }
 }
@@ -300,8 +312,10 @@ void Alignment::finalise() {
     for(auto& detector : get_detectors()) {
         string detectorID = detector->name();
         // Do not align the reference plane
-        if(detectorID == m_config.get<std::string>("reference"))
-            continue;
+      if(detectorID == m_config.get<std::string>("reference") ||
+         detectorID == m_config.get<std::string>("DUT")) {
+        continue;
+      }
 
         // Get the alignment parameters
         double displacementX = residualFitter->GetParameter(det * 6 + 0);

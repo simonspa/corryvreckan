@@ -176,9 +176,14 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
 
     // Loop over all pixels
     for(int pix = 0; pix < pixels->size(); pix++) {
-        tot += (*pixels)[pix]->m_adc;
-        row += ((*pixels)[pix]->m_row * (*pixels)[pix]->m_adc);
-        column += ((*pixels)[pix]->m_column * (*pixels)[pix]->m_adc);
+      double pixelToT = (*pixels)[pix]->m_adc;
+      if(pixelToT == 0){
+        LOG(DEBUG) << "Pixel with ToT 0!";
+        pixelToT = 1;
+      }
+        tot += pixelToT;
+        row += ((*pixels)[pix]->m_row * pixelToT);
+        column += ((*pixels)[pix]->m_column * pixelToT);
         if((*pixels)[pix]->m_timestamp < timestamp)
             timestamp = (*pixels)[pix]->m_timestamp;
     }
