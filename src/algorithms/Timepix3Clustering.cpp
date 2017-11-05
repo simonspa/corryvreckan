@@ -15,6 +15,10 @@ void Timepix3Clustering::initialise() {
         // Cluster plots
         string name = "clusterSize_" + detector->name();
         clusterSize[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
+      	name = "clusterWidthRow_" + detector->name();
+      	clusterWidthRow[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
+      	name = "clusterWidthColumn_" + detector->name();
+      	clusterWidthColumn[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
         name = "clusterTot_" + detector->name();
         clusterTot[detector->name()] = new TH1F(name.c_str(), name.c_str(), 200, 0, 1000);
         name = "clusterPositionGlobal_" + detector->name();
@@ -124,6 +128,8 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
         for(auto& cluster : (*clusters)) {
             // Fill cluster histograms
             clusterSize[detector->name()]->Fill(cluster->size());
+          	clusterWidthRow[detector->name()]->Fill(cluster->rowWidth());
+          	clusterWidthColumn[detector->name()]->Fill(cluster->columnWidth());
             clusterTot[detector->name()]->Fill(cluster->tot());
             clusterPositionGlobal[detector->name()]->Fill(cluster->globalX(), cluster->globalY());
         }
