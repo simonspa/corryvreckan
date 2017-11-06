@@ -32,20 +32,20 @@ void BasicTracking::initialise() {
             continue;
         string name = "residualsX_" + detectorID;
         residualsX[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
-      	name = "residualsXwidth1_" + detectorID;
-      	residualsXwidth1[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
-      	name = "residualsXwidth2_" + detectorID;
-      	residualsXwidth2[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
-      	name = "residualsXwidth3_" + detectorID;
-      	residualsXwidth3[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
+        name = "residualsXwidth1_" + detectorID;
+        residualsXwidth1[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
+        name = "residualsXwidth2_" + detectorID;
+        residualsXwidth2[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
+        name = "residualsXwidth3_" + detectorID;
+        residualsXwidth3[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
         name = "residualsY_" + detectorID;
         residualsY[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
-      	name = "residualsYwidth1_" + detectorID;
-      	residualsYwidth1[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
-      	name = "residualsYwidth2_" + detectorID;
-      	residualsYwidth2[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
-      	name = "residualsYwidth3_" + detectorID;
-      	residualsYwidth3[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
+        name = "residualsYwidth1_" + detectorID;
+        residualsYwidth1[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
+        name = "residualsYwidth2_" + detectorID;
+        residualsYwidth2[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
+        name = "residualsYwidth3_" + detectorID;
+        residualsYwidth3[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
     }
 }
 
@@ -80,8 +80,8 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
             LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters from " << detectorID;
             if(firstDetector && detectorID != m_config.get<std::string>("DUT")) {
                 referenceClusters = tempClusters;
-              	seedPlane = detector->name();
-              	LOG(DEBUG) << "Seed plane is "<<seedPlane;
+                seedPlane = detector->name();
+                LOG(DEBUG) << "Seed plane is " << seedPlane;
                 firstDetector = false;
             }
             if(tempClusters->size() == 0)
@@ -98,7 +98,8 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
         return Success;
 
     // Loop over all clusters
-  	if(referenceClusters == nullptr) return Success;
+    if(referenceClusters == nullptr)
+        return Success;
     int nSeedClusters = referenceClusters->size();
     map<Cluster*, bool> used;
     for(auto& cluster : (*referenceClusters)) {
@@ -199,13 +200,19 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
             string detectorID = trackCluster->detectorID();
             ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->globalZ());
             residualsX[detectorID]->Fill(intercept.X() - trackCluster->globalX());
-          	if(trackCluster->columnWidth() == 1) residualsXwidth1[detectorID]->Fill(intercept.X() - trackCluster->globalX());
-          	if(trackCluster->columnWidth() == 2) residualsXwidth2[detectorID]->Fill(intercept.X() - trackCluster->globalX());
-          	if(trackCluster->columnWidth() == 3) residualsXwidth3[detectorID]->Fill(intercept.X() - trackCluster->globalX());
+            if(trackCluster->columnWidth() == 1)
+                residualsXwidth1[detectorID]->Fill(intercept.X() - trackCluster->globalX());
+            if(trackCluster->columnWidth() == 2)
+                residualsXwidth2[detectorID]->Fill(intercept.X() - trackCluster->globalX());
+            if(trackCluster->columnWidth() == 3)
+                residualsXwidth3[detectorID]->Fill(intercept.X() - trackCluster->globalX());
             residualsY[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
-            if(trackCluster->rowWidth() == 1) residualsYwidth1[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
-          	if(trackCluster->rowWidth() == 2) residualsYwidth2[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
-          	if(trackCluster->rowWidth() == 3) residualsYwidth3[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
+            if(trackCluster->rowWidth() == 1)
+                residualsYwidth1[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
+            if(trackCluster->rowWidth() == 2)
+                residualsYwidth2[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
+            if(trackCluster->rowWidth() == 3)
+                residualsYwidth3[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
         }
 
         // Add potential associated clusters from the DUT:

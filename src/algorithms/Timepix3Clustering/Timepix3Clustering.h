@@ -27,8 +27,8 @@ namespace corryvreckan {
 
         // Cluster histograms
         std::map<std::string, TH1F*> clusterSize;
-      	std::map<std::string, TH1F*> clusterWidthRow;
-      	std::map<std::string, TH1F*> clusterWidthColumn;
+        std::map<std::string, TH1F*> clusterWidthRow;
+        std::map<std::string, TH1F*> clusterWidthColumn;
         std::map<std::string, TH1F*> clusterTot;
         std::map<std::string, TH2F*> clusterPositionGlobal;
 
