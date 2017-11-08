@@ -23,6 +23,7 @@ ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/SpidrSignal.h
     ${CMAKE_CURRENT_SOURCE_DIR}/TestBeamObject.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Track.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.h
     MODULE
     CorryvreckanObjects
 )

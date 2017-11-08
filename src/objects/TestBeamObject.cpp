@@ -2,6 +2,7 @@
 #include "TestBeamObject.h"
 #include "Cluster.h"
 #include "Pixel.h"
+#include "MCParticle.h"
 #include "Track.h"
 
 #include "core/utils/exceptions.h"
@@ -31,6 +32,8 @@ TestBeamObject* TestBeamObject::Factory(std::string detectorType, std::string ob
             return (object == NULL) ? new Pixel() : new Pixel(*static_cast<Pixel*>(object));
         if(objectType == "clusters")
             return (object == NULL) ? new Cluster() : new Cluster(*static_cast<Cluster*>(object));
+        if(objectType == "mcparticles")
+            return (object == NULL) ? new MCParticle() : new MCParticle(*static_cast<MCParticle*>(object));
     }
 
     return new TestBeamObject();
