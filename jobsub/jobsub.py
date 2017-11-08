@@ -467,6 +467,7 @@ def main(argv=None):
     parser.add_argument("--dry-run", action="store_true", default=False, help="Write configuration files but skip actual Corryvreckan execution")
     parser.add_argument("--subdir", action="store_true", default=False, help="Execute every job in its own subdirectory instead of all in the base path")
     parser.add_argument("--plain", action="store_true", default=False, help="Output written to stdout/stderr and log file in prefix-less format i.e. without time stamping")
+    parser.add_argument("--zfill", metavar='N', type=int, help="Fill run number with zeros up to the defined number of digits")
     parser.add_argument("runs", help="The runs to be analyzed; can be a list of single runs and/or a range, e.g. 1056-1060.", nargs='*')
     args = parser.parse_args(argv)
 
@@ -576,7 +577,10 @@ def main(argv=None):
             log.critical("Stopping to process remaining runs now")
             break  # if we received ctrl-c (SIGINT) we stop processing here
 
-        runnr = str(run).zfill(6)
+        if args.zfill:
+            runnr = str(run).zfill(args.zfill)
+        else:
+            runnr = str(run)
         log.info ("Now generating configuration file for run number "+runnr+"..")
 
         # make a copy of the preprocessed steering file content
