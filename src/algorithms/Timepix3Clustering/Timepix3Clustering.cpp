@@ -72,6 +72,8 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
             if(used[pixel])
                 continue;
 
+            if(pixel->m_adc == 0.) continue;
+          
             // Make the new cluster object
             Cluster* cluster = new Cluster();
             LOG(DEBUG) << "==== New cluster";
@@ -95,6 +97,9 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
                     // Check if they have been used
                     if(used[neighbour])
                         continue;
+                  
+                    if(neighbour->m_adc == 0.) continue;
+
                     // Check if they are touching cluster pixels
                     if(!touching(neighbour, cluster))
                         continue;
