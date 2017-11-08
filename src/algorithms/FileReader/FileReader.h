@@ -29,6 +29,7 @@ namespace corryvreckan {
         bool m_readPixels;
         bool m_readTracks;
         bool m_onlyDUT;
+        bool m_readMCParticles;
 
         // Map of trees which holds the output objects
         std::map<std::string, TTree*> m_inputTrees;

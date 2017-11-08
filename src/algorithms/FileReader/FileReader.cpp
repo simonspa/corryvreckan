@@ -12,6 +12,7 @@ FileReader::FileReader(Configuration config, std::vector<Detector*> detectors)
     m_readTracks = m_config.get<bool>("readTracks", false);
     m_fileName = m_config.get<std::string>("fileName", "outputTuples.root");
     m_timeWindow = m_config.get<double>("timeWindow", 1.);
+    m_readMCParticles = m_config.get<bool>("readMCParticles", false);
 
     m_currentTime = 0.;
 }
@@ -40,6 +41,8 @@ void FileReader::initialise() {
         m_objectList.push_back("clusters");
     if(m_readTracks)
         m_objectList.push_back("tracks");
+    if(m_readMCParticles)
+        m_objectList.push_back("mcparticles");
 
     // Get input file
     LOG(INFO) << "Opening file " << m_fileName;
@@ -53,7 +56,7 @@ void FileReader::initialise() {
         string objectType = m_objectList[itList];
 
         // Section to set up object reading per detector (such as pixels, clusters)
-        if(objectType == "pixels" || objectType == "clusters") {
+        if(objectType == "pixels" || objectType == "clusters" || objectType == "mcparticles") {
 
             // Loop over all detectors and search for data
             for(auto& detector : get_detectors()) {
@@ -112,7 +115,7 @@ StatusCode FileReader::run(Clipboard* clipboard) {
         string objectType = m_objectList[itList];
 
         // If this is written per device, loop over all devices
-        if(objectType == "pixels" || objectType == "clusters") {
+        if(objectType == "pixels" || objectType == "clusters" || objectType == "mcparticles") {
 
             // Loop over all detectors
             for(auto& detector : get_detectors()) {
