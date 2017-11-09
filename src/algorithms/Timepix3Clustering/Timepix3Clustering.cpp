@@ -72,8 +72,9 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
             if(used[pixel])
                 continue;
 
-            if(pixel->m_adc == 0.) continue;
-          
+            if(pixel->m_adc == 0.)
+                continue;
+
             // Make the new cluster object
             Cluster* cluster = new Cluster();
             LOG(DEBUG) << "==== New cluster";
@@ -97,8 +98,9 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
                     // Check if they have been used
                     if(used[neighbour])
                         continue;
-                  
-                    if(neighbour->m_adc == 0.) continue;
+
+                    if(neighbour->m_adc == 0.)
+                        continue;
 
                     // Check if they are touching cluster pixels
                     if(!touching(neighbour, cluster))
@@ -113,31 +115,22 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
 
             // Finalise the cluster and save it
             calculateClusterCentre(cluster);
-            deviceClusters->push_back(cluster);
-        }
 
-        // Put the clusters on the clipboard
-        if(deviceClusters->size() > 0)
-            clipboard->put(detector->name(), "clusters", (TestBeamObjects*)deviceClusters);
-        LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << detector->name();
-    }
-
-    for(auto& detector : get_detectors()) {
-        // Get the clusters
-        Clusters* clusters = (Clusters*)clipboard->get(detector->name(), "clusters");
-        if(clusters == NULL) {
-            LOG(DEBUG) << "Detector " << detector->name() << " does not have any clusters on the clipboard";
-            continue;
-        }
-        // Loop over all clusters and fill histograms
-        for(auto& cluster : (*clusters)) {
             // Fill cluster histograms
             clusterSize[detector->name()]->Fill(cluster->size());
             clusterWidthRow[detector->name()]->Fill(cluster->rowWidth());
             clusterWidthColumn[detector->name()]->Fill(cluster->columnWidth());
             clusterTot[detector->name()]->Fill(cluster->tot());
             clusterPositionGlobal[detector->name()]->Fill(cluster->globalX(), cluster->globalY());
+
+            deviceClusters->push_back(cluster);
         }
+
+        // Put the clusters on the clipboard
+        if(deviceClusters->size() > 0) {
+            clipboard->put(detector->name(), "clusters", (TestBeamObjects*)deviceClusters);
+        }
+        LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << detector->name();
     }
 
     return Success;
@@ -201,7 +194,6 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
     // Row and column positions are tot-weighted
     row /= tot;
     column /= tot;
-
     auto detector = get_detector(detectorID);
 
     // Create object with local cluster position

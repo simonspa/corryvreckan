@@ -34,18 +34,20 @@ public:
         m_error = cluster->error();
         m_detectorID = cluster->detectorID();
         m_timestamp = cluster->timestamp();
-        m_columnWidth = 0.;
-        m_rowWidth = 0.;
+        m_columnWidth = cluster->columnWidth();
+        m_rowWidth = cluster->rowWidth();
     }
 
     // Functions
     // Add a new pixel to the cluster
     void addPixel(Pixel* pixel) {
         m_pixels.push_back(pixel);
-        if(m_columnHits.count(pixel->m_column) != 0)
+        if(m_columnHits.count(pixel->m_column) == 0) {
             m_columnWidth++;
-        if(m_rowHits.count(pixel->m_row) != 0)
+        }
+        if(m_rowHits.count(pixel->m_row) == 0) {
             m_rowWidth++;
+        }
         m_columnHits[pixel->m_column] = true;
         m_rowHits[pixel->m_row] = true;
     }
