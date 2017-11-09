@@ -34,6 +34,8 @@ namespace corryvreckan {
         TH2F* clusterToTVersusTime;
         TH2F* residualsTimeVsTime;
 
+      	TH1F* residualsXMCtruth;
+
         TH2F* hAssociatedTracksGlobalPosition;
         TH2F* hUnassociatedTracksGlobalPosition;
 
@@ -44,6 +46,7 @@ namespace corryvreckan {
         std::string m_DUT;
         int m_eventNumber;
         int m_nAlignmentClusters;
+        bool m_useMCtruth;
         long long int m_powerOnTime;
         long long int m_powerOffTime;
         long long int m_shutterOpenTime;

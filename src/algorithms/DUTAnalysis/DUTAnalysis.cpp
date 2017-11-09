@@ -1,6 +1,7 @@
 #include "DUTAnalysis.h"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
+#include "objects/MCParticle.h"
 #include "objects/SpidrSignal.h"
 #include "objects/Track.h"
 
@@ -10,6 +11,7 @@ DUTAnalysis::DUTAnalysis(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
     m_digitalPowerPulsing = m_config.get<bool>("digitalPowerPulsing", false);
     m_DUT = m_config.get<std::string>("DUT");
+    m_useMCtruth = m_config.get<bool>("useMCtruth", false);
 }
 
 void DUTAnalysis::initialise() {
@@ -40,6 +42,10 @@ void DUTAnalysis::initialise() {
     hUnassociatedTracksGlobalPosition =
         new TH2F("hUnassociatedTracksGlobalPosition", "hUnassociatedTracksGlobalPosition", 200, -10, 10, 200, -10, 10);
 
+  	if(m_useMCtruth){
+    	residualsXMCtruth = new TH1F("residualsXMCtruth", "residualsXMCtruth", 400, -0.2, 0.2);
+  	}
+  
     // Initialise member variables
     m_eventNumber = 0;
     m_nAlignmentClusters = 0;
@@ -120,6 +126,12 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
     if(clusters == NULL) {
         LOG(DEBUG) << "No DUT clusters on the clipboard";
     }
+
+    // Get the MC particles from the clipboard
+  	MCParticles* mcParticles = (MCParticles*)clipboard->get(m_DUT, "mcparticles");
+  	if(mcParticles == NULL) {
+    	LOG(DEBUG) << "No DUT MC particles on the clipboard";
+  	}
 
     // Loop over all tracks
     bool first_track = true;
@@ -238,6 +250,24 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             m_nAlignmentClusters++;
             hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
 
+            // Get associated MC particle info and plot
+          	if(m_useMCtruth){
+              if(mcParticles == nullptr) continue;
+              // Find the closest MC particle
+              double smallestDistance(DBL_MAX); ROOT::Math::XYZPoint particlePosition;
+              for(auto& particle : (*mcParticles)) {
+                ROOT::Math::XYZPoint entry = particle->getLocalStart();
+                ROOT::Math::XYZPoint exit = particle->getLocalEnd();
+                ROOT::Math::XYZPoint centre( (entry.X()+exit.X())/2., (entry.Y()+exit.Y())/2., (entry.Z()+exit.Z())/2. );
+                double distance = sqrt( (centre.X() - cluster->localX())*(centre.X() - cluster->localX()) +
+                                       (centre.Y() - cluster->localY())*(centre.Y() - cluster->localY()) );
+                if(distance < smallestDistance){
+                  particlePosition.SetXYZ(centre.X(),centre.Y(),centre.Z());
+                }
+              }
+              residualsXMCtruth->Fill(cluster->localX() - particlePosition.X());
+          	}
+          
             // Fill power pulsing response
             if((m_shutterOpenTime != 0 && m_shutterCloseTime == 0) ||
                (m_shutterOpenTime != 0 &&
