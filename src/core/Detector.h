@@ -48,12 +48,14 @@ namespace corryvreckan {
         double timingOffset() { return m_timingOffset; }
 
         // Functions to set and retrieve basic translation parameters
-        void displacementX(double x) { m_displacementX = x; }
-        void displacementY(double y) { m_displacementY = y; }
-        void displacementZ(double z) { m_displacementZ = z; }
-        double displacementX() { return m_displacementX; }
-        double displacementY() { return m_displacementY; }
-        double displacementZ() { return m_displacementZ; }
+        void displacementX(double x) { m_displacement.SetX(x); }
+        void displacementY(double y) { m_displacement.SetY(y); }
+        void displacementZ(double z) { m_displacement.SetZ(z); }
+        void displacement(ROOT::Math::XYZPoint displacement) { m_displacement = displacement; }
+        double displacementX() { return m_displacement.X(); }
+        double displacementY() { return m_displacement.Y(); }
+        double displacementZ() { return m_displacement.Z(); }
+        ROOT::Math::XYZPoint displacement() { return m_displacement; }
 
         // Functions to set and retrieve basic rotation parameters
         void rotationX(double rx) { m_rotationX = rx; }
@@ -109,9 +111,7 @@ namespace corryvreckan {
         double m_timingOffset;
 
         // Displacement and rotation in x,y,z
-        double m_displacementX;
-        double m_displacementY;
-        double m_displacementZ;
+        ROOT::Math::XYZPoint m_displacement;
         double m_rotationX;
         double m_rotationY;
         double m_rotationZ;

@@ -11,7 +11,7 @@ using namespace corryvreckan;
 Detector::Detector() {}
 Detector::Detector(const Configuration& config) : Detector() {
     // Get information from the conditions file:
-    auto position = config.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
+    auto m_displacement = config.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
     auto orientation = config.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
     // Number of pixels
     auto npixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
@@ -24,9 +24,6 @@ Detector::Detector(const Configuration& config) : Detector() {
     m_nPixelsY = npixels.y();
     m_pitchX = pitch.x() / 1000.;
     m_pitchY = pitch.y() / 1000.;
-    m_displacementX = position.x();
-    m_displacementY = position.y();
-    m_displacementZ = position.z();
     m_rotationX = orientation.x();
     m_rotationY = orientation.y();
     m_rotationZ = orientation.z();
@@ -36,8 +33,8 @@ Detector::Detector(const Configuration& config) : Detector() {
 
     LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixelsX << "x" << m_nPixelsY << " px, pitch of "
                << m_pitchX << "/" << m_pitchY << "mm";
-    LOG(TRACE) << "Position:    " << m_displacementX << "," << m_displacementY << "," << m_displacementZ;
-    LOG(TRACE) << "Orientation: " << m_rotationX << "," << m_rotationY << "," << m_rotationZ;
+    LOG(TRACE) << "  Position:    " << display_vector(m_displacement, {"mm", "um"});
+    LOG(TRACE) << "  Orientation: " << m_rotationX << "," << m_rotationY << "," << m_rotationZ;
     if(m_timingOffset > 0.) {
         LOG(TRACE) << "Timing offset: " << m_timingOffset;
     }
@@ -106,7 +103,7 @@ void Detector::initialise() {
 
     // Make the local to global transform, built from a displacement and
     // rotation
-    m_translations = new Translation3D(m_displacementX, m_displacementY, m_displacementZ);
+    m_translations = new Translation3D(m_displacement.X(), m_displacement.Y(), m_displacement.Z());
     m_rotations = new Rotation3D(ROOT::Math::RotationZ(m_rotationZ) * ROOT::Math::RotationY(m_rotationY) *
                                  ROOT::Math::RotationX(m_rotationX));
 
@@ -140,7 +137,7 @@ Configuration Detector::getConfiguration() {
     Configuration config(name());
     config.set("type", m_detectorType);
 
-    auto position = ROOT::Math::XYZPoint(m_displacementX, m_displacementY, m_displacementZ);
+    auto position = ROOT::Math::XYZPoint(m_displacement.X(), m_displacement.Y(), m_displacement.Z());
     config.set("position", position);
     auto orientation = ROOT::Math::XYZVector(m_rotationX, m_rotationY, m_rotationZ);
     config.set("orientation", orientation);
