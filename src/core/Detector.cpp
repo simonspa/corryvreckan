@@ -108,10 +108,8 @@ void Detector::initialise() {
     m_globalToLocal = new Transform3D();
     (*m_globalToLocal) = m_localToGlobal->Inverse();
 
-    // Find the normal to the detector surface. Build two points, the origin and
-    // a unit step in z,
-    // transform these points to the global co-ordinate frame and then make a
-    // vector pointing between them
+    // Find the normal to the detector surface. Build two points, the origin and a unit step in z,
+    // transform these points to the global co-ordinate frame and then make a vector pointing between them
     m_origin = PositionVector3D<Cartesian3D<double>>(0., 0., 0.);
     m_origin = (*m_localToGlobal) * m_origin;
     PositionVector3D<Cartesian3D<double>> localZ(0., 0., 1.);
@@ -231,10 +229,8 @@ double Detector::getColumn(PositionVector3D<Cartesian3D<double>> localPosition) 
 // Function to get local position from row and column
 PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double row, double column) {
 
-    PositionVector3D<Cartesian3D<double>> positionLocal(
+    return PositionVector3D<Cartesian3D<double>>(
         m_pitchX * (column - m_nPixelsX / 2.), m_pitchY * (row - m_nPixelsY / 2.), 0.);
-
-    return positionLocal;
 }
 
 // Function to get in-pixel position (value returned in microns)
