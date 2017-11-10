@@ -104,8 +104,11 @@ namespace corryvreckan {
         double inPixelX(PositionVector3D<Cartesian3D<double>> localPosition);
         double inPixelY(PositionVector3D<Cartesian3D<double>> localPosition);
 
-        // Member variables
+        Transform3D* localToGlobal() { return m_localToGlobal; };
+        Transform3D* globalToLocal() { return m_globalToLocal; };
 
+    private:
+        // Member variables
         // Detector information
         std::string m_detectorType;
         std::string m_detectorName;

@@ -96,7 +96,7 @@ void Alignment::MinimiseTrackChi2(Int_t& npar, Double_t* grad, Double_t& result,
             // Recalculate the global position from the local
             PositionVector3D<Cartesian3D<double>> positionLocal(
                 trackCluster->localX(), trackCluster->localY(), trackCluster->localZ());
-            PositionVector3D<Cartesian3D<double>> positionGlobal = *(globalDetector->m_localToGlobal) * positionLocal;
+            PositionVector3D<Cartesian3D<double>> positionGlobal = *(globalDetector->localToGlobal()) * positionLocal;
             trackCluster->setClusterCentre(positionGlobal.X(), positionGlobal.Y(), positionGlobal.Z());
         }
 
@@ -148,7 +148,7 @@ void Alignment::MinimiseResiduals(Int_t& npar, Double_t* grad, Double_t& result,
             // Recalculate the global position from the local
             PositionVector3D<Cartesian3D<double>> positionLocal(
                 associatedCluster->localX(), associatedCluster->localY(), associatedCluster->localZ());
-            PositionVector3D<Cartesian3D<double>> positionGlobal = *(globalDetector->m_localToGlobal) * positionLocal;
+            PositionVector3D<Cartesian3D<double>> positionGlobal = *(globalDetector->localToGlobal()) * positionLocal;
             // Get the track intercept with the detector
             ROOT::Math::XYZPoint intercept = track->intercept(positionGlobal.Z());
             // Calculate the residuals
