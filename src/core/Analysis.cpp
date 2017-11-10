@@ -22,6 +22,11 @@ using namespace corryvreckan;
 // Default constructor
 Analysis::Analysis(std::string config_file_name, std::vector<std::string> options) : m_terminate(false) {
 
+    LOG(TRACE) << "Loading Corryvreckan";
+
+    // Put welcome message
+    LOG(STATUS) << "Welcome to Corryvreckan " << CORRYVRECKAN_PROJECT_VERSION;
+
     // Load the global configuration
     conf_mgr_ = std::make_unique<corryvreckan::ConfigManager>(std::move(config_file_name));
 

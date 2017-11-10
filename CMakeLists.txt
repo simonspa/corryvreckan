@@ -27,9 +27,6 @@ PROJECT(Corryvreckan VERSION ${SIMPLE_VERSION} LANGUAGES NONE)
 # Access the project name (for install locations) in the source
 ADD_DEFINITIONS(-DCORRYVRECKAN_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DCORRYVRECKAN_PROJECT_VERSION="${CORRYVRECKAN_VERSION}")
 
-# Include a generated configuration file
-# FIXME: this should be combined with the ADD_DEFINITIONS
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
 
 ###############################
 # Setup the build environment #
