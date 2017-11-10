@@ -10,8 +10,9 @@ using namespace corryvreckan;
 
 Detector::Detector(const Configuration& config) {
     // Get information from the conditions file:
-    auto m_displacement = config.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
-    auto m_orientation = config.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
+    m_displacement = config.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
+    m_orientation = config.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
+
     // Number of pixels
     auto npixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
     // Size of the pixels
