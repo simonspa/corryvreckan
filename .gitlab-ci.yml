@@ -1,12 +1,13 @@
 stages:
-    - compilation
+    - compile
+    - format
 
 #######################
 # Compilation targets #
 #######################
 
 cmp:slc6-gcc:
-    stage: compilation
+    stage: compile
     tags:
         - docker
     image: clicdp/slc6-base
@@ -27,7 +28,7 @@ cmp:slc6-gcc:
         expire_in: 3 hour
 
 cmp:slc6-llvm:
-    stage: compilation
+    stage: compile
     tags:
         - docker
     image: clicdp/slc6-base
@@ -47,7 +48,7 @@ cmp:slc6-llvm:
         expire_in: 3 hour
 
 cmp:cc7-gcc:
-    stage: compilation
+    stage: compile
     tags:
         - docker
     image: clicdp/cc7-base
@@ -68,7 +69,7 @@ cmp:cc7-gcc:
         expire_in: 3 hour
 
 cmp:cc7-llvm:
-    stage: compilation
+    stage: compile
     tags:
         - docker
     image: clicdp/cc7-base
@@ -88,7 +89,7 @@ cmp:cc7-llvm:
         expire_in: 3 hour
 
 cmp:mac1012-clang:
-    stage: compilation
+    stage: compile
     tags:
         - mac
     script:
@@ -105,3 +106,38 @@ cmp:mac1012-clang:
             - bin
             - lib
         expire_in: 3 hour
+
+
+############################
+# Format and Lint Checking #
+############################
+
+# SLC 6
+
+fmt:slc6-llvm-format:
+    stage: format
+    tags:
+        - docker
+    dependencies:
+        - cmp:slc6-llvm
+    image: clicdp/slc6-base
+    script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
+        - ninja check-format
+
+# CentOS 7
+
+fmt:centos7-llvm-format:
+    stage: format
+    tags:
+        - docker
+    dependencies:
+        - cmp:cc7-llvm
+    image: clicdp/cc7-base
+    script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
+        - ninja check-format
