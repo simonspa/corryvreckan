@@ -31,9 +31,14 @@ namespace corryvreckan {
     class Detector {
     public:
         // Constructors and desctructors
-        Detector();
+        Detector() = delete;
         Detector(const Configuration& config);
-        ~Detector() {}
+        ~Detector() {
+            delete m_translations;
+            delete m_rotations;
+            delete m_localToGlobal;
+            delete m_globalToLocal;
+        }
 
         // Functions to retrieve basic information
         std::string type() { return m_detectorType; }

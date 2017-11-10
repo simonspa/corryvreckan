@@ -8,8 +8,7 @@
 using namespace ROOT::Math;
 using namespace corryvreckan;
 
-Detector::Detector() {}
-Detector::Detector(const Configuration& config) : Detector() {
+Detector::Detector(const Configuration& config) {
     // Get information from the conditions file:
     auto m_displacement = config.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
     auto m_orientation = config.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
