@@ -56,6 +56,7 @@ namespace corryvreckan {
     private:
         void load_detectors();
         void load_algorithms();
+        void add_units();
 
         // Log file if specified
         std::ofstream log_file_;
