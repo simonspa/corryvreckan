@@ -148,6 +148,13 @@ void Timepix3EventLoader::initialise() {
         }
     }
 
+    // Check that we have files for every detector in the configuration file:
+    for(auto& detector : get_detectors()) {
+        if(m_files.count(detector->name()) == 0) {
+            LOG(ERROR) << "No data file found for detector " << detector->name();
+        }
+    }
+
     // Set the file iterator to the first file for every detector:
     for(auto& detector : m_files) {
         m_file_iterator[detector.first] = detector.second.begin();
@@ -283,6 +290,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
 
         // Use header 0x4 to get the long timestamps (called syncTime here)
         if(header == 0x4) {
+            LOG(TRACE) << "Found syncTime data";
 
             // The 0x4 header tells us that it is part of the timestamp
             // There is a second 4-bit header that says if it is the most
@@ -312,12 +320,18 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 // order to match the timestamp format (net 28 left)
                 m_syncTime[detectorID] =
                     (m_syncTime[detectorID] & 0x00000FFFFFFFFFFF) + ((pixdata & 0x00000000FFFF0000) << 28);
-                if(!m_clearedHeader[detectorID] && (double)m_syncTime[detectorID] / (4096. * 40000000.) < 6.)
+                if(!m_clearedHeader[detectorID] && (double)m_syncTime[detectorID] / (4096. * 40000000.) < 6.) {
                     m_clearedHeader[detectorID] = true;
+                    LOG(TRACE) << "Cleared header";
+                }
             }
         }
 
+        // In data taking during 2015 there was sometimes still data left in the buffers at the start of
+        // a run. For that reason we keep skipping data until this "header" data has been cleared, when
+        // the heart beat signal starts from a low number (~few seconds max)
         if(!m_clearedHeader[detectorID]) {
+            LOG(TRACE) << "Header not cleared, skipping data block.";
             continue;
         }
 
@@ -334,6 +348,8 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
 
             // New implementation of power pulsing signals from Adrian
             if(header2 == 0x6) {
+                LOG(TRACE) << "Found power pulsing - start";
+
                 const uint64_t time((pixdata & 0x0000000FFFFFFFFF) << 12);
 
                 const uint64_t controlbits = ((pixdata & 0x00F0000000000000) >> 52) & 0xF;
@@ -398,17 +414,9 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
              */
         }
 
-        // In data taking during 2015 there was sometimes still data left in the
-        // buffers at the start of
-        // a run. For that reason we keep skipping data until this "header" data has
-        // been cleared, when
-        // the heart beat signal starts from a low number (~few seconds max)
-        if(!m_clearedHeader[detectorID]) {
-            continue;
-        }
-
         // Header 0xA and 0xB indicate pixel data
         if(header == 0xA || header == 0xB) {
+            LOG(TRACE) << "Found pixel data";
 
             // Decode the pixel information from the relevant bits
             const UShort_t dcol = ((pixdata & 0x0FE0000000000000) >> 52);
