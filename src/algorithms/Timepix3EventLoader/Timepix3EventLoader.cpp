@@ -51,6 +51,9 @@ void Timepix3EventLoader::initialise() {
     dirent* entry;
     dirent* file;
 
+    // Buffer for file names:
+    std::map<std::string, std::vector<std::string>> detector_files;
+
     // Read the entries in the folder
     while(entry = readdir(directory)) {
 
@@ -69,7 +72,6 @@ void Timepix3EventLoader::initialise() {
             string detectorID = entry->d_name;
             string dataDirName = m_inputDirectory + "/" + entry->d_name;
             DIR* dataDir = opendir(dataDirName.c_str());
-            string trimdacfile;
 
             // Check if this device has conditions loaded and is a Timepix3
             Detector* detector;
@@ -91,71 +93,83 @@ void Timepix3EventLoader::initialise() {
 
                 // Check if file has extension .dat
                 if(string(file->d_name).find(".dat") != string::npos) {
-                    // Initialise null values for later
-                    m_syncTime[detectorID] = 0;
-                    m_clearedHeader[detectorID] = false;
-
-                    auto new_file = std::make_unique<std::ifstream>(filename);
-                    if(new_file->is_open()) {
-                        LOG(DEBUG) << "Opened data file for " << detectorID << ": " << filename;
-
-                        // The header is repeated in every new data file, thus skip it for all.
-                        char buffer[4];
-                        if(!new_file->read(reinterpret_cast<char*>(&buffer), sizeof 4)) {
-                            throw AlgorithmError("Cannot read header ID for " + detectorID + " in file " + filename);
-                        }
-                        std::string headerID(buffer);
-                        if(headerID != "SPDR") {
-                            throw AlgorithmError("Incorrect header ID for " + detectorID + " in file " + filename + ": " +
-                                                 headerID);
-                        }
-                        LOG(DEBUG) << "Header ID: \"" << headerID << "\"";
-
-                        // Skip the rest of the file header
-                        uint32_t headerSize;
-                        if(!new_file->read(reinterpret_cast<char*>(&headerSize), sizeof headerSize)) {
-                            throw AlgorithmError("Cannot read header size for " + detectorID + " in file " + filename);
-                        }
-
-                        // Skip the full header:
-                        new_file->seekg(headerSize);
-                        LOG(TRACE) << "Skipped header of " << detectorID << " (" << headerSize << "b) in " << filename;
-
-                        // Store the file in the data vector:
-                        m_files[detectorID].push_back(std::move(new_file));
-                    } else {
-                        throw AlgorithmError("Could not open data file " + filename);
-                    }
+                    LOG(DEBUG) << "Enqueuing data file for " << detectorID << ": " << filename;
+                    detector_files[detectorID].push_back(filename);
                 }
 
-                // If not a data file, it might be a trimdac file, with the list of
-                // masked pixels etc.
+                // If not a data file, it might be a trimdac file, with the list of masked pixels etc.
                 if(string(file->d_name).find("trimdac") != string::npos) {
-                    // If we have already found the masked trimdac file, use it for
-                    // preference
-                    if(trimdacfile.find("masked") != string::npos)
-                        continue;
-                    trimdacfile = filename;
+                    // Now that we have all of the data files and mask files for this detector, pass the mask file to
+                    // parameters
+                    LOG(INFO) << "Set mask file " << filename;
+                    detector->setMaskFile(filename);
+
+                    // Apply the pixel masking
+                    maskPixels(detector, filename);
                 }
-            }
-
-            // If files were stored, register the detector (check that it has alignment data)
-            if(!m_files[detectorID].empty()) {
-
-                // Now that we have all of the data files and mask files for this detector, pass the mask file to parameters
-                LOG(INFO) << "Set mask file " << trimdacfile;
-                detector->setMaskFile(trimdacfile);
-
-                // Apply the pixel masking
-                maskPixels(detector, trimdacfile);
             }
         }
     }
 
-    // Check that we have files for every detector in the configuration file:
+    // Check that we have files for every detector in the configuration file and sort them correctly:
     for(auto& detector : get_detectors()) {
-        if(m_files.count(detector->name()) == 0) {
+        std::string detectorID = detector->name();
+
+        if(detector_files.count(detector->name()) == 0) {
             LOG(ERROR) << "No data file found for detector " << detector->name();
+            continue;
+        }
+
+        // Initialise null values for later
+        m_syncTime[detectorID] = 0;
+        m_clearedHeader[detectorID] = false;
+
+        // Sort all files by extracting the "serial number" from the file name while ignoring the timestamp:
+        std::sort(detector_files[detector->name()].begin(),
+                  detector_files[detector->name()].end(),
+                  [](std::string a, std::string b) {
+
+                      auto get_serial = [](std::string name) {
+                          const auto pos1 = name.find_last_of('-');
+                          const auto pos2 = name.find_last_of('.');
+                          return name.substr(pos1 + 1, pos2 - pos1 - 1);
+                      };
+                      return std::stoi(get_serial(a)) < std::stoi(get_serial(b));
+                  });
+
+        // Open them:
+        for(auto& filename : detector_files[detectorID]) {
+
+            auto new_file = std::make_unique<std::ifstream>(filename);
+            if(new_file->is_open()) {
+                LOG(DEBUG) << "Opened data file for " << detectorID << ": " << filename;
+
+                // The header is repeated in every new data file, thus skip it for all.
+                char buffer[4];
+                if(!new_file->read(reinterpret_cast<char*>(&buffer), sizeof 4)) {
+                    throw AlgorithmError("Cannot read header ID for " + detectorID + " in file " + filename);
+                }
+                std::string headerID(buffer);
+                if(headerID != "SPDR") {
+                    throw AlgorithmError("Incorrect header ID for " + detectorID + " in file " + filename + ": " + headerID);
+                }
+                LOG(TRACE) << "Header ID: \"" << headerID << "\"";
+
+                // Skip the rest of the file header
+                uint32_t headerSize;
+                if(!new_file->read(reinterpret_cast<char*>(&headerSize), sizeof headerSize)) {
+                    throw AlgorithmError("Cannot read header size for " + detectorID + " in file " + filename);
+                }
+
+                // Skip the full header:
+                new_file->seekg(headerSize);
+                LOG(TRACE) << "Skipped header (" << headerSize << "b)";
+
+                // Store the file in the data vector:
+                m_files[detectorID].push_back(std::move(new_file));
+            } else {
+                throw AlgorithmError("Could not open data file " + filename);
+            }
         }
     }
 
