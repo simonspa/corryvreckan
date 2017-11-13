@@ -97,15 +97,19 @@ void Timepix3EventLoader::initialise() {
 
                     auto new_file = std::make_unique<std::ifstream>(filename);
                     if(new_file->is_open()) {
-                        LOG(TRACE) << "Opened data file for " << detectorID << ": " << filename;
+                        LOG(DEBUG) << "Opened data file for " << detectorID << ": " << filename;
 
                         // The header is repeated in every new data file, thus skip it for all.
-
-                        // Skip the header - first read how big it is
-                        uint32_t headerID;
-                        if(!new_file->read(reinterpret_cast<char*>(&headerID), sizeof headerID)) {
+                        char buffer[4];
+                        if(!new_file->read(reinterpret_cast<char*>(&buffer), sizeof 4)) {
                             throw AlgorithmError("Cannot read header ID for " + detectorID + " in file " + filename);
                         }
+                        std::string headerID(buffer);
+                        if(headerID != "SPDR") {
+                            throw AlgorithmError("Incorrect header ID for " + detectorID + " in file " + filename + ": " +
+                                                 headerID);
+                        }
+                        LOG(DEBUG) << "Header ID: \"" << headerID << "\"";
 
                         // Skip the rest of the file header
                         uint32_t headerSize;
