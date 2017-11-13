@@ -312,8 +312,9 @@ Algorithm* Analysis::create_algorithm(void* library, Configuration config) {
 // Run the analysis loop - this initialises, runs and finalises all algorithms
 void Analysis::run() {
 
-    // Check if we have an event limit:
+    // Check if we have an event or track limit:
     int number_of_events = global_config.get<int>("number_of_events", -1);
+    int number_of_tracks = global_config.get<int>("number_of_tracks", -1);
 
     // Loop over all events, running each algorithm on each "event"
     LOG(STATUS) << "========================| Event loop |========================";
@@ -327,6 +328,10 @@ void Analysis::run() {
 
         // Check if we have reached the maximum number of events
         if(number_of_events > -1 && m_events >= number_of_events)
+            break;
+
+        // Check if we have reached the maximum number of tracks
+        if(number_of_tracks > -1 && m_tracks >= number_of_tracks)
             break;
 
         // Run all algorithms
