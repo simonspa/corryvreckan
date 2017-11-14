@@ -145,13 +145,12 @@ void Timepix3EventLoader::initialise() {
                 LOG(DEBUG) << "Opened data file for " << detectorID << ": " << filename;
 
                 // The header is repeated in every new data file, thus skip it for all.
-                char buffer[4];
-                if(!new_file->read(reinterpret_cast<char*>(&buffer), sizeof 4)) {
+ 	        uint32_t headerID;
+                if(!new_file->read(reinterpret_cast<char*>(&headerID), sizeof headerID)) {
                     throw AlgorithmError("Cannot read header ID for " + detectorID + " in file " + filename);
                 }
-                std::string headerID(buffer);
-                if(headerID != "SPDR") {
-                    throw AlgorithmError("Incorrect header ID for " + detectorID + " in file " + filename + ": " + headerID);
+                if(headerID != 1380208723) {
+                    throw AlgorithmError("Incorrect header ID for " + detectorID + " in file " + filename + ": " + std::to_string(headerID));
                 }
                 LOG(TRACE) << "Header ID: \"" << headerID << "\"";
 
