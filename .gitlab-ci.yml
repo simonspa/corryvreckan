@@ -88,7 +88,7 @@ cmp:cc7-llvm:
             - lib
         expire_in: 3 hour
 
-cmp:mac1012-clang:
+cmp:mac1013-clang:
     stage: compile
     tags:
         - mac
