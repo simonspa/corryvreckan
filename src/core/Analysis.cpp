@@ -101,9 +101,11 @@ void Analysis::load_detectors() {
 
     for(auto& detectors_file : detectors_files) {
         std::fstream file(detectors_file);
-        ConfigReader reader(file, detectors_file);
+        ConfigManager det_mgr(detectors_file);
+        det_mgr.addIgnoreHeaderName("Ignore");
 
-        for(auto& detector : reader.getConfigurations()) {
+        for(auto& detector : det_mgr.getConfigurations()) {
+
             std::string name = detector.getName();
 
             // Check if we have a duplicate:
