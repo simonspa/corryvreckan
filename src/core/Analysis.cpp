@@ -96,17 +96,31 @@ void Analysis::load() {
 }
 
 void Analysis::load_detectors() {
-    std::string detectors_file = global_config.getPath("detectors_file");
-    std::fstream file(detectors_file);
-    ConfigReader reader(file, detectors_file);
 
-    for(auto& detector : reader.getConfigurations()) {
-        LOG(INFO) << "Detector: " << detector.getName();
-        Detector* det_parm = new Detector(detector);
+    std::vector<std::string> detectors_files = global_config.getPathArray("detectors_file");
 
-        // Add the new detector to the global list:
-        detectors.push_back(det_parm);
+    for(auto& detectors_file : detectors_files) {
+        std::fstream file(detectors_file);
+        ConfigReader reader(file, detectors_file);
+
+        for(auto& detector : reader.getConfigurations()) {
+            std::string name = detector.getName();
+
+            // Check if we have a duplicate:
+            if(std::find_if(detectors.begin(), detectors.end(), [&name](Detector* obj) { return obj->name() == name; }) !=
+               detectors.end()) {
+                throw InvalidValueError(
+                    global_config, "detectors_file", "Detector " + detector.getName() + " defined twice");
+            }
+
+            LOG(INFO) << "Detector: " << name;
+            Detector* det_parm = new Detector(detector);
+
+            // Add the new detector to the global list:
+            detectors.push_back(det_parm);
+        }
     }
+
     LOG(STATUS) << "Loaded " << detectors.size() << " detectors";
 
     // Finally, sort the list of detectors by z position (from lowest to highest)
