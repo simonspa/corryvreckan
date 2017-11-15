@@ -100,17 +100,13 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
         if(referenceClusters == NULL) {
             LOG(DEBUG) << "Reference detector " << m_config.get<std::string>("reference")
                        << " does not have any clusters on the clipboard";
-            //      continue;
+            continue;
         }
 
         // Loop over all clusters and fill histograms
-        if(!makeCorrelations) {
+        if(makeCorrelations) {
             for(auto& cluster : (*clusters)) {
                 // Loop over reference plane pixels to make correlation plots
-
-                if(referenceClusters == NULL)
-                    continue;
-
                 for(auto& refCluster : (*referenceClusters)) {
                     long long int timeDifferenceInt = (refCluster->timestamp() - cluster->timestamp()) / 4096;
 
@@ -129,7 +125,7 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
                     }
                     correlationTime[detector->name()]->Fill(timeDifference);
                     correlationTimeInt[detector->name()]->Fill(timeDifferenceInt);
-                } //*/
+                }
             }
         }
     }
