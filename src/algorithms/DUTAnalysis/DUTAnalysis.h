@@ -34,7 +34,7 @@ namespace corryvreckan {
         TH2F* clusterToTVersusTime;
         TH2F* residualsTimeVsTime;
 
-      	TH1F* residualsXMCtruth;
+        TH1F* residualsXMCtruth;
 
         TH2F* hAssociatedTracksGlobalPosition;
         TH2F* hUnassociatedTracksGlobalPosition;
