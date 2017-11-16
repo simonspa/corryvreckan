@@ -382,8 +382,8 @@ void Analysis::run() {
         m_tracks += (tracks == NULL ? 0 : tracks->size());
         if(m_events % 100 == 0 || skipped % 1000 == 0) {
             LOG_PROGRESS(STATUS, "event_loop")
-                << "Events processed: " << m_events << ", skipped: " << skipped << " Tracks found: " << m_tracks << " ("
-                << ((double)m_tracks / m_events) << " tr/ev)";
+                << "Events: +" << m_events << " \\" << skipped << " Tracks: " << m_tracks << " ("
+                << std::setprecision(3) << ((double)m_tracks / m_events) << " t/ev)";
         }
 
         // Clear objects from this iteration from the clipboard
