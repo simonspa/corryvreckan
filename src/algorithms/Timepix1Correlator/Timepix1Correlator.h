@@ -31,5 +31,5 @@ namespace corryvreckan {
         // Member variables
         int m_eventNumber;
     };
-}
+} // namespace corryvreckan
 #endif // Timepix1Correlator_H

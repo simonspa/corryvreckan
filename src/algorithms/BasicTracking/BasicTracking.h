@@ -50,5 +50,5 @@ namespace corryvreckan {
         int minHitsOnTrack;
         bool excludeDUT;
     };
-}
+} // namespace corryvreckan
 #endif // BASICTRACKING_H

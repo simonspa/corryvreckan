@@ -38,6 +38,6 @@ namespace corryvreckan {
 
     // Vector type declaration
     typedef std::vector<Pixel*> Pixels;
-}
+} // namespace corryvreckan
 
 #endif // PIXEL_H

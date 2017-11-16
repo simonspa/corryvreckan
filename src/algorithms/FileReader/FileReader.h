@@ -47,5 +47,5 @@ namespace corryvreckan {
         std::map<std::string, long long int> m_currentPosition;
         double m_timeWindow;
     };
-}
+} // namespace corryvreckan
 #endif // FileReader_H

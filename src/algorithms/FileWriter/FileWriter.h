@@ -41,5 +41,5 @@ namespace corryvreckan {
         // List of objects to write out
         std::vector<std::string> m_objectList;
     };
-}
+} // namespace corryvreckan
 #endif // FileWriter_H

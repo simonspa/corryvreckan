@@ -31,5 +31,5 @@ namespace corryvreckan {
         int m_eventNumber;
         std::string m_detector;
     };
-}
+} // namespace corryvreckan
 #endif // DataDump_H

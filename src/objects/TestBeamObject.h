@@ -45,5 +45,5 @@ namespace corryvreckan {
 
     // Vector type declaration
     typedef std::vector<TestBeamObject*> TestBeamObjects;
-}
+} // namespace corryvreckan
 #endif // TESTBEAMOBJECT_H

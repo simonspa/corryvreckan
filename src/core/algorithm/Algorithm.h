@@ -79,5 +79,5 @@ namespace corryvreckan {
     private:
         std::vector<Detector*> m_detectors;
     };
-}
+} // namespace corryvreckan
 #endif

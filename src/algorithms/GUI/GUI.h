@@ -44,5 +44,5 @@ namespace corryvreckan {
         int eventNumber;
         int updateNumber;
     };
-}
+} // namespace corryvreckan
 #endif // GUI_H

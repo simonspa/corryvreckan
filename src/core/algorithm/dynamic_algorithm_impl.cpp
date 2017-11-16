@@ -35,4 +35,4 @@ namespace corryvreckan {
         return static_cast<Algorithm*>(algorithm);
     }
     }
-}
+} // namespace corryvreckan

@@ -34,5 +34,5 @@ namespace corryvreckan {
         double max_correlation_rms;
         double damping_factor;
     };
-}
+} // namespace corryvreckan
 #endif // PREALIGNMENT_H

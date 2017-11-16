@@ -43,5 +43,5 @@ namespace corryvreckan {
         TH1F* hPixelToT;
         TH1F* hPixelsPerFrame;
     };
-}
+} // namespace corryvreckan
 #endif // Clicpix2EventLoader_H
