@@ -47,5 +47,5 @@ namespace corryvreckan {
         int eventNumber;
         int updateNumber;
     };
-}
+} // namespace corryvreckan
 #endif // OnlineMonitor_H

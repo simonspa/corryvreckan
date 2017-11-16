@@ -76,5 +76,5 @@ namespace corryvreckan {
         std::tuple<LogLevel, LogFormat> set_algorithm_before(const std::string&, const Configuration& config);
         void set_algorithm_after(std::tuple<LogLevel, LogFormat> prev);
     };
-}
+} // namespace corryvreckan
 #endif // ANALYSIS_H

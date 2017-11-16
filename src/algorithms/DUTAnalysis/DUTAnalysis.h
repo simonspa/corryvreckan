@@ -53,5 +53,5 @@ namespace corryvreckan {
         long long int m_shutterCloseTime;
         bool m_digitalPowerPulsing;
     };
-}
+} // namespace corryvreckan
 #endif // DUTAnalysis_H

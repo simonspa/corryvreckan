@@ -44,5 +44,5 @@ namespace corryvreckan {
         double nTracksTotal;
         bool excludeDUT;
     };
-}
+} // namespace corryvreckan
 #endif // SpatialTracking_H

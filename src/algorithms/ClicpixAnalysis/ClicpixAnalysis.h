@@ -126,5 +126,5 @@ namespace corryvreckan {
         double m_lostHits;
         bool timepix3Telescope;
     };
-}
+} // namespace corryvreckan
 #endif // ClicpixAnalysis_H

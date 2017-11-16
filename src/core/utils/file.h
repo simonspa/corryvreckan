@@ -191,6 +191,6 @@ namespace corryvreckan {
         }
         return std::make_pair(base_name, "");
     }
-}
+} // namespace corryvreckan
 
 #endif /* CORRYVRECKAN_FILE_H */

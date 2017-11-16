@@ -32,5 +32,5 @@ namespace corryvreckan {
         // Member variables
         int m_eventNumber;
     };
-}
+} // namespace corryvreckan
 #endif // GenericAlgorithm_H

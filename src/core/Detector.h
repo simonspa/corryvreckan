@@ -139,6 +139,6 @@ namespace corryvreckan {
         std::string m_maskfile;
         std::string m_maskfile_name;
     };
-}
+} // namespace corryvreckan
 
 #endif // DET_PARAMETERS_H

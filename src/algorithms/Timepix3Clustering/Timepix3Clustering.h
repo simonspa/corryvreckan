@@ -35,5 +35,5 @@ namespace corryvreckan {
         double timingCut;
         long long int timingCutInt;
     };
-}
+} // namespace corryvreckan
 #endif // TIMEPIX3CLUSTERING_H
