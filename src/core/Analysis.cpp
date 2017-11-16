@@ -382,8 +382,9 @@ void Analysis::run() {
         m_tracks += (tracks == NULL ? 0 : tracks->size());
         if(m_events % 100 == 0 || skipped % 1000 == 0) {
             LOG_PROGRESS(STATUS, "event_loop")
-                << "Events: +" << m_events << " \\" << skipped << " Tracks: " << m_tracks << " ("
-                << std::setprecision(3) << ((double)m_tracks / m_events) << " t/ev)";
+                << "Ev: +" << m_events << " \\" << skipped << " Tr: " << m_tracks << " (" << std::setprecision(3)
+                << ((double)m_tracks / m_events) << "/ev) t = " << std::setprecision(4)
+                << m_clipboard->get_persistent("currentTime") << "s";
         }
 
         // Clear objects from this iteration from the clipboard
