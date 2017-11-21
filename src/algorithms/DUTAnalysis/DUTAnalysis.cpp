@@ -240,7 +240,8 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             LOG(TRACE) << "Found associated cluster";
             associatedTracksVersusTime->Fill((double)track->timestamp() / (4096. * 40000000.));
             residualsX->Fill(xdistance);
-            if(cluster->size() == 1) residualsX1pix->Fill(xdistance);
+            if(cluster->size() == 1)
+                residualsX1pix->Fill(xdistance);
             residualsY->Fill(ydistance);
             clusterTotAssociated->Fill(cluster->tot());
             clusterSizeAssociated->Fill(cluster->size());
@@ -266,8 +267,9 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
                         particlePosition.SetXYZ(centre.X(), centre.Y(), centre.Z());
                     }
                 }
-                residualsXMCtruth->Fill(cluster->localX()+7.04 - particlePosition.X());
-                telescopeResolution->Fill(globalIntercept.X()+7.2 - particlePosition.X());
+                residualsXMCtruth->Fill(cluster->localX() + 7.04 - particlePosition.X());
+                auto interceptLocal = *(detector->globalToLocal()) * intercept;
+                telescopeResolution->Fill(interceptLocal.X() + 7.04 - particlePosition.X());
             }
 
             // Fill power pulsing response
