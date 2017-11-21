@@ -24,6 +24,7 @@ namespace corryvreckan {
         TH1F* tracksVersusTime;
         TH1F* associatedTracksVersusTime;
         TH1F* residualsX;
+        TH1F* residualsX1pix;
         TH1F* residualsY;
         TH1F* clusterTotAssociated;
         TH1F* clusterSizeAssociated;
@@ -35,6 +36,7 @@ namespace corryvreckan {
         TH2F* residualsTimeVsTime;
 
         TH1F* residualsXMCtruth;
+        TH1F* telescopeResolution;
 
         TH2F* hAssociatedTracksGlobalPosition;
         TH2F* hUnassociatedTracksGlobalPosition;
