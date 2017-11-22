@@ -39,5 +39,5 @@ namespace corryvreckan {
         // Parameters which can be set by user
         bool makeCorrelations;
     };
-}
+} // namespace corryvreckan
 #endif // TESTALGORITHM_H

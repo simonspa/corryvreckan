@@ -43,8 +43,7 @@ void Timepix3EventLoader::initialise() {
     // Open the root directory
     DIR* directory = opendir(m_inputDirectory.c_str());
     if(directory == NULL) {
-        LOG(ERROR) << "Directory " << m_inputDirectory << " does not exist";
-        return;
+        throw AlgorithmError("Directory " + m_inputDirectory + " does not exist");
     } else {
         LOG(TRACE) << "Found directory " << m_inputDirectory;
     }

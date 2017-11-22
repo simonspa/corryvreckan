@@ -37,5 +37,5 @@ namespace corryvreckan {
         bool m_newFrame;
         std::string m_prevHeader;
     };
-}
+} // namespace corryvreckan
 #endif // Timepix1EventLoader_H

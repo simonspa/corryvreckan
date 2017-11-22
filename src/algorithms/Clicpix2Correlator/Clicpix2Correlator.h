@@ -35,5 +35,5 @@ namespace corryvreckan {
         std::map<std::string, TH1F*> hTrackDiffX;
         std::map<std::string, TH1F*> hTrackDiffY;
     };
-}
+} // namespace corryvreckan
 #endif // Clicpix2Correlator_H

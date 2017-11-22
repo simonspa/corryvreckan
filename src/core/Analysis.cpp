@@ -101,9 +101,11 @@ void Analysis::load_detectors() {
 
     for(auto& detectors_file : detectors_files) {
         std::fstream file(detectors_file);
-        ConfigReader reader(file, detectors_file);
+        ConfigManager det_mgr(detectors_file);
+        det_mgr.addIgnoreHeaderName("Ignore");
 
-        for(auto& detector : reader.getConfigurations()) {
+        for(auto& detector : det_mgr.getConfigurations()) {
+
             std::string name = detector.getName();
 
             // Check if we have a duplicate:
@@ -380,8 +382,9 @@ void Analysis::run() {
         m_tracks += (tracks == NULL ? 0 : tracks->size());
         if(m_events % 100 == 0 || skipped % 1000 == 0) {
             LOG_PROGRESS(STATUS, "event_loop")
-                << "Events processed: " << m_events << ", skipped: " << skipped << " Tracks found: " << m_tracks << " ("
-                << ((double)m_tracks / m_events) << " tr/ev)";
+                << "Ev: +" << m_events << " \\" << skipped << " Tr: " << m_tracks << " (" << std::setprecision(3)
+                << ((double)m_tracks / m_events) << "/ev) t = " << std::setprecision(4)
+                << m_clipboard->get_persistent("currentTime") << "s";
         }
 
         // Clear objects from this iteration from the clipboard

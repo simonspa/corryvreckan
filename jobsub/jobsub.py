@@ -415,7 +415,7 @@ def zipLogs(path, filename):
 def main(argv=None):
     """  main routine of jobsub: a tool for Corryvreckan job submission """
     log = logging.getLogger('jobsub') # set up logging
-    formatter = logging.Formatter('%(asctime)s %(name)s(%(levelname)s): %(message)s',"%H:%M:%S")
+    formatter = logging.Formatter('%(name)s(%(levelname)s): %(message)s',"%H:%M:%S")
     handler_stream = logging.StreamHandler()
     handler_stream.setFormatter(formatter)
     log.addHandler(handler_stream)
@@ -462,7 +462,7 @@ def main(argv=None):
     parser.add_argument("-lx", "--lxplus-file", "--lxplus", help="Specify bsub parameter file for LXPLUS submission. Run LXPLUS submission via bsub instead of calling Corryvreckan directly", metavar="FILE")
     parser.add_argument("-csv", "--csv-file", help="Load additional run-specific variables from table (text file in csv format)", metavar="FILE")
     parser.add_argument("--log-file", help="Save submission log to specified file", metavar="FILE")
-    parser.add_argument("-l", "--log", default="info", help="Sets the verbosity of log messages during job submission where LEVEL is either debug, info, warning or error", metavar="LEVEL")
+    parser.add_argument("-v", "--verbosity", default="info", help="Sets the verbosity of log messages during job submission where LEVEL is either debug, info, warning or error", metavar="LEVEL")
     parser.add_argument("-s", "--silent", action="store_true", default=False, help="Suppress non-error (stdout) Corryvreckan output to console")
     parser.add_argument("--dry-run", action="store_true", default=False, help="Write configuration files but skip actual Corryvreckan execution")
     parser.add_argument("--subdir", action="store_true", default=False, help="Execute every job in its own subdirectory instead of all in the base path")
@@ -479,11 +479,11 @@ def main(argv=None):
 
     # set the logging level
     numeric_level = getattr(logging, "INFO", None) # default: INFO messages and above
-    if args.log:
+    if args.verbosity:
         # Convert log level to upper case to allow the user to specify --log=DEBUG or --log=debug
-        numeric_level = getattr(logging, args.log.upper(), None)
+        numeric_level = getattr(logging, args.verbosity.upper(), None)
         if not isinstance(numeric_level, int):
-            log.error('Invalid log level: %s' % args.log)
+            log.error('Invalid log level: %s' % args.verbosity)
             return 2
     handler_stream.setLevel(numeric_level)
     log.setLevel(numeric_level)
@@ -653,19 +653,19 @@ def main(argv=None):
         if args.dry_run:
             log.info("Dry run: skipping Corryvreckan execution. Steering file written to "+basefilename+'.conf')
         elif args.naf_file:
-            rcode = submitNAF(basefilename, jobtask, args.naf_file, runnr) # start NAF submission
+            rcode = submitNAF(basefilename, runnr, args.naf_file, runnr) # start NAF submission
             if rcode == 0:
                 log.info("NAF job submitted")
             else:
                 log.error("NAF submission returned with error code "+str(rcode))
         elif args.lxplus_file:
-            rcode = submitLXPLUS(basefilename, jobtask, args.lxplus_file, runnr) # start LXPLUS submission
+            rcode = submitLXPLUS(basefilename, runnr, args.lxplus_file, runnr) # start LXPLUS submission
             if rcode == 0:
                 log.info("LXPLUS job submitted")
             else:
                 log.error("LXPLUS submission returned with error code "+str(rcode))
         else:
-            rcode = runCorryvreckan(basefilename, jobtask, args.silent) # start Corryvreckan execution
+            rcode = runCorryvreckan(basefilename, runnr, args.silent) # start Corryvreckan execution
             if rcode == 0:
                 log.info("Corryvreckan execution done")
             else:

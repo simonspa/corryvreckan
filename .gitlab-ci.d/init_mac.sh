@@ -1,12 +1,12 @@
 #!/bin/bash
 
 if [ "$(uname)" == "Darwin" ]; then
-    if [ $(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}') == "10.12" ]; then
-        OS=mac1012
+    if [ $(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}') == "10.13" ]; then
+        OS=mac1013
         COMPILER_TYPE=llvm
-        COMPILER_VERSION=clang80
+        COMPILER_VERSION=llvm90
     else
-        echo "Bootstrap only works on macOS Sierra (10.12)"
+        echo "Bootstrap only works on macOS High Sierra (10.13)"
         exit 1
     fi
 else
@@ -39,14 +39,14 @@ BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
 #     CMake
 #--------------------------------------------------------------------------------
 
-export CMAKE_HOME=${CLICREPO}/software/CMake/3.6.2/${BUILD_FLAVOUR}
+export CMAKE_HOME=${CLICREPO}/software/CMake/3.9.5/${BUILD_FLAVOUR}
 export PATH=${CMAKE_HOME}/bin:$PATH
 
 #--------------------------------------------------------------------------------
 #     ROOT
 #--------------------------------------------------------------------------------
 
-export ROOTSYS=${CLICREPO}/software/ROOT/6.08.00/${BUILD_FLAVOUR}
+export ROOTSYS=${CLICREPO}/software/ROOT/6.10.08/${BUILD_FLAVOUR}
 export PYTHONPATH="$ROOTSYS/lib:$PYTHONPATH"
 export PATH="$ROOTSYS/bin:$PATH"
 export DYLD_LIBRARY_PATH="$ROOTSYS/lib:$DYLD_LIBRARY_PATH"
@@ -55,5 +55,5 @@ export DYLD_LIBRARY_PATH="$ROOTSYS/lib:$DYLD_LIBRARY_PATH"
 #     Ninja
 #--------------------------------------------------------------------------------
 
-export Ninja_HOME=${CLICREPO}/software/Ninja/1.7.1/${BUILD_FLAVOUR}
+export Ninja_HOME=${CLICREPO}/software/Ninja/1.8.2/${BUILD_FLAVOUR}
 export PATH="$Ninja_HOME:$PATH"

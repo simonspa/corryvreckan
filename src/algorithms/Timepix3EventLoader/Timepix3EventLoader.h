@@ -47,5 +47,5 @@ namespace corryvreckan {
         std::map<std::string, Pixels*> bufferedData;
         std::map<std::string, SpidrSignals*> bufferedSignals;
     };
-}
+} // namespace corryvreckan
 #endif // TIMEPIX3EVENTLOADER_H

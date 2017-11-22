@@ -1,12 +1,7 @@
-#ifndef ATLASpixEventLoader_H
-#define ATLASpixEventLoader_H 1
+#ifndef EtaCorrection_H
+#define EtaCorrection_H 1
 
-#include <dirent.h>
-#include <fstream>
 #include <iostream>
-#include <sstream>
-#include <stdio.h>
-#include <string.h>
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
@@ -16,12 +11,12 @@
 #include "objects/Track.h"
 
 namespace corryvreckan {
-    class ATLASpixEventLoader : public Algorithm {
+    class EtaCorrection : public Algorithm {
 
     public:
         // Constructors and destructors
-        ATLASpixEventLoader(Configuration config, std::vector<Detector*> detectors);
-        ~ATLASpixEventLoader() {}
+        EtaCorrection(Configuration config, std::vector<Detector*> detectors);
+        ~EtaCorrection() {}
 
         // Functions
         void initialise();
@@ -36,13 +31,6 @@ namespace corryvreckan {
 
         // Member variables
         int m_eventNumber;
-        std::string detectorID;
-        std::string m_filename;
-        std::ifstream m_file;
-
-        TH2F* hHitMap;
-        TH1F* hPixelToT;
-        TH1F* hPixelsPerFrame;
     };
 } // namespace corryvreckan
-#endif // ATLASpixEventLoader_H
+#endif // EtaCorrection_H

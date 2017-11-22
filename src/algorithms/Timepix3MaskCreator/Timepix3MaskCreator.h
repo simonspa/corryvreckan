@@ -23,5 +23,5 @@ namespace corryvreckan {
         // Member variables
         std::map<std::string, std::map<int, int>> pixelhits;
     };
-}
+} // namespace corryvreckan
 #endif // TIMEPIX3MASKCREATOR_H
