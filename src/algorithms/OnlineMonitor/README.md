@@ -8,7 +8,7 @@ This algorithm opens a GUI to monitor the progress of Corryvreckan reconstructio
 Users should be able to exit `OnlineMonitor` and leave the reconstruction still running, but currently this causes a crash.
 
 #### Parameters
-* `reference`: Name of the reference plane. 
+* `reference`: Name of the reference plane.
 
 #### Plots produced
 Overview canvas:
@@ -33,3 +33,4 @@ For each detector the following plots are produced:
 [OnlineMonitor]
 reference = "W0013_E03"
 ```
+Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

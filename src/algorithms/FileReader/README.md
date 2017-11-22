@@ -16,7 +16,7 @@ This algorithm reads in an input file containing trees with data previously writ
 * `DUT`: Name of the DUT plane.
 
 #### Plots produced
-No plots are produced. 
+No plots are produced.
 
 #### Usage
 ```toml
@@ -30,3 +30,4 @@ fileName = "input_file.root"
 timeWindow = 1
 DUT = "W0005_H03"
 ```
+Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

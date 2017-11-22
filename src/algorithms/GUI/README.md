@@ -25,3 +25,4 @@ Plots produced on screen for each device:
 DUT = "W000_H03"
 updateNumber = 400
 ```
+Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

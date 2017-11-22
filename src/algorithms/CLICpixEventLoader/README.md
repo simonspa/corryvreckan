@@ -23,3 +23,4 @@ The algorithm opens and reads one data file in the specified input directory wit
 DUT = "W0005_H03"
 inputDirectory = /user/data/directory
 ```
+Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

@@ -6,7 +6,7 @@
 #### Description
 This algorithm loads raw data from a Timepix3 device and adds it to the clipboard. The input file must have extension `.dat` and are sorted into time order via the data file serial numbers. This code also identifies `trimdac` files and applies this mask to the pixels.
 
-The data can be split into events using an event length in time, or using a maximum number of hits on a detector plane. `SpidrSignal` and `pixel` objects are loaded to the clipboard for each detector. 
+The data can be split into events using an event length in time, or using a maximum number of hits on a detector plane. `SpidrSignal` and `pixel` objects are loaded to the clipboard for each detector.
 
 #### Parameters
 * `inputDirectory`: Path to the directory above the data directory for each device. The device name is added to the path during the algorithm.
@@ -31,3 +31,4 @@ eventLength = 0.0000002
 number_of_pixelhits = 0
 DUT = "W0005_H03"
 ```
+Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

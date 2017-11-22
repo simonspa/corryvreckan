@@ -15,3 +15,4 @@ No plots are produced.
 ```toml
 [Timepix3MaskCreator]
 ```
+Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

@@ -9,7 +9,7 @@ This algorithm takes data from a Timepix3 device from the clipboard and plots th
 No parameters are used from the configuration file.
 
 #### Plots produced
-* Histogram of event numbers 
+* Histogram of event numbers
 
 For each detector the following plots are produced:
 * 2D histogram of pixel hit positions
@@ -19,3 +19,4 @@ For each detector the following plots are produced:
 [GenericAlgorithm]
 
 ```
+Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

@@ -41,3 +41,4 @@ masked = "W0005_H03" #excluding the DUT from the alignment
 number_of_tracks = 1000000
 log_level = INFO
 ```
+Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

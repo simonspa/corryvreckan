@@ -1,6 +1,6 @@
 ## Algorithm: Timepix3Clustering
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)  
-**Status**: Functional 
+**Status**: Functional
 
 #### Description
 This algorithm performs clustering on data from a Timepix3 device. The clustering method is a charge-weighted centre of gravity calculation, using a positional cut and a timing cut on proximity.
@@ -21,3 +21,4 @@ For each detector the following plots are produced:
 [Timepix3Clustering]
 timingCut = 0.0000002
 ```
+Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

@@ -24,7 +24,7 @@ For the DUT the following plots are produced:
 * Cluster width histogram (rows, Y-axis)
 * Cluster width histogram (columns, X-axis)
 
-* Global track difference 
+* Global track difference
 * Global track difference in Y
 * Global residuals in X
 * Global residuals in Y
@@ -37,7 +37,7 @@ For the DUT the following plots are produced:
 * Global residuals in X vs row width
 * Global residuals in Y vs column width
 * Global residuals in Y vs row width
-* 
+*
 * Track intercept in rows
 * Track intercept in columns
 * Absolute residual map histogram
@@ -76,14 +76,14 @@ For the DUT the following plots are produced:
 * Pixel ToT for columns for 2-pixel clusters
 * Cluster ToT ratio for rows for 2-pixel clusters
 * Cluster ToT ratio for rows for 2-pixel clusters
-* Local residuals for rows for 2-pixel clusters 
+* Local residuals for rows for 2-pixel clusters
 
 * 2D track intercepts
 * 2D associatedd track intercepts
 * 2D cluster positions in global coordinates
 * 2D associated cluster positions in global coordinates
-* 2D track-pixel intercepts 
-* 2D track-associated pixel intercepts 
+* 2D track-pixel intercepts
+* 2D track-associated pixel intercepts
 * 2D track-chip intercepts
 * 2D track-associated chip intercepts
 * 2D track-unassociated chip intercepts
@@ -106,3 +106,4 @@ proximityCut = 0.005
 timepix3Telescope = true
 DUT = "W0003_H05"
 ```
+Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

@@ -40,3 +40,4 @@ spatialCut = 0.3 #300um
 timingCut = 0.0000002 #200ns
 excludeDUT = true
 ```
+Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
