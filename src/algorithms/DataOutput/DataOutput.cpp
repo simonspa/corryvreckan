@@ -59,7 +59,6 @@ void DataOutput::initialise() {
 StatusCode DataOutput::run(Clipboard* clipboard) {
     // Counter for cluster event ID
     eventID++;
-    LOG(STATUS) << "Event ID = " << eventID;
 
     // Get the DUT
     auto DUT = get_detector(m_config.get<std::string>("DUT"));
@@ -84,73 +83,85 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return Success;
     }
-    LOG(DEBUG) << "Found tracks";
-
-    filledEvents++;
-    LOG(STATUS) << "filledEvents = " << filledEvents;
 
     // Iterate through tracks found
     for(auto& track : (*tracks)) {
+        // CHeck if we have associated clusters:
+        Clusters associatedClusters = track->associatedClusters();
+        if(associatedClusters.empty()) {
+            LOG(TRACE) << "No associated clusters, skipping track.";
+            continue;
+        }
+        // Drop events with more than one cluster associated
+        else if(associatedClusters.size() > 1) {
+            LOG(WARNING) << "More than one associated cluster, dropping track.";
+            continue;
+        }
+
+        LOG(DEBUG) << "Found track with associated cluster";
+
         // Get track intercept with DUT in global coordinates
         trackIntercept = DUT->getIntercept(track);
 
         // Calculate the intercept in local coordinates
         trackInterceptLocal = *(DUT->globalToLocal()) * trackIntercept;
         v_intercepts.push_back(trackInterceptLocal);
-        for(auto& cluster : track->associatedClusters()) {
-            numPixels = 0;
 
-            // Get the clusters in this event
-            // Cluster* cluster = (*itCluster);
+        Cluster* cluster = associatedClusters.front();
 
-            // x size
-            tmp_double = cluster->columnWidth();
-            LOG(DEBUG) << "Gets column width = " << tmp_double;
-            v_clusterSizeX.push_back(tmp_double);
+        // x size
+        tmp_double = cluster->columnWidth();
+        LOG(DEBUG) << "Gets column width = " << tmp_double;
+        v_clusterSizeX.push_back(tmp_double);
 
-            // y size
-            tmp_double = cluster->rowWidth();
-            LOG(DEBUG) << "Gets row width = " << tmp_double;
-            v_clusterSizeY.push_back(tmp_double);
+        // y size
+        tmp_double = cluster->rowWidth();
+        LOG(DEBUG) << "Gets row width = " << tmp_double;
+        v_clusterSizeY.push_back(tmp_double);
 
-            // eventID
-            v_clusterEventID.push_back(eventID);
-            LOG(DEBUG) << "Gets cluster eventID = " << eventID;
+        // eventID
+        v_clusterEventID.push_back(eventID);
+        LOG(DEBUG) << "Gets cluster eventID = " << eventID;
 
-            // Get the pixels in the current cluster
-            Pixels* pixels = cluster->pixels();
+        // Get the pixels in the current cluster
+        Pixels* pixels = cluster->pixels();
 
-            // Iterate through all pixels in the cluster
-            Pixels::iterator itPixel;
-            for(itPixel = pixels->begin(); itPixel != pixels->end(); itPixel++) {
-                // Increase counter for number of pixels in the cluster
-                numPixels++;
+        // Iterate through all pixels in the cluster
+        numPixels = 0;
+        for(auto& pixel : (*pixels)) {
+            // Increase counter for number of pixels in the cluster
+            numPixels++;
 
-                // Get the pixels
-                Pixel* pixel = (*itPixel);
+            // x position
+            tmp_int = pixel->m_column;
+            LOG(DEBUG) << "Gets pixel column = " << tmp_int;
+            v_pixelX.push_back(tmp_int);
 
-                // x position
-                tmp_int = pixel->m_column;
-                LOG(DEBUG) << "Gets pixel column = " << tmp_int;
-                v_pixelX.push_back(tmp_int);
+            // y position
+            tmp_int = pixel->m_row;
+            LOG(DEBUG) << "Gets pixel row = " << tmp_int;
+            v_pixelY.push_back(tmp_int);
 
-                // y position
-                tmp_int = pixel->m_row;
-                LOG(DEBUG) << "Gets pixel row = " << tmp_int;
-                v_pixelY.push_back(tmp_int);
+            // ToT
+            tmp_int = pixel->m_adc;
+            LOG(DEBUG) << "Gets pixel tot = " << tmp_int;
+            v_pixelToT.push_back(tmp_int);
 
-                // ToT
-                tmp_int = pixel->m_adc;
-                LOG(DEBUG) << "Gets pixel tot = " << tmp_int;
-                v_pixelToT.push_back(tmp_int);
-
-                // ToA
-                tmp_longint = pixel->m_timestamp;
-                LOG(DEBUG) << "Gets pixel timestamp = " << tmp_longint;
-                v_pixelToA.push_back(tmp_longint);
-            }
-            v_clusterNumPixels.push_back(numPixels);
+            // ToA
+            tmp_longint = pixel->m_timestamp;
+            LOG(DEBUG) << "Gets pixel timestamp = " << tmp_longint;
+            v_pixelToA.push_back(tmp_longint);
         }
+        v_clusterNumPixels.push_back(numPixels);
+    }
+
+    if(v_intercepts.empty()) {
+        return NoData;
+    }
+
+    filledEvents++;
+    if(filledEvents % 100 == 0) {
+        LOG(STATUS) << "Events with single associated cluster: " << filledEvents;
     }
     // Fill the tree with the information for this event
     m_outputTree->Fill();
