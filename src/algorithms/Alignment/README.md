@@ -5,12 +5,12 @@
 #### Description
 This algorithm performs translational and rotational telescope plane alignment.
 
-The alignment is performed with respect to the reference plane set in the configuration file. To not include the DUT in this translational and rotational alignment, it will need to be masked in the configuration file.
+The alignment is performed with respect to the reference plane set in the configuration file.
 
-This algorithm uses the tracks produced by the `BasicTracking` algorithm to align the telescope planes. There are two methods available for alignment: 
+This algorithm uses the tracks produced by the `BasicTracking` algorithm to align the telescope planes. There are two methods available for alignment:
 
 ##### 1) Minimising the track chi^2
-For each telescope detector except the reference plane, this method moves the detector, refits all of the tracks, and minimises the chi^2 of these new tracks. The parameter `detectorToAlign` is not used in this method as it automatically iterates through all telescope planes except the DUT.
+For each telescope detector except the reference plane, this method moves the detector, refits all of the tracks, and minimises the chi^2 of these new tracks. The parameters `detectorToAlign` and `DUT` are not used in this method as it automatically iterates through all telescope planes except the DUT.
 
 ##### 2) Minimising the track (unbiased) residuals
 For the detector specified by the `detectorToAlign` parameter, this method moves the detector, refits all the tracks, and minimises the unbiased residuals calculated from the track intercepts with the plane.
@@ -19,7 +19,7 @@ For the detector specified by the `detectorToAlign` parameter, this method moves
 * `number_of_tracks`: Number of tracks used in the alignment method chosen. Default value is `20000`.
 * `iterations`: Number of times the chosen alignment method is to be iterated. Default value is `3`.
 * `alignmentMethod`: Determines the alignment method used. To use the track chi^2 minimisation `alignmentMethod = 0`; to use the track residual minimisation `alignmentMethod = 1`.
-* `detectorToAlign`: Parameter to set a particular plane to align. This parameter is only used in the residuals method (`alignmentMethod = 1`). The default is the `DUT` plane. 
+* `detectorToAlign`: Parameter to set a particular plane to align. This parameter is only used in the residuals method (`alignmentMethod = 1`). The default is the `DUT` plane.
 * `DUT`: Name of the DUT plane.
 * `reference`: Name of the detector used as the alignment reference plane. All other telescope planes are aligned with respect to the reference plane.
 

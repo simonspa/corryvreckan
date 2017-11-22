@@ -1,9 +1,9 @@
 ## Algorithm: TestAlgorithm
-**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)   
+**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>) ; Daniel Hynds (<daniel.hynds@cern.ch>) 
 **Status**: Functional   
 
 #### Description
-This algorithm collects `pixel` and `cluster` objects from the clipboard and creates correlation and timing plots. 
+This algorithm collects `pixel` and `cluster` objects from the clipboard and creates correlation and timing plots.
 
 
 #### Parameters
@@ -21,7 +21,7 @@ For each device the following plots are produced:
 * 2D correlation in X in local coordinates
 * 2D correlation in Y in local coordinates
 * Correlation times histogram
-* Correlation times (integer values) histogram 
+* Correlation times (integer values) histogram
 
 #### Usage
 ```toml

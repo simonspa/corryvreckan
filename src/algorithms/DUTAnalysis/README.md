@@ -1,5 +1,5 @@
 ## Algorithm: DUTAnalysis
-**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)   
+**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>) ; Daniel Hynds (<daniel.hynds@cern.ch>) 
 **Status**: Functional   
 
 #### Description
@@ -25,7 +25,7 @@ Using the appropriate parameter settings in the configuration file, plots using 
 * Track correlations in time
 * Cluster ToT vs time
 * Residual in time vs time
-* 2D histogram of associated track global positions 
+* 2D histogram of associated track global positions
 * 2D histogram of unassociated track global positions
 * Residual in X using MC truth information, only produced if `usingMCtruth = true`
 * Tracks vs time since power on, only produced in `digitalPowerPusling = true`

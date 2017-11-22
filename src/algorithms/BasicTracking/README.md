@@ -3,9 +3,9 @@
 **Status**: Functional   
 
 #### Description
-This algorithm performs a basic tracking method. 
+This algorithm performs a basic tracking method.
 
-Clusters from the first plane in Z (named the seed plane) are related to clusters on the other detector planes using straight line tracks. The DUT plane can be excluded from the track finding and DUT clusters potentially associated with the track stored.
+Clusters from the first plane in Z (named the seed plane) are related to clusters close in time on the other detector planes using straight line tracks. The DUT plane can be excluded from the track finding and DUT clusters potentially associated with the track stored.
 
 #### Parameters
 * `timingCut`: Maximum time difference allowed between clusters for association. In units of seconds. Default value is `0.0000002` (200ns).
