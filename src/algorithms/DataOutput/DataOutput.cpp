@@ -208,41 +208,32 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
         // For track intercepts
         else {
             v_intercepts.clear();
-            // collecting detectors
-            for(auto& detector : get_detectors()) {
-                string detectorID = detector->name();
-                LOG(DEBUG) << "Detector name = " << detectorID;
-                // Only writing information for the DUT
-                if(detectorID != m_config.get<std::string>("DUT"))
-                    continue;
 
-                // Getting tracks from the clipboard
-                Tracks* tracks = (Tracks*)clipboard->get("tracks");
-                if(tracks == NULL) {
-                    LOG(DEBUG) << "No tracks on the clipboard";
-                    return Success;
-                }
-                LOG(DEBUG) << "Found tracks";
-
-                // Iterate through tracks found
-                Tracks::iterator itTrack;
-                for(itTrack = tracks->begin(); itTrack != tracks->end(); itTrack++) {
-                    // Get the track
-                    Track* track = (*itTrack);
-                    if(!track) {
-                        continue;
-                    }
-
-                    // Get track intercept with DUT in global coordinates
-                    trackIntercept = detector->getIntercept(track);
-
-                    // Calculate the intercept in local coordinates
-                    trackInterceptLocal = *(detector->globalToLocal()) * trackIntercept;
-
-                    v_intercepts.push_back(trackInterceptLocal);
-                }
-                m_outputTree->Fill();
+            // Getting tracks from the clipboard
+            Tracks* tracks = (Tracks*)clipboard->get("tracks");
+            if(tracks == NULL) {
+                LOG(DEBUG) << "No tracks on the clipboard";
+                return Success;
             }
+            LOG(DEBUG) << "Found tracks";
+
+            // Get the DUT
+            auto DUT = get_detector(m_config.get<std::string>("DUT"));
+
+            // Iterate through tracks found
+            for(auto& track : tracks) {
+                // Get track intercept with DUT in global coordinates
+                trackIntercept = DUT->getIntercept(track);
+
+                // Calculate the intercept in local coordinates
+                trackInterceptLocal = *(DUT->globalToLocal()) * trackIntercept;
+
+                for(auto& cluster : track->associatedClusters()) {
+                }
+
+                v_intercepts.push_back(trackInterceptLocal);
+            }
+            m_outputTree->Fill();
         }
     }
 
