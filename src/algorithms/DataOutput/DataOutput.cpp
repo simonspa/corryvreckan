@@ -28,22 +28,10 @@ DataOutput::DataOutput(Configuration config, std::vector<Detector*> detectors)
  of pixel X positions etc. can be split into their respective clusters).
  8)the intercept with the DUT for each track
 
- Any object which inherits from TestBeamObject can in principle be written
- to file. In order to enable this for a new type, the TestBeamObject::Factory
- function must know how to return an instantiation of that type (see
- TestBeamObject.C file to see how to do this). The new type can then simply
- be added to the object list and will be written out correctly.
-
  */
 
 void DataOutput::initialise() {
     LOG(DEBUG) << "Initialised DataOutput";
-
-    // Decide what objects will be written out
-    m_objectList.push_back("clusters");
-    m_objectList.push_back("tracks");
-
-    LOG(DEBUG) << "Pushed back list of objects";
 
     // Create output file and directories
     m_outputFile = new TFile(m_fileName.c_str(), "RECREATE");
@@ -52,193 +40,120 @@ void DataOutput::initialise() {
     m_outputTree = new TTree(m_treeName.c_str(), m_treeName.c_str());
     LOG(DEBUG) << "Created tree: " << m_treeName;
 
-    // Loop over all objects to be written to file, and set up the trees
     eventID = 0;
-    for(unsigned int itList = 0; itList < m_objectList.size(); itList++) {
+    filledEvents = 0;
 
-        // Check the type of object
-        string objectType = m_objectList[itList];
-
-        // Section to set up cluster writing per detector
-        if(objectType == "clusters") {
-
-            // Loop over all detectors
-            for(auto& detector : get_detectors()) {
-
-                // Get the detector ID and type
-                string detectorID = detector->name();
-                string detectorType = detector->type();
-
-                // Writing information for the DUT only
-                if(detectorID != m_config.get<std::string>("DUT"))
-                    continue;
-
-                // Create the output branches
-                m_outputTree->Branch("EventID", &v_clusterEventID);
-                m_outputTree->Branch("clusterSizeX", &v_clusterSizeX);
-                m_outputTree->Branch("clusterSizeY", &v_clusterSizeY);
-                m_outputTree->Branch("pixelX", &v_pixelX);
-                m_outputTree->Branch("pixelY", &v_pixelY);
-                m_outputTree->Branch("pixelToT", &v_pixelToT);
-                m_outputTree->Branch("pixelToA", &v_pixelToA);
-                m_outputTree->Branch("clusterNumPixels", &v_clusterNumPixels);
-            }
-        }
-
-        else {
-            // Branch for track intercepts
-            m_outputTree->Branch("intercepts", &v_intercepts);
-        }
-    }
-
-    // Initialise member variables
-    m_eventNumber = 0;
+    // Create the output branches
+    m_outputTree->Branch("EventID", &v_clusterEventID);
+    m_outputTree->Branch("clusterSizeX", &v_clusterSizeX);
+    m_outputTree->Branch("clusterSizeY", &v_clusterSizeY);
+    m_outputTree->Branch("pixelX", &v_pixelX);
+    m_outputTree->Branch("pixelY", &v_pixelY);
+    m_outputTree->Branch("pixelToT", &v_pixelToT);
+    m_outputTree->Branch("pixelToA", &v_pixelToA);
+    m_outputTree->Branch("clusterNumPixels", &v_clusterNumPixels);
+    // Branch for track intercepts
+    m_outputTree->Branch("intercepts", &v_intercepts);
 }
 
 StatusCode DataOutput::run(Clipboard* clipboard) {
     // Counter for cluster event ID
     eventID++;
+    LOG(STATUS) << "Event ID = " << eventID;
 
-    // Loop over all objects to be written to file, and get the objects
-    // currently held on the Clipboard
-    for(unsigned int itList = 0; itList < m_objectList.size(); itList++) {
+    // Get the DUT
+    auto DUT = get_detector(m_config.get<std::string>("DUT"));
+    v_intercepts.clear();
 
-        // Check the type of object
-        string objectType = m_objectList[itList];
+    // Clear data vectors before storing the cluster information for
+    // this event
+    v_clusterSizeX.clear();
+    v_clusterSizeY.clear();
+    v_clusterEventID.clear();
+    v_pixelX.clear();
+    v_pixelY.clear();
+    v_pixelToT.clear();
+    v_pixelToA.clear();
+    v_clusterNumPixels.clear();
+    tmp_int = 0;
+    tmp_double = 0.0;
 
-        // Loop over devices for cluster information
-        if(objectType == "clusters") {
+    // Getting tracks from the clipboard
+    Tracks* tracks = (Tracks*)clipboard->get("tracks");
+    if(tracks == NULL) {
+        LOG(DEBUG) << "No tracks on the clipboard";
+        return Success;
+    }
+    LOG(DEBUG) << "Found tracks";
 
-            // Loop over all detectors
-            for(auto& detector : get_detectors()) {
+    filledEvents++;
+    LOG(STATUS) << "filledEvents = " << filledEvents;
 
-                // Get the detector ID
-                string detectorID = detector->name();
+    // Iterate through tracks found
+    for(auto& track : (*tracks)) {
+        // Get track intercept with DUT in global coordinates
+        trackIntercept = DUT->getIntercept(track);
 
-                // Only writing information for the DUT
-                if(detectorID != m_config.get<std::string>("DUT"))
-                    continue;
+        // Calculate the intercept in local coordinates
+        trackInterceptLocal = *(DUT->globalToLocal()) * trackIntercept;
+        v_intercepts.push_back(trackInterceptLocal);
+        for(auto& cluster : track->associatedClusters()) {
+            numPixels = 0;
 
-                // Get the clusters, if they don't exist then continue
-                LOG(DEBUG) << "Checking for " << objectType << " on device " << detectorID;
+            // Get the clusters in this event
+            // Cluster* cluster = (*itCluster);
 
-                // Get the clusters in this event
-                Clusters* clusters = (Clusters*)clipboard->get(detectorID, "clusters");
-                if(clusters == NULL) {
-                    LOG(DEBUG) << "No clusters on the clipboard";
-                    return Success;
-                } else {
-                    LOG(DEBUG) << "Found clusters on the clipboard";
-                }
+            // x size
+            tmp_double = cluster->columnWidth();
+            LOG(DEBUG) << "Gets column width = " << tmp_double;
+            v_clusterSizeX.push_back(tmp_double);
 
-                // Clear data vectors before storing the cluster information for
-                // this event
-                v_clusterSizeX.clear();
-                v_clusterSizeY.clear();
-                v_clusterEventID.clear();
-                v_pixelX.clear();
-                v_pixelY.clear();
-                v_pixelToT.clear();
-                v_pixelToA.clear();
-                v_clusterNumPixels.clear();
-                tmp_int = 0;
-                tmp_double = 0.0;
+            // y size
+            tmp_double = cluster->rowWidth();
+            LOG(DEBUG) << "Gets row width = " << tmp_double;
+            v_clusterSizeY.push_back(tmp_double);
 
-                // Iterate through all clusters in this event
-                Clusters::iterator itCluster;
-                for(itCluster = clusters->begin(); itCluster != clusters->end(); itCluster++) {
-                    // Reset number of pixels in the cluster counter
-                    numPixels = 0;
+            // eventID
+            v_clusterEventID.push_back(eventID);
+            LOG(DEBUG) << "Gets cluster eventID = " << eventID;
 
-                    // Get the clusters in this event
-                    Cluster* cluster = (*itCluster);
+            // Get the pixels in the current cluster
+            Pixels* pixels = cluster->pixels();
 
-                    // x size
-                    tmp_double = cluster->columnWidth();
-                    LOG(DEBUG) << "Gets column width = " << tmp_double;
-                    v_clusterSizeX.push_back(tmp_double);
+            // Iterate through all pixels in the cluster
+            Pixels::iterator itPixel;
+            for(itPixel = pixels->begin(); itPixel != pixels->end(); itPixel++) {
+                // Increase counter for number of pixels in the cluster
+                numPixels++;
 
-                    // y size
-                    tmp_double = cluster->rowWidth();
-                    LOG(DEBUG) << "Gets row width = " << tmp_double;
-                    v_clusterSizeY.push_back(tmp_double);
+                // Get the pixels
+                Pixel* pixel = (*itPixel);
 
-                    // eventID
-                    v_clusterEventID.push_back(eventID);
-                    LOG(DEBUG) << "Gets cluster eventID = " << eventID;
+                // x position
+                tmp_int = pixel->m_column;
+                LOG(DEBUG) << "Gets pixel column = " << tmp_int;
+                v_pixelX.push_back(tmp_int);
 
-                    // Get the pixels in the current cluster
-                    Pixels* pixels = cluster->pixels();
+                // y position
+                tmp_int = pixel->m_row;
+                LOG(DEBUG) << "Gets pixel row = " << tmp_int;
+                v_pixelY.push_back(tmp_int);
 
-                    // Iterate through all pixels in the cluster
-                    Pixels::iterator itPixel;
-                    for(itPixel = pixels->begin(); itPixel != pixels->end(); itPixel++) {
-                        // Increase counter for number of pixels in the cluster
-                        numPixels++;
+                // ToT
+                tmp_int = pixel->m_adc;
+                LOG(DEBUG) << "Gets pixel tot = " << tmp_int;
+                v_pixelToT.push_back(tmp_int);
 
-                        // Get the pixels
-                        Pixel* pixel = (*itPixel);
-
-                        // x position
-                        tmp_int = pixel->m_column;
-                        LOG(DEBUG) << "Gets pixel column = " << tmp_int;
-                        v_pixelX.push_back(tmp_int);
-
-                        // y position
-                        tmp_int = pixel->m_row;
-                        LOG(DEBUG) << "Gets pixel row = " << tmp_int;
-                        v_pixelY.push_back(tmp_int);
-
-                        // ToT
-                        tmp_int = pixel->m_adc;
-                        LOG(DEBUG) << "Gets pixel tot = " << tmp_int;
-                        v_pixelToT.push_back(tmp_int);
-
-                        // ToA
-                        tmp_longint = pixel->m_timestamp;
-                        LOG(DEBUG) << "Gets pixel timestamp = " << tmp_longint;
-                        v_pixelToA.push_back(tmp_longint);
-                    }
-                    v_clusterNumPixels.push_back(numPixels);
-                }
-                // Fill the tree with the information for this event
-                m_outputTree->Fill();
+                // ToA
+                tmp_longint = pixel->m_timestamp;
+                LOG(DEBUG) << "Gets pixel timestamp = " << tmp_longint;
+                v_pixelToA.push_back(tmp_longint);
             }
-        }
-        // For track intercepts
-        else {
-            v_intercepts.clear();
-
-            // Getting tracks from the clipboard
-            Tracks* tracks = (Tracks*)clipboard->get("tracks");
-            if(tracks == NULL) {
-                LOG(DEBUG) << "No tracks on the clipboard";
-                return Success;
-            }
-            LOG(DEBUG) << "Found tracks";
-
-            // Get the DUT
-            auto DUT = get_detector(m_config.get<std::string>("DUT"));
-
-            // Iterate through tracks found
-            for(auto& track : tracks) {
-                // Get track intercept with DUT in global coordinates
-                trackIntercept = DUT->getIntercept(track);
-
-                // Calculate the intercept in local coordinates
-                trackInterceptLocal = *(DUT->globalToLocal()) * trackIntercept;
-
-                for(auto& cluster : track->associatedClusters()) {
-                }
-
-                v_intercepts.push_back(trackInterceptLocal);
-            }
-            m_outputTree->Fill();
+            v_clusterNumPixels.push_back(numPixels);
         }
     }
-
-    // Increment event counter
-    m_eventNumber++;
+    // Fill the tree with the information for this event
+    m_outputTree->Fill();
 
     // Return value telling analysis to keep running
     return Success;

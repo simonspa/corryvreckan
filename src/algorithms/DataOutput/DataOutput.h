@@ -8,6 +8,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "core/algorithm/Algorithm.h"
+#include "objects/Track.h"
 
 namespace corryvreckan {
     class DataOutput : public Algorithm {
@@ -23,10 +24,10 @@ namespace corryvreckan {
         void finalise();
 
         // Member variables
-        int m_eventNumber;
         int tmp_int;
         int numPixels;
         int eventID;
+        int filledEvents;
         long long int tmp_longint;
         double tmp_double;
 
@@ -39,7 +40,6 @@ namespace corryvreckan {
         std::vector<int> v_pixelToT;
         std::vector<int> v_clusterNumPixels;
         std::vector<long long int> v_pixelToA;
-        std::vector<double> v_object;
         std::vector<double> v_clusterSizeX;
         std::vector<double> v_clusterSizeY;
         std::vector<std::string> m_objectList;
