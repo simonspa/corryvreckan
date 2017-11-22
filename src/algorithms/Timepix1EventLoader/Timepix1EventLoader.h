@@ -5,9 +5,6 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include "TCanvas.h"
-#include "TH1F.h"
-#include "TH2F.h"
 #include "core/algorithm/Algorithm.h"
 
 namespace corryvreckan {

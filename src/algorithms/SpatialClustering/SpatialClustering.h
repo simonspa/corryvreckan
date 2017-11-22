@@ -2,9 +2,6 @@
 #define SpatialClustering_H 1
 
 #include <iostream>
-#include "TCanvas.h"
-#include "TH1F.h"
-#include "TH2F.h"
 #include "core/algorithm/Algorithm.h"
 #include "objects/Cluster.h"
 

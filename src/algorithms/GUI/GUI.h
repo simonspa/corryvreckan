@@ -6,8 +6,6 @@
 #include "TBrowser.h"
 #include "TCanvas.h"
 #include "TH1F.h"
-#include "TH2F.h"
-#include "TH3F.h"
 #include "TThread.h"
 #include "core/algorithm/Algorithm.h"
 
