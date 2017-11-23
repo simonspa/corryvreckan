@@ -8,7 +8,6 @@
 #include "Minuit2/Minuit2Minimizer.h"
 #include "TCanvas.h"
 #include "TH1F.h"
-#include "TH2F.h"
 // Local includes
 #include "core/algorithm/Algorithm.h"
 #include "objects/Cluster.h"
