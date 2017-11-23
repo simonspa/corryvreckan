@@ -1,0 +1,103 @@
+%----------------------------------------------------------------------------------------
+%   PACKAGES AND DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[fontsize=12pt, parskip=half]{scrartcl}
+\PassOptionsToPackage{obeyspaces}{url}
+\usepackage[backend=biber,
+            autocite=plain,
+            sorting=none,
+            url=false
+            ]{biblatex}
+\usepackage[T1]{fontenc}
+\usepackage[shortlabels]{enumitem}
+\usepackage{siunitx}
+\usepackage{array}
+\usepackage{ccicons}
+\usepackage{booktabs}
+\usepackage{xspace}
+\usepackage{xcolor}
+\usepackage{minted}
+\usepackage{a4wide}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{seqsplit}
+\usepackage{multirow}
+\usepackage[unicode=true]{hyperref}
+\usepackage{microtype}
+\usepackage{pgffor}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e}
+\usepackage[utf8]{inputenc}
+\usepackage{eurosym}
+\usepackage{fancyvrb}
+\urlstyle{same}
+\usepackage{longtable,booktabs}
+\usepackage[normalem]{ulem}
+
+\setlength{\emergencystretch}{3em}
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+\providecommand{\subtitle}[1]{}
+
+% Set paths
+\makeatletter
+\def\input@path{{usermanual/}}
+\makeatother
+
+% Load configuration
+\input{config}
+
+%----------------------------------------------------------------------------------------
+%   DOCUMENT INFORMATION
+%----------------------------------------------------------------------------------------
+\titlehead{\centering\includegraphics[width=7cm]{logo.png}}
+\title{Corryvreckan User Manual} % Title
+
+\author{Morag Williams (\href{mailto:morag.williams@cern.ch}{morag.williams@cern.ch})\\
+  Simon Spannagel (\href{mailto:simon.spannagel@cern.ch}{simon.spannagel@cern.ch})\\
+  Daniel Hynds (\href{mailto:daniel.hynds@cern.ch}{daniel.hynds@cern.ch})
+} % Author names
+
+\date{\today\\ \vspace{10pt} Version \version} % Date for the report
+
+\graphicspath{{usermanual/figures/}}
+
+\begin{document}
+\begin{titlepage}
+\maketitle % Insert the title, author and date
+
+\addlicense
+\end{titlepage}
+
+\clearpage
+% Table Of Contents
+\tableofcontents
+
+\clearpage
+
+\appendix
+% \input{appendices/example_output}
+% \clearpage
+% \input{appendices/design_notes}
+% \clearpage
+% probably some chapter with more advanced notes
+
+\clearpage
+\phantomsection
+\addreferencesline
+\printbibliography
+
+\end{document}
