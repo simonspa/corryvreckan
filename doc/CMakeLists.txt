@@ -16,6 +16,11 @@ IF(LATEX_COMPILER)
     SET(HTLATEX_COMPILER_TEX4HT_FLAGS "usermanual/html/corryvreckan,charset=utf-8" CACHE STRING "Flags passed to Tex4HT" FORCE)
     SET(HTLATEX_COMPILER_TEX4HT_POSTPROCESSOR_FLAGS "-utf8 -cunihtf" CACHE STRING "Flags passed to the postprocessor of Tex4HT" FORCE)
 
+    # Markdown files that should be included in the manual relative to the root of the repository
+    SET(DOC_README_FILES
+            jobsub/README.md
+    )
+
     # Check for pandoc for markdown conversion
     INCLUDE(${CMAKE_SOURCE_DIR}/cmake/PANDOC.cmake)
     IF(PANDOC_EXECUTABLE)
@@ -34,8 +39,27 @@ IF(LATEX_COMPILER)
                 SET(algorithm_tex_files ${algorithm_tex_files} ${CMAKE_BINARY_DIR}/usermanual/algorithms/${subdir}.tex)
             ENDIF()
         ENDFOREACH()
+
+        # Generate other tex files from README we need and put them in the MD folder of the user manual
+        SET(other_tex_files "")
+        FOREACH(doc_readme_file ${DOC_README_FILES})
+            GET_FILENAME_COMPONENT(readme_full_dir ${doc_readme_file} DIRECTORY)
+            GET_FILENAME_COMPONENT(readme_parent_dir ${readme_full_dir} DIRECTORY)
+            GET_FILENAME_COMPONENT(readme_dir_name ${readme_full_dir} NAME)
+
+            ADD_PANDOC_DOCUMENT(
+                ${CMAKE_BINARY_DIR}/usermanual/md/${readme_parent_dir}/${readme_dir_name}.tex
+                SOURCES              ${CMAKE_SOURCE_DIR}/${doc_readme_file}
+                PRODUCT_DIRECTORY    usermanual/md/${readme_parent_dir}/
+                PANDOC_DIRECTIVES    -t latex --listings --biblatex
+                NO_EXPORT_PRODUCT
+            )
+
+            SET(other_tex_files ${other_tex_files} ${CMAKE_BINARY_DIR}/usermanual/md/${readme_parent_dir}/${readme_dir_name}.tex)
+        ENDFOREACH()
     ELSE()
         SET(algorithm_tex_files)
+        SET(other_tex_files "")
         MESSAGE(WARNING "No pandoc command, cannot add Markdown documentation to user manual")
     ENDIF()
 
@@ -63,12 +87,13 @@ IF(LATEX_COMPILER)
             cc-by.png
             INPUTS
             usermanual/chapters/algorithms.tex
+            usermanual/chapters/tools.tex
             usermanual/config.tex
 
             CONFIGURE
             usermanual/config.tex
             EXCLUDE_FROM_ALL
-            DEPENDS ${algorithm_tex_files})
+            DEPENDS ${algorithm_tex_files} ${other_tex_files})
     ELSE()
         MESSAGE(WARNING "No biber command, cannot compile user manual.")
     ENDIF()
