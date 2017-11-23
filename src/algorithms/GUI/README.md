@@ -1,4 +1,4 @@
-## Algorithm: GUI
+## GUI
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)  
 **Status**: Functional - needing small fix
 

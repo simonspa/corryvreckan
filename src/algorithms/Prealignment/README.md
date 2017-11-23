@@ -1,4 +1,4 @@
-## Algorithm: Prealignment
+## Prealignment
 **Maintainer**: Morag Williams (<morag.williams@cern.ch>)   
 **Status**: Functional   
 

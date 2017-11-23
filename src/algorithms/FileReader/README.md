@@ -1,4 +1,4 @@
-## Algorithm: FileReader
+## FileReader
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)   
 **Status**: Functional   
 

@@ -1,4 +1,4 @@
-## Algorithm: TestAlgorithm
+## TestAlgorithm
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>) ; Daniel Hynds (<daniel.hynds@cern.ch>)
 **Status**: Functional   
 

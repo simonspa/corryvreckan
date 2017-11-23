@@ -1,4 +1,4 @@
-## Algorithm: Timepix1EventLoader
+## Timepix1EventLoader
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)
 
 **Status**: Functional  

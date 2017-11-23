@@ -1,4 +1,4 @@
-## Algorithm: Timepix3MaskCreator
+## Timepix3MaskCreator
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)  
 **Status**: Functional
 

@@ -1,4 +1,4 @@
-## Algorithm: CLICpixAnalysis
+## CLICpixAnalysis
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)   
 **Status**: Functional  
 

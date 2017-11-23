@@ -1,4 +1,4 @@
-## Algorithm: Timepix3Clustering
+## Timepix3Clustering
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)  
 **Status**: Functional
 

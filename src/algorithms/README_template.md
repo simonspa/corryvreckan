@@ -1,4 +1,4 @@
-## Algorithm: NAME
+## NAME
 **Maintainer**: NAME (<EMAIL>)   
 **Status**: Outdated, Functional, or Work in progress   
 

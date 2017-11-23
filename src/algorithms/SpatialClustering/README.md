@@ -1,4 +1,4 @@
-## Algorithm: SpatialClustering
+## SpatialClustering
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)
 
 **Status**: Functioning

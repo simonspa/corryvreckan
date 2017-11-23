@@ -1,4 +1,4 @@
-## Algorithm: Timepix1Correlator
+## Timepix1Correlator
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)   
 **Status**: Functional   
 

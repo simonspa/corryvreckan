@@ -1,4 +1,4 @@
-## Algorithm: Timepix3EventLoader
+## Timepix3EventLoader
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)
 
 **Status**: Outdated  

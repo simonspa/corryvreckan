@@ -1,4 +1,4 @@
-## Algorithm: OnlineMonitor
+## OnlineMonitor
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)   
 **Status**: Functional - some minor fixes needed
 

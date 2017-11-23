@@ -1,4 +1,4 @@
-## Algorithm: SpatialTracking
+## SpatialTracking
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)   
 **Status**: Functional  
 

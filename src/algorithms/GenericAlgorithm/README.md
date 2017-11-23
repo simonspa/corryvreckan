@@ -1,4 +1,4 @@
-## Algorithm: GenericAlgorithm
+## GenericAlgorithm
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)   
 **Status**: Functional
 

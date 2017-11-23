@@ -1,4 +1,4 @@
-## Algorithm: EtaCorrection
+## EtaCorrection
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)   
 **Status**: Under development
 

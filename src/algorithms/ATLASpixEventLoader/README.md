@@ -1,4 +1,4 @@
-## Algorithm: ATLASpixEventLoader
+## ATLASpixEventLoader
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)   
 **Status**: Outdated   
 

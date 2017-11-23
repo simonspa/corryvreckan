@@ -1,4 +1,4 @@
-## Algorithm: CLICpixEventLoader
+## CLICpixEventLoader
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)   
 **Status**: Functional   
 

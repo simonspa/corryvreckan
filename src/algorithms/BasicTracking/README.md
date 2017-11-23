@@ -1,4 +1,4 @@
-## Algorithm: BasicTracking
+## BasicTracking
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)   
 **Status**: Functional   
 

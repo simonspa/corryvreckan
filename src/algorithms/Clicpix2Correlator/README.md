@@ -1,4 +1,4 @@
-## Algorithm: CLICpix2Correlator
+## CLICpix2Correlator
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)
 
 **Status**: Functional
