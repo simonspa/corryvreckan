@@ -6,13 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdint.h>
-#include "TCanvas.h"
-#include "TH1F.h"
-#include "TH2F.h"
 #include "core/algorithm/Algorithm.h"
-#include "objects/Cluster.h"
-#include "objects/Pixel.h"
-#include "objects/Track.h"
 
 namespace corryvreckan {
     class DataDump : public Algorithm {

@@ -18,7 +18,6 @@
 #include "TGMenu.h"
 #include "TGTextEntry.h"
 #include "TH1F.h"
-#include "TH2F.h"
 #include "TROOT.h"
 #include "TRootEmbeddedCanvas.h"
 #include "TSystem.h"
