@@ -62,6 +62,7 @@ IF(LATEX_COMPILER)
             logo.png
             cc-by.png
             INPUTS
+            usermanual/chapters/algorithms.tex
             usermanual/config.tex
 
             CONFIGURE
