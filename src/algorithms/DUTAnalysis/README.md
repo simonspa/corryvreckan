@@ -1,6 +1,6 @@
 ## DUTAnalysis
-**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>) ; Daniel Hynds (<daniel.hynds@cern.ch>)
-**Status**: Functional   
+**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>) ; Daniel Hynds (<daniel.hynds@cern.ch>)  
+**Status**: Functional  
 
 #### Description
 This algorithm associates DUT clusters to telescope tracks.

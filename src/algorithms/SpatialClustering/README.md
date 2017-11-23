@@ -1,6 +1,5 @@
 ## SpatialClustering
-**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)
-
+**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)  
 **Status**: Functioning
 
 #### Description

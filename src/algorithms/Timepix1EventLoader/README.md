@@ -1,6 +1,5 @@
 ## Timepix1EventLoader
-**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)
-
+**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)  
 **Status**: Functional  
 
 #### Description
