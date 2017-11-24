@@ -171,21 +171,22 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
 
 void DataOutput::finalise() {
     LOG(DEBUG) << "Finalise";
-    // Branch for DUT angle
-    // auto DUT = get_detector(m_config.get<std::string>("DUT"));
+
+    // DUT angles for output
+    auto DUT = get_detector(m_config.get<std::string>("DUT"));
     auto directory = m_outputFile->mkdir("Directory");
     directory->cd();
-    // double DUTangle = (DUT->rotationY())-3.14159265358979323846;
-    double DUTangle = 1.0;
-    directory->WriteObject(&DUTangle, "DUTangle");
+    double DUTangleX = (DUT->rotationX());
+    double DUTangleY = (DUT->rotationY()) - 3.14159265358979323846; // minus pi as DUT rotated by 180 degrees as PCB facing
+                                                                    // beam. The rotation due to the mount for the analysis
+                                                                    // is rotationY - 180degrees
+    double DUTangleZ = (DUT->rotationZ());
 
-    /*auto DUT = get_detector(m_config.get<std::string>("DUT"));
-    DUTangle = (DUT->rotationY())-3.14159265358979323846;
-    LOG(DEBUG) << "DUT angle obtained X= " << DUT->rotationX()<< " radians";
-    DUTangle = DUTangle *180/3.14159265358979323846;
-    LOG(STATUS) << "DUT angle obtained Y= " << DUTangle<< " degrees";
-    LOG(DEBUG) << "DUT angle obtained Z= " << DUT->rotationZ()<< " radians";*/
-    // Write out the output file
+    // Creating XYZ vector of DUT angles and adding these to the outputfile
+    m_orientation.SetCoordinates(DUTangleX, DUTangleY, DUTangleZ);
+    directory->WriteObject(&m_orientation, "DUTorientation");
+
+    // Writing out outputfile
     m_outputFile->Write();
     delete(m_outputFile);
 }

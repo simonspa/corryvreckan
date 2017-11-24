@@ -30,6 +30,8 @@ namespace corryvreckan {
         long long int tmp_longint;
         double tmp_double;
 
+        ROOT::Math::XYZVector m_orientation;
+
         PositionVector3D<Cartesian3D<double>> trackIntercept;
         PositionVector3D<Cartesian3D<double>> trackInterceptLocal;
 
