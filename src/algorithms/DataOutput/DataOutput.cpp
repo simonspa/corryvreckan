@@ -8,7 +8,6 @@ DataOutput::DataOutput(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
 
     m_fileName = m_config.get<std::string>("fileName", "outputTuples.root");
-    m_useToA = m_config.get<bool>("useToA", true);
     m_treeName = m_config.get<std::string>("treeName", "tree");
 }
 
@@ -94,7 +93,7 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
         }
         // Drop events with more than one cluster associated
         else if(associatedClusters.size() > 1) {
-            LOG(WARNING) << "More than one associated cluster, dropping track.";
+            LOG(DEBUG) << "More than one associated cluster, dropping track.";
             continue;
         }
 
@@ -161,7 +160,7 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
 
     filledEvents++;
     if(filledEvents % 100 == 0) {
-        LOG(STATUS) << "Events with single associated cluster: " << filledEvents;
+        LOG(DEBUG) << "Events with single associated cluster: " << filledEvents;
     }
     // Fill the tree with the information for this event
     m_outputTree->Fill();

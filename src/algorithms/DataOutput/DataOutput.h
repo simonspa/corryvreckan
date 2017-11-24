@@ -4,7 +4,6 @@
 #include <iostream>
 #include "Math/Point3D.h"
 #include "Math/Vector3D.h"
-#include "TCanvas.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "core/algorithm/Algorithm.h"
