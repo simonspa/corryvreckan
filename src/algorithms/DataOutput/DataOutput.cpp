@@ -171,8 +171,17 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
 
 void DataOutput::finalise() {
     LOG(DEBUG) << "Finalise";
-
+    // Branch for DUT angle
+    double DUTangle;
+    m_outputTree->Branch("DUTangle", &DUTangle);
+    /*auto DUT = get_detector(m_config.get<std::string>("DUT"));
+    DUTangle = (DUT->rotationY())-3.14159265358979323846;
+    LOG(DEBUG) << "DUT angle obtained X= " << DUT->rotationX()<< " radians";
+    DUTangle = DUTangle *180/3.14159265358979323846;
+    LOG(STATUS) << "DUT angle obtained Y= " << DUTangle<< " degrees";
+    LOG(DEBUG) << "DUT angle obtained Z= " << DUT->rotationZ()<< " radians";*/
     // Write out the output file
+    m_outputTree->Fill();
     m_outputFile->Write();
     delete(m_outputFile);
 }
