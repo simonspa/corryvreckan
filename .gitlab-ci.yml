@@ -1,6 +1,7 @@
 stages:
     - compile
     - format
+    - documentation
 
 #######################
 # Compilation targets #
@@ -141,3 +142,28 @@ fmt:centos7-llvm-format:
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
         - ninja check-format
+
+
+#############################
+# Documentation Compilation #
+#############################
+
+
+# Compile LaTeX user manual:
+cmp:usermanual:
+    stage: documentation
+    tags:
+      - docker
+    image: gitlab-registry.cern.ch/clicdp/publications/templates/custom_ci_worker:fedora-latex-latest
+    dependencies: []
+    script:
+        - mkdir -p public/usermanual
+        - mkdir build
+        - cd build
+        - cmake -DBUILD_DOCS_ONLY=ON ..
+        - make pdf
+        - mv usermanual/corryvreckan-manual.pdf ../public/usermanual
+    artifacts:
+        paths:
+          - public
+        expire_in: 3 hour

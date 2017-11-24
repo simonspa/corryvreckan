@@ -27,6 +27,8 @@ void Clicpix2Correlator::initialise() {
         string name = "rotated" + std::to_string(angle);
         string histo = "hTrackDiffX_" + name;
         hTrackDiffX[name] = new TH1F(histo.c_str(), histo.c_str(), 4000, -20, 20);
+        string histo2 = "hTrackDiffY_" + name;
+        hTrackDiffY[name] = new TH1F(histo2.c_str(), histo2.c_str(), 4000, -20, 20);
     }
 
     // Initialise member variables

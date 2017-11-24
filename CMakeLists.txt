@@ -27,6 +27,19 @@ PROJECT(Corryvreckan VERSION ${SIMPLE_VERSION} LANGUAGES NONE)
 # Access the project name (for install locations) in the source
 ADD_DEFINITIONS(-DCORRYVRECKAN_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DCORRYVRECKAN_PROJECT_VERSION="${CORRYVRECKAN_VERSION}")
 
+###############################################
+# Setup the environment for the documentation #
+###############################################
+
+OPTION(BUILD_DOCS_ONLY "Build documentation only" OFF)
+
+# Add targets for Doxygen code reference and LaTeX User manual
+ADD_SUBDIRECTORY(doc)
+
+# If only building docs, stop processing the rest of the CMake file:
+IF(BUILD_DOCS_ONLY)
+  RETURN()
+ENDIF()
 
 ###############################
 # Setup the build environment #
