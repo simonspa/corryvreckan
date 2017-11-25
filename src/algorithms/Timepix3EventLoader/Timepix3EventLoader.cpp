@@ -21,6 +21,7 @@ Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<Detec
 
     applyTimingCut = m_config.get<bool>("applyTimingCut", false);
     m_timingCut = m_config.get<double>("timingCut", 0.0);
+    m_triggerLatency = m_config.get<double>("triggerLatency", 0.0);
     m_minNumberOfPlanes = m_config.get<int>("minNumerOfPlanes", 1);
 
     // Check whether event length or pixel count should be used to separate events:
@@ -429,6 +430,33 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             40000000.);
             }
              */
+        }
+
+        // Header 0x6 indicate trigger data
+        if(header == 0x6) {
+            const UChar_t header2 = ((pixdata & 0x0F00000000000000) >> 56) & 0xF;
+            if(header2 == 0xF) {
+                unsigned long long int stamp = (pixdata & 0x1E0) >> 5;
+                long long int timestamp_raw = (pixdata & 0xFFFFFFFFE00) >> 9;
+                long long int timestamp = 0;
+                int triggerNumber = ((pixdata & 0xFFF00000000000) >> 44);
+                int intermediate = (pixdata & 0x1F);
+                if(intermediate != 0)
+                    continue;
+
+                if((m_syncTimeTDC[detectorID] - timestamp_raw) >
+                   0x1312d000) // if jump back in time is larger than 1 sec, overflow detected...
+                {
+                    m_TDCoverflowCounter[detectorID]++;
+                }
+                m_syncTimeTDC[detectorID] = timestamp_raw;
+                timestamp = timestamp_raw + ((unsigned long long int)(m_TDCoverflowCounter[detectorID]) << 35);
+
+                double triggerTime = (timestamp * 25e-9 + stamp * 25e-9 / 12.) / 8.; // 320 MHz clock
+                triggerTime -= m_triggerLatency * 1e-9;
+                SpidrSignal* triggerSignal = new SpidrSignal("trigger", triggerTime * (4096. * 40000000.));
+                spidrData->push_back(triggerSignal);
+            }
         }
 
         // Header 0xA and 0xB indicate pixel data
