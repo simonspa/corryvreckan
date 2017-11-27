@@ -31,7 +31,7 @@ No plots are produced.
 #### Usage
 ```toml
 [DataOutput]
-DUT = W0005_H03"
+DUT = "W0005_H03"
 fileName = "myOutputFile.root"
 treeName = "myTree"
 ```
