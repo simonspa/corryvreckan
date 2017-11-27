@@ -42,6 +42,7 @@ namespace corryvreckan {
         std::map<std::string, bool> m_clearedHeader;
         std::map<std::string, long long int> m_syncTimeTDC;
         std::map<std::string, int> m_TDCoverflowCounter;
+
         long long int m_currentTime;
         long long int m_currentEvent;
 

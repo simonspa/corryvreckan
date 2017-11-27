@@ -123,6 +123,8 @@ void Timepix3EventLoader::initialise() {
         // Initialise null values for later
         m_syncTime[detectorID] = 0;
         m_clearedHeader[detectorID] = false;
+        m_syncTimeTDC[detectorID] = 0;
+        m_TDCoverflowCounter[detectorID] = 0;
 
         // Sort all files by extracting the "serial number" from the file name while ignoring the timestamp:
         std::sort(detector_files[detector->name()].begin(),
@@ -444,16 +446,15 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 if(intermediate != 0)
                     continue;
 
-                if((m_syncTimeTDC[detectorID] - timestamp_raw) >
-                   0x1312d000) // if jump back in time is larger than 1 sec, overflow detected...
-                {
+                // if jump back in time is larger than 1 sec, overflow detected...
+                if((m_syncTimeTDC[detectorID] - timestamp_raw) > 0x1312d000) {
                     m_TDCoverflowCounter[detectorID]++;
                 }
                 m_syncTimeTDC[detectorID] = timestamp_raw;
                 timestamp = timestamp_raw + ((unsigned long long int)(m_TDCoverflowCounter[detectorID]) << 35);
 
-                double triggerTime = (timestamp * 25e-9 + stamp * 25e-9 / 12.) / 8.; // 320 MHz clock
-                triggerTime -= m_triggerLatency * 1e-9;
+                double triggerTime = (timestamp * 25e-9 + stamp * 25e-9 / 12.) / 8; // 320 MHz clock
+                // triggerTime -= m_triggerLatency * 1e-9;
                 SpidrSignal* triggerSignal = new SpidrSignal("trigger", triggerTime * (4096. * 40000000.));
                 spidrData->push_back(triggerSignal);
             }
@@ -487,6 +488,10 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             // Calculate the timestamp.
             long long int time =
                 (((spidrTime << 18) + (toa << 4) + (15 - ftoa)) << 8) + (m_syncTime[detectorID] & 0xFFFFFC0000000000);
+
+            // Adjusting phases for double column shift
+            time += ((col / 2 - 1) % 16) * 256;
+
             // LOG(DEBUG) <<"Pixel time "<<(double)time/(4096. * 40000000.);
             // LOG(DEBUG) <<"Sync time "<<(double)m_syncTime[detectorID]/(4096. *
             // 40000000.);
