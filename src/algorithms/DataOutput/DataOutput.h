@@ -50,5 +50,5 @@ namespace corryvreckan {
         std::string m_fileName;
         std::string m_treeName;
     };
-}
+} // namespace corryvreckan
 #endif // DATAOUTPUT_H
