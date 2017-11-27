@@ -36,6 +36,8 @@ namespace corryvreckan {
 
         // Member variables
         int m_eventNumber;
+        unsigned long long int m_oldtoa;
+        unsigned long long int m_overflowcounter;
         std::string detectorID;
         std::string m_filename;
         std::ifstream m_file;
@@ -43,6 +45,8 @@ namespace corryvreckan {
 
         TH2F* hHitMap;
         TH1F* hPixelToT;
+        TH1F* hPixelToTCal;
+        TH1F* hPixelToA;
         TH1F* hPixelsPerFrame;
 
         // Parameters:

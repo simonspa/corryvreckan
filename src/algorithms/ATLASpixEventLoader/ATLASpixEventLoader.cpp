@@ -50,9 +50,15 @@ void ATLASpixEventLoader::initialise() {
     // Open the data file for later
     m_file.open(m_filename.c_str());
 
+    // Skip the first line as it only contains headers:
+    std::string headerline;
+    std::getline(m_file, headerline);
+
     // Make histograms for debugging
     hHitMap = new TH2F("hitMap", "hitMap", 128, 0, 128, 400, 0, 400);
     hPixelToT = new TH1F("pixelToT", "pixelToT", 100, 0, 100);
+    hPixelToTCal = new TH1F("pixelToTCal", "pixelToT", 100, 0, 100);
+    hPixelToA = new TH1F("pixelToA", "pixelToA", 100, 0, 100);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 200, 0, 200);
 
     // Read calibration:
@@ -79,6 +85,8 @@ void ATLASpixEventLoader::initialise() {
 
     // Initialise member variables
     m_eventNumber = 0;
+    m_oldtoa = 0;
+    m_overflowcounter = 0;
 }
 
 StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
@@ -89,67 +97,73 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
         return Failure;
     }
 
-    // Regular expression to find the hit information:
-    std::regex regex_hit("^Col\\(([0-9]+)\\); "
-                         "Row\\(([0-9]+)\\); "
-                         "TS\\(([0-9]+)\\); "
-                         "TOT\\(([0-9]+)\\); "
-                         "TriggerTSCoarse\\(([0-9]+)\\); "
-                         "TriggerTSFine\\(([0-9]+)\\); "
-                         "TriggerIndex\\(([0-9]+)\\)");
-    std::smatch sm;
-
-    // Pixel container, shutter information
+    // Pixel container
     Pixels* pixels = new Pixels();
-    string data;
-
-    int old_trg_index = 0;
-    std::streampos oldpos;
 
     // Read file and load data
-    while(getline(m_file, data)) {
+    while(!m_file.eof()) {
 
-        LOG(TRACE) << "Raw data: " << data;
+        unsigned int col, row, tot, ts;
+        unsigned long long int toa, TriggerDebugTS, dummy, bincounter;
 
-        if(std::regex_search(data, sm, regex_hit)) {
-            int col = std::stoi(sm[1]);
-            int row = std::stoi(sm[2]);
-            int tot = std::stoi(sm[4]);
-            int trg_index = std::stoi(sm[7]);
+        m_file >> col >> row >> ts >> tot >> dummy >> dummy >> bincounter >> TriggerDebugTS;
 
-            auto detector = get_detector(detectorID);
-            // If this pixel is masked, do not save it
-            if(detector->masked(col, row)) {
-                continue;
-            }
-
-            // Treat first event correctly:
-            if(old_trg_index == 0) {
-                old_trg_index = trg_index;
-            }
-
-            // Break at new event:
-            if(trg_index != old_trg_index) {
-                LOG(TRACE) << "Peek   (" << col << "," << row << ") TOT: " << tot << " TRG: " << trg_index;
-                m_file.seekg(oldpos);
-                old_trg_index = trg_index;
-                m_eventNumber++;
-                break;
-            }
-
-            LOG(DEBUG) << "Hit at (" << col << "," << row << ") TOT: " << tot << " TRG: " << trg_index;
-            LOG_PROGRESS(INFO, "atlaspix_reader") << "Current time: " << trg_index << ", " << m_eventNumber << " events";
-
-            Pixel* pixel = new Pixel(detectorID, row, col, tot, 0);
-            pixels->push_back(pixel);
-            hHitMap->Fill(col, row);
-            hPixelToT->Fill(tot);
-        } else {
-            LOG(WARNING) << "No hit data: " << data;
+        auto detector = get_detector(detectorID);
+        // If this pixel is masked, do not save it
+        if(detector->masked(col, row)) {
+            continue;
         }
 
-        // Update position of last hit read:
-        oldpos = m_file.tellg();
+        // TOT
+        if(tot <= (ts * 2 & 0x3F)) {
+            tot = 64 + tot - (ts * 2 & 0x3F);
+        } else {
+            tot = tot - (ts * 2 & 0x3F);
+        }
+
+        // Apply calibration:
+        unsigned int cal_tot = tot * m_calibrationFactors.at(row * 25 + col);
+        LOG(TRACE) << "Hit " << row << "\t" << col << ": " << m_calibrationFactors.at(row * 25 + col) << " * " << tot
+                   << " = " << cal_tot;
+
+        ts &= 0xFF;
+        ts *= 2; // atlaspix timestamp runs at 10MHz, multiply by to to get 20.
+
+        if((bincounter & 0x1FF) < ts) {
+            toa = ((bincounter & 0xFFFFFFFFFFFFFE00) - (1 << 9)) | (ts & 0x1FF);
+        } else {
+            toa = (bincounter & 0xFFFFFFFFFFFFFE00) | (ts & 0x1FF);
+        }
+
+        if(((toa + 10000) & 0xFFFFF000) < (m_oldtoa & 0xFFFFF000)) {
+            m_overflowcounter++;
+            LOG(DEBUG) << "Overflow detected " << m_overflowcounter << " " << (toa & 0xFFFFF000) << " "
+                       << (m_oldtoa & 0xFFFFF000);
+        } // Atlaspix only! Toa has overflow at 32 bits.
+
+        toa += (0x100000000 * m_overflowcounter);
+        m_oldtoa = toa & 0xFFFFFFFF;
+        LOG(DEBUG) << "    " << row << "\t" << col << ": " << tot << " " << ts << " " << bincounter << " " << toa << " "
+                   << (TriggerDebugTS - toa);
+
+        TriggerDebugTS *= 4096. / 5;              // runs with 200MHz, divide by 5 to scale counter value to 40MHz
+        toa *= 4096. * (unsigned long long int)2; // runs with 20MHz, multiply by 2 to scale counter value to 40MHz
+
+        // Timewalk correction:
+        if(m_timewalkCorrectionFactors.size() == 5) {
+            double corr = m_timewalkCorrectionFactors.at(0) + m_timewalkCorrectionFactors.at(1) * tot +
+                          m_timewalkCorrectionFactors.at(2) * tot * tot +
+                          m_timewalkCorrectionFactors.at(3) * tot * tot * tot +
+                          m_timewalkCorrectionFactors.at(4) * tot * tot * tot * tot;
+            toa -= corr * (4096. * 40000000.);
+        }
+
+        Pixel* pixel = new Pixel(detectorID, row, col, cal_tot, toa);
+        pixels->push_back(pixel);
+        hHitMap->Fill(col, row);
+        hPixelToT->Fill(tot);
+        hPixelToTCal->Fill(cal_tot);
+        hPixelToA->Fill(toa);
     }
 
     // Put the data on the clipboard
