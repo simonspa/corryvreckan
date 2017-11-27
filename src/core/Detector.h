@@ -69,6 +69,8 @@ namespace corryvreckan {
         double rotationX() { return m_orientation.X(); }
         double rotationY() { return m_orientation.Y(); }
         double rotationZ() { return m_orientation.Z(); }
+        ROOT::Math::XYZVector rotation() { return m_orientation; }
+        void rotation(ROOT::Math::XYZVector rotation) { m_orientation = rotation; }
 
         // Functions to set and check channel masking
         void setMaskFile(std::string file);

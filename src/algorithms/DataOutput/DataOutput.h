@@ -23,14 +23,9 @@ namespace corryvreckan {
         void finalise();
 
         // Member variables
-        int tmp_int;
         int numPixels;
         int eventID;
         int filledEvents;
-        long long int tmp_longint;
-        double tmp_double;
-
-        ROOT::Math::XYZVector m_orientation;
 
         PositionVector3D<Cartesian3D<double>> trackIntercept;
         PositionVector3D<Cartesian3D<double>> trackInterceptLocal;
@@ -52,7 +47,6 @@ namespace corryvreckan {
         TTree* m_outputTree{};
 
         // Config parameters
-        bool m_useToA;
         std::string m_fileName;
         std::string m_treeName;
     };

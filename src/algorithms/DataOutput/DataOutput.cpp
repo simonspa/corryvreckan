@@ -73,8 +73,6 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
     v_pixelToT.clear();
     v_pixelToA.clear();
     v_clusterNumPixels.clear();
-    tmp_int = 0;
-    tmp_double = 0.0;
 
     // Getting tracks from the clipboard
     Tracks* tracks = (Tracks*)clipboard->get("tracks");
@@ -109,14 +107,12 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
         Cluster* cluster = associatedClusters.front();
 
         // x size
-        tmp_double = cluster->columnWidth();
-        LOG(DEBUG) << "Gets column width = " << tmp_double;
-        v_clusterSizeX.push_back(tmp_double);
+        LOG(DEBUG) << "Gets column width = " << cluster->columnWidth();
+        v_clusterSizeX.push_back(cluster->columnWidth());
 
         // y size
-        tmp_double = cluster->rowWidth();
-        LOG(DEBUG) << "Gets row width = " << tmp_double;
-        v_clusterSizeY.push_back(tmp_double);
+        LOG(DEBUG) << "Gets row width = " << cluster->rowWidth();
+        v_clusterSizeY.push_back(cluster->rowWidth());
 
         // eventID
         v_clusterEventID.push_back(eventID);
@@ -132,24 +128,20 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
             numPixels++;
 
             // x position
-            tmp_int = pixel->m_column;
-            LOG(DEBUG) << "Gets pixel column = " << tmp_int;
-            v_pixelX.push_back(tmp_int);
+            LOG(DEBUG) << "Gets pixel column = " << pixel->m_column;
+            v_pixelX.push_back(pixel->m_column);
 
             // y position
-            tmp_int = pixel->m_row;
-            LOG(DEBUG) << "Gets pixel row = " << tmp_int;
-            v_pixelY.push_back(tmp_int);
+            LOG(DEBUG) << "Gets pixel row = " << pixel->m_row;
+            v_pixelY.push_back(pixel->m_row);
 
             // ToT
-            tmp_int = pixel->m_adc;
-            LOG(DEBUG) << "Gets pixel tot = " << tmp_int;
-            v_pixelToT.push_back(tmp_int);
+            LOG(DEBUG) << "Gets pixel tot = " << pixel->m_adc;
+            v_pixelToT.push_back(pixel->m_adc);
 
             // ToA
-            tmp_longint = pixel->m_timestamp;
-            LOG(DEBUG) << "Gets pixel timestamp = " << tmp_longint;
-            v_pixelToA.push_back(tmp_longint);
+            LOG(DEBUG) << "Gets pixel timestamp = " << pixel->m_timestamp;
+            v_pixelToA.push_back(pixel->m_timestamp);
         }
         v_clusterNumPixels.push_back(numPixels);
     }
@@ -171,20 +163,13 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
 
 void DataOutput::finalise() {
     LOG(DEBUG) << "Finalise";
-
     // DUT angles for output
     auto DUT = get_detector(m_config.get<std::string>("DUT"));
     auto directory = m_outputFile->mkdir("Directory");
     directory->cd();
-    double DUTangleX = (DUT->rotationX());
-    double DUTangleY = (DUT->rotationY()) - 3.14159265358979323846; // minus pi as DUT rotated by 180 degrees as PCB facing
-                                                                    // beam. The rotation due to the mount for the analysis
-                                                                    // is rotationY - 180degrees
-    double DUTangleZ = (DUT->rotationZ());
 
-    // Creating XYZ vector of DUT angles and adding these to the outputfile
-    m_orientation.SetCoordinates(DUTangleX, DUTangleY, DUTangleZ);
-    directory->WriteObject(&m_orientation, "DUTorientation");
+    auto orientation = DUT->rotation();
+    directory->WriteObject(&orientation, "DUTorientation");
 
     // Writing out outputfile
     m_outputFile->Write();
