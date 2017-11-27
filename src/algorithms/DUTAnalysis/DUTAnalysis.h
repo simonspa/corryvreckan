@@ -22,6 +22,7 @@ namespace corryvreckan {
 
         // Histograms
         TH1F* tracksVersusTime;
+        TH1F* triggerVersusTime;
         TH1F* associatedTracksVersusTime;
         TH1F* residualsX;
         TH1F* residualsY;
@@ -31,8 +32,9 @@ namespace corryvreckan {
         TH1F* hTrackCorrelationY;
         TH1F* hTrackCorrelationTime;
         TH1F* residualsTime;
-        TH2F* clusterToTVersusTime;
         TH2F* residualsTimeVsTime;
+        TH2F* residualsTimeVsSignal;
+        TH2F* clusterToTVersusTime;
 
         TH1F* residualsXMCtruth;
 
@@ -47,11 +49,6 @@ namespace corryvreckan {
         int m_eventNumber;
         int m_nAlignmentClusters;
         bool m_useMCtruth;
-        long long int m_powerOnTime;
-        long long int m_powerOffTime;
-        long long int m_shutterOpenTime;
-        long long int m_shutterCloseTime;
-        bool m_digitalPowerPulsing;
     };
 } // namespace corryvreckan
 #endif // DUTAnalysis_H

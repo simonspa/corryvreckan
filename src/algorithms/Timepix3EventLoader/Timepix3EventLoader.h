@@ -2,6 +2,9 @@
 #define TIMEPIX3EVENTLOADER_H 1
 
 #include <stdio.h>
+#include "TCanvas.h"
+#include "TH1F.h"
+#include "TH2F.h"
 #include "core/algorithm/Algorithm.h"
 #include "objects/Pixel.h"
 #include "objects/SpidrSignal.h"
@@ -19,8 +22,20 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
+        // ROOT graphs
+        TH1F* pixelToT_beforecalibration;
+        TH1F* pixelToT_aftercalibration;
+        TH2F* pixelTOTParamaterA;
+        TH2F* pixelTOTParamaterB;
+        TH2F* pixelTOTParamaterC;
+        TH2F* pixelTOTParamaterT;
+        TH2F* pixelTOAParamaterC;
+        TH2F* pixelTOAParamaterD;
+        TH2F* pixelTOAParamaterT;
+
     private:
         bool loadData(Clipboard* clipboard, Detector* detector, Pixels*, SpidrSignals*);
+        int loadCalibration(std::string path, char delim, std::vector<std::vector<float>>& dat);
         void maskPixels(Detector*, std::string);
 
         // cofngiuration paramaters:
@@ -33,6 +48,13 @@ namespace corryvreckan {
         bool temporalSplit;
         double m_eventLength;
         int m_numberPixelHits;
+
+        bool applyCalibration;
+        std::string calibrationPath;
+        std::string threshold;
+
+        std::vector<std::vector<float>> vtot;
+        std::vector<std::vector<float>> vtoa;
 
         // Member variables
         std::map<std::string, std::vector<std::unique_ptr<std::ifstream>>> m_files;
