@@ -36,13 +36,28 @@ namespace corryvreckan {
 
         // Member variables
         int m_eventNumber;
+        unsigned long long int m_oldtoa;
+        unsigned long long int m_overflowcounter;
         std::string detectorID;
         std::string m_filename;
         std::ifstream m_file;
+        double m_clockFactor;
 
         TH2F* hHitMap;
         TH1F* hPixelToT;
+        TH1F* hPixelToTCal;
+        TH1F* hPixelToA;
         TH1F* hPixelsPerFrame;
+
+        // Parameters:
+        std::vector<double> m_timewalkCorrectionFactors;
+        std::vector<double> m_calibrationFactors;
+        double m_timestampPeriod;
+        std::string m_inputDirectory;
+        std::string m_calibrationFile;
+        double m_eventLength;
+        double m_startTime;
+        bool m_toaMode;
     };
 } // namespace corryvreckan
 #endif // ATLASpixEventLoader_H

@@ -12,6 +12,7 @@ Detector::Detector(const Configuration& config) {
     // Get information from the conditions file:
     m_displacement = config.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
     m_orientation = config.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
+    m_orientation_mode = config.get<std::string>("orientation_mode", "xyz");
 
     // Number of pixels
     auto npixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
@@ -31,7 +32,7 @@ Detector::Detector(const Configuration& config) {
     LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixelsX << "x" << m_nPixelsY << " px, pitch of "
                << m_pitchX << "/" << m_pitchY << "mm";
     LOG(TRACE) << "  Position:    " << display_vector(m_displacement, {"mm", "um"});
-    LOG(TRACE) << "  Orientation: " << display_vector(m_orientation, {"deg"});
+    LOG(TRACE) << "  Orientation: " << display_vector(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
     if(m_timingOffset > 0.) {
         LOG(TRACE) << "Timing offset: " << m_timingOffset;
     }
@@ -101,8 +102,15 @@ void Detector::initialise() {
     // Make the local to global transform, built from a displacement and
     // rotation
     m_translations = new Translation3D(m_displacement.X(), m_displacement.Y(), m_displacement.Z());
-    m_rotations = new Rotation3D(ROOT::Math::RotationZ(m_orientation.Z()) * ROOT::Math::RotationY(m_orientation.Y()) *
-                                 ROOT::Math::RotationX(m_orientation.X()));
+
+    if(m_orientation_mode == "xyz") {
+        m_rotations = new Rotation3D(ROOT::Math::RotationZ(m_orientation.Z()) * ROOT::Math::RotationY(m_orientation.Y()) *
+                                     ROOT::Math::RotationX(m_orientation.X()));
+    } else if(m_orientation_mode == "zyx") {
+        m_rotations = new Rotation3D(ROOT::Math::RotationZYX(m_orientation.x(), m_orientation.y(), m_orientation.x()));
+    } else {
+        throw RuntimeError("Invalid detector orientation mode: " + m_orientation_mode);
+    }
 
     m_localToGlobal = new Transform3D(*m_rotations, *m_translations);
     m_globalToLocal = new Transform3D();
@@ -133,6 +141,7 @@ Configuration Detector::getConfiguration() {
     config.set("type", m_detectorType);
 
     config.set("position", m_displacement);
+    config.set("orientation_mode", m_orientation_mode);
     config.set("orientation", m_orientation);
     auto npixels = ROOT::Math::DisplacementVector2D<Cartesian2D<int>>(m_nPixelsX, m_nPixelsY);
     config.set("number_of_pixels", npixels);

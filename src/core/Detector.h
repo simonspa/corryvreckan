@@ -69,6 +69,8 @@ namespace corryvreckan {
         double rotationX() { return m_orientation.X(); }
         double rotationY() { return m_orientation.Y(); }
         double rotationZ() { return m_orientation.Z(); }
+        ROOT::Math::XYZVector rotation() { return m_orientation; }
+        void rotation(ROOT::Math::XYZVector rotation) { m_orientation = rotation; }
 
         // Functions to set and check channel masking
         void setMaskFile(std::string file);
@@ -121,6 +123,7 @@ namespace corryvreckan {
         // Displacement and rotation in x,y,z
         ROOT::Math::XYZPoint m_displacement;
         ROOT::Math::XYZVector m_orientation;
+        std::string m_orientation_mode;
 
         // Rotation and translation objects
         Translation3D* m_translations;
