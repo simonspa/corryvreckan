@@ -5,22 +5,30 @@ using namespace corryvreckan;
 using namespace std;
 
 ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {}
+    : Algorithm(std::move(config), std::move(detectors)) {
+
+    m_timewalkCorrectionFactors = m_config.getArray<double>("timewalkCorrectionFactors", std::vector<double>());
+    m_timestampPeriod = m_config.get<double>("timestampPeriod", Units::convert(25, "ns"));
+
+    m_inputDirectory = m_config.get<std::string>("inputDirectory");
+    m_calibrationFile = m_config.get<std::string>("calibrationFile");
+    m_eventLength = m_config.get<double>("eventLength", 0.000010);
+
+    m_startTime - m_config.get<double>("startTime", 0.);
+    m_toaMode = m_config.get<bool>("toaMode", false);
+}
 
 void ATLASpixEventLoader::initialise() {
 
     // File structure is RunX/ATLASpix/data.dat
 
-    // Take input directory from global parameters
-    string inputDirectory = m_config.get<std::string>("inputDirectory") + "/ATLASpix";
-
     // Assume that the ATLASpix is the DUT (if running this algorithm
     string detectorID = m_config.get<std::string>("DUT");
 
     // Open the root directory
-    DIR* directory = opendir(inputDirectory.c_str());
+    DIR* directory = opendir(m_inputDirectory.c_str());
     if(directory == NULL) {
-        LOG(ERROR) << "Directory " << inputDirectory << " does not exist";
+        LOG(ERROR) << "Directory " << m_inputDirectory << " does not exist";
         return;
     }
     dirent* entry;
@@ -29,7 +37,7 @@ void ATLASpixEventLoader::initialise() {
     // Read the entries in the folder
     while(entry = readdir(directory)) {
         // Check for the data file
-        string filename = inputDirectory + "/" + entry->d_name;
+        string filename = m_inputDirectory + "/" + entry->d_name;
         if(filename.find(".dat") != string::npos) {
             m_filename = filename;
         }
@@ -37,7 +45,7 @@ void ATLASpixEventLoader::initialise() {
 
     // If no data was loaded, give a warning
     if(m_filename.length() == 0)
-        LOG(WARNING) << "No data file was found for ATLASpix in " << inputDirectory;
+        LOG(WARNING) << "No data file was found for ATLASpix in " << m_inputDirectory;
 
     // Open the data file for later
     m_file.open(m_filename.c_str());
@@ -46,6 +54,28 @@ void ATLASpixEventLoader::initialise() {
     hHitMap = new TH2F("hitMap", "hitMap", 128, 0, 128, 400, 0, 400);
     hPixelToT = new TH1F("pixelToT", "pixelToT", 100, 0, 100);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 200, 0, 200);
+
+    // Read calibration:
+    m_calibrationFactors.resize(25 * 400, 1.0);
+    std::ifstream calibration(m_calibrationFile);
+    std::string line;
+    std::getline(calibration, line);
+
+    int col, row;
+    double calibfactor;
+    while(getline(calibration, line)) {
+        std::istringstream(line) >> col >> row >> calibfactor;
+        m_calibrationFactors.at(row * 25 + col) = calibfactor;
+    }
+    calibration.close();
+
+    LOG(INFO) << "Timewalk corrtion factors: ";
+    for(auto& ts : m_timewalkCorrectionFactors) {
+        LOG(INFO) << ts;
+    }
+
+    m_clockFactor = m_timestampPeriod / 25;
+    LOG(INFO) << "Applying clock scaling factor: " << m_clockFactor << std::endl;
 
     // Initialise member variables
     m_eventNumber = 0;
