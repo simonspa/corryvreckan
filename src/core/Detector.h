@@ -123,6 +123,7 @@ namespace corryvreckan {
         // Displacement and rotation in x,y,z
         ROOT::Math::XYZPoint m_displacement;
         ROOT::Math::XYZVector m_orientation;
+        std::string m_orientation_mode;
 
         // Rotation and translation objects
         Translation3D* m_translations;
