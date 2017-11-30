@@ -3,7 +3,7 @@ CORRYVRECKAN_ALGORITHM(ALGORITHM_NAME)
 
 # Add source files to library
 CORRYVRECKAN_ALGORITHM_SOURCES(${ALGORITHM_NAME}
-    ImproveTimestamp.cpp
+    ImproveReferenceTimestamp.cpp
     # ADD SOURCE FILES HERE...
 )
 

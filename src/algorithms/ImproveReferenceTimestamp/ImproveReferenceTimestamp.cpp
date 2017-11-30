@@ -1,26 +1,27 @@
-#include "ImproveTimestamp.h"
+#include "ImproveReferenceTimestamp.h"
 #include "objects/SpidrSignal.h"
 
 using namespace corryvreckan;
 using namespace std;
 
-ImproveTimestamp::ImproveTimestamp(Configuration config, std::vector<Detector*> detectors)
+ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
     m_method = m_config.get<int>("improvementMethod", 1);
+    m_source = m_config.get<std::string>("signalSource", "W0013_G02");
 }
 
-void ImproveTimestamp::initialise() {
+void ImproveReferenceTimestamp::initialise() {
     // Initialise member variables
     m_eventNumber = 0;
 }
 
-StatusCode ImproveTimestamp::run(Clipboard* clipboard) {
+StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
 
     // Recieved triggers
     std::vector<long long int> trigger_times;
 
     // Get trigger signals
-    SpidrSignals* spidrData = (SpidrSignals*)clipboard->get("W0013_G02", "SpidrSignals");
+    SpidrSignals* spidrData = (SpidrSignals*)clipboard->get(m_source, "SpidrSignals");
     if(spidrData != NULL) {
         // Loop over all signals registered
         int nSignals = spidrData->size();
@@ -47,27 +48,25 @@ StatusCode ImproveTimestamp::run(Clipboard* clipboard) {
 
         long long int improved_time = track->timestamp();
 
+        // Use trigger timestamp
         if(m_method == 0) {
             // Find trigger timestamp clostest in time
-            long long int diff = 999999999999999;
-            int imin = -1;
-            if(trigger_times.size() > 0) {
-                for(int i = 0; i < trigger_times.size(); i++) {
-                    LOG(DEBUG) << " track: " << track->timestamp() << " trigger: " << trigger_times.at(i)
-                               << " diff: " << abs((int)(trigger_times.at(i) - track->timestamp()))
-                               << " diff stored cycles: " << diff
-                               << " diff stored secs: " << (double)(diff) / (4096. * 40000000.);
-                    if(abs((int)(trigger_times.at(i) - track->timestamp())) < diff) {
-                        imin = i;
-                        diff = abs((int)(trigger_times.at(i) - track->timestamp()));
-                    }
+            long long int diff = std::numeric_limits<long long int>::max();
+            for(auto& trigger_time : trigger_times) {
+                LOG(DEBUG) << " track: " << track->timestamp() << " trigger: " << trigger_time
+                           << " diff: " << abs((long long int)(trigger_time - track->timestamp()))
+                           << " diff stored cycles: " << diff
+                           << " diff stored secs: " << (double)(diff) / (4096. * 40000000.);
+                if(abs((long long int)(trigger_time - track->timestamp())) < diff) {
+                    improved_time = trigger_time;
+                    diff = abs((long long int)(trigger_time - track->timestamp()));
                 }
-                improved_time = trigger_times.at(imin);
-                // trigger latency is 175 ns, still missing
             }
+            // trigger latency is ~175 ns, still missing
         }
 
-        if(m_method == 1) {
+        // Use average track timestamp
+        else if(m_method == 1) {
             int nhits = 0;
             long long int avg_track_time = 0;
             for(auto& cluster : track->clusters()) {
@@ -93,7 +92,7 @@ StatusCode ImproveTimestamp::run(Clipboard* clipboard) {
     return Success;
 }
 
-void ImproveTimestamp::finalise() {
+void ImproveReferenceTimestamp::finalise() {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }
