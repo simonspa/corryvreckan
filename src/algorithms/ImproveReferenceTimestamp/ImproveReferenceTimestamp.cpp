@@ -8,7 +8,6 @@ ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration config, std::
     : Algorithm(std::move(config), std::move(detectors)) {
     m_method = m_config.get<int>("improvementMethod", 1);
     m_source = m_config.get<std::string>("signalSource", "W0013_G02");
-    m_stop = m_config.get<bool>("allowOutoftimeEvents", true);
 }
 
 void ImproveReferenceTimestamp::initialise() {
@@ -63,11 +62,6 @@ StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
                     diff = abs((long long int)(trigger_time - track->timestamp()));
                 }
             }
-            // if(m_stop == false) {
-            //     if(diff > 5e-7) {
-            //         return NoData;
-            //     }
-            // }
             // trigger latency is ~175 ns, still missing
         }
 
