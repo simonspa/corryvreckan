@@ -64,6 +64,8 @@ IF(LATEX_COMPILER)
     ENDIF()
 
     # Build array of LaTex files to add to the documentation
+    LIST(LENGTH algorithm_tex_files NUM_ALGORITHMS)
+    MESSAGE(STATUS "Manual: adding ${NUM_ALGORITHMS} algorithm descriptions")
     FOREACH(algorithm_tex_file ${algorithm_tex_files})
         IF(NOT CORRYVRECKAN_ALGORITHM_FILES)
             SET(CORRYVRECKAN_ALGORITHM_FILES "{${algorithm_tex_file}")
