@@ -1,5 +1,5 @@
-#ifndef ImproveTimestamp_H
-#define ImproveTimestamp_H 1
+#ifndef ImproveReferenceTimestamp_H
+#define ImproveReferenceTimestamp_H 1
 
 #include <cmath>
 #include <iostream>
@@ -12,12 +12,12 @@
 #include "objects/Track.h"
 
 namespace corryvreckan {
-    class ImproveTimestamp : public Algorithm {
+    class ImproveReferenceTimestamp : public Algorithm {
 
     public:
         // Constructors and destructors
-        ImproveTimestamp(Configuration config, std::vector<Detector*> detectors);
-        ~ImproveTimestamp() {}
+        ImproveReferenceTimestamp(Configuration config, std::vector<Detector*> detectors);
+        ~ImproveReferenceTimestamp() {}
 
         // Functions
         void initialise();
@@ -33,6 +33,8 @@ namespace corryvreckan {
         // Member variables
         int m_eventNumber;
         int m_method;
+        bool m_stop;
+        std::string m_source;
     };
 } // namespace corryvreckan
-#endif // ImproveTimestamp_H
+#endif // ImproveReferenceTimestamp_H
