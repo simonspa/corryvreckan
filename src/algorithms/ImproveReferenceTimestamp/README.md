@@ -1,5 +1,5 @@
-## NAME
-**Maintainer**: Florian Pitters (<florian.pitters@cern.ch>)
+## ImproveReferenceTimestamp
+**Maintainer**: Florian Pitters (<florian.pitters@cern.ch>)  
 **Status**: Work in progress
 
 #### Description
