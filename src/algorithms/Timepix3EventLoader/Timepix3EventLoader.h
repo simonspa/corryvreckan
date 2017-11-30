@@ -26,6 +26,7 @@ namespace corryvreckan {
         // cofngiuration paramaters:
         bool applyTimingCut;
         double m_timingCut;
+        double m_triggerLatency;
         std::string m_inputDirectory;
         int m_minNumberOfPlanes;
 
@@ -39,6 +40,9 @@ namespace corryvreckan {
 
         std::map<std::string, long long int> m_syncTime;
         std::map<std::string, bool> m_clearedHeader;
+        std::map<std::string, long long int> m_syncTimeTDC;
+        std::map<std::string, int> m_TDCoverflowCounter;
+
         long long int m_currentTime;
         long long int m_currentEvent;
 

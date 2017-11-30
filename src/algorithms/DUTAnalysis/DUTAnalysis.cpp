@@ -186,36 +186,31 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
         // If no DUT clusters then continue to the next track
         if(clusters == NULL)
             continue;
-        /*
+
         // Correlation plot
-        for(int itCluster=0;itCluster<clusters->size();itCluster++){
+        for(int itCluster = 0; itCluster < clusters->size(); itCluster++) {
 
-          // Get the cluster pointer
-          Cluster* cluster = (*clusters)[itCluster];
+            // Get the cluster pointer
+            Cluster* cluster = (*clusters)[itCluster];
 
-          // Check if the cluster is close in time
-    //      if( abs(cluster->timestamp() - track->timestamp()) > timingCutInt )
-    continue;
+            // Check if the cluster is close in time
+            //      if( abs(cluster->timestamp() - track->timestamp()) > timingCutInt )
+            continue;
 
-          // Check distance between track and cluster
-          ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
+            // Check distance between track and cluster
+            ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
 
-          // Fill the correlation plot
-          hTrackCorrelationX->Fill(intercept.X() - cluster->globalX());
-          hTrackCorrelationY->Fill(intercept.Y() - cluster->globalY());
-          hTrackCorrelationTime->Fill( (double)(track->timestamp() -
-    cluster->timestamp()) / (4096.*40000000.));
+            // Fill the correlation plot
+            hTrackCorrelationX->Fill(intercept.X() - cluster->globalX());
+            hTrackCorrelationY->Fill(intercept.Y() - cluster->globalY());
+            hTrackCorrelationTime->Fill((double)(track->timestamp() - cluster->timestamp()) / (4096. * 40000000.));
 
-          if( fabs(intercept.X() - cluster->globalX()) < 0.1 &&
-              fabs(intercept.Y() - cluster->globalY()) < 0.1){
-            residualsTime->Fill((double)(track->timestamp() - cluster->timestamp())
-    / (4096.*40000000.));
-            residualsTimeVsTime->Fill( (double)track->timestamp() /
-    (4096.*40000000.), (double)(track->timestamp() - cluster->timestamp()) /
-    (4096.*40000000.));
-          }
+            if(fabs(intercept.X() - cluster->globalX()) < 0.1 && fabs(intercept.Y() - cluster->globalY()) < 0.1) {
+                residualsTime->Fill((double)(track->timestamp() - cluster->timestamp()) / (4096. * 40000000.));
+                residualsTimeVsTime->Fill((double)track->timestamp() / (4096. * 40000000.),
+                                          (double)(track->timestamp() - cluster->timestamp()) / (4096. * 40000000.));
+            }
         }
-        */
 
         // Loop over all DUT clusters
         bool associated = false;

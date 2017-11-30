@@ -21,6 +21,7 @@ Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<Detec
 
     applyTimingCut = m_config.get<bool>("applyTimingCut", false);
     m_timingCut = m_config.get<double>("timingCut", 0.0);
+    m_triggerLatency = m_config.get<double>("triggerLatency", 0.0);
     m_minNumberOfPlanes = m_config.get<int>("minNumerOfPlanes", 1);
 
     // Check whether event length or pixel count should be used to separate events:
@@ -122,6 +123,8 @@ void Timepix3EventLoader::initialise() {
         // Initialise null values for later
         m_syncTime[detectorID] = 0;
         m_clearedHeader[detectorID] = false;
+        m_syncTimeTDC[detectorID] = 0;
+        m_TDCoverflowCounter[detectorID] = 0;
 
         // Sort all files by extracting the "serial number" from the file name while ignoring the timestamp:
         std::sort(detector_files[detector->name()].begin(),
@@ -431,6 +434,32 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
              */
         }
 
+        // Header 0x6 indicate trigger data
+        if(header == 0x6) {
+            const UChar_t header2 = ((pixdata & 0x0F00000000000000) >> 56) & 0xF;
+            if(header2 == 0xF) {
+                unsigned long long int stamp = (pixdata & 0x1E0) >> 5;
+                long long int timestamp_raw = (pixdata & 0xFFFFFFFFE00) >> 9;
+                long long int timestamp = 0;
+                int triggerNumber = ((pixdata & 0xFFF00000000000) >> 44);
+                int intermediate = (pixdata & 0x1F);
+                if(intermediate != 0)
+                    continue;
+
+                // if jump back in time is larger than 1 sec, overflow detected...
+                if((m_syncTimeTDC[detectorID] - timestamp_raw) > 0x1312d000) {
+                    m_TDCoverflowCounter[detectorID]++;
+                }
+                m_syncTimeTDC[detectorID] = timestamp_raw;
+                timestamp = timestamp_raw + ((unsigned long long int)(m_TDCoverflowCounter[detectorID]) << 35);
+
+                double triggerTime = (timestamp * 25e-9 + stamp * 25e-9 / 12.) / 8; // 320 MHz clock
+                // triggerTime -= m_triggerLatency * 1e-9;
+                SpidrSignal* triggerSignal = new SpidrSignal("trigger", triggerTime * (4096. * 40000000.));
+                spidrData->push_back(triggerSignal);
+            }
+        }
+
         // Header 0xA and 0xB indicate pixel data
         if(header == 0xA || header == 0xB) {
             LOG(TRACE) << "Found pixel data";
@@ -459,6 +488,10 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             // Calculate the timestamp.
             long long int time =
                 (((spidrTime << 18) + (toa << 4) + (15 - ftoa)) << 8) + (m_syncTime[detectorID] & 0xFFFFFC0000000000);
+
+            // Adjusting phases for double column shift
+            time += ((col / 2 - 1) % 16) * 256;
+
             // LOG(DEBUG) <<"Pixel time "<<(double)time/(4096. * 40000000.);
             // LOG(DEBUG) <<"Sync time "<<(double)m_syncTime[detectorID]/(4096. *
             // 40000000.);
