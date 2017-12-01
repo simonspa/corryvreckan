@@ -7,6 +7,8 @@ This algorithm loads raw data from a Timepix3 device and adds it to the clipboar
 
 The data can be split into events using an event length in time, or using a maximum number of hits on a detector plane. `SpidrSignal` and `pixel` objects are loaded to the clipboard for each detector.
 
+The hit timestamps are derived from the 40 MHz TOA counter and the fast on-pixel oscillator, which is measuring the precise hit arrival time with respect to the global 40 MHz clock. In Timepix3, the phase of the 40 MHz clock can be shifted from one double column to the next by 22.5 degree by the clock generator in order to minimize the instant digital power supply due to the pixel matrix clock tree. This mode is used in the CLICdp telescope, and thus, the column-to-column phase shift is taken into account when calculating the hit arrival times.
+
 #### Parameters
 * `inputDirectory`: Path to the directory above the data directory for each device. The device name is added to the path during the algorithm.
 * `applyTimingCut`: Boolean to set if a timing cut should be applied. Default value is `false`. Not currently used.
