@@ -35,7 +35,7 @@ namespace corryvreckan {
 
     private:
         bool loadData(Clipboard* clipboard, Detector* detector, Pixels*, SpidrSignals*);
-        int loadCalibration(std::string path, char delim, std::vector<std::vector<float>>& dat);
+        void loadCalibration(std::string path, char delim, std::vector<std::vector<float>>& dat);
         void maskPixels(Detector*, std::string);
 
         // cofngiuration paramaters:

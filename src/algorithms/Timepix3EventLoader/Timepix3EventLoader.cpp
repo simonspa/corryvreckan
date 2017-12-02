@@ -30,9 +30,8 @@ Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<Detec
     m_numberPixelHits = m_config.get<int>("number_of_pixelhits", 2000);
 
     // Calibration parameters
-    applyCalibration = m_config.get<bool>("applyCalibration", false);
-    calibrationPath = m_config.get<std::string>("calibrationPath");
-    threshold = m_config.get<std::string>("threshold");
+    calibrationPath = m_config.get<std::string>("calibrationPath", "");
+    threshold = m_config.get<std::string>("threshold", "");
 }
 
 void Timepix3EventLoader::initialise() {
@@ -44,6 +43,7 @@ void Timepix3EventLoader::initialise() {
         LOG(INFO) << "Splitting events by number of pixel hits on detector plane.";
         temporalSplit = false;
     }
+    std::cout << "hi" << std::endl;
 
     // File structure is RunX/ChipID/files.dat
 
@@ -185,12 +185,16 @@ void Timepix3EventLoader::initialise() {
     for(auto& detector : m_files) {
         m_file_iterator[detector.first] = detector.second.begin();
     }
-    LOG(DEBUG) << "Apply calibration is set to " << applyCalibration;
-    if(!applyCalibration) {
-        LOG(STATUS) << "No calibration applied to data";
-    }
-    if(applyCalibration) {
-        LOG(STATUS) << "Applying calibration";
+
+    // Calibration
+    std::string nameb = "pixelToT_beforecalibration";
+    std::string namea = "pixelToT_aftercalibration";
+    pixelToT_beforecalibration = new TH1F(nameb.c_str(), nameb.c_str(), 100, 0, 200);
+
+    if(m_config.has("calibrationPath") && m_config.has("threshold")) {
+        LOG(INFO) << "Applying calibration from " << calibrationPath;
+        applyCalibration = true;
+
         // get DUT plane name
         std::string DUT = m_config.get<std::string>("DUT");
 
@@ -198,24 +202,11 @@ void Timepix3EventLoader::initialise() {
         int ret = 0;
         std::string tmp;
         tmp = calibrationPath + "/" + DUT + "/cal_thr_" + threshold + "_ik_10/" + DUT + "_cal_tot.txt";
-        ret = loadCalibration(tmp, ' ', vtot);
-        if(ret != 0) {
-            LOG(WARNING) << "Couldn't find good calibration file. Continueing without calibration.";
-            applyCalibration = false;
-        }
+        loadCalibration(tmp, ' ', vtot);
         tmp = calibrationPath + "/" + DUT + "/cal_thr_" + threshold + "_ik_10/" + DUT + "_cal_toa.txt";
-        ret = loadCalibration(tmp, ' ', vtoa);
-        if(ret != 0) {
-            LOG(WARNING) << "Couldn't find good calibration file. Continuing without calibration.";
-            applyCalibration = false;
-        }
-    }
+        loadCalibration(tmp, ' ', vtoa);
 
-    // ROOT graphs
-    string nameb = "pixelToT_beforecalibration";
-    string namea = "pixelToT_aftercalibration";
-    pixelToT_beforecalibration = new TH1F(nameb.c_str(), nameb.c_str(), 100, 0, 200);
-    if(applyCalibration) {
+        // make graphs of calibration parameters
         LOG(DEBUG) << "Creating calibration graphs";
         pixelTOTParamaterA = new TH2F("hist_par_a_tot", "hist_par_a_tot", 256, 0, 256, 256, 0, 256);
         pixelTOTParamaterB = new TH2F("hist_par_b_tot", "hist_par_b_tot", 256, 0, 256, 256, 0, 256);
@@ -225,6 +216,9 @@ void Timepix3EventLoader::initialise() {
         pixelTOAParamaterD = new TH2F("hist_par_d_toa", "hist_par_d_toa", 256, 0, 256, 256, 0, 256);
         pixelTOAParamaterT = new TH2F("hist_par_t_toa", "hist_par_t_toa", 256, 0, 256, 256, 0, 256);
         pixelToT_aftercalibration = new TH1F(namea.c_str(), namea.c_str(), 2000, 0, 20000);
+    } else {
+        LOG(INFO) << "No calibration file path given, data will be uncalibrated.";
+        applyCalibration = false;
     }
 }
 
@@ -319,7 +313,7 @@ void Timepix3EventLoader::maskPixels(Detector* detector, string trimdacfile) {
 }
 
 // Function to load calibration data
-int Timepix3EventLoader::loadCalibration(std::string path, char delim, std::vector<std::vector<float>>& dat) {
+void Timepix3EventLoader::loadCalibration(std::string path, char delim, std::vector<std::vector<float>>& dat) {
     std::ifstream f;
     f.open(path);
     dat.clear();
@@ -327,7 +321,7 @@ int Timepix3EventLoader::loadCalibration(std::string path, char delim, std::vect
     // check if file is open
     if(!f.is_open()) {
         LOG(ERROR) << "Cannot open input file:\n\t" << path;
-        return -1;
+        throw InvalidValueError(m_config, "calibrationPath", "Parsing error in calibration file.");
     }
 
     // read file line by line
@@ -353,11 +347,10 @@ int Timepix3EventLoader::loadCalibration(std::string path, char delim, std::vect
     // warn if too few entries
     if(dat.size() != 256 * 256) {
         LOG(ERROR) << "Something went wrong. Found only " << i << " entries. Not enough for TPX3.\n\t";
-        return -1;
+        throw InvalidValueError(m_config, "calibrationPath", "Parsing error in calibration file.");
     }
 
     f.close();
-    return 0;
 }
 
 // Function to load data for a given device, into the relevant container
@@ -626,6 +619,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
 
             // Otherwise create a new pixel object
             pixelToT_beforecalibration->Fill((int)tot);
+
             // Apply calibration if applyCalibration is true
             if(applyCalibration && detectorID == m_config.get<std::string>("DUT")) {
                 LOG(DEBUG) << "Applying calibration to DUT";
