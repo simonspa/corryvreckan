@@ -9,6 +9,7 @@
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
 #include "objects/Track.h"
+#include "core/Detector.h"
 
 namespace corryvreckan {
     class EtaCorrection : public Algorithm {
@@ -23,14 +24,15 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
-        // Histograms for several devices
-        std::map<std::string, TH2F*> plotPerDevice;
-
-        // Single histograms
-        TH1F* singlePlot;
-
         // Member variables
+      std::string m_DUT;
         int m_eventNumber;
+      double m_chi2ndofCut;
+      Detector* m_detector;
+      TH2F* m_etaDistributionX;
+      TH2F* m_etaDistributionY;
+      TH2F* m_etaDistributionXcorrected;
+      TH2F* m_etaDistributionYcorrected;
     };
 } // namespace corryvreckan
 #endif // EtaCorrection_H
