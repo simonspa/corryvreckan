@@ -5,11 +5,11 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "core/Detector.h"
 #include "core/algorithm/Algorithm.h"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
 #include "objects/Track.h"
-#include "core/Detector.h"
 
 namespace corryvreckan {
     class EtaCorrection : public Algorithm {
@@ -25,14 +25,14 @@ namespace corryvreckan {
         void finalise();
 
         // Member variables
-      std::string m_DUT;
+        std::string m_DUT;
         int m_eventNumber;
-      double m_chi2ndofCut;
-      Detector* m_detector;
-      TH2F* m_etaDistributionX;
-      TH2F* m_etaDistributionY;
-      TH2F* m_etaDistributionXcorrected;
-      TH2F* m_etaDistributionYcorrected;
+        double m_chi2ndofCut;
+        Detector* m_detector;
+        TH2F* m_etaDistributionX;
+        TH2F* m_etaDistributionY;
+        TH2F* m_etaDistributionXcorrected;
+        TH2F* m_etaDistributionYcorrected;
     };
 } // namespace corryvreckan
 #endif // EtaCorrection_H
