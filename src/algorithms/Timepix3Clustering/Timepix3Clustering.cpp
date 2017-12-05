@@ -108,7 +108,8 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
                     cluster->addPixel(neighbour);
                     clusterTime = neighbour->timestamp();
                     used[neighbour] = true;
-                    LOG(DEBUG) << "Adding pixel: " << neighbour->m_row << "," << neighbour->m_column;
+                    LOG(DEBUG) << "Adding pixel: " << neighbour->m_row << "," << neighbour->m_column << " time "
+                               << Units::display(neighbour->timestamp(), {"ns", "us", "s"});
                 }
             }
 

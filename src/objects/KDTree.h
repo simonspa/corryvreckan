@@ -43,7 +43,7 @@ public:
 
         // Fill the timing data from the clusters
         for(int cluster = 0; cluster < npoints; cluster++) {
-            times[cluster] = double(clusters[cluster]->timestamp()) / (4096. * 40000000.);
+            times[cluster] = clusters[cluster]->timestamp();
             iteratorNumber[clusters[cluster]] = cluster;
         }
 

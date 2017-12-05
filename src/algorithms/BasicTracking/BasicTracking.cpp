@@ -131,7 +131,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
 
             // Get all neighbours within 200 ns
             LOG(DEBUG) << "Searching for neighbouring cluster on " << detectorID;
-            LOG(DEBUG) << "- cluster time is " << cluster->timestamp();
+            LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
             Cluster* closestCluster = NULL;
             double closestClusterDistance = spatialCut;
             Clusters neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut);
