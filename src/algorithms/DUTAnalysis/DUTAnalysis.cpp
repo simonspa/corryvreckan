@@ -95,18 +95,20 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             if(signal->type() == "shutterOpen") {
                 // There may be multiple power on/off in 1 time window. At the moment,
                 // take earliest if within 1ms
-                if(fabs(Units::convert(signal->timestamp() - m_shutterOpenTime, "s") < 0.001)
+                if(abs(Units::convert(signal->timestamp() - m_shutterOpenTime, "s")) < 0.001) {
                     continue;
+                }
                 m_shutterOpenTime = signal->timestamp();
-                LOG(TRACE) << "Shutter opened at " << Units::display(m_shutterOpenTime, {"ns","us","s"});
+                LOG(TRACE) << "Shutter opened at " << Units::display(m_shutterOpenTime, {"ns", "us", "s"});
             }
             if(signal->type() == "shutterClosed") {
                 // There may be multiple power on/off in 1 time window. At the moment,
                 // take earliest if within 1ms
-                if(fabs(Units::convert(signal->timestamp() - m_shutterCloseTime, "s") < 0.001)
+                if(abs(Units::convert(signal->timestamp() - m_shutterCloseTime, "s")) < 0.001) {
                     continue;
+                }
                 m_shutterCloseTime = signal->timestamp();
-                LOG(TRACE) << "Shutter closed at " << Units::display(m_shutterCloseTime, {"ns","us","s"});
+                LOG(TRACE) << "Shutter closed at " << Units::display(m_shutterCloseTime, {"ns", "us", "s"});
             }
         }
     }
@@ -174,21 +176,9 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
 
             if(timeSincePowerOn < 200000) {
                 LOG(TRACE) << "Track at time " << Units::display(clipboard->get_persistent("currentTime"), {"ns", "us", "s"})
-                           << " has
-                    time shutter open of "<< Units::display(timeSincePowerOn, {"ns
-                              ", "us
-                              ", "s
-                              "});
-                    LOG(TRACE)
-                           << "Shutter open time is
-                              "<< Units::display(m_shutterOpenTime, {"ns
-                              ", "us
-                              ", "s
-                              "}) << ",
-                    shutter close time is "<< Units::display(m_shutterCloseTime, {"ns
-                                          ", "us
-                                          ", "s
-                                          "});
+                           << " has time shutter open of " << Units::display(timeSincePowerOn, {"ns", "us", "s"});
+                LOG(TRACE) << "Shutter open time is " << Units::display(m_shutterOpenTime, {"ns", "us", "s"})
+                           << ", shutter close time is " << Units::display(m_shutterCloseTime, {"ns", "us", "s"});
             }
         }
 

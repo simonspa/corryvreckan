@@ -158,7 +158,7 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
         }
 
         // Convert TOA to nanoseconds:
-        toa /= (4096. * 0.04.);
+        toa /= (4096. * 0.04);
 
         Pixel* pixel = new Pixel(detectorID, row, col, cal_tot, toa);
         pixels->push_back(pixel);
