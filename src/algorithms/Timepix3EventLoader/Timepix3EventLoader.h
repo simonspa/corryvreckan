@@ -23,9 +23,7 @@ namespace corryvreckan {
         bool loadData(Clipboard* clipboard, Detector* detector, Pixels*, SpidrSignals*);
         void maskPixels(Detector*, std::string);
 
-        // cofngiuration paramaters:
-        bool applyTimingCut;
-        double m_timingCut;
+        // configuration paramaters:
         double m_triggerLatency;
         std::string m_inputDirectory;
         int m_minNumberOfPlanes;

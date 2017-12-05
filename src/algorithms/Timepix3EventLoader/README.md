@@ -11,10 +11,8 @@ The hit timestamps are derived from the 40 MHz TOA counter and the fast on-pixel
 
 #### Parameters
 * `inputDirectory`: Path to the directory above the data directory for each device. The device name is added to the path during the algorithm.
-* `applyTimingCut`: Boolean to set if a timing cut should be applied. Default value is `false`. Not currently used.
-* `timingCut`: Value of the timing cut. This will be applied if `applyTimingCut = true`. Default value is `0.0`. Not currently used.
 * `minNumberOfPlanes`: Minimum number of planes with loaded data required for each event to be stored. Default value is `1`.
-* `eventLength`: Length in time for each event. Default value is `0.0`. This is only used if `eventLength` is present in the configuration file, otherwise the data is split into events using the `number_of_pixelhits` parameter.
+* `eventLength`: Length in time for each event. Default value is `0.0`. Event legnth is only used if this parameter is present in the configuration file, otherwise the data is split into events using the `number_of_pixelhits` parameter.
 * `number_of_pixelhits`: Maximum number of pixel hits on each detector per event. Default value is `2000`. This is only used if `eventLength` is not present in the configuration file, otherwise the data is split into events using the `eventLength` parameter.
 * `DUT`: Name of the DUT plane.
 
@@ -25,8 +23,6 @@ No plots are produced.
 ```toml
 [Timepix3EventLoader]
 inputDirectory = "path/to/directory"
-applyTimingCut = false
-timingCut = 0.0
 minNumberOfPlanes = 5
 eventLength = 0.0000002
 number_of_pixelhits = 0

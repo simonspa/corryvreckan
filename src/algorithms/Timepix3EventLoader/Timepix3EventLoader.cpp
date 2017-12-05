@@ -18,14 +18,11 @@ Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<Detec
 
     // Take input directory from global parameters
     m_inputDirectory = m_config.get<std::string>("inputDirectory");
-
-    applyTimingCut = m_config.get<bool>("applyTimingCut", false);
-    m_timingCut = m_config.get<double>("timingCut", 0.0);
     m_triggerLatency = m_config.get<double>("triggerLatency", 0.0);
     m_minNumberOfPlanes = m_config.get<int>("minNumerOfPlanes", 1);
 
     // Check whether event length or pixel count should be used to separate events:
-    m_eventLength = m_config.get<double>("eventLength", 0.0);
+    m_eventLength = m_config.get<double>("eventLength", Units::convert(0.0, "ns"));
     m_numberPixelHits = m_config.get<int>("number_of_pixelhits", 2000);
 }
 
@@ -231,8 +228,8 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
     // Otherwise tell event loop to keep running
     IFLOG(INFO) {
         if(temporalSplit) {
-            LOG_PROGRESS(INFO, "tpx3_loader")
-                << "Current time: " << std::setprecision(4) << std::fixed << clipboard->get_persistent("currentTime");
+            LOG_PROGRESS(INFO, "tpx3_loader") << "Current time: " << std::setprecision(4) << std::fixed
+                                              << Units::convert(clipboard->get_persistent("currentTime"), "s");
         } else {
             LOG_PROGRESS(INFO, "tpx3_loader") << "Current event: " << m_currentEvent;
         }
@@ -370,8 +367,8 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             if(header2 == 0x6) {
                 LOG(TRACE) << "Found power pulsing - start";
 
-                const uint64_t time((pixdata & 0x0000000FFFFFFFFF) << 12);
-
+                // Read time stamp and convert to nanoseconds
+                const double timestamp = ((pixdata & 0x0000000FFFFFFFFF) << 12) / (4096 * 0.04);
                 const uint64_t controlbits = ((pixdata & 0x00F0000000000000) >> 52) & 0xF;
 
                 const uint64_t powerOn = ((controlbits & 0x2) >> 1);
@@ -380,56 +377,55 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 // Stop looking at data if the signal is after the current event window
                 // (and rewind the file
                 // reader so that we start with this signal next event)
-                if(temporalSplit &&
-                   ((double)time / (4096. * 40000000.)) > (clipboard->get_persistent("currentTime") + m_eventLength)) {
-                    (*m_file_iterator[detectorID])->seekg(-1 * sizeof(pixdata), std::ios_base::cur);
-                    LOG(TRACE) << "Signal has a time beyond the current event: " << (double)time / (4096. * 40000000.);
-                    break;
+                if(temporalSplit) {
+                    if(timestamp > (clipboard->get_persistent("currentTime") + m_eventLength)) {
+                        (*m_file_iterator[detectorID])->seekg(-1 * sizeof(pixdata), std::ios_base::cur);
+                        LOG(TRACE) << "Signal has a time beyond the current event: " << Units::display(timestamp, "ns");
+                        break;
+                    }
                 }
 
-                SpidrSignal* powerSignal = (powerOn ? new SpidrSignal("powerOn", time) : new SpidrSignal("powerOff", time));
+                SpidrSignal* powerSignal =
+                    (powerOn ? new SpidrSignal("powerOn", timestamp) : new SpidrSignal("powerOff", timestamp));
                 spidrData->push_back(powerSignal);
-                LOG(DEBUG) << "Power is " << (powerOn ? "on" : "off") << " power! Time: " << std::setprecision(10)
-                           << (double)time / (4096. * 40000000.);
+                LOG(DEBUG) << "Power is " << (powerOn ? "on" : "off") << " power! Time: " << Units::display(timestamp, "ns");
 
                 LOG(TRACE) << "Shutter closed: " << hex << shutterClosed << dec;
 
-                SpidrSignal* shutterSignal =
-                    (shutterClosed ? new SpidrSignal("shutterClosed", time) : new SpidrSignal("shutterOpen", time));
+                SpidrSignal* shutterSignal = (shutterClosed ? new SpidrSignal("shutterClosed", timestamp)
+                                                            : new SpidrSignal("shutterOpen", timestamp));
                 if(!shutterClosed) {
                     spidrData->push_back(shutterSignal);
                     m_shutterOpen = true;
                     LOG(TRACE) << "Have opened shutter with signal " << shutterSignal->type() << " at time "
-                               << (double)time / (4096. * 40000000.);
+                               << Units::display(timestamp, "ns");
                 }
 
                 if(shutterClosed && m_shutterOpen) {
                     spidrData->push_back(shutterSignal);
                     m_shutterOpen = false;
                     LOG(TRACE) << "Have closed shutter with signal " << shutterSignal->type() << " at time "
-                               << (double)time / (4096. * 40000000.);
+                               << Units::display(timestamp, "ns");
                 }
 
-                LOG(DEBUG) << "Shutter is " << (shutterClosed ? "closed" : "open") << ". Time: " << std::setprecision(10)
-                           << (double)time / (4096. * 40000000.);
+                LOG(DEBUG) << "Shutter is " << (shutterClosed ? "closed" : "open")
+                           << ". Time: " << Units::display(timestamp, "ns");
             }
 
             /*
             // 0x6 is power on
             if(header2 == 0x6){
-              const uint64_t time( (pixdata & 0x0000000FFFFFFFFF) << 12 );
-              SpidrSignal* signal = new SpidrSignal("powerOn",time);
+              const double timestamp = ((pixdata & 0x0000000FFFFFFFFF) << 12 ) / (4096 * 0.04);
+              SpidrSignal* signal = new SpidrSignal("powerOn",timestamp);
               spidrData->push_back(signal);
-              LOG(DEBUG) <<"Turned on power! Time: "<<(double)time/(4096. *
-            40000000.);
+              LOG(DEBUG) <<"Turned on power! Time: " << Units::display(timestamp, "ns");
             }
             // 0x7 is power off
             if(header2 == 0x7){
-              const uint64_t time( (pixdata & 0x0000000FFFFFFFFF) << 12 );
-              SpidrSignal* signal = new SpidrSignal("powerOff",time);
+              const double timestamp = ((pixdata & 0x0000000FFFFFFFFF) << 12 ) / (4096 * 0.04);
+              SpidrSignal* signal = new SpidrSignal("powerOff",timestamp);
               spidrData->push_back(signal);
-              LOG(DEBUG) <<"Turned off power! Time: "<<(double)time/(4096. *
-            40000000.);
+              LOG(DEBUG) <<"Turned off power! Time: " << Units::display(timestamp, "ns");
             }
              */
         }
@@ -455,7 +451,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
 
                 double triggerTime = (timestamp * 25e-9 + stamp * 25e-9 / 12.) / 8; // 320 MHz clock
                 // triggerTime -= m_triggerLatency * 1e-9;
-                SpidrSignal* triggerSignal = new SpidrSignal("trigger", triggerTime * (4096. * 40000000.));
+                SpidrSignal* triggerSignal = new SpidrSignal("trigger", triggerTime);
                 spidrData->push_back(triggerSignal);
             }
         }
@@ -492,18 +488,11 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             // Adjusting phases for double column shift
             time += ((col / 2 - 1) % 16) * 256;
 
-            // LOG(DEBUG) <<"Pixel time "<<(double)time/(4096. * 40000000.);
-            // LOG(DEBUG) <<"Sync time "<<(double)m_syncTime[detectorID]/(4096. *
-            // 40000000.);
+            // Add the timing offset (in nano seconds) from the detectors file (if any)
+            time += (long long int)(detector->timingOffset() * 4096. * 0.04);
 
-            // Add the timing offset from the coniditions file (if any)
-            time += (long long int)(detector->timingOffset() * 4096. * 40000000.);
-
-            // The time from the pixels has a maximum value of ~26 seconds. We compare
-            // the pixel time
-            // to the "heartbeat" signal (which has an overflow of ~4 years) and check
-            // if the pixel
-            // time has wrapped back around to 0
+            // The time from the pixels has a maximum value of ~26 seconds. We compare the pixel time to the "heartbeat"
+            // signal (which has an overflow of ~4 years) and check if the pixel time has wrapped back around to 0
 
             // If the counter overflow happens before reading the new heartbeat
             //      while( abs(m_syncTime[detectorID]-time) > 0x0000020000000000 ){
@@ -517,33 +506,33 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 }
             }
 
+            // Convert final timestamp into ns:
+            const double timestamp = time / (4096 * 0.04);
+
             // If events are loaded based on time intervals, take all hits where the
             // time is within this window
 
             // Ignore pixels if they arrive before the current event window
-            //      if(temporalSplit && ((double)time/(4096. *
-            //      40000000.)) < (clipboard->get_persistent("currentTime")) ){
+            //      if(temporalSplit && (timestamp < clipboard->get_persistent("currentTime")) {
             //        continue;
             //      }
 
             // Stop looking at data if the pixel is after the current event window
             // (and rewind the file
             // reader so that we start with this pixel next event)
-            if(temporalSplit &&
-               ((double)time / (4096. * 40000000.)) > (clipboard->get_persistent("currentTime") + m_eventLength)) {
+            if(temporalSplit && (timestamp > (clipboard->get_persistent("currentTime") + m_eventLength))) {
                 (*m_file_iterator[detectorID])->seekg(-1 * sizeof(pixdata), std::ios_base::cur);
                 break;
             }
 
             // Otherwise create a new pixel object
-            Pixel* pixel = new Pixel(detectorID, row, col, (int)tot, time);
+            Pixel* pixel = new Pixel(detectorID, row, col, (int)tot, timestamp);
             devicedata->push_back(pixel);
             //      bufferedData[detectorID]->push_back(pixel);
-            m_prevTime = time;
+            m_prevTime = timestamp;
         }
 
-        // Stop when we reach some large number of pixels (if events not based on
-        // time)
+        // Stop when we reach some large number of pixels (if events not based on time)
         if(!temporalSplit && devicedata->size() >= m_numberPixelHits) {
             break;
         }
