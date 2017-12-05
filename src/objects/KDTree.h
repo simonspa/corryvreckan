@@ -83,16 +83,14 @@ public:
     // Function to get back all clusters within a given time period
     Clusters getAllClustersInTimeWindow(Cluster* cluster, double timeWindow) {
 
-        LOG(TRACE) << "Getting all clusters in time window" << timeWindow;
+        LOG(TRACE) << "Getting all clusters in time window " << Units::display(timeWindow, {"ns", "us", "s"});
         // Find out which iterator number this cluster corresponds to
         //    int iterator = iteratorNumber[cluster];
 
         // Get iterators of all clusters within the time window
         std::vector<int> results;
-        //    double* time;
-        //    time[0] = double(cluster->timestamp())/(4096. * 40000000.);
 
-        double time = double(cluster->timestamp()) / (4096. * 40000000.);
+        double time = cluster->timestamp();
         timeKdtree->FindInRange(&time, timeWindow, results);
 
         LOG(TRACE) << " -- found: " << results.size();
@@ -152,7 +150,7 @@ public:
 
     // ROOT I/O class definition - update version number when you change this
     // class!
-    ClassDef(KDTree, 1)
+    ClassDef(KDTree, 2)
 };
 
 #endif // KDTREE__H
