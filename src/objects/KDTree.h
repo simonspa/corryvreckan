@@ -6,6 +6,8 @@
 #include "TKDTree.h"
 #include "TestBeamObject.h"
 #include "core/utils/log.h"
+#include "core/utils/unit.h"
+
 /*
 
  This class is effectively just a wrapper for the root TKDTree class that
