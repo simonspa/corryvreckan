@@ -6,7 +6,7 @@ using namespace std;
 
 SpatialTracking::SpatialTracking(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
-    spatialCut = m_config.get<double>("spatialCut", 0.2); // 200 um
+    spatialCut = m_config.get<double>("spatialCut", Units::convert(200, "um"));
     minHitsOnTrack = m_config.get<int>("minHitsOnTrack", 6);
     excludeDUT = m_config.get<bool>("excludeDUT", true);
 }

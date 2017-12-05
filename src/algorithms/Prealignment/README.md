@@ -12,7 +12,7 @@ The required translational shifts in X and Y are calculated for each detector as
 #### Parameters
 * `reference`: Name of the detector used as the alignment reference plane. All other telescope planes are aligned with respect to the reference plane.
 * `damping_factor`: A factor to change the percentage of the calcuated shift applied to each detector. Default value is `1`.
-* `max_correlation_rms`: The maximum rms of the 1D correlation histograms allowed for the shifts to be applied. This factor should be tuned for each run, and is combat the effect of flat distributions. Default value is `6`.
+* `max_correlation_rms`: The maximum RMS of the 1D correlation histograms allowed for the shifts to be applied. This factor should be tuned for each run, and is combat the effect of flat distributions. Default value is 6mm.
 * `timingCut`: maximum time difference between clusters to be taken into account. Defaults to 100ns.
 
 ### Plots Created

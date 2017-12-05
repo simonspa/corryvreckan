@@ -11,7 +11,7 @@ FileReader::FileReader(Configuration config, std::vector<Detector*> detectors)
     m_readClusters = m_config.get<bool>("readClusters", false);
     m_readTracks = m_config.get<bool>("readTracks", false);
     m_fileName = m_config.get<std::string>("fileName", "outputTuples.root");
-    m_timeWindow = m_config.get<double>("timeWindow", 1.);
+    m_timeWindow = m_config.get<double>("timeWindow", Units::convert(1., "s");
     m_readMCParticles = m_config.get<bool>("readMCParticles", false);
 
     m_currentTime = 0.;

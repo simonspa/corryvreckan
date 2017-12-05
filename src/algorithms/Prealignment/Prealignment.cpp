@@ -6,7 +6,7 @@ using namespace std;
 Prealignment::Prealignment(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
     LOG(INFO) << "Starting prealignment of detectors";
-    max_correlation_rms = m_config.get<double>("max_correlation_rms", 6.0);
+    max_correlation_rms = m_config.get<double>("max_correlation_rms", Units::convert(6.0, "mm"));
     damping_factor = m_config.get<double>("damping_factor", 1.0);
     timingCut = m_config.get<double>("timingCut", Units::convert(100, "ns"));
     LOG(DEBUG) << "Setting max_correlation_rms to : " << max_correlation_rms;
@@ -99,13 +99,16 @@ void Prealignment::finalise() {
         double rmsY = correlationY[detector->name()]->GetRMS();
         if(rmsX > max_correlation_rms or rmsY > max_correlation_rms) {
             LOG(ERROR) << "Detector " << detector->name() << ": RMS is too wide for prealignment shifts";
-            LOG(ERROR) << "Detector " << detector->name() << ": RMS X = " << rmsX << " , RMS Y = " << rmsY;
+            LOG(ERROR) << "Detector " << detector->name() << ": RMS X = " << Units::display(rmsX, {"mm", "um"})
+                       << " , RMS Y = " << Units::display(rmsY, {"mm", "um"});
         }
         if(detector->name() != m_config.get<std::string>("reference")) {
             double mean_X = correlationX[detector->name()]->GetMean();
             double mean_Y = correlationY[detector->name()]->GetMean();
-            LOG(INFO) << "Detector " << detector->name() << ": x = " << mean_X << " , y = " << mean_Y;
-            LOG(INFO) << "Move in x by = " << mean_X * damping_factor << " , and in y by = " << mean_Y * damping_factor;
+            LOG(INFO) << "Detector " << detector->name() << ": x = " << Units::display(mean_X, {"mm", "um"})
+                      << " , y = " << Units::display(mean_Y, {"mm", "um"});
+            LOG(INFO) << "Move in x by = " << Units::display(mean_X * damping_factor, {"mm", "um"})
+                      << " , and in y by = " << Units::display(mean_Y * damping_factor, {"mm", "um"});
             double x = detector->displacementX();
             double y = detector->displacementY();
             detector->displacementX(x + damping_factor * mean_X);
