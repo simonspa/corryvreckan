@@ -5,12 +5,11 @@ using namespace std;
 
 Timepix3Clustering::Timepix3Clustering(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
-    timingCut = m_config.get<double>("timingCut", 0.0000001); // 100 ns
+    timingCut = m_config.get<double>("timingCut", Units::convert(100, "ns")); // 100 ns
 }
 
 void Timepix3Clustering::initialise() {
 
-    timingCutInt = (timingCut * 4096. * 40000000.);
     for(auto& detector : get_detectors()) {
         // Cluster plots
         string name = "clusterSize_" + detector->name();
@@ -81,7 +80,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
 
             // Keep adding hits to the cluster until no more are found
             cluster->addPixel(pixel);
-            long long int clusterTime = pixel->timestamp();
+            double clusterTime = pixel->timestamp();
             used[pixel] = true;
             LOG(DEBUG) << "Adding pixel: " << pixel->m_row << "," << pixel->m_column;
             int nPixels = 0;
@@ -160,7 +159,7 @@ bool Timepix3Clustering::closeInTime(Pixel* neighbour, Cluster* cluster) {
     Pixels* pixels = cluster->pixels();
     for(int iPix = 0; iPix < pixels->size(); iPix++) {
 
-        long long int timeDifference = abs(neighbour->timestamp() - (*pixels)[iPix]->timestamp());
+        double timeDifference = abs(neighbour->timestamp() - (*pixels)[iPix]->timestamp());
         if(timeDifference < timingCut)
             CloseInTime = true;
     }
@@ -171,12 +170,11 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
 
     // Empty variables to calculate cluster position
     double row(0), column(0), tot(0);
-    long long int timestamp;
 
     // Get the pixels on this cluster
     Pixels* pixels = cluster->pixels();
     string detectorID = (*pixels)[0]->detectorID();
-    timestamp = (*pixels)[0]->timestamp();
+    double timestamp = (*pixels)[0]->timestamp();
 
     // Loop over all pixels
     for(int pix = 0; pix < pixels->size(); pix++) {
