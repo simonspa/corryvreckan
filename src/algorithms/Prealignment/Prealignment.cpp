@@ -8,6 +8,7 @@ Prealignment::Prealignment(Configuration config, std::vector<Detector*> detector
     LOG(INFO) << "Starting prealignment of detectors";
     max_correlation_rms = m_config.get<double>("max_correlation_rms", 6.0);
     damping_factor = m_config.get<double>("damping_factor", 1.0);
+    timingCut = m_config.get<double>("timingCut", Units::convert(100, "ns"));
     LOG(DEBUG) << "Setting max_correlation_rms to : " << max_correlation_rms;
     LOG(DEBUG) << "Setting damping_factor to : " << damping_factor;
 }
@@ -74,15 +75,13 @@ StatusCode Prealignment::run(Clipboard* clipboard) {
         for(auto& cluster : (*clusters)) {
             // Loop over reference plane pixels to make correlation plots
             for(auto& refCluster : (*referenceClusters)) {
-                double timeDifference = (double)(refCluster->timestamp() - cluster->timestamp()) / (4096. * 40000000.);
+                double timeDifference = refCluster->timestamp() - cluster->timestamp();
 
                 // Correlation plots
-                if(abs(timeDifference) < 0.000001) {
+                if(abs(timeDifference) < timingCut) {
                     correlationX[detector->name()]->Fill(refCluster->globalX() - cluster->globalX());
                     correlationX2D[detector->name()]->Fill(cluster->globalX(), refCluster->globalX());
                     correlationX2Dlocal[detector->name()]->Fill(cluster->column(), refCluster->column());
-                }
-                if(abs(timeDifference) < 0.000001) {
                     correlationY[detector->name()]->Fill(refCluster->globalY() - cluster->globalY());
                     correlationY2D[detector->name()]->Fill(cluster->globalY(), refCluster->globalY());
                     correlationY2Dlocal[detector->name()]->Fill(cluster->row(), refCluster->row());
