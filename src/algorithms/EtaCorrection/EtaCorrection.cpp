@@ -73,9 +73,10 @@ StatusCode EtaCorrection::run(Clipboard* clipboard) {
                 m_etaDistributionX->Fill(inPixelX, pixelInterceptX);
                 m_etaDistributionXprofile->Fill(inPixelX, pixelInterceptX);
             }
-            if(dutCluster->rowWidth() == 2)
+            if(dutCluster->rowWidth() == 2) {
                 m_etaDistributionY->Fill(inPixelY, pixelInterceptY);
-            m_etaDistributionYprofile->Fill(inPixelY, pixelInterceptY);
+                m_etaDistributionYprofile->Fill(inPixelY, pixelInterceptY);
+            }
         }
     }
 
