@@ -18,7 +18,7 @@ void ImproveReferenceTimestamp::initialise() {
 StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
 
     // Recieved triggers
-    std::vector<long long int> trigger_times;
+    std::vector<double> trigger_times;
 
     // Get trigger signals
     SpidrSignals* spidrData = (SpidrSignals*)clipboard->get(m_source, "SpidrSignals");
@@ -46,7 +46,7 @@ StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
     // Loop over all tracks
     for(auto& track : (*tracks)) {
 
-        long long int improved_time = track->timestamp();
+        double improved_time = track->timestamp();
 
         // Use trigger timestamp
         if(m_method == 0) {
@@ -58,7 +58,7 @@ StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
                            << " diff stored cycles: " << diff * (4096. * 40000000.);
                 if(abs(trigger_time - track->timestamp()) < diff) {
                     improved_time = trigger_time;
-                    diff = abs((long long int)(trigger_time - track->timestamp()));
+                    diff = abs(trigger_time - track->timestamp());
                 }
             }
             // trigger latency is ~175 ns, still missing
@@ -67,7 +67,7 @@ StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
         // Use average track timestamp
         else if(m_method == 1) {
             int nhits = 0;
-            long long int avg_track_time = 0;
+            double avg_track_time = 0;
             for(auto& cluster : track->clusters()) {
                 avg_track_time += cluster->timestamp();
                 nhits++;
