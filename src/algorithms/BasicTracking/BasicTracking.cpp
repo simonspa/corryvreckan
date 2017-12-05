@@ -7,9 +7,10 @@ using namespace std;
 
 BasicTracking::BasicTracking(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
+
     // Default values for cuts
-    timingCut = m_config.get<double>("timingCut", 200. / 1000000000.); // 200 ns
-    spatialCut = m_config.get<double>("spatialCut", 0.2);              // 200 um
+    timingCut = m_config.get<double>("timingCut", Units::convert(200, "ns"));
+    spatialCut = m_config.get<double>("spatialCut", Units::convert(0.2, "mm"));
     minHitsOnTrack = m_config.get<int>("minHitsOnTrack", 6);
     excludeDUT = m_config.get<bool>("excludeDUT", true);
 }
@@ -275,8 +276,7 @@ Cluster* BasicTracking::getNearestCluster(long long int timestamp, Clusters clus
 //  for(int iCluster=0;iCluster<clusters->size();iCluster++){
 //    Timepix3Cluster* candidate = (*clusters)[iCluster];
 //    // Check if within time window
-//    if( abs((double)((candidate->timestamp() - cluster->timestamp()) /
-//    (4096.*40000000.))) > timinigCut ) continue;
+//    if(abs(candidate->timestamp() - cluster->timestamp()) > timinigCut ) continue;
 //    // Check how close it is (2D - assumes z-axis parallel to beam)
 //    if(bestCluster == NULL){ bestCluster = candidate; continue; }
 //    double distanceX = candidate->globalX() - cluster->globalX();
