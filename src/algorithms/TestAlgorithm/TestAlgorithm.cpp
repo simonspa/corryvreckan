@@ -85,7 +85,7 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
             // Hitmap
             hitmap[detector->name()]->Fill(pixel->m_column, pixel->m_row);
             // Timing plots
-            eventTimes[detector->name()]->Fill((double)pixel->m_timestamp / (4096. * 40000000.));
+            eventTimes[detector->name()]->Fill((double)pixel->timestamp() / (4096. * 40000000.));
         }
 
         // Get the clusters

@@ -153,7 +153,7 @@ void SpatialClustering::calculateClusterCentre(Detector* detector, Cluster* clus
 
     // Get the pixels on this cluster
     Pixels* pixels = cluster->pixels();
-    string detectorID = (*pixels)[0]->m_detectorID;
+    string detectorID = (*pixels)[0]->detectorID();
     LOG(DEBUG) << "- cluster has " << (*pixels).size() << " pixels";
 
     // Loop over all pixels

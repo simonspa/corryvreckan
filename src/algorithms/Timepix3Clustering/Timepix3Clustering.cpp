@@ -28,7 +28,7 @@ void Timepix3Clustering::initialise() {
 
 // Sort function for pixels from low to high times
 bool sortByTime(Pixel* pixel1, Pixel* pixel2) {
-    return (pixel1->m_timestamp < pixel2->m_timestamp);
+    return (pixel1->timestamp() < pixel2->timestamp());
 }
 
 StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
@@ -81,7 +81,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
 
             // Keep adding hits to the cluster until no more are found
             cluster->addPixel(pixel);
-            long long int clusterTime = pixel->m_timestamp;
+            long long int clusterTime = pixel->timestamp();
             used[pixel] = true;
             LOG(DEBUG) << "Adding pixel: " << pixel->m_row << "," << pixel->m_column;
             int nPixels = 0;
@@ -92,7 +92,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
                 for(int iNeighbour = (iP + 1); iNeighbour < totalPixels; iNeighbour++) {
                     Pixel* neighbour = (*pixels)[iNeighbour];
                     // Check if they are compatible in time with the cluster pixels
-                    if((neighbour->m_timestamp - clusterTime) > timingCutInt)
+                    if((neighbour->timestamp() - clusterTime) > timingCut)
                         break;
                     //          if(!closeInTime(neighbour,cluster)) break;
                     // Check if they have been used
@@ -107,7 +107,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
                         continue;
                     // Add to cluster
                     cluster->addPixel(neighbour);
-                    clusterTime = neighbour->m_timestamp;
+                    clusterTime = neighbour->timestamp();
                     used[neighbour] = true;
                     LOG(DEBUG) << "Adding pixel: " << neighbour->m_row << "," << neighbour->m_column;
                 }
@@ -160,8 +160,8 @@ bool Timepix3Clustering::closeInTime(Pixel* neighbour, Cluster* cluster) {
     Pixels* pixels = cluster->pixels();
     for(int iPix = 0; iPix < pixels->size(); iPix++) {
 
-        long long int timeDifference = abs(neighbour->m_timestamp - (*pixels)[iPix]->m_timestamp);
-        if(timeDifference < timingCutInt)
+        long long int timeDifference = abs(neighbour->timestamp() - (*pixels)[iPix]->timestamp());
+        if(timeDifference < timingCut)
             CloseInTime = true;
     }
     return CloseInTime;
@@ -175,8 +175,8 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
 
     // Get the pixels on this cluster
     Pixels* pixels = cluster->pixels();
-    string detectorID = (*pixels)[0]->m_detectorID;
-    timestamp = (*pixels)[0]->m_timestamp;
+    string detectorID = (*pixels)[0]->detectorID();
+    timestamp = (*pixels)[0]->timestamp();
 
     // Loop over all pixels
     for(int pix = 0; pix < pixels->size(); pix++) {
@@ -188,8 +188,8 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
         tot += pixelToT;
         row += ((*pixels)[pix]->m_row * pixelToT);
         column += ((*pixels)[pix]->m_column * pixelToT);
-        if((*pixels)[pix]->m_timestamp < timestamp)
-            timestamp = (*pixels)[pix]->m_timestamp;
+        if((*pixels)[pix]->timestamp() < timestamp)
+            timestamp = (*pixels)[pix]->timestamp();
     }
     // Row and column positions are tot-weighted
     row /= tot;
