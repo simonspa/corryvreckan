@@ -7,6 +7,10 @@ EtaCorrection::EtaCorrection(Configuration config, std::vector<Detector*> detect
     : Algorithm(std::move(config), std::move(detectors)) {
     m_DUT = m_config.get<std::string>("DUT");
     m_chi2ndofCut = m_config.get<double>("chi2ndofCut", 100.);
+    m_etaFormulaX = m_config.get<std::string>("EtaFormulaX", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
+    m_etaConstantsX = m_config.getArray<double>("EtaConstantsX");
+    m_etaFormulaY = m_config.get<std::string>("EtaFormulaY", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
+    m_etaConstantsY = m_config.getArray<double>("EtaConstantsY");
 }
 
 void EtaCorrection::initialise() {
@@ -29,6 +33,12 @@ void EtaCorrection::initialise() {
     m_etaDistributionYcorrected = new TH2F(name.c_str(), name.c_str(), 100., 0., pitchX, 100., 0., pitchY);
 
     // Initialise member variables
+    m_etaCorrectorX = new TF1("etaCorrectorX", m_etaFormulaX.c_str(), 0, m_detector->pitchX());
+    for(int x = 0; x < m_etaConstantsX.size(); x++)
+        m_etaCorrectorX->SetParameter(x, m_etaConstantsX[x]);
+    m_etaCorrectorY = new TF1("etaCorrectorY", m_etaFormulaY.c_str(), 0, m_detector->pitchY());
+    for(int y = 0; y < m_etaConstantsY.size(); y++)
+        m_etaCorrectorY->SetParameter(y, m_etaConstantsY[y]);
     m_eventNumber = 0;
 }
 
@@ -62,6 +72,10 @@ StatusCode EtaCorrection::run(Clipboard* clipboard) {
         // Look at the associated clusters and plot the eta function
         for(auto& dutCluster : track->associatedClusters()) {
 
+            // Only look at clusters from the DUT
+            if(dutCluster->detectorID() != m_DUT)
+                continue;
+
             // Ignore single pixel clusters
             if(dutCluster->size() == 1)
                 continue;
@@ -72,6 +86,13 @@ StatusCode EtaCorrection::run(Clipboard* clipboard) {
             if(dutCluster->columnWidth() == 2) {
                 m_etaDistributionX->Fill(inPixelX, pixelInterceptX);
                 m_etaDistributionXprofile->Fill(inPixelX, pixelInterceptX);
+                // Apply the eta correction
+                double newX = floor(dutCluster->localX() / m_detector->pitchX()) * m_detector->pitchX() +
+                              m_etaCorrectorX->Eval(inPixelX);
+                PositionVector3D<Cartesian3D<double>> positionLocal(newX, dutCluster->localY(), 0);
+                PositionVector3D<Cartesian3D<double>> positionGlobal = *(m_detector->localToGlobal()) * positionLocal;
+                dutCluster->setClusterCentre(positionGlobal.X(), positionGlobal.Y(), positionGlobal.Z());
+                dutCluster->setClusterCentreLocal(positionLocal.X(), positionLocal.Y(), positionLocal.Z());
             }
             if(dutCluster->rowWidth() == 2) {
                 m_etaDistributionY->Fill(inPixelY, pixelInterceptY);

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "TCanvas.h"
+#include "TF1.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TProfile.h"
@@ -31,6 +32,14 @@ namespace corryvreckan {
         int m_eventNumber;
         double m_chi2ndofCut;
         Detector* m_detector;
+        std::string m_etaFormulaX;
+        std::vector<double> m_etaConstantsX;
+        TF1* m_etaCorrectorX;
+        std::string m_etaFormulaY;
+        std::vector<double> m_etaConstantsY;
+        TF1* m_etaCorrectorY;
+
+        // Histograms
         TH2F* m_etaDistributionX;
         TH2F* m_etaDistributionY;
         TProfile* m_etaDistributionXprofile;
