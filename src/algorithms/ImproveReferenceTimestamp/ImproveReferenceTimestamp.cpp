@@ -51,13 +51,12 @@ StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
         // Use trigger timestamp
         if(m_method == 0) {
             // Find trigger timestamp clostest in time
-            long long int diff = std::numeric_limits<long long int>::max();
+            double diff = std::numeric_limits<double>::max();
             for(auto& trigger_time : trigger_times) {
                 LOG(DEBUG) << " track: " << track->timestamp() << " trigger: " << trigger_time
-                           << " diff: " << abs((long long int)(trigger_time - track->timestamp()))
-                           << " diff stored cycles: " << diff
-                           << " diff stored secs: " << (double)(diff) / (4096. * 40000000.);
-                if(abs((long long int)(trigger_time - track->timestamp())) < diff) {
+                           << " diff: " << Units::display(abs(trigger_time - track->timestamp()), {"ns", "us", "s"})
+                           << " diff stored cycles: " << diff * (4096. * 40000000.);
+                if(abs(trigger_time - track->timestamp()) < diff) {
                     improved_time = trigger_time;
                     diff = abs((long long int)(trigger_time - track->timestamp()));
                 }
@@ -74,8 +73,9 @@ StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
                 nhits++;
             }
             avg_track_time = round(avg_track_time / nhits);
-            LOG(DEBUG) << setprecision(12) << "Reference track time " << (double)(track->timestamp()) / (4096. * 40000000.);
-            LOG(DEBUG) << setprecision(12) << "Average track time " << (double)(avg_track_time) / (4096. * 40000000.);
+            LOG(DEBUG) << setprecision(12) << "Reference track time "
+                       << Units::display(track->timestamp(), {"ns", "us", "s"});
+            LOG(DEBUG) << setprecision(12) << "Average track time " << Units::display(avg_track_time, {"ns", "us", "s"});
         }
 
         // Set improved reference timestamp
