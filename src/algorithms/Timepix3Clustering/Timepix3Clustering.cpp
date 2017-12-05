@@ -19,7 +19,7 @@ void Timepix3Clustering::initialise() {
         name = "clusterWidthColumn_" + detector->name();
         clusterWidthColumn[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
         name = "clusterTot_" + detector->name();
-        clusterTot[detector->name()] = new TH1F(name.c_str(), name.c_str(), 200, 0, 1000);
+        clusterTot[detector->name()] = new TH1F(name.c_str(), name.c_str(), 10000, 0, 100000);
         name = "clusterPositionGlobal_" + detector->name();
         clusterPositionGlobal[detector->name()] = new TH2F(name.c_str(), name.c_str(), 400, -10., 10., 400, -10., 10.);
     }

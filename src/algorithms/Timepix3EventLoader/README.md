@@ -1,6 +1,6 @@
 ## Timepix3EventLoader
-**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)  
-**Status**: Outdated  
+**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)
+**Status**: Outdated
 
 #### Description
 This algorithm loads raw data from a Timepix3 device and adds it to the clipboard. The input file must have extension `.dat` and are sorted into time order via the data file serial numbers. This code also identifies `trimdac` files and applies this mask to the pixels.
@@ -14,15 +14,19 @@ The hit timestamps are derived from the 40 MHz TOA counter and the fast on-pixel
 * `minNumberOfPlanes`: Minimum number of planes with loaded data required for each event to be stored. Default value is `1`.
 * `eventLength`: Length in time for each event. Default value is `0.0`. Event legnth is only used if this parameter is present in the configuration file, otherwise the data is split into events using the `number_of_pixelhits` parameter.
 * `number_of_pixelhits`: Maximum number of pixel hits on each detector per event. Default value is `2000`. This is only used if `eventLength` is not present in the configuration file, otherwise the data is split into events using the `eventLength` parameter.
+* `calibrationPath`: Path to the calibration directory. If this parameter is set, calibration will be applied to the DUT. Assumed folder structure is `"[calibrationPath]/[detector name]/cal_thr_[thr dac]_ik_[ikrum dac]/[detector name]_cal_[tot/toa].txt"`. The assumed file structure is `[col | row | val1 | val2 | etc.]`.
 * `DUT`: Name of the DUT plane.
 
 #### Plots produced
-No plots are produced.
+* Histogram with pixel ToT before and after calibration
+* Map for each calibration paramater if calibration is used
 
 #### Usage
 ```toml
 [Timepix3EventLoader]
 inputDirectory = "path/to/directory"
+calibrationPath = "path/to/calibration"
+threshold = 1148
 minNumberOfPlanes = 5
 eventLength = 0.0000002
 number_of_pixelhits = 0
