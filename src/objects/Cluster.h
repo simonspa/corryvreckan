@@ -65,8 +65,6 @@ public:
     size_t size() { return m_pixels.size(); }
     double columnWidth() { return m_columnWidth; }
     double rowWidth() { return m_rowWidth; }
-    long long int timestamp() { return m_timestamp; }
-    std::string detectorID() { return m_detectorID; }
     Pixels* pixels() { return (&m_pixels); }
 
     // Set cluster parameters
@@ -84,8 +82,6 @@ public:
         m_localZ = z;
     }
     void setError(double error) { m_error = error; }
-    void setTimestamp(long long int timestamp) { m_timestamp = timestamp; }
-    void setDetectorID(std::string detectorID) { m_detectorID = detectorID; }
 
 private:
     // Member variables
@@ -96,14 +92,12 @@ private:
     double m_error;
     double m_columnWidth;
     double m_rowWidth;
-    long long int m_timestamp;
     double m_globalX;
     double m_globalY;
     double m_globalZ;
     double m_localX;
     double m_localY;
     double m_localZ;
-    std::string m_detectorID;
     std::map<int, bool> m_rowHits;
     std::map<int, bool> m_columnHits;
 
