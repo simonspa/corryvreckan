@@ -5,6 +5,8 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TProfile.h"
+
 #include "core/Detector.h"
 #include "core/algorithm/Algorithm.h"
 #include "objects/Cluster.h"
@@ -31,6 +33,8 @@ namespace corryvreckan {
         Detector* m_detector;
         TH2F* m_etaDistributionX;
         TH2F* m_etaDistributionY;
+        TProfile* m_etaDistributionXprofile;
+        TProfile* m_etaDistributionYprofile;
         TH2F* m_etaDistributionXcorrected;
         TH2F* m_etaDistributionYcorrected;
     };

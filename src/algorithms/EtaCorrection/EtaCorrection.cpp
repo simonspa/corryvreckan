@@ -16,13 +16,17 @@ void EtaCorrection::initialise() {
     double pitchX = m_detector->pitchX();
     double pitchY = m_detector->pitchY();
     string name = "etaDistributionX";
-    m_etaDistributionX = new TH2F(name.c_str(), name.c_str(), 100., 0., pitchX, 100., 0., pitchX);
+    m_etaDistributionX = new TH2F(name.c_str(), name.c_str(), 100., 0., pitchX, 100., 0., pitchY);
     name = "etaDistributionY";
-    m_etaDistributionY = new TH2F(name.c_str(), name.c_str(), 100., 0., pitchX, 100., 0., pitchX);
+    m_etaDistributionY = new TH2F(name.c_str(), name.c_str(), 100., 0., pitchX, 100., 0., pitchY);
+    name = "etaDistributionXprofile";
+    m_etaDistributionXprofile = new TProfile(name.c_str(), name.c_str(), 100., 0., pitchX, 0., pitchY);
+    name = "etaDistributionYprofile";
+    m_etaDistributionYprofile = new TProfile(name.c_str(), name.c_str(), 100., 0., pitchX, 0., pitchY);
     name = "etaDistributionXcorrected";
-    m_etaDistributionXcorrected = new TH2F(name.c_str(), name.c_str(), 100., 0., pitchX, 100., 0., pitchX);
+    m_etaDistributionXcorrected = new TH2F(name.c_str(), name.c_str(), 100., 0., pitchX, 100., 0., pitchY);
     name = "etaDistributionYcorrected";
-    m_etaDistributionYcorrected = new TH2F(name.c_str(), name.c_str(), 100., 0., pitchX, 100., 0., pitchX);
+    m_etaDistributionYcorrected = new TH2F(name.c_str(), name.c_str(), 100., 0., pitchX, 100., 0., pitchY);
 
     // Initialise member variables
     m_eventNumber = 0;
@@ -50,6 +54,10 @@ StatusCode EtaCorrection::run(Clipboard* clipboard) {
         PositionVector3D<Cartesian3D<double>> trackInterceptLocal = *(m_detector->globalToLocal()) * trackIntercept;
         double pixelInterceptX = m_detector->inPixelX(trackInterceptLocal) / 1000.;
         double pixelInterceptY = m_detector->inPixelY(trackInterceptLocal) / 1000.;
+        (pixelInterceptX > m_detector->pitchX() / 2. ? pixelInterceptX -= m_detector->pitchX() / 2.
+                                                     : pixelInterceptX += m_detector->pitchX() / 2.);
+        (pixelInterceptY > m_detector->pitchY() / 2. ? pixelInterceptY -= m_detector->pitchY() / 2.
+                                                     : pixelInterceptY += m_detector->pitchY() / 2.);
 
         // Look at the associated clusters and plot the eta function
         for(auto& dutCluster : track->associatedClusters()) {
@@ -59,12 +67,15 @@ StatusCode EtaCorrection::run(Clipboard* clipboard) {
                 continue;
 
             // Get the fraction along the pixel
-            double inPixelX = dutCluster->column() - floor(dutCluster->column());
-            double inPixelY = dutCluster->row() - floor(dutCluster->row());
-            if(dutCluster->columnWidth() == 2)
-                m_etaDistributionX->Fill(pixelInterceptX, inPixelX);
+            double inPixelX = m_detector->pitchX() * (dutCluster->column() - floor(dutCluster->column()));
+            double inPixelY = m_detector->pitchY() * (dutCluster->row() - floor(dutCluster->row()));
+            if(dutCluster->columnWidth() == 2) {
+                m_etaDistributionX->Fill(inPixelX, pixelInterceptX);
+                m_etaDistributionXprofile->Fill(inPixelX, pixelInterceptX);
+            }
             if(dutCluster->rowWidth() == 2)
-                m_etaDistributionY->Fill(pixelInterceptY, inPixelY);
+                m_etaDistributionY->Fill(inPixelY, pixelInterceptY);
+            m_etaDistributionYprofile->Fill(inPixelY, pixelInterceptY);
         }
     }
 
