@@ -9,7 +9,7 @@ This algorithm collects `pixel` and `cluster` objects from the clipboard and cre
 #### Parameters
 * `makeCorrelatons`: Boolean to change if correlation plots should be outputted. Default value is `false`.
 * `reference`: Name of the plane to be used as the reference for the correlation plots.
-* `timingCut`: maximum time difference between clusters to be taken into account. Defaults to 100ns.
+* `timingCut`: maximum time difference between clusters to be taken into account. Defaults to `100ns`.
 
 #### Plots produced
 For each device the following plots are produced:
