@@ -12,7 +12,6 @@ ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<Detec
 
     m_inputDirectory = m_config.get<std::string>("inputDirectory");
     m_calibrationFile = m_config.get<std::string>("calibrationFile");
-    m_eventLength = m_config.get<double>("eventLength", 0.000010);
 
     m_startTime - m_config.get<double>("startTime", 0.);
     m_toaMode = m_config.get<bool>("toaMode", false);
@@ -157,6 +156,9 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
                           m_timewalkCorrectionFactors.at(4) * tot * tot * tot * tot;
             toa -= corr * (4096. * 40000000.);
         }
+
+        // Convert TOA to nanoseconds:
+        toa /= (4096. * 0.04.);
 
         Pixel* pixel = new Pixel(detectorID, row, col, cal_tot, toa);
         pixels->push_back(pixel);
