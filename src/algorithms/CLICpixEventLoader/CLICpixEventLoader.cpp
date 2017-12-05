@@ -85,8 +85,8 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
             string name;
             istringstream header(data);
             header >> name >> timeInt;
-            shutterStartTime = (double)timeInt / (40000000.);
-            LOG(TRACE) << "Shutter rise time: " << shutterStartTime;
+            shutterStartTime = (double)timeInt / (0.04);
+            LOG(TRACE) << "Shutter rise time: " << Units::display(shutterStartTime, {"ns", "us", "s"});
             continue;
         }
         if(data.find("SHT_FALL") != string::npos) {
@@ -95,14 +95,13 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
             string name;
             istringstream header(data);
             header >> name >> timeInt;
-            shutterStopTime = (double)timeInt / (40000000.);
-            LOG(TRACE) << "Shutter fall time: " << shutterStopTime;
+            shutterStopTime = (double)timeInt / (0.04);
+            LOG(TRACE) << "Shutter fall time: " << Units::display(shutterStopTime, {"ns", "us", "s"});
             continue;
         }
 
         // Otherwise load data
         int row, col, counter, tot(0);
-        long int time;
         LOG(TRACE) << "Pixel data: " << data;
         istringstream pixelData(data);
         pixelData >> col >> row >> counter >> tot;
