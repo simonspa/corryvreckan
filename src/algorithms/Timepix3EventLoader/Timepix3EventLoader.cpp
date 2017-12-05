@@ -1,6 +1,7 @@
 #include "Timepix3EventLoader.h"
 
 #include <bitset>
+#include <cmath>
 #include <dirent.h>
 #include <fstream>
 #include <sstream>
@@ -27,6 +28,10 @@ Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<Detec
     // Check whether event length or pixel count should be used to separate events:
     m_eventLength = m_config.get<double>("eventLength", 0.0);
     m_numberPixelHits = m_config.get<int>("number_of_pixelhits", 2000);
+
+    // Calibration parameters
+    calibrationPath = m_config.get<std::string>("calibrationPath", "");
+    threshold = m_config.get<std::string>("threshold", "");
 }
 
 void Timepix3EventLoader::initialise() {
@@ -179,6 +184,41 @@ void Timepix3EventLoader::initialise() {
     for(auto& detector : m_files) {
         m_file_iterator[detector.first] = detector.second.begin();
     }
+
+    // Calibration
+    std::string nameb = "pixelToT_beforecalibration";
+    std::string namea = "pixelToT_aftercalibration";
+    pixelToT_beforecalibration = new TH1F(nameb.c_str(), nameb.c_str(), 100, 0, 200);
+
+    if(m_config.has("calibrationPath") && m_config.has("threshold")) {
+        LOG(INFO) << "Applying calibration from " << calibrationPath;
+        applyCalibration = true;
+
+        // get DUT plane name
+        std::string DUT = m_config.get<std::string>("DUT");
+
+        // make paths to calibration files and read
+        int ret = 0;
+        std::string tmp;
+        tmp = calibrationPath + "/" + DUT + "/cal_thr_" + threshold + "_ik_10/" + DUT + "_cal_tot.txt";
+        loadCalibration(tmp, ' ', vtot);
+        tmp = calibrationPath + "/" + DUT + "/cal_thr_" + threshold + "_ik_10/" + DUT + "_cal_toa.txt";
+        loadCalibration(tmp, ' ', vtoa);
+
+        // make graphs of calibration parameters
+        LOG(DEBUG) << "Creating calibration graphs";
+        pixelTOTParamaterA = new TH2F("hist_par_a_tot", "hist_par_a_tot", 256, 0, 256, 256, 0, 256);
+        pixelTOTParamaterB = new TH2F("hist_par_b_tot", "hist_par_b_tot", 256, 0, 256, 256, 0, 256);
+        pixelTOTParamaterC = new TH2F("hist_par_c_tot", "hist_par_c_tot", 256, 0, 256, 256, 0, 256);
+        pixelTOTParamaterT = new TH2F("hist_par_t_tot", "hist_par_t_tot", 256, 0, 256, 256, 0, 256);
+        pixelTOAParamaterC = new TH2F("hist_par_c_toa", "hist_par_c_toa", 256, 0, 256, 256, 0, 256);
+        pixelTOAParamaterD = new TH2F("hist_par_d_toa", "hist_par_d_toa", 256, 0, 256, 256, 0, 256);
+        pixelTOAParamaterT = new TH2F("hist_par_t_toa", "hist_par_t_toa", 256, 0, 256, 256, 0, 256);
+        pixelToT_aftercalibration = new TH1F(namea.c_str(), namea.c_str(), 2000, 0, 20000);
+    } else {
+        LOG(INFO) << "No calibration file path given, data will be uncalibrated.";
+        applyCalibration = false;
+    }
 }
 
 StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
@@ -269,6 +309,47 @@ void Timepix3EventLoader::maskPixels(Detector* detector, string trimdacfile) {
 
     // Close the files when finished
     trimdacs.close();
+}
+
+// Function to load calibration data
+void Timepix3EventLoader::loadCalibration(std::string path, char delim, std::vector<std::vector<float>>& dat) {
+    std::ifstream f;
+    f.open(path);
+    dat.clear();
+
+    // check if file is open
+    if(!f.is_open()) {
+        LOG(ERROR) << "Cannot open input file:\n\t" << path;
+        throw InvalidValueError(m_config, "calibrationPath", "Parsing error in calibration file.");
+    }
+
+    // read file line by line
+    int i = 0;
+    std::string line;
+    while(!f.eof()) {
+        std::getline(f, line);
+
+        // check if line is empty or a comment
+        // if not write to output vector
+        if(line.size() > 0 && isdigit(line.at(0))) {
+            std::stringstream ss(line);
+            std::string word;
+            std::vector<float> row;
+            while(std::getline(ss, word, delim)) {
+                i += 1;
+                row.push_back(stof(word));
+            }
+            dat.push_back(row);
+        }
+    }
+
+    // warn if too few entries
+    if(dat.size() != 256 * 256) {
+        LOG(ERROR) << "Something went wrong. Found only " << i << " entries. Not enough for TPX3.\n\t";
+        throw InvalidValueError(m_config, "calibrationPath", "Parsing error in calibration file.");
+    }
+
+    f.close();
 }
 
 // Function to load data for a given device, into the relevant container
@@ -536,9 +617,59 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             }
 
             // Otherwise create a new pixel object
-            Pixel* pixel = new Pixel(detectorID, row, col, (int)tot, time);
-            devicedata->push_back(pixel);
-            //      bufferedData[detectorID]->push_back(pixel);
+            pixelToT_beforecalibration->Fill((int)tot);
+
+            // Apply calibration if applyCalibration is true
+            if(applyCalibration && detectorID == m_config.get<std::string>("DUT")) {
+                LOG(DEBUG) << "Applying calibration to DUT";
+                float a = vtot[256 * row + col][2];
+                float b = vtot[256 * row + col][3];
+                float c = vtot[256 * row + col][4];
+                float t = vtot[256 * row + col][5];
+
+                float toa_c = vtoa[256 * row + col][2];
+                float toa_t = vtoa[256 * row + col][3];
+                float toa_d = vtoa[256 * row + col][4];
+
+                // Calculating calibrated tot and toa
+                float fvolts =
+                    (sqrt(a * a * t * t + 2 * a * b * t + 4 * a * c - 2 * a * t * tot + b * b - 2 * b * tot + tot * tot) +
+                     a * t - b + tot) /
+                    (2 * a);
+                float fcharge = fvolts * 1e-3 * 3e-15 * 6241.509 * 1e15; // capacitance is 3 fF or 18.7 e-/mV
+
+                /* Note 1: fvolts is the inverse to f(x) = a*x + b - c/(x-t). Note the +/- signs! */
+                /* Note 2: The capacitance is actually smaller than 3 fC, more like 2.5 fC. But there is an offset when when
+                 * using testpulses. Multiplying the voltage value with 20 [e-/mV] is a good approximation but means one is
+                 * over estimating the input capacitance to compensate the missing information of the offset. */
+
+                float t_shift = toa_c / (fvolts - toa_t) + toa_d;
+                long long int ftime =
+                    time - ((t_shift * 1e-9 /* - _planeLatencyVec[detectorID]*1e-9*/) * (4096. * 40000000.));
+
+                if(col == 123 && row == 138) {
+                    std::cout << col << " " << row << " " << a << " " << b << " " << fvolts << " " << fcharge << " "
+                              << t_shift << std::endl;
+                }
+
+                // creating new pixel object with calibrated values of tot and toa
+                Pixel* pixel = new Pixel(detectorID, row, col, fcharge, ftime);
+                devicedata->push_back(pixel);
+                LOG(DEBUG) << "Pixel Charge = " << fcharge << "; ToT value = " << tot;
+                pixelToT_aftercalibration->Fill(fcharge);
+                pixelTOTParamaterA->Fill(col, row, a);
+                pixelTOTParamaterB->Fill(col, row, b);
+                pixelTOTParamaterC->Fill(col, row, c);
+                pixelTOTParamaterT->Fill(col, row, t);
+                pixelTOAParamaterC->Fill(col, row, toa_c);
+                pixelTOAParamaterD->Fill(col, row, toa_d);
+                pixelTOAParamaterT->Fill(col, row, toa_t);
+            } else {
+                // creating new pixel object with non-calibrated values of tot and toa
+                Pixel* pixel = new Pixel(detectorID, row, col, (int)tot, time);
+                devicedata->push_back(pixel);
+            }
+            // bufferedData[detectorID]->push_back(pixel);
             m_prevTime = time;
         }
 
