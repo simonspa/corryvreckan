@@ -140,8 +140,8 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
             v_pixelToT.push_back(pixel->m_adc);
 
             // ToA
-            LOG(DEBUG) << "Gets pixel timestamp = " << pixel->m_timestamp;
-            v_pixelToA.push_back(pixel->m_timestamp);
+            LOG(DEBUG) << "Gets pixel timestamp = " << pixel->timestamp();
+            v_pixelToA.push_back(pixel->timestamp());
         }
         v_clusterNumPixels.push_back(numPixels);
     }
