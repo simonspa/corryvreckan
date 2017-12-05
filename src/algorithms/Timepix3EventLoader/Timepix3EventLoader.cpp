@@ -43,7 +43,6 @@ void Timepix3EventLoader::initialise() {
         LOG(INFO) << "Splitting events by number of pixel hits on detector plane.";
         temporalSplit = false;
     }
-    std::cout << "hi" << std::endl;
 
     // File structure is RunX/ChipID/files.dat
 

@@ -14,7 +14,7 @@ The data can be split into events using an event length in time, or using a maxi
 * `minNumberOfPlanes`: Minimum number of planes with loaded data required for each event to be stored. Default value is `1`.
 * `eventLength`: Length in time for each event. Default value is `0.0`. This is only used if `eventLength` is present in the configuration file, otherwise the data is split into events using the `number_of_pixelhits` parameter.
 * `number_of_pixelhits`: Maximum number of pixel hits on each detector per event. Default value is `2000`. This is only used if `eventLength` is not present in the configuration file, otherwise the data is split into events using the `eventLength` parameter.
-* `calibrationPath`: Path to the calibration directory. If this parameter is set, calibration will be applied. Assumed folder structure is `"[calibrationPath]/[detector name]/cal_thr_[thr dac]_ik_[ikrum dac]/[detector name]_cal_[tot/toa].txt"`. The assumed file structure is `[col | row | val1 | val2 | etc.]`. 
+* `calibrationPath`: Path to the calibration directory. If this parameter is set, calibration will be applied to the DUT. Assumed folder structure is `"[calibrationPath]/[detector name]/cal_thr_[thr dac]_ik_[ikrum dac]/[detector name]_cal_[tot/toa].txt"`. The assumed file structure is `[col | row | val1 | val2 | etc.]`. 
 * `DUT`: Name of the DUT plane.
 
 #### Plots produced
