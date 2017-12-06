@@ -8,9 +8,9 @@ EtaCorrection::EtaCorrection(Configuration config, std::vector<Detector*> detect
     m_DUT = m_config.get<std::string>("DUT");
     m_chi2ndofCut = m_config.get<double>("chi2ndofCut", 100.);
     m_etaFormulaX = m_config.get<std::string>("EtaFormulaX", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
-    m_etaConstantsX = m_config.getArray<double>("EtaConstantsX");
+    m_etaConstantsX = m_config.getArray<double>("EtaConstantsX", {});
     m_etaFormulaY = m_config.get<std::string>("EtaFormulaY", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
-    m_etaConstantsY = m_config.getArray<double>("EtaConstantsY");
+    m_etaConstantsY = m_config.getArray<double>("EtaConstantsY", {});
 }
 
 void EtaCorrection::initialise() {
