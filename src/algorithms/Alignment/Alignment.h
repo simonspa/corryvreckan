@@ -6,6 +6,8 @@
 #include "Minuit2/Minuit2Minimizer.h"
 #include "TError.h"
 #include "TGraph.h"
+#include "TH1F.h"
+#include "TProfile.h"
 // Local includes
 #include "core/algorithm/Algorithm.h"
 #include "objects/Cluster.h"
@@ -33,6 +35,14 @@ namespace corryvreckan {
         int nIterations;
         int m_numberOfTracksForAlignment;
         int alignmentMethod;
+
+        TH1F* residualsXPlot;
+        TH1F* residualsYPlot;
+
+        TProfile* profile_dY_X;
+        TProfile* profile_dY_Y;
+        TProfile* profile_dX_X;
+        TProfile* profile_dX_Y;
 
         std::map<std::string, TGraph*> align_correction_shiftX;
         std::map<std::string, TGraph*> align_correction_shiftY;

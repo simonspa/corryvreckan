@@ -89,8 +89,6 @@ namespace corryvreckan {
         TH1F* hPixelTOTCol2pix;
         TH1F* hClusterTOTRatioRow2pix;
         TH1F* hClusterTOTRatioCol2pix;
-        TH2F* hResidualsLocalRow2pixClusterTOT;
-        TH2F* hResidualsLocalRow2pixPixelIntercept;
 
         // Maps
         TH2F* hTrackIntercepts;

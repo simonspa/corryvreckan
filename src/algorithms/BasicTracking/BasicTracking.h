@@ -47,6 +47,7 @@ namespace corryvreckan {
         // Cuts for tracking
         double timingCut;
         double spatialCut;
+        double spatialCut_DUT;
         int minHitsOnTrack;
         bool excludeDUT;
     };

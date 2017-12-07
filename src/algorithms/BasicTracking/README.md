@@ -8,8 +8,9 @@ This algorithm performs a basic tracking method.
 Clusters from the first plane in Z (named the seed plane) are related to clusters close in time on the other detector planes using straight line tracks. The DUT plane can be excluded from the track finding and DUT clusters potentially associated with the track stored.
 
 #### Parameters
-* `timingCut`: Maximum time difference allowed between clusters for association. In units of seconds. Default value is `0.0000002` (200ns).
-* `spatialCut`: Maximum spatial distance in the XY plane allowed between clusters for association. In units of millimetres. Default value is `0.2` (200um).
+* `timingCut`: Maximum time difference allowed between clusters for association. Default value is `200ns`.
+* `spatialCut`: Maximum spatial distance in the XY plane allowed between clusters for association for the telescope planes. Default value is `0.2mm`.
+* `spatialCut_DUT`: Maximum spatial distance in the XY plane allowed between clusters for association for the DUT. Default value is `0.2mm`.
 * `minHitsOnTrack`: Minium number of associated clusters needed to create a track, equivalent to the minimum number of planes required for each track. Default value is `6`.
 * `excludeDUT`: Boolean to chose if the DUT plane is included in the track finding. In either case, the DUT clusters possibly associated with the track are saved. Default value is `true`.
 * `DUT`: Name of the DUT plane.

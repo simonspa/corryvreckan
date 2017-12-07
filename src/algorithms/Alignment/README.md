@@ -24,13 +24,21 @@ For the detector specified by the `detectorToAlign` parameter, this method moves
 * `reference`: Name of the detector used as the alignment reference plane. All other telescope planes are aligned with respect to the reference plane.
 
 #### Plots produced
-For each detector the following plots are produced:
+For each detector the following plots are produced when using `alignmentMethod = 0`:
 * Translational shift along X-axis vs. iteration number
 * Translational shift along Y-axis vs. iteration number
 * Translational shift along Z-axis vs. iteration number
 * Rotational shift around X-axis vs. iteration number
 * Rotational shift around Y-axis vs. iteration number
 * Rotational shift around Z-axis vs. iteration number
+
+For the `detectorToAlign` the following plots are produced when using `alignmentMethod = 1`:
+* Residual in X
+* Residual in Y
+* Profile plot of residual in X vs. X position
+* Profile plot of residual in X vs. Y position
+* Profile plot of residual in Y vs. X position
+* Profile plot of residual in Y vs. Y position
 
 
 #### Usage
