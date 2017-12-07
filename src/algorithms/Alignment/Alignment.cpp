@@ -63,7 +63,8 @@ StatusCode Alignment::run(Clipboard* clipboard) {
         m_alignmenttracks.push_back(alignmentTrack);
 
         Clusters associatedClusters = track->associatedClusters();
-
+        if(alignmentMethod == 0)
+            continue;
         // Find the cluster that needs to have its position recalculated
         for(auto& associatedCluster : associatedClusters) {
             // Recalculate the global position from the local
@@ -75,15 +76,13 @@ StatusCode Alignment::run(Clipboard* clipboard) {
             // Calculate the residuals
             double residualX = intercept.X() - positionGlobal.X();
             double residualY = intercept.Y() - positionGlobal.Y();
-            if(alignmentMethod == 1) {
-                // Fill the alignment residual profile plots
-                residualsXPlot->Fill(residualX);
-                residualsYPlot->Fill(residualY);
-                profile_dY_X->Fill(residualY, positionLocal.X(), 1);
-                profile_dY_Y->Fill(residualY, positionLocal.Y(), 1);
-                profile_dX_X->Fill(residualX, positionLocal.X(), 1);
-                profile_dX_Y->Fill(residualX, positionLocal.Y(), 1);
-            }
+            // Fill the alignment residual profile plots
+            residualsXPlot->Fill(residualX);
+            residualsYPlot->Fill(residualY);
+            profile_dY_X->Fill(residualY, positionLocal.X(), 1);
+            profile_dY_Y->Fill(residualY, positionLocal.Y(), 1);
+            profile_dX_X->Fill(residualX, positionLocal.X(), 1);
+            profile_dX_Y->Fill(residualX, positionLocal.Y(), 1);
         }
     }
     // If we have enough tracks for the alignment, tell the event loop to finish
