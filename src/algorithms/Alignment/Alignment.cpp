@@ -49,6 +49,7 @@ void Alignment::initialise() {
 
 // During run, just pick up tracks and save them till the end
 StatusCode Alignment::run(Clipboard* clipboard) {
+    auto detector = get_detector(detectorToAlign);
     // Get the tracks
     Tracks* tracks = (Tracks*)clipboard->get("tracks");
     if(tracks == NULL) {
