@@ -33,6 +33,7 @@ namespace corryvreckan {
         TH1F* residualsTime;
         TH2F* clusterToTVersusTime;
         TH2F* residualsTimeVsTime;
+        TH2F* residualsTimeVsSignal;
 
         TH1F* residualsXMCtruth;
 

@@ -23,9 +23,9 @@ void DUTAnalysis::initialise() {
     residualsX = new TH1F("residualsX", "residualsX", 400, -0.2, 0.2);
     residualsY = new TH1F("residualsY", "residualsY", 400, -0.2, 0.2);
 
-    clusterTotAssociated = new TH1F("clusterTotAssociated", "clusterTotAssociated", 250, 0, 10000);
+    clusterTotAssociated = new TH1F("clusterTotAssociated", "clusterTotAssociated", 20000, 0, 100000);
     clusterSizeAssociated = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
-    residualsTime = new TH1F("residualsTime", "residualsTime", 2000, -0.000001, 0.000001);
+    residualsTime = new TH1F("residualsTime", "residualsTime", 20000, -0.000001, 0.000001);
 
     hTrackCorrelationX = new TH1F("hTrackCorrelationX", "hTrackCorrelationX", 4000, -10., 10.);
     hTrackCorrelationY = new TH1F("hTrackCorrelationY", "hTrackCorrelationY", 4000, -10., 10.);
@@ -33,6 +33,8 @@ void DUTAnalysis::initialise() {
     clusterToTVersusTime = new TH2F("clusterToTVersusTime", "clusterToTVersusTime", 300000, 0., 300., 200, 0, 1000);
 
     residualsTimeVsTime = new TH2F("residualsTimeVsTime", "residualsTimeVsTime", 20000, 0, 200, 400, -0.0005, 0.0005);
+    residualsTimeVsSignal =
+        new TH2F("residualsTimeVsSignal", "residualsTimeVsSignal", 20000, 0, 100000, 400, -0.000001, 0.000001);
 
     tracksVersusPowerOnTime = new TH1F("tracksVersusPowerOnTime", "tracksVersusPowerOnTime", 1200000, -0.01, 0.11);
     associatedTracksVersusPowerOnTime =
@@ -193,8 +195,8 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             Cluster* cluster = (*clusters)[itCluster];
 
             // Check if the cluster is close in time
-            //      if( abs(cluster->timestamp() - track->timestamp()) > timingCut)
-            continue;
+            // if( abs(cluster->timestamp() - track->timestamp()) > timingCut)
+            //    continue;
 
             // Check distance between track and cluster
             ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
@@ -208,6 +210,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
                 residualsTime->Fill(Units::convert(track->timestamp() - cluster->timestamp(), "s"));
                 residualsTimeVsTime->Fill(Units::convert(track->timestamp(), "s"),
                                           Units::convert(track->timestamp() - cluster->timestamp(), "s"));
+                residualsTimeVsSignal->Fill(cluster->tot(), Units::convert(track->timestamp() - cluster->timestamp(), "s"));
             }
         }
 

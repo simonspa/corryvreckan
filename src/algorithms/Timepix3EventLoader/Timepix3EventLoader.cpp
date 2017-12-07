@@ -530,8 +530,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 m_syncTimeTDC[detectorID] = timestamp_raw;
                 timestamp = timestamp_raw + ((unsigned long long int)(m_TDCoverflowCounter[detectorID]) << 35);
 
-                double triggerTime = (timestamp * 25e-9 + stamp * 25e-9 / 12.) / 8; // 320 MHz clock
-                // triggerTime -= m_triggerLatency * 1e-9;
+                double triggerTime = (timestamp + stamp / 12.) / (8. * 0.04); // 320 MHz clock
                 SpidrSignal* triggerSignal = new SpidrSignal("trigger", triggerTime);
                 spidrData->push_back(triggerSignal);
             }

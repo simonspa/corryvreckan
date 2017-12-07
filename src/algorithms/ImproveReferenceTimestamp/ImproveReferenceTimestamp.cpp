@@ -8,6 +8,7 @@ ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration config, std::
     : Algorithm(std::move(config), std::move(detectors)) {
     m_method = m_config.get<int>("improvementMethod", 1);
     m_source = m_config.get<std::string>("signalSource", "W0013_G02");
+    m_triggerLatency = m_config.get<double>("triggerLatency", Units::convert(0, "ns"));
 }
 
 void ImproveReferenceTimestamp::initialise() {
@@ -29,7 +30,7 @@ StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
             // Get the signal
             SpidrSignal* signal = (*spidrData)[iSig];
             if(signal->type() == "trigger") {
-                trigger_times.push_back(signal->timestamp());
+                trigger_times.push_back(signal->timestamp() - m_triggerLatency);
             }
         }
         LOG(DEBUG) << "Number of triggers found: " << trigger_times.size();
@@ -50,18 +51,17 @@ StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
 
         // Use trigger timestamp
         if(m_method == 0) {
-            // Find trigger timestamp clostest in time
+            // Find trigger timestamp closest in time
             double diff = std::numeric_limits<double>::max();
             for(auto& trigger_time : trigger_times) {
                 LOG(DEBUG) << " track: " << track->timestamp() << " trigger: " << trigger_time
                            << " diff: " << Units::display(abs(trigger_time - track->timestamp()), {"ns", "us", "s"})
-                           << " diff stored cycles: " << diff * (4096. * 40000000.);
+                           << " diff stored: " << Units::display(diff, {"ns", "us", "s"});
                 if(abs(trigger_time - track->timestamp()) < diff) {
                     improved_time = trigger_time;
                     diff = abs(trigger_time - track->timestamp());
                 }
             }
-            // trigger latency is ~175 ns, still missing
         }
 
         // Use average track timestamp
