@@ -119,7 +119,6 @@ void ClicpixAnalysis::initialise() {
     hPixelTOTRow2pix = new TH1F("hPixelTOTRow2pix", "hPixelTOTRow2pix", 50, 0, 50);
     hPixelTOTCol2pix = new TH1F("hPixelTOTCol2pix", "hPixelTOTCol2pix", 50, 0, 50);
 
-
     // Maps
     hTrackIntercepts = new TH2F("hTrackIntercepts", "hTrackIntercepts", 200, -2.0, 2.0, 300, -1., 2);
     hTrackInterceptsAssociated =

@@ -28,11 +28,28 @@ Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
     LOG(INFO) << "Aligning detector \"" << detectorToAlign << "\"";
 }
 
-void Alignment::initialise() {}
+void Alignment::initialise() {
+    if(alignmentMethod == 1) {
+        auto detector = get_detector(detectorToAlign);
+        auto detname = detector->name();
+        std::string title = detname + "_residualsX";
+        residualsXPlot = new TH1F(title.c_str(), title.c_str(), 400, -0.2, 0.2);
+        title = detname + "_residualsY";
+        residualsYPlot = new TH1F(title.c_str(), title.c_str(), 400, -0.2, 0.2);
+        title = detname + "_profile_dY_X";
+        profile_dY_X = new TProfile(title.c_str(), title.c_str(), 400, -0.2, 0.2);
+        title = detname + "_profile_dY_Y";
+        profile_dY_Y = new TProfile(title.c_str(), title.c_str(), 400, -0.2, 0.2);
+        title = detname + "_profile_dX_X";
+        profile_dX_X = new TProfile(title.c_str(), title.c_str(), 400, -0.2, 0.2);
+        title = detname + "_profile_dX_Y";
+        profile_dX_Y = new TProfile(title.c_str(), title.c_str(), 400, -0.2, 0.2);
+    }
+}
 
 // During run, just pick up tracks and save them till the end
 StatusCode Alignment::run(Clipboard* clipboard) {
-
+    auto detector = get_detector(detectorToAlign);
     // Get the tracks
     Tracks* tracks = (Tracks*)clipboard->get("tracks");
     if(tracks == NULL) {
@@ -44,8 +61,31 @@ StatusCode Alignment::run(Clipboard* clipboard) {
         Track* track = (*tracks)[iTrack];
         Track* alignmentTrack = new Track(track);
         m_alignmenttracks.push_back(alignmentTrack);
-    }
 
+        Clusters associatedClusters = track->associatedClusters();
+
+        // Find the cluster that needs to have its position recalculated
+        for(auto& associatedCluster : associatedClusters) {
+            // Recalculate the global position from the local
+            PositionVector3D<Cartesian3D<double>> positionLocal(
+                associatedCluster->localX(), associatedCluster->localY(), associatedCluster->localZ());
+            PositionVector3D<Cartesian3D<double>> positionGlobal = *(detector->localToGlobal()) * positionLocal;
+            // Get the track intercept with the detector
+            ROOT::Math::XYZPoint intercept = track->intercept(positionGlobal.Z());
+            // Calculate the residuals
+            double residualX = intercept.X() - positionGlobal.X();
+            double residualY = intercept.Y() - positionGlobal.Y();
+            if(alignmentMethod == 1) {
+                // Fill the alignment residual profile plots
+                residualsXPlot->Fill(residualX);
+                residualsYPlot->Fill(residualY);
+                profile_dY_X->Fill(residualY, positionLocal.X(), 1);
+                profile_dY_Y->Fill(residualY, positionLocal.Y(), 1);
+                profile_dX_X->Fill(residualX, positionLocal.X(), 1);
+                profile_dX_Y->Fill(residualX, positionLocal.Y(), 1);
+            }
+        }
+    }
     // If we have enough tracks for the alignment, tell the event loop to finish
     if(m_alignmenttracks.size() >= m_numberOfTracksForAlignment) {
         LOG(STATUS) << "Accumulated " << m_alignmenttracks.size() << " tracks, interrupting processing.";
@@ -241,7 +281,6 @@ void Alignment::finalise() {
             detector->rotationY(rotationY);
             detector->rotationZ(rotationZ);
         }
-
         LOG(INFO) << detectorToAlign << " new alignment: T(" << detector->displacementX() << "," << detector->displacementY()
                   << "," << detector->displacementZ() << ") R(" << detector->rotationX() << "," << detector->rotationY()
                   << "," << detector->rotationZ() << ")";
