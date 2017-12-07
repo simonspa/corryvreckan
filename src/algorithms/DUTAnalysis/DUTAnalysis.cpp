@@ -25,16 +25,15 @@ void DUTAnalysis::initialise() {
 
     clusterTotAssociated = new TH1F("clusterTotAssociated", "clusterTotAssociated", 20000, 0, 100000);
     clusterSizeAssociated = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
-    residualsTime = new TH1F("residualsTime", "residualsTime", 20000, -0.000001, 0.000001);
+    residualsTime = new TH1F("residualsTime", "residualsTime", 20000, -1000, +1000);
 
     hTrackCorrelationX = new TH1F("hTrackCorrelationX", "hTrackCorrelationX", 4000, -10., 10.);
     hTrackCorrelationY = new TH1F("hTrackCorrelationY", "hTrackCorrelationY", 4000, -10., 10.);
-    hTrackCorrelationTime = new TH1F("hTrackCorrelationTime", "hTrackCorrelationTime", 2000000, -0.005, 0.005);
+    hTrackCorrelationTime = new TH1F("hTrackCorrelationTime", "hTrackCorrelationTime", 2000000, -5000, 5000);
     clusterToTVersusTime = new TH2F("clusterToTVersusTime", "clusterToTVersusTime", 300000, 0., 300., 200, 0, 1000);
 
-    residualsTimeVsTime = new TH2F("residualsTimeVsTime", "residualsTimeVsTime", 20000, 0, 200, 400, -0.0005, 0.0005);
-    residualsTimeVsSignal =
-        new TH2F("residualsTimeVsSignal", "residualsTimeVsSignal", 20000, 0, 100000, 400, -0.000001, 0.000001);
+    residualsTimeVsTime = new TH2F("residualsTimeVsTime", "residualsTimeVsTime", 20000, 0, 200, 1000, -1000, +1000);
+    residualsTimeVsSignal = new TH2F("residualsTimeVsSignal", "residualsTimeVsSignal", 20000, 0, 100000, 1000, -1000, +1000);
 
     tracksVersusPowerOnTime = new TH1F("tracksVersusPowerOnTime", "tracksVersusPowerOnTime", 1200000, -0.01, 0.11);
     associatedTracksVersusPowerOnTime =
@@ -204,13 +203,13 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             // Fill the correlation plot
             hTrackCorrelationX->Fill(intercept.X() - cluster->globalX());
             hTrackCorrelationY->Fill(intercept.Y() - cluster->globalY());
-            hTrackCorrelationTime->Fill(Units::convert(track->timestamp() - cluster->timestamp(), "s"));
+            hTrackCorrelationTime->Fill(Units::convert(track->timestamp() - cluster->timestamp(), "ns"));
 
             if(fabs(intercept.X() - cluster->globalX()) < 0.1 && fabs(intercept.Y() - cluster->globalY()) < 0.1) {
-                residualsTime->Fill(Units::convert(track->timestamp() - cluster->timestamp(), "s"));
-                residualsTimeVsTime->Fill(Units::convert(track->timestamp(), "s"),
-                                          Units::convert(track->timestamp() - cluster->timestamp(), "s"));
-                residualsTimeVsSignal->Fill(cluster->tot(), Units::convert(track->timestamp() - cluster->timestamp(), "s"));
+                residualsTime->Fill(Units::convert(track->timestamp() - cluster->timestamp(), "ns"));
+                residualsTimeVsTime->Fill(Units::convert(track->timestamp(), "ns"),
+                                          Units::convert(track->timestamp() - cluster->timestamp(), "ns"));
+                residualsTimeVsSignal->Fill(cluster->tot(), Units::convert(track->timestamp() - cluster->timestamp(), "ns"));
             }
         }
 
@@ -220,7 +219,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
 
             // Fill the tot histograms on the first run
             if(first_track == 0)
-                clusterToTVersusTime->Fill(Units::convert(cluster->timestamp(), "s"), cluster->tot());
+                clusterToTVersusTime->Fill(Units::convert(cluster->timestamp(), "ns"), cluster->tot());
 
             // Check if the cluster is close in time
             if(!m_digitalPowerPulsing && abs(cluster->timestamp() - track->timestamp()) > timingCut)
