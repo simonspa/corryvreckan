@@ -47,6 +47,9 @@ void FileReader::initialise() {
     // Get input file
     LOG(INFO) << "Opening file " << m_fileName;
     m_inputFile = new TFile(m_fileName.c_str(), "READ");
+    if(!m_inputFile->IsOpen()) {
+        throw AlgorithmError("Cannot open input file \"" + m_fileName + "\".");
+    }
     m_inputFile->cd();
 
     // Loop over all objects to be read from file, and get the trees
