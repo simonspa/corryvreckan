@@ -21,6 +21,7 @@ void DUTAnalysis::initialise() {
     tracksVersusTime = new TH1F("tracksVersusTime", "tracksVersusTime", 300000, 0, 300);
     associatedTracksVersusTime = new TH1F("associatedTracksVersusTime", "associatedTracksVersusTime", 300000, 0, 300);
     residualsX = new TH1F("residualsX", "residualsX", 400, -0.2, 0.2);
+    residualsX1pix = new TH1F("residualsX1pix", "residualsX1pix", 400, -0.2, 0.2);
     residualsY = new TH1F("residualsY", "residualsY", 400, -0.2, 0.2);
 
     clusterTotAssociated = new TH1F("clusterTotAssociated", "clusterTotAssociated", 20000, 0, 100000);
@@ -46,6 +47,7 @@ void DUTAnalysis::initialise() {
 
     if(m_useMCtruth) {
         residualsXMCtruth = new TH1F("residualsXMCtruth", "residualsXMCtruth", 400, -0.2, 0.2);
+        telescopeResolution = new TH1F("telescopeResolution", "telescopeResolution", 400, -0.2, 0.2);
     }
 
     // Initialise member variables
@@ -239,6 +241,8 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             LOG(TRACE) << "Found associated cluster";
             associatedTracksVersusTime->Fill(Units::convert(track->timestamp(), "s"));
             residualsX->Fill(xdistance);
+            if(cluster->size() == 1)
+                residualsX1pix->Fill(xdistance);
             residualsY->Fill(ydistance);
             clusterTotAssociated->Fill(cluster->tot());
             clusterSizeAssociated->Fill(cluster->size());
@@ -264,7 +268,9 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
                         particlePosition.SetXYZ(centre.X(), centre.Y(), centre.Z());
                     }
                 }
-                residualsXMCtruth->Fill(cluster->localX() - particlePosition.X());
+                residualsXMCtruth->Fill(cluster->localX() + 7.04 - particlePosition.X());
+                auto interceptLocal = *(detector->globalToLocal()) * intercept;
+                telescopeResolution->Fill(interceptLocal.X() + 7.04 - particlePosition.X());
             }
 
             // Fill power pulsing response
