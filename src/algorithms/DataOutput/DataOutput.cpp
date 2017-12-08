@@ -167,6 +167,7 @@ void DataOutput::finalise() {
     auto DUT = get_detector(m_config.get<std::string>("DUT"));
     auto directory = m_outputFile->mkdir("Directory");
     directory->cd();
+    LOG(STATUS) << filledEvents << " events written to file " << m_fileName;
 
     auto orientation = DUT->rotation();
     directory->WriteObject(&orientation, "DUTorientation");
