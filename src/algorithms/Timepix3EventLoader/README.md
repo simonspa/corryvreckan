@@ -11,12 +11,10 @@ The hit timestamps are derived from the 40 MHz TOA counter and the fast on-pixel
 
 #### Parameters
 * `inputDirectory`: Path to the directory above the data directory for each device. The device name is added to the path during the algorithm.
-* `applyTimingCut`: Boolean to set if a timing cut should be applied. Default value is `false`. Not currently used.
-* `timingCut`: Value of the timing cut. This will be applied if `applyTimingCut = true`. Default value is `0.0`. Not currently used.
 * `minNumberOfPlanes`: Minimum number of planes with loaded data required for each event to be stored. Default value is `1`.
-* `eventLength`: Length in time for each event. Default value is `0.0`. This is only used if `eventLength` is present in the configuration file, otherwise the data is split into events using the `number_of_pixelhits` parameter.
+* `eventLength`: Length in time for each event. Default value is `0.0`. Event legnth is only used if this parameter is present in the configuration file, otherwise the data is split into events using the `number_of_pixelhits` parameter.
 * `number_of_pixelhits`: Maximum number of pixel hits on each detector per event. Default value is `2000`. This is only used if `eventLength` is not present in the configuration file, otherwise the data is split into events using the `eventLength` parameter.
-* `calibrationPath`: Path to the calibration directory. If this parameter is set, calibration will be applied to the DUT. Assumed folder structure is `"[calibrationPath]/[detector name]/cal_thr_[thr dac]_ik_[ikrum dac]/[detector name]_cal_[tot/toa].txt"`. The assumed file structure is `[col | row | val1 | val2 | etc.]`. 
+* `calibrationPath`: Path to the calibration directory. If this parameter is set, calibration will be applied to the DUT. Assumed folder structure is `"[calibrationPath]/[detector name]/cal_thr_[thr dac]_ik_[ikrum dac]/[detector name]_cal_[tot/toa].txt"`. The assumed file structure is `[col | row | val1 | val2 | etc.]`.
 * `DUT`: Name of the DUT plane.
 
 #### Plots produced
@@ -29,8 +27,6 @@ The hit timestamps are derived from the 40 MHz TOA counter and the fast on-pixel
 inputDirectory = "path/to/directory"
 calibrationPath = "path/to/calibration"
 threshold = 1148
-applyTimingCut = false
-timingCut = 0.0
 minNumberOfPlanes = 5
 eventLength = 0.0000002
 number_of_pixelhits = 0

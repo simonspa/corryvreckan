@@ -11,20 +11,9 @@ namespace corryvreckan {
         // Constructors and destructors
         Pixel() = default;
         virtual ~Pixel() {}
-        Pixel(std::string detectorID, int row, int col, int tot) {
-            m_detectorID = detectorID;
-            m_row = row;
-            m_column = col;
-            m_adc = tot;
-            m_timestamp = 0;
-        }
-        Pixel(std::string detectorID, int row, int col, int tot, long long int timestamp) {
-            m_detectorID = detectorID;
-            m_row = row;
-            m_column = col;
-            m_adc = tot;
-            m_timestamp = timestamp;
-        }
+        Pixel(std::string detectorID, int row, int col, int tot) : Pixel(detectorID, row, col, tot, 0.) {}
+        Pixel(std::string detectorID, int row, int col, int tot, double timestamp)
+            : TestBeamObject(detectorID, timestamp), m_row(row), m_column(col), m_adc(tot) {}
 
         // Member variables
         int m_row;

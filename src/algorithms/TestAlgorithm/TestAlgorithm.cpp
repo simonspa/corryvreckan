@@ -6,6 +6,7 @@ using namespace std;
 TestAlgorithm::TestAlgorithm(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
     makeCorrelations = m_config.get<bool>("makeCorrelations", false);
+    timingCut = m_config.get<double>("timingCut", Units::convert(100, "ns"));
     LOG(DEBUG) << "Setting makeCorrelations to: " << makeCorrelations;
 }
 
@@ -85,7 +86,7 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
             // Hitmap
             hitmap[detector->name()]->Fill(pixel->m_column, pixel->m_row);
             // Timing plots
-            eventTimes[detector->name()]->Fill((double)pixel->m_timestamp / (4096. * 40000000.));
+            eventTimes[detector->name()]->Fill(Units::convert(pixel->timestamp(), "s"));
         }
 
         // Get the clusters
@@ -108,22 +109,23 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
             for(auto& cluster : (*clusters)) {
                 // Loop over reference plane pixels to make correlation plots
                 for(auto& refCluster : (*referenceClusters)) {
-                    long long int timeDifferenceInt = (refCluster->timestamp() - cluster->timestamp()) / 4096;
 
-                    double timeDifference = (double)(refCluster->timestamp() - cluster->timestamp()) / (4096. * 40000000.);
+                    double timeDifference = refCluster->timestamp() - cluster->timestamp();
+                    // in 40 MHz:
+                    long long int timeDifferenceInt = static_cast<long long int>(timeDifference / 25);
 
                     // Correlation plots
-                    if(abs(timeDifference) < 0.000001) {
+                    if(abs(timeDifference) < timingCut) {
                         correlationX[detector->name()]->Fill(refCluster->globalX() - cluster->globalX());
                         correlationX2D[detector->name()]->Fill(cluster->globalX(), refCluster->globalX());
                         correlationX2Dlocal[detector->name()]->Fill(cluster->column(), refCluster->column());
                     }
-                    if(abs(timeDifference) < 0.000001) {
+                    if(abs(timeDifference) < timingCut) {
                         correlationY[detector->name()]->Fill(refCluster->globalY() - cluster->globalY());
                         correlationY2D[detector->name()]->Fill(cluster->globalY(), refCluster->globalY());
                         correlationY2Dlocal[detector->name()]->Fill(cluster->row(), refCluster->row());
                     }
-                    correlationTime[detector->name()]->Fill(timeDifference);
+                    correlationTime[detector->name()]->Fill(Units::convert(timeDifference, "s"));
                     correlationTimeInt[detector->name()]->Fill(timeDifferenceInt);
                 }
             }

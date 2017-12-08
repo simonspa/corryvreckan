@@ -122,9 +122,9 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
         hPixelToT->Fill(tot);
     }
 
-    // Now set the event time so that the Timepix3 data is loaded correctly
-    shutterStartTime = shutterStartTimeInt * 25. / 1000000000.;
-    shutterStopTime = shutterStopTimeInt * 25. / 1000000000.;
+    // Now set the event time so that the Timepix3 data is loaded correctly, unit is nanoseconds
+    shutterStartTime = shutterStartTimeInt / 0.04;
+    shutterStopTime = shutterStopTimeInt / 0.04;
 
     clipboard->put_persistent("currentTime", shutterStartTime);
     m_config.set<double>("eventLength", (shutterStopTime - shutterStartTime));

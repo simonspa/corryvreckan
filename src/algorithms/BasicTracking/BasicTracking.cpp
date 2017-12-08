@@ -7,9 +7,10 @@ using namespace std;
 
 BasicTracking::BasicTracking(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
+
     // Default values for cuts
-    timingCut = m_config.get<double>("timingCut", 200. / 1000000000.); // 200 ns
-    spatialCut = m_config.get<double>("spatialCut", 0.2);              // 200 um
+    timingCut = m_config.get<double>("timingCut", Units::convert(200, "ns"));
+    spatialCut = m_config.get<double>("spatialCut", Units::convert(0.2, "mm"));
     spatialCut_DUT = m_config.get<double>("spatialCutDUT", Units::convert(0.2, "mm"));
     minHitsOnTrack = m_config.get<int>("minHitsOnTrack", 6);
     excludeDUT = m_config.get<bool>("excludeDUT", true);
@@ -131,7 +132,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
 
             // Get all neighbours within 200 ns
             LOG(DEBUG) << "Searching for neighbouring cluster on " << detectorID;
-            LOG(DEBUG) << "- cluster time is " << cluster->timestamp();
+            LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
             Cluster* closestCluster = NULL;
             double closestClusterDistance = spatialCut;
             Clusters neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut);

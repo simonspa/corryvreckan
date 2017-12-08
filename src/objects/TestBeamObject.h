@@ -18,13 +18,19 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        TestBeamObject() {}
+        TestBeamObject() : m_detectorID(), m_timestamp(0) {}
+        TestBeamObject(std::string detectorID) : m_detectorID(detectorID), m_timestamp(0) {}
+        TestBeamObject(double timestamp) : m_detectorID(), m_timestamp(timestamp) {}
+        TestBeamObject(std::string detectorID, double timestamp) : m_detectorID(detectorID), m_timestamp(timestamp) {}
         virtual ~TestBeamObject() { m_timestamp = 0; }
 
         // Methods to get member variables
         std::string getDetectorID() { return m_detectorID; }
-        long long int timestamp() { return m_timestamp; }
-        void timestamp(long long int time) { m_timestamp = time; }
+        std::string detectorID() { return getDetectorID(); }
+
+        double timestamp() { return m_timestamp; }
+        void timestamp(double time) { m_timestamp = time; }
+        void setTimestamp(double time) { timestamp(time); }
 
         // Methods to set member variables
         void setDetectorID(std::string detectorID) { m_detectorID = detectorID; }
@@ -34,13 +40,13 @@ namespace corryvreckan {
         static TestBeamObject* Factory(std::string, TestBeamObject* object = NULL);
         static TestBeamObject* Factory(std::string, std::string, TestBeamObject* object = NULL);
 
+    protected:
         // Member variables
         std::string m_detectorID;
-        long long int m_timestamp;
+        double m_timestamp;
 
-        // ROOT I/O class definition - update version number when you change this
-        // class!
-        ClassDef(TestBeamObject, 1)
+        // ROOT I/O class definition - update version number when you change this class!
+        ClassDef(TestBeamObject, 2)
     };
 
     // Vector type declaration

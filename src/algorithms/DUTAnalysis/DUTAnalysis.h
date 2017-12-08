@@ -33,6 +33,7 @@ namespace corryvreckan {
         TH1F* residualsTime;
         TH2F* clusterToTVersusTime;
         TH2F* residualsTimeVsTime;
+        TH2F* residualsTimeVsSignal;
 
         TH1F* residualsXMCtruth;
 
@@ -52,6 +53,7 @@ namespace corryvreckan {
         long long int m_shutterOpenTime;
         long long int m_shutterCloseTime;
         bool m_digitalPowerPulsing;
+        double timingCut;
     };
 } // namespace corryvreckan
 #endif // DUTAnalysis_H

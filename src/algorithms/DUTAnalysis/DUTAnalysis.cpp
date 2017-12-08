@@ -12,6 +12,7 @@ DUTAnalysis::DUTAnalysis(Configuration config, std::vector<Detector*> detectors)
     m_digitalPowerPulsing = m_config.get<bool>("digitalPowerPulsing", false);
     m_DUT = m_config.get<std::string>("DUT");
     m_useMCtruth = m_config.get<bool>("useMCtruth", false);
+    timingCut = m_config.get<double>("timingCut", Units::convert(200, "ns"));
 }
 
 void DUTAnalysis::initialise() {
@@ -22,16 +23,17 @@ void DUTAnalysis::initialise() {
     residualsX = new TH1F("residualsX", "residualsX", 400, -0.2, 0.2);
     residualsY = new TH1F("residualsY", "residualsY", 400, -0.2, 0.2);
 
-    clusterTotAssociated = new TH1F("clusterTotAssociated", "clusterTotAssociated", 2500, 0, 100000);
+    clusterTotAssociated = new TH1F("clusterTotAssociated", "clusterTotAssociated", 20000, 0, 100000);
     clusterSizeAssociated = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
-    residualsTime = new TH1F("residualsTime", "residualsTime", 2000, -0.000001, 0.000001);
+    residualsTime = new TH1F("residualsTime", "residualsTime", 20000, -1000, +1000);
 
     hTrackCorrelationX = new TH1F("hTrackCorrelationX", "hTrackCorrelationX", 4000, -10., 10.);
     hTrackCorrelationY = new TH1F("hTrackCorrelationY", "hTrackCorrelationY", 4000, -10., 10.);
-    hTrackCorrelationTime = new TH1F("hTrackCorrelationTime", "hTrackCorrelationTime", 2000000, -0.005, 0.005);
+    hTrackCorrelationTime = new TH1F("hTrackCorrelationTime", "hTrackCorrelationTime", 2000000, -5000, 5000);
     clusterToTVersusTime = new TH2F("clusterToTVersusTime", "clusterToTVersusTime", 300000, 0., 300., 200, 0, 1000);
 
-    residualsTimeVsTime = new TH2F("residualsTimeVsTime", "residualsTimeVsTime", 20000, 0, 200, 400, -0.0005, 0.0005);
+    residualsTimeVsTime = new TH2F("residualsTimeVsTime", "residualsTimeVsTime", 20000, 0, 200, 1000, -1000, +1000);
+    residualsTimeVsSignal = new TH2F("residualsTimeVsSignal", "residualsTimeVsSignal", 20000, 0, 100000, 1000, -1000, +1000);
 
     tracksVersusPowerOnTime = new TH1F("tracksVersusPowerOnTime", "tracksVersusPowerOnTime", 1200000, -0.01, 0.11);
     associatedTracksVersusPowerOnTime =
@@ -57,15 +59,11 @@ void DUTAnalysis::initialise() {
 
 StatusCode DUTAnalysis::run(Clipboard* clipboard) {
 
-    LOG(TRACE) << "Power on time: " << m_powerOnTime / (4096. * 40000000.);
-    LOG(TRACE) << "Power off time: " << m_powerOffTime / (4096. * 40000000.);
+    LOG(TRACE) << "Power on time: " << Units::display(m_powerOnTime, {"ns", "us", "s"});
+    LOG(TRACE) << "Power off time: " << Units::display(m_powerOffTime, {"ns", "us", "s"});
 
     //    if(clipboard->get_persistent("currentTime") < 13.5)
     //        return Success;
-
-    // Timing cut for association
-    double timingCut = 200. / 1000000000.; // 200 ns
-    long long int timingCutInt = (timingCut * 4096. * 40000000.);
 
     // Spatial cut
     double spatialCut = 0.2; // 200 um
@@ -98,18 +96,20 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             if(signal->type() == "shutterOpen") {
                 // There may be multiple power on/off in 1 time window. At the moment,
                 // take earliest if within 1ms
-                if(fabs(double(signal->timestamp() - m_shutterOpenTime) / (4096. * 40000000.)) < 0.001)
+                if(abs(Units::convert(signal->timestamp() - m_shutterOpenTime, "s")) < 0.001) {
                     continue;
+                }
                 m_shutterOpenTime = signal->timestamp();
-                LOG(TRACE) << "Shutter opened at " << double(m_shutterOpenTime) / (4096. * 40000000.);
+                LOG(TRACE) << "Shutter opened at " << Units::display(m_shutterOpenTime, {"ns", "us", "s"});
             }
             if(signal->type() == "shutterClosed") {
                 // There may be multiple power on/off in 1 time window. At the moment,
                 // take earliest if within 1ms
-                if(fabs(double(signal->timestamp() - m_shutterCloseTime) / (4096. * 40000000.)) < 0.001)
+                if(abs(Units::convert(signal->timestamp() - m_shutterCloseTime, "s")) < 0.001) {
                     continue;
+                }
                 m_shutterCloseTime = signal->timestamp();
-                LOG(TRACE) << "Shutter closed at " << double(m_shutterCloseTime) / (4096. * 40000000.);
+                LOG(TRACE) << "Shutter closed at " << Units::display(m_shutterCloseTime, {"ns", "us", "s"});
             }
         }
     }
@@ -155,14 +155,14 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             continue;
         }
 
-        tracksVersusTime->Fill((double)track->timestamp() / (4096. * 40000000.));
+        tracksVersusTime->Fill(Units::convert(track->timestamp(), "s"));
 
-        timeSincePowerOn = (double)(track->timestamp() - m_shutterOpenTime) / (4096. * 40000000.);
-        if(timeSincePowerOn > 0. && timeSincePowerOn < 0.0002) {
-            LOG(TRACE) << "Track at time " << double(track->timestamp()) / (4096. * 40000000.)
-                       << " has time shutter open of " << timeSincePowerOn;
-            LOG(TRACE) << "Shutter open time is " << double(m_shutterOpenTime) / (4096. * 40000000.)
-                       << ", shutter close time is " << double(m_shutterCloseTime) / (4096. * 40000000.);
+        timeSincePowerOn = track->timestamp() - m_shutterOpenTime;
+        if(timeSincePowerOn > 0. && timeSincePowerOn < Units::convert(200, "us")) {
+            LOG(TRACE) << "Track at time " << Units::display(track->timestamp(), {"ns", "us", "s"})
+                       << " has time shutter open of " << Units::display(timeSincePowerOn, {"ns", "us", "s"});
+            LOG(TRACE) << "Shutter open time is " << Units::display(m_shutterOpenTime, {"ns", "us", "s"})
+                       << ", shutter close time is " << Units::display(m_shutterCloseTime, {"ns", "us", "s"});
         }
 
         // Check time since power on (if power pulsing).
@@ -172,15 +172,15 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
            (m_shutterOpenTime != 0 &&
             ((m_shutterCloseTime > m_shutterOpenTime && m_shutterCloseTime - track->timestamp() > 0) ||
              (m_shutterOpenTime > m_shutterCloseTime && track->timestamp() - m_shutterOpenTime >= 0)))) {
-            timeSincePowerOn = (double)(track->timestamp() - m_shutterOpenTime) / (4096. * 40000000.);
+            timeSincePowerOn = track->timestamp() - m_shutterOpenTime;
             tracksVersusPowerOnTime->Fill(timeSincePowerOn);
-            //      if(timeSincePowerOn < (0.0002)){
-            //        LOG(TRACE) <<"Track at time "<<clipboard->get_persistent("currentTime")<<" has
-            //        time shutter open of "<<timeSincePowerOn;
-            //        LOG(TRACE) <<"Shutter open time is
-            //        "<<double(m_shutterOpenTime)/(4096.*40000000.)<<", shutter close
-            //        time is "<<double(m_shutterCloseTime)/(4096.*40000000.);
-            //      }
+
+            if(timeSincePowerOn < 200000) {
+                LOG(TRACE) << "Track at time " << Units::display(clipboard->get_persistent("currentTime"), {"ns", "us", "s"})
+                           << " has time shutter open of " << Units::display(timeSincePowerOn, {"ns", "us", "s"});
+                LOG(TRACE) << "Shutter open time is " << Units::display(m_shutterOpenTime, {"ns", "us", "s"})
+                           << ", shutter close time is " << Units::display(m_shutterCloseTime, {"ns", "us", "s"});
+            }
         }
 
         // If no DUT clusters then continue to the next track
@@ -194,8 +194,8 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             Cluster* cluster = (*clusters)[itCluster];
 
             // Check if the cluster is close in time
-            //      if( abs(cluster->timestamp() - track->timestamp()) > timingCutInt )
-            continue;
+            // if( abs(cluster->timestamp() - track->timestamp()) > timingCut)
+            //    continue;
 
             // Check distance between track and cluster
             ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
@@ -203,12 +203,13 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             // Fill the correlation plot
             hTrackCorrelationX->Fill(intercept.X() - cluster->globalX());
             hTrackCorrelationY->Fill(intercept.Y() - cluster->globalY());
-            hTrackCorrelationTime->Fill((double)(track->timestamp() - cluster->timestamp()) / (4096. * 40000000.));
+            hTrackCorrelationTime->Fill(Units::convert(track->timestamp() - cluster->timestamp(), "ns"));
 
             if(fabs(intercept.X() - cluster->globalX()) < 0.1 && fabs(intercept.Y() - cluster->globalY()) < 0.1) {
-                residualsTime->Fill((double)(track->timestamp() - cluster->timestamp()) / (4096. * 40000000.));
-                residualsTimeVsTime->Fill((double)track->timestamp() / (4096. * 40000000.),
-                                          (double)(track->timestamp() - cluster->timestamp()) / (4096. * 40000000.));
+                residualsTime->Fill(Units::convert(track->timestamp() - cluster->timestamp(), "ns"));
+                residualsTimeVsTime->Fill(Units::convert(track->timestamp(), "ns"),
+                                          Units::convert(track->timestamp() - cluster->timestamp(), "ns"));
+                residualsTimeVsSignal->Fill(cluster->tot(), Units::convert(track->timestamp() - cluster->timestamp(), "ns"));
             }
         }
 
@@ -218,10 +219,10 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
 
             // Fill the tot histograms on the first run
             if(first_track == 0)
-                clusterToTVersusTime->Fill((double)cluster->timestamp() / (4096. * 40000000.), cluster->tot());
+                clusterToTVersusTime->Fill(Units::convert(cluster->timestamp(), "ns"), cluster->tot());
 
             // Check if the cluster is close in time
-            if(!m_digitalPowerPulsing && abs(cluster->timestamp() - track->timestamp()) > timingCutInt)
+            if(!m_digitalPowerPulsing && abs(cluster->timestamp() - track->timestamp()) > timingCut)
                 continue;
 
             // Check distance between track and cluster
@@ -236,7 +237,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             // We now have an associated cluster! Fill plots
             associated = true;
             LOG(TRACE) << "Found associated cluster";
-            associatedTracksVersusTime->Fill((double)track->timestamp() / (4096. * 40000000.));
+            associatedTracksVersusTime->Fill(Units::convert(track->timestamp(), "s"));
             residualsX->Fill(xdistance);
             residualsY->Fill(ydistance);
             clusterTotAssociated->Fill(cluster->tot());

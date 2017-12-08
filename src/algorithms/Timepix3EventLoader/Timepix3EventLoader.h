@@ -38,9 +38,7 @@ namespace corryvreckan {
         void loadCalibration(std::string path, char delim, std::vector<std::vector<float>>& dat);
         void maskPixels(Detector*, std::string);
 
-        // cofngiuration paramaters:
-        bool applyTimingCut;
-        double m_timingCut;
+        // configuration paramaters:
         double m_triggerLatency;
         std::string m_inputDirectory;
         int m_minNumberOfPlanes;

@@ -163,7 +163,6 @@ public:
     double chi2() { return m_chi2; }
     double chi2ndof() { return m_chi2ndof; }
     double ndof() { return m_ndof; }
-    long long int timestamp() { return m_timestamp; }
     Clusters clusters() { return m_trackClusters; }
     Clusters associatedClusters() { return m_associatedClusters; }
     size_t nClusters() { return m_trackClusters.size(); }
@@ -171,9 +170,6 @@ public:
         ROOT::Math::XYZPoint point = m_state + m_direction * z;
         return point;
     }
-
-    // Set track parameters
-    void setTimestamp(long long int timestamp) { m_timestamp = timestamp; }
 
     // Member variables
     Clusters m_trackClusters;

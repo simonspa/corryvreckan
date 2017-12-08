@@ -8,29 +8,23 @@ class SpidrSignal : public TestBeamObject {
 public:
     // Constructors and destructors
     SpidrSignal() {}
-    SpidrSignal(std::string type, long long int timestamp) {
-        m_type = type;
-        m_timestamp = timestamp;
-    }
+    SpidrSignal(std::string type, double timestamp) : TestBeamObject(timestamp), m_type(type){};
     //    virtual ~SpidrSignal() {}
 
     // Functions
 
     // Set properties
-    void timestamp(long long int timestamp) { m_timestamp = timestamp; }
     void type(std::string type) { m_type = type; }
 
     // Retrieve properties
-    long long int timestamp() { return m_timestamp; }
     std::string type() { return m_type; }
 
+protected:
     // Member variables
-    long long int m_timestamp;
     std::string m_type;
 
-    // ROOT I/O class definition - update version number when you change this
-    // class!
-    ClassDef(SpidrSignal, 1)
+    // ROOT I/O class definition - update version number when you change this class!
+    ClassDef(SpidrSignal, 2)
 };
 
 // Vector type declaration

@@ -35,6 +35,7 @@ namespace corryvreckan {
         int m_method;
         bool m_stop;
         std::string m_source;
+        double m_triggerLatency;
     };
 } // namespace corryvreckan
 #endif // ImproveReferenceTimestamp_H

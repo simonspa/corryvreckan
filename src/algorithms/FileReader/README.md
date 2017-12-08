@@ -12,7 +12,7 @@ This algorithm reads in an input file containing trees with data previously writ
 * `readTracks`: Boolean to choose if track objects are to be read in. Default value is `false`.
 * `readMCParticles`: Boolean to choose if Monte-Carlo particle objects are to be read in. Default value is `false`.
 * `fileName`: Name of the file from which data will be read. Default value is `ouyputTuples.root`.
-* `timeWindow`: Data with time lower than this value will be read in. Default value is `1`.
+* `timeWindow`: Data with time lower than this value will be read in. Default value is `1s`.
 * `DUT`: Name of the DUT plane.
 
 #### Plots produced

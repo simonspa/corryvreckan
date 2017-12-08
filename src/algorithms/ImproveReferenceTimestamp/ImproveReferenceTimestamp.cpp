@@ -8,6 +8,7 @@ ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration config, std::
     : Algorithm(std::move(config), std::move(detectors)) {
     m_method = m_config.get<int>("improvementMethod", 1);
     m_source = m_config.get<std::string>("signalSource", "W0013_G02");
+    m_triggerLatency = m_config.get<double>("triggerLatency", Units::convert(0, "ns"));
 }
 
 void ImproveReferenceTimestamp::initialise() {
@@ -18,7 +19,7 @@ void ImproveReferenceTimestamp::initialise() {
 StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
 
     // Recieved triggers
-    std::vector<long long int> trigger_times;
+    std::vector<double> trigger_times;
 
     // Get trigger signals
     SpidrSignals* spidrData = (SpidrSignals*)clipboard->get(m_source, "SpidrSignals");
@@ -29,7 +30,7 @@ StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
             // Get the signal
             SpidrSignal* signal = (*spidrData)[iSig];
             if(signal->type() == "trigger") {
-                trigger_times.push_back(signal->timestamp());
+                trigger_times.push_back(signal->timestamp() - m_triggerLatency);
             }
         }
         LOG(DEBUG) << "Number of triggers found: " << trigger_times.size();
@@ -46,36 +47,35 @@ StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
     // Loop over all tracks
     for(auto& track : (*tracks)) {
 
-        long long int improved_time = track->timestamp();
+        double improved_time = track->timestamp();
 
         // Use trigger timestamp
         if(m_method == 0) {
-            // Find trigger timestamp clostest in time
-            long long int diff = std::numeric_limits<long long int>::max();
+            // Find trigger timestamp closest in time
+            double diff = std::numeric_limits<double>::max();
             for(auto& trigger_time : trigger_times) {
                 LOG(DEBUG) << " track: " << track->timestamp() << " trigger: " << trigger_time
-                           << " diff: " << abs((long long int)(trigger_time - track->timestamp()))
-                           << " diff stored cycles: " << diff
-                           << " diff stored secs: " << (double)(diff) / (4096. * 40000000.);
-                if(abs((long long int)(trigger_time - track->timestamp())) < diff) {
+                           << " diff: " << Units::display(abs(trigger_time - track->timestamp()), {"ns", "us", "s"})
+                           << " diff stored: " << Units::display(diff, {"ns", "us", "s"});
+                if(abs(trigger_time - track->timestamp()) < diff) {
                     improved_time = trigger_time;
-                    diff = abs((long long int)(trigger_time - track->timestamp()));
+                    diff = abs(trigger_time - track->timestamp());
                 }
             }
-            // trigger latency is ~175 ns, still missing
         }
 
         // Use average track timestamp
         else if(m_method == 1) {
             int nhits = 0;
-            long long int avg_track_time = 0;
+            double avg_track_time = 0;
             for(auto& cluster : track->clusters()) {
                 avg_track_time += cluster->timestamp();
                 nhits++;
             }
             avg_track_time = round(avg_track_time / nhits);
-            LOG(DEBUG) << setprecision(12) << "Reference track time " << (double)(track->timestamp()) / (4096. * 40000000.);
-            LOG(DEBUG) << setprecision(12) << "Average track time " << (double)(avg_track_time) / (4096. * 40000000.);
+            LOG(DEBUG) << setprecision(12) << "Reference track time "
+                       << Units::display(track->timestamp(), {"ns", "us", "s"});
+            LOG(DEBUG) << setprecision(12) << "Average track time " << Units::display(avg_track_time, {"ns", "us", "s"});
         }
 
         // Set improved reference timestamp

@@ -11,11 +11,13 @@ namespace corryvreckan {
     public:
         // Constructors and destructors
         MCParticle() = default;
-        MCParticle(int particle_id, ROOT::Math::XYZPoint local_start_point, ROOT::Math::XYZPoint local_end_point) {
-            m_particle_id = particle_id;
-            m_local_start_point = local_start_point;
-            m_local_end_point = local_end_point;
-        }
+        MCParticle(std::string detectorID,
+                   int particle_id,
+                   ROOT::Math::XYZPoint local_start_point,
+                   ROOT::Math::XYZPoint local_end_point,
+                   double timestamp)
+            : TestBeamObject(detectorID, timestamp), m_particle_id(particle_id), m_local_start_point(local_start_point),
+              m_local_end_point(local_end_point) {}
 
         // Member variables
         int m_particle_id;
@@ -28,7 +30,7 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint getLocalEnd() { return m_local_end_point; }
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(MCParticle, 1)
+        ClassDef(MCParticle, 2)
     };
 
     // Vector type declaration
