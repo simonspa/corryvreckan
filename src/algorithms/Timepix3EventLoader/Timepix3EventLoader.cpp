@@ -633,15 +633,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                  * over estimating the input capacitance to compensate the missing information of the offset. */
 
                 float t_shift = toa_c / (fvolts - toa_t) + toa_d;
-                long long int ftime =
-                    time - ((t_shift * 1e-9 /* - _planeLatencyVec[detectorID]*1e-9*/) * (4096. * 40000000.));
-
-                if(col == 123 && row == 138) {
-                    std::cout << col << " " << row << " " << a << " " << b << " " << fvolts << " " << fcharge << " "
-                              << t_shift << std::endl;
-                }
-
-                const double ftimestamp = ftime / (4096 * 0.04);
+                const double ftimestamp = timestamp - t_shift;
 
                 // creating new pixel object with calibrated values of tot and toa
                 Pixel* pixel = new Pixel(detectorID, row, col, fcharge, ftimestamp);
