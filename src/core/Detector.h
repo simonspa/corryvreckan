@@ -107,7 +107,9 @@ namespace corryvreckan {
         double inPixelY(PositionVector3D<Cartesian3D<double>> localPosition);
 
         Transform3D* localToGlobal() { return m_localToGlobal; };
+        ROOT::Math::XYZPoint localToGlobal(ROOT::Math::XYZPoint local) { return (*m_localToGlobal) * local; };
         Transform3D* globalToLocal() { return m_globalToLocal; };
+        ROOT::Math::XYZPoint globalToLocal(ROOT::Math::XYZPoint global) { return (*m_globalToLocal) * global; };
 
     private:
         // Member variables
