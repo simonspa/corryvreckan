@@ -2,6 +2,7 @@
 #define CLUSTER_H 1
 
 #include <iostream>
+#include "Math/Point3D.h"
 #include "Pixel.h"
 
 /*
@@ -25,12 +26,8 @@ public:
     virtual ~Cluster() {}
     // Copy constructor
     Cluster(Cluster* cluster) {
-        m_globalX = cluster->globalX();
-        m_globalY = cluster->globalY();
-        m_globalZ = cluster->globalZ();
-        m_localX = cluster->localX();
-        m_localY = cluster->localY();
-        m_localZ = cluster->localZ();
+        m_global = cluster->global();
+        m_local = cluster->local();
         m_error = cluster->error();
         m_detectorID = cluster->detectorID();
         m_timestamp = cluster->timestamp();
@@ -56,12 +53,17 @@ public:
     double column() { return m_column; }
     double tot() { return m_tot; }
     double error() { return m_error; }
-    double globalX() { return m_globalX; }
-    double globalY() { return m_globalY; }
-    double globalZ() { return m_globalZ; }
-    double localX() { return m_localX; }
-    double localY() { return m_localY; }
-    double localZ() { return m_localZ; }
+
+    double globalX() { return m_global.X(); }
+    double globalY() { return m_global.Y(); }
+    double globalZ() { return m_global.Z(); }
+    ROOT::Math::XYZPoint global() { return m_global; }
+
+    double localX() { return m_local.X(); }
+    double localY() { return m_local.Y(); }
+    double localZ() { return m_local.Z(); }
+    ROOT::Math::XYZPoint local() { return m_local; }
+
     size_t size() { return m_pixels.size(); }
     double columnWidth() { return m_columnWidth; }
     double rowWidth() { return m_rowWidth; }
@@ -72,14 +74,14 @@ public:
     void setColumn(double col) { m_column = col; }
     void setTot(double tot) { m_tot = tot; }
     void setClusterCentre(double x, double y, double z) {
-        m_globalX = x;
-        m_globalY = y;
-        m_globalZ = z;
+        m_global.SetX(x);
+        m_global.SetY(y);
+        m_global.SetZ(z);
     }
     void setClusterCentreLocal(double x, double y, double z) {
-        m_localX = x;
-        m_localY = y;
-        m_localZ = z;
+        m_local.SetX(x);
+        m_local.SetY(y);
+        m_local.SetZ(z);
     }
     void setError(double error) { m_error = error; }
 
@@ -92,18 +94,15 @@ private:
     double m_error;
     double m_columnWidth;
     double m_rowWidth;
-    double m_globalX;
-    double m_globalY;
-    double m_globalZ;
-    double m_localX;
-    double m_localY;
-    double m_localZ;
+
+    ROOT::Math::XYZPoint m_local;
+    ROOT::Math::XYZPoint m_global;
+
     std::map<int, bool> m_rowHits;
     std::map<int, bool> m_columnHits;
 
-    // ROOT I/O class definition - update version number when you change this
-    // class!
-    ClassDef(Cluster, 3)
+    // ROOT I/O class definition - update version number when you change this class!
+    ClassDef(Cluster, 4)
 };
 
 // Vector type declaration
