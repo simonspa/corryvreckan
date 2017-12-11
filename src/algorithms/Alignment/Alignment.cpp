@@ -388,12 +388,12 @@ void Alignment::finalise() {
             auto rotationZ = residualFitter->GetParameter(det * 6 + 5);
 
             // Store corrections:
-            shiftsX[detectorID].push_back(detector->displacementX() - old_position.X());
-            shiftsY[detectorID].push_back(detector->displacementY() - old_position.Y());
-            shiftsZ[detectorID].push_back(detector->displacementZ() - old_position.Z());
-            rotX[detectorID].push_back(detector->rotationX() - old_orientation.X());
-            rotY[detectorID].push_back(detector->rotationY() - old_orientation.Y());
-            rotZ[detectorID].push_back(detector->rotationZ() - old_orientation.Z());
+            shiftsX[detectorID].push_back(Units::convert(detector->displacementX() - old_position.X(), "um"));
+            shiftsY[detectorID].push_back(Units::convert(detector->displacementY() - old_position.Y(), "um"));
+            shiftsZ[detectorID].push_back(Units::convert(detector->displacementZ() - old_position.Z(), "um"));
+            rotX[detectorID].push_back(Units::convert(detector->rotationX() - old_orientation.X(), "deg"));
+            rotY[detectorID].push_back(Units::convert(detector->rotationY() - old_orientation.Y(), "deg"));
+            rotZ[detectorID].push_back(Units::convert(detector->rotationZ() - old_orientation.Z(), "deg"));
 
             LOG(INFO) << detector->name() << "/" << iteration << " dT"
                       << display_vector(detector->displacement() - old_position, {"mm", "um"}) << " dR"
@@ -442,31 +442,43 @@ void Alignment::finalise() {
         std::string name = "alignment_correction_displacementX_" + detector->name();
         align_correction_shiftX[detector->name()] =
             new TGraph(shiftsX[detector->name()].size(), &iterations[0], &shiftsX[detector->name()][0]);
+        align_correction_shiftX[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_shiftX[detector->name()]->GetYaxis()->SetTitle("correction [#mum]");
         align_correction_shiftX[detector->name()]->Write(name.c_str());
 
         name = "alignment_correction_displacementY_" + detector->name();
         align_correction_shiftY[detector->name()] =
             new TGraph(shiftsY[detector->name()].size(), &iterations[0], &shiftsY[detector->name()][0]);
+        align_correction_shiftY[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_shiftY[detector->name()]->GetYaxis()->SetTitle("correction [#mum]");
         align_correction_shiftY[detector->name()]->Write(name.c_str());
 
         name = "alignment_correction_displacementZ_" + detector->name();
         align_correction_shiftZ[detector->name()] =
             new TGraph(shiftsZ[detector->name()].size(), &iterations[0], &shiftsZ[detector->name()][0]);
+        align_correction_shiftZ[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_shiftZ[detector->name()]->GetYaxis()->SetTitle("correction [#mum]");
         align_correction_shiftZ[detector->name()]->Write(name.c_str());
 
         name = "alignment_correction_rotationX_" + detector->name();
         align_correction_rotX[detector->name()] =
             new TGraph(rotX[detector->name()].size(), &iterations[0], &rotX[detector->name()][0]);
+        align_correction_rotX[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_rotX[detector->name()]->GetYaxis()->SetTitle("correction [deg]");
         align_correction_rotX[detector->name()]->Write(name.c_str());
 
         name = "alignment_correction_rotationY_" + detector->name();
         align_correction_rotY[detector->name()] =
             new TGraph(rotY[detector->name()].size(), &iterations[0], &rotY[detector->name()][0]);
+        align_correction_rotY[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_rotY[detector->name()]->GetYaxis()->SetTitle("correction [deg]");
         align_correction_rotY[detector->name()]->Write(name.c_str());
 
         name = "alignment_correction_rotationZ_" + detector->name();
         align_correction_rotZ[detector->name()] =
             new TGraph(rotZ[detector->name()].size(), &iterations[0], &rotZ[detector->name()][0]);
+        align_correction_rotZ[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_rotZ[detector->name()]->GetYaxis()->SetTitle("correction [deg]");
         align_correction_rotZ[detector->name()]->Write(name.c_str());
     }
 }
