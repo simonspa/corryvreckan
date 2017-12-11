@@ -203,32 +203,43 @@ void Alignment::MinimiseResiduals(Int_t& npar, Double_t* grad, Double_t& result,
         // Get all clusters on the track
         Clusters associatedClusters = track->associatedClusters();
 
-        LOG(DEBUG) << "- track has chi2 " << track->chi2();
-        LOG(DEBUG) << "- track has gradient x " << track->m_direction.X();
-        LOG(DEBUG) << "- track has gradient y " << track->m_direction.Y();
+        LOG(TRACE) << "track has chi2 " << track->chi2();
+        LOG(TRACE) << "- track has gradient x " << track->m_direction.X();
+        LOG(TRACE) << "- track has gradient y " << track->m_direction.Y();
 
         // Find the cluster that needs to have its position recalculated
         for(auto& associatedCluster : associatedClusters) {
             string detectorID = associatedCluster->detectorID();
-            if(detectorID != detectorToAlign)
+            if(detectorID != detectorToAlign) {
                 continue;
-            // Recalculate the global position from the local
-            PositionVector3D<Cartesian3D<double>> positionLocal(
-                associatedCluster->localX(), associatedCluster->localY(), associatedCluster->localZ());
-            PositionVector3D<Cartesian3D<double>> positionGlobal = *(globalDetector->localToGlobal()) * positionLocal;
+            }
+
+            auto position = associatedCluster->local();
+
             // Get the track intercept with the detector
-            ROOT::Math::XYZPoint intercept = track->intercept(positionGlobal.Z());
+            auto trackIntercept = globalDetector->getIntercept(track);
+            auto intercept = globalDetector->globalToLocal(trackIntercept);
+
+            /*
+                        // Recalculate the global position from the local
+                        auto positionLocal = associatedCluster->local();
+                        auto position = globalDetector->localToGlobal(positionLocal);
+
+                        // Get the track intercept with the detector
+                        ROOT::Math::XYZPoint intercept = track->intercept(position.Z());
+            */
             // Calculate the residuals
-            double residualX = intercept.X() - positionGlobal.X();
-            double residualY = intercept.Y() - positionGlobal.Y();
+            double residualX = intercept.X() - position.X();
+            double residualY = intercept.Y() - position.Y();
+
             double error = associatedCluster->error();
-            LOG(DEBUG) << "- track has intercept (" << intercept.X() << "," << intercept.Y() << ")";
-            LOG(DEBUG) << "- cluster has position (" << positionGlobal.X() << "," << positionGlobal.Y() << ")";
+            LOG(TRACE) << "- track has intercept (" << intercept.X() << "," << intercept.Y() << ")";
+            LOG(DEBUG) << "- cluster has position (" << position.X() << "," << position.Y() << ")";
             double deltachi2 = ((residualX * residualX + residualY * residualY) / (error * error));
-            LOG(DEBUG) << "- delta chi2 = " << deltachi2;
+            LOG(TRACE) << "- delta chi2 = " << deltachi2;
             // Add the new residual2
             result += deltachi2;
-            LOG(DEBUG) << "- result is now " << result;
+            LOG(TRACE) << "- result is now " << result;
         }
     }
 }
