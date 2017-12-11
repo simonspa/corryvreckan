@@ -280,8 +280,8 @@ void Alignment::finalise() {
             }
         }
         if(n_associatedClusters < 0.5 * globalTracks.size()) {
-            LOG(ERROR) << "Only " << 100 * static_cast<double>(n_associatedClusters) / globalTracks.size()
-                       << "% of all tracks have associated clusters on detector " << detectorToAlign;
+            LOG(WARNING) << "Only " << 100 * static_cast<double>(n_associatedClusters) / globalTracks.size()
+                         << "% of all tracks have associated clusters on detector " << detectorToAlign;
         } else {
             LOG(INFO) << 100 * static_cast<double>(n_associatedClusters) / globalTracks.size()
                       << "% of all tracks have associated clusters on detector " << detectorToAlign;
@@ -341,10 +341,11 @@ void Alignment::finalise() {
     // Loop over all planes. For each plane, set the plane alignment parameters which will be varied, and then minimise the
     // track chi2 (sum of biased residuals). This means that tracks are refitted with each minimisation step.
 
-    int det = 0;
     for(int iteration = 0; iteration < nIterations; iteration++) {
 
-        det = 0;
+        LOG_PROGRESS(STATUS, "alignment_track") << "Alignment iteration " << (iteration + 1) << " of " << nIterations;
+
+        int det = 0;
         for(auto& detector : get_detectors()) {
             string detectorID = detector->name();
 
@@ -352,9 +353,6 @@ void Alignment::finalise() {
             if(detectorID == m_config.get<std::string>("reference") || detectorID == m_config.get<std::string>("DUT")) {
                 continue;
             }
-
-            LOG_PROGRESS(STATUS, "alignment_track")
-                << "Alignment iteration " << (iteration + 1) << " of " << nIterations << ", detector " << detectorID;
 
             // Say that this is the detector we align
             detectorToAlign = detectorID;
