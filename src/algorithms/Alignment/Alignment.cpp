@@ -17,6 +17,10 @@ Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
     m_numberOfTracksForAlignment = m_config.get<int>("number_of_tracks", 20000);
     nIterations = m_config.get<int>("iterations", 3);
 
+    m_pruneTracks = m_config.get<bool>("prune_tracks", false);
+    m_maxAssocClusters = m_config.get<int>("max_associated_clusters", 1);
+    m_maxTrackChi2 = m_config.get<double>("max_track_chi2ndof", 10.);
+
     // Get alignment method:
     alignmentMethod = m_config.get<int>("alignmentMethod");
 
@@ -57,8 +61,25 @@ StatusCode Alignment::run(Clipboard* clipboard) {
     }
 
     // Make a local copy and store it
-    for(int iTrack = 0; iTrack < tracks->size(); iTrack++) {
-        Track* track = (*tracks)[iTrack];
+    for(auto& track : (*tracks)) {
+
+        // Apply selection to tracks for alignment
+        if(m_pruneTracks) {
+            // Only allow one associated cluster:
+            if(track->associatedClusters().size() > m_maxAssocClusters) {
+                LOG(DEBUG) << "Discarded track with " << track->associatedClusters().size() << " associated clusters";
+                m_discardedtracks++;
+                continue;
+            }
+
+            // Only allow tracks with certain Chi2/NDoF:
+            if(track->chi2ndof() > m_maxTrackChi2) {
+                LOG(DEBUG) << "Discarded track with Chi2/NDoF - " << track->chi2ndof();
+                m_discardedtracks++;
+                continue;
+            }
+        }
+
         Track* alignmentTrack = new Track(track);
         m_alignmenttracks.push_back(alignmentTrack);
 
@@ -88,6 +109,9 @@ StatusCode Alignment::run(Clipboard* clipboard) {
     // If we have enough tracks for the alignment, tell the event loop to finish
     if(m_alignmenttracks.size() >= m_numberOfTracksForAlignment) {
         LOG(STATUS) << "Accumulated " << m_alignmenttracks.size() << " tracks, interrupting processing.";
+        if(m_discardedtracks > 0) {
+            LOG(INFO) << "Discarded " << m_discardedtracks << " input tracks.";
+        }
         return Failure;
     }
 

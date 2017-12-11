@@ -32,9 +32,14 @@ namespace corryvreckan {
 
         // Member variables
         Tracks m_alignmenttracks;
+        int m_discardedtracks{};
+
         int nIterations;
         int m_numberOfTracksForAlignment;
         int alignmentMethod;
+        bool m_pruneTracks;
+        int m_maxAssocClusters;
+        double m_maxTrackChi2;
 
         TH1F* residualsXPlot;
         TH1F* residualsYPlot;
