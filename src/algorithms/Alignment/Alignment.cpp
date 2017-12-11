@@ -53,7 +53,7 @@ void Alignment::initialise() {
 
 // During run, just pick up tracks and save them till the end
 StatusCode Alignment::run(Clipboard* clipboard) {
-    auto detector = get_detector(detectorToAlign);
+
     // Get the tracks
     Tracks* tracks = (Tracks*)clipboard->get("tracks");
     if(tracks == NULL) {
@@ -83,20 +83,23 @@ StatusCode Alignment::run(Clipboard* clipboard) {
         Track* alignmentTrack = new Track(track);
         m_alignmenttracks.push_back(alignmentTrack);
 
-        Clusters associatedClusters = track->associatedClusters();
         if(alignmentMethod == 0)
             continue;
         // Find the cluster that needs to have its position recalculated
-        for(auto& associatedCluster : associatedClusters) {
-            // Recalculate the global position from the local
-            PositionVector3D<Cartesian3D<double>> positionLocal(
-                associatedCluster->localX(), associatedCluster->localY(), associatedCluster->localZ());
-            PositionVector3D<Cartesian3D<double>> positionGlobal = *(detector->localToGlobal()) * positionLocal;
+        for(auto& associatedCluster : track->associatedClusters()) {
+            auto detector = get_detector(associatedCluster->detectorID());
+
+            // Local position of the cluster
+            auto position = associatedCluster->local();
+
             // Get the track intercept with the detector
-            ROOT::Math::XYZPoint intercept = track->intercept(positionGlobal.Z());
-            // Calculate the residuals
-            double residualX = intercept.X() - positionGlobal.X();
-            double residualY = intercept.Y() - positionGlobal.Y();
+            auto trackIntercept = detector->getIntercept(track);
+            auto intercept = detector->globalToLocal(trackIntercept);
+
+            // Calculate the local residuals
+            double residualX = intercept.X() - position.X();
+            double residualY = intercept.Y() - position.Y();
+
             // Fill the alignment residual profile plots
             residualsXPlot->Fill(Units::convert(residualX, "um"));
             residualsYPlot->Fill(Units::convert(residualY, "um"));
