@@ -242,6 +242,31 @@ void Alignment::finalise() {
         auto detector = get_detector(detectorToAlign);
         globalDetector = detector;
 
+        int n_associatedClusters = 0;
+        // count associated clusters:
+        for(auto& track : globalTracks) {
+            Clusters associatedClusters = track->associatedClusters();
+            for(auto& associatedCluster : associatedClusters) {
+                string detectorID = associatedCluster->detectorID();
+                if(detectorID != detectorToAlign) {
+                    continue;
+                }
+                n_associatedClusters++;
+                break;
+            }
+        }
+        if(n_associatedClusters < 0.5 * globalTracks.size()) {
+            LOG(ERROR) << "Only " << 100 * static_cast<double>(n_associatedClusters) / globalTracks.size()
+                       << "% of all tracks have associated clusters on detector " << detectorToAlign;
+        } else {
+            LOG(INFO) << 100 * static_cast<double>(n_associatedClusters) / globalTracks.size()
+                      << "% of all tracks have associated clusters on detector " << detectorToAlign;
+        }
+
+        LOG(STATUS) << detectorToAlign << " initial alignment: " << std::endl
+                    << "T" << display_vector(detector->displacement(), {"mm", "um"}) << " R"
+                    << display_vector(detector->rotation(), {"deg"});
+
         // Add the parameters to the fitter (z displacement not allowed to move!)
         residualFitter->SetParameter(
             0, (detectorToAlign + "_displacementX").c_str(), detector->displacementX(), 0.01, -50, 50);
@@ -255,34 +280,28 @@ void Alignment::finalise() {
 
         for(int iteration = 0; iteration < nIterations; iteration++) {
 
+            auto old_position = detector->displacement();
+            auto old_orientation = detector->rotation();
+
             // Fit this plane (minimising global track chi2)
             residualFitter->ExecuteCommand("MIGRAD", arglist, 2);
 
-            // Retrieve fit results:
-            auto displacementX = residualFitter->GetParameter(0);
-            auto displacementY = residualFitter->GetParameter(1);
-            auto displacementZ = residualFitter->GetParameter(2);
-            auto rotationX = residualFitter->GetParameter(3);
-            auto rotationY = residualFitter->GetParameter(4);
-            auto rotationZ = residualFitter->GetParameter(5);
+            // Set the alignment parameters of this plane to be the optimised values from the alignment
+            detector->displacementX(residualFitter->GetParameter(0));
+            detector->displacementY(residualFitter->GetParameter(1));
+            detector->displacementZ(residualFitter->GetParameter(2));
+            detector->rotationX(residualFitter->GetParameter(3));
+            detector->rotationY(residualFitter->GetParameter(4));
+            detector->rotationZ(residualFitter->GetParameter(5));
 
-            LOG(INFO) << detector->name() << "/" << iteration << " dT(" << (detector->displacementX() - displacementX) << ","
-                      << (detector->displacementY() - displacementY) << "," << (detector->displacementZ() - displacementZ)
-                      << ") dR(" << (detector->rotationX() - rotationX) << "," << (detector->rotationY() - rotationY) << ","
-                      << (detector->rotationZ() - rotationZ) << ")";
-
-            // Set the alignment parameters of this plane to be the optimised values
-            // from the alignment
-            detector->displacementX(displacementX);
-            detector->displacementY(displacementY);
-            detector->displacementZ(displacementZ);
-            detector->rotationX(rotationX);
-            detector->rotationY(rotationY);
-            detector->rotationZ(rotationZ);
+            LOG(INFO) << detector->name() << "/" << iteration << " dT"
+                      << display_vector(detector->displacement() - old_position, {"mm", "um"}) << " dR"
+                      << display_vector(detector->rotation() - old_orientation, {"deg"});
         }
-        LOG(INFO) << detectorToAlign << " new alignment: T(" << detector->displacementX() << "," << detector->displacementY()
-                  << "," << detector->displacementZ() << ") R(" << detector->rotationX() << "," << detector->rotationY()
-                  << "," << detector->rotationZ() << ")";
+
+        LOG(STATUS) << detectorToAlign << " new alignment: " << std::endl
+                    << "T" << display_vector(detector->displacement(), {"mm", "um"}) << " R"
+                    << display_vector(detector->rotation(), {"deg"});
 
         return;
     }
