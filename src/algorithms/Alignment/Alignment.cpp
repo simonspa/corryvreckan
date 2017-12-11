@@ -36,18 +36,18 @@ void Alignment::initialise() {
     if(alignmentMethod == 1) {
         auto detector = get_detector(detectorToAlign);
         auto detname = detector->name();
-        std::string title = detname + "_residualsX";
-        residualsXPlot = new TH1F(title.c_str(), title.c_str(), 400, -0.2, 0.2);
-        title = detname + "_residualsY";
-        residualsYPlot = new TH1F(title.c_str(), title.c_str(), 400, -0.2, 0.2);
-        title = detname + "_profile_dY_X";
-        profile_dY_X = new TProfile(title.c_str(), title.c_str(), 400, -0.2, 0.2);
-        title = detname + "_profile_dY_Y";
-        profile_dY_Y = new TProfile(title.c_str(), title.c_str(), 400, -0.2, 0.2);
-        title = detname + "_profile_dX_X";
-        profile_dX_X = new TProfile(title.c_str(), title.c_str(), 400, -0.2, 0.2);
-        title = detname + "_profile_dX_Y";
-        profile_dX_Y = new TProfile(title.c_str(), title.c_str(), 400, -0.2, 0.2);
+        std::string title = detname + "_residualsX;residual X [#mum]";
+        residualsXPlot = new TH1F(title.c_str(), title.c_str(), 1000, -500, 500);
+        title = detname + "_residualsY;residual Y [#mum]";
+        residualsYPlot = new TH1F(title.c_str(), title.c_str(), 1000, -500, 500);
+        title = detname + "_profile_dY_X;position X [#mum];residual Y [#mum]";
+        profile_dY_X = new TProfile(title.c_str(), title.c_str(), 1000, -500, 500);
+        title = detname + "_profile_dY_Y;position Y [#mum];residual Y [#mum]";
+        profile_dY_Y = new TProfile(title.c_str(), title.c_str(), 1000, -500, 500);
+        title = detname + "_profile_dX_X;position X [#mum];residual X [#mum]";
+        profile_dX_X = new TProfile(title.c_str(), title.c_str(), 1000, -500, 500);
+        title = detname + "_profile_dX_Y;position Y [#mum];residual X [#mum]";
+        profile_dX_Y = new TProfile(title.c_str(), title.c_str(), 1000, -500, 500);
     }
 }
 
@@ -98,14 +98,15 @@ StatusCode Alignment::run(Clipboard* clipboard) {
             double residualX = intercept.X() - positionGlobal.X();
             double residualY = intercept.Y() - positionGlobal.Y();
             // Fill the alignment residual profile plots
-            residualsXPlot->Fill(residualX);
-            residualsYPlot->Fill(residualY);
-            profile_dY_X->Fill(residualY, positionLocal.X(), 1);
-            profile_dY_Y->Fill(residualY, positionLocal.Y(), 1);
-            profile_dX_X->Fill(residualX, positionLocal.X(), 1);
-            profile_dX_Y->Fill(residualX, positionLocal.Y(), 1);
+            residualsXPlot->Fill(Units::convert(residualX, "um"));
+            residualsYPlot->Fill(Units::convert(residualY, "um"));
+            profile_dY_X->Fill(Units::convert(residualY, "um"), Units::convert(position.X(), "um"), 1);
+            profile_dY_Y->Fill(Units::convert(residualY, "um"), Units::convert(position.Y(), "um"), 1);
+            profile_dX_X->Fill(Units::convert(residualX, "um"), Units::convert(position.X(), "um"), 1);
+            profile_dX_Y->Fill(Units::convert(residualX, "um"), Units::convert(position.Y(), "um"), 1);
         }
     }
+
     // If we have enough tracks for the alignment, tell the event loop to finish
     if(m_alignmenttracks.size() >= m_numberOfTracksForAlignment) {
         LOG(STATUS) << "Accumulated " << m_alignmenttracks.size() << " tracks, interrupting processing.";
