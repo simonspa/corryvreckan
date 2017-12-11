@@ -73,6 +73,7 @@ public:
     void setRow(double row) { m_row = row; }
     void setColumn(double col) { m_column = col; }
     void setTot(double tot) { m_tot = tot; }
+    void setClusterCentre(ROOT::Math::XYZPoint global) { m_global = global; }
     void setClusterCentre(double x, double y, double z) {
         m_global.SetX(x);
         m_global.SetY(y);
