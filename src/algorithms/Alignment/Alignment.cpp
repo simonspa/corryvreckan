@@ -156,11 +156,11 @@ void Alignment::MinimiseTrackChi2(Int_t& npar, Double_t* grad, Double_t& result,
             if(globalDetector->name() != trackCluster->detectorID()) {
                 continue;
             }
+
             // Recalculate the global position from the local
-            PositionVector3D<Cartesian3D<double>> positionLocal(
-                trackCluster->localX(), trackCluster->localY(), trackCluster->localZ());
-            PositionVector3D<Cartesian3D<double>> positionGlobal = *(globalDetector->localToGlobal()) * positionLocal;
-            trackCluster->setClusterCentre(positionGlobal.X(), positionGlobal.Y(), positionGlobal.Z());
+            auto positionLocal = trackCluster->local();
+            auto positionGlobal = globalDetector->localToGlobal(positionLocal);
+            trackCluster->setClusterCentre(positionGlobal);
         }
 
         // Refit the track
