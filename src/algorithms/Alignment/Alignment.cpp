@@ -375,6 +375,9 @@ void Alignment::finalise() {
             residualFitter->SetParameter(
                 det * 6 + 5, (detectorID + "_rotationZ").c_str(), detector->rotationZ(), 0.001, -6.30, 6.30);
 
+            auto old_position = detector->displacement();
+            auto old_orientation = detector->rotation();
+
             // Fit this plane (minimising global track chi2)
             residualFitter->ExecuteCommand("MIGRAD", arglist, 2);
 
@@ -387,17 +390,16 @@ void Alignment::finalise() {
             auto rotationZ = residualFitter->GetParameter(det * 6 + 5);
 
             // Store corrections:
-            shiftsX[detectorID].push_back(detector->displacementX() - displacementX);
-            shiftsY[detectorID].push_back(detector->displacementY() - displacementY);
-            shiftsZ[detectorID].push_back(detector->displacementZ() - displacementZ);
-            rotX[detectorID].push_back(detector->rotationX() - rotationX);
-            rotY[detectorID].push_back(detector->rotationY() - rotationY);
-            rotZ[detectorID].push_back(detector->rotationZ() - rotationZ);
+            shiftsX[detectorID].push_back(detector->displacementX() - old_position.X());
+            shiftsY[detectorID].push_back(detector->displacementY() - old_position.Y());
+            shiftsZ[detectorID].push_back(detector->displacementZ() - old_position.Z());
+            rotX[detectorID].push_back(detector->rotationX() - old_orientation.X());
+            rotY[detectorID].push_back(detector->rotationY() - old_orientation.Y());
+            rotZ[detectorID].push_back(detector->rotationZ() - old_orientation.Z());
 
-            LOG(INFO) << detector->name() << "/" << iteration << " dT(" << (detector->displacementX() - displacementX) << ","
-                      << (detector->displacementY() - displacementY) << "," << (detector->displacementZ() - displacementZ)
-                      << ") dR(" << (detector->rotationX() - rotationX) << "," << (detector->rotationY() - rotationY) << ","
-                      << (detector->rotationZ() - rotationZ) << ")";
+            LOG(INFO) << detector->name() << "/" << iteration << " dT"
+                      << display_vector(detector->displacement() - old_position, {"mm", "um"}) << " dR"
+                      << display_vector(detector->rotation() - old_orientation, {"deg"});
 
             // Now that this device is fitted, set parameter errors to 0 so that they
             // are not fitted again
@@ -431,9 +433,9 @@ void Alignment::finalise() {
             continue;
         }
 
-        LOG(INFO) << detector->name() << " new alignment: T(" << detector->displacementX() << ","
-                  << detector->displacementY() << "," << detector->displacementZ() << ") R(" << detector->rotationX() << ","
-                  << detector->rotationY() << "," << detector->rotationZ() << ")";
+        LOG(STATUS) << detector->name() << " new alignment: " << std::endl
+                    << "T" << display_vector(detector->displacement(), {"mm", "um"}) << " R"
+                    << display_vector(detector->rotation(), {"deg"});
 
         // Fill the alignment convergence graphs:
         std::vector<double> iterations(nIterations);
