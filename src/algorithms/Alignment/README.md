@@ -1,13 +1,13 @@
 ## Alignment
-**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)   
+**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)
 **Status**: Functional   
 
 #### Description
-This algorithm performs translational and rotational telescope plane alignment.
+This algorithm performs translational and rotational telescope plane alignment. The alignment is performed with respect to the reference plane set in the configuration file.
 
-The alignment is performed with respect to the reference plane set in the configuration file.
+This algorithm uses the tracks produced by the `BasicTracking` algorithm to align the telescope planes. If fewer than half of the tracks have associated clusters, a warning is produced on termina. 
 
-This algorithm uses the tracks produced by the `BasicTracking` algorithm to align the telescope planes. There are two methods available for alignment:
+There are two methods available for alignment:
 
 ##### 1) Minimising the track chi^2
 For each telescope detector except the reference plane, this method moves the detector, refits all of the tracks, and minimises the chi^2 of these new tracks. The parameters `detectorToAlign` and `DUT` are not used in this method as it automatically iterates through all telescope planes except the DUT.
@@ -22,6 +22,9 @@ For the detector specified by the `detectorToAlign` parameter, this method moves
 * `detectorToAlign`: Parameter to set a particular plane to align. This parameter is only used in the residuals method (`alignmentMethod = 1`). The default is the `DUT` plane.
 * `DUT`: Name of the DUT plane.
 * `reference`: Name of the detector used as the alignment reference plane. All other telescope planes are aligned with respect to the reference plane.
+* `prune_tracks`: Boolean to set if tracks with number of associated tracks > `max_associated_clusters` or with a track chi^2 > `` should be excluded from use in the alignment. This parameter was designed for `alignmentMethod=1`. The number of discarded tracks is outputted on terminal. Default is `False`. 
+* `max_associated_clusters`: Maximum number of associated clusters per track allowed when `prune_tracks=True` for the track to be used in the alignment. Default value is `1`.
+* `max_track_chi2ndof`: Maximum track chi^2 value allowed when `prune_tracks=True` for the track to be used in the alignment. Default value is `10.0`.
 
 #### Plots produced
 For each detector the following plots are produced when using `alignmentMethod = 0`:
@@ -33,7 +36,7 @@ For each detector the following plots are produced when using `alignmentMethod =
 * Rotational shift around Z-axis vs. iteration number
 
 For the `detectorToAlign` the following plots are produced when using `alignmentMethod = 1`:
-* Residual in X
+* Residual in X (calculated in local coordinates)
 * Residual in Y
 * Profile plot of residual in X vs. X position
 * Profile plot of residual in X vs. Y position
