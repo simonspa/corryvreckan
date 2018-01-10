@@ -17,20 +17,18 @@ Detector::Detector(const Configuration& config) {
     // Number of pixels
     auto npixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
     // Size of the pixels
-    auto pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
+    m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
 
     m_detectorName = config.getName();
     m_detectorType = config.get<std::string>("type");
     m_nPixelsX = npixels.x();
     m_nPixelsY = npixels.y();
-    m_pitchX = pitch.x() / 1000.;
-    m_pitchY = pitch.y() / 1000.;
     m_timingOffset = config.get<double>("time_offset", 0.0);
 
     this->initialise();
 
     LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixelsX << "x" << m_nPixelsY << " px, pitch of "
-               << m_pitchX << "/" << m_pitchY << "mm";
+               << display_vector(m_pitch, {"mm", "um"});
     LOG(TRACE) << "  Position:    " << display_vector(m_displacement, {"mm", "um"});
     LOG(TRACE) << "  Orientation: " << display_vector(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
     if(m_timingOffset > 0.) {
@@ -147,8 +145,7 @@ Configuration Detector::getConfiguration() {
     config.set("number_of_pixels", npixels);
 
     // Size of the pixels
-    auto pitch = ROOT::Math::XYVector(m_pitchX * 1000., m_pitchY * 1000.);
-    config.set("pixel_pitch", pitch);
+    config.set("pixel_pitch", m_pitch);
 
     if(m_timingOffset != 0.) {
         config.set("time_offset", m_timingOffset);
@@ -227,11 +224,11 @@ bool Detector::hitMasked(Track* track, int tolerance) {
 
 // Functions to get row and column from local position
 double Detector::getRow(PositionVector3D<Cartesian3D<double>> localPosition) {
-    double row = ((localPosition.Y() + m_pitchY / 2.) / m_pitchY) + m_nPixelsY / 2.;
+    double row = ((localPosition.Y() + m_pitch.Y() / 2.) / m_pitch.Y()) + m_nPixelsY / 2.;
     return row;
 }
 double Detector::getColumn(PositionVector3D<Cartesian3D<double>> localPosition) {
-    double column = ((localPosition.X() + m_pitchY / 2.) / m_pitchX) + m_nPixelsX / 2.;
+    double column = ((localPosition.X() + m_pitch.X() / 2.) / m_pitch.X()) + m_nPixelsX / 2.;
     return column;
 }
 
@@ -239,17 +236,17 @@ double Detector::getColumn(PositionVector3D<Cartesian3D<double>> localPosition) 
 PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double row, double column) {
 
     return PositionVector3D<Cartesian3D<double>>(
-        m_pitchX * (column - m_nPixelsX / 2.), m_pitchY * (row - m_nPixelsY / 2.), 0.);
+        m_pitch.X() * (column - m_nPixelsX / 2.), m_pitch.Y() * (row - m_nPixelsY / 2.), 0.);
 }
 
 // Function to get in-pixel position (value returned in microns)
 double Detector::inPixelX(PositionVector3D<Cartesian3D<double>> localPosition) {
     double column = getColumn(localPosition);
-    double inPixelX = m_pitchX * (column - floor(column));
+    double inPixelX = m_pitch.X() * (column - floor(column));
     return 1000. * inPixelX;
 }
 double Detector::inPixelY(PositionVector3D<Cartesian3D<double>> localPosition) {
     double row = getRow(localPosition);
-    double inPixelY = m_pitchY * (row - floor(row));
+    double inPixelY = m_pitch.Y() * (row - floor(row));
     return 1000. * inPixelY;
 }

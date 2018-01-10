@@ -46,8 +46,8 @@ namespace corryvreckan {
 
         Configuration getConfiguration();
 
-        double pitchX() { return m_pitchX; }
-        double pitchY() { return m_pitchY; }
+        double pitchX() { return m_pitch.X(); }
+        double pitchY() { return m_pitch.Y(); }
         int nPixelsX() { return m_nPixelsX; }
         int nPixelsY() { return m_nPixelsY; }
         double timingOffset() { return m_timingOffset; }
@@ -116,8 +116,7 @@ namespace corryvreckan {
         // Detector information
         std::string m_detectorType;
         std::string m_detectorName;
-        double m_pitchX;
-        double m_pitchY;
+        ROOT::Math::XYVector m_pitch;
         int m_nPixelsX;
         int m_nPixelsY;
         double m_timingOffset;
