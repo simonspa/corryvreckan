@@ -17,6 +17,10 @@ Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
     m_numberOfTracksForAlignment = m_config.get<int>("number_of_tracks", 20000);
     nIterations = m_config.get<int>("iterations", 3);
 
+    m_pruneTracks = m_config.get<bool>("prune_tracks", false);
+    m_maxAssocClusters = m_config.get<int>("max_associated_clusters", 1);
+    m_maxTrackChi2 = m_config.get<double>("max_track_chi2ndof", 10.);
+
     // Get alignment method:
     alignmentMethod = m_config.get<int>("alignmentMethod");
 
@@ -32,24 +36,24 @@ void Alignment::initialise() {
     if(alignmentMethod == 1) {
         auto detector = get_detector(detectorToAlign);
         auto detname = detector->name();
-        std::string title = detname + "_residualsX";
-        residualsXPlot = new TH1F(title.c_str(), title.c_str(), 400, -0.2, 0.2);
-        title = detname + "_residualsY";
-        residualsYPlot = new TH1F(title.c_str(), title.c_str(), 400, -0.2, 0.2);
-        title = detname + "_profile_dY_X";
-        profile_dY_X = new TProfile(title.c_str(), title.c_str(), 400, -0.2, 0.2);
-        title = detname + "_profile_dY_Y";
-        profile_dY_Y = new TProfile(title.c_str(), title.c_str(), 400, -0.2, 0.2);
-        title = detname + "_profile_dX_X";
-        profile_dX_X = new TProfile(title.c_str(), title.c_str(), 400, -0.2, 0.2);
-        title = detname + "_profile_dX_Y";
-        profile_dX_Y = new TProfile(title.c_str(), title.c_str(), 400, -0.2, 0.2);
+        std::string title = detname + "_residualsX;residual X [#mum]";
+        residualsXPlot = new TH1F(title.c_str(), title.c_str(), 1000, -500, 500);
+        title = detname + "_residualsY;residual Y [#mum]";
+        residualsYPlot = new TH1F(title.c_str(), title.c_str(), 1000, -500, 500);
+        title = detname + "_profile_dY_X;position X [#mum];residual Y [#mum]";
+        profile_dY_X = new TProfile(title.c_str(), title.c_str(), 1000, -500, 500);
+        title = detname + "_profile_dY_Y;position Y [#mum];residual Y [#mum]";
+        profile_dY_Y = new TProfile(title.c_str(), title.c_str(), 1000, -500, 500);
+        title = detname + "_profile_dX_X;position X [#mum];residual X [#mum]";
+        profile_dX_X = new TProfile(title.c_str(), title.c_str(), 1000, -500, 500);
+        title = detname + "_profile_dX_Y;position Y [#mum];residual X [#mum]";
+        profile_dX_Y = new TProfile(title.c_str(), title.c_str(), 1000, -500, 500);
     }
 }
 
 // During run, just pick up tracks and save them till the end
 StatusCode Alignment::run(Clipboard* clipboard) {
-    auto detector = get_detector(detectorToAlign);
+
     // Get the tracks
     Tracks* tracks = (Tracks*)clipboard->get("tracks");
     if(tracks == NULL) {
@@ -57,37 +61,61 @@ StatusCode Alignment::run(Clipboard* clipboard) {
     }
 
     // Make a local copy and store it
-    for(int iTrack = 0; iTrack < tracks->size(); iTrack++) {
-        Track* track = (*tracks)[iTrack];
+    for(auto& track : (*tracks)) {
+
+        // Apply selection to tracks for alignment
+        if(m_pruneTracks) {
+            // Only allow one associated cluster:
+            if(track->associatedClusters().size() > m_maxAssocClusters) {
+                LOG(DEBUG) << "Discarded track with " << track->associatedClusters().size() << " associated clusters";
+                m_discardedtracks++;
+                continue;
+            }
+
+            // Only allow tracks with certain Chi2/NDoF:
+            if(track->chi2ndof() > m_maxTrackChi2) {
+                LOG(DEBUG) << "Discarded track with Chi2/NDoF - " << track->chi2ndof();
+                m_discardedtracks++;
+                continue;
+            }
+        }
+
         Track* alignmentTrack = new Track(track);
         m_alignmenttracks.push_back(alignmentTrack);
 
-        Clusters associatedClusters = track->associatedClusters();
         if(alignmentMethod == 0)
             continue;
         // Find the cluster that needs to have its position recalculated
-        for(auto& associatedCluster : associatedClusters) {
-            // Recalculate the global position from the local
-            PositionVector3D<Cartesian3D<double>> positionLocal(
-                associatedCluster->localX(), associatedCluster->localY(), associatedCluster->localZ());
-            PositionVector3D<Cartesian3D<double>> positionGlobal = *(detector->localToGlobal()) * positionLocal;
+        for(auto& associatedCluster : track->associatedClusters()) {
+            auto detector = get_detector(associatedCluster->detectorID());
+
+            // Local position of the cluster
+            auto position = associatedCluster->local();
+
             // Get the track intercept with the detector
-            ROOT::Math::XYZPoint intercept = track->intercept(positionGlobal.Z());
-            // Calculate the residuals
-            double residualX = intercept.X() - positionGlobal.X();
-            double residualY = intercept.Y() - positionGlobal.Y();
+            auto trackIntercept = detector->getIntercept(track);
+            auto intercept = detector->globalToLocal(trackIntercept);
+
+            // Calculate the local residuals
+            double residualX = intercept.X() - position.X();
+            double residualY = intercept.Y() - position.Y();
+
             // Fill the alignment residual profile plots
-            residualsXPlot->Fill(residualX);
-            residualsYPlot->Fill(residualY);
-            profile_dY_X->Fill(residualY, positionLocal.X(), 1);
-            profile_dY_Y->Fill(residualY, positionLocal.Y(), 1);
-            profile_dX_X->Fill(residualX, positionLocal.X(), 1);
-            profile_dX_Y->Fill(residualX, positionLocal.Y(), 1);
+            residualsXPlot->Fill(Units::convert(residualX, "um"));
+            residualsYPlot->Fill(Units::convert(residualY, "um"));
+            profile_dY_X->Fill(Units::convert(residualY, "um"), Units::convert(position.X(), "um"), 1);
+            profile_dY_Y->Fill(Units::convert(residualY, "um"), Units::convert(position.Y(), "um"), 1);
+            profile_dX_X->Fill(Units::convert(residualX, "um"), Units::convert(position.X(), "um"), 1);
+            profile_dX_Y->Fill(Units::convert(residualX, "um"), Units::convert(position.Y(), "um"), 1);
         }
     }
+
     // If we have enough tracks for the alignment, tell the event loop to finish
     if(m_alignmenttracks.size() >= m_numberOfTracksForAlignment) {
         LOG(STATUS) << "Accumulated " << m_alignmenttracks.size() << " tracks, interrupting processing.";
+        if(m_discardedtracks > 0) {
+            LOG(INFO) << "Discarded " << m_discardedtracks << " input tracks.";
+        }
         return Failure;
     }
 
@@ -132,11 +160,11 @@ void Alignment::MinimiseTrackChi2(Int_t& npar, Double_t* grad, Double_t& result,
             if(globalDetector->name() != trackCluster->detectorID()) {
                 continue;
             }
+
             // Recalculate the global position from the local
-            PositionVector3D<Cartesian3D<double>> positionLocal(
-                trackCluster->localX(), trackCluster->localY(), trackCluster->localZ());
-            PositionVector3D<Cartesian3D<double>> positionGlobal = *(globalDetector->localToGlobal()) * positionLocal;
-            trackCluster->setClusterCentre(positionGlobal.X(), positionGlobal.Y(), positionGlobal.Z());
+            auto positionLocal = trackCluster->local();
+            auto positionGlobal = globalDetector->localToGlobal(positionLocal);
+            trackCluster->setClusterCentre(positionGlobal);
         }
 
         // Refit the track
@@ -175,32 +203,43 @@ void Alignment::MinimiseResiduals(Int_t& npar, Double_t* grad, Double_t& result,
         // Get all clusters on the track
         Clusters associatedClusters = track->associatedClusters();
 
-        LOG(DEBUG) << "- track has chi2 " << track->chi2();
-        LOG(DEBUG) << "- track has gradient x " << track->m_direction.X();
-        LOG(DEBUG) << "- track has gradient y " << track->m_direction.Y();
+        LOG(TRACE) << "track has chi2 " << track->chi2();
+        LOG(TRACE) << "- track has gradient x " << track->m_direction.X();
+        LOG(TRACE) << "- track has gradient y " << track->m_direction.Y();
 
         // Find the cluster that needs to have its position recalculated
         for(auto& associatedCluster : associatedClusters) {
             string detectorID = associatedCluster->detectorID();
-            if(detectorID != detectorToAlign)
+            if(detectorID != detectorToAlign) {
                 continue;
-            // Recalculate the global position from the local
-            PositionVector3D<Cartesian3D<double>> positionLocal(
-                associatedCluster->localX(), associatedCluster->localY(), associatedCluster->localZ());
-            PositionVector3D<Cartesian3D<double>> positionGlobal = *(globalDetector->localToGlobal()) * positionLocal;
+            }
+
+            auto position = associatedCluster->local();
+
             // Get the track intercept with the detector
-            ROOT::Math::XYZPoint intercept = track->intercept(positionGlobal.Z());
+            auto trackIntercept = globalDetector->getIntercept(track);
+            auto intercept = globalDetector->globalToLocal(trackIntercept);
+
+            /*
+                        // Recalculate the global position from the local
+                        auto positionLocal = associatedCluster->local();
+                        auto position = globalDetector->localToGlobal(positionLocal);
+
+                        // Get the track intercept with the detector
+                        ROOT::Math::XYZPoint intercept = track->intercept(position.Z());
+            */
             // Calculate the residuals
-            double residualX = intercept.X() - positionGlobal.X();
-            double residualY = intercept.Y() - positionGlobal.Y();
+            double residualX = intercept.X() - position.X();
+            double residualY = intercept.Y() - position.Y();
+
             double error = associatedCluster->error();
-            LOG(DEBUG) << "- track has intercept (" << intercept.X() << "," << intercept.Y() << ")";
-            LOG(DEBUG) << "- cluster has position (" << positionGlobal.X() << "," << positionGlobal.Y() << ")";
+            LOG(TRACE) << "- track has intercept (" << intercept.X() << "," << intercept.Y() << ")";
+            LOG(DEBUG) << "- cluster has position (" << position.X() << "," << position.Y() << ")";
             double deltachi2 = ((residualX * residualX + residualY * residualY) / (error * error));
-            LOG(DEBUG) << "- delta chi2 = " << deltachi2;
+            LOG(TRACE) << "- delta chi2 = " << deltachi2;
             // Add the new residual2
             result += deltachi2;
-            LOG(DEBUG) << "- result is now " << result;
+            LOG(TRACE) << "- result is now " << result;
         }
     }
 }
@@ -242,6 +281,31 @@ void Alignment::finalise() {
         auto detector = get_detector(detectorToAlign);
         globalDetector = detector;
 
+        int n_associatedClusters = 0;
+        // count associated clusters:
+        for(auto& track : globalTracks) {
+            Clusters associatedClusters = track->associatedClusters();
+            for(auto& associatedCluster : associatedClusters) {
+                string detectorID = associatedCluster->detectorID();
+                if(detectorID != detectorToAlign) {
+                    continue;
+                }
+                n_associatedClusters++;
+                break;
+            }
+        }
+        if(n_associatedClusters < 0.5 * globalTracks.size()) {
+            LOG(WARNING) << "Only " << 100 * static_cast<double>(n_associatedClusters) / globalTracks.size()
+                         << "% of all tracks have associated clusters on detector " << detectorToAlign;
+        } else {
+            LOG(INFO) << 100 * static_cast<double>(n_associatedClusters) / globalTracks.size()
+                      << "% of all tracks have associated clusters on detector " << detectorToAlign;
+        }
+
+        LOG(STATUS) << detectorToAlign << " initial alignment: " << std::endl
+                    << "T" << display_vector(detector->displacement(), {"mm", "um"}) << " R"
+                    << display_vector(detector->rotation(), {"deg"});
+
         // Add the parameters to the fitter (z displacement not allowed to move!)
         residualFitter->SetParameter(
             0, (detectorToAlign + "_displacementX").c_str(), detector->displacementX(), 0.01, -50, 50);
@@ -255,34 +319,28 @@ void Alignment::finalise() {
 
         for(int iteration = 0; iteration < nIterations; iteration++) {
 
+            auto old_position = detector->displacement();
+            auto old_orientation = detector->rotation();
+
             // Fit this plane (minimising global track chi2)
             residualFitter->ExecuteCommand("MIGRAD", arglist, 2);
 
-            // Retrieve fit results:
-            auto displacementX = residualFitter->GetParameter(0);
-            auto displacementY = residualFitter->GetParameter(1);
-            auto displacementZ = residualFitter->GetParameter(2);
-            auto rotationX = residualFitter->GetParameter(3);
-            auto rotationY = residualFitter->GetParameter(4);
-            auto rotationZ = residualFitter->GetParameter(5);
+            // Set the alignment parameters of this plane to be the optimised values from the alignment
+            detector->displacementX(residualFitter->GetParameter(0));
+            detector->displacementY(residualFitter->GetParameter(1));
+            detector->displacementZ(residualFitter->GetParameter(2));
+            detector->rotationX(residualFitter->GetParameter(3));
+            detector->rotationY(residualFitter->GetParameter(4));
+            detector->rotationZ(residualFitter->GetParameter(5));
 
-            LOG(INFO) << detector->name() << "/" << iteration << " dT(" << (detector->displacementX() - displacementX) << ","
-                      << (detector->displacementY() - displacementY) << "," << (detector->displacementZ() - displacementZ)
-                      << ") dR(" << (detector->rotationX() - rotationX) << "," << (detector->rotationY() - rotationY) << ","
-                      << (detector->rotationZ() - rotationZ) << ")";
-
-            // Set the alignment parameters of this plane to be the optimised values
-            // from the alignment
-            detector->displacementX(displacementX);
-            detector->displacementY(displacementY);
-            detector->displacementZ(displacementZ);
-            detector->rotationX(rotationX);
-            detector->rotationY(rotationY);
-            detector->rotationZ(rotationZ);
+            LOG(INFO) << detector->name() << "/" << iteration << " dT"
+                      << display_vector(detector->displacement() - old_position, {"mm", "um"}) << " dR"
+                      << display_vector(detector->rotation() - old_orientation, {"deg"});
         }
-        LOG(INFO) << detectorToAlign << " new alignment: T(" << detector->displacementX() << "," << detector->displacementY()
-                  << "," << detector->displacementZ() << ") R(" << detector->rotationX() << "," << detector->rotationY()
-                  << "," << detector->rotationZ() << ")";
+
+        LOG(STATUS) << detectorToAlign << " new alignment: " << std::endl
+                    << "T" << display_vector(detector->displacement(), {"mm", "um"}) << " R"
+                    << display_vector(detector->rotation(), {"deg"});
 
         return;
     }
@@ -298,10 +356,11 @@ void Alignment::finalise() {
     // Loop over all planes. For each plane, set the plane alignment parameters which will be varied, and then minimise the
     // track chi2 (sum of biased residuals). This means that tracks are refitted with each minimisation step.
 
-    int det = 0;
     for(int iteration = 0; iteration < nIterations; iteration++) {
 
-        det = 0;
+        LOG_PROGRESS(STATUS, "alignment_track") << "Alignment iteration " << (iteration + 1) << " of " << nIterations;
+
+        int det = 0;
         for(auto& detector : get_detectors()) {
             string detectorID = detector->name();
 
@@ -309,9 +368,6 @@ void Alignment::finalise() {
             if(detectorID == m_config.get<std::string>("reference") || detectorID == m_config.get<std::string>("DUT")) {
                 continue;
             }
-
-            LOG_PROGRESS(STATUS, "alignment_track")
-                << "Alignment iteration " << (iteration + 1) << " of " << nIterations << ", detector " << detectorID;
 
             // Say that this is the detector we align
             detectorToAlign = detectorID;
@@ -332,6 +388,9 @@ void Alignment::finalise() {
             residualFitter->SetParameter(
                 det * 6 + 5, (detectorID + "_rotationZ").c_str(), detector->rotationZ(), 0.001, -6.30, 6.30);
 
+            auto old_position = detector->displacement();
+            auto old_orientation = detector->rotation();
+
             // Fit this plane (minimising global track chi2)
             residualFitter->ExecuteCommand("MIGRAD", arglist, 2);
 
@@ -344,17 +403,16 @@ void Alignment::finalise() {
             auto rotationZ = residualFitter->GetParameter(det * 6 + 5);
 
             // Store corrections:
-            shiftsX[detectorID].push_back(detector->displacementX() - displacementX);
-            shiftsY[detectorID].push_back(detector->displacementY() - displacementY);
-            shiftsZ[detectorID].push_back(detector->displacementZ() - displacementZ);
-            rotX[detectorID].push_back(detector->rotationX() - rotationX);
-            rotY[detectorID].push_back(detector->rotationY() - rotationY);
-            rotZ[detectorID].push_back(detector->rotationZ() - rotationZ);
+            shiftsX[detectorID].push_back(Units::convert(detector->displacementX() - old_position.X(), "um"));
+            shiftsY[detectorID].push_back(Units::convert(detector->displacementY() - old_position.Y(), "um"));
+            shiftsZ[detectorID].push_back(Units::convert(detector->displacementZ() - old_position.Z(), "um"));
+            rotX[detectorID].push_back(Units::convert(detector->rotationX() - old_orientation.X(), "deg"));
+            rotY[detectorID].push_back(Units::convert(detector->rotationY() - old_orientation.Y(), "deg"));
+            rotZ[detectorID].push_back(Units::convert(detector->rotationZ() - old_orientation.Z(), "deg"));
 
-            LOG(INFO) << detector->name() << "/" << iteration << " dT(" << (detector->displacementX() - displacementX) << ","
-                      << (detector->displacementY() - displacementY) << "," << (detector->displacementZ() - displacementZ)
-                      << ") dR(" << (detector->rotationX() - rotationX) << "," << (detector->rotationY() - rotationY) << ","
-                      << (detector->rotationZ() - rotationZ) << ")";
+            LOG(INFO) << detector->name() << "/" << iteration << " dT"
+                      << display_vector(detector->displacement() - old_position, {"mm", "um"}) << " dR"
+                      << display_vector(detector->rotation() - old_orientation, {"deg"});
 
             // Now that this device is fitted, set parameter errors to 0 so that they
             // are not fitted again
@@ -388,9 +446,9 @@ void Alignment::finalise() {
             continue;
         }
 
-        LOG(INFO) << detector->name() << " new alignment: T(" << detector->displacementX() << ","
-                  << detector->displacementY() << "," << detector->displacementZ() << ") R(" << detector->rotationX() << ","
-                  << detector->rotationY() << "," << detector->rotationZ() << ")";
+        LOG(STATUS) << detector->name() << " new alignment: " << std::endl
+                    << "T" << display_vector(detector->displacement(), {"mm", "um"}) << " R"
+                    << display_vector(detector->rotation(), {"deg"});
 
         // Fill the alignment convergence graphs:
         std::vector<double> iterations(nIterations);
@@ -399,31 +457,43 @@ void Alignment::finalise() {
         std::string name = "alignment_correction_displacementX_" + detector->name();
         align_correction_shiftX[detector->name()] =
             new TGraph(shiftsX[detector->name()].size(), &iterations[0], &shiftsX[detector->name()][0]);
+        align_correction_shiftX[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_shiftX[detector->name()]->GetYaxis()->SetTitle("correction [#mum]");
         align_correction_shiftX[detector->name()]->Write(name.c_str());
 
         name = "alignment_correction_displacementY_" + detector->name();
         align_correction_shiftY[detector->name()] =
             new TGraph(shiftsY[detector->name()].size(), &iterations[0], &shiftsY[detector->name()][0]);
+        align_correction_shiftY[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_shiftY[detector->name()]->GetYaxis()->SetTitle("correction [#mum]");
         align_correction_shiftY[detector->name()]->Write(name.c_str());
 
         name = "alignment_correction_displacementZ_" + detector->name();
         align_correction_shiftZ[detector->name()] =
             new TGraph(shiftsZ[detector->name()].size(), &iterations[0], &shiftsZ[detector->name()][0]);
+        align_correction_shiftZ[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_shiftZ[detector->name()]->GetYaxis()->SetTitle("correction [#mum]");
         align_correction_shiftZ[detector->name()]->Write(name.c_str());
 
         name = "alignment_correction_rotationX_" + detector->name();
         align_correction_rotX[detector->name()] =
             new TGraph(rotX[detector->name()].size(), &iterations[0], &rotX[detector->name()][0]);
+        align_correction_rotX[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_rotX[detector->name()]->GetYaxis()->SetTitle("correction [deg]");
         align_correction_rotX[detector->name()]->Write(name.c_str());
 
         name = "alignment_correction_rotationY_" + detector->name();
         align_correction_rotY[detector->name()] =
             new TGraph(rotY[detector->name()].size(), &iterations[0], &rotY[detector->name()][0]);
+        align_correction_rotY[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_rotY[detector->name()]->GetYaxis()->SetTitle("correction [deg]");
         align_correction_rotY[detector->name()]->Write(name.c_str());
 
         name = "alignment_correction_rotationZ_" + detector->name();
         align_correction_rotZ[detector->name()] =
             new TGraph(rotZ[detector->name()].size(), &iterations[0], &rotZ[detector->name()][0]);
+        align_correction_rotZ[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_rotZ[detector->name()]->GetYaxis()->SetTitle("correction [deg]");
         align_correction_rotZ[detector->name()]->Write(name.c_str());
     }
 }

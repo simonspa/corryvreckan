@@ -46,8 +46,8 @@ namespace corryvreckan {
 
         Configuration getConfiguration();
 
-        double pitchX() { return m_pitchX; }
-        double pitchY() { return m_pitchY; }
+        double pitchX() { return m_pitch.X(); }
+        double pitchY() { return m_pitch.Y(); }
         int nPixelsX() { return m_nPixelsX; }
         int nPixelsY() { return m_nPixelsY; }
         double timingOffset() { return m_timingOffset; }
@@ -107,15 +107,16 @@ namespace corryvreckan {
         double inPixelY(PositionVector3D<Cartesian3D<double>> localPosition);
 
         Transform3D* localToGlobal() { return m_localToGlobal; };
+        ROOT::Math::XYZPoint localToGlobal(ROOT::Math::XYZPoint local) { return (*m_localToGlobal) * local; };
         Transform3D* globalToLocal() { return m_globalToLocal; };
+        ROOT::Math::XYZPoint globalToLocal(ROOT::Math::XYZPoint global) { return (*m_globalToLocal) * global; };
 
     private:
         // Member variables
         // Detector information
         std::string m_detectorType;
         std::string m_detectorName;
-        double m_pitchX;
-        double m_pitchY;
+        ROOT::Math::XYVector m_pitch;
         int m_nPixelsX;
         int m_nPixelsY;
         double m_timingOffset;
