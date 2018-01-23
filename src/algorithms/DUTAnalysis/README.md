@@ -11,8 +11,9 @@ Using the appropriate parameter settings in the configuration file, plots using 
 * `DUT`: Name of the DUT plane.
 * `useMCtruth`: Boolean to set if Monte-Carlo truth information is available and should be used. Default value is `false`.
 * `digitalPowerPusling`: Boolean to set if power pulsing was used and that this information should be used. Default value is `false`.
-* `timingCut`: maximum time difference between clusters to be taken into account. Defaults to `200ns`.
-*
+* `timingCut`: maximum time difference between clusters to be taken into account. Default value is `200ns`.
+* `chi2ndofCut`: maximum chi^2 ndof value allowed for tracks to be used; tracks with values above this will be excluded. Default value is `3.0`.
+
 #### Plots produced
 * Tracks vs time
 * Associated tracks vs time
