@@ -10,6 +10,8 @@
 #include "objects/Pixel.h"
 
 namespace corryvreckan {
+    /** @ingroup Algorithms
+     */
     class TestAlgorithm : public Algorithm {
 
     public:

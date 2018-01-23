@@ -23,6 +23,8 @@
 #include "TSystem.h"
 
 namespace corryvreckan {
+    /** @ingroup Algorithms
+     */
     class OnlineMonitor : public Algorithm {
 
     public:

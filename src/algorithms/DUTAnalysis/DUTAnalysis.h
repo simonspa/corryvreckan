@@ -8,6 +8,8 @@
 #include "core/algorithm/Algorithm.h"
 
 namespace corryvreckan {
+    /** @ingroup Algorithms
+     */
     class DUTAnalysis : public Algorithm {
 
     public:

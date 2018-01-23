@@ -11,6 +11,8 @@
 #include "objects/Track.h"
 
 namespace corryvreckan {
+    /** @ingroup Algorithms
+     */
     class GenericAlgorithm : public Algorithm {
 
     public:

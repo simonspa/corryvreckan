@@ -16,6 +16,8 @@
 #include "objects/Track.h"
 
 namespace corryvreckan {
+    /** @ingroup Algorithms
+     */
     class Clicpix2EventLoader : public Algorithm {
 
     public:
