@@ -33,21 +33,21 @@ void BasicTracking::initialise() {
         if(detector->type() != "Timepix3")
             continue;
         string name = "residualsX_" + detectorID;
-        residualsX[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
+        residualsX[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
         name = "residualsXwidth1_" + detectorID;
-        residualsXwidth1[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
+        residualsXwidth1[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
         name = "residualsXwidth2_" + detectorID;
-        residualsXwidth2[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
+        residualsXwidth2[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
         name = "residualsXwidth3_" + detectorID;
-        residualsXwidth3[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
+        residualsXwidth3[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
         name = "residualsY_" + detectorID;
-        residualsY[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
+        residualsY[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
         name = "residualsYwidth1_" + detectorID;
-        residualsYwidth1[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
+        residualsYwidth1[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
         name = "residualsYwidth2_" + detectorID;
-        residualsYwidth2[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
+        residualsYwidth2[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
         name = "residualsYwidth3_" + detectorID;
-        residualsYwidth3[detectorID] = new TH1F(name.c_str(), name.c_str(), 100, -0.02, 0.02);
+        residualsYwidth3[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
     }
 }
 
