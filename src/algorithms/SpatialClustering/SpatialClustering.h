@@ -6,6 +6,8 @@
 #include "objects/Cluster.h"
 
 namespace corryvreckan {
+    /** @ingroup Algorithms
+     */
     class SpatialClustering : public Algorithm {
 
     public:

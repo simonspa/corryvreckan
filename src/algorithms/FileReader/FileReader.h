@@ -7,6 +7,8 @@
 #include "core/algorithm/Algorithm.h"
 
 namespace corryvreckan {
+    /** @ingroup Algorithms
+     */
     class FileReader : public Algorithm {
 
     public:

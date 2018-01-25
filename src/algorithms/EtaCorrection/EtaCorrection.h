@@ -15,6 +15,8 @@
 #include "objects/Track.h"
 
 namespace corryvreckan {
+    /** @ingroup Algorithms
+     */
     class EtaCorrection : public Algorithm {
 
     public:

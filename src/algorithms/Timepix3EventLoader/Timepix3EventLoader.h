@@ -10,6 +10,8 @@
 #include "objects/SpidrSignal.h"
 
 namespace corryvreckan {
+    /** @ingroup Algorithms
+     */
     class Timepix3EventLoader : public Algorithm {
 
     public:

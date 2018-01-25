@@ -6,6 +6,8 @@
 #include "objects/Pixel.h"
 
 namespace corryvreckan {
+    /** @ingroup Algorithms
+     */
     class Timepix3MaskCreator : public Algorithm {
 
     public:

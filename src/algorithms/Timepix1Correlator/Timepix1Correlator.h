@@ -8,6 +8,8 @@
 #include "core/algorithm/Algorithm.h"
 
 namespace corryvreckan {
+    /** @ingroup Algorithms
+     */
     class Timepix1Correlator : public Algorithm {
 
     public:

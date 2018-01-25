@@ -12,6 +12,8 @@
 #include "objects/Track.h"
 
 namespace corryvreckan {
+    /** @ingroup Algorithms
+     */
     class ImproveReferenceTimestamp : public Algorithm {
 
     public:

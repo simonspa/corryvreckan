@@ -14,6 +14,8 @@
 #include "objects/Track.h"
 
 namespace corryvreckan {
+    /** @ingroup Algorithms
+     */
     class SpatialTracking : public Algorithm {
 
     public:

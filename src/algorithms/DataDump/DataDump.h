@@ -9,6 +9,8 @@
 #include "core/algorithm/Algorithm.h"
 
 namespace corryvreckan {
+    /** @ingroup Algorithms
+     */
     class DataDump : public Algorithm {
 
     public:

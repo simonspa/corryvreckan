@@ -14,6 +14,9 @@
 #include "objects/Track.h"
 
 namespace corryvreckan {
+
+    /** @ingroup Algorithms
+     */
     class Alignment : public Algorithm {
 
     public:
