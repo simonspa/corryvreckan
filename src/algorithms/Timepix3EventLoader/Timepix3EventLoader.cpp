@@ -95,7 +95,7 @@ void Timepix3EventLoader::initialise() {
 
                 // Check if file has extension .dat
                 if(string(file->d_name).find(".dat") != string::npos) {
-                    LOG(DEBUG) << "Enqueuing data file for " << detectorID << ": " << filename;
+                    LOG(INFO) << "Enqueuing data file for " << detectorID << ": " << filename;
                     detector_files[detectorID].push_back(filename);
                 }
 
@@ -268,8 +268,8 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
     // Otherwise tell event loop to keep running
     IFLOG(INFO) {
         if(temporalSplit) {
-            LOG_PROGRESS(INFO, "tpx3_loader") << "Current time: " << std::setprecision(4) << std::fixed
-                                              << Units::convert(clipboard->get_persistent("currentTime"), "s");
+            LOG_PROGRESS(INFO, "tpx3_loader")
+                << "Current time: " << Units::display(clipboard->get_persistent("currentTime"), {"s", "ms", "us", "ns"});
         } else {
             LOG_PROGRESS(INFO, "tpx3_loader") << "Current event: " << m_currentEvent;
         }
@@ -420,7 +420,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                     (m_syncTime[detectorID] & 0x00000FFFFFFFFFFF) + ((pixdata & 0x00000000FFFF0000) << 28);
                 if(!m_clearedHeader[detectorID] && (double)m_syncTime[detectorID] / (4096. * 40000000.) < 6.) {
                     m_clearedHeader[detectorID] = true;
-                    LOG(TRACE) << "Cleared header";
+                    LOG(DEBUG) << detectorID << ": Cleared header";
                 }
             }
         }
@@ -648,6 +648,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 pixelTOAParamaterD->Fill(col, row, toa_d);
                 pixelTOAParamaterT->Fill(col, row, toa_t);
             } else {
+                LOG(DEBUG) << "Pixel hit at " << Units::display(timestamp, {"s", "ns"});
                 // creating new pixel object with non-calibrated values of tot and toa
                 Pixel* pixel = new Pixel(detectorID, row, col, (int)tot, timestamp);
                 devicedata->push_back(pixel);
