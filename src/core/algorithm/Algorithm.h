@@ -28,6 +28,9 @@ namespace corryvreckan {
         Failure,
     };
 
+    /** Base class for all algorithms
+     *  @defgroup Algorithms Algorithms
+     */
     class Algorithm {
 
     public:
