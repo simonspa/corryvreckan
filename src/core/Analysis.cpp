@@ -331,6 +331,7 @@ void Analysis::run() {
     // Check if we have an event or track limit:
     int number_of_events = global_config.get<int>("number_of_events", -1);
     int number_of_tracks = global_config.get<int>("number_of_tracks", -1);
+    float run_time = global_config.get<float>("run_time", Units::convert(-1.0, "s"));
 
     // Loop over all events, running each algorithm on each "event"
     LOG(STATUS) << "========================| Event loop |========================";
@@ -343,7 +344,11 @@ void Analysis::run() {
         bool noData = false;
 
         // Check if we have reached the maximum number of events
+
         if(number_of_events > -1 && m_events >= number_of_events)
+            break;
+
+        if(run_time > 0.0 && (m_clipboard->get_persistent("currentTime")) >= run_time)
             break;
 
         // Check if we have reached the maximum number of tracks
