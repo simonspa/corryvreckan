@@ -27,13 +27,13 @@ namespace corryvreckan {
         // ROOT graphs
         TH1F* pixelToT_beforecalibration;
         TH1F* pixelToT_aftercalibration;
-        TH2F* pixelTOTParamaterA;
-        TH2F* pixelTOTParamaterB;
-        TH2F* pixelTOTParamaterC;
-        TH2F* pixelTOTParamaterT;
-        TH2F* pixelTOAParamaterC;
-        TH2F* pixelTOAParamaterD;
-        TH2F* pixelTOAParamaterT;
+        TH2F* pixelTOTParameterA;
+        TH2F* pixelTOTParameterB;
+        TH2F* pixelTOTParameterC;
+        TH2F* pixelTOTParameterT;
+        TH2F* pixelTOAParameterC;
+        TH2F* pixelTOAParameterD;
+        TH2F* pixelTOAParameterT;
 
     private:
         bool loadData(Clipboard* clipboard, Detector* detector, Pixels*, SpidrSignals*);

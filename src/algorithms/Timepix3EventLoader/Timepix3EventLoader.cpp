@@ -183,9 +183,7 @@ void Timepix3EventLoader::initialise() {
     }
 
     // Calibration
-    std::string nameb = "pixelToT_beforecalibration";
-    std::string namea = "pixelToT_aftercalibration";
-    pixelToT_beforecalibration = new TH1F(nameb.c_str(), nameb.c_str(), 100, 0, 200);
+    pixelToT_beforecalibration = new TH1F("pixelToT_beforecalibration", "pixelToT_beforecalibration", 100, 0, 200);
 
     if(m_config.has("calibrationPath") && m_config.has("threshold")) {
         LOG(INFO) << "Applying calibration from " << calibrationPath;
@@ -204,14 +202,34 @@ void Timepix3EventLoader::initialise() {
 
         // make graphs of calibration parameters
         LOG(DEBUG) << "Creating calibration graphs";
-        pixelTOTParamaterA = new TH2F("hist_par_a_tot", "hist_par_a_tot", 256, 0, 256, 256, 0, 256);
-        pixelTOTParamaterB = new TH2F("hist_par_b_tot", "hist_par_b_tot", 256, 0, 256, 256, 0, 256);
-        pixelTOTParamaterC = new TH2F("hist_par_c_tot", "hist_par_c_tot", 256, 0, 256, 256, 0, 256);
-        pixelTOTParamaterT = new TH2F("hist_par_t_tot", "hist_par_t_tot", 256, 0, 256, 256, 0, 256);
-        pixelTOAParamaterC = new TH2F("hist_par_c_toa", "hist_par_c_toa", 256, 0, 256, 256, 0, 256);
-        pixelTOAParamaterD = new TH2F("hist_par_d_toa", "hist_par_d_toa", 256, 0, 256, 256, 0, 256);
-        pixelTOAParamaterT = new TH2F("hist_par_t_toa", "hist_par_t_toa", 256, 0, 256, 256, 0, 256);
-        pixelToT_aftercalibration = new TH1F(namea.c_str(), namea.c_str(), 2000, 0, 20000);
+        pixelTOTParameterA = new TH2F("hist_par_a_tot", "hist_par_a_tot", 256, 0, 256, 256, 0, 256);
+        pixelTOTParameterB = new TH2F("hist_par_b_tot", "hist_par_b_tot", 256, 0, 256, 256, 0, 256);
+        pixelTOTParameterC = new TH2F("hist_par_c_tot", "hist_par_c_tot", 256, 0, 256, 256, 0, 256);
+        pixelTOTParameterT = new TH2F("hist_par_t_tot", "hist_par_t_tot", 256, 0, 256, 256, 0, 256);
+        pixelTOAParameterC = new TH2F("hist_par_c_toa", "hist_par_c_toa", 256, 0, 256, 256, 0, 256);
+        pixelTOAParameterD = new TH2F("hist_par_d_toa", "hist_par_d_toa", 256, 0, 256, 256, 0, 256);
+        pixelTOAParameterT = new TH2F("hist_par_t_toa", "hist_par_t_toa", 256, 0, 256, 256, 0, 256);
+        pixelToT_aftercalibration = new TH1F("pixelToT_aftercalibration", "pixelToT_aftercalibration", 2000, 0, 20000);
+
+        for(int row = 1; row < 256; row++) {
+            for(int col = 1; col < 256; col++) {
+                float a = vtot[256 * row + col][2];
+                float b = vtot[256 * row + col][3];
+                float c = vtot[256 * row + col][4];
+                float t = vtot[256 * row + col][5];
+                float toa_c = vtoa[256 * row + col][2];
+                float toa_t = vtoa[256 * row + col][3];
+                float toa_d = vtoa[256 * row + col][4];
+
+                pixelTOTParameterA->Fill(col, row, a);
+                pixelTOTParameterB->Fill(col, row, b);
+                pixelTOTParameterC->Fill(col, row, c);
+                pixelTOTParameterT->Fill(col, row, t);
+                pixelTOAParameterC->Fill(col, row, toa_c);
+                pixelTOAParameterD->Fill(col, row, toa_d);
+                pixelTOAParameterT->Fill(col, row, toa_t);
+            }
+        }
     } else {
         LOG(INFO) << "No calibration file path given, data will be uncalibrated.";
         applyCalibration = false;
@@ -640,13 +658,6 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 devicedata->push_back(pixel);
                 LOG(DEBUG) << "Pixel Charge = " << fcharge << "; ToT value = " << tot;
                 pixelToT_aftercalibration->Fill(fcharge);
-                pixelTOTParamaterA->Fill(col, row, a);
-                pixelTOTParamaterB->Fill(col, row, b);
-                pixelTOTParamaterC->Fill(col, row, c);
-                pixelTOTParamaterT->Fill(col, row, t);
-                pixelTOAParamaterC->Fill(col, row, toa_c);
-                pixelTOAParamaterD->Fill(col, row, toa_d);
-                pixelTOAParamaterT->Fill(col, row, toa_t);
             } else {
                 LOG(DEBUG) << "Pixel hit at " << Units::display(timestamp, {"s", "ns"});
                 // creating new pixel object with non-calibrated values of tot and toa
