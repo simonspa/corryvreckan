@@ -34,6 +34,7 @@ namespace corryvreckan {
         TH2F* pixelTOAParameterC;
         TH2F* pixelTOAParameterD;
         TH2F* pixelTOAParameterT;
+        TH1F* timeshiftPlot;
 
     private:
         bool loadData(Clipboard* clipboard, Detector* detector, Pixels*, SpidrSignals*);

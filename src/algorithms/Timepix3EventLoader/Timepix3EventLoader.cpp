@@ -209,6 +209,7 @@ void Timepix3EventLoader::initialise() {
         pixelTOAParameterC = new TH2F("hist_par_c_toa", "hist_par_c_toa", 256, 0, 256, 256, 0, 256);
         pixelTOAParameterD = new TH2F("hist_par_d_toa", "hist_par_d_toa", 256, 0, 256, 256, 0, 256);
         pixelTOAParameterT = new TH2F("hist_par_t_toa", "hist_par_t_toa", 256, 0, 256, 256, 0, 256);
+        timeshiftPlot = new TH1F("timeshift", "timeshift (/ns)", 1000, -10, 80);
         pixelToT_aftercalibration = new TH1F("pixelToT_aftercalibration", "pixelToT_aftercalibration", 2000, 0, 20000);
 
         for(int row = 0; row < 256; row++) {
@@ -606,7 +607,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
 
             // Convert final timestamp into ns:
             const double timestamp = time / (4096 * 0.04);
-
+            LOG(DEBUG) << "Timestamp = " << Units::display(timestamp, {"s", "ns"});
             // If events are loaded based on time intervals, take all hits where the
             // time is within this window
 
@@ -651,8 +652,10 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                  * over estimating the input capacitance to compensate the missing information of the offset. */
 
                 float t_shift = toa_c / (fvolts - toa_t) + toa_d;
+                timeshiftPlot->Fill(Units::convert(t_shift, "ns"));
                 const double ftimestamp = timestamp - t_shift;
-
+                LOG(DEBUG) << "Time shift= " << Units::display(t_shift, {"s", "ns"});
+                LOG(DEBUG) << "Timestamp calibrated = " << Units::display(ftimestamp, {"s", "ns"});
                 // creating new pixel object with calibrated values of tot and toa
                 Pixel* pixel = new Pixel(detectorID, row, col, fcharge, ftimestamp);
                 devicedata->push_back(pixel);
