@@ -607,7 +607,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
 
             // Convert final timestamp into ns:
             const double timestamp = time / (4096 * 0.04);
-
+            LOG(DEBUG) << "Timestamp = " << Units::display(timestamp, {"s", "ns"});
             // If events are loaded based on time intervals, take all hits where the
             // time is within this window
 
@@ -654,7 +654,8 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 float t_shift = toa_c / (fvolts - toa_t) + toa_d;
                 timeshiftPlot->Fill(Units::convert(t_shift, "ns"));
                 const double ftimestamp = timestamp - t_shift;
-
+                LOG(DEBUG) << "Time shift= " << Units::display(t_shift, {"s", "ns"});
+                LOG(DEBUG) << "Timestamp calibrated = " << Units::display(ftimestamp, {"s", "ns"});
                 // creating new pixel object with calibrated values of tot and toa
                 Pixel* pixel = new Pixel(detectorID, row, col, fcharge, ftimestamp);
                 devicedata->push_back(pixel);
