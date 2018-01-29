@@ -213,13 +213,13 @@ void Timepix3EventLoader::initialise() {
 
         for(int row = 0; row < 256; row++) {
             for(int col = 0; col < 256; col++) {
-                float a = vtot[256 * row + col][2];
-                float b = vtot[256 * row + col][3];
-                float c = vtot[256 * row + col][4];
-                float t = vtot[256 * row + col][5];
-                float toa_c = vtoa[256 * row + col][2];
-                float toa_t = vtoa[256 * row + col][3];
-                float toa_d = vtoa[256 * row + col][4];
+                float a = vtot.at(256 * row + col).at(2);
+                float b = vtot.at(256 * row + col).at(3);
+                float c = vtot.at(256 * row + col).at(4);
+                float t = vtot.at(256 * row + col).at(5);
+                float toa_c = vtoa.at(256 * row + col).at(2);
+                float toa_t = vtoa.at(256 * row + col).at(3);
+                float toa_d = vtoa.at(256 * row + col).at(4);
 
                 pixelTOTParameterA->Fill(col, row, a);
                 pixelTOTParameterB->Fill(col, row, b);
@@ -629,14 +629,14 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             // Apply calibration if applyCalibration is true
             if(applyCalibration && detectorID == m_config.get<std::string>("DUT")) {
                 LOG(DEBUG) << "Applying calibration to DUT";
-                float a = vtot[256 * row + col][2];
-                float b = vtot[256 * row + col][3];
-                float c = vtot[256 * row + col][4];
-                float t = vtot[256 * row + col][5];
+                float a = vtot.at(256 * row + col).at(2);
+                float b = vtot.at(256 * row + col).at(3);
+                float c = vtot.at(256 * row + col).at(4);
+                float t = vtot.at(256 * row + col).at(5);
 
-                float toa_c = vtoa[256 * row + col][2];
-                float toa_t = vtoa[256 * row + col][3];
-                float toa_d = vtoa[256 * row + col][4];
+                float toa_c = vtoa.at(256 * row + col).at(2);
+                float toa_t = vtoa.at(256 * row + col).at(3);
+                float toa_d = vtoa.at(256 * row + col).at(4);
 
                 // Calculating calibrated tot and toa
                 float fvolts =
