@@ -211,8 +211,8 @@ void Timepix3EventLoader::initialise() {
         pixelTOAParameterT = new TH2F("hist_par_t_toa", "hist_par_t_toa", 256, 0, 256, 256, 0, 256);
         pixelToT_aftercalibration = new TH1F("pixelToT_aftercalibration", "pixelToT_aftercalibration", 2000, 0, 20000);
 
-        for(int row = 1; row < 256; row++) {
-            for(int col = 1; col < 256; col++) {
+        for(int row = 0; row < 256; row++) {
+            for(int col = 0; col < 256; col++) {
                 float a = vtot[256 * row + col][2];
                 float b = vtot[256 * row + col][3];
                 float c = vtot[256 * row + col][4];
