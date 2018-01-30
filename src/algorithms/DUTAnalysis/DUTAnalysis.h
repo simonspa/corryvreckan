@@ -30,6 +30,8 @@ namespace corryvreckan {
         TH1F* residualsY;
         TH1F* clusterTotAssociated;
         TH1F* clusterSizeAssociated;
+        TH1F* clusterSizeAssociated_X;
+        TH1F* clusterSizeAssociated_Y;
         TH1F* hTrackCorrelationX;
         TH1F* hTrackCorrelationY;
         TH1F* hTrackCorrelationTime;
