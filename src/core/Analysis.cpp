@@ -336,8 +336,10 @@ void Analysis::run() {
     // Loop over all events, running each algorithm on each "event"
     LOG(STATUS) << "========================| Event loop |========================";
     m_events = 1;
+    int events_prev = 1;
     m_tracks = 0;
     int skipped = 0;
+    int skipped_prev = 0;
 
     while(1) {
         bool run = true;
@@ -385,7 +387,18 @@ void Analysis::run() {
         // Print statistics:
         Tracks* tracks = (Tracks*)m_clipboard->get("tracks");
         m_tracks += (tracks == NULL ? 0 : tracks->size());
-        if(m_events % 100 == 0 || skipped % 1000 == 0) {
+
+        bool update_progress = false;
+        if(m_events % 100 == 0 && m_events != events_prev) {
+            update_progress = true;
+        }
+        if(skipped % 1000 == 0 && skipped != skipped_prev) {
+            update_progress = true;
+        }
+
+        if(update_progress) {
+            skipped_prev = skipped;
+            events_prev = m_events;
             LOG_PROGRESS(STATUS, "event_loop")
                 << "Ev: +" << m_events << " \\" << skipped << " Tr: " << m_tracks << " (" << std::setprecision(3)
                 << ((double)m_tracks / m_events)
