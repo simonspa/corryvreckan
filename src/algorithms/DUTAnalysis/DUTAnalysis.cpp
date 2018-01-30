@@ -27,6 +27,8 @@ void DUTAnalysis::initialise() {
 
     clusterTotAssociated = new TH1F("clusterTotAssociated", "clusterTotAssociated", 20000, 0, 100000);
     clusterSizeAssociated = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
+    clusterSizeAssociated_X = new TH1F("clusterSizeAssociated_X", "clusterSizeAssociated_X", 30, 0, 30);
+    clusterSizeAssociated_Y = new TH1F("clusterSizeAssociated_Y", "clusterSizeAssociated_Y", 30, 0, 30);
     residualsTime = new TH1F("residualsTime", "residualsTime", 20000, -1000, +1000);
 
     hTrackCorrelationX = new TH1F("hTrackCorrelationX", "hTrackCorrelationX", 4000, -10., 10.);
@@ -245,6 +247,8 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             residualsY->Fill(ydistance);
             clusterTotAssociated->Fill(cluster->tot());
             clusterSizeAssociated->Fill(cluster->size());
+            clusterSizeAssociated_X->Fill(cluster->columnWidth());
+            clusterSizeAssociated_Y->Fill(cluster->rowWidth());
             track->addAssociatedCluster(cluster);
             m_nAlignmentClusters++;
             hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
