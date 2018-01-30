@@ -79,6 +79,7 @@ public:
         m_global.SetY(y);
         m_global.SetZ(z);
     }
+    void setClusterCentreLocal(ROOT::Math::XYZPoint local) { m_local = local; }
     void setClusterCentreLocal(double x, double y, double z) {
         m_local.SetX(x);
         m_local.SetY(y);

@@ -62,8 +62,8 @@ StatusCode EtaCorrection::run(Clipboard* clipboard) {
         // Get the in-pixel track intercept
         PositionVector3D<Cartesian3D<double>> trackIntercept = m_detector->getIntercept(track);
         PositionVector3D<Cartesian3D<double>> trackInterceptLocal = *(m_detector->globalToLocal()) * trackIntercept;
-        double pixelInterceptX = m_detector->inPixelX(trackInterceptLocal) / 1000.;
-        double pixelInterceptY = m_detector->inPixelY(trackInterceptLocal) / 1000.;
+        double pixelInterceptX = m_detector->inPixelX(trackInterceptLocal);
+        double pixelInterceptY = m_detector->inPixelY(trackInterceptLocal);
         (pixelInterceptX > m_detector->pitchX() / 2. ? pixelInterceptX -= m_detector->pitchX() / 2.
                                                      : pixelInterceptX += m_detector->pitchX() / 2.);
         (pixelInterceptY > m_detector->pitchY() / 2. ? pixelInterceptY -= m_detector->pitchY() / 2.
@@ -90,9 +90,9 @@ StatusCode EtaCorrection::run(Clipboard* clipboard) {
                 double newX = floor(dutCluster->localX() / m_detector->pitchX()) * m_detector->pitchX() +
                               m_etaCorrectorX->Eval(inPixelX);
                 PositionVector3D<Cartesian3D<double>> positionLocal(newX, dutCluster->localY(), 0);
-                PositionVector3D<Cartesian3D<double>> positionGlobal = *(m_detector->localToGlobal()) * positionLocal;
-                dutCluster->setClusterCentre(positionGlobal.X(), positionGlobal.Y(), positionGlobal.Z());
-                dutCluster->setClusterCentreLocal(positionLocal.X(), positionLocal.Y(), positionLocal.Z());
+                PositionVector3D<Cartesian3D<double>> positionGlobal = m_detector->localToGlobal(positionLocal);
+                dutCluster->setClusterCentre(positionGlobal);
+                dutCluster->setClusterCentreLocal(positionLocal);
             }
             if(dutCluster->rowWidth() == 2) {
                 m_etaDistributionY->Fill(inPixelY, pixelInterceptY);

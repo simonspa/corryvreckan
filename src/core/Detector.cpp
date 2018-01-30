@@ -243,10 +243,10 @@ PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double row, dou
 double Detector::inPixelX(PositionVector3D<Cartesian3D<double>> localPosition) {
     double column = getColumn(localPosition);
     double inPixelX = m_pitch.X() * (column - floor(column));
-    return 1000. * inPixelX;
+    return inPixelX;
 }
 double Detector::inPixelY(PositionVector3D<Cartesian3D<double>> localPosition) {
     double row = getRow(localPosition);
     double inPixelY = m_pitch.Y() * (row - floor(row));
-    return 1000. * inPixelY;
+    return inPixelY;
 }
