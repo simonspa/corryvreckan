@@ -1,2 +1,0 @@
-DetectorID  DetectorType  nPixelsX  nPixelsY  PitchX  PitchY  X          Y          Z          Rx         Ry         Rz         tOffset       
-W0005_J02   Timepix3      256        256        55      55      0.000000   0.0000000  0.00000000 0.000000   0.000000   0.0000000  0.0000000000  
