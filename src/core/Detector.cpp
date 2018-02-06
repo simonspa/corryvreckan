@@ -18,8 +18,15 @@ Detector::Detector(const Configuration& config) {
     auto npixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
     // Size of the pixels
     m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
-
     m_detectorName = config.getName();
+
+    if(Units::convert(m_pitch.X(), "mm") >= 1 or Units::convert(m_pitch.Y(), "mm") >= 1 or
+       Units::convert(m_pitch.X(), "um") <= 1 or Units::convert(m_pitch.Y(), "um") <= 1) {
+        LOG(WARNING) << "Pixel pitch unphysical for detector " << m_detectorName << ".";
+        LOG(WARNING) << "Pitch X = " << Units::display(m_pitch.X(), {"nm", "um", "mm"})
+                     << " ; Pitch Y = " << Units::display(m_pitch.Y(), {"nm", "um", "mm"});
+    }
+
     m_detectorType = config.get<std::string>("type");
     m_nPixelsX = npixels.x();
     m_nPixelsY = npixels.y();

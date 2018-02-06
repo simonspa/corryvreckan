@@ -11,6 +11,7 @@ Timepix3Clustering::Timepix3Clustering(Configuration config, std::vector<Detecto
 void Timepix3Clustering::initialise() {
 
     for(auto& detector : get_detectors()) {
+
         // Cluster plots
         string name = "clusterSize_" + detector->name();
         clusterSize[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
