@@ -12,12 +12,6 @@ void Timepix3Clustering::initialise() {
 
     for(auto& detector : get_detectors()) {
 
-        if(Units::convert(detector->pitchX(), "mm") >= 1 or Units::convert(detector->pitchY(), "mm") >= 1 or
-           Units::convert(detector->pitchX(), "um") <= 1 or Units::convert(detector->pitchY(), "um") <= 1) {
-            LOG(WARNING) << "Pixel pitch unphysical for detector " << detector->name() << ".";
-            LOG(WARNING) << "Pitch X = " << Units::display(detector->pitchX(), {"nm", "um", "mm"})
-                         << " ; Pitch Y = " << Units::display(detector->pitchY(), {"nm", "um", "mm"});
-        }
         // Cluster plots
         string name = "clusterSize_" + detector->name();
         clusterSize[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
