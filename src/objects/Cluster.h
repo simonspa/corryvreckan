@@ -22,6 +22,7 @@ public:
     Cluster() {
         m_columnWidth = 0.;
         m_rowWidth = 0.;
+        m_split = false;
     }
     virtual ~Cluster() {}
     // Copy constructor
@@ -33,6 +34,7 @@ public:
         m_timestamp = cluster->timestamp();
         m_columnWidth = cluster->columnWidth();
         m_rowWidth = cluster->rowWidth();
+        m_split = cluster->isSplit();
     }
 
     // Functions
@@ -53,6 +55,9 @@ public:
     double column() { return m_column; }
     double tot() { return m_tot; }
     double error() { return m_error; }
+
+    bool isSplit() { return m_split; }
+    void setSplit(bool split) { m_split = split; }
 
     double globalX() { return m_global.X(); }
     double globalY() { return m_global.Y(); }
@@ -96,6 +101,7 @@ private:
     double m_error;
     double m_columnWidth;
     double m_rowWidth;
+    bool m_split;
 
     ROOT::Math::XYZPoint m_local;
     ROOT::Math::XYZPoint m_global;
@@ -104,7 +110,7 @@ private:
     std::map<int, bool> m_columnHits;
 
     // ROOT I/O class definition - update version number when you change this class!
-    ClassDef(Cluster, 4)
+    ClassDef(Cluster, 5)
 };
 
 // Vector type declaration
