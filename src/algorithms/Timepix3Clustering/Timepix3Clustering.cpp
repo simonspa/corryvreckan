@@ -6,6 +6,8 @@ using namespace std;
 Timepix3Clustering::Timepix3Clustering(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
     timingCut = m_config.get<double>("timingCut", Units::convert(100, "ns")); // 100 ns
+    neighbour_radius_row = m_config.get<int>("neighbour_radius_row", 1);
+    neighbour_radius_col = m_config.get<int>("neighbour_radius_col", 1);
 }
 
 void Timepix3Clustering::initialise() {
@@ -105,6 +107,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
                     // Check if they are touching cluster pixels
                     if(!touching(neighbour, cluster))
                         continue;
+
                     // Add to cluster
                     cluster->addPixel(neighbour);
                     clusterTime = neighbour->timestamp();
@@ -141,11 +144,15 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
 bool Timepix3Clustering::touching(Pixel* neighbour, Cluster* cluster) {
 
     bool Touching = false;
-    Pixels* pixels = cluster->pixels();
-    for(int iPix = 0; iPix < pixels->size(); iPix++) {
 
-        if(abs((*pixels)[iPix]->m_row - neighbour->m_row) <= 1 &&
-           abs((*pixels)[iPix]->m_column - neighbour->m_column) <= 1) {
+    for(auto pixel : (*cluster->pixels())) {
+        int row_distance = abs(pixel->m_row - neighbour->m_row);
+        int col_distance = abs(pixel->m_column - neighbour->m_column);
+
+        if(row_distance <= neighbour_radius_row && col_distance <= neighbour_radius_col) {
+            if(row_distance > 1 || col_distance > 1) {
+                cluster->setSplit(true);
+            }
             Touching = true;
             break;
         }

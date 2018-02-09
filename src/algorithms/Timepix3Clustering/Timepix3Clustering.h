@@ -35,6 +35,8 @@ namespace corryvreckan {
         std::map<std::string, TH2F*> clusterPositionGlobal;
 
         double timingCut;
+        int neighbour_radius_row;
+        int neighbour_radius_col;
     };
 } // namespace corryvreckan
 #endif // TIMEPIX3CLUSTERING_H
