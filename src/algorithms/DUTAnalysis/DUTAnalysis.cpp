@@ -26,8 +26,8 @@ void DUTAnalysis::initialise() {
     residualsY = new TH1F("residualsY", "residualsY", 400, -0.2, 0.2);
 
     clusterTotAssociated = new TH1F("clusterTotAssociated", "clusterTotAssociated", 20000, 0, 100000);
-    clusterSizeAssociated = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
-    clusterSizeAssociated_X = new TH1F("clusterSizeAssociated_X", "clusterSizeAssociated_X", 30, 0, 30);
+    clusterSizeAssociated = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 100, 0, 100);
+    clusterSizeAssociated_X = new TH1F("clusterSizeAssociated_X", "clusterSizeAssociated_X", 100, 0, 100);
     clusterSizeAssociated_Y = new TH1F("clusterSizeAssociated_Y", "clusterSizeAssociated_Y", 30, 0, 30);
     residualsTime = new TH1F("residualsTime", "residualsTime", 20000, -1000, +1000);
 
