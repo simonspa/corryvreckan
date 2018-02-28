@@ -107,18 +107,19 @@ void Detector::initialise() {
 
     // Make the local to global transform, built from a displacement and
     // rotation
-    m_translations = new Translation3D(m_displacement.X(), m_displacement.Y(), m_displacement.Z());
+    Translation3D translations = Translation3D(m_displacement.X(), m_displacement.Y(), m_displacement.Z());
 
+    Rotation3D rotations;
     if(m_orientation_mode == "xyz") {
-        m_rotations = new Rotation3D(ROOT::Math::RotationZ(m_orientation.Z()) * ROOT::Math::RotationY(m_orientation.Y()) *
-                                     ROOT::Math::RotationX(m_orientation.X()));
+        rotations = Rotation3D(ROOT::Math::RotationZ(m_orientation.Z()) * ROOT::Math::RotationY(m_orientation.Y()) *
+                               ROOT::Math::RotationX(m_orientation.X()));
     } else if(m_orientation_mode == "zyx") {
-        m_rotations = new Rotation3D(ROOT::Math::RotationZYX(m_orientation.x(), m_orientation.y(), m_orientation.x()));
+        rotations = Rotation3D(ROOT::Math::RotationZYX(m_orientation.x(), m_orientation.y(), m_orientation.x()));
     } else {
         throw RuntimeError("Invalid detector orientation mode: " + m_orientation_mode);
     }
 
-    m_localToGlobal = new Transform3D(*m_rotations, *m_translations);
+    m_localToGlobal = new Transform3D(rotations, translations);
     m_globalToLocal = new Transform3D();
     (*m_globalToLocal) = m_localToGlobal->Inverse();
 
@@ -134,8 +135,6 @@ void Detector::initialise() {
 
 // Function to update transforms (such as during alignment)
 void Detector::update() {
-    delete m_translations;
-    delete m_rotations;
     delete m_localToGlobal;
     delete m_globalToLocal;
     this->initialise();
