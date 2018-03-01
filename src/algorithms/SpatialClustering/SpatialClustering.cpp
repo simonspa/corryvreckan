@@ -199,7 +199,8 @@ void SpatialClustering::calculateClusterCentre(Detector* detector, Cluster* clus
     cluster->setRow(row);
     cluster->setColumn(column);
     cluster->setTot(tot);
-    cluster->setError(0.004);
+    cluster->setErrorX(0.004);
+    cluster->setErrorY(0.004);
     cluster->setDetectorID(detectorID);
     cluster->setClusterCentre(positionGlobal.X(), positionGlobal.Y(), positionGlobal.Z());
     cluster->setClusterCentreLocal(positionLocal.X(), positionLocal.Y(), positionLocal.Z());

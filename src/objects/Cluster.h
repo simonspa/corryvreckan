@@ -29,7 +29,8 @@ public:
     Cluster(Cluster* cluster) {
         m_global = cluster->global();
         m_local = cluster->local();
-        m_error = cluster->error();
+        m_error_x = cluster->errorX();
+        m_error_y = cluster->errorY();
         m_detectorID = cluster->detectorID();
         m_timestamp = cluster->timestamp();
         m_columnWidth = cluster->columnWidth();
@@ -54,7 +55,9 @@ public:
     double row() { return m_row; }
     double column() { return m_column; }
     double tot() { return m_tot; }
-    double error() { return m_error; }
+    double error() { return sqrt(m_error_x * m_error_x + m_error_y * m_error_y); }
+    double errorX() { return m_error_x; }
+    double errorY() { return m_error_y; }
 
     bool isSplit() { return m_split; }
     void setSplit(bool split) { m_split = split; }
@@ -90,7 +93,8 @@ public:
         m_local.SetY(y);
         m_local.SetZ(z);
     }
-    void setError(double error) { m_error = error; }
+    void setErrorX(double error) { m_error_x = error; }
+    void setErrorY(double error) { m_error_y = error; }
 
 private:
     // Member variables
@@ -98,7 +102,8 @@ private:
     double m_row;
     double m_column;
     double m_tot;
-    double m_error;
+    double m_error_x;
+    double m_error_y;
     double m_columnWidth;
     double m_rowWidth;
     bool m_split;
