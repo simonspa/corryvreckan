@@ -86,6 +86,7 @@ void Detector::processMaskFile() {
                 LOG(WARNING) << "Could not parse mask entry (id \"" << id << "\", col " << col << " row " << row << ")";
             }
         }
+        LOG(INFO) << m_masked.size() << " masked pixels";
     }
 }
 
