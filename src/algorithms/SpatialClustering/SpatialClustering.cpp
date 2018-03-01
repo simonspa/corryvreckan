@@ -31,7 +31,14 @@ void SpatialClustering::initialise() {
         name = "clusterTot_" + detector->name();
         clusterTot[detector->name()] = new TH1F(name.c_str(), name.c_str(), 10000, 0, 100000);
         name = "clusterPositionGlobal_" + detector->name();
-        clusterPositionGlobal[detector->name()] = new TH2F(name.c_str(), name.c_str(), 400, -10., 10., 400, -10., 10.);
+        clusterPositionGlobal[detector->name()] = new TH2F(name.c_str(),
+                                                           name.c_str(),
+                                                           400,
+                                                           -detector->size().X() / 1.5,
+                                                           detector->size().X() / 1.5,
+                                                           400,
+                                                           -detector->size().Y() / 1.5,
+                                                           detector->size().Y() / 1.5);
     }
 
     // Initialise member variables
