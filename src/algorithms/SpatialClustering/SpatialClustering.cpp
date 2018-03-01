@@ -19,12 +19,19 @@ SpatialClustering::SpatialClustering(Configuration config, std::vector<Detector*
 
 void SpatialClustering::initialise() {
 
-    // Initialise histograms per device
     for(auto& detector : get_detectors()) {
 
-        // Check if they are a Timepix1
-        if(detector->type() != "ATLASpix" && detector->type() != "Timepix1" && detector->type() != "CLICpix")
-            continue;
+        // Cluster plots
+        string name = "clusterSize_" + detector->name();
+        clusterSize[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
+        name = "clusterWidthRow_" + detector->name();
+        clusterWidthRow[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
+        name = "clusterWidthColumn_" + detector->name();
+        clusterWidthColumn[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
+        name = "clusterTot_" + detector->name();
+        clusterTot[detector->name()] = new TH1F(name.c_str(), name.c_str(), 10000, 0, 100000);
+        name = "clusterPositionGlobal_" + detector->name();
+        clusterPositionGlobal[detector->name()] = new TH2F(name.c_str(), name.c_str(), 400, -10., 10., 400, -10., 10.);
     }
 
     // Initialise member variables
@@ -36,10 +43,6 @@ StatusCode SpatialClustering::run(Clipboard* clipboard) {
     // Loop over all detectors of this algorithm:
     for(auto& detector : get_detectors()) {
         LOG(TRACE) << "Executing loop for detector " << detector->name();
-
-        // Check if they are a Timepix1
-        if(detector->type() != "ATLASpix" && detector->type() != "Timepix1" && detector->type() != "CLICpix")
-            continue;
 
         // Get the pixels
         Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
@@ -121,6 +124,14 @@ StatusCode SpatialClustering::run(Clipboard* clipboard) {
 
             // Finalise the cluster and save it
             calculateClusterCentre(detector, cluster);
+
+            // Fill cluster histograms
+            clusterSize[detector->name()]->Fill(cluster->size());
+            clusterWidthRow[detector->name()]->Fill(cluster->rowWidth());
+            clusterWidthColumn[detector->name()]->Fill(cluster->columnWidth());
+            clusterTot[detector->name()]->Fill(cluster->tot());
+            clusterPositionGlobal[detector->name()]->Fill(cluster->globalX(), cluster->globalY());
+
             deviceClusters->push_back(cluster);
         }
 
