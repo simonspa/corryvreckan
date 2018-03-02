@@ -7,7 +7,7 @@ using namespace corryvreckan;
 using namespace std;
 
 EUDAQEventLoader::EUDAQEventLoader(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)), m_longID(true), m_knownDetectors(true) {
+    : Algorithm(std::move(config), std::move(detectors)), m_longID(true) {
 
     m_filename = m_config.get<std::string>("file_name");
     m_longID = m_config.get<bool>("long_detector_id", true);
