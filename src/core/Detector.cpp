@@ -66,7 +66,7 @@ void Detector::processMaskFile() {
         std::string id;
         std::string line;
         // loop over all lines and apply masks
-        while(inputMaskFile >> id >> row >> col) {
+        while(inputMaskFile >> id >> col >> row) {
             if(id == "c") {
                 LOG(TRACE) << "Masking column " << col;
                 int nRows = nPixelsY();
