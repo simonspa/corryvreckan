@@ -1,4 +1,4 @@
-# - Try to find pxarCore used in native reader library for exporting RAW to pxarCore format needed for reconstruction
+# - Try to find the EUDAQ framework
 # Once done this will define
 #  EUDAQ_FOUND - System has EUDAQ
 #  EUDAQ_INCLUDE_DIR - The EUDAQ main include directories
