@@ -175,9 +175,6 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
     }
 
     // Save the tracks on the clipboard
-    nTracksTotal += tracks->size();
-    LOG_PROGRESS(STATUS, "spatial_tracking") << "Produced " << (int)nTracksTotal << " tracks";
-
     tracksPerEvent->Fill(tracks->size());
     if(tracks->size() > 0) {
         clipboard->put("tracks", (TestBeamObjects*)tracks);

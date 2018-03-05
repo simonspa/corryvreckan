@@ -9,7 +9,12 @@ This algorithm clusters the input data of a Timepix1, ATLASpix, or CLICpix devic
 No parameters are used from the configuration file.
 
 #### Plots produced
-No plots are produced.
+For each detector the following plots are produced:
+* Cluster size histogram
+* Cluster width (rows, in X) histogram
+* Cluster width (columns, in Y) histogram
+* Cluster ToT histogram
+* 2D cluster positions in global coordinates
 
 #### Usage
 ```toml
