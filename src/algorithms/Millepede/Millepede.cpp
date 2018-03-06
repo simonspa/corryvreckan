@@ -608,16 +608,6 @@ void Millepede::updateGeometry() {
 //=============================================================================
 bool Millepede::reset(const unsigned int nPlanes, const double startfact) {
 
-    LOG(INFO) << "                                           ";
-    LOG(INFO) << "            * o o                   o      ";
-    LOG(INFO) << "              o o                   o      ";
-    LOG(INFO) << "   o ooooo  o o o  oo  ooo   oo   ooo  oo  ";
-    LOG(INFO) << "    o  o  o o o o o  o o  o o  o o  o o  o ";
-    LOG(INFO) << "    o  o  o o o o oooo o  o oooo o  o oooo ";
-    LOG(INFO) << "    o  o  o o o o o    ooo  o    o  o o    ";
-    LOG(INFO) << "    o  o  o o o o  oo  o     oo   ooo  oo  ++ starts";
-    LOG(INFO) << "                                           ";
-
     // Reset the list of track equations.
     m_equations.clear();
     // Set the number of global derivatives.
@@ -806,17 +796,6 @@ bool Millepede::fitGlobal() {
 
     // Print the final results.
     printResults();
-
-    LOG(INFO);
-    LOG(INFO) << "            * o o                   o      ";
-    LOG(INFO) << "              o o                   o      ";
-    LOG(INFO) << "   o ooooo  o o o  oo  ooo   oo   ooo  oo  ";
-    LOG(INFO) << "    o  o  o o o o o  o o  o o  o o  o o  o ";
-    LOG(INFO) << "    o  o  o o o o oooo o  o oooo o  o oooo ";
-    LOG(INFO) << "    o  o  o o o o o    ooo  o    o  o o    ";
-    LOG(INFO) << "    o  o  o o o o  oo  o     oo   ooo  oo ++ ends.";
-    LOG(INFO) << "                       o                   ";
-    LOG(INFO);
     return true;
 }
 
@@ -1113,8 +1092,7 @@ bool Millepede::printResults() {
     LOG(INFO) << line;
     LOG(INFO) << " Result of fit for global parameters";
     LOG(INFO) << line;
-    LOG(INFO) << "   I    Difference    Last step      "
-              << "Error        Pull     Global corr.";
+    LOG(INFO) << "   I    Difference    Last step      Error        Pull     Global corr.";
     LOG(INFO) << line;
     for(unsigned int i = 0; i < m_nagb; ++i) {
         double err = sqrt(fabs(m_cgmat[i][i]));
