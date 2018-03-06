@@ -1098,11 +1098,11 @@ bool Millepede::multiplyAVAt(const std::vector<std::vector<double>>& v,
 // Print results
 //=============================================================================
 bool Millepede::printResults() {
-    const std::string line(71, '-');
+    const std::string line(65, '-');
     LOG(INFO) << line;
     LOG(INFO) << " Result of fit for global parameters";
     LOG(INFO) << line;
-    LOG(INFO) << "   I    Difference    Last step      Error        Pull     Global corr.";
+    LOG(INFO) << "   I  Difference    Last step      Error        Pull Global corr.";
     LOG(INFO) << line;
     for(unsigned int i = 0; i < m_nagb; ++i) {
         double err = sqrt(fabs(m_cgmat[i][i]));
@@ -1114,15 +1114,15 @@ bool Millepede::printResults() {
             // Calculate the global correlation coefficient
             // (correlation between the parameter and all the other variables).
             const double gcor = sqrt(fabs(1.0 - 1.0 / (m_cgmat[i][i] * m_diag[i])));
-            LOG(INFO) << std::setprecision(6) << std::fixed << std::setw(4) << i << "   " << std::setw(10) << m_dparm[i]
-                      << "   " << std::setw(10) << m_bgvec[i] << "   " << std::setw(10) << std::setprecision(5) << err
-                      << "   " << std::setw(10) << std::setprecision(5) << pull << "   " << std::setw(10) << gcor;
+            LOG(INFO) << std::setprecision(3) << std::scientific << std::setw(3) << i << "   " << std::setw(10) << m_dparm[i]
+                      << "   " << std::setw(10) << m_bgvec[i] << "   " << std::setw(8) << std::setprecision(2) << err
+                      << "   " << std::setw(9) << std::setprecision(2) << pull << "   " << std::setw(9) << gcor;
         } else {
-            LOG(INFO) << std::setw(4) << i << "   " << std::setw(10) << "OFF"
+            LOG(INFO) << std::setw(3) << i << "   " << std::setw(10) << "OFF"
                       << "   " << std::setw(10) << "OFF"
-                      << "   " << std::setw(10) << "OFF"
-                      << "   " << std::setw(10) << "OFF"
-                      << "   " << std::setw(10) << "OFF";
+                      << "   " << std::setw(8) << "OFF"
+                      << "   " << std::setw(9) << "OFF"
+                      << "   " << std::setw(9) << "OFF";
         }
         if((i + 1) % (m_nagb / 6) == 0)
             LOG(INFO) << line;
