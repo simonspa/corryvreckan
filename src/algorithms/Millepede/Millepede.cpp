@@ -128,7 +128,10 @@ void Millepede::finalise() {
         }
         // Do the global fit.
         LOG(INFO) << "Determining global parameters...";
-        fitGlobal();
+        if(!fitGlobal()) {
+            LOG(ERROR) << "Global fit failed.";
+            break;
+        }
         // Calculate the convergence metric (sum of misalignments).
         double converg = 0.;
         for(unsigned int i = 0; i < nParameters; ++i) {
@@ -665,6 +668,11 @@ bool Millepede::fitGlobal() {
     unsigned int iteration = 1;
     unsigned int nGoodTracks = nTracks;
     while(iteration <= nMaxIterations) {
+        if(nGoodTracks == 0) {
+            LOG(ERROR) << "No tracks to work with after outlier rejection.";
+            return false;
+        }
+
         LOG(INFO) << "Iteration " << iteration << " (using " << nGoodTracks << " tracks)";
 
         // Save the diagonal elements.
