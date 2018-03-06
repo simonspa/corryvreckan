@@ -1096,7 +1096,7 @@ bool Millepede::multiplyAVAt(const std::vector<std::vector<double>>& v,
 // Print results
 //=============================================================================
 bool Millepede::printResults() {
-    const std::string line(85, '-');
+    const std::string line(71, '-');
     LOG(INFO) << line;
     LOG(INFO) << " Result of fit for global parameters";
     LOG(INFO) << line;
@@ -1107,15 +1107,14 @@ bool Millepede::printResults() {
         if(m_cgmat[i][i] < 0.0)
             err = -err;
         if(fabs(m_cgmat[i][i] * m_diag[i]) > 0) {
-            LOG(INFO) << std::setprecision(6) << std::fixed;
             // Calculate the pull.
             const double pull = m_dparm[i] / sqrt(m_psigm[i] * m_psigm[i] - m_cgmat[i][i]);
             // Calculate the global correlation coefficient
             // (correlation between the parameter and all the other variables).
             const double gcor = sqrt(fabs(1.0 - 1.0 / (m_cgmat[i][i] * m_diag[i])));
-            LOG(INFO) << std::setw(4) << i << "   " << std::setw(10) << m_dparm[i] << "   " << std::setw(10) << m_bgvec[i]
-                      << "   " << std::setw(10) << std::setprecision(5) << err << "   " << std::setw(10)
-                      << std::setprecision(5) << pull << "   " << std::setw(10) << gcor;
+            LOG(INFO) << std::setprecision(6) << std::fixed << std::setw(4) << i << "   " << std::setw(10) << m_dparm[i]
+                      << "   " << std::setw(10) << m_bgvec[i] << "   " << std::setw(10) << std::setprecision(5) << err
+                      << "   " << std::setw(10) << std::setprecision(5) << pull << "   " << std::setw(10) << gcor;
         } else {
             LOG(INFO) << std::setw(4) << i << "   " << std::setw(10) << "OFF"
                       << "   " << std::setw(10) << "OFF"
