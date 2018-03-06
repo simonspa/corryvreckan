@@ -24,6 +24,11 @@ ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/TestBeamObject.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Track.h
     ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.h
+    LINKDEF
+    ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
+    OPTIONS
+    -inlineInputHeader
+    -I${CMAKE_CURRENT_SOURCE_DIR}
     MODULE
     CorryvreckanObjects
 )

@@ -78,6 +78,14 @@ namespace corryvreckan {
 
             return (*it);
         }
+        bool has_detector(std::string name) {
+            auto it =
+                find_if(m_detectors.begin(), m_detectors.end(), [&name](Detector* obj) { return obj->name() == name; });
+            if(it == m_detectors.end()) {
+                return false;
+            }
+            return true;
+        }
 
     private:
         std::vector<Detector*> m_detectors;
