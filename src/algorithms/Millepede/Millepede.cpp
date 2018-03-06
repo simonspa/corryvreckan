@@ -23,6 +23,8 @@ Millepede::Millepede(Configuration config, std::vector<Detector*> detectors)
     m_rescut_init = m_config.get<double>("residual_cut_init", 0.6);
     m_nstdev = m_config.get<double>("NStdDev", 0);
 
+    m_convergence = m_config.get<double>("convergence", 0.00001);
+
     // Use default values for the sigmas, unless specified explicitly.
     m_sigmas = m_config.getArray<double>("sigmas", {0.05, 0.05, 0.5, 0.005, 0.005, 0.005});
 }
@@ -153,7 +155,7 @@ void Millepede::finalise() {
                 cluster->setClusterCentre(pGlobal.x(), pGlobal.y(), pGlobal.z());
             }
         }
-        if(converg < 0.00001)
+        if(converg < m_convergence)
             break;
     }
 }

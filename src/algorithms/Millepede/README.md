@@ -7,6 +7,7 @@ This implementation of the Millepede algorithm has been taken from the [Kepler f
 
 The Millepede algorthm allows a simultaneous fit of both the tracks and the alignment constants.
 
+The algorithms stops if the convergence, i.e. the absolute sum of all corrections over the total number of parameters, is smaller than the configured value.
 
 #### Parameters
 * `number_of_tracks`: Number of tracks used in the alignment method chosen. Default value is `20000`.
@@ -16,6 +17,7 @@ The Millepede algorthm allows a simultaneous fit of both the tracks and the alig
 * `residual_cut_init`: Initial residual cut for outlier rejection in the first iteration. This value is applied for the first iteration and replaced by `residual_cut` thereafter. Default value is `0.6mm`.
 * `nstddev`: Cut to reject track candidates based on their Chi2/ndof value. Default value is `0`, i.e. the feature is disabled.
 * `sigmas`: Uncertainties for each of the alignment parameters. Defaults to `0.05, 0.05, 0.5, 0.005, 0.005, 0.005`.
+* `convergence`: Convergence value at which the algorithm stops iterating. Default value is `10e-5`.
 
 #### Plots produced
 No plots are produced.

@@ -144,6 +144,8 @@ namespace corryvreckan {
         double m_cfactref;
         // Number of standard deviations for chisquare / ndof cut.
         int m_nstdev;
+        // Value of convergence to interrupting iterations
+        double m_convergence;
         /// Number of "full" iterations (with geometry updates).
         unsigned int m_nIterations;
         /// Sigmas for each degree of freedom
