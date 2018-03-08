@@ -30,7 +30,7 @@ Using the appropriate parameter settings in the configuration file, plots using 
 * Residual in time vs time
 * 2D histogram of associated track global positions
 * 2D histogram of unassociated track global positions
-* Residual in X using MC truth information, only produced if `usingMCtruth = true`
+* Residual in X using MC truth information (two resolutions), only produced if `usingMCtruth = true`
 * Tracks vs time since power on, only produced in `digitalPowerPusling = true`
 * Associated tracks vs time since power on, only produced in `digitalPowerPusling = true`
 

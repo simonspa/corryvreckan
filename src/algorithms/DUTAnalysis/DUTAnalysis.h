@@ -26,6 +26,7 @@ namespace corryvreckan {
         TH1F* tracksVersusTime;
         TH1F* associatedTracksVersusTime;
         TH1F* residualsX;
+        TH1F* residualsXfine;
         TH1F* residualsX1pix;
         TH1F* residualsY;
         TH1F* clusterTotAssociated;
