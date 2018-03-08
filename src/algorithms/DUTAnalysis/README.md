@@ -10,7 +10,7 @@ Using the appropriate parameter settings in the configuration file, plots using 
 #### Parameters
 * `DUT`: Name of the DUT plane.
 * `useMCtruth`: Boolean to set if Monte-Carlo truth information is available and should be used. Default value is `false`.
-* `digitalPowerPusling`: Boolean to set if power pulsing was used and that this information should be used. Default value is `false`.
+* `digitalPowerPulsing`: Boolean to set if power pulsing was used and that this information should be used. Default value is `false`.
 * `timingCut`: maximum time difference between clusters to be taken into account. Default value is `200ns`.
 * `spatialCut`: maximum distance between cluster and track for the cluster to be taken into account. Default value is `200um`.
 * `chi2ndofCut`: maximum chi^2 ndof value allowed for tracks to be used; tracks with values above this will be excluded. Default value is `3.0`.
@@ -31,8 +31,8 @@ Using the appropriate parameter settings in the configuration file, plots using 
 * 2D histogram of associated track global positions
 * 2D histogram of unassociated track global positions
 * Residual in X using MC truth information (two resolutions), only produced if `usingMCtruth = true`
-* Tracks vs time since power on, only produced in `digitalPowerPusling = true`
-* Associated tracks vs time since power on, only produced in `digitalPowerPusling = true`
+* Tracks vs time since power on, only produced in `digitalPowerPulsing = true`
+* Associated tracks vs time since power on, only produced in `digitalPowerPulsing = true`
 
 #### Usage
 ```toml
