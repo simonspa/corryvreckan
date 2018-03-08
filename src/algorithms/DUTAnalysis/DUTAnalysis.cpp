@@ -13,6 +13,7 @@ DUTAnalysis::DUTAnalysis(Configuration config, std::vector<Detector*> detectors)
     m_DUT = m_config.get<std::string>("DUT");
     m_useMCtruth = m_config.get<bool>("useMCtruth", false);
     timingCut = m_config.get<double>("timingCut", Units::convert(200, "ns"));
+    spatialCut = m_config.get<double>("spatialCut", Units::convert(200, "um"));
     chi2ndofCut = m_config.get<double>("chi2ndofCut", 3.);
 }
 
@@ -69,9 +70,6 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
 
     //    if(clipboard->get_persistent("currentTime") < 13.5)
     //        return Success;
-
-    // Spatial cut
-    double spatialCut = 0.2; // 200 um
 
     // Track chi2/ndof cut
     // Power pulsing variable initialisation - get signals from SPIDR for this

@@ -59,7 +59,7 @@ namespace corryvreckan {
         long long int m_shutterOpenTime;
         long long int m_shutterCloseTime;
         bool m_digitalPowerPulsing;
-        double timingCut;
+        double timingCut, spatialCut;
         double chi2ndofCut;
     };
 } // namespace corryvreckan
