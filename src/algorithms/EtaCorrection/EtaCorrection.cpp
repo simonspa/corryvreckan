@@ -5,7 +5,6 @@ using namespace std;
 
 EtaCorrection::EtaCorrection(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
-    m_chi2ndofCut = m_config.get<double>("chi2ndofCut", 100.);
     m_etaFormulaX = m_config.get<std::string>("EtaFormulaX", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
     m_etaFormulaY = m_config.get<std::string>("EtaFormulaY", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
 }
@@ -44,7 +43,6 @@ void EtaCorrection::initialise() {
             m_correctY[detector->name()] = false;
         }
     }
-    m_eventNumber = 0;
 }
 
 void EtaCorrection::applyEta(Cluster* cluster, Detector* detector) {

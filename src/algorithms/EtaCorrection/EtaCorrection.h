@@ -33,8 +33,6 @@ namespace corryvreckan {
         void applyEta(Cluster* cluster, Detector* detector);
 
         // Member variables
-        int m_eventNumber;
-        double m_chi2ndofCut;
         std::string m_etaFormulaX;
         std::map<std::string, TF1*> m_etaCorrectorX;
         std::map<std::string, bool> m_correctX;
