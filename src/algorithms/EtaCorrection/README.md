@@ -9,7 +9,7 @@ This algorithm does not calculate the $`\eta`$ distribution.
 
 #### Parameters
 * `EtaFormulaX` / `EtaFormulaY`: The formula for the $`\eta`$ correction to be applied for the X an Y coordinate, respectively. It defaults to a polynomial of fifth ordern, i.e. `[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5`.
-* `EtaConstantsX_<detector>` / `EtaConstantsY_<detector>`: Vector of correction factors, representing the parameters of the above correction function, in X and Y coordinates, respectively. Defaults to an empty vector, i.e. by default no correction is applied. The `<detector>` part of the variabe has to be replaced with the respective unique name of the detector given in the setup file.
+* `EtaConstantsX_<detector>` / `EtaConstantsY_<detector>`: Vector of correction factors, representing the parameters of the above correction function, in X and Y coordinates, respectively. Defaults to an empty vector, i.e. by default no correction is applied. The `<detector>` part of the variable has to be replaced with the respective unique name of the detector given in the setup file.
 
 #### Plots produced
 Currently, no plots are produced. The result of the $`\eta`$-correction is best observed in residual distributions of the respective detector.
