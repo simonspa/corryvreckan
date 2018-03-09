@@ -12,8 +12,9 @@ EtaCalculation::EtaCalculation(Configuration config, std::vector<Detector*> dete
 
 void EtaCalculation::initialise() {
 
-    // Initialise histograms
     for(auto& detector : get_detectors()) {
+
+        // Initialise histograms
         double pitchX = detector->pitchX();
         double pitchY = detector->pitchY();
         string name = "etaDistributionX_" + detector->name();
@@ -24,6 +25,10 @@ void EtaCalculation::initialise() {
         m_etaDistributionXprofile[detector->name()] = new TProfile(name.c_str(), name.c_str(), 100., 0., pitchX, 0., pitchY);
         name = "etaDistributionYprofile_" + detector->name();
         m_etaDistributionYprofile[detector->name()] = new TProfile(name.c_str(), name.c_str(), 100., 0., pitchX, 0., pitchY);
+
+        // Prepare fit functions - we need them for every detector as they might have different pitches
+        m_etaFitX[detector->name()] = new TF1("etaFormulaX", m_etaFormulaX.c_str(), 0, detector->pitchX());
+        m_etaFitY[detector->name()] = new TF1("etaFormulaY", m_etaFormulaY.c_str(), 0, detector->pitchY());
     }
 }
 
@@ -91,4 +96,32 @@ StatusCode EtaCalculation::run(Clipboard* clipboard) {
 
     // Return value telling analysis to keep running
     return Success;
+}
+
+std::string EtaCalculation::fit(TF1* function, std::string fname, TProfile* profile) {
+    std::stringstream parameters;
+
+    // Get the eta distribution profiles and fit them to extract the correction parameters
+    profile->Fit(function, "q");
+    TF1* fit = profile->GetFunction(fname.c_str());
+
+    for(int i = 0; i < fit->GetNumberFreeParameters(); i++) {
+        parameters << " " << fit->GetParameter(i);
+    }
+    return parameters.str();
+}
+
+void EtaCalculation::finalise() {
+
+    std::stringstream config;
+    for(auto& detector : get_detectors()) {
+        config << std::endl
+               << "EtaConstantsX_" << detector->name() << " ="
+               << fit(m_etaFitX[detector->name()], "etaFormulaX", m_etaDistributionXprofile[detector->name()]);
+        config << std::endl
+               << "EtaConstantsY_" << detector->name() << " ="
+               << fit(m_etaFitY[detector->name()], "etaFormulaY", m_etaDistributionYprofile[detector->name()]);
+    }
+
+    LOG(INFO) << "Configuration for \"EtaCorrection\" algorithm:" << config.str();
 }

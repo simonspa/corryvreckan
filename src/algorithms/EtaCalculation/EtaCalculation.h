@@ -27,20 +27,19 @@ namespace corryvreckan {
         // Functions
         void initialise();
         StatusCode run(Clipboard* clipboard);
-        void finalise(){};
+        void finalise();
 
     private:
         ROOT::Math::XYVector pixelIntercept(Track* tr, Detector* det);
         void calculateEta(Track* track, Cluster* cluster);
+        std::string fit(TF1* function, std::string fname, TProfile* profile);
 
         // Member variables
         double m_chi2ndofCut;
         std::string m_etaFormulaX;
-        std::map<std::string, TF1*> m_etaCorrectorX;
-        std::map<std::string, bool> m_correctX;
+        std::map<std::string, TF1*> m_etaFitX;
         std::string m_etaFormulaY;
-        std::map<std::string, TF1*> m_etaCorrectorY;
-        std::map<std::string, bool> m_correctY;
+        std::map<std::string, TF1*> m_etaFitY;
 
         // Histograms
         std::map<std::string, TH2F*> m_etaDistributionX;
