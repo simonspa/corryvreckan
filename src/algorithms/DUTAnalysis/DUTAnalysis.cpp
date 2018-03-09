@@ -25,6 +25,7 @@ void DUTAnalysis::initialise() {
     residualsX = new TH1F("residualsX", "residualsX", 400, -0.2, 0.2);
     residualsXfine = new TH1F("residualsXfine", "residualsXfine", 400, -0.05, 0.05);
     residualsX1pix = new TH1F("residualsX1pix", "residualsX1pix", 400, -0.2, 0.2);
+    residualsX2pix = new TH1F("residualsX2pix", "residualsX2pix", 400, -0.2, 0.2);
     residualsY = new TH1F("residualsY", "residualsY", 400, -0.2, 0.2);
 
     clusterTotAssociated = new TH1F("clusterTotAssociated", "clusterTotAssociated", 2000, 0, 100000);
@@ -244,6 +245,8 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             residualsXfine->Fill(xdistance);
             if(cluster->size() == 1)
                 residualsX1pix->Fill(xdistance);
+            if(cluster->size() == 2)
+                residualsX2pix->Fill(xdistance);
             residualsY->Fill(ydistance);
             clusterTotAssociated->Fill(cluster->tot());
             clusterSizeAssociated->Fill(cluster->size());

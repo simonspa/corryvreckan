@@ -28,6 +28,7 @@ namespace corryvreckan {
         TH1F* residualsX;
         TH1F* residualsXfine;
         TH1F* residualsX1pix;
+        TH1F* residualsX2pix;
         TH1F* residualsY;
         TH1F* clusterTotAssociated;
         TH1F* clusterSizeAssociated;
