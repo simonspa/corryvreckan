@@ -1,0 +1,26 @@
+## EtaCalculation
+**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Status**: Under development  
+
+#### Description
+This algorithm calculates the $`\eta`$-distributions for two-pixel clusters of any detector in analysis by comparing the in-pixel track position and the calculated cluster centre position. Histograms for all available detectors are filled for both X and Y coordinate.
+
+In order to measure the correct $`\eta`$-distribution, no additional $`\eta`$-correction should be applied during this calculation, i.e. by using the EtaCorrection algorithm.
+
+Currently, no automatic fit is performed.
+
+#### Parameters
+* `chi2ndofCut`: Track quality cut on its Chi2 over numbers of degrees of freedom. Default value is `100`.
+* `EtaFormulaX` / `EtaFormulaY`: Formula to calculate the $`\eta`$-distribution from, defaults to a polynomial of fifth order, i.e. `[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5`. Currently unused.
+
+#### Plots produced
+For each detector the following plots are produced:
+* 2D histogram of the calculated $`\eta`$-distribution, for X and Y respectively
+* Profile plot of the calculated $`\eta`$-distribution, for X and Y respectively
+
+#### Usage
+```toml
+[EtaCalculation]
+chi2ndofCut = 100
+```
+Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
