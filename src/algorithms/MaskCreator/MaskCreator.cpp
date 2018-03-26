@@ -5,14 +5,27 @@
 using namespace corryvreckan;
 
 MaskCreator::MaskCreator(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Algorithm(std::move(config), std::move(detectors)), m_numEvents(0) {
+
+    m_method = m_config.get<std::string>("method", "frequency");
 
     m_frequency = m_config.get<double>("frequency_cut", 50);
+
+    binsOccupancy = m_config.get<int>("binsOccupancy", 128);
+    bandwidth = m_config.get<double>("density_bandwidth", 2.);
+    m_sigmaMax = m_config.get<double>("sigma_above_avg_max", 5.);
+    m_rateMax = m_config.get<double>("rate_max", 1.);
 }
 
 void MaskCreator::initialise() {
 
     for(auto& detector : get_detectors()) {
+        // adjust per-axis bandwith for pixel pitch along each axis such that the
+        // covered area is approximately circular in metric coordinates.
+        double scale = std::hypot(detector->pitchX(), detector->pitchY()) / M_SQRT2;
+        m_bandwidthCol[detector->name()] = std::ceil(bandwidth * scale / detector->pitchX());
+        m_bandwidthRow[detector->name()] = std::ceil(bandwidth * scale / detector->pitchY());
+
         std::string name = "maskmap_" + detector->name();
         maskmap[detector->name()] = new TH2F(name.c_str(),
                                              name.c_str(),
@@ -22,6 +35,7 @@ void MaskCreator::initialise() {
                                              detector->nPixelsY(),
                                              0,
                                              detector->nPixelsY());
+
         name = "occupancy_" + detector->name();
         m_occupancy[detector->name()] = new TH2D(name.c_str(),
                                                  name.c_str(),
@@ -31,6 +45,32 @@ void MaskCreator::initialise() {
                                                  detector->nPixelsY(),
                                                  0,
                                                  detector->nPixelsY());
+
+        name = "occupancy_dist_" + detector->name();
+        m_occupancyDist[detector->name()] = new TH1D(name.c_str(), name.c_str(), binsOccupancy, 0, 1);
+
+        name = "density_" + detector->name();
+        m_density[detector->name()] = new TH2D(name.c_str(),
+                                               name.c_str(),
+                                               detector->nPixelsX(),
+                                               0,
+                                               detector->nPixelsX(),
+                                               detector->nPixelsY(),
+                                               0,
+                                               detector->nPixelsY());
+
+        name = "local_significance_" + detector->name();
+        m_significance[detector->name()] = new TH2D(name.c_str(),
+                                                    name.c_str(),
+                                                    detector->nPixelsX(),
+                                                    0,
+                                                    detector->nPixelsX(),
+                                                    detector->nPixelsY(),
+                                                    0,
+                                                    detector->nPixelsY());
+
+        name = "local_significance_dist_" + detector->name();
+        m_significanceDist[detector->name()] = new TH1D(name.c_str(), name.c_str(), binsOccupancy, 0, 1);
     }
 }
 
@@ -54,20 +94,78 @@ StatusCode MaskCreator::run(Clipboard* clipboard) {
             m_occupancy[detector->name()]->Fill(pixel->m_column, pixel->m_row);
         }
     }
-
+    m_numEvents++;
     return Success;
 }
 
 void MaskCreator::finalise() {
 
-    // Use global frequency filter to detect noisy pixels:
-    globalFrequencyFilter();
+    if(m_method == "localdensity") {
+        LOG(STATUS) << "Using local density estimator";
+        // Reject noisy pixels based on local density estimator:
+        localDensityEstimator();
+    } else {
+        LOG(STATUS) << "Using global frequency filter";
+        // Use global frequency filter to detect noisy pixels:
+        globalFrequencyFilter();
+    }
 
     // Write updated files out:
     writeMaskFiles();
 }
 
-void MaskCreator::localDensityEstimator() {}
+void MaskCreator::localDensityEstimator() {
+
+    // Loop through all registered detectors
+    for(auto& detector : get_detectors()) {
+
+        estimateDensity(m_occupancy[detector->name()],
+                        m_bandwidthCol[detector->name()],
+                        m_bandwidthRow[detector->name()],
+                        m_density[detector->name()]);
+        // calculate local signifance, i.e. (hits - density) / sqrt(density)
+        for(int icol = 1; icol <= m_occupancy[detector->name()]->GetNbinsX(); ++icol) {
+            for(int irow = 1; irow <= m_occupancy[detector->name()]->GetNbinsY(); ++irow) {
+                auto val = m_occupancy[detector->name()]->GetBinContent(icol, irow);
+                auto den = m_density[detector->name()]->GetBinContent(icol, irow);
+                auto sig = (val - den) / std::sqrt(den);
+                m_significance[detector->name()]->SetBinContent(icol, irow, sig);
+            }
+        }
+        m_significance[detector->name()]->ResetStats();
+        m_significance[detector->name()]->SetEntries(m_occupancy[detector->name()]->GetEntries());
+
+        // rescale hit counts to occupancy
+        m_occupancy[detector->name()]->Sumw2();
+        m_occupancy[detector->name()]->Scale(1.0 / m_numEvents);
+        m_density[detector->name()]->Scale(1.0 / m_numEvents);
+
+        // fill per-pixel distributions
+        fillDist(m_occupancy[detector->name()], m_occupancyDist[detector->name()]);
+        fillDist(m_significance[detector->name()], m_significanceDist[detector->name()]);
+
+        // select noisy pixels
+        for(int icol = 1; icol <= m_significance[detector->name()]->GetNbinsX(); ++icol) {
+            for(int irow = 1; irow <= m_significance[detector->name()]->GetNbinsY(); ++irow) {
+                auto sig = m_significance[detector->name()]->GetBinContent(icol, irow);
+                auto rate = m_occupancy[detector->name()]->GetBinContent(icol, irow);
+                // pixel occupancy is a number of stddevs above local average
+                bool isAboveRelative = (m_sigmaMax < sig);
+                // pixel occupancy is above absolute limit
+                bool isAboveAbsolute = (m_rateMax < rate);
+                if(isAboveRelative || isAboveAbsolute) {
+                    maskmap[detector->name()]->SetBinContent(icol, irow, 1);
+                }
+            }
+        }
+
+        LOG(INFO) << "Detector " << detector->name() << ":";
+        LOG(INFO) << "  cut relative: local mean + " << m_sigmaMax << " * local sigma";
+        LOG(INFO) << "  cut absolute: " << m_rateMax << " hits/pixel/event";
+        LOG(INFO) << "  max occupancy: " << m_occupancy[detector->name()]->GetMaximum() << " hits/pixel/event";
+        LOG(INFO) << "  noisy pixels: " << maskmap[detector->name()]->GetEntries();
+    }
+}
 
 void MaskCreator::globalFrequencyFilter() {
 
@@ -179,4 +277,16 @@ void MaskCreator::estimateDensity(const TH2D* values, int bandwidthX, int bandwi
     }
     density->ResetStats();
     density->SetEntries(values->GetEntries());
+}
+
+void MaskCreator::fillDist(const TH2D* values, TH1D* dist) {
+    // ensure all values are binned
+    dist->SetBins(dist->GetNbinsX(), values->GetMinimum(), std::nextafter(values->GetMaximum(), values->GetMaximum() + 1));
+    for(int icol = 1; icol <= values->GetNbinsX(); ++icol) {
+        for(int irow = 1; irow <= values->GetNbinsY(); ++irow) {
+            auto value = values->GetBinContent(icol, irow);
+            if(std::isfinite(value))
+                dist->Fill(value);
+        }
+    }
 }

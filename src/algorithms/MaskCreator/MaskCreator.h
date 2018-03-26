@@ -43,8 +43,20 @@ namespace corryvreckan {
 
         // Member variables
         std::map<std::string, TH2D*> m_occupancy;
+        std::map<std::string, TH1D*> m_occupancyDist;
+        std::map<std::string, TH2D*> m_density;
+        std::map<std::string, TH2D*> m_significance;
+        std::map<std::string, TH1D*> m_significanceDist;
+
         std::map<std::string, TH2F*> maskmap;
-        double m_frequency;
+
+        std::string m_method;
+        double m_frequency, bandwidth;
+        std::map<std::string, double> m_bandwidthCol, m_bandwidthRow;
+        double m_sigmaMax, m_rateMax;
+        int m_numEvents, binsOccupancy;
+
+        static inline void fillDist(const TH2D* values, TH1D* dist);
     };
 } // namespace corryvreckan
 #endif // MASKCREATOR_H
