@@ -13,6 +13,7 @@ DUTAnalysis::DUTAnalysis(Configuration config, std::vector<Detector*> detectors)
     m_DUT = m_config.get<std::string>("DUT");
     m_useMCtruth = m_config.get<bool>("useMCtruth", false);
     timingCut = m_config.get<double>("timingCut", Units::convert(200, "ns"));
+    spatialCut = m_config.get<double>("spatialCut", Units::convert(200, "um"));
     chi2ndofCut = m_config.get<double>("chi2ndofCut", 3.);
 }
 
@@ -22,10 +23,12 @@ void DUTAnalysis::initialise() {
     tracksVersusTime = new TH1F("tracksVersusTime", "tracksVersusTime", 300000, 0, 300);
     associatedTracksVersusTime = new TH1F("associatedTracksVersusTime", "associatedTracksVersusTime", 300000, 0, 300);
     residualsX = new TH1F("residualsX", "residualsX", 400, -0.2, 0.2);
+    residualsXfine = new TH1F("residualsXfine", "residualsXfine", 400, -0.05, 0.05);
     residualsX1pix = new TH1F("residualsX1pix", "residualsX1pix", 400, -0.2, 0.2);
+    residualsX2pix = new TH1F("residualsX2pix", "residualsX2pix", 400, -0.2, 0.2);
     residualsY = new TH1F("residualsY", "residualsY", 400, -0.2, 0.2);
 
-    clusterTotAssociated = new TH1F("clusterTotAssociated", "clusterTotAssociated", 20000, 0, 100000);
+    clusterTotAssociated = new TH1F("clusterTotAssociated", "clusterTotAssociated", 2000, 0, 100000);
     clusterSizeAssociated = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
     clusterSizeAssociated_X = new TH1F("clusterSizeAssociated_X", "clusterSizeAssociated_X", 30, 0, 30);
     clusterSizeAssociated_Y = new TH1F("clusterSizeAssociated_Y", "clusterSizeAssociated_Y", 30, 0, 30);
@@ -69,9 +72,6 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
 
     //    if(clipboard->get_persistent("currentTime") < 13.5)
     //        return Success;
-
-    // Spatial cut
-    double spatialCut = 0.2; // 200 um
 
     // Track chi2/ndof cut
     // Power pulsing variable initialisation - get signals from SPIDR for this
@@ -242,8 +242,11 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             LOG(TRACE) << "Found associated cluster";
             associatedTracksVersusTime->Fill(Units::convert(track->timestamp(), "s"));
             residualsX->Fill(xdistance);
+            residualsXfine->Fill(xdistance);
             if(cluster->size() == 1)
                 residualsX1pix->Fill(xdistance);
+            if(cluster->size() == 2)
+                residualsX2pix->Fill(xdistance);
             residualsY->Fill(ydistance);
             clusterTotAssociated->Fill(cluster->tot());
             clusterSizeAssociated->Fill(cluster->size());
@@ -271,9 +274,10 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
                         particlePosition.SetXYZ(centre.X(), centre.Y(), centre.Z());
                     }
                 }
-                residualsXMCtruth->Fill(cluster->localX() + 7.04 - particlePosition.X());
+                auto detector = get_detector(cluster->detectorID());
+                residualsXMCtruth->Fill(cluster->localX() + detector->size().X() / 2 - particlePosition.X());
                 auto interceptLocal = *(detector->globalToLocal()) * intercept;
-                telescopeResolution->Fill(interceptLocal.X() + 7.04 - particlePosition.X());
+                telescopeResolution->Fill(interceptLocal.X() + detector->size().X() / 2 - particlePosition.X());
             }
 
             // Fill power pulsing response

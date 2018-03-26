@@ -2,6 +2,9 @@
 #define SpatialClustering_H 1
 
 #include <iostream>
+#include "TCanvas.h"
+#include "TH1F.h"
+#include "TH2F.h"
 #include "core/algorithm/Algorithm.h"
 #include "objects/Cluster.h"
 
@@ -21,6 +24,14 @@ namespace corryvreckan {
         void finalise();
 
         void calculateClusterCentre(Detector* detector, Cluster*);
+
+    private:
+        // Cluster histograms
+        std::map<std::string, TH1F*> clusterSize;
+        std::map<std::string, TH1F*> clusterWidthRow;
+        std::map<std::string, TH1F*> clusterWidthColumn;
+        std::map<std::string, TH1F*> clusterTot;
+        std::map<std::string, TH2F*> clusterPositionGlobal;
 
         // Member variables
         int m_eventNumber;

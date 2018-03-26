@@ -16,141 +16,142 @@
 
 */
 
-using namespace corryvreckan;
+namespace corryvreckan {
 
-class KDTree : public TestBeamObject {
+    class KDTree : public TestBeamObject {
 
-public:
-    // Constructors and destructors
-    KDTree() {
-        timeKdtree = NULL;
-        positionKdtree = NULL;
-    }
-    ~KDTree() {
-        delete timeKdtree;
-        delete positionKdtree;
-    }
-
-    // Build a tree sorted by cluster times
-    void buildTimeTree(Clusters inputClusters) {
-
-        // Store the vector of cluster pointers
-        clusters = inputClusters;
-
-        // Create the data for the ROOT KDTree
-        int npoints = clusters.size();
-        times = new double[npoints];
-
-        // Fill the timing data from the clusters
-        for(int cluster = 0; cluster < npoints; cluster++) {
-            times[cluster] = clusters[cluster]->timestamp();
-            iteratorNumber[clusters[cluster]] = cluster;
+    public:
+        // Constructors and destructors
+        KDTree() {
+            timeKdtree = NULL;
+            positionKdtree = NULL;
+        }
+        ~KDTree() {
+            delete timeKdtree;
+            delete positionKdtree;
         }
 
-        // Place the data into the tree and build the structure
-        timeKdtree = new TKDTreeID(npoints, 1, 1);
-        timeKdtree->SetData(0, times);
-        timeKdtree->Build();
-        timeKdtree->SetOwner(kTRUE);
-    }
+        // Build a tree sorted by cluster times
+        void buildTimeTree(Clusters inputClusters) {
 
-    // Build a tree sorted by cluster xy positions
-    void buildSpatialTree(Clusters inputClusters) {
+            // Store the vector of cluster pointers
+            clusters = inputClusters;
 
-        // Store the vector of cluster pointers
-        clusters = inputClusters;
+            // Create the data for the ROOT KDTree
+            int npoints = clusters.size();
+            times = new double[npoints];
 
-        // Create the data for the ROOT KDTree
-        int npoints = clusters.size();
-        xpositions = new double[npoints];
-        ypositions = new double[npoints];
+            // Fill the timing data from the clusters
+            for(int cluster = 0; cluster < npoints; cluster++) {
+                times[cluster] = clusters[cluster]->timestamp();
+                iteratorNumber[clusters[cluster]] = cluster;
+            }
 
-        // Fill the x and y data from the clusters
-        for(int cluster = 0; cluster < npoints; cluster++) {
-            xpositions[cluster] = clusters[cluster]->globalX();
-            ypositions[cluster] = clusters[cluster]->globalY();
-            iteratorNumber[clusters[cluster]] = cluster;
+            // Place the data into the tree and build the structure
+            timeKdtree = new TKDTreeID(npoints, 1, 1);
+            timeKdtree->SetData(0, times);
+            timeKdtree->Build();
+            timeKdtree->SetOwner(kTRUE);
         }
 
-        // Place the data into the tree and build the structure
-        positionKdtree = new TKDTreeID(npoints, 2, 1);
-        positionKdtree->SetData(0, xpositions);
-        positionKdtree->SetData(1, ypositions);
-        positionKdtree->Build();
-        positionKdtree->SetOwner(kTRUE);
-    }
+        // Build a tree sorted by cluster xy positions
+        void buildSpatialTree(Clusters inputClusters) {
 
-    // Function to get back all clusters within a given time period
-    Clusters getAllClustersInTimeWindow(Cluster* cluster, double timeWindow) {
+            // Store the vector of cluster pointers
+            clusters = inputClusters;
 
-        LOG(TRACE) << "Getting all clusters in time window " << Units::display(timeWindow, {"ns", "us", "s"});
-        // Find out which iterator number this cluster corresponds to
-        //    int iterator = iteratorNumber[cluster];
+            // Create the data for the ROOT KDTree
+            int npoints = clusters.size();
+            xpositions = new double[npoints];
+            ypositions = new double[npoints];
 
-        // Get iterators of all clusters within the time window
-        std::vector<int> results;
+            // Fill the x and y data from the clusters
+            for(int cluster = 0; cluster < npoints; cluster++) {
+                xpositions[cluster] = clusters[cluster]->globalX();
+                ypositions[cluster] = clusters[cluster]->globalY();
+                iteratorNumber[clusters[cluster]] = cluster;
+            }
 
-        double time = cluster->timestamp();
-        timeKdtree->FindInRange(&time, timeWindow, results);
+            // Place the data into the tree and build the structure
+            positionKdtree = new TKDTreeID(npoints, 2, 1);
+            positionKdtree->SetData(0, xpositions);
+            positionKdtree->SetData(1, ypositions);
+            positionKdtree->Build();
+            positionKdtree->SetOwner(kTRUE);
+        }
 
-        LOG(TRACE) << " -- found: " << results.size();
+        // Function to get back all clusters within a given time period
+        Clusters getAllClustersInTimeWindow(Cluster* cluster, double timeWindow) {
 
-        // Turn this into a vector of clusters
-        Clusters resultClusters;
-        //    delete time;
-        for(int res = 0; res < results.size(); res++)
-            resultClusters.push_back(clusters[results[res]]);
+            LOG(TRACE) << "Getting all clusters in time window " << Units::display(timeWindow, {"ns", "us", "s"});
+            // Find out which iterator number this cluster corresponds to
+            //    int iterator = iteratorNumber[cluster];
 
-        // Return the vector of clusters
-        return resultClusters;
-    }
+            // Get iterators of all clusters within the time window
+            std::vector<int> results;
 
-    // Function to get back all clusters within a given spatial window
-    Clusters getAllClustersInWindow(Cluster* cluster, double window) {
+            double time = cluster->timestamp();
+            timeKdtree->FindInRange(&time, timeWindow, results);
 
-        // Get iterators of all clusters within the time window
-        std::vector<int> results;
-        double* position;
-        position[0] = cluster->globalX();
-        position[1] = cluster->globalY();
-        positionKdtree->FindInRange(position, window, results);
+            LOG(TRACE) << " -- found: " << results.size();
 
-        // Turn this into a vector of clusters
-        Clusters resultClusters;
-        for(int res = 0; res < results.size(); res++)
-            resultClusters.push_back(clusters[results[res]]);
+            // Turn this into a vector of clusters
+            Clusters resultClusters;
+            //    delete time;
+            for(int res = 0; res < results.size(); res++)
+                resultClusters.push_back(clusters[results[res]]);
 
-        // Return the vector of clusters
-        return resultClusters;
-    }
+            // Return the vector of clusters
+            return resultClusters;
+        }
 
-    // Function to get back the nearest cluster in space
-    Cluster* getClosestNeighbour(Cluster* cluster) {
+        // Function to get back all clusters within a given spatial window
+        Clusters getAllClustersInWindow(Cluster* cluster, double window) {
 
-        // Get the closest cluster to this one
-        int result;
-        double distance;
-        double position[2];
-        position[0] = cluster->globalX();
-        position[1] = cluster->globalY();
-        positionKdtree->FindNearestNeighbors(position, 1, &result, &distance);
+            // Get iterators of all clusters within the time window
+            std::vector<int> results;
+            double* position;
+            position[0] = cluster->globalX();
+            position[1] = cluster->globalY();
+            positionKdtree->FindInRange(position, window, results);
 
-        // Return the cluster
-        return clusters[result];
-    }
+            // Turn this into a vector of clusters
+            Clusters resultClusters;
+            for(int res = 0; res < results.size(); res++)
+                resultClusters.push_back(clusters[results[res]]);
 
-    // Member variables
-    double* xpositions; //!
-    double* ypositions; //!
-    double* times;      //!
-    TKDTreeID* positionKdtree;
-    TKDTreeID* timeKdtree;
-    Clusters clusters;
-    std::map<Cluster*, int> iteratorNumber;
+            // Return the vector of clusters
+            return resultClusters;
+        }
 
-    // ROOT I/O class definition - update version number when you change this
-    // class!
-    ClassDef(KDTree, 2)
-};
+        // Function to get back the nearest cluster in space
+        Cluster* getClosestNeighbour(Cluster* cluster) {
+
+            // Get the closest cluster to this one
+            int result;
+            double distance;
+            double position[2];
+            position[0] = cluster->globalX();
+            position[1] = cluster->globalY();
+            positionKdtree->FindNearestNeighbors(position, 1, &result, &distance);
+
+            // Return the cluster
+            return clusters[result];
+        }
+
+        // Member variables
+        double* xpositions; //!
+        double* ypositions; //!
+        double* times;      //!
+        TKDTreeID* positionKdtree;
+        TKDTreeID* timeKdtree;
+        Clusters clusters;
+        std::map<Cluster*, int> iteratorNumber;
+
+        // ROOT I/O class definition - update version number when you change this
+        // class!
+        ClassDef(KDTree, 2)
+    };
+} // namespace corryvreckan
 
 #endif // KDTREE__H

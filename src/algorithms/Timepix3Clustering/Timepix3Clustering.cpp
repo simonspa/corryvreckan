@@ -213,7 +213,8 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
     cluster->setRow(row);
     cluster->setColumn(column);
     cluster->setTot(tot);
-    cluster->setError(0.005657);
+    cluster->setErrorX(0.004);
+    cluster->setErrorY(0.004);
     cluster->setTimestamp(timestamp);
     cluster->setDetectorID(detectorID);
     cluster->setClusterCentre(positionGlobal.X(), positionGlobal.Y(), positionGlobal.Z());

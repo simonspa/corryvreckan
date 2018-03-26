@@ -27,27 +27,18 @@ namespace corryvreckan {
         // Functions
         void initialise();
         StatusCode run(Clipboard* clipboard);
-        void finalise();
+        void finalise(){};
+
+    private:
+        void applyEta(Cluster* cluster, Detector* detector);
 
         // Member variables
-        std::string m_DUT;
-        int m_eventNumber;
-        double m_chi2ndofCut;
-        Detector* m_detector;
         std::string m_etaFormulaX;
-        std::vector<double> m_etaConstantsX;
-        TF1* m_etaCorrectorX;
+        std::map<std::string, TF1*> m_etaCorrectorX;
+        std::map<std::string, bool> m_correctX;
         std::string m_etaFormulaY;
-        std::vector<double> m_etaConstantsY;
-        TF1* m_etaCorrectorY;
-
-        // Histograms
-        TH2F* m_etaDistributionX;
-        TH2F* m_etaDistributionY;
-        TProfile* m_etaDistributionXprofile;
-        TProfile* m_etaDistributionYprofile;
-        TH2F* m_etaDistributionXcorrected;
-        TH2F* m_etaDistributionYcorrected;
+        std::map<std::string, TF1*> m_etaCorrectorY;
+        std::map<std::string, bool> m_correctY;
     };
 } // namespace corryvreckan
 #endif // EtaCorrection_H

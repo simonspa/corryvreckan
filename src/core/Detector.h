@@ -34,8 +34,6 @@ namespace corryvreckan {
         Detector() = delete;
         Detector(const Configuration& config);
         ~Detector() {
-            delete m_translations;
-            delete m_rotations;
             delete m_localToGlobal;
             delete m_globalToLocal;
         }
@@ -46,6 +44,7 @@ namespace corryvreckan {
 
         Configuration getConfiguration();
 
+        ROOT::Math::XYVector size() { return ROOT::Math::XYVector(m_pitch.X() * m_nPixelsX, m_pitch.Y() * m_nPixelsY); }
         double pitchX() { return m_pitch.X(); }
         double pitchY() { return m_pitch.Y(); }
         int nPixelsX() { return m_nPixelsX; }
@@ -125,10 +124,6 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint m_displacement;
         ROOT::Math::XYZVector m_orientation;
         std::string m_orientation_mode;
-
-        // Rotation and translation objects
-        Translation3D* m_translations;
-        Rotation3D* m_rotations;
 
         // Transforms from local to global and back
         Transform3D* m_localToGlobal;
