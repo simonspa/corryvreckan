@@ -22,6 +22,15 @@ void MaskCreator::initialise() {
                                              detector->nPixelsY(),
                                              0,
                                              detector->nPixelsY());
+        name = "occupancy_" + detector->name();
+        m_occupancy[detector->name()] = new TH2D(name.c_str(),
+                                                 name.c_str(),
+                                                 detector->nPixelsX(),
+                                                 0,
+                                                 detector->nPixelsX(),
+                                                 detector->nPixelsY(),
+                                                 0,
+                                                 detector->nPixelsY());
     }
 }
 
@@ -42,8 +51,7 @@ StatusCode MaskCreator::run(Clipboard* clipboard) {
             Pixel* pixel = (*pixels)[iP];
 
             // Enter another pixel hit for this channel
-            int channelID = pixel->m_row + detector->nPixelsY() * pixel->m_column;
-            pixelhits[detector->name()][channelID]++;
+            m_occupancy[detector->name()]->Fill(pixel->m_column, pixel->m_row);
         }
     }
 
@@ -64,10 +72,9 @@ void MaskCreator::finalise() {
 
         // Calculate what the mean number of hits was
         double meanHits = 0;
-        for(int col = 0; col < detector->nPixelsX(); col++) {
-            for(int row = 0; row < detector->nPixelsY(); row++) {
-                int channelID = row + detector->nPixelsY() * col;
-                meanHits += pixelhits[detector->name()][channelID];
+        for(int col = 1; col <= m_occupancy[detector->name()]->GetNbinsX(); col++) {
+            for(int row = 1; row <= m_occupancy[detector->name()]->GetNbinsY(); row++) {
+                meanHits += m_occupancy[detector->name()]->GetBinContent(col, row);
             }
         }
         meanHits /= (detector->nPixelsX() * detector->nPixelsY());
@@ -80,16 +87,15 @@ void MaskCreator::finalise() {
         int masked = 0, new_masked = 0;
         for(int col = 0; col < detector->nPixelsX(); col++) {
             for(int row = 0; row < detector->nPixelsY(); row++) {
-                int channelID = row + detector->nPixelsY() * col;
                 if(detector->masked(col, row)) {
                     LOG(DEBUG) << "Found existing mask for pixel " << col << "," << row << ", keeping.";
                     maskfile << "p\t" << col << "\t" << row << std::endl;
                     maskmap[detector->name()]->Fill(col, row);
                     masked++;
-                } else if(pixelhits[detector->name()][channelID] > m_frequency * meanHits) {
+                } else if(m_occupancy[detector->name()]->GetBinContent(col + 1, row + 1) > m_frequency * meanHits) {
                     maskfile << "p\t" << col << "\t" << row << std::endl;
                     LOG(DEBUG) << "Masking pixel " << col << "," << row << " on detector " << detector->name() << " with "
-                               << pixelhits[detector->name()][channelID] << " counts";
+                               << m_occupancy[detector->name()]->GetBinContent(col + 1, row + 1) << " counts";
                     maskmap[detector->name()]->Fill(col, row);
                     new_masked++;
                 }

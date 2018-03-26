@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include "TCanvas.h"
-#include "TH2F.h"
+#include "TH2D.h"
 #include "core/algorithm/Algorithm.h"
 #include "objects/Pixel.h"
 
@@ -23,7 +23,7 @@ namespace corryvreckan {
         void finalise();
 
         // Member variables
-        std::map<std::string, std::map<int, int>> pixelhits;
+        std::map<std::string, TH2D*> m_occupancy;
         std::map<std::string, TH2F*> maskmap;
         double m_frequency;
     };
