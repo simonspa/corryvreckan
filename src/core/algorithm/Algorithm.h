@@ -69,6 +69,7 @@ namespace corryvreckan {
         Configuration m_config;
 
         std::vector<Detector*> get_detectors() { return m_detectors; };
+        std::size_t num_detectors() { return m_detectors.size(); };
         Detector* get_detector(std::string name) {
             auto it =
                 find_if(m_detectors.begin(), m_detectors.end(), [&name](Detector* obj) { return obj->name() == name; });

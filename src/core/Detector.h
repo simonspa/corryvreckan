@@ -71,6 +71,8 @@ namespace corryvreckan {
         ROOT::Math::XYZVector rotation() { return m_orientation; }
         void rotation(ROOT::Math::XYZVector rotation) { m_orientation = rotation; }
 
+        PositionVector3D<Cartesian3D<double>> normal() { return m_normal; };
+
         // Functions to set and check channel masking
         void setMaskFile(std::string file);
         void processMaskFile();

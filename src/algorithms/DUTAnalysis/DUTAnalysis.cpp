@@ -99,7 +99,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             if(signal->type() == "shutterOpen") {
                 // There may be multiple power on/off in 1 time window. At the moment,
                 // take earliest if within 1ms
-                if(abs(Units::convert(signal->timestamp() - m_shutterOpenTime, "s")) < 0.001) {
+                if(std::abs(Units::convert(signal->timestamp() - m_shutterOpenTime, "s")) < 0.001) {
                     continue;
                 }
                 m_shutterOpenTime = signal->timestamp();
@@ -108,7 +108,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             if(signal->type() == "shutterClosed") {
                 // There may be multiple power on/off in 1 time window. At the moment,
                 // take earliest if within 1ms
-                if(abs(Units::convert(signal->timestamp() - m_shutterCloseTime, "s")) < 0.001) {
+                if(std::abs(Units::convert(signal->timestamp() - m_shutterCloseTime, "s")) < 0.001) {
                     continue;
                 }
                 m_shutterCloseTime = signal->timestamp();
@@ -197,7 +197,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             Cluster* cluster = (*clusters)[itCluster];
 
             // Check if the cluster is close in time
-            // if( abs(cluster->timestamp() - track->timestamp()) > timingCut)
+            // if( std::abs(cluster->timestamp() - track->timestamp()) > timingCut)
             //    continue;
 
             // Check distance between track and cluster
@@ -225,16 +225,16 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
                 clusterToTVersusTime->Fill(Units::convert(cluster->timestamp(), "ns"), cluster->tot());
 
             // Check if the cluster is close in time
-            if(!m_digitalPowerPulsing && abs(cluster->timestamp() - track->timestamp()) > timingCut)
+            if(!m_digitalPowerPulsing && std::abs(cluster->timestamp() - track->timestamp()) > timingCut)
                 continue;
 
             // Check distance between track and cluster
             ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
             double xdistance = intercept.X() - cluster->globalX();
             double ydistance = intercept.Y() - cluster->globalY();
-            if(abs(xdistance) > spatialCut)
+            if(std::abs(xdistance) > spatialCut)
                 continue;
-            if(abs(ydistance) > spatialCut)
+            if(std::abs(ydistance) > spatialCut)
                 continue;
 
             // We now have an associated cluster! Fill plots
