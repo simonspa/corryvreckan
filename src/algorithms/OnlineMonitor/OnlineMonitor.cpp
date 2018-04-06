@@ -60,7 +60,7 @@ void OnlineMonitor::initialise() {
         string hitmap = "/corryvreckan/TestAlgorithm/hitmap_" + detectorID;
         AddHisto("HitmapCanvas", hitmap, "colz");
 
-        string chargeHisto = "/corryvreckan/TestAlgorithm/clusterTot_" + detectorID;
+        string chargeHisto = "/corryvreckan/Timepix3Clustering/clusterTot_" + detectorID;
         AddHisto("ChargeDistributionCanvas", chargeHisto);
 
         string eventTimeHisto = "/corryvreckan/TestAlgorithm/eventTimes_" + detectorID;
