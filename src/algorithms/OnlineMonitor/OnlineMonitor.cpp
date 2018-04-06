@@ -98,6 +98,10 @@ void OnlineMonitor::initialise() {
         gui->Display("OverviewCanvas");
     }
 
+    gui->canvas->GetCanvas()->Paint();
+    gui->canvas->GetCanvas()->Update();
+    gSystem->ProcessEvents();
+
     // Initialise member variables
     eventNumber = 0;
 }
