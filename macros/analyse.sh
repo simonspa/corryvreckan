@@ -1,30 +1,17 @@
 #!/bin/bash
-
-# Where the code is and which run to analyse
-TBCODE=..
+CORRY=/home/telescope/corryvreckan
 RUN=${1}
- 
-# Set up the arguments to be passed to the testbeam code
-CONDFILE=${TBCODE}/cond/Alignment${RUN}.dat
-HISTOFILE=${TBCODE}/histos/histogramsRun${RUN}test.root
-INPUTFILE=${TBCODE}/pixels/pixelsRun${RUN}.root
-INPUTFOLDER=${TBCODE}/example/Run${RUN}
-EVENTTIME=0.0005
-NEVENTS=-1
+ALIGNMENT=27834
 
-# If the alignment file for this run does not exist, get it from the DB
-if [ ! -f ${CONDFILE} ] 
-then
-  while read run align dut thl angle
-  do
-    if [ "$run" == "$RUN" ]
-    then
-      CONDFILE=${TBCODE}/cond/Alignment${align}.dat
-      echo New cond file is ${CONDFILE}
-    fi
-  done <<< "$(grep ${RUN} runListAngledHVCMOS.dat)"
-fi
+# Set up the arguments to be passed to Corryvreckan
+CONDFILE=${CORRY}/cond/Alignment${ALIGNMENT}.dat
+HISTOGRAMFILE=${CORRY}/macros/histograms.root
+INPUTDIR_TPX=/data/tbSeptember2017/data/Run${RUN}
+INPUTDIR_CPX=/data/tbSeptember2017/clicpix2/Run${RUN}
 
-# Launch the testbeam analysis and replace the original alignment file with the new one
-#${TBCODE}/bin/tbAnalysis -c ${CONDFILE} -n ${NEVENTS} -h ${HISTOFILE} -t ${INPUTFILE} -s ${TBCODE}/masks/maskedPixels11044.dat
-${TBCODE}/bin/tbAnalysis -c ${CONDFILE} -h ${HISTOFILE} -d ${INPUTFOLDER} -p ${EVENTTIME} -g
+${CORRY}/bin/corry -c telescope.conf \
+                   -o detectors_file=${CONDFILE} \
+		   -o histogramFile=${HISTOGRAMFILE} \
+                   -o Timepix3EventLoader.inputDirectory=${INPUTDIR_TPX} \
+                   -o Clicpix2EventLoader.inputDirectory=${INPUTDIR_CPX}
+
