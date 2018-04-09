@@ -626,19 +626,19 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
 
             // Ignore pixel data if it is before the "currentTime" read from the clipboard storage:
             if(temporalSplit && (timestamp < clipboard->get_persistent("currentTime"))) {
-                LOG(WARNING) << "Skipping pixel, is before event window (" << Units::display(timestamp, {"s", "us", "ns"})
-                             << " < " << Units::display(clipboard->get_persistent("currentTime"), {"s", "us", "ns"}) << ")";
+                LOG(TRACE) << "Skipping pixel, is before event window (" << Units::display(timestamp, {"s", "us", "ns"})
+                           << " < " << Units::display(clipboard->get_persistent("currentTime"), {"s", "us", "ns"}) << ")";
                 continue;
             }
 
             // Stop looking at data if the pixel is after the current event window
             // (and rewind the file reader so that we start with this pixel next event)
             if(temporalSplit && (timestamp > (clipboard->get_persistent("currentTime") + m_eventLength))) {
-                LOG(WARNING) << "Stopping processing event, pixel is after "
-                                "event window ("
-                             << Units::display(timestamp, {"s", "us", "ns"}) << " > "
-                             << Units::display(clipboard->get_persistent("currentTime") + m_eventLength, {"s", "us", "ns"})
-                             << ")";
+                LOG(DEBUG) << "Stopping processing event, pixel is after "
+                              "event window ("
+                           << Units::display(timestamp, {"s", "us", "ns"}) << " > "
+                           << Units::display(clipboard->get_persistent("currentTime") + m_eventLength, {"s", "us", "ns"})
+                           << ")";
                 (*m_file_iterator[detectorID])->seekg(-1 * sizeof(pixdata), std::ios_base::cur);
                 break;
             }
