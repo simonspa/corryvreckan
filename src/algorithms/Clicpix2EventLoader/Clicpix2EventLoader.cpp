@@ -14,10 +14,13 @@ Clicpix2EventLoader::Clicpix2EventLoader(Configuration config, std::vector<Detec
 
 void Clicpix2EventLoader::initialise() {
 
-    // File structure is RunX/CLICpix2/data.csv
-
+  auto det = get_detector(m_config.get<std::string>("DUT"));
+  if(det->type() != "CLICpix2") {
+    LOG(ERROR) << "DUT not of type CLICpix2";
+  }
+  
     // Take input directory from global parameters
-    string inputDirectory = m_config.get<std::string>("inputDirectory") + "/CLICpix2";
+    string inputDirectory = m_config.get<std::string>("inputDirectory");
 
     // Open the root directory
     DIR* directory = opendir(inputDirectory.c_str());
@@ -33,6 +36,7 @@ void Clicpix2EventLoader::initialise() {
         // Check for the data file
         string filename = inputDirectory + "/" + entry->d_name;
         if(filename.find(".raw") != string::npos) {
+            LOG(INFO) << "Found file " << filename;
             m_filename = filename;
             LOG(INFO) << "Found data file: " << m_filename;
         }
@@ -145,6 +149,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
             char guff;
             int frameNumber;
             header >> guff >> frameNumber >> guff;
+	    LOG(DEBUG) << "Found header, frame number = " << frameNumber;
             continue;
         }
 
@@ -164,6 +169,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
             int value;
             long long int time;
             timestamp >> value >> colon >> time;
+	    LOG(DEBUG) << "Found timestamp: " << time;
             if(value == 3) {
                 shutterOpen = true;
                 shutterStartTimeInt = time;

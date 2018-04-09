@@ -78,12 +78,14 @@ void Timepix3EventLoader::initialise() {
             // Check if this device has conditions loaded and is a Timepix3
             Detector* detector;
             try {
+  	        LOG(DEBUG) << "Fetching detector with ID \"" << detectorID << "\"";
                 detector = get_detector(detectorID);
             } catch(AlgorithmError& e) {
                 LOG(WARNING) << e.what();
                 continue;
             }
 
+	    LOG(DEBUG) << "Detector is of type \"" << detector->type() << "\"";
             if(detector->type() != "Timepix3") {
                 LOG(WARNING) << "Device with detector ID " << entry->d_name << " is not of type Timepix3.";
                 continue;
@@ -116,6 +118,10 @@ void Timepix3EventLoader::initialise() {
     // Check that we have files for every detector in the configuration file and sort them correctly:
     for(auto& detector : get_detectors()) {
         std::string detectorID = detector->name();
+
+	if(detector->type() != "Timepix3") {
+	  continue;
+	}
 
         if(detector_files.count(detector->name()) == 0) {
             LOG(ERROR) << "No data file found for detector " << detector->name();
