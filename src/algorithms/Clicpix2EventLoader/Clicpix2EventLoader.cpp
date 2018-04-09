@@ -32,7 +32,7 @@ void Clicpix2EventLoader::initialise() {
     while(entry = readdir(directory)) {
         // Check for the data file
         string filename = inputDirectory + "/" + entry->d_name;
-        if(filename.find(".csv") != string::npos) {
+        if(filename.find(".raw") != string::npos) {
             m_filename = filename;
             LOG(INFO) << "Found data file: " << m_filename;
         }
