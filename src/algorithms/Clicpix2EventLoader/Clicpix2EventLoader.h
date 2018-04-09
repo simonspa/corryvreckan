@@ -15,6 +15,9 @@
 #include "objects/Pixel.h"
 #include "objects/Track.h"
 
+#include "clicpix2_frameDecoder.hpp"
+#include "clicpix2_pixels.hpp"
+
 namespace corryvreckan {
     /** @ingroup Algorithms
      */
@@ -30,15 +33,22 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
+    private:
+        std::map<std::pair<uint8_t, uint8_t>, caribou::pixelConfig> matrix_config;
+
         // Histograms for several devices
         std::map<std::string, TH2F*> plotPerDevice;
 
         // Single histograms
         TH1F* singlePlot;
 
+        bool comp, sp_comp;
+        caribou::clicpix2_frameDecoder* decoder;
+
         // Member variables
         int m_eventNumber;
         std::string m_filename;
+        std::string m_matrix;
         std::ifstream m_file;
 
         TH2F* hHitMap;

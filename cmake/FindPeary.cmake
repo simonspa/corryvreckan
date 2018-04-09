@@ -1,0 +1,25 @@
+# - Try to find the PEARY framework
+# Once done this will define
+#  PEARY_FOUND - System has PEARY
+#  PEARY_INCLUDE_DIR - The PEARY main include directories
+#  PEARY_LIBRARY - The libraries needed to use PEARY
+
+MESSAGE(STATUS "Looking for PEARY...")
+
+FIND_PATH(PEARY_INCLUDE_DIR NAMES "devices/clicpix2/clicpix2.hpp" PATHS "$ENV{PEARYPATH}")
+IF(PEARY_INCLUDE_DIR)
+   SET(PEARY_INC_FOUND TRUE)
+   MESSAGE(STATUS "Found PEARY headers: ${PEARY_INCLUDE_DIR}")
+ENDIF()
+
+FIND_LIBRARY(PEARY_LIBRARY NAMES "CLICpix2" HINTS "$ENV{PEARYPATH}/lib")
+IF(PEARY_LIBRARY)
+   SET(PEARY_LIB_FOUND TRUE)
+   MESSAGE(STATUS "Found PEARY library: ${PEARY_LIBRARY}")
+ENDIF()
+
+IF(PEARY_LIB_FOUND AND PEARY_INC_FOUND)
+   SET(PEARY_FOUND TRUE)
+ENDIF()
+
+mark_as_advanced(PEARY_LIBRARY PEARY_INCLUDE_DIR)
