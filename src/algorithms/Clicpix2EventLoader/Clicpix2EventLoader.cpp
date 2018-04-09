@@ -129,8 +129,6 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
         return Failure;
     }
 
-    // Otherwise load a new frame
-
     // Pixel container, shutter information
     Pixels* pixels = new Pixels();
     long long int shutterStartTimeInt, shutterStopTimeInt;
@@ -145,25 +143,15 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
 
         // Check if this is a header
         if(data.find("=====") != string::npos) {
-            istringstream header(data);
-            char guff;
+	    std::istringstream header(data);
+	    std::string guff;
             int frameNumber;
             header >> guff >> frameNumber >> guff;
-	    LOG(DEBUG) << "Found header, frame number = " << frameNumber;
-            continue;
-        }
-
-        // If we are at the end of a frame then the next character will be a "="
-        char c = m_file.peek();
-        if(strcmp(&c, "=") == 0) {
-            LOG(DEBUG) << "End of frame found";
+	    LOG(DEBUG) << "Found next header, frame number = " << frameNumber;
             break;
         }
-
-        // Otherwise load data
-
         // If there is a colon, then this is a timestamp
-        if(data.find(":") != string::npos) {
+        else if(data.find(":") != string::npos) {
             istringstream timestamp(data);
             char colon;
             int value;
@@ -177,14 +165,14 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
                 shutterOpen = false;
                 shutterStopTimeInt = time;
             }
-            continue;
-        }
-
-        // Otherwise pixel data
-        rawData.push_back(atoi(data.c_str()));
+        } else {
+	  // Otherwise pixel data
+	  rawData.push_back(atoi(data.c_str()));
+	}
     }
 
     try {
+        LOG(DEBUG) << "Decoding data frame...";
         decoder->decode(rawData);
         pearydata data = decoder->getZerosuppressedFrame();
 
@@ -210,17 +198,21 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
     } catch(caribou::DataException& e) {
         LOG(ERROR) << "Caugth DataException: " << e.what() << ", clearing event data.";
     }
-
+    LOG(DEBUG) << "Finished decoding, storing " << pixels->size() << " pixels";
+    
     // Now set the event time so that the Timepix3 data is loaded correctly, unit is nanoseconds
     shutterStartTime = shutterStartTimeInt / 0.04;
     shutterStopTime = shutterStopTimeInt / 0.04;
 
+    // Store current frame time and the length of the event:
+    LOG(DEBUG) << "Event time: " << Units::display(shutterStartTime, {"ns", "us", "s"}) << ", length: " << Units::display((shutterStopTime - shutterStartTime), {"ns", "us", "s"});
     clipboard->put_persistent("currentTime", shutterStartTime);
-    m_config.set<double>("eventLength", (shutterStopTime - shutterStartTime));
+    clipboard->put_persistent("eventLength", (shutterStopTime - shutterStartTime));
 
     // Put the data on the clipboard
-    if(pixels->size() > 0)
-        clipboard->put(detectorID, "pixels", (TestBeamObjects*)pixels);
+    if(!pixels->empty()) {
+      clipboard->put(detectorID, "pixels", (TestBeamObjects*)pixels);
+    }
 
     // Fill histograms
     hPixelsPerFrame->Fill(npixels);
