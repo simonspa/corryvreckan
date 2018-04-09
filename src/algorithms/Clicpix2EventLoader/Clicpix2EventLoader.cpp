@@ -201,8 +201,9 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
     LOG(DEBUG) << "Finished decoding, storing " << pixels->size() << " pixels";
     
     // Now set the event time so that the Timepix3 data is loaded correctly, unit is nanoseconds
-    shutterStartTime = shutterStartTimeInt / 0.04;
-    shutterStopTime = shutterStopTimeInt / 0.04;
+    // NOTE FPGA clock is always on 100MHz from CaR oscillator, same as chip
+    shutterStartTime = shutterStartTimeInt / 0.1;
+    shutterStopTime = shutterStopTimeInt / 0.1;
 
     // Store current frame time and the length of the event:
     LOG(DEBUG) << "Event time: " << Units::display(shutterStartTime, {"ns", "us", "s"}) << ", length: " << Units::display((shutterStopTime - shutterStartTime), {"ns", "us", "s"});
