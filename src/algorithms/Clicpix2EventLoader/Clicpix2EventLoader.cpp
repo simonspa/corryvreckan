@@ -14,11 +14,11 @@ Clicpix2EventLoader::Clicpix2EventLoader(Configuration config, std::vector<Detec
 
 void Clicpix2EventLoader::initialise() {
 
-  auto det = get_detector(m_config.get<std::string>("DUT"));
-  if(det->type() != "CLICpix2") {
-    LOG(ERROR) << "DUT not of type CLICpix2";
-  }
-  
+    auto det = get_detector(m_config.get<std::string>("DUT"));
+    if(det->type() != "CLICpix2") {
+        LOG(ERROR) << "DUT not of type CLICpix2";
+    }
+
     // Take input directory from global parameters
     string inputDirectory = m_config.get<std::string>("inputDirectory");
 
@@ -143,11 +143,11 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
 
         // Check if this is a header
         if(data.find("=====") != string::npos) {
-	    std::istringstream header(data);
-	    std::string guff;
+            std::istringstream header(data);
+            std::string guff;
             int frameNumber;
             header >> guff >> frameNumber >> guff;
-	    LOG(DEBUG) << "Found next header, frame number = " << frameNumber;
+            LOG(DEBUG) << "Found next header, frame number = " << frameNumber;
             break;
         }
         // If there is a colon, then this is a timestamp
@@ -157,7 +157,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
             int value;
             long long int time;
             timestamp >> value >> colon >> time;
-	    LOG(DEBUG) << "Found timestamp: " << time;
+            LOG(DEBUG) << "Found timestamp: " << time;
             if(value == 3) {
                 shutterOpen = true;
                 shutterStartTimeInt = time;
@@ -166,10 +166,15 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
                 shutterStopTimeInt = time;
             }
         } else {
-	  // Otherwise pixel data
-	  rawData.push_back(atoi(data.c_str()));
-	}
+            // Otherwise pixel data
+            rawData.push_back(atoi(data.c_str()));
+        }
     }
+
+    // Now set the event time so that the Timepix3 data is loaded correctly, unit is nanoseconds
+    // NOTE FPGA clock is always on 100MHz from CaR oscillator, same as chip
+    shutterStartTime = shutterStartTimeInt / 0.1;
+    shutterStopTime = shutterStopTimeInt / 0.1;
 
     try {
         LOG(DEBUG) << "Decoding data frame...";
@@ -189,7 +194,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
             }
 
             // FIXME TOA is missing...
-            Pixel* pixel = new Pixel(detectorID, row, col, tot, 0);
+            Pixel* pixel = new Pixel(detectorID, row, col, tot, shutterStartTime);
             pixels->push_back(pixel);
             npixels++;
             hHitMap->Fill(col, row);
@@ -199,20 +204,16 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
         LOG(ERROR) << "Caugth DataException: " << e.what() << ", clearing event data.";
     }
     LOG(DEBUG) << "Finished decoding, storing " << pixels->size() << " pixels";
-    
-    // Now set the event time so that the Timepix3 data is loaded correctly, unit is nanoseconds
-    // NOTE FPGA clock is always on 100MHz from CaR oscillator, same as chip
-    shutterStartTime = shutterStartTimeInt / 0.1;
-    shutterStopTime = shutterStopTimeInt / 0.1;
 
     // Store current frame time and the length of the event:
-    LOG(DEBUG) << "Event time: " << Units::display(shutterStartTime, {"ns", "us", "s"}) << ", length: " << Units::display((shutterStopTime - shutterStartTime), {"ns", "us", "s"});
+    LOG(DEBUG) << "Event time: " << Units::display(shutterStartTime, {"ns", "us", "s"})
+               << ", length: " << Units::display((shutterStopTime - shutterStartTime), {"ns", "us", "s"});
     clipboard->put_persistent("currentTime", shutterStartTime);
     clipboard->put_persistent("eventLength", (shutterStopTime - shutterStartTime));
 
     // Put the data on the clipboard
     if(!pixels->empty()) {
-      clipboard->put(detectorID, "pixels", (TestBeamObjects*)pixels);
+        clipboard->put(detectorID, "pixels", (TestBeamObjects*)pixels);
     }
 
     // Fill histograms
