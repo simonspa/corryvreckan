@@ -8,6 +8,7 @@ This algorithm performs track finding using only positional information (no timi
 
 #### Parameters
 * `spatialCut`: Cut on the maximum distance between the track and cluster for them to be considered associated. Default value is `200um`.
+* `spatialCutDUT`: Cut on the maximum distance between the track and cluster for them to be considered associated for the DUT. Default value is `200um`.
 * `minHitsOnTrack`: The minimum number of planes with clusters associated to a track for it to be stored. Default value is `6`.
 * `excludeDUT`: Boolean to set if the DUT should be included in the track fitting. Default value is `true`.
 * `DUT`: Name of the DUT plane.
