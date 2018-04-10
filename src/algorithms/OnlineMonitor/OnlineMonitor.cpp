@@ -60,7 +60,7 @@ void OnlineMonitor::initialise() {
         string hitmap = "/corryvreckan/TestAlgorithm/hitmap_" + detectorID;
         AddHisto("HitmapCanvas", hitmap, "colz");
 
-        string chargeHisto = "/corryvreckan/TestAlgorithm/clusterTot_" + detectorID;
+        string chargeHisto = "/corryvreckan/Timepix3Clustering/clusterTot_" + detectorID;
         AddHisto("ChargeDistributionCanvas", chargeHisto);
 
         string eventTimeHisto = "/corryvreckan/TestAlgorithm/eventTimes_" + detectorID;
@@ -82,7 +82,7 @@ void OnlineMonitor::initialise() {
     string exitButton = "StopMonitoring";
     gui->buttons[exitButton] = new TGTextButton(gui->buttonMenu, exitButton.c_str());
     gui->buttonMenu->AddFrame(gui->buttons[exitButton], new TGLayoutHints(kLHintsLeft, 10, 10, 10, 10));
-    gui->buttons[exitButton]->Connect("Pressed()", "GuiDisplay", gui, "Exit()");
+    gui->buttons[exitButton]->Connect("Pressed()", "corryvreckan::GuiDisplay", gui, "Exit()");
 
     // Main frame resizing
     gui->m_mainFrame->AddFrame(gui->buttonMenu, new TGLayoutHints(kLHintsLeft, 10, 10, 10, 10));
@@ -97,6 +97,10 @@ void OnlineMonitor::initialise() {
     if(gui->histograms["OverviewCanvas"].size() != 0) {
         gui->Display("OverviewCanvas");
     }
+
+    gui->canvas->GetCanvas()->Paint();
+    gui->canvas->GetCanvas()->Update();
+    gSystem->ProcessEvents();
 
     // Initialise member variables
     eventNumber = 0;
@@ -143,5 +147,5 @@ void OnlineMonitor::AddButton(string buttonName, string canvasName) {
     gui->buttonMenu->AddFrame(gui->buttons[buttonName], new TGLayoutHints(kLHintsLeft, 10, 10, 10, 10));
     string command = "Display(=\"" + canvasName + "\")";
     LOG(INFO) << "Connecting button with command " << command.c_str();
-    gui->buttons[buttonName]->Connect("Pressed()", "GuiDisplay", gui, command.c_str());
+    gui->buttons[buttonName]->Connect("Pressed()", "corryvreckan::GuiDisplay", gui, command.c_str());
 }

@@ -75,7 +75,7 @@ namespace corryvreckan {
         };
 
         // Exit the monitoring
-        inline void Exit() { raise(SIGQUIT); }
+        inline void Exit() { raise(SIGINT); }
 
         // ROOT I/O class definition - update version number when you change this
         // class!
