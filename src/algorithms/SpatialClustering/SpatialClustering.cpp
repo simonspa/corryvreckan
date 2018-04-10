@@ -86,7 +86,7 @@ StatusCode SpatialClustering::run(Clipboard* clipboard) {
             // New pixel => new cluster
             Cluster* cluster = new Cluster();
             cluster->addPixel(pixel);
-	    cluster->setTimestamp(pixel->timestamp());
+            cluster->setTimestamp(pixel->timestamp());
             used[pixel] = true;
             addedPixel = true;
             // Somewhere to store found neighbours
