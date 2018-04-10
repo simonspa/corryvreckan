@@ -10,6 +10,7 @@ BasicTracking::BasicTracking(Configuration config, std::vector<Detector*> detect
 
     // Default values for cuts
     timingCut = m_config.get<double>("timingCut", Units::convert(200, "ns"));
+    timingCut_DUT = m_config.get<double>("timingCutDUT", Units::convert(200, "ns"));
     spatialCut = m_config.get<double>("spatialCut", Units::convert(0.2, "mm"));
     spatialCut_DUT = m_config.get<double>("spatialCutDUT", Units::convert(0.2, "mm"));
     minHitsOnTrack = m_config.get<int>("minHitsOnTrack", 6);
@@ -122,7 +123,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
             // Check if the DUT should be excluded and obey:
             if(excludeDUT && detectorID == m_config.get<std::string>("DUT")) {
                 // Keep all DUT clusters, so we can add them as associated clusters later:
-                dutClusters = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut);
+                dutClusters = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut_DUT);
                 continue;
             }
             if(detectorID == seedPlane)

@@ -48,6 +48,7 @@ namespace corryvreckan {
 
         // Cuts for tracking
         double timingCut;
+        double timingCut_DUT;
         double spatialCut;
         double spatialCut_DUT;
         int minHitsOnTrack;
