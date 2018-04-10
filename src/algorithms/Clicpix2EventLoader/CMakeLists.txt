@@ -6,7 +6,8 @@ CORRYVRECKAN_ALGORITHM(ALGORITHM_NAME)
 # Geant4 is required for geometry description and charge deposition.
 FIND_PACKAGE(Peary)
 IF(NOT PEARY_FOUND)
-    MESSAGE(FATAL_ERROR "Could not find peary.")
+    MESSAGE(FATAL_ERROR "Could not find Peary, make sure to set the path to your installation using\n"
+    "$ export PEARYPATH=/your/path/to/Peary")
 ENDIF()
 
 # Add source files to library
