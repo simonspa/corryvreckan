@@ -47,6 +47,7 @@ namespace corryvreckan {
         // Member variables
         int eventNumber;
         int updateNumber;
+        std::string canvasTitle;
     };
 } // namespace corryvreckan
 #endif // OnlineMonitor_H

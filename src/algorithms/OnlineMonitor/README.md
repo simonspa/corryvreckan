@@ -9,6 +9,8 @@ Users should be able to exit `OnlineMonitor` and leave the reconstruction still 
 
 #### Parameters
 * `reference`: Name of the reference plane.
+* `update`: Number of events after which to update, defaults to `500`.
+* `canvasTitle`: Title of the canvas window to be shown, defaults to `Corryvreckan Testbeam Monitor`.
 
 #### Plots produced
 Overview canvas:
@@ -26,6 +28,8 @@ For each detector the following plots are produced:
 * Event times canvas: event times histogram
 * Correlations X canvas: correlation in X plot
 * Correlations Y canvas: correlation in Y plot
+* 2D Correlations X canvas: 2D correlation in X plot
+* 2D Correlations Y canvas: 2D correlation in Y plot
 * Charge distributions canvas: cluster ToT - broken at the moment
 
 #### Usage

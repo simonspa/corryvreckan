@@ -6,7 +6,9 @@ using namespace std;
 
 OnlineMonitor::OnlineMonitor(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
-    updateNumber = 500;
+    canvasTitle = m_config.get<std::string>("canvasTitle", "Corryvreckan Testbeam Monitor");
+    updateNumber = m_config.get<int>("update", 500);
+    ;
 }
 
 void OnlineMonitor::initialise() {
@@ -94,7 +96,7 @@ void OnlineMonitor::initialise() {
 
     // Main frame resizing
     gui->m_mainFrame->AddFrame(gui->buttonMenu, new TGLayoutHints(kLHintsLeft, 10, 10, 10, 10));
-    gui->m_mainFrame->SetWindowName("Corryvreckan Testbeam Monitor");
+    gui->m_mainFrame->SetWindowName(canvasTitle.c_str());
     gui->m_mainFrame->MapSubwindows();
     gui->m_mainFrame->Resize(gui->m_mainFrame->GetDefaultSize());
 
