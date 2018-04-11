@@ -10,7 +10,10 @@ using namespace caribou;
 using namespace clicpix2_utils;
 
 Clicpix2EventLoader::Clicpix2EventLoader(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {}
+    : Algorithm(std::move(config), std::move(detectors)) {
+
+    discardZeroToT = m_config.get<bool>("discardZeroToT", false);
+}
 
 void Clicpix2EventLoader::initialise() {
 
@@ -111,6 +114,9 @@ void Clicpix2EventLoader::initialise() {
 
     // Make histograms for debugging
     hHitMap = new TH2F("hitMap", "hitMap", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
+    hHitMapDiscarded = new TH2F(
+        "hitMapDiscarded", "hitMapDiscarded", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
+
     hPixelToT = new TH1F("pixelToT", "pixelToT", 32, 0, 31);
     hPixelToA = new TH1F("pixelToA", "pixelToA", 8192, 0, 8191);
     hPixelCnt = new TH1F("pixelCnt", "pixelCnt", 8192, 0, 8191);
@@ -195,7 +201,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
             }
 
             // Disentangle data types from pixel:
-            int tot, toa, cnt;
+            int tot = -1, toa = -1, cnt = -1;
 
             // ToT will throw if longcounter is enabled:
             try {
@@ -214,9 +220,14 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
             }
 
             Pixel* pixel = new Pixel(detectorID, row, col, tot, shutterStartTime);
-            pixels->push_back(pixel);
-            npixels++;
-            hHitMap->Fill(col, row);
+
+            if(tot == 0 && discardZeroToT) {
+                hHitMapDiscarded->Fill(col, row);
+            } else {
+                pixels->push_back(pixel);
+                npixels++;
+                hHitMap->Fill(col, row);
+            }
         }
     } catch(caribou::DataException& e) {
         LOG(ERROR) << "Caugth DataException: " << e.what() << ", clearing event data.";

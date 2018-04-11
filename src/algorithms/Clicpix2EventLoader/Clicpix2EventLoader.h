@@ -52,10 +52,13 @@ namespace corryvreckan {
         std::ifstream m_file;
 
         TH2F* hHitMap;
+        TH2F* hHitMapDiscarded;
         TH1F* hPixelToT;
         TH1F* hPixelToA;
         TH1F* hPixelCnt;
         TH1F* hPixelsPerFrame;
+
+        bool discardZeroToT;
     };
 } // namespace corryvreckan
 #endif // Clicpix2EventLoader_H
