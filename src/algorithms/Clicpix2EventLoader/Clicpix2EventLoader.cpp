@@ -201,13 +201,15 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
             }
 
             // Disentangle data types from pixel:
-            int tot = -1, toa = -1, cnt = -1;
+            int tot, toa = -1, cnt = -1;
 
             // ToT will throw if longcounter is enabled:
             try {
                 tot = cp2_pixel->GetTOT();
                 hPixelToT->Fill(tot);
             } catch(caribou::WrongDataFormat&) {
+                // Set ToT to one of not defined.
+                tot = 1;
             }
 
             // Decide whether information is counter of ToA
