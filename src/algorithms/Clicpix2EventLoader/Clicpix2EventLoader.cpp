@@ -111,7 +111,7 @@ void Clicpix2EventLoader::initialise() {
 
     // Make histograms for debugging
     hHitMap = new TH2F("hitMap", "hitMap", 128, 0, 128, 128, 0, 128);
-    hPixelToT = new TH1F("pixelToT", "pixelToT", 100, 0, 100);
+    hPixelToT = new TH1F("pixelToT", "pixelToT", 32, 0, 31);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 1000, 0, 1000);
 
     // Initialise member variables
