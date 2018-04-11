@@ -26,12 +26,14 @@ void ClicpixAnalysis::initialise() {
     m_eventNumber = 0;
     m_triggerNumber = 0;
     dutID = m_config.get<std::string>("DUT");
+    auto det = get_detector(dutID);
     m_lostHits = 0.;
 
     // Cluster/pixel histograms
-    hHitPixels = new TH2F("hHitPixels", "hHitPixels", 64, 0, 64, 64, 0, 64);
-    hColumnHits = new TH1F("hColumnHits", "hColumnHits", 64, 0, 64);
-    hRowHits = new TH1F("hRowHits", "hRowHits", 64, 0, 64);
+    hHitPixels =
+        new TH2F("hHitPixels", "hHitPixels", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
+    hColumnHits = new TH1F("hColumnHits", "hColumnHits", det->nPixelsX(), 0, det->nPixelsX());
+    hRowHits = new TH1F("hRowHits", "hRowHits", det->nPixelsY(), 0, det->nPixelsY());
 
     hClusterSizeAll = new TH1F("hClusterSizeAll", "hClusterSizeAll", 20, 0, 20);
     hClusterTOTAll = new TH1F("hClusterTOTAll", "hClusterTOTAll", 50, 0, 50);
@@ -80,8 +82,9 @@ void ClicpixAnalysis::initialise() {
         new TH1F("hAssociatedClustersVersusEventNo", "hAssociatedClustersVersusEventNo", 60000, 0, 60000);
     hAssociatedClustersVersusTriggerNo =
         new TH1F("hAssociatedClustersVersusTriggerNo", "hAssociatedClustersVersusTriggerNo", 50, 0, 50);
-    hAssociatedClusterRow = new TH1F("hAssociatedClusterRow", "hAssociatedClusterRow", 64, 0, 64);
-    hAssociatedClusterColumn = new TH1F("hAssociatedClusterColumn", "hAssociatedClusterColumn", 64, 0, 64);
+    hAssociatedClusterRow = new TH1F("hAssociatedClusterRow", "hAssociatedClusterRow", det->nPixelsY(), 0, det->nPixelsY());
+    hAssociatedClusterColumn =
+        new TH1F("hAssociatedClusterColumn", "hAssociatedClusterColumn", det->nPixelsX(), 0, det->nPixelsX());
     hFrameEfficiency = new TH1F("hFrameEfficiency", "hFrameEfficiency", 6000, 0, 6000);
     hFrameTracks = new TH1F("hFrameTracks", "hFrameTracks", 6000, 0, 6000);
     hFrameTracksAssociated = new TH1F("hFrameTracksAssociated", "hFrameTracksAssociated", 6000, 0, 6000);
@@ -128,16 +131,48 @@ void ClicpixAnalysis::initialise() {
     hTrackInterceptsPixel = new TH2F("hTrackInterceptsPixel", "hTrackInterceptsPixel", 50, 0, 50, 25, 0, 25);
     hTrackInterceptsPixelAssociated =
         new TH2F("hTrackInterceptsPixelAssociated", "hTrackInterceptsPixelAssociated", 50, 0, 50, 25, 0, 25);
-    hTrackInterceptsChip = new TH2F("hTrackInterceptsChip", "hTrackInterceptsChip", 65, -0.5, 64.5, 65, -0.5, 64.5);
-    hTrackInterceptsChipAssociated =
-        new TH2F("hTrackInterceptsChipAssociated", "hTrackInterceptsChipAssociated", 65, -0.5, 64.5, 65, -0.5, 64.5);
-    hTrackInterceptsChipUnassociated =
-        new TH2F("hTrackInterceptsChipUnassociated", "hTrackInterceptsChipUnassociated", 65, -0.5, 64.5, 65, -0.5, 64.5);
-    hTrackInterceptsChipLost =
-        new TH2F("hTrackInterceptsChipLost", "hTrackInterceptsChipLost", 65, -0.5, 64.5, 65, -0.5, 64.5);
+    hTrackInterceptsChip = new TH2F("hTrackInterceptsChip",
+                                    "hTrackInterceptsChip",
+                                    det->nPixelsX() + 1,
+                                    -0.5,
+                                    det->nPixelsX() + 0.5,
+                                    det->nPixelsY() + 1,
+                                    -0.5,
+                                    det->nPixelsY() + 0.5);
+    hTrackInterceptsChipAssociated = new TH2F("hTrackInterceptsChipAssociated",
+                                              "hTrackInterceptsChipAssociated",
+                                              det->nPixelsX() + 1,
+                                              -0.5,
+                                              det->nPixelsX() + 0.5,
+                                              det->nPixelsY() + 1,
+                                              -0.5,
+                                              det->nPixelsY() + 0.5);
+    hTrackInterceptsChipUnassociated = new TH2F("hTrackInterceptsChipUnassociated",
+                                                "hTrackInterceptsChipUnassociated",
+                                                det->nPixelsX() + 1,
+                                                -0.5,
+                                                det->nPixelsX() + 0.5,
+                                                det->nPixelsY() + 1,
+                                                -0.5,
+                                                det->nPixelsY() + 0.5);
+    hTrackInterceptsChipLost = new TH2F("hTrackInterceptsChipLost",
+                                        "hTrackInterceptsChipLost",
+                                        det->nPixelsX() + 1,
+                                        -0.5,
+                                        det->nPixelsX() + 0.5,
+                                        det->nPixelsY() + 1,
+                                        -0.5,
+                                        det->nPixelsY() + 0.5);
 
     hPixelEfficiencyMap = new TH2F("hPixelEfficiencyMap", "hPixelEfficiencyMap", 50, 0, 50, 25, 0, 25);
-    hChipEfficiencyMap = new TH2F("hChipEfficiencyMap", "hChipEfficiencyMap", 65, -0.5, 64.5, 65, -0.5, 64.5);
+    hChipEfficiencyMap = new TH2F("hChipEfficiencyMap",
+                                  "hChipEfficiencyMap",
+                                  det->nPixelsX() + 1,
+                                  -0.5,
+                                  det->nPixelsX() + 0.5,
+                                  det->nPixelsY() + 1,
+                                  -0.5,
+                                  det->nPixelsY() + 0.5);
     hGlobalEfficiencyMap = new TH2F("hGlobalEfficiencyMap", "hGlobalEfficiencyMap", 200, -2.0, 2.0, 300, -1., 2);
 
     hInterceptClusterSize1 = new TH2F("hInterceptClusterSize1", "hInterceptClusterSize1", 25, 0, 25, 25, 0, 25);
