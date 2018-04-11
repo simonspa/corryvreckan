@@ -53,6 +53,8 @@ namespace corryvreckan {
 
         TH2F* hHitMap;
         TH1F* hPixelToT;
+        TH1F* hPixelToA;
+        TH1F* hPixelCnt;
         TH1F* hPixelsPerFrame;
     };
 } // namespace corryvreckan

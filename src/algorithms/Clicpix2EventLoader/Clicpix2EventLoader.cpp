@@ -110,8 +110,10 @@ void Clicpix2EventLoader::initialise() {
     LOG(INFO) << "Prepared CLICpix2 frame decoder.";
 
     // Make histograms for debugging
-    hHitMap = new TH2F("hitMap", "hitMap", 128, 0, 128, 128, 0, 128);
+    hHitMap = new TH2F("hitMap", "hitMap", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
     hPixelToT = new TH1F("pixelToT", "pixelToT", 32, 0, 31);
+    hPixelToA = new TH1F("pixelToA", "pixelToA", 8192, 0, 8191);
+    hPixelCnt = new TH1F("pixelCnt", "pixelCnt", 8192, 0, 8191);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 1000, 0, 1000);
 
     // Initialise member variables
@@ -186,19 +188,35 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
             auto cp2_pixel = dynamic_cast<caribou::pixelReadout*>(px.second.get());
             int col = px.first.first;
             int row = px.first.second;
-            int tot = cp2_pixel->GetTOT();
 
             // If this pixel is masked, do not save it
             if(get_detector(detectorID)->masked(col, row)) {
                 continue;
             }
 
-            // FIXME TOA is missing...
+            // Disentangle data types from pixel:
+            int tot, toa, cnt;
+
+            // ToT will throw if longcounter is enabled:
+            try {
+                tot = cp2_pixel->GetTOT();
+                hPixelToT->Fill(tot);
+            } catch(caribou::WrongDataFormat&) {
+            }
+
+            // Decide whether information is counter of ToA
+            if(matrix_config[std::make_pair(row, col)].GetCountingMode()) {
+                cnt = cp2_pixel->GetCounter();
+                hPixelCnt->Fill(cnt);
+            } else {
+                toa = cp2_pixel->GetTOA();
+                hPixelToA->Fill(toa);
+            }
+
             Pixel* pixel = new Pixel(detectorID, row, col, tot, shutterStartTime);
             pixels->push_back(pixel);
             npixels++;
             hHitMap->Fill(col, row);
-            hPixelToT->Fill(tot);
         }
     } catch(caribou::DataException& e) {
         LOG(ERROR) << "Caugth DataException: " << e.what() << ", clearing event data.";
