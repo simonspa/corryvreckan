@@ -74,13 +74,13 @@ void OnlineMonitor::initialise() {
         AddHisto("CorrelationXCanvas", correlationXHisto);
 
         string correlationX2DHisto = "/corryvreckan/TestAlgorithm/correlationX_2Dlocal_" + detectorID;
-        AddHisto("CorrelationX2DCanvas", correlationX2DHisto);
+        AddHisto("CorrelationX2DCanvas", correlationX2DHisto, "colz");
 
         string correlationYHisto = "/corryvreckan/TestAlgorithm/correlationY_" + detectorID;
         AddHisto("CorrelationYCanvas", correlationYHisto);
 
         string correlationY2DHisto = "/corryvreckan/TestAlgorithm/correlationY_2Dlocal_" + detectorID;
-        AddHisto("CorrelationY2DCanvas", correlationY2DHisto);
+        AddHisto("CorrelationY2DCanvas", correlationY2DHisto, "colz");
 
         string residualHisto = "/corryvreckan/BasicTracking/residualsX_" + detectorID;
         AddHisto("ResidualCanvas", residualHisto);
