@@ -88,12 +88,12 @@ void OnlineMonitor::initialise() {
     }
 
     if(get_detector(m_config.get<std::string>("DUT"))->type() == "CLICpix2") {
-        AddHisto("DUTCanvas", "/corryvreckan/Clixpix2EventLoader/hitMap", "colz");
-        AddHisto("DUTCanvas", "/corryvreckan/Clixpix2EventLoader/hitMapDiscarded", "colz");
-        AddHisto("DUTCanvas", "/corryvreckan/Clixpix2EventLoader/pixelToT");
-        AddHisto("DUTCanvas", "/corryvreckan/Clixpix2EventLoader/pixelToA");
-        AddHisto("DUTCanvas", "/corryvreckan/Clixpix2EventLoader/pixelCnt", "", true);
-        AddHisto("DUTCanvas", "/corryvreckan/Clixpix2EventLoader/pixelsPerFrame", "", true);
+        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/hitMap", "colz");
+        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/hitMapDiscarded", "colz");
+        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/pixelToT");
+        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/pixelToA");
+        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/pixelCnt", "", true);
+        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/pixelsPerFrame", "", true);
     }
 
     // Set up the main frame before drawing
