@@ -66,7 +66,7 @@ namespace corryvreckan {
                     canvas->GetCanvas()->cd(i + 1);
                 std::string style = styles[histograms[canvasName][i]];
                 if(logarithmic[histograms[canvasName][i]]) {
-                    canvas->GetCanvas()->SetLogy(true);
+                    gPad->SetLogy();
                 }
                 if(stackedCanvas[canvas]) {
                     style = "same";
