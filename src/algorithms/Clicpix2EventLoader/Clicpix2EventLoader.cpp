@@ -112,14 +112,20 @@ void Clicpix2EventLoader::initialise() {
     decoder = new clicpix2_frameDecoder(comp, sp_comp, matrix_config);
     LOG(INFO) << "Prepared CLICpix2 frame decoder.";
 
+    // Check if longcounting mode is on, defined by pixel 0,0:
+    int maxcounter = 256;
+    if(matrix_config[std::make_pair(0, 0)].GetLongCounter()) {
+        maxcounter = 8192;
+    }
+
     // Make histograms for debugging
     hHitMap = new TH2F("hitMap", "hitMap", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
     hHitMapDiscarded = new TH2F(
         "hitMapDiscarded", "hitMapDiscarded", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
 
     hPixelToT = new TH1F("pixelToT", "pixelToT", 32, 0, 31);
-    hPixelToA = new TH1F("pixelToA", "pixelToA", 8192, 0, 8191);
-    hPixelCnt = new TH1F("pixelCnt", "pixelCnt", 8192, 0, 8191);
+    hPixelToA = new TH1F("pixelToA", "pixelToA", maxcounter, 0, maxcounter - 1);
+    hPixelCnt = new TH1F("pixelCnt", "pixelCnt", maxcounter, 0, maxcounter - 1);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 1000, 0, 1000);
 
     // Initialise member variables
