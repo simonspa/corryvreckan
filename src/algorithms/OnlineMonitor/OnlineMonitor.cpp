@@ -56,6 +56,7 @@ void OnlineMonitor::initialise() {
     AddButton("CorrelationsX2D", "CorrelationX2DCanvas");
     AddButton("CorrelationsY2D", "CorrelationY2DCanvas");
     AddButton("ChargeDistributions", "ChargeDistributionCanvas");
+    AddButton("DUTPlots", "DUTCanvas");
 
     // Per detector histograms
     for(auto& detector : get_detectors()) {
@@ -84,6 +85,15 @@ void OnlineMonitor::initialise() {
 
         string residualHisto = "/corryvreckan/BasicTracking/residualsX_" + detectorID;
         AddHisto("ResidualCanvas", residualHisto);
+    }
+
+    if(get_detector(m_config.get<std::string>("DUT"))->type() == "CLICpix2") {
+        AddHisto("DUTCanvas", "/corryvreckan/Clixpix2EventLoader/hitMap", "colz");
+        AddHisto("DUTCanvas", "/corryvreckan/Clixpix2EventLoader/hitMapDiscarded", "colz");
+        AddHisto("DUTCanvas", "/corryvreckan/Clixpix2EventLoader/pixelToT");
+        AddHisto("DUTCanvas", "/corryvreckan/Clixpix2EventLoader/pixelToA");
+        AddHisto("DUTCanvas", "/corryvreckan/Clixpix2EventLoader/pixelCnt", "", true);
+        AddHisto("DUTCanvas", "/corryvreckan/Clixpix2EventLoader/pixelsPerFrame", "", true);
     }
 
     // Set up the main frame before drawing
@@ -141,12 +151,13 @@ void OnlineMonitor::finalise() {
     LOG(DEBUG) << "Analysed " << eventNumber << " events";
 }
 
-void OnlineMonitor::AddHisto(string canvasName, string histoName, string style) {
+void OnlineMonitor::AddHisto(string canvasName, string histoName, string style, bool logy) {
 
     TH1* histogram = (TH1*)gDirectory->Get(histoName.c_str());
     if(histogram) {
         gui->histograms[canvasName].push_back((TH1*)gDirectory->Get(histoName.c_str()));
         gui->styles[gui->histograms[canvasName].back()] = style;
+        gui->logarithmic[gui->histograms[canvasName].back()] = logy;
     } else {
         LOG(WARNING) << "Histogram " << histoName << " does not exist";
     }
