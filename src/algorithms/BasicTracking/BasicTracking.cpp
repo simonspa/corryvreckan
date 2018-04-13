@@ -31,8 +31,7 @@ void BasicTracking::initialise() {
     for(auto& detector : get_detectors()) {
         // Check if they are a Timepix3
         string detectorID = detector->name();
-        if(detector->type() != "Timepix3")
-            continue;
+
         string name = "residualsX_" + detectorID;
         residualsX[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
         name = "residualsXwidth1_" + detectorID;
@@ -50,6 +49,8 @@ void BasicTracking::initialise() {
         name = "residualsYwidth3_" + detectorID;
         residualsYwidth3[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
     }
+
+    associatedClusters = 0;
 }
 
 StatusCode BasicTracking::run(Clipboard* clipboard) {
@@ -68,15 +69,11 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
     bool firstDetector = true;
     std::string seedPlane;
     for(auto& detector : get_detectors()) {
-
-        // Check if they are a Timepix3
         string detectorID = detector->name();
-        if(detector->type() != "Timepix3")
-            continue;
 
         // Get the clusters
         Clusters* tempClusters = (Clusters*)clipboard->get(detectorID, "clusters");
-        if(tempClusters == NULL) {
+        if(tempClusters == NULL || tempClusters->size() == 0) {
             LOG(DEBUG) << "Detector " << detectorID << " does not have any clusters on the clipboard";
         } else {
             // Store them
@@ -87,8 +84,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
                 LOG(DEBUG) << "Seed plane is " << seedPlane;
                 firstDetector = false;
             }
-            if(tempClusters->size() == 0)
-                continue;
+
             KDTree* clusterTree = new KDTree();
             clusterTree->buildTimeTree(*tempClusters);
             trees[detectorID] = clusterTree;
@@ -118,20 +114,23 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
         // Get the cluster time
         long long int timestamp = cluster->timestamp();
 
-        // Loop over each subsequent plane and look for a cluster within 100 ns
+        // Loop over each subsequent plane and look for a cluster within the timing cuts
         for(auto& detectorID : detectors) {
+
             // Check if the DUT should be excluded and obey:
             if(excludeDUT && detectorID == m_config.get<std::string>("DUT")) {
-                // Keep all DUT clusters, so we can add them as associated clusters later:
+                // Keep all DUT clusters, so we can add them as associated clusters later, that are within the DUT timing cut:
                 dutClusters = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut_DUT);
-                continue;
+                LOG(DEBUG) << "Got " << dutClusters.size() << " DUT clusters within " << Units::display(timingCut_DUT, {"ms","us","ns"});
+		continue;
             }
+
             if(detectorID == seedPlane)
                 continue;
             if(trees.count(detectorID) == 0)
                 continue;
 
-            // Get all neighbours within 200 ns
+            // Get all neighbours within the timing cut
             LOG(DEBUG) << "Searching for neighbouring cluster on " << detectorID;
             LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
             Cluster* closestCluster = NULL;
@@ -225,13 +224,14 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
             ROOT::Math::XYZPoint intercept = track->intercept(dutcluster->globalZ());
             double xdistance = intercept.X() - dutcluster->globalX();
             double ydistance = intercept.Y() - dutcluster->globalY();
-            if(abs(xdistance) > spatialCut_DUT)
+            if(abs(xdistance) > spatialCut_DUT || abs(ydistance) > spatialCut_DUT) {
+                LOG(DEBUG) << "Discarding DUT cluster with distance (" << abs(xdistance) << "," << abs(ydistance) << ")";
                 continue;
-            if(abs(ydistance) > spatialCut_DUT)
-                continue;
+	    }
 
-            LOG(DEBUG) << "Found associated cluster";
+            LOG(DEBUG) << "Found associated cluster with distance (" << abs(xdistance) << "," << abs(ydistance) << ")";
             track->addAssociatedCluster(dutcluster);
+	    associatedClusters++;
         }
     }
 
@@ -266,4 +266,6 @@ Cluster* BasicTracking::getNearestCluster(long long int timestamp, Clusters clus
     return bestCluster;
 }
 
-void BasicTracking::finalise() {}
+void BasicTracking::finalise() {
+  LOG(INFO) << "Found " << associatedClusters << " associated clusters for detector " << m_config.get<std::string>("DUT");
+}

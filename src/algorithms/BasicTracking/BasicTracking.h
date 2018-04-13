@@ -25,6 +25,7 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
+    private:
         //  Cluster* getNearestCluster(Cluster*, map<Cluster*, bool>, Clusters*);
         Cluster* getNearestCluster(long long int, Clusters);
 
@@ -53,6 +54,8 @@ namespace corryvreckan {
         double spatialCut_DUT;
         int minHitsOnTrack;
         bool excludeDUT;
+
+	int associatedClusters;
     };
 } // namespace corryvreckan
 #endif // BASICTRACKING_H
