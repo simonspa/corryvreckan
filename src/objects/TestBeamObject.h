@@ -18,11 +18,11 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        TestBeamObject() : m_detectorID(), m_timestamp(0) {}
-        TestBeamObject(std::string detectorID) : m_detectorID(detectorID), m_timestamp(0) {}
-        TestBeamObject(double timestamp) : m_detectorID(), m_timestamp(timestamp) {}
-        TestBeamObject(std::string detectorID, double timestamp) : m_detectorID(detectorID), m_timestamp(timestamp) {}
-        virtual ~TestBeamObject() { m_timestamp = 0; }
+        TestBeamObject();
+        TestBeamObject(std::string detectorID);
+        TestBeamObject(double timestamp);
+        TestBeamObject(std::string detectorID, double timestamp);
+        virtual ~TestBeamObject();
 
         // Methods to get member variables
         std::string getDetectorID() { return m_detectorID; }

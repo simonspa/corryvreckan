@@ -9,10 +9,15 @@
 
 using namespace corryvreckan;
 
-ClassImp(TestBeamObject)
+TestBeamObject::TestBeamObject() : m_detectorID(), m_timestamp(0) {}
+TestBeamObject::TestBeamObject(std::string detectorID) : m_detectorID(detectorID), m_timestamp(0) {}
+TestBeamObject::TestBeamObject(double timestamp) : m_detectorID(), m_timestamp(timestamp) {}
+TestBeamObject::TestBeamObject(std::string detectorID, double timestamp)
+    : m_detectorID(detectorID), m_timestamp(timestamp) {}
+TestBeamObject::~TestBeamObject() {}
 
-    // Return class type for fixed object types (that don't depend on detector type)
-    TestBeamObject* TestBeamObject::Factory(std::string objectType, TestBeamObject* object) {
+// Return class type for fixed object types (that don't depend on detector type)
+TestBeamObject* TestBeamObject::Factory(std::string objectType, TestBeamObject* object) {
     // Track class
     if(objectType == "tracks") {
         return (object == NULL) ? new Track() : new Track(*static_cast<Track*>(object));
@@ -35,3 +40,5 @@ TestBeamObject* TestBeamObject::Factory(std::string detectorType, std::string ob
 
     return new TestBeamObject();
 }
+
+ClassImp(TestBeamObject)
