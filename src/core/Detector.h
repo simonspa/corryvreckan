@@ -56,18 +56,12 @@ namespace corryvreckan {
         void displacementY(double y) { m_displacement.SetY(y); }
         void displacementZ(double z) { m_displacement.SetZ(z); }
         void displacement(ROOT::Math::XYZPoint displacement) { m_displacement = displacement; }
-        double displacementX() { return m_displacement.X(); }
-        double displacementY() { return m_displacement.Y(); }
-        double displacementZ() { return m_displacement.Z(); }
         ROOT::Math::XYZPoint displacement() { return m_displacement; }
 
         // Functions to set and retrieve basic rotation parameters
         void rotationX(double rx) { m_orientation.SetX(rx); }
         void rotationY(double ry) { m_orientation.SetY(ry); }
         void rotationZ(double rz) { m_orientation.SetZ(rz); }
-        double rotationX() { return m_orientation.X(); }
-        double rotationY() { return m_orientation.Y(); }
-        double rotationZ() { return m_orientation.Z(); }
         ROOT::Math::XYZVector rotation() { return m_orientation; }
         void rotation(ROOT::Math::XYZVector rotation) { m_orientation = rotation; }
 
@@ -107,9 +101,7 @@ namespace corryvreckan {
         double inPixelX(PositionVector3D<Cartesian3D<double>> localPosition);
         double inPixelY(PositionVector3D<Cartesian3D<double>> localPosition);
 
-        Transform3D* localToGlobal() { return m_localToGlobal; };
         ROOT::Math::XYZPoint localToGlobal(ROOT::Math::XYZPoint local) { return (*m_localToGlobal) * local; };
-        Transform3D* globalToLocal() { return m_globalToLocal; };
         ROOT::Math::XYZPoint globalToLocal(ROOT::Math::XYZPoint global) { return (*m_globalToLocal) * global; };
 
     private:

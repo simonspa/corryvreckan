@@ -171,7 +171,7 @@ void Millepede::setConstraints(const unsigned int nPlanes) {
         if(det->name() == m_config.get<std::string>("DUT")) {
             continue;
         }
-        avgz += det->displacementZ();
+        avgz += det->displacement().Z();
     }
     avgz /= nPlanes;
     // Calculate the variance.
@@ -180,7 +180,7 @@ void Millepede::setConstraints(const unsigned int nPlanes) {
         if(det->name() == m_config.get<std::string>("DUT")) {
             continue;
         }
-        const double dz = det->displacementZ() - avgz;
+        const double dz = det->displacement().Z() - avgz;
         varz += dz * dz;
     }
     varz /= nPlanes;
@@ -203,7 +203,7 @@ void Millepede::setConstraints(const unsigned int nPlanes) {
             continue;
         }
         const unsigned int i = m_millePlanes[det->name()];
-        const double sz = (det->displacementZ() - avgz) / varz;
+        const double sz = (det->displacement().Z() - avgz) / varz;
         ftx[i] = 1.0;
         fty[i + nPlanes] = 1.0;
         ftz[i + 2 * nPlanes] = 1.0;
@@ -287,9 +287,9 @@ bool Millepede::putTrack(Track* track, const unsigned int nPlanes) {
         const double yg = cluster->globalY();
         const double zg = cluster->globalZ();
         // Calculate quasi-local coordinates.
-        const double zl = zg - detector->displacementZ();
-        const double xl = xg - detector->displacementX();
-        const double yl = yg - detector->displacementY();
+        const double zl = zg - detector->displacement().Z();
+        const double xl = xg - detector->displacement().X();
+        const double yl = yg - detector->displacement().Y();
 
         std::vector<double> nonlinear = {nx, ny, 1., -yl + zl * ny, -xl + zl * nx, xl * ny - yl * nx};
         const double den = 1. + tx * nx + ty * ny;
@@ -582,12 +582,12 @@ void Millepede::updateGeometry() {
         }
         auto plane = m_millePlanes[det->name()];
 
-        det->displacementX(det->displacementX() + m_dparm[plane + 0 * nPlanes]);
-        det->displacementY(det->displacementY() + m_dparm[plane + 1 * nPlanes]);
-        det->displacementZ(det->displacementZ() + m_dparm[plane + 2 * nPlanes]);
-        det->rotationX(det->rotationX() + m_dparm[plane + 3 * nPlanes]);
-        det->rotationY(det->rotationY() + m_dparm[plane + 4 * nPlanes]);
-        det->rotationZ(det->rotationZ() + m_dparm[plane + 5 * nPlanes]);
+        det->displacementX(det->displacement().X() + m_dparm[plane + 0 * nPlanes]);
+        det->displacementY(det->displacement().Y() + m_dparm[plane + 1 * nPlanes]);
+        det->displacementZ(det->displacement().Z() + m_dparm[plane + 2 * nPlanes]);
+        det->rotationX(det->rotation().X() + m_dparm[plane + 3 * nPlanes]);
+        det->rotationY(det->rotation().Y() + m_dparm[plane + 4 * nPlanes]);
+        det->rotationZ(det->rotation().Z() + m_dparm[plane + 5 * nPlanes]);
         det->update();
     }
     /*

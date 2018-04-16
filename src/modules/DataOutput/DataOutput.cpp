@@ -101,7 +101,7 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
         trackIntercept = DUT->getIntercept(track);
 
         // Calculate the intercept in local coordinates
-        trackInterceptLocal = *(DUT->globalToLocal()) * trackIntercept;
+        trackInterceptLocal = DUT->globalToLocal(trackIntercept);
         v_intercepts.push_back(trackInterceptLocal);
 
         Cluster* cluster = associatedClusters.front();
