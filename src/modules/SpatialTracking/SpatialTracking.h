@@ -9,14 +9,14 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 // Local includes
-#include "core/algorithm/Algorithm.h"
+#include "core/module/Module.hpp"
 #include "objects/Cluster.h"
 #include "objects/Track.h"
 
 namespace corryvreckan {
-    /** @ingroup Algorithms
+    /** @ingroup Modules
      */
-    class SpatialTracking : public Algorithm {
+    class SpatialTracking : public Module {
 
     public:
         // Constructors and destructors

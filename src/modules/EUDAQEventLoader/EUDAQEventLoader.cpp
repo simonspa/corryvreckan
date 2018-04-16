@@ -7,7 +7,7 @@ using namespace corryvreckan;
 using namespace std;
 
 EUDAQEventLoader::EUDAQEventLoader(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)), m_longID(true) {
+    : Module(std::move(config), std::move(detectors)), m_longID(true) {
 
     m_filename = m_config.get<std::string>("file_name");
     m_longID = m_config.get<bool>("long_detector_id", true);
@@ -23,7 +23,7 @@ void EUDAQEventLoader::initialise() {
     try {
         reader = new eudaq::FileReader(m_filename, "");
     } catch(...) {
-        throw AlgorithmError("Unable to read input file \"" + m_filename + "\"");
+        throw ModuleError("Unable to read input file \"" + m_filename + "\"");
     }
 
     // Initialise member variables
@@ -42,7 +42,7 @@ StatusCode EUDAQEventLoader::run(Clipboard* clipboard) {
         try {
             eudaq::PluginManager::Initialize(evt);
         } catch(const eudaq::Exception&) {
-            throw AlgorithmError("Unknown event types encountered");
+            throw ModuleError("Unknown event types encountered");
         }
     } else if(evt.IsEORE()) {
         LOG(INFO) << "Found EORE";

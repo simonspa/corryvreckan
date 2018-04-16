@@ -3,10 +3,10 @@
 **Status**: Under development  
 
 #### Description
-This algorithm calculates the $`\eta`$-distributions for two-pixel clusters of any detector in analysis by comparing the in-pixel track position and the calculated cluster centre position. Histograms for all available detectors are filled for both X and Y coordinate.
-At the end of the run, fits to the recorded profiles are performed using the provided formulas. A printout of the resulting fit parameters is provided in the format read by the EtaCorrection algorithm for convenience.
+This module calculates the $`\eta`$-distributions for two-pixel clusters of any detector in analysis by comparing the in-pixel track position and the calculated cluster centre position. Histograms for all available detectors are filled for both X and Y coordinate.
+At the end of the run, fits to the recorded profiles are performed using the provided formulas. A printout of the resulting fit parameters is provided in the format read by the EtaCorrection module for convenience.
 
-In order to measure the correct $`\eta`$-distribution, no additional $`\eta`$-correction should be applied during this calculation, i.e. by using the EtaCorrection algorithm.
+In order to measure the correct $`\eta`$-distribution, no additional $`\eta`$-correction should be applied during this calculation, i.e. by using the EtaCorrection module.
 
 #### Parameters
 * `chi2ndofCut`: Track quality cut on its Chi2 over numbers of degrees of freedom. Default value is `100`.
@@ -22,4 +22,4 @@ For each detector the following plots are produced:
 [EtaCalculation]
 chi2ndofCut = 100
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

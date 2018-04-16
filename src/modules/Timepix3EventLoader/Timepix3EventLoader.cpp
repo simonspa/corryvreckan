@@ -14,7 +14,7 @@ using namespace corryvreckan;
 using namespace std;
 
 Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)), temporalSplit(false), m_currentTime(0), m_currentEvent(0),
+    : Module(std::move(config), std::move(detectors)), temporalSplit(false), m_currentTime(0), m_currentEvent(0),
       m_prevTime(0), m_shutterOpen(false) {
 
     // Take input directory from global parameters
@@ -46,7 +46,7 @@ void Timepix3EventLoader::initialise() {
     // Open the root directory
     DIR* directory = opendir(m_inputDirectory.c_str());
     if(directory == NULL) {
-        throw AlgorithmError("Directory " + m_inputDirectory + " does not exist");
+        throw ModuleError("Directory " + m_inputDirectory + " does not exist");
     } else {
         LOG(TRACE) << "Found directory " << m_inputDirectory;
     }
@@ -80,7 +80,7 @@ void Timepix3EventLoader::initialise() {
             try {
                 LOG(DEBUG) << "Fetching detector with ID \"" << detectorID << "\"";
                 detector = get_detector(detectorID);
-            } catch(AlgorithmError& e) {
+            } catch(ModuleError& e) {
                 LOG(WARNING) << e.what();
                 continue;
             }
@@ -157,18 +157,18 @@ void Timepix3EventLoader::initialise() {
                 // The header is repeated in every new data file, thus skip it for all.
                 uint32_t headerID;
                 if(!new_file->read(reinterpret_cast<char*>(&headerID), sizeof headerID)) {
-                    throw AlgorithmError("Cannot read header ID for " + detectorID + " in file " + filename);
+                    throw ModuleError("Cannot read header ID for " + detectorID + " in file " + filename);
                 }
                 if(headerID != 1380208723) {
-                    throw AlgorithmError("Incorrect header ID for " + detectorID + " in file " + filename + ": " +
-                                         std::to_string(headerID));
+                    throw ModuleError("Incorrect header ID for " + detectorID + " in file " + filename + ": " +
+                                      std::to_string(headerID));
                 }
                 LOG(TRACE) << "Header ID: \"" << headerID << "\"";
 
                 // Skip the rest of the file header
                 uint32_t headerSize;
                 if(!new_file->read(reinterpret_cast<char*>(&headerSize), sizeof headerSize)) {
-                    throw AlgorithmError("Cannot read header size for " + detectorID + " in file " + filename);
+                    throw ModuleError("Cannot read header size for " + detectorID + " in file " + filename);
                 }
 
                 // Skip the full header:
@@ -178,7 +178,7 @@ void Timepix3EventLoader::initialise() {
                 // Store the file in the data vector:
                 m_files[detectorID].push_back(std::move(new_file));
             } else {
-                throw AlgorithmError("Could not open data file " + filename);
+                throw ModuleError("Could not open data file " + filename);
             }
         }
     }

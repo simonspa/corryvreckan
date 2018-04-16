@@ -1,5 +1,5 @@
-#ifndef ALGORITHM_H
-#define ALGORITHM_H 1
+#ifndef MODULE_H
+#define MODULE_H 1
 
 // Include files
 #include <string>
@@ -10,14 +10,14 @@
 #include "exceptions.h"
 
 //-------------------------------------------------------------------------------
-// The algorithm class is the base class that all user algorithms are built on.
+// The module class is the base class that all user modules are built on.
 // It
-// allows the analysis class to hold algorithms of different types, without
+// allows the analysis class to hold modules of different types, without
 // knowing
 // what they are, and provides the functions initialise, run and finalise. It
 // also
 // gives some basic tools like the "tcout" replacement for "cout" (appending the
-// algorithm name) and the stopwatch for timing measurements.
+// module name) and the stopwatch for timing measurements.
 //-------------------------------------------------------------------------------
 
 namespace corryvreckan {
@@ -28,15 +28,15 @@ namespace corryvreckan {
         Failure,
     };
 
-    /** Base class for all algorithms
-     *  @defgroup Algorithms Algorithms
+    /** Base class for all modules
+     *  @defgroup Modules Modules
      */
-    class Algorithm {
+    class Module {
 
     public:
         // Constructors and destructors
-        Algorithm() {}
-        Algorithm(Configuration config, std::vector<Detector*> detectors) {
+        Module() {}
+        Module(Configuration config, std::vector<Detector*> detectors) {
             m_name = config.getName();
             m_config = config;
             m_detectors = detectors;
@@ -46,13 +46,13 @@ namespace corryvreckan {
                 for(auto& d : m_detectors) {
                     det << d->name() << ", ";
                 }
-                LOG(TRACE) << "Algorithm determined to run on detectors: " << det.str();
+                LOG(TRACE) << "Module determined to run on detectors: " << det.str();
             }
         }
-        virtual ~Algorithm() {}
+        virtual ~Module() {}
 
         // Three main functions - initialise, run and finalise. Called for every
-        // algorithm
+        // module
         virtual void initialise() = 0;
         virtual StatusCode run(Clipboard*) = 0;
         virtual void finalise() = 0;
@@ -74,7 +74,7 @@ namespace corryvreckan {
             auto it =
                 find_if(m_detectors.begin(), m_detectors.end(), [&name](Detector* obj) { return obj->name() == name; });
             if(it == m_detectors.end()) {
-                throw AlgorithmError("Device with detector ID " + name + " is not registered.");
+                throw ModuleError("Device with detector ID " + name + " is not registered.");
             }
 
             return (*it);

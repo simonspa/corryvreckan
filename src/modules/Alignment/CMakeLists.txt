@@ -1,11 +1,11 @@
-# Define module and return the generated name as ALGORITHM_NAME
-CORRYVRECKAN_ALGORITHM(ALGORITHM_NAME)
+# Define module and return the generated name as MODULE_NAME
+CORRYVRECKAN_MODULE(MODULE_NAME)
 
 # Add source files to library
-CORRYVRECKAN_ALGORITHM_SOURCES(${ALGORITHM_NAME}
+CORRYVRECKAN_MODULE_SOURCES(${MODULE_NAME}
     Alignment.cpp
     # ADD SOURCE FILES HERE...
 )
 
 # Provide standard install target
-CORRYVRECKAN_ALGORITHM_INSTALL(${ALGORITHM_NAME})
+CORRYVRECKAN_MODULE_INSTALL(${MODULE_NAME})

@@ -1,19 +1,19 @@
 #ifndef Millepede_H
 #define Millepede_H 1
 
-#include "core/algorithm/Algorithm.h"
+#include "core/module/Module.hpp"
 #include "objects/Track.h"
 
 namespace corryvreckan {
 
-    /** @ingroup Algorithms
+    /** @ingroup Modules
      *
      *  Implementation of the Millepede algorithm.
      *
      *  @author Christoph Hombach
      *  @date   2012-06-19
     */
-    class Millepede : public Algorithm {
+    class Millepede : public Module {
     public:
         /// Constructor
         Millepede(Configuration config, std::vector<Detector*> detectors);

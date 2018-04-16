@@ -5,12 +5,12 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include "core/algorithm/Algorithm.h"
+#include "core/module/Module.hpp"
 
 namespace corryvreckan {
-    /** @ingroup Algorithms
+    /** @ingroup Modules
      */
-    class Timepix1EventLoader : public Algorithm {
+    class Timepix1EventLoader : public Module {
 
     public:
         // Constructors and destructors

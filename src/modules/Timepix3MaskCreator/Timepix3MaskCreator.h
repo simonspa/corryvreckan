@@ -2,13 +2,13 @@
 #define TIMEPIX3MASKCREATOR_H 1
 
 #include <iostream>
-#include "core/algorithm/Algorithm.h"
+#include "core/module/Module.hpp"
 #include "objects/Pixel.h"
 
 namespace corryvreckan {
-    /** @ingroup Algorithms
+    /** @ingroup Modules
      */
-    class Timepix3MaskCreator : public Algorithm {
+    class Timepix3MaskCreator : public Module {
 
     public:
         // Constructors and destructors

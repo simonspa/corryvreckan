@@ -9,15 +9,15 @@
 #include "TH1F.h"
 #include "TProfile.h"
 // Local includes
-#include "core/algorithm/Algorithm.h"
+#include "core/module/Module.hpp"
 #include "objects/Cluster.h"
 #include "objects/Track.h"
 
 namespace corryvreckan {
 
-    /** @ingroup Algorithms
+    /** @ingroup Modules
      */
-    class Alignment : public Algorithm {
+    class Alignment : public Module {
 
     public:
         // Constructors and destructors

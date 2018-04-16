@@ -4,7 +4,7 @@ using namespace corryvreckan;
 using namespace std;
 
 TestAlgorithm::TestAlgorithm(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
     makeCorrelations = m_config.get<bool>("makeCorrelations", false);
     timingCut = m_config.get<double>("timingCut", Units::convert(100, "ns"));
     LOG(DEBUG) << "Setting makeCorrelations to: " << makeCorrelations;

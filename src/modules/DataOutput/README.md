@@ -3,7 +3,7 @@
 **Status**: Functional  
 
 #### Description
-This algorithm writes out data from a Timepix3 DUT for timing analysis. The outputted ROOT TTree contains data in branches. This is intended for analysis of the timing capabilities of Timepix3 devices of different thicknesses.
+This module writes out data from a Timepix3 DUT for timing analysis. The outputted ROOT TTree contains data in branches. This is intended for analysis of the timing capabilities of Timepix3 devices of different thicknesses.
 
 For each track associated DUT `cluster` object the following information is written out:
 * Event ID
@@ -35,4 +35,4 @@ DUT = "W0005_H03"
 fileName = "myOutputFile.root"
 treeName = "myTree"
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

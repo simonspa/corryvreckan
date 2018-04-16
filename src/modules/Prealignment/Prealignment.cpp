@@ -4,7 +4,7 @@ using namespace corryvreckan;
 using namespace std;
 
 Prealignment::Prealignment(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
     LOG(INFO) << "Starting prealignment of detectors";
     max_correlation_rms = m_config.get<double>("max_correlation_rms", Units::convert(6.0, "mm"));
     damping_factor = m_config.get<double>("damping_factor", 1.0);

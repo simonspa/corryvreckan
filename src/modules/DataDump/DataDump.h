@@ -6,12 +6,12 @@
 #include <iostream>
 #include <sstream>
 #include <stdint.h>
-#include "core/algorithm/Algorithm.h"
+#include "core/module/Module.hpp"
 
 namespace corryvreckan {
-    /** @ingroup Algorithms
+    /** @ingroup Modules
      */
-    class DataDump : public Algorithm {
+    class DataDump : public Module {
 
     public:
         // Constructors and destructors

@@ -5,7 +5,7 @@ using namespace corryvreckan;
 using namespace std;
 
 SpatialClustering::SpatialClustering(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {}
+    : Module(std::move(config), std::move(detectors)) {}
 
 /*
 

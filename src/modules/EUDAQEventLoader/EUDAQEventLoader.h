@@ -2,16 +2,16 @@
 #define EUDAQEventLoader_H 1
 
 #include <iostream>
-#include "core/algorithm/Algorithm.h"
+#include "core/module/Module.hpp"
 #include "eudaq/FileReader.hh"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
 #include "objects/Track.h"
 
 namespace corryvreckan {
-    /** @ingroup Algorithms
+    /** @ingroup Modules
      */
-    class EUDAQEventLoader : public Algorithm {
+    class EUDAQEventLoader : public Module {
 
     public:
         // Constructors and destructors

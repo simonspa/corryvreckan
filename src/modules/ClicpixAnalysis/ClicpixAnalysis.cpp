@@ -7,7 +7,7 @@ using namespace corryvreckan;
 using namespace std;
 
 ClicpixAnalysis::ClicpixAnalysis(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
 
     m_associationCut = m_config.get<double>("associationCut", Units::convert(100, "um"));
     m_proximityCut = m_config.get<double>("proximityCut", Units::convert(125, "um"));

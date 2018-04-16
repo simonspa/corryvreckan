@@ -6,7 +6,7 @@ using namespace corryvreckan;
 using namespace std;
 
 BasicTracking::BasicTracking(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
 
     // Default values for cuts
     timingCut = m_config.get<double>("timingCut", Units::convert(200, "ns"));

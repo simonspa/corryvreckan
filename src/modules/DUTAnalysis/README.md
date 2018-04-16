@@ -3,7 +3,7 @@
 **Status**: Functional  
 
 #### Description
-This algorithm associates DUT clusters to telescope tracks.
+This module associates DUT clusters to telescope tracks.
 
 Using the appropriate parameter settings in the configuration file, plots using power pulsing and/or Monte-Carlo truth information can be produced.
 
@@ -41,4 +41,4 @@ digitalPowerPusling = false
 useMCtruth = true
 DUT = "W0005_H03"
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

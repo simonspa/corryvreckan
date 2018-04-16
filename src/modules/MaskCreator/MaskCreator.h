@@ -4,13 +4,13 @@
 #include <iostream>
 #include "TCanvas.h"
 #include "TH2D.h"
-#include "core/algorithm/Algorithm.h"
+#include "core/module/Module.hpp"
 #include "objects/Pixel.h"
 
 namespace corryvreckan {
-    /** @ingroup Algorithms
+    /** @ingroup Modules
      */
-    class MaskCreator : public Algorithm {
+    class MaskCreator : public Module {
 
     public:
         // Constructors and destructors

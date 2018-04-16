@@ -5,14 +5,14 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "core/algorithm/Algorithm.h"
+#include "core/module/Module.hpp"
 #include "objects/Pixel.h"
 #include "objects/SpidrSignal.h"
 
 namespace corryvreckan {
-    /** @ingroup Algorithms
+    /** @ingroup Modules
      */
-    class Timepix3EventLoader : public Algorithm {
+    class Timepix3EventLoader : public Module {
 
     public:
         // Constructors and destructors

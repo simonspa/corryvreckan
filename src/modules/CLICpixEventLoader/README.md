@@ -3,12 +3,12 @@
 **Status**: Functional   
 
 #### Description
-This algorithm reads in data for a CLICpix device from an input file.
+This module reads in data for a CLICpix device from an input file.
 
-The algorithm opens and reads one data file in the specified input directory with the ending `.dat`. For each hit it stores the detectorID, row, column, and ToT. The shutter rise and fall time information are used to set the current time and event length.
+The module opens and reads one data file in the specified input directory with the ending `.dat`. For each hit it stores the detectorID, row, column, and ToT. The shutter rise and fall time information are used to set the current time and event length.
 
 #### Parameters
-* `inputDirectory`: Path to the directory containing the `.dat` file. This path should lead to the directory above the CLICpix directory, as this string is added onto the input directory in the algorithm.
+* `inputDirectory`: Path to the directory containing the `.dat` file. This path should lead to the directory above the CLICpix directory, as this string is added onto the input directory in the module.
 * `DUT`: Name of the DUT plane.
 
 #### Plots produced
@@ -23,4 +23,4 @@ The algorithm opens and reads one data file in the specified input directory wit
 DUT = "W0005_H03"
 inputDirectory = /user/data/directory
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

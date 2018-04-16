@@ -6,13 +6,13 @@
 #include "Math/Vector3D.h"
 #include "TFile.h"
 #include "TTree.h"
-#include "core/algorithm/Algorithm.h"
+#include "core/module/Module.hpp"
 #include "objects/Track.h"
 
 namespace corryvreckan {
-    /** @ingroup Algorithms
+    /** @ingroup Modules
      */
-    class DataOutput : public Algorithm {
+    class DataOutput : public Module {
 
     public:
         // Constructors and destructors

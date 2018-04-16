@@ -7,16 +7,16 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TThread.h"
-#include "core/algorithm/Algorithm.h"
+#include "core/module/Module.hpp"
 
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
 #include "objects/Track.h"
 
 namespace corryvreckan {
-    /** @ingroup Algorithms
+    /** @ingroup Modules
      */
-    class GUI : public Algorithm {
+    class GUI : public Module {
 
     public:
         // Constructors and destructors

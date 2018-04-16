@@ -4,9 +4,9 @@
 **Status**: Functional   
 
 #### Description
-This algorithm performs translational and rotational telescope plane alignment. The alignment is performed with respect to the reference plane set in the configuration file.
+This module performs translational and rotational telescope plane alignment. The alignment is performed with respect to the reference plane set in the configuration file.
 
-This algorithm uses the tracks produced by the `BasicTracking` algorithm to align the telescope planes. If fewer than half of the tracks have associated clusters, a warning is produced on terminal. 
+This module uses the tracks produced by the `BasicTracking` module to align the telescope planes. If fewer than half of the tracks have associated clusters, a warning is produced on terminal. 
 
 There are two methods available for alignment:
 
@@ -53,4 +53,4 @@ masked = "W0005_H03" #excluding the DUT from the alignment
 number_of_tracks = 1000000
 log_level = INFO
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

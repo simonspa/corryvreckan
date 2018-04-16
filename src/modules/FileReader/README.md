@@ -3,7 +3,7 @@
 **Status**: Functional   
 
 #### Description
-This algorithm reads in an input file containing trees with data previously written out by the `FileWriter`. The read in objects are stored on the clipboard. It reads in `pixel`, `cluster`, `track`, and/or `MCparticle` objects.
+This module reads in an input file containing trees with data previously written out by the `FileWriter`. The read in objects are stored on the clipboard. It reads in `pixel`, `cluster`, `track`, and/or `MCparticle` objects.
 
 #### Parameters
 * `onlyDUT`: Boolean to decide if data is read in from only the DUT. Default value is `false`.
@@ -30,4 +30,4 @@ fileName = "input_file.root"
 timeWindow = 1
 DUT = "W0005_H03"
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

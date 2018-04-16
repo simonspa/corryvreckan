@@ -3,7 +3,7 @@
 **Status**: Functional - needing small fix
 
 #### Description
-This algorithm is a GUI for looking at plots made during the `BasicTracking`, `DUTAnalysis`, and `TestAlgorithm` algorithms. It is not functional.
+This module is a GUI for looking at plots made during the `BasicTracking`, `DUTAnalysis`, and `TestAlgorithm` modules. It is not functional.
 
 #### Parameters
 * `updateNumber`: Determines how often the plots are updated on screen. Default number is `500`.
@@ -25,4 +25,4 @@ Plots produced on screen for each device:
 DUT = "W000_H03"
 updateNumber = 400
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

@@ -3,13 +3,13 @@
 **Status**: Work in progress
 
 #### Description
-This algorithm reads in `pixel` objects for each device from the clipboard, and masks pixels considered noisy.
+This module reads in `pixel` objects for each device from the clipboard, and masks pixels considered noisy.
 
 Currently, two methods are available. The `localdensity` noise estimation method is taken from the [Proteus framework](https://gitlab.cern.ch/unige-fei4tel/proteus) developed by Université de Genève.
 It uses a local estimate of the expected hit rate to find pixels that are a certain number of standard deviations away from this estimate.
 The second method, `frequency`, is a simple cut on a global pixel firing frequency which masks pixels with a hit rate larger than `frequency_cut` times the mean global hit rate.
 
-The algorithm writes new mask file with all masked pixels for each device. Already existing masks are maintained. No masks are applied as this is done by other algorithms directly when reading input data.
+The module writes new mask file with all masked pixels for each device. Already existing masks are maintained. No masks are applied as this is done by other modules directly when reading input data.
 
 #### Parameters
 * `method`: Select the method to evaluate noisy pixels. Can be either `localdensity` or `frequency`, where the latter is chosen by default.
@@ -28,4 +28,4 @@ For each detector the following plots are produced:
 [MaskCreator]
 frequency_cut = 10
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

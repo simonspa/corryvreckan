@@ -3,7 +3,7 @@
 **Status**: Functional  
 
 #### Description
-This algorithm associates CLICpix2 DUT clusters to tracks using a spatial cut (device type not checked). A significant number of analysis plots are produced.
+This module associates CLICpix2 DUT clusters to tracks using a spatial cut (device type not checked). A significant number of analysis plots are produced.
 
 #### Parameters
 * `associationCut`: Maximum distance between a track and cluster for them to be associated. Units of mm. Default value is `0.05` (50um).
@@ -106,4 +106,4 @@ proximityCut = 0.005
 timepix3Telescope = true
 DUT = "W0003_H05"
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

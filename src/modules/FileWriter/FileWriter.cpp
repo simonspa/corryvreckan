@@ -4,7 +4,7 @@ using namespace corryvreckan;
 using namespace std;
 
 FileWriter::FileWriter(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
 
     m_onlyDUT = m_config.get<bool>("onlyDUT", true);
     m_writePixels = m_config.get<bool>("writePixels", true);

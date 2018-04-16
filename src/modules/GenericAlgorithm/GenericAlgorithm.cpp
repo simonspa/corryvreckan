@@ -4,7 +4,7 @@ using namespace corryvreckan;
 using namespace std;
 
 GenericAlgorithm::GenericAlgorithm(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {}
+    : Module(std::move(config), std::move(detectors)) {}
 
 void GenericAlgorithm::initialise() {
 

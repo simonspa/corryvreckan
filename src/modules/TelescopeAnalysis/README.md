@@ -3,7 +3,7 @@
 **Status**: Work in progress
 
 #### Description
-This algorithm produces reference histograms for the telescope performance used for tracking. It produces local and global biased residuals for each of the telescope planes, and if Monte Carlo information is available, calculates the residuals between track and Monte Carlo particle.
+This module produces reference histograms for the telescope performance used for tracking. It produces local and global biased residuals for each of the telescope planes, and if Monte Carlo information is available, calculates the residuals between track and Monte Carlo particle.
 
 Furthermore, the telescope resolution at the position of the DUT detector is plotted of Monte Carlo information is available. The Monte Carlo particle position is compared with the track interception with the DUT.
 
@@ -24,4 +24,4 @@ For each detector participating in tracking, the following plots are produced:
 [NAME]
 chi2ndofCut = 3
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

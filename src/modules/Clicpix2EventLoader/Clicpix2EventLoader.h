@@ -10,7 +10,7 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "core/algorithm/Algorithm.h"
+#include "core/module/Module.hpp"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
 #include "objects/Track.h"
@@ -19,9 +19,9 @@
 #include "clicpix2_pixels.hpp"
 
 namespace corryvreckan {
-    /** @ingroup Algorithms
+    /** @ingroup Modules
      */
-    class Clicpix2EventLoader : public Algorithm {
+    class Clicpix2EventLoader : public Module {
 
     public:
         // Constructors and destructors

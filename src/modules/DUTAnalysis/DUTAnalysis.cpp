@@ -8,7 +8,7 @@
 using namespace corryvreckan;
 
 DUTAnalysis::DUTAnalysis(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
     m_digitalPowerPulsing = m_config.get<bool>("digitalPowerPulsing", false);
     m_DUT = m_config.get<std::string>("DUT");
     m_useMCtruth = m_config.get<bool>("useMCtruth", false);

@@ -4,12 +4,12 @@
 #include <iostream>
 #include "TFile.h"
 #include "TTree.h"
-#include "core/algorithm/Algorithm.h"
+#include "core/module/Module.hpp"
 
 namespace corryvreckan {
-    /** @ingroup Algorithms
+    /** @ingroup Modules
      */
-    class FileReader : public Algorithm {
+    class FileReader : public Module {
 
     public:
         // Constructors and destructors

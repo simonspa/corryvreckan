@@ -2,7 +2,7 @@
 #define OnlineMonitor_H 1
 
 #include <iostream>
-#include "core/algorithm/Algorithm.h"
+#include "core/module/Module.hpp"
 #include "objects/Cluster.h"
 #include "objects/GuiDisplay.h"
 #include "objects/Pixel.h"
@@ -23,9 +23,9 @@
 #include "TSystem.h"
 
 namespace corryvreckan {
-    /** @ingroup Algorithms
+    /** @ingroup Modules
      */
-    class OnlineMonitor : public Algorithm {
+    class OnlineMonitor : public Module {
 
     public:
         // Constructors and destructors

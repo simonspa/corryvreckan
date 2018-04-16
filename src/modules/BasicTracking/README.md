@@ -3,7 +3,7 @@
 **Status**: Functional   
 
 #### Description
-This algorithm performs a basic tracking method.
+This module performs a basic tracking method.
 
 Clusters from the first plane in Z (named the seed plane) are related to clusters close in time on the other detector planes using straight line tracks. The DUT plane can be excluded from the track finding and DUT clusters potentially associated with the track stored.
 
@@ -42,4 +42,4 @@ spatialCut = 0.3 #300um
 timingCut = 0.0000002 #200ns
 excludeDUT = true
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

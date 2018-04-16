@@ -1,8 +1,8 @@
-# Option to build all algorithms
-OPTION(BUILD_ALL_ALGORITHMS "Build all algorithms?" OFF)
+# Option to build all modules
+OPTION(BUILD_ALL_MODULES "Build all modules?" OFF)
 
 # reset the saved libraries
-SET(CORRYVRECKAN_ALGORITHM_LIBRARIES "" CACHE INTERNAL "Algorithm libraries")
+SET(CORRYVRECKAN_MODULE_LIBRARIES "" CACHE INTERNAL "Module libraries")
 
 FILE(GLOB subdirs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*)
 FOREACH(subdir ${subdirs})

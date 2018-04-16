@@ -5,14 +5,14 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "core/algorithm/Algorithm.h"
+#include "core/module/Module.hpp"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
 
 namespace corryvreckan {
-    /** @ingroup Algorithms
+    /** @ingroup Modules
      */
-    class Timepix3Clustering : public Algorithm {
+    class Timepix3Clustering : public Module {
 
     public:
         // Constructors and destructors

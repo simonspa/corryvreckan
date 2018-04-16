@@ -4,7 +4,7 @@ using namespace corryvreckan;
 using namespace std;
 
 FileReader::FileReader(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
 
     m_onlyDUT = m_config.get<bool>("onlyDUT", false);
     m_readPixels = m_config.get<bool>("readPixels", true);
@@ -48,7 +48,7 @@ void FileReader::initialise() {
     LOG(INFO) << "Opening file " << m_fileName;
     m_inputFile = new TFile(m_fileName.c_str(), "READ");
     if(!m_inputFile->IsOpen()) {
-        throw AlgorithmError("Cannot open input file \"" + m_fileName + "\".");
+        throw ModuleError("Cannot open input file \"" + m_fileName + "\".");
     }
     m_inputFile->cd();
 

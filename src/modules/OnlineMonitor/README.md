@@ -3,7 +3,7 @@
 **Status**: Functional - some minor fixes needed
 
 #### Description
-This algorithm opens a GUI to monitor the progress of Corryvreckan reconstruction. Each canvas contains real time plots of the reconstruction, updated every 500 events. Plots are used from the `BasicTracking` and `TestAlgorithm` algorithms.
+This module opens a GUI to monitor the progress of Corryvreckan reconstruction. Each canvas contains real time plots of the reconstruction, updated every 500 events. Plots are used from the `BasicTracking` and `TestAlgorithm` modules.
 
 Users should be able to exit `OnlineMonitor` and leave the reconstruction still running, but currently this causes a crash.
 
@@ -37,4 +37,4 @@ For each detector the following plots are produced:
 [OnlineMonitor]
 reference = "W0013_E03"
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

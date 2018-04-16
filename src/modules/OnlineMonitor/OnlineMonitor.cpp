@@ -5,7 +5,7 @@ using namespace corryvreckan;
 using namespace std;
 
 OnlineMonitor::OnlineMonitor(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
     canvasTitle = m_config.get<std::string>("canvasTitle", "Corryvreckan Testbeam Monitor");
     updateNumber = m_config.get<int>("update", 500);
     ;

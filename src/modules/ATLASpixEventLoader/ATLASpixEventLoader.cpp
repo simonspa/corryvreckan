@@ -5,7 +5,7 @@ using namespace corryvreckan;
 using namespace std;
 
 ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
 
     m_timewalkCorrectionFactors = m_config.getArray<double>("timewalkCorrectionFactors", std::vector<double>());
     m_timestampPeriod = m_config.get<double>("timestampPeriod", Units::convert(25, "ns"));

@@ -4,7 +4,7 @@ using namespace corryvreckan;
 using namespace std;
 
 Timepix3Clustering::Timepix3Clustering(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
     timingCut = m_config.get<double>("timingCut", Units::convert(100, "ns")); // 100 ns
     neighbour_radius_row = m_config.get<int>("neighbour_radius_row", 1);
     neighbour_radius_col = m_config.get<int>("neighbour_radius_col", 1);

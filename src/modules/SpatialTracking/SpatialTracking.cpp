@@ -5,7 +5,7 @@ using namespace corryvreckan;
 using namespace std;
 
 SpatialTracking::SpatialTracking(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
     spatialCut = m_config.get<double>("spatialCut", Units::convert(200, "um"));
     spatialCut_DUT = m_config.get<double>("spatialCutDUT", Units::convert(200, "um"));
     minHitsOnTrack = m_config.get<int>("minHitsOnTrack", 6);

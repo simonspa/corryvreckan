@@ -7,7 +7,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-GUI::GUI(Configuration config, std::vector<Detector*> detectors) : Algorithm(std::move(config), std::move(detectors)) {
+GUI::GUI(Configuration config, std::vector<Detector*> detectors) : Module(std::move(config), std::move(detectors)) {
     // Update every X events:
     updateNumber = m_config.get<int>("updateNumber", 500);
 }

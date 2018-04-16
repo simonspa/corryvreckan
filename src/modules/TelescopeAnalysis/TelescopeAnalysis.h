@@ -3,14 +3,14 @@
 
 #include <iostream>
 #include "TH1F.h"
-#include "core/algorithm/Algorithm.h"
+#include "core/module/Module.hpp"
 #include "objects/MCParticle.h"
 #include "objects/Track.h"
 
 namespace corryvreckan {
-    /** @ingroup Algorithms
+    /** @ingroup Modules
      */
-    class TelescopeAnalysis : public Algorithm {
+    class TelescopeAnalysis : public Module {
 
     public:
         // Constructors and destructors

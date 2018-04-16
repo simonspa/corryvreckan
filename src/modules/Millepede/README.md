@@ -3,11 +3,11 @@
 **Status**: Work in progress  
 
 #### Description
-This implementation of the Millepede algorithm has been taken from the [Kepler framework](https://gitlab.cern.ch/lhcb/Kepler) used for test beam data analysis within the LHCb collaboration. It has been written by Christoph Hombach and has seen contributions from Tim Evans and Heinrich Schindler. This version is only slightly adapted to the Corryvreckan framework.
+This implementation of the Millepede module has been taken from the [Kepler framework](https://gitlab.cern.ch/lhcb/Kepler) used for test beam data analysis within the LHCb collaboration. It has been written by Christoph Hombach and has seen contributions from Tim Evans and Heinrich Schindler. This version is only slightly adapted to the Corryvreckan framework.
 
 The Millepede algorthm allows a simultaneous fit of both the tracks and the alignment constants.
 
-The algorithms stops if the convergence, i.e. the absolute sum of all corrections over the total number of parameters, is smaller than the configured value.
+The modules stops if the convergence, i.e. the absolute sum of all corrections over the total number of parameters, is smaller than the configured value.
 
 #### Parameters
 * `number_of_tracks`: Number of tracks used in the alignment method chosen. Default value is `20000`.
@@ -17,7 +17,7 @@ The algorithms stops if the convergence, i.e. the absolute sum of all correction
 * `residual_cut_init`: Initial residual cut for outlier rejection in the first iteration. This value is applied for the first iteration and replaced by `residual_cut` thereafter. Default value is `0.6mm`.
 * `nstddev`: Cut to reject track candidates based on their Chi2/ndof value. Default value is `0`, i.e. the feature is disabled.
 * `sigmas`: Uncertainties for each of the alignment parameters. Defaults to `0.05, 0.05, 0.5, 0.005, 0.005, 0.005`.
-* `convergence`: Convergence value at which the algorithm stops iterating. Default value is `10e-5`.
+* `convergence`: Convergence value at which the module stops iterating. Default value is `10e-5`.
 
 #### Plots produced
 No plots are produced.
@@ -28,4 +28,4 @@ No plots are produced.
 iterations = 10
 dofs = true, true, false, true, true, true
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

@@ -13,7 +13,7 @@ using namespace std;
 // Standard constructor, initializes variables
 //=============================================================================
 Millepede::Millepede(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
 
     m_numberOfTracksForAlignment = m_config.get<int>("number_of_tracks", 20000);
     m_dofs = m_config.getArray<bool>("dofs", {});

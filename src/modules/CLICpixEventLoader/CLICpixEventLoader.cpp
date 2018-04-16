@@ -4,7 +4,7 @@ using namespace corryvreckan;
 using namespace std;
 
 CLICpixEventLoader::CLICpixEventLoader(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
     m_filename = "";
 }
 

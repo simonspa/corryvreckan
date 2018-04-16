@@ -3,7 +3,7 @@
 **Status**: Functional
 
 #### Description
-This algorithm takes data from a Timepix3 device from the clipboard and plots the pixel hit positions. This is to be a template to easy create other algorithms for Corryvreckan.
+This module takes data from a Timepix3 device from the clipboard and plots the pixel hit positions. This is to be a template to easy create other modules for Corryvreckan.
 
 #### Parameters
 No parameters are used from the configuration file.
@@ -19,4 +19,4 @@ For each detector the following plots are produced:
 [GenericAlgorithm]
 
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

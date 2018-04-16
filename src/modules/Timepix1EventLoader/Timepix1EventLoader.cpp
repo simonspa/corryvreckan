@@ -6,7 +6,7 @@ using namespace corryvreckan;
 using namespace std;
 
 Timepix1EventLoader::Timepix1EventLoader(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {}
+    : Module(std::move(config), std::move(detectors)) {}
 
 /*
  This algorithm loads data from Timepix1-like devices and places it on the
@@ -180,7 +180,7 @@ StatusCode Timepix1EventLoader::run(Clipboard* clipboard) {
             // Put the pixels on the clipboard
             clipboard->put(detID, "pixels", dataContainers[detID]);
             LOG(DEBUG) << "Loaded " << dataContainers[detID]->size() << " pixels from device " << detID;
-        } catch(AlgorithmError& e) {
+        } catch(ModuleError& e) {
             LOG(WARNING) << "Unknown detector \"" << detID << "\"";
         }
     }

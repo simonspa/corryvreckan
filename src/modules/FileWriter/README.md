@@ -3,7 +3,7 @@
 **Status**: Functional   
 
 #### Description
-This algorithm writes an output file and fills it with trees containing the requested data objects. `Pixel`, `cluster`, and/or `track` objects can be written into the trees.
+This module writes an output file and fills it with trees containing the requested data objects. `Pixel`, `cluster`, and/or `track` objects can be written into the trees.
 
 #### Parameters
 * `DUT`: Name of the DUT plane.
@@ -26,4 +26,4 @@ writeClusters = true
 writeTracks = true
 fileName = "output.root"
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

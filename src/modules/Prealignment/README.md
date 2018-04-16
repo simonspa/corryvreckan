@@ -3,9 +3,9 @@
 **Status**: Functional   
 
 #### Description
-This algorithm performs translational telescope plane alignment.
+This module performs translational telescope plane alignment.
 
-This initial alignment along the X and Y axes is designed to be performed before the `Alignment` algorithm, which carries out translational and rotational alignment of the planes. To not include the DUT in this transaltional alignment, it will need to be masked in the configuration file.
+This initial alignment along the X and Y axes is designed to be performed before the `Alignment` module, which carries out translational and rotational alignment of the planes. To not include the DUT in this transaltional alignment, it will need to be masked in the configuration file.
 
 The required translational shifts in X and Y are calculated for each detector as the mean of the 1D correlation histogram along the axis.
 
@@ -33,4 +33,4 @@ masked = "W0005_H03" #excluding the DUT from the prelaignment
 max_correlation_rms = 6.0
 damping_factor = 1.0
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

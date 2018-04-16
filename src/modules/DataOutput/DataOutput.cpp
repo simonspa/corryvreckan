@@ -5,7 +5,7 @@ using namespace corryvreckan;
 using namespace std;
 
 DataOutput::DataOutput(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
 
     m_fileName = m_config.get<std::string>("fileName", "outputTuples.root");
     m_treeName = m_config.get<std::string>("treeName", "tree");

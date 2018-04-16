@@ -3,7 +3,7 @@
 **Status**: Functional   
 
 #### Description
-This algorithm collects `pixel` and `cluster` objects from the clipboard and creates correlation and timing plots.
+This module collects `pixel` and `cluster` objects from the clipboard and creates correlation and timing plots.
 
 
 #### Parameters
@@ -30,4 +30,4 @@ For each device the following plots are produced:
 makeCorrelations = true
 reference = "W0013_E03"
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

@@ -1,11 +1,11 @@
 /**
  * @file
- * @brief Special file automatically included in the algorithm for the dynamic
+ * @brief Special file automatically included in the module for the dynamic
  * loading
  *
  * Needs the following names to be defined by the build system
- * - CORRYVRECKAN_ALGORITHM_NAME: name of the module
- * - CORRYVRECKAN_ALGORITHM_HEADER: name of the header defining the module
+ * - CORRYVRECKAN_MODULE_NAME: name of the module
+ * - CORRYVRECKAN_MODULE_HEADER: name of the header defining the module
  *
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied
@@ -15,7 +15,7 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef CORRYVRECKAN_ALGORITHM_NAME
+#ifndef CORRYVRECKAN_MODULE_NAME
 #error "This header should only be automatically included during the build"
 #endif
 
@@ -25,14 +25,14 @@
 #include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
 
-#include CORRYVRECKAN_ALGORITHM_HEADER
+#include CORRYVRECKAN_MODULE_HEADER
 
 namespace corryvreckan {
     extern "C" {
-    Algorithm* corryvreckan_algorithm_generator(Configuration config, std::vector<Detector*> detectors);
-    Algorithm* corryvreckan_algorithm_generator(Configuration config, std::vector<Detector*> detectors) {
-        auto algorithm = new CORRYVRECKAN_ALGORITHM_NAME(std::move(config), std::move(detectors)); // NOLINT
-        return static_cast<Algorithm*>(algorithm);
+    Module* corryvreckan_module_generator(Configuration config, std::vector<Detector*> detectors);
+    Module* corryvreckan_module_generator(Configuration config, std::vector<Detector*> detectors) {
+        auto module = new CORRYVRECKAN_MODULE_NAME(std::move(config), std::move(detectors)); // NOLINT
+        return static_cast<Module*>(module);
     }
     }
 } // namespace corryvreckan

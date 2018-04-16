@@ -5,7 +5,7 @@ using namespace corryvreckan;
 using namespace std;
 
 ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
     m_method = m_config.get<int>("improvementMethod", 1);
     m_source = m_config.get<std::string>("signalSource", "W0013_G02");
     m_triggerLatency = m_config.get<double>("triggerLatency", Units::convert(0, "ns"));

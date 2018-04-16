@@ -13,7 +13,7 @@ Detector* globalDetector;
 int detNum;
 
 Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
     m_numberOfTracksForAlignment = m_config.get<int>("number_of_tracks", 20000);
     nIterations = m_config.get<int>("iterations", 3);
 

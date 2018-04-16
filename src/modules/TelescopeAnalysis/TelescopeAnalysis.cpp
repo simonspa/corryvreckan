@@ -6,7 +6,7 @@ using namespace corryvreckan;
 using namespace std;
 
 TelescopeAnalysis::TelescopeAnalysis(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {
+    : Module(std::move(config), std::move(detectors)) {
 
     chi2ndofCut = m_config.get<double>("chi2ndofCut", 3.);
 }

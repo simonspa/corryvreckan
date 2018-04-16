@@ -3,7 +3,7 @@
 **Status**: Functional  
 
 #### Description
-This algorithm performs track finding using only positional information (no timing information). It is based on a linear extrapolation along the Z-axis, followed by a nearest neighbour search.
+This module performs track finding using only positional information (no timing information). It is based on a linear extrapolation along the Z-axis, followed by a nearest neighbour search.
 
 
 #### Parameters
@@ -32,4 +32,4 @@ minHitsOnTrack = 5
 excludeDUT = true
 DUT = "W0005_H03"
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

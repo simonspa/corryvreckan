@@ -3,7 +3,7 @@
 **Status**: Functional
 
 #### Description
-This algorithm reads in raw data files with extension `-1.dat`, and outputs the pixel data in hexidecimal in an output file called `outputHexDump.dat`.
+This module reads in raw data files with extension `-1.dat`, and outputs the pixel data in hexidecimal in an output file called `outputHexDump.dat`.
 
 #### Parameters
 * `DeviceToDumpData`: The name of the device data is to be read from.
@@ -19,4 +19,4 @@ DeviceToDumpData = "W0005_H03"
 inputDirectory = "path/to/directory"
 
 ```
-Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

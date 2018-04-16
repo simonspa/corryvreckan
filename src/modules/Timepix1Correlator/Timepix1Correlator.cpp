@@ -7,7 +7,7 @@ using namespace corryvreckan;
 using namespace std;
 
 Timepix1Correlator::Timepix1Correlator(Configuration config, std::vector<Detector*> detectors)
-    : Algorithm(std::move(config), std::move(detectors)) {}
+    : Module(std::move(config), std::move(detectors)) {}
 
 void Timepix1Correlator::initialise() {
 
