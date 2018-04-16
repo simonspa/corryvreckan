@@ -12,6 +12,7 @@ ADD_LIBRARY(CorryvreckanCore SHARED
     config/ConfigReader.cpp
     config/Configuration.cpp
     config/exceptions.cpp
+    module/Module.cpp
 )
 
 # Link the dependencies
