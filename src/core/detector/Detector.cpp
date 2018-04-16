@@ -10,6 +10,11 @@
 #include <map>
 #include <string>
 
+#include "Math/RotationX.h"
+#include "Math/RotationY.h"
+#include "Math/RotationZ.h"
+#include "Math/RotationZYX.h"
+
 #include "Detector.hpp"
 #include "core/utils/log.h"
 
