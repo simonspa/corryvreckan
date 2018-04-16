@@ -18,10 +18,10 @@ FileWriter::FileWriter(Configuration config, std::vector<Detector*> detectors)
  This algorithm writes an output file and fills it with trees containing
  the requested data.
 
- Any object which inherits from TestBeamObject can in principle be written
- to file. In order to enable this for a new type, the TestBeamObject::Factory
+ Any object which inherits from Object can in principle be written
+ to file. In order to enable this for a new type, the Object::Factory
  function must know how to return an instantiation of that type (see
- TestBeamObject.C file to see how to do this). The new type can then simply
+ Object.C file to see how to do this). The new type can then simply
  be added to the object list and will be written out correctly.
 
  */
@@ -70,9 +70,9 @@ void FileWriter::initialise() {
                 m_outputTrees[objectID] = new TTree(treeName.c_str(), treeName.c_str());
                 m_outputTrees[objectID]->Branch("time", &m_time);
 
-                // Cast the TestBeamObject as a specific type using a Factory
+                // Cast the Object as a specific type using a Factory
                 // This will return a Timepix1Pixel*, Timepix3Pixel* etc.
-                m_objects[objectID] = TestBeamObject::Factory(detectorType, objectType);
+                m_objects[objectID] = Object::Factory(detectorType, objectType);
                 m_outputTrees[objectID]->Branch(objectType.c_str(), &m_objects[objectID]);
             }
         }
@@ -83,7 +83,7 @@ void FileWriter::initialise() {
             m_outputTrees[objectType] = new TTree(treeName.c_str(), treeName.c_str());
             // Branch the tree to the timestamp and object
             m_outputTrees[objectType]->Branch("time", &m_time);
-            m_objects[objectType] = TestBeamObject::Factory(objectType);
+            m_objects[objectType] = Object::Factory(objectType);
             m_outputTrees[objectType]->Branch(objectType.c_str(), &m_objects[objectType]);
         }
     }
@@ -117,7 +117,7 @@ StatusCode FileWriter::run(Clipboard* clipboard) {
 
                 // Get the objects, if they don't exist then continue
                 LOG(DEBUG) << "Checking for " << objectType << " on device " << detectorID;
-                TestBeamObjects* objects = clipboard->get(detectorID, objectType);
+                Objects* objects = clipboard->get(detectorID, objectType);
                 if(objects == NULL)
                     continue;
                 LOG(DEBUG) << "Picked up " << objects->size() << " " << objectType << " from device " << detectorID;
@@ -138,7 +138,7 @@ StatusCode FileWriter::run(Clipboard* clipboard) {
 
             // Get the objects, if they don't exist then continue
             LOG(DEBUG) << "Checking for " << objectType;
-            TestBeamObjects* objects = clipboard->get(objectType);
+            Objects* objects = clipboard->get(objectType);
             if(objects == NULL)
                 continue;
             LOG(DEBUG) << "Picked up " << objects->size() << " " << objectType;

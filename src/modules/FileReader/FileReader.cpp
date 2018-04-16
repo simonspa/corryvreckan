@@ -22,10 +22,10 @@ FileReader::FileReader(Configuration config, std::vector<Detector*> detectors)
  This algorithm reads an input file containing trees with data previously
  written out by the FileWriter.
 
- Any object which inherits from TestBeamObject can in principle be read
- from file. In order to enable this for a new type, the TestBeamObject::Factory
+ Any object which inherits from Object can in principle be read
+ from file. In order to enable this for a new type, the Object::Factory
  function must know how to return an instantiation of that type (see
- TestBeamObject.C file to see how to do this). The new type can then simply
+ Object.C file to see how to do this). The new type can then simply
  be added to the object list and will be read in correctly. This is the same
  as for the FileWriter, so if the data has been written then the reading will
  run without problems.
@@ -82,8 +82,8 @@ void FileReader::initialise() {
                 // Set the branch addresses
                 m_inputTrees[objectID]->SetBranchAddress("time", &m_time);
 
-                // Cast the TestBeamObject as a specific type using a Factory
-                m_objects[objectID] = TestBeamObject::Factory(detectorType, objectType);
+                // Cast the Object as a specific type using a Factory
+                m_objects[objectID] = Object::Factory(detectorType, objectType);
                 m_inputTrees[objectID]->SetBranchAddress(objectType.c_str(), &m_objects[objectID]);
                 m_currentPosition[objectID] = 0;
             }
@@ -95,7 +95,7 @@ void FileReader::initialise() {
             m_inputTrees[objectType] = (TTree*)gDirectory->Get(treePath.c_str());
             // Branch the tree to the timestamp and object
             m_inputTrees[objectType]->SetBranchAddress("time", &m_time);
-            m_objects[objectType] = TestBeamObject::Factory(objectType);
+            m_objects[objectType] = Object::Factory(objectType);
             m_inputTrees[objectType]->SetBranchAddress(objectType.c_str(), &m_objects[objectType]);
         }
     }
@@ -137,7 +137,7 @@ StatusCode FileReader::run(Clipboard* clipboard) {
                     continue;
 
                 // Create the container that will go on the clipboard
-                TestBeamObjects* objectContainer = new TestBeamObjects();
+                Objects* objectContainer = new Objects();
                 LOG(DEBUG) << "Looking for " << objectType << " on detector " << detectorID;
 
                 // Continue looping over this device while there is still data
@@ -160,7 +160,7 @@ StatusCode FileReader::run(Clipboard* clipboard) {
 
                     // Make a copy of the object from the tree, and place it in the object
                     // container
-                    TestBeamObject* object = TestBeamObject::Factory(detectorType, objectType, m_objects[objectID]);
+                    Object* object = Object::Factory(detectorType, objectType, m_objects[objectID]);
                     objectContainer->push_back(object);
                 }
 
@@ -176,7 +176,7 @@ StatusCode FileReader::run(Clipboard* clipboard) {
                 continue;
 
             // Create the container that will go on the clipboard
-            TestBeamObjects* objectContainer = new TestBeamObjects();
+            Objects* objectContainer = new Objects();
             LOG(DEBUG) << "Looking for " << objectType;
 
             // Continue looping over this device while there is still data
@@ -199,7 +199,7 @@ StatusCode FileReader::run(Clipboard* clipboard) {
 
                 // Make a copy of the object from the tree, and place it in the object
                 // container
-                TestBeamObject* object = TestBeamObject::Factory(objectType, m_objects[objectType]);
+                Object* object = Object::Factory(objectType, m_objects[objectType]);
                 objectContainer->push_back(object);
             }
 

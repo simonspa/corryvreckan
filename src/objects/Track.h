@@ -15,7 +15,7 @@
 
 namespace corryvreckan {
 
-    class Track : public TestBeamObject {
+    class Track : public Object {
 
     public:
         // Constructors and destructors

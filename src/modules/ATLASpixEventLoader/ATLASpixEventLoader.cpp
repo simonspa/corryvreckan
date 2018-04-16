@@ -170,7 +170,7 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
 
     // Put the data on the clipboard
     if(pixels->size() > 0)
-        clipboard->put(detectorID, "pixels", (TestBeamObjects*)pixels);
+        clipboard->put(detectorID, "pixels", (Objects*)pixels);
 
     // Fill histograms
     hPixelsPerFrame->Fill(pixels->size());

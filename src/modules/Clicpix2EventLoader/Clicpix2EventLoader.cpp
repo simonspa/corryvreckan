@@ -250,7 +250,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
 
     // Put the data on the clipboard
     if(!pixels->empty()) {
-        clipboard->put(detectorID, "pixels", (TestBeamObjects*)pixels);
+        clipboard->put(detectorID, "pixels", (Objects*)pixels);
     }
 
     // Fill histograms

@@ -3,12 +3,12 @@
 
 namespace corryvreckan {
 
-    class SpidrSignal : public TestBeamObject {
+    class SpidrSignal : public Object {
 
     public:
         // Constructors and destructors
         SpidrSignal() {}
-        SpidrSignal(std::string type, double timestamp) : TestBeamObject(timestamp), m_type(type){};
+        SpidrSignal(std::string type, double timestamp) : Object(timestamp), m_type(type){};
         //    virtual ~SpidrSignal() {}
 
         // Functions

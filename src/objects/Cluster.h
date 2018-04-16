@@ -15,7 +15,7 @@
 
 namespace corryvreckan {
 
-    class Cluster : public TestBeamObject {
+    class Cluster : public Object {
 
     public:
         // Constructors and destructors
