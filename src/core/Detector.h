@@ -1,5 +1,5 @@
-#ifndef DET_PARAMETERS_H
-#define DET_PARAMETERS_H 1
+#ifndef CORRYVRECKAN_DETECTOR_H
+#define CORRYVRECKAN_DETECTOR_H
 
 #include <fstream>
 #include <map>
@@ -33,10 +33,7 @@ namespace corryvreckan {
         // Constructors and desctructors
         Detector() = delete;
         Detector(const Configuration& config);
-        ~Detector() {
-            delete m_localToGlobal;
-            delete m_globalToLocal;
-        }
+        ~Detector() {}
 
         // Functions to retrieve basic information
         std::string type() { return m_detectorType; }
@@ -101,8 +98,8 @@ namespace corryvreckan {
         double inPixelX(PositionVector3D<Cartesian3D<double>> localPosition);
         double inPixelY(PositionVector3D<Cartesian3D<double>> localPosition);
 
-        ROOT::Math::XYZPoint localToGlobal(ROOT::Math::XYZPoint local) { return (*m_localToGlobal) * local; };
-        ROOT::Math::XYZPoint globalToLocal(ROOT::Math::XYZPoint global) { return (*m_globalToLocal) * global; };
+        ROOT::Math::XYZPoint localToGlobal(ROOT::Math::XYZPoint local) { return m_localToGlobal * local; };
+        ROOT::Math::XYZPoint globalToLocal(ROOT::Math::XYZPoint global) { return m_globalToLocal * global; };
 
     private:
         // Member variables
@@ -120,8 +117,8 @@ namespace corryvreckan {
         std::string m_orientation_mode;
 
         // Transforms from local to global and back
-        Transform3D* m_localToGlobal;
-        Transform3D* m_globalToLocal;
+        Transform3D m_localToGlobal;
+        Transform3D m_globalToLocal;
 
         // Normal to the detector surface and point on the surface
         PositionVector3D<Cartesian3D<double>> m_normal;
@@ -134,4 +131,4 @@ namespace corryvreckan {
     };
 } // namespace corryvreckan
 
-#endif // DET_PARAMETERS_H
+#endif // CORRYVRECKAN_DETECTOR_H

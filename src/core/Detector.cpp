@@ -119,24 +119,21 @@ void Detector::initialise() {
         throw RuntimeError("Invalid detector orientation mode: " + m_orientation_mode);
     }
 
-    m_localToGlobal = new Transform3D(rotations, translations);
-    m_globalToLocal = new Transform3D();
-    (*m_globalToLocal) = m_localToGlobal->Inverse();
+    m_localToGlobal = Transform3D(rotations, translations);
+    m_globalToLocal = m_localToGlobal.Inverse();
 
     // Find the normal to the detector surface. Build two points, the origin and a unit step in z,
     // transform these points to the global co-ordinate frame and then make a vector pointing between them
     m_origin = PositionVector3D<Cartesian3D<double>>(0., 0., 0.);
-    m_origin = (*m_localToGlobal) * m_origin;
+    m_origin = m_localToGlobal * m_origin;
     PositionVector3D<Cartesian3D<double>> localZ(0., 0., 1.);
-    localZ = (*m_localToGlobal) * localZ;
+    localZ = m_localToGlobal * localZ;
     m_normal = PositionVector3D<Cartesian3D<double>>(
         localZ.X() - m_origin.X(), localZ.Y() - m_origin.Y(), localZ.Z() - m_origin.Z());
 }
 
 // Function to update transforms (such as during alignment)
 void Detector::update() {
-    delete m_localToGlobal;
-    delete m_globalToLocal;
     this->initialise();
 }
 
@@ -189,7 +186,7 @@ bool Detector::hasIntercept(Track* track, double pixelTolerance) {
     PositionVector3D<Cartesian3D<double>> globalIntercept = this->getIntercept(track);
 
     // Convert to local co-ordinates
-    PositionVector3D<Cartesian3D<double>> localIntercept = *(this->m_globalToLocal) * globalIntercept;
+    PositionVector3D<Cartesian3D<double>> localIntercept = this->m_globalToLocal * globalIntercept;
 
     // Get the row and column numbers
     double row = this->getRow(localIntercept);
@@ -211,7 +208,7 @@ bool Detector::hitMasked(Track* track, int tolerance) {
     PositionVector3D<Cartesian3D<double>> globalIntercept = this->getIntercept(track);
 
     // Convert to local co-ordinates
-    PositionVector3D<Cartesian3D<double>> localIntercept = *(this->m_globalToLocal) * globalIntercept;
+    PositionVector3D<Cartesian3D<double>> localIntercept = this->m_globalToLocal * globalIntercept;
 
     // Get the row and column numbers
     int row = static_cast<int>(floor(this->getRow(localIntercept) + 0.5));
