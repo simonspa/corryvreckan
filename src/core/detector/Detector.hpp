@@ -1,3 +1,11 @@
+/** @file
+ *  @brief Detector model class
+ *  @copyright Copyright (c) 2017 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 #ifndef CORRYVRECKAN_DETECTOR_H
 #define CORRYVRECKAN_DETECTOR_H
 
@@ -19,10 +27,10 @@
 #include "Math/Translation3D.h"
 #include "Math/Vector3D.h"
 
-#include "config/Configuration.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/utils/ROOT.h"
+#include "core/utils/log.h"
 #include "objects/Track.h"
-#include "utils/ROOT.h"
-#include "utils/log.h"
 
 using namespace ROOT::Math;
 

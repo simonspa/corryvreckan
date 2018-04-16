@@ -1,9 +1,17 @@
+/** @file
+ *  @brief Implementation of the detector model
+ *  @copyright Copyright (c) 2017 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 #include <fstream>
 #include <map>
 #include <string>
 
-#include "Detector.h"
-#include "utils/log.h"
+#include "Detector.hpp"
+#include "core/utils/log.h"
 
 using namespace ROOT::Math;
 using namespace corryvreckan;
