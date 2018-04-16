@@ -1,3 +1,11 @@
+/** @file
+ *  @brief Interface to the core framework
+ *  @copyright Copyright (c) 2017 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 // ROOT include files
 #include <Math/DisplacementVector2D.h>
 #include <Math/Vector2D.h>
@@ -6,7 +14,7 @@
 #include <TSystem.h>
 
 // Local include files
-#include "Analysis.h"
+#include "Analysis.hpp"
 #include "module/exceptions.h"
 #include "utils/log.h"
 

@@ -6,7 +6,7 @@
 #include <string>
 #include <utility>
 
-#include "core/Analysis.h"
+#include "core/Analysis.hpp"
 #include "core/config/ConfigManager.hpp"
 #include "core/utils/exceptions.h"
 /**

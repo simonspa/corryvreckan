@@ -1,5 +1,13 @@
-#ifndef ANALYSIS_H
-#define ANALYSIS_H 1
+/** @file
+ *  @brief Interface to the core framework
+ *  @copyright Copyright (c) 2017 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
+#ifndef CORRYVRECKAN_ANALYSIS_H
+#define CORRYVRECKAN_ANALYSIS_H
 
 #include <fstream>
 #include <map>
@@ -12,21 +20,20 @@
 #include "Detector.h"
 #include "clipboard/Clipboard.hpp"
 #include "config/ConfigManager.hpp"
-#include "config/Configuration.hpp"
 #include "module/Module.hpp"
 
-//-------------------------------------------------------------------------------
-// The analysis class is the core class which allows the event processing to
-// run. It basically contains a vector of modules, each of which is
-// initialised,
-// run on each event and finalised. It does not define what an event is, merely
-// runs each module sequentially and passes the clipboard between them
-// (erasing
-// it at the end of each run sequence). When an module returns a 0, the event
-// processing will stop.
-//-------------------------------------------------------------------------------
-
 namespace corryvreckan {
+
+    /**
+     * @brief Provides the link between the core framework and the executable.
+     *
+     * Supply the path location the main configuration which should be provided to the executable. Hereafter this class
+     * should be used to load, initialize, run and finalize all the modules.
+     * The analysis class is the core class which allows the event processing to run. It basically contains a vector of
+     * modules, each of which is initialised, run on each event and finalised. It does not define what an event is, merely
+     * runs each module sequentially and passes the clipboard between them (erasing it at the end of each run sequence). When
+     * an module returns a Failure code, the event processing will stop.
+     */
     class Analysis {
 
     public:
@@ -77,4 +84,5 @@ namespace corryvreckan {
         void set_module_after(std::tuple<LogLevel, LogFormat> prev);
     };
 } // namespace corryvreckan
-#endif // ANALYSIS_H
+
+#endif // CORRYVRECKAN_ANALYSIS_H
