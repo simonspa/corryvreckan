@@ -124,6 +124,7 @@ void Clicpix2EventLoader::initialise() {
         "hitMapDiscarded", "hitMapDiscarded", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
 
     hPixelToT = new TH1F("pixelToT", "pixelToT", 32, 0, 31);
+    hPixelToTMap = new TProfile2D("pixelToTMap", "pixelToTMap", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY(), 0, maxcounter - 1);
     hPixelToA = new TH1F("pixelToA", "pixelToA", maxcounter, 0, maxcounter - 1);
     hPixelCnt = new TH1F("pixelCnt", "pixelCnt", maxcounter, 0, maxcounter - 1);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 1000, 0, 1000);
@@ -213,6 +214,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
             try {
                 tot = cp2_pixel->GetTOT();
                 hPixelToT->Fill(tot);
+		hPixelToTMap->Fill(col,row,tot);
             } catch(caribou::WrongDataFormat&) {
                 // Set ToT to one of not defined.
                 tot = 1;

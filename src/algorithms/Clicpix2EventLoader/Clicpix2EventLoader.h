@@ -10,6 +10,8 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TProfile2D.h"
+
 #include "core/algorithm/Algorithm.h"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
@@ -53,6 +55,7 @@ namespace corryvreckan {
 
         TH2F* hHitMap;
         TH2F* hHitMapDiscarded;
+	TProfile2D* hPixelToTMap;
         TH1F* hPixelToT;
         TH1F* hPixelToA;
         TH1F* hPixelCnt;
