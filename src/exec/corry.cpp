@@ -144,7 +144,7 @@ int main(int argc, const char* argv[]) {
     }
 
     try {
-        // Construct main Allpix object
+        // Construct main Corryvreckan object
         corry = std::make_unique<Analysis>(config_file_name, options);
         cv_ready = true;
 

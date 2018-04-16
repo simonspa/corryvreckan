@@ -145,8 +145,7 @@ void Analysis::load_modules() {
     LOG(DEBUG) << "Start loading modules, have " << configs.size() << " configurations.";
     // Loop through all non-global configurations
     for(auto& config : configs) {
-        // Load library for each module. Libraries are named (by convention + CMAKE)
-        // libAllpixModule Name.suffix
+        // Load library for each module. Libraries are named (by convention + CMAKE libCorryvreckanModule Name.suffix
         std::string lib_name =
             std::string(CORRYVRECKAN_MODULE_PREFIX).append(config.getName()).append(SHARED_LIBRARY_SUFFIX);
         LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loading module " << config.getName();
