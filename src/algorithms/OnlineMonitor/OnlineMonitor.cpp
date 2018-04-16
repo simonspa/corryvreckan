@@ -94,8 +94,8 @@ void OnlineMonitor::initialise() {
         AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/pixelToA");
         AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/pixelCnt", "", true);
         AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/pixelsPerFrame", "", true);
-	AddHisto("DUTCanvas", "/corryvreckan/DUTAnalysis/clusterTotAssociated", "");
-	AddHisto("DUTCanvas", "/corryvreckan/DUTAnalysis/associatedTracksVersusTime", "");
+        AddHisto("DUTCanvas", "/corryvreckan/DUTAnalysis/clusterTotAssociated", "");
+        AddHisto("DUTCanvas", "/corryvreckan/DUTAnalysis/associatedTracksVersusTime", "");
     }
 
     // Set up the main frame before drawing

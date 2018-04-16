@@ -224,17 +224,17 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             if(first_track == 0)
                 clusterToTVersusTime->Fill(Units::convert(cluster->timestamp(), "ns"), cluster->tot());
 
-	    auto assocClusters = track->associatedClusters();
-	    if(std::find(assocClusters.begin(), assocClusters.end(), cluster) == assocClusters.end()) {
-	      LOG(DEBUG) << "Cluster not associated with track";
-	      continue;
-	    }
-	    LOG(DEBUG) << "Found associated cluster";
+            auto assocClusters = track->associatedClusters();
+            if(std::find(assocClusters.begin(), assocClusters.end(), cluster) == assocClusters.end()) {
+                LOG(DEBUG) << "Cluster not associated with track";
+                continue;
+            }
+            LOG(DEBUG) << "Found associated cluster";
 
-	    ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
-	    double xdistance = intercept.X() - cluster->globalX();
-	    double ydistance = intercept.Y() - cluster->globalY();
-	    
+            ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
+            double xdistance = intercept.X() - cluster->globalX();
+            double ydistance = intercept.Y() - cluster->globalY();
+
             // We now have an associated cluster! Fill plots
             associated = true;
             LOG(TRACE) << "Found associated cluster";

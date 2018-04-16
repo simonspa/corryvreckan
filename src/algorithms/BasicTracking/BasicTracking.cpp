@@ -119,10 +119,12 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
 
             // Check if the DUT should be excluded and obey:
             if(excludeDUT && detectorID == m_config.get<std::string>("DUT")) {
-                // Keep all DUT clusters, so we can add them as associated clusters later, that are within the DUT timing cut:
+                // Keep all DUT clusters, so we can add them as associated clusters later, that are within the DUT timing
+                // cut:
                 dutClusters = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut_DUT);
-                LOG(DEBUG) << "Got " << dutClusters.size() << " DUT clusters within " << Units::display(timingCut_DUT, {"ms","us","ns"});
-		continue;
+                LOG(DEBUG) << "Got " << dutClusters.size() << " DUT clusters within "
+                           << Units::display(timingCut_DUT, {"ms", "us", "ns"});
+                continue;
             }
 
             if(detectorID == seedPlane)
@@ -227,11 +229,11 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
             if(abs(xdistance) > spatialCut_DUT || abs(ydistance) > spatialCut_DUT) {
                 LOG(DEBUG) << "Discarding DUT cluster with distance (" << abs(xdistance) << "," << abs(ydistance) << ")";
                 continue;
-	    }
+            }
 
             LOG(DEBUG) << "Found associated cluster with distance (" << abs(xdistance) << "," << abs(ydistance) << ")";
             track->addAssociatedCluster(dutcluster);
-	    associatedClusters++;
+            associatedClusters++;
         }
     }
 
@@ -267,5 +269,5 @@ Cluster* BasicTracking::getNearestCluster(long long int timestamp, Clusters clus
 }
 
 void BasicTracking::finalise() {
-  LOG(INFO) << "Found " << associatedClusters << " associated clusters for detector " << m_config.get<std::string>("DUT");
+    LOG(INFO) << "Found " << associatedClusters << " associated clusters for detector " << m_config.get<std::string>("DUT");
 }
