@@ -18,6 +18,8 @@ Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
     nIterations = m_config.get<int>("iterations", 3);
 
     m_pruneTracks = m_config.get<bool>("prune_tracks", false);
+    m_translationsOnly = m_config.get<bool>("translationsOnly", false);
+    m_rotationsOnly = m_config.get<bool>("rotationsOnly", false);
     m_maxAssocClusters = m_config.get<int>("max_associated_clusters", 1);
     m_maxTrackChi2 = m_config.get<double>("max_track_chi2ndof", 10.);
 
@@ -307,16 +309,26 @@ void Alignment::finalise() {
                     << display_vector(detector->rotation(), {"deg"});
 
         // Add the parameters to the fitter (z displacement not allowed to move!)
-        residualFitter->SetParameter(
-            0, (detectorToAlign + "_displacementX").c_str(), detector->displacementX(), 0.01, -50, 50);
-        residualFitter->SetParameter(
-            1, (detectorToAlign + "_displacementY").c_str(), detector->displacementY(), 0.01, -50, 50);
-        residualFitter->SetParameter(
+	if(m_rotationsOnly==true){
+	        residualFitter->SetParameter(0, (detectorToAlign + "_displacementX").c_str(), detector->displacementX(), 0, -50, 50);
+        	residualFitter->SetParameter(1, (detectorToAlign + "_displacementY").c_str(), detector->displacementY(), 0, -50, 50);
+	}
+	else{	
+		residualFitter->SetParameter(0, (detectorToAlign + "_displacementX").c_str(), detector->displacementX(), 0.01, -50, 50);
+        	residualFitter->SetParameter(1, (detectorToAlign + "_displacementY").c_str(), detector->displacementY(), 0.01, -50, 50);
+	}        
+	residualFitter->SetParameter(
             2, (detectorToAlign + "_displacementZ").c_str(), detector->displacementZ(), 0, -10, 500);
-        residualFitter->SetParameter(3, (detectorToAlign + "_rotationX").c_str(), detector->rotationX(), 0.001, -6.30, 6.30);
-        residualFitter->SetParameter(4, (detectorToAlign + "_rotationY").c_str(), detector->rotationY(), 0.001, -6.30, 6.30);
-        residualFitter->SetParameter(5, (detectorToAlign + "_rotationZ").c_str(), detector->rotationZ(), 0.001, -6.30, 6.30);
-
+	if(m_translationsOnly==true){
+	        residualFitter->SetParameter(3, (detectorToAlign + "_rotationX").c_str(), detector->rotationX(), 0, -6.30, 6.30);
+	        residualFitter->SetParameter(4, (detectorToAlign + "_rotationY").c_str(), detector->rotationY(), 0, -6.30, 6.30);
+        	residualFitter->SetParameter(5, (detectorToAlign + "_rotationZ").c_str(), detector->rotationZ(), 0, -6.30, 6.30);
+	}
+	else{
+        	residualFitter->SetParameter(3, (detectorToAlign + "_rotationX").c_str(), detector->rotationX(), 0.001, -6.30, 6.30);
+        	residualFitter->SetParameter(4, (detectorToAlign + "_rotationY").c_str(), detector->rotationY(), 0.001, -6.30, 6.30);
+        	residualFitter->SetParameter(5, (detectorToAlign + "_rotationZ").c_str(), detector->rotationZ(), 0.001, -6.30, 6.30);
+	}	
         for(int iteration = 0; iteration < nIterations; iteration++) {
 
             auto old_position = detector->displacement();

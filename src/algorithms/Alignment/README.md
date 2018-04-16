@@ -23,6 +23,8 @@ For the detector specified by the `detectorToAlign` parameter, this method moves
 * `detectorToAlign`: Parameter to set a particular plane to align. This parameter is only used in the residuals method (`alignmentMethod = 1`). The default is the `DUT` plane.
 * `DUT`: Name of the DUT plane.
 * `reference`: Name of the detector used as the alignment reference plane. All other telescope planes are aligned with respect to the reference plane.
+* `translationsOnly`: Boolean to set if only translational alignment is wanted by the user. Note that the Z displacement is never aligned. The default value is `false`.
+* `rotationsOnly`: Boolean to set if only rotational alignment is wanted by the user. The default value is `false`.
 * `prune_tracks`: Boolean to set if tracks with a number of associated clusters > `max_associated_clusters` or with a track chi^2 > `max_track_chi2ndof` should be excluded from use in the alignment. This parameter was designed for `alignmentMethod=1`. The number of discarded tracks is outputted on terminal. Default is `False`. 
 * `max_associated_clusters`: Maximum number of associated clusters per track allowed when `prune_tracks=True` for the track to be used in the alignment. Default value is `1`.
 * `max_track_chi2ndof`: Maximum track chi^2 value allowed when `prune_tracks=True` for the track to be used in the alignment. Default value is `10.0`.
