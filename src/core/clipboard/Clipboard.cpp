@@ -1,14 +1,14 @@
 #include "Clipboard.hpp"
-#include "objects/TestBeamObject.h"
+#include "objects/Object.hpp"
 
 using namespace corryvreckan;
 
-void Clipboard::put(std::string name, TestBeamObjects* objects) {
+void Clipboard::put(std::string name, Objects* objects) {
     m_dataID.push_back(name);
     m_data[name] = objects;
 }
 
-void Clipboard::put(std::string name, std::string type, TestBeamObjects* objects) {
+void Clipboard::put(std::string name, std::string type, Objects* objects) {
     m_dataID.push_back(name + type);
     m_data[name + type] = objects;
 }
@@ -17,13 +17,13 @@ void Clipboard::put_persistent(std::string name, double value) {
     m_persistent_data[name] = value;
 }
 
-TestBeamObjects* Clipboard::get(std::string name) {
+Objects* Clipboard::get(std::string name) {
     if(m_data.count(name) == 0)
         return NULL;
     return m_data[name];
 }
 
-TestBeamObjects* Clipboard::get(std::string name, std::string type) {
+Objects* Clipboard::get(std::string name, std::string type) {
     if(m_data.count(name + type) == 0)
         return NULL;
     return m_data[name + type];
@@ -35,8 +35,8 @@ double Clipboard::get_persistent(std::string name) {
 
 void Clipboard::clear() {
     for(auto& id : m_dataID) {
-        TestBeamObjects* collection = m_data[id];
-        for(TestBeamObjects::iterator it = collection->begin(); it != collection->end(); it++)
+        Objects* collection = m_data[id];
+        for(Objects::iterator it = collection->begin(); it != collection->end(); it++)
             delete(*it);
         delete m_data[id];
         m_data.erase(id);

@@ -239,7 +239,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
 
     // Save the tracks on the clipboard
     if(tracks->size() > 0) {
-        clipboard->put("tracks", (TestBeamObjects*)tracks);
+        clipboard->put("tracks", (Objects*)tracks);
         tracksPerEvent->Fill(tracks->size());
     }
 

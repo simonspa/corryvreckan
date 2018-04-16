@@ -289,9 +289,9 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
         if(data) {
             loadedData++;
             LOG(DEBUG) << "Loaded " << deviceData->size() << " pixels for device " << detectorID;
-            clipboard->put(detectorID, "pixels", (TestBeamObjects*)deviceData);
+            clipboard->put(detectorID, "pixels", (Objects*)deviceData);
         }
-        clipboard->put(detectorID, "SpidrSignals", (TestBeamObjects*)spidrData);
+        clipboard->put(detectorID, "SpidrSignals", (Objects*)spidrData);
     }
 
     // Increment the event time

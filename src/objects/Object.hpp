@@ -1,5 +1,5 @@
-#ifndef TESTBEAMOBJECT_H
-#define TESTBEAMOBJECT_H 1
+#ifndef CORRYVRECKANOBJECT_H
+#define CORRYVRECKANOBJECT_H 1
 
 // Include files
 #include <string>
@@ -8,21 +8,21 @@
 #include "TTree.h"
 
 //-------------------------------------------------------------------------------
-// Generic base class. Every class which inherits from TestBeamObject can be
+// Generic base class. Every class which inherits from Object can be
 // placed on the clipboard and written out to file.
 //-------------------------------------------------------------------------------
 
 namespace corryvreckan {
 
-    class TestBeamObject : public TObject {
+    class Object : public TObject {
 
     public:
         // Constructors and destructors
-        TestBeamObject();
-        TestBeamObject(std::string detectorID);
-        TestBeamObject(double timestamp);
-        TestBeamObject(std::string detectorID, double timestamp);
-        virtual ~TestBeamObject();
+        Object();
+        Object(std::string detectorID);
+        Object(double timestamp);
+        Object(std::string detectorID, double timestamp);
+        virtual ~Object();
 
         // Methods to get member variables
         std::string getDetectorID() { return m_detectorID; }
@@ -37,8 +37,8 @@ namespace corryvreckan {
 
         // Function to get instantiation of inherited class (given a string, give back
         // an object of type 'daughter')
-        static TestBeamObject* Factory(std::string, TestBeamObject* object = NULL);
-        static TestBeamObject* Factory(std::string, std::string, TestBeamObject* object = NULL);
+        static Object* Factory(std::string, Object* object = NULL);
+        static Object* Factory(std::string, std::string, Object* object = NULL);
 
     protected:
         // Member variables
@@ -46,10 +46,11 @@ namespace corryvreckan {
         double m_timestamp;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(TestBeamObject, 2)
+        ClassDef(Object, 1)
     };
 
     // Vector type declaration
-    typedef std::vector<TestBeamObject*> TestBeamObjects;
+    typedef std::vector<Object*> Objects;
 } // namespace corryvreckan
-#endif // TESTBEAMOBJECT_H
+
+#endif // CORRYVRECKANOBJECT_H

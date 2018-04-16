@@ -38,7 +38,7 @@ namespace corryvreckan {
         // Objects which the trees will point to (when
         // the branch address is set
         long long int m_time;
-        std::map<std::string, TestBeamObject*> m_objects;
+        std::map<std::string, Object*> m_objects;
 
         // List of objects to write out
         std::vector<std::string> m_objectList;

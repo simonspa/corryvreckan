@@ -2,11 +2,11 @@
 #define MCPARTICLE_H 1
 
 #include <Math/Point3D.h>
-#include "TestBeamObject.h"
+#include "Object.hpp"
 
 namespace corryvreckan {
 
-    class MCParticle : public TestBeamObject {
+    class MCParticle : public Object {
 
     public:
         // Constructors and destructors
@@ -16,7 +16,7 @@ namespace corryvreckan {
                    ROOT::Math::XYZPoint local_start_point,
                    ROOT::Math::XYZPoint local_end_point,
                    double timestamp)
-            : TestBeamObject(detectorID, timestamp), m_particle_id(particle_id), m_local_start_point(local_start_point),
+            : Object(detectorID, timestamp), m_particle_id(particle_id), m_local_start_point(local_start_point),
               m_local_end_point(local_end_point) {}
 
         // Member variables

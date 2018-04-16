@@ -59,7 +59,7 @@ StatusCode SpatialClustering::run(Clipboard* clipboard) {
         }
 
         // Make the cluster container and the maps for clustering
-        TestBeamObjects* deviceClusters = new TestBeamObjects();
+        Objects* deviceClusters = new Objects();
         map<Pixel*, bool> used;
         map<int, map<int, Pixel*>> hitmap;
         bool addedPixel;

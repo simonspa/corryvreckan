@@ -3,8 +3,8 @@
 
 #include <map>
 #include "Cluster.h"
+#include "Object.hpp"
 #include "TKDTree.h"
-#include "TestBeamObject.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 
@@ -18,7 +18,7 @@
 
 namespace corryvreckan {
 
-    class KDTree : public TestBeamObject {
+    class KDTree : public Object {
 
     public:
         // Constructors and destructors

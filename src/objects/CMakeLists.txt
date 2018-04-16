@@ -21,7 +21,7 @@ ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/KDTree.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.h
     ${CMAKE_CURRENT_SOURCE_DIR}/SpidrSignal.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/TestBeamObject.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Object.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Track.h
     ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.h
     LINKDEF
@@ -48,7 +48,7 @@ ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDiction
 
 # Define the library adding the object file created above
 ADD_LIBRARY(CorryvreckanObjects SHARED
-    TestBeamObject.cpp
+    Object.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx.o
 )
 

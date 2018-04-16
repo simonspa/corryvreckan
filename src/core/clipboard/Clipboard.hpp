@@ -7,11 +7,11 @@
 #include <string>
 
 #include "core/utils/log.h"
-#include "objects/TestBeamObject.h"
+#include "objects/Object.hpp"
 
 //-------------------------------------------------------------------------------
 // The Clipboard class is used to transfer information between modules during
-// the event processing. Any object inheriting from TestBeamObject can be placed
+// the event processing. Any object inheriting from Object can be placed
 // on the clipboard, and retrieved by its name. At the end of each event, the
 // clipboard is wiped clean.
 //-------------------------------------------------------------------------------
@@ -26,13 +26,13 @@ namespace corryvreckan {
         virtual ~Clipboard() {}
 
         // Add objects to clipboard - with name or name + type
-        void put(std::string name, TestBeamObjects* objects);
-        void put(std::string name, std::string type, TestBeamObjects* objects);
+        void put(std::string name, Objects* objects);
+        void put(std::string name, std::string type, Objects* objects);
         void put_persistent(std::string name, double value);
 
         // Get objects from clipboard - with name or name + type
-        TestBeamObjects* get(std::string name);
-        TestBeamObjects* get(std::string name, std::string type);
+        Objects* get(std::string name);
+        Objects* get(std::string name, std::string type);
 
         double get_persistent(std::string name);
 
@@ -44,7 +44,7 @@ namespace corryvreckan {
 
     private:
         // Container for data, list of all data held
-        std::map<std::string, TestBeamObjects*> m_data;
+        std::map<std::string, Objects*> m_data;
         std::vector<std::string> m_dataID;
         std::map<std::string, double> m_persistent_data;
     };

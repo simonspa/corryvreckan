@@ -199,7 +199,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
     // Save the tracks on the clipboard
     tracksPerEvent->Fill(tracks->size());
     if(tracks->size() > 0) {
-        clipboard->put("tracks", (TestBeamObjects*)tracks);
+        clipboard->put("tracks", (Objects*)tracks);
     }
 
     // Clean up tree objects
