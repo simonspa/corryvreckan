@@ -1,19 +1,33 @@
-#ifndef CORRYVRECKANOBJECT_H
-#define CORRYVRECKANOBJECT_H 1
+/**
+ * @file
+ * @brief Definition of Object base class
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
 
-// Include files
+/**
+ * @defgroup Objects Objects
+ * @brief Collection of objects passed around between modules
+ */
+
+#ifndef CORRYVRECKAN_OBJECT_H
+#define CORRYVRECKAN_OBJECT_H
+
 #include <string>
 #include <vector>
 #include "TObject.h"
 #include "TTree.h"
 
-//-------------------------------------------------------------------------------
-// Generic base class. Every class which inherits from Object can be
-// placed on the clipboard and written out to file.
-//-------------------------------------------------------------------------------
-
 namespace corryvreckan {
 
+    /**
+     * @ingroup Objects
+     * @brief Base class for internal objects
+     *
+     * Generic base class. Every class which inherits from Object can be placed on the clipboard and written out to file.
+    */
     class Object : public TObject {
 
     public:
@@ -53,4 +67,4 @@ namespace corryvreckan {
     typedef std::vector<Object*> Objects;
 } // namespace corryvreckan
 
-#endif // CORRYVRECKANOBJECT_H
+#endif // CORRYVRECKAN_OBJECT_H

@@ -17,12 +17,6 @@ void Clipboard::put_persistent(std::string name, double value) {
     m_persistent_data[name] = value;
 }
 
-Objects* Clipboard::get(std::string name) {
-    if(m_data.count(name) == 0)
-        return NULL;
-    return m_data[name];
-}
-
 Objects* Clipboard::get(std::string name, std::string type) {
     if(m_data.count(name + type) == 0)
         return NULL;
@@ -44,7 +38,10 @@ void Clipboard::clear() {
     m_dataID.clear();
 }
 
-void Clipboard::checkCollections() {
-    for(auto& name : m_dataID)
-        LOG(DEBUG) << "Data held: " << name;
+std::vector<std::string> Clipboard::listCollections() {
+    std::vector<std::string> collections;
+    for(auto& name : m_dataID) {
+        collections.push_back(name);
+    }
+    return collections;
 }
