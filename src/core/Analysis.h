@@ -11,18 +11,18 @@
 
 #include "Clipboard.h"
 #include "Detector.h"
-#include "algorithm/Algorithm.h"
 #include "config/ConfigManager.hpp"
 #include "config/Configuration.hpp"
+#include "module/Module.hpp"
 
 //-------------------------------------------------------------------------------
 // The analysis class is the core class which allows the event processing to
-// run. It basically contains a vector of algorithms, each of which is
+// run. It basically contains a vector of modules, each of which is
 // initialised,
 // run on each event and finalised. It does not define what an event is, merely
-// runs each algorithm sequentially and passes the clipboard between them
+// runs each module sequentially and passes the clipboard between them
 // (erasing
-// it at the end of each run sequence). When an algorithm returns a 0, the event
+// it at the end of each run sequence). When an module returns a 0, the event
 // processing will stop.
 //-------------------------------------------------------------------------------
 
@@ -55,7 +55,7 @@ namespace corryvreckan {
 
     private:
         void load_detectors();
-        void load_algorithms();
+        void load_modules();
         void add_units();
 
         // Log file if specified
@@ -66,15 +66,15 @@ namespace corryvreckan {
         int m_events;
         int m_tracks;
 
-        std::vector<Algorithm*> m_algorithms;
+        std::vector<Module*> m_modules;
         std::map<std::string, void*> loaded_libraries_;
 
         std::atomic<bool> m_terminate;
         std::unique_ptr<corryvreckan::ConfigManager> conf_mgr_;
 
-        Algorithm* create_algorithm(void* library, corryvreckan::Configuration config);
-        std::tuple<LogLevel, LogFormat> set_algorithm_before(const std::string&, const Configuration& config);
-        void set_algorithm_after(std::tuple<LogLevel, LogFormat> prev);
+        Module* create_module(void* library, corryvreckan::Configuration config);
+        std::tuple<LogLevel, LogFormat> set_module_before(const std::string&, const Configuration& config);
+        void set_module_after(std::tuple<LogLevel, LogFormat> prev);
     };
 } // namespace corryvreckan
 #endif // ANALYSIS_H

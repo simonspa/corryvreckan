@@ -40,19 +40,19 @@ IF(LATEX_COMPILER)
     # Check for pandoc for markdown conversion
     INCLUDE(${CMAKE_SOURCE_DIR}/cmake/PANDOC.cmake)
     IF(PANDOC_EXECUTABLE)
-        # Loop through all algorithms and fetch their README
-        SET(algorithm_dir ${CMAKE_SOURCE_DIR}/src/algorithms)
-        FILE(GLOB subdirs RELATIVE ${algorithm_dir} ${algorithm_dir}/*)
+        # Loop through all modules and fetch their README
+        SET(module_dir ${CMAKE_SOURCE_DIR}/src/modules)
+        FILE(GLOB subdirs RELATIVE ${module_dir} ${module_dir}/*)
         FOREACH(subdir ${subdirs})
-            IF(EXISTS ${algorithm_dir}/${subdir}/README.md AND NOT ${subdir} STREQUAL "Dummy")
+            IF(EXISTS ${module_dir}/${subdir}/README.md AND NOT ${subdir} STREQUAL "Dummy")
                 ADD_PANDOC_DOCUMENT(
-                    ${CMAKE_BINARY_DIR}/usermanual/algorithms/${subdir}.tex
-                    SOURCES              ${algorithm_dir}/${subdir}/README.md
-                    PRODUCT_DIRECTORY    usermanual/algorithms/
+                    ${CMAKE_BINARY_DIR}/usermanual/modules/${subdir}.tex
+                    SOURCES              ${module_dir}/${subdir}/README.md
+                    PRODUCT_DIRECTORY    usermanual/modules/
                     PANDOC_DIRECTIVES    -t latex --listings --biblatex
                     NO_EXPORT_PRODUCT
                 )
-                SET(algorithm_tex_files ${algorithm_tex_files} ${CMAKE_BINARY_DIR}/usermanual/algorithms/${subdir}.tex)
+                SET(module_tex_files ${module_tex_files} ${CMAKE_BINARY_DIR}/usermanual/modules/${subdir}.tex)
             ENDIF()
         ENDFOREACH()
 
@@ -74,25 +74,25 @@ IF(LATEX_COMPILER)
             SET(other_tex_files ${other_tex_files} ${CMAKE_BINARY_DIR}/usermanual/md/${readme_parent_dir}/${readme_dir_name}.tex)
         ENDFOREACH()
     ELSE()
-        SET(algorithm_tex_files)
+        SET(module_tex_files)
         SET(other_tex_files "")
         MESSAGE(WARNING "No pandoc command, cannot add Markdown documentation to user manual")
     ENDIF()
 
     # Build array of LaTex files to add to the documentation
-    LIST(LENGTH algorithm_tex_files NUM_ALGORITHMS)
-    MESSAGE(STATUS "Manual: adding ${NUM_ALGORITHMS} algorithm descriptions")
-    FOREACH(algorithm_tex_file ${algorithm_tex_files})
-        IF(NOT CORRYVRECKAN_ALGORITHM_FILES)
-            SET(CORRYVRECKAN_ALGORITHM_FILES "{${algorithm_tex_file}")
+    LIST(LENGTH module_tex_files NUM_MODULES)
+    MESSAGE(STATUS "Manual: adding ${NUM_MODULES} module descriptions")
+    FOREACH(module_tex_file ${module_tex_files})
+        IF(NOT CORRYVRECKAN_MODULE_FILES)
+            SET(CORRYVRECKAN_MODULE_FILES "{${module_tex_file}")
         ELSE()
-            SET(CORRYVRECKAN_ALGORITHM_FILES "${CORRYVRECKAN_ALGORITHM_FILES},${algorithm_tex_file}")
+            SET(CORRYVRECKAN_MODULE_FILES "${CORRYVRECKAN_MODULE_FILES},${module_tex_file}")
         ENDIF()
     ENDFOREACH()
-    IF(CORRYVRECKAN_ALGORITHM_FILES)
-        SET(CORRYVRECKAN_ALGORITHM_FILES "${CORRYVRECKAN_ALGORITHM_FILES}}")
+    IF(CORRYVRECKAN_MODULE_FILES)
+        SET(CORRYVRECKAN_MODULE_FILES "${CORRYVRECKAN_MODULE_FILES}}")
     ELSE()
-        SET(CORRYVRECKAN_ALGORITHM_FILES "")
+        SET(CORRYVRECKAN_MODULE_FILES "")
     ENDIF()
 
     # Check if we have biber and do not build if not
@@ -104,14 +104,14 @@ IF(LATEX_COMPILER)
             logo.png
             cc-by.png
             INPUTS
-            usermanual/chapters/algorithms.tex
+            usermanual/chapters/modules.tex
             usermanual/chapters/tools.tex
             usermanual/config.tex
 
             CONFIGURE
             usermanual/config.tex
             EXCLUDE_FROM_ALL
-            DEPENDS ${algorithm_tex_files} ${other_tex_files})
+            DEPENDS ${module_tex_files} ${other_tex_files})
     ELSE()
         MESSAGE(WARNING "No biber command, cannot compile user manual.")
     ENDIF()
