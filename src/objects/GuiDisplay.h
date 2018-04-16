@@ -81,9 +81,8 @@ namespace corryvreckan {
         // Exit the monitoring
         inline void Exit() { raise(SIGINT); }
 
-        // ROOT I/O class definition - update version number when you change this
-        // class!
-        ClassDef(GuiDisplay, 0)
+        // ROOT I/O class definition - update version number when you change this class!
+        ClassDef(GuiDisplay, 1)
     };
 } // namespace corryvreckan
 
