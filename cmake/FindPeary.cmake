@@ -1,8 +1,8 @@
-# - Try to find the PEARY framework
+# - Try to find the Peary framework
 # Once done this will define
-#  PEARY_FOUND - System has PEARY
-#  PEARY_INCLUDE_DIR - The PEARY main include directories
-#  PEARY_LIBRARY - The libraries needed to use PEARY
+#  Peary_FOUND - System has Peary
+#  Peary_INCLUDE_DIRS - The Peary main include directory
+#  Peary_LIBRARIES - The libraries for Peary and the required components
 
 MESSAGE(STATUS "Looking for Peary...")
 
