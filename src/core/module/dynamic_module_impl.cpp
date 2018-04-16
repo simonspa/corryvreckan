@@ -1,0 +1,38 @@
+/**
+ * @file
+ * @brief Special file automatically included in the module for the dynamic
+ * loading
+ *
+ * Needs the following names to be defined by the build system
+ * - CORRYVRECKAN_MODULE_NAME: name of the module
+ * - CORRYVRECKAN_MODULE_HEADER: name of the header defining the module
+ *
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied
+ * verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities
+ * granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
+#ifndef CORRYVRECKAN_MODULE_NAME
+#error "This header should only be automatically included during the build"
+#endif
+
+#include <memory>
+#include <utility>
+
+#include "core/config/Configuration.hpp"
+#include "core/utils/log.h"
+
+#include CORRYVRECKAN_MODULE_HEADER
+
+namespace corryvreckan {
+    extern "C" {
+    Module* corryvreckan_module_generator(Configuration config, std::vector<Detector*> detectors);
+    Module* corryvreckan_module_generator(Configuration config, std::vector<Detector*> detectors) {
+        auto module = new CORRYVRECKAN_MODULE_NAME(std::move(config), std::move(detectors)); // NOLINT
+        return static_cast<Module*>(module);
+    }
+    }
+} // namespace corryvreckan

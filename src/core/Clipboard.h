@@ -10,7 +10,7 @@
 #include "utils/log.h"
 
 //-------------------------------------------------------------------------------
-// The Clipboard class is used to transfer information between algorithms during
+// The Clipboard class is used to transfer information between modules during
 // the event processing. Any object inheriting from TestBeamObject can be placed
 // on the clipboard, and retrieved by its name. At the end of each event, the
 // clipboard is wiped clean.
