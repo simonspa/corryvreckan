@@ -80,6 +80,8 @@ namespace corryvreckan {
         Module* create_module(void* library, corryvreckan::Configuration config);
         std::tuple<LogLevel, LogFormat> set_module_before(const std::string&, const Configuration& config);
         void set_module_after(std::tuple<LogLevel, LogFormat> prev);
+
+        std::map<Module*, long double> module_execution_time_;
     };
 } // namespace corryvreckan
 

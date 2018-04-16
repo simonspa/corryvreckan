@@ -18,6 +18,7 @@
 #include "module/exceptions.h"
 #include "utils/log.h"
 
+#include <chrono>
 #include <dlfcn.h>
 #include <fstream>
 #include <iomanip>
@@ -366,6 +367,9 @@ void Analysis::run() {
 
         // Run all modules
         for(auto& module : m_modules) {
+            // Get current time
+            auto start = std::chrono::steady_clock::now();
+
             // Set run module section header
             std::string old_section_name = Log::getSection();
             std::string section_name = "R:";
@@ -375,20 +379,23 @@ void Analysis::run() {
             auto old_settings = set_module_before(module->getName(), module->getConfig());
             // Change to the output file directory
             m_directory->cd(module->getName().c_str());
-            // Run the modules with timing enabled
-            module->getStopwatch()->Start(false);
             StatusCode check = module->run(m_clipboard);
-            module->getStopwatch()->Stop();
             // Reset logging
             Log::setSection(old_section_name);
             set_module_after(old_settings);
+
+            // Update execution time
+            auto end = std::chrono::steady_clock::now();
+            module_execution_time_[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
+
             if(check == NoData) {
                 noData = true;
                 skipped++;
                 break;
             } // Nothing to be done in this event
-            if(check == Failure)
+            if(check == Failure) {
                 run = false;
+            }
         }
 
         // Print statistics:
@@ -518,8 +525,8 @@ void Analysis::timing() {
     LOG(STATUS) << "===============| Wall-clock timing (seconds) |================";
     for(auto& module : m_modules) {
         LOG(STATUS) << std::setw(25) << module->getName() << "  --  " << std::fixed << std::setprecision(5)
-                    << module->getStopwatch()->RealTime() << " = " << std::setprecision(9)
-                    << module->getStopwatch()->RealTime() / m_events << " s/evt";
+                    << module_execution_time_[module] << " = " << std::setprecision(9)
+                    << module_execution_time_[module] / m_events << " s/evt";
     }
     LOG(STATUS) << "==============================================================";
 }

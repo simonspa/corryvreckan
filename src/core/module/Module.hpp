@@ -10,7 +10,7 @@
 #define CORRYVRECKAN_MODULE_H
 
 #include <string>
-#include "TStopwatch.h"
+
 #include "core/clipboard/Clipboard.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/detector/Detector.hpp"
@@ -47,8 +47,6 @@ namespace corryvreckan {
      * - Module::initialise(): for initializing the module at the start
      * - Module::run(Clipoard* Clipboard): for doing the job of every module for every event
      * - Module::finalise(): for finalising the module at the end
-     *
-     * The module class also provides a few utility methods such as a stopwatch for timing measurements.
      */
     class Module {
 
@@ -103,7 +101,6 @@ namespace corryvreckan {
         // Methods to get member variables
         std::string getName() { return m_name; }
         Configuration getConfig() { return m_config; }
-        TStopwatch* getStopwatch() { return m_stopwatch; }
 
     protected:
         // Member variables
@@ -116,7 +113,6 @@ namespace corryvreckan {
         bool has_detector(std::string name);
 
     private:
-        TStopwatch* m_stopwatch;
         std::vector<Detector*> m_detectors;
     };
 } // namespace corryvreckan

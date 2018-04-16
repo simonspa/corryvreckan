@@ -14,7 +14,6 @@ Module::Module(Configuration config, std::vector<Detector*> detectors) {
     m_name = config.getName();
     m_config = config;
     m_detectors = detectors;
-    m_stopwatch = new TStopwatch();
     IFLOG(TRACE) {
         std::stringstream det;
         for(auto& d : m_detectors) {
