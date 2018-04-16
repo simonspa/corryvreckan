@@ -75,6 +75,18 @@ namespace corryvreckan {
         Module& operator=(const Module&) = delete;
 
         /**
+         * @brief Get the name of this module
+         * @return Name of the module
+         */
+        std::string getName() { return m_name; }
+
+        /**
+         * @brief Get the configuration for this module
+         * @return Reference to the configuration of this module
+         */
+        Configuration& getConfig() { return m_config; }
+
+        /**
          * @brief Initialise the module before the event sequence
          *
          * Does nothing if not overloaded.
@@ -98,23 +110,45 @@ namespace corryvreckan {
          */
         virtual void finalise(){};
 
-        // Methods to get member variables
-        std::string getName() { return m_name; }
-        Configuration getConfig() { return m_config; }
-
     protected:
-        // Member variables
-        std::string m_name;
+        // Configuration of this module
         Configuration m_config;
 
+        /**
+         * @brief Get list of all detectors this module acts on
+         * @return List of all detectors for this module
+         */
         std::vector<Detector*> get_detectors() { return m_detectors; };
+
+        /**
+         * @brief Get the number of detectors this module takes care of
+         * @return Number of detectors to act on
+         */
         std::size_t num_detectors() { return m_detectors.size(); };
+
+        /**
+         * @brief Get a specific detector, identified by its name
+         * @param  name Name of the detector to retrieve
+         * @return Pointer to the requested detector
+         * @throws ModuleError if detector with given name is not found for this module
+         */
         Detector* get_detector(std::string name);
+
+        /**
+         * @brief Check if this module should act on a given detector
+         * @param  name Name of the detector to check
+         * @return True if detector is known to this module, false if detector is unknown.
+         */
         bool has_detector(std::string name);
 
     private:
+        // Name of the module
+        std::string m_name;
+
+        // List of detectors to act on
         std::vector<Detector*> m_detectors;
     };
+
 } // namespace corryvreckan
 
 #endif // CORRYVRECKAN_MODULE_H
