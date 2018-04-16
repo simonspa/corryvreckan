@@ -4,8 +4,8 @@
 // Include files
 #include <string>
 #include "TStopwatch.h"
-#include "core/Clipboard.h"
 #include "core/Detector.h"
+#include "core/clipboard/Clipboard.hpp"
 #include "core/config/Configuration.hpp"
 #include "exceptions.h"
 

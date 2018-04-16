@@ -9,8 +9,8 @@
 #include "TDirectory.h"
 #include "TFile.h"
 
-#include "Clipboard.h"
 #include "Detector.h"
+#include "clipboard/Clipboard.hpp"
 #include "config/ConfigManager.hpp"
 #include "config/Configuration.hpp"
 #include "module/Module.hpp"

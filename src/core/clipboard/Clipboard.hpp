@@ -6,8 +6,8 @@
 #include <map>
 #include <string>
 
+#include "core/utils/log.h"
 #include "objects/TestBeamObject.h"
-#include "utils/log.h"
 
 //-------------------------------------------------------------------------------
 // The Clipboard class is used to transfer information between modules during
