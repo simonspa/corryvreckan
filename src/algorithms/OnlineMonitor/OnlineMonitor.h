@@ -41,12 +41,13 @@ namespace corryvreckan {
         TApplication* app;
         GuiDisplay* gui;
 
-        void AddHisto(std::string, std::string, std::string style = "");
+        void AddHisto(std::string, std::string, std::string style = "", bool logy = false);
         void AddButton(std::string, std::string);
 
         // Member variables
         int eventNumber;
         int updateNumber;
+        std::string canvasTitle;
     };
 } // namespace corryvreckan
 #endif // OnlineMonitor_H

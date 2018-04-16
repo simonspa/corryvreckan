@@ -10,7 +10,8 @@ Clusters from the first plane in Z (named the seed plane) are related to cluster
 #### Parameters
 * `timingCut`: Maximum time difference allowed between clusters for association. Default value is `200ns`.
 * `spatialCut`: Maximum spatial distance in the XY plane allowed between clusters for association for the telescope planes. Default value is `0.2mm`.
-* `spatialCut_DUT`: Maximum spatial distance in the XY plane allowed between clusters for association for the DUT. Default value is `0.2mm`.
+* `spatialCutDUT`: Maximum spatial distance in the XY plane allowed between clusters for association for the DUT. Default value is `0.2mm`.
+* `timingCutDUT`: Maximum time difference allowed between clusters for association for the DUT. Default value is `200ns`.
 * `minHitsOnTrack`: Minium number of associated clusters needed to create a track, equivalent to the minimum number of planes required for each track. Default value is `6`.
 * `excludeDUT`: Boolean to chose if the DUT plane is included in the track finding. In either case, the DUT clusters possibly associated with the track are saved. Default value is `true`.
 * `DUT`: Name of the DUT plane.

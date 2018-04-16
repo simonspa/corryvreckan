@@ -78,12 +78,14 @@ void Timepix3EventLoader::initialise() {
             // Check if this device has conditions loaded and is a Timepix3
             Detector* detector;
             try {
+                LOG(DEBUG) << "Fetching detector with ID \"" << detectorID << "\"";
                 detector = get_detector(detectorID);
             } catch(AlgorithmError& e) {
                 LOG(WARNING) << e.what();
                 continue;
             }
 
+            LOG(DEBUG) << "Detector is of type \"" << detector->type() << "\"";
             if(detector->type() != "Timepix3") {
                 LOG(WARNING) << "Device with detector ID " << entry->d_name << " is not of type Timepix3.";
                 continue;
@@ -116,6 +118,10 @@ void Timepix3EventLoader::initialise() {
     // Check that we have files for every detector in the configuration file and sort them correctly:
     for(auto& detector : get_detectors()) {
         std::string detectorID = detector->name();
+
+        if(detector->type() != "Timepix3") {
+            continue;
+        }
 
         if(detector_files.count(detector->name()) == 0) {
             LOG(ERROR) << "No data file found for detector " << detector->name();
@@ -243,6 +249,12 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
     // be done in one of two ways: by taking all data in the time interval (t,t+delta), or by
     // loading a fixed number of pixels (ie. 2000 at a time)
 
+    // If event length is stored on clipboard, prefer that one:
+    if(clipboard->get_persistent("eventLength") > 0.1) {
+        m_eventLength = clipboard->get_persistent("eventLength");
+        LOG(DEBUG) << "Using event length from clipboard: " << Units::display(m_eventLength, {"s", "us", "ns"});
+    }
+
     LOG(TRACE) << "== New event";
     int loadedData = 0;
 
@@ -253,8 +265,9 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
     for(auto& detector : get_detectors()) {
 
         // Check if they are a Timepix3
-        if(detector->type() != "Timepix3")
+        if(detector->type() != "Timepix3") {
             continue;
+        }
 
         string detectorID = detector->name();
         // If all files for this detector have been read, ignore it:
@@ -611,15 +624,21 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             // If events are loaded based on time intervals, take all hits where the
             // time is within this window
 
-            // Ignore pixels if they arrive before the current event window
-            //      if(temporalSplit && (timestamp < clipboard->get_persistent("currentTime")) {
-            //        continue;
-            //      }
+            // Ignore pixel data if it is before the "currentTime" read from the clipboard storage:
+            if(temporalSplit && (timestamp < clipboard->get_persistent("currentTime"))) {
+                LOG(TRACE) << "Skipping pixel, is before event window (" << Units::display(timestamp, {"s", "us", "ns"})
+                           << " < " << Units::display(clipboard->get_persistent("currentTime"), {"s", "us", "ns"}) << ")";
+                continue;
+            }
 
             // Stop looking at data if the pixel is after the current event window
-            // (and rewind the file
-            // reader so that we start with this pixel next event)
+            // (and rewind the file reader so that we start with this pixel next event)
             if(temporalSplit && (timestamp > (clipboard->get_persistent("currentTime") + m_eventLength))) {
+                LOG(DEBUG) << "Stopping processing event, pixel is after "
+                              "event window ("
+                           << Units::display(timestamp, {"s", "us", "ns"}) << " > "
+                           << Units::display(clipboard->get_persistent("currentTime") + m_eventLength, {"s", "us", "ns"})
+                           << ")";
                 (*m_file_iterator[detectorID])->seekg(-1 * sizeof(pixdata), std::ios_base::cur);
                 break;
             }

@@ -28,7 +28,7 @@ void DUTAnalysis::initialise() {
     residualsX2pix = new TH1F("residualsX2pix", "residualsX2pix", 400, -0.2, 0.2);
     residualsY = new TH1F("residualsY", "residualsY", 400, -0.2, 0.2);
 
-    clusterTotAssociated = new TH1F("clusterTotAssociated", "clusterTotAssociated", 2000, 0, 100000);
+    clusterTotAssociated = new TH1F("clusterTotAssociated", "clusterTotAssociated", 10000, 0, 10000);
     clusterSizeAssociated = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
     clusterSizeAssociated_X = new TH1F("clusterSizeAssociated_X", "clusterSizeAssociated_X", 30, 0, 30);
     clusterSizeAssociated_Y = new TH1F("clusterSizeAssociated_Y", "clusterSizeAssociated_Y", 30, 0, 30);
@@ -224,18 +224,16 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             if(first_track == 0)
                 clusterToTVersusTime->Fill(Units::convert(cluster->timestamp(), "ns"), cluster->tot());
 
-            // Check if the cluster is close in time
-            if(!m_digitalPowerPulsing && std::abs(cluster->timestamp() - track->timestamp()) > timingCut)
+            auto assocClusters = track->associatedClusters();
+            if(std::find(assocClusters.begin(), assocClusters.end(), cluster) == assocClusters.end()) {
+                LOG(DEBUG) << "Cluster not associated with track";
                 continue;
+            }
+            LOG(DEBUG) << "Found associated cluster";
 
-            // Check distance between track and cluster
             ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
             double xdistance = intercept.X() - cluster->globalX();
             double ydistance = intercept.Y() - cluster->globalY();
-            if(std::abs(xdistance) > spatialCut)
-                continue;
-            if(std::abs(ydistance) > spatialCut)
-                continue;
 
             // We now have an associated cluster! Fill plots
             associated = true;

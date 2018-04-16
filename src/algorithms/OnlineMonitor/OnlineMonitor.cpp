@@ -6,7 +6,9 @@ using namespace std;
 
 OnlineMonitor::OnlineMonitor(Configuration config, std::vector<Detector*> detectors)
     : Algorithm(std::move(config), std::move(detectors)) {
-    updateNumber = 500;
+    canvasTitle = m_config.get<std::string>("canvasTitle", "Corryvreckan Testbeam Monitor");
+    updateNumber = m_config.get<int>("update", 500);
+    ;
 }
 
 void OnlineMonitor::initialise() {
@@ -51,7 +53,10 @@ void OnlineMonitor::initialise() {
     AddButton("EventTimes", "EventTimeCanvas");
     AddButton("CorrelationsX", "CorrelationXCanvas");
     AddButton("CorrelationsY", "CorrelationYCanvas");
+    AddButton("CorrelationsX2D", "CorrelationX2DCanvas");
+    AddButton("CorrelationsY2D", "CorrelationY2DCanvas");
     AddButton("ChargeDistributions", "ChargeDistributionCanvas");
+    AddButton("DUTPlots", "DUTCanvas");
 
     // Per detector histograms
     for(auto& detector : get_detectors()) {
@@ -69,11 +74,33 @@ void OnlineMonitor::initialise() {
         string correlationXHisto = "/corryvreckan/TestAlgorithm/correlationX_" + detectorID;
         AddHisto("CorrelationXCanvas", correlationXHisto);
 
+        string correlationX2DHisto = "/corryvreckan/TestAlgorithm/correlationX_2Dlocal_" + detectorID;
+        AddHisto("CorrelationX2DCanvas", correlationX2DHisto, "colz");
+
         string correlationYHisto = "/corryvreckan/TestAlgorithm/correlationY_" + detectorID;
         AddHisto("CorrelationYCanvas", correlationYHisto);
 
+        string correlationY2DHisto = "/corryvreckan/TestAlgorithm/correlationY_2Dlocal_" + detectorID;
+        AddHisto("CorrelationY2DCanvas", correlationY2DHisto, "colz");
+
+        // Hisograms below not available for DUTs:
+        if(detectorID == m_config.get<std::string>("DUT")) {
+            continue;
+        }
+
         string residualHisto = "/corryvreckan/BasicTracking/residualsX_" + detectorID;
         AddHisto("ResidualCanvas", residualHisto);
+    }
+
+    if(get_detector(m_config.get<std::string>("DUT"))->type() == "CLICpix2") {
+        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/hitMap", "colz");
+        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/hitMapDiscarded", "colz");
+        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/pixelToT");
+        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/pixelToA");
+        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/pixelCnt", "", true);
+        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/pixelsPerFrame", "", true);
+        AddHisto("DUTCanvas", "/corryvreckan/DUTAnalysis/clusterTotAssociated", "");
+        AddHisto("DUTCanvas", "/corryvreckan/DUTAnalysis/associatedTracksVersusTime", "");
     }
 
     // Set up the main frame before drawing
@@ -86,7 +113,7 @@ void OnlineMonitor::initialise() {
 
     // Main frame resizing
     gui->m_mainFrame->AddFrame(gui->buttonMenu, new TGLayoutHints(kLHintsLeft, 10, 10, 10, 10));
-    gui->m_mainFrame->SetWindowName("Corryvreckan Testbeam Monitor");
+    gui->m_mainFrame->SetWindowName(canvasTitle.c_str());
     gui->m_mainFrame->MapSubwindows();
     gui->m_mainFrame->Resize(gui->m_mainFrame->GetDefaultSize());
 
@@ -131,12 +158,13 @@ void OnlineMonitor::finalise() {
     LOG(DEBUG) << "Analysed " << eventNumber << " events";
 }
 
-void OnlineMonitor::AddHisto(string canvasName, string histoName, string style) {
+void OnlineMonitor::AddHisto(string canvasName, string histoName, string style, bool logy) {
 
     TH1* histogram = (TH1*)gDirectory->Get(histoName.c_str());
     if(histogram) {
         gui->histograms[canvasName].push_back((TH1*)gDirectory->Get(histoName.c_str()));
         gui->styles[gui->histograms[canvasName].back()] = style;
+        gui->logarithmic[gui->histograms[canvasName].back()] = logy;
     } else {
         LOG(WARNING) << "Histogram " << histoName << " does not exist";
     }
