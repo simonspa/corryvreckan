@@ -83,6 +83,11 @@ void OnlineMonitor::initialise() {
         string correlationY2DHisto = "/corryvreckan/TestAlgorithm/correlationY_2Dlocal_" + detectorID;
         AddHisto("CorrelationY2DCanvas", correlationY2DHisto, "colz");
 
+        // Hisograms below not available for DUTs:
+        if(detectorID == m_config.get<std::string>("DUT")) {
+            continue;
+        }
+
         string residualHisto = "/corryvreckan/BasicTracking/residualsX_" + detectorID;
         AddHisto("ResidualCanvas", residualHisto);
     }
