@@ -26,47 +26,21 @@ namespace corryvreckan {
         virtual ~Clipboard() {}
 
         // Add objects to clipboard - with name or name + type
-        void put(std::string name, TestBeamObjects* objects) {
-            m_dataID.push_back(name);
-            m_data[name] = objects;
-        }
-        void put(std::string name, std::string type, TestBeamObjects* objects) {
-            m_dataID.push_back(name + type);
-            m_data[name + type] = objects;
-        }
-        void put_persistent(std::string name, double value) { m_persistent_data[name] = value; }
+        void put(std::string name, TestBeamObjects* objects);
+        void put(std::string name, std::string type, TestBeamObjects* objects);
+        void put_persistent(std::string name, double value);
 
         // Get objects from clipboard - with name or name + type
-        TestBeamObjects* get(std::string name) {
-            if(m_data.count(name) == 0)
-                return NULL;
-            return m_data[name];
-        }
-        TestBeamObjects* get(std::string name, std::string type) {
-            if(m_data.count(name + type) == 0)
-                return NULL;
-            return m_data[name + type];
-        }
+        TestBeamObjects* get(std::string name);
+        TestBeamObjects* get(std::string name, std::string type);
 
-        double get_persistent(std::string name) { return m_persistent_data[name]; }
+        double get_persistent(std::string name);
 
         // Clear items on the clipboard
-        void clear() {
-            for(auto& id : m_dataID) {
-                TestBeamObjects* collection = m_data[id];
-                for(TestBeamObjects::iterator it = collection->begin(); it != collection->end(); it++)
-                    delete(*it);
-                delete m_data[id];
-                m_data.erase(id);
-            }
-            m_dataID.clear();
-        }
+        void clear();
 
         // Quick function to check what is currently held by the clipboard
-        void checkCollections() {
-            for(auto& name : m_dataID)
-                LOG(DEBUG) << "Data held: " << name;
-        }
+        void checkCollections();
 
     private:
         // Container for data, list of all data held
