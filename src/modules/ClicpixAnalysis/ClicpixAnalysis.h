@@ -6,6 +6,7 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TProfile2D.h"
 #include "core/module/Module.hpp"
 
 namespace corryvreckan {
@@ -110,6 +111,7 @@ namespace corryvreckan {
         TH2F* hInterceptClusterSize2;
         TH2F* hInterceptClusterSize3;
         TH2F* hInterceptClusterSize4;
+        TProfile2D* hPixelToTMap;
 
         TH2F* hMapClusterSizeAssociated;
         int m_nBinsX;

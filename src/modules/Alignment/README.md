@@ -1,12 +1,11 @@
 ## Alignment
-**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>) 
-
-**Status**: Functional   
+**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Status**: Functional
 
 #### Description
 This module performs translational and rotational telescope plane alignment. The alignment is performed with respect to the reference plane set in the configuration file.
 
-This module uses the tracks produced by the `BasicTracking` module to align the telescope planes. If fewer than half of the tracks have associated clusters, a warning is produced on terminal. 
+This module uses the tracks produced by the `BasicTracking` module to align the telescope planes. If fewer than half of the tracks have associated clusters, a warning is produced on terminal.
 
 There are two methods available for alignment:
 
@@ -23,7 +22,9 @@ For the detector specified by the `detectorToAlign` parameter, this method moves
 * `detectorToAlign`: Parameter to set a particular plane to align. This parameter is only used in the residuals method (`alignmentMethod = 1`). The default is the `DUT` plane.
 * `DUT`: Name of the DUT plane.
 * `reference`: Name of the detector used as the alignment reference plane. All other telescope planes are aligned with respect to the reference plane.
-* `prune_tracks`: Boolean to set if tracks with a number of associated clusters > `max_associated_clusters` or with a track chi^2 > `max_track_chi2ndof` should be excluded from use in the alignment. This parameter was designed for `alignmentMethod=1`. The number of discarded tracks is outputted on terminal. Default is `False`. 
+* `alignPosition`: Boolean to select whether to align the X and Y displacements of the detector or not. Note that the Z displacement is never aligned. This parameter is only used in `alignmentMode = 1`. The default value is `true`.
+* `alignOrientation`: Boolean to select whether to align the three rotations of the detector under consideration or not.  This parameter is only used in `alignmentMode = 1`. The default value is `true`.
+* `prune_tracks`: Boolean to set if tracks with a number of associated clusters > `max_associated_clusters` or with a track chi^2 > `max_track_chi2ndof` should be excluded from use in the alignment. This parameter was designed for `alignmentMethod=1`. The number of discarded tracks is outputted on terminal. Default is `False`.
 * `max_associated_clusters`: Maximum number of associated clusters per track allowed when `prune_tracks=True` for the track to be used in the alignment. Default value is `1`.
 * `max_track_chi2ndof`: Maximum track chi^2 value allowed when `prune_tracks=True` for the track to be used in the alignment. Default value is `10.0`.
 

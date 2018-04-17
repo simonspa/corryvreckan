@@ -29,12 +29,23 @@ void ClicpixAnalysis::initialise() {
     auto det = get_detector(dutID);
     m_lostHits = 0.;
 
+    int maxcounter = 256;
+
     // Cluster/pixel histograms
     hHitPixels =
         new TH2F("hHitPixels", "hHitPixels", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
     hColumnHits = new TH1F("hColumnHits", "hColumnHits", det->nPixelsX(), 0, det->nPixelsX());
     hRowHits = new TH1F("hRowHits", "hRowHits", det->nPixelsY(), 0, det->nPixelsY());
-
+    hPixelToTMap = new TProfile2D("pixelToTMap",
+                                  "pixelToTMap",
+                                  det->nPixelsX(),
+                                  0,
+                                  det->nPixelsX(),
+                                  det->nPixelsY(),
+                                  0,
+                                  det->nPixelsY(),
+                                  0,
+                                  maxcounter - 1);
     hClusterSizeAll = new TH1F("hClusterSizeAll", "hClusterSizeAll", 20, 0, 20);
     hClusterTOTAll = new TH1F("hClusterTOTAll", "hClusterTOTAll", 50, 0, 50);
     hClustersPerEvent = new TH1F("hClustersPerEvent", "hClustersPerEvent", 500, 0, 500);
@@ -233,11 +244,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
     double nClustersAssociated = 0, nValidTracks = 0;
 
     // Loop over tracks, and compare with Clicpix clusters
-    Tracks::iterator itTrack;
-    for(itTrack = tracks->begin(); itTrack != tracks->end(); itTrack++) {
-
-        // Get the track
-        Track* track = (*itTrack);
+    for(auto& track : (*tracks)) {
         if(!track) {
             continue;
         }
@@ -256,18 +263,18 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
 
         // Plot the difference between track intercepts and all clicpix clusters
         // Also record which cluster is the closest
-        Clusters::iterator itCorrelate;
         bool matched = false;
-        Clusters::iterator bestCluster;
+        Clusters clusters = track->clusters();
+        Cluster* bestCluster;
         double xresidualBest = 10000.;
         double yresidualBest = 10000.;
         double absoluteresidualBest = sqrt(xresidualBest * xresidualBest + yresidualBest * yresidualBest);
 
-        for(itCorrelate = clusters->begin(); itCorrelate != clusters->end(); ++itCorrelate) {
+        for(auto& cluster : (clusters)) {
 
             // Get the distance between this cluster and the track intercept (global)
-            double xcorr = (*itCorrelate)->globalX() - trackIntercept.X();
-            double ycorr = (*itCorrelate)->globalY() - trackIntercept.Y();
+            double xcorr = cluster->globalX() - trackIntercept.X();
+            double ycorr = cluster->globalY() - trackIntercept.Y();
 
             // Fill histograms on correlations
             hGlobalTrackDifferenceX->Fill(xcorr);
@@ -288,7 +295,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
                 absoluteresidualBest = absoluteresidual;
                 xresidualBest = xcorr;
                 yresidualBest = ycorr;
-                bestCluster = itCorrelate;
+                bestCluster = cluster;
             }
         }
 
@@ -326,20 +333,20 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
         if(matched) {
 
             // Some test plots of pixel response function
-            fillResponseHistos(trackIntercept.X(), trackIntercept.Y(), (*bestCluster));
+            fillResponseHistos(trackIntercept.X(), trackIntercept.Y(), (bestCluster));
 
             // Add this cluster to the list of associated clusters held by this track.
             // This will allow alignment to take place
-            track->addAssociatedCluster(*bestCluster);
+            track->addAssociatedCluster(bestCluster);
 
             // Now fill all of the histograms/efficiency counters that we want
             hTrackInterceptsAssociated->Fill(trackIntercept.X(), trackIntercept.Y());
             hGlobalResidualsX->Fill(xresidualBest);
             hGlobalResidualsY->Fill(yresidualBest);
-            hGlobalAssociatedClusterPositions->Fill((*bestCluster)->globalX(), (*bestCluster)->globalY());
+            hGlobalAssociatedClusterPositions->Fill((bestCluster)->globalX(), (bestCluster)->globalY());
             nClustersAssociated++;
-            hAssociatedClusterRow->Fill((*bestCluster)->row());
-            hAssociatedClusterColumn->Fill((*bestCluster)->column());
+            hAssociatedClusterRow->Fill((bestCluster)->row());
+            hAssociatedClusterColumn->Fill((bestCluster)->column());
             hTrackInterceptsChipAssociated->Fill(chipInterceptCol, chipInterceptRow);
             hTrackInterceptsPixelAssociated->Fill(pixelInterceptX, pixelInterceptY);
             hFrameTracksAssociated->Fill(m_eventNumber);
@@ -355,32 +362,37 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
                 pixelInterceptX, pixelInterceptY, sqrt(xresidualBest * xresidualBest + yresidualBest * yresidualBest));
             hXresidualVersusYresidual->Fill(xresidualBest, yresidualBest);
             hAbsoluteResiduals->Fill(sqrt(xresidualBest * xresidualBest + yresidualBest * yresidualBest));
-            hClusterTOTAssociated->Fill((*bestCluster)->tot());
-            hClusterSizeAssociated->Fill((*bestCluster)->size());
+            hClusterTOTAssociated->Fill((bestCluster)->tot());
+            hClusterSizeAssociated->Fill((bestCluster)->size());
             //      hClusterWidthColAssociated->Fill((*bestCluster)->colWidth());
             //      hClusterWidthRowAssociated->Fill((*bestCluster)->rowWidth());
 
-            hMapClusterSizeAssociated->Fill(chipInterceptCol, chipInterceptRow, (*bestCluster)->tot());
+            hMapClusterSizeAssociated->Fill(chipInterceptCol, chipInterceptRow, (bestCluster)->tot());
 
-            if((*bestCluster)->size() == 1) {
-                hClusterTOTAssociated1pix->Fill((*bestCluster)->tot());
+            if((bestCluster)->size() == 1) {
+                hClusterTOTAssociated1pix->Fill((bestCluster)->tot());
                 hInterceptClusterSize1->Fill(pixelInterceptX, pixelInterceptY);
                 int id = floor(chipInterceptCol * m_nBinsX / detector->nPixelsX()) +
                          floor(chipInterceptRow * m_nBinsY / detector->nPixelsY()) * m_nBinsX;
-                hMapClusterTOTAssociated1pix[id]->Fill((*bestCluster)->tot());
+                hMapClusterTOTAssociated1pix[id]->Fill((bestCluster)->tot());
             }
-            if((*bestCluster)->size() == 2) {
-                hClusterTOTAssociated2pix->Fill((*bestCluster)->tot());
+            if((bestCluster)->size() == 2) {
+                hClusterTOTAssociated2pix->Fill((bestCluster)->tot());
                 hInterceptClusterSize2->Fill(pixelInterceptX, pixelInterceptY);
             }
-            if((*bestCluster)->size() == 3) {
-                hClusterTOTAssociated3pix->Fill((*bestCluster)->tot());
+            if((bestCluster)->size() == 3) {
+                hClusterTOTAssociated3pix->Fill((bestCluster)->tot());
                 hInterceptClusterSize3->Fill(pixelInterceptX, pixelInterceptY);
             }
-            if((*bestCluster)->size() == 4) {
-                hClusterTOTAssociated4pix->Fill((*bestCluster)->tot());
+            if((bestCluster)->size() == 4) {
+                hClusterTOTAssociated4pix->Fill((bestCluster)->tot());
                 hInterceptClusterSize4->Fill(pixelInterceptX, pixelInterceptY);
             }
+            Pixels* pixels = bestCluster->pixels();
+            for(auto& pixel : (*pixels)) {
+                hPixelToTMap->Fill(pixel->m_column, pixel->m_row, pixel->m_adc);
+            }
+
         } else {
 
             // Search for lost hits. Basically loop through all pixels in all clusters

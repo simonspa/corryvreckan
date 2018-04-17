@@ -41,6 +41,8 @@ namespace corryvreckan {
         int m_numberOfTracksForAlignment;
         int alignmentMethod;
         bool m_pruneTracks;
+        bool m_alignPosition;
+        bool m_alignOrientation;
         int m_maxAssocClusters;
         double m_maxTrackChi2;
 
