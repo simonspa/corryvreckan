@@ -17,18 +17,16 @@
 #include "TDirectory.h"
 #include "TFile.h"
 
-#include "Detector.h"
 #include "clipboard/Clipboard.hpp"
 #include "config/ConfigManager.hpp"
+#include "detector/Detector.hpp"
 #include "module/Module.hpp"
 
 namespace corryvreckan {
 
     /**
-     * @brief Provides the link between the core framework and the executable.
+     * @brief Core class of the Corryvreckan analysis framework
      *
-     * Supply the path location the main configuration which should be provided to the executable. Hereafter this class
-     * should be used to load, initialize, run and finalize all the modules.
      * The analysis class is the core class which allows the event processing to run. It basically contains a vector of
      * modules, each of which is initialised, run on each event and finalised. It does not define what an event is, merely
      * runs each module sequentially and passes the clipboard between them (erasing it at the end of each run sequence). When
@@ -82,6 +80,8 @@ namespace corryvreckan {
         Module* create_module(void* library, corryvreckan::Configuration config);
         std::tuple<LogLevel, LogFormat> set_module_before(const std::string&, const Configuration& config);
         void set_module_after(std::tuple<LogLevel, LogFormat> prev);
+
+        std::map<Module*, long double> module_execution_time_;
     };
 } // namespace corryvreckan
 

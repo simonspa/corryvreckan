@@ -259,7 +259,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
         // Get the track intercept with the clicpix plane (global and local
         // co-ordinates)
         PositionVector3D<Cartesian3D<double>> trackIntercept = detector->getIntercept(track);
-        PositionVector3D<Cartesian3D<double>> trackInterceptLocal = *(detector->globalToLocal()) * trackIntercept;
+        PositionVector3D<Cartesian3D<double>> trackInterceptLocal = detector->globalToLocal(trackIntercept);
 
         // Plot the difference between track intercepts and all clicpix clusters
         // Also record which cluster is the closest
@@ -591,7 +591,7 @@ void ClicpixAnalysis::fillResponseHistos(double trackInterceptX, double trackInt
         Pixel* pixel = (*itp);
         // Get the pixel local then global position
         PositionVector3D<Cartesian3D<double>> pixelPositionLocal = detector->getLocalPosition(pixel->m_row, pixel->m_column);
-        PositionVector3D<Cartesian3D<double>> pixelPositionGlobal = *(detector->localToGlobal()) * pixelPositionLocal;
+        PositionVector3D<Cartesian3D<double>> pixelPositionGlobal = detector->localToGlobal(pixelPositionLocal);
 
         // Fill the response histograms
         hPixelResponseX->Fill(pixelPositionGlobal.X() - trackInterceptX);

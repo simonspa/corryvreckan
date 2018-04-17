@@ -1,28 +1,28 @@
-#ifndef DET_PARAMETERS_H
-#define DET_PARAMETERS_H 1
+/** @file
+ *  @brief Detector model class
+ *  @copyright Copyright (c) 2017 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
+#ifndef CORRYVRECKAN_DETECTOR_H
+#define CORRYVRECKAN_DETECTOR_H
 
 #include <fstream>
 #include <map>
 #include <string>
 
-// Root includes
 #include <Math/DisplacementVector2D.h>
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
-#include "Math/Point3D.h"
-#include "Math/Rotation3D.h"
-#include "Math/RotationX.h"
-#include "Math/RotationY.h"
-#include "Math/RotationZ.h"
-#include "Math/RotationZYX.h"
 #include "Math/Transform3D.h"
-#include "Math/Translation3D.h"
 #include "Math/Vector3D.h"
 
-#include "config/Configuration.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/utils/ROOT.h"
+#include "core/utils/log.h"
 #include "objects/Track.h"
-#include "utils/ROOT.h"
-#include "utils/log.h"
 
 using namespace ROOT::Math;
 
@@ -33,10 +33,7 @@ namespace corryvreckan {
         // Constructors and desctructors
         Detector() = delete;
         Detector(const Configuration& config);
-        ~Detector() {
-            delete m_localToGlobal;
-            delete m_globalToLocal;
-        }
+        ~Detector() {}
 
         // Functions to retrieve basic information
         std::string type() { return m_detectorType; }
@@ -56,18 +53,12 @@ namespace corryvreckan {
         void displacementY(double y) { m_displacement.SetY(y); }
         void displacementZ(double z) { m_displacement.SetZ(z); }
         void displacement(ROOT::Math::XYZPoint displacement) { m_displacement = displacement; }
-        double displacementX() { return m_displacement.X(); }
-        double displacementY() { return m_displacement.Y(); }
-        double displacementZ() { return m_displacement.Z(); }
         ROOT::Math::XYZPoint displacement() { return m_displacement; }
 
         // Functions to set and retrieve basic rotation parameters
         void rotationX(double rx) { m_orientation.SetX(rx); }
         void rotationY(double ry) { m_orientation.SetY(ry); }
         void rotationZ(double rz) { m_orientation.SetZ(rz); }
-        double rotationX() { return m_orientation.X(); }
-        double rotationY() { return m_orientation.Y(); }
-        double rotationZ() { return m_orientation.Z(); }
         ROOT::Math::XYZVector rotation() { return m_orientation; }
         void rotation(ROOT::Math::XYZVector rotation) { m_orientation = rotation; }
 
@@ -107,10 +98,8 @@ namespace corryvreckan {
         double inPixelX(PositionVector3D<Cartesian3D<double>> localPosition);
         double inPixelY(PositionVector3D<Cartesian3D<double>> localPosition);
 
-        Transform3D* localToGlobal() { return m_localToGlobal; };
-        ROOT::Math::XYZPoint localToGlobal(ROOT::Math::XYZPoint local) { return (*m_localToGlobal) * local; };
-        Transform3D* globalToLocal() { return m_globalToLocal; };
-        ROOT::Math::XYZPoint globalToLocal(ROOT::Math::XYZPoint global) { return (*m_globalToLocal) * global; };
+        ROOT::Math::XYZPoint localToGlobal(ROOT::Math::XYZPoint local) { return m_localToGlobal * local; };
+        ROOT::Math::XYZPoint globalToLocal(ROOT::Math::XYZPoint global) { return m_globalToLocal * global; };
 
     private:
         // Member variables
@@ -128,8 +117,8 @@ namespace corryvreckan {
         std::string m_orientation_mode;
 
         // Transforms from local to global and back
-        Transform3D* m_localToGlobal;
-        Transform3D* m_globalToLocal;
+        Transform3D m_localToGlobal;
+        Transform3D m_globalToLocal;
 
         // Normal to the detector surface and point on the surface
         PositionVector3D<Cartesian3D<double>> m_normal;
@@ -142,4 +131,4 @@ namespace corryvreckan {
     };
 } // namespace corryvreckan
 
-#endif // DET_PARAMETERS_H
+#endif // CORRYVRECKAN_DETECTOR_H

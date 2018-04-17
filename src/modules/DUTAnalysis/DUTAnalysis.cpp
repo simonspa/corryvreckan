@@ -274,7 +274,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
                 }
                 auto detector = get_detector(cluster->detectorID());
                 residualsXMCtruth->Fill(cluster->localX() + detector->size().X() / 2 - particlePosition.X());
-                auto interceptLocal = *(detector->globalToLocal()) * intercept;
+                auto interceptLocal = detector->globalToLocal(intercept);
                 telescopeResolution->Fill(interceptLocal.X() + detector->size().X() / 2 - particlePosition.X());
             }
 

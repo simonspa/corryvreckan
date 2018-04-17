@@ -194,7 +194,7 @@ void SpatialClustering::calculateClusterCentre(Detector* detector, Cluster* clus
                                                         detector->pitchY() * (row - detector->nPixelsY() / 2.),
                                                         0);
     // Calculate global cluster position
-    PositionVector3D<Cartesian3D<double>> positionGlobal = *(detector->localToGlobal()) * positionLocal;
+    PositionVector3D<Cartesian3D<double>> positionGlobal = detector->localToGlobal(positionLocal);
 
     // Set the cluster parameters
     cluster->setRow(row);
