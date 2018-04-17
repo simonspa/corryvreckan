@@ -82,7 +82,7 @@ StatusCode EUDAQEventLoader::run(Clipboard* clipboard) {
             }
 
             // Store on clipboard
-            clipboard->put(detectorID, "pixels", (TestBeamObjects*)deviceData);
+            clipboard->put(detectorID, "pixels", (Objects*)deviceData);
         }
     }
 

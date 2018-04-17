@@ -2,7 +2,7 @@
 #define GUIDISPLAY_H 1
 
 // Local includes
-#include "TestBeamObject.h"
+#include "Object.hpp"
 #include "core/utils/log.h"
 
 // Global includes
@@ -26,7 +26,7 @@
 
 namespace corryvreckan {
 
-    class GuiDisplay : public TestBeamObject {
+    class GuiDisplay : public Object {
 
         RQ_OBJECT("GuiDisplay")
 

@@ -7,6 +7,7 @@ ADD_LIBRARY(CorryvreckanCore SHARED
     Detector.cpp
     utils/log.cpp
     utils/unit.cpp
+    clipboard/Clipboard.cpp
     config/ConfigManager.cpp
     config/ConfigReader.cpp
     config/Configuration.cpp

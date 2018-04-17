@@ -43,7 +43,7 @@ namespace corryvreckan {
         std::vector<std::string> m_objectList;
         std::vector<PositionVector3D<Cartesian3D<double>>> v_intercepts;
 
-        std::map<std::string, TestBeamObject*> m_objects;
+        std::map<std::string, Object*> m_objects;
 
         TFile* m_outputFile;
         TTree* m_outputTree{};

@@ -132,7 +132,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
 
         // Put the clusters on the clipboard
         if(deviceClusters->size() > 0) {
-            clipboard->put(detector->name(), "clusters", (TestBeamObjects*)deviceClusters);
+            clipboard->put(detector->name(), "clusters", (Objects*)deviceClusters);
         }
         LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << detector->name();
     }

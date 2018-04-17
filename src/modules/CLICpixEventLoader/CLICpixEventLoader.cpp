@@ -126,7 +126,7 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
     LOG(TRACE) << "Loaded " << npixels << " pixels";
     // Put the data on the clipboard
     if(pixels->size() > 0)
-        clipboard->put(detectorID, "pixels", (TestBeamObjects*)pixels);
+        clipboard->put(detectorID, "pixels", (Objects*)pixels);
 
     // Fill histograms
     hPixelsPerFrame->Fill(npixels);
