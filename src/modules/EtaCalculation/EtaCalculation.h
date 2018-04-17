@@ -8,7 +8,6 @@
 #include "TH2F.h"
 #include "TProfile.h"
 
-#include "core/Detector.h"
 #include "core/module/Module.hpp"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"

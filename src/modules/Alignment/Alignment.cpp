@@ -308,14 +308,17 @@ void Alignment::finalise() {
 
         // Add the parameters to the fitter (z displacement not allowed to move!)
         residualFitter->SetParameter(
-            0, (detectorToAlign + "_displacementX").c_str(), detector->displacementX(), 0.01, -50, 50);
+            0, (detectorToAlign + "_displacementX").c_str(), detector->displacement().X(), 0.01, -50, 50);
         residualFitter->SetParameter(
-            1, (detectorToAlign + "_displacementY").c_str(), detector->displacementY(), 0.01, -50, 50);
+            1, (detectorToAlign + "_displacementY").c_str(), detector->displacement().Y(), 0.01, -50, 50);
         residualFitter->SetParameter(
-            2, (detectorToAlign + "_displacementZ").c_str(), detector->displacementZ(), 0, -10, 500);
-        residualFitter->SetParameter(3, (detectorToAlign + "_rotationX").c_str(), detector->rotationX(), 0.001, -6.30, 6.30);
-        residualFitter->SetParameter(4, (detectorToAlign + "_rotationY").c_str(), detector->rotationY(), 0.001, -6.30, 6.30);
-        residualFitter->SetParameter(5, (detectorToAlign + "_rotationZ").c_str(), detector->rotationZ(), 0.001, -6.30, 6.30);
+            2, (detectorToAlign + "_displacementZ").c_str(), detector->displacement().Z(), 0, -10, 500);
+        residualFitter->SetParameter(
+            3, (detectorToAlign + "_rotationX").c_str(), detector->rotation().X(), 0.001, -6.30, 6.30);
+        residualFitter->SetParameter(
+            4, (detectorToAlign + "_rotationY").c_str(), detector->rotation().Y(), 0.001, -6.30, 6.30);
+        residualFitter->SetParameter(
+            5, (detectorToAlign + "_rotationZ").c_str(), detector->rotation().Z(), 0.001, -6.30, 6.30);
 
         for(int iteration = 0; iteration < nIterations; iteration++) {
 
@@ -376,17 +379,17 @@ void Alignment::finalise() {
             detNum = det;
             // Add the parameters to the fitter (z displacement not allowed to move!)
             residualFitter->SetParameter(
-                det * 6 + 0, (detectorID + "_displacementX").c_str(), detector->displacementX(), 0.01, -50, 50);
+                det * 6 + 0, (detectorID + "_displacementX").c_str(), detector->displacement().X(), 0.01, -50, 50);
             residualFitter->SetParameter(
-                det * 6 + 1, (detectorID + "_displacementY").c_str(), detector->displacementY(), 0.01, -50, 50);
+                det * 6 + 1, (detectorID + "_displacementY").c_str(), detector->displacement().Y(), 0.01, -50, 50);
             residualFitter->SetParameter(
-                det * 6 + 2, (detectorID + "_displacementZ").c_str(), detector->displacementZ(), 0, -10, 500);
+                det * 6 + 2, (detectorID + "_displacementZ").c_str(), detector->displacement().Z(), 0, -10, 500);
             residualFitter->SetParameter(
-                det * 6 + 3, (detectorID + "_rotationX").c_str(), detector->rotationX(), 0.001, -6.30, 6.30);
+                det * 6 + 3, (detectorID + "_rotationX").c_str(), detector->rotation().X(), 0.001, -6.30, 6.30);
             residualFitter->SetParameter(
-                det * 6 + 4, (detectorID + "_rotationY").c_str(), detector->rotationY(), 0.001, -6.30, 6.30);
+                det * 6 + 4, (detectorID + "_rotationY").c_str(), detector->rotation().Y(), 0.001, -6.30, 6.30);
             residualFitter->SetParameter(
-                det * 6 + 5, (detectorID + "_rotationZ").c_str(), detector->rotationZ(), 0.001, -6.30, 6.30);
+                det * 6 + 5, (detectorID + "_rotationZ").c_str(), detector->rotation().Z(), 0.001, -6.30, 6.30);
 
             auto old_position = detector->displacement();
             auto old_orientation = detector->rotation();
@@ -403,12 +406,12 @@ void Alignment::finalise() {
             auto rotationZ = residualFitter->GetParameter(det * 6 + 5);
 
             // Store corrections:
-            shiftsX[detectorID].push_back(Units::convert(detector->displacementX() - old_position.X(), "um"));
-            shiftsY[detectorID].push_back(Units::convert(detector->displacementY() - old_position.Y(), "um"));
-            shiftsZ[detectorID].push_back(Units::convert(detector->displacementZ() - old_position.Z(), "um"));
-            rotX[detectorID].push_back(Units::convert(detector->rotationX() - old_orientation.X(), "deg"));
-            rotY[detectorID].push_back(Units::convert(detector->rotationY() - old_orientation.Y(), "deg"));
-            rotZ[detectorID].push_back(Units::convert(detector->rotationZ() - old_orientation.Z(), "deg"));
+            shiftsX[detectorID].push_back(Units::convert(detector->displacement().X() - old_position.X(), "um"));
+            shiftsY[detectorID].push_back(Units::convert(detector->displacement().Y() - old_position.Y(), "um"));
+            shiftsZ[detectorID].push_back(Units::convert(detector->displacement().Z() - old_position.Z(), "um"));
+            rotX[detectorID].push_back(Units::convert(detector->rotation().X() - old_orientation.X(), "deg"));
+            rotY[detectorID].push_back(Units::convert(detector->rotation().Y() - old_orientation.Y(), "deg"));
+            rotZ[detectorID].push_back(Units::convert(detector->rotation().Z() - old_orientation.Z(), "deg"));
 
             LOG(INFO) << detector->name() << "/" << iteration << " dT"
                       << display_vector(detector->displacement() - old_position, {"mm", "um"}) << " dR"

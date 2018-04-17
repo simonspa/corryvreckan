@@ -73,9 +73,9 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
             LOG(DEBUG) << "Detector " << detectorID << " does not have any clusters on the clipboard";
         } else {
             // Store the clusters of the first plane in Z as the reference
-            if(detector->displacementZ() < minZ) {
+            if(detector->displacement().Z() < minZ) {
                 referenceClusters = tempClusters;
-                minZ = detector->displacementZ();
+                minZ = detector->displacement().Z();
             }
             if(tempClusters->size() == 0)
                 continue;
