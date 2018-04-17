@@ -167,8 +167,7 @@ StatusCode FileWriter::run(Clipboard* clipboard) {
 void FileWriter::finalise() {
 
     // Write the trees to file
-    // Loop over all objects to be written to file, and get the objects currently
-    // held on the Clipboard
+    // Loop over all objects to be written to file, and get the objects currently held on the Clipboard
     for(unsigned int itList = 0; itList < m_objectList.size(); itList++) {
 
         // Check the type of object
@@ -215,5 +214,7 @@ void FileWriter::finalise() {
         }
     }
 
+    // Close the output file
+    m_outputFile->Close();
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }
