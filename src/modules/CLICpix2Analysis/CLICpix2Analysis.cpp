@@ -175,16 +175,18 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
                 hTrackCorrelationY->Fill(intercept.Y() - cluster->globalY());
                 hTrackCorrelationTime->Fill(track->timestamp() - cluster->timestamp());
 
-                double xdistance = fabs(intercept.X() - cluster->globalX());
-                double ydistance = fabs(intercept.Y() - cluster->globalY());
-                if(xdistance > spatialCut || ydistance > spatialCut) {
-                    LOG(DEBUG) << "    - Discarding DUT cluster with distance (" << Units::display(xdistance, {"um"}) << ","
-                               << Units::display(ydistance, {"um"}) << ")";
+                double xdistance = intercept.X() - cluster->globalX();
+                double ydistance = intercept.Y() - cluster->globalY();
+                double xabsdistance = fabs(xdistance);
+                double yabsdistance = fabs(ydistance);
+                if(xabsdistance > spatialCut || yabsdistance > spatialCut) {
+                    LOG(DEBUG) << "    - Discarding DUT cluster with distance (" << Units::display(xabsdistance, {"um"})
+                               << "," << Units::display(yabsdistance, {"um"}) << ")";
                     continue;
                 }
 
-                LOG(DEBUG) << "    - Found associated cluster with distance (" << Units::display(xdistance, {"um"}) << ","
-                           << Units::display(ydistance, {"um"}) << ")";
+                LOG(DEBUG) << "    - Found associated cluster with distance (" << Units::display(xabsdistance, {"um"}) << ","
+                           << Units::display(yabsdistance, {"um"}) << ")";
 
                 // We now have an associated cluster
                 cluster_associated = true;
