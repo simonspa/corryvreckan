@@ -25,6 +25,7 @@ namespace corryvreckan {
     private:
         // Histograms
         TH2F *hClusterMapAssoc, *hHitMapAssoc;
+        TProfile2D *hClusterSizeMapAssoc, *hClusterToTMapAssoc;
 
         TH1F* hPixelToTAssoc;
         TProfile2D* hPixelToTMapAssoc;

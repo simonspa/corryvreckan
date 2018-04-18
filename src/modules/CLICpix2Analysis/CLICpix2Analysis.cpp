@@ -23,7 +23,28 @@ void CLICpix2Analysis::initialise() {
     auto det = get_detector(m_DUT);
 
     hClusterMapAssoc = new TH2F(
-        "clusterMapAssoc", "clusterMapAssoc", det->size().X(), 0, det->size().X(), det->size().Y(), 0, det->size().Y());
+        "clusterMapAssoc", "clusterMapAssoc", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
+    hClusterSizeMapAssoc = new TProfile2D("clusterSizeMapAssoc",
+                                          "clusterSizeMapAssoc",
+                                          det->nPixelsX(),
+                                          0,
+                                          det->nPixelsX(),
+                                          det->nPixelsY(),
+                                          0,
+                                          det->nPixelsY(),
+                                          0,
+                                          100);
+
+    hClusterToTMapAssoc = new TProfile2D("clusterSizeToTAssoc",
+                                         "clusterToTMapAssoc",
+                                         det->nPixelsX(),
+                                         0,
+                                         det->nPixelsX(),
+                                         det->nPixelsY(),
+                                         0,
+                                         det->nPixelsY(),
+                                         0,
+                                         1000);
 
     // Per-pixel histograms
     hHitMapAssoc =
@@ -190,7 +211,13 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
 
                 // We now have an associated cluster
                 cluster_associated = true;
-                hClusterMapAssoc->Fill(cluster->local().X(), cluster->local().Y());
+                // FIXME need to understand local coord of clusters - why shifted? what's normal?
+                auto clusterLocal = detector->globalToLocal(cluster->global());
+                hClusterMapAssoc->Fill(detector->getColumn(clusterLocal), detector->getRow(clusterLocal));
+                hClusterSizeMapAssoc->Fill(
+                    detector->getColumn(clusterLocal), detector->getRow(clusterLocal), cluster->size());
+                hClusterToTMapAssoc->Fill(detector->getColumn(clusterLocal), detector->getRow(clusterLocal), cluster->tot());
+
                 clusterTotAssoc->Fill(cluster->tot());
 
                 // Fill per-pixel histograms
