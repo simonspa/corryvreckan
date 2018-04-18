@@ -11,7 +11,9 @@ CLICpix2Analysis::CLICpix2Analysis(Configuration config, std::vector<Detector*> 
 
     m_DUT = m_config.get<std::string>("DUT");
 
-    spatialCut = m_config.get<double>("spatialCut", Units::convert(200, "um"));
+    m_timeCutFrameEdge = m_config.get<double>("timeCutFrameEdge", Units::convert(20, "ns"));
+
+    spatialCut = m_config.get<double>("spatialCut", Units::convert(50, "um"));
     chi2ndofCut = m_config.get<double>("chi2ndofCut", 3.);
 }
 
@@ -43,38 +45,44 @@ void CLICpix2Analysis::initialise() {
     residualsY = new TH1F("residualsY", "residualsY", 800, -0.1, 0.1);
 
     residualsX1pix = new TH1F("residualsX1pix", "residualsX1pix", 400, -0.2, 0.2);
-    residualsX1pix = new TH1F("residualsY1pix", "residualsY1pix", 400, -0.2, 0.2);
+    residualsY1pix = new TH1F("residualsY1pix", "residualsY1pix", 400, -0.2, 0.2);
     residualsX2pix = new TH1F("residualsX2pix", "residualsX2pix", 400, -0.2, 0.2);
-    residualsX2pix = new TH1F("residualsY2pix", "residualsY2pix", 400, -0.2, 0.2);
+    residualsY2pix = new TH1F("residualsY2pix", "residualsY2pix", 400, -0.2, 0.2);
 
     clusterTotAssoc = new TH1F("clusterTotAssociated", "clusterTotAssociated", 10000, 0, 10000);
     clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
 
     // Efficiency maps
-    hPixelEfficiencyMap = new TH2F("hPixelEfficiencyMap",
-                                   "hPixelEfficiencyMap",
-                                   2 * Units::convert(det->pitch().X(), "um"),
-                                   0,
-                                   2 * Units::convert(det->pitch().X(), "um"),
-                                   Units::convert(det->pitch().Y(), "um"),
-                                   0,
-                                   Units::convert(det->pitch().Y(), "um"));
-    hChipEfficiencyMap = new TH2F("hChipEfficiencyMap",
-                                  "hChipEfficiencyMap",
-                                  det->nPixelsX() + 1,
-                                  -0.5,
-                                  det->nPixelsX() + 0.5,
-                                  det->nPixelsY() + 1,
-                                  -0.5,
-                                  det->nPixelsY() + 0.5);
-    hGlobalEfficiencyMap = new TH2F("hGlobalEfficiencyMap",
-                                    "hGlobalEfficiencyMap",
-                                    300,
-                                    -1.5 * det->size().X(),
-                                    1.5 * det->size().X(),
-                                    300,
-                                    -1.5 * det->size().Y(),
-                                    1.5 * det->size().Y());
+    hPixelEfficiencyMap = new TProfile2D("hPixelEfficiencyMap",
+                                         "hPixelEfficiencyMap",
+                                         Units::convert(det->pitch().X(), "um"),
+                                         0,
+                                         Units::convert(det->pitch().X(), "um"),
+                                         Units::convert(det->pitch().Y(), "um"),
+                                         0,
+                                         Units::convert(det->pitch().Y(), "um"),
+                                         0,
+                                         1);
+    hChipEfficiencyMap = new TProfile2D("hChipEfficiencyMap",
+                                        "hChipEfficiencyMap",
+                                        det->nPixelsX() + 1,
+                                        -0.5,
+                                        det->nPixelsX() + 0.5,
+                                        det->nPixelsY() + 1,
+                                        -0.5,
+                                        det->nPixelsY() + 0.5,
+                                        0,
+                                        1);
+    hGlobalEfficiencyMap = new TProfile2D("hGlobalEfficiencyMap",
+                                          "hGlobalEfficiencyMap",
+                                          300,
+                                          -1.5 * det->size().X(),
+                                          1.5 * det->size().X(),
+                                          300,
+                                          -1.5 * det->size().Y(),
+                                          1.5 * det->size().Y(),
+                                          0,
+                                          1);
 
     residualsTime = new TH1F("residualsTime", "residualsTime", 20000, -1000, +1000);
 
@@ -122,6 +130,25 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
             continue;
         }
 
+        // Discard tracks which are very close to the frame edges
+        //
+        if(fabs(track->timestamp() - clipboard->get_persistent("currentTime")) < m_timeCutFrameEdge) {
+            // Late edge - the currentTime has been updated by Timexpi3EventLoader to point to the end of the frame`
+            LOG(DEBUG) << " - track close to end of readout frame: "
+                       << Units::display(fabs(track->timestamp() - clipboard->get_persistent("currentTime")), {"us", "ns"})
+                       << " at " << Units::display(track->timestamp(), {"us"});
+            continue;
+        } else if(fabs(track->timestamp() - clipboard->get_persistent("currentTime") +
+                       clipboard->get_persistent("eventLength")) < m_timeCutFrameEdge) {
+            // Early edge - subtract the eventLength from the current time to see the beginning of the frame
+            LOG(DEBUG) << " - track close to start of readout frame: "
+                       << Units::display(fabs(track->timestamp() - clipboard->get_persistent("currentTime") +
+                                              clipboard->get_persistent("eventLength")),
+                                         {"us", "ns"})
+                       << " at " << Units::display(track->timestamp(), {"us"});
+            continue;
+        }
+
         // Check that it doesn't go through/near a masked pixel
         if(detector->hitMasked(track, 1.)) {
             LOG(DEBUG) << " - track close to masked pixel";
@@ -148,16 +175,16 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
                 hTrackCorrelationY->Fill(intercept.Y() - cluster->globalY());
                 hTrackCorrelationTime->Fill(track->timestamp() - cluster->timestamp());
 
-                double xdistance = intercept.X() - cluster->globalX();
-                double ydistance = intercept.Y() - cluster->globalY();
-                if(abs(xdistance) > spatialCut || abs(ydistance) > spatialCut) {
-                    LOG(DEBUG) << "    - Discarding DUT cluster with distance (" << abs(xdistance) << "," << abs(ydistance)
-                               << ")";
+                double xdistance = fabs(intercept.X() - cluster->globalX());
+                double ydistance = fabs(intercept.Y() - cluster->globalY());
+                if(xdistance > spatialCut || ydistance > spatialCut) {
+                    LOG(DEBUG) << "    - Discarding DUT cluster with distance (" << Units::display(xdistance, {"um"}) << ","
+                               << Units::display(ydistance, {"um"}) << ")";
                     continue;
                 }
 
-                LOG(DEBUG) << "    - Found associated cluster with distance (" << abs(xdistance) << "," << abs(ydistance)
-                           << ")";
+                LOG(DEBUG) << "    - Found associated cluster with distance (" << Units::display(xdistance, {"um"}) << ","
+                           << Units::display(ydistance, {"um"}) << ")";
 
                 // We now have an associated cluster
                 cluster_associated = true;
@@ -198,9 +225,12 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
 
         // Efficiency plots:
         hGlobalEfficiencyMap->Fill(globalIntercept.X(), globalIntercept.Y(), cluster_associated);
+
         auto localIntercept = detector->globalToLocal(globalIntercept);
-        hChipEfficiencyMap->Fill(localIntercept.X(), localIntercept.Y(), cluster_associated);
-        // hPixelEfficiencyMap->Fill();
+        hChipEfficiencyMap->Fill(detector->getColumn(localIntercept), detector->getRow(localIntercept), cluster_associated);
+        hPixelEfficiencyMap->Fill(Units::convert(detector->inPixelX(localIntercept), "um"),
+                                  Units::convert(detector->inPixelY(localIntercept), "um"),
+                                  cluster_associated);
     }
 
     // Return value telling analysis to keep running

@@ -94,7 +94,7 @@ namespace corryvreckan {
         // Function to get local position from row and column
         PositionVector3D<Cartesian3D<double>> getLocalPosition(double row, double column);
 
-        // Function to get in-pixel position (value returned in microns)
+        // Function to get in-pixel position
         double inPixelX(PositionVector3D<Cartesian3D<double>> localPosition);
         double inPixelY(PositionVector3D<Cartesian3D<double>> localPosition);
 

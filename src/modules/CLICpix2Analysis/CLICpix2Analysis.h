@@ -38,9 +38,9 @@ namespace corryvreckan {
         TH1F* clusterTotAssoc;
         TH1F* clusterSizeAssoc;
 
-        TH2F* hPixelEfficiencyMap;
-        TH2F* hChipEfficiencyMap;
-        TH2F* hGlobalEfficiencyMap;
+        TProfile2D* hPixelEfficiencyMap;
+        TProfile2D* hChipEfficiencyMap;
+        TProfile2D* hGlobalEfficiencyMap;
 
         TH1F* hTrackCorrelationX;
         TH1F* hTrackCorrelationY;
@@ -54,7 +54,7 @@ namespace corryvreckan {
 
         // Member variables
         std::string m_DUT;
-        double spatialCut;
+        double spatialCut, m_timeCutFrameEdge;
         double chi2ndofCut;
     };
 } // namespace corryvreckan
