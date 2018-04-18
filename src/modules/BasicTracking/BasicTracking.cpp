@@ -10,9 +10,7 @@ BasicTracking::BasicTracking(Configuration config, std::vector<Detector*> detect
 
     // Default values for cuts
     timingCut = m_config.get<double>("timingCut", Units::convert(200, "ns"));
-    timingCut_DUT = m_config.get<double>("timingCutDUT", Units::convert(200, "ns"));
     spatialCut = m_config.get<double>("spatialCut", Units::convert(0.2, "mm"));
-    spatialCut_DUT = m_config.get<double>("spatialCutDUT", Units::convert(0.2, "mm"));
     minHitsOnTrack = m_config.get<int>("minHitsOnTrack", 6);
     excludeDUT = m_config.get<bool>("excludeDUT", true);
 }
@@ -49,8 +47,6 @@ void BasicTracking::initialise() {
         name = "residualsYwidth3_" + detectorID;
         residualsYwidth3[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
     }
-
-    associatedClusters = 0;
 }
 
 StatusCode BasicTracking::run(Clipboard* clipboard) {
@@ -60,7 +56,6 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
     map<string, KDTree*> trees;
     vector<string> detectors;
     Clusters* referenceClusters = nullptr;
-    Clusters dutClusters;
 
     // Output track container
     Tracks* tracks = new Tracks();
@@ -119,11 +114,6 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
 
             // Check if the DUT should be excluded and obey:
             if(excludeDUT && detectorID == m_config.get<std::string>("DUT")) {
-                // Keep all DUT clusters, so we can add them as associated clusters later, that are within the DUT timing
-                // cut:
-                dutClusters = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut_DUT);
-                LOG(DEBUG) << "Got " << dutClusters.size() << " DUT clusters within "
-                           << Units::display(timingCut_DUT, {"ms", "us", "ns"});
                 continue;
             }
 
@@ -217,23 +207,6 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
                 residualsYwidth2[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
             if(trackCluster->rowWidth() == 3)
                 residualsYwidth3[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
-        }
-
-        // Add potential associated clusters from the DUT:
-        for(auto& dutcluster : dutClusters) {
-
-            // Check distance between track and cluster
-            ROOT::Math::XYZPoint intercept = track->intercept(dutcluster->globalZ());
-            double xdistance = intercept.X() - dutcluster->globalX();
-            double ydistance = intercept.Y() - dutcluster->globalY();
-            if(abs(xdistance) > spatialCut_DUT || abs(ydistance) > spatialCut_DUT) {
-                LOG(DEBUG) << "Discarding DUT cluster with distance (" << abs(xdistance) << "," << abs(ydistance) << ")";
-                continue;
-            }
-
-            LOG(DEBUG) << "Found associated cluster with distance (" << abs(xdistance) << "," << abs(ydistance) << ")";
-            track->addAssociatedCluster(dutcluster);
-            associatedClusters++;
         }
     }
 
