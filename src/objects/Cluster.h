@@ -52,6 +52,7 @@ namespace corryvreckan {
             m_rowHits[pixel->m_row] = true;
         }
         // Retrieve cluster parameters
+        // FIXME these should be renamed seed_row and seed_column!
         double row() { return m_row; }
         double column() { return m_column; }
         double tot() { return m_tot; }
