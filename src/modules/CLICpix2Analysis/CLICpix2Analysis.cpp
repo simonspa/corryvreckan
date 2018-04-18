@@ -65,12 +65,12 @@ void CLICpix2Analysis::initialise() {
                                          1);
     hChipEfficiencyMap = new TProfile2D("hChipEfficiencyMap",
                                         "hChipEfficiencyMap",
-                                        det->nPixelsX() + 1,
-                                        -0.5,
-                                        det->nPixelsX() + 0.5,
-                                        det->nPixelsY() + 1,
-                                        -0.5,
-                                        det->nPixelsY() + 0.5,
+                                        det->nPixelsX(),
+                                        0,
+                                        det->nPixelsX(),
+                                        det->nPixelsY(),
+                                        0,
+                                        det->nPixelsY(),
                                         0,
                                         1);
     hGlobalEfficiencyMap = new TProfile2D("hGlobalEfficiencyMap",
