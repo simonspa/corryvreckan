@@ -46,7 +46,7 @@ StatusCode Timepix3MaskCreator::run(Clipboard* clipboard) {
             Pixel* pixel = (*pixels)[iP];
 
             // Enter another pixel hit for this channel
-            int channelID = pixel->m_row + 256 * pixel->m_column;
+            int channelID = pixel->row() + 256 * pixel->column();
             pixelhits[detector->name()][channelID]++;
         }
     }

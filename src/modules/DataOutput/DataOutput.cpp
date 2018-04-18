@@ -128,16 +128,16 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
             numPixels++;
 
             // x position
-            LOG(DEBUG) << "Gets pixel column = " << pixel->m_column;
-            v_pixelX.push_back(pixel->m_column);
+            LOG(DEBUG) << "Gets pixel column = " << pixel->column();
+            v_pixelX.push_back(pixel->column());
 
             // y position
-            LOG(DEBUG) << "Gets pixel row = " << pixel->m_row;
-            v_pixelY.push_back(pixel->m_row);
+            LOG(DEBUG) << "Gets pixel row = " << pixel->row();
+            v_pixelY.push_back(pixel->row());
 
             // ToT
-            LOG(DEBUG) << "Gets pixel tot = " << pixel->m_adc;
-            v_pixelToT.push_back(pixel->m_adc);
+            LOG(DEBUG) << "Gets pixel tot = " << pixel->adc();
+            v_pixelToT.push_back(pixel->adc());
 
             // ToA
             LOG(DEBUG) << "Gets pixel timestamp = " << pixel->timestamp();

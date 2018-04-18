@@ -91,7 +91,7 @@ StatusCode MaskCreator::run(Clipboard* clipboard) {
             Pixel* pixel = (*pixels)[iP];
 
             // Enter another pixel hit for this channel
-            m_occupancy[detector->name()]->Fill(pixel->m_column, pixel->m_row);
+            m_occupancy[detector->name()]->Fill(pixel->column(), pixel->row());
         }
     }
     m_numEvents++;

@@ -390,7 +390,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
             }
             Pixels* pixels = bestCluster->pixels();
             for(auto& pixel : (*pixels)) {
-                hPixelToTMap->Fill(pixel->m_column, pixel->m_row, pixel->m_adc);
+                hPixelToTMap->Fill(pixel->column(), pixel->row(), pixel->adc());
             }
 
         } else {
@@ -408,8 +408,8 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
         for (itPixel = (*itCorrelate)->pixels().begin(); itPixel != (*itCorrelate)->pixels().end(); itPixel++) {
 
           // Get the pixel global position
-          LOG(TRACE) <<"New pixel, row = "<<(*itPixel)->m_row<<", column = "<<(*itPixel)->m_column;
-          PositionVector3D<Cartesian3D<double> > pixelPositionLocal = get_detector(dutID)->getLocalPosition((*itPixel)->m_row,(*itPixel)->m_column);
+          LOG(TRACE) <<"New pixel, row = "<<(*itPixel)->row()<<", column = "<<(*itPixel)->column();
+          PositionVector3D<Cartesian3D<double> > pixelPositionLocal = get_detector(dutID)->getLocalPosition((*itPixel)->row(),(*itPixel)->column());
           PositionVector3D<Cartesian3D<double> > pixelPositionGlobal = *(get_detector(dutID)->m_localToGlobal) * pixelPositionLocal;
 
           // Check if it is close to the track
@@ -549,19 +549,19 @@ void ClicpixAnalysis::fillClusterHistos(Clusters* clusters) {
         Pixels::iterator itp;
         for(itp = pixels->begin(); itp != pixels->end(); itp++) {
             // Check if this clicpix frame is still the current
-            int pixelID = (*itp)->m_column + nCols * (*itp)->m_row;
-            if(m_hitPixels[pixelID] != (*itp)->m_adc) {
+            int pixelID = (*itp)->column() + nCols * (*itp)->row();
+            if(m_hitPixels[pixelID] != (*itp)->adc()) {
                 // New frame! Reset the stored pixels and trigger number
                 if(!newFrame) {
                     m_hitPixels.clear();
                     newFrame = true;
                 }
-                m_hitPixels[pixelID] = (*itp)->m_adc;
+                m_hitPixels[pixelID] = (*itp)->adc();
                 m_triggerNumber = 0;
             }
-            hHitPixels->Fill((*itp)->m_column, (*itp)->m_row);
-            hColumnHits->Fill((*itp)->m_column);
-            hRowHits->Fill((*itp)->m_row);
+            hHitPixels->Fill((*itp)->column(), (*itp)->row());
+            hColumnHits->Fill((*itp)->column());
+            hRowHits->Fill((*itp)->row());
         }
 
         // Fill cluster histograms
@@ -590,7 +590,7 @@ void ClicpixAnalysis::fillResponseHistos(double trackInterceptX, double trackInt
         // Get the pixel
         Pixel* pixel = (*itp);
         // Get the pixel local then global position
-        PositionVector3D<Cartesian3D<double>> pixelPositionLocal = detector->getLocalPosition(pixel->m_row, pixel->m_column);
+        PositionVector3D<Cartesian3D<double>> pixelPositionLocal = detector->getLocalPosition(pixel->row(), pixel->column());
         PositionVector3D<Cartesian3D<double>> pixelPositionGlobal = detector->localToGlobal(pixelPositionLocal);
 
         // Fill the response histograms

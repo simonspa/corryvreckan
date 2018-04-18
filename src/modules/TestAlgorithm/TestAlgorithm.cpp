@@ -84,7 +84,7 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
         // Loop over all pixels and make hitmaps
         for(auto& pixel : (*pixels)) {
             // Hitmap
-            hitmap[detector->name()]->Fill(pixel->m_column, pixel->m_row);
+            hitmap[detector->name()]->Fill(pixel->column(), pixel->row());
             // Timing plots
             eventTimes[detector->name()]->Fill(Units::convert(pixel->timestamp(), "s"));
         }

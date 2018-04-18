@@ -21,6 +21,7 @@ namespace corryvreckan {
         int adc() { return m_adc; }
         int tot() { return adc(); }
 
+    private:
         // Member variables
         int m_row;
         int m_column;
