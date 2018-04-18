@@ -74,7 +74,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
             if(used[pixel])
                 continue;
 
-            if(pixel->m_adc == 0.)
+            if(pixel->adc() == 0.)
                 continue;
 
             // Make the new cluster object
@@ -85,7 +85,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
             cluster->addPixel(pixel);
             double clusterTime = pixel->timestamp();
             used[pixel] = true;
-            LOG(DEBUG) << "Adding pixel: " << pixel->m_row << "," << pixel->m_column;
+            LOG(DEBUG) << "Adding pixel: " << pixel->row() << "," << pixel->column();
             int nPixels = 0;
             while(cluster->size() != nPixels) {
 
@@ -101,7 +101,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
                     if(used[neighbour])
                         continue;
 
-                    if(neighbour->m_adc == 0.)
+                    if(neighbour->adc() == 0.)
                         continue;
 
                     // Check if they are touching cluster pixels
@@ -112,7 +112,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
                     cluster->addPixel(neighbour);
                     clusterTime = neighbour->timestamp();
                     used[neighbour] = true;
-                    LOG(DEBUG) << "Adding pixel: " << neighbour->m_row << "," << neighbour->m_column << " time "
+                    LOG(DEBUG) << "Adding pixel: " << neighbour->row() << "," << neighbour->column() << " time "
                                << Units::display(neighbour->timestamp(), {"ns", "us", "s"});
                 }
             }
@@ -146,8 +146,8 @@ bool Timepix3Clustering::touching(Pixel* neighbour, Cluster* cluster) {
     bool Touching = false;
 
     for(auto pixel : (*cluster->pixels())) {
-        int row_distance = abs(pixel->m_row - neighbour->m_row);
-        int col_distance = abs(pixel->m_column - neighbour->m_column);
+        int row_distance = abs(pixel->row() - neighbour->row());
+        int col_distance = abs(pixel->column() - neighbour->column());
 
         if(row_distance <= neighbour_radius_row && col_distance <= neighbour_radius_col) {
             if(row_distance > 1 || col_distance > 1) {
@@ -187,14 +187,14 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
 
     // Loop over all pixels
     for(int pix = 0; pix < pixels->size(); pix++) {
-        double pixelToT = (*pixels)[pix]->m_adc;
+        double pixelToT = (*pixels)[pix]->adc();
         if(pixelToT == 0) {
             LOG(DEBUG) << "Pixel with ToT 0!";
             pixelToT = 1;
         }
         tot += pixelToT;
-        row += ((*pixels)[pix]->m_row * pixelToT);
-        column += ((*pixels)[pix]->m_column * pixelToT);
+        row += ((*pixels)[pix]->row() * pixelToT);
+        column += ((*pixels)[pix]->column() * pixelToT);
         if((*pixels)[pix]->timestamp() < timestamp)
             timestamp = (*pixels)[pix]->timestamp();
     }
@@ -204,8 +204,9 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
     auto detector = get_detector(detectorID);
 
     // Create object with local cluster position
-    PositionVector3D<Cartesian3D<double>> positionLocal(
-        detector->pitchX() * (column - detector->nPixelsX() / 2), detector->pitchY() * (row - detector->nPixelsY() / 2), 0);
+    PositionVector3D<Cartesian3D<double>> positionLocal(detector->pitch().X() * (column - detector->nPixelsX() / 2),
+                                                        detector->pitch().Y() * (row - detector->nPixelsY() / 2),
+                                                        0);
     // Calculate global cluster position
     PositionVector3D<Cartesian3D<double>> positionGlobal = detector->localToGlobal(positionLocal);
 

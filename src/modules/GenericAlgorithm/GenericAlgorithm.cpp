@@ -54,7 +54,7 @@ StatusCode GenericAlgorithm::run(Clipboard* clipboard) {
         // Loop over all pixels and make hitmaps
         for(auto& pixel : (*pixels)) {
             // Fill the plots for this device
-            plotPerDevice[detector->name()]->Fill(pixel->m_column, pixel->m_row);
+            plotPerDevice[detector->name()]->Fill(pixel->column(), pixel->row());
         }
     }
 

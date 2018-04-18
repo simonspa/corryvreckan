@@ -15,14 +15,20 @@ namespace corryvreckan {
         Pixel(std::string detectorID, int row, int col, int tot, double timestamp)
             : Object(detectorID, timestamp), m_row(row), m_column(col), m_adc(tot) {}
 
+        int row() { return m_row; }
+        int column() { return m_column; }
+
+        int adc() { return m_adc; }
+        int tot() { return adc(); }
+
+    private:
         // Member variables
         int m_row;
         int m_column;
         int m_adc;
 
-        // ROOT I/O class definition - update version number when you change this
-        // class!
-        ClassDef(Pixel, 1)
+        // ROOT I/O class definition - update version number when you change this class!
+        ClassDef(Pixel, 2)
     };
 
     // Vector type declaration

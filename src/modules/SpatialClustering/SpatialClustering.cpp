@@ -71,8 +71,7 @@ StatusCode SpatialClustering::run(Clipboard* clipboard) {
         // Fill the hitmap with pixels
         for(int iP = 0; iP < pixels->size(); iP++) {
             Pixel* pixel = (Pixel*)(*pixels)[iP];
-            hitmap[pixel->m_row][pixel->m_column] = pixel;
-            (pixel->m_adc)++; // temp fix for clicpix data
+            hitmap[pixel->row()][pixel->column()] = pixel;
         }
 
         // Loop over all pixels and make clusters
@@ -97,11 +96,11 @@ StatusCode SpatialClustering::run(Clipboard* clipboard) {
             while(addedPixel) {
 
                 addedPixel = false;
-                for(int row = (pixel->m_row - 1); row <= (pixel->m_row + 1); row++) {
+                for(int row = (pixel->row() - 1); row <= (pixel->row() + 1); row++) {
                     // If out of bounds for row
                     if(row < 0 || row >= nRows)
                         continue;
-                    for(int col = (pixel->m_column - 1); col <= (pixel->m_column + 1); col++) {
+                    for(int col = (pixel->column() - 1); col <= (pixel->column() + 1); col++) {
                         // If out of bounds for column
                         if(col < 0 || col >= nCols)
                             continue;
@@ -177,10 +176,10 @@ void SpatialClustering::calculateClusterCentre(Detector* detector, Cluster* clus
 
     // Loop over all pixels
     for(int pix = 0; pix < pixels->size(); pix++) {
-        tot += (*pixels)[pix]->m_adc;
-        row += ((*pixels)[pix]->m_row * (*pixels)[pix]->m_adc);
-        column += ((*pixels)[pix]->m_column * (*pixels)[pix]->m_adc);
-        LOG(DEBUG) << "- pixel row, col: " << (*pixels)[pix]->m_row << "," << (*pixels)[pix]->m_column;
+        tot += (*pixels)[pix]->adc();
+        row += ((*pixels)[pix]->row() * (*pixels)[pix]->adc());
+        column += ((*pixels)[pix]->column() * (*pixels)[pix]->adc());
+        LOG(DEBUG) << "- pixel row, col: " << (*pixels)[pix]->row() << "," << (*pixels)[pix]->column();
     }
 
     // Row and column positions are tot-weighted
@@ -190,8 +189,8 @@ void SpatialClustering::calculateClusterCentre(Detector* detector, Cluster* clus
     LOG(DEBUG) << "- cluster row, col: " << row << "," << column;
 
     // Create object with local cluster position
-    PositionVector3D<Cartesian3D<double>> positionLocal(detector->pitchX() * (column - detector->nPixelsX() / 2.),
-                                                        detector->pitchY() * (row - detector->nPixelsY() / 2.),
+    PositionVector3D<Cartesian3D<double>> positionLocal(detector->pitch().X() * (column - detector->nPixelsX() / 2.),
+                                                        detector->pitch().Y() * (row - detector->nPixelsY() / 2.),
                                                         0);
     // Calculate global cluster position
     PositionVector3D<Cartesian3D<double>> positionGlobal = detector->localToGlobal(positionLocal);

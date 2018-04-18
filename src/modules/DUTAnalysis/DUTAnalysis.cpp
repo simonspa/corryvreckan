@@ -221,19 +221,21 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
         for(auto& cluster : (*clusters)) {
 
             // Fill the tot histograms on the first run
-            if(first_track == 0)
+            if(first_track == 0) {
                 clusterToTVersusTime->Fill(Units::convert(cluster->timestamp(), "ns"), cluster->tot());
-
-            auto assocClusters = track->associatedClusters();
-            if(std::find(assocClusters.begin(), assocClusters.end(), cluster) == assocClusters.end()) {
-                LOG(DEBUG) << "Cluster not associated with track";
-                continue;
             }
-            LOG(DEBUG) << "Found associated cluster";
 
+            // Check distance between track and cluster
             ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
             double xdistance = intercept.X() - cluster->globalX();
             double ydistance = intercept.Y() - cluster->globalY();
+            if(abs(xdistance) > spatialCut || abs(ydistance) > spatialCut) {
+                LOG(DEBUG) << "Discarding DUT cluster with distance (" << abs(xdistance) << "," << abs(ydistance) << ")";
+                continue;
+            }
+
+            LOG(DEBUG) << "Found associated cluster with distance (" << abs(xdistance) << "," << abs(ydistance) << ")";
+            track->addAssociatedCluster(cluster);
 
             // We now have an associated cluster! Fill plots
             associated = true;
