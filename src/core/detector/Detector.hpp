@@ -42,8 +42,8 @@ namespace corryvreckan {
         Configuration getConfiguration();
 
         ROOT::Math::XYVector size() { return ROOT::Math::XYVector(m_pitch.X() * m_nPixelsX, m_pitch.Y() * m_nPixelsY); }
-        double pitchX() { return m_pitch.X(); }
-        double pitchY() { return m_pitch.Y(); }
+        ROOT::Math::XYVector pitch() { return m_pitch; }
+
         int nPixelsX() { return m_nPixelsX; }
         int nPixelsY() { return m_nPixelsY; }
         double timingOffset() { return m_timingOffset; }

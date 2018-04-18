@@ -15,8 +15,8 @@ void EtaCalculation::initialise() {
     for(auto& detector : get_detectors()) {
 
         // Initialise histograms
-        double pitchX = detector->pitchX();
-        double pitchY = detector->pitchY();
+        double pitchX = detector->pitch().X();
+        double pitchY = detector->pitch().Y();
         string name = "etaDistributionX_" + detector->name();
         m_etaDistributionX[detector->name()] = new TH2F(name.c_str(), name.c_str(), 100., 0., pitchX, 100., 0., pitchY);
         name = "etaDistributionY_" + detector->name();
@@ -27,19 +27,22 @@ void EtaCalculation::initialise() {
         m_etaDistributionYprofile[detector->name()] = new TProfile(name.c_str(), name.c_str(), 100., 0., pitchX, 0., pitchY);
 
         // Prepare fit functions - we need them for every detector as they might have different pitches
-        m_etaFitX[detector->name()] = new TF1("etaFormulaX", m_etaFormulaX.c_str(), 0, detector->pitchX());
-        m_etaFitY[detector->name()] = new TF1("etaFormulaY", m_etaFormulaY.c_str(), 0, detector->pitchY());
+        m_etaFitX[detector->name()] = new TF1("etaFormulaX", m_etaFormulaX.c_str(), 0, pitchX);
+        m_etaFitY[detector->name()] = new TF1("etaFormulaY", m_etaFormulaY.c_str(), 0, pitchY);
     }
 }
 
 ROOT::Math::XYVector EtaCalculation::pixelIntercept(Track* tr, Detector* det) {
+
+    double pitchX = det->pitch().X();
+    double pitchY = det->pitch().Y();
     // Get the in-pixel track intercept
     PositionVector3D<Cartesian3D<double>> trackIntercept = det->getIntercept(tr);
     PositionVector3D<Cartesian3D<double>> trackInterceptLocal = det->globalToLocal(trackIntercept);
     double pixelInterceptX = det->inPixelX(trackInterceptLocal);
-    (pixelInterceptX > det->pitchX() / 2. ? pixelInterceptX -= det->pitchX() / 2. : pixelInterceptX += det->pitchX() / 2.);
+    (pixelInterceptX > pitchX / 2. ? pixelInterceptX -= pitchX / 2. : pixelInterceptX += pitchX / 2.);
     double pixelInterceptY = det->inPixelY(trackInterceptLocal);
-    (pixelInterceptY > det->pitchY() / 2. ? pixelInterceptY -= det->pitchY() / 2. : pixelInterceptY += det->pitchY() / 2.);
+    (pixelInterceptY > pitchY / 2. ? pixelInterceptY -= pitchY / 2. : pixelInterceptY += pitchY / 2.);
     return ROOT::Math::XYVector(pixelInterceptX, pixelInterceptY);
 }
 
@@ -55,13 +58,13 @@ void EtaCalculation::calculateEta(Track* track, Cluster* cluster) {
     auto pxIntercept = pixelIntercept(track, detector);
 
     if(cluster->columnWidth() == 2) {
-        double inPixelX = detector->pitchX() * (cluster->column() - floor(cluster->column()));
+        double inPixelX = detector->pitch().X() * (cluster->column() - floor(cluster->column()));
         m_etaDistributionX[detector->name()]->Fill(inPixelX, pxIntercept.X());
         m_etaDistributionXprofile[detector->name()]->Fill(inPixelX, pxIntercept.X());
     }
 
     if(cluster->rowWidth() == 2) {
-        double inPixelY = detector->pitchY() * (cluster->row() - floor(cluster->row()));
+        double inPixelY = detector->pitch().Y() * (cluster->row() - floor(cluster->row()));
         m_etaDistributionY[detector->name()]->Fill(inPixelY, pxIntercept.Y());
         m_etaDistributionYprofile[detector->name()]->Fill(inPixelY, pxIntercept.Y());
     }

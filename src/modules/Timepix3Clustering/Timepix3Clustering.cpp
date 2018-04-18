@@ -204,8 +204,9 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
     auto detector = get_detector(detectorID);
 
     // Create object with local cluster position
-    PositionVector3D<Cartesian3D<double>> positionLocal(
-        detector->pitchX() * (column - detector->nPixelsX() / 2), detector->pitchY() * (row - detector->nPixelsY() / 2), 0);
+    PositionVector3D<Cartesian3D<double>> positionLocal(detector->pitch().X() * (column - detector->nPixelsX() / 2),
+                                                        detector->pitch().Y() * (row - detector->nPixelsY() / 2),
+                                                        0);
     // Calculate global cluster position
     PositionVector3D<Cartesian3D<double>> positionGlobal = detector->localToGlobal(positionLocal);
 

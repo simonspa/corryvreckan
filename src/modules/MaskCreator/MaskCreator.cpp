@@ -22,9 +22,9 @@ void MaskCreator::initialise() {
     for(auto& detector : get_detectors()) {
         // adjust per-axis bandwith for pixel pitch along each axis such that the
         // covered area is approximately circular in metric coordinates.
-        double scale = std::hypot(detector->pitchX(), detector->pitchY()) / M_SQRT2;
-        m_bandwidthCol[detector->name()] = std::ceil(bandwidth * scale / detector->pitchX());
-        m_bandwidthRow[detector->name()] = std::ceil(bandwidth * scale / detector->pitchY());
+        double scale = std::hypot(detector->pitch().X(), detector->pitch().Y()) / M_SQRT2;
+        m_bandwidthCol[detector->name()] = std::ceil(bandwidth * scale / detector->pitch().X());
+        m_bandwidthRow[detector->name()] = std::ceil(bandwidth * scale / detector->pitch().Y());
 
         std::string name = "maskmap_" + detector->name();
         maskmap[detector->name()] = new TH2F(name.c_str(),
