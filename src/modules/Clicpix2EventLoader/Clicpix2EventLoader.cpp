@@ -143,7 +143,7 @@ void Clicpix2EventLoader::initialise() {
         for(int row = 0; row < det->nPixelsY(); row++) {
             if(det->masked(column, row)) {
                 hMaskMap->Fill(column, row, 2);
-            } else if(matrix_config[std::make_pair(column, row)].GetMask()) {
+            } else if(matrix_config[std::make_pair(row, column)].GetMask()) {
                 hMaskMap->Fill(column, row, 1);
             }
         }
