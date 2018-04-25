@@ -15,7 +15,7 @@
 
 namespace corryvreckan {
 
-    class Cluster : public TestBeamObject {
+    class Cluster : public Object {
 
     public:
         // Constructors and destructors
@@ -42,16 +42,17 @@ namespace corryvreckan {
         // Add a new pixel to the cluster
         void addPixel(Pixel* pixel) {
             m_pixels.push_back(pixel);
-            if(m_columnHits.count(pixel->m_column) == 0) {
+            if(m_columnHits.count(pixel->column()) == 0) {
                 m_columnWidth++;
             }
-            if(m_rowHits.count(pixel->m_row) == 0) {
+            if(m_rowHits.count(pixel->row()) == 0) {
                 m_rowWidth++;
             }
-            m_columnHits[pixel->m_column] = true;
-            m_rowHits[pixel->m_row] = true;
+            m_columnHits[pixel->column()] = true;
+            m_rowHits[pixel->row()] = true;
         }
         // Retrieve cluster parameters
+        // FIXME these should be renamed seed_row and seed_column!
         double row() { return m_row; }
         double column() { return m_column; }
         double tot() { return m_tot; }

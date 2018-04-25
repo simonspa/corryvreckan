@@ -41,10 +41,10 @@
   \end{center}}
 
 % Command to add all modules
-\newcommand{\includemodulesmd}{\def\temp{@CORRYVRECKAN_ALGORITHM_FILES@}\ifx\temp\empty
-  \textit{Algorithm documentation not added because Markdown to LaTex conversion was not possible}
+\newcommand{\includemodulesmd}{\def\temp{@CORRYVRECKAN_MODULE_FILES@}\ifx\temp\empty
+  \textit{Module documentation not added because Markdown to LaTex conversion was not possible}
 \else
-  \foreach \n in @CORRYVRECKAN_ALGORITHM_FILES@ {\input{\n}}
+  \foreach \n in @CORRYVRECKAN_MODULE_FILES@ {\input{\n}}
 \fi}
 
 % Command to add a single converted markdown file

@@ -1,3 +1,11 @@
+/** @file
+ *  @brief Interface to the core framework
+ *  @copyright Copyright (c) 2017 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 // ROOT include files
 #include <Math/DisplacementVector2D.h>
 #include <Math/Vector2D.h>
@@ -6,16 +14,17 @@
 #include <TSystem.h>
 
 // Local include files
-#include "Analysis.h"
-#include "algorithm/exceptions.h"
+#include "Analysis.hpp"
+#include "module/exceptions.h"
 #include "utils/log.h"
 
+#include <chrono>
 #include <dlfcn.h>
 #include <fstream>
 #include <iomanip>
 
-#define CORRYVRECKAN_ALGORITHM_PREFIX "libCorryvreckanAlgorithm"
-#define CORRYVRECKAN_GENERATOR_FUNCTION "corryvreckan_algorithm_generator"
+#define CORRYVRECKAN_MODULE_PREFIX "libCorryvreckanModule"
+#define CORRYVRECKAN_GENERATOR_FUNCTION "corryvreckan_module_generator"
 
 using namespace corryvreckan;
 
@@ -92,7 +101,7 @@ void Analysis::load() {
     add_units();
 
     load_detectors();
-    load_algorithms();
+    load_modules();
 }
 
 void Analysis::load_detectors() {
@@ -127,11 +136,11 @@ void Analysis::load_detectors() {
 
     // Finally, sort the list of detectors by z position (from lowest to highest)
     std::sort(detectors.begin(), detectors.end(), [](Detector* det1, Detector* det2) {
-        return det1->displacementZ() < det2->displacementZ();
+        return det1->displacement().Z() < det2->displacement().Z();
     });
 }
 
-void Analysis::load_algorithms() {
+void Analysis::load_modules() {
     std::vector<Configuration> configs = conf_mgr_->getConfigurations();
 
     // Create histogram output file
@@ -142,14 +151,13 @@ void Analysis::load_algorithms() {
         throw RuntimeError("Cannot create main ROOT file " + histogramFile);
     }
 
-    LOG(DEBUG) << "Start loading algorithms, have " << configs.size() << " configurations.";
+    LOG(DEBUG) << "Start loading modules, have " << configs.size() << " configurations.";
     // Loop through all non-global configurations
     for(auto& config : configs) {
-        // Load library for each module. Libraries are named (by convention + CMAKE)
-        // libAllpixModule Name.suffix
+        // Load library for each module. Libraries are named (by convention + CMAKE libCorryvreckanModule Name.suffix
         std::string lib_name =
-            std::string(CORRYVRECKAN_ALGORITHM_PREFIX).append(config.getName()).append(SHARED_LIBRARY_SUFFIX);
-        LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loading algorithm " << config.getName();
+            std::string(CORRYVRECKAN_MODULE_PREFIX).append(config.getName()).append(SHARED_LIBRARY_SUFFIX);
+        LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loading module " << config.getName();
 
         void* lib = nullptr;
         bool load_error = false;
@@ -226,7 +234,7 @@ void Analysis::load_algorithms() {
                            << std::endl
                            << "- Recompile the library " << problem_lib << " with tls-model=global-dynamic";
             } else if(lib_error != nullptr && std::strstr(lib_error, "cannot open shared object file") != nullptr &&
-                      problem_lib.find(CORRYVRECKAN_ALGORITHM_PREFIX) == std::string::npos) {
+                      problem_lib.find(CORRYVRECKAN_MODULE_PREFIX) == std::string::npos) {
                 LOG(ERROR) << "Library could not be loaded: one of its dependencies is missing" << std::endl
                            << "The name of the missing library is " << problem_lib << std::endl
                            << "Please make sure the library is properly initialized and try "
@@ -252,44 +260,44 @@ void Analysis::load_algorithms() {
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
 
-        // Merge the global configuration into the algorithms config:
+        // Merge the global configuration into the modules config:
         config.merge(global_config);
 
-        // Create the algorithms from the library
-        m_algorithms.emplace_back(create_algorithm(loaded_libraries_[lib_name], config));
+        // Create the modules from the library
+        m_modules.emplace_back(create_module(loaded_libraries_[lib_name], config));
     }
     LOG(STATUS) << "Loaded " << configs.size() << " modules";
 }
 
-Algorithm* Analysis::create_algorithm(void* library, Configuration config) {
-    LOG(TRACE) << "Creating algorithm " << config.getName() << ", using generator \"" << CORRYVRECKAN_GENERATOR_FUNCTION
+Module* Analysis::create_module(void* library, Configuration config) {
+    LOG(TRACE) << "Creating module " << config.getName() << ", using generator \"" << CORRYVRECKAN_GENERATOR_FUNCTION
                << "\"";
 
     // Make the vector to return
-    std::string algorithm_name = config.getName();
+    std::string module_name = config.getName();
 
     // Get the generator function for this module
     void* generator = dlsym(library, CORRYVRECKAN_GENERATOR_FUNCTION);
     // If the generator function was not found, throw an error
     if(generator == nullptr) {
-        LOG(ERROR) << "Algorithm library is invalid or outdated: required "
+        LOG(ERROR) << "Module library is invalid or outdated: required "
                       "interface function not found!";
-        throw corryvreckan::RuntimeError("Error instantiating algorithm from " + config.getName());
+        throw corryvreckan::RuntimeError("Error instantiating module from " + config.getName());
     }
 
     // Convert to correct generator function
-    auto algorithm_generator = reinterpret_cast<Algorithm* (*)(Configuration, std::vector<Detector*>)>(generator); // NOLINT
+    auto module_generator = reinterpret_cast<Module* (*)(Configuration, std::vector<Detector*>)>(generator); // NOLINT
 
-    // Figure out which detectors should run on this algorithm:
-    std::vector<Detector*> algorithm_det;
+    // Figure out which detectors should run on this module:
+    std::vector<Detector*> module_det;
     if(!config.has("detectors")) {
-        algorithm_det = detectors;
+        module_det = detectors;
     } else {
         std::vector<std::string> det_list = config.getArray<std::string>("detectors");
 
         for(auto& d : detectors) {
             if(std::find(det_list.begin(), det_list.end(), d->name()) != det_list.end()) {
-                algorithm_det.push_back(d);
+                module_det.push_back(d);
             }
         }
     }
@@ -298,10 +306,10 @@ Algorithm* Analysis::create_algorithm(void* library, Configuration config) {
     if(config.has("masked")) {
         std::vector<std::string> mask_list = config.getArray<std::string>("masked");
 
-        for(auto it = algorithm_det.begin(); it != algorithm_det.end();) {
+        for(auto it = module_det.begin(); it != module_det.end();) {
             // Remove detectors which are masked:
             if(std::find(mask_list.begin(), mask_list.end(), (*it)->name()) != mask_list.end()) {
-                it = algorithm_det.erase(it);
+                it = module_det.erase(it);
             } else {
                 it++;
             }
@@ -314,18 +322,18 @@ Algorithm* Analysis::create_algorithm(void* library, Configuration config) {
     section_name += config.getName();
     Log::setSection(section_name);
     // Set module specific log settings
-    auto old_settings = set_algorithm_before(config.getName(), config);
-    // Build algorithm
-    Algorithm* algorithm = algorithm_generator(config, algorithm_det);
+    auto old_settings = set_module_before(config.getName(), config);
+    // Build module
+    Module* module = module_generator(config, module_det);
     // Reset log
     Log::setSection(old_section_name);
-    set_algorithm_after(old_settings);
+    set_module_after(old_settings);
 
-    // Return the algorithm to the analysis
-    return algorithm;
+    // Return the module to the analysis
+    return module;
 }
 
-// Run the analysis loop - this initialises, runs and finalises all algorithms
+// Run the analysis loop - this initialises, runs and finalises all modules
 void Analysis::run() {
 
     // Check if we have an event or track limit:
@@ -333,7 +341,7 @@ void Analysis::run() {
     int number_of_tracks = global_config.get<int>("number_of_tracks", -1);
     float run_time = global_config.get<float>("run_time", Units::convert(-1.0, "s"));
 
-    // Loop over all events, running each algorithm on each "event"
+    // Loop over all events, running each module on each "event"
     LOG(STATUS) << "========================| Event loop |========================";
     m_events = 1;
     int events_prev = 1;
@@ -357,31 +365,37 @@ void Analysis::run() {
         if(number_of_tracks > -1 && m_tracks >= number_of_tracks)
             break;
 
-        // Run all algorithms
-        for(auto& algorithm : m_algorithms) {
+        // Run all modules
+        for(auto& module : m_modules) {
+            // Get current time
+            auto start = std::chrono::steady_clock::now();
+
             // Set run module section header
             std::string old_section_name = Log::getSection();
             std::string section_name = "R:";
-            section_name += algorithm->getName();
+            section_name += module->getName();
             Log::setSection(section_name);
             // Set module specific settings
-            auto old_settings = set_algorithm_before(algorithm->getName(), algorithm->getConfig());
+            auto old_settings = set_module_before(module->getName(), module->getConfig());
             // Change to the output file directory
-            m_directory->cd(algorithm->getName().c_str());
-            // Run the algorithms with timing enabled
-            algorithm->getStopwatch()->Start(false);
-            StatusCode check = algorithm->run(m_clipboard);
-            algorithm->getStopwatch()->Stop();
+            m_directory->cd(module->getName().c_str());
+            StatusCode check = module->run(m_clipboard);
             // Reset logging
             Log::setSection(old_section_name);
-            set_algorithm_after(old_settings);
+            set_module_after(old_settings);
+
+            // Update execution time
+            auto end = std::chrono::steady_clock::now();
+            module_execution_time_[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
+
             if(check == NoData) {
                 noData = true;
                 skipped++;
                 break;
             } // Nothing to be done in this event
-            if(check == Failure)
+            if(check == Failure) {
                 run = false;
+            }
         }
 
         // Print statistics:
@@ -407,7 +421,7 @@ void Analysis::run() {
 
         // Clear objects from this iteration from the clipboard
         m_clipboard->clear();
-        // Check if any of the algorithms return a value saying it should stop
+        // Check if any of the modules return a value saying it should stop
         if(!run)
             break;
         // Increment event number
@@ -429,54 +443,54 @@ void Analysis::terminate() {
     m_terminate = true;
 }
 
-// Initalise all algorithms
+// Initalise all modules
 void Analysis::initialiseAll() {
-    // Loop over all algorithms and initialise them
-    LOG(STATUS) << "=================| Initialising algorithms |==================";
-    for(auto& algorithm : m_algorithms) {
+    // Loop over all modules and initialise them
+    LOG(STATUS) << "=================| Initialising modules |==================";
+    for(auto& module : m_modules) {
         // Set init module section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "I:";
-        section_name += algorithm->getName();
+        section_name += module->getName();
         Log::setSection(section_name);
         // Set module specific settings
-        auto old_settings = set_algorithm_before(algorithm->getName(), algorithm->getConfig());
+        auto old_settings = set_module_before(module->getName(), module->getConfig());
 
         // Make a new folder in the output file
         m_directory->cd();
-        m_directory->mkdir(algorithm->getName().c_str());
-        m_directory->cd(algorithm->getName().c_str());
-        LOG(INFO) << "Initialising \"" << algorithm->getName() << "\"";
-        // Initialise the algorithm
-        algorithm->initialise();
+        m_directory->mkdir(module->getName().c_str());
+        m_directory->cd(module->getName().c_str());
+        LOG(INFO) << "Initialising \"" << module->getName() << "\"";
+        // Initialise the module
+        module->initialise();
 
         // Reset logging
         Log::setSection(old_section_name);
-        set_algorithm_after(old_settings);
+        set_module_after(old_settings);
     }
 }
 
-// Finalise all algorithms
+// Finalise all modules
 void Analysis::finaliseAll() {
 
-    // Loop over all algorithms and finalise them
-    LOG(STATUS) << "===================| Finalising algorithms |===================";
-    for(auto& algorithm : m_algorithms) {
+    // Loop over all modules and finalise them
+    LOG(STATUS) << "===================| Finalising modules |===================";
+    for(auto& module : m_modules) {
         // Set init module section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "F:";
-        section_name += algorithm->getName();
+        section_name += module->getName();
         Log::setSection(section_name);
         // Set module specific settings
-        auto old_settings = set_algorithm_before(algorithm->getName(), algorithm->getConfig());
+        auto old_settings = set_module_before(module->getName(), module->getConfig());
 
         // Change to the output file directory
-        m_directory->cd(algorithm->getName().c_str());
-        // Finalise the algorithm
-        algorithm->finalise();
+        m_directory->cd(module->getName().c_str());
+        // Finalise the module
+        module->finalise();
         // Reset logging
         Log::setSection(old_section_name);
-        set_algorithm_after(old_settings);
+        set_module_after(old_settings);
     }
 
     // Write the output histogram file
@@ -506,19 +520,19 @@ void Analysis::finaliseAll() {
     timing();
 }
 
-// Display timing statistics for each algorithm, over all events and per event
+// Display timing statistics for each module, over all events and per event
 void Analysis::timing() {
     LOG(STATUS) << "===============| Wall-clock timing (seconds) |================";
-    for(auto& algorithm : m_algorithms) {
-        LOG(STATUS) << std::setw(25) << algorithm->getName() << "  --  " << std::fixed << std::setprecision(5)
-                    << algorithm->getStopwatch()->RealTime() << " = " << std::setprecision(9)
-                    << algorithm->getStopwatch()->RealTime() / m_events << " s/evt";
+    for(auto& module : m_modules) {
+        LOG(STATUS) << std::setw(25) << module->getName() << "  --  " << std::fixed << std::setprecision(5)
+                    << module_execution_time_[module] << " = " << std::setprecision(9)
+                    << module_execution_time_[module] / m_events << " s/evt";
     }
     LOG(STATUS) << "==============================================================";
 }
 
 // Helper functions to set the module specific log settings if necessary
-std::tuple<LogLevel, LogFormat> Analysis::set_algorithm_before(const std::string&, const Configuration& config) {
+std::tuple<LogLevel, LogFormat> Analysis::set_module_before(const std::string&, const Configuration& config) {
     // Set new log level if necessary
     LogLevel prev_level = Log::getReportingLevel();
     if(config.has("log_level")) {
@@ -553,7 +567,7 @@ std::tuple<LogLevel, LogFormat> Analysis::set_algorithm_before(const std::string
 
     return std::make_tuple(prev_level, prev_format);
 }
-void Analysis::set_algorithm_after(std::tuple<LogLevel, LogFormat> prev) {
+void Analysis::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
     // Reset the previous log level
     LogLevel cur_level = Log::getReportingLevel();
     LogLevel old_level = std::get<0>(prev);

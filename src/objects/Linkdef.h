@@ -13,7 +13,7 @@
     ROOT::Math::DefaultCoordinateSystemTag > +;
 
 // AP2 objects
-#pragma link C++ class corryvreckan::TestBeamObject + ;
+#pragma link C++ class corryvreckan::Object + ;
 #pragma link C++ class corryvreckan::Cluster + ;
 #pragma link C++ class corryvreckan::GuiDisplay + ;
 #pragma link C++ class corryvreckan::KDTree + ;
@@ -23,4 +23,4 @@
 #pragma link C++ class corryvreckan::MCParticle + ;
 
 // Vector of Object for internal storage
-#pragma link C++ class std::vector < corryvreckan::TestBeamObject* > +;
+#pragma link C++ class std::vector < corryvreckan::Object* > +;

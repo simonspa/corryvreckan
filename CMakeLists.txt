@@ -146,7 +146,7 @@ ADD_SUBDIRECTORY(src/objects)
 SET(CORRYVRECKAN_LIBRARIES ${CORRYVRECKAN_LIBRARIES} CorryvreckanObjects)
 
 # Build required modules
-ADD_SUBDIRECTORY(src/algorithms)
+ADD_SUBDIRECTORY(src/modules)
 
 # Build the executable
 ADD_SUBDIRECTORY(src/exec)

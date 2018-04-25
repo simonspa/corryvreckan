@@ -2,7 +2,7 @@
 #define GUIDISPLAY_H 1
 
 // Local includes
-#include "TestBeamObject.h"
+#include "Object.hpp"
 #include "core/utils/log.h"
 
 // Global includes
@@ -26,7 +26,7 @@
 
 namespace corryvreckan {
 
-    class GuiDisplay : public TestBeamObject {
+    class GuiDisplay : public Object {
 
         RQ_OBJECT("GuiDisplay")
 
@@ -40,6 +40,7 @@ namespace corryvreckan {
         TRootEmbeddedCanvas* canvas;
         std::map<std::string, std::vector<TH1*>> histograms;
         std::map<TH1*, std::string> styles;
+        std::map<TH1*, bool> logarithmic;
         std::map<std::string, TGTextButton*> buttons;
         std::map<TRootEmbeddedCanvas*, bool> stackedCanvas;
         TGHorizontalFrame* buttonMenu;
@@ -64,6 +65,9 @@ namespace corryvreckan {
                 if(!stackedCanvas[canvas])
                     canvas->GetCanvas()->cd(i + 1);
                 std::string style = styles[histograms[canvasName][i]];
+                if(logarithmic[histograms[canvasName][i]]) {
+                    gPad->SetLogy();
+                }
                 if(stackedCanvas[canvas]) {
                     style = "same";
                     histograms[canvasName][i]->SetLineColor(i + 1);
@@ -77,9 +81,8 @@ namespace corryvreckan {
         // Exit the monitoring
         inline void Exit() { raise(SIGINT); }
 
-        // ROOT I/O class definition - update version number when you change this
-        // class!
-        ClassDef(GuiDisplay, 0)
+        // ROOT I/O class definition - update version number when you change this class!
+        ClassDef(GuiDisplay, 1)
     };
 } // namespace corryvreckan
 

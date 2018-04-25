@@ -1,48 +1,48 @@
-# For every algorithm, build a separate library to be loaded by corryvreckan core
+# For every module, build a separate library to be loaded by corryvreckan core
 MACRO(corryvreckan_enable_default val)
-    # Get the name of the algorithm
-    GET_FILENAME_COMPONENT(_corryvreckan_algorithm_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    # Get the name of the module
+    GET_FILENAME_COMPONENT(_corryvreckan_module_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
-    # Build all algorithms by default if not specified otherwise
-    OPTION(BUILD_${_corryvreckan_algorithm_dir} "Build algorithm in directory ${_corryvreckan_algorithm_dir}?" ${val})
+    # Build all modules by default if not specified otherwise
+    OPTION(BUILD_${_corryvreckan_module_dir} "Build module in directory ${_corryvreckan_module_dir}?" ${val})
 ENDMACRO()
 
-# Common algorithm definitions
-MACRO(corryvreckan_algorithm name)
-    # Get the name of the algorithm
-    GET_FILENAME_COMPONENT(_corryvreckan_algorithm_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+# Common module definitions
+MACRO(corryvreckan_module name)
+    # Get the name of the module
+    GET_FILENAME_COMPONENT(_corryvreckan_module_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
-    # Build all algorithms by default if not specified otherwise
-    OPTION(BUILD_${_corryvreckan_algorithm_dir} "Build algorithm in directory ${_corryvreckan_algorithm_dir}?" ON)
+    # Build all modules by default if not specified otherwise
+    OPTION(BUILD_${_corryvreckan_module_dir} "Build module in directory ${_corryvreckan_module_dir}?" ON)
 
-    # Quit the file if not building this file or all algorithms
-    IF(NOT (BUILD_${_corryvreckan_algorithm_dir} OR BUILD_ALL_ALGORITHMS))
+    # Quit the file if not building this file or all modules
+    IF(NOT (BUILD_${_corryvreckan_module_dir} OR BUILD_ALL_MODULES))
         RETURN()
     ENDIF()
 
     # Put message
-    MESSAGE( STATUS "Building algorithm: " ${_corryvreckan_algorithm_dir} )
+    MESSAGE( STATUS "Building module: " ${_corryvreckan_module_dir} )
 
-    # Prepend with the algorithm prefix to create the name of the algorithm
-    SET(${name} "CorryvreckanAlgorithm${_corryvreckan_algorithm_dir}")
+    # Prepend with the module prefix to create the name of the module
+    SET(${name} "CorryvreckanModule${_corryvreckan_module_dir}")
 
-    # Save the algorithm library for prelinking in the executable (NOTE: see exec folder)
-    SET(CORRYVRECKAN_ALGORITHM_LIBRARIES ${CORRYVRECKAN_ALGORITHM_LIBRARIES} ${${name}} CACHE INTERNAL "Algorithm libraries")
+    # Save the module library for prelinking in the executable (NOTE: see exec folder)
+    SET(CORRYVRECKAN_MODULE_LIBRARIES ${CORRYVRECKAN_MODULE_LIBRARIES} ${${name}} CACHE INTERNAL "Module libraries")
 
-    # Set default algorithm class name
-    SET(_corryvreckan_algorithm_class "${_corryvreckan_algorithm_dir}")
+    # Set default module class name
+    SET(_corryvreckan_module_class "${_corryvreckan_module_dir}")
 
-    # Find if alternative algorithm class name is passed or we can use the default
+    # Find if alternative module class name is passed or we can use the default
     SET (extra_macro_args ${ARGN})
     LIST(LENGTH extra_macro_args num_extra_args)
     IF (${num_extra_args} GREATER 0)
-        MESSAGE (AUTHOR_WARNING "Provided non-standard algorithm class name! Naming it ${_corryvreckan_algorithm_class} is recommended")
-        LIST(GET extra_macro_args 0 _corryvreckan_algorithm_class)
+        MESSAGE (AUTHOR_WARNING "Provided non-standard module class name! Naming it ${_corryvreckan_module_class} is recommended")
+        LIST(GET extra_macro_args 0 _corryvreckan_module_class)
     ENDIF ()
 
     # check if main header file is defined
-    IF(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_corryvreckan_algorithm_class}.h")
-        MESSAGE(FATAL_ERROR "Header file ${_corryvreckan_algorithm_class}.h does not exist, cannot build algorithm! \
+    IF(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_corryvreckan_module_class}.h")
+        MESSAGE(FATAL_ERROR "Header file ${_corryvreckan_module_class}.h does not exist, cannot build module! \
 Create the header or provide the alternative class name as first argument")
     ENDIF()
 
@@ -53,15 +53,15 @@ Create the header or provide the alternative class name as first argument")
     TARGET_INCLUDE_DIRECTORIES(${${name}} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
     # Set the special header flags and add the special dynamic implementation file
-    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_ALGORITHM_NAME=${_corryvreckan_algorithm_class})
-    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_ALGORITHM_HEADER="${_corryvreckan_algorithm_class}.h")
+    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_NAME=${_corryvreckan_module_class})
+    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_HEADER="${_corryvreckan_module_class}.h")
 
-    TARGET_SOURCES(${${name}} PRIVATE "${PROJECT_SOURCE_DIR}/src/core/algorithm/dynamic_algorithm_impl.cpp")
-    SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/algorithm/dynamic_algorithm_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_corryvreckan_algorithm_class}.h")
+    TARGET_SOURCES(${${name}} PRIVATE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp")
+    SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_corryvreckan_module_class}.h")
 ENDMACRO()
 
-# Add sources to the algorithm
-MACRO(corryvreckan_algorithm_sources name)
+# Add sources to the module
+MACRO(corryvreckan_module_sources name)
     # Get the list of sources
     SET(_list_var "${ARGN}")
     LIST(REMOVE_ITEM _list_var ${name})
@@ -76,8 +76,8 @@ MACRO(corryvreckan_algorithm_sources name)
     TARGET_LINK_LIBRARIES(${name} ${CORRYVRECKAN_LIBRARIES} ${CORRYVRECKAN_DEPS_LIBRARIES})
 ENDMACRO()
 
-# Provide default install target for the algorithm
-MACRO(corryvreckan_algorithm_install name)
+# Provide default install target for the module
+MACRO(corryvreckan_module_install name)
     INSTALL(TARGETS ${name}
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
