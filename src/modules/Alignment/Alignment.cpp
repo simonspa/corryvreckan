@@ -19,7 +19,13 @@ Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
 
     m_pruneTracks = m_config.get<bool>("prune_tracks", false);
     m_alignPosition = m_config.get<bool>("alignPosition", true);
+    if(m_alignPosition) {
+        LOG(INFO) << "Aligning positions";
+    }
     m_alignOrientation = m_config.get<bool>("alignOrientation", true);
+    if(m_alignOrientation) {
+        LOG(INFO) << "Aligning orientations";
+    }
     m_maxAssocClusters = m_config.get<int>("max_associated_clusters", 1);
     m_maxTrackChi2 = m_config.get<double>("max_track_chi2ndof", 10.);
 
@@ -31,7 +37,12 @@ Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
     } else {
         detectorToAlign = m_config.get<std::string>("DUT");
     }
-    LOG(INFO) << "Aligning detector \"" << detectorToAlign << "\"";
+
+    if(alignmentMethod == 1) {
+        LOG(INFO) << "Aligning detector \"" << detectorToAlign << "\"";
+    } else {
+        LOG(INFO) << "Aligning telescope";
+    }
 }
 
 void Alignment::initialise() {
@@ -399,19 +410,36 @@ void Alignment::finalise() {
 
             detNum = det;
             // Add the parameters to the fitter (z displacement not allowed to move!)
-            residualFitter->SetParameter(
-                det * 6 + 0, (detectorID + "_displacementX").c_str(), detector->displacement().X(), 0.01, -50, 50);
-            residualFitter->SetParameter(
-                det * 6 + 1, (detectorID + "_displacementY").c_str(), detector->displacement().Y(), 0.01, -50, 50);
+            if(m_alignPosition) {
+                residualFitter->SetParameter(
+                    det * 6 + 0, (detectorID + "_displacementX").c_str(), detector->displacement().X(), 0.01, -50, 50);
+                residualFitter->SetParameter(
+                    det * 6 + 1, (detectorID + "_displacementY").c_str(), detector->displacement().Y(), 0.01, -50, 50);
+
+            } else {
+                residualFitter->SetParameter(
+                    det * 6 + 0, (detectorID + "_displacementX").c_str(), detector->displacement().X(), 0, -50, 50);
+                residualFitter->SetParameter(
+                    det * 6 + 1, (detectorID + "_displacementY").c_str(), detector->displacement().Y(), 0, -50, 50);
+            }
             residualFitter->SetParameter(
                 det * 6 + 2, (detectorID + "_displacementZ").c_str(), detector->displacement().Z(), 0, -10, 500);
-            residualFitter->SetParameter(
-                det * 6 + 3, (detectorID + "_rotationX").c_str(), detector->rotation().X(), 0.001, -6.30, 6.30);
-            residualFitter->SetParameter(
-                det * 6 + 4, (detectorID + "_rotationY").c_str(), detector->rotation().Y(), 0.001, -6.30, 6.30);
-            residualFitter->SetParameter(
-                det * 6 + 5, (detectorID + "_rotationZ").c_str(), detector->rotation().Z(), 0.001, -6.30, 6.30);
 
+            if(m_alignOrientation) {
+                residualFitter->SetParameter(
+                    det * 6 + 3, (detectorID + "_rotationX").c_str(), detector->rotation().X(), 0.001, -6.30, 6.30);
+                residualFitter->SetParameter(
+                    det * 6 + 4, (detectorID + "_rotationY").c_str(), detector->rotation().Y(), 0.001, -6.30, 6.30);
+                residualFitter->SetParameter(
+                    det * 6 + 5, (detectorID + "_rotationZ").c_str(), detector->rotation().Z(), 0.001, -6.30, 6.30);
+            } else {
+                residualFitter->SetParameter(
+                    det * 6 + 3, (detectorID + "_rotationX").c_str(), detector->rotation().X(), 0, -6.30, 6.30);
+                residualFitter->SetParameter(
+                    det * 6 + 4, (detectorID + "_rotationY").c_str(), detector->rotation().Y(), 0, -6.30, 6.30);
+                residualFitter->SetParameter(
+                    det * 6 + 5, (detectorID + "_rotationZ").c_str(), detector->rotation().Z(), 0, -6.30, 6.30);
+            }
             auto old_position = detector->displacement();
             auto old_orientation = detector->rotation();
 
