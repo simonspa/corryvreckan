@@ -54,6 +54,7 @@ namespace corryvreckan {
         std::ifstream m_file;
 
         TH2F* hHitMap;
+        TH2F* hMaskMap;
         TH2F* hHitMapDiscarded;
         TProfile2D* hPixelToTMap;
         TH1F* hPixelToT;

@@ -138,6 +138,17 @@ void Clicpix2EventLoader::initialise() {
     hPixelCnt = new TH1F("pixelCnt", "pixelCnt", maxcounter, 0, maxcounter - 1);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 1000, 0, 1000);
 
+    hMaskMap = new TH2F("maskMap", "maskMap", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
+    for(int column = 0; column < det->nPixelsX(); column++) {
+        for(int row = 0; row < det->nPixelsY(); row++) {
+            if(det->masked(column, row)) {
+                hMaskMap->Fill(column, row, 2);
+            } else if(matrix_config[std::make_pair(row, column)].GetMask()) {
+                hMaskMap->Fill(column, row, 1);
+            }
+        }
+    }
+
     // Initialise member variables
     m_eventNumber = 0;
 }

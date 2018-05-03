@@ -256,7 +256,7 @@ PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double row, dou
         m_pitch.X() * (column - m_nPixelsX / 2.), m_pitch.Y() * (row - m_nPixelsY / 2.), 0.);
 }
 
-// Function to get in-pixel position (value returned in microns)
+// Function to get in-pixel position
 double Detector::inPixelX(PositionVector3D<Cartesian3D<double>> localPosition) {
     double column = getColumn(localPosition);
     double inPixelX = m_pitch.X() * (column - floor(column));

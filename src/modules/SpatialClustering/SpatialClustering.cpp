@@ -183,8 +183,8 @@ void SpatialClustering::calculateClusterCentre(Detector* detector, Cluster* clus
     }
 
     // Row and column positions are tot-weighted
-    row /= tot;
-    column /= tot;
+    row /= (tot > 0 ? tot : 1);
+    column /= (tot > 0 ? tot : 1);
 
     LOG(DEBUG) << "- cluster row, col: " << row << "," << column;
 
