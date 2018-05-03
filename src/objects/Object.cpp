@@ -27,14 +27,13 @@ Object* Object::Factory(std::string objectType, Object* object) {
 
 // Return class type for objects which change with detector type
 Object* Object::Factory(std::string detectorType, std::string objectType, Object* object) {
-    // Timepix types both use generic classes
-    if(detectorType == "Timepix1" || detectorType == "Timepix3") {
-        if(objectType == "pixels")
-            return (object == NULL) ? new Pixel() : new Pixel(*static_cast<Pixel*>(object));
-        if(objectType == "clusters")
-            return (object == NULL) ? new Cluster() : new Cluster(*static_cast<Cluster*>(object));
-        if(objectType == "mcparticles")
-            return (object == NULL) ? new MCParticle() : new MCParticle(*static_cast<MCParticle*>(object));
+
+    if(objectType == "pixels") {
+        return (object == NULL) ? new Pixel() : new Pixel(*static_cast<Pixel*>(object));
+    } else if(objectType == "clusters") {
+        return (object == NULL) ? new Cluster() : new Cluster(*static_cast<Cluster*>(object));
+    } else if(objectType == "mcparticles") {
+        return (object == NULL) ? new MCParticle() : new MCParticle(*static_cast<MCParticle*>(object));
     }
 
     return new Object();
