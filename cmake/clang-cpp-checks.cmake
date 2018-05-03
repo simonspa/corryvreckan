@@ -1,4 +1,4 @@
-# Additional targets to perform clang-format/clang-tidy
+# Additional targets to perform clang-format/clang-tidy/cppcheck
 
 # Get all project files - FIXME: this should also use the list of generated targets
 IF(NOT CHECK_CXX_SOURCE_FILES)
@@ -35,6 +35,8 @@ IF(CLANG_FORMAT)
                   ${CMAKE_BINARY_DIR}/check_format_file.txt > /dev/null
         COMMENT "Checking format compliance"
     )
+ELSE()
+    MESSAGE(STATUS "Could NOT find clang-format")
 ENDIF()
 
 # Adding clang-tidy target if executable is found
@@ -56,6 +58,8 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     GET_FILENAME_COMPONENT(CLANG_DIR ${CLANG_TIDY} DIRECTORY)
     FIND_PROGRAM(RUN_CLANG_TIDY NAMES "run-clang-tidy.py" "run-clang-tidy-4.0.py" HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
+        MESSAGE(STATUS "Found clang-tidy, adding linting targets")
+
         # Set export commands on
         SET (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -80,5 +84,45 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             COMMAND ! grep -c ": error: " ${CMAKE_BINARY_DIR}/check_lint_file.txt > /dev/null
             COMMENT "Checking for problems in source files"
         )
+    ELSE()
+        MESSAGE(STATUS "Could NOT find run-clang-tidy script")
+    ENDIF()
+ELSE()
+    MESSAGE(STATUS "Could NOT find clang-tidy")
+ENDIF()
+
+FIND_PROGRAM(CPPCHECK "cppcheck")
+IF(CPPCHECK)
+    # Set export commands on
+    SET (CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+    ADD_CUSTOM_TARGET(
+        cppcheck
+        COMMAND ${CPPCHECK}
+        --enable=all
+        --project=${CMAKE_BINARY_DIR}/compile_commands.json
+        --std=c++11
+        --verbose
+        --quiet
+        --xml-version=2
+        --language=c++
+        --suppress=missingIncludeSystem
+        --output-file=${CMAKE_BINARY_DIR}/cppcheck_results.xml
+        ${CHECK_CXX_SOURCE_FILES}
+        COMMENT "Generate cppcheck report for the project"
+    )
+
+    FIND_PROGRAM(CPPCHECK_HTML "cppcheck-htmlreport")
+    IF(CPPCHECK_HTML)
+        ADD_CUSTOM_TARGET(
+            cppcheck-html
+            COMMAND ${CPPCHECK_HTML}
+            --title=${CMAKE_PROJECT_NAME}
+            --file=${CMAKE_BINARY_DIR}/cppcheck_results.xml
+            --report-dir=${CMAKE_BINARY_DIR}/cppcheck_results
+            --source-dir=${CMAKE_SOURCE_DIR}
+            COMMENT "Convert cppcheck report to HTML output"
+        )
+        ADD_DEPENDENCIES(cppcheck-html cppcheck)
     ENDIF()
 ENDIF()
