@@ -36,16 +36,15 @@ namespace corryvreckan {
         // Map of trees which holds the output objects
         std::map<std::string, TTree*> m_inputTrees;
 
-        // Objects which the trees will point to (when
-        // the branch address is set
-        long long int m_time;
+        // Objects which the trees will point to (when the branch address is set)
+        double m_time;
         std::map<std::string, Object*> m_objects;
 
         // List of objects to write out
         std::vector<std::string> m_objectList;
 
         // Variables to keep track of time and file reading
-        long long int m_currentTime;
+        double m_currentTime;
         std::map<std::string, long long int> m_currentPosition;
         double m_timeWindow;
     };
