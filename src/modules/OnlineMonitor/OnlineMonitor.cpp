@@ -122,7 +122,7 @@ void OnlineMonitor::initialise() {
 
     // Plot the overview tab (if it exists)
     if(gui->histograms["OverviewCanvas"].size() != 0) {
-        gui->Display("OverviewCanvas");
+        gui->Display(const_cast<char*>(std::string("OverviewCanvas").c_str()));
     }
 
     gui->canvas->GetCanvas()->Paint();
