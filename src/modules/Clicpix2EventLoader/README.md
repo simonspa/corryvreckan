@@ -19,6 +19,7 @@ This module requires an installation of [Peary](https://gitlab.cern.ch/Caribou/p
 
 #### Plots produced
 * 2D Hit map
+* 2D maps of masked pixels, encoded with online masked (value 1) and offline masked (value 2)
 * 1D Pixel ToT histogram (if value is available)
 * 1D Pixel ToA histogram (if value is available)
 * 1D Pixel particle count histogram (if value is available)
