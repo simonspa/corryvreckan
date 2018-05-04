@@ -115,6 +115,17 @@ namespace corryvreckan {
         }
     }
 
+    /**
+     * @throws InvalidKeyError If the conversion to the requested type did not succeed
+     * @throws InvalidKeyError If an overflow happened while converting the key
+     */
+    template <typename T> Matrix<T> Configuration::getMatrix(const std::string& key, const Matrix<T> def) const {
+        if(has(key)) {
+            return getMatrix<T>(key);
+        }
+        return def;
+    }
+
     template <typename T> void Configuration::set(const std::string& key, const T& val) {
         config_[key] = corryvreckan::to_string(val);
     }

@@ -199,8 +199,8 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
             timestamp = (*pixels)[pix]->timestamp();
     }
     // Row and column positions are tot-weighted
-    row /= tot;
-    column /= tot;
+    row /= (tot > 0 ? tot : 1);
+    column /= (tot > 0 ? tot : 1);
     auto detector = get_detector(detectorID);
 
     // Create object with local cluster position
