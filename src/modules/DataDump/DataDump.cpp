@@ -36,7 +36,7 @@ StatusCode DataDump::run(Clipboard* clipboard) {
     bool clearedHeader = false;
 
     // Get all of the files for this chip
-    while(file = readdir(directory)) {
+    while((file = readdir(directory))) {
         string filename = inputDirectory + "/" + file->d_name;
 
         // Check if file has extension .dat

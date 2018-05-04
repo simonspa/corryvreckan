@@ -13,7 +13,7 @@ ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<Detec
     m_inputDirectory = m_config.get<std::string>("inputDirectory");
     m_calibrationFile = m_config.get<std::string>("calibrationFile");
 
-    m_startTime - m_config.get<double>("startTime", 0.);
+    m_startTime = m_config.get<double>("startTime", 0.);
     m_toaMode = m_config.get<bool>("toaMode", false);
 }
 
@@ -34,7 +34,7 @@ void ATLASpixEventLoader::initialise() {
     dirent* file;
 
     // Read the entries in the folder
-    while(entry = readdir(directory)) {
+    while((entry = readdir(directory))) {
         // Check for the data file
         string filename = m_inputDirectory + "/" + entry->d_name;
         if(filename.find(".dat") != string::npos) {

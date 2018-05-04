@@ -25,7 +25,7 @@ void CLICpixEventLoader::initialise() {
     dirent* file;
 
     // Read the entries in the folder
-    while(entry = readdir(directory)) {
+    while((entry = readdir(directory))) {
         // Check for the data file
         string filename = inputDirectory + "/" + entry->d_name;
         if(filename.find(".dat") != string::npos) {
