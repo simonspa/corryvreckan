@@ -9,11 +9,11 @@
 
 using namespace corryvreckan;
 
-Object::Object() : m_detectorID(), m_timestamp(0) {}
-Object::Object(std::string detectorID) : m_detectorID(detectorID), m_timestamp(0) {}
-Object::Object(double timestamp) : m_detectorID(), m_timestamp(timestamp) {}
-Object::Object(std::string detectorID, double timestamp) : m_detectorID(detectorID), m_timestamp(timestamp) {}
-Object::~Object() {}
+Object::Object() = default;
+Object::Object(std::string detectorID) : m_detectorID(std::move(detectorID)) {}
+Object::Object(double timestamp) : m_timestamp(timestamp) {}
+Object::Object(std::string detectorID, double timestamp) : m_detectorID(std::move(detectorID)), m_timestamp(timestamp) {}
+Object::~Object() = default;
 
 // Return class type for fixed object types (that don't depend on detector type)
 Object* Object::Factory(std::string objectType, Object* object) {
@@ -38,5 +38,3 @@ Object* Object::Factory(std::string detectorType, std::string objectType, Object
 
     return new Object();
 }
-
-ClassImp(Object)
