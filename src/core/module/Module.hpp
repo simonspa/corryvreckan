@@ -100,7 +100,7 @@ namespace corryvreckan {
          *
          * Does nothing if not overloaded.
          */
-        virtual StatusCode run(Clipboard* clipboard) { (void)clipboard; }
+        virtual StatusCode run(Clipboard*) { return Success; }
 
         /**
          * @brief Finalise the module after the event sequence

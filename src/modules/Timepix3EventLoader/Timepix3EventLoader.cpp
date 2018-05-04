@@ -57,7 +57,7 @@ void Timepix3EventLoader::initialise() {
     std::map<std::string, std::vector<std::string>> detector_files;
 
     // Read the entries in the folder
-    while(entry = readdir(directory)) {
+    while((entry = readdir(directory))) {
 
         // Ignore UNIX functional directories:
         if(std::string(entry->d_name).at(0) == '.') {
@@ -92,7 +92,7 @@ void Timepix3EventLoader::initialise() {
             }
 
             // Get all of the files for this chip
-            while(file = readdir(dataDir)) {
+            while((file = readdir(dataDir))) {
                 string filename = dataDirName + "/" + file->d_name;
 
                 // Check if file has extension .dat
@@ -138,7 +138,6 @@ void Timepix3EventLoader::initialise() {
         std::sort(detector_files[detector->name()].begin(),
                   detector_files[detector->name()].end(),
                   [](std::string a, std::string b) {
-
                       auto get_serial = [](std::string name) {
                           const auto pos1 = name.find_last_of('-');
                           const auto pos2 = name.find_last_of('.');
