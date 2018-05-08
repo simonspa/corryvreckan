@@ -265,9 +265,12 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
         // Efficiency plots:
         hGlobalEfficiencyMap->Fill(globalIntercept.X(), globalIntercept.Y(), cluster_associated);
         hChipEfficiencyMap->Fill(detector->getColumn(localIntercept), detector->getRow(localIntercept), cluster_associated);
-        hPixelEfficiencyMap->Fill(Units::convert(detector->inPixelX(localIntercept), "um"),
-                                  Units::convert(detector->inPixelY(localIntercept), "um"),
-                                  cluster_associated);
+        // For pixels, only look at the ROI:
+        if(is_within_roi) {
+            hPixelEfficiencyMap->Fill(Units::convert(detector->inPixelX(localIntercept), "um"),
+                                      Units::convert(detector->inPixelY(localIntercept), "um"),
+                                      cluster_associated);
+        }
     }
 
     // Return value telling analysis to keep running
