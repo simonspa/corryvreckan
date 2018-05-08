@@ -12,6 +12,7 @@ CLICpix2Analysis::CLICpix2Analysis(Configuration config, std::vector<Detector*> 
     m_DUT = m_config.get<std::string>("DUT");
 
     m_timeCutFrameEdge = m_config.get<double>("timeCutFrameEdge", Units::convert(20, "ns"));
+    m_roi = m_config.getMatrix<int>("roi", std::vector<std::vector<int>>());
 
     spatialCut = m_config.get<double>("spatialCut", Units::convert(50, "um"));
     chi2ndofCut = m_config.get<double>("chi2ndofCut", 3.);
@@ -145,14 +146,26 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
         }
 
         // Check if it intercepts the DUT
-        PositionVector3D<Cartesian3D<double>> globalIntercept = detector->getIntercept(track);
+        auto globalIntercept = detector->getIntercept(track);
         if(!detector->hasIntercept(track, 1.)) {
             LOG(DEBUG) << " - track outside DUT area";
             continue;
         }
 
+        // Check that track is within region of interest using winding number algorithm
+        bool is_within_roi = false;
+        auto localIntercept = detector->globalToLocal(globalIntercept);
+        if(winding_number(detector->getColumn(localIntercept), detector->getRow(localIntercept), m_roi) != 0) {
+            is_within_roi = true;
+        }
+
+        // Check that it doesn't go through/near a masked pixel
+        if(detector->hitMasked(track, 1.)) {
+            LOG(DEBUG) << " - track close to masked pixel";
+            continue;
+        }
+
         // Discard tracks which are very close to the frame edges
-        //
         if(fabs(track->timestamp() - clipboard->get_persistent("currentTime")) < m_timeCutFrameEdge) {
             // Late edge - the currentTime has been updated by Timexpi3EventLoader to point to the end of the frame`
             LOG(DEBUG) << " - track close to end of readout frame: "
@@ -169,14 +182,6 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
                        << " at " << Units::display(track->timestamp(), {"us"});
             continue;
         }
-
-        // Check that it doesn't go through/near a masked pixel
-        if(detector->hitMasked(track, 1.)) {
-            LOG(DEBUG) << " - track close to masked pixel";
-            continue;
-        }
-
-        // FIXME check that track is within fiducial area
 
         // Get the DUT clusters from the clipboard
         Clusters* clusters = (Clusters*)clipboard->get(m_DUT, "clusters");
@@ -254,8 +259,6 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
 
         // Efficiency plots:
         hGlobalEfficiencyMap->Fill(globalIntercept.X(), globalIntercept.Y(), cluster_associated);
-
-        auto localIntercept = detector->globalToLocal(globalIntercept);
         hChipEfficiencyMap->Fill(detector->getColumn(localIntercept), detector->getRow(localIntercept), cluster_associated);
         hPixelEfficiencyMap->Fill(Units::convert(detector->inPixelX(localIntercept), "um"),
                                   Units::convert(detector->inPixelY(localIntercept), "um"),
@@ -264,4 +267,49 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
 
     // Return value telling analysis to keep running
     return Success;
+}
+
+/* isLeft(): tests if a point is Left|On|Right of an infinite line.
+ * via: http://geomalgorithms.com/a03-_inclusion.html
+ *    Input:  three points P0, P1, and P2
+ *    Return: >0 for P2 left of the line through P0 and P1
+ *            =0 for P2  on the line
+ *            <0 for P2  right of the line
+ *    See: Algorithm 1 "Area of Triangles and Polygons"
+ */
+int CLICpix2Analysis::isLeft(int x0, int y0, int x1, int y1, int x2, int y2) {
+    return ((x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0));
+}
+
+/* Winding number test for a point in a polygon
+ * via: http://geomalgorithms.com/a03-_inclusion.html
+ *      Input:   x, y = a point,
+ *               polygon = vector of vertex points of a polygon V[n+1] with V[n]=V[0]
+ *      Return:  wn = the winding number (=0 only when P is outside)
+ */
+int CLICpix2Analysis::winding_number(int x, int y, std::vector<std::vector<int>> polygon) {
+    // Two points don't make an area
+    if(polygon.size() < 3) {
+        LOG(DEBUG) << "No ROI given.";
+        return 0;
+    }
+
+    int wn = 0; // the  winding number counter
+
+    // loop through all edges of the polygon
+    for(int i = 0; i < polygon.size(); i++) { // edge from V[i] to  V[i+1]
+        auto point = polygon.at(i);
+        if(polygon.at(i).at(1) <= y) {      // start y <= P.y
+            if(polygon.at(i + 1).at(1) > y) // an upward crossing
+                if(isLeft(polygon.at(i).at(0), polygon.at(i).at(1), polygon.at(i + 1).at(0), polygon.at(i + 1).at(1), x, y) >
+                   0)                        // P left of  edge
+                    ++wn;                    // have  a valid up intersect
+        } else {                             // start y > P.y (no test needed)
+            if(polygon.at(i + 1).at(1) <= y) // a downward crossing
+                if(isLeft(polygon.at(i).at(0), polygon.at(i).at(1), polygon.at(i + 1).at(0), polygon.at(i + 1).at(1), x, y) <
+                   0)     // P right of  edge
+                    --wn; // have  a valid down intersect
+        }
+    }
+    return wn;
 }

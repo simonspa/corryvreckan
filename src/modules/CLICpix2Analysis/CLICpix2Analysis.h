@@ -23,6 +23,9 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
 
     private:
+        static int winding_number(int x, int y, std::vector<std::vector<int>> polygon);
+        inline static int isLeft(int x0, int y0, int x1, int y1, int x2, int y2);
+
         // Histograms
         TH2F *hClusterMapAssoc, *hHitMapAssoc;
         TProfile2D *hClusterSizeMapAssoc, *hClusterToTMapAssoc;
@@ -57,6 +60,7 @@ namespace corryvreckan {
         std::string m_DUT;
         double spatialCut, m_timeCutFrameEdge;
         double chi2ndofCut;
+        std::vector<std::vector<int>> m_roi;
     };
 } // namespace corryvreckan
 
