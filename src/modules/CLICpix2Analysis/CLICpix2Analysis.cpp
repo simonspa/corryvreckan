@@ -50,6 +50,8 @@ void CLICpix2Analysis::initialise() {
     // Per-pixel histograms
     hHitMapAssoc =
         new TH2F("hitMapAssoc", "hitMapAssoc", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
+    hHitMapROI =
+        new TH2F("hitMapROI", "hitMapROI", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
     hPixelToTAssoc = new TH1F("pixelToTAssoc", "pixelToTAssoc", 32, 0, 31);
     hPixelToTMapAssoc = new TProfile2D("pixelToTMapAssoc",
                                        "pixelToTMapAssoc",
@@ -228,6 +230,9 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
                 // Fill per-pixel histograms
                 for(auto& pixel : (*cluster->pixels())) {
                     hHitMapAssoc->Fill(pixel->column(), pixel->row());
+                    if(is_within_roi) {
+                        hHitMapROI->Fill(pixel->column(), pixel->row());
+                    }
                     hPixelToTAssoc->Fill(pixel->tot());
                     hPixelToTMapAssoc->Fill(pixel->column(), pixel->row(), pixel->tot());
                 }
@@ -277,8 +282,8 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
  *            <0 for P2  right of the line
  *    See: Algorithm 1 "Area of Triangles and Polygons"
  */
-int CLICpix2Analysis::isLeft(int x0, int y0, int x1, int y1, int x2, int y2) {
-    return ((x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0));
+int CLICpix2Analysis::isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2) {
+    return ((pt1.first - pt0.first) * (pt2.second - pt0.second) - (pt2.first - pt0.first) * (pt1.second - pt0.second));
 }
 
 /* Winding number test for a point in a polygon
@@ -287,9 +292,9 @@ int CLICpix2Analysis::isLeft(int x0, int y0, int x1, int y1, int x2, int y2) {
  *               polygon = vector of vertex points of a polygon V[n+1] with V[n]=V[0]
  *      Return:  wn = the winding number (=0 only when P is outside)
  */
-int CLICpix2Analysis::winding_number(int x, int y, std::vector<std::vector<int>> polygon) {
+int CLICpix2Analysis::winding_number(int x, int y, std::vector<std::vector<int>> poly) {
     // Two points don't make an area
-    if(polygon.size() < 3) {
+    if(poly.size() < 3) {
         LOG(DEBUG) << "No ROI given.";
         return 0;
     }
@@ -297,18 +302,34 @@ int CLICpix2Analysis::winding_number(int x, int y, std::vector<std::vector<int>>
     int wn = 0; // the  winding number counter
 
     // loop through all edges of the polygon
-    for(int i = 0; i < polygon.size(); i++) { // edge from V[i] to  V[i+1]
-        auto point = polygon.at(i);
-        if(polygon.at(i).at(1) <= y) {      // start y <= P.y
-            if(polygon.at(i + 1).at(1) > y) // an upward crossing
-                if(isLeft(polygon.at(i).at(0), polygon.at(i).at(1), polygon.at(i + 1).at(0), polygon.at(i + 1).at(1), x, y) >
-                   0)                        // P left of  edge
-                    ++wn;                    // have  a valid up intersect
-        } else {                             // start y > P.y (no test needed)
-            if(polygon.at(i + 1).at(1) <= y) // a downward crossing
-                if(isLeft(polygon.at(i).at(0), polygon.at(i).at(1), polygon.at(i + 1).at(0), polygon.at(i + 1).at(1), x, y) <
-                   0)     // P right of  edge
-                    --wn; // have  a valid down intersect
+
+    // edge from V[i] to  V[i+1]
+    for(int i = 0; i < poly.size(); i++) {
+        auto point_this = std::make_pair(poly.at(i).at(0), poly.at(i).at(1));
+        auto point_next = (i + 1 < poly.size() ? std::make_pair(poly.at(i + 1).at(0), poly.at(i + 1).at(1))
+                                               : std::make_pair(poly.at(0).at(0), poly.at(0).at(1)));
+
+        // start y <= P.y
+        if(point_this.second <= y) {
+            // an upward crossing
+            if(point_next.second > y) {
+                // P left of  edge
+                if(isLeft(point_this, point_next, std::make_pair(x, y)) > 0) {
+                    // have  a valid up intersect
+                    ++wn;
+                }
+            }
+        } else {
+            // start y > P.y (no test needed)
+
+            // a downward crossing
+            if(point_next.second <= y) {
+                // P right of  edge
+                if(isLeft(point_this, point_next, std::make_pair(x, y)) < 0) {
+                    // have  a valid down intersect
+                    --wn;
+                }
+            }
         }
     }
     return wn;

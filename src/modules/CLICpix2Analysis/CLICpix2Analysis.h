@@ -24,10 +24,10 @@ namespace corryvreckan {
 
     private:
         static int winding_number(int x, int y, std::vector<std::vector<int>> polygon);
-        inline static int isLeft(int x0, int y0, int x1, int y1, int x2, int y2);
+        inline static int isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2);
 
         // Histograms
-        TH2F *hClusterMapAssoc, *hHitMapAssoc;
+        TH2F *hClusterMapAssoc, *hHitMapAssoc, *hHitMapROI;
         TProfile2D *hClusterSizeMapAssoc, *hClusterToTMapAssoc;
 
         TH1F* hPixelToTAssoc;

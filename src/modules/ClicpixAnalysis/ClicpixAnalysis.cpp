@@ -409,8 +409,9 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
 
           // Get the pixel global position
           LOG(TRACE) <<"New pixel, row = "<<(*itPixel)->row()<<", column = "<<(*itPixel)->column();
-          PositionVector3D<Cartesian3D<double> > pixelPositionLocal = get_detector(dutID)->getLocalPosition((*itPixel)->row(),(*itPixel)->column());
-          PositionVector3D<Cartesian3D<double> > pixelPositionGlobal = *(get_detector(dutID)->m_localToGlobal) * pixelPositionLocal;
+          PositionVector3D<Cartesian3D<double> > pixelPositionLocal =
+      get_detector(dutID)->getLocalPosition((*itPixel)->row(),(*itPixel)->column()); PositionVector3D<Cartesian3D<double> >
+      pixelPositionGlobal = *(get_detector(dutID)->m_localToGlobal) * pixelPositionLocal;
 
           // Check if it is close to the track
           if( fabs( pixelPositionGlobal.X() - trackIntercept.X() ) > m_associationCut ||
