@@ -192,6 +192,10 @@ PositionVector3D<Cartesian3D<double>> Detector::getIntercept(Track* track) {
     return globalIntercept;
 }
 
+PositionVector3D<Cartesian3D<double>> Detector::getLocalIntercept(Track* track) {
+    return globalToLocal(getIntercept(track));
+}
+
 // Function to check if a track intercepts with a plane
 bool Detector::hasIntercept(Track* track, double pixelTolerance) {
 

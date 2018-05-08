@@ -80,6 +80,8 @@ namespace corryvreckan {
 
         // Function to get global intercept with a track
         PositionVector3D<Cartesian3D<double>> getIntercept(Track* track);
+        // Function to get local intercept with a track
+        PositionVector3D<Cartesian3D<double>> getLocalIntercept(Track* track);
 
         // Function to check if a track intercepts with a plane
         bool hasIntercept(Track* track, double pixelTolerance = 0.);
