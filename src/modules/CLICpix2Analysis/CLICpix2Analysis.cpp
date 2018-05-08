@@ -157,8 +157,7 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
         }
 
         // Check that track is within region of interest using winding number algorithm
-        auto localIntercept = detector->globalToLocal(globalIntercept);
-        if(winding_number(detector->getColumn(localIntercept), detector->getRow(localIntercept), m_roi) == 0) {
+        if(!track->is_within_roi()) {
             is_within_roi = false;
         }
 
@@ -264,6 +263,7 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
         }
 
         // Efficiency plots:
+        auto localIntercept = detector->globalToLocal(globalIntercept);
         hGlobalEfficiencyMap->Fill(globalIntercept.X(), globalIntercept.Y(), has_associated_cluster);
         hChipEfficiencyMap->Fill(
             detector->getColumn(localIntercept), detector->getRow(localIntercept), has_associated_cluster);
@@ -278,65 +278,4 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
 
     // Return value telling analysis to keep running
     return Success;
-}
-
-/* isLeft(): tests if a point is Left|On|Right of an infinite line.
- * via: http://geomalgorithms.com/a03-_inclusion.html
- *    Input:  three points P0, P1, and P2
- *    Return: >0 for P2 left of the line through P0 and P1
- *            =0 for P2  on the line
- *            <0 for P2  right of the line
- *    See: Algorithm 1 "Area of Triangles and Polygons"
- */
-int CLICpix2Analysis::isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2) {
-    return ((pt1.first - pt0.first) * (pt2.second - pt0.second) - (pt2.first - pt0.first) * (pt1.second - pt0.second));
-}
-
-/* Winding number test for a point in a polygon
- * via: http://geomalgorithms.com/a03-_inclusion.html
- *      Input:   x, y = a point,
- *               polygon = vector of vertex points of a polygon V[n+1] with V[n]=V[0]
- *      Return:  wn = the winding number (=0 only when P is outside)
- */
-int CLICpix2Analysis::winding_number(int x, int y, std::vector<std::vector<int>> poly) {
-    // Two points don't make an area
-    if(poly.size() < 3) {
-        LOG(DEBUG) << "No ROI given.";
-        return 0;
-    }
-
-    int wn = 0; // the  winding number counter
-
-    // loop through all edges of the polygon
-
-    // edge from V[i] to  V[i+1]
-    for(int i = 0; i < poly.size(); i++) {
-        auto point_this = std::make_pair(poly.at(i).at(0), poly.at(i).at(1));
-        auto point_next = (i + 1 < poly.size() ? std::make_pair(poly.at(i + 1).at(0), poly.at(i + 1).at(1))
-                                               : std::make_pair(poly.at(0).at(0), poly.at(0).at(1)));
-
-        // start y <= P.y
-        if(point_this.second <= y) {
-            // an upward crossing
-            if(point_next.second > y) {
-                // P left of  edge
-                if(isLeft(point_this, point_next, std::make_pair(x, y)) > 0) {
-                    // have  a valid up intersect
-                    ++wn;
-                }
-            }
-        } else {
-            // start y > P.y (no test needed)
-
-            // a downward crossing
-            if(point_next.second <= y) {
-                // P right of  edge
-                if(isLeft(point_this, point_next, std::make_pair(x, y)) < 0) {
-                    // have  a valid down intersect
-                    --wn;
-                }
-            }
-        }
-    }
-    return wn;
 }
