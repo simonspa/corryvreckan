@@ -155,10 +155,10 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
         }
 
         // Check that track is within region of interest using winding number algorithm
-        bool is_within_roi = false;
+        bool is_within_roi = true;
         auto localIntercept = detector->globalToLocal(globalIntercept);
-        if(winding_number(detector->getColumn(localIntercept), detector->getRow(localIntercept), m_roi) != 0) {
-            is_within_roi = true;
+        if(winding_number(detector->getColumn(localIntercept), detector->getRow(localIntercept), m_roi) == 0) {
+            is_within_roi = false;
         }
 
         // Check that it doesn't go through/near a masked pixel

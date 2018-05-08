@@ -9,12 +9,14 @@ Analysis module for CLICpix2 prototypes. This module is still work in progress, 
 * `timeCutFrameEdge`: Parameter to discard telescope tracks at the frame edges (start and end of the current CLICpix2 frame). Defaults to `20ns`.
 * `spatialCut`: Spatial cut for associating a track with a DUT cluster, defaults to `50um`.
 * `chi2ndofCut`: Acceptance criterion for telescope tracks, defaults to a value of `3`.
+* `roi`: A region of interest, given as polygon by specifying a matrix of pixel coordinates. Defaults to no ROI defined.
 
 #### Plots produced
 * 2D Map of associated cluster positions
 * 2D Map of cluster sizes for associated clusters
 * 2D Map of cluster ToT values from associated clusters
 * 2D Map of associated hits
+* 2D Map of associated hits within the defined region-of-interest
 * Distribution of pixel ToT values from associated clusters
 * 2D Map of pixel ToT values from associated clusters
 * Track residuals in X and Y
@@ -32,6 +34,8 @@ Analysis module for CLICpix2 prototypes. This module is still work in progress, 
 ```toml
 [CLICpix2Analysis]
 timeCutFrameEdge = 50ns
+# Define a rectangle as region of interest:
+roi = [1, 1], [1, 120], [60, 120], [60, 1]
 ```
 
 Parameters to be used in multiple algorithms can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
