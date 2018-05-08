@@ -137,13 +137,15 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
 
     // Loop over all tracks
     for(auto& track : (*tracks)) {
-        // Flag for efficiency calculation
-        bool cluster_associated = false;
+        // Flags to select clusters and tracks
+        bool has_associated_cluster = false;
+        bool is_within_roi = true;
 
         LOG(DEBUG) << "Looking at next track";
 
         // Cut on the chi2/ndof
         if(track->chi2ndof() > chi2ndofCut) {
+            LOG(DEBUG) << " - track discarded due to Chi2/ndof";
             continue;
         }
 
@@ -155,7 +157,6 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
         }
 
         // Check that track is within region of interest using winding number algorithm
-        bool is_within_roi = true;
         auto localIntercept = detector->globalToLocal(globalIntercept);
         if(winding_number(detector->getColumn(localIntercept), detector->getRow(localIntercept), m_roi) == 0) {
             is_within_roi = false;
@@ -217,7 +218,7 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
                            << Units::display(yabsdistance, {"um"}) << ")";
 
                 // We now have an associated cluster
-                cluster_associated = true;
+                has_associated_cluster = true;
                 // FIXME need to understand local coord of clusters - why shifted? what's normal?
                 auto clusterLocal = detector->globalToLocal(cluster->global());
                 hClusterMapAssoc->Fill(detector->getColumn(clusterLocal), detector->getRow(clusterLocal));
@@ -263,13 +264,15 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
         }
 
         // Efficiency plots:
-        hGlobalEfficiencyMap->Fill(globalIntercept.X(), globalIntercept.Y(), cluster_associated);
-        hChipEfficiencyMap->Fill(detector->getColumn(localIntercept), detector->getRow(localIntercept), cluster_associated);
+        hGlobalEfficiencyMap->Fill(globalIntercept.X(), globalIntercept.Y(), has_associated_cluster);
+        hChipEfficiencyMap->Fill(
+            detector->getColumn(localIntercept), detector->getRow(localIntercept), has_associated_cluster);
+
         // For pixels, only look at the ROI:
         if(is_within_roi) {
             hPixelEfficiencyMap->Fill(Units::convert(detector->inPixelX(localIntercept), "um"),
                                       Units::convert(detector->inPixelY(localIntercept), "um"),
-                                      cluster_associated);
+                                      has_associated_cluster);
         }
     }
 
