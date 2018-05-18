@@ -78,6 +78,19 @@ namespace corryvreckan {
         double rowWidth() { return m_rowWidth; }
         Pixels* pixels() { return (&m_pixels); }
 
+        // Retrieve the seed pixel of the cluster, defined as the one with the highest charge:
+        Pixel* getSeedPixel() {
+            Pixel* seed;
+            double maxcharge = -1;
+            for(auto& px : m_pixels) {
+                if(px->charge() > maxcharge) {
+                    maxcharge = px->charge();
+                    seed = px;
+                }
+            }
+            return seed;
+        }
+
         // Set cluster parameters
         void setRow(double row) { m_row = row; }
         void setColumn(double col) { m_column = col; }
@@ -116,7 +129,7 @@ namespace corryvreckan {
         std::map<int, bool> m_columnHits;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Cluster, 5)
+        ClassDef(Cluster, 6)
     };
 
     // Vector type declaration
