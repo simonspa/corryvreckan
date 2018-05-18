@@ -32,7 +32,7 @@ StatusCode RegionOfInterest::run(Clipboard* clipboard) {
         }
 
         // If it does, we define the track as being inside the ROI
-        track->set_within_roi(false);
+        track->set_within_roi(true);
 
         // Check that track is within region of interest using winding number algorithm
         auto localIntercept = detector->getLocalIntercept(track);
@@ -40,6 +40,8 @@ StatusCode RegionOfInterest::run(Clipboard* clipboard) {
         if(winding_number(coordinates, m_roi) == 0) {
             LOG(DEBUG) << "Track outside DUT ROI";
             track->set_within_roi(false);
+        } else {
+            LOG(DEBUG) << "Track within DUT ROI";
         }
     }
 
