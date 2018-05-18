@@ -36,8 +36,13 @@ namespace corryvreckan {
         TH1F *residualsX1pix, *residualsY1pix;
         TH1F *residualsX2pix, *residualsY2pix;
 
-        TH1F* clusterTotAssoc;
+        TH1F *clusterTotAssoc, *clusterTotAssocNorm;
         TH1F* clusterSizeAssoc;
+
+        TProfile2D *rmsxvsxmym, *rmsyvsxmym, *rmsxyvsxmym;
+        TProfile2D *qvsxmym, *qMoyalvsxmym, *pxqvsxmym;
+        TProfile2D* npxvsxmym;
+        TH2F *npx1vsxmym, *npx2vsxmym, *npx3vsxmym, *npx4vsxmym;
 
         TProfile2D* hPixelEfficiencyMap;
         TProfile2D* hChipEfficiencyMap;
