@@ -79,10 +79,8 @@ void CLICpix2Analysis::initialise() {
 
     // In-pixel studies:
     auto pitch_x = Units::convert(det->pitch().X(), "um");
-    auto pitch_x_str = Units::display(det->pitch().X(), "um");
     auto pitch_y = Units::convert(det->pitch().Y(), "um");
-    auto pitch_y_str = Units::display(det->pitch().Y(), "um");
-    auto mod_axes = "x_{track} mod " + pitch_x_str + " #mum;y_{track} mod " + pitch_y_str + " #mum;";
+    auto mod_axes = "x_{track} mod " + std::to_string(pitch_x) + "#mum;y_{track} mod " + std::to_string(pitch_y) + "#mum;";
 
     std::string title = "DUT x resolution;" + mod_axes + "MAD(#Deltax) [#mum]";
     rmsxvsxmym = new TProfile2D("rmsxvsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y);
