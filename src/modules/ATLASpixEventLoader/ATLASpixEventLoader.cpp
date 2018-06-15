@@ -138,6 +138,9 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double current_time) {
     // Pixel container
     Pixels* pixels = new Pixels();
 
+    // Detector we're looking at:
+    auto detector = get_detector(m_detectorID);
+
     // Read file and load data
     std::string line_str;
     std::streampos oldpos;
@@ -171,6 +174,11 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double current_time) {
                 // Rewind to previous position:
                 m_file.seekg(oldpos);
                 break;
+            }
+
+            // If this pixel is masked, do not save it
+            if(detector->masked(col, row)) {
+                continue;
             }
 
             Pixel* pixel = new Pixel(m_detectorID, row, col, bin_cnt, tr_cnt);
