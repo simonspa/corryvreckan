@@ -11,7 +11,12 @@ ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<Detec
     m_timestampPeriod = m_config.get<double>("timestampPeriod", Units::convert(25, "ns"));
 
     m_inputDirectory = m_config.get<std::string>("inputDirectory");
-    m_calibrationFile = m_config.get<std::string>("calibrationFile");
+    m_calibrationFile = m_config.get<std::string>("calibrationFile", std::string());
+
+    m_eventLength = m_config.get<double>("eventLength", Units::convert(0.0, "ns"));
+
+    // Allow reading of legacy data format using the Karlsruhe readout system:
+    m_legacyFormat = m_config.get<bool>("legacyFormat", false);
 
     m_startTime = m_config.get<double>("startTime", 0.);
     m_toaMode = m_config.get<bool>("toaMode", false);
@@ -22,7 +27,7 @@ void ATLASpixEventLoader::initialise() {
     // File structure is RunX/ATLASpix/data.dat
 
     // Assume that the ATLASpix is the DUT (if running this algorithm
-    string detectorID = m_config.get<std::string>("DUT");
+    m_detectorID = m_config.get<std::string>("DUT");
 
     // Open the root directory
     DIR* directory = opendir(m_inputDirectory.c_str());
@@ -43,8 +48,11 @@ void ATLASpixEventLoader::initialise() {
     }
 
     // If no data was loaded, give a warning
-    if(m_filename.length() == 0)
+    if(m_filename.length() == 0) {
         LOG(WARNING) << "No data file was found for ATLASpix in " << m_inputDirectory;
+    } else {
+        LOG(STATUS) << "Opened data file for ATLASpix: " << m_filename;
+    }
 
     // Open the data file for later
     m_file.open(m_filename.c_str());
@@ -54,27 +62,30 @@ void ATLASpixEventLoader::initialise() {
     std::getline(m_file, headerline);
 
     // Make histograms for debugging
-    hHitMap = new TH2F("hitMap", "hitMap", 128, 0, 128, 400, 0, 400);
+    auto det = get_detector(m_detectorID);
+    hHitMap = new TH2F("hitMap", "hitMap", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
     hPixelToT = new TH1F("pixelToT", "pixelToT", 100, 0, 100);
     hPixelToTCal = new TH1F("pixelToTCal", "pixelToT", 100, 0, 100);
     hPixelToA = new TH1F("pixelToA", "pixelToA", 100, 0, 100);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 200, 0, 200);
 
     // Read calibration:
-    m_calibrationFactors.resize(25 * 400, 1.0);
-    std::ifstream calibration(m_calibrationFile);
-    std::string line;
-    std::getline(calibration, line);
+    m_calibrationFactors.resize(det->nPixelsX() * det->nPixelsY(), 1.0);
+    if(!m_calibrationFile.empty()) {
+        std::ifstream calibration(m_calibrationFile);
+        std::string line;
+        std::getline(calibration, line);
 
-    int col, row;
-    double calibfactor;
-    while(getline(calibration, line)) {
-        std::istringstream(line) >> col >> row >> calibfactor;
-        m_calibrationFactors.at(row * 25 + col) = calibfactor;
+        int col, row;
+        double calibfactor;
+        while(getline(calibration, line)) {
+            std::istringstream(line) >> col >> row >> calibfactor;
+            m_calibrationFactors.at(row * 25 + col) = calibfactor;
+        }
+        calibration.close();
     }
-    calibration.close();
 
-    LOG(INFO) << "Timewalk corrtion factors: ";
+    LOG(INFO) << "Timewalk correction factors: ";
     for(auto& ts : m_timewalkCorrectionFactors) {
         LOG(INFO) << ts;
     }
@@ -96,6 +107,88 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
         return Failure;
     }
 
+    double current_time = clipboard->get_persistent("currentTime");
+
+    // Read pixel data
+    Pixels* pixels = (m_legacyFormat ? read_legacy_data(current_time) : read_caribou_data(current_time));
+
+    for(auto px : (*pixels)) {
+        hHitMap->Fill(px->column(), px->row());
+        hPixelToT->Fill(px->tot());
+        hPixelToTCal->Fill(px->charge());
+        hPixelToA->Fill(px->timestamp());
+    }
+
+    // Put the data on the clipboard
+    if(!pixels->empty()) {
+        clipboard->put(m_detectorID, "pixels", (Objects*)pixels);
+    }
+
+    // Increment the event time
+    clipboard->put_persistent("currentTime", clipboard->get_persistent("currentTime") + m_eventLength);
+
+    // Fill histograms
+    hPixelsPerFrame->Fill(pixels->size());
+
+    // Return value telling analysis to keep running
+    return Success;
+}
+
+Pixels* ATLASpixEventLoader::read_caribou_data(double current_time) {
+    // Pixel container
+    Pixels* pixels = new Pixels();
+
+    // Read file and load data
+    std::string line_str;
+    std::streampos oldpos;
+    while(getline(m_file, line_str)) {
+        double timestamp;
+        std::istringstream line(line_str);
+
+        std::string identifier;
+        line >> identifier;
+        m_identifiers[identifier]++;
+
+        if(identifier == "WEIRD_DATA") {
+            continue;
+        } else if(identifier == "TRIGGER") {
+            int id, cnt;
+            line >> id >> cnt;
+            LOG(DEBUG) << "Trigger at " << cnt;
+        } else if(identifier == "HIT") {
+            int col, row, ts1, ts2, fpga_ts, tr_cnt, bin_cnt, grey_cnt;
+            line >> col >> row >> ts1 >> ts2 >> fpga_ts >> tr_cnt >> bin_cnt >> grey_cnt;
+
+            // Log the timestamp:
+            timestamp = tr_cnt;
+
+            // Stop looking at data if the pixel is after the current event window
+            // (and rewind the file reader so that we start with this pixel next event)
+            if(timestamp > (current_time + m_eventLength)) {
+                LOG(DEBUG) << "Stopping processing event, pixel is after event window ("
+                           << Units::display(timestamp, {"s", "us", "ns"}) << " > "
+                           << Units::display(current_time + m_eventLength, {"s", "us", "ns"}) << ")";
+                // Rewind to previous position:
+                m_file.seekg(oldpos);
+                break;
+            }
+
+            Pixel* pixel = new Pixel(m_detectorID, row, col, bin_cnt, tr_cnt);
+            LOG(DEBUG) << *pixel;
+            pixels->push_back(pixel);
+        } else {
+            LOG(DEBUG) << "Unknown identifier \"" << identifier << "\"";
+        }
+
+        // Store this position in the file in case we need to rewind:
+        oldpos = m_file.tellg();
+    }
+
+    return pixels;
+}
+
+Pixels* ATLASpixEventLoader::read_legacy_data(double) {
+
     // Pixel container
     Pixels* pixels = new Pixels();
 
@@ -107,7 +200,7 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
 
         m_file >> col >> row >> ts >> tot >> dummy >> dummy >> bincounter >> TriggerDebugTS;
 
-        auto detector = get_detector(detectorID);
+        auto detector = get_detector(m_detectorID);
         // If this pixel is masked, do not save it
         if(detector->masked(col, row)) {
             continue;
@@ -160,26 +253,19 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
         // Convert TOA to nanoseconds:
         toa /= (4096. * 0.04);
 
-        Pixel* pixel = new Pixel(detectorID, row, col, cal_tot, toa);
+        Pixel* pixel = new Pixel(m_detectorID, row, col, cal_tot, toa);
+        pixel->setCharge(cal_tot);
         pixels->push_back(pixel);
-        hHitMap->Fill(col, row);
-        hPixelToT->Fill(tot);
-        hPixelToTCal->Fill(cal_tot);
-        hPixelToA->Fill(toa);
     }
 
-    // Put the data on the clipboard
-    if(pixels->size() > 0)
-        clipboard->put(detectorID, "pixels", (Objects*)pixels);
-
-    // Fill histograms
-    hPixelsPerFrame->Fill(pixels->size());
-
-    // Return value telling analysis to keep running
-    return Success;
+    return pixels;
 }
 
 void ATLASpixEventLoader::finalise() {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
+    LOG(INFO) << "Identifier distribution:";
+    for(auto id : m_identifiers) {
+        LOG(INFO) << "\t" << id.first << ": " << id.second;
+    }
 }

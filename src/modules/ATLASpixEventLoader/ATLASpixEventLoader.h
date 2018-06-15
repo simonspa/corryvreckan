@@ -30,11 +30,16 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
-        // Histograms for several devices
-        std::map<std::string, TH2F*> plotPerDevice;
+    private:
+        /*
+         * @brief Read data in the format written by the Karlsruhe readout system
+         */
+        Pixels* read_legacy_data(double current_time);
 
-        // Single histograms
-        TH1F* singlePlot;
+        /*
+         * @brief Read data in the format written by the Caribou readout system
+         */
+        Pixels* read_caribou_data(double current_time);
 
         // Member variables
         int m_eventNumber;
@@ -60,6 +65,10 @@ namespace corryvreckan {
         double m_eventLength;
         double m_startTime;
         bool m_toaMode;
+        std::string m_detectorID;
+        bool m_legacyFormat;
+
+        std::map<std::string, int> m_identifiers;
     };
 } // namespace corryvreckan
 #endif // ATLASpixEventLoader_H
