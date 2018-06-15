@@ -15,20 +15,32 @@ namespace corryvreckan {
         Pixel(std::string detectorID, int row, int col, int tot, double timestamp)
             : Object(detectorID, timestamp), m_row(row), m_column(col), m_adc(tot) {}
 
-        int row() { return m_row; }
-        int column() { return m_column; }
+        int row() const { return m_row; }
+        int column() const { return m_column; }
 
-        int adc() { return m_adc; }
-        int tot() { return adc(); }
+        int adc() const { return m_adc; }
+        int tot() const { return adc(); }
+
+        double charge() const { return m_charge; }
+        void setCharge(double charge) { m_charge = charge; }
+
+        /**
+         * @brief Print an ASCII representation of Pixel to the given stream
+         * @param out Stream to print to
+         */
+        void print(std::ostream& out) const override;
+
+        /**
+         * @brief ROOT class definition
+         */
+        ClassDefOverride(Pixel, 3);
 
     private:
         // Member variables
         int m_row;
         int m_column;
         int m_adc;
-
-        // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Pixel, 2)
+        double m_charge;
     };
 
     // Vector type declaration

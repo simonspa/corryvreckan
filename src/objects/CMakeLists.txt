@@ -27,7 +27,6 @@ ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
     LINKDEF
     ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
     OPTIONS
-    -Wno-inconsistent-missing-override
     -inlineInputHeader
     -I${CMAKE_CURRENT_SOURCE_DIR}
     MODULE
@@ -50,6 +49,7 @@ ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDiction
 # Define the library adding the object file created above
 ADD_LIBRARY(CorryvreckanObjects SHARED
     Object.cpp
+    Pixel.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx.o
 )
 
