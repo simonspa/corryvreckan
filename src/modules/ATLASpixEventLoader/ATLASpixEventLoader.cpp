@@ -164,8 +164,15 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double current_time) {
             line >> id >> cnt;
             LOG(DEBUG) << "Trigger at " << cnt;
         } else if(identifier == "HIT") {
-            int col, row, ts1, ts2, tot, fpga_ts, tr_cnt, bin_cnt;
-            line >> col >> row >> ts1 >> ts2 >> tot >> fpga_ts >> tr_cnt >> bin_cnt;
+            // Read columns form file
+            std::string scol, srow, sts1, sts2, stot, sfpga_ts, str_cnt, sbin_cnt;
+            line >> scol >> srow >> sts1 >> sts2 >> stot >> sfpga_ts >> str_cnt >> sbin_cnt;
+
+            // Only convert used numbers:
+            int col = std::stoi(scol);
+            int row = std::stoi(srow);
+            int fpga_ts = std::stoi(sfpga_ts);
+            int tot = std::stoi(stot);
 
             // Convert the timestamp to nanoseconds:
             timestamp = fpga_ts * m_clockCycle;
