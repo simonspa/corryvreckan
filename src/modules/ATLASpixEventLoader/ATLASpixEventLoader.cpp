@@ -14,6 +14,7 @@ ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<Detec
     m_calibrationFile = m_config.get<std::string>("calibrationFile", std::string());
 
     m_eventLength = m_config.get<double>("eventLength", Units::convert(0.0, "ns"));
+    m_clockCycle = m_config.get<int>("clockCycle", Units::convert(25, "ns"));
 
     // Allow reading of legacy data format using the Karlsruhe readout system:
     m_legacyFormat = m_config.get<bool>("legacyFormat", false);
@@ -68,6 +69,7 @@ void ATLASpixEventLoader::initialise() {
     hPixelToTCal = new TH1F("pixelToTCal", "pixelToT", 100, 0, 100);
     hPixelToA = new TH1F("pixelToA", "pixelToA", 100, 0, 100);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 200, 0, 200);
+    hPixelsOverTime = new TH1F("pixelsOverTime", "pixelsOverTime", 2e6, 0, 2e6);
 
     // Read calibration:
     m_calibrationFactors.resize(det->nPixelsX() * det->nPixelsY(), 1.0);
@@ -117,6 +119,9 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
         hPixelToT->Fill(px->tot());
         hPixelToTCal->Fill(px->charge());
         hPixelToA->Fill(px->timestamp());
+
+        // Pixels per 100us:
+        hPixelsOverTime->Fill(Units::convert(px->timestamp(), "ms"));
     }
 
     // Put the data on the clipboard
@@ -159,11 +164,11 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double current_time) {
             line >> id >> cnt;
             LOG(DEBUG) << "Trigger at " << cnt;
         } else if(identifier == "HIT") {
-            int col, row, ts1, ts2, fpga_ts, tr_cnt, bin_cnt, grey_cnt;
-            line >> col >> row >> ts1 >> ts2 >> fpga_ts >> tr_cnt >> bin_cnt >> grey_cnt;
+            int col, row, ts1, ts2, tot, fpga_ts, tr_cnt, bin_cnt;
+            line >> col >> row >> ts1 >> ts2 >> tot >> fpga_ts >> tr_cnt >> bin_cnt;
 
-            // Log the timestamp:
-            timestamp = tr_cnt;
+            // Convert the timestamp to nanoseconds:
+            timestamp = fpga_ts * m_clockCycle;
 
             // Stop looking at data if the pixel is after the current event window
             // (and rewind the file reader so that we start with this pixel next event)
@@ -181,7 +186,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double current_time) {
                 continue;
             }
 
-            Pixel* pixel = new Pixel(m_detectorID, row, col, bin_cnt, tr_cnt);
+            Pixel* pixel = new Pixel(m_detectorID, row, col, tot, timestamp);
             LOG(DEBUG) << *pixel;
             pixels->push_back(pixel);
         } else {

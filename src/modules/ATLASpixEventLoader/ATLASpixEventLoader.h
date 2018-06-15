@@ -55,6 +55,7 @@ namespace corryvreckan {
         TH1F* hPixelToTCal;
         TH1F* hPixelToA;
         TH1F* hPixelsPerFrame;
+        TH1F* hPixelsOverTime;
 
         // Parameters:
         std::vector<double> m_timewalkCorrectionFactors;
@@ -67,6 +68,7 @@ namespace corryvreckan {
         bool m_toaMode;
         std::string m_detectorID;
         bool m_legacyFormat;
+        int m_clockCycle;
 
         std::map<std::string, int> m_identifiers;
     };
