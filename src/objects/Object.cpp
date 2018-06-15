@@ -1,4 +1,3 @@
-// local
 #include "Object.hpp"
 #include "Cluster.h"
 #include "MCParticle.h"
@@ -37,4 +36,9 @@ Object* Object::Factory(std::string detectorType, std::string objectType, Object
     }
 
     return new Object();
+}
+
+std::ostream& corryvreckan::operator<<(std::ostream& out, const Object& obj) {
+    obj.print(out);
+    return out;
 }
