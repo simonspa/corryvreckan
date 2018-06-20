@@ -152,20 +152,16 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
         }
 
         // Discard tracks which are very close to the frame edges
-        //
-        if(fabs(track->timestamp() - clipboard->get_persistent("currentTime")) < m_timeCutFrameEdge) {
-            // Late edge - the currentTime has been updated by Timexpi3EventLoader to point to the end of the frame`
+        if(fabs(track->timestamp() - clipboard->get_persistent("eventEnd")) < m_timeCutFrameEdge) {
+            // Late edge - eventEnd points to the end of the frame`
             LOG(DEBUG) << " - track close to end of readout frame: "
-                       << Units::display(fabs(track->timestamp() - clipboard->get_persistent("currentTime")), {"us", "ns"})
+                       << Units::display(fabs(track->timestamp() - clipboard->get_persistent("eventEnd")), {"us", "ns"})
                        << " at " << Units::display(track->timestamp(), {"us"});
             continue;
-        } else if(fabs(track->timestamp() - clipboard->get_persistent("currentTime") +
-                       clipboard->get_persistent("eventLength")) < m_timeCutFrameEdge) {
-            // Early edge - subtract the eventLength from the current time to see the beginning of the frame
+        } else if(fabs(track->timestamp() - clipboard->get_persistent("eventStart")) < m_timeCutFrameEdge) {
+            // Early edge - eventStart points to the beginning of the frame
             LOG(DEBUG) << " - track close to start of readout frame: "
-                       << Units::display(fabs(track->timestamp() - clipboard->get_persistent("currentTime") +
-                                              clipboard->get_persistent("eventLength")),
-                                         {"us", "ns"})
+                       << Units::display(fabs(track->timestamp() - clipboard->get_persistent("eventStart")), {"us", "ns"})
                        << " at " << Units::display(track->timestamp(), {"us"});
             continue;
         }
