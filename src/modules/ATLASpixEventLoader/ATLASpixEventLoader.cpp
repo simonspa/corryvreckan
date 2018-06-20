@@ -124,13 +124,15 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
         hPixelsOverTime->Fill(Units::convert(px->timestamp(), "ms"));
     }
 
+    // Fill histograms
+    hPixelsPerFrame->Fill(pixels->size());
+
     // Put the data on the clipboard
     if(!pixels->empty()) {
         clipboard->put(m_detectorID, "pixels", (Objects*)pixels);
+    } else {
+        return NoData;
     }
-
-    // Fill histograms
-    hPixelsPerFrame->Fill(pixels->size());
 
     // Return value telling analysis to keep running
     return Success;
