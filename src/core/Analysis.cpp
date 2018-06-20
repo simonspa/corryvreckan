@@ -358,7 +358,7 @@ void Analysis::run() {
         if(number_of_events > -1 && m_events >= number_of_events)
             break;
 
-        if(run_time > 0.0 && (m_clipboard->get_persistent("currentTime")) >= run_time)
+        if(run_time > 0.0 && (m_clipboard->get_persistent("eventStart")) >= run_time)
             break;
 
         // Check if we have reached the maximum number of tracks
@@ -416,7 +416,7 @@ void Analysis::run() {
             LOG_PROGRESS(STATUS, "event_loop")
                 << "Ev: +" << m_events << " \\" << skipped << " Tr: " << m_tracks << " (" << std::setprecision(3)
                 << ((double)m_tracks / m_events)
-                << "/ev) t = " << Units::display(m_clipboard->get_persistent("currentTime"), {"ns", "us", "ms", "s"});
+                << "/ev) t = " << Units::display(m_clipboard->get_persistent("eventStart"), {"ns", "us", "ms", "s"});
         }
 
         // Clear objects from this iteration from the clipboard
