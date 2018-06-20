@@ -13,7 +13,6 @@ ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<Detec
     m_inputDirectory = m_config.get<std::string>("inputDirectory");
     m_calibrationFile = m_config.get<std::string>("calibrationFile", std::string());
 
-    m_eventLength = m_config.get<double>("eventLength", Units::convert(0.0, "ns"));
     m_clockCycle = m_config.get<int>("clockCycle", Units::convert(25, "ns"));
 
     // Allow reading of legacy data format using the Karlsruhe readout system:
@@ -109,10 +108,11 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
         return Failure;
     }
 
-    double current_time = clipboard->get_persistent("currentTime");
+    double start_time = clipboard->get_persistent("eventStart");
+    double end_time = clipboard->get_persistent("eventEnd");
 
     // Read pixel data
-    Pixels* pixels = (m_legacyFormat ? read_legacy_data(current_time) : read_caribou_data(current_time));
+    Pixels* pixels = (m_legacyFormat ? read_legacy_data(start_time, end_time) : read_caribou_data(start_time, end_time));
 
     for(auto px : (*pixels)) {
         hHitMap->Fill(px->column(), px->row());
@@ -129,9 +129,6 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
         clipboard->put(m_detectorID, "pixels", (Objects*)pixels);
     }
 
-    // Increment the event time
-    clipboard->put_persistent("currentTime", clipboard->get_persistent("currentTime") + m_eventLength);
-
     // Fill histograms
     hPixelsPerFrame->Fill(pixels->size());
 
@@ -139,7 +136,7 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
     return Success;
 }
 
-Pixels* ATLASpixEventLoader::read_caribou_data(double current_time) {
+Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_time) {
     // Pixel container
     Pixels* pixels = new Pixels();
 
@@ -179,13 +176,20 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double current_time) {
 
             // Stop looking at data if the pixel is after the current event window
             // (and rewind the file reader so that we start with this pixel next event)
-            if(timestamp > (current_time + m_eventLength)) {
+            if(timestamp > end_time) {
                 LOG(DEBUG) << "Stopping processing event, pixel is after event window ("
                            << Units::display(timestamp, {"s", "us", "ns"}) << " > "
-                           << Units::display(current_time + m_eventLength, {"s", "us", "ns"}) << ")";
+                           << Units::display(end_time, {"s", "us", "ns"}) << ")";
                 // Rewind to previous position:
                 m_file.seekg(oldpos);
                 break;
+            }
+
+            if(timestamp < start_time) {
+                LOG(DEBUG) << "Skipping pixel hit, pixel is before event window ("
+                           << Units::display(timestamp, {"s", "us", "ns"}) << " < "
+                           << Units::display(start_time, {"s", "us", "ns"}) << ")";
+                continue;
             }
 
             // If this pixel is masked, do not save it
@@ -207,7 +211,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double current_time) {
     return pixels;
 }
 
-Pixels* ATLASpixEventLoader::read_legacy_data(double) {
+Pixels* ATLASpixEventLoader::read_legacy_data(double, double) {
 
     // Pixel container
     Pixels* pixels = new Pixels();

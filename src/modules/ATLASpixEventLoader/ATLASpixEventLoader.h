@@ -34,12 +34,12 @@ namespace corryvreckan {
         /*
          * @brief Read data in the format written by the Karlsruhe readout system
          */
-        Pixels* read_legacy_data(double current_time);
+        Pixels* read_legacy_data(double start_time, double end_time);
 
         /*
          * @brief Read data in the format written by the Caribou readout system
          */
-        Pixels* read_caribou_data(double current_time);
+        Pixels* read_caribou_data(double start_time, double end_time);
 
         // Member variables
         int m_eventNumber;

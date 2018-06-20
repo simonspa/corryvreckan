@@ -1,13 +1,13 @@
 ## ATLASpixEventLoader
-**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)   
-**Status**: Outdated   
+**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Status**: Functional
 
 #### Description
-This module reads in data for the ATLASpix device from an input file.
+This module reads in data for the ATLASpix device from an input file created by the CaRIBou readout system.
 
 The module opens and reads one data file in the specified input directory with the ending `.dat`. For each hit it, stores the detectorID, row, column, and ToT.
 
-Outdated as data format and decoding for this device has since changed.
+This module requires either another event loader of another detector type before which defines the event start and end times (variables `eventStart` and `eventEnd` on the clipboard) or an instance of the Metronome module which provides this information.
 
 #### Parameters
 * `inputDirectory`: Path to the directory containing the `.dat` file. This path should lead to the directory above the ALTASpix directory, as this string is added to the input directory in the module.
