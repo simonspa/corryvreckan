@@ -3,7 +3,8 @@
 **Status**: Functional
 
 #### Description
-This module reads in data for a CLICpix2 device from an input file. It defines the reconstruction time structure as being the CLICpix2 frame by setting the `currentTime` to the begin of the frame and the `eventLength` to the length of the readout frame. These times are stored on the persistent clipboard storage and can be picked up by other modules to allow synchronization.
+This module reads in data for a CLICpix2 device from an input file. It defines the reconstruction time structure as being the CLICpix2 frame by setting the `eventStart` to the begin of the frame, the `eventEnd` to the end of the shutter and the `eventLength` to the length of the readout frame. These times are stored on the persistent clipboard storage and can be picked up by other modules to allow synchronization.
+Thus, this module should not be used in conjunction with the Metronome but should be placed at the very beginning of the module chain.
 
 The module opens and reads one data file in the specified input directory.
 The input directory is searched for a data file with the file extension `.raw` and a pixel matrix configuration file required for decoding with the file extension `.cfg` and a name starting with `matrix`.

@@ -267,7 +267,8 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
     // Store current frame time and the length of the event:
     LOG(DEBUG) << "Event time: " << Units::display(shutterStartTime, {"ns", "us", "s"})
                << ", length: " << Units::display((shutterStopTime - shutterStartTime), {"ns", "us", "s"});
-    clipboard->put_persistent("currentTime", shutterStartTime);
+    clipboard->put_persistent("eventStart", shutterStartTime);
+    clipboard->put_persistent("eventEnd", shutterStopTime);
     clipboard->put_persistent("eventLength", (shutterStopTime - shutterStartTime));
 
     // Put the data on the clipboard
