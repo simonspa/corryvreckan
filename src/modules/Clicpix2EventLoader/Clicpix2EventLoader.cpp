@@ -1,7 +1,7 @@
 #include "Clicpix2EventLoader.h"
 
-#include "clicpix2_pixels.hpp"
-#include "clicpix2_utilities.hpp"
+#include "CLICpix2/clicpix2_pixels.hpp"
+#include "CLICpix2/clicpix2_utilities.hpp"
 #include "datatypes.hpp"
 
 using namespace corryvreckan;
