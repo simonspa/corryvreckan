@@ -416,7 +416,7 @@ void Analysis::run() {
             LOG_PROGRESS(STATUS, "event_loop")
                 << "Ev: +" << m_events << " \\" << skipped << " Tr: " << m_tracks << " (" << std::setprecision(3)
                 << ((double)m_tracks / m_events)
-                << "/ev) t = " << Units::display(m_clipboard->get_persistent("currentTime"), {"ns", "us", "s"});
+                << "/ev) t = " << Units::display(m_clipboard->get_persistent("currentTime"), {"ns", "us", "ms", "s"});
         }
 
         // Clear objects from this iteration from the clipboard
@@ -496,7 +496,9 @@ void Analysis::finaliseAll() {
     // Write the output histogram file
     m_directory->cd();
     m_directory->Write();
+
     m_histogramFile->Close();
+    LOG(STATUS) << "Wrote histogram output file to " << global_config.getPath("histogramFile");
 
     // Write out update detectors file:
     if(global_config.has("detectors_file_updated")) {
