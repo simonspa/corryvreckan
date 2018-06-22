@@ -435,10 +435,6 @@ void Analysis::run() {
             break;
         }
     }
-
-    // If running the gui, don't close until the user types a command
-    if(global_config.get<bool>("gui", false))
-        std::cin.ignore();
 }
 
 void Analysis::terminate() {
