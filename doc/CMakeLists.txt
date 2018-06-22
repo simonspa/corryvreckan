@@ -104,6 +104,7 @@ IF(LATEX_COMPILER)
             logo.png
             cc-by.png
             INPUTS
+            usermanual/chapters/introduction.tex
             usermanual/chapters/modules.tex
             usermanual/chapters/tools.tex
             usermanual/config.tex
