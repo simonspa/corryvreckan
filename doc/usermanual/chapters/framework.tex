@@ -1,0 +1,112 @@
+\chapter{The \corrybold Framework}
+\label{ch:framework}
+
+This chapter provides some crucial information about the framework, its executables and the available configuration parameters which are processed on a global level.
+
+\section{The \texttt{corry} Executable}
+\label{sec:executable}
+The \corry executable \texttt{corry} functions as the interface between the user and the framework.
+It is primarily used to provide the main configuration file, but also allows to add and overwrite options from the main configuration file.
+This is both useful for quick testing as well as for batch processing of many runs to be reconstructed.
+
+The executable handles the following arguments:
+\begin{itemize}
+\item \texttt{-c <file>}: Specifies the configuration file to be used for the reconstruction, relative to the current directory.
+This is the only \textbf{required} argument, the simulation will fail to start if this argument is not given.
+\item \texttt{-l <file>}: Specify an additional location such as a file to forward log output to. This is used as additional destination alongside the standard output and the location specified in the framework parameters described in Section~\ref{sec:framework_parameters}.
+\item \texttt{-v <level>}: Sets the global log verbosity level, overwriting the value specified in the configuration file described in Section~\ref{sec:framework_parameters}.
+Possible values are \texttt{FATAL}, \texttt{STATUS}, \texttt{ERROR}, \texttt{WARNING}, \texttt{INFO} and \texttt{DEBUG}, where all options are case-insensitive.
+The module specific logging level introduced in Section~\ref{sec:logging_verbosity} is not overwritten.
+\item \texttt{-o <option>}: Passes extra options which are added and overwritten in the main configuration file.
+This argument may be specified multiple times, to add multiple options.
+
+Options are specified as key/value pairs in the same syntax as used in the configuration files (refer to Chapter~\ref{ch:configuration_files} for more details), but the key is extended to include a reference to a configuration section in shorthand notation.
+There are two types of keys that can be specified:
+\begin{itemize}
+\item Keys to set \textbf{framework parameters}. These have to be provided in exactly the same way as they would be in the main configuration file (a section does not need to be specified). An example to overwrite the standard output directory would be \command{corry -c <file> -o output_directory="run123456"}.
+\item Keys for \textbf{module configurations}. These are specified by adding a dot (\texttt{.}) between the module and the actual key as it would be given in the configuration file (thus \textit{module}.\textit{key}). An example to overwrite the information written by the FileWiter module would be \command{corry -c <file> -o FileWriter.onlyDUT="true"}.
+\end{itemize}
+Note that only the single argument directly following the \texttt{-o} is interpreted as the option. If there is whitespace in the key/value pair this should be properly enclosed in quotation marks to ensure the argument is parsed correctly.
+\end{itemize}
+
+No interaction with the framework is possible during the reconstruction. Signals can however be send using keyboard shortcuts to terminate the run, either gracefully or with force. The executable understand the following signals:
+\begin{itemize}
+\item \texttt{CTRL+C} (SIGINT): Request a graceful shutdown of the reconstruction. This means the currently processed event is finished, while all other events requested in the configuration file are ignored. After finishing the event, the finalization stage is executed for every module to ensure all modules finish properly.
+\item \texttt{CTRL+\textbackslash} (SIGQUIT): Forcefully terminates the framework. It is not recommended to use this signal as it will normally lead to the loss of all generated data. This signal should only be used when graceful termination is for any reason not possible.
+\end{itemize}
+
+\section{Global Framework parameters}
+\label{sec:framework_parameters}
+The \corry framework provides a set of global parameters which control and alter its behavior. These parameters are inherited by all modules.
+The currently available global parameters are:
+
+\begin{itemize}
+\item \parameter{detectors_file}: Location of the file describing the detector configuration described in Section~\ref{sec:detector_config}.
+The only \textit{required} global parameter: the framework will fail to start if it is not specified.
+\item \parameter{detectors_file_updated}: Location of the file that the (potentially) updated detector configuration should be written into. If this file does not already exist, it will be created. If the same file is given as for \parameter{detectors_file}, the file is overwritten with the updated values.
+\item \parameter{histogram_file}: Location of the file where the ROOT output histograms of all modules will be written to. The file extension \texttt{.root} will be appended if not present. Directories within the ROOT file will be created automatically for all modules.
+\item \parameter{number_of_events}: Determines the total number of events the framework should process, negative numbers allow processing of all data available.
+After reaching the specified number of events, reconstruction is stopped.
+Defaults to $-1$.
+\item \parameter{number_of_tracks}: Determines the total number of tracks the framework should reconstruct, negative numbers indicate no limit on the number of reconstructed tracks.
+After reaching the specified number of events, reconstruction is stopped.
+Defaults to $-1$.
+\item \parameter{run_time}: Determines the wall-clock time of data acquisition the framework should reconstruct up until. Negative numbers inidcate no limit on the time slice to reconstruct.
+Defaults to $-1$.
+\item \parameter{log_level}: Specifies the lowest log level which should be reported.
+Possible values are \texttt{FATAL}, \texttt{STATUS}, \texttt{ERROR}, \texttt{WARNING}, \texttt{INFO} and \texttt{DEBUG}, where all options are case-insensitive.
+Defaults to the \texttt{INFO} level.
+More details and information about the log levels, including how to change them for a particular module, can be found in Section~\ref{sec:logging_verbosity}.
+Can be overwritten by the \texttt{-v} parameter on the command line (see Section~\ref{sec:executable}).
+\item \parameter{log_format}: Determines the log message format to display.
+Possible options are \texttt{SHORT}, \texttt{DEFAULT} and \texttt{LONG}, where all options are case-insensitive.
+More information can be found in Section~\ref{sec:logging_verbosity}.
+\item \parameter{log_file}: File where the log output should be written to in addition to printing to the standard output (usually the terminal).
+Another (additional) location to write to can be specified on the command line using the \texttt{-l} parameter (see Section~\ref{sec:executable}).
+\item \parameter{library_directories}: Additional directories to search for module libraries, before searching the default paths.
+\end{itemize}
+
+\section{Logging and Verbosity Levels}
+\label{sec:logging_verbosity}
+\corry is designed to identify mistakes and implementation errors as early as possible and to provide the user with clear indications about the problem.
+The amount of feedback can be controlled using different log levels which are inclusive, i.e.\ lower levels also include messages from all higher levels.
+The global log level can be set using the global parameter \parameter{log_level}.
+The log level can be overridden for a specific module by adding the \parameter{log_level} parameter to the respective configuration section.
+The following log levels are supported:
+\begin{itemize}
+\item \textbf{FATAL}: Indicates a fatal error that will lead to direct termination of the application.
+Typically only emitted in the main executable after catching exceptions as they are the preferred way of fatal error handling.
+An example of a fatal error is an invalid configuration parameter.
+\item \textbf{STATUS}: Important information about the status of the reconstruction.
+Is only used for messages which have to be logged in every run such as initial information on the module loading, opened data files and the current progress of the run.
+\item \textbf{ERROR}: Severe error that should not occur during a normal well-configured reconstruction.
+Frequently leads to a fatal error and can be used to provide extra information that may help in finding the problem (for example used to indicate the reason a dynamic library cannot be loaded).
+\item \textbf{WARNING}: Indicate conditions that should not occur normally and possibly lead to unexpected results.
+The framework will however continue without problems after a warning.
+A warning is for example issued to indicate that a calibration file for a certain detector cannot be found and that the reconstruction is therefore performed with uncalibrated data.
+\item \textbf{INFO}: Information messages about the reconstruction process.
+Contains summaries of the reconstruction details for every event and for the overall run.
+Should typically produce maximum one line of output per event and module.
+\item \textbf{DEBUG}: In-depth details about the progress of the reconstruction such as information on every cluster formed or on track fitting results.
+Produces large volumes of output per event, and should therefore only be used for debugging the reconstruction.
+\item \textbf{TRACE}: Messages to trace what the framework or a module is currently doing.
+Unlike the \textbf{DEBUG} level, it does not contain any direct information about the physics but rather indicates which part of the module or framework is currently running.
+Mostly used for software debugging or determining performance bottlenecks in the simulations.
+\end{itemize}
+
+\begin{warning}
+    It is not recommended to set the \parameter{log_level} higher than \textbf{WARNING} in a typical reconstruction as important messages may be missed.
+    Setting too low logging levels should also be avoided since printing many log messages will significantly slow down the simulation.
+\end{warning}
+
+The logging system supports several formats for displaying the log messages.
+The following formats are supported via the global parameter \parameter{log_format} or the individual module parameter with the same name:
+\begin{itemize}
+\item \textbf{SHORT}: Displays the data in a short form.
+Includes only the first character of the log level followed by the configuration section header and the message.
+\item \textbf{DEFAULT}: The default format.
+Displays system time, log level, section header and the message itself.
+\item \textbf{LONG}: Detailed logging format.
+Displays all of the above but also indicates source code file and line where the log message was produced.
+This can help in debugging modules.
+\end{itemize}
