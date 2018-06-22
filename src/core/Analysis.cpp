@@ -144,7 +144,9 @@ void Analysis::load_modules() {
     std::vector<Configuration> configs = conf_mgr_->getConfigurations();
 
     // Create histogram output file
-    std::string histogramFile = global_config.getPath("histogramFile");
+    global_config.setAlias("histogram_file", "histogramFile");
+    std::string histogramFile = global_config.getPath("histogram_file");
+
     m_histogramFile = new TFile(histogramFile.c_str(), "RECREATE");
     m_directory = m_histogramFile->mkdir("corryvreckan");
     if(m_histogramFile->IsZombie()) {
