@@ -42,13 +42,17 @@
 
 % Command to add all modules
 \newcommand{\includemodulesmd}{\def\temp{@CORRYVRECKAN_MODULE_FILES@}\ifx\temp\empty
-  \textit{Module documentation not added because Markdown to LaTex conversion was not possible}
+  \textit{Module documentation not added because Markdown to \LaTeX~conversion was not possible. Pandoc is required for the conversion.}
 \else
   \foreach \n in @CORRYVRECKAN_MODULE_FILES@ {\input{\n}}
 \fi}
 
 % Command to add a single converted markdown file
-\newcommand{\inputmd}[1]{\input{md/#1}}
+\newcommand{\inputmd}[1]{\def\temp{@other_tex_files@}\ifx\temp\empty
+  \textit{This section is missing Markdown to \LaTeX~conversion was not possible. Pandoc is required for the conversion.}
+\else
+  \input{md/#1}
+\fi}
 
 % Set bibliography
 \addbibresource{usermanual/references.bib}

@@ -100,6 +100,7 @@ void FileReader::initialise() {
         }
     }
 
+    LOG(STATUS) << "Successfully opened data file \"" << m_fileName << "\"";
     // Initialise member variables
     m_eventNumber = 0;
 }
