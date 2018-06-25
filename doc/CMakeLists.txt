@@ -100,6 +100,9 @@ IF(LATEX_COMPILER)
         SET(LATEX_OUTPUT_PATH ${CMAKE_BINARY_DIR}/usermanual)
         ADD_LATEX_DOCUMENT(
             usermanual/corryvreckan-manual.tex
+            BIBFILES
+            usermanual/references.bib
+            USE_BIBLATEX
             IMAGES
             logo.png
             cc-by.png
