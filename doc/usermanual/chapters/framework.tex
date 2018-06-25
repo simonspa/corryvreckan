@@ -35,7 +35,12 @@ No interaction with the framework is possible during the reconstruction. Signals
 \item \texttt{CTRL+\textbackslash} (SIGQUIT): Forcefully terminates the framework. It is not recommended to use this signal as it will normally lead to the loss of all generated data. This signal should only be used when graceful termination is for any reason not possible.
 \end{itemize}
 
-\section{Global Framework parameters}
+\section{The Clipboard}
+
+\todo{description of clipboard and interaction with it}
+
+
+\section{Global Framework Parameters}
 \label{sec:framework_parameters}
 The \corry framework provides a set of global parameters which control and alter its behavior. These parameters are inherited by all modules.
 The currently available global parameters are:
@@ -111,7 +116,7 @@ Displays all of the above but also indicates source code file and line where the
 This can help in debugging modules.
 \end{itemize}
 
-\section{Coordinate systems}
+\section{Coordinate Systems}
 \label{sec:coordinate_systems}
 
 Local coordinate systems for each detector and a global frame of reference for the full setup are defined.
