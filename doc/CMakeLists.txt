@@ -108,6 +108,10 @@ IF(LATEX_COMPILER)
             cc-by.png
             INPUTS
             usermanual/chapters/introduction.tex
+            usermanual/chapters/installation.tex
+            usermanual/chapters/framework.tex
+            usermanual/chapters/configuration.tex
+            usermanual/chapters/correlation.tex
             usermanual/chapters/modules.tex
             usermanual/chapters/tools.tex
             usermanual/config.tex
