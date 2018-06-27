@@ -112,7 +112,9 @@ IF(LATEX_COMPILER)
             usermanual/chapters/framework.tex
             usermanual/chapters/configuration.tex
             usermanual/chapters/correlation.tex
+            usermanual/chapters/onlinemonitoring.tex
             usermanual/chapters/modules.tex
+            usermanual/chapters/development.tex
             usermanual/chapters/tools.tex
             usermanual/config.tex
 
