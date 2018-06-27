@@ -53,8 +53,8 @@ namespace corryvreckan {
         std::string canvasTitle;
 
         // Canvases and their plots:
-        Matrix<std::string> canvas_dutplots;
-        Matrix<std::string> canvas_overview;
+        Matrix<std::string> canvas_dutplots, canvas_overview, canvas_tracking, canvas_hitmaps, canvas_residuals, canvas_cx,
+            canvas_cy, canvas_cx2d, canvas_cy2d, canvas_charge, canvas_time;
     };
 } // namespace corryvreckan
 #endif // OnlineMonitor_H

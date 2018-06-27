@@ -12,21 +12,36 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<Detector*> detect
 
     // Set up overview plots:
     canvas_overview = m_config.getMatrix<std::string>("Overview",
-                                                      {{"BasicTracking/trackChi2", ""},
-                                                       {"TestAlgorithm/clusterTot_%REFERENCE%", ""},
+                                                      {{"BasicTracking/trackChi2"},
+                                                       {"TestAlgorithm/clusterTot_%REFERENCE%"},
                                                        {"TestAlgorithm/hitmap_%REFERENCE%", "colz"},
-                                                       {"BasicTracking/residualsX_%REFERENCE%", ""}});
+                                                       {"BasicTracking/residualsX_%REFERENCE%"}});
 
     // Set up individual plots for the DUT
     canvas_dutplots = m_config.getMatrix<std::string>("DUTPlots",
                                                       {{"Clicpix2EventLoader/hitMap", "colz"},
                                                        {"Clicpix2EventLoader/hitMapDiscarded", "colz"},
-                                                       {"Clicpix2EventLoader/pixelToT", ""},
-                                                       {"Clicpix2EventLoader/pixelToA", ""},
+                                                       {"Clicpix2EventLoader/pixelToT"},
+                                                       {"Clicpix2EventLoader/pixelToA"},
                                                        {"Clicpix2EventLoader/pixelCnt", "log"},
                                                        {"Clicpix2EventLoader/pixelsPerFrame", "log"},
-                                                       {"DUTAnalysis/clusterTotAssociated", ""},
-                                                       {"DUTAnalysis/associatedTracksVersusTime", ""}});
+                                                       {"DUTAnalysis/clusterTotAssociated"},
+                                                       {"DUTAnalysis/associatedTracksVersusTime"}});
+    canvas_tracking =
+        m_config.getMatrix<std::string>("Tracking", {{"BasicTracking/trackChi2"}, {"BasicTracking/trackAngleX"}});
+    canvas_hitmaps = m_config.getMatrix<std::string>("HitMaps", {{"TestAlgorithm/hitmap_%DETECTOR%", "colz"}});
+    canvas_residuals = m_config.getMatrix<std::string>("Residuals", {{"BasicTracking/residualsX_%DETECTOR%"}});
+
+    canvas_cx = m_config.getMatrix<std::string>("CorrelationX", {{"TestAlgorithm/correlationX_%DETECTOR%"}});
+    canvas_cx2d =
+        m_config.getMatrix<std::string>("CorrelationX2D", {{"TestAlgorithm/correlationX_2Dlocal_%DETECTOR%", "colz"}});
+    canvas_cy = m_config.getMatrix<std::string>("CorrelationY", {{"TestAlgorithm/correlationY_%DETECTOR%"}});
+    canvas_cy2d =
+        m_config.getMatrix<std::string>("CorrelationY2D", {{"TestAlgorithm/correlationY_2Dlocal_%DETECTOR%", "colz"}});
+
+    canvas_charge = m_config.getMatrix<std::string>("ChargeDistributions", {{"Timepix3Clustering/clusterTot_%DETECTOR%"}});
+
+    canvas_time = m_config.getMatrix<std::string>("EventTimes", {{"TestAlgorithm/eventTimes_%DETECTOR%"}});
 }
 
 void OnlineMonitor::initialise() {
@@ -53,58 +68,37 @@ void OnlineMonitor::initialise() {
 
     //=== Track canvas
     AddButton("Tracking", "TrackCanvas");
-    AddHisto("TrackCanvas", "/corryvreckan/BasicTracking/trackChi2");
-    AddHisto("TrackCanvas", "/corryvreckan/BasicTracking/trackAngleX");
+    AddPlots("TrackCanvas", canvas_tracking);
 
     //=== Per detector canvases
     AddButton("HitMaps", "HitmapCanvas");
+    AddPlots("HitmapCanvas", canvas_hitmaps);
+
     AddButton("Residuals", "ResidualCanvas");
+    AddPlots("ResidualCanvas", canvas_residuals);
+
     AddButton("EventTimes", "EventTimeCanvas");
+    AddPlots("EventTimeCanvas", canvas_time);
+
     AddButton("CorrelationsX", "CorrelationXCanvas");
+    AddPlots("CorrelationXCanvas", canvas_cx);
+
     AddButton("CorrelationsY", "CorrelationYCanvas");
+    AddPlots("CorrelationYCanvas", canvas_cy);
+
     AddButton("CorrelationsX2D", "CorrelationX2DCanvas");
+    AddPlots("CorrelationX2DCanvas", canvas_cx2d);
+
     AddButton("CorrelationsY2D", "CorrelationY2DCanvas");
+    AddPlots("CorrelationY2DCanvas", canvas_cy2d);
+
     AddButton("ChargeDistributions", "ChargeDistributionCanvas");
+    AddPlots("ChargeDistributionCanvas", canvas_charge);
+
     AddButton("DUTPlots", "DUTCanvas");
-
-    // Per detector histograms
-    for(auto& detector : get_detectors()) {
-        string detectorID = detector->name();
-
-        string hitmap = "/corryvreckan/TestAlgorithm/hitmap_" + detectorID;
-        AddHisto("HitmapCanvas", hitmap, "colz");
-
-        string chargeHisto = "/corryvreckan/Timepix3Clustering/clusterTot_" + detectorID;
-        AddHisto("ChargeDistributionCanvas", chargeHisto);
-
-        string eventTimeHisto = "/corryvreckan/TestAlgorithm/eventTimes_" + detectorID;
-        AddHisto("EventTimeCanvas", eventTimeHisto);
-
-        string correlationXHisto = "/corryvreckan/TestAlgorithm/correlationX_" + detectorID;
-        AddHisto("CorrelationXCanvas", correlationXHisto);
-
-        string correlationX2DHisto = "/corryvreckan/TestAlgorithm/correlationX_2Dlocal_" + detectorID;
-        AddHisto("CorrelationX2DCanvas", correlationX2DHisto, "colz");
-
-        string correlationYHisto = "/corryvreckan/TestAlgorithm/correlationY_" + detectorID;
-        AddHisto("CorrelationYCanvas", correlationYHisto);
-
-        string correlationY2DHisto = "/corryvreckan/TestAlgorithm/correlationY_2Dlocal_" + detectorID;
-        AddHisto("CorrelationY2DCanvas", correlationY2DHisto, "colz");
-
-        // Hisograms below not available for DUTs:
-        if(detectorID == m_config.get<std::string>("DUT")) {
-            continue;
-        }
-
-        string residualHisto = "/corryvreckan/BasicTracking/residualsX_" + detectorID;
-        AddHisto("ResidualCanvas", residualHisto);
-    }
-
     AddPlots("DUTCanvas", canvas_dutplots);
 
     // Set up the main frame before drawing
-
     // Exit button
     string exitButton = "StopMonitoring";
     gui->buttons[exitButton] = new TGTextButton(gui->buttonMenu, exitButton.c_str());
@@ -160,9 +154,9 @@ void OnlineMonitor::finalise() {
 
 void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas_plots) {
     for(auto plot : canvas_plots) {
-        if(plot.size() != 2) {
-            continue;
-        }
+
+        // Add default plotting style if not set:
+        plot.resize(2, "");
 
         // Do we need to plot with a LogY scale?
         bool log_scale = (plot.back().find("log") != std::string::npos) ? true : false;
@@ -176,13 +170,13 @@ void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas
             LOG(DEBUG) << "Adding plot " << name << " for all detectors.";
             for(auto& detector : get_detectors()) {
                 AddHisto(canvas_name,
-                         "/corryvreckan/" + std::regex_replace(name, std::regex("%DETECTOR%"), detector->name()),
+                         std::regex_replace(name, std::regex("%DETECTOR%"), detector->name()),
                          plot.back(),
                          log_scale);
             }
         } else {
             // Single histogram only.
-            AddHisto(canvas_name, "/corryvreckan/" + name, plot.back(), log_scale);
+            AddHisto(canvas_name, name, plot.back(), log_scale);
         }
     }
 }
@@ -190,7 +184,7 @@ void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas
 void OnlineMonitor::AddHisto(string canvasName, string histoName, string style, bool logy) {
 
     // Add "corryvreckan" namespace:
-    // histoName = "/corryvreckan/" + histoName;
+    histoName = "/corryvreckan/" + histoName;
 
     TH1* histogram = (TH1*)gDirectory->Get(histoName.c_str());
     if(histogram) {
