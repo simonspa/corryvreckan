@@ -15,7 +15,7 @@ The required translational shifts in X and Y are calculated for each detector as
 * `max_correlation_rms`: The maximum RMS of the 1D correlation histograms allowed for the shifts to be applied. This factor should be tuned for each run, and is combat the effect of flat distributions. Default value is `6mm`.
 * `timingCut`: maximum time difference between clusters to be taken into account. Defaults to `100ns`.
 
-## Plots Created
+### Plots Created
 For each detector the following plots are produced:
 * 1D correlation plot for X
 * 1D correlation plot for Y
