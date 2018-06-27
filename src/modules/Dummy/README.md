@@ -1,9 +1,9 @@
 # Dummy
-**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)   
+**Maintainer**: *NAME* (*EMAIL*)
 **Status**: Functional
 
 ### Description
-This is a demonstrator module only, taking data every detector on the clipboard and plots the pixel hit positions. 
+This is a demonstrator module only, taking data every detector on the clipboard and plots the pixel hit positions.
 It serves as template to create new modules.
 
 ### Parameters
