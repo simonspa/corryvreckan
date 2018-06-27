@@ -61,42 +61,19 @@ void OnlineMonitor::initialise() {
     gui->m_mainFrame->DontCallClose();
 
     // Add canvases and histograms
+    AddCanvas("Overview", canvas_overview);
+    AddCanvas("Tracking", canvas_tracking);
+    AddCanvas("HitMaps", canvas_hitmaps);
+    AddCanvas("Residuals", canvas_residuals);
+    AddCanvas("EventTimes", canvas_time);
+    AddCanvas("ChargeDistributions", canvas_charge);
 
-    //=== Overview canvas
-    AddButton("Overview", "OverviewCanvas");
-    AddPlots("OverviewCanvas", canvas_overview);
+    AddCanvas("CorrelationsX", canvas_cx);
+    AddCanvas("CorrelationsY", canvas_cy);
+    AddCanvas("CorrelationsX2D", canvas_cx2d);
+    AddCanvas("CorrelationsY2D", canvas_cy2d);
 
-    //=== Track canvas
-    AddButton("Tracking", "TrackCanvas");
-    AddPlots("TrackCanvas", canvas_tracking);
-
-    //=== Per detector canvases
-    AddButton("HitMaps", "HitmapCanvas");
-    AddPlots("HitmapCanvas", canvas_hitmaps);
-
-    AddButton("Residuals", "ResidualCanvas");
-    AddPlots("ResidualCanvas", canvas_residuals);
-
-    AddButton("EventTimes", "EventTimeCanvas");
-    AddPlots("EventTimeCanvas", canvas_time);
-
-    AddButton("CorrelationsX", "CorrelationXCanvas");
-    AddPlots("CorrelationXCanvas", canvas_cx);
-
-    AddButton("CorrelationsY", "CorrelationYCanvas");
-    AddPlots("CorrelationYCanvas", canvas_cy);
-
-    AddButton("CorrelationsX2D", "CorrelationX2DCanvas");
-    AddPlots("CorrelationX2DCanvas", canvas_cx2d);
-
-    AddButton("CorrelationsY2D", "CorrelationY2DCanvas");
-    AddPlots("CorrelationY2DCanvas", canvas_cy2d);
-
-    AddButton("ChargeDistributions", "ChargeDistributionCanvas");
-    AddPlots("ChargeDistributionCanvas", canvas_charge);
-
-    AddButton("DUTPlots", "DUTCanvas");
-    AddPlots("DUTCanvas", canvas_dutplots);
+    AddCanvas("DUTPlots", canvas_dutplots);
 
     // Set up the main frame before drawing
     // Exit button
@@ -152,6 +129,18 @@ void OnlineMonitor::finalise() {
     LOG(DEBUG) << "Analysed " << eventNumber << " events";
 }
 
+void OnlineMonitor::AddCanvas(std::string canvas_title, Matrix<std::string> canvas_plots) {
+    std::string canvas_name = canvas_title + "Canvas";
+
+    gui->buttons[canvas_title] = new TGTextButton(gui->buttonMenu, canvas_title.c_str());
+    gui->buttonMenu->AddFrame(gui->buttons[canvas_title], new TGLayoutHints(kLHintsLeft, 10, 10, 10, 10));
+    string command = "Display(=\"" + canvas_name + "\")";
+    LOG(INFO) << "Connecting button with command " << command.c_str();
+    gui->buttons[canvas_title]->Connect("Pressed()", "corryvreckan::GuiDisplay", gui, command.c_str());
+
+    AddPlots(canvas_name, canvas_plots);
+}
+
 void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas_plots) {
     for(auto plot : canvas_plots) {
 
@@ -194,12 +183,4 @@ void OnlineMonitor::AddHisto(string canvasName, string histoName, string style, 
     } else {
         LOG(WARNING) << "Histogram " << histoName << " does not exist";
     }
-}
-
-void OnlineMonitor::AddButton(string buttonName, string canvasName) {
-    gui->buttons[buttonName] = new TGTextButton(gui->buttonMenu, buttonName.c_str());
-    gui->buttonMenu->AddFrame(gui->buttons[buttonName], new TGLayoutHints(kLHintsLeft, 10, 10, 10, 10));
-    string command = "Display(=\"" + canvasName + "\")";
-    LOG(INFO) << "Connecting button with command " << command.c_str();
-    gui->buttons[buttonName]->Connect("Pressed()", "corryvreckan::GuiDisplay", gui, command.c_str());
 }
