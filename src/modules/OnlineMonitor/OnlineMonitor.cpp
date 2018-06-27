@@ -8,7 +8,17 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<Detector*> detect
     : Module(std::move(config), std::move(detectors)) {
     canvasTitle = m_config.get<std::string>("canvasTitle", "Corryvreckan Testbeam Monitor");
     updateNumber = m_config.get<int>("update", 500);
-    ;
+
+    // Set up individual plots for the DUT
+    canvas_dutplots = m_config.getMatrix<std::string>("DUTPlots",
+                                                      {{"Clicpix2EventLoader/hitMap", "colz"},
+                                                       {"Clicpix2EventLoader/hitMapDiscarded", "colz"},
+                                                       {"Clicpix2EventLoader/pixelToT", ""},
+                                                       {"Clicpix2EventLoader/pixelToA", ""},
+                                                       {"Clicpix2EventLoader/pixelCnt", "log"},
+                                                       {"Clicpix2EventLoader/pixelsPerFrame", "log"},
+                                                       {"DUTAnalysis/clusterTotAssociated", ""},
+                                                       {"DUTAnalysis/associatedTracksVersusTime", ""}});
 }
 
 void OnlineMonitor::initialise() {
@@ -92,15 +102,13 @@ void OnlineMonitor::initialise() {
         AddHisto("ResidualCanvas", residualHisto);
     }
 
-    if(get_detector(m_config.get<std::string>("DUT"))->type() == "CLICpix2") {
-        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/hitMap", "colz");
-        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/hitMapDiscarded", "colz");
-        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/pixelToT");
-        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/pixelToA");
-        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/pixelCnt", "", true);
-        AddHisto("DUTCanvas", "/corryvreckan/Clicpix2EventLoader/pixelsPerFrame", "", true);
-        AddHisto("DUTCanvas", "/corryvreckan/DUTAnalysis/clusterTotAssociated", "");
-        AddHisto("DUTCanvas", "/corryvreckan/DUTAnalysis/associatedTracksVersusTime", "");
+    for(auto plot : canvas_dutplots) {
+        if(plot.size() != 2) {
+            continue;
+        }
+
+        bool log_scale = (plot.back().find("log") != std::string::npos) ? true : false;
+        AddHisto("DUTCanvas", "/corryvreckan/" + plot.front(), plot.back(), log_scale);
     }
 
     // Set up the main frame before drawing

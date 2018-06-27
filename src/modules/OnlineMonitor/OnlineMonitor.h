@@ -47,7 +47,10 @@ namespace corryvreckan {
         // Member variables
         int eventNumber;
         int updateNumber;
+
+    private:
         std::string canvasTitle;
+        Matrix<std::string> canvas_dutplots;
     };
 } // namespace corryvreckan
 #endif // OnlineMonitor_H
