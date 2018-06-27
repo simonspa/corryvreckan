@@ -17,6 +17,7 @@ The required translational shifts in X and Y are calculated for each detector as
 
 ### Plots Created
 For each detector the following plots are produced:
+
 * 1D correlation plot for X
 * 1D correlation plot for Y
 * 2D correlation plot for X in local coordinates (comparing to reference plane)

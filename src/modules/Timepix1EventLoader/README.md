@@ -8,9 +8,6 @@ This module loads raw data from Timepix1 devices and adds it to the clipboard as
 ### Parameters
 * `inputDirectory`: Path of the directory above the data files.
 
-### Plots produced
-No plots are produced.
-
 ### Usage
 ```toml
 [Timepix1EventLoader]

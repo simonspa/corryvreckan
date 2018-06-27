@@ -21,6 +21,7 @@ This module performs track finding using only positional information (no timing 
 * Track angle in Y histogram
 
 Plots produced per device:
+
 * Residual in X
 * Residual in Y
 

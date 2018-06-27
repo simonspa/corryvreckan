@@ -13,6 +13,7 @@ This module associates CLICpix2 DUT clusters to tracks using a spatial cut (devi
 
 ### Plots produced
 For the DUT the following plots are produced:
+
 * 2D hitmap
 * Column hits histogram
 * Row hits histogram
@@ -37,7 +38,7 @@ For the DUT the following plots are produced:
 * Global residuals in X vs row width
 * Global residuals in Y vs column width
 * Global residuals in Y vs row width
-*
+
 * Track intercept in rows
 * Track intercept in columns
 * Absolute residual map histogram

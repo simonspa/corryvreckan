@@ -10,6 +10,7 @@ This module collects `pixel` and `cluster` objects from the clipboard for a Time
 
 ### Plots produced
 For each device the following plots are produced:
+
 * 2D hitmap in local coordinates
 * 2D hitmap in global coordinates
 * Cluster size histogram

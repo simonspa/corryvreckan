@@ -9,9 +9,6 @@ This module reads in raw data files with extension `-1.dat`, and outputs the pix
 * `DeviceToDumpData`: The name of the device data is to be read from.
 * `inputDirectory`: Path to the directory above the data directory named `DeviceToDumpData`.
 
-### Plots produced
-No plots are produced.
-
 ### Usage
 ```toml
 [DataDump]

@@ -25,6 +25,7 @@ Clusters from the first plane in Z (named the seed plane) are related to cluster
 * Track angle with respect to Y-axis histogram
 
 For each detector the following plots are produced:
+
 * Residual in X
 * Residual in Y
 * Residual in X for clusters with a width in X of 1

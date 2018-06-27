@@ -8,9 +8,6 @@ This module reads in `pixel` objects for each device from the clipboard, masks a
 ### Parameters
 No parameters are used from the configuration file.
 
-### Plots produced
-No plots are produced.
-
 ### Usage
 ```toml
 [Timepix3MaskCreator]

@@ -6,18 +6,21 @@
 This module writes out data from a Timepix3 DUT for timing analysis. The outputted ROOT TTree contains data in branches. This is intended for analysis of the timing capabilities of Timepix3 devices of different thicknesses.
 
 For each track associated DUT `cluster` object the following information is written out:
+
 * Event ID
 * Size in X
 * Size in Y
 * Number of pixels in the cluster
 
 For each `pixel` object in an associated `cluster` the follwing information is written out:
+
 * X position
 * Y position
 * ToT
 * ToA
 
 For each `track` with associated DUT `clusters` the following information is written out:
+
 * Intercept with the DUT (3D position vector)
 
 ### Parameters

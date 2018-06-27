@@ -11,6 +11,7 @@ This module makes plots of the correlations in X and Y for angles between 0 and 
 
 ### Plots produced
 For each angle between 0 and 2pi in steps of 0.6 radians the following plots are produced:
+
 * Correlation (track difference) in X
 * Correlation (track difference) in Y
 

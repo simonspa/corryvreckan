@@ -14,6 +14,7 @@ Split clusters can be recovered using a larger search radius for neighbouring pi
 
 ### Plots produced
 For each detector the following plots are produced:
+
 * Cluster size histogram
 * Cluster width (rows, in X) histogram
 * Cluster width (columns, in Y) histogram

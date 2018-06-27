@@ -14,6 +14,7 @@ Furthermore, the telescope resolution at the position of the DUT detector is plo
 * Telescope resolution at position of DUT
 
 For each detector participating in tracking, the following plots are produced:
+
 * Biased local track residual, for X and Y;
 * Biased global track residual, for X and Y;
 * Local residuals with track and Monte Carlo particle, for X and Y;

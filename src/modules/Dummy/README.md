@@ -13,6 +13,7 @@ No parameters are used from the configuration file.
 * Histogram of event numbers
 
 For each detector the following plots are produced:
+
 * 2D histogram of pixel hit positions
 
 ### Usage

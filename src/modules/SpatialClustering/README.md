@@ -10,6 +10,7 @@ No parameters are used from the configuration file.
 
 ### Plots produced
 For each detector the following plots are produced:
+
 * Cluster size histogram
 * Cluster width (rows, in X) histogram
 * Cluster width (columns, in Y) histogram

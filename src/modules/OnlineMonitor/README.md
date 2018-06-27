@@ -14,15 +14,18 @@ Users should be able to exit `OnlineMonitor` and leave the reconstruction still 
 
 ### Plots produced
 Overview canvas:
+
 * Cluster ToT of reference plane
 * 2D hitmap of reference plane
 * Residual in X of reference plane
 
 Tracking canvas:
+
 * Track chi^2
 * Track angle in X
 
 For each detector the following plots are produced:
+
 * Hitmap canvas: 2D hitmap
 * Residuals canvas: residual in X histogram
 * Event times canvas: event times histogram

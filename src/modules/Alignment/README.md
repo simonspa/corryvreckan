@@ -30,6 +30,7 @@ For the detector specified by the `detectorToAlign` parameter, this method moves
 
 ### Plots produced
 For each detector the following plots are produced when using `alignmentMethod = 0`:
+
 * Translational shift along X-axis vs. iteration number
 * Translational shift along Y-axis vs. iteration number
 * Translational shift along Z-axis vs. iteration number
@@ -38,6 +39,7 @@ For each detector the following plots are produced when using `alignmentMethod =
 * Rotational shift around Z-axis vs. iteration number
 
 For the `detectorToAlign` the following plots are produced when using `alignmentMethod = 1`:
+
 * Residual in X (calculated in local coordinates)
 * Residual in Y
 * Profile plot of residual in X vs. X position

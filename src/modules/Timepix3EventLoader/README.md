@@ -7,7 +7,10 @@ This module loads raw data from a Timepix3 device and adds it to the clipboard. 
 
 The data can be split into events using an event length in time, or using a maximum number of hits on a detector plane. `SpidrSignal` and `pixel` objects are loaded to the clipboard for each detector.
 
-The hit timestamps are derived from the 40 MHz TOA counter and the fast on-pixel oscillator, which is measuring the precise hit arrival phase within to the global 40 MHz clock. In Timepix3, the phase of the 40 MHz clock can be shifted from one double column to the next by 22.5 degree by the clock generator in order to minimize the instant digital power supply due to the pixel matrix clock tree. This mode is used in the CLICdp telescope, and thus, the column-to-column phase shift is taken into account when calculating the hit arrival times. See also, Timepix3 Manual v1.9, section 3.2.1 and/or EP-ESE seminar,The Timepix3 chip, X. Llopart, https://indico.cern.ch/event/267425, slides 25 and 48.
+The hit timestamps are derived from the 40 MHz TOA counter and the fast on-pixel oscillator, which is measuring the precise hit arrival phase within to the global 40 MHz clock.
+In Timepix3, the phase of the 40 MHz clock can be shifted from one double column to the next by 22.5 degree by the clock generator in order to minimize the instant digital power supply due to the pixel matrix clock tree.
+This mode is used in the CLICdp telescope, and thus, the column-to-column phase shift is taken into account when calculating the hit arrival times.
+See also the Timepix3 chip manual version 1.9, section 3.2.1 and/or [@timepix3-talk], slides 25 and 48.
 
 ### Parameters
 * `inputDirectory`: Path to the directory above the data directory for each device. The device name is added to the path during the module.
@@ -33,3 +36,5 @@ number_of_pixelhits = 0
 DUT = "W0005_H03"
 ```
 Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
+
+[@timepix-talk] X. Llopart, The Timepix3 chip, EP-ESE seminar, https://indico.cern.ch/event/267425,

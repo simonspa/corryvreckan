@@ -13,6 +13,7 @@ This module collects `pixel` and `cluster` objects from the clipboard and create
 
 ### Plots produced
 For each device the following plots are produced:
+
 * 2D hitmap
 * 2D event times histogram
 * Correlation in X

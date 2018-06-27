@@ -14,6 +14,7 @@ In order to measure the correct $`\eta`$-distribution, no additional $`\eta`$-co
 
 ### Plots produced
 For each detector the following plots are produced:
+
 * 2D histogram of the calculated $`\eta`$-distribution, for X and Y respectively
 * Profile plot of the calculated $`\eta`$-distribution, for X and Y respectively
 
