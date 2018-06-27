@@ -1,9 +1,10 @@
-# GenericAlgorithm
+# Dummy
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)   
 **Status**: Functional
 
 ### Description
-This module takes data from a Timepix3 device from the clipboard and plots the pixel hit positions. This is to be a template to easy create other modules for Corryvreckan.
+This is a demonstrator module only, taking data every detector on the clipboard and plots the pixel hit positions. 
+It serves as template to create new modules.
 
 ### Parameters
 No parameters are used from the configuration file.
@@ -16,7 +17,7 @@ For each detector the following plots are produced:
 
 ### Usage
 ```toml
-[GenericAlgorithm]
+[Dummy]
 
 ```
 Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
