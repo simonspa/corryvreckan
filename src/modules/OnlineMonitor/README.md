@@ -1,18 +1,18 @@
-## OnlineMonitor
+# OnlineMonitor
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)   
 **Status**: Functional - some minor fixes needed
 
-#### Description
+### Description
 This module opens a GUI to monitor the progress of Corryvreckan reconstruction. Each canvas contains real time plots of the reconstruction, updated every 500 events. Plots are used from the `BasicTracking` and `TestAlgorithm` modules.
 
 Users should be able to exit `OnlineMonitor` and leave the reconstruction still running, but currently this causes a crash.
 
-#### Parameters
+### Parameters
 * `reference`: Name of the reference plane.
 * `update`: Number of events after which to update, defaults to `500`.
 * `canvasTitle`: Title of the canvas window to be shown, defaults to `Corryvreckan Testbeam Monitor`.
 
-#### Plots produced
+### Plots produced
 Overview canvas:
 * Cluster ToT of reference plane
 * 2D hitmap of reference plane
@@ -32,7 +32,7 @@ For each detector the following plots are produced:
 * 2D Correlations Y canvas: 2D correlation in Y plot
 * Charge distributions canvas: cluster ToT - broken at the moment
 
-#### Usage
+### Usage
 ```toml
 [OnlineMonitor]
 reference = "W0013_E03"

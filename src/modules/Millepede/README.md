@@ -1,15 +1,15 @@
-## Millepede
+# Millepede
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
 **Status**: Work in progress  
 
-#### Description
+### Description
 This implementation of the Millepede module has been taken from the [Kepler framework](https://gitlab.cern.ch/lhcb/Kepler) used for test beam data analysis within the LHCb collaboration. It has been written by Christoph Hombach and has seen contributions from Tim Evans and Heinrich Schindler. This version is only slightly adapted to the Corryvreckan framework.
 
 The Millepede algorthm allows a simultaneous fit of both the tracks and the alignment constants.
 
 The modules stops if the convergence, i.e. the absolute sum of all corrections over the total number of parameters, is smaller than the configured value.
 
-#### Parameters
+### Parameters
 * `number_of_tracks`: Number of tracks used in the alignment method chosen. Default value is `20000`.
 * `iterations`: Number of times the chosen alignment method is to be iterated. Default value is `3`.
 * `dofs`: Degrees of freedom to be aligned. This parameter should be given as vector of six boolean values for the parameters "Translation X", "Translation Y", "Translation Z", "Rotation X", "Rotation Y" and "Rotation Z". The default setting is an alignment of all parameters except for "Translation Z", i.e. `dofs = true, true, false, true, true, true`.
@@ -19,10 +19,7 @@ The modules stops if the convergence, i.e. the absolute sum of all corrections o
 * `sigmas`: Uncertainties for each of the alignment parameters. Defaults to `0.05, 0.05, 0.5, 0.005, 0.005, 0.005`.
 * `convergence`: Convergence value at which the module stops iterating. Default value is `10e-5`.
 
-#### Plots produced
-No plots are produced.
-
-#### Usage
+### Usage
 ```toml
 [Millepede]
 iterations = 10

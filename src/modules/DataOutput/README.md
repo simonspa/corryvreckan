@@ -1,8 +1,8 @@
-## DataOutput
+# DataOutput
 **Maintainer**: Morag Williams (<morag.williams@cern.ch>)   
 **Status**: Functional  
 
-#### Description
+### Description
 This module writes out data from a Timepix3 DUT for timing analysis. The outputted ROOT TTree contains data in branches. This is intended for analysis of the timing capabilities of Timepix3 devices of different thicknesses.
 
 For each track associated DUT `cluster` object the following information is written out:
@@ -20,15 +20,15 @@ For each `pixel` object in an associated `cluster` the follwing information is w
 For each `track` with associated DUT `clusters` the following information is written out:
 * Intercept with the DUT (3D position vector)
 
-#### Parameters
+### Parameters
 * `DUT`: Name of the DUT plane.
 * `fileName`: Name of the outputted ROOT file. Default value is `outputTuples`.
 * `treeName`: Name of the tree inside the outputted ROOT file. Default value is `tree`.
 
-#### Plots produced
+### Plots produced
 No plots are produced.
 
-#### Usage
+### Usage
 ```toml
 [DataOutput]
 DUT = "W0005_H03"

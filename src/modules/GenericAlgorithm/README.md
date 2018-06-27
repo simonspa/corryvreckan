@@ -1,20 +1,20 @@
-## GenericAlgorithm
+# GenericAlgorithm
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)   
 **Status**: Functional
 
-#### Description
+### Description
 This module takes data from a Timepix3 device from the clipboard and plots the pixel hit positions. This is to be a template to easy create other modules for Corryvreckan.
 
-#### Parameters
+### Parameters
 No parameters are used from the configuration file.
 
-#### Plots produced
+### Plots produced
 * Histogram of event numbers
 
 For each detector the following plots are produced:
 * 2D histogram of pixel hit positions
 
-#### Usage
+### Usage
 ```toml
 [GenericAlgorithm]
 

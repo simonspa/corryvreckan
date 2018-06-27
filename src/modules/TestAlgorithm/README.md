@@ -1,17 +1,17 @@
-## TestAlgorithm
+# TestAlgorithm
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>) ; Daniel Hynds (<daniel.hynds@cern.ch>)  
 **Status**: Functional   
 
-#### Description
+### Description
 This module collects `pixel` and `cluster` objects from the clipboard and creates correlation and timing plots.
 
 
-#### Parameters
+### Parameters
 * `makeCorrelatons`: Boolean to change if correlation plots should be outputted. Default value is `false`.
 * `reference`: Name of the plane to be used as the reference for the correlation plots.
 * `timingCut`: maximum time difference between clusters to be taken into account. Defaults to `100ns`.
 
-#### Plots produced
+### Plots produced
 For each device the following plots are produced:
 * 2D hitmap
 * 2D event times histogram
@@ -24,7 +24,7 @@ For each device the following plots are produced:
 * Correlation times histogram
 * Correlation times (integer values) histogram
 
-#### Usage
+### Usage
 ```toml
 [TestAlgorithm]
 makeCorrelations = true
