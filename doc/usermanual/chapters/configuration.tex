@@ -187,12 +187,7 @@ All supported rotations are extrinsic active rotations, i.e. the vector itself i
 \item The \parameter{number_of_pixels} parameter represents a two-dimensional vector with the number of pixels in the active matrix in the column and row direction, respectively.
 \item The \parameter{pixel_pitch} is a two-dimensional vector defining the size of a single pixel.
 \item The \parameter{time_offset} can be used to shift the individual detector time frames of reference to e.g.\ account for time of flight effects between different detector planes by adding a fixed offset.
-\item Pixels to be masked in the offline analysis can be placed in a separate file specified by the \parameter{mask_file} parameter. The following syntax can be used within the mask file:
-\begin{itemize}
-    \item \command{c COL}: masking all pixels in column \parameter{COL}
-    \item \command{r ROW}: masking all pixels in row \parameter{ROW}
-    \item \command{p COL ROW}: masking the single pixel at address \parameter{COL, ROW}
-\end{itemize}
+\item Pixels to be masked in the offline analysis can be placed in a separate file specified by the \parameter{mask_file} parameter explained in detail in Section~\ref{sec:masking}.
 \end{itemize}
 
 An example configuration file describing a setup with one CLICpix2 detector (named \parameter{016_CP_PS} and two Timepix3~\cite{timepix} detectors (\parameter{W0013_D04}and \parameter{W0013_J05}) is the following:
@@ -224,9 +219,17 @@ position = 0um, 0um, 204mm
 type = "Timepix3"
 \end{minted}
 
-%\inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_detector.conf}
-This configuration is used in the rest of this chapter for explaining concepts.
-
 \subsection{Masking Pixels Offline}
+\label{sec:masking}
 
-\subsection{Time Resolution}
+Mask files can be provided to individual detectors, which allow the specification of pixels ot be masked in the reconstruction.
+The following syntax is within the mask file:
+\begin{itemize}
+    \item \command{c COL}: masking all pixels in column \parameter{COL}
+    \item \command{r ROW}: masking all pixels in row \parameter{ROW}
+    \item \command{p COL ROW}: masking the single pixel at address \parameter{COL, ROW}
+\end{itemize}
+
+\begin{warning}
+It should be noted that the individual event loader modules have to take care of discarding masked pixels manually, the \corry framework only parses the mask file and attaches the mask information to the respective detector. The event loader modules should thus always query the detector object for masks before adding new pixels to the data collections.
+\end{warning}
