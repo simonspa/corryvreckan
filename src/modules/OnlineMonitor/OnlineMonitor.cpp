@@ -1,5 +1,6 @@
 #include "OnlineMonitor.h"
 #include <TVirtualPadEditor.h>
+#include <regex>
 
 using namespace corryvreckan;
 using namespace std;
@@ -8,6 +9,13 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<Detector*> detect
     : Module(std::move(config), std::move(detectors)) {
     canvasTitle = m_config.get<std::string>("canvasTitle", "Corryvreckan Testbeam Monitor");
     updateNumber = m_config.get<int>("update", 500);
+
+    // Set up overview plots:
+    canvas_overview = m_config.getMatrix<std::string>("Overview",
+                                                      {{"BasicTracking/trackChi2", ""},
+                                                       {"TestAlgorithm/clusterTot_%REFERENCE%", ""},
+                                                       {"TestAlgorithm/hitmap_%REFERENCE%", "colz"},
+                                                       {"BasicTracking/residualsX_%REFERENCE%", ""}});
 
     // Set up individual plots for the DUT
     canvas_dutplots = m_config.getMatrix<std::string>("DUTPlots",
@@ -41,16 +49,7 @@ void OnlineMonitor::initialise() {
 
     //=== Overview canvas
     AddButton("Overview", "OverviewCanvas");
-    // track chi2
-    AddHisto("OverviewCanvas", "/corryvreckan/BasicTracking/trackChi2");
-    // reference plane map, residuals
-    string reference = m_config.get<std::string>("reference");
-    string tot = "/corryvreckan/TestAlgorithm/clusterTot_" + reference;
-    AddHisto("OverviewCanvas", tot);
-    string hitmap = "/corryvreckan/TestAlgorithm/hitmap_" + reference;
-    AddHisto("OverviewCanvas", hitmap, "colz");
-    string residuals = "/corryvreckan/BasicTracking/residualsX_" + reference;
-    AddHisto("OverviewCanvas", residuals);
+    AddPlots("OverviewCanvas", canvas_overview);
 
     //=== Track canvas
     AddButton("Tracking", "TrackCanvas");
@@ -102,14 +101,7 @@ void OnlineMonitor::initialise() {
         AddHisto("ResidualCanvas", residualHisto);
     }
 
-    for(auto plot : canvas_dutplots) {
-        if(plot.size() != 2) {
-            continue;
-        }
-
-        bool log_scale = (plot.back().find("log") != std::string::npos) ? true : false;
-        AddHisto("DUTCanvas", "/corryvreckan/" + plot.front(), plot.back(), log_scale);
-    }
+    AddPlots("DUTCanvas", canvas_dutplots);
 
     // Set up the main frame before drawing
 
@@ -166,7 +158,39 @@ void OnlineMonitor::finalise() {
     LOG(DEBUG) << "Analysed " << eventNumber << " events";
 }
 
+void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas_plots) {
+    for(auto plot : canvas_plots) {
+        if(plot.size() != 2) {
+            continue;
+        }
+
+        // Do we need to plot with a LogY scale?
+        bool log_scale = (plot.back().find("log") != std::string::npos) ? true : false;
+
+        // Replace other placeholders and add histogram
+        std::string name = std::regex_replace(plot.front(), std::regex("%DUT%"), m_config.get<std::string>("DUT"));
+        name = std::regex_replace(name, std::regex("%REFERENCE%"), m_config.get<std::string>("reference"));
+
+        // Do we have a detector placeholder?
+        if(name.find("%DETECTOR%") != std::string::npos) {
+            LOG(DEBUG) << "Adding plot " << name << " for all detectors.";
+            for(auto& detector : get_detectors()) {
+                AddHisto(canvas_name,
+                         "/corryvreckan/" + std::regex_replace(name, std::regex("%DETECTOR%"), detector->name()),
+                         plot.back(),
+                         log_scale);
+            }
+        } else {
+            // Single histogram only.
+            AddHisto(canvas_name, "/corryvreckan/" + name, plot.back(), log_scale);
+        }
+    }
+}
+
 void OnlineMonitor::AddHisto(string canvasName, string histoName, string style, bool logy) {
+
+    // Add "corryvreckan" namespace:
+    // histoName = "/corryvreckan/" + histoName;
 
     TH1* histogram = (TH1*)gDirectory->Get(histoName.c_str());
     if(histogram) {

@@ -41,6 +41,8 @@ namespace corryvreckan {
         TApplication* app;
         GuiDisplay* gui;
 
+    private:
+        void AddPlots(std::string canvas_name, Matrix<std::string> canvas_plots);
         void AddHisto(std::string, std::string, std::string style = "", bool logy = false);
         void AddButton(std::string, std::string);
 
@@ -48,9 +50,11 @@ namespace corryvreckan {
         int eventNumber;
         int updateNumber;
 
-    private:
         std::string canvasTitle;
+
+        // Canvases and their plots:
         Matrix<std::string> canvas_dutplots;
+        Matrix<std::string> canvas_overview;
     };
 } // namespace corryvreckan
 #endif // OnlineMonitor_H
