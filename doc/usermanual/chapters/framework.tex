@@ -37,7 +37,20 @@ No interaction with the framework is possible during the reconstruction. Signals
 
 \section{The Clipboard}
 
-\todo{description of clipboard and interaction with it}
+The clipboard is the framework's infrastructure for temporary storing information during the event processing.
+Every module can access the clipboard and both read and write information.
+Collections or individual elements on the clipboard are accessed via their name, and is internally stored as map.
+
+The clipboard consists of two parts, a temporary storage and a persistent storage space.
+
+\subsection{Temporary Data Storage}
+The temporary data storage is only available during the processing of a single event.
+It is automatically cleared at the end of the event processing and has to be populated with new data in the new event to be processed.
+The temporary storage acts as the main data structure to communicate information between different modules and can hold multiple collections of \corry objects such as pixel hits, clusters or tracks.
+
+\subsection{Persistent Storage}
+The persistent storage is not cleared at the end of each event processing and can be used to store information used in multiple events.
+Currently this storage only allows for the caching of double-precision floating point numbers.
 
 
 \section{Global Framework Parameters}
