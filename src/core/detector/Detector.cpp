@@ -155,18 +155,17 @@ Configuration Detector::getConfiguration() {
     Configuration config(name());
     config.set("type", m_detectorType);
 
-    config.set("position", m_displacement);
-    config.set("postst", Units::display(m_displacement, {"um", "mm"}));
+    config.set("position", m_displacement, {"um", "mm"});
     config.set("orientation_mode", m_orientation_mode);
-    config.set("orientation", m_orientation);
+    config.set("orientation", m_orientation, {"deg"});
     auto npixels = ROOT::Math::DisplacementVector2D<Cartesian2D<int>>(m_nPixelsX, m_nPixelsY);
     config.set("number_of_pixels", npixels);
 
     // Size of the pixels
-    config.set("pixel_pitch", m_pitch);
+    config.set("pixel_pitch", m_pitch, {"um"});
 
     if(m_timingOffset != 0.) {
-        config.set("time_offset", m_timingOffset);
+        config.set("time_offset", m_timingOffset, {"ns", "us", "ms", "s"});
     }
 
     if(!m_maskfile_name.empty()) {
