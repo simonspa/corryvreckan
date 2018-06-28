@@ -316,8 +316,8 @@ void Alignment::finalise() {
         }
 
         LOG(STATUS) << detectorToAlign << " initial alignment: " << std::endl
-                    << "T" << display_vector(detector->displacement(), {"mm", "um"}) << " R"
-                    << display_vector(detector->rotation(), {"deg"});
+                    << "T" << Units::display(detector->displacement(), {"mm", "um"}) << " R"
+                    << Units::display(detector->rotation(), {"deg"});
 
         // Add the parameters to the fitter (z displacement not allowed to move!)
         if(m_alignPosition) {
@@ -369,13 +369,13 @@ void Alignment::finalise() {
             detector->rotationZ(residualFitter->GetParameter(5));
 
             LOG(INFO) << detector->name() << "/" << iteration << " dT"
-                      << display_vector(detector->displacement() - old_position, {"mm", "um"}) << " dR"
-                      << display_vector(detector->rotation() - old_orientation, {"deg"});
+                      << Units::display(detector->displacement() - old_position, {"mm", "um"}) << " dR"
+                      << Units::display(detector->rotation() - old_orientation, {"deg"});
         }
 
         LOG(STATUS) << detectorToAlign << " new alignment: " << std::endl
-                    << "T" << display_vector(detector->displacement(), {"mm", "um"}) << " R"
-                    << display_vector(detector->rotation(), {"deg"});
+                    << "T" << Units::display(detector->displacement(), {"mm", "um"}) << " R"
+                    << Units::display(detector->rotation(), {"deg"});
 
         return;
     }
@@ -463,8 +463,8 @@ void Alignment::finalise() {
             rotZ[detectorID].push_back(Units::convert(detector->rotation().Z() - old_orientation.Z(), "deg"));
 
             LOG(INFO) << detector->name() << "/" << iteration << " dT"
-                      << display_vector(detector->displacement() - old_position, {"mm", "um"}) << " dR"
-                      << display_vector(detector->rotation() - old_orientation, {"deg"});
+                      << Units::display(detector->displacement() - old_position, {"mm", "um"}) << " dR"
+                      << Units::display(detector->rotation() - old_orientation, {"deg"});
 
             // Now that this device is fitted, set parameter errors to 0 so that they
             // are not fitted again
@@ -499,8 +499,8 @@ void Alignment::finalise() {
         }
 
         LOG(STATUS) << detector->name() << " new alignment: " << std::endl
-                    << "T" << display_vector(detector->displacement(), {"mm", "um"}) << " R"
-                    << display_vector(detector->rotation(), {"deg"});
+                    << "T" << Units::display(detector->displacement(), {"mm", "um"}) << " R"
+                    << Units::display(detector->rotation(), {"deg"});
 
         // Fill the alignment convergence graphs:
         std::vector<double> iterations(nIterations);
