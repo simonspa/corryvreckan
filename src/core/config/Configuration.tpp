@@ -147,10 +147,11 @@ namespace corryvreckan {
         // NOTE: not the most elegant way to support arrays
         std::string str;
         for(auto& el : val) {
+            str += corryvreckan::to_string(el);
             str += ",";
-            str += corryvreckan::to_string(val);
         }
-        set(key, str);
+        str.pop_back();
+        config_[key] = str;
     }
 
     template <typename T> void Configuration::setDefault(const std::string& key, const T& val) {
