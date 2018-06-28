@@ -143,11 +143,20 @@ namespace corryvreckan {
         std::vector<std::string> getPathArray(const std::string& key, bool check_exists = false) const;
 
         /**
+         * @brief Set value for a key in a given type with units
+         * @param key Key to set value of
+         * @param val Value to assign to the key
+         * @param units List of possible output units
+         */
+        template <typename T> void set(const std::string& key, const T& val, std::initializer_list<std::string> units);
+
+        /**
          * @brief Set value for a key in a given type
          * @param key Key to set value of
          * @param val Value to assign to the key
          */
         template <typename T> void set(const std::string& key, const T& val);
+
         /**
          * @brief Set list of values for a key in a given type
          * @param key Key to set values of

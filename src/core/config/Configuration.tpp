@@ -129,6 +129,20 @@ namespace corryvreckan {
     template <typename T> void Configuration::set(const std::string& key, const T& val) {
         config_[key] = corryvreckan::to_string(val);
     }
+
+    template <typename T>
+    void Configuration::set(const std::string& key, const T& val, std::initializer_list<std::string> units) {
+        auto split = corryvreckan::split<Units::UnitType>(corryvreckan::to_string(val));
+
+        std::string ret_str;
+        for(auto& element : split) {
+            ret_str += Units::display(element, units);
+            ret_str += ",";
+        }
+        ret_str.pop_back();
+        config_[key] = ret_str;
+    }
+
     template <typename T> void Configuration::setArray(const std::string& key, const std::vector<T>& val) {
         // NOTE: not the most elegant way to support arrays
         std::string str;
