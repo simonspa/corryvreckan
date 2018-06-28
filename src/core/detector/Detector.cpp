@@ -48,9 +48,9 @@ Detector::Detector(const Configuration& config) {
     this->initialise();
 
     LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixelsX << "x" << m_nPixelsY << " px, pitch of "
-               << display_vector(m_pitch, {"mm", "um"});
-    LOG(TRACE) << "  Position:    " << display_vector(m_displacement, {"mm", "um"});
-    LOG(TRACE) << "  Orientation: " << display_vector(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
+               << Units::display(m_pitch, {"mm", "um"});
+    LOG(TRACE) << "  Position:    " << Units::display(m_displacement, {"mm", "um"});
+    LOG(TRACE) << "  Orientation: " << Units::display(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
     if(m_timingOffset > 0.) {
         LOG(TRACE) << "Timing offset: " << m_timingOffset;
     }
@@ -156,6 +156,7 @@ Configuration Detector::getConfiguration() {
     config.set("type", m_detectorType);
 
     config.set("position", m_displacement);
+    config.set("postst", Units::display(m_displacement, {"um", "mm"}));
     config.set("orientation_mode", m_orientation_mode);
     config.set("orientation", m_orientation);
     auto npixels = ROOT::Math::DisplacementVector2D<Cartesian2D<int>>(m_nPixelsX, m_nPixelsY);
