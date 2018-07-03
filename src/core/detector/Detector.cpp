@@ -176,7 +176,7 @@ Configuration Detector::getConfiguration() {
 }
 
 // Function to get global intercept with a track
-PositionVector3D<Cartesian3D<double>> Detector::getIntercept(Track* track) {
+PositionVector3D<Cartesian3D<double>> Detector::getIntercept(const Track* track) {
 
     // Get the distance from the plane to the track initial state
     double distance = (m_origin.X() - track->m_state.X()) * m_normal.X();
@@ -192,12 +192,12 @@ PositionVector3D<Cartesian3D<double>> Detector::getIntercept(Track* track) {
     return globalIntercept;
 }
 
-PositionVector3D<Cartesian3D<double>> Detector::getLocalIntercept(Track* track) {
+PositionVector3D<Cartesian3D<double>> Detector::getLocalIntercept(const Track* track) {
     return globalToLocal(getIntercept(track));
 }
 
 // Function to check if a track intercepts with a plane
-bool Detector::hasIntercept(Track* track, double pixelTolerance) {
+bool Detector::hasIntercept(const Track* track, double pixelTolerance) {
 
     // First, get the track intercept in global co-ordinates with the plane
     PositionVector3D<Cartesian3D<double>> globalIntercept = this->getIntercept(track);
@@ -244,11 +244,11 @@ bool Detector::hitMasked(Track* track, int tolerance) {
 }
 
 // Functions to get row and column from local position
-double Detector::getRow(PositionVector3D<Cartesian3D<double>> localPosition) {
+double Detector::getRow(const PositionVector3D<Cartesian3D<double>> localPosition) {
     double row = ((localPosition.Y() + m_pitch.Y() / 2.) / m_pitch.Y()) + m_nPixelsY / 2.;
     return row;
 }
-double Detector::getColumn(PositionVector3D<Cartesian3D<double>> localPosition) {
+double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosition) {
     double column = ((localPosition.X() + m_pitch.X() / 2.) / m_pitch.X()) + m_nPixelsX / 2.;
     return column;
 }
@@ -261,12 +261,12 @@ PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double row, dou
 }
 
 // Function to get in-pixel position
-double Detector::inPixelX(PositionVector3D<Cartesian3D<double>> localPosition) {
+double Detector::inPixelX(const PositionVector3D<Cartesian3D<double>> localPosition) {
     double column = getColumn(localPosition);
     double inPixelX = m_pitch.X() * (column - floor(column));
     return inPixelX;
 }
-double Detector::inPixelY(PositionVector3D<Cartesian3D<double>> localPosition) {
+double Detector::inPixelY(const PositionVector3D<Cartesian3D<double>> localPosition) {
     double row = getRow(localPosition);
     double inPixelY = m_pitch.Y() * (row - floor(row));
     return inPixelY;
