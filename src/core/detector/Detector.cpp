@@ -297,7 +297,16 @@ bool Detector::isWithinROI(const Track* track) {
 }
 
 // Check if cluster is within ROI and/or touches ROI border:
-bool Detector::isWithinROI(const Cluster* cluster) {}
+bool Detector::isWithinROI(Cluster* cluster) {
+
+    // Loop over all pixels of the cluster
+    for(auto& pixel : (*cluster->pixels())) {
+        if(winding_number(pixel->coordinates(), m_roi) == 0) {
+            return false;
+        }
+    }
+    return true;
+}
 
 /* isLeft(): tests if a point is Left|On|Right of an infinite line.
  * via: http://geomalgorithms.com/a03-_inclusion.html
