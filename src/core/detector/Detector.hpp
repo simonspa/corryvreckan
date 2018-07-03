@@ -43,6 +43,7 @@ namespace corryvreckan {
 
         ROOT::Math::XYVector size() { return ROOT::Math::XYVector(m_pitch.X() * m_nPixelsX, m_pitch.Y() * m_nPixelsY); }
         ROOT::Math::XYVector pitch() { return m_pitch; }
+        ROOT::Math::XYVector resolution() { return m_resolution; }
 
         int nPixelsX() { return m_nPixelsX; }
         int nPixelsY() { return m_nPixelsY; }
@@ -112,6 +113,7 @@ namespace corryvreckan {
         std::string m_detectorType;
         std::string m_detectorName;
         ROOT::Math::XYVector m_pitch;
+        ROOT::Math::XYVector m_resolution;
         int m_nPixelsX;
         int m_nPixelsY;
         double m_timingOffset;
