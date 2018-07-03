@@ -105,7 +105,7 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint globalToLocal(ROOT::Math::XYZPoint global) { return m_globalToLocal * global; };
 
         bool isWithinROI(const Track* track);
-        bool isWithinROI(const Cluster* cluster);
+        bool isWithinROI(Cluster* cluster);
 
     private:
         // Member variables

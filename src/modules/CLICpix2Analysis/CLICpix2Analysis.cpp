@@ -190,7 +190,7 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
         }
 
         // Check that track is within region of interest using winding number algorithm
-        if(!track->is_within_roi()) {
+        if(!detector->isWithinROI(track)) {
             is_within_roi = false;
         }
 
