@@ -103,6 +103,9 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint localToGlobal(ROOT::Math::XYZPoint local) { return m_localToGlobal * local; };
         ROOT::Math::XYZPoint globalToLocal(ROOT::Math::XYZPoint global) { return m_globalToLocal * global; };
 
+        bool isWithinROI(const Track* track);
+        bool isWithinROI(const Cluster* cluster);
+
     private:
         // Member variables
         // Detector information
@@ -112,6 +115,10 @@ namespace corryvreckan {
         int m_nPixelsX;
         int m_nPixelsY;
         double m_timingOffset;
+
+        std::vector<std::vector<int>> m_roi;
+        static int winding_number(std::pair<int, int> probe, std::vector<std::vector<int>> polygon);
+        inline static int isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2);
 
         // Displacement and rotation in x,y,z
         ROOT::Math::XYZPoint m_displacement;
