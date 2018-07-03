@@ -17,6 +17,7 @@ namespace corryvreckan {
 
         int row() const { return m_row; }
         int column() const { return m_column; }
+        std::pair<int, int> coordinates() { return std::make_pair(m_column, m_row); }
 
         int adc() const { return m_adc; }
         int tot() const { return adc(); }
@@ -33,7 +34,7 @@ namespace corryvreckan {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(Pixel, 3);
+        ClassDefOverride(Pixel, 4);
 
     private:
         // Member variables
