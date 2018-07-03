@@ -188,6 +188,7 @@ All supported rotations are extrinsic active rotations, i.e. the vector itself i
 \item The \parameter{pixel_pitch} is a two-dimensional vector defining the size of a single pixel.
 \item The \parameter{time_offset} can be used to shift the individual detector time frames of reference to e.g.\ account for time of flight effects between different detector planes by adding a fixed offset.
 \item Pixels to be masked in the offline analysis can be placed in a separate file specified by the \parameter{mask_file} parameter explained in detail in Section~\ref{sec:masking}.
+\item A region of interest in the given detector can be defined using the \parameter{roi} parameter. More details on this functionality cna be found in Section~\ref{sec:roi}.
 \end{itemize}
 
 An example configuration file describing a setup with one CLICpix2 detector (named \parameter{016_CP_PS} and two Timepix3~\cite{timepix} detectors (\parameter{W0013_D04}and \parameter{W0013_J05}) is the following:
@@ -233,3 +234,24 @@ The following syntax is within the mask file:
 \begin{warning}
 It should be noted that the individual event loader modules have to take care of discarding masked pixels manually, the \corry framework only parses the mask file and attaches the mask information to the respective detector. The event loader modules should thus always query the detector object for masks before adding new pixels to the data collections.
 \end{warning}
+
+\subsection{Defining a Region of Interest}
+
+The region of interest (ROI) feature of each detector allows marking tracks or clusters to be within a certain region on the respective detector.
+This information can be used in analyses to restrict the selection of tracks or clusters to certain regions of the device, e.g.\ to exclude known bad regions from the calculation of efficiencies.
+
+The ROI is defined as a polynomial in local pixel coordinates of the device using the \parameter{roi} keyword. A rectangle could, for example, be defined by providing the four corners of the shape via
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+roi = [1, 1], [1, 120], [60, 120], [60, 1]
+\end{minted}
+
+Internally, a winding number algorithm is used to determine whether a certain local position is within or outside the given polynomial shape.
+Two functions are provided by the detector API:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+// Returns "true" if the track is found to be within the ROI
+bool isWithinROI(const Track* track);
+// Returns "true" if the cluster as well as all its pixels are found to be within the ROI
+bool isWithinROI(const Cluster* cluster);
+\end{minted}
