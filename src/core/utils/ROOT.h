@@ -22,7 +22,7 @@
 #include <Math/PositionVector3D.h>
 #include <TString.h>
 
-#include "core/utils/string.h"
+#include "core/utils/text.h"
 #include "core/utils/type.h"
 
 namespace corryvreckan {
@@ -145,21 +145,6 @@ namespace corryvreckan {
     template <typename T, typename U>
     inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::PositionVector2D<T, U>& vec) {
         return os << "(" << vec.x() << "," << vec.y() << ")";
-    }
-
-    /**
-     * @brief Utility function to display vector types with units
-     * @note Works for all vector types that can be converted to string using \ref StringConversions "the string utilities".
-     */
-    template <typename T> inline std::string display_vector(T inp, std::initializer_list<std::string> units) {
-        auto split = corryvreckan::split<Units::UnitType>(corryvreckan::to_string(inp));
-        std::string ret_str = "(";
-        for(auto& element : split) {
-            ret_str += Units::display(element, units);
-            ret_str += ",";
-        }
-        ret_str[ret_str.size() - 1] = ')';
-        return ret_str;
     }
 } // namespace corryvreckan
 

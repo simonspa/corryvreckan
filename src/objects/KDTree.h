@@ -6,7 +6,6 @@
 #include "Object.hpp"
 #include "TKDTree.h"
 #include "core/utils/log.h"
-#include "core/utils/unit.h"
 
 /*
 
@@ -83,7 +82,7 @@ namespace corryvreckan {
         // Function to get back all clusters within a given time period
         Clusters getAllClustersInTimeWindow(Cluster* cluster, double timeWindow) {
 
-            LOG(TRACE) << "Getting all clusters in time window " << Units::display(timeWindow, {"ns", "us", "s"});
+            LOG(TRACE) << "Getting all clusters in time window " << timeWindow << "ns";
             // Find out which iterator number this cluster corresponds to
             //    int iterator = iteratorNumber[cluster];
 
