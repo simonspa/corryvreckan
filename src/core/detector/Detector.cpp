@@ -285,6 +285,11 @@ double Detector::inPixelY(const PositionVector3D<Cartesian3D<double>> localPosit
 // Check if track position is within ROI:
 bool Detector::isWithinROI(const Track* track) {
 
+    // Empty region of interest:
+    if(m_roi.empty()) {
+        return true;
+    }
+
     // Check that track is within region of interest using winding number algorithm
     auto localIntercept = this->getLocalIntercept(track);
     auto coordinates = std::make_pair(this->getColumn(localIntercept), this->getRow(localIntercept));
@@ -298,6 +303,11 @@ bool Detector::isWithinROI(const Track* track) {
 
 // Check if cluster is within ROI and/or touches ROI border:
 bool Detector::isWithinROI(Cluster* cluster) {
+
+    // Empty region of interest:
+    if(m_roi.empty()) {
+        return true;
+    }
 
     // Loop over all pixels of the cluster
     for(auto& pixel : (*cluster->pixels())) {
