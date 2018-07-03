@@ -1,8 +1,9 @@
 #ifndef CLUSTER_H
 #define CLUSTER_H 1
 
+#include <Math/Point3D.h>
+#include <Math/Vector2D.h>
 #include <iostream>
-#include "Math/Point3D.h"
 #include "Pixel.h"
 
 /*
@@ -29,8 +30,7 @@ namespace corryvreckan {
         Cluster(Cluster* cluster) {
             m_global = cluster->global();
             m_local = cluster->local();
-            m_error_x = cluster->errorX();
-            m_error_y = cluster->errorY();
+            m_error = ROOT::Math::XYVector(cluster->errorX(), cluster->errorY());
             m_detectorID = cluster->detectorID();
             m_timestamp = cluster->timestamp();
             m_columnWidth = cluster->columnWidth();
@@ -56,9 +56,9 @@ namespace corryvreckan {
         double row() { return m_row; }
         double column() { return m_column; }
         double tot() { return m_tot; }
-        double error() { return sqrt(m_error_x * m_error_x + m_error_y * m_error_y); }
-        double errorX() { return m_error_x; }
-        double errorY() { return m_error_y; }
+        double error() { return sqrt(m_error.X() * m_error.X() + m_error.Y() * m_error.Y()); }
+        double errorX() { return m_error.X(); }
+        double errorY() { return m_error.Y(); }
 
         bool isSplit() { return m_split; }
         void setSplit(bool split) { m_split = split; }
@@ -107,8 +107,9 @@ namespace corryvreckan {
             m_local.SetY(y);
             m_local.SetZ(z);
         }
-        void setErrorX(double error) { m_error_x = error; }
-        void setErrorY(double error) { m_error_y = error; }
+        void setErrorX(double error) { m_error.SetX(error); }
+        void setErrorY(double error) { m_error.SetY(error); }
+        void setError(ROOT::Math::XYVector error) { m_error = error; }
 
     private:
         // Member variables
@@ -116,8 +117,7 @@ namespace corryvreckan {
         double m_row;
         double m_column;
         double m_tot;
-        double m_error_x;
-        double m_error_y;
+        ROOT::Math::XYVector m_error;
         double m_columnWidth;
         double m_rowWidth;
         bool m_split;
@@ -129,7 +129,7 @@ namespace corryvreckan {
         std::map<int, bool> m_columnHits;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Cluster, 6)
+        ClassDef(Cluster, 7)
     };
 
     // Vector type declaration
