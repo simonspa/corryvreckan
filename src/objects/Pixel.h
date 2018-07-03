@@ -13,7 +13,7 @@ namespace corryvreckan {
         virtual ~Pixel() {}
         Pixel(std::string detectorID, int row, int col, int tot) : Pixel(detectorID, row, col, tot, 0.) {}
         Pixel(std::string detectorID, int row, int col, int tot, double timestamp)
-            : Object(detectorID, timestamp), m_row(row), m_column(col), m_adc(tot) {}
+            : Object(detectorID, timestamp), m_row(row), m_column(col), m_adc(tot), m_charge(tot) {}
 
         int row() const { return m_row; }
         int column() const { return m_column; }
@@ -40,6 +40,7 @@ namespace corryvreckan {
         int m_row;
         int m_column;
         int m_adc;
+
         double m_charge;
     };
 

@@ -28,9 +28,9 @@ void Clicpix2EventLoader::initialise() {
     // Open the root directory
     DIR* directory = opendir(inputDirectory.c_str());
     if(directory == NULL) {
-        LOG(ERROR) << "Directory " << inputDirectory << " does not exist";
-        return;
+        throw ModuleError("Directory " + inputDirectory + " does not exist");
     }
+
     dirent* entry;
     dirent* file;
 
@@ -52,8 +52,7 @@ void Clicpix2EventLoader::initialise() {
     }
 
     if(m_matrix.empty()) {
-        LOG(ERROR) << "No matrix configuration file found in " << inputDirectory;
-        return;
+        throw ModuleError("No matrix configuration file found in " + inputDirectory);
     }
 
     // Read the matrix configuration:

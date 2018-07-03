@@ -44,6 +44,7 @@ Detector::Detector(const Configuration& config) {
     m_nPixelsX = npixels.x();
     m_nPixelsY = npixels.y();
     m_timingOffset = config.get<double>("time_offset", 0.0);
+    m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
 
     this->initialise();
 
@@ -172,11 +173,13 @@ Configuration Detector::getConfiguration() {
         config.set("mask_file", m_maskfile_name);
     }
 
+    config.setMatrix("roi", m_roi);
+
     return config;
 }
 
 // Function to get global intercept with a track
-PositionVector3D<Cartesian3D<double>> Detector::getIntercept(Track* track) {
+PositionVector3D<Cartesian3D<double>> Detector::getIntercept(const Track* track) {
 
     // Get the distance from the plane to the track initial state
     double distance = (m_origin.X() - track->m_state.X()) * m_normal.X();
@@ -192,8 +195,12 @@ PositionVector3D<Cartesian3D<double>> Detector::getIntercept(Track* track) {
     return globalIntercept;
 }
 
+PositionVector3D<Cartesian3D<double>> Detector::getLocalIntercept(const Track* track) {
+    return globalToLocal(getIntercept(track));
+}
+
 // Function to check if a track intercepts with a plane
-bool Detector::hasIntercept(Track* track, double pixelTolerance) {
+bool Detector::hasIntercept(const Track* track, double pixelTolerance) {
 
     // First, get the track intercept in global co-ordinates with the plane
     PositionVector3D<Cartesian3D<double>> globalIntercept = this->getIntercept(track);
@@ -240,11 +247,11 @@ bool Detector::hitMasked(Track* track, int tolerance) {
 }
 
 // Functions to get row and column from local position
-double Detector::getRow(PositionVector3D<Cartesian3D<double>> localPosition) {
+double Detector::getRow(const PositionVector3D<Cartesian3D<double>> localPosition) {
     double row = ((localPosition.Y() + m_pitch.Y() / 2.) / m_pitch.Y()) + m_nPixelsY / 2.;
     return row;
 }
-double Detector::getColumn(PositionVector3D<Cartesian3D<double>> localPosition) {
+double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosition) {
     double column = ((localPosition.X() + m_pitch.X() / 2.) / m_pitch.X()) + m_nPixelsX / 2.;
     return column;
 }
@@ -257,13 +264,91 @@ PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double row, dou
 }
 
 // Function to get in-pixel position
-double Detector::inPixelX(PositionVector3D<Cartesian3D<double>> localPosition) {
+double Detector::inPixelX(const PositionVector3D<Cartesian3D<double>> localPosition) {
     double column = getColumn(localPosition);
     double inPixelX = m_pitch.X() * (column - floor(column));
     return inPixelX;
 }
-double Detector::inPixelY(PositionVector3D<Cartesian3D<double>> localPosition) {
+double Detector::inPixelY(const PositionVector3D<Cartesian3D<double>> localPosition) {
     double row = getRow(localPosition);
     double inPixelY = m_pitch.Y() * (row - floor(row));
     return inPixelY;
+}
+
+// Check if track position is within ROI:
+bool Detector::isWithinROI(const Track* track) {
+
+    // Check that track is within region of interest using winding number algorithm
+    auto localIntercept = this->getLocalIntercept(track);
+    auto coordinates = std::make_pair(this->getColumn(localIntercept), this->getRow(localIntercept));
+    if(winding_number(coordinates, m_roi) != 0) {
+        return true;
+    }
+
+    // Outside ROI:
+    return false;
+}
+
+// Check if cluster is within ROI and/or touches ROI border:
+bool Detector::isWithinROI(const Cluster* cluster) {}
+
+/* isLeft(): tests if a point is Left|On|Right of an infinite line.
+ * via: http://geomalgorithms.com/a03-_inclusion.html
+ *    Input:  three points P0, P1, and P2
+ *    Return: >0 for P2 left of the line through P0 and P1
+ *            =0 for P2  on the line
+ *            <0 for P2  right of the line
+ *    See: Algorithm 1 "Area of Triangles and Polygons"
+ */
+int Detector::isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2) {
+    return ((pt1.first - pt0.first) * (pt2.second - pt0.second) - (pt2.first - pt0.first) * (pt1.second - pt0.second));
+}
+
+/* Winding number test for a point in a polygon
+ * via: http://geomalgorithms.com/a03-_inclusion.html
+ *      Input:   x, y = a point,
+ *               polygon = vector of vertex points of a polygon V[n+1] with V[n]=V[0]
+ *      Return:  wn = the winding number (=0 only when P is outside)
+ */
+int Detector::winding_number(std::pair<int, int> probe, std::vector<std::vector<int>> polygon) {
+    // Two points don't make an area
+    if(polygon.size() < 3) {
+        LOG(DEBUG) << "No ROI given.";
+        return 0;
+    }
+
+    int wn = 0; // the  winding number counter
+
+    // loop through all edges of the polygon
+
+    // edge from V[i] to  V[i+1]
+    for(int i = 0; i < polygon.size(); i++) {
+        auto point_this = std::make_pair(polygon.at(i).at(0), polygon.at(i).at(1));
+        auto point_next = (i + 1 < polygon.size() ? std::make_pair(polygon.at(i + 1).at(0), polygon.at(i + 1).at(1))
+                                                  : std::make_pair(polygon.at(0).at(0), polygon.at(0).at(1)));
+
+        // start y <= P.y
+        if(point_this.second <= probe.second) {
+            // an upward crossing
+            if(point_next.second > probe.second) {
+                // P left of  edge
+                if(isLeft(point_this, point_next, probe) > 0) {
+                    // have  a valid up intersect
+                    ++wn;
+                }
+            }
+        } else {
+            // start y > P.y (no test needed)
+
+            // a downward crossing
+            if(point_next.second <= probe.second) {
+                // P right of  edge
+                if(isLeft(point_this, point_next, probe) < 0) {
+                    // have  a valid down intersect
+                    --wn;
+                }
+            }
+        }
+    }
+    return wn;
 }

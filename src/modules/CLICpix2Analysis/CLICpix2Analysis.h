@@ -24,7 +24,7 @@ namespace corryvreckan {
 
     private:
         // Histograms
-        TH2F *hClusterMapAssoc, *hHitMapAssoc;
+        TH2F *hClusterMapAssoc, *hHitMapAssoc, *hHitMapROI;
         TProfile2D *hClusterSizeMapAssoc, *hClusterToTMapAssoc;
 
         TH1F* hPixelToTAssoc;
@@ -36,8 +36,13 @@ namespace corryvreckan {
         TH1F *residualsX1pix, *residualsY1pix;
         TH1F *residualsX2pix, *residualsY2pix;
 
-        TH1F* clusterTotAssoc;
+        TH1F *clusterTotAssoc, *clusterTotAssocNorm;
         TH1F* clusterSizeAssoc;
+
+        TProfile2D *rmsxvsxmym, *rmsyvsxmym, *rmsxyvsxmym;
+        TProfile2D *qvsxmym, *qMoyalvsxmym, *pxqvsxmym;
+        TProfile2D* npxvsxmym;
+        TH2F *npx1vsxmym, *npx2vsxmym, *npx3vsxmym, *npx4vsxmym;
 
         TProfile2D* hPixelEfficiencyMap;
         TProfile2D* hChipEfficiencyMap;
@@ -57,6 +62,7 @@ namespace corryvreckan {
         std::string m_DUT;
         double spatialCut, m_timeCutFrameEdge;
         double chi2ndofCut;
+        std::vector<std::vector<int>> m_roi;
     };
 } // namespace corryvreckan
 
