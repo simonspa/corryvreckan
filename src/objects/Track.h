@@ -171,9 +171,6 @@ namespace corryvreckan {
             return point;
         }
 
-        bool is_within_roi() { return m_region_of_interest; }
-        void set_within_roi(bool roi) { m_region_of_interest = roi; }
-
         // Member variables
         Clusters m_trackClusters;
         Clusters m_associatedClusters;
@@ -182,10 +179,10 @@ namespace corryvreckan {
         double m_chi2ndof;
         ROOT::Math::XYZPoint m_state;
         ROOT::Math::XYZVector m_direction;
-        bool m_region_of_interest{false};
 
-        // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Track, 2)
+        // ROOT I/O class definition - update version number when you change this
+        // class!
+        ClassDef(Track, 1)
     };
 
     // Vector type declaration
