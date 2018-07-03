@@ -31,6 +31,10 @@ Detector::Detector(const Configuration& config) {
     auto npixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
     // Size of the pixels
     m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
+
+    // Intrinsic position resolution, defaults to 4um:
+    m_resolution = config.get<ROOT::Math::XYVector>("resolution", ROOT::Math::XYVector(0.004, 0.004));
+
     m_detectorName = config.getName();
 
     if(Units::convert(m_pitch.X(), "mm") >= 1 or Units::convert(m_pitch.Y(), "mm") >= 1 or
@@ -164,6 +168,9 @@ Configuration Detector::getConfiguration() {
 
     // Size of the pixels
     config.set("pixel_pitch", m_pitch, {"um"});
+
+    // Intrinsic resolution:
+    config.set("resolution", m_resolution, {"um"});
 
     if(m_timingOffset != 0.) {
         config.set("time_offset", m_timingOffset, {"ns", "us", "ms", "s"});
