@@ -8,12 +8,11 @@ ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<Detec
     : Module(std::move(config), std::move(detectors)) {
 
     m_timewalkCorrectionFactors = m_config.getArray<double>("timewalkCorrectionFactors", std::vector<double>());
-    m_timestampPeriod = m_config.get<double>("timestampPeriod", Units::convert(25, "ns"));
 
     m_inputDirectory = m_config.get<std::string>("inputDirectory");
     m_calibrationFile = m_config.get<std::string>("calibrationFile", std::string());
 
-    m_clockCycle = m_config.get<int>("clockCycle", Units::convert(25, "ns"));
+    m_clockCycle = m_config.get<double>("clockCycle", Units::convert(25, "ns"));
 
     // Allow reading of legacy data format using the Karlsruhe readout system:
     m_legacyFormat = m_config.get<bool>("legacyFormat", false);
@@ -42,7 +41,7 @@ void ATLASpixEventLoader::initialise() {
     while((entry = readdir(directory))) {
         // Check for the data file
         string filename = m_inputDirectory + "/" + entry->d_name;
-        if(filename.find(".dat") != string::npos) {
+        if(filename.find("data.txt") != string::npos) {
             m_filename = filename;
         }
     }
@@ -91,8 +90,7 @@ void ATLASpixEventLoader::initialise() {
         LOG(INFO) << ts;
     }
 
-    m_clockFactor = m_timestampPeriod / 25;
-    LOG(INFO) << "Applying clock scaling factor: " << m_clockFactor << std::endl;
+    LOG(INFO) << "Using clock cycle length of " << m_clockCycle << std::endl;
 
     // Initialise member variables
     m_eventNumber = 0;
@@ -139,6 +137,7 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
 }
 
 Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_time) {
+
     // Pixel container
     Pixels* pixels = new Pixels();
 
@@ -147,7 +146,6 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
 
     // Read file and load data
     std::string line_str;
-    std::streampos oldpos;
     while(getline(m_file, line_str)) {
         double timestamp;
         std::istringstream line(line_str);
@@ -168,10 +166,10 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
             line >> scol >> srow >> sts1 >> sts2 >> stot >> sfpga_ts >> str_cnt >> sbin_cnt;
 
             // Only convert used numbers:
-            int col = std::stoi(scol);
-            int row = std::stoi(srow);
-            int fpga_ts = std::stoi(sfpga_ts);
-            int tot = std::stoi(stot);
+            long long col = std::stoll(scol);
+            long long row = std::stoll(srow);
+            long long fpga_ts = std::stoll(sfpga_ts);
+            long long tot = std::stoll(stot);
 
             // Convert the timestamp to nanoseconds:
             timestamp = fpga_ts * m_clockCycle;
@@ -183,6 +181,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
                            << Units::display(timestamp, {"s", "us", "ns"}) << " > "
                            << Units::display(end_time, {"s", "us", "ns"}) << ")";
                 // Rewind to previous position:
+		LOG(TRACE) << "Rewinding to file pointer : " << oldpos;
                 m_file.seekg(oldpos);
                 break;
             }
@@ -207,6 +206,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
         }
 
         // Store this position in the file in case we need to rewind:
+	LOG(TRACE) << "Storing file pointer position: " << m_file.tellg();
         oldpos = m_file.tellg();
     }
 
