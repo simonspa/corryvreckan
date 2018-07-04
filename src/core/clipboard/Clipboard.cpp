@@ -1,4 +1,5 @@
 #include "Clipboard.hpp"
+#include "exceptions.h"
 #include "objects/Object.hpp"
 
 using namespace corryvreckan;
@@ -24,7 +25,15 @@ Objects* Clipboard::get(std::string name, std::string type) {
 }
 
 double Clipboard::get_persistent(std::string name) {
-    return m_persistent_data[name];
+    try {
+        return m_persistent_data.at(name);
+    } catch(std::out_of_range&) {
+        throw MissingDataError("Key " + name + " not available on clipboard");
+    }
+}
+
+bool Clipboard::has_persistent(std::string name) {
+    return m_persistent_data.find(name) != m_persistent_data.end();
 }
 
 void Clipboard::clear() {
