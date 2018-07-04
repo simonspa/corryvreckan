@@ -2,10 +2,8 @@
  * @file
  * @brief Tags for type dispatching and run time type identification
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied
- * verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities
- * granted to it by virtue of its status as an
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -21,14 +19,12 @@
 namespace corryvreckan {
     /**
      * @brief Tag for specific type
-     * @note This tag is needed in the \ref ::corryvreckan namespace due to ADL
-     * lookup
+     * @note This tag is needed in the \ref ::corryvreckan namespace due to ADL lookup
      */
     template <typename T> struct type_tag {};
     /**
      * @brief Empty tag
-     * @note This tag is needed in the \ref ::corryvreckan namespace due to ADL
-     * lookup
+     * @note This tag is needed in the \ref ::corryvreckan namespace due to ADL lookup
      */
     struct empty_tag {};
 
@@ -54,8 +50,7 @@ namespace corryvreckan {
     /**
      * @brief Demangle the type to human-readable form if it is mangled
      * @param name The possibly mangled name
-     * @param keep_corryvreckan If true the corryvreckan namespace tag will be kept,
-     * otherwise it is removed
+     * @param keep_corryvreckan If true the corryvreckan namespace tag will be kept, otherwise it is removed
      */
     inline std::string demangle(const char* name, bool keep_corryvreckan = false) { return name; }
 #endif

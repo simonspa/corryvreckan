@@ -49,6 +49,8 @@ void CLICpix2Analysis::initialise() {
     // Per-pixel histograms
     hHitMapAssoc =
         new TH2F("hitMapAssoc", "hitMapAssoc", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
+    hHitMapROI =
+        new TH2F("hitMapROI", "hitMapROI", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
     hPixelToTAssoc = new TH1F("pixelToTAssoc", "pixelToTAssoc", 32, 0, 31);
     hPixelToTMapAssoc = new TProfile2D("pixelToTMapAssoc",
                                        "pixelToTMapAssoc",
@@ -71,19 +73,50 @@ void CLICpix2Analysis::initialise() {
     residualsY2pix = new TH1F("residualsY2pix", "residualsY2pix", 400, -0.2, 0.2);
 
     clusterTotAssoc = new TH1F("clusterTotAssociated", "clusterTotAssociated", 10000, 0, 10000);
+    clusterTotAssocNorm = new TH1F("clusterTotAssociatedNormalized", "clusterTotAssociatedNormalized", 10000, 0, 10000);
     clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
 
+    // In-pixel studies:
+    auto pitch_x = Units::convert(det->pitch().X(), "um");
+    auto pitch_y = Units::convert(det->pitch().Y(), "um");
+    auto mod_axes = "x_{track} mod " + std::to_string(pitch_x) + "#mum;y_{track} mod " + std::to_string(pitch_y) + "#mum;";
+
+    std::string title = "DUT x resolution;" + mod_axes + "MAD(#Deltax) [#mum]";
+    rmsxvsxmym = new TProfile2D("rmsxvsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y);
+
+    title = "DUT y resolution;" + mod_axes + "MAD(#Deltay) [#mum]";
+    rmsyvsxmym = new TProfile2D("rmsyvsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y);
+
+    title = "DUT resolution;" + mod_axes + "MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
+    rmsxyvsxmym = new TProfile2D("rmsxyvsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y);
+
+    title = "DUT cluster charge map;" + mod_axes + "<cluster charge> [ke]";
+    qvsxmym = new TProfile2D("qvsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y, 0, 250);
+
+    title = "DUT cluster charge map, Moyal approx;" + mod_axes + "cluster charge MPV [ke]";
+    qMoyalvsxmym = new TProfile2D("qMoyalvsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y, 0, 250);
+
+    title = "DUT seed pixel charge map;" + mod_axes + "<seed pixel charge> [ke]";
+    pxqvsxmym = new TProfile2D("pxqvsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y, 0, 250);
+
+    title = "DUT cluster size map;" + mod_axes + "<pixels/cluster>";
+    npxvsxmym = new TProfile2D("npxvsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y, 0, 4.5);
+
+    title = "DUT 1-pixel cluster map;" + mod_axes + "clusters";
+    npx1vsxmym = new TH2F("npx1vsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y);
+
+    title = "DUT 2-pixel cluster map;" + mod_axes + "clusters";
+    npx2vsxmym = new TH2F("npx2vsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y);
+
+    title = "DUT 3-pixel cluster map;" + mod_axes + "clusters";
+    npx3vsxmym = new TH2F("npx3vsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y);
+
+    title = "DUT 4-pixel cluster map;" + mod_axes + "clusters";
+    npx4vsxmym = new TH2F("npx4vsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y);
+
     // Efficiency maps
-    hPixelEfficiencyMap = new TProfile2D("hPixelEfficiencyMap",
-                                         "hPixelEfficiencyMap",
-                                         Units::convert(det->pitch().X(), "um"),
-                                         0,
-                                         Units::convert(det->pitch().X(), "um"),
-                                         Units::convert(det->pitch().Y(), "um"),
-                                         0,
-                                         Units::convert(det->pitch().Y(), "um"),
-                                         0,
-                                         1);
+    hPixelEfficiencyMap =
+        new TProfile2D("hPixelEfficiencyMap", "hPixelEfficiencyMap", pitch_x, 0, pitch_x, pitch_y, 0, pitch_y, 0, 1);
     hChipEfficiencyMap = new TProfile2D("hChipEfficiencyMap",
                                         "hChipEfficiencyMap",
                                         det->nPixelsX(),
@@ -134,36 +167,30 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
 
     // Loop over all tracks
     for(auto& track : (*tracks)) {
-        // Flag for efficiency calculation
-        bool cluster_associated = false;
+        // Flags to select clusters and tracks
+        bool has_associated_cluster = false;
+        bool is_within_roi = true;
 
         LOG(DEBUG) << "Looking at next track";
 
         // Cut on the chi2/ndof
         if(track->chi2ndof() > chi2ndofCut) {
+            LOG(DEBUG) << " - track discarded due to Chi2/ndof";
             continue;
         }
 
         // Check if it intercepts the DUT
-        PositionVector3D<Cartesian3D<double>> globalIntercept = detector->getIntercept(track);
+        auto globalIntercept = detector->getIntercept(track);
+        auto localIntercept = detector->globalToLocal(globalIntercept);
+
         if(!detector->hasIntercept(track, 1.)) {
             LOG(DEBUG) << " - track outside DUT area";
             continue;
         }
 
-        // Discard tracks which are very close to the frame edges
-        if(fabs(track->timestamp() - clipboard->get_persistent("eventEnd")) < m_timeCutFrameEdge) {
-            // Late edge - eventEnd points to the end of the frame`
-            LOG(DEBUG) << " - track close to end of readout frame: "
-                       << Units::display(fabs(track->timestamp() - clipboard->get_persistent("eventEnd")), {"us", "ns"})
-                       << " at " << Units::display(track->timestamp(), {"us"});
-            continue;
-        } else if(fabs(track->timestamp() - clipboard->get_persistent("eventStart")) < m_timeCutFrameEdge) {
-            // Early edge - eventStart points to the beginning of the frame
-            LOG(DEBUG) << " - track close to start of readout frame: "
-                       << Units::display(fabs(track->timestamp() - clipboard->get_persistent("eventStart")), {"us", "ns"})
-                       << " at " << Units::display(track->timestamp(), {"us"});
-            continue;
+        // Check that track is within region of interest using winding number algorithm
+        if(!detector->isWithinROI(track)) {
+            is_within_roi = false;
         }
 
         // Check that it doesn't go through/near a masked pixel
@@ -172,7 +199,27 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
             continue;
         }
 
-        // FIXME check that track is within fiducial area
+        // Discard tracks which are very close to the frame edges
+        if(fabs(track->timestamp() - clipboard->get_persistent("currentTime")) < m_timeCutFrameEdge) {
+            // Late edge - the currentTime has been updated by Timexpi3EventLoader to point to the end of the frame`
+            LOG(DEBUG) << " - track close to end of readout frame: "
+                       << Units::display(fabs(track->timestamp() - clipboard->get_persistent("currentTime")), {"us", "ns"})
+                       << " at " << Units::display(track->timestamp(), {"us"});
+            continue;
+        } else if(fabs(track->timestamp() - clipboard->get_persistent("currentTime") +
+                       clipboard->get_persistent("eventLength")) < m_timeCutFrameEdge) {
+            // Early edge - subtract the eventLength from the current time to see the beginning of the frame
+            LOG(DEBUG) << " - track close to start of readout frame: "
+                       << Units::display(fabs(track->timestamp() - clipboard->get_persistent("currentTime") +
+                                              clipboard->get_persistent("eventLength")),
+                                         {"us", "ns"})
+                       << " at " << Units::display(track->timestamp(), {"us"});
+            continue;
+        }
+
+        // Calculate in-pixel position of track in microns
+        double xmod = Units::convert(detector->inPixelX(localIntercept), "um");
+        double ymod = Units::convert(detector->inPixelY(localIntercept), "um");
 
         // Get the DUT clusters from the clipboard
         Clusters* clusters = (Clusters*)clipboard->get(m_DUT, "clusters");
@@ -206,7 +253,7 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
                            << Units::display(yabsdistance, {"um"}) << ")";
 
                 // We now have an associated cluster
-                cluster_associated = true;
+                has_associated_cluster = true;
                 // FIXME need to understand local coord of clusters - why shifted? what's normal?
                 auto clusterLocal = detector->globalToLocal(cluster->global());
                 hClusterMapAssoc->Fill(detector->getColumn(clusterLocal), detector->getRow(clusterLocal));
@@ -216,9 +263,17 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
 
                 clusterTotAssoc->Fill(cluster->tot());
 
+                // Cluster charge normalized to path length in sensor:
+                double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
+                auto normalized_charge = cluster->tot() * norm;
+                clusterTotAssocNorm->Fill(normalized_charge);
+
                 // Fill per-pixel histograms
                 for(auto& pixel : (*cluster->pixels())) {
                     hHitMapAssoc->Fill(pixel->column(), pixel->row());
+                    if(is_within_roi) {
+                        hHitMapROI->Fill(pixel->column(), pixel->row());
+                    }
                     hPixelToTAssoc->Fill(pixel->tot());
                     hPixelToTMapAssoc->Fill(pixel->column(), pixel->row(), pixel->tot());
                 }
@@ -240,6 +295,31 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
 
                 clusterSizeAssoc->Fill(cluster->size());
 
+                // Fill in-pixel plots: (all as function of track position within pixel cell)
+                if(is_within_roi) {
+                    qvsxmym->Fill(xmod, ymod, cluster->tot());                     // cluster charge profile
+                    qMoyalvsxmym->Fill(xmod, ymod, exp(-normalized_charge / 3.5)); // norm. cluster charge profile
+
+                    // mean charge of cluster seed
+                    pxqvsxmym->Fill(xmod, ymod, cluster->getSeedPixel()->charge());
+
+                    // mean cluster size
+                    npxvsxmym->Fill(xmod, ymod, cluster->size());
+                    if(cluster->size() == 1)
+                        npx1vsxmym->Fill(xmod, ymod);
+                    if(cluster->size() == 2)
+                        npx2vsxmym->Fill(xmod, ymod);
+                    if(cluster->size() == 3)
+                        npx3vsxmym->Fill(xmod, ymod);
+                    if(cluster->size() == 4)
+                        npx4vsxmym->Fill(xmod, ymod);
+
+                    // residual MAD x, y, combined (sqrt(x*x + y*y))
+                    rmsxvsxmym->Fill(xmod, ymod, xabsdistance);
+                    rmsyvsxmym->Fill(xmod, ymod, yabsdistance);
+                    rmsxyvsxmym->Fill(xmod, ymod, fabs(sqrt(xdistance * xdistance + ydistance * ydistance)));
+                }
+
                 track->addAssociatedCluster(cluster);
                 hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
 
@@ -249,13 +329,14 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
         }
 
         // Efficiency plots:
-        hGlobalEfficiencyMap->Fill(globalIntercept.X(), globalIntercept.Y(), cluster_associated);
+        hGlobalEfficiencyMap->Fill(globalIntercept.X(), globalIntercept.Y(), has_associated_cluster);
+        hChipEfficiencyMap->Fill(
+            detector->getColumn(localIntercept), detector->getRow(localIntercept), has_associated_cluster);
 
-        auto localIntercept = detector->globalToLocal(globalIntercept);
-        hChipEfficiencyMap->Fill(detector->getColumn(localIntercept), detector->getRow(localIntercept), cluster_associated);
-        hPixelEfficiencyMap->Fill(Units::convert(detector->inPixelX(localIntercept), "um"),
-                                  Units::convert(detector->inPixelY(localIntercept), "um"),
-                                  cluster_associated);
+        // For pixels, only look at the ROI:
+        if(is_within_roi) {
+            hPixelEfficiencyMap->Fill(xmod, ymod, has_associated_cluster);
+        }
     }
 
     // Return value telling analysis to keep running

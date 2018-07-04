@@ -12,7 +12,7 @@ namespace corryvreckan {
      *
      *  @author Christoph Hombach
      *  @date   2012-06-19
-    */
+     */
     class Millepede : public Module {
     public:
         /// Constructor

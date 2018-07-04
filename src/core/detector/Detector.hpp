@@ -43,6 +43,7 @@ namespace corryvreckan {
 
         ROOT::Math::XYVector size() { return ROOT::Math::XYVector(m_pitch.X() * m_nPixelsX, m_pitch.Y() * m_nPixelsY); }
         ROOT::Math::XYVector pitch() { return m_pitch; }
+        ROOT::Math::XYVector resolution() { return m_resolution; }
 
         int nPixelsX() { return m_nPixelsX; }
         int nPixelsY() { return m_nPixelsY; }
@@ -79,10 +80,12 @@ namespace corryvreckan {
         void update();
 
         // Function to get global intercept with a track
-        PositionVector3D<Cartesian3D<double>> getIntercept(Track* track);
+        PositionVector3D<Cartesian3D<double>> getIntercept(const Track* track);
+        // Function to get local intercept with a track
+        PositionVector3D<Cartesian3D<double>> getLocalIntercept(const Track* track);
 
         // Function to check if a track intercepts with a plane
-        bool hasIntercept(Track* track, double pixelTolerance = 0.);
+        bool hasIntercept(const Track* track, double pixelTolerance = 0.);
 
         // Function to check if a track goes through/near a masked pixel
         bool hitMasked(Track* track, int tolerance = 0.);
@@ -101,15 +104,23 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint localToGlobal(ROOT::Math::XYZPoint local) { return m_localToGlobal * local; };
         ROOT::Math::XYZPoint globalToLocal(ROOT::Math::XYZPoint global) { return m_globalToLocal * global; };
 
+        bool isWithinROI(const Track* track);
+        bool isWithinROI(Cluster* cluster);
+
     private:
         // Member variables
         // Detector information
         std::string m_detectorType;
         std::string m_detectorName;
         ROOT::Math::XYVector m_pitch;
+        ROOT::Math::XYVector m_resolution;
         int m_nPixelsX;
         int m_nPixelsY;
         double m_timingOffset;
+
+        std::vector<std::vector<int>> m_roi;
+        static int winding_number(std::pair<int, int> probe, std::vector<std::vector<int>> polygon);
+        inline static int isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2);
 
         // Displacement and rotation in x,y,z
         ROOT::Math::XYZPoint m_displacement;

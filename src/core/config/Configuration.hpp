@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#include "core/utils/string.h"
+#include "core/utils/text.h"
 #include "exceptions.h"
 
 namespace corryvreckan {
@@ -143,11 +143,20 @@ namespace corryvreckan {
         std::vector<std::string> getPathArray(const std::string& key, bool check_exists = false) const;
 
         /**
+         * @brief Set value for a key in a given type with units
+         * @param key Key to set value of
+         * @param val Value to assign to the key
+         * @param units List of possible output units
+         */
+        template <typename T> void set(const std::string& key, const T& val, std::initializer_list<std::string> units);
+
+        /**
          * @brief Set value for a key in a given type
          * @param key Key to set value of
          * @param val Value to assign to the key
          */
         template <typename T> void set(const std::string& key, const T& val);
+
         /**
          * @brief Set list of values for a key in a given type
          * @param key Key to set values of
@@ -155,6 +164,13 @@ namespace corryvreckan {
          */
         // TODO [doc] Provide second template parameter to specify the vector type to return it in
         template <typename T> void setArray(const std::string& key, const std::vector<T>& val);
+
+        /**
+         * @brief Set matrix of values for a key in a given type
+         * @param key Key to set values of
+         * @param val List of values to assign to the key
+         */
+        template <typename T> void setMatrix(const std::string& key, const Matrix<T>& val);
 
         /**
          * @brief Set default value for a key only if it is not defined yet

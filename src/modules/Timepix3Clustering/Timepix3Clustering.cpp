@@ -214,8 +214,10 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
     cluster->setRow(row);
     cluster->setColumn(column);
     cluster->setTot(tot);
-    cluster->setErrorX(0.004);
-    cluster->setErrorY(0.004);
+
+    // Set uncertainty on position from intrinstic detector resolution:
+    cluster->setError(detector->resolution());
+
     cluster->setTimestamp(timestamp);
     cluster->setDetectorID(detectorID);
     cluster->setClusterCentre(positionGlobal.X(), positionGlobal.Y(), positionGlobal.Z());

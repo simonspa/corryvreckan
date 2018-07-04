@@ -90,6 +90,10 @@ namespace corryvreckan {
             Matrix<T> matrix;
             auto node = parse_value(str);
             for(auto& child : node->children) {
+                if(child->children.empty()) {
+                    throw std::invalid_argument("matrix has less than two dimensions");
+                }
+
                 std::vector<T> array;
                 // Create subarray of matrix
                 for(auto& subchild : child->children) {
@@ -99,10 +103,6 @@ namespace corryvreckan {
                         throw InvalidKeyError(key, getName(), subchild->value, typeid(T), e.what());
                     }
                 }
-                if(!child->value.empty()) {
-                    throw std::invalid_argument("matrix has less than two dimensions");
-                }
-
                 matrix.push_back(array);
             }
             return matrix;
@@ -129,14 +129,50 @@ namespace corryvreckan {
     template <typename T> void Configuration::set(const std::string& key, const T& val) {
         config_[key] = corryvreckan::to_string(val);
     }
+
+    template <typename T>
+    void Configuration::set(const std::string& key, const T& val, std::initializer_list<std::string> units) {
+        auto split = corryvreckan::split<Units::UnitType>(corryvreckan::to_string(val));
+
+        std::string ret_str;
+        for(auto& element : split) {
+            ret_str += Units::display(element, units);
+            ret_str += ",";
+        }
+        ret_str.pop_back();
+        config_[key] = ret_str;
+    }
+
     template <typename T> void Configuration::setArray(const std::string& key, const std::vector<T>& val) {
         // NOTE: not the most elegant way to support arrays
         std::string str;
         for(auto& el : val) {
+            str += corryvreckan::to_string(el);
             str += ",";
-            str += corryvreckan::to_string(val);
         }
-        set(key, str);
+        str.pop_back();
+        config_[key] = str;
+    }
+
+    template <typename T> void Configuration::setMatrix(const std::string& key, const Matrix<T>& val) {
+        // NOTE: not the most elegant way to support arrays
+        if(val.empty()) {
+            return;
+        }
+
+        std::string str = "[";
+        for(auto& col : val) {
+            str += "[";
+            for(auto& el : col) {
+                str += corryvreckan::to_string(el);
+                str += ",";
+            }
+            str.pop_back();
+            str += "],";
+        }
+        str.pop_back();
+        str += "]";
+        config_[key] = str;
     }
 
     template <typename T> void Configuration::setDefault(const std::string& key, const T& val) {
