@@ -145,7 +145,7 @@ void Analysis::load_modules() {
 
     // Create histogram output file
     std::string histogramFile = global_config.getPath("histogramFile");
-    m_histogramFile = new TFile(histogramFile.c_str(), "RECREATE");
+    m_histogramFile = std::make_unique<TFile>(histogramFile.c_str(), "RECREATE");
     m_directory = m_histogramFile->mkdir("corryvreckan");
     if(m_histogramFile->IsZombie()) {
         throw RuntimeError("Cannot create main ROOT file " + histogramFile);
