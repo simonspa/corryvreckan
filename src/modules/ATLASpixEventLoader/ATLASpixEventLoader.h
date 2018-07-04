@@ -49,9 +49,9 @@ namespace corryvreckan {
         std::string m_filename;
         std::ifstream m_file;
 
-	// Resuming in next event:
-	std::streampos oldpos;
- 
+        // Resuming in next event:
+        std::streampos oldpos;
+
         TH2F* hHitMap;
         TH1F* hPixelToT;
         TH1F* hPixelToTCal;
