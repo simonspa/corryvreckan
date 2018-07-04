@@ -12,7 +12,6 @@ CLICpix2Analysis::CLICpix2Analysis(Configuration config, std::vector<Detector*> 
     m_DUT = m_config.get<std::string>("DUT");
 
     m_timeCutFrameEdge = m_config.get<double>("timeCutFrameEdge", Units::convert(20, "ns"));
-    m_roi = m_config.getMatrix<int>("roi", std::vector<std::vector<int>>());
 
     spatialCut = m_config.get<double>("spatialCut", Units::convert(50, "um"));
     chi2ndofCut = m_config.get<double>("chi2ndofCut", 3.);

@@ -8,13 +8,11 @@ ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<Detec
     : Module(std::move(config), std::move(detectors)) {
 
     m_timewalkCorrectionFactors = m_config.getArray<double>("timewalkCorrectionFactors", std::vector<double>());
-    m_timestampPeriod = m_config.get<double>("timestampPeriod", Units::convert(25, "ns"));
 
     m_inputDirectory = m_config.get<std::string>("inputDirectory");
     m_calibrationFile = m_config.get<std::string>("calibrationFile", std::string());
 
-    m_eventLength = m_config.get<double>("eventLength", Units::convert(0.0, "ns"));
-    m_clockCycle = m_config.get<int>("clockCycle", Units::convert(25, "ns"));
+    m_clockCycle = m_config.get<double>("clockCycle", Units::convert(25, "ns"));
 
     // Allow reading of legacy data format using the Karlsruhe readout system:
     m_legacyFormat = m_config.get<bool>("legacyFormat", false);
@@ -43,7 +41,7 @@ void ATLASpixEventLoader::initialise() {
     while((entry = readdir(directory))) {
         // Check for the data file
         string filename = m_inputDirectory + "/" + entry->d_name;
-        if(filename.find(".dat") != string::npos) {
+        if(filename.find("data.txt") != string::npos) {
             m_filename = filename;
         }
     }
@@ -92,8 +90,7 @@ void ATLASpixEventLoader::initialise() {
         LOG(INFO) << ts;
     }
 
-    m_clockFactor = m_timestampPeriod / 25;
-    LOG(INFO) << "Applying clock scaling factor: " << m_clockFactor << std::endl;
+    LOG(INFO) << "Using clock cycle length of " << m_clockCycle << std::endl;
 
     // Initialise member variables
     m_eventNumber = 0;
@@ -103,16 +100,22 @@ void ATLASpixEventLoader::initialise() {
 
 StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
 
+    // Check if event frame is defined:
+    if(!clipboard->has_persistent("eventStart") || !clipboard->has_persistent("eventEnd")) {
+        throw ModuleError("Event not defined. Add Metronome module or Event reader defining the event.");
+    }
+
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
         m_file.close();
         return Failure;
     }
 
-    double current_time = clipboard->get_persistent("currentTime");
+    double start_time = clipboard->get_persistent("eventStart");
+    double end_time = clipboard->get_persistent("eventEnd");
 
     // Read pixel data
-    Pixels* pixels = (m_legacyFormat ? read_legacy_data(current_time) : read_caribou_data(current_time));
+    Pixels* pixels = (m_legacyFormat ? read_legacy_data(start_time, end_time) : read_caribou_data(start_time, end_time));
 
     for(auto px : (*pixels)) {
         hHitMap->Fill(px->column(), px->row());
@@ -124,22 +127,22 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
         hPixelsOverTime->Fill(Units::convert(px->timestamp(), "ms"));
     }
 
+    // Fill histograms
+    hPixelsPerFrame->Fill(pixels->size());
+
     // Put the data on the clipboard
     if(!pixels->empty()) {
         clipboard->put(m_detectorID, "pixels", (Objects*)pixels);
+    } else {
+        return NoData;
     }
-
-    // Increment the event time
-    clipboard->put_persistent("currentTime", clipboard->get_persistent("currentTime") + m_eventLength);
-
-    // Fill histograms
-    hPixelsPerFrame->Fill(pixels->size());
 
     // Return value telling analysis to keep running
     return Success;
 }
 
-Pixels* ATLASpixEventLoader::read_caribou_data(double current_time) {
+Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_time) {
+
     // Pixel container
     Pixels* pixels = new Pixels();
 
@@ -148,7 +151,6 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double current_time) {
 
     // Read file and load data
     std::string line_str;
-    std::streampos oldpos;
     while(getline(m_file, line_str)) {
         double timestamp;
         std::istringstream line(line_str);
@@ -169,23 +171,31 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double current_time) {
             line >> scol >> srow >> sts1 >> sts2 >> stot >> sfpga_ts >> str_cnt >> sbin_cnt;
 
             // Only convert used numbers:
-            int col = std::stoi(scol);
-            int row = std::stoi(srow);
-            int fpga_ts = std::stoi(sfpga_ts);
-            int tot = std::stoi(stot);
+            long long col = std::stoll(scol);
+            long long row = std::stoll(srow);
+            long long fpga_ts = std::stoll(sfpga_ts);
+            long long tot = std::stoll(stot);
 
             // Convert the timestamp to nanoseconds:
             timestamp = fpga_ts * m_clockCycle;
 
             // Stop looking at data if the pixel is after the current event window
             // (and rewind the file reader so that we start with this pixel next event)
-            if(timestamp > (current_time + m_eventLength)) {
+            if(timestamp > end_time) {
                 LOG(DEBUG) << "Stopping processing event, pixel is after event window ("
                            << Units::display(timestamp, {"s", "us", "ns"}) << " > "
-                           << Units::display(current_time + m_eventLength, {"s", "us", "ns"}) << ")";
+                           << Units::display(end_time, {"s", "us", "ns"}) << ")";
                 // Rewind to previous position:
+                LOG(TRACE) << "Rewinding to file pointer : " << oldpos;
                 m_file.seekg(oldpos);
                 break;
+            }
+
+            if(timestamp < start_time) {
+                LOG(DEBUG) << "Skipping pixel hit, pixel is before event window ("
+                           << Units::display(timestamp, {"s", "us", "ns"}) << " < "
+                           << Units::display(start_time, {"s", "us", "ns"}) << ")";
+                continue;
             }
 
             // If this pixel is masked, do not save it
@@ -201,13 +211,14 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double current_time) {
         }
 
         // Store this position in the file in case we need to rewind:
+        LOG(TRACE) << "Storing file pointer position: " << m_file.tellg();
         oldpos = m_file.tellg();
     }
 
     return pixels;
 }
 
-Pixels* ATLASpixEventLoader::read_legacy_data(double) {
+Pixels* ATLASpixEventLoader::read_legacy_data(double, double) {
 
     // Pixel container
     Pixels* pixels = new Pixels();

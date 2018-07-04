@@ -62,7 +62,6 @@ namespace corryvreckan {
         std::string m_DUT;
         double spatialCut, m_timeCutFrameEdge;
         double chi2ndofCut;
-        std::vector<std::vector<int>> m_roi;
     };
 } // namespace corryvreckan
 

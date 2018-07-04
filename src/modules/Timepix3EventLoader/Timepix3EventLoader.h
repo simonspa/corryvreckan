@@ -47,7 +47,6 @@ namespace corryvreckan {
         int m_minNumberOfPlanes;
 
         bool temporalSplit;
-        double m_eventLength;
         int m_numberPixelHits;
 
         bool applyCalibration;
@@ -66,7 +65,6 @@ namespace corryvreckan {
         std::map<std::string, long long int> m_syncTimeTDC;
         std::map<std::string, int> m_TDCoverflowCounter;
 
-        long long int m_currentTime;
         long long int m_currentEvent;
 
         long long int m_prevTime;

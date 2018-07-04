@@ -34,12 +34,12 @@ namespace corryvreckan {
         /*
          * @brief Read data in the format written by the Karlsruhe readout system
          */
-        Pixels* read_legacy_data(double current_time);
+        Pixels* read_legacy_data(double start_time, double end_time);
 
         /*
          * @brief Read data in the format written by the Caribou readout system
          */
-        Pixels* read_caribou_data(double current_time);
+        Pixels* read_caribou_data(double start_time, double end_time);
 
         // Member variables
         int m_eventNumber;
@@ -48,7 +48,9 @@ namespace corryvreckan {
         std::string detectorID;
         std::string m_filename;
         std::ifstream m_file;
-        double m_clockFactor;
+
+        // Resuming in next event:
+        std::streampos oldpos;
 
         TH2F* hHitMap;
         TH1F* hPixelToT;
@@ -60,7 +62,6 @@ namespace corryvreckan {
         // Parameters:
         std::vector<double> m_timewalkCorrectionFactors;
         std::vector<double> m_calibrationFactors;
-        double m_timestampPeriod;
         std::string m_inputDirectory;
         std::string m_calibrationFile;
         double m_eventLength;
@@ -68,7 +69,7 @@ namespace corryvreckan {
         bool m_toaMode;
         std::string m_detectorID;
         bool m_legacyFormat;
-        int m_clockCycle;
+        double m_clockCycle;
 
         std::map<std::string, int> m_identifiers;
     };
