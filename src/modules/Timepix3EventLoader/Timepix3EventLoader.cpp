@@ -247,6 +247,11 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
     // be done in one of two ways: by taking all data in the time interval (t,t+delta), or by
     // loading a fixed number of pixels (ie. 2000 at a time)
 
+    // Check if event frame is defined:
+    if(!clipboard->has_persistent("eventStart") || !clipboard->has_persistent("eventEnd")) {
+        throw ModuleError("Event not defined. Add Metronome module or Event reader defining the event.");
+    }
+
     LOG(TRACE) << "== New event";
     int loadedData = 0;
 

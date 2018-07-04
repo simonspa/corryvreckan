@@ -100,6 +100,11 @@ void ATLASpixEventLoader::initialise() {
 
 StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
 
+    // Check if event frame is defined:
+    if(!clipboard->has_persistent("eventStart") || !clipboard->has_persistent("eventEnd")) {
+        throw ModuleError("Event not defined. Add Metronome module or Event reader defining the event.");
+    }
+
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
         m_file.close();
@@ -181,7 +186,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
                            << Units::display(timestamp, {"s", "us", "ns"}) << " > "
                            << Units::display(end_time, {"s", "us", "ns"}) << ")";
                 // Rewind to previous position:
-		LOG(TRACE) << "Rewinding to file pointer : " << oldpos;
+                LOG(TRACE) << "Rewinding to file pointer : " << oldpos;
                 m_file.seekg(oldpos);
                 break;
             }
@@ -206,7 +211,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
         }
 
         // Store this position in the file in case we need to rewind:
-	LOG(TRACE) << "Storing file pointer position: " << m_file.tellg();
+        LOG(TRACE) << "Storing file pointer position: " << m_file.tellg();
         oldpos = m_file.tellg();
     }
 
