@@ -25,9 +25,8 @@ void BasicTracking::initialise() {
     trackAngleX = new TH1F("trackAngleX", "trackAngleX", 2000, -0.01, 0.01);
     trackAngleY = new TH1F("trackAngleY", "trackAngleY", 2000, -0.01, 0.01);
 
-    // Loop over all Timepix3
+    // Loop over all planes
     for(auto& detector : get_detectors()) {
-        // Check if they are a Timepix3
         string detectorID = detector->name();
 
         string name = "residualsX_" + detectorID;
@@ -60,7 +59,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
     // Output track container
     Tracks* tracks = new Tracks();
 
-    // Loop over all Timepix3 and get clusters
+    // Loop over all planes and get clusters
     bool firstDetector = true;
     std::string seedPlane;
     for(auto& detector : get_detectors()) {
@@ -73,7 +72,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
         } else {
             // Store them
             LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters from " << detectorID;
-            if(firstDetector && detectorID != m_config.get<std::string>("DUT")) {
+            if(firstDetector && (!m_config.has("DUT") || detectorID != m_config.get<std::string>("DUT"))) {
                 referenceClusters = tempClusters;
                 seedPlane = detector->name();
                 LOG(DEBUG) << "Seed plane is " << seedPlane;
@@ -113,8 +112,10 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
         for(auto& detectorID : detectors) {
 
             // Check if the DUT should be excluded and obey:
-            if(excludeDUT && detectorID == m_config.get<std::string>("DUT")) {
-                continue;
+            if(m_config.has("DUT")) {
+                if(excludeDUT && detectorID == m_config.get<std::string>("DUT")) {
+                    continue;
+                }
             }
 
             if(detectorID == seedPlane)
@@ -241,6 +242,4 @@ Cluster* BasicTracking::getNearestCluster(long long int timestamp, Clusters clus
     return bestCluster;
 }
 
-void BasicTracking::finalise() {
-    LOG(INFO) << "Found " << associatedClusters << " associated clusters for detector " << m_config.get<std::string>("DUT");
-}
+void BasicTracking::finalise() {}

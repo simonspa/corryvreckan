@@ -13,7 +13,7 @@ Clusters from the first plane in Z (named the seed plane) are related to cluster
 * `spatialCutDUT`: Maximum spatial distance in the XY plane allowed between clusters for association for the DUT. Default value is `0.2mm`.
 * `timingCutDUT`: Maximum time difference allowed between clusters for association for the DUT. Default value is `200ns`.
 * `minHitsOnTrack`: Minium number of associated clusters needed to create a track, equivalent to the minimum number of planes required for each track. Default value is `6`.
-* `excludeDUT`: Boolean to chose if the DUT plane is included in the track finding. In either case, the DUT clusters possibly associated with the track are saved. Default value is `true`.
+* `excludeDUT`: Boolean to chose if the DUT plane is included in the track finding. Default value is `true`.
 * `DUT`: Name of the DUT plane.
 
 #### Plots produced
@@ -38,8 +38,9 @@ For each detector the following plots are produced:
 ```toml
 [BasicTracking]
 minHitsOnTrack = 4
-spatialCut = 0.3 #300um
-timingCut = 0.0000002 #200ns
+spatialCut = 300um
+DUT = "W13_01"
+timingCut = 200ns
 excludeDUT = true
 ```
 Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

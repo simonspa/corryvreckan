@@ -32,10 +32,18 @@ Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
     // Get alignment method:
     alignmentMethod = m_config.get<int>("alignmentMethod");
 
-    if(m_config.has("detectorToAlign")) {
-        detectorToAlign = m_config.get<std::string>("detectorToAlign");
-    } else {
-        detectorToAlign = m_config.get<std::string>("DUT");
+    if(alignmentMethod == 1) {
+        if(m_config.has("detectorToAlign")) {
+            detectorToAlign = m_config.get<std::string>("detectorToAlign");
+        } else {
+            if(m_config.has("DUT")) {
+                detectorToAlign = m_config.get<std::string>("DUT");
+            } else {
+                LOG(ERROR) << "Alignment method 1 selected but neither 'detectorToAlign' nor 'DUT' parameters were set in "
+                              "the config file.";
+                return;
+            }
+        }
     }
 
     if(alignmentMethod == 1) {
@@ -400,7 +408,8 @@ void Alignment::finalise() {
             string detectorID = detector->name();
 
             // Do not align the reference plane
-            if(detectorID == m_config.get<std::string>("reference") || detectorID == m_config.get<std::string>("DUT")) {
+            if(detectorID == m_config.get<std::string>("reference") ||
+               (m_config.has("DUT") && detectorID == m_config.get<std::string>("DUT"))) {
                 continue;
             }
 
@@ -494,7 +503,7 @@ void Alignment::finalise() {
     for(auto& detector : get_detectors()) {
         // Do not align the reference plane
         if(detector->name() == m_config.get<std::string>("reference") ||
-           detector->name() == m_config.get<std::string>("DUT")) {
+           (m_config.has("DUT") && detector->name() == m_config.get<std::string>("DUT"))) {
             continue;
         }
 
