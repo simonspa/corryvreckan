@@ -9,7 +9,7 @@ This module associates CLICpix2 DUT clusters to tracks using a spatial cut (devi
 * `associationCut`: Maximum distance between a track and cluster for them to be associated. Units of mm. Default value is `0.05` (50um).
 * `proximityCut`: Maximum distance apart two tracks are for them to be 'close' to each other. If at the CLICpix plane there are two tracks close to each other, the DUT cluster is not associated with either track. Units of mm. Default value is `0.0005` (0.5um).
 * `timepix3Telescope`: Boolean to set whether the Timepix3 telescope is being used. Default value is `false`.
-* `DUT`: Name of the DUT plane.
+* `DUT`: Name of the DUT plane. The CLICpix device is assumed to be the DUT.
 
 #### Plots produced
 For the DUT the following plots are produced:

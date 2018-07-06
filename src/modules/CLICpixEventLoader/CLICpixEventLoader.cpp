@@ -9,6 +9,10 @@ CLICpixEventLoader::CLICpixEventLoader(Configuration config, std::vector<Detecto
 }
 
 void CLICpixEventLoader::initialise() {
+    if(!m_config.has("DUT")) {
+        LOG(ERROR) << "No DUT parameter set. Set the CLICpix device as the DUT.";
+        return;
+    }
 
     // File structure is RunX/CLICpix/RunX.dat
 

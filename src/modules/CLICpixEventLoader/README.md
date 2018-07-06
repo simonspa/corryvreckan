@@ -9,7 +9,7 @@ The module opens and reads one data file in the specified input directory with t
 
 #### Parameters
 * `inputDirectory`: Path to the directory containing the `.dat` file. This path should lead to the directory above the CLICpix directory, as this string is added onto the input directory in the module.
-* `DUT`: Name of the DUT plane.
+* `DUT`: Name of the DUT plane. The CLICpix device is assumed to be the DUT device.
 
 #### Plots produced
 * 2D Hit map
