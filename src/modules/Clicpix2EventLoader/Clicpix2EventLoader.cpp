@@ -16,6 +16,10 @@ Clicpix2EventLoader::Clicpix2EventLoader(Configuration config, std::vector<Detec
 }
 
 void Clicpix2EventLoader::initialise() {
+    if(!m_config.has("DUT")) {
+        LOG(ERROR) << "No DUT parameter set. Set the CLICpix2 device as the DUT.";
+        return;
+    }
 
     auto det = get_detector(m_config.get<std::string>("DUT"));
     if(det->type() != "CLICpix2") {
