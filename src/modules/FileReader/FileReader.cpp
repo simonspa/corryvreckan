@@ -72,11 +72,11 @@ void FileReader::initialise() {
                 if(m_onlyDUT && detectorID != m_config.get<std::string>("DUT"))
                     continue;
 
-                LOG(DEBUG) << "Looking for " << objectType << " for device " << detectorID;
-
                 // Get the tree
                 string objectID = detectorID + "_" + objectType;
                 string treePath = objectType + "/" + detectorID + "_" + detectorType + "_" + objectType;
+                LOG(DEBUG) << "Looking for " << objectType << " for device " << detectorID << ", tree path " << treePath;
+
                 m_inputTrees[objectID] = (TTree*)gDirectory->Get(treePath.c_str());
 
                 // Set the branch addresses
@@ -100,6 +100,7 @@ void FileReader::initialise() {
         }
     }
 
+    LOG(STATUS) << "Successfully opened data file \"" << m_fileName << "\"";
     // Initialise member variables
     m_eventNumber = 0;
 }

@@ -199,8 +199,8 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
             timestamp = (*pixels)[pix]->timestamp();
     }
     // Row and column positions are tot-weighted
-    row /= tot;
-    column /= tot;
+    row /= (tot > 0 ? tot : 1);
+    column /= (tot > 0 ? tot : 1);
     auto detector = get_detector(detectorID);
 
     // Create object with local cluster position
@@ -214,8 +214,10 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
     cluster->setRow(row);
     cluster->setColumn(column);
     cluster->setTot(tot);
-    cluster->setErrorX(0.004);
-    cluster->setErrorY(0.004);
+
+    // Set uncertainty on position from intrinstic detector resolution:
+    cluster->setError(detector->resolution());
+
     cluster->setTimestamp(timestamp);
     cluster->setDetectorID(detectorID);
     cluster->setClusterCentre(positionGlobal.X(), positionGlobal.Y(), positionGlobal.Z());

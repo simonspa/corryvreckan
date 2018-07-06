@@ -47,7 +47,7 @@ Corryvreckan has been developed and is maintained by
 
 The following authors, in alphabetical order, have contributed to Corryvreckan:
 
-* Matthew Daniel Buckland, University of Glasgow, @mbucklan
+* Matthew Daniel Buckland, University of Liverpool, @mbucklan
 * Adrian Fiergolski, CERN, @afiergol
 * Andreas Matthias Nürnberg, CERN, @nurnberg
 * Florian Pitters, CERN, @fpipper

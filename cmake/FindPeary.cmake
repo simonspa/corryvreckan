@@ -6,17 +6,21 @@
 
 MESSAGE(STATUS "Looking for Peary...")
 
-FIND_PATH(Peary_INCLUDE_DIRS NAMES "peary/device/device.hpp" PATHS "$ENV{PEARYPATH}")
+FIND_PATH(Peary_INCLUDE_DIR NAMES "peary/device/device.hpp" PATHS "$ENV{PEARYPATH}")
 FIND_LIBRARY(Peary_LIBRARIES NAMES "peary" HINTS "$ENV{PEARYPATH}/lib")
+
+LIST(APPEND Peary_INCLUDE_DIRS "${Peary_INCLUDE_DIR}/peary/utils")
+LIST(APPEND Peary_INCLUDE_DIRS "${Peary_INCLUDE_DIR}/devices")
 
 IF(Peary_FIND_COMPONENTS)
    FOREACH(component ${Peary_FIND_COMPONENTS})
-      STRING(TOLOWER "${component}" _COMP)
-      FIND_PATH(Peary_COMP_INCLUDE NAMES "devices/${_COMP}/${_COMP}.hpp" PATHS "$ENV{PEARYPATH}")
-      FIND_LIBRARY(Peary_COMP_LIB NAMES "${component}" HINTS "$ENV{PEARYPATH}/lib")
+      FIND_PATH(Peary_COMP_INCLUDE NAMES "devices/${component}/${component}Device.hpp" PATHS "$ENV{PEARYPATH}")
+      FIND_LIBRARY(Peary_COMP_LIB NAMES "PearyDevice${component}" HINTS "$ENV{PEARYPATH}/lib")
       IF(Peary_COMP_INCLUDE AND Peary_COMP_LIB)
          LIST(APPEND Peary_LIBRARIES "${Peary_COMP_LIB}")
+         LIST(APPEND Peary_INCLUDE_DIRS "${Peary_COMP_INCLUDE}/devices/${component}")
          SET(Peary_${component}_FOUND TRUE)
+         MESSAGE(STATUS "Looking for Peary component: ${component} -- Found")
       ELSE()
          MESSAGE(STATUS "Looking for Peary component: ${component} -- NOTFOUND")
       ENDIF()

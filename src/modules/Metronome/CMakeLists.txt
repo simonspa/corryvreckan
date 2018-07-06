@@ -3,7 +3,7 @@ CORRYVRECKAN_MODULE(MODULE_NAME)
 
 # Add source files to library
 CORRYVRECKAN_MODULE_SOURCES(${MODULE_NAME}
-    GUI.cpp
+    Metronome.cpp
     # ADD SOURCE FILES HERE...
 )
 

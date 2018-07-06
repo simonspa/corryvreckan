@@ -183,8 +183,8 @@ void SpatialClustering::calculateClusterCentre(Detector* detector, Cluster* clus
     }
 
     // Row and column positions are tot-weighted
-    row /= tot;
-    column /= tot;
+    row /= (tot > 0 ? tot : 1);
+    column /= (tot > 0 ? tot : 1);
 
     LOG(DEBUG) << "- cluster row, col: " << row << "," << column;
 
@@ -199,8 +199,10 @@ void SpatialClustering::calculateClusterCentre(Detector* detector, Cluster* clus
     cluster->setRow(row);
     cluster->setColumn(column);
     cluster->setTot(tot);
-    cluster->setErrorX(0.004);
-    cluster->setErrorY(0.004);
+
+    // Set uncertainty on position from intrinstic detector resolution:
+    cluster->setError(detector->resolution());
+
     cluster->setDetectorID(detectorID);
     cluster->setClusterCentre(positionGlobal.X(), positionGlobal.Y(), positionGlobal.Z());
     cluster->setClusterCentreLocal(positionLocal.X(), positionLocal.Y(), positionLocal.Z());

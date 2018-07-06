@@ -1,4 +1,3 @@
-// local
 #include "Object.hpp"
 #include "Cluster.h"
 #include "MCParticle.h"
@@ -9,11 +8,11 @@
 
 using namespace corryvreckan;
 
-Object::Object() : m_detectorID(), m_timestamp(0) {}
-Object::Object(std::string detectorID) : m_detectorID(detectorID), m_timestamp(0) {}
-Object::Object(double timestamp) : m_detectorID(), m_timestamp(timestamp) {}
-Object::Object(std::string detectorID, double timestamp) : m_detectorID(detectorID), m_timestamp(timestamp) {}
-Object::~Object() {}
+Object::Object() = default;
+Object::Object(std::string detectorID) : m_detectorID(std::move(detectorID)) {}
+Object::Object(double timestamp) : m_timestamp(timestamp) {}
+Object::Object(std::string detectorID, double timestamp) : m_detectorID(std::move(detectorID)), m_timestamp(timestamp) {}
+Object::~Object() = default;
 
 // Return class type for fixed object types (that don't depend on detector type)
 Object* Object::Factory(std::string objectType, Object* object) {
@@ -27,17 +26,19 @@ Object* Object::Factory(std::string objectType, Object* object) {
 
 // Return class type for objects which change with detector type
 Object* Object::Factory(std::string detectorType, std::string objectType, Object* object) {
-    // Timepix types both use generic classes
-    if(detectorType == "Timepix1" || detectorType == "Timepix3") {
-        if(objectType == "pixels")
-            return (object == NULL) ? new Pixel() : new Pixel(*static_cast<Pixel*>(object));
-        if(objectType == "clusters")
-            return (object == NULL) ? new Cluster() : new Cluster(*static_cast<Cluster*>(object));
-        if(objectType == "mcparticles")
-            return (object == NULL) ? new MCParticle() : new MCParticle(*static_cast<MCParticle*>(object));
+
+    if(objectType == "pixels") {
+        return (object == NULL) ? new Pixel() : new Pixel(*static_cast<Pixel*>(object));
+    } else if(objectType == "clusters") {
+        return (object == NULL) ? new Cluster() : new Cluster(*static_cast<Cluster*>(object));
+    } else if(objectType == "mcparticles") {
+        return (object == NULL) ? new MCParticle() : new MCParticle(*static_cast<MCParticle*>(object));
     }
 
     return new Object();
 }
 
-ClassImp(Object)
+std::ostream& corryvreckan::operator<<(std::ostream& out, const Object& obj) {
+    obj.print(out);
+    return out;
+}

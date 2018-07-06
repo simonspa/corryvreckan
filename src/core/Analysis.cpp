@@ -145,7 +145,7 @@ void Analysis::load_modules() {
 
     // Create histogram output file
     std::string histogramFile = global_config.getPath("histogramFile");
-    m_histogramFile = new TFile(histogramFile.c_str(), "RECREATE");
+    m_histogramFile = std::make_unique<TFile>(histogramFile.c_str(), "RECREATE");
     m_directory = m_histogramFile->mkdir("corryvreckan");
     if(m_histogramFile->IsZombie()) {
         throw RuntimeError("Cannot create main ROOT file " + histogramFile);
@@ -358,7 +358,7 @@ void Analysis::run() {
         if(number_of_events > -1 && m_events >= number_of_events)
             break;
 
-        if(run_time > 0.0 && (m_clipboard->get_persistent("currentTime")) >= run_time)
+        if(run_time > 0.0 && (m_clipboard->get_persistent("eventStart")) >= run_time)
             break;
 
         // Check if we have reached the maximum number of tracks
@@ -415,8 +415,10 @@ void Analysis::run() {
             events_prev = m_events;
             LOG_PROGRESS(STATUS, "event_loop")
                 << "Ev: +" << m_events << " \\" << skipped << " Tr: " << m_tracks << " (" << std::setprecision(3)
-                << ((double)m_tracks / m_events)
-                << "/ev) t = " << Units::display(m_clipboard->get_persistent("currentTime"), {"ns", "us", "s"});
+                << ((double)m_tracks / m_events) << "/ev)"
+                << (m_clipboard->has_persistent("eventStart")
+                        ? " t = " + Units::display(m_clipboard->get_persistent("eventStart"), {"ns", "us", "ms", "s"})
+                        : "");
         }
 
         // Clear objects from this iteration from the clipboard
@@ -496,7 +498,9 @@ void Analysis::finaliseAll() {
     // Write the output histogram file
     m_directory->cd();
     m_directory->Write();
+
     m_histogramFile->Close();
+    LOG(STATUS) << "Wrote histogram output file to " << global_config.getPath("histogramFile");
 
     // Write out update detectors file:
     if(global_config.has("detectors_file_updated")) {

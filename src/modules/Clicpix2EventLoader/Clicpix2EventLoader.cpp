@@ -1,7 +1,7 @@
 #include "Clicpix2EventLoader.h"
 
-#include "clicpix2_pixels.hpp"
-#include "clicpix2_utilities.hpp"
+#include "CLICpix2/clicpix2_pixels.hpp"
+#include "CLICpix2/clicpix2_utilities.hpp"
 #include "datatypes.hpp"
 
 using namespace corryvreckan;
@@ -28,9 +28,9 @@ void Clicpix2EventLoader::initialise() {
     // Open the root directory
     DIR* directory = opendir(inputDirectory.c_str());
     if(directory == NULL) {
-        LOG(ERROR) << "Directory " << inputDirectory << " does not exist";
-        return;
+        throw ModuleError("Directory " + inputDirectory + " does not exist");
     }
+
     dirent* entry;
     dirent* file;
 
@@ -52,8 +52,7 @@ void Clicpix2EventLoader::initialise() {
     }
 
     if(m_matrix.empty()) {
-        LOG(ERROR) << "No matrix configuration file found in " << inputDirectory;
-        return;
+        throw ModuleError("No matrix configuration file found in " + inputDirectory);
     }
 
     // Read the matrix configuration:
@@ -137,6 +136,17 @@ void Clicpix2EventLoader::initialise() {
     hPixelToA = new TH1F("pixelToA", "pixelToA", maxcounter, 0, maxcounter - 1);
     hPixelCnt = new TH1F("pixelCnt", "pixelCnt", maxcounter, 0, maxcounter - 1);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 1000, 0, 1000);
+
+    hMaskMap = new TH2F("maskMap", "maskMap", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
+    for(int column = 0; column < det->nPixelsX(); column++) {
+        for(int row = 0; row < det->nPixelsY(); row++) {
+            if(det->masked(column, row)) {
+                hMaskMap->Fill(column, row, 2);
+            } else if(matrix_config[std::make_pair(row, column)].GetMask()) {
+                hMaskMap->Fill(column, row, 1);
+            }
+        }
+    }
 
     // Initialise member variables
     m_eventNumber = 0;
@@ -256,7 +266,8 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
     // Store current frame time and the length of the event:
     LOG(DEBUG) << "Event time: " << Units::display(shutterStartTime, {"ns", "us", "s"})
                << ", length: " << Units::display((shutterStopTime - shutterStartTime), {"ns", "us", "s"});
-    clipboard->put_persistent("currentTime", shutterStartTime);
+    clipboard->put_persistent("eventStart", shutterStartTime);
+    clipboard->put_persistent("eventEnd", shutterStopTime);
     clipboard->put_persistent("eventLength", (shutterStopTime - shutterStartTime));
 
     // Put the data on the clipboard

@@ -3,10 +3,8 @@
  * @brief Implementation of unit system
  *
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied
- * verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities
- * granted to it by virtue of its status as an
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -20,7 +18,7 @@
 #include <string>
 #include <type_traits>
 
-#include "core/utils/string.h"
+#include "core/utils/text.h"
 
 using namespace corryvreckan;
 
@@ -29,8 +27,7 @@ std::map<std::string, corryvreckan::Units::UnitType> Units::unit_map_;
 /**
  * @throws std::invalid_argument If the unit already exists
  *
- * Units should consist of only alphabetical characters. Units are converted to
- * lowercase internally. All the defined units
+ * Units should consist of only alphabetical characters. Units are converted to lowercase internally. All the defined units
  * should have unique values and it is not possible to redefine them.
  *
  * @note No explicit check is done for alphabetical units
@@ -49,8 +46,7 @@ void Units::add(std::string str, UnitType value) {
 /**
  * @throws std::invalid_argument If the requested unit does not exist
  *
- * All units are converted to lowercase before finding their value in the
- * internal database.
+ * All units are converted to lowercase before finding their value in the internal database.
  */
 corryvreckan::Units::UnitType Units::getSingle(std::string str) {
     if(corryvreckan::trim(str).empty()) {
@@ -70,10 +66,8 @@ corryvreckan::Units::UnitType Units::getSingle(std::string str) {
 /**
  * @throws invalid_argument If one tries to get the value of an empty unit
  *
- * Units are combined by applying the multiplication operator * and the division
- * operator / linearly. The first unit is
- * always multiplied, following common sense. Grouping units together within
- * brackets or parentheses is not supported. Thus
+ * Units are combined by applying the multiplication operator * and the division operator / linearly. The first unit is
+ * always multiplied, following common sense. Grouping units together within brackets or parentheses is not supported. Thus
  * any other character then a name of a unit, * or \ should lead to an error
  */
 corryvreckan::Units::UnitType Units::get(std::string str) {
@@ -143,11 +137,9 @@ corryvreckan::Units::UnitType Units::convert(UnitType input, std::string str) {
  * @throws std::invalid_argument If the list of units is empty
  *
  * The best unit is determined using the two rules below:
- * - If there exists at least one unit for which the value is larger than one,
- * the unit with value nearest to one is chosen
+ * - If there exists at least one unit for which the value is larger than one, the unit with value nearest to one is chosen
  *   from all units with values larger than one
- * - Otherwise the unit is chosen that has a value as close as possible to one
- * (from below)
+ * - Otherwise the unit is chosen that has a value as close as possible to one (from below)
  */
 std::string Units::display(UnitType input, std::initializer_list<std::string> units) {
     if(units.size() == 0) {

@@ -1,4 +1,4 @@
-# Additional targets to perform clang-format/clang-tidy
+# Additional targets to perform clang-format/clang-tidy/cppcheck
 
 # Get all project files - FIXME: this should also use the list of generated targets
 IF(NOT CHECK_CXX_SOURCE_FILES)
@@ -7,8 +7,9 @@ IF(NOT CHECK_CXX_SOURCE_FILES)
 ENDIF()
 
 # Adding clang-format check and formatter if found
-FIND_PROGRAM(CLANG_FORMAT "clang-format")
+FIND_PROGRAM(CLANG_FORMAT NAMES "clang-format-6.0" "clang-format-5.0" "clang-format-4.0" "clang-format")
 IF(CLANG_FORMAT)
+    MESSAGE(STATUS "Found ${CLANG_FORMAT}, adding formatting targets")
     ADD_CUSTOM_TARGET(
         format
         COMMAND
@@ -34,6 +35,8 @@ IF(CLANG_FORMAT)
                   ${CMAKE_BINARY_DIR}/check_format_file.txt > /dev/null
         COMMENT "Checking format compliance"
     )
+ELSE()
+    MESSAGE(STATUS "Could NOT find clang-format")
 ENDIF()
 
 # Adding clang-tidy target if executable is found
@@ -42,7 +45,7 @@ IF(${CMAKE_CXX_STANDARD})
     SET(CXX_STD ${CMAKE_CXX_STANDARD})
 ENDIF()
 
-FIND_PROGRAM(CLANG_TIDY "clang-tidy")
+FIND_PROGRAM(CLANG_TIDY NAMES "clang-tidy-6.0" "clang-tidy-5.0" "clang-tidy-4.0" "clang-tidy")
 # Enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # If debug build enabled do automatic clang tidy
@@ -52,9 +55,12 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
     # Enable checking and formatting through run-clang-tidy if available
     # FIXME Make finding this program more portable
+    GET_FILENAME_COMPONENT(CLANG_TIDY ${CLANG_TIDY} REALPATH)
     GET_FILENAME_COMPONENT(CLANG_DIR ${CLANG_TIDY} DIRECTORY)
     FIND_PROGRAM(RUN_CLANG_TIDY NAMES "run-clang-tidy.py" "run-clang-tidy-4.0.py" HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
+        MESSAGE(STATUS "Found ${CLANG_TIDY}, adding linting targets")
+
         # Set export commands on
         SET (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -79,5 +85,49 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             COMMAND ! grep -c ": error: " ${CMAKE_BINARY_DIR}/check_lint_file.txt > /dev/null
             COMMENT "Checking for problems in source files"
         )
+    ELSE()
+        MESSAGE(STATUS "Could NOT find run-clang-tidy script")
+    ENDIF()
+ELSE()
+    IF(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        MESSAGE(STATUS "Could NOT find clang-tidy")
+    ELSE()
+        MESSAGE(STATUS "Could NOT check for clang-tidy, wrong compiler: ${CMAKE_CXX_COMPILER_ID}")
+    ENDIF()
+ENDIF()
+
+FIND_PROGRAM(CPPCHECK "cppcheck")
+IF(CPPCHECK)
+    # Set export commands on
+    SET (CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+    ADD_CUSTOM_TARGET(
+        cppcheck
+        COMMAND ${CPPCHECK}
+        --enable=all
+        --project=${CMAKE_BINARY_DIR}/compile_commands.json
+        --std=c++11
+        --verbose
+        --quiet
+        --xml-version=2
+        --language=c++
+        --suppress=missingIncludeSystem
+        --output-file=${CMAKE_BINARY_DIR}/cppcheck_results.xml
+        ${CHECK_CXX_SOURCE_FILES}
+        COMMENT "Generate cppcheck report for the project"
+    )
+
+    FIND_PROGRAM(CPPCHECK_HTML "cppcheck-htmlreport")
+    IF(CPPCHECK_HTML)
+        ADD_CUSTOM_TARGET(
+            cppcheck-html
+            COMMAND ${CPPCHECK_HTML}
+            --title=${CMAKE_PROJECT_NAME}
+            --file=${CMAKE_BINARY_DIR}/cppcheck_results.xml
+            --report-dir=${CMAKE_BINARY_DIR}/cppcheck_results
+            --source-dir=${CMAKE_SOURCE_DIR}
+            COMMENT "Convert cppcheck report to HTML output"
+        )
+        ADD_DEPENDENCIES(cppcheck-html cppcheck)
     ENDIF()
 ENDIF()

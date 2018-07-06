@@ -25,7 +25,7 @@ void CLICpixEventLoader::initialise() {
     dirent* file;
 
     // Read the entries in the folder
-    while(entry = readdir(directory)) {
+    while((entry = readdir(directory))) {
         // Check for the data file
         string filename = inputDirectory + "/" + entry->d_name;
         if(filename.find(".dat") != string::npos) {
@@ -120,8 +120,9 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
     }
 
     // Now set the event time so that the Timepix3 data is loaded correctly
-    clipboard->put_persistent("currentTime", shutterStartTime);
-    m_config.set<double>("eventLength", (shutterStopTime - shutterStartTime));
+    clipboard->put_persistent("eventStart", shutterStartTime);
+    clipboard->put_persistent("eventEnd", shutterStopTime);
+    clipboard->put_persistent("eventLength", (shutterStopTime - shutterStartTime));
 
     LOG(TRACE) << "Loaded " << npixels << " pixels";
     // Put the data on the clipboard

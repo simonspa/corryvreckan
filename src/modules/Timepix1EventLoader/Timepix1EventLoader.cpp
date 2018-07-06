@@ -49,7 +49,7 @@ void Timepix1EventLoader::initialise() {
     dirent* file;
 
     // Read the entries in the folder
-    while(entry = readdir(directory)) {
+    while((entry = readdir(directory))) {
 
         // Get the name of this entry
         string filename = entry->d_name;
