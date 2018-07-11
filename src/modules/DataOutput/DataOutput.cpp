@@ -32,6 +32,9 @@ DataOutput::DataOutput(Configuration config, std::vector<Detector*> detectors)
 void DataOutput::initialise() {
     LOG(DEBUG) << "Initialised DataOutput";
 
+    // DUT is necessary for this module; checking to see if this is given in the config
+    m_DUT = m_config.get<std::string>("DUT");
+
     // Create output file and directories
     m_outputFile = new TFile(m_fileName.c_str(), "RECREATE");
     LOG(DEBUG) << "Made and moved to output file: " << m_fileName;
@@ -60,7 +63,7 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
     eventID++;
 
     // Get the DUT
-    auto DUT = get_detector(m_config.get<std::string>("DUT"));
+    auto DUT = get_detector(m_DUT);
     v_intercepts.clear();
 
     // Clear data vectors before storing the cluster information for
@@ -164,7 +167,7 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
 void DataOutput::finalise() {
     LOG(DEBUG) << "Finalise";
     // DUT angles for output
-    auto DUT = get_detector(m_config.get<std::string>("DUT"));
+    auto DUT = get_detector(m_DUT);
     auto directory = m_outputFile->mkdir("Directory");
     directory->cd();
     LOG(STATUS) << filledEvents << " events written to file " << m_fileName;
