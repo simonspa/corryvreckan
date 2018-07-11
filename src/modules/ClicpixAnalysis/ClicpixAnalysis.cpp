@@ -21,11 +21,6 @@ template <typename T> std::string convertToString(T number) {
 }
 
 void ClicpixAnalysis::initialise() {
-    if(!m_config.has("DUT")) {
-        LOG(ERROR) << "No DUT parameter set. Set the CLICpix device as the DUT.";
-        return;
-    }
-
     // Initialise member variables
     m_eventNumber = 0;
     m_triggerNumber = 0;
