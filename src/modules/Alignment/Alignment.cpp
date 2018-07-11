@@ -36,13 +36,7 @@ Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
         if(m_config.has("detectorToAlign")) {
             detectorToAlign = m_config.get<std::string>("detectorToAlign");
         } else {
-            if(m_config.has("DUT")) {
-                detectorToAlign = m_config.get<std::string>("DUT");
-            } else {
-                LOG(ERROR) << "Alignment method 1 selected but neither 'detectorToAlign' nor 'DUT' parameters were set in "
-                              "the config file.";
-                return;
-            }
+            detectorToAlign = m_config.get<std::string>("DUT");
         }
     }
 

@@ -24,14 +24,8 @@ ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<Detec
 void ATLASpixEventLoader::initialise() {
 
     // File structure is RunX/ATLASpix/data.dat
-
     // Assume that the ATLASpix is the DUT (if running this algorithm
-    if(m_config.has("DUT")) {
-        m_detectorID = m_config.get<std::string>("DUT");
-    } else {
-        LOG(ERROR) << "No DUT parameter present. Please set this parameter to the name of the ATLASpix device.";
-        return;
-    }
+    m_detectorID = m_config.get<std::string>("DUT");
     // Open the root directory
     DIR* directory = opendir(m_inputDirectory.c_str());
     if(directory == NULL) {
