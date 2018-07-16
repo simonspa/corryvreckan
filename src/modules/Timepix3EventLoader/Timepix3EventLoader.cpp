@@ -189,7 +189,7 @@ void Timepix3EventLoader::initialise() {
     // Calibration
     pixelToT_beforecalibration = new TH1F("pixelToT_beforecalibration", "pixelToT_beforecalibration", 100, 0, 200);
 
-    if(m_config.has("calibrationPath") && m_config.has("threshold")) {
+    if(m_config.has("DUT") && m_config.has("calibrationPath") && m_config.has("threshold")) {
         LOG(INFO) << "Applying calibration from " << calibrationPath;
         applyCalibration = true;
 
@@ -236,7 +236,7 @@ void Timepix3EventLoader::initialise() {
             }
         }
     } else {
-        LOG(INFO) << "No calibration file path given, data will be uncalibrated.";
+        LOG(INFO) << "No calibration file path or no DUT name given; data will be uncalibrated.";
         applyCalibration = false;
     }
 }
@@ -463,7 +463,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
         if(header == 0x0) {
 
             // Only want to read these packets from the DUT
-            if(detectorID != m_config.get<std::string>("DUT")) {
+            if(m_config.has("DUT") && detectorID != m_config.get<std::string>("DUT")) {
                 continue;
             }
 

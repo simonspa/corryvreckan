@@ -9,7 +9,7 @@ SpatialTracking::SpatialTracking(Configuration config, std::vector<Detector*> de
     spatialCut = m_config.get<double>("spatialCut", Units::convert(200, "um"));
     spatialCut_DUT = m_config.get<double>("spatialCutDUT", Units::convert(200, "um"));
     minHitsOnTrack = m_config.get<int>("minHitsOnTrack", 6);
-    excludeDUT = m_config.get<bool>("excludeDUT", true);
+    excludeDUT = (m_config.has("DUT") ? m_config.get<bool>("excludeDUT", true) : true);
 }
 
 /*
@@ -122,12 +122,15 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
                 continue;
 
             // Check if the DUT should be excluded and obey:
-            if(excludeDUT && detectorID == m_config.get<std::string>("DUT")) {
-                // Keep all DUT clusters, so we can add them as associated clusters later:
-                Cluster* dutCluster = trees[detectorID]->getClosestNeighbour(cluster);
-                dutClusters.push_back(dutCluster);
-                continue;
-            }
+            if(excludeDUT) {
+                if(!m_config.has("DUT")) {
+                    continue;
+                } else if (detectorID == m_config.get<std::string>("DUT"){
+                    // Keep all DUT clusters, so we can add them as associated clusters later:
+                    Cluster* dutCluster = trees[detectorID]->getClosestNeighbour(cluster);
+                    dutClusters.push_back(dutCluster);
+                    continue;
+                }
 
             // Get the closest neighbour
             LOG(DEBUG) << "- looking for nearest cluster on device " << detectorID;
@@ -149,69 +152,68 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
             track->addCluster(closestCluster);
             cluster = closestCluster;
             LOG(DEBUG) << "- added cluster to track. Distance is " << distance;
-        }
+            }
 
-        // Now should have a track with one cluster from each plane
-        if(track->nClusters() < minHitsOnTrack) {
-            delete track;
-            continue;
-        }
-
-        // Fit the track
-        track->fit();
-
-        // Save the track
-        tracks->push_back(track);
-
-        // Fill histograms
-        trackChi2->Fill(track->chi2());
-        clustersPerTrack->Fill(track->nClusters());
-        trackChi2ndof->Fill(track->chi2ndof());
-        trackAngleX->Fill(atan(track->m_direction.X()));
-        trackAngleY->Fill(atan(track->m_direction.Y()));
-
-        // Make residuals
-        Clusters trackClusters = track->clusters();
-        for(auto& trackCluster : trackClusters) {
-            string detectorID = trackCluster->detectorID();
-            ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->globalZ());
-            residualsX[detectorID]->Fill(intercept.X() - trackCluster->globalX());
-            residualsY[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
-        }
-
-        // Add potential associated clusters from the DUT:
-        for(auto& dutcluster : dutClusters) {
-
-            // Check distance between track and cluster
-            ROOT::Math::XYZPoint intercept = track->intercept(dutcluster->globalZ());
-            double xdistance = intercept.X() - dutcluster->globalX();
-            double ydistance = intercept.Y() - dutcluster->globalY();
-            if(abs(xdistance) > spatialCut_DUT)
+            // Now should have a track with one cluster from each plane
+            if(track->nClusters() < minHitsOnTrack) {
+                delete track;
                 continue;
-            if(abs(ydistance) > spatialCut_DUT)
-                continue;
+            }
 
-            LOG(DEBUG) << "Found associated cluster";
-            track->addAssociatedCluster(dutcluster);
+            // Fit the track
+            track->fit();
+
+            // Save the track
+            tracks->push_back(track);
+
+            // Fill histograms
+            trackChi2->Fill(track->chi2());
+            clustersPerTrack->Fill(track->nClusters());
+            trackChi2ndof->Fill(track->chi2ndof());
+            trackAngleX->Fill(atan(track->m_direction.X()));
+            trackAngleY->Fill(atan(track->m_direction.Y()));
+
+            // Make residuals
+            Clusters trackClusters = track->clusters();
+            for(auto& trackCluster : trackClusters) {
+                string detectorID = trackCluster->detectorID();
+                ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->globalZ());
+                residualsX[detectorID]->Fill(intercept.X() - trackCluster->globalX());
+                residualsY[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
+            }
+
+            // Add potential associated clusters from the DUT:
+            if(!m_config.has("DUT")) {
+                for(auto& dutcluster : dutClusters) {
+
+                    // Check distance between track and cluster
+                    ROOT::Math::XYZPoint intercept = track->intercept(dutcluster->globalZ());
+                    double xdistance = intercept.X() - dutcluster->globalX();
+                    double ydistance = intercept.Y() - dutcluster->globalY();
+                    if(abs(xdistance) > spatialCut_DUT)
+                        continue;
+                    if(abs(ydistance) > spatialCut_DUT)
+                        continue;
+
+                    LOG(DEBUG) << "Found associated cluster";
+                    track->addAssociatedCluster(dutcluster);
+                }
+            }
         }
+
+        // Save the tracks on the clipboard
+        tracksPerEvent->Fill(tracks->size());
+        if(tracks->size() > 0) {
+            clipboard->put("tracks", (Objects*)tracks);
+        }
+
+        // Clean up tree objects
+        for(auto& detector : get_detectors()) {
+            if(trees.count(detector->name()) != 0)
+                delete trees[detector->name()];
+        }
+
+        return Success;
     }
 
-    // Save the tracks on the clipboard
-    tracksPerEvent->Fill(tracks->size());
-    if(tracks->size() > 0) {
-        clipboard->put("tracks", (Objects*)tracks);
-    }
-
-    // Clean up tree objects
-    for(auto& detector : get_detectors()) {
-        if(trees.count(detector->name()) != 0)
-            delete trees[detector->name()];
-    }
-
-    return Success;
-}
-
-void SpatialTracking::finalise() {
-
-    LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
-}
+    void SpatialTracking::finalise() { LOG(DEBUG) << "Analysed " << m_eventNumber << " events"; }
