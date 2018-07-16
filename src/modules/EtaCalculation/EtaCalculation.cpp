@@ -11,7 +11,8 @@ EtaCalculation::EtaCalculation(Configuration config, std::vector<Detector*> dete
 }
 
 void EtaCalculation::initialise() {
-
+    // checking DUT exists
+    DUTname = m_config.has<std::string>("DUT");
     for(auto& detector : get_detectors()) {
 
         // Initialise histograms

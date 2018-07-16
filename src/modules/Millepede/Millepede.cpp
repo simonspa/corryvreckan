@@ -45,7 +45,7 @@ void Millepede::initialise() {
     // Renumber the planes in Millepede, ignoring masked planes.
     unsigned int index = 0;
     for(const auto& det : get_detectors()) {
-        if(det->name() == m_config.get<std::string>("DUT")) {
+        if(m_config.has<std::string>("DUT") && det->name() == m_config.get<std::string>("DUT")) {
             continue;
         }
         m_millePlanes[det->name()] = index;
@@ -99,7 +99,12 @@ StatusCode Millepede::run(Clipboard* clipboard) {
 void Millepede::finalise() {
 
     LOG(INFO) << "Millepede alignment";
-    const unsigned int nPlanes = num_detectors() - 1; // Subtract DUT
+    if(m_config.has<std::string>("DUT")) {
+        // assumes only 1 DUT
+        const unsigned int nPlanes = num_detectors() - 1;
+    } else {
+        const unsigned int nPlanes = num_detectors();
+    }
     const unsigned int nParameters = 6 * nPlanes;
     for(unsigned int iteration = 0; iteration < m_nIterations; ++iteration) {
         const unsigned int nTracks = m_alignmenttracks.size();
@@ -168,7 +173,7 @@ void Millepede::setConstraints(const unsigned int nPlanes) {
     // Calculate the mean z-position.
     double avgz = 0.;
     for(const auto& det : get_detectors()) {
-        if(det->name() == m_config.get<std::string>("DUT")) {
+        if(m_config.has<std::string>("DUT") && det->name() == m_config.get<std::string>("DUT")) {
             continue;
         }
         avgz += det->displacement().Z();
@@ -177,7 +182,7 @@ void Millepede::setConstraints(const unsigned int nPlanes) {
     // Calculate the variance.
     double varz = 0.0;
     for(const auto& det : get_detectors()) {
-        if(det->name() == m_config.get<std::string>("DUT")) {
+        if(m_config.has<std::string>("DUT") && det->name() == m_config.get<std::string>("DUT")) {
             continue;
         }
         const double dz = det->displacement().Z() - avgz;
@@ -199,7 +204,7 @@ void Millepede::setConstraints(const unsigned int nPlanes) {
 
     m_constraints.clear();
     for(const auto& det : get_detectors()) {
-        if(det->name() == m_config.get<std::string>("DUT")) {
+        if(m_config.has<std::string>("DUT") && det->name() == m_config.get<std::string>("DUT")) {
             continue;
         }
         const unsigned int i = m_millePlanes[det->name()];
@@ -574,10 +579,14 @@ bool Millepede::fitTrack(const std::vector<Equation>& equations,
 // Update the module positions and orientations.
 //=============================================================================
 void Millepede::updateGeometry() {
-
-    auto nPlanes = num_detectors() - 1;
+    if(m_config.has<std::string>("DUT")) {
+        // assumes only 1 DUT
+        auto nPlanes = num_detectors() - 1;
+    } else {
+        auto nPlanes = num_detectors();
+    }
     for(const auto& det : get_detectors()) {
-        if(det->name() == m_config.get<std::string>("DUT")) {
+        if(m_config.has<std::string>("DUT") && det->name() == m_config.get<std::string>("DUT")) {
             continue;
         }
         auto plane = m_millePlanes[det->name()];
