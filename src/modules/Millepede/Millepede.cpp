@@ -99,11 +99,10 @@ StatusCode Millepede::run(Clipboard* clipboard) {
 void Millepede::finalise() {
 
     LOG(INFO) << "Millepede alignment";
+    const unsigned int nPlanes = num_detectors();
     if(m_config.has("DUT")) {
         // assumes only 1 DUT
-        const unsigned int nPlanes = num_detectors() - 1;
-    } else {
-        const unsigned int nPlanes = num_detectors();
+        nPlanes = nPlanes - 1;
     }
     const unsigned int nParameters = 6 * nPlanes;
     for(unsigned int iteration = 0; iteration < m_nIterations; ++iteration) {
