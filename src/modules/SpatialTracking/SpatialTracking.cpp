@@ -125,33 +125,33 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
             if(excludeDUT) {
                 if(!m_config.has("DUT")) {
                     continue;
-                } else if (detectorID == m_config.get<std::string>("DUT"){
+                } else if(detectorID == m_config.get<std::string>("DUT")) {
                     // Keep all DUT clusters, so we can add them as associated clusters later:
                     Cluster* dutCluster = trees[detectorID]->getClosestNeighbour(cluster);
                     dutClusters.push_back(dutCluster);
                     continue;
                 }
 
-            // Get the closest neighbour
-            LOG(DEBUG) << "- looking for nearest cluster on device " << detectorID;
-            Cluster* closestCluster = trees[detectorID]->getClosestNeighbour(cluster);
+                // Get the closest neighbour
+                LOG(DEBUG) << "- looking for nearest cluster on device " << detectorID;
+                Cluster* closestCluster = trees[detectorID]->getClosestNeighbour(cluster);
 
-            LOG(DEBUG) << "still alive";
-            // If it is used do nothing
-            //      if(used[closestCluster]) continue;
+                LOG(DEBUG) << "still alive";
+                // If it is used do nothing
+                //      if(used[closestCluster]) continue;
 
-            // Check if it is within the spatial window
-            double distance =
-                sqrt((cluster->globalX() - closestCluster->globalX()) * (cluster->globalX() - closestCluster->globalX()) +
-                     (cluster->globalY() - closestCluster->globalY()) * (cluster->globalY() - closestCluster->globalY()));
+                // Check if it is within the spatial window
+                double distance = sqrt(
+                    (cluster->globalX() - closestCluster->globalX()) * (cluster->globalX() - closestCluster->globalX()) +
+                    (cluster->globalY() - closestCluster->globalY()) * (cluster->globalY() - closestCluster->globalY()));
 
-            if(distance > spatialCut)
-                continue;
+                if(distance > spatialCut)
+                    continue;
 
-            // Add the cluster to the track
-            track->addCluster(closestCluster);
-            cluster = closestCluster;
-            LOG(DEBUG) << "- added cluster to track. Distance is " << distance;
+                // Add the cluster to the track
+                track->addCluster(closestCluster);
+                cluster = closestCluster;
+                LOG(DEBUG) << "- added cluster to track. Distance is " << distance;
             }
 
             // Now should have a track with one cluster from each plane
