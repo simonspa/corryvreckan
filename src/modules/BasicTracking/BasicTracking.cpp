@@ -163,7 +163,8 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
             }
 
             if(closestCluster == NULL)
-                LOG(DEBUG) << "No cluster within spatial cut." continue;
+                LOG(DEBUG) << "No cluster within spatial cut.";
+            continue;
 
             // Add the cluster to the track
             LOG(DEBUG) << "- added cluster to track";
