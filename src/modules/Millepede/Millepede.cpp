@@ -99,11 +99,13 @@ StatusCode Millepede::run(Clipboard* clipboard) {
 void Millepede::finalise() {
 
     LOG(INFO) << "Millepede alignment";
-    const unsigned int nPlanes = num_detectors();
+
+    unsigned int nPlanes = num_detectors();
     if(m_config.has("DUT")) {
         // assumes only 1 DUT
         nPlanes = nPlanes - 1;
     }
+
     const unsigned int nParameters = 6 * nPlanes;
     for(unsigned int iteration = 0; iteration < m_nIterations; ++iteration) {
         const unsigned int nTracks = m_alignmenttracks.size();
@@ -578,11 +580,10 @@ bool Millepede::fitTrack(const std::vector<Equation>& equations,
 // Update the module positions and orientations.
 //=============================================================================
 void Millepede::updateGeometry() {
+    auto nPlanes = num_detectors();
     if(m_config.has("DUT")) {
         // assumes only 1 DUT
-        auto nPlanes = num_detectors() - 1;
-    } else {
-        auto nPlanes = num_detectors();
+        nPlanes = nPlanes - 1;
     }
     for(const auto& det : get_detectors()) {
         if(m_config.has("DUT") && det->name() == m_config.get<std::string>("DUT")) {
