@@ -74,7 +74,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
         } else {
             // Store them
             LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters from " << detectorID;
-            if(firstDetector && (!excludeDUT && detectorID != m_config.get<std::string>("DUT"))) {
+            if(firstDetector && (!m_config.has("DUT") || detectorID != m_config.get<std::string>("DUT"))) {
                 referenceClusters = tempClusters;
                 seedPlane = detector->name();
                 LOG(DEBUG) << "Seed plane is " << seedPlane;
