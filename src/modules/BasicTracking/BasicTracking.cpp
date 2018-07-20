@@ -114,7 +114,8 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
         for(auto& detectorID : detectors) {
 
             // Check if the DUT should be excluded and obey:
-            if(excludeDUT && detectorID == m_config.get<std::string>("DUT")) {
+            if(m_config.has("DUT") && excludeDUT && detectorID == m_config.get<std::string>("DUT")) {
+                LOG(DEBUG) << "Skipping DUT plane.";
                 continue;
             }
 
@@ -162,9 +163,10 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
                 }
             }
 
-            if(closestCluster == NULL)
+            if(closestCluster == NULL) {
                 LOG(DEBUG) << "No cluster within spatial cut.";
-            continue;
+                continue;
+            }
 
             // Add the cluster to the track
             LOG(DEBUG) << "- added cluster to track";

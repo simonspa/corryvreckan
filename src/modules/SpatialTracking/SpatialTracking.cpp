@@ -118,19 +118,16 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
         // plane, so first detector is 1 (not 0)
         for(auto& detectorID : detectors) {
 
-            if(trees.count(detectorID) == 0)
+            if(trees.count(detectorID) == 0) {
                 continue;
+            }
 
             // Check if the DUT should be excluded and obey:
-            if(excludeDUT) {
-                if(!m_config.has("DUT")) {
-                    continue;
-                } else if(detectorID == m_config.get<std::string>("DUT")) {
-                    // Keep all DUT clusters, so we can add them as associated clusters later:
-                    Cluster* dutCluster = trees[detectorID]->getClosestNeighbour(cluster);
-                    dutClusters.push_back(dutCluster);
-                    continue;
-                }
+            if(m_config.has("DUT") && excludeDUT && detectorID == m_config.get<std::string>("DUT")) {
+                // Keep all DUT clusters, so we can add them as associated clusters later:
+                Cluster* dutCluster = trees[detectorID]->getClosestNeighbour(cluster);
+                dutClusters.push_back(dutCluster);
+                continue;
             }
 
             // Get the closest neighbour
