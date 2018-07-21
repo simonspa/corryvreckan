@@ -417,8 +417,10 @@ void Analysis::run() {
             events_prev = m_events;
             LOG_PROGRESS(STATUS, "event_loop")
                 << "Ev: +" << m_events << " \\" << skipped << " Tr: " << m_tracks << " (" << std::setprecision(3)
-                << ((double)m_tracks / m_events)
-                << "/ev) t = " << Units::display(m_clipboard->get_persistent("eventStart"), {"ns", "us", "ms", "s"});
+                << ((double)m_tracks / m_events) << "/ev)"
+                << (m_clipboard->has_persistent("eventStart")
+                        ? " t = " + Units::display(m_clipboard->get_persistent("eventStart"), {"ns", "us", "ms", "s"})
+                        : "");
         }
 
         // Clear objects from this iteration from the clipboard

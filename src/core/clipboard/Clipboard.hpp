@@ -11,8 +11,8 @@
 #define CORRYVRECKAN_CLIPBOARD_H
 
 #include <iostream>
-#include <map>
 #include <string>
+#include <unordered_map>
 
 #include "core/utils/log.h"
 #include "objects/Object.hpp"
@@ -105,7 +105,7 @@ namespace corryvreckan {
         std::vector<std::string> m_dataID;
 
         // Persistent clipboard storage
-        std::map<std::string, double> m_persistent_data;
+        std::unordered_map<std::string, double> m_persistent_data;
     };
 } // namespace corryvreckan
 

@@ -70,7 +70,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
     LOG(TRACE) << "Power on time: " << Units::display(m_powerOnTime, {"ns", "us", "s"});
     LOG(TRACE) << "Power off time: " << Units::display(m_powerOffTime, {"ns", "us", "s"});
 
-    //    if(clipboard->get_persistent("currentTime") < 13.5)
+    //    if(clipboard->get_persistent("eventStart") < 13.5)
     //        return Success;
 
     // Track chi2/ndof cut
@@ -179,7 +179,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             tracksVersusPowerOnTime->Fill(timeSincePowerOn);
 
             if(timeSincePowerOn < 200000) {
-                LOG(TRACE) << "Track at time " << Units::display(clipboard->get_persistent("currentTime"), {"ns", "us", "s"})
+                LOG(TRACE) << "Track at time " << Units::display(clipboard->get_persistent("eventStart"), {"ns", "us", "s"})
                            << " has time shutter open of " << Units::display(timeSincePowerOn, {"ns", "us", "s"});
                 LOG(TRACE) << "Shutter open time is " << Units::display(m_shutterOpenTime, {"ns", "us", "s"})
                            << ", shutter close time is " << Units::display(m_shutterCloseTime, {"ns", "us", "s"});

@@ -618,7 +618,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             // If events are loaded based on time intervals, take all hits where the
             // time is within this window
 
-            // Ignore pixel data if it is before the "currentTime" read from the clipboard storage:
+            // Ignore pixel data if it is before the "eventStart" read from the clipboard storage:
             if(temporalSplit && (timestamp < clipboard->get_persistent("eventStart"))) {
                 LOG(TRACE) << "Skipping pixel, is before event window (" << Units::display(timestamp, {"s", "us", "ns"})
                            << " < " << Units::display(clipboard->get_persistent("eventStart"), {"s", "us", "ns"}) << ")";

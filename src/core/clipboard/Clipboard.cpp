@@ -28,7 +28,7 @@ double Clipboard::get_persistent(std::string name) {
     try {
         return m_persistent_data.at(name);
     } catch(std::out_of_range&) {
-        throw MissingDataError("Key " + name + " not available on clipboard");
+        throw MissingDataError(name);
     }
 }
 
