@@ -103,7 +103,7 @@ void Millepede::finalise() {
     unsigned int nPlanes = num_detectors();
     if(m_config.has("DUT")) {
         // assumes only 1 DUT
-        nPlanes = nPlanes - 1;
+        nPlanes--;
     }
 
     const unsigned int nParameters = 6 * nPlanes;

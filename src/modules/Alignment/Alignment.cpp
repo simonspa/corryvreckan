@@ -38,9 +38,6 @@ Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
         } else {
             detectorToAlign = m_config.get<std::string>("DUT");
         }
-    }
-
-    if(alignmentMethod == 1) {
         LOG(INFO) << "Aligning detector \"" << detectorToAlign << "\"";
     } else {
         LOG(INFO) << "Aligning telescope";
