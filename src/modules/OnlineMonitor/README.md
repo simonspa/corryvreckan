@@ -1,8 +1,8 @@
-## OnlineMonitor
+# OnlineMonitor
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
 **Status**: Functional
 
-#### Description
+### Description
 This module opens a GUI to monitor the progress of the reconstruction.
 Since Linux allows concurrent (reading) file access, this can already e started while a run is recorded to disk and thus serves as online monitoring tool during data taking.
 A set of canvases is available to display a variety of information ranging from hitmaps and basic correlation plots to more advances results such as tracking quality and track angles.
@@ -27,7 +27,7 @@ Several keywords can be used in the plot path, which are parsed and interpreted 
 
 The "corryvreckan" namespace i not required to be added to the plot path.
 
-#### Parameters
+### Parameters
 * `update`: Number of events after which to update, defaults to `500`.
 * `canvasTitle`: Title of the GUI window to be shown, defaults to `Corryvreckan Testbeam Monitor`. This parameter can be used to e.g. display the current run number in the window title.
 
@@ -44,7 +44,7 @@ The "corryvreckan" namespace i not required to be added to the plot path.
 * `ChargeDistributions`: List of plots to be placed on the "ChargeDistributions" canvas of the online monitor. By default, this canvas displays `Timepix3Clustering/clusterTot_%DETECTOR%` for all detectors.
 * `EventTimes`: List of plots to be placed on the "EventTimes" canvas of the online monitor. By default, this canvas displays `TestAlgorithm/eventTimes_%DETECTOR%` for all detectors.
 
-#### Plots produced
+### Plots produced
 Overview canvas:
 
 * Cluster ToT of reference plane
@@ -56,7 +56,7 @@ Tracking canvas:
 * Track chi^2
 * Track angle in X
 
-#### Usage
+### Usage
 ```toml
 [OnlineMonitor]
 update = 200
