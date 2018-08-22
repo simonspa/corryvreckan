@@ -32,6 +32,11 @@ namespace corryvreckan {
 
     private:
         /*
+         * @brief Converts gray encoded data to binary number
+         */
+        uint32_t gray_decode(uint32_t gray);
+
+        /*
          * @brief Read data in the format written by the Karlsruhe readout system
          */
         Pixels* read_legacy_data(double start_time, double end_time);
@@ -51,6 +56,7 @@ namespace corryvreckan {
 
         // Resuming in next event:
         std::streampos oldpos;
+        unsigned long long oldfpga_ts;
 
         TH2F* hHitMap;
         TH1F* hPixelToT;
@@ -72,6 +78,8 @@ namespace corryvreckan {
         double m_clockCycle;
 
         std::map<std::string, int> m_identifiers;
+
+        unsigned int data_pixel_{}, data_header_{};
     };
 } // namespace corryvreckan
 #endif // ATLASpixEventLoader_H
