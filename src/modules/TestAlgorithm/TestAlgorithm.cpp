@@ -8,6 +8,9 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::vector<Detector*> detect
     makeCorrelations = m_config.get<bool>("makeCorrelations", false);
     timingCut = m_config.get<double>("timingCut", Units::convert(100, "ns"));
     LOG(DEBUG) << "Setting makeCorrelations to: " << makeCorrelations;
+
+    m_eventLength = m_config.get<double>("eventLength", 1);
+
 }
 
 void TestAlgorithm::initialise() {
@@ -36,7 +39,8 @@ void TestAlgorithm::initialise() {
         name = "correlationY_" + detector->name();
         correlationY[detector->name()] = new TH1F(name.c_str(), name.c_str(), 1000, -10., 10.);
         name = "correlationTime_" + detector->name();
-        correlationTime[detector->name()] = new TH1F(name.c_str(), name.c_str(), 2000000, -0.5, 0.5);
+	// time correlation plot range should cover length of events. nanosecond binning.
+        correlationTime[detector->name()] = new TH1F(name.c_str(), name.c_str(), (int)(2.*m_eventLength), -1*m_eventLength, m_eventLength);
         name = "correlationTimeInt_" + detector->name();
         correlationTimeInt[detector->name()] = new TH1F(name.c_str(), name.c_str(), 8000, -40000, 40000);
 
