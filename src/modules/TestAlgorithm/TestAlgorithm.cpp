@@ -10,7 +10,6 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::vector<Detector*> detect
     LOG(DEBUG) << "Setting makeCorrelations to: " << makeCorrelations;
 
     m_eventLength = m_config.get<double>("eventLength", 1);
-
 }
 
 void TestAlgorithm::initialise() {
@@ -39,10 +38,14 @@ void TestAlgorithm::initialise() {
         name = "correlationY_" + detector->name();
         correlationY[detector->name()] = new TH1F(name.c_str(), name.c_str(), 1000, -10., 10.);
         name = "correlationTime_" + detector->name();
-	// time correlation plot range should cover length of events. nanosecond binning.
-        correlationTime[detector->name()] = new TH1F(name.c_str(), name.c_str(), (int)(2.*m_eventLength), -1*m_eventLength, m_eventLength);
+        // time correlation plot range should cover length of events. nanosecond binning.
+        correlationTime[detector->name()] =
+            new TH1F(name.c_str(), name.c_str(), (int)(2. * m_eventLength), -1 * m_eventLength, m_eventLength);
+        correlationTime[detector->name()]->GetXaxis()->SetTitle("Reference cluster time stamp - cluster time stamp [ns]");
         name = "correlationTimeInt_" + detector->name();
         correlationTimeInt[detector->name()] = new TH1F(name.c_str(), name.c_str(), 8000, -40000, 40000);
+        correlationTimeInt[detector->name()]->GetXaxis()->SetTitle(
+            "Reference cluster time stamp - cluster time stamp [1/40 MHz]");
 
         // 2D correlation plots (pixel-by-pixel, local coordinates):
         name = "correlationX_2Dlocal_" + detector->name();
@@ -129,7 +132,8 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
                         correlationY2D[detector->name()]->Fill(cluster->globalY(), refCluster->globalY());
                         correlationY2Dlocal[detector->name()]->Fill(cluster->row(), refCluster->row());
                     }
-                    correlationTime[detector->name()]->Fill(Units::convert(timeDifference, "s"));
+                    //                    correlationTime[detector->name()]->Fill(Units::convert(timeDifference, "s"));
+                    correlationTime[detector->name()]->Fill(timeDifference); // time difference in ns
                     correlationTimeInt[detector->name()]->Fill(timeDifferenceInt);
                 }
             }
