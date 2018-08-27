@@ -19,6 +19,12 @@ ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<Detec
 
     m_startTime = m_config.get<double>("startTime", 0.);
     m_toaMode = m_config.get<bool>("toaMode", false);
+
+    // m_clkdivendM = m_config.get<int>("clkdivend", 0.) + 1;
+    m_clkdivend2M = m_config.get<int>("clkdivend2", 0.) + 1;
+
+    // ts1Range = 0x800 * m_clkdivendM;
+    ts2Range = 0x40 * m_clkdivend2M;
 }
 
 uint32_t ATLASpixEventLoader::gray_decode(uint32_t gray) {
@@ -91,7 +97,7 @@ void ATLASpixEventLoader::initialise() {
             m_file.clear();
             m_file.seekg(ios::beg);
             LOG(WARNING) << "No T0 event was found in file " << m_filename
-                         << ". Rewinding to the file to the beginning and loading all events.";
+                         << ". Rewinding the file to the beginning and loading all events.";
             break;
         } else if((datain & 0xFF000000) == 0x70000000) {
             LOG(STATUS) << "Found T0 event at position " << m_file.tellg() << ". Skipping all data before this event.";
@@ -253,15 +259,19 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
 
             // Structure: {1'b1, column_addr[5:0], row_addr[8:0], rise_timestamp[9:0], fall_timestamp[5:0]}
             // Extract pixel data
-            // shift by 2 (*4) because of clkdivend2 == 3
-            long ts2 = gray_decode((datain)&0x003F) << 2;
+            long ts2 = gray_decode((datain)&0x003F);
             // long ts2 = gray_decode((datain>>6)&0x003F);
-            // TS1 counter is half speed of TS2. By multiplying with 2 we make it equal.
+            // TS1 counter is by default half speed of TS2. By multiplying with 2 we make it equal.
             long ts1 = (gray_decode((datain >> 6) & 0x03FF)) << 1;
             // long ts1 = (gray_decode(((datain << 4) & 0x3F0) | ((datain >> 12) & 0xF)))<<1;
             long row = ((datain >> (6 + 10)) & 0x01FF);
             long col = ((datain >> (6 + 10 + 9)) & 0x003F);
             // long tot = 0;
+
+            // correction for clkdivend
+            // ts1 *= (m_clkdivendM);
+            // correction for clkdivend2
+            ts2 *= (m_clkdivend2M);
 
             ts_diff = ts1 - (readout_ts & 0x07FF);
 
@@ -289,9 +299,9 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
 
             // hit_ts = (readout_ts & 0xFFFFFFFFFFFFF800) + ts1;
 
-            long tot = ts2 - (ts1 & 0xFF);
+            long tot = ts2 - (ts1 % ts2Range);
             if(tot < 0) {
-                tot += 0x100;
+                tot += ts2Range;
             }
 
             // Convert the timestamp to nanoseconds:

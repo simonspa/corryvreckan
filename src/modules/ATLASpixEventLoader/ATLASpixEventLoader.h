@@ -57,6 +57,8 @@ namespace corryvreckan {
         // Resuming in next event:
         std::streampos oldpos;
         unsigned long long oldfpga_ts;
+        // int ts1Range;
+        int ts2Range;
 
         TH2F* hHitMap;
         TH1F* hPixelToT;
@@ -76,6 +78,8 @@ namespace corryvreckan {
         std::string m_detectorID;
         bool m_legacyFormat;
         double m_clockCycle;
+        // int m_clkdivendM;
+        int m_clkdivend2M;
 
         std::map<std::string, int> m_identifiers;
 
