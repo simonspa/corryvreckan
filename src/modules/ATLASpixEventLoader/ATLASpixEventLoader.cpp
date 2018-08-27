@@ -133,7 +133,8 @@ void ATLASpixEventLoader::initialise() {
     auto det = get_detector(m_detectorID);
     hHitMap = new TH2F("hitMap", "hitMap", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
     //    hPixelToT = new TH1F("pixelToT", "pixelToT", 100, 0, 100);
-    hPixelToT = new TH1F("pixelToT", "pixelToT", 256, 0, 256);
+    hPixelToT = new TH1F("pixelToT", "pixelToT", 64, 0, ts2Range);
+    hPixelToT->GetXaxis()->SetTitle("ToT in TS2 counter units");
     hPixelToTCal = new TH1F("pixelToTCal", "pixelToT", 100, 0, 100);
     hPixelToA = new TH1F("pixelToA", "pixelToA", 100, 0, 100);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 200, 0, 200);
