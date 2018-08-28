@@ -12,7 +12,7 @@ ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<Detec
     m_inputDirectory = m_config.get<std::string>("inputDirectory");
     m_calibrationFile = m_config.get<std::string>("calibrationFile", std::string());
 
-    m_clockCycle = m_config.get<double>("clockCycle", Units::convert(25, "ns"));
+    m_clockCycle = m_config.get<double>("clockCycle", Units::convert(6.25, "ns"));
 
     // Allow reading of legacy data format using the Karlsruhe readout system:
     m_legacyFormat = m_config.get<bool>("legacyFormat", false);
