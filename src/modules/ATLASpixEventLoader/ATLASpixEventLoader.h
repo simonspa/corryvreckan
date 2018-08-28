@@ -56,7 +56,8 @@ namespace corryvreckan {
 
         // Resuming in next event:
         std::streampos oldpos;
-        unsigned long long oldfpga_ts;
+        unsigned long long old_readout_ts;
+        unsigned long long old_fpga_ts;
         // int ts1Range;
         int ts2Range;
 
