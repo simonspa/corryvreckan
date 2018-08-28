@@ -133,8 +133,9 @@ void ATLASpixEventLoader::initialise() {
     auto det = get_detector(m_detectorID);
     hHitMap = new TH2F("hitMap", "hitMap", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
     //    hPixelToT = new TH1F("pixelToT", "pixelToT", 100, 0, 100);
+    // std::string totTitle = "pixelToT;x ToT in " + string(m_clockCycle) + " ns units";
     hPixelToT = new TH1F("pixelToT", "pixelToT", 64, 0, ts2Range);
-    hPixelToT->GetXaxis()->SetTitle("ToT in TS2 counter units");
+    hPixelToT->GetXaxis()->SetTitle("ToT in global clk (TS1) cycles.");
     hPixelToTCal = new TH1F("pixelToTCal", "pixelToT", 100, 0, 100);
     hPixelToA = new TH1F("pixelToA", "pixelToA", 100, 0, 100);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 200, 0, 200);
@@ -304,7 +305,6 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
 
             // Convert the timestamp to nanoseconds:
             double timestamp = hit_ts * m_clockCycle;
-            // double tot_ns = tot * m_clockCycle;
 
             if(timestamp > end_time) {
                 keep_pointer_stored = true;
@@ -334,6 +334,8 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
             if(tot < 0) {
                 tot += ts2Range;
             }
+            // convert ToT to nanoseconds
+            double tot_ns = tot * m_clockCycle;
 
             LOG(TRACE) << "HIT: TS1: " << ts1 << "\t0x" << std::hex << ts1 << "\tTS2: " << ts2 << "\t0x" << std::hex << ts2
                        << "\tTS_FULL: " << hit_ts << "\t" << Units::display(timestamp, {"s", "us", "ns"})
