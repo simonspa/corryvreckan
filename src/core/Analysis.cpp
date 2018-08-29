@@ -144,7 +144,9 @@ void Analysis::load_modules() {
     std::vector<Configuration> configs = conf_mgr_->getConfigurations();
 
     // Create histogram output file
-    std::string histogramFile = global_config.getPath("histogramFile");
+    global_config.setAlias("histogram_file", "histogramFile");
+    std::string histogramFile = global_config.getPath("histogram_file");
+
     m_histogramFile = std::make_unique<TFile>(histogramFile.c_str(), "RECREATE");
     m_directory = m_histogramFile->mkdir("corryvreckan");
     if(m_histogramFile->IsZombie()) {
@@ -435,10 +437,6 @@ void Analysis::run() {
             break;
         }
     }
-
-    // If running the gui, don't close until the user types a command
-    if(global_config.get<bool>("gui", false))
-        std::cin.ignore();
 }
 
 void Analysis::terminate() {

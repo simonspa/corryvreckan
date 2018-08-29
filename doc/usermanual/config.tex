@@ -1,3 +1,8 @@
+% Add command to display allpix squared
+\DeclareMathAlphabet\mathbfcal{OMS}{cmsy}{b}{n}
+\newcommand{\corry}{$\mathcal{C}$orryvreckan\xspace}
+\newcommand{\corrybold}{$\mathbfcal{C}$\textbf{orryvreckan}\xspace}
+
 % Temporary TODO commands
 % \newcommand{\comment}[1]{#1} % DRAFT
 \newcommand{\comment}[1]{} % FINAL
@@ -13,6 +18,11 @@
 
 % Typeset framework parameter and escape underscores:
 \DeclareUrlCommand\parameter{\bfseries\urlstyle{tt}}
+\newcommand{\command}[1]{\parameter{#1}}
+
+% Typeset directory and file names
+\DeclareUrlCommand\dir{\urlstyle{tt}}
+\newcommand{\file}[1]{\dir{#1}}
 
 % Define ini format used in the converted Markdown files
 \lstdefinelanguage{Ini}
@@ -34,10 +44,11 @@
 \newenvironment{warning}
   {\newcommand\colboxcolor{pink}%
    \begin{lrbox}{\warningbox}%
-   \begin{minipage}{\dimexpr\columnwidth-2\fboxsep\relax}}
+   \begin{minipage}{\dimexpr\linewidth-2em\relax}}
   {\end{minipage}\end{lrbox}%
    \begin{center}
-     \colorbox{\colboxcolor}{\usebox{\warningbox}}
+     \setlength\fboxsep{0pt}
+     \colorbox{\colboxcolor}{\setlength\fboxsep{1em}\fbox{\usebox{\warningbox}}}
   \end{center}}
 
 % Command to add all modules
@@ -62,11 +73,11 @@
 \newcommand{\project}{@CMAKE_PROJECT_NAME@}
 
 % Create addreferences command (overwritten for HTML in config)
-\newcommand{\addreferencesline}{\addcontentsline{toc}{section}{References}}
+\newcommand{\addreferencesline}{\addcontentsline{toc}{chapter}{References}}
 
 % Command to add the license (overwritten for HTML in config)
 \newcommand{\addlicense}{
-\begin{table}
+\begin{table}[H]
 \centering
 \renewcommand{\arraystretch}{1.5}% Spread rows out...
 \begin{tabular}{>{\centering\arraybackslash}m{.10\textwidth}>{\raggedright\arraybackslash}m{.90\textwidth}}
