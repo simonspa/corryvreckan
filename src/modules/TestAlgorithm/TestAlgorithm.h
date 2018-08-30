@@ -42,8 +42,8 @@ namespace corryvreckan {
         bool makeCorrelations;
         double timingCut;
 
-	// parameters
-	double m_eventLength;
+        // parameters
+        double m_eventLength;
     };
 } // namespace corryvreckan
 #endif // TESTALGORITHM_H
