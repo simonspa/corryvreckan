@@ -35,22 +35,6 @@ uint32_t ATLASpixEventLoader::gray_decode(uint32_t gray) {
     return bin;
 }
 
-/*
-long int ATLASpixEventLoader::ts_correction(long int coarseLSBs, long int fine, long int finePeriod, long int maxFwd) {
-    long int diff = fine - coarseLSBs;
-    if (diff > 0) {
-        if (diff > maxFwd) {
-            diff -= finePeriod;
-        }
-    }
-    else {
-        if (diff < (maxFwd-finePeriod) {
-            diff += finePeriod;
-        }
-    }
-}
-*/
-
 void ATLASpixEventLoader::initialise() {
 
     uint32_t datain;
@@ -132,10 +116,11 @@ void ATLASpixEventLoader::initialise() {
     // Make histograms for debugging
     auto det = get_detector(m_detectorID);
     hHitMap = new TH2F("hitMap", "hitMap", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
-    //    hPixelToT = new TH1F("pixelToT", "pixelToT", 100, 0, 100);
+    // hPixelToT = new TH1F("pixelToT", "pixelToT", 100, 0, 100);
     // std::string totTitle = "pixelToT;x ToT in " + string(m_clockCycle) + " ns units";
-    hPixelToT = new TH1F("pixelToT", "pixelToT", 64, 0, ts2Range);
-    hPixelToT->GetXaxis()->SetTitle("ToT in global clk (TS1) cycles.");
+    // hPixelToT = new TH1F("pixelToT", "pixelToT", 64, 0, ts2Range*m_clockCycle);
+    hPixelToT = new TH1F("pixelToT", "pixelToT", 64, 0, 64);
+    hPixelToT->GetXaxis()->SetTitle("ToT in TS2 clock cycles.");
     hPixelToTCal = new TH1F("pixelToTCal", "pixelToT", 100, 0, 100);
     hPixelToA = new TH1F("pixelToA", "pixelToA", 100, 0, 100);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 200, 0, 200);
@@ -191,6 +176,7 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
 
     for(auto px : (*pixels)) {
         hHitMap->Fill(px->column(), px->row());
+        // hPixelToT->Fill((px->tot())*m_clockCycle);
         hPixelToT->Fill(px->tot());
         hPixelToTCal->Fill(px->charge());
         hPixelToA->Fill(px->timestamp());
@@ -275,7 +261,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
             // correction for clkdivend
             // ts1 *= (m_clkdivendM);
             // correction for clkdivend2
-            ts2 *= (m_clkdivend2M);
+            // ts2 *= (m_clkdivend2M);
 
             ts_diff = ts1 - (readout_ts & 0x07FF);
 
@@ -330,12 +316,12 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
             }
 
             // calculate ToT only when pixel is good for storing (division is time consuming)
-            long tot = ts2 - (ts1 % ts2Range);
+            int tot = ts2 - ((hit_ts % (long long)(64 * m_clkdivend2M)) / m_clkdivend2M);
             if(tot < 0) {
-                tot += ts2Range;
+                tot += 64;
             }
             // convert ToT to nanoseconds
-            double tot_ns = tot * m_clockCycle;
+            // double tot_ns = tot * m_clockCycle;
 
             LOG(TRACE) << "HIT: TS1: " << ts1 << "\t0x" << std::hex << ts1 << "\tTS2: " << ts2 << "\t0x" << std::hex << ts2
                        << "\tTS_FULL: " << hit_ts << "\t" << Units::display(timestamp, {"s", "us", "ns"})
