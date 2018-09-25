@@ -1,13 +1,13 @@
-## DUTAnalysis
+# DUTAnalysis
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>) ; Daniel Hynds (<daniel.hynds@cern.ch>)  
 **Status**: Functional  
 
-#### Description
+### Description
 This module associates DUT clusters to telescope tracks.
 
 Using the appropriate parameter settings in the configuration file, plots using power pulsing and/or Monte-Carlo truth information can be produced.
 
-#### Parameters
+### Parameters
 * `DUT`: Name of the DUT plane.
 * `useMCtruth`: Boolean to set if Monte-Carlo truth information is available and should be used. Default value is `false`.
 * `digitalPowerPulsing`: Boolean to set if power pulsing was used and that this information should be used. Default value is `false`.
@@ -15,7 +15,7 @@ Using the appropriate parameter settings in the configuration file, plots using 
 * `spatialCut`: maximum distance between cluster and track for the cluster to be taken into account. Default value is `200um`.
 * `chi2ndofCut`: maximum chi^2 ndof value allowed for tracks to be used; tracks with values above this will be excluded. Default value is `3.0`.
 
-#### Plots produced
+### Plots produced
 * Tracks vs time
 * Associated tracks vs time
 * Residual in X
@@ -34,7 +34,7 @@ Using the appropriate parameter settings in the configuration file, plots using 
 * Tracks vs time since power on, only produced in `digitalPowerPulsing = true`
 * Associated tracks vs time since power on, only produced in `digitalPowerPulsing = true`
 
-#### Usage
+### Usage
 ```toml
 [DUTAnalysis]
 digitalPowerPusling = false

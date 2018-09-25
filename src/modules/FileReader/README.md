@@ -1,11 +1,11 @@
-## FileReader
+# FileReader
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)   
 **Status**: Functional   
 
-#### Description
+### Description
 This module reads in an input file containing trees with data previously written out by the `FileWriter`. The read in objects are stored on the clipboard. It reads in `pixel`, `cluster`, `track`, and/or `MCparticle` objects.
 
-#### Parameters
+### Parameters
 * `onlyDUT`: Boolean to decide if data is read in from only the DUT. Default value is `false`.
 * `readPixels`: Boolean to choose if pixel objects are to be read in. Default value is `true`.
 * `readClusters`: Boolean to choose if cluster objects are to be read in. Default value is `false`.
@@ -15,10 +15,7 @@ This module reads in an input file containing trees with data previously written
 * `timeWindow`: Data with time lower than this value will be read in. Default value is `1s`.
 * `DUT`: Name of the DUT plane.
 
-#### Plots produced
-No plots are produced.
-
-#### Usage
+### Usage
 ```toml
 [FileReader]
 onlyDUT = true

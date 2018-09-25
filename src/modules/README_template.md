@@ -1,22 +1,22 @@
-## NAME
+# NAME
 **Maintainer**: NAME (<EMAIL>)   
 **Status**: Outdated, Functional, or Work in progress   
 
-#### Description
+### Description
 DESCRIPTION
 
-#### Parameters
+### Parameters
 * `PARAMETERNAME`: EXPLANATION. Default value is `DEFAULT`.
 
-Or No parameters are used from the configuration file.
+Or: **No parameters are used from the configuration file.**
 
-#### Plots produced
+### Plots produced
 * PLOT or No plots are produced.
 
 For each detector the following plots are produced:
 * PLOT
 
-#### Usage
+### Usage
 ```toml
 [NAME]
 ALLPARAMETERS = VALUE

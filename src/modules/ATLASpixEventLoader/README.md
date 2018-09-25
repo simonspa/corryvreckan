@@ -1,25 +1,25 @@
-## ATLASpixEventLoader
+# ATLASpixEventLoader
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
-**Status**: Functional
+**Status**: Functional 
 
-#### Description
+### Description
 This module reads in data for the ATLASpix device from an input file created by the CaRIBou readout system.
 
 The module opens and reads one data file in the specified input directory with the ending `.dat`. For each hit it, stores the detectorID, row, column, and ToT.
 
 This module requires either another event loader of another detector type before which defines the event start and end times (variables `eventStart` and `eventEnd` on the clipboard) or an instance of the Metronome module which provides this information.
 
-#### Parameters
+### Parameters
 * `inputDirectory`: Path to the directory containing the `.dat` file. This path should lead to the directory above the ALTASpix directory, as this string is added to the input directory in the module.
 * `clockCycle`: Period of the clock used to count the trigger timestamps in, defaults to `25ns`
 * `DUT`: Name of the DUT plane. The ATLASpix device is assumed to be the `DUT`.
 
-#### Plots produced
+### Plots produced
 * 2D Hit map
 * 1D Pixel ToT histogram
 * 1D Pixels per frame histogram
 
-#### Usage
+### Usage
 ```toml
 [ATLASpixEventLoader]
 DUT = "W0005_H03"

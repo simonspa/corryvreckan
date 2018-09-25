@@ -1,0 +1,258 @@
+\chapter{Configuration Files}
+\label{ch:configuration_files}
+The framework is configured with human-readable key/value based configuration files.
+The configuration format consists of section headers within $[$ and $]$ brackets, and a global section without header at the start.
+Each of these sections contains a set of key/value pairs separated by the \texttt{=} character.
+Comments are indicated using the hash symbol (\texttt{\#}).
+
+The framework has the following two required layers of configuration files:
+\begin{itemize}
+\item The \textbf{main} configuration: The most important configuration file and the file that is passed directly to the binary.
+Contains both the global framework configuration and the list of modules to instantiate together with their configuration.
+
+\item The \textbf{detector} configuration passed to the framework to determine the geometry.
+Describes the detector setup, containing the position, orientation and type of all detectors along with additional properties crucial for the reconstruction.
+\end{itemize}
+
+In the following paragraphs, the available types and the unit system are explained and an introduction to the different configuration files is given.
+
+\section{Parsing types and units}
+\label{sec:config_values}
+The \corry framework supports the use of a variety of types for all configuration values.
+The module requesting the configuration key specifies how the value type should be interpreted.
+An error will be raised if either the key is not specified in the configuration file, the conversion to the desired type is not possible, or if the given value is outside the domain of possible options.
+Please refer to the module documentation in Chapter~\ref{ch:modules} for the list of module parameters and their types.
+Parsing the value roughly follows common-sense, but a few special rules do apply:
+\begin{itemize}
+\item If the value is a \textbf{string}, it may be enclosed by a single pair of double quotation marks (\texttt{"}), which are stripped before passing the value to the modules.
+If the string is not enclosed by quotation marks, all whitespace before and after the value is erased.
+If the value is an array of strings, the value is split at every whitespace or comma (\texttt{,}) that is not enclosed in quotation marks.
+\item If the value is a \textbf{boolean}, either numerical (\texttt{0}, \texttt{1}) or textual (\texttt{false}, \texttt{true}) representations are accepted.
+\item If the value is a \textbf{relative path}, that path will be made absolute by adding the absolute path of the directory that contains the configuration file where the key is defined.
+\item If the value is an \textbf{arithmetic} type, it may have a suffix indicating the unit.
+The list of base units is shown in Table~\ref{tab:units}.
+\end{itemize}
+
+\begin{warning}
+  If no units are specified, values will always be interpreted in the base units of the framework.
+  In some cases this can lead to unexpected results.
+  E.g. specifying a bias voltage as \texttt{bias\_voltage = 50} results in an applied voltage of \SI{50}{\mega\volt}.
+  Therefore it is strongly recommended to always specify units in the configuration files.
+\end{warning}
+
+The internal base units of the framework are not chosen for user convenience but for maximum precision of the calculations and in order to avoid the necessity of conversions in the code.
+
+\begin{table}[tbp]
+\caption{List of units supported by \corry}
+\label{tab:units}
+\centering
+\begin{tabular}{lll}
+  \toprule
+\textbf{Quantity}                 & \textbf{Default unit}                   & \textbf{Auxiliary units} \\
+ \midrule
+\multirow{6}{*}{\textit{Length}}  & \multirow{6}{*}{mm (millimeter)}        & nm (nanometer)           \\
+                                  &                                         & um (micrometer)          \\
+                                  &                                         & cm (centimeter)          \\
+                                  &                                         & dm (decimeter)           \\
+                                  &                                         & m (meter)                \\
+                                  &                                         & km (kilometer)           \\
+ \midrule
+\multirow{4}{*}{\textit{Time}}    & \multirow{4}{*}{ns (nanosecond)}        & ps (picosecond)          \\
+                                  &                                         & us (microsecond)         \\
+                                  &                                         & ms (millisecond)         \\
+                                  &                                         & s (second)               \\
+\midrule
+\multirow{3}{*}{\textit{Energy}}  & \multirow{4}{*}{MeV (megaelectronvolt)} & eV (electronvolt)        \\
+                                  &                                         & keV (kiloelectronvolt)   \\
+                                  &                                         & GeV (gigaelectronvolt)   \\
+\midrule
+\textit{Temperature}              & K (kelvin)                              & ---                      \\
+\midrule
+\multirow{2}{*}{\textit{Charge}}  & e (elementary charge)                   & C (coulomb)              \\
+                                  &                                         & ke (kiloelectrons)       \\
+\midrule
+\multirow{2}{*}{\textit{Voltage}} & \multirow{2}{*}{MV (megavolt)}          & V (volt)                 \\
+                                  &                                         & kV (kilovolt)            \\
+\midrule
+\multirow{2}{*}{\textit{Angle}}   & \multirow{2}{*}{rad (radian)}           & deg (degree)             \\
+                                  &                                         & mrad (milliradian)       \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Combinations of base units can be specified by using the multiplication sign \texttt{*} and the division sign \texttt{/} that are parsed in linear order (thus $\frac{V m}{s^2}$ should be specified as $V*m/s/s$).
+The framework assumes the default units (as given in Table~\ref{tab:units}) if the unit is not explicitly specified.
+It is recommended to always specify the unit explicitly for all parameters that are not dimensionless as well as for angles.
+
+Examples of specifying key/values pairs of various types are given below:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# All whitespace at the front and back is removed
+first_string =   string_without_quotation
+# All whitespace within the quotation marks is preserved
+second_string = "  string with quotation marks  "
+# Keys are split on whitespace and commas
+string_array = "first element" "second element","third element"
+# Integer and floats can be specified in standard formats
+int_value = 42
+float_value = 123.456e9
+# Units can be passed to arithmetic type
+energy_value = 1.23MeV
+time_value = 42ns
+# Units are combined in linear order
+acceleration_value = 1.0m/s/s
+# Thus the quantity below is the same as 1.0deg*kV*K/m/s
+random_quantity = 1.0deg*kV/m/s*K
+# Relative paths are expanded to absolute
+# Path below will be /home/user/test if the config file is in /home/user
+output_path = "test"
+# Booleans can be represented in numerical or textual style
+my_switch = true
+my_other_switch = 0
+\end{minted}
+
+\section{Main configuration}
+\label{sec:main_config}
+The main configuration consists of a set of sections specifying the modules used.
+All modules are executed in the \emph{linear} order in which they are defined.
+There are a few section names which have a special meaning in the main configuration, namely the following:
+\begin{itemize}
+\item The \textbf{global} (framework) header sections: These are all zero-length section headers (including the one at the beginning of the file) and all sections marked with the header \texttt{[Corryvreckan]} (case-insensitive).
+These are combined and accessed together as the global configuration, which contain all parameters of the framework itself (see Section~\ref{sec:framework_parameters} for details).
+All key-value pairs defined in this section are also inherited by all individual configurations as long the key is not defined in the module configuration itself. This is encouraged for module parameters used in multiple modules.
+\item The \textbf{ignore} header sections: All sections with name \texttt{[Ignore]} are ignored.
+Key-value pairs defined in the section as well as the section itself are discarded by the parser.
+These section headers are useful for quickly enabling and disabling individual modules by replacing their actual name by an ignore section header.
+\end{itemize}
+
+All other section headers are used to instantiate modules of the respective name.
+Installed module libraries are loaded automatically at startup.
+Parameters defined under the header of a module are local to that module and are not inherited by other modules.
+
+An example for a valid albeit illustrative \corry main configuration file is:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# Key is part of the empty section and therefore the global configuration
+string_value = "example1"
+# The location of the detector configuration is a global parameter
+detectors_file = "testbeam_setup.conf"
+# The Corryvreckan section is also considered global and merged with the above
+[Corryvreckan]
+another_random_string = "example2"
+
+# Stop after one thousand events:
+number_of_events = 1000
+
+# First run "ModuleA"
+[ModuleA]
+# This module takes no parameters
+
+# Ignore this section:
+[Ignore]
+my_key = "my_value"
+
+[ModuleC]
+int_value = 2
+vector_of_doubles = 23.0, 45.6, 78.9
+\end{minted}
+
+\section{Detector configuration}
+\label{sec:detector_config}
+The detector configuration consists of a set of sections describing the detectors in the setup.
+Each section starts with a header describing the name used to identify the detector; all names are required to be unique.
+Every detector should contain all of the following parameters:
+\begin{itemize}
+\item The \parameter{type} parameter is a string describing the type of detector, e.g.\ \parameter{Timepix3} or \parameter{CLICpix2}. This value might be used by some modules to distinguish between different types.
+\item The \parameter{position} in the world frame.
+This is the position of the geometric center of the sensor given in world coordinates as X, Y and Z as defined in Section~\ref{sec:coordinate_systems}.
+\item An \parameter{orientation_mode} that determines the way that the orientation is applied.
+This can be either \texttt{xyz}, \texttt{zyx} or \texttt{zxz}, where \textbf{\texttt{xyz} is used as default if the parameter is not specified}. Three angles are expected as input, which should always be provided in the order in which they are applied.
+\begin{itemize}
+    \item The \texttt{xyz} option uses extrinsic Euler angles to apply a rotation around the global $X$ axis, followed by a rotation around the global $Y$ axis and finally a rotation around the global $Z$ axis.
+    \item The \texttt{zyx} option uses the \textbf{extrinsic Z-Y-X convention} for Euler angles, also known as Pitch-Roll-Yaw or 321 convention. The rotation is represented by three angles describing first a rotation of an angle $\phi$ (yaw) about the $Z$ axis, followed by a rotation of an angle $\theta$ (pitch) about the initial $Y$ axis, followed by a third rotation of an angle $\psi$ (roll) about the initial $X$ axis.
+    \item The \texttt{zxz} uses the \textbf{extrinsic Z-X-Z convention} for Euler angles instead. This option is also known as the 3-1-3 or the "x-convention" and the most widely used definition of Euler angles~\cite{eulerangles}.
+\end{itemize}
+\begin{warning}
+It is highly recommended to always explicitly state the orientation mode instead of relying on the default configuration.
+\end{warning}
+
+\item The \parameter{orientation} to specify the Euler angles in logical order (e.g. first $X$, then $Y$, then $Z$ for the \texttt{xyz} method), interpreted using the method above (or with the \texttt{xyz} method if the \parameter{orientation_mode} is not specified). An example for three Euler angles would be
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+orientation_mode = "zyx"
+orientation = 45deg 10deg 12deg
+\end{minted}
+which describes the rotation of \SI{45}{\degree} around the $Z$ axis, followed by a \SI{10}{\degree} rotation around the initial $Y$ axis, and finally a rotation of \SI{12}{\degree} around the initial $X$ axis.
+\begin{warning}
+All supported rotations are extrinsic active rotations, i.e. the vector itself is rotated, not the coordinate system. All angles in configuration files should be specified in the order they will be applied.
+\end{warning}
+
+\item The \parameter{number_of_pixels} parameter represents a two-dimensional vector with the number of pixels in the active matrix in the column and row direction, respectively.
+\item The \parameter{pixel_pitch} is a two-dimensional vector defining the size of a single pixel.
+\item The intrinsic resolution of the detector can be specified using the \parameter{resolution} parameter, a two-dimensional vector holding the position resolution for the column and row directions.
+\item The \parameter{time_offset} can be used to shift the individual detector time frames of reference to e.g.\ account for time of flight effects between different detector planes by adding a fixed offset.
+\item Pixels to be masked in the offline analysis can be placed in a separate file specified by the \parameter{mask_file} parameter explained in detail in Section~\ref{sec:masking}.
+\item A region of interest in the given detector can be defined using the \parameter{roi} parameter. More details on this functionality cna be found in Section~\ref{sec:roi}.
+\end{itemize}
+
+An example configuration file describing a setup with one CLICpix2 detector (named \parameter{016_CP_PS} and two Timepix3~\cite{timepix} detectors (\parameter{W0013_D04}and \parameter{W0013_J05}) is the following:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[W0013_D04]
+number_of_pixels = 256, 256
+orientation = 9deg, 9deg, 0deg
+orientation_mode = "xyz"
+pixel_pitch = 55um, 55um
+position = 0um, 0um, 10mm
+type = "Timepix3"
+
+[016_CP_PS]
+mask_file = "mask_016_CP_PS.conf"
+number_of_pixels = 128,128
+orientation = -0.02deg, 0.0deg, -0.015deg
+orientation_mode = "xyz"
+pixel_pitch = 25um, 25um
+position = -0.9mm, 0.21mm, 106.0mm
+type = "CLICpix2"
+
+[W0013_J05]
+number_of_pixels = 256, 256
+orientation = -9deg, 9deg, 0deg
+orientation_mode = "xyz"
+pixel_pitch = 55um, 55um
+position = 0um, 0um, 204mm
+type = "Timepix3"
+\end{minted}
+
+\subsection{Masking Pixels Offline}
+\label{sec:masking}
+
+Mask files can be provided to individual detectors, which allow the specification of pixels ot be masked in the reconstruction.
+The following syntax is within the mask file:
+\begin{itemize}
+    \item \command{c COL}: masking all pixels in column \parameter{COL}
+    \item \command{r ROW}: masking all pixels in row \parameter{ROW}
+    \item \command{p COL ROW}: masking the single pixel at address \parameter{COL, ROW}
+\end{itemize}
+
+\begin{warning}
+It should be noted that the individual event loader modules have to take care of discarding masked pixels manually, the \corry framework only parses the mask file and attaches the mask information to the respective detector. The event loader modules should thus always query the detector object for masks before adding new pixels to the data collections.
+\end{warning}
+
+\subsection{Defining a Region of Interest}
+
+The region of interest (ROI) feature of each detector allows marking tracks or clusters to be within a certain region on the respective detector.
+This information can be used in analyses to restrict the selection of tracks or clusters to certain regions of the device, e.g.\ to exclude known bad regions from the calculation of efficiencies.
+
+The ROI is defined as a polynomial in local pixel coordinates of the device using the \parameter{roi} keyword. A rectangle could, for example, be defined by providing the four corners of the shape via
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+roi = [1, 1], [1, 120], [60, 120], [60, 1]
+\end{minted}
+
+Internally, a winding number algorithm is used to determine whether a certain local position is within or outside the given polynomial shape.
+Two functions are provided by the detector API:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+// Returns "true" if the track is found to be within the ROI
+bool isWithinROI(const Track* track);
+// Returns "true" if the cluster as well as all its pixels are found to be within the ROI
+bool isWithinROI(const Cluster* cluster);
+\end{minted}

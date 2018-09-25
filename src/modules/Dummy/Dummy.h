@@ -1,5 +1,5 @@
-#ifndef GenericAlgorithm_H
-#define GenericAlgorithm_H 1
+#ifndef Dummy_H
+#define Dummy_H 1
 
 #include <iostream>
 #include "TCanvas.h"
@@ -13,12 +13,12 @@
 namespace corryvreckan {
     /** @ingroup Modules
      */
-    class GenericAlgorithm : public Module {
+    class Dummy : public Module {
 
     public:
         // Constructors and destructors
-        GenericAlgorithm(Configuration config, std::vector<Detector*> detectors);
-        ~GenericAlgorithm() {}
+        Dummy(Configuration config, std::vector<Detector*> detectors);
+        ~Dummy() {}
 
         // Functions
         void initialise();
@@ -35,4 +35,4 @@ namespace corryvreckan {
         int m_eventNumber;
     };
 } // namespace corryvreckan
-#endif // GenericAlgorithm_H
+#endif // Dummy_H

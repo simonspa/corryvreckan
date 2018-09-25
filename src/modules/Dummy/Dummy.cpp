@@ -1,20 +1,14 @@
-#include "GenericAlgorithm.h"
+#include "Dummy.h"
 
 using namespace corryvreckan;
 using namespace std;
 
-GenericAlgorithm::GenericAlgorithm(Configuration config, std::vector<Detector*> detectors)
-    : Module(std::move(config), std::move(detectors)) {}
+Dummy::Dummy(Configuration config, std::vector<Detector*> detectors) : Module(std::move(config), std::move(detectors)) {}
 
-void GenericAlgorithm::initialise() {
+void Dummy::initialise() {
 
     // Initialise histograms per device
     for(auto& detector : get_detectors()) {
-
-        // Check if they are a Timepix3
-        if(detector->type() != "Timepix3")
-            continue;
-
         // Simple histogram per device
         string name = "plotForDevice_" + detector->name();
         plotPerDevice[detector->name()] = new TH2F(name.c_str(), name.c_str(), 256, 0, 256, 256, 0, 256);
@@ -28,14 +22,10 @@ void GenericAlgorithm::initialise() {
     m_eventNumber = 0;
 }
 
-StatusCode GenericAlgorithm::run(Clipboard* clipboard) {
+StatusCode Dummy::run(Clipboard* clipboard) {
 
     // Loop over all Timepix3 and make plots
     for(auto& detector : get_detectors()) {
-
-        // Check if they are a Timepix3
-        if(detector->type() != "Timepix3")
-            continue;
 
         // Get the pixels
         Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
@@ -68,7 +58,7 @@ StatusCode GenericAlgorithm::run(Clipboard* clipboard) {
     return Success;
 }
 
-void GenericAlgorithm::finalise() {
+void Dummy::finalise() {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }

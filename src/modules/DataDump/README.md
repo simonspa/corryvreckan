@@ -1,18 +1,15 @@
-## DataDump
+# DataDump
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)  
 **Status**: Functional
 
-#### Description
+### Description
 This module reads in raw data files with extension `-1.dat`, and outputs the pixel data in hexidecimal in an output file called `outputHexDump.dat`.
 
-#### Parameters
+### Parameters
 * `DeviceToDumpData`: The name of the device data is to be read from.
 * `inputDirectory`: Path to the directory above the data directory named `DeviceToDumpData`.
 
-#### Plots produced
-No plots are produced.
-
-#### Usage
+### Usage
 ```toml
 [DataDump]
 DeviceToDumpData = "W0005_H03"

@@ -1,18 +1,19 @@
-## CLICpixAnalysis
+# CLICpixAnalysis
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)   
 **Status**: Functional  
 
-#### Description
+### Description
 This module associates CLICpix2 DUT clusters to tracks using a spatial cut (device type not checked). A significant number of analysis plots are produced.
 
-#### Parameters
+### Parameters
 * `associationCut`: Maximum distance between a track and cluster for them to be associated. Units of mm. Default value is `0.05` (50um).
 * `proximityCut`: Maximum distance apart two tracks are for them to be 'close' to each other. If at the CLICpix plane there are two tracks close to each other, the DUT cluster is not associated with either track. Units of mm. Default value is `0.0005` (0.5um).
 * `timepix3Telescope`: Boolean to set whether the Timepix3 telescope is being used. Default value is `false`.
 * `DUT`: Name of the DUT plane. The CLICpix device is assumed to be the DUT.
 
-#### Plots produced
+### Plots produced
 For the DUT the following plots are produced:
+
 * 2D hitmap
 * Column hits histogram
 * Row hits histogram
@@ -37,7 +38,7 @@ For the DUT the following plots are produced:
 * Global residuals in X vs row width
 * Global residuals in Y vs column width
 * Global residuals in Y vs row width
-*
+
 * Track intercept in rows
 * Track intercept in columns
 * Absolute residual map histogram
@@ -98,7 +99,7 @@ For the DUT the following plots are produced:
 * 2D Associated cluster size map
 
 
-#### Usage
+### Usage
 ```toml
 [CLICpixAnalysis]
 associationCut = 0.005
