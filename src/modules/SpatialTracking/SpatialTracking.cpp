@@ -182,20 +182,21 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
 
         // Add potential associated clusters from the DUT:
         if(!m_config.has("DUT")) {
-            for(auto& dutcluster : dutClusters) {
+            continue;
+        }
+        for(auto& dutcluster : dutClusters) {
 
-                // Check distance between track and cluster
-                ROOT::Math::XYZPoint intercept = track->intercept(dutcluster->globalZ());
-                double xdistance = intercept.X() - dutcluster->globalX();
-                double ydistance = intercept.Y() - dutcluster->globalY();
-                if(abs(xdistance) > spatialCut_DUT)
-                    continue;
-                if(abs(ydistance) > spatialCut_DUT)
-                    continue;
+            // Check distance between track and cluster
+            ROOT::Math::XYZPoint intercept = track->intercept(dutcluster->globalZ());
+            double xdistance = intercept.X() - dutcluster->globalX();
+            double ydistance = intercept.Y() - dutcluster->globalY();
+            if(abs(xdistance) > spatialCut_DUT)
+                continue;
+            if(abs(ydistance) > spatialCut_DUT)
+                continue;
 
-                LOG(DEBUG) << "Found associated cluster";
-                track->addAssociatedCluster(dutcluster);
-            }
+            LOG(DEBUG) << "Found associated cluster";
+            track->addAssociatedCluster(dutcluster);
         }
     }
 
