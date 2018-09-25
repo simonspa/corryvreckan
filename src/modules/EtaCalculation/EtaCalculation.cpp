@@ -11,8 +11,6 @@ EtaCalculation::EtaCalculation(Configuration config, std::vector<Detector*> dete
 }
 
 void EtaCalculation::initialise() {
-    // checking DUT exists
-    std::string DUTname = m_config.get<std::string>("DUT");
     for(auto& detector : get_detectors()) {
 
         // Initialise histograms
@@ -54,7 +52,6 @@ void EtaCalculation::calculateEta(Track* track, Cluster* cluster) {
     }
 
     auto detector = get_detector(cluster->detectorID());
-
     // Get the in-pixel track intercept
     auto pxIntercept = pixelIntercept(track, detector);
 
