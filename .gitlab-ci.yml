@@ -148,6 +148,26 @@ fmt:centos7-llvm-format:
 # Documentation Compilation #
 #############################
 
+# Compile Doxygen reference
+cmp:doxygen:
+    stage: documentation
+    tags:
+        - docker
+    image: clicdp/cc7-base
+    dependencies: []
+    script:
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - mkdir -p public/usermanual
+        - mkdir build
+        - cd build
+        - cmake -DBUILD_DOCS_ONLY=ON ..
+        - make reference
+        - mv reference/html ../public/reference
+    artifacts:
+        paths:
+            - public
+        expire_in: 24 hour
 
 # Compile LaTeX user manual:
 cmp:usermanual:
