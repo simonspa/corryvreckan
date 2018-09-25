@@ -2,6 +2,7 @@ stages:
     - compilation
     - formatting
     - documentation
+    - deployment
 
 #######################
 # Compilation targets #
@@ -186,4 +187,32 @@ cmp:usermanual:
     artifacts:
         paths:
           - public
-        expire_in: 3 hour
+        expire_in: 24 hour
+
+########################
+# Automatic Deployment #
+########################
+
+deploy-docker-latest:
+    stage: deployment
+    tags:
+        - docker-image-build
+    dependencies: []
+    only:
+        - schedules # Only execute this on scheduled "nightly" pipelines
+    script:
+        - "echo" # unused but this line is required by GitLab CI
+    variables:
+        TO: gitlab-registry.cern.ch/corryvreckan/corryvreckan
+
+deploy-docker-tag:
+    stage: deployment
+    tags:
+        - docker-image-build
+    dependencies: []
+    only:
+        - tags
+    script:
+        - "echo" # unused but this line is required by GitLab CI
+    variables:
+        TO: gitlab-registry.cern.ch/corryvreckan/corryvreckan:${CI_COMMIT_TAG}
