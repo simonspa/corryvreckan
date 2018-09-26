@@ -6,7 +6,7 @@ IF(COMMAND CMAKE_POLICY)
 ENDIF(COMMAND CMAKE_POLICY)
 
 # Set default version
-SET(CORRYVRECKAN_VERSION "v0.1")
+SET(CORRYVRECKAN_VERSION "v0.8")
 
 # Set default build type
 IF(NOT CMAKE_BUILD_TYPE)
@@ -20,12 +20,15 @@ GET_VERSION(CORRYVRECKAN_VERSION)
 # Print version
 MESSAGE(STATUS "Building Corryvreckan version ${CORRYVRECKAN_VERSION}.")
 
+# Gather information about build time:
+STRING(TIMESTAMP BUILD_TIME "%Y-%m-%d, %H:%M:%S UTC" UTC)
+
 # Define the project with the simple version
 STRING(REGEX MATCH "([0-9.]+)+" SIMPLE_VERSION "${CORRYVRECKAN_VERSION}")
 # Set languages to NONE to allow the documentation to be built without CXX compiler:
 PROJECT(Corryvreckan VERSION ${SIMPLE_VERSION} LANGUAGES NONE)
 # Access the project name (for install locations) in the source
-ADD_DEFINITIONS(-DCORRYVRECKAN_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DCORRYVRECKAN_PROJECT_VERSION="${CORRYVRECKAN_VERSION}")
+ADD_DEFINITIONS(-DCORRYVRECKAN_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DCORRYVRECKAN_PROJECT_VERSION="${CORRYVRECKAN_VERSION}" -DCORRYVRECKAN_BUILD_TIME="${BUILD_TIME}")
 
 INCLUDE(cmake/CPackConfig.cmake)
 INCLUDE(CPack)
