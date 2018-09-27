@@ -7,7 +7,7 @@ COPY . /opt/corryvreckan
 ENV PATH="/opt/corryvreckan/bin:${PATH}"
 WORKDIR "/data"
 
-# Compile Allpix Squared
+# Compile Corryvreckan
 RUN source scl_source enable devtoolset-7 && \
     mkdir -p /opt/corryvreckan/build && \
     cd /opt/corryvreckan/build && \
