@@ -90,6 +90,17 @@ int main(int argc, const char* argv[]) {
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
+        } else if(strcmp(argv[i], "--version") == 0) {
+            std::cout << "Corryvreckan version " << CORRYVRECKAN_PROJECT_VERSION << std::endl;
+            std::cout << "             built on " << CORRYVRECKAN_BUILD_TIME << std::endl;
+            std::cout << std::endl;
+            std::cout << "Copyright (c) 2017 CERN and the Corryvreckan authors." << std::endl << std::endl;
+            std::cout << "This software is distributed under the terms of the MIT License." << std::endl;
+            std::cout << "In applying this license, CERN does not waive the privileges and immunities" << std::endl;
+            std::cout << "granted to it by virtue of its status as an Intergovernmental Organization" << std::endl;
+            std::cout << "or submit itself to any jurisdiction." << std::endl;
+            clean();
+            return 0;
         } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
             try {
                 LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
@@ -112,11 +123,17 @@ int main(int argc, const char* argv[]) {
 
     // Print help if requested or no arguments given
     if(print_help) {
-        std::cout << "Usage: corry -c <config> [-v <level>]" << std::endl;
+        std::cout << "Corryvreckan " << CORRYVRECKAN_PROJECT_VERSION << std::endl;
+        std::cout << "The Maelstrom for Your Test Beam Data" << std::endl;
+        std::cout << std::endl;
+        std::cout << "Usage: corry -c <config> [OPTIONS]" << std::endl;
+        std::cout << std::endl;
+        std::cout << "Options:" << std::endl;
         std::cout << "  -c <file>    configuration file to be used" << std::endl;
         std::cout << "  -l <file>    file to log to besides standard output" << std::endl;
         std::cout << "  -o <option>  extra configuration option(s) to pass" << std::endl;
         std::cout << "  -v <level>   verbosity level, overwriting the global level" << std::endl;
+        std::cout << "  --version    print version information and quit" << std::endl;
         clean();
         return return_code;
     }
