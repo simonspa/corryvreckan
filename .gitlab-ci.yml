@@ -1,14 +1,16 @@
 stages:
-    - compile
-    - format
+    - compilation
+    - formatting
     - documentation
+    - packaging
+    - deployment
 
 #######################
 # Compilation targets #
 #######################
 
 cmp:slc6-gcc:
-    stage: compile
+    stage: compilation
     tags:
         - docker
     image: clicdp/slc6-base
@@ -29,7 +31,7 @@ cmp:slc6-gcc:
         expire_in: 3 hour
 
 cmp:slc6-llvm:
-    stage: compile
+    stage: compilation
     tags:
         - docker
     image: clicdp/slc6-base
@@ -49,7 +51,7 @@ cmp:slc6-llvm:
         expire_in: 3 hour
 
 cmp:cc7-gcc:
-    stage: compile
+    stage: compilation
     tags:
         - docker
     image: clicdp/cc7-base
@@ -70,7 +72,7 @@ cmp:cc7-gcc:
         expire_in: 3 hour
 
 cmp:cc7-llvm:
-    stage: compile
+    stage: compilation
     tags:
         - docker
     image: clicdp/cc7-base
@@ -90,7 +92,7 @@ cmp:cc7-llvm:
         expire_in: 3 hour
 
 cmp:mac1013-clang:
-    stage: compile
+    stage: compilation
     tags:
         - mac
     script:
@@ -116,7 +118,7 @@ cmp:mac1013-clang:
 # SLC 6
 
 fmt:slc6-llvm-format:
-    stage: format
+    stage: formatting
     tags:
         - docker
     dependencies:
@@ -131,7 +133,7 @@ fmt:slc6-llvm-format:
 # CentOS 7
 
 fmt:centos7-llvm-format:
-    stage: format
+    stage: formatting
     tags:
         - docker
     dependencies:
@@ -148,6 +150,26 @@ fmt:centos7-llvm-format:
 # Documentation Compilation #
 #############################
 
+# Compile Doxygen reference
+cmp:doxygen:
+    stage: documentation
+    tags:
+        - docker
+    image: clicdp/cc7-base
+    dependencies: []
+    script:
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - mkdir -p public/usermanual
+        - mkdir build
+        - cd build
+        - cmake -DBUILD_DOCS_ONLY=ON ..
+        - make reference
+        - mv reference/html ../public/reference
+    artifacts:
+        paths:
+            - public
+        expire_in: 24 hour
 
 # Compile LaTeX user manual:
 cmp:usermanual:
@@ -166,4 +188,84 @@ cmp:usermanual:
     artifacts:
         paths:
           - public
-        expire_in: 3 hour
+        expire_in: 24 hour
+
+################################
+# Packaging of Binary Tarballs #
+################################
+
+pkg:slc6-gcc:
+    stage: packaging
+    tags:
+        - docker
+    image: clicdp/slc6-base
+    only:
+        - tags
+        - schedules
+    dependencies:
+        - cmp:slc6-gcc
+    script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - mkdir -p public/releases
+        - cd build
+        - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
+        - ninja package
+        - mv *.tar.gz ../public/releases
+    artifacts:
+        paths:
+            - public
+        expire_in: 24 hour
+
+pkg:cc7-gcc:
+    stage: packaging
+    tags:
+        - docker
+    image: clicdp/cc7-base
+    only:
+        - tags
+        - schedules
+    dependencies:
+        - cmp:cc7-gcc
+    script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - mkdir -p public/releases
+        - cd build
+        - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
+        - ninja package
+        - mv *.tar.gz ../public/releases
+    artifacts:
+        paths:
+            - public
+        expire_in: 24 hour
+
+########################
+# Automatic Deployment #
+########################
+
+deploy-docker-latest:
+    stage: deployment
+    tags:
+        - docker-image-build
+    dependencies: []
+    only:
+        - schedules # Only execute this on scheduled "nightly" pipelines
+    script:
+        - "echo" # unused but this line is required by GitLab CI
+    variables:
+        TO: gitlab-registry.cern.ch/corryvreckan/corryvreckan
+
+deploy-docker-tag:
+    stage: deployment
+    tags:
+        - docker-image-build
+    dependencies: []
+    only:
+        - tags
+    script:
+        - "echo" # unused but this line is required by GitLab CI
+    variables:
+        TO: gitlab-registry.cern.ch/corryvreckan/corryvreckan:${CI_COMMIT_TAG}
