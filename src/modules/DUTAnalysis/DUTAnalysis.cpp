@@ -219,8 +219,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
                 clusterToTVersusTime->Fill(Units::convert(cluster->timestamp(), "ns"), cluster->tot());
             }
 
-            auto associated_clusters = track->associatedClusters();
-            if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) != associated_clusters.end()) {
+            if(!track->isAssociated(cluster)) {
                 LOG(DEBUG) << "No associated cluster found";
                 continue;
             }
