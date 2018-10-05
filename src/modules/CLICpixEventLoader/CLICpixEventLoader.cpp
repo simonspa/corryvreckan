@@ -9,7 +9,8 @@ CLICpixEventLoader::CLICpixEventLoader(Configuration config, std::vector<Detecto
 }
 
 void CLICpixEventLoader::initialise() {
-
+    // Assume that the CLICpix is the DUT (if running this algorithm
+    detectorID = m_config.get<std::string>("DUT");
     // File structure is RunX/CLICpix/RunX.dat
 
     // Take input directory from global parameters
@@ -49,9 +50,7 @@ void CLICpixEventLoader::initialise() {
 
 StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
 
-    //  LOG(TRACE) <<"Running";
-    // Assume that the CLICpix is the DUT (if running this algorithm
-    string detectorID = m_config.get<std::string>("DUT");
+    //  LOG(TRACE) <<"Running"
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {

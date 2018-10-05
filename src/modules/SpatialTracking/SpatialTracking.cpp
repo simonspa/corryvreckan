@@ -9,7 +9,7 @@ SpatialTracking::SpatialTracking(Configuration config, std::vector<Detector*> de
     spatialCut = m_config.get<double>("spatialCut", Units::convert(200, "um"));
     spatialCut_DUT = m_config.get<double>("spatialCutDUT", Units::convert(200, "um"));
     minHitsOnTrack = m_config.get<int>("minHitsOnTrack", 6);
-    excludeDUT = m_config.get<bool>("excludeDUT", true);
+    excludeDUT = (m_config.has("DUT") ? m_config.get<bool>("excludeDUT", true) : true);
 }
 
 /*
@@ -118,11 +118,12 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
         // plane, so first detector is 1 (not 0)
         for(auto& detectorID : detectors) {
 
-            if(trees.count(detectorID) == 0)
+            if(trees.count(detectorID) == 0) {
                 continue;
+            }
 
             // Check if the DUT should be excluded and obey:
-            if(excludeDUT && detectorID == m_config.get<std::string>("DUT")) {
+            if(m_config.has("DUT") && excludeDUT && detectorID == m_config.get<std::string>("DUT")) {
                 // Keep all DUT clusters, so we can add them as associated clusters later:
                 Cluster* dutCluster = trees[detectorID]->getClosestNeighbour(cluster);
                 dutClusters.push_back(dutCluster);
@@ -180,6 +181,9 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
         }
 
         // Add potential associated clusters from the DUT:
+        if(!m_config.has("DUT")) {
+            continue;
+        }
         for(auto& dutcluster : dutClusters) {
 
             // Check distance between track and cluster
@@ -212,6 +216,5 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
 }
 
 void SpatialTracking::finalise() {
-
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }
