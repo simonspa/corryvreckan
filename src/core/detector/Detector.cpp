@@ -22,7 +22,19 @@ using namespace ROOT::Math;
 using namespace corryvreckan;
 
 Detector::Detector(const Configuration& config) {
-    // Get information from the conditions file:
+    // Role of this detector:
+    auto role = config.get<std::string>("role", "none");
+    if(role == "none") {
+        m_role = DetectorRole::NONE;
+    } else if(role == "reference") {
+        m_role = DetectorRole::REFERENCE;
+    } else if(role == "dut") {
+        m_role = DetectorRole::DUT;
+    } else {
+        throw InvalidValueError(config, "role", "Detector role does not exist.");
+    }
+
+    // Detector position and orientation
     m_displacement = config.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
     m_orientation = config.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
     m_orientation_mode = config.get<std::string>("orientation_mode", "xyz");
