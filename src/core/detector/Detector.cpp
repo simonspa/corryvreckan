@@ -26,6 +26,9 @@ Detector::Detector(const Configuration& config) {
     m_displacement = config.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
     m_orientation = config.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
     m_orientation_mode = config.get<std::string>("orientation_mode", "xyz");
+    if(m_orientation_mode != "xyz" && m_orientation_mode != "zyx") {
+        throw InvalidValueError(config, "orientation_mode", "Invalid detector orientation mode");
+    }
 
     // Number of pixels
     auto npixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
@@ -39,9 +42,8 @@ Detector::Detector(const Configuration& config) {
 
     if(Units::convert(m_pitch.X(), "mm") >= 1 or Units::convert(m_pitch.Y(), "mm") >= 1 or
        Units::convert(m_pitch.X(), "um") <= 1 or Units::convert(m_pitch.Y(), "um") <= 1) {
-        LOG(WARNING) << "Pixel pitch unphysical for detector " << m_detectorName << ".";
-        LOG(WARNING) << "Pitch X = " << Units::display(m_pitch.X(), {"nm", "um", "mm"})
-                     << " ; Pitch Y = " << Units::display(m_pitch.Y(), {"nm", "um", "mm"});
+        LOG(WARNING) << "Pixel pitch unphysical for detector " << m_detectorName << ": " << std::endl
+                     << Units::display(m_pitch, {"nm", "um", "mm"});
     }
 
     m_detectorType = config.get<std::string>("type");
@@ -133,8 +135,6 @@ void Detector::initialise() {
                                ROOT::Math::RotationX(m_orientation.X()));
     } else if(m_orientation_mode == "zyx") {
         rotations = Rotation3D(ROOT::Math::RotationZYX(m_orientation.x(), m_orientation.y(), m_orientation.x()));
-    } else {
-        throw RuntimeError("Invalid detector orientation mode: " + m_orientation_mode);
     }
 
     m_localToGlobal = Transform3D(rotations, translations);
