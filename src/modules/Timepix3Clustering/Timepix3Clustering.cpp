@@ -16,11 +16,11 @@ void Timepix3Clustering::initialise() {
 
         // Cluster plots
         string name = "clusterSize_" + detector->name();
-        clusterSize[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
+        clusterSize[detector->name()] = new TH1F(name.c_str(), name.c_str(), 100, 0, 100);
         name = "clusterWidthRow_" + detector->name();
         clusterWidthRow[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
         name = "clusterWidthColumn_" + detector->name();
-        clusterWidthColumn[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
+        clusterWidthColumn[detector->name()] = new TH1F(name.c_str(), name.c_str(), 100, 0, 100);
         name = "clusterTot_" + detector->name();
         clusterTot[detector->name()] = new TH1F(name.c_str(), name.c_str(), 10000, 0, 100000);
         name = "clusterPositionGlobal_" + detector->name();

@@ -9,6 +9,7 @@ Analysis module for CLICpix2 prototypes. This module is still work in progress, 
 * `timeCutFrameEdge`: Parameter to discard telescope tracks at the frame edges (start and end of the current CLICpix2 frame). Defaults to `20ns`.
 * `spatialCut`: Spatial cut for associating a track with a DUT cluster, defaults to `50um`.
 * `chi2ndofCut`: Acceptance criterion for telescope tracks, defaults to a value of `3`.
+* `DUT`: Name of the DUT plane. The CLICpix2 device is assumed to be the DUT.
 
 ### Plots produced
 * 2D Map of associated cluster positions

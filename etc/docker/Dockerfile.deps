@@ -1,0 +1,33 @@
+FROM gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-base:latest
+MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
+
+ENV ROOT6_VERSION 6.10.08
+
+# Add layer for ROOT6
+ENV ROOTSYS="/opt/root6"
+ENV PATH="$ROOTSYS/bin:$PATH"
+ENV LD_LIBRARY_PATH="$ROOTSYS/lib:$LD_LIBRARY_PATH"
+ENV LIBPATH="$ROOTSYS/lib:$LIBPATH"
+ENV PYTHONPATH="$ROOTSYS/lib:$PYTHONPATH"
+ENV CMAKE_PREFIX_PATH="$ROOTSYS:$CMAKE_PREFIX_PATH"
+
+RUN source scl_source enable devtoolset-7 && \
+    mkdir -p ${ROOTSYS}/{src,build} && \
+    curl -o ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz \
+            https://root.cern.ch/download/root_v${ROOT6_VERSION}.source.tar.gz && \
+    tar zxf ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz -C ${ROOTSYS}/src && \
+    rm -f ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz && \
+    cd ${ROOTSYS}/build && \
+    cmake3 -Dcxx11=ON \
+           -Dgdml=ON \
+           -Dgenvector=ON \
+           -Dmathmore=ON \
+           -Dminuit2=ON \
+           -Dthread=ON \
+           -Dx11=OFF \
+           -Dopengl=OFF \
+           -DCMAKE_INSTALL_PREFIX=../ \
+           ../src/root-${ROOT6_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${ROOTSYS}/{src,build}

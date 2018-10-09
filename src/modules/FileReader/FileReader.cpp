@@ -6,14 +6,14 @@ using namespace std;
 FileReader::FileReader(Configuration config, std::vector<Detector*> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
-    m_onlyDUT = m_config.get<bool>("onlyDUT", false);
     m_readPixels = m_config.get<bool>("readPixels", true);
     m_readClusters = m_config.get<bool>("readClusters", false);
     m_readTracks = m_config.get<bool>("readTracks", false);
     m_fileName = m_config.get<std::string>("fileName", "outputTuples.root");
     m_timeWindow = m_config.get<double>("timeWindow", Units::convert(1., "s"));
     m_readMCParticles = m_config.get<bool>("readMCParticles", false);
-
+    // checking if DUT parameter is in the configuration file, if so then check if should only output the DUT
+    m_onlyDUT = (m_config.has("DUT") ? m_config.get<bool>("onlyDUT", false) : false);
     m_currentTime = 0.;
 }
 
@@ -33,7 +33,6 @@ FileReader::FileReader(Configuration config, std::vector<Detector*> detectors)
  */
 
 void FileReader::initialise() {
-
     // Decide what objects will be read in
     if(m_readPixels)
         m_objectList.push_back("pixels");
