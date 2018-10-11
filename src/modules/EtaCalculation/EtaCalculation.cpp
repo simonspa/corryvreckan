@@ -11,7 +11,6 @@ EtaCalculation::EtaCalculation(Configuration config, std::vector<Detector*> dete
 }
 
 void EtaCalculation::initialise() {
-
     for(auto& detector : get_detectors()) {
 
         // Initialise histograms
@@ -53,7 +52,6 @@ void EtaCalculation::calculateEta(Track* track, Cluster* cluster) {
     }
 
     auto detector = get_detector(cluster->detectorID());
-
     // Get the in-pixel track intercept
     auto pxIntercept = pixelIntercept(track, detector);
 

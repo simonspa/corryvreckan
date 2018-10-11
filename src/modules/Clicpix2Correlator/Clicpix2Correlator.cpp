@@ -7,7 +7,6 @@ Clicpix2Correlator::Clicpix2Correlator(Configuration config, std::vector<Detecto
     : Module(std::move(config), std::move(detectors)) {}
 
 void Clicpix2Correlator::initialise() {
-
     // Get the DUT ID
     dutID = m_config.get<std::string>("DUT");
 

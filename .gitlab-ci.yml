@@ -1,3 +1,6 @@
+variables:
+    DOCKER_FILE: etc/docker/Dockerfile
+
 stages:
     - compilation
     - formatting
