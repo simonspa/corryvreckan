@@ -37,13 +37,13 @@ namespace corryvreckan {
         Tracks m_alignmenttracks;
         int m_discardedtracks{};
 
-        int nIterations;
-        int m_numberOfTracksForAlignment;
+        size_t nIterations;
+        size_t m_numberOfTracksForAlignment;
         int alignmentMethod;
         bool m_pruneTracks;
         bool m_alignPosition;
         bool m_alignOrientation;
-        int m_maxAssocClusters;
+        size_t m_maxAssocClusters;
         double m_maxTrackChi2;
 
         TH1F* residualsXPlot;
