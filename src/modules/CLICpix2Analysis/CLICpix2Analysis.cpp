@@ -9,8 +9,6 @@ using namespace corryvreckan;
 CLICpix2Analysis::CLICpix2Analysis(Configuration config, std::vector<Detector*> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
-    m_DUT = m_config.get<std::string>("DUT");
-
     m_timeCutFrameEdge = m_config.get<double>("timeCutFrameEdge", Units::convert(20, "ns"));
 
     spatialCut = m_config.get<double>("spatialCut", Units::convert(50, "um"));
@@ -20,7 +18,7 @@ CLICpix2Analysis::CLICpix2Analysis(Configuration config, std::vector<Detector*> 
 void CLICpix2Analysis::initialise() {
 
     // Get DUT detector:
-    auto det = get_detector(m_DUT);
+    auto det = get_dut();
 
     hClusterMapAssoc = new TH2F(
         "clusterMapAssoc", "clusterMapAssoc", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
@@ -163,7 +161,7 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
     }
 
     // Get the DUT detector:
-    auto detector = get_detector(m_DUT);
+    auto detector = get_dut();
 
     // Loop over all tracks
     for(auto& track : (*tracks)) {
@@ -219,7 +217,7 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
         double ymod = Units::convert(detector->inPixelY(localIntercept), "um");
 
         // Get the DUT clusters from the clipboard
-        Clusters* clusters = (Clusters*)clipboard->get(m_DUT, "clusters");
+        Clusters* clusters = (Clusters*)clipboard->get(get_dut()->name(), "clusters");
         if(clusters == NULL) {
             LOG(DEBUG) << " - no DUT clusters";
         } else {

@@ -59,7 +59,6 @@ namespace corryvreckan {
         TH2F* hUnassociatedTracksGlobalPosition;
 
         // Member variables
-        std::string m_DUT;
         double spatialCut, m_timeCutFrameEdge;
         double chi2ndofCut;
     };
