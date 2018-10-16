@@ -3,8 +3,9 @@
 using namespace corryvreckan;
 using namespace std;
 
-Timepix3Clustering::Timepix3Clustering(Configuration config, std::vector<Detector*> detectors)
-    : Module(std::move(config), std::move(detectors)) {
+Timepix3Clustering::Timepix3Clustering(Configuration config, Detector* detector)
+    : Module(std::move(config), std::move(detector)) {
+
     timingCut = m_config.get<double>("timingCut", Units::convert(100, "ns")); // 100 ns
     neighbour_radius_row = m_config.get<int>("neighbour_radius_row", 1);
     neighbour_radius_col = m_config.get<int>("neighbour_radius_col", 1);
@@ -12,20 +13,19 @@ Timepix3Clustering::Timepix3Clustering(Configuration config, std::vector<Detecto
 
 void Timepix3Clustering::initialise() {
 
-    for(auto& detector : get_detectors()) {
+    auto detector = get_detectors().front();
 
-        // Cluster plots
-        string name = "clusterSize_" + detector->name();
-        clusterSize[detector->name()] = new TH1F(name.c_str(), name.c_str(), 100, 0, 100);
-        name = "clusterWidthRow_" + detector->name();
-        clusterWidthRow[detector->name()] = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
-        name = "clusterWidthColumn_" + detector->name();
-        clusterWidthColumn[detector->name()] = new TH1F(name.c_str(), name.c_str(), 100, 0, 100);
-        name = "clusterTot_" + detector->name();
-        clusterTot[detector->name()] = new TH1F(name.c_str(), name.c_str(), 10000, 0, 100000);
-        name = "clusterPositionGlobal_" + detector->name();
-        clusterPositionGlobal[detector->name()] = new TH2F(name.c_str(), name.c_str(), 400, -10., 10., 400, -10., 10.);
-    }
+    // Cluster plots
+    string name = "clusterSize_" + detector->name();
+    clusterSize = new TH1F(name.c_str(), name.c_str(), 100, 0, 100);
+    name = "clusterWidthRow_" + detector->name();
+    clusterWidthRow = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
+    name = "clusterWidthColumn_" + detector->name();
+    clusterWidthColumn = new TH1F(name.c_str(), name.c_str(), 100, 0, 100);
+    name = "clusterTot_" + detector->name();
+    clusterTot = new TH1F(name.c_str(), name.c_str(), 10000, 0, 100000);
+    name = "clusterPositionGlobal_" + detector->name();
+    clusterPositionGlobal = new TH2F(name.c_str(), name.c_str(), 400, -10., 10., 400, -10., 10.);
 }
 
 // Sort function for pixels from low to high times
@@ -35,107 +35,100 @@ bool sortByTime(Pixel* pixel1, Pixel* pixel2) {
 
 StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
 
-    // Loop over all Timepix3 and for each device perform the clustering
-    for(auto& detector : get_detectors()) {
+    auto detector = get_detectors().front();
 
-        // Check if they are a Timepix3
-        if(detector->type() != "Timepix3")
-            continue;
-
-        // Get the pixels
-        Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
-        if(pixels == NULL) {
-            LOG(DEBUG) << "Detector " << detector->name() << " does not have any pixels on the clipboard";
-            continue;
-        }
-        LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << detector->name();
-
-        //    if(pixels->size() > 500.){
-        //      LOG(DEBUG) <<"Skipping large event with "<<pixels->size()<<" pixels
-        //      for device "<<detector->name();
-        //      continue;
-        //    }
-
-        // Sort the pixels from low to high timestamp
-        std::sort(pixels->begin(), pixels->end(), sortByTime);
-        int totalPixels = pixels->size();
-
-        // Make the cluster storage
-        Clusters* deviceClusters = new Clusters();
-
-        // Keep track of which pixels are used
-        map<Pixel*, bool> used;
-
-        // Start to cluster
-        for(int iP = 0; iP < pixels->size(); iP++) {
-            Pixel* pixel = (*pixels)[iP];
-
-            // Check if pixel is used
-            if(used[pixel])
-                continue;
-
-            if(pixel->adc() == 0.)
-                continue;
-
-            // Make the new cluster object
-            Cluster* cluster = new Cluster();
-            LOG(DEBUG) << "==== New cluster";
-
-            // Keep adding hits to the cluster until no more are found
-            cluster->addPixel(pixel);
-            double clusterTime = pixel->timestamp();
-            used[pixel] = true;
-            LOG(DEBUG) << "Adding pixel: " << pixel->row() << "," << pixel->column();
-            int nPixels = 0;
-            while(cluster->size() != nPixels) {
-
-                nPixels = cluster->size();
-                // Loop over all pixels
-                for(int iNeighbour = (iP + 1); iNeighbour < totalPixels; iNeighbour++) {
-                    Pixel* neighbour = (*pixels)[iNeighbour];
-                    // Check if they are compatible in time with the cluster pixels
-                    if((neighbour->timestamp() - clusterTime) > timingCut)
-                        break;
-                    //          if(!closeInTime(neighbour,cluster)) break;
-                    // Check if they have been used
-                    if(used[neighbour])
-                        continue;
-
-                    if(neighbour->adc() == 0.)
-                        continue;
-
-                    // Check if they are touching cluster pixels
-                    if(!touching(neighbour, cluster))
-                        continue;
-
-                    // Add to cluster
-                    cluster->addPixel(neighbour);
-                    clusterTime = neighbour->timestamp();
-                    used[neighbour] = true;
-                    LOG(DEBUG) << "Adding pixel: " << neighbour->row() << "," << neighbour->column() << " time "
-                               << Units::display(neighbour->timestamp(), {"ns", "us", "s"});
-                }
-            }
-
-            // Finalise the cluster and save it
-            calculateClusterCentre(cluster);
-
-            // Fill cluster histograms
-            clusterSize[detector->name()]->Fill(cluster->size());
-            clusterWidthRow[detector->name()]->Fill(cluster->rowWidth());
-            clusterWidthColumn[detector->name()]->Fill(cluster->columnWidth());
-            clusterTot[detector->name()]->Fill(cluster->tot());
-            clusterPositionGlobal[detector->name()]->Fill(cluster->globalX(), cluster->globalY());
-
-            deviceClusters->push_back(cluster);
-        }
-
-        // Put the clusters on the clipboard
-        if(deviceClusters->size() > 0) {
-            clipboard->put(detector->name(), "clusters", (Objects*)deviceClusters);
-        }
-        LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << detector->name();
+    // Check if they are a Timepix3
+    if(detector->type() != "Timepix3") {
+        return Success;
     }
+
+    // Get the pixels
+    Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
+    if(pixels == NULL) {
+        LOG(DEBUG) << "Detector " << detector->name() << " does not have any pixels on the clipboard";
+        return Success;
+    }
+    LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << detector->name();
+
+    // Sort the pixels from low to high timestamp
+    std::sort(pixels->begin(), pixels->end(), sortByTime);
+    int totalPixels = pixels->size();
+
+    // Make the cluster storage
+    Clusters* deviceClusters = new Clusters();
+
+    // Keep track of which pixels are used
+    map<Pixel*, bool> used;
+
+    // Start to cluster
+    for(int iP = 0; iP < pixels->size(); iP++) {
+        Pixel* pixel = (*pixels)[iP];
+
+        // Check if pixel is used
+        if(used[pixel])
+            continue;
+
+        if(pixel->adc() == 0.)
+            continue;
+
+        // Make the new cluster object
+        Cluster* cluster = new Cluster();
+        LOG(DEBUG) << "==== New cluster";
+
+        // Keep adding hits to the cluster until no more are found
+        cluster->addPixel(pixel);
+        double clusterTime = pixel->timestamp();
+        used[pixel] = true;
+        LOG(DEBUG) << "Adding pixel: " << pixel->row() << "," << pixel->column();
+        int nPixels = 0;
+        while(cluster->size() != nPixels) {
+
+            nPixels = cluster->size();
+            // Loop over all pixels
+            for(int iNeighbour = (iP + 1); iNeighbour < totalPixels; iNeighbour++) {
+                Pixel* neighbour = (*pixels)[iNeighbour];
+                // Check if they are compatible in time with the cluster pixels
+                if((neighbour->timestamp() - clusterTime) > timingCut)
+                    break;
+                //          if(!closeInTime(neighbour,cluster)) break;
+                // Check if they have been used
+                if(used[neighbour])
+                    continue;
+
+                if(neighbour->adc() == 0.)
+                    continue;
+
+                // Check if they are touching cluster pixels
+                if(!touching(neighbour, cluster))
+                    continue;
+
+                // Add to cluster
+                cluster->addPixel(neighbour);
+                clusterTime = neighbour->timestamp();
+                used[neighbour] = true;
+                LOG(DEBUG) << "Adding pixel: " << neighbour->row() << "," << neighbour->column() << " time "
+                           << Units::display(neighbour->timestamp(), {"ns", "us", "s"});
+            }
+        }
+
+        // Finalise the cluster and save it
+        calculateClusterCentre(cluster);
+
+        // Fill cluster histograms
+        clusterSize->Fill(cluster->size());
+        clusterWidthRow->Fill(cluster->rowWidth());
+        clusterWidthColumn->Fill(cluster->columnWidth());
+        clusterTot->Fill(cluster->tot());
+        clusterPositionGlobal->Fill(cluster->globalX(), cluster->globalY());
+
+        deviceClusters->push_back(cluster);
+    }
+
+    // Put the clusters on the clipboard
+    if(deviceClusters->size() > 0) {
+        clipboard->put(detector->name(), "clusters", (Objects*)deviceClusters);
+    }
+    LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << detector->name();
 
     return Success;
 }
@@ -223,5 +216,3 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
     cluster->setClusterCentre(positionGlobal.X(), positionGlobal.Y(), positionGlobal.Z());
     cluster->setClusterCentreLocal(positionLocal.X(), positionLocal.Y(), positionLocal.Z());
 }
-
-void Timepix3Clustering::finalise() {}

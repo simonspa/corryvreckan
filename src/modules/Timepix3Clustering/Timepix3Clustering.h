@@ -16,23 +16,24 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Timepix3Clustering(Configuration config, std::vector<Detector*> detectors);
+        Timepix3Clustering(Configuration config, Detector* detectors);
         ~Timepix3Clustering() {}
 
         // Functions
         void initialise();
         StatusCode run(Clipboard* clipboard);
-        void finalise();
+
+    private:
         void calculateClusterCentre(Cluster*);
         bool touching(Pixel*, Cluster*);
         bool closeInTime(Pixel*, Cluster*);
 
         // Cluster histograms
-        std::map<std::string, TH1F*> clusterSize;
-        std::map<std::string, TH1F*> clusterWidthRow;
-        std::map<std::string, TH1F*> clusterWidthColumn;
-        std::map<std::string, TH1F*> clusterTot;
-        std::map<std::string, TH2F*> clusterPositionGlobal;
+        TH1F* clusterSize;
+        TH1F* clusterWidthRow;
+        TH1F* clusterWidthColumn;
+        TH1F* clusterTot;
+        TH2F* clusterPositionGlobal;
 
         double timingCut;
         int neighbour_radius_row;
