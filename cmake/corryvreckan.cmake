@@ -8,7 +8,7 @@ MACRO(corryvreckan_enable_default val)
 ENDMACRO()
 
 # Common module definitions
-MACRO(corryvreckan_module name)
+MACRO(_corryvreckan_module_define_common name)
     # Get the name of the module
     GET_FILENAME_COMPONENT(_corryvreckan_module_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
@@ -58,6 +58,22 @@ Create the header or provide the alternative class name as first argument")
 
     TARGET_SOURCES(${${name}} PRIVATE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp")
     SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_corryvreckan_module_class}.h")
+ENDMACRO()
+
+# Put this at the start of every unique module
+MACRO(corryvreckan_unique_module name)
+    _corryvreckan_module_define_common(${name} ${ARGN})
+
+    # Set the unique flag to true
+    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_UNIQUE=1)
+ENDMACRO()
+
+# Put this at the start of every detector module
+MACRO(corryvreckan_detector_module name)
+    _corryvreckan_module_define_common(${name} ${ARGN})
+
+    # Set the unique flag to false
+    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_UNIQUE=0)
 ENDMACRO()
 
 # Add sources to the module
