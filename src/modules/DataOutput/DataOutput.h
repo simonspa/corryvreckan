@@ -51,7 +51,6 @@ namespace corryvreckan {
         // Config parameters
         std::string m_fileName;
         std::string m_treeName;
-        std::string m_DUT;
     };
 } // namespace corryvreckan
 #endif // DATAOUTPUT_H

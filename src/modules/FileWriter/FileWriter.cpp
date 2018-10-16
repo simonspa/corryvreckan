@@ -5,8 +5,8 @@ using namespace std;
 
 FileWriter::FileWriter(Configuration config, std::vector<Detector*> detectors)
     : Module(std::move(config), std::move(detectors)) {
-    // checking if DUT parameter is in the configuration file, if so then check if it is to be the only file written
-    m_onlyDUT = (m_config.has("DUT") ? m_config.get<bool>("onlyDUT", true) : false);
+
+    m_onlyDUT = m_config.get<bool>("onlyDUT", true);
     m_writePixels = m_config.get<bool>("writePixels", true);
     m_writeClusters = m_config.get<bool>("writeClusters", false);
     m_writeTracks = m_config.get<bool>("writeTracks", true);

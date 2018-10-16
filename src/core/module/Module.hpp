@@ -142,7 +142,7 @@ namespace corryvreckan {
 
         /**
          * @brief Get the device under test
-         * @return Pointer to the DUT detector
+         * @return Pointer to the DUT detector.  A nullptr is returned if no DUT is found.
          * FIXME This should allow retrieval of a vector of DUTs
          */
         Detector* get_dut();

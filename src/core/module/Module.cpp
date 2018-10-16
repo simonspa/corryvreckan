@@ -41,6 +41,10 @@ Detector* Module::get_reference() {
 
 Detector* Module::get_dut() {
     auto it = find_if(m_detectors.begin(), m_detectors.end(), [](Detector* obj) { return obj->isDUT(); });
+    if(it == m_detectors.end()) {
+        return nullptr;
+    }
+
     return (*it);
 }
 

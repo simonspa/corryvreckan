@@ -399,7 +399,7 @@ void Alignment::finalise() {
             string detectorID = detector->name();
 
             // Do not align the reference plane
-            if(detector->isReference() || (m_config.has("DUT") && detector->isDUT())) {
+            if(detector->isReference() || detector->isDUT()) {
                 continue;
             }
 
@@ -492,7 +492,7 @@ void Alignment::finalise() {
     // Now list the new alignment parameters
     for(auto& detector : get_detectors()) {
         // Do not align the reference plane
-        if(detector->isReference() || (m_config.has("DUT") && detector->isDUT())) {
+        if(detector->isReference() || detector->isDUT()) {
             continue;
         }
 

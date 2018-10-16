@@ -13,7 +13,7 @@ FileReader::FileReader(Configuration config, std::vector<Detector*> detectors)
     m_timeWindow = m_config.get<double>("timeWindow", Units::convert(1., "s"));
     m_readMCParticles = m_config.get<bool>("readMCParticles", false);
     // checking if DUT parameter is in the configuration file, if so then check if should only output the DUT
-    m_onlyDUT = (m_config.has("DUT") ? m_config.get<bool>("onlyDUT", false) : false);
+    m_onlyDUT = m_config.get<bool>("onlyDUT", false);
     m_currentTime = 0.;
 }
 
