@@ -124,7 +124,7 @@ namespace corryvreckan {
         std::map<int, double> m_hitPixels;
         double m_associationCut;
         double m_proximityCut;
-        double m_lostHits;
+        int m_lostHits;
         bool timepix3Telescope;
     };
 } // namespace corryvreckan
