@@ -135,6 +135,12 @@ namespace corryvreckan {
         Detector* get_detector(std::string name);
 
         /**
+         * @brief Get the reference detector for this setup
+         * @return Pointer to the reference detector
+         */
+        Detector* get_reference();
+
+        /**
          * @brief Check if this module should act on a given detector
          * @param  name Name of the detector to check
          * @return True if detector is known to this module, false if detector is unknown.
