@@ -31,4 +31,3 @@ For each device the following plots are produced:
 makeCorrelations = true
 reference = "W0013_E03"
 ```
-Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
