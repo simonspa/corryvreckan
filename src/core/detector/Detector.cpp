@@ -24,6 +24,8 @@ using namespace corryvreckan;
 Detector::Detector(const Configuration& config) {
     // Role of this detector:
     auto role = config.get<std::string>("role", "none");
+    std::transform(role.begin(), role.end(), role.begin(), ::tolower);
+
     if(role == "none") {
         m_role = DetectorRole::NONE;
     } else if(role == "reference") {
