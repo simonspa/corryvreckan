@@ -45,7 +45,6 @@ namespace corryvreckan {
         int m_eventNumber;
         unsigned long long int m_oldtoa;
         unsigned long long int m_overflowcounter;
-        std::string detectorID;
         std::string m_filename;
         std::ifstream m_file;
 
@@ -67,7 +66,6 @@ namespace corryvreckan {
         double m_eventLength;
         double m_startTime;
         bool m_toaMode;
-        std::string m_detectorID;
         bool m_legacyFormat;
         double m_clockCycle;
 
