@@ -19,8 +19,9 @@ void Clipboard::put_persistent(std::string name, double value) {
 }
 
 Objects* Clipboard::get(std::string name, std::string type) {
-    if(m_data.count(name + type) == 0)
-        return NULL;
+    if(m_data.count(name + type) == 0) {
+        return nullptr;
+    }
     return m_data[name + type];
 }
 

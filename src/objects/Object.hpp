@@ -41,6 +41,7 @@ namespace corryvreckan {
         explicit Object(std::string detectorID);
         explicit Object(double timestamp);
         Object(std::string detectorID, double timestamp);
+        Object(const Object&);
 
         /**
          * @brief Required virtual destructor
@@ -59,13 +60,13 @@ namespace corryvreckan {
         void setDetectorID(std::string detectorID) { m_detectorID = std::move(detectorID); }
 
         // Function to get instantiation of inherited class (given a string, give back an object of type 'daughter')
-        static Object* Factory(std::string, Object* object = NULL);
-        static Object* Factory(std::string, std::string, Object* object = NULL);
+        static Object* Factory(std::string, Object* object = nullptr);
+        static Object* Factory(std::string, std::string, Object* object = nullptr);
 
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(Object, 3);
+        ClassDefOverride(Object, 4);
 
     protected:
         // Member variables

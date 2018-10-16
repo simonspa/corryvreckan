@@ -357,7 +357,7 @@ void Analysis::run() {
     // Check if we have an event or track limit:
     int number_of_events = global_config.get<int>("number_of_events", -1);
     int number_of_tracks = global_config.get<int>("number_of_tracks", -1);
-    float run_time = global_config.get<float>("run_time", Units::convert(-1.0, "s"));
+    auto run_time = global_config.get<double>("run_time", static_cast<double>(Units::convert(-1.0, "s")));
 
     // Loop over all events, running each module on each "event"
     LOG(STATUS) << "========================| Event loop |========================";
@@ -417,8 +417,8 @@ void Analysis::run() {
         }
 
         // Print statistics:
-        Tracks* tracks = (Tracks*)m_clipboard->get("tracks");
-        m_tracks += (tracks == NULL ? 0 : tracks->size());
+        Tracks* tracks = reinterpret_cast<Tracks*>(m_clipboard->get("tracks"));
+        m_tracks += (tracks == nullptr ? 0 : tracks->size());
 
         bool update_progress = false;
         if(m_events % 100 == 0 && m_events != events_prev) {
@@ -433,7 +433,7 @@ void Analysis::run() {
             events_prev = m_events;
             LOG_PROGRESS(STATUS, "event_loop")
                 << "Ev: +" << m_events << " \\" << skipped << " Tr: " << m_tracks << " (" << std::setprecision(3)
-                << ((double)m_tracks / m_events) << "/ev)"
+                << (static_cast<double>(m_tracks) / m_events) << "/ev)"
                 << (m_clipboard->has_persistent("eventStart")
                         ? " t = " + Units::display(m_clipboard->get_persistent("eventStart"), {"ns", "us", "ms", "s"})
                         : "");
@@ -441,12 +441,16 @@ void Analysis::run() {
 
         // Clear objects from this iteration from the clipboard
         m_clipboard->clear();
+
         // Check if any of the modules return a value saying it should stop
-        if(!run)
+        if(!run) {
             break;
+        }
+
         // Increment event number
-        if(!noData)
+        if(!noData) {
             m_events++;
+        }
 
         // Check for user termination and stop the event loop:
         if(m_terminate) {

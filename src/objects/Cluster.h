@@ -25,7 +25,7 @@ namespace corryvreckan {
             m_rowWidth = 0.;
             m_split = false;
         }
-        virtual ~Cluster() {}
+
         // Copy constructor
         Cluster(Cluster* cluster) {
             m_global = cluster->global();
@@ -129,7 +129,7 @@ namespace corryvreckan {
         std::map<int, bool> m_columnHits;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Cluster, 7)
+        ClassDef(Cluster, 8)
     };
 
     // Vector type declaration

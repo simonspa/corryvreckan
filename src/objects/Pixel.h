@@ -10,7 +10,6 @@ namespace corryvreckan {
     public:
         // Constructors and destructors
         Pixel() = default;
-        virtual ~Pixel() {}
         Pixel(std::string detectorID, int row, int col, int tot) : Pixel(detectorID, row, col, tot, 0.) {}
         Pixel(std::string detectorID, int row, int col, int tot, double timestamp)
             : Object(detectorID, timestamp), m_row(row), m_column(col), m_adc(tot), m_charge(tot) {}
@@ -34,7 +33,7 @@ namespace corryvreckan {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(Pixel, 4);
+        ClassDefOverride(Pixel, 5);
 
     private:
         // Member variables

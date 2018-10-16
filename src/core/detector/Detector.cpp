@@ -377,7 +377,7 @@ int Detector::winding_number(std::pair<int, int> probe, std::vector<std::vector<
     // loop through all edges of the polygon
 
     // edge from V[i] to  V[i+1]
-    for(int i = 0; i < polygon.size(); i++) {
+    for(size_t i = 0; i < polygon.size(); i++) {
         auto point_this = std::make_pair(polygon.at(i).at(0), polygon.at(i).at(1));
         auto point_next = (i + 1 < polygon.size() ? std::make_pair(polygon.at(i + 1).at(0), polygon.at(i + 1).at(1))
                                                   : std::make_pair(polygon.at(0).at(0), polygon.at(0).at(1)));
