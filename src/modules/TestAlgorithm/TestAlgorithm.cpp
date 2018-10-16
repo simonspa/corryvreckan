@@ -19,7 +19,7 @@ void TestAlgorithm::initialise() {
         LOG(DEBUG) << "Booking histograms for detector " << detector->name();
 
         // get the reference detector:
-        Detector* reference = get_detector(m_config.get<std::string>("reference"));
+        Detector* reference = get_reference();
 
         // Simple hit map
         string name = "hitmap_" + detector->name();
@@ -104,10 +104,10 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
         }
 
         // Get clusters from reference detector
-        Clusters* referenceClusters = (Clusters*)clipboard->get(m_config.get<std::string>("reference"), "clusters");
+        auto reference = get_reference();
+        Clusters* referenceClusters = (Clusters*)clipboard->get(reference->name(), "clusters");
         if(referenceClusters == NULL) {
-            LOG(DEBUG) << "Reference detector " << m_config.get<std::string>("reference")
-                       << " does not have any clusters on the clipboard";
+            LOG(DEBUG) << "Reference detector " << reference->name() << " does not have any clusters on the clipboard";
             continue;
         }
 

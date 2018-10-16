@@ -41,7 +41,7 @@ void ATLASpixEventLoader::initialise() {
 
     // File structure is RunX/ATLASpix/data.dat
     // Assume that the ATLASpix is the DUT (if running this algorithm
-    m_detectorID = m_config.get<std::string>("DUT");
+
     // Open the root directory
     DIR* directory = opendir(m_inputDirectory.c_str());
     if(directory == NULL) {
@@ -112,7 +112,7 @@ void ATLASpixEventLoader::initialise() {
     }
 
     // Make histograms for debugging
-    auto det = get_detector(m_detectorID);
+    auto det = get_dut();
     hHitMap = new TH2F("hitMap", "hitMap", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
     // hPixelToT = new TH1F("pixelToT", "pixelToT", 100, 0, 100);
     // std::string totTitle = "pixelToT;x ToT in " + string(m_clockCycle) + " ns units";
@@ -188,7 +188,7 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
 
     // Put the data on the clipboard
     if(!pixels->empty()) {
-        clipboard->put(m_detectorID, "pixels", (Objects*)pixels);
+        clipboard->put(get_dut()->name(), "pixels", (Objects*)pixels);
     } else {
         return NoData;
     }
@@ -206,9 +206,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
     Pixels* pixels = new Pixels();
 
     // Detector we're looking at:
-    auto detector = get_detector(m_detectorID);
-
-    // double timestamp = 0;
+    auto detector = get_dut();
 
     // Read file and load data
     uint32_t datain;
@@ -325,7 +323,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
                        << "\tTS_FULL: " << hit_ts << "\t" << Units::display(timestamp, {"s", "us", "ns"})
                        << "\tTOT: " << tot; // << "\t" << Units::display(tot_ns, {"s", "us", "ns"});
 
-            Pixel* pixel = new Pixel(m_detectorID, row, col, tot, timestamp);
+            Pixel* pixel = new Pixel(get_dut()->name(), row, col, tot, timestamp);
             LOG(DEBUG) << "PIXEL:\t" << *pixel;
             pixels->push_back(pixel);
 
@@ -507,7 +505,7 @@ Pixels* ATLASpixEventLoader::read_legacy_data(double, double) {
 
         m_file >> col >> row >> ts >> tot >> dummy >> dummy >> bincounter >> TriggerDebugTS;
 
-        auto detector = get_detector(m_detectorID);
+        auto detector = get_dut();
         // If this pixel is masked, do not save it
         if(detector->masked(col, row)) {
             continue;
@@ -560,7 +558,7 @@ Pixels* ATLASpixEventLoader::read_legacy_data(double, double) {
         // Convert TOA to nanoseconds:
         toa /= (4096. * 0.04);
 
-        Pixel* pixel = new Pixel(m_detectorID, row, col, cal_tot, toa);
+        Pixel* pixel = new Pixel(get_dut()->name(), row, col, cal_tot, toa);
         pixel->setCharge(cal_tot);
         pixels->push_back(pixel);
     }

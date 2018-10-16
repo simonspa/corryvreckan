@@ -26,4 +26,3 @@ This module requires either another event loader of another detector type before
 DUT = "W0005_H03"
 inputDirectory = /user/data/directory
 ```
-Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

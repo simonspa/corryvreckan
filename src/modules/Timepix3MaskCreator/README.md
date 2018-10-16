@@ -12,4 +12,3 @@ No parameters are used from the configuration file.
 ```toml
 [Timepix3MaskCreator]
 ```
-Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

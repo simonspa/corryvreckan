@@ -24,7 +24,6 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
 
     private:
-        std::string m_DUT;
         double timingCut, spatialCut;
     };
 } // namespace corryvreckan

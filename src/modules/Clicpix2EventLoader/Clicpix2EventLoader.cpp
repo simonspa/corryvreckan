@@ -16,7 +16,7 @@ Clicpix2EventLoader::Clicpix2EventLoader(Configuration config, std::vector<Detec
 }
 
 void Clicpix2EventLoader::initialise() {
-    auto det = get_detector(m_config.get<std::string>("DUT"));
+    auto det = get_dut();
     if(det->type() != "CLICpix2") {
         LOG(ERROR) << "DUT not of type CLICpix2";
     }
@@ -154,7 +154,7 @@ void Clicpix2EventLoader::initialise() {
 StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
 
     // Assume that the CLICpix is the DUT (if running this algorithm
-    string detectorID = m_config.get<std::string>("DUT");
+    auto detector = get_dut();
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
@@ -221,7 +221,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
             int row = px.first.second;
 
             // If this pixel is masked, do not save it
-            if(get_detector(detectorID)->masked(col, row)) {
+            if(detector->masked(col, row)) {
                 continue;
             }
 
@@ -247,7 +247,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
                 hPixelToA->Fill(toa);
             }
 
-            Pixel* pixel = new Pixel(detectorID, row, col, tot, shutterStartTime);
+            Pixel* pixel = new Pixel(detector->name(), row, col, tot, shutterStartTime);
 
             if(tot == 0 && discardZeroToT) {
                 hHitMapDiscarded->Fill(col, row);
@@ -271,7 +271,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
 
     // Put the data on the clipboard
     if(!pixels->empty()) {
-        clipboard->put(detectorID, "pixels", (Objects*)pixels);
+        clipboard->put(detector->name(), "pixels", (Objects*)pixels);
     }
 
     // Fill histograms

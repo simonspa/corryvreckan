@@ -25,4 +25,3 @@ The modules stops if the convergence, i.e. the absolute sum of all corrections o
 iterations = 10
 dofs = true, true, false, true, true, true
 ```
-Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

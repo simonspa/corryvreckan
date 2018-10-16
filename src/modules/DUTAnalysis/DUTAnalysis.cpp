@@ -10,7 +10,6 @@ using namespace corryvreckan;
 DUTAnalysis::DUTAnalysis(Configuration config, std::vector<Detector*> detectors)
     : Module(std::move(config), std::move(detectors)) {
     m_digitalPowerPulsing = m_config.get<bool>("digitalPowerPulsing", false);
-    m_DUT = m_config.get<std::string>("DUT");
     m_useMCtruth = m_config.get<bool>("useMCtruth", false);
     chi2ndofCut = m_config.get<double>("chi2ndofCut", 3.);
 }
@@ -68,6 +67,10 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
     LOG(TRACE) << "Power on time: " << Units::display(m_powerOnTime, {"ns", "us", "s"});
     LOG(TRACE) << "Power off time: " << Units::display(m_powerOffTime, {"ns", "us", "s"});
 
+    // Get the DUT detector:
+    auto detector = get_dut();
+    auto dutname = detector->name();
+
     //    if(clipboard->get_persistent("eventStart") < 13.5)
     //        return Success;
 
@@ -84,7 +87,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
         m_shutterCloseTime = 0;
 
     // Now update the power pulsing with any new signals
-    SpidrSignals* spidrData = (SpidrSignals*)clipboard->get(m_DUT, "SpidrSignals");
+    SpidrSignals* spidrData = (SpidrSignals*)clipboard->get(dutname, "SpidrSignals");
     // If there are new signals
     if(spidrData != NULL) {
         // Loop over all signals registered
@@ -123,13 +126,13 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
     }
 
     // Get the DUT clusters from the clipboard
-    Clusters* clusters = (Clusters*)clipboard->get(m_DUT, "clusters");
+    Clusters* clusters = (Clusters*)clipboard->get(dutname, "clusters");
     if(clusters == NULL) {
         LOG(DEBUG) << "No DUT clusters on the clipboard";
     }
 
     // Get the MC particles from the clipboard
-    MCParticles* mcParticles = (MCParticles*)clipboard->get(m_DUT, "mcparticles");
+    MCParticles* mcParticles = (MCParticles*)clipboard->get(dutname, "mcparticles");
     if(mcParticles == NULL) {
         LOG(DEBUG) << "No DUT MC particles on the clipboard";
     }
@@ -143,8 +146,6 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             continue;
         }
 
-        // Get the DUT detector:
-        auto detector = get_detector(m_DUT);
         // Check if it intercepts the DUT
         PositionVector3D<Cartesian3D<double>> globalIntercept = detector->getIntercept(track);
         if(!detector->hasIntercept(track, 1.)) {
@@ -219,8 +220,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
                 clusterToTVersusTime->Fill(Units::convert(cluster->timestamp(), "ns"), cluster->tot());
             }
 
-            auto associated_clusters = track->associatedClusters();
-            if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) != associated_clusters.end()) {
+            if(!track->isAssociated(cluster)) {
                 LOG(DEBUG) << "No associated cluster found";
                 continue;
             }

@@ -70,4 +70,3 @@ DUTPlots = [["Clicpix2EventLoader/hitMap", "colz"],
             [DUTAnalysis/associatedTracksVersusTime"]]
 ```
 
-Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

@@ -55,4 +55,3 @@ alignmentMethod = 0
 number_of_tracks = 1000000
 log_level = INFO
 ```
-Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

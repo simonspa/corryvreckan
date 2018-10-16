@@ -17,4 +17,3 @@ improvementMethod = 0
 signalSource = "W0013_G02"
 triggerLatency = 20ns
 ```
-Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

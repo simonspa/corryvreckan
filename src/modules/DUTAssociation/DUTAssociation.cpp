@@ -6,8 +6,6 @@ using namespace std;
 DUTAssociation::DUTAssociation(Configuration config, std::vector<Detector*> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
-    m_DUT = m_config.get<std::string>("DUT");
-
     timingCut = m_config.get<double>("timingCut", Units::convert(200, "ns"));
     spatialCut = m_config.get<double>("spatialCut", Units::convert(200, "um"));
 }
@@ -21,8 +19,11 @@ StatusCode DUTAssociation::run(Clipboard* clipboard) {
         return Success;
     }
 
+    // Get the DUT:
+    auto dut = get_dut();
+
     // Get the DUT clusters from the clipboard
-    Clusters* clusters = (Clusters*)clipboard->get(m_DUT, "clusters");
+    Clusters* clusters = (Clusters*)clipboard->get(dut->name(), "clusters");
     if(clusters == NULL) {
         LOG(DEBUG) << "No DUT clusters on the clipboard";
         return Success;

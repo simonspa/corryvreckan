@@ -36,6 +36,5 @@ eventLength = 0.0000002
 number_of_pixelhits = 0
 DUT = "W0005_H03"
 ```
-Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
 
 [@timepix-talk] X. Llopart, The Timepix3 chip, EP-ESE seminar, https://indico.cern.ch/event/267425,
