@@ -182,6 +182,13 @@ Configuration Detector::getConfiguration() {
     Configuration config(name());
     config.set("type", m_detectorType);
 
+    // Store the role of the detector
+    if(m_role == DetectorRole::REFERENCE) {
+        config.set("role", "reference");
+    } else if(m_role == DetectorRole::DUT) {
+        config.set("role", "dut");
+    }
+
     config.set("position", m_displacement, {"um", "mm"});
     config.set("orientation_mode", m_orientation_mode);
     config.set("orientation", m_orientation, {"deg"});
