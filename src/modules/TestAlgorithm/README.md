@@ -22,7 +22,7 @@ For each device the following plots are produced:
 * 2D correlation in Y in global coordinates
 * 2D correlation in X in local coordinates
 * 2D correlation in Y in local coordinates
-* Correlation times histogram
+* Correlation times (nanosecond binning) histogram, range covers 2 * event length
 * Correlation times (integer values) histogram
 
 ### Usage
