@@ -9,9 +9,9 @@ using namespace corryvreckan;
 CLICpix2Analysis::CLICpix2Analysis(Configuration config, std::vector<Detector*> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
-    m_timeCutFrameEdge = m_config.get<double>("timeCutFrameEdge", Units::convert(20, "ns"));
+    m_timeCutFrameEdge = m_config.get<double>("timeCutFrameEdge", static_cast<double>(Units::convert(20, "ns")));
 
-    spatialCut = m_config.get<double>("spatialCut", Units::convert(50, "um"));
+    spatialCut = m_config.get<double>("spatialCut", static_cast<double>(Units::convert(50, "um")));
     chi2ndofCut = m_config.get<double>("chi2ndofCut", 3.);
 }
 
@@ -75,46 +75,65 @@ void CLICpix2Analysis::initialise() {
     clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
 
     // In-pixel studies:
-    auto pitch_x = Units::convert(det->pitch().X(), "um");
-    auto pitch_y = Units::convert(det->pitch().Y(), "um");
+    auto pitch_x = static_cast<double>(Units::convert(det->pitch().X(), "um"));
+    auto pitch_y = static_cast<double>(Units::convert(det->pitch().Y(), "um"));
     auto mod_axes = "x_{track} mod " + std::to_string(pitch_x) + "#mum;y_{track} mod " + std::to_string(pitch_y) + "#mum;";
 
     std::string title = "DUT x resolution;" + mod_axes + "MAD(#Deltax) [#mum]";
-    rmsxvsxmym = new TProfile2D("rmsxvsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y);
+    rmsxvsxmym = new TProfile2D(
+        "rmsxvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
 
     title = "DUT y resolution;" + mod_axes + "MAD(#Deltay) [#mum]";
-    rmsyvsxmym = new TProfile2D("rmsyvsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y);
+    rmsyvsxmym = new TProfile2D(
+        "rmsyvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
 
     title = "DUT resolution;" + mod_axes + "MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
-    rmsxyvsxmym = new TProfile2D("rmsxyvsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y);
+    rmsxyvsxmym = new TProfile2D(
+        "rmsxyvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
 
     title = "DUT cluster charge map;" + mod_axes + "<cluster charge> [ke]";
-    qvsxmym = new TProfile2D("qvsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y, 0, 250);
+    qvsxmym = new TProfile2D(
+        "qvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y, 0, 250);
 
     title = "DUT cluster charge map, Moyal approx;" + mod_axes + "cluster charge MPV [ke]";
-    qMoyalvsxmym = new TProfile2D("qMoyalvsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y, 0, 250);
+    qMoyalvsxmym = new TProfile2D(
+        "qMoyalvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y, 0, 250);
 
     title = "DUT seed pixel charge map;" + mod_axes + "<seed pixel charge> [ke]";
-    pxqvsxmym = new TProfile2D("pxqvsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y, 0, 250);
+    pxqvsxmym = new TProfile2D(
+        "pxqvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y, 0, 250);
 
     title = "DUT cluster size map;" + mod_axes + "<pixels/cluster>";
-    npxvsxmym = new TProfile2D("npxvsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y, 0, 4.5);
+    npxvsxmym = new TProfile2D(
+        "npxvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y, 0, 4.5);
 
     title = "DUT 1-pixel cluster map;" + mod_axes + "clusters";
-    npx1vsxmym = new TH2F("npx1vsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y);
+    npx1vsxmym =
+        new TH2F("npx1vsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
 
     title = "DUT 2-pixel cluster map;" + mod_axes + "clusters";
-    npx2vsxmym = new TH2F("npx2vsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y);
+    npx2vsxmym =
+        new TH2F("npx2vsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
 
     title = "DUT 3-pixel cluster map;" + mod_axes + "clusters";
-    npx3vsxmym = new TH2F("npx3vsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y);
+    npx3vsxmym =
+        new TH2F("npx3vsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
 
     title = "DUT 4-pixel cluster map;" + mod_axes + "clusters";
-    npx4vsxmym = new TH2F("npx4vsxmym", title.c_str(), pitch_x, 0, pitch_x, pitch_y, 0, pitch_y);
+    npx4vsxmym =
+        new TH2F("npx4vsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
 
     // Efficiency maps
-    hPixelEfficiencyMap =
-        new TProfile2D("hPixelEfficiencyMap", "hPixelEfficiencyMap", pitch_x, 0, pitch_x, pitch_y, 0, pitch_y, 0, 1);
+    hPixelEfficiencyMap = new TProfile2D("hPixelEfficiencyMap",
+                                         "hPixelEfficiencyMap",
+                                         static_cast<int>(pitch_x),
+                                         0,
+                                         pitch_x,
+                                         static_cast<int>(pitch_y),
+                                         0,
+                                         pitch_y,
+                                         0,
+                                         1);
     hChipEfficiencyMap = new TProfile2D("hChipEfficiencyMap",
                                         "hChipEfficiencyMap",
                                         det->nPixelsX(),
@@ -154,8 +173,8 @@ void CLICpix2Analysis::initialise() {
 StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
 
     // Get the telescope tracks from the clipboard
-    Tracks* tracks = (Tracks*)clipboard->get("tracks");
-    if(tracks == NULL) {
+    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return Success;
     }
@@ -213,12 +232,12 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
         }
 
         // Calculate in-pixel position of track in microns
-        double xmod = Units::convert(detector->inPixelX(localIntercept), "um");
-        double ymod = Units::convert(detector->inPixelY(localIntercept), "um");
+        auto xmod = static_cast<double>(Units::convert(detector->inPixelX(localIntercept), "um"));
+        auto ymod = static_cast<double>(Units::convert(detector->inPixelY(localIntercept), "um"));
 
         // Get the DUT clusters from the clipboard
-        Clusters* clusters = (Clusters*)clipboard->get(get_dut()->name(), "clusters");
-        if(clusters == NULL) {
+        Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(get_dut()->name(), "clusters"));
+        if(clusters == nullptr) {
             LOG(DEBUG) << " - no DUT clusters";
         } else {
 
@@ -272,7 +291,7 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
                     hPixelToTMapAssoc->Fill(pixel->column(), pixel->row(), pixel->tot());
                 }
 
-                associatedTracksVersusTime->Fill(Units::convert(track->timestamp(), "s"));
+                associatedTracksVersusTime->Fill(static_cast<double>(Units::convert(track->timestamp(), "s")));
 
                 // Residuals
                 residualsX->Fill(xdistance);
