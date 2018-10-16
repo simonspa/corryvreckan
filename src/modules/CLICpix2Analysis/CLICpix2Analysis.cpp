@@ -234,18 +234,16 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
                 hTrackCorrelationY->Fill(intercept.Y() - cluster->globalY());
                 hTrackCorrelationTime->Fill(track->timestamp() - cluster->timestamp());
 
-                double xdistance = intercept.X() - cluster->globalX();
-                double ydistance = intercept.Y() - cluster->globalY();
-                double xabsdistance = fabs(xdistance);
-                double yabsdistance = fabs(ydistance);
-                if(xabsdistance > spatialCut || yabsdistance > spatialCut) {
-                    LOG(DEBUG) << "    - Discarding DUT cluster with distance (" << Units::display(xabsdistance, {"um"})
-                               << "," << Units::display(yabsdistance, {"um"}) << ")";
+                auto associated_clusters = track->associatedClusters();
+                if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) != associated_clusters.end()) {
+                    LOG(DEBUG) << "No associated cluster found";
                     continue;
                 }
 
-                LOG(DEBUG) << "    - Found associated cluster with distance (" << Units::display(xabsdistance, {"um"}) << ","
-                           << Units::display(yabsdistance, {"um"}) << ")";
+                LOG(DEBUG) << "Found associated cluster";
+                ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
+                double xdistance = intercept.X() - cluster->globalX();
+                double ydistance = intercept.Y() - cluster->globalY();
 
                 // We now have an associated cluster
                 has_associated_cluster = true;

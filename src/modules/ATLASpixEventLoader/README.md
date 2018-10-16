@@ -12,7 +12,7 @@ This module requires either another event loader of another detector type before
 ### Parameters
 * `inputDirectory`: Path to the directory containing the `.dat` file. This path should lead to the directory above the ALTASpix directory, as this string is added to the input directory in the module.
 * `clockCycle`: Period of the clock used to count the trigger timestamps in, defaults to `25ns`
-* `DUT`: Name of the DUT plane.
+* `DUT`: Name of the DUT plane. The ATLASpix device is assumed to be the `DUT`.
 
 ### Plots produced
 * 2D Hit map

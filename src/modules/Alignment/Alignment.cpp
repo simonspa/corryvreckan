@@ -32,13 +32,12 @@ Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
     // Get alignment method:
     alignmentMethod = m_config.get<int>("alignmentMethod");
 
-    if(m_config.has("detectorToAlign")) {
-        detectorToAlign = m_config.get<std::string>("detectorToAlign");
-    } else {
-        detectorToAlign = get_dut()->name();
-    }
-
     if(alignmentMethod == 1) {
+        if(m_config.has("detectorToAlign")) {
+            detectorToAlign = m_config.get<std::string>("detectorToAlign");
+        } else {
+            detectorToAlign = get_dut()->name();
+        }
         LOG(INFO) << "Aligning detector \"" << detectorToAlign << "\"";
     } else {
         LOG(INFO) << "Aligning telescope";
@@ -400,7 +399,7 @@ void Alignment::finalise() {
             string detectorID = detector->name();
 
             // Do not align the reference plane
-            if(detector->isReference() || detector->isDUT()) {
+            if(detector->isReference() || (m_config.has("DUT") && detector->isDUT())) {
                 continue;
             }
 
@@ -493,7 +492,7 @@ void Alignment::finalise() {
     // Now list the new alignment parameters
     for(auto& detector : get_detectors()) {
         // Do not align the reference plane
-        if(detector->isReference() || detector->isDUT()) {
+        if(detector->isReference() || (m_config.has("DUT") && detector->isDUT())) {
             continue;
         }
 

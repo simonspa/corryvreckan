@@ -7,7 +7,7 @@ This module writes an output file and fills it with trees containing the request
 
 ### Parameters
 * `DUT`: Name of the DUT plane.
-* `onlyDUT`: Boolean to decide if only the DUT data is to be written into the outputfile, or if all planes are to be. Default value is `true`.
+* `onlyDUT`: Boolean to decide if only the DUT data is to be written into the outputfile, or if all planes are to be. Default value is `true`. If no `DUT` parameter is set in the configuration file, this parameter is automatically `false`.
 * `writePixels`: Boolean to choose if pixel objects are to be written out. Default value is `true`.
 * `writeClusters`: Boolean to choose if cluster objects are to be written out. Default value is `false`.
 * `writeTracks`: Boolean to choose if track objects are to be written out. Default value is `true`.

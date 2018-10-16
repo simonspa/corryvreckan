@@ -76,7 +76,7 @@ StatusCode TelescopeAnalysis::run(Clipboard* clipboard) {
             auto name = detector->name();
 
             // Ignore DUT
-            if(name == m_config.get<std::string>("DUT")) {
+            if(m_config.has("DUT") && name == m_config.get<std::string>("DUT")) {
                 continue;
             }
 
@@ -102,6 +102,9 @@ StatusCode TelescopeAnalysis::run(Clipboard* clipboard) {
         }
 
         // Calculate telescope resolution at DUT
+        if(!m_config.has("DUT")) {
+            continue;
+        }
         auto detector = get_detector(m_config.get<std::string>("DUT"));
 
         // Get the MC particles from the clipboard

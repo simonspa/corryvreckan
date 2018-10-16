@@ -9,8 +9,8 @@ This module uses the tracks produced by the `BasicTracking` module to align the 
 
 There are two methods available for alignment:
 
-#### 1) Minimising the track chi^2
-For each telescope detector except the reference plane, this method moves the detector, refits all of the tracks, and minimises the chi^2 of these new tracks. The parameters `detectorToAlign` and `DUT` are not used in this method as it automatically iterates through all telescope planes except the DUT.
+##### 1) Minimising the track chi^2
+For each telescope detector except the reference plane, this method moves the detector, refits all of the tracks, and minimises the chi^2 of these new tracks. The parameters `detectorToAlign` and `DUT` are not used in this method as it automatically iterates through all telescope planes except the DUT (if a DUT is present).
 
 #### 2) Minimising the track (unbiased) residuals
 For the detector specified by the `detectorToAlign` parameter, this method moves the detector, refits all the tracks, and minimises the unbiased residuals calculated from the track intercepts with the plane.
@@ -52,7 +52,6 @@ For the `detectorToAlign` the following plots are produced when using `alignment
 ```toml
 [Alignment]
 alignmentMethod = 0
-masked = "W0005_H03" #excluding the DUT from the alignment
 number_of_tracks = 1000000
 log_level = INFO
 ```

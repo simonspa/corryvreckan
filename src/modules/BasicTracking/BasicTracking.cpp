@@ -12,7 +12,9 @@ BasicTracking::BasicTracking(Configuration config, std::vector<Detector*> detect
     timingCut = m_config.get<double>("timingCut", Units::convert(200, "ns"));
     spatialCut = m_config.get<double>("spatialCut", Units::convert(0.2, "mm"));
     minHitsOnTrack = m_config.get<int>("minHitsOnTrack", 6);
-    excludeDUT = m_config.get<bool>("excludeDUT", true);
+    // checking if DUT parameter is in the configuration file, if so then check if the the DUT should be excluded, if not
+    // then set exclude the DUT
+    excludeDUT = (m_config.has("DUT") ? m_config.get<bool>("excludeDUT", true) : true);
 }
 
 void BasicTracking::initialise() {
@@ -25,9 +27,8 @@ void BasicTracking::initialise() {
     trackAngleX = new TH1F("trackAngleX", "trackAngleX", 2000, -0.01, 0.01);
     trackAngleY = new TH1F("trackAngleY", "trackAngleY", 2000, -0.01, 0.01);
 
-    // Loop over all Timepix3
+    // Loop over all planes
     for(auto& detector : get_detectors()) {
-        // Check if they are a Timepix3
         string detectorID = detector->name();
 
         string name = "residualsX_" + detectorID;
@@ -60,7 +61,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
     // Output track container
     Tracks* tracks = new Tracks();
 
-    // Loop over all Timepix3 and get clusters
+    // Loop over all planes and get clusters
     bool firstDetector = true;
     std::string seedPlane;
     for(auto& detector : get_detectors()) {
@@ -73,7 +74,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
         } else {
             // Store them
             LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters from " << detectorID;
-            if(firstDetector && !detector->isDUT()) {
+            if(firstDetector && (!m_config.has("DUT") || !detector->isDUT())) {
                 referenceClusters = tempClusters;
                 seedPlane = detector->name();
                 LOG(DEBUG) << "Seed plane is " << seedPlane;
@@ -116,6 +117,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
 
             // Check if the DUT should be excluded and obey:
             if(excludeDUT && det->isDUT()) {
+                LOG(DEBUG) << "Skipping DUT plane.";
                 continue;
             }
 
@@ -161,8 +163,10 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
                 }
             }
 
-            if(closestCluster == NULL)
+            if(closestCluster == NULL) {
+                LOG(DEBUG) << "No cluster within spatial cut.";
                 continue;
+            }
 
             // Add the cluster to the track
             LOG(DEBUG) << "- added cluster to track";

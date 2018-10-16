@@ -16,7 +16,6 @@ Clicpix2EventLoader::Clicpix2EventLoader(Configuration config, std::vector<Detec
 }
 
 void Clicpix2EventLoader::initialise() {
-
     auto det = get_detector(m_config.get<std::string>("DUT"));
     if(det->type() != "CLICpix2") {
         LOG(ERROR) << "DUT not of type CLICpix2";
