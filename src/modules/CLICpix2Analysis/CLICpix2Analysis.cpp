@@ -242,9 +242,10 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
                 }
 
                 LOG(DEBUG) << "Found associated cluster";
-                ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
                 double xdistance = intercept.X() - cluster->globalX();
                 double ydistance = intercept.Y() - cluster->globalY();
+                double xabsdistance = fabs(xdistance);
+                double yabsdistance = fabs(ydistance);
 
                 // We now have an associated cluster
                 has_associated_cluster = true;
