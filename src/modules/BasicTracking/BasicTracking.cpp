@@ -9,9 +9,9 @@ BasicTracking::BasicTracking(Configuration config, std::vector<Detector*> detect
     : Module(std::move(config), std::move(detectors)) {
 
     // Default values for cuts
-    timingCut = m_config.get<double>("timingCut", Units::convert(200, "ns"));
-    spatialCut = m_config.get<double>("spatialCut", Units::convert(0.2, "mm"));
-    minHitsOnTrack = m_config.get<int>("minHitsOnTrack", 6);
+    timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(200, "ns")));
+    spatialCut = m_config.get<double>("spatialCut", static_cast<double>(Units::convert(0.2, "mm")));
+    minHitsOnTrack = m_config.get<size_t>("minHitsOnTrack", 6);
     excludeDUT = m_config.get<bool>("excludeDUT", true);
 }
 
@@ -63,8 +63,8 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
         string detectorID = detector->name();
 
         // Get the clusters
-        Clusters* tempClusters = (Clusters*)clipboard->get(detectorID, "clusters");
-        if(tempClusters == NULL || tempClusters->size() == 0) {
+        Clusters* tempClusters = reinterpret_cast<Clusters*>(clipboard->get(detectorID, "clusters"));
+        if(tempClusters == nullptr || tempClusters->size() == 0) {
             LOG(DEBUG) << "Detector " << detectorID << " does not have any clusters on the clipboard";
         } else {
             // Store them
@@ -123,7 +123,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
             // Get all neighbours within the timing cut
             LOG(DEBUG) << "Searching for neighbouring cluster on " << detectorID;
             LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
-            Cluster* closestCluster = NULL;
+            Cluster* closestCluster = nullptr;
             double closestClusterDistance = spatialCut;
             Clusters neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut);
 
@@ -143,7 +143,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
             }
 
             // Loop over each neighbour in time
-            for(int ne = 0; ne < neighbours.size(); ne++) {
+            for(size_t ne = 0; ne < neighbours.size(); ne++) {
                 Cluster* newCluster = neighbours[ne];
 
                 // Calculate the distance to the previous plane's cluster/intercept
@@ -157,7 +157,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
                 }
             }
 
-            if(closestCluster == NULL) {
+            if(closestCluster == nullptr) {
                 LOG(DEBUG) << "No cluster within spatial cut.";
                 continue;
             }
@@ -210,7 +210,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
 
     // Save the tracks on the clipboard
     if(tracks->size() > 0) {
-        clipboard->put("tracks", (Objects*)tracks);
+        clipboard->put("tracks", reinterpret_cast<Objects*>(tracks));
         tracksPerEvent->Fill(tracks->size());
     }
 
@@ -226,11 +226,11 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
 
 Cluster* BasicTracking::getNearestCluster(long long int timestamp, Clusters clusters) {
 
-    Cluster* bestCluster = NULL;
+    Cluster* bestCluster = nullptr;
     // Loop over all clusters and return the one with the closest timestamp
-    for(int iCluster = 0; iCluster < clusters.size(); iCluster++) {
+    for(size_t iCluster = 0; iCluster < clusters.size(); iCluster++) {
         Cluster* cluster = clusters[iCluster];
-        if(bestCluster == NULL)
+        if(bestCluster == nullptr)
             bestCluster = cluster;
         if(abs(cluster->timestamp() - timestamp) < abs(bestCluster->timestamp() - timestamp))
             bestCluster = cluster;

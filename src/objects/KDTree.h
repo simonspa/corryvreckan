@@ -22,8 +22,8 @@ namespace corryvreckan {
     public:
         // Constructors and destructors
         KDTree() {
-            timeKdtree = NULL;
-            positionKdtree = NULL;
+            timeKdtree = nullptr;
+            positionKdtree = nullptr;
         }
         ~KDTree() {
             delete timeKdtree;
@@ -37,17 +37,17 @@ namespace corryvreckan {
             clusters = inputClusters;
 
             // Create the data for the ROOT KDTree
-            int npoints = clusters.size();
+            size_t npoints = clusters.size();
             times = new double[npoints];
 
             // Fill the timing data from the clusters
-            for(int cluster = 0; cluster < npoints; cluster++) {
+            for(size_t cluster = 0; cluster < npoints; cluster++) {
                 times[cluster] = clusters[cluster]->timestamp();
                 iteratorNumber[clusters[cluster]] = cluster;
             }
 
             // Place the data into the tree and build the structure
-            timeKdtree = new TKDTreeID(npoints, 1, 1);
+            timeKdtree = new TKDTreeID(static_cast<int>(npoints), 1, 1);
             timeKdtree->SetData(0, times);
             timeKdtree->Build();
             timeKdtree->SetOwner(kTRUE);
@@ -60,19 +60,19 @@ namespace corryvreckan {
             clusters = inputClusters;
 
             // Create the data for the ROOT KDTree
-            int npoints = clusters.size();
+            size_t npoints = clusters.size();
             xpositions = new double[npoints];
             ypositions = new double[npoints];
 
             // Fill the x and y data from the clusters
-            for(int cluster = 0; cluster < npoints; cluster++) {
+            for(size_t cluster = 0; cluster < npoints; cluster++) {
                 xpositions[cluster] = clusters[cluster]->globalX();
                 ypositions[cluster] = clusters[cluster]->globalY();
                 iteratorNumber[clusters[cluster]] = cluster;
             }
 
             // Place the data into the tree and build the structure
-            positionKdtree = new TKDTreeID(npoints, 2, 1);
+            positionKdtree = new TKDTreeID(static_cast<int>(npoints), 2, 1);
             positionKdtree->SetData(0, xpositions);
             positionKdtree->SetData(1, ypositions);
             positionKdtree->Build();
@@ -97,8 +97,8 @@ namespace corryvreckan {
             // Turn this into a vector of clusters
             Clusters resultClusters;
             //    delete time;
-            for(int res = 0; res < results.size(); res++)
-                resultClusters.push_back(clusters[results[res]]);
+            for(size_t res = 0; res < results.size(); res++)
+                resultClusters.push_back(clusters[static_cast<size_t>(results[res])]);
 
             // Return the vector of clusters
             return resultClusters;
@@ -109,15 +109,15 @@ namespace corryvreckan {
 
             // Get iterators of all clusters within the time window
             std::vector<int> results;
-            double* position;
+            double* position = new double();
             position[0] = cluster->globalX();
             position[1] = cluster->globalY();
             positionKdtree->FindInRange(position, window, results);
 
             // Turn this into a vector of clusters
             Clusters resultClusters;
-            for(int res = 0; res < results.size(); res++)
-                resultClusters.push_back(clusters[results[res]]);
+            for(size_t res = 0; res < results.size(); res++)
+                resultClusters.push_back(clusters[static_cast<size_t>(results[res])]);
 
             // Return the vector of clusters
             return resultClusters;
@@ -135,7 +135,7 @@ namespace corryvreckan {
             positionKdtree->FindNearestNeighbors(position, 1, &result, &distance);
 
             // Return the cluster
-            return clusters[result];
+            return clusters[static_cast<size_t>(result)];
         }
 
         // Member variables
@@ -145,11 +145,11 @@ namespace corryvreckan {
         TKDTreeID* positionKdtree;
         TKDTreeID* timeKdtree;
         Clusters clusters;
-        std::map<Cluster*, int> iteratorNumber;
+        std::map<Cluster*, size_t> iteratorNumber;
 
         // ROOT I/O class definition - update version number when you change this
         // class!
-        ClassDef(KDTree, 2)
+        ClassDef(KDTree, 3)
     };
 } // namespace corryvreckan
 
