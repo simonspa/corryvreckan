@@ -56,9 +56,6 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
     vector<string> detectors;
     Clusters* referenceClusters = nullptr;
 
-    // Output track container
-    Tracks* tracks = new Tracks();
-
     // Loop over all planes and get clusters
     bool firstDetector = true;
     std::string seedPlane;
@@ -87,13 +84,14 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
     }
 
     // If there are no detectors then stop trying to track
-    if(detectors.size() == 0)
+    if(detectors.size() == 0 || referenceClusters == nullptr) {
         return Success;
+    }
+
+    // Output track container
+    Tracks* tracks = new Tracks();
 
     // Loop over all clusters
-    if(referenceClusters == nullptr)
-        return Success;
-    int nSeedClusters = referenceClusters->size();
     map<Cluster*, bool> used;
     for(auto& cluster : (*referenceClusters)) {
 
@@ -105,8 +103,6 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
         track->addCluster(cluster);
         track->setTimestamp(cluster->timestamp());
         used[cluster] = true;
-        // Get the cluster time
-        long long int timestamp = cluster->timestamp();
 
         // Loop over each subsequent plane and look for a cluster within the timing cuts
         for(auto& detectorID : detectors) {

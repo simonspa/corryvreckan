@@ -175,8 +175,6 @@ StatusCode Timepix1EventLoader::run(Clipboard* clipboard) {
 
         // Check if this detector has been seen before
         try {
-            auto detector = get_detector(detID);
-
             // Put the pixels on the clipboard
             clipboard->put(detID, "pixels", dataContainers[detID]);
             LOG(DEBUG) << "Loaded " << dataContainers[detID]->size() << " pixels from device " << detID;

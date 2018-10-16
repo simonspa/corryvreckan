@@ -61,7 +61,7 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
 
     // Pixel container, shutter information
     Pixels* pixels = new Pixels();
-    long double shutterStartTime, shutterStopTime;
+    long double shutterStartTime = 0, shutterStopTime = 0;
     string data;
 
     int npixels = 0;

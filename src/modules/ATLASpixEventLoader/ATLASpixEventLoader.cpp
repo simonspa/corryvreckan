@@ -543,7 +543,7 @@ Pixels* ATLASpixEventLoader::read_legacy_data(double, double) {
         LOG(DEBUG) << "    " << row << "\t" << col << ": " << tot << " " << ts << " " << bincounter << " " << toa << " "
                    << (TriggerDebugTS - toa);
 
-        TriggerDebugTS *= 4096. / 5;              // runs with 200MHz, divide by 5 to scale counter value to 40MHz
+        // TriggerDebugTS *= 4096. / 5;              // runs with 200MHz, divide by 5 to scale counter value to 40MHz
         toa *= 4096. * (unsigned long long int)2; // runs with 20MHz, multiply by 2 to scale counter value to 40MHz
 
         // Timewalk correction:

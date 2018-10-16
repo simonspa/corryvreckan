@@ -52,11 +52,8 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
     // Container for all clusters, and detectors in tracking
     map<string, KDTree*> trees;
     vector<Detector*> detectors;
-    Clusters* referenceClusters;
+    Clusters* referenceClusters = nullptr;
     Clusters dutClusters;
-
-    // Output track container
-    Tracks* tracks = new Tracks();
 
     // Loop over all Timepix1 and get clusters
     double minZ = 1000.;
@@ -93,6 +90,9 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
     if(detectors.empty()) {
         return Success;
     }
+
+    // Output track container
+    Tracks* tracks = new Tracks();
 
     // Keep a note of which clusters have been used
     map<Cluster*, bool> used;

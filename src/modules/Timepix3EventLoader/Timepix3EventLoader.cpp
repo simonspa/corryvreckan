@@ -545,7 +545,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 unsigned long long int stamp = (pixdata & 0x1E0) >> 5;
                 long long int timestamp_raw = (pixdata & 0xFFFFFFFFE00) >> 9;
                 long long int timestamp = 0;
-                int triggerNumber = ((pixdata & 0xFFF00000000000) >> 44);
+                // int triggerNumber = ((pixdata & 0xFFF00000000000) >> 44);
                 int intermediate = (pixdata & 0x1F);
                 if(intermediate != 0)
                     continue;
@@ -581,7 +581,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             }
 
             // Get the rest of the data from the pixel
-            const UShort_t pixno = col * 256 + row;
+            // const UShort_t pixno = col * 256 + row;
             const UInt_t data = ((pixdata & 0x00000FFFFFFF0000) >> 16);
             const unsigned int tot = (data & 0x00003FF0) >> 4;
             const uint64_t spidrTime(pixdata & 0x000000000000FFFF);
