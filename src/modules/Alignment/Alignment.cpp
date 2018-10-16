@@ -400,7 +400,7 @@ void Alignment::finalise() {
             string detectorID = detector->name();
 
             // Do not align the reference plane
-            if(detectorID == m_config.get<std::string>("reference") || detectorID == m_config.get<std::string>("DUT")) {
+            if(detector->role() == DetectorRole::REFERENCE || detectorID == m_config.get<std::string>("DUT")) {
                 continue;
             }
 
@@ -493,8 +493,7 @@ void Alignment::finalise() {
     // Now list the new alignment parameters
     for(auto& detector : get_detectors()) {
         // Do not align the reference plane
-        if(detector->name() == m_config.get<std::string>("reference") ||
-           detector->name() == m_config.get<std::string>("DUT")) {
+        if(detector->role() == DetectorRole::REFERENCE || detector->name() == m_config.get<std::string>("DUT")) {
             continue;
         }
 

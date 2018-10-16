@@ -48,7 +48,7 @@ void Timepix1Correlator::initialise() {
 StatusCode Timepix1Correlator::run(Clipboard* clipboard) {
 
     // Get the clusters for the reference detector
-    string referenceDetector = m_config.get<std::string>("reference");
+    string referenceDetector = get_reference()->name();
     Clusters* referenceClusters = (Clusters*)clipboard->get(referenceDetector, "clusters");
     if(referenceClusters == NULL) {
         LOG(DEBUG) << "Detector " << referenceDetector << " does not have any clusters on the clipboard";
