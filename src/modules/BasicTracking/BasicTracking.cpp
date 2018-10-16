@@ -73,7 +73,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
         } else {
             // Store them
             LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters from " << detectorID;
-            if(firstDetector && detectorID != m_config.get<std::string>("DUT")) {
+            if(firstDetector && !detector->isDUT()) {
                 referenceClusters = tempClusters;
                 seedPlane = detector->name();
                 LOG(DEBUG) << "Seed plane is " << seedPlane;
@@ -111,9 +111,11 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
 
         // Loop over each subsequent plane and look for a cluster within the timing cuts
         for(auto& detectorID : detectors) {
+            // Get the detector
+            auto det = get_detector(detectorID);
 
             // Check if the DUT should be excluded and obey:
-            if(excludeDUT && detectorID == m_config.get<std::string>("DUT")) {
+            if(excludeDUT && det->isDUT()) {
                 continue;
             }
 
@@ -136,8 +138,6 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
             if(track->nClusters() > 1) {
                 track->fit();
 
-                // Get the detector
-                auto det = get_detector(detectorID);
                 PositionVector3D<Cartesian3D<double>> interceptPoint = det->getIntercept(track);
                 interceptX = interceptPoint.X();
                 interceptY = interceptPoint.Y();
@@ -239,8 +239,4 @@ Cluster* BasicTracking::getNearestCluster(long long int timestamp, Clusters clus
     }
 
     return bestCluster;
-}
-
-void BasicTracking::finalise() {
-    LOG(INFO) << "Found " << associatedClusters << " associated clusters for detector " << m_config.get<std::string>("DUT");
 }
