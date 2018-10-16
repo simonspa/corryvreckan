@@ -52,7 +52,11 @@ namespace corryvreckan {
         // Functions to retrieve basic information
         std::string type() { return m_detectorType; }
         std::string name() { return m_detectorName; }
+
+        // Detector role and helper functions
         DetectorRole role() { return m_role; }
+        bool isReference();
+        bool isDUT();
 
         Configuration getConfiguration();
 

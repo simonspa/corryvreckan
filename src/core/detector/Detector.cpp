@@ -83,6 +83,14 @@ Detector::Detector(const Configuration& config) {
     }
 }
 
+bool Detector::isReference() {
+    return m_role == DetectorRole::REFERENCE;
+}
+
+bool Detector::isDUT() {
+    return m_role == DetectorRole::DUT;
+}
+
 // Functions to set and check channel masking
 void Detector::setMaskFile(std::string file) {
     m_maskfile = file;

@@ -35,8 +35,7 @@ Detector* Module::get_detector(std::string name) {
 }
 
 Detector* Module::get_reference() {
-    auto it = find_if(
-        m_detectors.begin(), m_detectors.end(), [](Detector* obj) { return obj->role() == DetectorRole::REFERENCE; });
+    auto it = find_if(m_detectors.begin(), m_detectors.end(), [](Detector* obj) { return obj->isReference(); });
     return (*it);
 }
 
