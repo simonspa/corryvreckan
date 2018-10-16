@@ -12,8 +12,6 @@ DUTAnalysis::DUTAnalysis(Configuration config, std::vector<Detector*> detectors)
     m_digitalPowerPulsing = m_config.get<bool>("digitalPowerPulsing", false);
     m_DUT = m_config.get<std::string>("DUT");
     m_useMCtruth = m_config.get<bool>("useMCtruth", false);
-    timingCut = m_config.get<double>("timingCut", Units::convert(200, "ns"));
-    spatialCut = m_config.get<double>("spatialCut", Units::convert(200, "um"));
     chi2ndofCut = m_config.get<double>("chi2ndofCut", 3.);
 }
 
@@ -196,10 +194,6 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             // Get the cluster pointer
             Cluster* cluster = (*clusters)[itCluster];
 
-            // Check if the cluster is close in time
-            // if( std::abs(cluster->timestamp() - track->timestamp()) > timingCut)
-            //    continue;
-
             // Check distance between track and cluster
             ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
 
@@ -225,21 +219,19 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
                 clusterToTVersusTime->Fill(Units::convert(cluster->timestamp(), "ns"), cluster->tot());
             }
 
-            // Check distance between track and cluster
-            ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
-            double xdistance = intercept.X() - cluster->globalX();
-            double ydistance = intercept.Y() - cluster->globalY();
-            if(abs(xdistance) > spatialCut || abs(ydistance) > spatialCut) {
-                LOG(DEBUG) << "Discarding DUT cluster with distance (" << abs(xdistance) << "," << abs(ydistance) << ")";
+            auto associated_clusters = track->associatedClusters();
+            if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) != associated_clusters.end()) {
+                LOG(DEBUG) << "No associated cluster found";
                 continue;
             }
 
-            LOG(DEBUG) << "Found associated cluster with distance (" << abs(xdistance) << "," << abs(ydistance) << ")";
-            track->addAssociatedCluster(cluster);
+            LOG(DEBUG) << "Found associated cluster";
+            ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
+            double xdistance = intercept.X() - cluster->globalX();
+            double ydistance = intercept.Y() - cluster->globalY();
 
             // We now have an associated cluster! Fill plots
             associated = true;
-            LOG(TRACE) << "Found associated cluster";
             associatedTracksVersusTime->Fill(Units::convert(track->timestamp(), "s"));
             residualsX->Fill(xdistance);
             residualsXfine->Fill(xdistance);
