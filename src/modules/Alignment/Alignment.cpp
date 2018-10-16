@@ -35,7 +35,7 @@ Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
     if(m_config.has("detectorToAlign")) {
         detectorToAlign = m_config.get<std::string>("detectorToAlign");
     } else {
-        detectorToAlign = m_config.get<std::string>("DUT");
+        detectorToAlign = get_dut()->name();
     }
 
     if(alignmentMethod == 1) {
@@ -400,7 +400,7 @@ void Alignment::finalise() {
             string detectorID = detector->name();
 
             // Do not align the reference plane
-            if(detector->role() == DetectorRole::REFERENCE || detectorID == m_config.get<std::string>("DUT")) {
+            if(detector->isReference() || detector->isDUT()) {
                 continue;
             }
 
@@ -493,7 +493,7 @@ void Alignment::finalise() {
     // Now list the new alignment parameters
     for(auto& detector : get_detectors()) {
         // Do not align the reference plane
-        if(detector->role() == DetectorRole::REFERENCE || detector->name() == m_config.get<std::string>("DUT")) {
+        if(detector->isReference() || detector->isDUT()) {
             continue;
         }
 
