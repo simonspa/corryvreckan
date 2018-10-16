@@ -69,8 +69,9 @@ void FileReader::initialise() {
                 string detectorType = detector->type();
 
                 // If only reading information for the DUT
-                if(m_onlyDUT && detectorID != m_config.get<std::string>("DUT"))
+                if(m_onlyDUT && !detector->isDUT()) {
                     continue;
+                }
 
                 // Get the tree
                 string objectID = detectorID + "_" + objectType;
@@ -130,12 +131,14 @@ StatusCode FileReader::run(Clipboard* clipboard) {
                 string objectID = detectorID + "_" + objectType;
 
                 // If only writing information for the DUT
-                if(m_onlyDUT && detectorID != m_config.get<std::string>("DUT"))
+                if(m_onlyDUT && !detector->isDUT()) {
                     continue;
+                }
 
                 // If there is no data for this device, continue
-                if(!m_inputTrees[objectID])
+                if(!m_inputTrees[objectID]) {
                     continue;
+                }
 
                 // Create the container that will go on the clipboard
                 Objects* objectContainer = new Objects();

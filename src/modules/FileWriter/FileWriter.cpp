@@ -61,7 +61,7 @@ void FileWriter::initialise() {
                 string detectorType = detector->type();
 
                 // If only writing information for the DUT
-                if(m_onlyDUT && detectorID != m_config.get<std::string>("DUT"))
+                if(m_onlyDUT && !detector->isDUT())
                     continue;
 
                 // Create the tree
@@ -112,7 +112,7 @@ StatusCode FileWriter::run(Clipboard* clipboard) {
                 string objectID = detectorID + "_" + objectType;
 
                 // If only writing information for the DUT
-                if(m_onlyDUT && detectorID != m_config.get<std::string>("DUT"))
+                if(m_onlyDUT && !detector->isDUT())
                     continue;
 
                 // Get the objects, if they don't exist then continue
