@@ -57,7 +57,14 @@ namespace corryvreckan {
         Module() = delete;
 
         /**
-         * @brief Base constructor for modules
+         * @brief Base constructor for detector modules
+         * @param config Configuration for this module
+         * @param detector Pointer to the detector this module is bound to
+         */
+        Module(Configuration config, Detector* detector);
+
+        /**
+         * @brief Base constructor for unique modules
          * @param config Configuration for this module
          * @param detectors List of detectors this module should be aware of
          */

@@ -25,6 +25,7 @@
 
 #define CORRYVRECKAN_MODULE_PREFIX "libCorryvreckanModule"
 #define CORRYVRECKAN_GENERATOR_FUNCTION "corryvreckan_module_generator"
+#define CORRYVRECKAN_UNIQUE_FUNCTION "corryvreckan_module_is_unique"
 
 using namespace corryvreckan;
 
@@ -271,6 +272,18 @@ void Analysis::load_modules() {
         // Remember that this library was loaded
         loaded_libraries_[lib_name] = lib;
 
+        // Check if this module is produced once, or once per detector
+        bool unique = true;
+        void* uniqueFunction = dlsym(loaded_libraries_[lib_name], CORRYVRECKAN_UNIQUE_FUNCTION);
+
+        // If the unique function was not found, throw an error
+        if(uniqueFunction == nullptr) {
+            LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
+            throw corryvreckan::DynamicLibraryError(config.getName());
+        } else {
+            unique = reinterpret_cast<bool (*)()>(uniqueFunction)(); // NOLINT
+        }
+
         // Apply the module specific options to the module configuration
         conf_mgr_->applyOptions(config.getName(), config);
 
@@ -282,17 +295,21 @@ void Analysis::load_modules() {
         config.merge(global_config);
 
         // Create the modules from the library
-        m_modules.emplace_back(create_module(loaded_libraries_[lib_name], config));
+        if(unique) {
+            m_modules.emplace_back(create_unique_module(loaded_libraries_[lib_name], config));
+        } else {
+            auto modules = create_detector_modules(loaded_libraries_[lib_name], config);
+            for(const auto& mod : modules) {
+                m_modules.push_back(mod);
+            }
+        }
     }
     LOG(STATUS) << "Loaded " << configs.size() << " modules";
 }
 
-Module* Analysis::create_module(void* library, Configuration config) {
+Module* Analysis::create_unique_module(void* library, Configuration config) {
     LOG(TRACE) << "Creating module " << config.getName() << ", using generator \"" << CORRYVRECKAN_GENERATOR_FUNCTION
                << "\"";
-
-    // Make the vector to return
-    std::string module_name = config.getName();
 
     // Get the generator function for this module
     void* generator = dlsym(library, CORRYVRECKAN_GENERATOR_FUNCTION);
@@ -349,6 +366,75 @@ Module* Analysis::create_module(void* library, Configuration config) {
 
     // Return the module to the analysis
     return module;
+}
+
+std::vector<Module*> Analysis::create_detector_modules(void* library, Configuration config) {
+    LOG(TRACE) << "Creating instantiations for module " << config.getName() << ", using generator \""
+               << CORRYVRECKAN_GENERATOR_FUNCTION << "\"";
+
+    // Get the generator function for this module
+    void* generator = dlsym(library, CORRYVRECKAN_GENERATOR_FUNCTION);
+    // If the generator function was not found, throw an error
+    if(generator == nullptr) {
+        LOG(ERROR) << "Module library is invalid or outdated: required "
+                      "interface function not found!";
+        throw corryvreckan::RuntimeError("Error instantiating module from " + config.getName());
+    }
+
+    // Convert to correct generator function
+    auto module_generator = reinterpret_cast<Module* (*)(Configuration, Detector*)>(generator); // NOLINT
+
+    // Figure out which detectors should run on this module:
+    std::vector<Detector*> module_det;
+    if(!config.has("detectors")) {
+        module_det = detectors;
+    } else {
+        std::vector<std::string> det_list = config.getArray<std::string>("detectors");
+
+        for(auto& d : detectors) {
+            if(std::find(det_list.begin(), det_list.end(), d->name()) != det_list.end()) {
+                module_det.push_back(d);
+            }
+        }
+    }
+
+    // Check for potentially masked detectors:
+    if(config.has("masked")) {
+        std::vector<std::string> mask_list = config.getArray<std::string>("masked");
+
+        for(auto it = module_det.begin(); it != module_det.end();) {
+            // Remove detectors which are masked:
+            if(std::find(mask_list.begin(), mask_list.end(), (*it)->name()) != mask_list.end()) {
+                it = module_det.erase(it);
+            } else {
+                it++;
+            }
+        }
+    }
+
+    std::vector<Module*> modules;
+    auto module_base_name = config.getName();
+    for(const auto& detector : module_det) {
+        // Set the identifier for this module:
+        config.setName(module_base_name + "_" + detector->name());
+        LOG(TRACE) << "Creating instantiation \"" << config.getName() << "\"";
+
+        // Set the log section header
+        std::string old_section_name = Log::getSection();
+        std::string section_name = "C:";
+        section_name += config.getName();
+        Log::setSection(section_name);
+        // Set module specific log settings
+        auto old_settings = set_module_before(config.getName(), config);
+        // Build module
+        modules.emplace_back(module_generator(config, detector));
+        // Reset log
+        Log::setSection(old_section_name);
+        set_module_after(old_settings);
+    }
+
+    // Return the list of modules to the analysis
+    return modules;
 }
 
 // Run the analysis loop - this initialises, runs and finalises all modules

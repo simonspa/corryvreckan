@@ -10,6 +10,8 @@
 
 using namespace corryvreckan;
 
+Module::Module(Configuration config, Detector* detector) : Module(config, std::vector<Detector*>{detector}) {}
+
 Module::Module(Configuration config, std::vector<Detector*> detectors) {
     m_name = config.getName();
     m_config = config;
