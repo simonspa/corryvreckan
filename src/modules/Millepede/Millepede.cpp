@@ -45,7 +45,7 @@ void Millepede::initialise() {
     // Renumber the planes in Millepede, ignoring masked planes.
     unsigned int index = 0;
     for(const auto& det : get_detectors()) {
-        if(det->name() == m_config.get<std::string>("DUT")) {
+        if(det->isDUT()) {
             continue;
         }
         m_millePlanes[det->name()] = index;
@@ -168,7 +168,7 @@ void Millepede::setConstraints(const unsigned int nPlanes) {
     // Calculate the mean z-position.
     double avgz = 0.;
     for(const auto& det : get_detectors()) {
-        if(det->name() == m_config.get<std::string>("DUT")) {
+        if(det->isDUT()) {
             continue;
         }
         avgz += det->displacement().Z();
@@ -177,7 +177,7 @@ void Millepede::setConstraints(const unsigned int nPlanes) {
     // Calculate the variance.
     double varz = 0.0;
     for(const auto& det : get_detectors()) {
-        if(det->name() == m_config.get<std::string>("DUT")) {
+        if(det->isDUT()) {
             continue;
         }
         const double dz = det->displacement().Z() - avgz;
@@ -199,7 +199,7 @@ void Millepede::setConstraints(const unsigned int nPlanes) {
 
     m_constraints.clear();
     for(const auto& det : get_detectors()) {
-        if(det->name() == m_config.get<std::string>("DUT")) {
+        if(det->isDUT()) {
             continue;
         }
         const unsigned int i = m_millePlanes[det->name()];
@@ -577,7 +577,7 @@ void Millepede::updateGeometry() {
 
     auto nPlanes = num_detectors() - 1;
     for(const auto& det : get_detectors()) {
-        if(det->name() == m_config.get<std::string>("DUT")) {
+        if(det->isDUT()) {
             continue;
         }
         auto plane = m_millePlanes[det->name()];
