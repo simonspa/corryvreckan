@@ -27,8 +27,8 @@ void EtaCorrection::initialise() {
         if(!m_etaConstantsX.empty()) {
             m_correctX[detector->name()] = true;
             m_etaCorrectorX[detector->name()] = new TF1("etaCorrectorX", m_etaFormulaX.c_str(), 0, pitchX);
-            for(int x = 0; x < m_etaConstantsX.size(); x++) {
-                m_etaCorrectorX[detector->name()]->SetParameter(x, m_etaConstantsX[x]);
+            for(size_t x = 0; x < m_etaConstantsX.size(); x++) {
+                m_etaCorrectorX[detector->name()]->SetParameter(static_cast<int>(x), m_etaConstantsX[x]);
             }
         } else {
             m_correctX[detector->name()] = false;
@@ -37,8 +37,8 @@ void EtaCorrection::initialise() {
         if(!m_etaConstantsY.empty()) {
             m_correctY[detector->name()] = true;
             m_etaCorrectorY[detector->name()] = new TF1("etaCorrectorY", m_etaFormulaY.c_str(), 0, pitchY);
-            for(int y = 0; y < m_etaConstantsY.size(); y++)
-                m_etaCorrectorY[detector->name()]->SetParameter(y, m_etaConstantsY[y]);
+            for(size_t y = 0; y < m_etaConstantsY.size(); y++)
+                m_etaCorrectorY[detector->name()]->SetParameter(static_cast<int>(y), m_etaConstantsY[y]);
         } else {
             m_correctY[detector->name()] = false;
         }
@@ -84,8 +84,8 @@ StatusCode EtaCorrection::run(Clipboard* clipboard) {
 
     for(auto& detector : get_detectors()) {
         // Get the clusters
-        Clusters* clusters = (Clusters*)clipboard->get(detector->name(), "clusters");
-        if(clusters == NULL) {
+        Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(detector->name(), "clusters"));
+        if(clusters == nullptr) {
             LOG(DEBUG) << "Detector " << detector->name() << " does not have any clusters on the clipboard";
             return Success;
         }
