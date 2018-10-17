@@ -10,7 +10,7 @@ FileReader::FileReader(Configuration config, std::vector<Detector*> detectors)
     m_readClusters = m_config.get<bool>("readClusters", false);
     m_readTracks = m_config.get<bool>("readTracks", false);
     m_fileName = m_config.get<std::string>("fileName", "outputTuples.root");
-    m_timeWindow = m_config.get<double>("timeWindow", Units::convert(1., "s"));
+    m_timeWindow = m_config.get<double>("timeWindow", static_cast<double>(Units::convert(1., "s")));
     m_readMCParticles = m_config.get<bool>("readMCParticles", false);
     // checking if DUT parameter is in the configuration file, if so then check if should only output the DUT
     m_onlyDUT = m_config.get<bool>("onlyDUT", false);
@@ -77,7 +77,7 @@ void FileReader::initialise() {
                 string treePath = objectType + "/" + detectorID + "_" + detectorType + "_" + objectType;
                 LOG(DEBUG) << "Looking for " << objectType << " for device " << detectorID << ", tree path " << treePath;
 
-                m_inputTrees[objectID] = (TTree*)gDirectory->Get(treePath.c_str());
+                m_inputTrees[objectID] = static_cast<TTree*>(gDirectory->Get(treePath.c_str()));
 
                 // Set the branch addresses
                 m_inputTrees[objectID]->SetBranchAddress("time", &m_time);
@@ -92,7 +92,7 @@ void FileReader::initialise() {
         else {
             // Make the tree
             string treePath = objectType + "/" + objectType;
-            m_inputTrees[objectType] = (TTree*)gDirectory->Get(treePath.c_str());
+            m_inputTrees[objectType] = static_cast<TTree*>(gDirectory->Get(treePath.c_str()));
             // Branch the tree to the timestamp and object
             m_inputTrees[objectType]->SetBranchAddress("time", &m_time);
             m_objects[objectType] = Object::Factory(objectType);

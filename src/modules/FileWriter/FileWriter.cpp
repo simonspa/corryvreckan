@@ -118,7 +118,7 @@ StatusCode FileWriter::run(Clipboard* clipboard) {
                 // Get the objects, if they don't exist then continue
                 LOG(DEBUG) << "Checking for " << objectType << " on device " << detectorID;
                 Objects* objects = clipboard->get(detectorID, objectType);
-                if(objects == NULL)
+                if(objects == nullptr)
                     continue;
                 LOG(DEBUG) << "Picked up " << objects->size() << " " << objectType << " from device " << detectorID;
 
@@ -127,8 +127,8 @@ StatusCode FileWriter::run(Clipboard* clipboard) {
                     continue;
 
                 // Fill the objects into the tree
-                for(int itObject = 0; itObject < objects->size(); itObject++) {
-                    m_objects[objectID] = (*objects)[itObject];
+                for(auto& object : (*objects)) {
+                    m_objects[objectID] = object;
                     m_time = m_objects[objectID]->timestamp();
                     m_outputTrees[objectID]->Fill();
                 }
@@ -139,7 +139,7 @@ StatusCode FileWriter::run(Clipboard* clipboard) {
             // Get the objects, if they don't exist then continue
             LOG(DEBUG) << "Checking for " << objectType;
             Objects* objects = clipboard->get(objectType);
-            if(objects == NULL)
+            if(objects == nullptr)
                 continue;
             LOG(DEBUG) << "Picked up " << objects->size() << " " << objectType;
 
@@ -148,8 +148,8 @@ StatusCode FileWriter::run(Clipboard* clipboard) {
                 continue;
 
             // Fill the objects into the tree
-            for(int itObject = 0; itObject < objects->size(); itObject++) {
-                m_objects[objectType] = (*objects)[itObject];
+            for(auto& object : (*objects)) {
+                m_objects[objectType] = object;
                 m_time = m_objects[objectType]->timestamp();
                 m_outputTrees[objectType]->Fill();
             }
@@ -194,7 +194,7 @@ void FileWriter::finalise() {
 
                 // Clean up the tree and remove object pointer
                 delete m_outputTrees[objectID];
-                m_objects[objectID] = 0;
+                m_objects[objectID] = nullptr;
             }
         } // Write trees for devices which are not detector dependent
         else {
@@ -210,7 +210,7 @@ void FileWriter::finalise() {
 
             // Clean up the tree and remove object pointer
             delete m_outputTrees[objectType];
-            m_objects[objectType] = 0;
+            m_objects[objectType] = nullptr;
         }
     }
 
