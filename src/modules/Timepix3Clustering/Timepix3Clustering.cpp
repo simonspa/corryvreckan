@@ -5,7 +5,7 @@ using namespace std;
 
 Timepix3Clustering::Timepix3Clustering(Configuration config, std::vector<Detector*> detectors)
     : Module(std::move(config), std::move(detectors)) {
-    timingCut = m_config.get<double>("timingCut", Units::convert(100, "ns")); // 100 ns
+    timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(100, "ns"))); // 100 ns
     neighbour_radius_row = m_config.get<int>("neighbour_radius_row", 1);
     neighbour_radius_col = m_config.get<int>("neighbour_radius_col", 1);
 }
@@ -43,8 +43,8 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
             continue;
 
         // Get the pixels
-        Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
-        if(pixels == NULL) {
+        Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(detector->name(), "pixels"));
+        if(pixels == nullptr) {
             LOG(DEBUG) << "Detector " << detector->name() << " does not have any pixels on the clipboard";
             continue;
         }
@@ -58,7 +58,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
 
         // Sort the pixels from low to high timestamp
         std::sort(pixels->begin(), pixels->end(), sortByTime);
-        int totalPixels = pixels->size();
+        size_t totalPixels = pixels->size();
 
         // Make the cluster storage
         Clusters* deviceClusters = new Clusters();
@@ -67,15 +67,17 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
         map<Pixel*, bool> used;
 
         // Start to cluster
-        for(int iP = 0; iP < pixels->size(); iP++) {
+        for(size_t iP = 0; iP < pixels->size(); iP++) {
             Pixel* pixel = (*pixels)[iP];
 
             // Check if pixel is used
-            if(used[pixel])
+            if(used[pixel]) {
                 continue;
+            }
 
-            if(pixel->adc() == 0.)
+            if(pixel->adc() == 0.) {
                 continue;
+            }
 
             // Make the new cluster object
             Cluster* cluster = new Cluster();
@@ -86,12 +88,12 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
             double clusterTime = pixel->timestamp();
             used[pixel] = true;
             LOG(DEBUG) << "Adding pixel: " << pixel->row() << "," << pixel->column();
-            int nPixels = 0;
+            size_t nPixels = 0;
             while(cluster->size() != nPixels) {
 
                 nPixels = cluster->size();
                 // Loop over all pixels
-                for(int iNeighbour = (iP + 1); iNeighbour < totalPixels; iNeighbour++) {
+                for(size_t iNeighbour = (iP + 1); iNeighbour < totalPixels; iNeighbour++) {
                     Pixel* neighbour = (*pixels)[iNeighbour];
                     // Check if they are compatible in time with the cluster pixels
                     if((neighbour->timestamp() - clusterTime) > timingCut)
@@ -132,7 +134,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
 
         // Put the clusters on the clipboard
         if(deviceClusters->size() > 0) {
-            clipboard->put(detector->name(), "clusters", (Objects*)deviceClusters);
+            clipboard->put(detector->name(), "clusters", reinterpret_cast<Objects*>(deviceClusters));
         }
         LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << detector->name();
     }
@@ -166,7 +168,7 @@ bool Timepix3Clustering::closeInTime(Pixel* neighbour, Cluster* cluster) {
     bool CloseInTime = false;
 
     Pixels* pixels = cluster->pixels();
-    for(int iPix = 0; iPix < pixels->size(); iPix++) {
+    for(size_t iPix = 0; iPix < pixels->size(); iPix++) {
 
         double timeDifference = abs(neighbour->timestamp() - (*pixels)[iPix]->timestamp());
         if(timeDifference < timingCut)
@@ -186,17 +188,17 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
     double timestamp = (*pixels)[0]->timestamp();
 
     // Loop over all pixels
-    for(int pix = 0; pix < pixels->size(); pix++) {
-        double pixelToT = (*pixels)[pix]->adc();
+    for(auto& pixel : (*pixels)) {
+        double pixelToT = pixel->adc();
         if(pixelToT == 0) {
             LOG(DEBUG) << "Pixel with ToT 0!";
             pixelToT = 1;
         }
         tot += pixelToT;
-        row += ((*pixels)[pix]->row() * pixelToT);
-        column += ((*pixels)[pix]->column() * pixelToT);
-        if((*pixels)[pix]->timestamp() < timestamp)
-            timestamp = (*pixels)[pix]->timestamp();
+        row += (pixel->row() * pixelToT);
+        column += (pixel->column() * pixelToT);
+        if(pixel->timestamp() < timestamp)
+            timestamp = pixel->timestamp();
     }
     // Row and column positions are tot-weighted
     row /= (tot > 0 ? tot : 1);
