@@ -6,9 +6,9 @@ using namespace std;
 
 SpatialTracking::SpatialTracking(Configuration config, std::vector<Detector*> detectors)
     : Module(std::move(config), std::move(detectors)) {
-    spatialCut = m_config.get<double>("spatialCut", Units::convert(200, "um"));
-    spatialCut_DUT = m_config.get<double>("spatialCutDUT", Units::convert(200, "um"));
-    minHitsOnTrack = m_config.get<int>("minHitsOnTrack", 6);
+    spatialCut = m_config.get<double>("spatialCut", static_cast<double>(Units::convert(200, "um")));
+    spatialCut_DUT = m_config.get<double>("spatialCutDUT", static_cast<double>(Units::convert(200, "um")));
+    minHitsOnTrack = m_config.get<size_t>("minHitsOnTrack", 6);
     excludeDUT = m_config.get<bool>("excludeDUT", true);
 }
 
@@ -65,8 +65,8 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
         //     continue;
 
         // Get the clusters
-        Clusters* tempClusters = (Clusters*)clipboard->get(detectorID, "clusters");
-        if(tempClusters == NULL) {
+        Clusters* tempClusters = reinterpret_cast<Clusters*>(clipboard->get(detectorID, "clusters"));
+        if(tempClusters == nullptr) {
             LOG(DEBUG) << "Detector " << detectorID << " does not have any clusters on the clipboard";
         } else {
             // Store the clusters of the first plane in Z as the reference
@@ -98,16 +98,10 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
     map<Cluster*, bool> used;
 
     // Loop over all clusters
-    int nSeedClusters = referenceClusters->size();
-    for(int iSeedCluster = 0; iSeedCluster < nSeedClusters; iSeedCluster++) {
-
-        LOG(DEBUG) << "==> seed cluster " << iSeedCluster;
+    for(auto& cluster : (*referenceClusters)) {
 
         // Make a new track
         Track* track = new Track();
-
-        // Get the cluster
-        Cluster* cluster = (*referenceClusters)[iSeedCluster];
 
         // Add the cluster to the track
         track->addCluster(cluster);
@@ -201,7 +195,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
     // Save the tracks on the clipboard
     tracksPerEvent->Fill(tracks->size());
     if(tracks->size() > 0) {
-        clipboard->put("tracks", (Objects*)tracks);
+        clipboard->put("tracks", reinterpret_cast<Objects*>(tracks));
     }
 
     // Clean up tree objects

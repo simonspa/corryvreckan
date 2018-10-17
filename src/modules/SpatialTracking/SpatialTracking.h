@@ -41,7 +41,7 @@ namespace corryvreckan {
         // Member variables
         int m_eventNumber;
         double spatialCut, spatialCut_DUT;
-        int minHitsOnTrack;
+        size_t minHitsOnTrack;
         double nTracksTotal;
         bool excludeDUT;
     };

@@ -52,8 +52,8 @@ StatusCode SpatialClustering::run(Clipboard* clipboard) {
         LOG(TRACE) << "Executing loop for detector " << detector->name();
 
         // Get the pixels
-        Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
-        if(pixels == NULL) {
+        Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(detector->name(), "pixels"));
+        if(pixels == nullptr) {
             LOG(DEBUG) << "Detector " << detector->name() << " does not have any pixels on the clipboard";
             continue;
         }
@@ -69,18 +69,12 @@ StatusCode SpatialClustering::run(Clipboard* clipboard) {
         int nCols = detector->nPixelsX();
 
         // Fill the hitmap with pixels
-        for(int iP = 0; iP < pixels->size(); iP++) {
-            Pixel* pixel = (Pixel*)(*pixels)[iP];
+        for(auto& pixel : (*pixels)) {
             hitmap[pixel->row()][pixel->column()] = pixel;
-        }
 
-        // Loop over all pixels and make clusters
-        for(int iP = 0; iP < pixels->size(); iP++) {
-
-            // Get the pixel. If it is already used then do nothing
-            Pixel* pixel = (Pixel*)(*pixels)[iP];
-            if(used[pixel])
+            if(used[pixel]) {
                 continue;
+            }
 
             // New pixel => new cluster
             Cluster* cluster = new Cluster();
@@ -175,11 +169,11 @@ void SpatialClustering::calculateClusterCentre(Detector* detector, Cluster* clus
     LOG(DEBUG) << "- cluster has " << (*pixels).size() << " pixels";
 
     // Loop over all pixels
-    for(int pix = 0; pix < pixels->size(); pix++) {
-        tot += (*pixels)[pix]->adc();
-        row += ((*pixels)[pix]->row() * (*pixels)[pix]->adc());
-        column += ((*pixels)[pix]->column() * (*pixels)[pix]->adc());
-        LOG(DEBUG) << "- pixel row, col: " << (*pixels)[pix]->row() << "," << (*pixels)[pix]->column();
+    for(auto& pixel : (*pixels)) {
+        tot += pixel->adc();
+        row += (pixel->row() * pixel->adc());
+        column += (pixel->column() * pixel->adc());
+        LOG(DEBUG) << "- pixel row, col: " << pixel->row() << "," << pixel->column();
     }
 
     // Row and column positions are tot-weighted

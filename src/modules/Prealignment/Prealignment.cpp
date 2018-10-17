@@ -6,9 +6,9 @@ using namespace std;
 Prealignment::Prealignment(Configuration config, std::vector<Detector*> detectors)
     : Module(std::move(config), std::move(detectors)) {
     LOG(INFO) << "Starting prealignment of detectors";
-    max_correlation_rms = m_config.get<double>("max_correlation_rms", Units::convert(6.0, "mm"));
+    max_correlation_rms = m_config.get<double>("max_correlation_rms", static_cast<double>(Units::convert(6.0, "mm")));
     damping_factor = m_config.get<double>("damping_factor", 1.0);
-    timingCut = m_config.get<double>("timingCut", Units::convert(100, "ns"));
+    timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(100, "ns")));
     LOG(DEBUG) << "Setting max_correlation_rms to : " << max_correlation_rms;
     LOG(DEBUG) << "Setting damping_factor to : " << damping_factor;
 }
@@ -57,16 +57,16 @@ StatusCode Prealignment::run(Clipboard* clipboard) {
     // Loop over all Timepix3 and make plots
     for(auto& detector : get_detectors()) {
         // Get the clusters
-        Clusters* clusters = (Clusters*)clipboard->get(detector->name(), "clusters");
-        if(clusters == NULL) {
+        Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(detector->name(), "clusters"));
+        if(clusters == nullptr) {
             LOG(DEBUG) << "Detector " << detector->name() << " does not have any clusters on the clipboard";
             continue;
         }
 
         // Get clusters from reference detector
         auto reference = get_reference();
-        Clusters* referenceClusters = (Clusters*)clipboard->get(reference->name(), "clusters");
-        if(referenceClusters == NULL) {
+        Clusters* referenceClusters = reinterpret_cast<Clusters*>(clipboard->get(reference->name(), "clusters"));
+        if(referenceClusters == nullptr) {
             LOG(DEBUG) << "Reference detector " << reference->name() << " does not have any clusters on the clipboard";
             continue;
         }
