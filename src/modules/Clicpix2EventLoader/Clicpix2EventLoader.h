@@ -41,9 +41,6 @@ namespace corryvreckan {
         // Histograms for several devices
         std::map<std::string, TH2F*> plotPerDevice;
 
-        // Single histograms
-        TH1F* singlePlot;
-
         bool comp, sp_comp;
         caribou::clicpix2_frameDecoder* decoder;
 

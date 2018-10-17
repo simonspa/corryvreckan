@@ -26,15 +26,14 @@ void Clicpix2EventLoader::initialise() {
 
     // Open the root directory
     DIR* directory = opendir(inputDirectory.c_str());
-    if(directory == NULL) {
+    if(directory == nullptr) {
         throw ModuleError("Directory " + inputDirectory + " does not exist");
     }
 
     dirent* entry;
-    dirent* file;
 
     // Read the entries in the folder
-    while(entry = readdir(directory)) {
+    while((entry = readdir(directory))) {
         // Check for the data file
         string filename = inputDirectory + "/" + entry->d_name;
         if(filename.find(".raw") != string::npos) {
@@ -165,18 +164,18 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
     // Pixel container, shutter information
     Pixels* pixels = new Pixels();
     long long int shutterStartTimeInt, shutterStopTimeInt;
-    long double shutterStartTime, shutterStopTime;
-    string data;
+    double shutterStartTime, shutterStopTime;
+    string datastring;
     int npixels = 0;
     bool shutterOpen = false;
     std::vector<uint32_t> rawData;
 
     // Read file and load data
-    while(getline(m_file, data)) {
+    while(getline(m_file, datastring)) {
 
         // Check if this is a header
-        if(data.find("=====") != string::npos) {
-            std::istringstream header(data);
+        if(datastring.find("=====") != string::npos) {
+            std::istringstream header(datastring);
             std::string guff;
             int frameNumber;
             header >> guff >> frameNumber >> guff;
@@ -184,8 +183,8 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
             break;
         }
         // If there is a colon, then this is a timestamp
-        else if(data.find(":") != string::npos) {
-            istringstream timestamp(data);
+        else if(datastring.find(":") != string::npos) {
+            istringstream timestamp(datastring);
             char colon;
             int value;
             long long int time;
@@ -200,7 +199,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
             }
         } else {
             // Otherwise pixel data
-            rawData.push_back(atoi(data.c_str()));
+            rawData.push_back(static_cast<unsigned int>(std::atoi(datastring.c_str())));
         }
     }
 
@@ -271,7 +270,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
 
     // Put the data on the clipboard
     if(!pixels->empty()) {
-        clipboard->put(detector->name(), "pixels", (Objects*)pixels);
+        clipboard->put(detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
     }
 
     // Fill histograms
