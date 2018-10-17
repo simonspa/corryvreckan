@@ -41,12 +41,11 @@ void Timepix1EventLoader::initialise() {
 
     // Open the directory
     DIR* directory = opendir(m_inputDirectory.c_str());
-    if(directory == NULL) {
+    if(directory == nullptr) {
         LOG(ERROR) << "Directory " << m_inputDirectory << " does not exist";
         return;
     }
     dirent* entry;
-    dirent* file;
 
     // Read the entries in the folder
     while((entry = readdir(directory))) {

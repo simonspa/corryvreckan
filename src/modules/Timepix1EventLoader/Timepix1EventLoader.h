@@ -29,7 +29,7 @@ namespace corryvreckan {
         std::string m_inputDirectory;
         std::vector<std::string> m_inputFilenames;
         bool m_fileOpen;
-        int m_fileNumber;
+        size_t m_fileNumber;
         long long int m_eventTime;
         std::ifstream m_currentFile;
         std::string m_currentDevice;
