@@ -95,7 +95,7 @@ namespace corryvreckan {
                           const unsigned int m);
 
         Tracks m_alignmenttracks;
-        int m_numberOfTracksForAlignment;
+        size_t m_numberOfTracksForAlignment;
 
         /// Number of global derivatives
         unsigned int m_nagb;
@@ -147,7 +147,7 @@ namespace corryvreckan {
         // Value of convergence to interrupting iterations
         double m_convergence;
         /// Number of "full" iterations (with geometry updates).
-        unsigned int m_nIterations;
+        size_t m_nIterations;
         /// Sigmas for each degree of freedom
         std::vector<double> m_sigmas;
         /// Planes to be kept fixed

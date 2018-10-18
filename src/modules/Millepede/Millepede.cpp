@@ -15,13 +15,13 @@ using namespace std;
 Millepede::Millepede(Configuration config, std::vector<Detector*> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
-    m_numberOfTracksForAlignment = m_config.get<int>("number_of_tracks", 20000);
+    m_numberOfTracksForAlignment = m_config.get<size_t>("number_of_tracks", 20000);
     m_dofs = m_config.getArray<bool>("dofs", {});
-    m_nIterations = m_config.get<int>("iterations", 5);
+    m_nIterations = m_config.get<size_t>("iterations", 5);
 
     m_rescut = m_config.get<double>("residual_cut", 0.05);
     m_rescut_init = m_config.get<double>("residual_cut_init", 0.6);
-    m_nstdev = m_config.get<double>("NStdDev", 0);
+    m_nstdev = m_config.get<int>("NStdDev", 0);
 
     m_convergence = m_config.get<double>("convergence", 0.00001);
 
@@ -38,9 +38,6 @@ Millepede::~Millepede() {}
 // Initialization
 //=============================================================================
 void Millepede::initialise() {
-
-    // Initialise the base class.
-    StatusCode sc = Success; // TbAlignmentBase::initialize();
 
     // Renumber the planes in Millepede, ignoring masked planes.
     unsigned int index = 0;
@@ -72,8 +69,8 @@ void Millepede::initialise() {
 StatusCode Millepede::run(Clipboard* clipboard) {
 
     // Get the tracks
-    Tracks* tracks = (Tracks*)clipboard->get("tracks");
-    if(tracks == NULL) {
+    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    if(tracks == nullptr) {
         return Success;
     }
 
