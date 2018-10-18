@@ -46,13 +46,13 @@ namespace corryvreckan {
         };
 
         /// (Re-)initialise matrices and vectors.
-        bool reset(const unsigned int nPlanes, const double startfact);
+        bool reset(const size_t nPlanes, const double startfact);
         /// Setup the constraint equations.
-        void setConstraints(const unsigned int nPlanes);
+        void setConstraints(const size_t nPlanes);
         /// Define a single constraint equation
         void addConstraint(const std::vector<double>& dercs, const double rhs);
         /// Add the equations for one track and do the local fit.
-        bool putTrack(Track* track, const unsigned int nPlanes);
+        bool putTrack(Track* track, const size_t nPlanes);
         /// Store the parameters for one measurement.
         void addEquation(std::vector<Equation>& equations,
                          const std::vector<double>& derlc,
@@ -75,9 +75,9 @@ namespace corryvreckan {
         bool printResults();
 
         /// Matrix inversion and solution for global fit.
-        int invertMatrix(std::vector<std::vector<double>>& v, std::vector<double>& b, const int n);
+        int invertMatrix(std::vector<std::vector<double>>& v, std::vector<double>& b, const size_t n);
         // Matrix inversion and solution for local fit.
-        int invertMatrixLocal(std::vector<std::vector<double>>& v, std::vector<double>& b, const int n);
+        int invertMatrixLocal(std::vector<std::vector<double>>& v, std::vector<double>& b, const size_t n);
 
         /// Return the limit in chi2 / ndof for n sigmas.
         double chi2Limit(const int n, const int nd) const;
@@ -131,7 +131,6 @@ namespace corryvreckan {
         /// Mapping of internal numbering to geometry service planes.
         std::map<std::string, unsigned int> m_millePlanes;
 
-        bool m_debug = false;
         /// Flag to switch on/off iterations in the global fit.
         bool m_iterate = true;
         /// Residual cut after the first iteration.
