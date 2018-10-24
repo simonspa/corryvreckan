@@ -25,7 +25,8 @@ namespace corryvreckan {
 
     private:
         std::string m_DUT;
-        double timingCut, spatialCut;
+        double timingCut;
+        ROOT::Math::XYVector spatialCut;
     };
 } // namespace corryvreckan
 #endif // DUTAssociation_H
