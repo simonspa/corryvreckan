@@ -189,12 +189,13 @@ void Timepix3EventLoader::initialise() {
     // Calibration
     pixelToT_beforecalibration = new TH1F("pixelToT_beforecalibration", "pixelToT_beforecalibration", 100, 0, 200);
 
-    if(m_config.has("DUT") && m_config.has("calibrationPath") && m_config.has("threshold")) {
+    auto dut = get_dut();
+    if(dut != nullptr && m_config.has("calibrationPath") && m_config.has("threshold")) {
         LOG(INFO) << "Applying calibration from " << calibrationPath;
         applyCalibration = true;
 
         // get DUT plane name
-        std::string DUT = m_config.get<std::string>("DUT");
+        std::string DUT = dut->name();
 
         // make paths to calibration files and read
         int ret = 0;
@@ -463,7 +464,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
         if(header == 0x0) {
 
             // Only want to read these packets from the DUT
-            if(m_config.has("DUT") && detectorID != m_config.get<std::string>("DUT")) {
+            if(detector->isDUT()) {
                 continue;
             }
 
@@ -544,7 +545,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 unsigned long long int stamp = (pixdata & 0x1E0) >> 5;
                 long long int timestamp_raw = (pixdata & 0xFFFFFFFFE00) >> 9;
                 long long int timestamp = 0;
-                int triggerNumber = ((pixdata & 0xFFF00000000000) >> 44);
+                // int triggerNumber = ((pixdata & 0xFFF00000000000) >> 44);
                 int intermediate = (pixdata & 0x1F);
                 if(intermediate != 0)
                     continue;
@@ -580,7 +581,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             }
 
             // Get the rest of the data from the pixel
-            const UShort_t pixno = col * 256 + row;
+            // const UShort_t pixno = col * 256 + row;
             const UInt_t data = ((pixdata & 0x00000FFFFFFF0000) >> 16);
             const unsigned int tot = (data & 0x00003FF0) >> 4;
             const uint64_t spidrTime(pixdata & 0x000000000000FFFF);
@@ -640,7 +641,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             pixelToT_beforecalibration->Fill((int)tot);
 
             // Apply calibration if applyCalibration is true
-            if(applyCalibration && detectorID == m_config.get<std::string>("DUT")) {
+            if(applyCalibration && detector->isDUT()) {
                 LOG(DEBUG) << "Applying calibration to DUT";
                 float a = vtot.at(256 * row + col).at(2);
                 float b = vtot.at(256 * row + col).at(3);

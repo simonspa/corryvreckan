@@ -24,8 +24,7 @@ void ClicpixAnalysis::initialise() {
     // Initialise member variables
     m_eventNumber = 0;
     m_triggerNumber = 0;
-    dutID = m_config.get<std::string>("DUT");
-    auto det = get_detector(dutID);
+    auto det = get_dut();
     m_lostHits = 0.;
 
     int maxcounter = 256;
@@ -190,18 +189,16 @@ void ClicpixAnalysis::initialise() {
     hInterceptClusterSize3 = new TH2F("hInterceptClusterSize3", "hInterceptClusterSize3", 25, 0, 25, 25, 0, 25);
     hInterceptClusterSize4 = new TH2F("hInterceptClusterSize4", "hInterceptClusterSize4", 25, 0, 25, 25, 0, 25);
 
-    // Get the DUT detector:
-    auto detector = get_detector(dutID);
     m_nBinsX = 32;
     m_nBinsY = 32;
     hMapClusterSizeAssociated = new TH2F("hMapClusterSizeAssociated",
                                          "hMapClusterSizeAssociated",
                                          m_nBinsX,
                                          0,
-                                         detector->nPixelsX(),
+                                         det->nPixelsX(),
                                          m_nBinsY,
                                          0,
-                                         detector->nPixelsY());
+                                         det->nPixelsY());
 
     for(int x = 0; x < m_nBinsX; x++) {
         for(int y = 0; y < m_nBinsY; y++) {
@@ -216,9 +213,10 @@ void ClicpixAnalysis::initialise() {
 StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
 
     // Get the clicpix clusters in this event
-    Clusters* clusters = (Clusters*)clipboard->get(dutID, "clusters");
+    auto detector = get_dut();
+    Clusters* clusters = (Clusters*)clipboard->get(detector->name(), "clusters");
     if(clusters == NULL) {
-        LOG(DEBUG) << "No clusters for " << dutID << " on the clipboard";
+        LOG(DEBUG) << "No clusters for " << detector->name() << " on the clipboard";
         return Success;
     }
 
@@ -253,8 +251,6 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
             continue;
         }
 
-        // Get the DUT detector:
-        auto detector = get_detector(dutID);
         // Get the track intercept with the clicpix plane (global and local
         // co-ordinates)
         PositionVector3D<Cartesian3D<double>> trackIntercept = detector->getIntercept(track);
@@ -409,8 +405,8 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
           // Get the pixel global position
           LOG(TRACE) <<"New pixel, row = "<<(*itPixel)->row()<<", column = "<<(*itPixel)->column();
           PositionVector3D<Cartesian3D<double> > pixelPositionLocal =
-      get_detector(dutID)->getLocalPosition((*itPixel)->row(),(*itPixel)->column()); PositionVector3D<Cartesian3D<double> >
-      pixelPositionGlobal = *(get_detector(dutID)->m_localToGlobal) * pixelPositionLocal;
+      detector->getLocalPosition((*itPixel)->row(),(*itPixel)->column()); PositionVector3D<Cartesian3D<double> >
+      pixelPositionGlobal = *(detector->m_localToGlobal) * pixelPositionLocal;
 
           // Check if it is close to the track
           if( fabs( pixelPositionGlobal.X() - trackIntercept.X() ) > m_associationCut ||
@@ -473,7 +469,7 @@ void ClicpixAnalysis::finalise() {
 bool ClicpixAnalysis::checkMasked(double chipInterceptRow, double chipInterceptCol) {
 
     // Get the DUT detector:
-    auto detector = get_detector(dutID);
+    auto detector = get_dut();
 
     // Get the pixel row and column number
     int rowNumber = ceil(chipInterceptRow);
@@ -507,7 +503,7 @@ bool ClicpixAnalysis::checkMasked(double chipInterceptRow, double chipInterceptC
 // "Close" is defined as the intercept at the clicpix
 bool ClicpixAnalysis::checkProximity(Track* track, Tracks* tracks) {
 
-    auto detector = get_detector(dutID);
+    auto detector = get_dut();
     // Get the intercept of the interested track at the dut
     bool close = false;
     PositionVector3D<Cartesian3D<double>> trackIntercept = detector->getIntercept(track);
@@ -535,7 +531,7 @@ bool ClicpixAnalysis::checkProximity(Track* track, Tracks* tracks) {
 void ClicpixAnalysis::fillClusterHistos(Clusters* clusters) {
 
     // Pick up column to generate unique pixel id
-    int nCols = get_detector(dutID)->nPixelsX();
+    int nCols = get_dut()->nPixelsX();
     Clusters::iterator itc;
 
     // Check if this is a new clicpix frame (each frame may be in several events)
@@ -580,7 +576,7 @@ void ClicpixAnalysis::fillClusterHistos(Clusters* clusters) {
 // track intercept for the pixel to still see charge
 void ClicpixAnalysis::fillResponseHistos(double trackInterceptX, double trackInterceptY, Cluster* cluster) {
 
-    auto detector = get_detector(dutID);
+    auto detector = get_dut();
     // Loop over pixels in the cluster and show their distance from the track
     // intercept
     Pixels* pixels = cluster->pixels();

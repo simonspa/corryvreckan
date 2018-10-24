@@ -13,7 +13,7 @@ FileReader::FileReader(Configuration config, std::vector<Detector*> detectors)
     m_timeWindow = m_config.get<double>("timeWindow", Units::convert(1., "s"));
     m_readMCParticles = m_config.get<bool>("readMCParticles", false);
     // checking if DUT parameter is in the configuration file, if so then check if should only output the DUT
-    m_onlyDUT = (m_config.has("DUT") ? m_config.get<bool>("onlyDUT", false) : false);
+    m_onlyDUT = m_config.get<bool>("onlyDUT", false);
     m_currentTime = 0.;
 }
 
@@ -68,8 +68,9 @@ void FileReader::initialise() {
                 string detectorType = detector->type();
 
                 // If only reading information for the DUT
-                if(m_onlyDUT && detectorID != m_config.get<std::string>("DUT"))
+                if(m_onlyDUT && !detector->isDUT()) {
                     continue;
+                }
 
                 // Get the tree
                 string objectID = detectorID + "_" + objectType;
@@ -129,12 +130,14 @@ StatusCode FileReader::run(Clipboard* clipboard) {
                 string objectID = detectorID + "_" + objectType;
 
                 // If only writing information for the DUT
-                if(m_onlyDUT && detectorID != m_config.get<std::string>("DUT"))
+                if(m_onlyDUT && !detector->isDUT()) {
                     continue;
+                }
 
                 // If there is no data for this device, continue
-                if(!m_inputTrees[objectID])
+                if(!m_inputTrees[objectID]) {
                     continue;
+                }
 
                 // Create the container that will go on the clipboard
                 Objects* objectContainer = new Objects();

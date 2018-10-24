@@ -165,6 +165,13 @@ namespace corryvreckan {
         double ndof() { return m_ndof; }
         Clusters clusters() { return m_trackClusters; }
         Clusters associatedClusters() { return m_associatedClusters; }
+        bool isAssociated(Cluster* cluster) {
+            if(std::find(m_associatedClusters.begin(), m_associatedClusters.end(), cluster) != m_associatedClusters.end()) {
+                return true;
+            }
+            return false;
+        }
+
         size_t nClusters() { return m_trackClusters.size(); }
         ROOT::Math::XYZPoint intercept(double z) {
             ROOT::Math::XYZPoint point = m_state + m_direction * z;
@@ -180,9 +187,8 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint m_state;
         ROOT::Math::XYZVector m_direction;
 
-        // ROOT I/O class definition - update version number when you change this
-        // class!
-        ClassDef(Track, 1)
+        // ROOT I/O class definition - update version number when you change this class!
+        ClassDef(Track, 2)
     };
 
     // Vector type declaration

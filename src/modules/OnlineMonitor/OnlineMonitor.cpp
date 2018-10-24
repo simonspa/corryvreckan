@@ -151,8 +151,8 @@ void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas
         bool log_scale = (plot.back().find("log") != std::string::npos) ? true : false;
 
         // Replace other placeholders and add histogram
-        std::string name = std::regex_replace(plot.front(), std::regex("%DUT%"), m_config.get<std::string>("DUT"));
-        name = std::regex_replace(name, std::regex("%REFERENCE%"), m_config.get<std::string>("reference"));
+        std::string name = std::regex_replace(plot.front(), std::regex("%DUT%"), get_dut()->name());
+        name = std::regex_replace(name, std::regex("%REFERENCE%"), get_reference()->name());
 
         // Do we have a detector placeholder?
         if(name.find("%DETECTOR%") != std::string::npos) {

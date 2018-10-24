@@ -20,4 +20,3 @@ Currently, no plots are produced. The result of the $`\eta`$-correction is best 
 EtaFormulaX = [0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5
 EtaConstantsX_dut = 0.025 0.038  6.71 -323.58  5950.3 -34437.5
 ```
-Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

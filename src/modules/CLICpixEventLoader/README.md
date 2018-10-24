@@ -23,4 +23,3 @@ The module opens and reads one data file in the specified input directory with t
 DUT = "W0005_H03"
 inputDirectory = /user/data/directory
 ```
-Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

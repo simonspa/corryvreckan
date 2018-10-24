@@ -106,6 +106,9 @@ void Analysis::load() {
 
 void Analysis::load_detectors() {
 
+    // Flag for the reference detector
+    bool found_reference = false;
+
     std::vector<std::string> detectors_files = global_config.getPathArray("detectors_file");
 
     for(auto& detectors_file : detectors_files) {
@@ -127,9 +130,22 @@ void Analysis::load_detectors() {
             LOG(INFO) << "Detector: " << name;
             Detector* det_parm = new Detector(detector);
 
+            // Check if we already found a reference plane:
+            if(found_reference && det_parm->role() == DetectorRole::REFERENCE) {
+                throw InvalidValueError(global_config, "detectors_file", "Found more than one reference detector");
+            }
+
+            // Switch flag if we found the reference plane:
+            found_reference |= (det_parm->role() == DetectorRole::REFERENCE);
+
             // Add the new detector to the global list:
             detectors.push_back(det_parm);
         }
+    }
+
+    // Check that exactly one detector is marked as reference:
+    if(!found_reference) {
+        throw InvalidValueError(global_config, "detectors_file", "Found no detector marked as reference");
     }
 
     LOG(STATUS) << "Loaded " << detectors.size() << " detectors";

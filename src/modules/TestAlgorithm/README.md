@@ -22,7 +22,7 @@ For each device the following plots are produced:
 * 2D correlation in Y in global coordinates
 * 2D correlation in X in local coordinates
 * 2D correlation in Y in local coordinates
-* Correlation times histogram
+* Correlation times (nanosecond binning) histogram, range covers 2 * event length
 * Correlation times (integer values) histogram
 
 ### Usage
@@ -31,4 +31,3 @@ For each device the following plots are produced:
 makeCorrelations = true
 reference = "W0013_E03"
 ```
-Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

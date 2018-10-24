@@ -27,7 +27,21 @@
 using namespace ROOT::Math;
 
 namespace corryvreckan {
-    // Class containing just the detector parameters
+
+    /**
+     * @brief Role of the detector
+     */
+    enum class DetectorRole {
+        NONE = 0,  ///< No specific detector role
+        REFERENCE, ///< Reference detector
+        DUT,       ///< Detector used as device under test
+    };
+
+    /**
+     * @brief Detector representation in the reconstruction chain
+     *
+     * Contains the detector with all its properties such as type, name, position and orientation, pitch, resolution etc.
+     */
     class Detector {
     public:
         // Constructors and desctructors
@@ -38,6 +52,11 @@ namespace corryvreckan {
         // Functions to retrieve basic information
         std::string type() { return m_detectorType; }
         std::string name() { return m_detectorName; }
+
+        // Detector role and helper functions
+        DetectorRole role() { return m_role; }
+        bool isReference();
+        bool isDUT();
 
         Configuration getConfiguration();
 
@@ -108,7 +127,8 @@ namespace corryvreckan {
         bool isWithinROI(Cluster* cluster);
 
     private:
-        // Member variables
+        DetectorRole m_role;
+
         // Detector information
         std::string m_detectorType;
         std::string m_detectorName;

@@ -9,8 +9,6 @@ CLICpixEventLoader::CLICpixEventLoader(Configuration config, std::vector<Detecto
 }
 
 void CLICpixEventLoader::initialise() {
-    // Assume that the CLICpix is the DUT (if running this algorithm
-    detectorID = m_config.get<std::string>("DUT");
     // File structure is RunX/CLICpix/RunX.dat
 
     // Take input directory from global parameters
@@ -50,7 +48,8 @@ void CLICpixEventLoader::initialise() {
 
 StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
 
-    //  LOG(TRACE) <<"Running"
+    // Assume that the CLICpix is the DUT (if running this algorithm
+    auto detector = get_dut();
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
@@ -62,7 +61,7 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
 
     // Pixel container, shutter information
     Pixels* pixels = new Pixels();
-    long double shutterStartTime, shutterStopTime;
+    long double shutterStartTime = 0, shutterStopTime = 0;
     string data;
 
     int npixels = 0;
@@ -109,9 +108,9 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
         LOG(TRACE) << "New pixel: " << col << "," << row << " with tot " << tot;
 
         // If this pixel is masked, do not save it
-        if(get_detector(detectorID)->masked(col, row))
+        if(detector->masked(col, row))
             continue;
-        Pixel* pixel = new Pixel(detectorID, row, col, tot, 0);
+        Pixel* pixel = new Pixel(detector->name(), row, col, tot, 0);
         pixels->push_back(pixel);
         npixels++;
         hHitMap->Fill(col, row);
@@ -126,7 +125,7 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
     LOG(TRACE) << "Loaded " << npixels << " pixels";
     // Put the data on the clipboard
     if(pixels->size() > 0)
-        clipboard->put(detectorID, "pixels", (Objects*)pixels);
+        clipboard->put(detector->name(), "pixels", (Objects*)pixels);
 
     // Fill histograms
     hPixelsPerFrame->Fill(npixels);

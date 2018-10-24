@@ -22,8 +22,11 @@ StatusCode DUTAssociation::run(Clipboard* clipboard) {
         return Success;
     }
 
+    // Get the DUT:
+    auto dut = get_dut();
+
     // Get the DUT clusters from the clipboard
-    Clusters* clusters = (Clusters*)clipboard->get(m_DUT, "clusters");
+    Clusters* clusters = (Clusters*)clipboard->get(dut->name(), "clusters");
     if(clusters == NULL) {
         LOG(DEBUG) << "No DUT clusters on the clipboard";
         return Success;

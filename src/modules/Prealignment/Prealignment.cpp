@@ -19,7 +19,7 @@ void Prealignment::initialise() {
         LOG(INFO) << "Booking histograms for detector " << detector->name();
 
         // get the reference detector:
-        Detector* reference = get_detector(m_config.get<std::string>("reference"));
+        Detector* reference = get_reference();
 
         // Correlation plots
         string name = "correlationX_" + detector->name();
@@ -64,10 +64,10 @@ StatusCode Prealignment::run(Clipboard* clipboard) {
         }
 
         // Get clusters from reference detector
-        Clusters* referenceClusters = (Clusters*)clipboard->get(m_config.get<std::string>("reference"), "clusters");
+        auto reference = get_reference();
+        Clusters* referenceClusters = (Clusters*)clipboard->get(reference->name(), "clusters");
         if(referenceClusters == NULL) {
-            LOG(DEBUG) << "Reference detector " << m_config.get<std::string>("reference")
-                       << " does not have any clusters on the clipboard";
+            LOG(DEBUG) << "Reference detector " << reference->name() << " does not have any clusters on the clipboard";
             continue;
         }
 
@@ -102,7 +102,7 @@ void Prealignment::finalise() {
             LOG(ERROR) << "Detector " << detector->name() << ": RMS X = " << Units::display(rmsX, {"mm", "um"})
                        << " , RMS Y = " << Units::display(rmsY, {"mm", "um"});
         }
-        if(detector->name() != m_config.get<std::string>("reference")) {
+        if(detector->role() != DetectorRole::REFERENCE) {
             double mean_X = correlationX[detector->name()]->GetMean();
             double mean_Y = correlationY[detector->name()]->GetMean();
             LOG(INFO) << "Detector " << detector->name() << ": x = " << Units::display(mean_X, {"mm", "um"})

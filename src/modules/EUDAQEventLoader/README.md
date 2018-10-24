@@ -24,4 +24,3 @@ for CMake to find the library link against and headers to include.
 file_name = "rawdata/eudaq/run020808.raw"
 long_detector_id = true
 ```
-Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.

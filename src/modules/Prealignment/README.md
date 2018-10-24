@@ -34,4 +34,3 @@ masked = "W0005_H03" #excluding the DUT from the prelaignment
 max_correlation_rms = 6.0
 damping_factor = 1.0
 ```
-Parameters to be used in multiple modules can also be defined globally at the top of the configuration file. This is highly encouraged for parameters such as `DUT` and `reference`.
