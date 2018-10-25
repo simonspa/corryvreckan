@@ -602,11 +602,11 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             // If the counter overflow happens before reading the new heartbeat
             //      while( abs(m_syncTime[detectorID]-time) > 0x0000020000000000 ){
             if(!extra) {
-                while(m_syncTime[detectorID] - time > 0x0000020000000000) {
+                while(static_cast<long long>(m_syncTime[detectorID]) - static_cast<long long>(time) > 0x0000020000000000) {
                     time += 0x0000040000000000;
                 }
             } else {
-                while(m_prevTime - time > 0x0000020000000000) {
+                while(static_cast<long long>(m_prevTime) - static_cast<long long>(time) > 0x0000020000000000) {
                     time += 0x0000040000000000;
                 }
             }
