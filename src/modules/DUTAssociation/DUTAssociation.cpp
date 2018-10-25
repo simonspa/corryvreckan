@@ -6,9 +6,7 @@ using namespace std;
 DUTAssociation::DUTAssociation(Configuration config, std::vector<Detector*> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
-    m_DUT = m_config.get<std::string>("DUT");
-    auto det = get_detector(m_DUT);
-
+    auto det = get_dut();
     timingCut = m_config.get<double>("timingCut", Units::convert(200, "ns"));
     spatialCut = m_config.get<XYVector>("spatialCut", 2 * det->pitch());
 }
