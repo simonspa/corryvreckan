@@ -56,10 +56,11 @@ namespace corryvreckan {
             canvas->GetCanvas()->Clear();
             canvas->GetCanvas()->cd();
             if(!stackedCanvas[canvas]) {
-                if(nHistograms < 4)
-                    canvas->GetCanvas()->Divide(static_cast<int>(nHistograms));
-                else
-                    canvas->GetCanvas()->Divide(static_cast<int>(std::ceil(nHistograms / 2.)), 2);
+                if(nHistograms < 4) {
+                    canvas->GetCanvas()->Divide(static_cast<int>(nHistograms), 1, 0.01f, 0.01f);
+                } else {
+                    canvas->GetCanvas()->Divide(static_cast<int>((nHistograms + 1) / 2), 2, 0.01f, 0.01f);
+                }
             }
             for(size_t i = 0; i < nHistograms; i++) {
                 if(!stackedCanvas[canvas])

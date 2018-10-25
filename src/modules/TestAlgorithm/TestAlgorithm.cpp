@@ -134,7 +134,7 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
                     }
                     //                    correlationTime[detector->name()]->Fill(Units::convert(timeDifference, "s"));
                     correlationTime[detector->name()]->Fill(timeDifference); // time difference in ns
-                    correlationTimeInt[detector->name()]->Fill(timeDifferenceInt);
+                    correlationTimeInt[detector->name()]->Fill(static_cast<double>(timeDifferenceInt));
                 }
             }
         }

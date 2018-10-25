@@ -13,7 +13,7 @@ Timepix1EventLoader::Timepix1EventLoader(Configuration config, std::vector<Detec
  clipboard
 */
 
-bool sortByTime(string filename1, string filename2) {
+bool Timepix1EventLoader::sortByTime(string filename1, string filename2) {
 
     // double filetime1 = stod(filename1.substr(filename1.length()-13,9));
     // double filetime2 = stod(filename2.substr(filename2.length()-13,9));
@@ -158,7 +158,8 @@ StatusCode Timepix1EventLoader::run(Clipboard* clipboard) {
             istringstream detectorData(data);
             detectorData >> col >> row >> tot;
             Pixel* pixel = new Pixel(m_currentDevice, row, col, tot);
-            pixel->timestamp(m_eventTime);
+            // FIXME to work properly, m_eventTime needs to be converted to nanoseconds!
+            pixel->timestamp(static_cast<double>(m_eventTime));
             dataContainers[m_currentDevice]->push_back(pixel);
         }
     }

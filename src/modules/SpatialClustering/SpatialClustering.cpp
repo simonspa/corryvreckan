@@ -127,7 +127,7 @@ StatusCode SpatialClustering::run(Clipboard* clipboard) {
             calculateClusterCentre(detector, cluster);
 
             // Fill cluster histograms
-            clusterSize[detector->name()]->Fill(cluster->size());
+            clusterSize[detector->name()]->Fill(static_cast<double>(cluster->size()));
             clusterWidthRow[detector->name()]->Fill(cluster->rowWidth());
             clusterWidthColumn[detector->name()]->Fill(cluster->columnWidth());
             clusterTot[detector->name()]->Fill(cluster->tot());

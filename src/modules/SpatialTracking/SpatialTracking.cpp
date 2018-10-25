@@ -161,7 +161,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
 
         // Fill histograms
         trackChi2->Fill(track->chi2());
-        clustersPerTrack->Fill(track->nClusters());
+        clustersPerTrack->Fill(static_cast<double>(track->nClusters()));
         trackChi2ndof->Fill(track->chi2ndof());
         trackAngleX->Fill(atan(track->m_direction.X()));
         trackAngleY->Fill(atan(track->m_direction.Y()));
@@ -193,7 +193,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
     }
 
     // Save the tracks on the clipboard
-    tracksPerEvent->Fill(tracks->size());
+    tracksPerEvent->Fill(static_cast<double>(tracks->size()));
     if(tracks->size() > 0) {
         clipboard->put("tracks", reinterpret_cast<Objects*>(tracks));
     }

@@ -29,7 +29,7 @@ void Timepix3Clustering::initialise() {
 }
 
 // Sort function for pixels from low to high times
-bool sortByTime(Pixel* pixel1, Pixel* pixel2) {
+bool Timepix3Clustering::sortByTime(Pixel* pixel1, Pixel* pixel2) {
     return (pixel1->timestamp() < pixel2->timestamp());
 }
 
@@ -123,7 +123,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
             calculateClusterCentre(cluster);
 
             // Fill cluster histograms
-            clusterSize[detector->name()]->Fill(cluster->size());
+            clusterSize[detector->name()]->Fill(static_cast<double>(cluster->size()));
             clusterWidthRow[detector->name()]->Fill(cluster->rowWidth());
             clusterWidthColumn[detector->name()]->Fill(cluster->columnWidth());
             clusterTot[detector->name()]->Fill(cluster->tot());

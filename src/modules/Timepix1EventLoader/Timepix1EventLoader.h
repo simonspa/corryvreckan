@@ -22,6 +22,8 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
+    private:
+        static bool sortByTime(std::string filename1, std::string filename2);
         void processHeader(std::string, std::string&, long long int&);
 
         // Member variables

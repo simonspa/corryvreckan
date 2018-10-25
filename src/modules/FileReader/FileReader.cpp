@@ -78,13 +78,15 @@ void FileReader::initialise() {
                 LOG(DEBUG) << "Looking for " << objectType << " for device " << detectorID << ", tree path " << treePath;
 
                 m_inputTrees[objectID] = static_cast<TTree*>(gDirectory->Get(treePath.c_str()));
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
                 // Set the branch addresses
                 m_inputTrees[objectID]->SetBranchAddress("time", &m_time);
 
                 // Cast the Object as a specific type using a Factory
                 m_objects[objectID] = Object::Factory(detectorType, objectType);
                 m_inputTrees[objectID]->SetBranchAddress(objectType.c_str(), &m_objects[objectID]);
+#pragma GCC diagnostic pop
                 m_currentPosition[objectID] = 0;
             }
         }
@@ -93,10 +95,13 @@ void FileReader::initialise() {
             // Make the tree
             string treePath = objectType + "/" + objectType;
             m_inputTrees[objectType] = static_cast<TTree*>(gDirectory->Get(treePath.c_str()));
-            // Branch the tree to the timestamp and object
+// Branch the tree to the timestamp and object
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
             m_inputTrees[objectType]->SetBranchAddress("time", &m_time);
             m_objects[objectType] = Object::Factory(objectType);
             m_inputTrees[objectType]->SetBranchAddress(objectType.c_str(), &m_objects[objectType]);
+#pragma GCC diagnostic pop
         }
     }
 

@@ -141,7 +141,7 @@ void Millepede::finalise() {
         for(size_t i = 0; i < nParameters; ++i) {
             converg += fabs(m_dparm[i]);
         }
-        converg /= nParameters;
+        converg /= static_cast<double>(nParameters);
         LOG(INFO) << "Convergence: " << converg;
         // Update the module positions and orientations.
         LOG(INFO) << "Updating geometry...";
@@ -175,7 +175,7 @@ void Millepede::setConstraints(const size_t nPlanes) {
         }
         avgz += det->displacement().Z();
     }
-    avgz /= nPlanes;
+    avgz /= static_cast<double>(nPlanes);
     // Calculate the variance.
     double varz = 0.0;
     for(const auto& det : get_detectors()) {
@@ -185,7 +185,7 @@ void Millepede::setConstraints(const size_t nPlanes) {
         const double dz = det->displacement().Z() - avgz;
         varz += dz * dz;
     }
-    varz /= nPlanes;
+    varz /= static_cast<double>(nPlanes);
 
     // Define the 9 constraints equations according to the requested geometry.
     const size_t nParameters = 6 * nPlanes;
@@ -810,7 +810,7 @@ bool Millepede::fitGlobal() {
                 m_equations[i].clear();
             }
         }
-        LOG(INFO) << "Chi2 / DOF after re-fit: " << chi2 / (ndof - nRows);
+        LOG(INFO) << "Chi2 / DOF after re-fit: " << chi2 / (ndof - static_cast<double>(nRows));
     }
 
     // Print the final results.
