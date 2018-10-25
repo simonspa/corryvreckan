@@ -79,7 +79,7 @@ void FileReader::initialise() {
 
                 m_inputTrees[objectID] = static_cast<TTree*>(gDirectory->Get(treePath.c_str()));
 #pragma GCC diagnostic push
-#if defined(__GNUC__)
+#ifndef __clang__
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif
                 // Set the branch addresses
@@ -99,7 +99,7 @@ void FileReader::initialise() {
             m_inputTrees[objectType] = static_cast<TTree*>(gDirectory->Get(treePath.c_str()));
 // Branch the tree to the timestamp and object
 #pragma GCC diagnostic push
-#if defined(__GNUC__)
+#ifndef __clang__
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif
             m_inputTrees[objectType]->SetBranchAddress("time", &m_time);
