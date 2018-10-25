@@ -35,7 +35,6 @@ namespace corryvreckan {
         long long int m_eventTime;
         std::ifstream m_currentFile;
         std::string m_currentDevice;
-        bool m_newFrame;
         std::string m_prevHeader;
     };
 } // namespace corryvreckan
