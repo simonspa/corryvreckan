@@ -8,7 +8,7 @@
 ##################################################################
 # SETTINGS
 # set path to clang-format binary
-for bin in "clang-format-6.0" "clang-format-5.0" "clang-format-4.0" "clang-format";
+for bin in "clang-format-7" "clang-format-6.0" "clang-format-5.0" "clang-format-4.0" "clang-format";
 do
     CLANG_FORMAT=$(which "$bin")
     [ -n "$CLANG_FORMAT" ] && break

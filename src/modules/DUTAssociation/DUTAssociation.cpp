@@ -6,8 +6,11 @@ using namespace std;
 DUTAssociation::DUTAssociation(Configuration config, std::vector<Detector*> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
+    m_DUT = m_config.get<std::string>("DUT");
+    auto det = get_detector(m_DUT);
+
     timingCut = m_config.get<double>("timingCut", Units::convert(200, "ns"));
-    spatialCut = m_config.get<double>("spatialCut", Units::convert(200, "um"));
+    spatialCut = m_config.get<XYVector>("spatialCut", 2 * det->pitch());
 }
 
 StatusCode DUTAssociation::run(Clipboard* clipboard) {
@@ -38,7 +41,7 @@ StatusCode DUTAssociation::run(Clipboard* clipboard) {
             ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
             double xdistance = intercept.X() - cluster->globalX();
             double ydistance = intercept.Y() - cluster->globalY();
-            if(abs(xdistance) > spatialCut || abs(ydistance) > spatialCut) {
+            if(abs(xdistance) > spatialCut.x() || abs(ydistance) > spatialCut.y()) {
                 LOG(DEBUG) << "Discarding DUT cluster with distance (" << abs(xdistance) << "," << abs(ydistance) << ")";
                 continue;
             }
