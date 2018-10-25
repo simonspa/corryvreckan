@@ -183,7 +183,7 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
     }
 
     // Fill histograms
-    hPixelsPerFrame->Fill(pixels->size());
+    hPixelsPerFrame->Fill(static_cast<double>(pixels->size()));
 
     // Put the data on the clipboard
     if(!pixels->empty()) {
@@ -282,10 +282,8 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
 
             hit_ts = static_cast<long long>(readout_ts) + ts_diff;
 
-            // hit_ts = (readout_ts & 0xFFFFFFFFFFFFF800) + ts1;
-
             // Convert the timestamp to nanoseconds:
-            double timestamp = hit_ts * m_clockCycle;
+            double timestamp = m_clockCycle * static_cast<double>(hit_ts);
 
             if(timestamp > end_time) {
                 keep_pointer_stored = true;
@@ -377,7 +375,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
                                << readout_ts;
                 }
                 // If the readout time is after the window, mark it as a candidate for last readout in the window
-                if((readout_ts * m_clockCycle) > end_time) {
+                if((static_cast<double>(readout_ts) * m_clockCycle) > end_time) {
                     window_end = true;
                 }
                 break;
@@ -543,8 +541,8 @@ Pixels* ATLASpixEventLoader::read_legacy_data(double, double) {
                    << (TriggerDebugTS - toa);
 
         // TriggerDebugTS *= 4096. / 5;              // runs with 200MHz, divide by 5 to scale counter value to 40MHz
-        toa *=
-            4096. * static_cast<unsigned long long int>(2); // runs with 20MHz, multiply by 2 to scale counter value to 40MHz
+        double toa_timestamp =
+            4096. * 2 * static_cast<double>(toa); // runs with 20MHz, multiply by 2 to scale counter value to 40MHz
 
         // Timewalk correction:
         if(m_timewalkCorrectionFactors.size() == 5) {
@@ -552,13 +550,13 @@ Pixels* ATLASpixEventLoader::read_legacy_data(double, double) {
                           m_timewalkCorrectionFactors.at(2) * tot * tot +
                           m_timewalkCorrectionFactors.at(3) * tot * tot * tot +
                           m_timewalkCorrectionFactors.at(4) * tot * tot * tot * tot;
-            toa -= corr * (4096. * 40000000.);
+            toa_timestamp -= corr * 163840000000; //(40000000 * 4096)
         }
 
         // Convert TOA to nanoseconds:
-        toa /= (4096. * 0.04);
+        toa_timestamp /= (4096. * 0.04);
 
-        Pixel* pixel = new Pixel(get_dut()->name(), row, col, tot, toa);
+        Pixel* pixel = new Pixel(get_dut()->name(), row, col, tot, toa_timestamp);
         pixel->setCharge(cal_tot);
         pixels->push_back(pixel);
     }
