@@ -260,7 +260,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
         // Also record which cluster is the closest
         bool matched = false;
         Clusters trackclusters = track->clusters();
-        Cluster* bestCluster;
+        Cluster* bestCluster = nullptr;
         double xresidualBest = 10000.;
         double yresidualBest = 10000.;
         double absoluteresidualBest = sqrt(xresidualBest * xresidualBest + yresidualBest * yresidualBest);
@@ -358,7 +358,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
             hXresidualVersusYresidual->Fill(xresidualBest, yresidualBest);
             hAbsoluteResiduals->Fill(sqrt(xresidualBest * xresidualBest + yresidualBest * yresidualBest));
             hClusterTOTAssociated->Fill((bestCluster)->tot());
-            hClusterSizeAssociated->Fill((bestCluster)->size());
+            hClusterSizeAssociated->Fill(static_cast<double>(bestCluster->size()));
             //      hClusterWidthColAssociated->Fill((*bestCluster)->colWidth());
             //      hClusterWidthRowAssociated->Fill((*bestCluster)->rowWidth());
 
@@ -560,13 +560,13 @@ void ClicpixAnalysis::fillClusterHistos(Clusters* clusters) {
         }
 
         // Fill cluster histograms
-        hClusterSizeAll->Fill((*itc)->size());
+        hClusterSizeAll->Fill(static_cast<double>((*itc)->size()));
         hClusterTOTAll->Fill((*itc)->tot());
         hGlobalClusterPositions->Fill((*itc)->globalX(), (*itc)->globalY());
     }
 
-    hClustersPerEvent->Fill(clusters->size());
-    hClustersVersusEventNo->Fill(m_eventNumber, clusters->size());
+    hClustersPerEvent->Fill(static_cast<double>(clusters->size()));
+    hClustersVersusEventNo->Fill(m_eventNumber, static_cast<double>(clusters->size()));
 
     return;
 }

@@ -271,7 +271,7 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
                 auto clusterLocal = detector->globalToLocal(cluster->global());
                 hClusterMapAssoc->Fill(detector->getColumn(clusterLocal), detector->getRow(clusterLocal));
                 hClusterSizeMapAssoc->Fill(
-                    detector->getColumn(clusterLocal), detector->getRow(clusterLocal), cluster->size());
+                    detector->getColumn(clusterLocal), detector->getRow(clusterLocal), static_cast<double>(cluster->size()));
                 hClusterToTMapAssoc->Fill(detector->getColumn(clusterLocal), detector->getRow(clusterLocal), cluster->tot());
 
                 clusterTotAssoc->Fill(cluster->tot());
@@ -306,7 +306,7 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
                     residualsY2pix->Fill(ydistance);
                 }
 
-                clusterSizeAssoc->Fill(cluster->size());
+                clusterSizeAssoc->Fill(static_cast<double>(cluster->size()));
 
                 // Fill in-pixel plots: (all as function of track position within pixel cell)
                 if(is_within_roi) {
@@ -317,7 +317,7 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
                     pxqvsxmym->Fill(xmod, ymod, cluster->getSeedPixel()->charge());
 
                     // mean cluster size
-                    npxvsxmym->Fill(xmod, ymod, cluster->size());
+                    npxvsxmym->Fill(xmod, ymod, static_cast<double>(cluster->size()));
                     if(cluster->size() == 1)
                         npx1vsxmym->Fill(xmod, ymod);
                     if(cluster->size() == 2)

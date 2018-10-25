@@ -237,7 +237,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
                 residualsX2pix->Fill(xdistance);
             residualsY->Fill(ydistance);
             clusterTotAssociated->Fill(cluster->tot());
-            clusterSizeAssociated->Fill(cluster->size());
+            clusterSizeAssociated->Fill(static_cast<double>(cluster->size()));
             clusterSizeAssociated_X->Fill(cluster->columnWidth());
             clusterSizeAssociated_Y->Fill(cluster->rowWidth());
             track->addAssociatedCluster(cluster);
