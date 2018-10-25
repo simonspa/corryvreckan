@@ -181,7 +181,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
 
         // Fill histograms
         trackChi2->Fill(track->chi2());
-        clustersPerTrack->Fill(track->nClusters());
+        clustersPerTrack->Fill(static_cast<double>(track->nClusters()));
         trackChi2ndof->Fill(track->chi2ndof());
         trackAngleX->Fill(atan(track->m_direction.X()));
         trackAngleY->Fill(atan(track->m_direction.Y()));
@@ -211,7 +211,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
     // Save the tracks on the clipboard
     if(tracks->size() > 0) {
         clipboard->put("tracks", reinterpret_cast<Objects*>(tracks));
-        tracksPerEvent->Fill(tracks->size());
+        tracksPerEvent->Fill(static_cast<double>(tracks->size()));
     }
 
     // Clean up tree objects
@@ -222,19 +222,4 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
 
     LOG(DEBUG) << "End of event";
     return Success;
-}
-
-Cluster* BasicTracking::getNearestCluster(long long int timestamp, Clusters clusters) {
-
-    Cluster* bestCluster = nullptr;
-    // Loop over all clusters and return the one with the closest timestamp
-    for(size_t iCluster = 0; iCluster < clusters.size(); iCluster++) {
-        Cluster* cluster = clusters[iCluster];
-        if(bestCluster == nullptr)
-            bestCluster = cluster;
-        if(abs(cluster->timestamp() - timestamp) < abs(bestCluster->timestamp() - timestamp))
-            bestCluster = cluster;
-    }
-
-    return bestCluster;
 }

@@ -25,11 +25,6 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
 
     private:
-        //  Cluster* getNearestCluster(Cluster*, map<Cluster*, bool>, Clusters*);
-        Cluster* getNearestCluster(long long int, Clusters);
-
-        // Member variables
-
         // Histograms
         TH1F* trackChi2;
         TH1F* clustersPerTrack;
