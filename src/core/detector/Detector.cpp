@@ -153,10 +153,9 @@ void Detector::initialise() {
 
     Rotation3D rotations;
     if(m_orientation_mode == "xyz") {
-        rotations = Rotation3D(ROOT::Math::RotationZ(m_orientation.Z()) * ROOT::Math::RotationY(m_orientation.Y()) *
-                               ROOT::Math::RotationX(m_orientation.X()));
+        rotations = RotationZ(m_orientation.Z()) * RotationY(m_orientation.Y()) * RotationX(m_orientation.X());
     } else if(m_orientation_mode == "zyx") {
-        rotations = Rotation3D(ROOT::Math::RotationZYX(m_orientation.x(), m_orientation.y(), m_orientation.x()));
+        rotations = RotationZYX(m_orientation.x(), m_orientation.y(), m_orientation.x());
     }
 
     m_localToGlobal = Transform3D(rotations, translations);
