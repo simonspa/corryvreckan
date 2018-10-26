@@ -254,7 +254,7 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
                 hTrackCorrelationTime->Fill(track->timestamp() - cluster->timestamp());
 
                 auto associated_clusters = track->associatedClusters();
-                if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) != associated_clusters.end()) {
+                if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) == associated_clusters.end()) {
                     LOG(DEBUG) << "No associated cluster found";
                     continue;
                 }
