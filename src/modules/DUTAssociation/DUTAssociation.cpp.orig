@@ -7,7 +7,11 @@ DUTAssociation::DUTAssociation(Configuration config, std::vector<Detector*> dete
     : Module(std::move(config), std::move(detectors)) {
 
     auto det = get_dut();
+<<<<<<< HEAD
     timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(200, "ns")));
+=======
+    timingCut = m_config.get<double>("timingCut", Units::convert(200, "ns"));
+>>>>>>> master
     spatialCut = m_config.get<XYVector>("spatialCut", 2 * det->pitch());
 }
 

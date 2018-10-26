@@ -37,7 +37,7 @@ namespace corryvreckan {
         std::vector<int> v_pixelY;
         std::vector<int> v_pixelToT;
         std::vector<int> v_clusterNumPixels;
-        std::vector<long long int> v_pixelToA;
+        std::vector<double> v_pixelToA;
         std::vector<double> v_clusterSizeX;
         std::vector<double> v_clusterSizeY;
         std::vector<std::string> m_objectList;

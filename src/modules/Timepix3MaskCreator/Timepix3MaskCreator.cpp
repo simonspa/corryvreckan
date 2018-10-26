@@ -34,17 +34,15 @@ StatusCode Timepix3MaskCreator::run(Clipboard* clipboard) {
             continue;
 
         // Get the pixels
-        Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
-        if(pixels == NULL) {
+        Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(detector->name(), "pixels"));
+        if(pixels == nullptr) {
             LOG(DEBUG) << "Detector " << detector->name() << " does not have any pixels on the clipboard";
             continue;
         }
         LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << detector->name();
 
         // Loop over all pixels
-        for(int iP = 0; iP < pixels->size(); iP++) {
-            Pixel* pixel = (*pixels)[iP];
-
+        for(auto& pixel : (*pixels)) {
             // Enter another pixel hit for this channel
             int channelID = pixel->row() + 256 * pixel->column();
             pixelhits[detector->name()][channelID]++;

@@ -25,7 +25,7 @@ namespace corryvreckan {
             m_rowWidth = 0.;
             m_split = false;
         }
-        virtual ~Cluster() {}
+
         // Copy constructor
         Cluster(Cluster* cluster) {
             m_global = cluster->global();
@@ -80,7 +80,7 @@ namespace corryvreckan {
 
         // Retrieve the seed pixel of the cluster, defined as the one with the highest charge:
         Pixel* getSeedPixel() {
-            Pixel* seed;
+            Pixel* seed = nullptr;
             double maxcharge = -1;
             for(auto& px : m_pixels) {
                 if(px->charge() > maxcharge) {
@@ -129,7 +129,7 @@ namespace corryvreckan {
         std::map<int, bool> m_columnHits;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Cluster, 7)
+        ClassDef(Cluster, 8)
     };
 
     // Vector type declaration

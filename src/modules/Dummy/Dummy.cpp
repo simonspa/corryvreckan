@@ -28,15 +28,15 @@ StatusCode Dummy::run(Clipboard* clipboard) {
     for(auto& detector : get_detectors()) {
 
         // Get the pixels
-        Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
-        if(pixels == NULL) {
+        Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(detector->name(), "pixels"));
+        if(pixels == nullptr) {
             LOG(DEBUG) << "Detector " << detector->name() << " does not have any pixels on the clipboard";
             continue;
         }
 
         // Get the clusters
-        Clusters* clusters = (Clusters*)clipboard->get(detector->name(), "clusters");
-        if(clusters == NULL) {
+        Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(detector->name(), "clusters"));
+        if(clusters == nullptr) {
             LOG(DEBUG) << "Detector " << detector->name() << " does not have any clusters on the clipboard";
             continue;
         }

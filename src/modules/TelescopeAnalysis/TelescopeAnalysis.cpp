@@ -57,8 +57,8 @@ ROOT::Math::XYZPoint TelescopeAnalysis::closestApproach(ROOT::Math::XYZPoint pos
 StatusCode TelescopeAnalysis::run(Clipboard* clipboard) {
 
     // Get the tracks from the clipboard
-    Tracks* tracks = (Tracks*)clipboard->get("tracks");
-    if(tracks == NULL) {
+    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return Success;
     }
@@ -81,8 +81,8 @@ StatusCode TelescopeAnalysis::run(Clipboard* clipboard) {
             }
 
             // Get the MC particles from the clipboard
-            MCParticles* mcParticles = (MCParticles*)clipboard->get(name, "mcparticles");
-            if(mcParticles == NULL) {
+            MCParticles* mcParticles = reinterpret_cast<MCParticles*>(clipboard->get(name, "mcparticles"));
+            if(mcParticles == nullptr) {
                 continue;
             }
 
@@ -108,8 +108,8 @@ StatusCode TelescopeAnalysis::run(Clipboard* clipboard) {
         }
 
         // Get the MC particles from the clipboard
-        MCParticles* mcParticles = (MCParticles*)clipboard->get(detector->name(), "mcparticles");
-        if(mcParticles == NULL) {
+        MCParticles* mcParticles = reinterpret_cast<MCParticles*>(clipboard->get(detector->name(), "mcparticles"));
+        if(mcParticles == nullptr) {
             continue;
         }
 

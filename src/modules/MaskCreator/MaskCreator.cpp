@@ -23,8 +23,8 @@ void MaskCreator::initialise() {
         // adjust per-axis bandwith for pixel pitch along each axis such that the
         // covered area is approximately circular in metric coordinates.
         double scale = std::hypot(detector->pitch().X(), detector->pitch().Y()) / M_SQRT2;
-        m_bandwidthCol[detector->name()] = std::ceil(bandwidth * scale / detector->pitch().X());
-        m_bandwidthRow[detector->name()] = std::ceil(bandwidth * scale / detector->pitch().Y());
+        m_bandwidthCol[detector->name()] = static_cast<int>(std::ceil(bandwidth * scale / detector->pitch().X()));
+        m_bandwidthRow[detector->name()] = static_cast<int>(std::ceil(bandwidth * scale / detector->pitch().Y()));
 
         std::string name = "maskmap_" + detector->name();
         maskmap[detector->name()] = new TH2F(name.c_str(),
@@ -79,17 +79,15 @@ StatusCode MaskCreator::run(Clipboard* clipboard) {
     for(auto& detector : get_detectors()) {
 
         // Get the pixels
-        Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
-        if(pixels == NULL) {
+        Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(detector->name(), "pixels"));
+        if(pixels == nullptr) {
             LOG(TRACE) << "Detector " << detector->name() << " does not have any pixels on the clipboard";
             continue;
         }
         LOG(TRACE) << "Picked up " << pixels->size() << " pixels for device " << detector->name();
 
         // Loop over all pixels
-        for(int iP = 0; iP < pixels->size(); iP++) {
-            Pixel* pixel = (*pixels)[iP];
-
+        for(auto& pixel : (*pixels)) {
             // Enter another pixel hit for this channel
             m_occupancy[detector->name()]->Fill(pixel->column(), pixel->row());
         }

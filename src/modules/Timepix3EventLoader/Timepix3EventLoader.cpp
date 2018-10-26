@@ -23,7 +23,7 @@ Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<Detec
     m_minNumberOfPlanes = m_config.get<int>("minNumerOfPlanes", 1);
 
     // Check whether event length or pixel count should be used to separate events:
-    m_numberPixelHits = m_config.get<int>("number_of_pixelhits", 2000);
+    m_numberPixelHits = m_config.get<size_t>("number_of_pixelhits", 2000);
 
     // Calibration parameters
     calibrationPath = m_config.get<std::string>("calibrationPath", "");
@@ -44,7 +44,7 @@ void Timepix3EventLoader::initialise() {
 
     // Open the root directory
     DIR* directory = opendir(m_inputDirectory.c_str());
-    if(directory == NULL) {
+    if(directory == nullptr) {
         throw ModuleError("Directory " + m_inputDirectory + " does not exist");
     } else {
         LOG(TRACE) << "Found directory " << m_inputDirectory;
@@ -198,7 +198,6 @@ void Timepix3EventLoader::initialise() {
         std::string DUT = dut->name();
 
         // make paths to calibration files and read
-        int ret = 0;
         std::string tmp;
         tmp = calibrationPath + "/" + DUT + "/cal_thr_" + threshold + "_ik_10/" + DUT + "_cal_tot.txt";
         loadCalibration(tmp, ' ', vtot);
@@ -217,8 +216,8 @@ void Timepix3EventLoader::initialise() {
         timeshiftPlot = new TH1F("timeshift", "timeshift (/ns)", 1000, -10, 80);
         pixelToT_aftercalibration = new TH1F("pixelToT_aftercalibration", "pixelToT_aftercalibration", 2000, 0, 20000);
 
-        for(int row = 0; row < 256; row++) {
-            for(int col = 0; col < 256; col++) {
+        for(size_t row = 0; row < 256; row++) {
+            for(size_t col = 0; col < 256; col++) {
                 float a = vtot.at(256 * row + col).at(2);
                 float b = vtot.at(256 * row + col).at(3);
                 float c = vtot.at(256 * row + col).at(4);
@@ -227,13 +226,15 @@ void Timepix3EventLoader::initialise() {
                 float toa_t = vtoa.at(256 * row + col).at(3);
                 float toa_d = vtoa.at(256 * row + col).at(4);
 
-                pixelTOTParameterA->Fill(col, row, a);
-                pixelTOTParameterB->Fill(col, row, b);
-                pixelTOTParameterC->Fill(col, row, c);
-                pixelTOTParameterT->Fill(col, row, t);
-                pixelTOAParameterC->Fill(col, row, toa_c);
-                pixelTOAParameterD->Fill(col, row, toa_d);
-                pixelTOAParameterT->Fill(col, row, toa_t);
+                double cold = static_cast<double>(col);
+                double rowd = static_cast<double>(row);
+                pixelTOTParameterA->Fill(cold, rowd, a);
+                pixelTOTParameterB->Fill(cold, rowd, b);
+                pixelTOTParameterC->Fill(cold, rowd, c);
+                pixelTOTParameterT->Fill(cold, rowd, t);
+                pixelTOAParameterC->Fill(cold, rowd, toa_c);
+                pixelTOAParameterD->Fill(cold, rowd, toa_d);
+                pixelTOAParameterT->Fill(cold, rowd, toa_t);
             }
         }
     } else {
@@ -287,9 +288,9 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
         if(data) {
             loadedData++;
             LOG(DEBUG) << "Loaded " << deviceData->size() << " pixels for device " << detectorID;
-            clipboard->put(detectorID, "pixels", (Objects*)deviceData);
+            clipboard->put(detectorID, "pixels", reinterpret_cast<Objects*>(deviceData));
         }
-        clipboard->put(detectorID, "SpidrSignals", (Objects*)spidrData);
+        clipboard->put(detectorID, "SpidrSignals", reinterpret_cast<Objects*>(spidrData));
     }
 
     // Otherwise tell event loop to keep running
@@ -399,7 +400,6 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
 
         // Now read the data packets.
         ULong64_t pixdata = 0;
-        UShort_t thr = 0;
 
         // If we can't read data anymore, jump to begin of loop:
         if(!(*m_file_iterator[detectorID])->read(reinterpret_cast<char*>(&pixdata), sizeof pixdata)) {
@@ -411,7 +411,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
 
         // Get the header (first 4 bits) and do things depending on what it is
         // 0x4 is the "heartbeat" signal, 0xA and 0xB are pixel data
-        const UChar_t header = ((pixdata & 0xF000000000000000) >> 60) & 0xF;
+        const UChar_t header = static_cast<UChar_t>((pixdata & 0xF000000000000000) >> 60) & 0xF;
 
         // Use header 0x4 to get the long timestamps (called syncTime here)
         if(header == 0x4) {
@@ -445,7 +445,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 // order to match the timestamp format (net 28 left)
                 m_syncTime[detectorID] =
                     (m_syncTime[detectorID] & 0x00000FFFFFFFFFFF) + ((pixdata & 0x00000000FFFF0000) << 28);
-                if(!m_clearedHeader[detectorID] && (double)m_syncTime[detectorID] / (4096. * 40000000.) < 6.) {
+                if(!m_clearedHeader[detectorID] && static_cast<double>(m_syncTime[detectorID]) / (4096. * 40000000.) < 6.) {
                     m_clearedHeader[detectorID] = true;
                     LOG(DEBUG) << detectorID << ": Cleared header";
                 }
@@ -476,7 +476,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 LOG(TRACE) << "Found power pulsing - start";
 
                 // Read time stamp and convert to nanoseconds
-                const double timestamp = ((pixdata & 0x0000000FFFFFFFFF) << 12) / (4096 * 0.04);
+                const double timestamp = static_cast<double>((pixdata & 0x0000000FFFFFFFFF) << 12) / (4096 * 0.04);
                 const uint64_t controlbits = ((pixdata & 0x00F0000000000000) >> 52) & 0xF;
 
                 const uint64_t powerOn = ((controlbits & 0x2) >> 1);
@@ -487,7 +487,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 // reader so that we start with this signal next event)
                 if(temporalSplit) {
                     if(timestamp > clipboard->get_persistent("eventEnd")) {
-                        (*m_file_iterator[detectorID])->seekg(-1 * sizeof(pixdata), std::ios_base::cur);
+                        (*m_file_iterator[detectorID])->seekg(-1 * static_cast<int>(sizeof(pixdata)), std::ios_base::cur);
                         LOG(TRACE) << "Signal has a time beyond the current event: " << Units::display(timestamp, "ns");
                         break;
                     }
@@ -545,7 +545,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                 unsigned long long int stamp = (pixdata & 0x1E0) >> 5;
                 long long int timestamp_raw = (pixdata & 0xFFFFFFFFE00) >> 9;
                 long long int timestamp = 0;
-                int triggerNumber = ((pixdata & 0xFFF00000000000) >> 44);
+                // int triggerNumber = ((pixdata & 0xFFF00000000000) >> 44);
                 int intermediate = (pixdata & 0x1F);
                 if(intermediate != 0)
                     continue;
@@ -555,9 +555,10 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                     m_TDCoverflowCounter[detectorID]++;
                 }
                 m_syncTimeTDC[detectorID] = timestamp_raw;
-                timestamp = timestamp_raw + ((unsigned long long int)(m_TDCoverflowCounter[detectorID]) << 35);
+                timestamp = timestamp_raw + (static_cast<long long int>(m_TDCoverflowCounter[detectorID]) << 35);
 
-                double triggerTime = (timestamp + stamp / 12.) / (8. * 0.04); // 320 MHz clock
+                double triggerTime =
+                    static_cast<double>(timestamp + static_cast<long long int>(stamp) / 12) / (8. * 0.04); // 320 MHz clock
                 SpidrSignal* triggerSignal = new SpidrSignal("trigger", triggerTime);
                 spidrData->push_back(triggerSignal);
             }
@@ -571,8 +572,8 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             const UShort_t dcol = ((pixdata & 0x0FE0000000000000) >> 52);
             const UShort_t spix = ((pixdata & 0x001F800000000000) >> 45);
             const UShort_t pix = ((pixdata & 0x0000700000000000) >> 44);
-            const UShort_t col = (dcol + pix / 4);
-            const UShort_t row = (spix + (pix & 0x3));
+            const UShort_t col = static_cast<UShort_t>(dcol + pix / 4);
+            const UShort_t row = static_cast<UShort_t>(spix + (pix & 0x3));
 
             // Check if this pixel is masked
             if(detector->masked(col, row)) {
@@ -581,7 +582,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             }
 
             // Get the rest of the data from the pixel
-            const UShort_t pixno = col * 256 + row;
+            // const UShort_t pixno = col * 256 + row;
             const UInt_t data = ((pixdata & 0x00000FFFFFFF0000) >> 16);
             const unsigned int tot = (data & 0x00003FF0) >> 4;
             const uint64_t spidrTime(pixdata & 0x000000000000FFFF);
@@ -589,14 +590,11 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             const uint64_t toa((data & 0x0FFFC000) >> 14);
 
             // Calculate the timestamp.
-            long long int time =
+            unsigned long long int time =
                 (((spidrTime << 18) + (toa << 4) + (15 - ftoa)) << 8) + (m_syncTime[detectorID] & 0xFFFFFC0000000000);
 
             // Adjusting phases for double column shift
-            time += ((col / 2 - 1) % 16) * 256;
-
-            // Add the timing offset (in nano seconds) from the detectors file (if any)
-            time += (long long int)(detector->timingOffset() * 4096. * 0.04);
+            time += ((static_cast<unsigned long long int>(col) / 2 - 1) % 16) * 256;
 
             // The time from the pixels has a maximum value of ~26 seconds. We compare the pixel time to the "heartbeat"
             // signal (which has an overflow of ~4 years) and check if the pixel time has wrapped back around to 0
@@ -604,17 +602,18 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             // If the counter overflow happens before reading the new heartbeat
             //      while( abs(m_syncTime[detectorID]-time) > 0x0000020000000000 ){
             if(!extra) {
-                while(m_syncTime[detectorID] - time > 0x0000020000000000) {
+                while(static_cast<long long>(m_syncTime[detectorID]) - static_cast<long long>(time) > 0x0000020000000000) {
                     time += 0x0000040000000000;
                 }
             } else {
-                while(m_prevTime - time > 0x0000020000000000) {
+                while(static_cast<long long>(m_prevTime) - static_cast<long long>(time) > 0x0000020000000000) {
                     time += 0x0000040000000000;
                 }
             }
 
-            // Convert final timestamp into ns:
-            const double timestamp = time / (4096 * 0.04);
+            // Convert final timestamp into ns and add the timing offset (in nano seconds) from the detectors file (if any)
+            const double timestamp = static_cast<double>(time) / (4096 / 25) + detector->timingOffset();
+
             LOG(DEBUG) << "Timestamp = " << Units::display(timestamp, {"s", "ns"});
             // If events are loaded based on time intervals, take all hits where the
             // time is within this window
@@ -633,31 +632,33 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                               "event window ("
                            << Units::display(timestamp, {"s", "us", "ns"}) << " > "
                            << Units::display(clipboard->get_persistent("eventEnd"), {"s", "us", "ns"}) << ")";
-                (*m_file_iterator[detectorID])->seekg(-1 * sizeof(pixdata), std::ios_base::cur);
+                (*m_file_iterator[detectorID])->seekg(-1 * static_cast<int>(sizeof(pixdata)), std::ios_base::cur);
                 break;
             }
 
             // Otherwise create a new pixel object
-            pixelToT_beforecalibration->Fill((int)tot);
+            pixelToT_beforecalibration->Fill(static_cast<int>(tot));
 
             // Apply calibration if applyCalibration is true
             if(applyCalibration && detector->isDUT()) {
                 LOG(DEBUG) << "Applying calibration to DUT";
-                float a = vtot.at(256 * row + col).at(2);
-                float b = vtot.at(256 * row + col).at(3);
-                float c = vtot.at(256 * row + col).at(4);
-                float t = vtot.at(256 * row + col).at(5);
+                size_t scol = static_cast<size_t>(col);
+                size_t srow = static_cast<size_t>(row);
+                float a = vtot.at(256 * srow + scol).at(2);
+                float b = vtot.at(256 * srow + scol).at(3);
+                float c = vtot.at(256 * srow + scol).at(4);
+                float t = vtot.at(256 * srow + scol).at(5);
 
-                float toa_c = vtoa.at(256 * row + col).at(2);
-                float toa_t = vtoa.at(256 * row + col).at(3);
-                float toa_d = vtoa.at(256 * row + col).at(4);
+                float toa_c = vtoa.at(256 * srow + scol).at(2);
+                float toa_t = vtoa.at(256 * srow + scol).at(3);
+                float toa_d = vtoa.at(256 * srow + scol).at(4);
 
                 // Calculating calibrated tot and toa
-                float fvolts =
-                    (sqrt(a * a * t * t + 2 * a * b * t + 4 * a * c - 2 * a * t * tot + b * b - 2 * b * tot + tot * tot) +
-                     a * t - b + tot) /
-                    (2 * a);
-                float fcharge = fvolts * 1e-3 * 3e-15 * 6241.509 * 1e15; // capacitance is 3 fF or 18.7 e-/mV
+                float fvolts = (sqrt(a * a * t * t + 2 * a * b * t + 4 * a * c - 2 * a * t * static_cast<float>(tot) +
+                                     b * b - 2 * b * static_cast<float>(tot) + static_cast<float>(tot * tot)) +
+                                a * t - b + static_cast<float>(tot)) /
+                               (2 * a);
+                double fcharge = fvolts * 1e-3 * 3e-15 * 6241.509 * 1e15; // capacitance is 3 fF or 18.7 e-/mV
 
                 /* Note 1: fvolts is the inverse to f(x) = a*x + b - c/(x-t). Note the +/- signs! */
                 /* Note 2: The capacitance is actually smaller than 3 fC, more like 2.5 fC. But there is an offset when when
@@ -665,19 +666,20 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
                  * over estimating the input capacitance to compensate the missing information of the offset. */
 
                 float t_shift = toa_c / (fvolts - toa_t) + toa_d;
-                timeshiftPlot->Fill(Units::convert(t_shift, "ns"));
+                timeshiftPlot->Fill(static_cast<double>(Units::convert(t_shift, "ns")));
                 const double ftimestamp = timestamp - t_shift;
                 LOG(DEBUG) << "Time shift= " << Units::display(t_shift, {"s", "ns"});
                 LOG(DEBUG) << "Timestamp calibrated = " << Units::display(ftimestamp, {"s", "ns"});
                 // creating new pixel object with calibrated values of tot and toa
-                Pixel* pixel = new Pixel(detectorID, row, col, fcharge, ftimestamp);
+                Pixel* pixel = new Pixel(detectorID, row, col, static_cast<int>(tot), ftimestamp);
+                pixel->setCharge(fcharge);
                 devicedata->push_back(pixel);
                 LOG(DEBUG) << "Pixel Charge = " << fcharge << "; ToT value = " << tot;
                 pixelToT_aftercalibration->Fill(fcharge);
             } else {
                 LOG(DEBUG) << "Pixel hit at " << Units::display(timestamp, {"s", "ns"});
                 // creating new pixel object with non-calibrated values of tot and toa
-                Pixel* pixel = new Pixel(detectorID, row, col, (int)tot, timestamp);
+                Pixel* pixel = new Pixel(detectorID, row, col, static_cast<int>(tot), timestamp);
                 devicedata->push_back(pixel);
             }
 

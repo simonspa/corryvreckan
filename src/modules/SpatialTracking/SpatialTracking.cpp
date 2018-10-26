@@ -6,9 +6,9 @@ using namespace std;
 
 SpatialTracking::SpatialTracking(Configuration config, std::vector<Detector*> detectors)
     : Module(std::move(config), std::move(detectors)) {
-    spatialCut = m_config.get<double>("spatialCut", Units::convert(200, "um"));
-    spatialCut_DUT = m_config.get<double>("spatialCutDUT", Units::convert(200, "um"));
-    minHitsOnTrack = m_config.get<int>("minHitsOnTrack", 6);
+    spatialCut = m_config.get<double>("spatialCut", static_cast<double>(Units::convert(200, "um")));
+    spatialCut_DUT = m_config.get<double>("spatialCutDUT", static_cast<double>(Units::convert(200, "um")));
+    minHitsOnTrack = m_config.get<size_t>("minHitsOnTrack", 6);
     excludeDUT = m_config.get<bool>("excludeDUT", true);
 }
 
@@ -52,11 +52,8 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
     // Container for all clusters, and detectors in tracking
     map<string, KDTree*> trees;
     vector<Detector*> detectors;
-    Clusters* referenceClusters;
+    Clusters* referenceClusters = nullptr;
     Clusters dutClusters;
-
-    // Output track container
-    Tracks* tracks = new Tracks();
 
     // Loop over all Timepix1 and get clusters
     double minZ = 1000.;
@@ -68,8 +65,8 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
         //     continue;
 
         // Get the clusters
-        Clusters* tempClusters = (Clusters*)clipboard->get(detectorID, "clusters");
-        if(tempClusters == NULL) {
+        Clusters* tempClusters = reinterpret_cast<Clusters*>(clipboard->get(detectorID, "clusters"));
+        if(tempClusters == nullptr) {
             LOG(DEBUG) << "Detector " << detectorID << " does not have any clusters on the clipboard";
         } else {
             // Store the clusters of the first plane in Z as the reference
@@ -94,20 +91,17 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
         return Success;
     }
 
+    // Output track container
+    Tracks* tracks = new Tracks();
+
     // Keep a note of which clusters have been used
     map<Cluster*, bool> used;
 
     // Loop over all clusters
-    int nSeedClusters = referenceClusters->size();
-    for(int iSeedCluster = 0; iSeedCluster < nSeedClusters; iSeedCluster++) {
-
-        LOG(DEBUG) << "==> seed cluster " << iSeedCluster;
+    for(auto& cluster : (*referenceClusters)) {
 
         // Make a new track
         Track* track = new Track();
-
-        // Get the cluster
-        Cluster* cluster = (*referenceClusters)[iSeedCluster];
 
         // Add the cluster to the track
         track->addCluster(cluster);
@@ -167,7 +161,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
 
         // Fill histograms
         trackChi2->Fill(track->chi2());
-        clustersPerTrack->Fill(track->nClusters());
+        clustersPerTrack->Fill(static_cast<double>(track->nClusters()));
         trackChi2ndof->Fill(track->chi2ndof());
         trackAngleX->Fill(atan(track->m_direction.X()));
         trackAngleY->Fill(atan(track->m_direction.Y()));
@@ -199,9 +193,9 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
     }
 
     // Save the tracks on the clipboard
-    tracksPerEvent->Fill(tracks->size());
+    tracksPerEvent->Fill(static_cast<double>(tracks->size()));
     if(tracks->size() > 0) {
-        clipboard->put("tracks", (Objects*)tracks);
+        clipboard->put("tracks", reinterpret_cast<Objects*>(tracks));
     }
 
     // Clean up tree objects

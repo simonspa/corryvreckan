@@ -24,7 +24,9 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
 
     private:
-        double timingCut, spatialCut;
+        std::string m_DUT;
+        double timingCut;
+        ROOT::Math::XYVector spatialCut;
     };
 } // namespace corryvreckan
 #endif // DUTAssociation_H

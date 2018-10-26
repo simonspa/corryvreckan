@@ -24,9 +24,8 @@
 #include "core/utils/log.h"
 #include "objects/Track.h"
 
-using namespace ROOT::Math;
-
 namespace corryvreckan {
+    using namespace ROOT::Math;
 
     /**
      * @brief Role of the detector
@@ -60,9 +59,9 @@ namespace corryvreckan {
 
         Configuration getConfiguration();
 
-        ROOT::Math::XYVector size() { return ROOT::Math::XYVector(m_pitch.X() * m_nPixelsX, m_pitch.Y() * m_nPixelsY); }
-        ROOT::Math::XYVector pitch() { return m_pitch; }
-        ROOT::Math::XYVector resolution() { return m_resolution; }
+        XYVector size() { return XYVector(m_pitch.X() * m_nPixelsX, m_pitch.Y() * m_nPixelsY); }
+        XYVector pitch() { return m_pitch; }
+        XYVector resolution() { return m_resolution; }
 
         int nPixelsX() { return m_nPixelsX; }
         int nPixelsY() { return m_nPixelsY; }
@@ -72,15 +71,15 @@ namespace corryvreckan {
         void displacementX(double x) { m_displacement.SetX(x); }
         void displacementY(double y) { m_displacement.SetY(y); }
         void displacementZ(double z) { m_displacement.SetZ(z); }
-        void displacement(ROOT::Math::XYZPoint displacement) { m_displacement = displacement; }
-        ROOT::Math::XYZPoint displacement() { return m_displacement; }
+        void displacement(XYZPoint displacement) { m_displacement = displacement; }
+        XYZPoint displacement() { return m_displacement; }
 
         // Functions to set and retrieve basic rotation parameters
         void rotationX(double rx) { m_orientation.SetX(rx); }
         void rotationY(double ry) { m_orientation.SetY(ry); }
         void rotationZ(double rz) { m_orientation.SetZ(rz); }
-        ROOT::Math::XYZVector rotation() { return m_orientation; }
-        void rotation(ROOT::Math::XYZVector rotation) { m_orientation = rotation; }
+        XYZVector rotation() { return m_orientation; }
+        void rotation(XYZVector rotation) { m_orientation = rotation; }
 
         PositionVector3D<Cartesian3D<double>> normal() { return m_normal; };
 
@@ -120,8 +119,8 @@ namespace corryvreckan {
         double inPixelX(PositionVector3D<Cartesian3D<double>> localPosition);
         double inPixelY(PositionVector3D<Cartesian3D<double>> localPosition);
 
-        ROOT::Math::XYZPoint localToGlobal(ROOT::Math::XYZPoint local) { return m_localToGlobal * local; };
-        ROOT::Math::XYZPoint globalToLocal(ROOT::Math::XYZPoint global) { return m_globalToLocal * global; };
+        XYZPoint localToGlobal(XYZPoint local) { return m_localToGlobal * local; };
+        XYZPoint globalToLocal(XYZPoint global) { return m_globalToLocal * global; };
 
         bool isWithinROI(const Track* track);
         bool isWithinROI(Cluster* cluster);
@@ -132,8 +131,8 @@ namespace corryvreckan {
         // Detector information
         std::string m_detectorType;
         std::string m_detectorName;
-        ROOT::Math::XYVector m_pitch;
-        ROOT::Math::XYVector m_resolution;
+        XYVector m_pitch;
+        XYVector m_resolution;
         int m_nPixelsX;
         int m_nPixelsY;
         double m_timingOffset;

@@ -16,12 +16,11 @@ void CLICpixEventLoader::initialise() {
 
     // Open the root directory
     DIR* directory = opendir(inputDirectory.c_str());
-    if(directory == NULL) {
+    if(directory == nullptr) {
         LOG(ERROR) << "Directory " << inputDirectory << " does not exist";
         return;
     }
     dirent* entry;
-    dirent* file;
 
     // Read the entries in the folder
     while((entry = readdir(directory))) {
@@ -61,7 +60,7 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
 
     // Pixel container, shutter information
     Pixels* pixels = new Pixels();
-    long double shutterStartTime, shutterStopTime;
+    double shutterStartTime = 0, shutterStopTime = 0;
     string data;
 
     int npixels = 0;
@@ -83,7 +82,7 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
             string name;
             istringstream header(data);
             header >> name >> timeInt;
-            shutterStartTime = (double)timeInt / (0.04);
+            shutterStartTime = static_cast<double>(timeInt) / (0.04);
             LOG(TRACE) << "Shutter rise time: " << Units::display(shutterStartTime, {"ns", "us", "s"});
             continue;
         }
@@ -93,7 +92,7 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
             string name;
             istringstream header(data);
             header >> name >> timeInt;
-            shutterStopTime = (double)timeInt / (0.04);
+            shutterStopTime = static_cast<double>(timeInt) / (0.04);
             LOG(TRACE) << "Shutter fall time: " << Units::display(shutterStopTime, {"ns", "us", "s"});
             continue;
         }
@@ -125,7 +124,7 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
     LOG(TRACE) << "Loaded " << npixels << " pixels";
     // Put the data on the clipboard
     if(pixels->size() > 0)
-        clipboard->put(detector->name(), "pixels", (Objects*)pixels);
+        clipboard->put(detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
 
     // Fill histograms
     hPixelsPerFrame->Fill(npixels);

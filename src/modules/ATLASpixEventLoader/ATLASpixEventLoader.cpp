@@ -12,7 +12,7 @@ ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<Detec
     m_inputDirectory = m_config.get<std::string>("inputDirectory");
     m_calibrationFile = m_config.get<std::string>("calibrationFile", std::string());
 
-    m_clockCycle = m_config.get<double>("clockCycle", Units::convert(6.25, "ns"));
+    m_clockCycle = m_config.get<double>("clockCycle", static_cast<double>(Units::convert(6.25, "ns")));
 
     // Allow reading of legacy data format using the Karlsruhe readout system:
     m_legacyFormat = m_config.get<bool>("legacyFormat", false);
@@ -44,12 +44,11 @@ void ATLASpixEventLoader::initialise() {
 
     // Open the root directory
     DIR* directory = opendir(m_inputDirectory.c_str());
-    if(directory == NULL) {
+    if(directory == nullptr) {
         LOG(ERROR) << "Directory " << m_inputDirectory << " does not exist";
         return;
     }
     dirent* entry;
-    dirent* file;
 
     // Read the entries in the folder
     while((entry = readdir(directory))) {
@@ -74,7 +73,7 @@ void ATLASpixEventLoader::initialise() {
     // fast forward file to T0 event
     old_fpga_ts = 0;
     while(1) {
-        m_file.read((char*)&datain, 4);
+        m_file.read(reinterpret_cast<char*>(&datain), 4);
         if(m_file.eof()) {
             m_file.clear();
             m_file.seekg(ios::beg);
@@ -85,14 +84,14 @@ void ATLASpixEventLoader::initialise() {
             LOG(STATUS) << "Found T0 event at position " << m_file.tellg() << ". Skipping all data before this event.";
             oldpos = m_file.tellg();
             unsigned long ts3 = datain & 0x00FFFFFF;
-            std::streampos tmppos = (int)oldpos - 8;
+            std::streampos tmppos = static_cast<int>(oldpos) - 8;
             m_file.seekg(tmppos);
-            while((int)m_file.tellg() > 0) {
-                m_file.read((char*)&datain, 4);
+            while(static_cast<int>(m_file.tellg()) > 0) {
+                m_file.read(reinterpret_cast<char*>(&datain), 4);
                 unsigned int message_type = (datain >> 24);
                 // TS2
                 if(message_type == 0b00100000) {
-                    old_fpga_ts = (((unsigned long long)(datain & 0x00FFFFFF)) << 24) | ts3;
+                    old_fpga_ts = ((static_cast<unsigned long long>(datain & 0x00FFFFFF)) << 24) | ts3;
                     LOG(DEBUG) << "Set old_fpga_ts to " << old_fpga_ts;
                     break;
                 }
@@ -103,7 +102,7 @@ void ATLASpixEventLoader::initialise() {
                                      << ts3 << ". Some timestamps at the begining might be corrupted.";
                     }
                 }
-                tmppos = (int)tmppos - 4;
+                tmppos = static_cast<int>(tmppos) - 4;
                 m_file.seekg(tmppos);
             }
             m_file.seekg(oldpos);
@@ -125,7 +124,7 @@ void ATLASpixEventLoader::initialise() {
     hPixelsOverTime = new TH1F("pixelsOverTime", "pixelsOverTime", 2e6, 0, 2e6);
 
     // Read calibration:
-    m_calibrationFactors.resize(det->nPixelsX() * det->nPixelsY(), 1.0);
+    m_calibrationFactors.resize(static_cast<size_t>(det->nPixelsX() * det->nPixelsY()), 1.0);
     if(!m_calibrationFile.empty()) {
         std::ifstream calibration(m_calibrationFile);
         std::string line;
@@ -135,7 +134,7 @@ void ATLASpixEventLoader::initialise() {
         double calibfactor;
         while(getline(calibration, line)) {
             std::istringstream(line) >> col >> row >> calibfactor;
-            m_calibrationFactors.at(row * 25 + col) = calibfactor;
+            m_calibrationFactors.at(static_cast<size_t>(row * 25 + col)) = calibfactor;
         }
         calibration.close();
     }
@@ -180,15 +179,15 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
         hPixelToA->Fill(px->timestamp());
 
         // Pixels per 100us:
-        hPixelsOverTime->Fill(Units::convert(px->timestamp(), "ms"));
+        hPixelsOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "ms")));
     }
 
     // Fill histograms
-    hPixelsPerFrame->Fill(pixels->size());
+    hPixelsPerFrame->Fill(static_cast<double>(pixels->size()));
 
     // Put the data on the clipboard
     if(!pixels->empty()) {
-        clipboard->put(get_dut()->name(), "pixels", (Objects*)pixels);
+        clipboard->put(get_dut()->name(), "pixels", reinterpret_cast<Objects*>(pixels));
     } else {
         return NoData;
     }
@@ -210,13 +209,13 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
 
     // Read file and load data
     uint32_t datain;
-    long ts_diff; // tmp
+    long long ts_diff; // tmp
 
     // *TBD: Can be cleared only in the first call and kept for next call:
     // Initialize all to 0 for a case that hit data come before timestamp/trigger data
-    long long hit_ts = 0;       // 64bit value of a hit timestamp combined from readout and pixel hit timestamp
-    unsigned long atp_ts = 0;   // 16bit value of ATLASpix readout timestamp
-    unsigned long trig_cnt = 0; // 32bit value of trigger counter (in FPGA)
+    long long hit_ts = 0;            // 64bit value of a hit timestamp combined from readout and pixel hit timestamp
+    unsigned long long atp_ts = 0;   // 16bit value of ATLASpix readout timestamp
+    unsigned long long trig_cnt = 0; // 32bit value of trigger counter (in FPGA)
     unsigned long long readout_ts =
         old_readout_ts;                       // 64bit value of a readout timestamp combined from FPGA and ATp timestamp
     unsigned long long fpga_ts = old_fpga_ts; // 64bit value of FPGA readout timestamp
@@ -233,7 +232,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
     // Repeat until input EOF:
     while(keep_reading) {
         // Read next 4-byte data from file
-        m_file.read((char*)&datain, 4);
+        m_file.read(reinterpret_cast<char*>(&datain), 4);
         if(m_file.eof()) {
             LOG(DEBUG) << "EOF...";
             break;
@@ -250,8 +249,8 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
             // TS1 counter is by default half speed of TS2. By multiplying with 2 we make it equal.
             long ts1 = (gray_decode((datain >> 6) & 0x03FF)) << 1;
             // long ts1 = (gray_decode(((datain << 4) & 0x3F0) | ((datain >> 12) & 0xF)))<<1;
-            long row = ((datain >> (6 + 10)) & 0x01FF);
-            long col = ((datain >> (6 + 10 + 9)) & 0x003F);
+            int row = ((datain >> (6 + 10)) & 0x01FF);
+            int col = ((datain >> (6 + 10 + 9)) & 0x003F);
             // long tot = 0;
 
             // correction for clkdivend
@@ -259,7 +258,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
             // correction for clkdivend2
             // ts2 *= (m_clkdivend2M);
 
-            ts_diff = ts1 - (readout_ts & 0x07FF);
+            ts_diff = ts1 - static_cast<long long>(readout_ts & 0x07FF);
 
             if(ts_diff > 0) {
                 // Hit probably came before readout started and meanwhile an OVF of TS1 happened
@@ -281,12 +280,10 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
                 //}
             }
 
-            hit_ts = readout_ts + ts_diff;
-
-            // hit_ts = (readout_ts & 0xFFFFFFFFFFFFF800) + ts1;
+            hit_ts = static_cast<long long>(readout_ts) + ts_diff;
 
             // Convert the timestamp to nanoseconds:
-            double timestamp = hit_ts * m_clockCycle;
+            double timestamp = m_clockCycle * static_cast<double>(hit_ts);
 
             if(timestamp > end_time) {
                 keep_pointer_stored = true;
@@ -312,7 +309,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
             }
 
             // calculate ToT only when pixel is good for storing (division is time consuming)
-            int tot = ts2 - ((hit_ts % (long long)(64 * m_clkdivend2M)) / m_clkdivend2M);
+            int tot = static_cast<int>(ts2 - ((hit_ts % static_cast<long long>(64 * m_clkdivend2M)) / m_clkdivend2M));
             if(tot < 0) {
                 tot += 64;
             }
@@ -350,7 +347,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
                 }
 
                 atp_ts = (datain >> 7) & 0x1FFFE;
-                ts_diff = atp_ts - (fpga_ts & 0x1FFFF);
+                ts_diff = static_cast<long long>(atp_ts) - static_cast<long long>(fpga_ts & 0x1FFFF);
 
                 if(ts_diff > 0) {
                     if(ts_diff > 0x10000) {
@@ -361,7 +358,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
                         ts_diff += 0x20000;
                     }
                 }
-                readout_ts = fpga_ts + ts_diff;
+                readout_ts = static_cast<unsigned long long>(static_cast<long long>(fpga_ts) + ts_diff);
 
                 LOG(DEBUG) << "ATP_TS:\t" << atp_ts << "\t" << std::hex << atp_ts;
                 LOG(DEBUG) << "READOUT_TS:\t" << readout_ts << "\t" << std::hex << readout_ts;
@@ -378,7 +375,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
                                << readout_ts;
                 }
                 // If the readout time is after the window, mark it as a candidate for last readout in the window
-                if((readout_ts * m_clockCycle) > end_time) {
+                if((static_cast<double>(readout_ts) * m_clockCycle) > end_time) {
                     window_end = true;
                 }
                 break;
@@ -394,7 +391,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
             // Trigger counter from FPGA [31:24] and timestamp from FPGA [63:48] (2/4)
             case 0b00110000:
                 trig_cnt |= (datain << 8) & 0xFF000000;
-                fpga_ts1 = (((unsigned long long)datain << 48) & 0xFFFF000000000000);
+                fpga_ts1 = ((static_cast<unsigned long long>(datain) << 48) & 0xFFFF000000000000);
                 // LOG(DEBUG) << "TRIGGER\t" << trig_cnt;
 
                 // LOG(DEBUG) << "TRG_FPGA_2:\t" << trig_cnt << "\t" << std::hex << trig_cnt;
@@ -404,7 +401,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
 
             // Timestamp from FPGA [47:24] (3/4)
             case 0b00100000:
-                fpga_tsx = (((unsigned long long)datain << 24) & 0x0000FFFFFF000000);
+                fpga_tsx = ((static_cast<unsigned long long>(datain) << 24) & 0x0000FFFFFF000000);
                 // LOG(DEBUG) << "TS_FPGA_2:\t" << fpga_tsx << "\t" << std::hex << fpga_tsx;
                 if((!new_ts1) && (fpga_tsx < fpga_ts2)) {
                     fpga_ts1 += 0x0001000000000000;
@@ -500,7 +497,7 @@ Pixels* ATLASpixEventLoader::read_legacy_data(double, double) {
     // Read file and load data
     while(!m_file.eof()) {
 
-        unsigned int col, row, tot, ts;
+        int col, row, tot, ts;
         unsigned long long int toa, TriggerDebugTS, dummy, bincounter;
 
         m_file >> col >> row >> ts >> tot >> dummy >> dummy >> bincounter >> TriggerDebugTS;
@@ -519,14 +516,14 @@ Pixels* ATLASpixEventLoader::read_legacy_data(double, double) {
         }
 
         // Apply calibration:
-        unsigned int cal_tot = tot * m_calibrationFactors.at(row * 25 + col);
-        LOG(TRACE) << "Hit " << row << "\t" << col << ": " << m_calibrationFactors.at(row * 25 + col) << " * " << tot
-                   << " = " << cal_tot;
+        double cal_tot = tot * m_calibrationFactors.at(static_cast<size_t>(row * 25 + col));
+        LOG(TRACE) << "Hit " << row << "\t" << col << ": " << m_calibrationFactors.at(static_cast<size_t>(row * 25 + col))
+                   << " * " << tot << " = " << cal_tot;
 
         ts &= 0xFF;
         ts *= 2; // atlaspix timestamp runs at 10MHz, multiply by to to get 20.
 
-        if((bincounter & 0x1FF) < ts) {
+        if((bincounter & 0x1FF) < static_cast<unsigned long long>(ts)) {
             toa = ((bincounter & 0xFFFFFFFFFFFFFE00) - (1 << 9)) | (ts & 0x1FF);
         } else {
             toa = (bincounter & 0xFFFFFFFFFFFFFE00) | (ts & 0x1FF);
@@ -543,8 +540,9 @@ Pixels* ATLASpixEventLoader::read_legacy_data(double, double) {
         LOG(DEBUG) << "    " << row << "\t" << col << ": " << tot << " " << ts << " " << bincounter << " " << toa << " "
                    << (TriggerDebugTS - toa);
 
-        TriggerDebugTS *= 4096. / 5;              // runs with 200MHz, divide by 5 to scale counter value to 40MHz
-        toa *= 4096. * (unsigned long long int)2; // runs with 20MHz, multiply by 2 to scale counter value to 40MHz
+        // TriggerDebugTS *= 4096. / 5;              // runs with 200MHz, divide by 5 to scale counter value to 40MHz
+        double toa_timestamp =
+            4096. * 2 * static_cast<double>(toa); // runs with 20MHz, multiply by 2 to scale counter value to 40MHz
 
         // Timewalk correction:
         if(m_timewalkCorrectionFactors.size() == 5) {
@@ -552,13 +550,13 @@ Pixels* ATLASpixEventLoader::read_legacy_data(double, double) {
                           m_timewalkCorrectionFactors.at(2) * tot * tot +
                           m_timewalkCorrectionFactors.at(3) * tot * tot * tot +
                           m_timewalkCorrectionFactors.at(4) * tot * tot * tot * tot;
-            toa -= corr * (4096. * 40000000.);
+            toa_timestamp -= corr * 163840000000; //(40000000 * 4096)
         }
 
         // Convert TOA to nanoseconds:
-        toa /= (4096. * 0.04);
+        toa_timestamp /= (4096. * 0.04);
 
-        Pixel* pixel = new Pixel(get_dut()->name(), row, col, cal_tot, toa);
+        Pixel* pixel = new Pixel(get_dut()->name(), row, col, tot, toa_timestamp);
         pixel->setCharge(cal_tot);
         pixels->push_back(pixel);
     }

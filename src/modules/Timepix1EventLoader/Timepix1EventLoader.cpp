@@ -13,7 +13,7 @@ Timepix1EventLoader::Timepix1EventLoader(Configuration config, std::vector<Detec
  clipboard
 */
 
-bool sortByTime(string filename1, string filename2) {
+bool Timepix1EventLoader::sortByTime(string filename1, string filename2) {
 
     // double filetime1 = stod(filename1.substr(filename1.length()-13,9));
     // double filetime2 = stod(filename2.substr(filename2.length()-13,9));
@@ -41,12 +41,11 @@ void Timepix1EventLoader::initialise() {
 
     // Open the directory
     DIR* directory = opendir(m_inputDirectory.c_str());
-    if(directory == NULL) {
+    if(directory == nullptr) {
         LOG(ERROR) << "Directory " << m_inputDirectory << " does not exist";
         return;
     }
     dirent* entry;
-    dirent* file;
 
     // Read the entries in the folder
     while((entry = readdir(directory))) {
@@ -159,7 +158,8 @@ StatusCode Timepix1EventLoader::run(Clipboard* clipboard) {
             istringstream detectorData(data);
             detectorData >> col >> row >> tot;
             Pixel* pixel = new Pixel(m_currentDevice, row, col, tot);
-            pixel->timestamp(m_eventTime);
+            // FIXME to work properly, m_eventTime needs to be converted to nanoseconds!
+            pixel->timestamp(static_cast<double>(m_eventTime));
             dataContainers[m_currentDevice]->push_back(pixel);
         }
     }
@@ -175,8 +175,6 @@ StatusCode Timepix1EventLoader::run(Clipboard* clipboard) {
 
         // Check if this detector has been seen before
         try {
-            auto detector = get_detector(detID);
-
             // Put the pixels on the clipboard
             clipboard->put(detID, "pixels", dataContainers[detID]);
             LOG(DEBUG) << "Loaded " << dataContainers[detID]->size() << " pixels from device " << detID;

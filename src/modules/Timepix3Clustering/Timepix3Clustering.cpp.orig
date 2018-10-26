@@ -3,10 +3,16 @@
 using namespace corryvreckan;
 using namespace std;
 
+<<<<<<< HEAD
 Timepix3Clustering::Timepix3Clustering(Configuration config, Detector* detector)
     : Module(std::move(config), std::move(detector)) {
 
+    timingCut = m_config.get<double>("timingCut", Units::convert(100, "ns")); // 100 ns
+=======
+Timepix3Clustering::Timepix3Clustering(Configuration config, std::vector<Detector*> detectors)
+    : Module(std::move(config), std::move(detectors)) {
     timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(100, "ns"))); // 100 ns
+>>>>>>> compilerwarnings
     neighbour_radius_row = m_config.get<int>("neighbour_radius_row", 1);
     neighbour_radius_col = m_config.get<int>("neighbour_radius_col", 1);
 }
@@ -43,8 +49,8 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
     }
 
     // Get the pixels
-    Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(detector->name(), "pixels"));
-    if(pixels == nullptr) {
+    Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
+    if(pixels == NULL) {
         LOG(DEBUG) << "Detector " << detector->name() << " does not have any pixels on the clipboard";
         return Success;
     }
@@ -52,7 +58,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
 
     // Sort the pixels from low to high timestamp
     std::sort(pixels->begin(), pixels->end(), sortByTime);
-    size_t totalPixels = pixels->size();
+    int totalPixels = pixels->size();
 
     // Make the cluster storage
     Clusters* deviceClusters = new Clusters();
@@ -61,17 +67,16 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
     map<Pixel*, bool> used;
 
     // Start to cluster
-    for(size_t iP = 0; iP < pixels->size(); iP++) {
+    for(int iP = 0; iP < pixels->size(); iP++) {
         Pixel* pixel = (*pixels)[iP];
 
         // Check if pixel is used
-        if(used[pixel]) {
+        if(used[pixel])
             continue;
-        }
 
-        if(pixel->adc() == 0.) {
+<<<<<<< HEAD
+        if(pixel->adc() == 0.)
             continue;
-        }
 
         // Make the new cluster object
         Cluster* cluster = new Cluster();
@@ -82,12 +87,12 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
         double clusterTime = pixel->timestamp();
         used[pixel] = true;
         LOG(DEBUG) << "Adding pixel: " << pixel->row() << "," << pixel->column();
-        size_t nPixels = 0;
+        int nPixels = 0;
         while(cluster->size() != nPixels) {
 
             nPixels = cluster->size();
             // Loop over all pixels
-            for(size_t iNeighbour = (iP + 1); iNeighbour < totalPixels; iNeighbour++) {
+            for(int iNeighbour = (iP + 1); iNeighbour < totalPixels; iNeighbour++) {
                 Pixel* neighbour = (*pixels)[iNeighbour];
                 // Check if they are compatible in time with the cluster pixels
                 if((neighbour->timestamp() - clusterTime) > timingCut)
@@ -110,25 +115,119 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
                 used[neighbour] = true;
                 LOG(DEBUG) << "Adding pixel: " << neighbour->row() << "," << neighbour->column() << " time "
                            << Units::display(neighbour->timestamp(), {"ns", "us", "s"});
+=======
+        // Get the pixels
+        Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(detector->name(), "pixels"));
+        if(pixels == nullptr) {
+            LOG(DEBUG) << "Detector " << detector->name() << " does not have any pixels on the clipboard";
+            continue;
+        }
+        LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << detector->name();
+
+        //    if(pixels->size() > 500.){
+        //      LOG(DEBUG) <<"Skipping large event with "<<pixels->size()<<" pixels
+        //      for device "<<detector->name();
+        //      continue;
+        //    }
+
+        // Sort the pixels from low to high timestamp
+        std::sort(pixels->begin(), pixels->end(), sortByTime);
+        size_t totalPixels = pixels->size();
+
+        // Make the cluster storage
+        Clusters* deviceClusters = new Clusters();
+
+        // Keep track of which pixels are used
+        map<Pixel*, bool> used;
+
+        // Start to cluster
+        for(size_t iP = 0; iP < pixels->size(); iP++) {
+            Pixel* pixel = (*pixels)[iP];
+
+            // Check if pixel is used
+            if(used[pixel]) {
+                continue;
+            }
+
+            if(pixel->adc() == 0.) {
+                continue;
+            }
+
+            // Make the new cluster object
+            Cluster* cluster = new Cluster();
+            LOG(DEBUG) << "==== New cluster";
+
+            // Keep adding hits to the cluster until no more are found
+            cluster->addPixel(pixel);
+            double clusterTime = pixel->timestamp();
+            used[pixel] = true;
+            LOG(DEBUG) << "Adding pixel: " << pixel->row() << "," << pixel->column();
+            size_t nPixels = 0;
+            while(cluster->size() != nPixels) {
+
+                nPixels = cluster->size();
+                // Loop over all pixels
+                for(size_t iNeighbour = (iP + 1); iNeighbour < totalPixels; iNeighbour++) {
+                    Pixel* neighbour = (*pixels)[iNeighbour];
+                    // Check if they are compatible in time with the cluster pixels
+                    if((neighbour->timestamp() - clusterTime) > timingCut)
+                        break;
+                    //          if(!closeInTime(neighbour,cluster)) break;
+                    // Check if they have been used
+                    if(used[neighbour])
+                        continue;
+
+                    if(neighbour->adc() == 0.)
+                        continue;
+
+                    // Check if they are touching cluster pixels
+                    if(!touching(neighbour, cluster))
+                        continue;
+
+                    // Add to cluster
+                    cluster->addPixel(neighbour);
+                    clusterTime = neighbour->timestamp();
+                    used[neighbour] = true;
+                    LOG(DEBUG) << "Adding pixel: " << neighbour->row() << "," << neighbour->column() << " time "
+                               << Units::display(neighbour->timestamp(), {"ns", "us", "s"});
+                }
+>>>>>>> compilerwarnings
             }
         }
 
         // Finalise the cluster and save it
         calculateClusterCentre(cluster);
 
+<<<<<<< HEAD
         // Fill cluster histograms
-        clusterSize->Fill(static_cast<double>(cluster->size()));
+        clusterSize->Fill(cluster->size());
         clusterWidthRow->Fill(cluster->rowWidth());
         clusterWidthColumn->Fill(cluster->columnWidth());
         clusterTot->Fill(cluster->tot());
         clusterPositionGlobal->Fill(cluster->globalX(), cluster->globalY());
+=======
+            // Fill cluster histograms
+            clusterSize[detector->name()]->Fill(static_cast<double>(cluster->size()));
+            clusterWidthRow[detector->name()]->Fill(cluster->rowWidth());
+            clusterWidthColumn[detector->name()]->Fill(cluster->columnWidth());
+            clusterTot[detector->name()]->Fill(cluster->tot());
+            clusterPositionGlobal[detector->name()]->Fill(cluster->globalX(), cluster->globalY());
+>>>>>>> compilerwarnings
 
         deviceClusters->push_back(cluster);
     }
 
+<<<<<<< HEAD
     // Put the clusters on the clipboard
     if(deviceClusters->size() > 0) {
-        clipboard->put(detector->name(), "clusters", reinterpret_cast<Objects*>(deviceClusters));
+        clipboard->put(detector->name(), "clusters", (Objects*)deviceClusters);
+=======
+        // Put the clusters on the clipboard
+        if(deviceClusters->size() > 0) {
+            clipboard->put(detector->name(), "clusters", reinterpret_cast<Objects*>(deviceClusters));
+        }
+        LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << detector->name();
+>>>>>>> compilerwarnings
     }
     LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << detector->name();
 

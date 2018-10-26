@@ -153,10 +153,9 @@ void Detector::initialise() {
 
     Rotation3D rotations;
     if(m_orientation_mode == "xyz") {
-        rotations = Rotation3D(ROOT::Math::RotationZ(m_orientation.Z()) * ROOT::Math::RotationY(m_orientation.Y()) *
-                               ROOT::Math::RotationX(m_orientation.X()));
+        rotations = RotationZ(m_orientation.Z()) * RotationY(m_orientation.Y()) * RotationX(m_orientation.X());
     } else if(m_orientation_mode == "zyx") {
-        rotations = Rotation3D(ROOT::Math::RotationZYX(m_orientation.x(), m_orientation.y(), m_orientation.x()));
+        rotations = RotationZYX(m_orientation.x(), m_orientation.y(), m_orientation.x());
     }
 
     m_localToGlobal = Transform3D(rotations, translations);
@@ -377,7 +376,7 @@ int Detector::winding_number(std::pair<int, int> probe, std::vector<std::vector<
     // loop through all edges of the polygon
 
     // edge from V[i] to  V[i+1]
-    for(int i = 0; i < polygon.size(); i++) {
+    for(size_t i = 0; i < polygon.size(); i++) {
         auto point_this = std::make_pair(polygon.at(i).at(0), polygon.at(i).at(1));
         auto point_next = (i + 1 < polygon.size() ? std::make_pair(polygon.at(i + 1).at(0), polygon.at(i + 1).at(1))
                                                   : std::make_pair(polygon.at(0).at(0), polygon.at(0).at(1)));

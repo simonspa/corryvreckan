@@ -75,8 +75,8 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
     v_clusterNumPixels.clear();
 
     // Getting tracks from the clipboard
-    Tracks* tracks = (Tracks*)clipboard->get("tracks");
-    if(tracks == NULL) {
+    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return Success;
     }
