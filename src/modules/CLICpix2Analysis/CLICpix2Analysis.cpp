@@ -6,7 +6,7 @@
 
 using namespace corryvreckan;
 
-CLICpix2Analysis::CLICpix2Analysis(Configuration config, std::vector<Detector*> detectors)
+CLICpix2Analysis::CLICpix2Analysis(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
     m_timeCutFrameEdge = m_config.get<double>("timeCutFrameEdge", static_cast<double>(Units::convert(20, "ns")));

@@ -123,14 +123,15 @@ void Analysis::load_detectors() {
             std::string name = detector.getName();
 
             // Check if we have a duplicate:
-            if(std::find_if(detectors.begin(), detectors.end(), [&name](Detector* obj) { return obj->name() == name; }) !=
-               detectors.end()) {
+            if(std::find_if(detectors.begin(), detectors.end(), [&name](std::shared_ptr<Detector> obj) {
+                   return obj->name() == name;
+               }) != detectors.end()) {
                 throw InvalidValueError(
                     global_config, "detectors_file", "Detector " + detector.getName() + " defined twice");
             }
 
             LOG_PROGRESS(STATUS, "DET_LOAD_LOOP") << "Loading detector " << name;
-            Detector* det_parm = new Detector(detector);
+            auto det_parm = std::make_shared<Detector>(detector);
 
             // Check if we already found a reference plane:
             if(found_reference && det_parm->role() == DetectorRole::REFERENCE) {
@@ -138,7 +139,10 @@ void Analysis::load_detectors() {
             }
 
             // Switch flag if we found the reference plane:
-            found_reference |= (det_parm->role() == DetectorRole::REFERENCE);
+            if(det_parm->role() == DetectorRole::REFERENCE) {
+                found_reference = true;
+                m_reference = det_parm;
+            }
 
             // Add the new detector to the global list:
             detectors.push_back(det_parm);
@@ -153,7 +157,7 @@ void Analysis::load_detectors() {
     LOG_PROGRESS(STATUS, "DET_LOAD_LOOP") << "Loaded " << detectors.size() << " detectors";
 
     // Finally, sort the list of detectors by z position (from lowest to highest)
-    std::sort(detectors.begin(), detectors.end(), [](Detector* det1, Detector* det2) {
+    std::sort(detectors.begin(), detectors.end(), [](std::shared_ptr<Detector> det1, std::shared_ptr<Detector> det2) {
         return det1->displacement().Z() < det2->displacement().Z();
     });
 }
@@ -315,6 +319,11 @@ void Analysis::load_modules() {
             }
         }
     }
+
+    // Set the reference detector:
+    for(auto& module : m_modules) {
+        module->setReference(m_reference);
+    }
     LOG_PROGRESS(STATUS, "MOD_LOAD_LOOP") << "Loaded " << configs.size() << " modules";
 }
 
@@ -332,10 +341,11 @@ Module* Analysis::create_unique_module(void* library, Configuration config) {
     }
 
     // Convert to correct generator function
-    auto module_generator = reinterpret_cast<Module* (*)(Configuration, std::vector<Detector*>)>(generator); // NOLINT
+    auto module_generator =
+        reinterpret_cast<Module* (*)(Configuration, std::vector<std::shared_ptr<Detector>>)>(generator); // NOLINT
 
     // Figure out which detectors should run on this module:
-    std::vector<Detector*> module_det;
+    std::vector<std::shared_ptr<Detector>> module_det;
     if(!config.has("detectors")) {
         module_det = detectors;
     } else {
@@ -393,10 +403,10 @@ std::vector<Module*> Analysis::create_detector_modules(void* library, Configurat
     }
 
     // Convert to correct generator function
-    auto module_generator = reinterpret_cast<Module* (*)(Configuration, Detector*)>(generator); // NOLINT
+    auto module_generator = reinterpret_cast<Module* (*)(Configuration, std::shared_ptr<Detector>)>(generator); // NOLINT
 
     // Figure out which detectors should run on this module:
-    std::vector<Detector*> module_det;
+    std::vector<std::shared_ptr<Detector>> module_det;
     if(!config.has("detectors")) {
         module_det = detectors;
     } else {

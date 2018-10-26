@@ -20,7 +20,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        EtaCalculation(Configuration config, std::vector<Detector*> detectors);
+        EtaCalculation(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~EtaCalculation() {}
 
         // Functions
@@ -29,7 +29,7 @@ namespace corryvreckan {
         void finalise();
 
     private:
-        ROOT::Math::XYVector pixelIntercept(Track* tr, Detector* det);
+        ROOT::Math::XYVector pixelIntercept(Track* tr, std::shared_ptr<Detector> det);
         void calculateEta(Track* track, Cluster* cluster);
         std::string fit(TF1* function, std::string fname, TProfile* profile);
 

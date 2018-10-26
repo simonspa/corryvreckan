@@ -4,7 +4,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-SpatialClustering::SpatialClustering(Configuration config, std::vector<Detector*> detectors)
+SpatialClustering::SpatialClustering(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {}
 
 /*
@@ -157,7 +157,7 @@ void SpatialClustering::finalise() {
  Function to calculate the centre of gravity of a cluster.
  Sets the local and global cluster positions as well.
 */
-void SpatialClustering::calculateClusterCentre(Detector* detector, Cluster* cluster) {
+void SpatialClustering::calculateClusterCentre(std::shared_ptr<Detector> detector, Cluster* cluster) {
 
     LOG(DEBUG) << "== Making cluster centre";
     // Empty variables to calculate cluster position

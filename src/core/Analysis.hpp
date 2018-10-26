@@ -56,12 +56,14 @@ namespace corryvreckan {
         // Member variables
         Clipboard* m_clipboard;
         Configuration global_config;
-        std::vector<Detector*> detectors;
+        std::vector<std::shared_ptr<Detector>> detectors;
 
     private:
         void load_detectors();
         void load_modules();
         void add_units();
+
+        std::shared_ptr<Detector> m_reference;
 
         // Log file if specified
         std::ofstream log_file_;

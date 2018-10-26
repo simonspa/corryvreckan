@@ -20,7 +20,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        EtaCorrection(Configuration config, std::vector<Detector*> detectors);
+        EtaCorrection(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~EtaCorrection() {}
 
         // Functions
@@ -29,7 +29,7 @@ namespace corryvreckan {
         void finalise(){};
 
     private:
-        void applyEta(Cluster* cluster, Detector* detector);
+        void applyEta(Cluster* cluster, std::shared_ptr<Detector> detector);
 
         // Member variables
         std::string m_etaFormulaX;

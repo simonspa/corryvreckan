@@ -3,7 +3,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-DUTAssociation::DUTAssociation(Configuration config, std::vector<Detector*> detectors)
+DUTAssociation::DUTAssociation(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
     auto det = get_dut();

@@ -12,7 +12,7 @@ using namespace std;
 //=============================================================================
 // Standard constructor, initializes variables
 //=============================================================================
-Millepede::Millepede(Configuration config, std::vector<Detector*> detectors)
+Millepede::Millepede(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
     m_numberOfTracksForAlignment = m_config.get<size_t>("number_of_tracks", 20000);

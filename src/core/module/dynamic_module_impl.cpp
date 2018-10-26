@@ -53,8 +53,8 @@ namespace corryvreckan {
      * Internal method for the dynamic loading in the central Analysis class. Forwards the supplied arguments to the
      * constructor and returns an instantiation.
      */
-    Module* corryvreckan_module_generator(Configuration config, std::vector<Detector*> detectors);
-    Module* corryvreckan_module_generator(Configuration config, std::vector<Detector*> detectors) {
+    Module* corryvreckan_module_generator(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+    Module* corryvreckan_module_generator(Configuration config, std::vector<std::shared_ptr<Detector>> detectors) {
         auto module = new CORRYVRECKAN_MODULE_NAME(std::move(config), std::move(detectors)); // NOLINT
         return static_cast<Module*>(module);
     }
@@ -75,8 +75,8 @@ namespace corryvreckan {
      * Internal method for the dynamic loading in the central Analysis class. Forwards the supplied arguments to the
      * constructor and returns an instantiation
      */
-    Module* corryvreckan_module_generator(Configuration config, Detector* detector);
-    Module* corryvreckan_module_generator(Configuration config, Detector* detector) {
+    Module* corryvreckan_module_generator(Configuration config, std::shared_ptr<Detector> detector);
+    Module* corryvreckan_module_generator(Configuration config, std::shared_ptr<Detector> detector) {
         auto module = new CORRYVRECKAN_MODULE_NAME(std::move(config), std::move(detector)); // NOLINT
         return static_cast<Module*>(module);
     }
@@ -97,8 +97,8 @@ namespace corryvreckan {
      * Internal method for the dynamic loading in the central Analysis class. Forwards the supplied arguments to the
      * constructor and returns an instantiation
      */
-    Module* corryvreckan_module_generator(Configuration config, Detector* detector);
-    Module* corryvreckan_module_generator(Configuration config, Detector* detector) {
+    Module* corryvreckan_module_generator(Configuration config, std::shared_ptr<Detector> detector);
+    Module* corryvreckan_module_generator(Configuration config, std::shared_ptr<Detector> detector) {
         auto module = new CORRYVRECKAN_MODULE_NAME(std::move(config), std::move(detector)); // NOLINT
         return static_cast<Module*>(module);
     }

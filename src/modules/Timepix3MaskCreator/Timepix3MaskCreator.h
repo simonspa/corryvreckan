@@ -12,7 +12,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Timepix3MaskCreator(Configuration config, std::vector<Detector*> detectors);
+        Timepix3MaskCreator(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~Timepix3MaskCreator() {}
 
         // Functions

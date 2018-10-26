@@ -16,7 +16,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Timepix3Clustering(Configuration config, Detector* detectors);
+        Timepix3Clustering(Configuration config, std::shared_ptr<Detector> detectors);
         ~Timepix3Clustering() {}
 
         // Functions

@@ -22,7 +22,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        ATLASpixEventLoader(Configuration config, std::vector<Detector*> detectors);
+        ATLASpixEventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~ATLASpixEventLoader() {}
 
         // Functions

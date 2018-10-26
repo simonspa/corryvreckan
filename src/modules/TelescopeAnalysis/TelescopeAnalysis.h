@@ -14,7 +14,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        TelescopeAnalysis(Configuration config, std::vector<Detector*> detectors);
+        TelescopeAnalysis(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~TelescopeAnalysis() {}
 
         // Functions

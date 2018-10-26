@@ -6,7 +6,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-ClicpixAnalysis::ClicpixAnalysis(Configuration config, std::vector<Detector*> detectors)
+ClicpixAnalysis::ClicpixAnalysis(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
     m_associationCut = m_config.get<double>("associationCut", static_cast<double>(Units::convert(100, "um")));

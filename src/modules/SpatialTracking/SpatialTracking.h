@@ -20,7 +20,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        SpatialTracking(Configuration config, std::vector<Detector*> detectors);
+        SpatialTracking(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~SpatialTracking() {}
 
         // Functions

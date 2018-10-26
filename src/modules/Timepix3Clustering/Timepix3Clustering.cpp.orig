@@ -4,12 +4,12 @@ using namespace corryvreckan;
 using namespace std;
 
 <<<<<<< HEAD
-Timepix3Clustering::Timepix3Clustering(Configuration config, Detector* detector)
+Timepix3Clustering::Timepix3Clustering(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), std::move(detector)) {
 
     timingCut = m_config.get<double>("timingCut", Units::convert(100, "ns")); // 100 ns
 =======
-Timepix3Clustering::Timepix3Clustering(Configuration config, std::vector<Detector*> detectors)
+Timepix3Clustering::Timepix3Clustering(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
     timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(100, "ns"))); // 100 ns
 >>>>>>> compilerwarnings

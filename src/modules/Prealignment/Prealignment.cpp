@@ -3,7 +3,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-Prealignment::Prealignment(Configuration config, std::vector<Detector*> detectors)
+Prealignment::Prealignment(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
     LOG(INFO) << "Starting prealignment of detectors";
     max_correlation_rms = m_config.get<double>("max_correlation_rms", static_cast<double>(Units::convert(6.0, "mm")));
@@ -19,7 +19,7 @@ void Prealignment::initialise() {
         LOG(INFO) << "Booking histograms for detector " << detector->name();
 
         // get the reference detector:
-        Detector* reference = get_reference();
+        std::shared_ptr<Detector> reference = get_reference();
 
         // Correlation plots
         string name = "correlationX_" + detector->name();

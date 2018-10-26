@@ -17,7 +17,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        BasicTracking(Configuration config, std::vector<Detector*> detectors);
+        BasicTracking(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~BasicTracking() {}
 
         // Functions

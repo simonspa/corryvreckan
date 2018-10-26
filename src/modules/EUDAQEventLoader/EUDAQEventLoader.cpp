@@ -6,7 +6,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-EUDAQEventLoader::EUDAQEventLoader(Configuration config, std::vector<Detector*> detectors)
+EUDAQEventLoader::EUDAQEventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)), m_longID(true) {
 
     m_filename = m_config.get<std::string>("file_name");

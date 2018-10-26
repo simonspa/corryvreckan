@@ -13,7 +13,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        FileReader(Configuration config, std::vector<Detector*> detectors);
+        FileReader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~FileReader() {}
 
         // Functions

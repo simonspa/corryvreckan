@@ -27,7 +27,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Clicpix2EventLoader(Configuration config, std::vector<Detector*> detectors);
+        Clicpix2EventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~Clicpix2EventLoader() {}
 
         // Functions

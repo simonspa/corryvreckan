@@ -4,7 +4,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-SpatialTracking::SpatialTracking(Configuration config, std::vector<Detector*> detectors)
+SpatialTracking::SpatialTracking(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
     spatialCut = m_config.get<double>("spatialCut", static_cast<double>(Units::convert(200, "um")));
     spatialCut_DUT = m_config.get<double>("spatialCutDUT", static_cast<double>(Units::convert(200, "um")));
@@ -51,7 +51,7 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
 
     // Container for all clusters, and detectors in tracking
     map<string, KDTree*> trees;
-    vector<Detector*> detectors;
+    vector<std::shared_ptr<Detector>> detectors;
     Clusters* referenceClusters = nullptr;
     Clusters dutClusters;
 

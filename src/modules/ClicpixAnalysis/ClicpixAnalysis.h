@@ -16,7 +16,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        ClicpixAnalysis(Configuration config, std::vector<Detector*> detectors);
+        ClicpixAnalysis(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~ClicpixAnalysis() {}
 
         // Functions

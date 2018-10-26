@@ -3,7 +3,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-Timepix3Clustering::Timepix3Clustering(Configuration config, Detector* detector)
+Timepix3Clustering::Timepix3Clustering(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), std::move(detector)) {
 
     timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(100, "ns"))); // 100 ns

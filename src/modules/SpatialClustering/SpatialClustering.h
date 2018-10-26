@@ -15,7 +15,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        SpatialClustering(Configuration config, std::vector<Detector*> detectors);
+        SpatialClustering(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~SpatialClustering() {}
 
         // Functions
@@ -23,7 +23,7 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
-        void calculateClusterCentre(Detector* detector, Cluster*);
+        void calculateClusterCentre(std::shared_ptr<Detector> detector, Cluster*);
 
     private:
         // Cluster histograms

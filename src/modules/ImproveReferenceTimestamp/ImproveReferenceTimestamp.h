@@ -18,7 +18,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        ImproveReferenceTimestamp(Configuration config, std::vector<Detector*> detectors);
+        ImproveReferenceTimestamp(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~ImproveReferenceTimestamp() {}
 
         // Functions

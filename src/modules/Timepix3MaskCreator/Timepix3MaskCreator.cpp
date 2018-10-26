@@ -4,7 +4,7 @@
 
 using namespace corryvreckan;
 
-Timepix3MaskCreator::Timepix3MaskCreator(Configuration config, std::vector<Detector*> detectors)
+Timepix3MaskCreator::Timepix3MaskCreator(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {}
 
 void Timepix3MaskCreator::initialise() {

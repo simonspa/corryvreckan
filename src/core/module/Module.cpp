@@ -10,9 +10,12 @@
 
 using namespace corryvreckan;
 
-Module::Module(Configuration config, Detector* detector) : Module(config, std::vector<Detector*>{detector}) {}
+Module::Module(Configuration config, std::shared_ptr<Detector> detector)
+    : Module(config, std::vector<std::shared_ptr<Detector>>{detector}) {}
 
-Module::Module(Configuration config, std::vector<Detector*> detectors) {
+Module::~Module() {}
+
+Module::Module(Configuration config, std::vector<std::shared_ptr<Detector>> detectors) {
     m_name = config.getName();
     m_config = config;
     m_detectors = detectors;
@@ -25,10 +28,9 @@ Module::Module(Configuration config, std::vector<Detector*> detectors) {
     }
 }
 
-Module::~Module() {}
-
-Detector* Module::get_detector(std::string name) {
-    auto it = find_if(m_detectors.begin(), m_detectors.end(), [&name](Detector* obj) { return obj->name() == name; });
+std::shared_ptr<Detector> Module::get_detector(std::string name) {
+    auto it = find_if(
+        m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->name() == name; });
     if(it == m_detectors.end()) {
         throw ModuleError("Device with detector ID " + name + " is not registered.");
     }
@@ -36,13 +38,12 @@ Detector* Module::get_detector(std::string name) {
     return (*it);
 }
 
-Detector* Module::get_reference() {
-    auto it = find_if(m_detectors.begin(), m_detectors.end(), [](Detector* obj) { return obj->isReference(); });
-    return (*it);
+std::shared_ptr<Detector> Module::get_reference() {
+    return m_reference;
 }
 
-Detector* Module::get_dut() {
-    auto it = find_if(m_detectors.begin(), m_detectors.end(), [](Detector* obj) { return obj->isDUT(); });
+std::shared_ptr<Detector> Module::get_dut() {
+    auto it = find_if(m_detectors.begin(), m_detectors.end(), [](std::shared_ptr<Detector> obj) { return obj->isDUT(); });
     if(it == m_detectors.end()) {
         return nullptr;
     }
@@ -51,7 +52,8 @@ Detector* Module::get_dut() {
 }
 
 bool Module::has_detector(std::string name) {
-    auto it = find_if(m_detectors.begin(), m_detectors.end(), [&name](Detector* obj) { return obj->name() == name; });
+    auto it = find_if(
+        m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->name() == name; });
     if(it == m_detectors.end()) {
         return false;
     }

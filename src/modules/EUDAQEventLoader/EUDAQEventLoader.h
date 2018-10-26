@@ -15,7 +15,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        EUDAQEventLoader(Configuration config, std::vector<Detector*> detectors);
+        EUDAQEventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~EUDAQEventLoader() {}
 
         // Functions

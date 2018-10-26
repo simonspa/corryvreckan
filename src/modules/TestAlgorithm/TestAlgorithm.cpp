@@ -3,7 +3,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-TestAlgorithm::TestAlgorithm(Configuration config, std::vector<Detector*> detectors)
+TestAlgorithm::TestAlgorithm(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
     makeCorrelations = m_config.get<bool>("makeCorrelations", false);
     timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(100, "ns")));
@@ -19,7 +19,7 @@ void TestAlgorithm::initialise() {
         LOG(DEBUG) << "Booking histograms for detector " << detector->name();
 
         // get the reference detector:
-        Detector* reference = get_reference();
+        std::shared_ptr<Detector> reference = get_reference();
 
         // Simple hit map
         string name = "hitmap_" + detector->name();

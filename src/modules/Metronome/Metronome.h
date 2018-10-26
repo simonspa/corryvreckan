@@ -17,7 +17,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Metronome(Configuration config, std::vector<Detector*> detectors);
+        Metronome(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~Metronome() {}
 
         // Functions

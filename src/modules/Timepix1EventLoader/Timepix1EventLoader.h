@@ -14,7 +14,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Timepix1EventLoader(Configuration config, std::vector<Detector*> detectors);
+        Timepix1EventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~Timepix1EventLoader() {}
 
         // Functions

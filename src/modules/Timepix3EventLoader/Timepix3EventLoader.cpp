@@ -13,7 +13,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<Detector*> detectors)
+Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)), temporalSplit(false), m_currentEvent(0), m_prevTime(0),
       m_shutterOpen(false) {
 
@@ -75,7 +75,7 @@ void Timepix3EventLoader::initialise() {
             DIR* dataDir = opendir(dataDirName.c_str());
 
             // Check if this device has conditions loaded and is a Timepix3
-            Detector* detector;
+            std::shared_ptr<Detector> detector;
             try {
                 LOG(DEBUG) << "Fetching detector with ID \"" << detectorID << "\"";
                 detector = get_detector(detectorID);
@@ -312,7 +312,7 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
 }
 
 // Function to load the pixel mask file
-void Timepix3EventLoader::maskPixels(Detector* detector, string trimdacfile) {
+void Timepix3EventLoader::maskPixels(std::shared_ptr<Detector> detector, string trimdacfile) {
 
     // Open the mask file
     ifstream trimdacs;
@@ -378,7 +378,10 @@ void Timepix3EventLoader::loadCalibration(std::string path, char delim, std::vec
 }
 
 // Function to load data for a given device, into the relevant container
-bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pixels* devicedata, SpidrSignals* spidrData) {
+bool Timepix3EventLoader::loadData(Clipboard* clipboard,
+                                   std::shared_ptr<Detector> detector,
+                                   Pixels* devicedata,
+                                   SpidrSignals* spidrData) {
 
     string detectorID = detector->name();
 

@@ -9,10 +9,10 @@ using namespace std;
 // Global container declarations
 Tracks globalTracks;
 std::string detectorToAlign;
-Detector* globalDetector;
+std::shared_ptr<Detector> globalDetector;
 int detNum;
 
-Alignment::Alignment(Configuration config, std::vector<Detector*> detectors)
+Alignment::Alignment(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
     m_numberOfTracksForAlignment = m_config.get<size_t>("number_of_tracks", 20000);
     nIterations = m_config.get<size_t>("iterations", 3);

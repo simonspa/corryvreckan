@@ -21,7 +21,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Alignment(Configuration config, std::vector<Detector*> detectors);
+        Alignment(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~Alignment() {}
 
         // Functions

@@ -4,7 +4,7 @@
 
 using namespace corryvreckan;
 
-MaskCreator::MaskCreator(Configuration config, std::vector<Detector*> detectors)
+MaskCreator::MaskCreator(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)), m_numEvents(0) {
 
     m_method = m_config.get<std::string>("method", "frequency");

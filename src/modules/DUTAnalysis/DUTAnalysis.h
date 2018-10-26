@@ -14,7 +14,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        DUTAnalysis(Configuration config, Detector* detector);
+        DUTAnalysis(Configuration config, std::shared_ptr<Detector> detector);
 
         ~DUTAnalysis() {}
 

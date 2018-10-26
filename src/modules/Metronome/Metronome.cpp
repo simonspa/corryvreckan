@@ -3,7 +3,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-Metronome::Metronome(Configuration config, std::vector<Detector*> detectors)
+Metronome::Metronome(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
     m_eventLength = m_config.get<double>("eventLength", static_cast<double>(Units::convert(10, "us")));

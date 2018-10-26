@@ -16,7 +16,7 @@ namespace corryvreckan {
     class Millepede : public Module {
     public:
         /// Constructor
-        Millepede(Configuration config, std::vector<Detector*> detectors);
+        Millepede(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         /// Destructor
         virtual ~Millepede();
 

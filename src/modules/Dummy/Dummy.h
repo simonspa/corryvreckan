@@ -34,7 +34,7 @@ namespace corryvreckan {
          * @param config Configuration object for this module as retrieved from the steering file
          * @param detectors Vector of pointers to the detectors
          */
-        Dummy(Configuration config, std::vector<Detector*> detectors);
+        Dummy(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
 
         /**
          * @brief [Initialise this module]

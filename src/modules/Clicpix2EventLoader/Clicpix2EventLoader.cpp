@@ -9,7 +9,7 @@ using namespace std;
 using namespace caribou;
 using namespace clicpix2_utils;
 
-Clicpix2EventLoader::Clicpix2EventLoader(Configuration config, std::vector<Detector*> detectors)
+Clicpix2EventLoader::Clicpix2EventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
     discardZeroToT = m_config.get<bool>("discardZeroToT", false);

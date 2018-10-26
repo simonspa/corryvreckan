@@ -16,7 +16,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Timepix3EventLoader(Configuration config, std::vector<Detector*> detectors);
+        Timepix3EventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~Timepix3EventLoader() {}
 
         // Standard algorithm functions
@@ -37,9 +37,9 @@ namespace corryvreckan {
         TH1F* timeshiftPlot;
 
     private:
-        bool loadData(Clipboard* clipboard, Detector* detector, Pixels*, SpidrSignals*);
+        bool loadData(Clipboard* clipboard, std::shared_ptr<Detector> detector, Pixels*, SpidrSignals*);
         void loadCalibration(std::string path, char delim, std::vector<std::vector<float>>& dat);
-        void maskPixels(Detector*, std::string);
+        void maskPixels(std::shared_ptr<Detector>, std::string);
 
         // configuration paramaters:
         double m_triggerLatency;

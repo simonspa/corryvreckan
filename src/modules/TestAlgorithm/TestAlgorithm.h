@@ -16,7 +16,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        TestAlgorithm(Configuration config, std::vector<Detector*> detectors);
+        TestAlgorithm(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~TestAlgorithm() {}
 
         // Functions

@@ -3,7 +3,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-CLICpixEventLoader::CLICpixEventLoader(Configuration config, std::vector<Detector*> detectors)
+CLICpixEventLoader::CLICpixEventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
     m_filename = "";
 }

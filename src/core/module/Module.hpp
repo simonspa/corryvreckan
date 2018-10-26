@@ -49,6 +49,7 @@ namespace corryvreckan {
      * - Module::finalise(): for finalising the module at the end
      */
     class Module {
+        friend class Analysis;
 
     public:
         /**
@@ -61,14 +62,14 @@ namespace corryvreckan {
          * @param config Configuration for this module
          * @param detector Pointer to the detector this module is bound to
          */
-        Module(Configuration config, Detector* detector);
+        Module(Configuration config, std::shared_ptr<Detector> detector);
 
         /**
          * @brief Base constructor for unique modules
          * @param config Configuration for this module
          * @param detectors List of detectors this module should be aware of
          */
-        Module(Configuration config, std::vector<Detector*> detectors);
+        Module(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
 
         /**
          * @brief Essential virtual destructor.
@@ -125,7 +126,7 @@ namespace corryvreckan {
          * @brief Get list of all detectors this module acts on
          * @return List of all detectors for this module
          */
-        std::vector<Detector*> get_detectors() { return m_detectors; };
+        std::vector<std::shared_ptr<Detector>> get_detectors() { return m_detectors; };
 
         /**
          * @brief Get the number of detectors this module takes care of
@@ -139,20 +140,20 @@ namespace corryvreckan {
          * @return Pointer to the requested detector
          * @throws ModuleError if detector with given name is not found for this module
          */
-        Detector* get_detector(std::string name);
+        std::shared_ptr<Detector> get_detector(std::string name);
 
         /**
          * @brief Get the reference detector for this setup
          * @return Pointer to the reference detector
          */
-        Detector* get_reference();
+        std::shared_ptr<Detector> get_reference();
 
         /**
          * @brief Get the device under test
          * @return Pointer to the DUT detector.  A nullptr is returned if no DUT is found.
          * FIXME This should allow retrieval of a vector of DUTs
          */
-        Detector* get_dut();
+        std::shared_ptr<Detector> get_dut();
 
         /**
          * @brief Check if this module should act on a given detector
@@ -162,11 +163,15 @@ namespace corryvreckan {
         bool has_detector(std::string name);
 
     private:
+        // Configure the reference detector:
+        void setReference(std::shared_ptr<Detector> reference) { m_reference = reference; };
+        std::shared_ptr<Detector> m_reference;
+
         // Name of the module
         std::string m_name;
 
         // List of detectors to act on
-        std::vector<Detector*> m_detectors;
+        std::vector<std::shared_ptr<Detector>> m_detectors;
     };
 
 } // namespace corryvreckan

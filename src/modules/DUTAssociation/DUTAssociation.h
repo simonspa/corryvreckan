@@ -17,7 +17,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        DUTAssociation(Configuration config, std::vector<Detector*> detectors);
+        DUTAssociation(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~DUTAssociation() = default;
 
         // Functions

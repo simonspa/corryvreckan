@@ -3,7 +3,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-FileReader::FileReader(Configuration config, std::vector<Detector*> detectors)
+FileReader::FileReader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
     m_readPixels = m_config.get<bool>("readPixels", true);

@@ -3,7 +3,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-EtaCorrection::EtaCorrection(Configuration config, std::vector<Detector*> detectors)
+EtaCorrection::EtaCorrection(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
     m_etaFormulaX = m_config.get<std::string>("EtaFormulaX", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
     m_etaFormulaY = m_config.get<std::string>("EtaFormulaY", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
@@ -45,7 +45,7 @@ void EtaCorrection::initialise() {
     }
 }
 
-void EtaCorrection::applyEta(Cluster* cluster, Detector* detector) {
+void EtaCorrection::applyEta(Cluster* cluster, std::shared_ptr<Detector> detector) {
     // Ignore single pixel clusters
     if(cluster->size() == 1) {
         return;

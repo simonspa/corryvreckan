@@ -5,7 +5,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-BasicTracking::BasicTracking(Configuration config, std::vector<Detector*> detectors)
+BasicTracking::BasicTracking(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
     // Default values for cuts
