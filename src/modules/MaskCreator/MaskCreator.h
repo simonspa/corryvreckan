@@ -1,9 +1,9 @@
 #ifndef MASKCREATOR_H
 #define MASKCREATOR_H 1
 
+#include <TCanvas.h>
+#include <TH2D.h>
 #include <iostream>
-#include "TCanvas.h"
-#include "TH2D.h"
 #include "core/module/Module.hpp"
 #include "objects/Pixel.h"
 

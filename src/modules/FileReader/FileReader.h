@@ -1,9 +1,9 @@
 #ifndef FileReader_H
 #define FileReader_H 1
 
+#include <TFile.h>
+#include <TTree.h>
 #include <iostream>
-#include "TFile.h"
-#include "TTree.h"
 #include "core/module/Module.hpp"
 
 namespace corryvreckan {

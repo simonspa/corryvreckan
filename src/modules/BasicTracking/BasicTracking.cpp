@@ -1,5 +1,5 @@
 #include "BasicTracking.h"
-#include "TCanvas.h"
+#include <TCanvas.h>
 #include "objects/KDTree.h"
 
 using namespace corryvreckan;

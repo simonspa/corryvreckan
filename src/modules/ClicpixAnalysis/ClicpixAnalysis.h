@@ -1,12 +1,12 @@
 #ifndef ClicpixAnalysis_H
 #define ClicpixAnalysis_H 1
 
+#include <TCanvas.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TProfile2D.h>
 #include <iostream>
 #include <sstream>
-#include "TCanvas.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TProfile2D.h"
 #include "core/module/Module.hpp"
 
 namespace corryvreckan {

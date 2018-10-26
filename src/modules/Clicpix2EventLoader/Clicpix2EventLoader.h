@@ -1,16 +1,16 @@
 #ifndef Clicpix2EventLoader_H
 #define Clicpix2EventLoader_H 1
 
+#include <TCanvas.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TProfile2D.h>
 #include <dirent.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <stdio.h>
 #include <string.h>
-#include "TCanvas.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TProfile2D.h"
 
 #include "core/module/Module.hpp"
 #include "objects/Cluster.h"

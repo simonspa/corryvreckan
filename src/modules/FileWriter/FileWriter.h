@@ -1,9 +1,9 @@
 #ifndef FileWriter_H
 #define FileWriter_H 1
 
+#include <TFile.h>
+#include <TTree.h>
 #include <iostream>
-#include "TFile.h"
-#include "TTree.h"
 #include "core/module/Module.hpp"
 
 namespace corryvreckan {

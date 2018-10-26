@@ -1,12 +1,12 @@
 #ifndef EtaCorrection_H
 #define EtaCorrection_H 1
 
+#include <TCanvas.h>
+#include <TF1.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TProfile.h>
 #include <iostream>
-#include "TCanvas.h"
-#include "TF1.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TProfile.h"
 
 #include "core/module/Module.hpp"
 #include "objects/Cluster.h"

@@ -2,13 +2,13 @@
 #define ALIGNMENT_H 1
 
 // ROOT includes
-#include "Math/Functor.h"
-#include "Minuit2/Minuit2Minimizer.h"
-#include "TError.h"
-#include "TGraph.h"
-#include "TH1F.h"
-#include "TProfile.h"
-// Local includes
+#include <Math/Functor.h>
+#include <Minuit2/Minuit2Minimizer.h>
+#include <TError.h>
+#include <TGraph.h>
+#include <TH1F.h>
+#include <TProfile.h>
+
 #include "core/module/Module.hpp"
 #include "objects/Cluster.h"
 #include "objects/Track.h"

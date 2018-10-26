@@ -13,9 +13,9 @@
 #include <map>
 #include <vector>
 
-#include "TBrowser.h"
-#include "TDirectory.h"
-#include "TFile.h"
+#include <TBrowser.h>
+#include <TDirectory.h>
+#include <TFile.h>
 
 #include "Module.hpp"
 #include "core/clipboard/Clipboard.hpp"

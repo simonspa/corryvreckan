@@ -1,15 +1,15 @@
 #ifndef ATLASpixEventLoader_H
 #define ATLASpixEventLoader_H 1
 
+#include <TCanvas.h>
+#include <TH1F.h>
+#include <TH2F.h>
 #include <dirent.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <stdio.h>
 #include <string.h>
-#include "TCanvas.h"
-#include "TH1F.h"
-#include "TH2F.h"
 #include "core/module/Module.hpp"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"

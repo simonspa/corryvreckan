@@ -1,14 +1,14 @@
 #ifndef CLICpixEventLoader_H
 #define CLICpixEventLoader_H 1
 
+#include <TCanvas.h>
+#include <TH1F.h>
+#include <TH2F.h>
 #include <dirent.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <stdio.h>
-#include "TCanvas.h"
-#include "TH1F.h"
-#include "TH2F.h"
 #include "core/module/Module.hpp"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"

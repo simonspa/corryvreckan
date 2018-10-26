@@ -11,15 +11,15 @@
 
 // ROOT includes
 #include <RQ_OBJECT.h>
+#include <TCanvas.h>
+#include <TH1F.h>
+#include <TH2F.h>
 #include "TApplication.h"
-#include "TCanvas.h"
 #include "TGCanvas.h"
 #include "TGDockableFrame.h"
 #include "TGFrame.h"
 #include "TGMenu.h"
 #include "TGTextEntry.h"
-#include "TH1F.h"
-#include "TH2F.h"
 #include "TROOT.h"
 #include "TRootEmbeddedCanvas.h"
 #include "TSystem.h"

@@ -1,10 +1,10 @@
 #ifndef TIMEPIX3EVENTLOADER_H
 #define TIMEPIX3EVENTLOADER_H 1
 
+#include <TCanvas.h>
+#include <TH1F.h>
+#include <TH2F.h>
 #include <stdio.h>
-#include "TCanvas.h"
-#include "TH1F.h"
-#include "TH2F.h"
 #include "core/module/Module.hpp"
 #include "objects/Pixel.h"
 #include "objects/SpidrSignal.h"

@@ -1,8 +1,8 @@
 #ifndef TelescopeAnalysis_H
 #define TelescopeAnalysis_H 1
 
+#include <TH1F.h>
 #include <iostream>
-#include "TH1F.h"
 #include "core/module/Module.hpp"
 #include "objects/MCParticle.h"
 #include "objects/Track.h"

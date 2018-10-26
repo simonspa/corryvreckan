@@ -1,13 +1,12 @@
 #ifndef SpatialTracking_H
 #define SpatialTracking_H 1
 
-// Includes
+#include <Math/Functor.h>
+#include <Minuit2/Minuit2Minimizer.h>
+#include <TCanvas.h>
+#include <TH1F.h>
 #include <iostream>
-// ROOT includes
-#include "Math/Functor.h"
-#include "Minuit2/Minuit2Minimizer.h"
-#include "TCanvas.h"
-#include "TH1F.h"
+
 // Local includes
 #include "core/module/Module.hpp"
 #include "objects/Cluster.h"
