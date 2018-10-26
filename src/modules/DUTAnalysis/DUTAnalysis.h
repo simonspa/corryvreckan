@@ -14,7 +14,8 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        DUTAnalysis(Configuration config, std::vector<Detector*> detectors);
+        DUTAnalysis(Configuration config, Detector* detector);
+
         ~DUTAnalysis() {}
 
         // Functions
@@ -22,6 +23,7 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
+    private:
         // Histograms
         TH1F* tracksVersusTime;
         TH1F* associatedTracksVersusTime;

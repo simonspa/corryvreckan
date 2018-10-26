@@ -25,7 +25,8 @@
 
 #define CORRYVRECKAN_MODULE_PREFIX "libCorryvreckanModule"
 #define CORRYVRECKAN_GENERATOR_FUNCTION "corryvreckan_module_generator"
-#define CORRYVRECKAN_UNIQUE_FUNCTION "corryvreckan_module_is_unique"
+#define CORRYVRECKAN_GLOBAL_FUNCTION "corryvreckan_module_is_global"
+#define CORRYVRECKAN_DUT_FUNCTION "corryvreckan_module_is_dut"
 
 using namespace corryvreckan;
 
@@ -273,15 +274,25 @@ void Analysis::load_modules() {
         loaded_libraries_[lib_name] = lib;
 
         // Check if this module is produced once, or once per detector
-        bool unique = true;
-        void* uniqueFunction = dlsym(loaded_libraries_[lib_name], CORRYVRECKAN_UNIQUE_FUNCTION);
+        bool global = true;
+        bool dut_only = false;
+        void* globalFunction = dlsym(loaded_libraries_[lib_name], CORRYVRECKAN_GLOBAL_FUNCTION);
+        void* dutFunction = dlsym(loaded_libraries_[lib_name], CORRYVRECKAN_DUT_FUNCTION);
 
-        // If the unique function was not found, throw an error
-        if(uniqueFunction == nullptr) {
+        // If the global function was not found, throw an error
+        if(globalFunction == nullptr) {
             LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
             throw corryvreckan::DynamicLibraryError(config.getName());
         } else {
-            unique = reinterpret_cast<bool (*)()>(uniqueFunction)(); // NOLINT
+            global = reinterpret_cast<bool (*)()>(globalFunction)(); // NOLINT
+        }
+
+        // If the DUT function was not found, throw an error
+        if(dutFunction == nullptr) {
+            LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
+            throw corryvreckan::DynamicLibraryError(config.getName());
+        } else {
+            dut_only = reinterpret_cast<bool (*)()>(dutFunction)(); // NOLINT
         }
 
         // Apply the module specific options to the module configuration
@@ -295,10 +306,10 @@ void Analysis::load_modules() {
         config.merge(global_config);
 
         // Create the modules from the library
-        if(unique) {
+        if(global) {
             m_modules.emplace_back(create_unique_module(loaded_libraries_[lib_name], config));
         } else {
-            auto modules = create_detector_modules(loaded_libraries_[lib_name], config);
+            auto modules = create_detector_modules(loaded_libraries_[lib_name], config, dut_only);
             for(const auto& mod : modules) {
                 m_modules.push_back(mod);
             }
@@ -368,7 +379,7 @@ Module* Analysis::create_unique_module(void* library, Configuration config) {
     return module;
 }
 
-std::vector<Module*> Analysis::create_detector_modules(void* library, Configuration config) {
+std::vector<Module*> Analysis::create_detector_modules(void* library, Configuration config, bool dut_only) {
     LOG(TRACE) << "Creating instantiations for module " << config.getName() << ", using generator \""
                << CORRYVRECKAN_GENERATOR_FUNCTION << "\"";
 
@@ -417,6 +428,12 @@ std::vector<Module*> Analysis::create_detector_modules(void* library, Configurat
     for(const auto& detector : module_det) {
         // Set the identifier for this module:
         config.setName(module_base_name + "_" + detector->name());
+
+        // If this should only be instantiated for DUTs, skip otherwise:
+        if(dut_only && !detector->isDUT()) {
+            LOG(TRACE) << "Skipping instantiation \"" << config.getName() << "\", detector is no DUT";
+            continue;
+        }
         LOG(TRACE) << "Creating instantiation \"" << config.getName() << "\"";
 
         // Set the log section header

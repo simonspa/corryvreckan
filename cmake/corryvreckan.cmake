@@ -60,12 +60,12 @@ Create the header or provide the alternative class name as first argument")
     SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_corryvreckan_module_class}.h")
 ENDMACRO()
 
-# Put this at the start of every unique module
-MACRO(corryvreckan_unique_module name)
+# Put this at the start of every global module
+MACRO(corryvreckan_global_module name)
     _corryvreckan_module_define_common(${name} ${ARGN})
 
     # Set the unique flag to true
-    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_UNIQUE=1)
+    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_GLOBAL=1)
 ENDMACRO()
 
 # Put this at the start of every detector module
@@ -73,7 +73,17 @@ MACRO(corryvreckan_detector_module name)
     _corryvreckan_module_define_common(${name} ${ARGN})
 
     # Set the unique flag to false
-    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_UNIQUE=0)
+    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_GLOBAL=0)
+    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_DUT=0)
+ENDMACRO()
+
+# Put this at the start of every detector module
+MACRO(corryvreckan_dut_module name)
+    _corryvreckan_module_define_common(${name} ${ARGN})
+
+    # Set the unique flag to false
+    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_GLOBAL=0)
+    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_DUT=1)
 ENDMACRO()
 
 # Add sources to the module
