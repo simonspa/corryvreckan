@@ -5,6 +5,17 @@ echo -e "\nPreparing code basis for a new module:\n"
 # Ask for module name:
 read -p "Name of the module? " MODNAME
 
+# Ask for module type:
+echo -e "Type of the module?\n"
+type=0
+select yn in "global" "detector" "dut"; do
+    case $yn in
+        global ) type=1; break;;
+        detector ) type=2; break;;
+        dut ) type=3; break;;
+    esac
+done
+
 echo "Creating directory and files..."
 
 echo
@@ -52,6 +63,32 @@ sed -e "s/Dummy/$MODNAME/g" "$MODDIR/Dummy/Dummy.cpp" > "$MODDIR/$MODNAME/${MODN
 opt=-i
 platform=`uname`
 if [ "$platform" == "Darwin" ]; then opt="-i \"\""; fi
+
+# Change to detector or dut module type if necessary:
+if [ "$type" != 1 ]; then
+
+  # Prepare sed commands to change to per detector module
+  # Change module type in CMakeLists
+  if [ "$type" == 3 ]; then
+    command="sed $opt 's/_GLOBAL_/_DUT_/g' $MODDIR/$MODNAME/CMakeLists.txt"
+  else
+    command="sed $opt 's/_GLOBAL_/_DETECTOR_/g' $MODDIR/$MODNAME/CMakeLists.txt"
+  fi
+  eval $command
+
+  # Change header file
+  command="sed ${opt} \
+      -e 's/param detectors.*/param detector Pointer to the detector for this module instance/g' \
+      -e 's/std::vector<Detector\*> detectors/Detector\* detector/g' \
+      $MODDIR/$MODNAME/${MODNAME}.h"
+  eval $command
+  # Change implementation file
+  command="sed ${opt} \
+      -e 's/std::vector<Detector\*> detectors/Detector\* detector/g' \
+      -e 's/move(detectors)/move\(detector\)/g' \
+      $MODDIR/$MODNAME/${MODNAME}.cpp"
+  eval $command
+fi
 
 # Print a summary of the module created:
 FINALPATH=`realpath $MODDIR/$MODNAME`

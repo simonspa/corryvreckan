@@ -1,5 +1,15 @@
-#ifndef Dummy_H
-#define Dummy_H 1
+/**
+ * @file
+ * @brief Definition of [Dummy] module
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ *
+ * Contains minimal dummy module to use as a start for the development of your own module
+ *
+ * Refer to the User's Manual for more details.
+ */
 
 #include <iostream>
 #include "TCanvas.h"
@@ -12,27 +22,37 @@
 
 namespace corryvreckan {
     /** @ingroup Modules
+     * @brief Module to do function
+     *
+     * More detailed explanation of module
      */
     class Dummy : public Module {
 
     public:
-        // Constructors and destructors
+        /**
+         * @brief Constructor for this unique module
+         * @param config Configuration object for this module as retrieved from the steering file
+         * @param detectors Vector of pointers to the detectors
+         */
         Dummy(Configuration config, std::vector<Detector*> detectors);
-        ~Dummy() {}
 
-        // Functions
+        /**
+         * @brief [Initialise this module]
+         */
         void initialise();
+
+        /**
+         * @brief [Run the function of this module]
+         */
         StatusCode run(Clipboard* clipboard);
+
+        /**
+         * @brief [Finalise module]
+         */
         void finalise();
 
-        // Histograms for several devices
-        std::map<std::string, TH2F*> plotPerDevice;
-
-        // Single histograms
-        TH1F* singlePlot;
-
-        // Member variables
+    private:
         int m_eventNumber;
     };
+
 } // namespace corryvreckan
-#endif // Dummy_H
