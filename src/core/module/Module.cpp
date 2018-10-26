@@ -11,13 +11,11 @@
 using namespace corryvreckan;
 
 Module::Module(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(config, std::vector<std::shared_ptr<Detector>>{detector}) {}
+    : Module(std::move(config), std::vector<std::shared_ptr<Detector>>{detector}) {}
 
 Module::~Module() {}
 
-Module::Module(Configuration config, std::vector<std::shared_ptr<Detector>> detectors) {
-    m_name = config.getName();
-    m_config = config;
+Module::Module(Configuration config, std::vector<std::shared_ptr<Detector>> detectors) : m_config(std::move(config)) {
     m_detectors = detectors;
     IFLOG(TRACE) {
         std::stringstream det;
@@ -26,6 +24,26 @@ Module::Module(Configuration config, std::vector<std::shared_ptr<Detector>> dete
         }
         LOG(TRACE) << "Module determined to run on detectors: " << det.str();
     }
+}
+
+/**
+ * @throws InvalidModuleActionException If this method is called from the constructor
+ *
+ * This name is guaranteed to be unique for every single instantiation of all modules
+ */
+std::string Module::getUniqueName() const {
+    std::string unique_name = get_identifier().getUniqueName();
+    if(unique_name.empty()) {
+        throw InvalidModuleActionException("Cannot uniquely identify module in constructor");
+    }
+    return unique_name;
+}
+
+void Module::set_identifier(ModuleIdentifier identifier) {
+    identifier_ = std::move(identifier);
+}
+ModuleIdentifier Module::get_identifier() const {
+    return identifier_;
 }
 
 std::shared_ptr<Detector> Module::get_detector(std::string name) {

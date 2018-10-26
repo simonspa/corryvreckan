@@ -36,6 +36,23 @@ namespace corryvreckan {
 
     /**
      * @ingroup Exceptions
+     * @brief Informs that a module executes an action is it not allowed to do in particular state
+     *
+     * A module for example tries to accesses special methods as Module::getOutputPath which are not allowed in the
+     * constructors, or sends a message outside the Module::run method.
+     */
+    class InvalidModuleActionException : public LogicError {
+    public:
+        /**
+         * @brief Constructs error with a description
+         * @param message Text explaining the problem
+         */
+        // TODO [doc] the module itself is missing
+        explicit InvalidModuleActionException(std::string message) { error_message_ = std::move(message); }
+    };
+
+    /**
+     * @ingroup Exceptions
      * @brief General exception for modules if something goes wrong
      * @note Only runtime error that should be raised directly by modules
      *

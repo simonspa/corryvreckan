@@ -311,11 +311,14 @@ void ModuleManager::load_modules() {
 
         // Create the modules from the library
         if(global) {
-            m_modules.emplace_back(create_unique_module(loaded_libraries_[lib_name], config));
+            auto module = create_unique_module(loaded_libraries_[lib_name], config);
+            m_modules.push_back(module.second);
+            m_modules.back()->set_identifier(module.first);
         } else {
             auto modules = create_detector_modules(loaded_libraries_[lib_name], config, dut_only);
             for(const auto& mod : modules) {
-                m_modules.push_back(mod);
+                m_modules.push_back(mod.second);
+                m_modules.back()->set_identifier(mod.first);
             }
         }
     }
@@ -327,9 +330,12 @@ void ModuleManager::load_modules() {
     LOG_PROGRESS(STATUS, "MOD_LOAD_LOOP") << "Loaded " << configs.size() << " modules";
 }
 
-Module* ModuleManager::create_unique_module(void* library, Configuration config) {
-    LOG(TRACE) << "Creating module " << config.getName() << ", using generator \"" << CORRYVRECKAN_GENERATOR_FUNCTION
-               << "\"";
+std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* library, Configuration config) {
+    // Create the identifier
+    ModuleIdentifier identifier(config.getName(), "", 0);
+
+    LOG(TRACE) << "Creating module " << identifier.getUniqueName() << ", using generator \""
+               << CORRYVRECKAN_GENERATOR_FUNCTION << "\"";
 
     // Get the generator function for this module
     void* generator = dlsym(library, CORRYVRECKAN_GENERATOR_FUNCTION);
@@ -386,10 +392,11 @@ Module* ModuleManager::create_unique_module(void* library, Configuration config)
     set_module_after(old_settings);
 
     // Return the module to the analysis
-    return module;
+    return std::make_pair(identifier, module);
 }
 
-std::vector<Module*> ModuleManager::create_detector_modules(void* library, Configuration config, bool dut_only) {
+std::vector<std::pair<ModuleIdentifier, Module*>>
+ModuleManager::create_detector_modules(void* library, Configuration config, bool dut_only) {
     LOG(TRACE) << "Creating instantiations for module " << config.getName() << ", using generator \""
                << CORRYVRECKAN_GENERATOR_FUNCTION << "\"";
 
@@ -433,28 +440,26 @@ std::vector<Module*> ModuleManager::create_detector_modules(void* library, Confi
         }
     }
 
-    std::vector<Module*> modules;
+    std::vector<std::pair<ModuleIdentifier, Module*>> modules;
     auto module_base_name = config.getName();
     for(const auto& detector : module_det) {
-        // Set the identifier for this module:
-        config.setName(module_base_name + "_" + detector->name());
-
+        ModuleIdentifier identifier(module_base_name, detector->name(), 0);
         // If this should only be instantiated for DUTs, skip otherwise:
         if(dut_only && !detector->isDUT()) {
-            LOG(TRACE) << "Skipping instantiation \"" << config.getName() << "\", detector is no DUT";
+            LOG(TRACE) << "Skipping instantiation \"" << identifier.getUniqueName() << "\", detector is no DUT";
             continue;
         }
-        LOG(TRACE) << "Creating instantiation \"" << config.getName() << "\"";
+        LOG(TRACE) << "Creating instantiation \"" << identifier.getUniqueName() << "\"";
 
         // Set the log section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "C:";
-        section_name += config.getName();
+        section_name += identifier.getUniqueName();
         Log::setSection(section_name);
         // Set module specific log settings
-        auto old_settings = set_module_before(config.getName(), config);
+        auto old_settings = set_module_before(identifier.getUniqueName(), config);
         // Build module
-        modules.emplace_back(module_generator(config, detector));
+        modules.emplace_back(identifier, module_generator(config, detector));
         // Reset log
         Log::setSection(old_section_name);
         set_module_after(old_settings);
@@ -504,12 +509,12 @@ void ModuleManager::run() {
             // Set run module section header
             std::string old_section_name = Log::getSection();
             std::string section_name = "R:";
-            section_name += module->getName();
+            section_name += module->getUniqueName();
             Log::setSection(section_name);
             // Set module specific settings
-            auto old_settings = set_module_before(module->getName(), module->getConfig());
+            auto old_settings = set_module_before(module->getUniqueName(), module->getConfig());
             // Change to the output file directory
-            m_directory->cd(module->getName().c_str());
+            m_directory->cd(module->getUniqueName().c_str());
             StatusCode check = module->run(m_clipboard);
             // Reset logging
             Log::setSection(old_section_name);
@@ -584,16 +589,16 @@ void ModuleManager::initialiseAll() {
         // Set init module section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "I:";
-        section_name += module->getName();
+        section_name += module->getUniqueName();
         Log::setSection(section_name);
         // Set module specific settings
-        auto old_settings = set_module_before(module->getName(), module->getConfig());
+        auto old_settings = set_module_before(module->getUniqueName(), module->getConfig());
 
         // Make a new folder in the output file
         m_directory->cd();
-        m_directory->mkdir(module->getName().c_str());
-        m_directory->cd(module->getName().c_str());
-        LOG(INFO) << "Initialising \"" << module->getName() << "\"";
+        m_directory->mkdir(module->getUniqueName().c_str());
+        m_directory->cd(module->getUniqueName().c_str());
+        LOG(INFO) << "Initialising \"" << module->getUniqueName() << "\"";
         // Initialise the module
         module->initialise();
 
@@ -612,13 +617,13 @@ void ModuleManager::finaliseAll() {
         // Set init module section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "F:";
-        section_name += module->getName();
+        section_name += module->getUniqueName();
         Log::setSection(section_name);
         // Set module specific settings
-        auto old_settings = set_module_before(module->getName(), module->getConfig());
+        auto old_settings = set_module_before(module->getUniqueName(), module->getConfig());
 
         // Change to the output file directory
-        m_directory->cd(module->getName().c_str());
+        m_directory->cd(module->getUniqueName().c_str());
         // Finalise the module
         module->finalise();
         // Reset logging
@@ -659,7 +664,7 @@ void ModuleManager::finaliseAll() {
 void ModuleManager::timing() {
     LOG(STATUS) << "===============| Wall-clock timing (seconds) |================";
     for(auto& module : m_modules) {
-        LOG(STATUS) << std::setw(25) << module->getName() << "  --  " << std::fixed << std::setprecision(5)
+        LOG(STATUS) << std::setw(25) << module->getUniqueName() << "  --  " << std::fixed << std::setprecision(5)
                     << module_execution_time_[module] << " = " << std::setprecision(9)
                     << module_execution_time_[module] / m_events << " s/evt";
     }

@@ -11,6 +11,7 @@
 
 #include <string>
 
+#include "ModuleIdentifier.hpp"
 #include "core/clipboard/Clipboard.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/detector/Detector.hpp"
@@ -83,10 +84,11 @@ namespace corryvreckan {
         Module& operator=(const Module&) = delete;
 
         /**
-         * @brief Get the name of this module
-         * @return Name of the module
+         * @brief Get the unique name of this module
+         * @return Unique name
+         * @note Can be used to interact with ROOT objects that require an unique name
          */
-        std::string getName() { return m_name; }
+        std::string getUniqueName() const;
 
         /**
          * @brief Get the configuration for this module
@@ -163,12 +165,21 @@ namespace corryvreckan {
         bool has_detector(std::string name);
 
     private:
+        /**
+         * @brief Set the module identifier for internal use
+         * @param identifier Identifier of the instantiation
+         */
+        void set_identifier(ModuleIdentifier identifier);
+        /**
+         * @brief Get the module identifier for internal use
+         * @return Identifier of the instantiation
+         */
+        ModuleIdentifier get_identifier() const;
+        ModuleIdentifier identifier_;
+
         // Configure the reference detector:
         void setReference(std::shared_ptr<Detector> reference) { m_reference = reference; };
         std::shared_ptr<Detector> m_reference;
-
-        // Name of the module
-        std::string m_name;
 
         // List of detectors to act on
         std::vector<std::shared_ptr<Detector>> m_detectors;
