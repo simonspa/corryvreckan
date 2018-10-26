@@ -3,7 +3,6 @@ INCLUDE_DIRECTORIES(SYSTEM ${CORRYVRECKAN_DEPS_INCLUDE_DIRS})
 
 # Create core library
 ADD_LIBRARY(CorryvreckanCore SHARED
-    Analysis.cpp
     detector/Detector.cpp
     utils/log.cpp
     utils/unit.cpp
@@ -14,6 +13,7 @@ ADD_LIBRARY(CorryvreckanCore SHARED
     config/Configuration.cpp
     config/exceptions.cpp
     module/Module.cpp
+    module/ModuleManager.cpp
 )
 
 # Link the dependencies
