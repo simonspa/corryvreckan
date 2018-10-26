@@ -50,7 +50,7 @@ namespace corryvreckan {
      * @param detectors Vector of pointers to all detectors to be processed by this module
      * @return Instantiation of the module
      *
-     * Internal method for the dynamic loading in the central Analysis class. Forwards the supplied arguments to the
+     * Internal method for the dynamic loading in the central ModuleManager class. Forwards the supplied arguments to the
      * constructor and returns an instantiation.
      */
     Module* corryvreckan_module_generator(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
@@ -72,7 +72,7 @@ namespace corryvreckan {
      * @param detector Pointer to the Detector object this module is bound to
      * @return Instantiation of the module
      *
-     * Internal method for the dynamic loading in the central Analysis class. Forwards the supplied arguments to the
+     * Internal method for the dynamic loading in the central ModuleManager class. Forwards the supplied arguments to the
      * constructor and returns an instantiation
      */
     Module* corryvreckan_module_generator(Configuration config, std::shared_ptr<Detector> detector);
@@ -94,7 +94,7 @@ namespace corryvreckan {
      * @param detector Pointer to the Detector object this module is bound to
      * @return Instantiation of the module
      *
-     * Internal method for the dynamic loading in the central Analysis class. Forwards the supplied arguments to the
+     * Internal method for the dynamic loading in the central ModuleManager class. Forwards the supplied arguments to the
      * constructor and returns an instantiation
      */
     Module* corryvreckan_module_generator(Configuration config, std::shared_ptr<Detector> detector);

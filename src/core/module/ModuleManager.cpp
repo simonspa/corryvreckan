@@ -14,9 +14,9 @@
 #include <TSystem.h>
 
 // Local include files
-#include "Analysis.hpp"
-#include "module/exceptions.h"
-#include "utils/log.h"
+#include "ModuleManager.hpp"
+#include "core/utils/log.h"
+#include "exceptions.h"
 
 #include <chrono>
 #include <dlfcn.h>
@@ -31,7 +31,7 @@
 using namespace corryvreckan;
 
 // Default constructor
-Analysis::Analysis(std::string config_file_name, std::vector<std::string> options) : m_terminate(false) {
+ModuleManager::ModuleManager(std::string config_file_name, std::vector<std::string> options) : m_terminate(false) {
 
     LOG(TRACE) << "Loading Corryvreckan";
 
@@ -98,7 +98,7 @@ Analysis::Analysis(std::string config_file_name, std::vector<std::string> option
     m_clipboard = new Clipboard();
 }
 
-void Analysis::load() {
+void ModuleManager::load() {
 
     add_units();
 
@@ -106,7 +106,7 @@ void Analysis::load() {
     load_modules();
 }
 
-void Analysis::load_detectors() {
+void ModuleManager::load_detectors() {
 
     // Flag for the reference detector
     bool found_reference = false;
@@ -162,7 +162,7 @@ void Analysis::load_detectors() {
     });
 }
 
-void Analysis::load_modules() {
+void ModuleManager::load_modules() {
     std::vector<Configuration> configs = conf_mgr_->getConfigurations();
 
     // Create histogram output file
@@ -327,7 +327,7 @@ void Analysis::load_modules() {
     LOG_PROGRESS(STATUS, "MOD_LOAD_LOOP") << "Loaded " << configs.size() << " modules";
 }
 
-Module* Analysis::create_unique_module(void* library, Configuration config) {
+Module* ModuleManager::create_unique_module(void* library, Configuration config) {
     LOG(TRACE) << "Creating module " << config.getName() << ", using generator \"" << CORRYVRECKAN_GENERATOR_FUNCTION
                << "\"";
 
@@ -389,7 +389,7 @@ Module* Analysis::create_unique_module(void* library, Configuration config) {
     return module;
 }
 
-std::vector<Module*> Analysis::create_detector_modules(void* library, Configuration config, bool dut_only) {
+std::vector<Module*> ModuleManager::create_detector_modules(void* library, Configuration config, bool dut_only) {
     LOG(TRACE) << "Creating instantiations for module " << config.getName() << ", using generator \""
                << CORRYVRECKAN_GENERATOR_FUNCTION << "\"";
 
@@ -465,7 +465,7 @@ std::vector<Module*> Analysis::create_detector_modules(void* library, Configurat
 }
 
 // Run the analysis loop - this initialises, runs and finalises all modules
-void Analysis::run() {
+void ModuleManager::run() {
 
     // Check if we have an event or track limit:
     int number_of_events = global_config.get<int>("number_of_events", -1);
@@ -572,12 +572,12 @@ void Analysis::run() {
     }
 }
 
-void Analysis::terminate() {
+void ModuleManager::terminate() {
     m_terminate = true;
 }
 
 // Initalise all modules
-void Analysis::initialiseAll() {
+void ModuleManager::initialiseAll() {
     // Loop over all modules and initialise them
     LOG(STATUS) << "=================| Initialising modules |==================";
     for(auto& module : m_modules) {
@@ -604,7 +604,7 @@ void Analysis::initialiseAll() {
 }
 
 // Finalise all modules
-void Analysis::finaliseAll() {
+void ModuleManager::finaliseAll() {
 
     // Loop over all modules and finalise them
     LOG(STATUS) << "===================| Finalising modules |===================";
@@ -656,7 +656,7 @@ void Analysis::finaliseAll() {
 }
 
 // Display timing statistics for each module, over all events and per event
-void Analysis::timing() {
+void ModuleManager::timing() {
     LOG(STATUS) << "===============| Wall-clock timing (seconds) |================";
     for(auto& module : m_modules) {
         LOG(STATUS) << std::setw(25) << module->getName() << "  --  " << std::fixed << std::setprecision(5)
@@ -667,7 +667,7 @@ void Analysis::timing() {
 }
 
 // Helper functions to set the module specific log settings if necessary
-std::tuple<LogLevel, LogFormat> Analysis::set_module_before(const std::string&, const Configuration& config) {
+std::tuple<LogLevel, LogFormat> ModuleManager::set_module_before(const std::string&, const Configuration& config) {
     // Set new log level if necessary
     LogLevel prev_level = Log::getReportingLevel();
     if(config.has("log_level")) {
@@ -702,7 +702,7 @@ std::tuple<LogLevel, LogFormat> Analysis::set_module_before(const std::string&, 
 
     return std::make_tuple(prev_level, prev_format);
 }
-void Analysis::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
+void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
     // Reset the previous log level
     LogLevel cur_level = Log::getReportingLevel();
     LogLevel old_level = std::get<0>(prev);
@@ -720,7 +720,7 @@ void Analysis::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
     }
 }
 
-void Analysis::add_units() {
+void ModuleManager::add_units() {
 
     LOG(TRACE) << "Adding physical units";
 

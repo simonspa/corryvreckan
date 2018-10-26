@@ -17,10 +17,10 @@
 #include "TDirectory.h"
 #include "TFile.h"
 
-#include "clipboard/Clipboard.hpp"
-#include "config/ConfigManager.hpp"
-#include "detector/Detector.hpp"
-#include "module/Module.hpp"
+#include "Module.hpp"
+#include "core/clipboard/Clipboard.hpp"
+#include "core/config/ConfigManager.hpp"
+#include "core/detector/Detector.hpp"
 
 namespace corryvreckan {
 
@@ -32,12 +32,12 @@ namespace corryvreckan {
      * runs each module sequentially and passes the clipboard between them (erasing it at the end of each run sequence). When
      * an module returns a Failure code, the event processing will stop.
      */
-    class Analysis {
+    class ModuleManager {
 
     public:
         // Constructors and destructors
-        explicit Analysis(std::string config_file_name, std::vector<std::string> options = std::vector<std::string>());
-        virtual ~Analysis(){};
+        explicit ModuleManager(std::string config_file_name, std::vector<std::string> options = std::vector<std::string>());
+        virtual ~ModuleManager(){};
 
         // Member functions
         void load();

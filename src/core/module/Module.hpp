@@ -49,7 +49,7 @@ namespace corryvreckan {
      * - Module::finalise(): for finalising the module at the end
      */
     class Module {
-        friend class Analysis;
+        friend class ModuleManager;
 
     public:
         /**
