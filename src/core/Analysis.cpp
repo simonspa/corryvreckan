@@ -129,7 +129,7 @@ void Analysis::load_detectors() {
                     global_config, "detectors_file", "Detector " + detector.getName() + " defined twice");
             }
 
-            LOG(INFO) << "Detector: " << name;
+            LOG_PROGRESS(STATUS, "DET_LOAD_LOOP") << "Loading detector " << name;
             Detector* det_parm = new Detector(detector);
 
             // Check if we already found a reference plane:
@@ -150,7 +150,7 @@ void Analysis::load_detectors() {
         throw InvalidValueError(global_config, "detectors_file", "Found no detector marked as reference");
     }
 
-    LOG(STATUS) << "Loaded " << detectors.size() << " detectors";
+    LOG_PROGRESS(STATUS, "DET_LOAD_LOOP") << "Loaded " << detectors.size() << " detectors";
 
     // Finally, sort the list of detectors by z position (from lowest to highest)
     std::sort(detectors.begin(), detectors.end(), [](Detector* det1, Detector* det2) {
@@ -177,7 +177,7 @@ void Analysis::load_modules() {
         // Load library for each module. Libraries are named (by convention + CMAKE libCorryvreckanModule Name.suffix
         std::string lib_name =
             std::string(CORRYVRECKAN_MODULE_PREFIX).append(config.getName()).append(SHARED_LIBRARY_SUFFIX);
-        LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loading module " << config.getName();
+        LOG_PROGRESS(STATUS, "MOD_LOAD_LOOP") << "Loading module " << config.getName();
 
         void* lib = nullptr;
         bool load_error = false;
@@ -315,7 +315,7 @@ void Analysis::load_modules() {
             }
         }
     }
-    LOG(STATUS) << "Loaded " << configs.size() << " modules";
+    LOG_PROGRESS(STATUS, "MOD_LOAD_LOOP") << "Loaded " << configs.size() << " modules";
 }
 
 Module* Analysis::create_unique_module(void* library, Configuration config) {
