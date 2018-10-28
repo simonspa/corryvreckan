@@ -27,6 +27,7 @@
 #define CORRYVRECKAN_GENERATOR_FUNCTION "corryvreckan_module_generator"
 #define CORRYVRECKAN_GLOBAL_FUNCTION "corryvreckan_module_is_global"
 #define CORRYVRECKAN_DUT_FUNCTION "corryvreckan_module_is_dut"
+#define CORRYVRECKAN_TYPE_FUNCTION "corryvreckan_detector_types"
 
 using namespace corryvreckan;
 
@@ -278,26 +279,19 @@ void ModuleManager::load_modules() {
         loaded_libraries_[lib_name] = lib;
 
         // Check if this module is produced once, or once per detector
-        bool global = true;
-        bool dut_only = false;
         void* globalFunction = dlsym(loaded_libraries_[lib_name], CORRYVRECKAN_GLOBAL_FUNCTION);
         void* dutFunction = dlsym(loaded_libraries_[lib_name], CORRYVRECKAN_DUT_FUNCTION);
+        void* typeFunction = dlsym(loaded_libraries_[lib_name], CORRYVRECKAN_TYPE_FUNCTION);
 
         // If the global function was not found, throw an error
-        if(globalFunction == nullptr) {
+        if(globalFunction == nullptr || dutFunction == nullptr || typeFunction == nullptr) {
             LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
             throw corryvreckan::DynamicLibraryError(config.getName());
-        } else {
-            global = reinterpret_cast<bool (*)()>(globalFunction)(); // NOLINT
         }
 
-        // If the DUT function was not found, throw an error
-        if(dutFunction == nullptr) {
-            LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
-            throw corryvreckan::DynamicLibraryError(config.getName());
-        } else {
-            dut_only = reinterpret_cast<bool (*)()>(dutFunction)(); // NOLINT
-        }
+        bool global = reinterpret_cast<bool (*)()>(globalFunction)();                                      // NOLINT
+        bool dut_only = reinterpret_cast<bool (*)()>(dutFunction)();                                       // NOLINT
+        std::vector<std::string> types = reinterpret_cast<std::vector<std::string> (*)()>(typeFunction)(); // NOLINT
 
         // Apply the module specific options to the module configuration
         conf_mgr_->applyOptions(config.getName(), config);
@@ -311,11 +305,11 @@ void ModuleManager::load_modules() {
 
         // Create the modules from the library
         if(global) {
-            auto module = create_unique_module(loaded_libraries_[lib_name], config);
+            auto module = create_unique_module(loaded_libraries_[lib_name], config, types);
             m_modules.push_back(module.second);
             m_modules.back()->set_identifier(module.first);
         } else {
-            auto modules = create_detector_modules(loaded_libraries_[lib_name], config, dut_only);
+            auto modules = create_detector_modules(loaded_libraries_[lib_name], config, dut_only, types);
             for(const auto& mod : modules) {
                 m_modules.push_back(mod.second);
                 m_modules.back()->set_identifier(mod.first);
@@ -330,7 +324,8 @@ void ModuleManager::load_modules() {
     LOG_PROGRESS(STATUS, "MOD_LOAD_LOOP") << "Loaded " << configs.size() << " modules";
 }
 
-std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* library, Configuration config) {
+std::pair<ModuleIdentifier, Module*>
+ModuleManager::create_unique_module(void* library, Configuration config, std::vector<std::string>) {
     // Create the identifier
     ModuleIdentifier identifier(config.getName(), "", 0);
 
@@ -396,7 +391,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* l
 }
 
 std::vector<std::pair<ModuleIdentifier, Module*>>
-ModuleManager::create_detector_modules(void* library, Configuration config, bool dut_only) {
+ModuleManager::create_detector_modules(void* library, Configuration config, bool dut_only, std::vector<std::string> types) {
     LOG(TRACE) << "Creating instantiations for module " << config.getName() << ", using generator \""
                << CORRYVRECKAN_GENERATOR_FUNCTION << "\"";
 
@@ -447,6 +442,14 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
         // If this should only be instantiated for DUTs, skip otherwise:
         if(dut_only && !detector->isDUT()) {
             LOG(TRACE) << "Skipping instantiation \"" << identifier.getUniqueName() << "\", detector is no DUT";
+            continue;
+        }
+
+        // Do not instantiate module if detector type is not mentioned as supported:
+        auto detectortype = detector->type();
+        std::transform(detectortype.begin(), detectortype.end(), detectortype.begin(), ::tolower);
+        if(!types.empty() && std::find(types.begin(), types.end(), detectortype) == types.end()) {
+            LOG(TRACE) << "Skipping instantiation \"" << identifier.getUniqueName() << "\", detector type mismatch";
             continue;
         }
         LOG(TRACE) << "Creating instantiation \"" << identifier.getUniqueName() << "\"";

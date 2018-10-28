@@ -78,9 +78,10 @@ namespace corryvreckan {
         std::atomic<bool> m_terminate;
         std::unique_ptr<corryvreckan::ConfigManager> conf_mgr_;
 
-        std::pair<ModuleIdentifier, Module*> create_unique_module(void* library, corryvreckan::Configuration config);
+        std::pair<ModuleIdentifier, Module*>
+        create_unique_module(void* library, corryvreckan::Configuration config, std::vector<std::string> types);
         std::vector<std::pair<ModuleIdentifier, Module*>>
-        create_detector_modules(void* library, Configuration config, bool dut_only);
+        create_detector_modules(void* library, Configuration config, bool dut_only, std::vector<std::string> types);
 
         std::tuple<LogLevel, LogFormat> set_module_before(const std::string&, const Configuration& config);
         void set_module_after(std::tuple<LogLevel, LogFormat> prev);

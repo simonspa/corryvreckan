@@ -18,7 +18,11 @@
 #error "This header should only be automatically included during the build"
 #endif
 
+#define XSTR(...) #__VA_ARGS__
+#define STR(...) XSTR(__VA_ARGS__)
+
 #include <memory>
+#include <sstream>
 #include <utility>
 
 #include "core/config/Configuration.hpp"
@@ -43,6 +47,28 @@ namespace corryvreckan {
      */
     bool corryvreckan_module_is_dut();
 
+    /**
+     * @brief Returns a list of detector types this module can run on
+     *
+     * Used by the ModuleManager to determine if module should instantiate for a given detector
+     */
+    std::vector<std::string> corryvreckan_detector_types();
+    std::vector<std::string> corryvreckan_detector_types() {
+#if defined(CORRYVRECKAN_DETECTOR_TYPE) || defined(DOXYGEN)
+        auto tokenstream = std::stringstream(STR(CORRYVRECKAN_DETECTOR_TYPE));
+        std::vector<std::string> tokens;
+        while(tokenstream.good()) {
+            std::string token;
+            getline(tokenstream, token, ',');
+            std::transform(token.begin(), token.end(), token.begin(), ::tolower);
+            tokens.push_back(token);
+        }
+        return tokens;
+#else
+        return std::vector<std::string>();
+#endif
+    }
+
 #if CORRYVRECKAN_MODULE_GLOBAL || defined(DOXYGEN)
     /**
      * @brief Instantiates an unique module
@@ -62,7 +88,6 @@ namespace corryvreckan {
     bool corryvreckan_module_is_global() { return true; }
     // Globale modules cannot be DUT modules
     bool corryvreckan_module_is_dut() { return false; }
-
 #endif
 
 #if(!CORRYVRECKAN_MODULE_GLOBAL && !CORRYVRECKAN_MODULE_DUT) || defined(DOXYGEN)
