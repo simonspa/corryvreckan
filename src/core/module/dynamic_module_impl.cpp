@@ -52,20 +52,13 @@ namespace corryvreckan {
      *
      * Used by the ModuleManager to determine if module should instantiate for a given detector
      */
-    std::vector<std::string> corryvreckan_detector_types();
-    std::vector<std::string> corryvreckan_detector_types() {
+    char* corryvreckan_detector_types();
+    char* corryvreckan_detector_types() {
 #if defined(CORRYVRECKAN_DETECTOR_TYPE) || defined(DOXYGEN)
-        auto tokenstream = std::stringstream(STR(CORRYVRECKAN_DETECTOR_TYPE));
-        std::vector<std::string> tokens;
-        while(tokenstream.good()) {
-            std::string token;
-            getline(tokenstream, token, ',');
-            std::transform(token.begin(), token.end(), token.begin(), ::tolower);
-            tokens.push_back(token);
-        }
-        return tokens;
+        auto types = new std::string(STR(CORRYVRECKAN_DETECTOR_TYPE));
+        return const_cast<char*>(types->c_str());
 #else
-        return std::vector<std::string>();
+        return new char();
 #endif
     }
 

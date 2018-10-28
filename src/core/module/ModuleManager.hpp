@@ -65,6 +65,8 @@ namespace corryvreckan {
 
         std::shared_ptr<Detector> m_reference;
 
+        // Create string vector for detector types:
+        std::vector<std::string> get_type_vector(char* tokens);
         // Log file if specified
         std::ofstream log_file_;
 

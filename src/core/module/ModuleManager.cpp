@@ -289,9 +289,11 @@ void ModuleManager::load_modules() {
             throw corryvreckan::DynamicLibraryError(config.getName());
         }
 
-        bool global = reinterpret_cast<bool (*)()>(globalFunction)();                                      // NOLINT
-        bool dut_only = reinterpret_cast<bool (*)()>(dutFunction)();                                       // NOLINT
-        std::vector<std::string> types = reinterpret_cast<std::vector<std::string> (*)()>(typeFunction)(); // NOLINT
+        bool global = reinterpret_cast<bool (*)()>(globalFunction)();      // NOLINT
+        bool dut_only = reinterpret_cast<bool (*)()>(dutFunction)();       // NOLINT
+        char* type_tokens = reinterpret_cast<char* (*)()>(typeFunction)(); // NOLINT
+
+        std::vector<std::string> types = get_type_vector(type_tokens);
 
         // Apply the module specific options to the module configuration
         conf_mgr_->applyOptions(config.getName(), config);
@@ -322,6 +324,22 @@ void ModuleManager::load_modules() {
         module->setReference(m_reference);
     }
     LOG_PROGRESS(STATUS, "MOD_LOAD_LOOP") << "Loaded " << configs.size() << " modules";
+}
+
+std::vector<std::string> ModuleManager::get_type_vector(char* type_tokens) {
+    std::vector<std::string> types;
+
+    std::stringstream tokenstream(type_tokens);
+    while(tokenstream.good()) {
+        std::string token;
+        getline(tokenstream, token, ',');
+        if(token.empty()) {
+            continue;
+        }
+        std::transform(token.begin(), token.end(), token.begin(), ::tolower);
+        types.push_back(token);
+    }
+    return types;
 }
 
 std::pair<ModuleIdentifier, Module*>
