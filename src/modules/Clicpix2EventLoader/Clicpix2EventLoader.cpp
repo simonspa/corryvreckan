@@ -9,17 +9,13 @@ using namespace std;
 using namespace caribou;
 using namespace clicpix2_utils;
 
-Clicpix2EventLoader::Clicpix2EventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
+Clicpix2EventLoader::Clicpix2EventLoader(Configuration config, std::shared_ptr<Detector> detector)
+    : Module(std::move(config), detector), m_detector(detector) {
 
     discardZeroToT = m_config.get<bool>("discardZeroToT", false);
 }
 
 void Clicpix2EventLoader::initialise() {
-    auto det = get_dut();
-    if(det->type() != "CLICpix2") {
-        LOG(ERROR) << "DUT not of type CLICpix2";
-    }
 
     // Take input directory from global parameters
     string inputDirectory = m_config.get<std::string>("inputDirectory");
@@ -116,29 +112,49 @@ void Clicpix2EventLoader::initialise() {
     }
 
     // Make histograms for debugging
-    hHitMap = new TH2F("hitMap", "hitMap", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
-    hHitMapDiscarded = new TH2F(
-        "hitMapDiscarded", "hitMapDiscarded", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
+    hHitMap = new TH2F("hitMap",
+                       "hitMap",
+                       m_detector->nPixelsX(),
+                       0,
+                       m_detector->nPixelsX(),
+                       m_detector->nPixelsY(),
+                       0,
+                       m_detector->nPixelsY());
+    hHitMapDiscarded = new TH2F("hitMapDiscarded",
+                                "hitMapDiscarded",
+                                m_detector->nPixelsX(),
+                                0,
+                                m_detector->nPixelsX(),
+                                m_detector->nPixelsY(),
+                                0,
+                                m_detector->nPixelsY());
 
     hPixelToT = new TH1F("pixelToT", "pixelToT", 32, 0, 31);
     hPixelToTMap = new TProfile2D("pixelToTMap",
                                   "pixelToTMap",
-                                  det->nPixelsX(),
+                                  m_detector->nPixelsX(),
                                   0,
-                                  det->nPixelsX(),
-                                  det->nPixelsY(),
+                                  m_detector->nPixelsX(),
+                                  m_detector->nPixelsY(),
                                   0,
-                                  det->nPixelsY(),
+                                  m_detector->nPixelsY(),
                                   0,
                                   maxcounter - 1);
     hPixelToA = new TH1F("pixelToA", "pixelToA", maxcounter, 0, maxcounter - 1);
     hPixelCnt = new TH1F("pixelCnt", "pixelCnt", maxcounter, 0, maxcounter - 1);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 1000, 0, 1000);
 
-    hMaskMap = new TH2F("maskMap", "maskMap", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
-    for(int column = 0; column < det->nPixelsX(); column++) {
-        for(int row = 0; row < det->nPixelsY(); row++) {
-            if(det->masked(column, row)) {
+    hMaskMap = new TH2F("maskMap",
+                        "maskMap",
+                        m_detector->nPixelsX(),
+                        0,
+                        m_detector->nPixelsX(),
+                        m_detector->nPixelsY(),
+                        0,
+                        m_detector->nPixelsY());
+    for(int column = 0; column < m_detector->nPixelsX(); column++) {
+        for(int row = 0; row < m_detector->nPixelsY(); row++) {
+            if(m_detector->masked(column, row)) {
                 hMaskMap->Fill(column, row, 2);
             } else if(matrix_config[std::make_pair(row, column)].GetMask()) {
                 hMaskMap->Fill(column, row, 1);
@@ -151,9 +167,6 @@ void Clicpix2EventLoader::initialise() {
 }
 
 StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
-
-    // Assume that the CLICpix is the DUT (if running this algorithm
-    auto detector = get_dut();
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
@@ -220,7 +233,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
             int row = px.first.second;
 
             // If this pixel is masked, do not save it
-            if(detector->masked(col, row)) {
+            if(m_detector->masked(col, row)) {
                 continue;
             }
 
@@ -246,7 +259,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
                 hPixelToA->Fill(toa);
             }
 
-            Pixel* pixel = new Pixel(detector->name(), row, col, tot, shutterStartTime);
+            Pixel* pixel = new Pixel(m_detector->name(), row, col, tot, shutterStartTime);
 
             if(tot == 0 && discardZeroToT) {
                 hHitMapDiscarded->Fill(col, row);
@@ -270,7 +283,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
 
     // Put the data on the clipboard
     if(!pixels->empty()) {
-        clipboard->put(detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
+        clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
     }
 
     // Fill histograms
@@ -281,6 +294,12 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
 }
 
 void Clicpix2EventLoader::finalise() {
-
-    LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
+    hHitMap->Write();
+    hMaskMap->Write();
+    hHitMapDiscarded->Write();
+    hPixelToTMap->Write();
+    hPixelToT->Write();
+    hPixelToA->Write();
+    hPixelCnt->Write();
+    hPixelsPerFrame->Write();
 }

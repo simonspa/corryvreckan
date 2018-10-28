@@ -27,7 +27,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Clicpix2EventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        Clicpix2EventLoader(Configuration config, std::shared_ptr<Detector> detector);
         ~Clicpix2EventLoader() {}
 
         // Functions
@@ -36,6 +36,7 @@ namespace corryvreckan {
         void finalise();
 
     private:
+        std::shared_ptr<Detector> m_detector;
         std::map<std::pair<uint8_t, uint8_t>, caribou::pixelConfig> matrix_config;
 
         // Histograms for several devices
