@@ -657,6 +657,9 @@ void ModuleManager::finaliseAll() {
         // Finalise the module
         module->finalise();
 
+        // Store all ROOT objects:
+        module->getROOTDirectory()->Write();
+
         // Remove the pointer to the ROOT directory after finalizing
         module->set_ROOT_directory(nullptr);
 

@@ -33,7 +33,6 @@ namespace corryvreckan {
         // Functions
         void initialise();
         StatusCode run(Clipboard* clipboard);
-        void finalise();
 
     private:
         std::shared_ptr<Detector> m_detector;

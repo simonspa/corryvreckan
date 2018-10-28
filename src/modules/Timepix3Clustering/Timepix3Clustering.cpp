@@ -130,14 +130,6 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
     return Success;
 }
 
-void Timepix3Clustering::finalise() {
-    clusterSize->Write();
-    clusterWidthRow->Write();
-    clusterWidthColumn->Write();
-    clusterTot->Write();
-    clusterPositionGlobal->Write();
-}
-
 // Check if a pixel touches any of the pixels in a cluster
 bool Timepix3Clustering::touching(Pixel* neighbour, Cluster* cluster) {
 

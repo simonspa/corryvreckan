@@ -292,14 +292,3 @@ StatusCode EventLoaderCLICpix2::run(Clipboard* clipboard) {
     // Return value telling analysis to keep running
     return Success;
 }
-
-void EventLoaderCLICpix2::finalise() {
-    hHitMap->Write();
-    hMaskMap->Write();
-    hHitMapDiscarded->Write();
-    hPixelToTMap->Write();
-    hPixelToT->Write();
-    hPixelToA->Write();
-    hPixelCnt->Write();
-    hPixelsPerFrame->Write();
-}

@@ -22,7 +22,6 @@ namespace corryvreckan {
         // Functions
         void initialise();
         StatusCode run(Clipboard* clipboard);
-        void finalise();
 
     private:
         static bool sortByTime(Pixel* pixel1, Pixel* pixel2);

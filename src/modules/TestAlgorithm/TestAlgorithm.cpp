@@ -125,16 +125,3 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
 
     return Success;
 }
-
-void TestAlgorithm::finalise() {
-    hitmap->Write();
-    eventTimes->Write();
-    correlationX->Write();
-    correlationY->Write();
-    correlationX2Dlocal->Write();
-    correlationY2Dlocal->Write();
-    correlationX2D->Write();
-    correlationY2D->Write();
-    correlationTime->Write();
-    correlationTimeInt->Write();
-}
