@@ -1,4 +1,4 @@
-#include "Timepix3EventLoader.h"
+#include "EventLoaderTimepix3.h"
 
 #include <bitset>
 #include <cmath>
@@ -13,7 +13,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+EventLoaderTimepix3::EventLoaderTimepix3(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)), temporalSplit(false), m_currentEvent(0), m_prevTime(0),
       m_shutterOpen(false) {
 
@@ -30,7 +30,7 @@ Timepix3EventLoader::Timepix3EventLoader(Configuration config, std::vector<std::
     threshold = m_config.get<std::string>("threshold", "");
 }
 
-void Timepix3EventLoader::initialise() {
+void EventLoaderTimepix3::initialise() {
 
     if(m_config.has("number_of_pixelhits")) {
         LOG(INFO) << "Splitting events by number of pixel hits on detector plane.";
@@ -243,7 +243,7 @@ void Timepix3EventLoader::initialise() {
     }
 }
 
-StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
+StatusCode EventLoaderTimepix3::run(Clipboard* clipboard) {
 
     // This will loop through each timepix3 registered, and load data from each of them. This can
     // be done in one of two ways: by taking all data in the time interval (t,t+delta), or by
@@ -312,7 +312,7 @@ StatusCode Timepix3EventLoader::run(Clipboard* clipboard) {
 }
 
 // Function to load the pixel mask file
-void Timepix3EventLoader::maskPixels(std::shared_ptr<Detector> detector, string trimdacfile) {
+void EventLoaderTimepix3::maskPixels(std::shared_ptr<Detector> detector, string trimdacfile) {
 
     // Open the mask file
     ifstream trimdacs;
@@ -337,7 +337,7 @@ void Timepix3EventLoader::maskPixels(std::shared_ptr<Detector> detector, string 
 }
 
 // Function to load calibration data
-void Timepix3EventLoader::loadCalibration(std::string path, char delim, std::vector<std::vector<float>>& dat) {
+void EventLoaderTimepix3::loadCalibration(std::string path, char delim, std::vector<std::vector<float>>& dat) {
     std::ifstream f;
     f.open(path);
     dat.clear();
@@ -378,7 +378,7 @@ void Timepix3EventLoader::loadCalibration(std::string path, char delim, std::vec
 }
 
 // Function to load data for a given device, into the relevant container
-bool Timepix3EventLoader::loadData(Clipboard* clipboard,
+bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
                                    std::shared_ptr<Detector> detector,
                                    Pixels* devicedata,
                                    SpidrSignals* spidrData) {
@@ -708,4 +708,4 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard,
     return true;
 }
 
-void Timepix3EventLoader::finalise() {}
+void EventLoaderTimepix3::finalise() {}

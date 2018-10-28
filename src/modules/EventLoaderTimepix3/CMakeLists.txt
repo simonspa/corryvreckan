@@ -3,8 +3,7 @@ CORRYVRECKAN_GLOBAL_MODULE(MODULE_NAME)
 
 # Add source files to library
 CORRYVRECKAN_MODULE_SOURCES(${MODULE_NAME}
-    Timepix3EventLoader.cpp
-    # ADD SOURCE FILES HERE...
+    EventLoaderTimepix3.cpp
 )
 
 # Provide standard install target

@@ -12,12 +12,12 @@
 namespace corryvreckan {
     /** @ingroup Modules
      */
-    class Timepix3EventLoader : public Module {
+    class EventLoaderTimepix3 : public Module {
 
     public:
         // Constructors and destructors
-        Timepix3EventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
-        ~Timepix3EventLoader() {}
+        EventLoaderTimepix3(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        ~EventLoaderTimepix3() {}
 
         // Standard algorithm functions
         void initialise();
