@@ -16,16 +16,11 @@ void Timepix3Clustering::initialise() {
     auto detector = get_detectors().front();
 
     // Cluster plots
-    string name = "clusterSize_" + detector->name();
-    clusterSize = new TH1F(name.c_str(), name.c_str(), 100, 0, 100);
-    name = "clusterWidthRow_" + detector->name();
-    clusterWidthRow = new TH1F(name.c_str(), name.c_str(), 25, 0, 25);
-    name = "clusterWidthColumn_" + detector->name();
-    clusterWidthColumn = new TH1F(name.c_str(), name.c_str(), 100, 0, 100);
-    name = "clusterTot_" + detector->name();
-    clusterTot = new TH1F(name.c_str(), name.c_str(), 10000, 0, 100000);
-    name = "clusterPositionGlobal_" + detector->name();
-    clusterPositionGlobal = new TH2F(name.c_str(), name.c_str(), 400, -10., 10., 400, -10., 10.);
+    clusterSize = new TH1F("clusterSize", "clusterSize", 100, 0, 100);
+    clusterWidthRow = new TH1F("clusterWidthRow", "clusterWidthRow", 25, 0, 25);
+    clusterWidthColumn = new TH1F("clusterWidthColumn", "clusterWidthColumn", 100, 0, 100);
+    clusterTot = new TH1F("clusterTot", "clusterTot", 10000, 0, 100000);
+    clusterPositionGlobal = new TH2F("clusterPositionGlobal", "clusterPositionGlobal", 400, -10., 10., 400, -10., 10.);
 }
 
 // Sort function for pixels from low to high times
@@ -133,6 +128,14 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
     LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << detector->name();
 
     return Success;
+}
+
+void Timepix3Clustering::finalise() {
+    clusterSize->Write();
+    clusterWidthRow->Write();
+    clusterWidthColumn->Write();
+    clusterTot->Write();
+    clusterPositionGlobal->Write();
 }
 
 // Check if a pixel touches any of the pixels in a cluster
