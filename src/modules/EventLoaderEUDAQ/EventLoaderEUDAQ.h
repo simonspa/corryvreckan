@@ -1,5 +1,5 @@
-#ifndef EUDAQEventLoader_H
-#define EUDAQEventLoader_H 1
+#ifndef EventLoaderEUDAQ_H
+#define EventLoaderEUDAQ_H 1
 
 #include <iostream>
 #include "core/module/Module.hpp"
@@ -11,12 +11,12 @@
 namespace corryvreckan {
     /** @ingroup Modules
      */
-    class EUDAQEventLoader : public Module {
+    class EventLoaderEUDAQ : public Module {
 
     public:
         // Constructors and destructors
-        EUDAQEventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
-        ~EUDAQEventLoader() {}
+        EventLoaderEUDAQ(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        ~EventLoaderEUDAQ() {}
 
         // Functions
         void initialise();
@@ -32,4 +32,4 @@ namespace corryvreckan {
         bool m_longID;
     };
 } // namespace corryvreckan
-#endif // EUDAQEventLoader_H
+#endif // EventLoaderEUDAQ_H

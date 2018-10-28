@@ -1,4 +1,4 @@
-#include "EUDAQEventLoader.h"
+#include "EventLoaderEUDAQ.h"
 #include "eudaq/PluginManager.hh"
 
 #include <algorithm>
@@ -6,14 +6,14 @@
 using namespace corryvreckan;
 using namespace std;
 
-EUDAQEventLoader::EUDAQEventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+EventLoaderEUDAQ::EventLoaderEUDAQ(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)), m_longID(true) {
 
     m_filename = m_config.get<std::string>("file_name");
     m_longID = m_config.get<bool>("long_detector_id", true);
 }
 
-void EUDAQEventLoader::initialise() {
+void EventLoaderEUDAQ::initialise() {
 
     // Create new file reader:
     try {
@@ -26,7 +26,7 @@ void EUDAQEventLoader::initialise() {
     m_eventNumber = 0;
 }
 
-StatusCode EUDAQEventLoader::run(Clipboard* clipboard) {
+StatusCode EventLoaderEUDAQ::run(Clipboard* clipboard) {
 
     // Read next event from EUDAQ reader:
     const eudaq::DetectorEvent& evt = reader->Event();
@@ -96,7 +96,7 @@ StatusCode EUDAQEventLoader::run(Clipboard* clipboard) {
     return Success;
 }
 
-void EUDAQEventLoader::finalise() {
+void EventLoaderEUDAQ::finalise() {
 
     LOG(DEBUG) << "Read " << m_eventNumber << " events";
 }
