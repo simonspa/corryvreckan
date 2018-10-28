@@ -1,5 +1,5 @@
-#ifndef Clicpix2EventLoader_H
-#define Clicpix2EventLoader_H 1
+#ifndef EventLoaderCLICpix2_H
+#define EventLoaderCLICpix2_H 1
 
 #include <TCanvas.h>
 #include <TH1F.h>
@@ -23,12 +23,12 @@
 namespace corryvreckan {
     /** @ingroup Modules
      */
-    class Clicpix2EventLoader : public Module {
+    class EventLoaderCLICpix2 : public Module {
 
     public:
         // Constructors and destructors
-        Clicpix2EventLoader(Configuration config, std::shared_ptr<Detector> detector);
-        ~Clicpix2EventLoader() {}
+        EventLoaderCLICpix2(Configuration config, std::shared_ptr<Detector> detector);
+        ~EventLoaderCLICpix2() {}
 
         // Functions
         void initialise();

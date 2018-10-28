@@ -1,4 +1,4 @@
-#include "Clicpix2EventLoader.h"
+#include "EventLoaderCLICpix2.h"
 
 #include "CLICpix2/clicpix2_pixels.hpp"
 #include "CLICpix2/clicpix2_utilities.hpp"
@@ -9,13 +9,13 @@ using namespace std;
 using namespace caribou;
 using namespace clicpix2_utils;
 
-Clicpix2EventLoader::Clicpix2EventLoader(Configuration config, std::shared_ptr<Detector> detector)
+EventLoaderCLICpix2::EventLoaderCLICpix2(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
     discardZeroToT = m_config.get<bool>("discardZeroToT", false);
 }
 
-void Clicpix2EventLoader::initialise() {
+void EventLoaderCLICpix2::initialise() {
 
     // Take input directory from global parameters
     string inputDirectory = m_config.get<std::string>("inputDirectory");
@@ -166,7 +166,7 @@ void Clicpix2EventLoader::initialise() {
     m_eventNumber = 0;
 }
 
-StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
+StatusCode EventLoaderCLICpix2::run(Clipboard* clipboard) {
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
@@ -293,7 +293,7 @@ StatusCode Clicpix2EventLoader::run(Clipboard* clipboard) {
     return Success;
 }
 
-void Clicpix2EventLoader::finalise() {
+void EventLoaderCLICpix2::finalise() {
     hHitMap->Write();
     hMaskMap->Write();
     hHitMapDiscarded->Write();
