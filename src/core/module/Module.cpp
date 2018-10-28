@@ -46,6 +46,24 @@ ModuleIdentifier Module::get_identifier() const {
     return identifier_;
 }
 
+/**
+ * @throws InvalidModuleActionException If this method is called from the constructor or destructor
+ * @warning Cannot be used from the constructor, because the instantiation logic has not finished yet
+ * @warning This method should not be accessed from the destructor (the file is then already closed)
+ * @note It is not needed to change directory to this file explicitly in the module, this is done automatically.
+ */
+TDirectory* Module::getROOTDirectory() const {
+    // The directory will only be a null pointer if this method is executed from the constructor or destructor
+    if(directory_ == nullptr) {
+        throw InvalidModuleActionException("Cannot access ROOT directory in constructor or destructor");
+    }
+
+    return directory_;
+}
+void Module::set_ROOT_directory(TDirectory* directory) {
+    directory_ = directory;
+}
+
 std::shared_ptr<Detector> Module::get_detector(std::string name) {
     auto it = find_if(
         m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->name() == name; });

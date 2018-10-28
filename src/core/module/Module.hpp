@@ -120,6 +120,12 @@ namespace corryvreckan {
          */
         virtual void finalise(){};
 
+        /**
+         * @brief Get ROOT directory which should be used to output histograms et cetera
+         * @return ROOT directory for storage
+         */
+        TDirectory* getROOTDirectory() const;
+
     protected:
         // Configuration of this module
         Configuration m_config;
@@ -176,6 +182,13 @@ namespace corryvreckan {
          */
         ModuleIdentifier get_identifier() const;
         ModuleIdentifier identifier_;
+
+        /**
+         * @brief Set the output ROOT directory for this module
+         * @param directory ROOT directory for storage
+         */
+        void set_ROOT_directory(TDirectory* directory);
+        TDirectory* directory_{nullptr};
 
         // Configure the reference detector:
         void setReference(std::shared_ptr<Detector> reference) { m_reference = reference; };
