@@ -170,10 +170,10 @@ void ModuleManager::load_modules() {
     std::string histogramFile = global_config.getPath("histogram_file");
 
     m_histogramFile = std::make_unique<TFile>(histogramFile.c_str(), "RECREATE");
-    m_directory = m_histogramFile->mkdir("corryvreckan");
     if(m_histogramFile->IsZombie()) {
         throw RuntimeError("Cannot create main ROOT file " + histogramFile);
     }
+    m_histogramFile->cd();
 
     LOG(DEBUG) << "Start loading modules, have " << configs.size() << " configurations.";
     // Loop through all non-global configurations
@@ -514,8 +514,10 @@ void ModuleManager::run() {
             // Set module specific settings
             auto old_settings = set_module_before(module->getUniqueName(), module->getConfig());
             // Change to the output file directory
-            m_directory->cd(module->getUniqueName().c_str());
+            module->getROOTDirectory()->cd();
+
             StatusCode check = module->run(m_clipboard);
+
             // Reset logging
             Log::setSection(old_section_name);
             set_module_after(old_settings);
@@ -586,6 +588,33 @@ void ModuleManager::initialiseAll() {
     // Loop over all modules and initialise them
     LOG(STATUS) << "=================| Initialising modules |==================";
     for(auto& module : m_modules) {
+        // Create main ROOT directory for this module class if it does not exists yet
+        LOG(TRACE) << "Creating and accessing ROOT directory";
+        std::string module_name = module->getConfig().getName();
+        auto directory = m_histogramFile->GetDirectory(module_name.c_str());
+        if(directory == nullptr) {
+            directory = m_histogramFile->mkdir(module_name.c_str());
+            if(directory == nullptr) {
+                throw RuntimeError("Cannot create or access overall ROOT directory for module " + module_name);
+            }
+        }
+        directory->cd();
+
+        // Create local directory for this instance
+        TDirectory* local_directory = nullptr;
+        if(module->get_identifier().getIdentifier().empty()) {
+            local_directory = directory;
+        } else {
+            local_directory = directory->mkdir(module->get_identifier().getIdentifier().c_str());
+            if(local_directory == nullptr) {
+                throw RuntimeError("Cannot create or access local ROOT directory for module " + module->getUniqueName());
+            }
+        }
+
+        // Change to the directory and save it in the module
+        local_directory->cd();
+        module->set_ROOT_directory(local_directory);
+
         // Set init module section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "I:";
@@ -593,12 +622,10 @@ void ModuleManager::initialiseAll() {
         Log::setSection(section_name);
         // Set module specific settings
         auto old_settings = set_module_before(module->getUniqueName(), module->getConfig());
+        // Change to our ROOT directory
+        module->getROOTDirectory()->cd();
 
-        // Make a new folder in the output file
-        m_directory->cd();
-        m_directory->mkdir(module->getUniqueName().c_str());
-        m_directory->cd(module->getUniqueName().c_str());
-        LOG(INFO) << "Initialising \"" << module->getUniqueName() << "\"";
+        LOG_PROGRESS(STATUS, "MOD_INIT_LOOP") << "Initialising \"" << module->getUniqueName() << "\"";
         // Initialise the module
         module->initialise();
 
@@ -621,21 +648,23 @@ void ModuleManager::finaliseAll() {
         Log::setSection(section_name);
         // Set module specific settings
         auto old_settings = set_module_before(module->getUniqueName(), module->getConfig());
+        // Change to our ROOT directory
+        module->getROOTDirectory()->cd();
 
-        // Change to the output file directory
-        m_directory->cd(module->getUniqueName().c_str());
         // Finalise the module
         module->finalise();
+
+        // Remove the pointer to the ROOT directory after finalizing
+        module->set_ROOT_directory(nullptr);
+
         // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);
     }
 
     // Write the output histogram file
-    m_directory->cd();
-    m_directory->Write();
-
     m_histogramFile->Close();
+
     LOG(STATUS) << "Wrote histogram output file to " << global_config.getPath("histogramFile");
 
     // Write out update detectors file:

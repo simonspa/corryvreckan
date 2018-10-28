@@ -69,7 +69,6 @@ namespace corryvreckan {
         std::ofstream log_file_;
 
         std::unique_ptr<TFile> m_histogramFile;
-        TDirectory* m_directory;
         int m_events;
         int m_tracks;
 
