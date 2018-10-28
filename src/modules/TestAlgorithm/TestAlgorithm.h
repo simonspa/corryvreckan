@@ -16,7 +16,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        TestAlgorithm(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        TestAlgorithm(Configuration config, std::shared_ptr<Detector> detector);
         ~TestAlgorithm() {}
 
         // Functions
@@ -24,19 +24,22 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
+    private:
+        std::shared_ptr<Detector> m_detector;
+
         // Pixel histograms
-        std::map<std::string, TH2F*> hitmap;
-        std::map<std::string, TH1F*> eventTimes;
+        TH2F* hitmap;
+        TH1F* eventTimes;
 
         // Correlation plots
-        std::map<std::string, TH1F*> correlationX;
-        std::map<std::string, TH1F*> correlationY;
-        std::map<std::string, TH2F*> correlationX2Dlocal;
-        std::map<std::string, TH2F*> correlationY2Dlocal;
-        std::map<std::string, TH2F*> correlationX2D;
-        std::map<std::string, TH2F*> correlationY2D;
-        std::map<std::string, TH1F*> correlationTime;
-        std::map<std::string, TH1F*> correlationTimeInt;
+        TH1F* correlationX;
+        TH1F* correlationY;
+        TH2F* correlationX2Dlocal;
+        TH2F* correlationY2Dlocal;
+        TH2F* correlationX2D;
+        TH2F* correlationY2D;
+        TH1F* correlationTime;
+        TH1F* correlationTimeInt;
 
         // Parameters which can be set by user
         bool makeCorrelations;
