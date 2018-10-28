@@ -693,7 +693,9 @@ void ModuleManager::finaliseAll() {
 void ModuleManager::timing() {
     LOG(STATUS) << "===============| Wall-clock timing (seconds) |================";
     for(auto& module : m_modules) {
-        LOG(STATUS) << std::setw(25) << module->getUniqueName() << "  --  " << std::fixed << std::setprecision(5)
+        auto identifier = module->get_identifier().getIdentifier();
+        LOG(STATUS) << std::setw(25) << module->getConfig().getName() << (identifier.empty() ? "   " : " : ")
+                    << std::setw(10) << identifier << "  --  " << std::fixed << std::setprecision(5)
                     << module_execution_time_[module] << " = " << std::setprecision(9)
                     << module_execution_time_[module] / m_events << " s/evt";
     }
