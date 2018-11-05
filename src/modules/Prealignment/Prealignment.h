@@ -16,7 +16,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Prealignment(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        Prealignment(Configuration config, std::shared_ptr<Detector> detector);
         ~Prealignment() {}
 
         // Functions
@@ -24,13 +24,16 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
+    private:
+        std::shared_ptr<Detector> m_detector;
+
         // Correlation plots
-        std::map<std::string, TH1F*> correlationX;
-        std::map<std::string, TH1F*> correlationY;
-        std::map<std::string, TH2F*> correlationX2Dlocal;
-        std::map<std::string, TH2F*> correlationY2Dlocal;
-        std::map<std::string, TH2F*> correlationX2D;
-        std::map<std::string, TH2F*> correlationY2D;
+        TH1F* correlationX;
+        TH1F* correlationY;
+        TH2F* correlationX2Dlocal;
+        TH2F* correlationY2Dlocal;
+        TH2F* correlationX2D;
+        TH2F* correlationY2D;
 
         // Parameters which can be set by user
         double max_correlation_rms;
