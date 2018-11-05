@@ -12,10 +12,10 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
 
     // Set up overview plots:
     canvas_overview = m_config.getMatrix<std::string>("Overview",
-                                                      {{"BasicTracking/trackChi2"},
+                                                      {{"Tracking4D/trackChi2"},
                                                        {"TestAlgorithm/%REFERENCE%/clusterTot"},
                                                        {"TestAlgorithm/%REFERENCE%/hitmap", "colz"},
-                                                       {"BasicTracking/residualsX_%REFERENCE%"}});
+                                                       {"Tracking4D/residualsX_%REFERENCE%"}});
 
     // Set up individual plots for the DUT
     canvas_dutplots = m_config.getMatrix<std::string>("DUTPlots",
@@ -27,10 +27,15 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
                                                        {"EventLoaderCLICpix2/%DUT%/pixelsPerFrame", "log"},
                                                        {"DUTAnalysis/clusterTotAssociated"},
                                                        {"DUTAnalysis/associatedTracksVersusTime"}});
-    canvas_tracking =
-        m_config.getMatrix<std::string>("Tracking", {{"BasicTracking/trackChi2"}, {"BasicTracking/trackAngleX"}});
+    canvas_tracking = m_config.getMatrix<std::string>("Tracking",
+                                                      {{"Tracking4D/trackChi2"},
+                                                       {"Tracking4D/trackAngleX"},
+                                                       {"Tracking4D/trackAngleY"},
+                                                       {"Tracking4D/trackChi2ndof"},
+                                                       {"Tracking4D/tracksPerEvent"},
+                                                       {"Tracking4D/clustersPerTrack"}});
     canvas_hitmaps = m_config.getMatrix<std::string>("HitMaps", {{"TestAlgorithm/%DETECTOR%/hitmap", "colz"}});
-    canvas_residuals = m_config.getMatrix<std::string>("Residuals", {{"BasicTracking/residualsX_%DETECTOR%"}});
+    canvas_residuals = m_config.getMatrix<std::string>("Residuals", {{"Tracking4D/residualsX_%DETECTOR%"}});
 
     canvas_cx = m_config.getMatrix<std::string>("CorrelationX", {{"TestAlgorithm/%DETECTOR%/correlationX"}});
     canvas_cx2d =

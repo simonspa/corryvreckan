@@ -1,5 +1,5 @@
-#ifndef BASICTRACKING_H
-#define BASICTRACKING_H 1
+#ifndef TRACKING4D_H
+#define TRACKING4D_H 1
 
 #include <TCanvas.h>
 #include <TH1F.h>
@@ -13,12 +13,12 @@
 namespace corryvreckan {
     /** @ingroup Modules
      */
-    class BasicTracking : public Module {
+    class Tracking4D : public Module {
 
     public:
         // Constructors and destructors
-        BasicTracking(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
-        ~BasicTracking() {}
+        Tracking4D(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        ~Tracking4D() {}
 
         // Functions
         void initialise();
@@ -48,4 +48,4 @@ namespace corryvreckan {
         bool excludeDUT;
     };
 } // namespace corryvreckan
-#endif // BASICTRACKING_H
+#endif // TRACKING4D_H

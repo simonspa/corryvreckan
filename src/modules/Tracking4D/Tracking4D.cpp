@@ -1,11 +1,11 @@
-#include "BasicTracking.h"
+#include "Tracking4D.h"
 #include <TCanvas.h>
 #include "objects/KDTree.h"
 
 using namespace corryvreckan;
 using namespace std;
 
-BasicTracking::BasicTracking(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
     // Default values for cuts
@@ -15,15 +15,21 @@ BasicTracking::BasicTracking(Configuration config, std::vector<std::shared_ptr<D
     excludeDUT = m_config.get<bool>("excludeDUT", true);
 }
 
-void BasicTracking::initialise() {
+void Tracking4D::initialise() {
 
     // Set up histograms
-    trackChi2 = new TH1F("trackChi2", "trackChi2", 150, 0, 150);
-    trackChi2ndof = new TH1F("trackChi2ndof", "trackChi2ndof", 100, 0, 50);
-    clustersPerTrack = new TH1F("clustersPerTrack", "clustersPerTrack", 10, 0, 10);
-    tracksPerEvent = new TH1F("tracksPerEvent", "tracksPerEvent", 100, 0, 100);
-    trackAngleX = new TH1F("trackAngleX", "trackAngleX", 2000, -0.01, 0.01);
-    trackAngleY = new TH1F("trackAngleY", "trackAngleY", 2000, -0.01, 0.01);
+    std::string title = "Track #chi^{2};#chi^{2};events";
+    trackChi2 = new TH1F("trackChi2", title.c_str(), 150, 0, 150);
+    title = "Track #chi^{2}/ndof;#chi^{2}/ndof;events";
+    trackChi2ndof = new TH1F("trackChi2ndof", title.c_str(), 100, 0, 50);
+    title = "Clusters per track;clusters;tracks";
+    clustersPerTrack = new TH1F("clustersPerTrack", title.c_str(), 10, 0, 10);
+    title = "Track multiplicity;tracks;events";
+    tracksPerEvent = new TH1F("tracksPerEvent", title.c_str(), 100, 0, 100);
+    title = "Track angle X;angle_{x} [rad];events";
+    trackAngleX = new TH1F("trackAngleX", title.c_str(), 2000, -0.01, 0.01);
+    title = "Track angle Y;angle_{y} [rad];events";
+    trackAngleY = new TH1F("trackAngleY", title.c_str(), 2000, -0.01, 0.01);
 
     // Loop over all planes
     for(auto& detector : get_detectors()) {
@@ -48,7 +54,7 @@ void BasicTracking::initialise() {
     }
 }
 
-StatusCode BasicTracking::run(Clipboard* clipboard) {
+StatusCode Tracking4D::run(Clipboard* clipboard) {
 
     LOG(DEBUG) << "Start of event";
     // Container for all clusters, and detectors in tracking

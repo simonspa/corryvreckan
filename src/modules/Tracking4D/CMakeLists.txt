@@ -3,8 +3,7 @@ CORRYVRECKAN_GLOBAL_MODULE(MODULE_NAME)
 
 # Add source files to library
 CORRYVRECKAN_MODULE_SOURCES(${MODULE_NAME}
-    BasicTracking.cpp
-    # ADD SOURCE FILES HERE...
+    Tracking4D.cpp
 )
 
 # Provide standard install target
