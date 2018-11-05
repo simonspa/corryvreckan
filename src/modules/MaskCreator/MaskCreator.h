@@ -52,7 +52,7 @@ namespace corryvreckan {
 
         std::string m_method;
         double m_frequency, bandwidth;
-        std::map<std::string, double> m_bandwidthCol, m_bandwidthRow;
+        std::map<std::string, int> m_bandwidthCol, m_bandwidthRow;
         double m_sigmaMax, m_rateMax;
         int m_numEvents, binsOccupancy;
 

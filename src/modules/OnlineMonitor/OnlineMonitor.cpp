@@ -47,7 +47,7 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<Detector*> detect
 void OnlineMonitor::initialise() {
 
     // TApplication keeps the canvases persistent
-    app = new TApplication("example", 0, 0);
+    app = new TApplication("example", nullptr, nullptr);
 
     // Make the GUI
     gui = new GuiDisplay();
@@ -115,9 +115,10 @@ StatusCode OnlineMonitor::run(Clipboard* clipboard) {
     gSystem->ProcessEvents();
 
     // Get the tracks from the clipboard
-    Tracks* tracks = (Tracks*)clipboard->get("tracks");
-    if(tracks == NULL)
+    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    if(tracks == nullptr) {
         return Success;
+    }
 
     // Otherwise increase the event number
     eventNumber++;
@@ -175,9 +176,9 @@ void OnlineMonitor::AddHisto(string canvasName, string histoName, string style, 
     // Add "corryvreckan" namespace:
     histoName = "/corryvreckan/" + histoName;
 
-    TH1* histogram = (TH1*)gDirectory->Get(histoName.c_str());
+    TH1* histogram = static_cast<TH1*>(gDirectory->Get(histoName.c_str()));
     if(histogram) {
-        gui->histograms[canvasName].push_back((TH1*)gDirectory->Get(histoName.c_str()));
+        gui->histograms[canvasName].push_back(static_cast<TH1*>(gDirectory->Get(histoName.c_str())));
         gui->styles[gui->histograms[canvasName].back()] = style;
         gui->logarithmic[gui->histograms[canvasName].back()] = logy;
     } else {

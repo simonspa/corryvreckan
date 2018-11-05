@@ -52,25 +52,26 @@ namespace corryvreckan {
                 LOG(ERROR) << "Canvas does not have any histograms, exiting";
                 return;
             }
-            int nHistograms = histograms[canvasName].size();
+            size_t nHistograms = histograms[canvasName].size();
             canvas->GetCanvas()->Clear();
             canvas->GetCanvas()->cd();
             if(!stackedCanvas[canvas]) {
-                if(nHistograms < 4)
-                    canvas->GetCanvas()->Divide(nHistograms);
-                else
-                    canvas->GetCanvas()->Divide(ceil(nHistograms / 2.), 2);
+                if(nHistograms < 4) {
+                    canvas->GetCanvas()->Divide(static_cast<int>(nHistograms), 1, 0.01f, 0.01f);
+                } else {
+                    canvas->GetCanvas()->Divide(static_cast<int>((nHistograms + 1) / 2), 2, 0.01f, 0.01f);
+                }
             }
-            for(int i = 0; i < nHistograms; i++) {
+            for(size_t i = 0; i < nHistograms; i++) {
                 if(!stackedCanvas[canvas])
-                    canvas->GetCanvas()->cd(i + 1);
+                    canvas->GetCanvas()->cd(static_cast<int>(i + 1));
                 std::string style = styles[histograms[canvasName][i]];
                 if(logarithmic[histograms[canvasName][i]]) {
                     gPad->SetLogy();
                 }
                 if(stackedCanvas[canvas]) {
                     style = "same";
-                    histograms[canvasName][i]->SetLineColor(i + 1);
+                    histograms[canvasName][i]->SetLineColor(static_cast<short>(i + 1));
                 }
                 histograms[canvasName][i]->Draw(style.c_str());
             }
@@ -82,7 +83,7 @@ namespace corryvreckan {
         inline void Exit() { raise(SIGINT); }
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(GuiDisplay, 1)
+        ClassDef(GuiDisplay, 2)
     };
 } // namespace corryvreckan
 

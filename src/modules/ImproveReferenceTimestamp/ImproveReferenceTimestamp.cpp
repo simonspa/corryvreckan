@@ -8,7 +8,7 @@ ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration config, std::
     : Module(std::move(config), std::move(detectors)) {
     m_method = m_config.get<int>("improvementMethod", 1);
     m_source = m_config.get<std::string>("signalSource", "W0013_G02");
-    m_triggerLatency = m_config.get<double>("triggerLatency", Units::convert(0, "ns"));
+    m_triggerLatency = m_config.get<double>("triggerLatency", static_cast<double>(Units::convert(0, "ns")));
 }
 
 void ImproveReferenceTimestamp::initialise() {
@@ -22,13 +22,10 @@ StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
     std::vector<double> trigger_times;
 
     // Get trigger signals
-    SpidrSignals* spidrData = (SpidrSignals*)clipboard->get(m_source, "SpidrSignals");
-    if(spidrData != NULL) {
+    SpidrSignals* spidrData = reinterpret_cast<SpidrSignals*>(clipboard->get(m_source, "SpidrSignals"));
+    if(spidrData != nullptr) {
         // Loop over all signals registered
-        int nSignals = spidrData->size();
-        for(int iSig = 0; iSig < nSignals; iSig++) {
-            // Get the signal
-            SpidrSignal* signal = (*spidrData)[iSig];
+        for(auto& signal : (*spidrData)) {
             if(signal->type() == "trigger") {
                 trigger_times.push_back(signal->timestamp() - m_triggerLatency);
             }
@@ -37,8 +34,8 @@ StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
     }
 
     // Get the tracks from the clipboard
-    Tracks* tracks = (Tracks*)clipboard->get("tracks");
-    if(tracks == NULL) {
+    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return Success;
     }

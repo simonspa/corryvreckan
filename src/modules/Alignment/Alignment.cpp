@@ -301,7 +301,7 @@ void Alignment::finalise() {
         auto detector = get_detector(detectorToAlign);
         globalDetector = detector;
 
-        int n_associatedClusters = 0;
+        size_t n_associatedClusters = 0;
         // count associated clusters:
         for(auto& track : globalTracks) {
             Clusters associatedClusters = track->associatedClusters();
@@ -314,11 +314,12 @@ void Alignment::finalise() {
                 break;
             }
         }
-        if(n_associatedClusters < 0.5 * globalTracks.size()) {
-            LOG(WARNING) << "Only " << 100 * static_cast<double>(n_associatedClusters) / globalTracks.size()
+        if(n_associatedClusters < globalTracks.size() / 2) {
+            LOG(WARNING) << "Only "
+                         << 100 * static_cast<double>(n_associatedClusters) / static_cast<double>(globalTracks.size())
                          << "% of all tracks have associated clusters on detector " << detectorToAlign;
         } else {
-            LOG(INFO) << 100 * static_cast<double>(n_associatedClusters) / globalTracks.size()
+            LOG(INFO) << 100 * static_cast<double>(n_associatedClusters) / static_cast<double>(globalTracks.size())
                       << "% of all tracks have associated clusters on detector " << detectorToAlign;
         }
 

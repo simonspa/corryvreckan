@@ -418,7 +418,7 @@ void Analysis::run() {
 
         // Print statistics:
         Tracks* tracks = reinterpret_cast<Tracks*>(m_clipboard->get("tracks"));
-        m_tracks += (tracks == nullptr ? 0 : tracks->size());
+        m_tracks += (tracks == nullptr ? 0 : static_cast<int>(tracks->size()));
 
         bool update_progress = false;
         if(m_events % 100 == 0 && m_events != events_prev) {

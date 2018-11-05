@@ -7,15 +7,15 @@ DUTAssociation::DUTAssociation(Configuration config, std::vector<Detector*> dete
     : Module(std::move(config), std::move(detectors)) {
 
     auto det = get_dut();
-    timingCut = m_config.get<double>("timingCut", Units::convert(200, "ns"));
+    timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(200, "ns")));
     spatialCut = m_config.get<XYVector>("spatialCut", 2 * det->pitch());
 }
 
 StatusCode DUTAssociation::run(Clipboard* clipboard) {
 
     // Get the tracks from the clipboard
-    Tracks* tracks = (Tracks*)clipboard->get("tracks");
-    if(tracks == NULL) {
+    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return Success;
     }
@@ -24,8 +24,8 @@ StatusCode DUTAssociation::run(Clipboard* clipboard) {
     auto dut = get_dut();
 
     // Get the DUT clusters from the clipboard
-    Clusters* clusters = (Clusters*)clipboard->get(dut->name(), "clusters");
-    if(clusters == NULL) {
+    Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(dut->name(), "clusters"));
+    if(clusters == nullptr) {
         LOG(DEBUG) << "No DUT clusters on the clipboard";
         return Success;
     }
@@ -33,7 +33,6 @@ StatusCode DUTAssociation::run(Clipboard* clipboard) {
     // Loop over all tracks
     for(auto& track : (*tracks)) {
         // Loop over all DUT clusters
-        bool associated = false;
         for(auto& cluster : (*clusters)) {
             // Check distance between track and cluster
             ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());

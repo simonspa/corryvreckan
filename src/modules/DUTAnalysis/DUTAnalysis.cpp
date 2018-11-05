@@ -87,14 +87,11 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
         m_shutterCloseTime = 0;
 
     // Now update the power pulsing with any new signals
-    SpidrSignals* spidrData = (SpidrSignals*)clipboard->get(dutname, "SpidrSignals");
+    SpidrSignals* spidrData = reinterpret_cast<SpidrSignals*>(clipboard->get(dutname, "SpidrSignals"));
     // If there are new signals
-    if(spidrData != NULL) {
+    if(spidrData != nullptr) {
         // Loop over all signals registered
-        int nSignals = spidrData->size();
-        for(int iSig = 0; iSig < nSignals; iSig++) {
-            // Get the signal
-            SpidrSignal* signal = (*spidrData)[iSig];
+        for(auto& signal : (*spidrData)) {
             // Register the power on or power off time, and whether the shutter is
             // open or not
             if(signal->type() == "shutterOpen") {
@@ -119,21 +116,21 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
     }
 
     // Get the tracks from the clipboard
-    Tracks* tracks = (Tracks*)clipboard->get("tracks");
-    if(tracks == NULL) {
+    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return Success;
     }
 
     // Get the DUT clusters from the clipboard
-    Clusters* clusters = (Clusters*)clipboard->get(dutname, "clusters");
-    if(clusters == NULL) {
+    Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(dutname, "clusters"));
+    if(clusters == nullptr) {
         LOG(DEBUG) << "No DUT clusters on the clipboard";
     }
 
     // Get the MC particles from the clipboard
-    MCParticles* mcParticles = (MCParticles*)clipboard->get(dutname, "mcparticles");
-    if(mcParticles == NULL) {
+    MCParticles* mcParticles = reinterpret_cast<MCParticles*>(clipboard->get(dutname, "mcparticles"));
+    if(mcParticles == nullptr) {
         LOG(DEBUG) << "No DUT MC particles on the clipboard";
     }
 
@@ -157,7 +154,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
             continue;
         }
 
-        tracksVersusTime->Fill(Units::convert(track->timestamp(), "s"));
+        tracksVersusTime->Fill(static_cast<double>(Units::convert(track->timestamp(), "s")));
 
         timeSincePowerOn = track->timestamp() - m_shutterOpenTime;
         if(timeSincePowerOn > 0. && timeSincePowerOn < Units::convert(200, "us")) {
@@ -186,28 +183,27 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
         }
 
         // If no DUT clusters then continue to the next track
-        if(clusters == NULL)
+        if(clusters == nullptr)
             continue;
 
         // Correlation plot
-        for(int itCluster = 0; itCluster < clusters->size(); itCluster++) {
-
-            // Get the cluster pointer
-            Cluster* cluster = (*clusters)[itCluster];
-
+        for(auto& cluster : (*clusters)) {
             // Check distance between track and cluster
             ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
 
             // Fill the correlation plot
             hTrackCorrelationX->Fill(intercept.X() - cluster->globalX());
             hTrackCorrelationY->Fill(intercept.Y() - cluster->globalY());
-            hTrackCorrelationTime->Fill(Units::convert(track->timestamp() - cluster->timestamp(), "ns"));
+            hTrackCorrelationTime->Fill(
+                static_cast<double>(Units::convert(track->timestamp() - cluster->timestamp(), "ns")));
 
             if(fabs(intercept.X() - cluster->globalX()) < 0.1 && fabs(intercept.Y() - cluster->globalY()) < 0.1) {
-                residualsTime->Fill(Units::convert(track->timestamp() - cluster->timestamp(), "ns"));
-                residualsTimeVsTime->Fill(Units::convert(track->timestamp(), "ns"),
-                                          Units::convert(track->timestamp() - cluster->timestamp(), "ns"));
-                residualsTimeVsSignal->Fill(cluster->tot(), Units::convert(track->timestamp() - cluster->timestamp(), "ns"));
+                residualsTime->Fill(static_cast<double>(Units::convert(track->timestamp() - cluster->timestamp(), "ns")));
+                residualsTimeVsTime->Fill(
+                    static_cast<double>(Units::convert(track->timestamp(), "ns")),
+                    static_cast<double>(Units::convert(track->timestamp() - cluster->timestamp(), "ns")));
+                residualsTimeVsSignal->Fill(
+                    cluster->tot(), static_cast<double>(Units::convert(track->timestamp() - cluster->timestamp(), "ns")));
             }
         }
 
@@ -217,7 +213,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
 
             // Fill the tot histograms on the first run
             if(first_track == 0) {
-                clusterToTVersusTime->Fill(Units::convert(cluster->timestamp(), "ns"), cluster->tot());
+                clusterToTVersusTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "ns")), cluster->tot());
             }
 
             if(!track->isAssociated(cluster)) {
@@ -232,7 +228,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
 
             // We now have an associated cluster! Fill plots
             associated = true;
-            associatedTracksVersusTime->Fill(Units::convert(track->timestamp(), "s"));
+            associatedTracksVersusTime->Fill(static_cast<double>(Units::convert(track->timestamp(), "s")));
             residualsX->Fill(xdistance);
             residualsXfine->Fill(xdistance);
             if(cluster->size() == 1)
@@ -241,7 +237,7 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
                 residualsX2pix->Fill(xdistance);
             residualsY->Fill(ydistance);
             clusterTotAssociated->Fill(cluster->tot());
-            clusterSizeAssociated->Fill(cluster->size());
+            clusterSizeAssociated->Fill(static_cast<double>(cluster->size()));
             clusterSizeAssociated_X->Fill(cluster->columnWidth());
             clusterSizeAssociated_Y->Fill(cluster->rowWidth());
             track->addAssociatedCluster(cluster);
@@ -266,10 +262,10 @@ StatusCode DUTAnalysis::run(Clipboard* clipboard) {
                         particlePosition.SetXYZ(centre.X(), centre.Y(), centre.Z());
                     }
                 }
-                auto detector = get_detector(cluster->detectorID());
-                residualsXMCtruth->Fill(cluster->localX() + detector->size().X() / 2 - particlePosition.X());
-                auto interceptLocal = detector->globalToLocal(intercept);
-                telescopeResolution->Fill(interceptLocal.X() + detector->size().X() / 2 - particlePosition.X());
+                auto cluster_det = get_detector(cluster->detectorID());
+                residualsXMCtruth->Fill(cluster->localX() + cluster_det->size().X() / 2 - particlePosition.X());
+                auto interceptLocal = cluster_det->globalToLocal(intercept);
+                telescopeResolution->Fill(interceptLocal.X() + cluster_det->size().X() / 2 - particlePosition.X());
             }
 
             // Fill power pulsing response

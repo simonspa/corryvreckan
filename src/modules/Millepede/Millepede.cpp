@@ -15,13 +15,13 @@ using namespace std;
 Millepede::Millepede(Configuration config, std::vector<Detector*> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
-    m_numberOfTracksForAlignment = m_config.get<int>("number_of_tracks", 20000);
+    m_numberOfTracksForAlignment = m_config.get<size_t>("number_of_tracks", 20000);
     m_dofs = m_config.getArray<bool>("dofs", {});
-    m_nIterations = m_config.get<int>("iterations", 5);
+    m_nIterations = m_config.get<size_t>("iterations", 5);
 
     m_rescut = m_config.get<double>("residual_cut", 0.05);
     m_rescut_init = m_config.get<double>("residual_cut_init", 0.6);
-    m_nstdev = m_config.get<double>("NStdDev", 0);
+    m_nstdev = m_config.get<int>("NStdDev", 0);
 
     m_convergence = m_config.get<double>("convergence", 0.00001);
 
@@ -38,9 +38,6 @@ Millepede::~Millepede() {}
 // Initialization
 //=============================================================================
 void Millepede::initialise() {
-
-    // Initialise the base class.
-    StatusCode sc = Success; // TbAlignmentBase::initialize();
 
     // Renumber the planes in Millepede, ignoring masked planes.
     unsigned int index = 0;
@@ -72,8 +69,8 @@ void Millepede::initialise() {
 StatusCode Millepede::run(Clipboard* clipboard) {
 
     // Get the tracks
-    Tracks* tracks = (Tracks*)clipboard->get("tracks");
-    if(tracks == NULL) {
+    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    if(tracks == nullptr) {
         return Success;
     }
 
@@ -100,23 +97,21 @@ void Millepede::finalise() {
 
     LOG(INFO) << "Millepede alignment";
 
-    unsigned int nPlanes = num_detectors();
+    size_t nPlanes = num_detectors();
     for(const auto& det : get_detectors()) {
         if(det->isDUT()) {
             nPlanes--;
         }
     }
 
-    const unsigned int nParameters = 6 * nPlanes;
+    const size_t nParameters = 6 * nPlanes;
     for(unsigned int iteration = 0; iteration < m_nIterations; ++iteration) {
-        const unsigned int nTracks = m_alignmenttracks.size();
-
         // Define the constraint equations.
         setConstraints(nPlanes);
         const double startfact = 100.;
         // Initialise all matrices and vectors.
         reset(nPlanes, startfact);
-        LOG(INFO) << "Feeding Millepede with " << nTracks << " tracks...";
+        LOG(INFO) << "Feeding Millepede with " << m_alignmenttracks.size() << " tracks...";
         // Feed Millepede with tracks.
         unsigned int nSkipped = 0;
         unsigned int nOutliers = 0;
@@ -143,10 +138,10 @@ void Millepede::finalise() {
         }
         // Calculate the convergence metric (sum of misalignments).
         double converg = 0.;
-        for(unsigned int i = 0; i < nParameters; ++i) {
+        for(size_t i = 0; i < nParameters; ++i) {
             converg += fabs(m_dparm[i]);
         }
-        converg /= nParameters;
+        converg /= static_cast<double>(nParameters);
         LOG(INFO) << "Convergence: " << converg;
         // Update the module positions and orientations.
         LOG(INFO) << "Updating geometry...";
@@ -170,7 +165,7 @@ void Millepede::finalise() {
 //=============================================================================
 // Setup the constraint equations.
 //=============================================================================
-void Millepede::setConstraints(const unsigned int nPlanes) {
+void Millepede::setConstraints(const size_t nPlanes) {
 
     // Calculate the mean z-position.
     double avgz = 0.;
@@ -180,7 +175,7 @@ void Millepede::setConstraints(const unsigned int nPlanes) {
         }
         avgz += det->displacement().Z();
     }
-    avgz /= nPlanes;
+    avgz /= static_cast<double>(nPlanes);
     // Calculate the variance.
     double varz = 0.0;
     for(const auto& det : get_detectors()) {
@@ -190,10 +185,10 @@ void Millepede::setConstraints(const unsigned int nPlanes) {
         const double dz = det->displacement().Z() - avgz;
         varz += dz * dz;
     }
-    varz /= nPlanes;
+    varz /= static_cast<double>(nPlanes);
 
     // Define the 9 constraints equations according to the requested geometry.
-    const unsigned int nParameters = 6 * nPlanes;
+    const size_t nParameters = 6 * nPlanes;
     std::vector<double> ftx(nParameters, 0.);
     std::vector<double> fty(nParameters, 0.);
     std::vector<double> ftz(nParameters, 0.);
@@ -263,10 +258,10 @@ void Millepede::addConstraint(const std::vector<double>& dercs, const double rhs
 //=============================================================================
 // Add the equations for one track to the matrix
 //=============================================================================
-bool Millepede::putTrack(Track* track, const unsigned int nPlanes) {
+bool Millepede::putTrack(Track* track, const size_t nPlanes) {
 
     std::vector<Equation> equations;
-    const unsigned int nParameters = 6 * nPlanes;
+    const size_t nParameters = 6 * nPlanes;
     // Global derivatives
     std::vector<double> dergb(nParameters, 0.);
     // Global derivatives non linearly related to residual
@@ -389,7 +384,7 @@ void Millepede::addEquation(std::vector<Equation>& equations,
     for(unsigned int i = 0; i < m_nalc; ++i) {
         if(derlc[i] == 0.)
             continue;
-        equation.indL.push_back(i);
+        equation.indL.push_back(static_cast<int>(i));
         equation.derL.push_back(derlc[i]);
     }
     // Add non-zero global derivatives and corresponding indices.
@@ -398,11 +393,11 @@ void Millepede::addEquation(std::vector<Equation>& equations,
     equation.derNL.clear();
     equation.indNL.clear();
     equation.slopes.clear();
-    const unsigned int nG = dergb.size();
-    for(unsigned int i = 0; i < nG; ++i) {
+    const size_t nG = dergb.size();
+    for(size_t i = 0; i < nG; ++i) {
         if(dergb[i] == 0.)
             continue;
-        equation.indG.push_back(i);
+        equation.indG.push_back(static_cast<int>(i));
         equation.derG.push_back(dergb[i]);
         equation.derNL.push_back(dernl[i]);
         equation.indNL.push_back(dernli[i]);
@@ -427,22 +422,22 @@ bool Millepede::fitTrack(const std::vector<Equation>& equations,
     for(const auto& equation : equations) {
         double rmeas = equation.rmeas;
         // Suppress the global part (only relevant with iterations).
-        const unsigned int nG = equation.derG.size();
-        for(unsigned int i = 0; i < nG; ++i) {
-            const unsigned int j = equation.indG[i];
+        const size_t nG = equation.derG.size();
+        for(size_t i = 0; i < nG; ++i) {
+            const size_t j = static_cast<size_t>(equation.indG[i]);
             rmeas -= equation.derG[i] * m_dparm[j];
         }
         const double w = equation.weight;
         // Fill local matrix and vector.
-        const unsigned int nL = equation.derL.size();
-        for(unsigned int i = 0; i < nL; ++i) {
-            const unsigned int j = equation.indL[i];
+        const size_t nL = equation.derL.size();
+        for(size_t i = 0; i < nL; ++i) {
+            const size_t j = static_cast<size_t>(equation.indL[i]);
             blvec[j] += w * rmeas * equation.derL[i];
             LOG(DEBUG) << "blvec[" << j << "] = " << blvec[j];
 
             // Symmetric matrix, don't bother k > j coefficients.
             for(unsigned int k = 0; k <= i; ++k) {
-                const unsigned int ik = equation.indL[k];
+                const size_t ik = static_cast<size_t>(equation.indL[k]);
                 clmat[j][ik] += w * equation.derL[i] * equation.derL[k];
                 LOG(DEBUG) << "clmat[" << j << "][" << ik << "] = " << clmat[j][ik];
             }
@@ -451,7 +446,7 @@ bool Millepede::fitTrack(const std::vector<Equation>& equations,
 
     // Local parameter matrix is completed, now invert to solve.
     // Rank: number of non-zero diagonal elements.
-    int rank = invertMatrixLocal(clmat, blvec, m_nalc);
+    int rank = invertMatrixLocal(clmat, blvec, static_cast<size_t>(m_nalc));
     // Store the track parameters and errors.
     for(unsigned int i = 0; i < m_nalc; ++i) {
         trackParams[2 * i] = blvec[i];
@@ -464,14 +459,14 @@ bool Millepede::fitTrack(const std::vector<Equation>& equations,
     for(const auto& equation : equations) {
         double rmeas = equation.rmeas;
         // Suppress global and local terms.
-        const unsigned int nL = equation.derL.size();
-        for(unsigned int i = 0; i < nL; ++i) {
-            const unsigned int j = equation.indL[i];
+        const size_t nL = equation.derL.size();
+        for(size_t i = 0; i < nL; ++i) {
+            const size_t j = static_cast<size_t>(equation.indL[i]);
             rmeas -= equation.derL[i] * blvec[j];
         }
-        const unsigned int nG = equation.derG.size();
-        for(unsigned int i = 0; i < nG; ++i) {
-            const unsigned int j = equation.indG[i];
+        const size_t nG = equation.derG.size();
+        for(size_t i = 0; i < nG; ++i) {
+            const size_t j = static_cast<size_t>(equation.indG[i]);
             rmeas -= equation.derG[i] * m_dparm[j];
         }
         // Now rmeas contains the residual value.
@@ -524,41 +519,41 @@ bool Millepede::fitTrack(const std::vector<Equation>& equations,
     for(const auto& equation : equations) {
         double rmeas = equation.rmeas;
         // Suppress the global part.
-        const unsigned int nG = equation.derG.size();
-        for(unsigned int i = 0; i < nG; ++i) {
-            const unsigned int j = equation.indG[i];
+        const size_t nG = equation.derG.size();
+        for(size_t i = 0; i < nG; ++i) {
+            const size_t j = static_cast<size_t>(equation.indG[i]);
             rmeas -= equation.derG[i] * m_dparm[j];
         }
         const double w = equation.weight;
         // First of all, the global/global terms.
-        for(unsigned int i = 0; i < nG; ++i) {
-            const unsigned int j = equation.indG[i];
+        for(size_t i = 0; i < nG; ++i) {
+            const size_t j = static_cast<size_t>(equation.indG[i]);
             m_bgvec[j] += w * rmeas * equation.derG[i];
             LOG(DEBUG) << "bgvec[" << j << "] = " << m_bgvec[j];
-            for(unsigned int k = 0; k < nG; ++k) {
-                const unsigned int n = equation.indG[k];
+            for(size_t k = 0; k < nG; ++k) {
+                const size_t n = static_cast<size_t>(equation.indG[k]);
                 m_cgmat[j][n] += w * equation.derG[i] * equation.derG[k];
                 LOG(DEBUG) << "cgmat[" << j << "][" << n << "] = " << m_cgmat[j][n];
             }
         }
         // Now we have also rectangular matrices containing global/local terms.
-        const unsigned int nL = equation.derL.size();
-        for(unsigned int i = 0; i < nG; ++i) {
-            const unsigned int j = equation.indG[i];
+        const size_t nL = equation.derL.size();
+        for(size_t i = 0; i < nG; ++i) {
+            const size_t j = static_cast<size_t>(equation.indG[i]);
             // Index of index.
             int ik = indnz[j];
             if(ik == -1) {
                 // New global variable.
-                indnz[j] = nagbn;
-                indbk[nagbn] = j;
-                ik = nagbn;
+                indnz[j] = static_cast<int>(nagbn);
+                indbk[nagbn] = static_cast<int>(j);
+                ik = static_cast<int>(nagbn);
                 ++nagbn;
             }
             // Now fill the rectangular matrix.
-            for(unsigned int k = 0; k < nL; ++k) {
-                const unsigned int ij = equation.indL[k];
-                m_clcmat[ik][ij] += w * equation.derG[i] * equation.derL[k];
-                LOG(DEBUG) << "clcmat[" << ik << "][" << ij << "] = " << m_clcmat[ik][ij];
+            for(size_t k = 0; k < nL; ++k) {
+                const size_t ij = static_cast<size_t>(equation.indL[k]);
+                m_clcmat[static_cast<size_t>(ik)][ij] += w * equation.derG[i] * equation.derL[k];
+                LOG(DEBUG) << "clcmat[" << ik << "][" << ij << "] = " << m_clcmat[static_cast<size_t>(ik)][ij];
             }
         }
     }
@@ -566,11 +561,11 @@ bool Millepede::fitTrack(const std::vector<Equation>& equations,
     // Third loop is finished, now we update the correction matrices.
     multiplyAVAt(clmat, m_clcmat, m_corrm, m_nalc, nagbn);
     multiplyAX(m_clcmat, blvec, m_corrv, m_nalc, nagbn);
-    for(unsigned int i = 0; i < nagbn; ++i) {
-        const unsigned int j = indbk[i];
+    for(size_t i = 0; i < nagbn; ++i) {
+        const size_t j = static_cast<size_t>(indbk[i]);
         m_bgvec[j] -= m_corrv[i];
-        for(unsigned int k = 0; k < nagbn; ++k) {
-            const unsigned int ik = indbk[k];
+        for(size_t k = 0; k < nagbn; ++k) {
+            const size_t ik = static_cast<size_t>(indbk[k]);
             m_cgmat[j][ik] -= m_corrm[i][k];
         }
     }
@@ -623,14 +618,14 @@ void Millepede::updateGeometry() {
 //=============================================================================
 // Initialise the vectors and arrays.
 //=============================================================================
-bool Millepede::reset(const unsigned int nPlanes, const double startfact) {
+bool Millepede::reset(const size_t nPlanes, const double startfact) {
 
     // Reset the list of track equations.
     m_equations.clear();
     // Set the number of global derivatives.
-    m_nagb = 6 * nPlanes;
+    m_nagb = static_cast<unsigned int>(6 * nPlanes);
     // Reset matrices and vectors.
-    const unsigned int nRows = m_nagb + m_constraints.size();
+    const unsigned int nRows = m_nagb + static_cast<unsigned int>(m_constraints.size());
     m_bgvec.resize(nRows, 0.);
     m_cgmat.assign(nRows, std::vector<double>(nRows, 0.));
     m_corrv.assign(m_nagb, 0.);
@@ -643,7 +638,7 @@ bool Millepede::reset(const unsigned int nPlanes, const double startfact) {
     for(unsigned int i = 0; i < 6; ++i) {
         if(!m_dofs[i])
             continue;
-        for(unsigned int j = i * nPlanes; j < (i + 1) * nPlanes; ++j) {
+        for(size_t j = i * nPlanes; j < (i + 1) * nPlanes; ++j) {
             m_fixed[j] = false;
             m_psigm[j] = m_sigmas[i];
         }
@@ -675,12 +670,12 @@ bool Millepede::fitGlobal() {
     m_diag.assign(m_nagb, 0.);
     std::vector<double> bgvecPrev(m_nagb, 0.);
     std::vector<double> trackParams(2 * m_nalc + 2, 0.);
-    const unsigned int nTracks = m_equations.size();
+    const size_t nTracks = m_equations.size();
     std::vector<std::vector<double>> localParams(nTracks, std::vector<double>(m_nalc, 0.));
 
     const unsigned int nMaxIterations = 10;
     unsigned int iteration = 1;
-    unsigned int nGoodTracks = nTracks;
+    unsigned int nGoodTracks = static_cast<unsigned int>(nTracks);
     while(iteration <= nMaxIterations) {
         if(nGoodTracks == 0) {
             LOG(ERROR) << "No tracks to work with after outlier rejection.";
@@ -709,7 +704,7 @@ bool Millepede::fitGlobal() {
             }
         }
         // Add the constraints equations.
-        unsigned int nRows = m_nagb;
+        size_t nRows = static_cast<size_t>(m_nagb);
         for(const auto& constraint : m_constraints) {
             double sum = constraint.rhs;
             for(unsigned int j = 0; j < m_nagb; ++j) {
@@ -754,9 +749,9 @@ bool Millepede::fitGlobal() {
             LOG(DEBUG) << "err = " << sqrt(fabs(m_cgmat[i][i]));
             LOG(DEBUG) << "cgmat * diag = " << std::setprecision(5) << m_cgmat[i][i] * m_diag[i];
         }
-        if(nRows - nFixed - rank != 0) {
+        if(nRows - nFixed - static_cast<unsigned int>(rank) != 0) {
             LOG(WARNING) << "The rank defect of the symmetric " << nRows << " by " << nRows << " matrix is "
-                         << nRows - nFixed - rank;
+                         << nRows - nFixed - static_cast<unsigned int>(rank);
         }
         if(!m_iterate)
             break;
@@ -782,15 +777,17 @@ bool Millepede::fitGlobal() {
         double chi2 = 0.;
         double ndof = 0.;
         nGoodTracks = 0;
-        for(unsigned int i = 0; i < nTracks; ++i) {
+        for(size_t i = 0; i < nTracks; ++i) {
             // Skip invalidated tracks.
-            if(m_equations[i].empty())
+            if(m_equations[i].empty()) {
                 continue;
+            }
+
             std::vector<Equation> equations(m_equations[i].begin(), m_equations[i].end());
             for(auto equation : equations) {
-                const unsigned int nG = equation.derG.size();
-                for(unsigned int j = 0; j < nG; ++j) {
-                    const double t = localParams[i][equation.indNL[j]];
+                const size_t nG = equation.derG.size();
+                for(size_t j = 0; j < nG; ++j) {
+                    const double t = localParams[i][static_cast<size_t>(equation.indNL[j])];
                     if(t == 0)
                         continue;
                     equation.derG[j] += equation.derNL[j] * (t - equation.slopes[j]);
@@ -813,7 +810,7 @@ bool Millepede::fitGlobal() {
                 m_equations[i].clear();
             }
         }
-        LOG(INFO) << "Chi2 / DOF after re-fit: " << chi2 / (ndof - nRows);
+        LOG(INFO) << "Chi2 / DOF after re-fit: " << chi2 / (ndof - static_cast<double>(nRows));
     }
 
     // Print the final results.
@@ -827,15 +824,15 @@ bool Millepede::fitGlobal() {
 // Solve the equation V * X = B.
 // V is replaced by its inverse matrix and B by X, the solution vector
 //=============================================================================
-int Millepede::invertMatrix(std::vector<std::vector<double>>& v, std::vector<double>& b, const int n) {
+int Millepede::invertMatrix(std::vector<std::vector<double>>& v, std::vector<double>& b, const size_t n) {
     int rank = 0;
     const double eps = 0.0000000000001;
 
     std::vector<double> diag(n, 0.);
     std::vector<bool> used_param(n, true);
     std::vector<bool> flag(n, true);
-    for(int i = 0; i < n; i++) {
-        for(int j = 0; j <= i; j++) {
+    for(size_t i = 0; i < n; i++) {
+        for(size_t j = 0; j <= i; j++) {
             v[j][i] = v[i][j];
         }
     }
@@ -843,15 +840,15 @@ int Millepede::invertMatrix(std::vector<std::vector<double>>& v, std::vector<dou
     // Find max. elements of each row and column.
     std::vector<double> r(n, 0.);
     std::vector<double> c(n, 0.);
-    for(int i = 0; i < n; i++) {
-        for(int j = 0; j < n; j++) {
+    for(size_t i = 0; i < n; i++) {
+        for(size_t j = 0; j < n; j++) {
             if(fabs(v[i][j]) >= r[i])
                 r[i] = fabs(v[i][j]);
             if(fabs(v[j][i]) >= c[i])
                 c[i] = fabs(v[j][i]);
         }
     }
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         if(0.0 != r[i])
             r[i] = 1. / r[i];
         if(0.0 != c[i])
@@ -864,13 +861,13 @@ int Millepede::invertMatrix(std::vector<std::vector<double>>& v, std::vector<dou
     }
 
     // Equilibrate the V matrix
-    for(int i = 0; i < n; i++) {
-        for(int j = 0; j < n; j++) {
+    for(size_t i = 0; i < n; i++) {
+        for(size_t j = 0; j < n; j++) {
             v[i][j] = sqrt(r[i]) * v[i][j] * sqrt(c[j]);
         }
     }
 
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         // Save the absolute values of the diagonal elements.
         diag[i] = fabs(v[i][i]);
         if(r[i] == 0. && c[i] == 0.) {
@@ -880,18 +877,21 @@ int Millepede::invertMatrix(std::vector<std::vector<double>>& v, std::vector<dou
         }
     }
 
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         double vkk = 0.0;
-        int k = -1;
+
+        size_t k = 0;
+        bool found_k = false;
         // First look for the pivot, i. e. the max unused diagonal element.
-        for(int j = 0; j < n; j++) {
+        for(size_t j = 0; j < n; j++) {
             if(flag[j] && (fabs(v[j][j]) > std::max(fabs(vkk), eps))) {
                 vkk = v[j][j];
                 k = j;
+                found_k = true;
             }
         }
 
-        if(k >= 0) {
+        if(found_k) {
             // Pivot found.
             rank++;
             // Use this value.
@@ -899,15 +899,15 @@ int Millepede::invertMatrix(std::vector<std::vector<double>>& v, std::vector<dou
             // Replace pivot by its inverse.
             vkk = 1.0 / vkk;
             v[k][k] = -vkk;
-            for(int j = 0; j < n; j++) {
-                for(int jj = 0; jj < n; jj++) {
+            for(size_t j = 0; j < n; j++) {
+                for(size_t jj = 0; jj < n; jj++) {
                     if(j != k && jj != k && used_param[j] && used_param[jj]) {
                         // Other elements (do them first as you use old v[k][j])
                         v[j][jj] = v[j][jj] - vkk * v[j][k] * v[k][jj];
                     }
                 }
             }
-            for(int j = 0; j < n; j++) {
+            for(size_t j = 0; j < n; j++) {
                 if(j != k && used_param[j]) {
                     v[j][k] = v[j][k] * vkk;
                     v[k][j] = v[k][j] * vkk;
@@ -915,10 +915,10 @@ int Millepede::invertMatrix(std::vector<std::vector<double>>& v, std::vector<dou
             }
         } else {
             // No more pivot value (clear those elements)
-            for(int j = 0; j < n; j++) {
+            for(size_t j = 0; j < n; j++) {
                 if(flag[j]) {
                     b[j] = 0.0;
-                    for(int k = 0; k < n; k++) {
+                    for(size_t l = 0; l < n; l++) {
                         v[j][k] = 0.0;
                         v[k][j] = 0.0;
                     }
@@ -928,22 +928,22 @@ int Millepede::invertMatrix(std::vector<std::vector<double>>& v, std::vector<dou
         }
     }
     // Correct matrix V
-    for(int i = 0; i < n; i++) {
-        for(int j = 0; j < n; j++) {
+    for(size_t i = 0; i < n; i++) {
+        for(size_t j = 0; j < n; j++) {
             v[i][j] = sqrt(c[i]) * v[i][j] * sqrt(r[j]);
         }
     }
 
     std::vector<double> temp(n, 0.);
-    for(int j = 0; j < n; j++) {
+    for(size_t j = 0; j < n; j++) {
         // Reverse matrix elements
-        for(int jj = 0; jj < n; jj++) {
+        for(size_t jj = 0; jj < n; jj++) {
             v[j][jj] = -v[j][jj];
             temp[j] += v[j][jj] * b[jj];
         }
     }
 
-    for(int j = 0; j < n; j++) {
+    for(size_t j = 0; j < n; j++) {
         b[j] = temp[j];
     }
     return rank;
@@ -952,41 +952,44 @@ int Millepede::invertMatrix(std::vector<std::vector<double>>& v, std::vector<dou
 //=============================================================================
 // Simplified version.
 //=============================================================================
-int Millepede::invertMatrixLocal(std::vector<std::vector<double>>& v, std::vector<double>& b, const int n) {
+int Millepede::invertMatrixLocal(std::vector<std::vector<double>>& v, std::vector<double>& b, const size_t n) {
 
     int rank = 0;
     const double eps = 0.0000000000001;
 
     std::vector<bool> flag(n, true);
     std::vector<double> diag(n, 0.);
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         // Save the absolute values of the diagonal elements.
         diag[i] = fabs(v[i][i]);
-        for(int j = 0; j <= i; j++) {
+        for(size_t j = 0; j <= i; j++) {
             v[j][i] = v[i][j];
         }
     }
 
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         double vkk = 0.0;
-        int k = -1;
+
+        size_t k = 0;
+        bool found_k = false;
         // First look for the pivot, i. e. the max. unused diagonal element.
-        for(int j = 0; j < n; j++) {
+        for(size_t j = 0; j < n; j++) {
             if(flag[j] && (fabs(v[j][j]) > std::max(fabs(vkk), eps * diag[j]))) {
                 vkk = v[j][j];
                 k = j;
+                found_k = true;
             }
         }
 
-        if(k >= 0) {
+        if(found_k) {
             // Pivot found
             rank++;
             flag[k] = false;
             // Replace pivot by its inverse.
             vkk = 1.0 / vkk;
             v[k][k] = -vkk;
-            for(int j = 0; j < n; j++) {
-                for(int jj = 0; jj < n; jj++) {
+            for(size_t j = 0; j < n; j++) {
+                for(size_t jj = 0; jj < n; jj++) {
                     if(j != k && jj != k) {
                         // Other elements (do them first as you use old v[k][j])
                         v[j][jj] = v[j][jj] - vkk * v[j][k] * v[k][jj];
@@ -994,7 +997,7 @@ int Millepede::invertMatrixLocal(std::vector<std::vector<double>>& v, std::vecto
                 }
             }
 
-            for(int j = 0; j < n; j++) {
+            for(size_t j = 0; j < n; j++) {
                 if(j != k) {
                     v[j][k] = v[j][k] * vkk;
                     v[k][j] = v[k][j] * vkk;
@@ -1002,7 +1005,7 @@ int Millepede::invertMatrixLocal(std::vector<std::vector<double>>& v, std::vecto
             }
         } else {
             // No more pivot values (clear those elements).
-            for(int j = 0; j < n; j++) {
+            for(size_t j = 0; j < n; j++) {
                 if(flag[j]) {
                     b[j] = 0.0;
                     for(k = 0; k < n; k++)
@@ -1014,14 +1017,14 @@ int Millepede::invertMatrixLocal(std::vector<std::vector<double>>& v, std::vecto
     }
 
     std::vector<double> temp(n, 0.);
-    for(int j = 0; j < n; j++) {
+    for(size_t j = 0; j < n; j++) {
         // Reverse matrix elements
-        for(int jj = 0; jj < n; jj++) {
+        for(size_t jj = 0; jj < n; jj++) {
             v[j][jj] = -v[j][jj];
             temp[j] += v[j][jj] * b[jj];
         }
     }
-    for(int j = 0; j < n; j++) {
+    for(size_t j = 0; j < n; j++) {
         b[j] = temp[j];
     }
     return rank;

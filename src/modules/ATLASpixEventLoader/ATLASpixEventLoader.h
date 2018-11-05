@@ -72,7 +72,6 @@ namespace corryvreckan {
         std::vector<double> m_calibrationFactors;
         std::string m_inputDirectory;
         std::string m_calibrationFile;
-        double m_eventLength;
         double m_startTime;
         bool m_toaMode;
         bool m_legacyFormat;

@@ -6,7 +6,7 @@ using namespace std;
 TestAlgorithm::TestAlgorithm(Configuration config, std::vector<Detector*> detectors)
     : Module(std::move(config), std::move(detectors)) {
     makeCorrelations = m_config.get<bool>("makeCorrelations", false);
-    timingCut = m_config.get<double>("timingCut", Units::convert(100, "ns"));
+    timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(100, "ns")));
     LOG(DEBUG) << "Setting makeCorrelations to: " << makeCorrelations;
 
     m_eventLength = m_config.get<double>("eventLength", 1);
@@ -40,7 +40,7 @@ void TestAlgorithm::initialise() {
         name = "correlationTime_" + detector->name();
         // time correlation plot range should cover length of events. nanosecond binning.
         correlationTime[detector->name()] =
-            new TH1F(name.c_str(), name.c_str(), (int)(2. * m_eventLength), -1 * m_eventLength, m_eventLength);
+            new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_eventLength), -1 * m_eventLength, m_eventLength);
         correlationTime[detector->name()]->GetXaxis()->SetTitle("Reference cluster time stamp - cluster time stamp [ns]");
         name = "correlationTimeInt_" + detector->name();
         correlationTimeInt[detector->name()] = new TH1F(name.c_str(), name.c_str(), 8000, -40000, 40000);
@@ -82,8 +82,8 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
     // Loop over all Timepix3 and make plots
     for(auto& detector : get_detectors()) {
         // Get the pixels
-        Pixels* pixels = (Pixels*)clipboard->get(detector->name(), "pixels");
-        if(pixels == NULL) {
+        Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(detector->name(), "pixels"));
+        if(pixels == nullptr) {
             LOG(DEBUG) << "Detector " << detector->name() << " does not have any pixels on the clipboard";
             continue;
         }
@@ -93,20 +93,20 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
             // Hitmap
             hitmap[detector->name()]->Fill(pixel->column(), pixel->row());
             // Timing plots
-            eventTimes[detector->name()]->Fill(Units::convert(pixel->timestamp(), "s"));
+            eventTimes[detector->name()]->Fill(static_cast<double>(Units::convert(pixel->timestamp(), "s")));
         }
 
         // Get the clusters
-        Clusters* clusters = (Clusters*)clipboard->get(detector->name(), "clusters");
-        if(clusters == NULL) {
+        Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(detector->name(), "clusters"));
+        if(clusters == nullptr) {
             LOG(DEBUG) << "Detector " << detector->name() << " does not have any clusters on the clipboard";
             continue;
         }
 
         // Get clusters from reference detector
         auto reference = get_reference();
-        Clusters* referenceClusters = (Clusters*)clipboard->get(reference->name(), "clusters");
-        if(referenceClusters == NULL) {
+        Clusters* referenceClusters = reinterpret_cast<Clusters*>(clipboard->get(reference->name(), "clusters"));
+        if(referenceClusters == nullptr) {
             LOG(DEBUG) << "Reference detector " << reference->name() << " does not have any clusters on the clipboard";
             continue;
         }
@@ -134,7 +134,7 @@ StatusCode TestAlgorithm::run(Clipboard* clipboard) {
                     }
                     //                    correlationTime[detector->name()]->Fill(Units::convert(timeDifference, "s"));
                     correlationTime[detector->name()]->Fill(timeDifference); // time difference in ns
-                    correlationTimeInt[detector->name()]->Fill(timeDifferenceInt);
+                    correlationTimeInt[detector->name()]->Fill(static_cast<double>(timeDifferenceInt));
                 }
             }
         }

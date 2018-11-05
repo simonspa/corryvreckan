@@ -15,10 +15,6 @@ EUDAQEventLoader::EUDAQEventLoader(Configuration config, std::vector<Detector*> 
 
 void EUDAQEventLoader::initialise() {
 
-    // Initialise histograms per device
-    for(auto& detector : get_detectors()) {
-    }
-
     // Create new file reader:
     try {
         reader = new eudaq::FileReader(m_filename, "");
@@ -66,9 +62,9 @@ StatusCode EUDAQEventLoader::run(Clipboard* clipboard) {
 
             // Make a new container for the data
             Pixels* deviceData = new Pixels();
-            for(size_t ipix = 0; ipix < plane.HitPixels(); ++ipix) {
-                auto col = plane.GetX(ipix);
-                auto row = plane.GetY(ipix);
+            for(unsigned int ipix = 0; ipix < plane.HitPixels(); ++ipix) {
+                auto col = static_cast<int>(plane.GetX(ipix));
+                auto row = static_cast<int>(plane.GetY(ipix));
 
                 // Check if this pixel is masked
                 if(detector->masked(col, row)) {
@@ -76,13 +72,14 @@ StatusCode EUDAQEventLoader::run(Clipboard* clipboard) {
                     continue;
                 }
 
-                Pixel* pixel = new Pixel(detectorID, row, col, plane.GetPixel(ipix));
+                Pixel* pixel = new Pixel(detectorID, row, col, static_cast<int>(plane.GetPixel(ipix)));
+                pixel->setCharge(plane.GetPixel(ipix));
                 pixel->timestamp(m_eventNumber);
                 deviceData->push_back(pixel);
             }
 
             // Store on clipboard
-            clipboard->put(detectorID, "pixels", (Objects*)deviceData);
+            clipboard->put(detectorID, "pixels", reinterpret_cast<Objects*>(deviceData));
         }
     }
 

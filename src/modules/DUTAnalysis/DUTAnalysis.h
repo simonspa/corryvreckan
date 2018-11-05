@@ -57,8 +57,8 @@ namespace corryvreckan {
         bool m_useMCtruth;
         long long int m_powerOnTime;
         long long int m_powerOffTime;
-        long long int m_shutterOpenTime;
-        long long int m_shutterCloseTime;
+        double m_shutterOpenTime;
+        double m_shutterCloseTime;
         bool m_digitalPowerPulsing;
         double chi2ndofCut;
     };

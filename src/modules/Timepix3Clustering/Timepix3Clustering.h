@@ -23,6 +23,9 @@ namespace corryvreckan {
         void initialise();
         StatusCode run(Clipboard* clipboard);
         void finalise();
+
+    private:
+        static bool sortByTime(Pixel* pixel1, Pixel* pixel2);
         void calculateClusterCentre(Cluster*);
         bool touching(Pixel*, Cluster*);
         bool closeInTime(Pixel*, Cluster*);

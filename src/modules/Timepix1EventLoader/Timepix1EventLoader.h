@@ -22,6 +22,8 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
+    private:
+        static bool sortByTime(std::string filename1, std::string filename2);
         void processHeader(std::string, std::string&, long long int&);
 
         // Member variables
@@ -29,11 +31,10 @@ namespace corryvreckan {
         std::string m_inputDirectory;
         std::vector<std::string> m_inputFilenames;
         bool m_fileOpen;
-        int m_fileNumber;
+        size_t m_fileNumber;
         long long int m_eventTime;
         std::ifstream m_currentFile;
         std::string m_currentDevice;
-        bool m_newFrame;
         std::string m_prevHeader;
     };
 } // namespace corryvreckan

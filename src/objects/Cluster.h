@@ -80,7 +80,7 @@ namespace corryvreckan {
 
         // Retrieve the seed pixel of the cluster, defined as the one with the highest charge:
         Pixel* getSeedPixel() {
-            Pixel* seed;
+            Pixel* seed = nullptr;
             double maxcharge = -1;
             for(auto& px : m_pixels) {
                 if(px->charge() > maxcharge) {
