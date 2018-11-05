@@ -1,9 +1,9 @@
-#include "Timepix3Clustering.h"
+#include "Clustering4D.h"
 
 using namespace corryvreckan;
 using namespace std;
 
-Timepix3Clustering::Timepix3Clustering(Configuration config, std::shared_ptr<Detector> detector)
+Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
     timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(100, "ns"))); // 100 ns
@@ -11,7 +11,7 @@ Timepix3Clustering::Timepix3Clustering(Configuration config, std::shared_ptr<Det
     neighbour_radius_col = m_config.get<int>("neighbour_radius_col", 1);
 }
 
-void Timepix3Clustering::initialise() {
+void Clustering4D::initialise() {
 
     // Cluster plots
     std::string title = m_detector->name() + " Cluster size;cluster size;events";
@@ -27,11 +27,11 @@ void Timepix3Clustering::initialise() {
 }
 
 // Sort function for pixels from low to high times
-bool Timepix3Clustering::sortByTime(Pixel* pixel1, Pixel* pixel2) {
+bool Clustering4D::sortByTime(Pixel* pixel1, Pixel* pixel2) {
     return (pixel1->timestamp() < pixel2->timestamp());
 }
 
-StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
+StatusCode Clustering4D::run(Clipboard* clipboard) {
 
     // Check if they are a Timepix3
     if(m_detector->type() != "Timepix3") {
@@ -132,7 +132,7 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
 }
 
 // Check if a pixel touches any of the pixels in a cluster
-bool Timepix3Clustering::touching(Pixel* neighbour, Cluster* cluster) {
+bool Clustering4D::touching(Pixel* neighbour, Cluster* cluster) {
 
     bool Touching = false;
 
@@ -152,7 +152,7 @@ bool Timepix3Clustering::touching(Pixel* neighbour, Cluster* cluster) {
 }
 
 // Check if a pixel is close in time to the pixels of a cluster
-bool Timepix3Clustering::closeInTime(Pixel* neighbour, Cluster* cluster) {
+bool Clustering4D::closeInTime(Pixel* neighbour, Cluster* cluster) {
 
     bool CloseInTime = false;
 
@@ -166,7 +166,7 @@ bool Timepix3Clustering::closeInTime(Pixel* neighbour, Cluster* cluster) {
     return CloseInTime;
 }
 
-void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
+void Clustering4D::calculateClusterCentre(Cluster* cluster) {
 
     // Empty variables to calculate cluster position
     double row(0), column(0), tot(0);

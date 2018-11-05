@@ -1,10 +1,10 @@
-#ifndef TIMEPIX3CLUSTERING_H
-#define TIMEPIX3CLUSTERING_H 1
+#ifndef CLUSTERING4D_H
+#define CLUSTERING4D_H 1
 
-#include <iostream>
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <iostream>
 #include "core/module/Module.hpp"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
@@ -12,25 +12,20 @@
 namespace corryvreckan {
     /** @ingroup Modules
      */
-    class Timepix3Clustering : public Module {
+    class Clustering4D : public Module {
 
     public:
         // Constructors and destructors
-        Timepix3Clustering(Configuration config, std::shared_ptr<Detector> detectors);
-        ~Timepix3Clustering() {}
+        Clustering4D(Configuration config, std::shared_ptr<Detector> detector);
+        ~Clustering4D() {}
 
         // Functions
         void initialise();
         StatusCode run(Clipboard* clipboard);
-<<<<<<< HEAD
 
     private:
-=======
-        void finalise();
-
-    private:
+        std::shared_ptr<Detector> m_detector;
         static bool sortByTime(Pixel* pixel1, Pixel* pixel2);
->>>>>>> compilerwarnings
         void calculateClusterCentre(Cluster*);
         bool touching(Pixel*, Cluster*);
         bool closeInTime(Pixel*, Cluster*);
@@ -47,4 +42,4 @@ namespace corryvreckan {
         int neighbour_radius_col;
     };
 } // namespace corryvreckan
-#endif // TIMEPIX3CLUSTERING_H
+#endif // CLUSTERING4D_H

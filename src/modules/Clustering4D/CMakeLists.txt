@@ -3,8 +3,7 @@ CORRYVRECKAN_DETECTOR_MODULE(MODULE_NAME)
 
 # Add source files to library
 CORRYVRECKAN_MODULE_SOURCES(${MODULE_NAME}
-    Timepix3Clustering.cpp
-    # ADD SOURCE FILES HERE...
+    Clustering4D.cpp
 )
 
 # Provide standard install target

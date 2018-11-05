@@ -39,7 +39,7 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
     canvas_cy2d =
         m_config.getMatrix<std::string>("CorrelationY2D", {{"TestAlgorithm/%DETECTOR%/correlationY_2Dlocal", "colz"}});
 
-    canvas_charge = m_config.getMatrix<std::string>("ChargeDistributions", {{"Timepix3Clustering/%DETECTOR%/clusterTot"}});
+    canvas_charge = m_config.getMatrix<std::string>("ChargeDistributions", {{"Clustering4D/%DETECTOR%/clusterTot"}});
 
     canvas_time = m_config.getMatrix<std::string>("EventTimes", {{"TestAlgorithm/%DETECTOR%/eventTimes"}});
 }
