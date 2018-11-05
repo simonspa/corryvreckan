@@ -546,7 +546,7 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
             const UChar_t header2 = ((pixdata & 0x0F00000000000000) >> 56) & 0xF;
             if(header2 == 0xF) {
                 unsigned long long int stamp = (pixdata & 0x1E0) >> 5;
-                long long int timestamp_raw = (pixdata & 0xFFFFFFFFE00) >> 9;
+                long long int timestamp_raw = static_cast<long long int>(pixdata & 0xFFFFFFFFE00) >> 9;
                 long long int timestamp = 0;
                 // int triggerNumber = ((pixdata & 0xFFF00000000000) >> 44);
                 int intermediate = (pixdata & 0x1F);
@@ -572,9 +572,9 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
             LOG(TRACE) << "Found pixel data";
 
             // Decode the pixel information from the relevant bits
-            const UShort_t dcol = ((pixdata & 0x0FE0000000000000) >> 52);
-            const UShort_t spix = ((pixdata & 0x001F800000000000) >> 45);
-            const UShort_t pix = ((pixdata & 0x0000700000000000) >> 44);
+            const UShort_t dcol = static_cast<UShort_t>((pixdata & 0x0FE0000000000000) >> 52);
+            const UShort_t spix = static_cast<UShort_t>((pixdata & 0x001F800000000000) >> 45);
+            const UShort_t pix = static_cast<UShort_t>((pixdata & 0x0000700000000000) >> 44);
             const UShort_t col = static_cast<UShort_t>(dcol + pix / 4);
             const UShort_t row = static_cast<UShort_t>(spix + (pix & 0x3));
 
@@ -586,7 +586,7 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
 
             // Get the rest of the data from the pixel
             // const UShort_t pixno = col * 256 + row;
-            const UInt_t data = ((pixdata & 0x00000FFFFFFF0000) >> 16);
+            const UInt_t data = static_cast<UInt_t>((pixdata & 0x00000FFFFFFF0000) >> 16);
             const unsigned int tot = (data & 0x00003FF0) >> 4;
             const uint64_t spidrTime(pixdata & 0x000000000000FFFF);
             const uint64_t ftoa(data & 0x0000000F);
@@ -615,11 +615,7 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
             }
 
             // Convert final timestamp into ns and add the timing offset (in nano seconds) from the detectors file (if any)
-            const double timestamp = static_cast<double>(time) / (4096 / 25) + detector->timingOffset();
-
-            LOG(DEBUG) << "Timestamp = " << Units::display(timestamp, {"s", "ns"});
-            // If events are loaded based on time intervals, take all hits where the
-            // time is within this window
+            const double timestamp = static_cast<double>(time) / (4096. / 25.) + detector->timingOffset();
 
             // Ignore pixel data if it is before the "eventStart" read from the clipboard storage:
             if(temporalSplit && (timestamp < clipboard->get_persistent("eventStart"))) {
