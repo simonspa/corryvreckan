@@ -612,11 +612,7 @@ bool Timepix3EventLoader::loadData(Clipboard* clipboard, Detector* detector, Pix
             }
 
             // Convert final timestamp into ns and add the timing offset (in nano seconds) from the detectors file (if any)
-            const double timestamp = static_cast<double>(time) / (4096 / 25) + detector->timingOffset();
-
-            LOG(DEBUG) << "Timestamp = " << Units::display(timestamp, {"s", "ns"});
-            // If events are loaded based on time intervals, take all hits where the
-            // time is within this window
+            const double timestamp = static_cast<double>(time) / (4096. / 25.) + detector->timingOffset();
 
             // Ignore pixel data if it is before the "eventStart" read from the clipboard storage:
             if(temporalSplit && (timestamp < clipboard->get_persistent("eventStart"))) {
