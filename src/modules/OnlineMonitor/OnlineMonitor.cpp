@@ -15,7 +15,7 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
                                                       {{"Tracking4D/trackChi2"},
                                                        {"TestAlgorithm/%REFERENCE%/clusterTot"},
                                                        {"TestAlgorithm/%REFERENCE%/hitmap", "colz"},
-                                                       {"Tracking4D/residualsX_%REFERENCE%"}});
+                                                       {"Tracking4D/%REFERENCE%/residualsX"}});
 
     // Set up individual plots for the DUT
     canvas_dutplots = m_config.getMatrix<std::string>("DUTPlots",
@@ -35,7 +35,7 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
                                                        {"Tracking4D/tracksPerEvent"},
                                                        {"Tracking4D/clustersPerTrack"}});
     canvas_hitmaps = m_config.getMatrix<std::string>("HitMaps", {{"TestAlgorithm/%DETECTOR%/hitmap", "colz"}});
-    canvas_residuals = m_config.getMatrix<std::string>("Residuals", {{"Tracking4D/residualsX_%DETECTOR%"}});
+    canvas_residuals = m_config.getMatrix<std::string>("Residuals", {{"Tracking4D/%DETECTOR%/residualsX"}});
 
     canvas_cx = m_config.getMatrix<std::string>("CorrelationX", {{"TestAlgorithm/%DETECTOR%/correlationX"}});
     canvas_cx2d =

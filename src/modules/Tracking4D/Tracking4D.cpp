@@ -33,24 +33,33 @@ void Tracking4D::initialise() {
 
     // Loop over all planes
     for(auto& detector : get_detectors()) {
-        string detectorID = detector->name();
+        auto detectorID = detector->name();
 
-        string name = "residualsX_" + detectorID;
-        residualsX[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
-        name = "residualsXwidth1_" + detectorID;
-        residualsXwidth1[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
-        name = "residualsXwidth2_" + detectorID;
-        residualsXwidth2[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
-        name = "residualsXwidth3_" + detectorID;
-        residualsXwidth3[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
-        name = "residualsY_" + detectorID;
-        residualsY[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
-        name = "residualsYwidth1_" + detectorID;
-        residualsYwidth1[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
-        name = "residualsYwidth2_" + detectorID;
-        residualsYwidth2[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
-        name = "residualsYwidth3_" + detectorID;
-        residualsYwidth3[detectorID] = new TH1F(name.c_str(), name.c_str(), 500, -0.1, 0.1);
+        TDirectory* directory = getROOTDirectory();
+        TDirectory* local_directory = directory->mkdir(detectorID.c_str());
+        if(local_directory == nullptr) {
+            throw RuntimeError("Cannot create or access local ROOT directory for module " + this->getUniqueName());
+        }
+        local_directory->cd();
+
+        title = detectorID + " Residual X;x_{track}-x [mm];events";
+        residualsX[detectorID] = new TH1F("residualsX", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + " Residual X, size 1;x_{track}-x [mm];events";
+        residualsXwidth1[detectorID] = new TH1F("residualsXwidth1", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + " Residual X, size 2;x_{track}-x [mm];events";
+        residualsXwidth2[detectorID] = new TH1F("residualsXwidth2", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + " Residual X, size 3;x_{track}-x [mm];events";
+        residualsXwidth3[detectorID] = new TH1F("residualsXwidth3", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + " Residual Y;y_{track}-y [mm];events";
+        residualsY[detectorID] = new TH1F("residualsY", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + " Residual Y, size 1;y_{track}-y [mm];events";
+        residualsYwidth1[detectorID] = new TH1F("residualsYwidth1", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + " Residual Y, size 2;y_{track}-y [mm];events";
+        residualsYwidth2[detectorID] = new TH1F("residualsYwidth2", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + " Residual Y, size 3;y_{track}-y [mm];events";
+        residualsYwidth3[detectorID] = new TH1F("residualsYwidth3", title.c_str(), 500, -0.1, 0.1);
+
+        directory->cd();
     }
 }
 
