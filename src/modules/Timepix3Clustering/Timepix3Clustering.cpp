@@ -4,7 +4,7 @@ using namespace corryvreckan;
 using namespace std;
 
 Timepix3Clustering::Timepix3Clustering(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), std::move(detector)) {
+    : Module(std::move(config), detector), m_detector(detector) {
 
     timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(100, "ns"))); // 100 ns
     neighbour_radius_row = m_config.get<int>("neighbour_radius_row", 1);
@@ -13,14 +13,17 @@ Timepix3Clustering::Timepix3Clustering(Configuration config, std::shared_ptr<Det
 
 void Timepix3Clustering::initialise() {
 
-    auto detector = get_detectors().front();
-
     // Cluster plots
-    clusterSize = new TH1F("clusterSize", "clusterSize", 100, 0, 100);
-    clusterWidthRow = new TH1F("clusterWidthRow", "clusterWidthRow", 25, 0, 25);
-    clusterWidthColumn = new TH1F("clusterWidthColumn", "clusterWidthColumn", 100, 0, 100);
-    clusterTot = new TH1F("clusterTot", "clusterTot", 10000, 0, 100000);
-    clusterPositionGlobal = new TH2F("clusterPositionGlobal", "clusterPositionGlobal", 400, -10., 10., 400, -10., 10.);
+    std::string title = m_detector->name() + " Cluster size;cluster size;events";
+    clusterSize = new TH1F("clusterSize", title.c_str(), 100, 0, 100);
+    title = m_detector->name() + " Cluster Width - Rows;cluster width [rows];events";
+    clusterWidthRow = new TH1F("clusterWidthRow", title.c_str(), 25, 0, 25);
+    title = m_detector->name() + " Cluster Width - Columns;cluster width [columns];events";
+    clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, 0, 100);
+    title = m_detector->name() + " Cluster Charge;cluster charge [e];events";
+    clusterTot = new TH1F("clusterTot", title.c_str(), 10000, 0, 100000);
+    title = m_detector->name() + " Cluster Position (Global);x [mm];y [mm];events";
+    clusterPositionGlobal = new TH2F("clusterPositionGlobal", title.c_str(), 400, -10., 10., 400, -10., 10.);
 }
 
 // Sort function for pixels from low to high times
@@ -30,20 +33,18 @@ bool Timepix3Clustering::sortByTime(Pixel* pixel1, Pixel* pixel2) {
 
 StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
 
-    auto detector = get_detectors().front();
-
     // Check if they are a Timepix3
-    if(detector->type() != "Timepix3") {
+    if(m_detector->type() != "Timepix3") {
         return Success;
     }
 
     // Get the pixels
-    Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(detector->name(), "pixels"));
+    Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));
     if(pixels == nullptr) {
-        LOG(DEBUG) << "Detector " << detector->name() << " does not have any pixels on the clipboard";
+        LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return Success;
     }
-    LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << detector->name();
+    LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << m_detector->name();
 
     // Sort the pixels from low to high timestamp
     std::sort(pixels->begin(), pixels->end(), sortByTime);
@@ -123,9 +124,9 @@ StatusCode Timepix3Clustering::run(Clipboard* clipboard) {
 
     // Put the clusters on the clipboard
     if(deviceClusters->size() > 0) {
-        clipboard->put(detector->name(), "clusters", reinterpret_cast<Objects*>(deviceClusters));
+        clipboard->put(m_detector->name(), "clusters", reinterpret_cast<Objects*>(deviceClusters));
     }
-    LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << detector->name();
+    LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << m_detector->name();
 
     return Success;
 }
@@ -191,14 +192,18 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
     // Row and column positions are tot-weighted
     row /= (tot > 0 ? tot : 1);
     column /= (tot > 0 ? tot : 1);
-    auto detector = get_detector(detectorID);
+
+    if(detectorID != m_detector->name()) {
+        // Should never happen...
+        return;
+    }
 
     // Create object with local cluster position
-    PositionVector3D<Cartesian3D<double>> positionLocal(detector->pitch().X() * (column - detector->nPixelsX() / 2),
-                                                        detector->pitch().Y() * (row - detector->nPixelsY() / 2),
+    PositionVector3D<Cartesian3D<double>> positionLocal(m_detector->pitch().X() * (column - m_detector->nPixelsX() / 2),
+                                                        m_detector->pitch().Y() * (row - m_detector->nPixelsY() / 2),
                                                         0);
     // Calculate global cluster position
-    PositionVector3D<Cartesian3D<double>> positionGlobal = detector->localToGlobal(positionLocal);
+    PositionVector3D<Cartesian3D<double>> positionGlobal = m_detector->localToGlobal(positionLocal);
 
     // Set the cluster parameters
     cluster->setRow(row);
@@ -206,7 +211,7 @@ void Timepix3Clustering::calculateClusterCentre(Cluster* cluster) {
     cluster->setTot(tot);
 
     // Set uncertainty on position from intrinstic detector resolution:
-    cluster->setError(detector->resolution());
+    cluster->setError(m_detector->resolution());
 
     cluster->setTimestamp(timestamp);
     cluster->setDetectorID(detectorID);

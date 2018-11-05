@@ -16,7 +16,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Timepix3Clustering(Configuration config, std::shared_ptr<Detector> detectors);
+        Timepix3Clustering(Configuration config, std::shared_ptr<Detector> detector);
         ~Timepix3Clustering() {}
 
         // Functions
@@ -24,6 +24,7 @@ namespace corryvreckan {
         StatusCode run(Clipboard* clipboard);
 
     private:
+        std::shared_ptr<Detector> m_detector;
         static bool sortByTime(Pixel* pixel1, Pixel* pixel2);
         void calculateClusterCentre(Cluster*);
         bool touching(Pixel*, Cluster*);

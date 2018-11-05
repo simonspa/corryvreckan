@@ -18,8 +18,9 @@ void TestAlgorithm::initialise() {
     std::shared_ptr<Detector> reference = get_reference();
 
     // Simple hit map
+    std::string title = m_detector->name() + ": hitmap;x [px];y [px];events";
     hitmap = new TH2F("hitmap",
-                      "hitmap",
+                      title.c_str(),
                       m_detector->nPixelsX(),
                       0,
                       m_detector->nPixelsX(),
@@ -28,7 +29,7 @@ void TestAlgorithm::initialise() {
                       m_detector->nPixelsY());
 
     // Correlation plots
-    std::string title = m_detector->name() + ": correlation X;x_{ref}-x [mm];events";
+    title = m_detector->name() + ": correlation X;x_{ref}-x [mm];events";
     correlationX = new TH1F("correlationX", title.c_str(), 1000, -10., 10.);
     title = m_detector->name() + ": correlation Y;y_{ref}-y [mm];events";
     correlationY = new TH1F("correlationY", title.c_str(), 1000, -10., 10.);
