@@ -28,27 +28,31 @@ void TestAlgorithm::initialise() {
                       m_detector->nPixelsY());
 
     // Correlation plots
-    correlationX = new TH1F("correlationX", "correlationX", 1000, -10., 10.);
-    correlationY = new TH1F("correlationY", "correlationY", 1000, -10., 10.);
+    std::string title = m_detector->name() + ": correlation X;x_{ref}-x [mm];events";
+    correlationX = new TH1F("correlationX", title.c_str(), 1000, -10., 10.);
+    title = m_detector->name() + ": correlation Y;y_{ref}-y [mm];events";
+    correlationY = new TH1F("correlationY", title.c_str(), 1000, -10., 10.);
 
     // time correlation plot range should cover length of events. nanosecond binning.
-    correlationTime = new TH1F(
-        "correlationTime", "correlationTime", static_cast<int>(2. * m_eventLength), -1 * m_eventLength, m_eventLength);
-    correlationTime->GetXaxis()->SetTitle("Reference cluster time stamp - cluster time stamp [ns]");
-    correlationTimeInt = new TH1F("correlationTimeInt", "correlationTimeInt", 8000, -40000, 40000);
-    correlationTimeInt->GetXaxis()->SetTitle("Reference cluster time stamp - cluster time stamp [1/40 MHz]");
+    title = m_detector->name() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [ns];events";
+    correlationTime =
+        new TH1F("correlationTime", title.c_str(), static_cast<int>(2. * m_eventLength), -1 * m_eventLength, m_eventLength);
+    title = m_detector->name() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [1/40MHz];events";
+    correlationTimeInt = new TH1F("correlationTimeInt", title.c_str(), 8000, -40000, 40000);
 
     // 2D correlation plots (pixel-by-pixel, local coordinates):
+    title = m_detector->name() + ": 2D correlation X (local);x [px];x_{ref} [px];events";
     correlationX2Dlocal = new TH2F("correlationX_2Dlocal",
-                                   "correlationX_2Dlocal",
+                                   title.c_str(),
                                    m_detector->nPixelsX(),
                                    0,
                                    m_detector->nPixelsX(),
                                    reference->nPixelsX(),
                                    0,
                                    reference->nPixelsX());
-    correlationY2Dlocal = new TH2F("correlationY_2Dlocal_",
-                                   "correlationY_2Dlocal_",
+    title = m_detector->name() + ": 2D correlation Y (local);y [px];y_{ref} [px];events";
+    correlationY2Dlocal = new TH2F("correlationY_2Dlocal",
+                                   title.c_str(),
                                    m_detector->nPixelsY(),
                                    0,
                                    m_detector->nPixelsY(),
@@ -56,11 +60,14 @@ void TestAlgorithm::initialise() {
                                    0,
                                    reference->nPixelsY());
 
-    correlationX2D = new TH2F("correlationX_2D", "correlationX_2D", 100, -10., 10., 100, -10., 10.);
-    correlationY2D = new TH2F("correlationY_2D", "correlationY_2D", 100, -10., 10., 100, -10., 10.);
+    title = m_detector->name() + ": 2D correlation X (global);x [mm];x_{ref} [mm];events";
+    correlationX2D = new TH2F("correlationX_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);
+    title = m_detector->name() + ": 2D correlation Y (global);y [mm];y_{ref} [mm];events";
+    correlationY2D = new TH2F("correlationY_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);
 
     // Timing plots
-    eventTimes = new TH1F("eventTimes", "eventTimes", 3000000, 0, 300);
+    title = m_detector->name() + ": event time;t [s];events";
+    eventTimes = new TH1F("eventTimes", title.c_str(), 3000000, 0, 300);
 }
 
 StatusCode TestAlgorithm::run(Clipboard* clipboard) {
