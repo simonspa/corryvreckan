@@ -3,8 +3,7 @@ CORRYVRECKAN_GLOBAL_MODULE(MODULE_NAME)
 
 # Add source files to library
 CORRYVRECKAN_MODULE_SOURCES(${MODULE_NAME}
-    SpatialTracking.cpp
-    # ADD SOURCE FILES HERE...
+    TrackingSpatial.cpp
 )
 
 # Provide standard install target

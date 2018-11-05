@@ -1,5 +1,5 @@
-#ifndef SpatialTracking_H
-#define SpatialTracking_H 1
+#ifndef TrackingSpatial_H
+#define TrackingSpatial_H 1
 
 #include <Math/Functor.h>
 #include <Minuit2/Minuit2Minimizer.h>
@@ -15,12 +15,12 @@
 namespace corryvreckan {
     /** @ingroup Modules
      */
-    class SpatialTracking : public Module {
+    class TrackingSpatial : public Module {
 
     public:
         // Constructors and destructors
-        SpatialTracking(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
-        ~SpatialTracking() {}
+        TrackingSpatial(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        ~TrackingSpatial() {}
 
         // Functions
         void initialise();
@@ -45,4 +45,4 @@ namespace corryvreckan {
         bool excludeDUT;
     };
 } // namespace corryvreckan
-#endif // SpatialTracking_H
+#endif // TrackingSpatial_H

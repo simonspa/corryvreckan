@@ -1,10 +1,11 @@
-#include "SpatialTracking.h"
+#include "TrackingSpatial.h"
+#include <TDirectory.h>
 #include "objects/KDTree.h"
 
 using namespace corryvreckan;
 using namespace std;
 
-SpatialTracking::SpatialTracking(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+TrackingSpatial::TrackingSpatial(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
     spatialCut = m_config.get<double>("spatialCut", static_cast<double>(Units::convert(200, "um")));
     spatialCut_DUT = m_config.get<double>("spatialCutDUT", static_cast<double>(Units::convert(200, "um")));
@@ -21,25 +22,39 @@ SpatialTracking::SpatialTracking(Configuration config, std::vector<std::shared_p
 
  */
 
-void SpatialTracking::initialise() {
+void TrackingSpatial::initialise() {
 
     // Set up histograms
-    trackChi2 = new TH1F("trackChi2", "trackChi2", 150, 0, 150);
-    trackChi2ndof = new TH1F("trackChi2ndof", "trackChi2ndof", 100, 0, 50);
-    clustersPerTrack = new TH1F("clustersPerTrack", "clustersPerTrack", 10, 0, 10);
-    tracksPerEvent = new TH1F("tracksPerEvent", "tracksPerEvent", 100, 0, 100);
-    trackAngleX = new TH1F("trackAngleX", "trackAngleX", 2000, -0.01, 0.01);
-    trackAngleY = new TH1F("trackAngleY", "trackAngleY", 2000, -0.01, 0.01);
+    std::string title = "Track #chi^{2};#chi^{2};events";
+    trackChi2 = new TH1F("trackChi2", title.c_str(), 150, 0, 150);
+    title = "Track #chi^{2}/ndof;#chi^{2}/ndof;events";
+    trackChi2ndof = new TH1F("trackChi2ndof", title.c_str(), 100, 0, 50);
+    title = "Clusters per track;clusters;tracks";
+    clustersPerTrack = new TH1F("clustersPerTrack", title.c_str(), 10, 0, 10);
+    title = "Track multiplicity;tracks;events";
+    tracksPerEvent = new TH1F("tracksPerEvent", title.c_str(), 100, 0, 100);
+    title = "Track angle X;angle_{x} [rad];events";
+    trackAngleX = new TH1F("trackAngleX", title.c_str(), 2000, -0.01, 0.01);
+    title = "Track angle Y;angle_{y} [rad];events";
+    trackAngleY = new TH1F("trackAngleY", title.c_str(), 2000, -0.01, 0.01);
 
-    // Loop over all Timepix1
+    // Loop over all planes
     for(auto& detector : get_detectors()) {
-        // Check if they are a Timepix3
-        // if(detector->type() != "Timepix1")
-        //     continue;
-        string name = "residualsX_" + detector->name();
-        residualsX[detector->name()] = new TH1F(name.c_str(), name.c_str(), 400, -0.05, 0.05);
-        name = "residualsY_" + detector->name();
-        residualsY[detector->name()] = new TH1F(name.c_str(), name.c_str(), 400, -0.05, 0.05);
+        auto detectorID = detector->name();
+
+        TDirectory* directory = getROOTDirectory();
+        TDirectory* local_directory = directory->mkdir(detectorID.c_str());
+        if(local_directory == nullptr) {
+            throw RuntimeError("Cannot create or access local ROOT directory for module " + this->getUniqueName());
+        }
+        local_directory->cd();
+
+        title = detectorID + " Residual X;x_{track}-x [mm];events";
+        residualsX[detectorID] = new TH1F("residualsX", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + " Residual Y;y_{track}-y [mm];events";
+        residualsY[detectorID] = new TH1F("residualsY", title.c_str(), 500, -0.1, 0.1);
+
+        directory->cd();
     }
 
     // Initialise member variables
@@ -47,7 +62,7 @@ void SpatialTracking::initialise() {
     nTracksTotal = 0.;
 }
 
-StatusCode SpatialTracking::run(Clipboard* clipboard) {
+StatusCode TrackingSpatial::run(Clipboard* clipboard) {
 
     // Container for all clusters, and detectors in tracking
     map<string, KDTree*> trees;
@@ -207,6 +222,6 @@ StatusCode SpatialTracking::run(Clipboard* clipboard) {
     return Success;
 }
 
-void SpatialTracking::finalise() {
+void TrackingSpatial::finalise() {
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }
