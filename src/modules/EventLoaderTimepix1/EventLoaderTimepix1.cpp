@@ -1,11 +1,11 @@
-#include "Timepix1EventLoader.h"
+#include "EventLoaderTimepix1.h"
 #include <dirent.h>
 #include "objects/Pixel.h"
 
 using namespace corryvreckan;
 using namespace std;
 
-Timepix1EventLoader::Timepix1EventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+EventLoaderTimepix1::EventLoaderTimepix1(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {}
 
 /*
@@ -13,7 +13,7 @@ Timepix1EventLoader::Timepix1EventLoader(Configuration config, std::vector<std::
  clipboard
 */
 
-bool Timepix1EventLoader::sortByTime(string filename1, string filename2) {
+bool EventLoaderTimepix1::sortByTime(string filename1, string filename2) {
 
     // double filetime1 = stod(filename1.substr(filename1.length()-13,9));
     // double filetime2 = stod(filename2.substr(filename2.length()-13,9));
@@ -31,7 +31,7 @@ bool Timepix1EventLoader::sortByTime(string filename1, string filename2) {
     return (filetime1 < filetime2);
 }
 
-void Timepix1EventLoader::initialise() {
+void EventLoaderTimepix1::initialise() {
 
     // Take input directory from global parameters
     m_inputDirectory = m_config.get<std::string>("inputDirectory");
@@ -75,7 +75,7 @@ void Timepix1EventLoader::initialise() {
 }
 
 // In each event, load one frame of data from all devices
-StatusCode Timepix1EventLoader::run(Clipboard* clipboard) {
+StatusCode EventLoaderTimepix1::run(Clipboard* clipboard) {
 
     LOG_PROGRESS(INFO, "tpx_loader") << "\rRunning over event " << m_eventNumber;
 
@@ -191,7 +191,7 @@ StatusCode Timepix1EventLoader::run(Clipboard* clipboard) {
     return Success;
 }
 
-void Timepix1EventLoader::processHeader(string header, string& device, long long int& time) {
+void EventLoaderTimepix1::processHeader(string header, string& device, long long int& time) {
     // time = stod(header.substr(header.find("Start time : ")+13,13));
 
     string timestring = header.substr(header.find("Start time : ") + 13, 13);
@@ -202,7 +202,7 @@ void Timepix1EventLoader::processHeader(string header, string& device, long long
         header.substr(header.find("ChipboardID : ") + 14, header.find(" # DACs") - (header.find("ChipboardID : ") + 14));
 }
 
-void Timepix1EventLoader::finalise() {
+void EventLoaderTimepix1::finalise() {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }

@@ -1,5 +1,5 @@
-#ifndef Timepix1EventLoader_H
-#define Timepix1EventLoader_H 1
+#ifndef EventLoaderTimepix1_H
+#define EventLoaderTimepix1_H 1
 
 #include <fstream>
 #include <iostream>
@@ -10,12 +10,12 @@
 namespace corryvreckan {
     /** @ingroup Modules
      */
-    class Timepix1EventLoader : public Module {
+    class EventLoaderTimepix1 : public Module {
 
     public:
         // Constructors and destructors
-        Timepix1EventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
-        ~Timepix1EventLoader() {}
+        EventLoaderTimepix1(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        ~EventLoaderTimepix1() {}
 
         // Functions
         void initialise();
@@ -38,4 +38,4 @@ namespace corryvreckan {
         std::string m_prevHeader;
     };
 } // namespace corryvreckan
-#endif // Timepix1EventLoader_H
+#endif // EventLoaderTimepix1_H
