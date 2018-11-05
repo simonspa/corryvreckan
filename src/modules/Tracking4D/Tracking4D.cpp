@@ -1,5 +1,6 @@
 #include "Tracking4D.h"
 #include <TCanvas.h>
+#include <TDirectory.h>
 #include "objects/KDTree.h"
 
 using namespace corryvreckan;
