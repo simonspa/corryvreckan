@@ -1,5 +1,5 @@
-#ifndef CLICpixEventLoader_H
-#define CLICpixEventLoader_H 1
+#ifndef EventLoaderCLICpix_H
+#define EventLoaderCLICpix_H 1
 
 #include <TCanvas.h>
 #include <TH1F.h>
@@ -17,18 +17,20 @@
 namespace corryvreckan {
     /** @ingroup Modules
      */
-    class CLICpixEventLoader : public Module {
+    class EventLoaderCLICpix : public Module {
 
     public:
         // Constructors and destructors
-        CLICpixEventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
-        ~CLICpixEventLoader() {}
+        EventLoaderCLICpix(Configuration config, std::shared_ptr<Detector> detector);
+        ~EventLoaderCLICpix() {}
 
         // Functions
         void initialise();
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
+    private:
+        std::shared_ptr<Detector> m_detector;
         // Member variables
         int m_eventNumber;
         std::string m_filename;
@@ -40,4 +42,4 @@ namespace corryvreckan {
         TH1F* hPixelsPerFrame;
     };
 } // namespace corryvreckan
-#endif // CLICpixEventLoader_H
+#endif // EventLoaderCLICpix_H

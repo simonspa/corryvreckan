@@ -1,14 +1,15 @@
-#include "CLICpixEventLoader.h"
+#include "EventLoaderCLICpix.h"
 
 using namespace corryvreckan;
 using namespace std;
 
-CLICpixEventLoader::CLICpixEventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
+EventLoaderCLICpix::EventLoaderCLICpix(Configuration config, std::shared_ptr<Detector> detector)
+    : Module(std::move(config), detector) {
+    m_detector = detector;
     m_filename = "";
 }
 
-void CLICpixEventLoader::initialise() {
+void EventLoaderCLICpix::initialise() {
     // File structure is RunX/CLICpix/RunX.dat
 
     // Take input directory from global parameters
@@ -45,10 +46,7 @@ void CLICpixEventLoader::initialise() {
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 4100, 0, 4100);
 }
 
-StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
-
-    // Assume that the CLICpix is the DUT (if running this algorithm
-    auto detector = get_dut();
+StatusCode EventLoaderCLICpix::run(Clipboard* clipboard) {
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
@@ -107,9 +105,9 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
         LOG(TRACE) << "New pixel: " << col << "," << row << " with tot " << tot;
 
         // If this pixel is masked, do not save it
-        if(detector->masked(col, row))
+        if(m_detector->masked(col, row))
             continue;
-        Pixel* pixel = new Pixel(detector->name(), row, col, tot, 0);
+        Pixel* pixel = new Pixel(m_detector->name(), row, col, tot, 0);
         pixels->push_back(pixel);
         npixels++;
         hHitMap->Fill(col, row);
@@ -124,7 +122,7 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
     LOG(TRACE) << "Loaded " << npixels << " pixels";
     // Put the data on the clipboard
     if(pixels->size() > 0)
-        clipboard->put(detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
+        clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
 
     // Fill histograms
     hPixelsPerFrame->Fill(npixels);
@@ -134,7 +132,7 @@ StatusCode CLICpixEventLoader::run(Clipboard* clipboard) {
     return Success;
 }
 
-void CLICpixEventLoader::finalise() {
+void EventLoaderCLICpix::finalise() {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }
