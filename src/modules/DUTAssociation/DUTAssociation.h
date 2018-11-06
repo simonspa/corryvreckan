@@ -17,14 +17,14 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        DUTAssociation(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        DUTAssociation(Configuration config, std::shared_ptr<Detector> detector);
         ~DUTAssociation() = default;
 
         // Functions
         StatusCode run(Clipboard* clipboard);
 
     private:
-        std::string m_DUT;
+        std::shared_ptr<Detector> m_detector;
         double timingCut;
         ROOT::Math::XYVector spatialCut;
     };
