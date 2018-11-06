@@ -284,6 +284,8 @@ StatusCode EventLoaderCLICpix2::run(Clipboard* clipboard) {
     // Put the data on the clipboard
     if(!pixels->empty()) {
         clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
+    } else {
+        delete pixels;
     }
 
     // Fill histograms
