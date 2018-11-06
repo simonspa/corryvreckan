@@ -1,5 +1,5 @@
-#ifndef Millepede_H
-#define Millepede_H 1
+#ifndef AlignmentMillepede_H
+#define AlignmentMillepede_H 1
 
 #include "core/module/Module.hpp"
 #include "objects/Track.h"
@@ -13,12 +13,12 @@ namespace corryvreckan {
      *  @author Christoph Hombach
      *  @date   2012-06-19
      */
-    class Millepede : public Module {
+    class AlignmentMillepede : public Module {
     public:
         /// Constructor
-        Millepede(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        AlignmentMillepede(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         /// Destructor
-        virtual ~Millepede();
+        virtual ~AlignmentMillepede();
 
         void initialise();
         void finalise();
@@ -156,4 +156,4 @@ namespace corryvreckan {
     };
 } // namespace corryvreckan
 
-#endif // Millepede_H
+#endif // AlignmentMillepede_H

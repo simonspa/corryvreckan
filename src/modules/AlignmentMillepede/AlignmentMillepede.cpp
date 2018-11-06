@@ -3,7 +3,7 @@
 #include <iomanip>
 
 // Local
-#include "Millepede.h"
+#include "AlignmentMillepede.h"
 #include "objects/Cluster.h"
 
 using namespace corryvreckan;
@@ -12,7 +12,7 @@ using namespace std;
 //=============================================================================
 // Standard constructor, initializes variables
 //=============================================================================
-Millepede::Millepede(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+AlignmentMillepede::AlignmentMillepede(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
     m_numberOfTracksForAlignment = m_config.get<size_t>("number_of_tracks", 20000);
@@ -32,12 +32,12 @@ Millepede::Millepede(Configuration config, std::vector<std::shared_ptr<Detector>
 //=============================================================================
 // Destructor
 //=============================================================================
-Millepede::~Millepede() {}
+AlignmentMillepede::~AlignmentMillepede() {}
 
 //=============================================================================
 // Initialization
 //=============================================================================
-void Millepede::initialise() {
+void AlignmentMillepede::initialise() {
 
     // Renumber the planes in Millepede, ignoring masked planes.
     unsigned int index = 0;
@@ -66,7 +66,7 @@ void Millepede::initialise() {
 }
 
 // During run, just pick up tracks and save them till the end
-StatusCode Millepede::run(Clipboard* clipboard) {
+StatusCode AlignmentMillepede::run(Clipboard* clipboard) {
 
     // Get the tracks
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
@@ -93,7 +93,7 @@ StatusCode Millepede::run(Clipboard* clipboard) {
 //=============================================================================
 // Main alignment function
 //=============================================================================
-void Millepede::finalise() {
+void AlignmentMillepede::finalise() {
 
     LOG(INFO) << "Millepede alignment";
 
@@ -165,7 +165,7 @@ void Millepede::finalise() {
 //=============================================================================
 // Setup the constraint equations.
 //=============================================================================
-void Millepede::setConstraints(const size_t nPlanes) {
+void AlignmentMillepede::setConstraints(const size_t nPlanes) {
 
     // Calculate the mean z-position.
     double avgz = 0.;
@@ -245,7 +245,7 @@ void Millepede::setConstraints(const size_t nPlanes) {
 //=============================================================================
 // Define a single constraint equation.
 //=============================================================================
-void Millepede::addConstraint(const std::vector<double>& dercs, const double rhs) {
+void AlignmentMillepede::addConstraint(const std::vector<double>& dercs, const double rhs) {
 
     Constraint constraint;
     // Set the right-hand side (Lagrange multiplier value, sum of equation).
@@ -258,7 +258,7 @@ void Millepede::addConstraint(const std::vector<double>& dercs, const double rhs
 //=============================================================================
 // Add the equations for one track to the matrix
 //=============================================================================
-bool Millepede::putTrack(Track* track, const size_t nPlanes) {
+bool AlignmentMillepede::putTrack(Track* track, const size_t nPlanes) {
 
     std::vector<Equation> equations;
     const size_t nParameters = 6 * nPlanes;
@@ -362,14 +362,14 @@ bool Millepede::putTrack(Track* track, const size_t nPlanes) {
 //=============================================================================
 // Store the parameters for one measurement
 //=============================================================================
-void Millepede::addEquation(std::vector<Equation>& equations,
-                            const std::vector<double>& derlc,
-                            const std::vector<double>& dergb,
-                            const std::vector<double>& dernl,
-                            const std::vector<int>& dernli,
-                            const std::vector<double>& slopes,
-                            const double rmeas,
-                            const double sigma) {
+void AlignmentMillepede::addEquation(std::vector<Equation>& equations,
+                                     const std::vector<double>& derlc,
+                                     const std::vector<double>& dergb,
+                                     const std::vector<double>& dernl,
+                                     const std::vector<int>& dernli,
+                                     const std::vector<double>& slopes,
+                                     const double rmeas,
+                                     const double sigma) {
 
     if(sigma <= 0.) {
         LOG(ERROR) << "Invalid cluster error (" << sigma << ")";
@@ -410,10 +410,10 @@ void Millepede::addEquation(std::vector<Equation>& equations,
 //=============================================================================
 // Track fit (local fit)
 //=============================================================================
-bool Millepede::fitTrack(const std::vector<Equation>& equations,
-                         std::vector<double>& trackParams,
-                         const bool singlefit,
-                         const unsigned int iteration) {
+bool AlignmentMillepede::fitTrack(const std::vector<Equation>& equations,
+                                  std::vector<double>& trackParams,
+                                  const bool singlefit,
+                                  const unsigned int iteration) {
 
     std::vector<double> blvec(m_nalc, 0.);
     std::vector<std::vector<double>> clmat(m_nalc, std::vector<double>(m_nalc, 0.));
@@ -575,7 +575,7 @@ bool Millepede::fitTrack(const std::vector<Equation>& equations,
 //=============================================================================
 // Update the module positions and orientations.
 //=============================================================================
-void Millepede::updateGeometry() {
+void AlignmentMillepede::updateGeometry() {
     auto nPlanes = num_detectors();
     for(const auto& det : get_detectors()) {
         if(det->isDUT()) {
@@ -618,7 +618,7 @@ void Millepede::updateGeometry() {
 //=============================================================================
 // Initialise the vectors and arrays.
 //=============================================================================
-bool Millepede::reset(const size_t nPlanes, const double startfact) {
+bool AlignmentMillepede::reset(const size_t nPlanes, const double startfact) {
 
     // Reset the list of track equations.
     m_equations.clear();
@@ -665,7 +665,7 @@ bool Millepede::reset(const size_t nPlanes, const double startfact) {
 //=============================================================================
 //
 //=============================================================================
-bool Millepede::fitGlobal() {
+bool AlignmentMillepede::fitGlobal() {
 
     m_diag.assign(m_nagb, 0.);
     std::vector<double> bgvecPrev(m_nagb, 0.);
@@ -824,7 +824,7 @@ bool Millepede::fitGlobal() {
 // Solve the equation V * X = B.
 // V is replaced by its inverse matrix and B by X, the solution vector
 //=============================================================================
-int Millepede::invertMatrix(std::vector<std::vector<double>>& v, std::vector<double>& b, const size_t n) {
+int AlignmentMillepede::invertMatrix(std::vector<std::vector<double>>& v, std::vector<double>& b, const size_t n) {
     int rank = 0;
     const double eps = 0.0000000000001;
 
@@ -952,7 +952,7 @@ int Millepede::invertMatrix(std::vector<std::vector<double>>& v, std::vector<dou
 //=============================================================================
 // Simplified version.
 //=============================================================================
-int Millepede::invertMatrixLocal(std::vector<std::vector<double>>& v, std::vector<double>& b, const size_t n) {
+int AlignmentMillepede::invertMatrixLocal(std::vector<std::vector<double>>& v, std::vector<double>& b, const size_t n) {
 
     int rank = 0;
     const double eps = 0.0000000000001;
@@ -1034,7 +1034,7 @@ int Millepede::invertMatrixLocal(std::vector<std::vector<double>>& v, std::vecto
 // Return the limit in chi^2 / nd for n sigmas stdev authorized.
 // Only n=1, 2, and 3 are expected in input.
 //=============================================================================
-double Millepede::chi2Limit(const int n, const int nd) const {
+double AlignmentMillepede::chi2Limit(const int n, const int nd) const {
     constexpr double sn[3] = {0.47523, 1.690140, 2.782170};
     constexpr double table[3][30] = {{1.0000, 1.1479, 1.1753, 1.1798, 1.1775, 1.1730, 1.1680, 1.1630, 1.1581, 1.1536,
                                       1.1493, 1.1454, 1.1417, 1.1383, 1.1351, 1.1321, 1.1293, 1.1266, 1.1242, 1.1218,
@@ -1057,11 +1057,11 @@ double Millepede::chi2Limit(const int n, const int nd) const {
 //=============================================================================
 // Multiply general M-by-N matrix A and N-vector X
 //=============================================================================
-bool Millepede::multiplyAX(const std::vector<std::vector<double>>& a,
-                           const std::vector<double>& x,
-                           std::vector<double>& y,
-                           const unsigned int n,
-                           const unsigned int m) {
+bool AlignmentMillepede::multiplyAX(const std::vector<std::vector<double>>& a,
+                                    const std::vector<double>& x,
+                                    std::vector<double>& y,
+                                    const unsigned int n,
+                                    const unsigned int m) {
 
     // Y = A * X, where
     //   A = general M-by-N matrix
@@ -1081,11 +1081,11 @@ bool Millepede::multiplyAX(const std::vector<std::vector<double>>& a,
 // matrix A and from the right with the transposed of the same general
 // matrix to form a symmetric M-by-M matrix W.
 //=============================================================================
-bool Millepede::multiplyAVAt(const std::vector<std::vector<double>>& v,
-                             const std::vector<std::vector<double>>& a,
-                             std::vector<std::vector<double>>& w,
-                             const unsigned int n,
-                             const unsigned int m) {
+bool AlignmentMillepede::multiplyAVAt(const std::vector<std::vector<double>>& v,
+                                      const std::vector<std::vector<double>>& a,
+                                      std::vector<std::vector<double>>& w,
+                                      const unsigned int n,
+                                      const unsigned int m) {
 
     // W = A * V * AT, where
     //   V = symmetric N-by-N matrix
@@ -1112,7 +1112,7 @@ bool Millepede::multiplyAVAt(const std::vector<std::vector<double>>& v,
 //=============================================================================
 // Print results
 //=============================================================================
-bool Millepede::printResults() {
+bool AlignmentMillepede::printResults() {
     const std::string line(65, '-');
     LOG(INFO) << line;
     LOG(INFO) << " Result of fit for global parameters";
