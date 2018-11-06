@@ -101,6 +101,12 @@ StatusCode Tracking4D::run(Clipboard* clipboard) {
 
     // If there are no detectors then stop trying to track
     if(detectors.size() == 0 || referenceClusters == nullptr) {
+        // Clean up tree objects
+        for(auto tree = trees.cbegin(); tree != trees.cend();) {
+            delete tree->second;
+            tree = trees.erase(tree);
+        }
+
         return Success;
     }
 
@@ -231,9 +237,9 @@ StatusCode Tracking4D::run(Clipboard* clipboard) {
     }
 
     // Clean up tree objects
-    for(auto& detector : get_detectors()) {
-        if(trees.count(detector->name()) != 0)
-            delete trees[detector->name()];
+    for(auto tree = trees.cbegin(); tree != trees.cend();) {
+        delete tree->second;
+        tree = trees.erase(tree);
     }
 
     LOG(DEBUG) << "End of event";

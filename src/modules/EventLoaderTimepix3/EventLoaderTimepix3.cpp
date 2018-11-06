@@ -246,8 +246,15 @@ StatusCode EventLoaderTimepix3::run(Clipboard* clipboard) {
     if(data) {
         LOG(DEBUG) << "Loaded " << deviceData->size() << " pixels for device " << m_detector->name();
         clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(deviceData));
+    } else {
+        delete deviceData;
     }
-    clipboard->put(m_detector->name(), "SpidrSignals", reinterpret_cast<Objects*>(spidrData));
+
+    if(!spidrData->empty()) {
+        clipboard->put(m_detector->name(), "SpidrSignals", reinterpret_cast<Objects*>(spidrData));
+    } else {
+        delete spidrData;
+    }
 
     // Otherwise tell event loop to keep running
     IFLOG(INFO) {

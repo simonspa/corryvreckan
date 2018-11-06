@@ -292,3 +292,7 @@ StatusCode EventLoaderCLICpix2::run(Clipboard* clipboard) {
     // Return value telling analysis to keep running
     return Success;
 }
+
+void EventLoaderCLICpix2::finalise() {
+    delete decoder;
+}
