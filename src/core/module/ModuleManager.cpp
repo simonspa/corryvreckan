@@ -552,9 +552,10 @@ void ModuleManager::run() {
         Tracks* tracks = reinterpret_cast<Tracks*>(m_clipboard->get("tracks"));
         m_tracks += (tracks == nullptr ? 0 : static_cast<int>(tracks->size()));
 
-        if(m_events % 1000) {
+        if(m_events % 100 == 0) {
             LOG_PROGRESS(STATUS, "event_loop")
-                << "Ev: " << m_events << " Tr: " << m_tracks << " (" << std::setprecision(3)
+                << "Ev: " << std::fixed << std::setprecision(1) << 0.001 * m_events << "k Tr: " << std::fixed
+                << std::setprecision(1) << 0.001 * m_tracks << "k (" << std::setprecision(3)
                 << (static_cast<double>(m_tracks) / m_events) << "/ev)"
                 << (m_clipboard->has_persistent("eventStart")
                         ? " t = " + Units::display(m_clipboard->get_persistent("eventStart"), {"ns", "us", "ms", "s"})
@@ -697,10 +698,10 @@ void ModuleManager::timing() {
     LOG(STATUS) << "===============| Wall-clock timing (seconds) |================";
     for(auto& module : m_modules) {
         auto identifier = module->get_identifier().getIdentifier();
-        LOG(STATUS) << std::setw(25) << module->getConfig().getName() << (identifier.empty() ? "   " : " : ")
+        LOG(STATUS) << std::setw(20) << module->getConfig().getName() << (identifier.empty() ? "   " : " : ")
                     << std::setw(10) << identifier << "  --  " << std::fixed << std::setprecision(5)
-                    << module_execution_time_[module] << " = " << std::setprecision(9)
-                    << module_execution_time_[module] / m_events << " s/evt";
+                    << module_execution_time_[module] << "s = " << std::setprecision(6)
+                    << 1000 * module_execution_time_[module] / m_events << "ms/evt";
     }
     LOG(STATUS) << "==============================================================";
 }
