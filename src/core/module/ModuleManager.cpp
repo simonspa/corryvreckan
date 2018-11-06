@@ -500,15 +500,11 @@ void ModuleManager::run() {
 
     // Loop over all events, running each module on each "event"
     LOG(STATUS) << "========================| Event loop |========================";
-    m_events = 1;
-    int events_prev = 1;
+    m_events = 0;
     m_tracks = 0;
-    int skipped = 0;
-    int skipped_prev = 0;
 
     while(1) {
         bool run = true;
-        bool noData = false;
 
         // Check if we have reached the maximum number of events
 
@@ -547,11 +543,6 @@ void ModuleManager::run() {
             auto end = std::chrono::steady_clock::now();
             module_execution_time_[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
 
-            if(check == NoData) {
-                noData = true;
-                skipped++;
-                break;
-            } // Nothing to be done in this event
             if(check == Failure) {
                 run = false;
             }
@@ -561,19 +552,9 @@ void ModuleManager::run() {
         Tracks* tracks = reinterpret_cast<Tracks*>(m_clipboard->get("tracks"));
         m_tracks += (tracks == nullptr ? 0 : static_cast<int>(tracks->size()));
 
-        bool update_progress = false;
-        if(m_events % 100 == 0 && m_events != events_prev) {
-            update_progress = true;
-        }
-        if(skipped % 1000 == 0 && skipped != skipped_prev) {
-            update_progress = true;
-        }
-
-        if(update_progress) {
-            skipped_prev = skipped;
-            events_prev = m_events;
+        if(m_events % 1000) {
             LOG_PROGRESS(STATUS, "event_loop")
-                << "Ev: +" << m_events << " \\" << skipped << " Tr: " << m_tracks << " (" << std::setprecision(3)
+                << "Ev: " << m_events << " Tr: " << m_tracks << " (" << std::setprecision(3)
                 << (static_cast<double>(m_tracks) / m_events) << "/ev)"
                 << (m_clipboard->has_persistent("eventStart")
                         ? " t = " + Units::display(m_clipboard->get_persistent("eventStart"), {"ns", "us", "ms", "s"})
@@ -589,9 +570,7 @@ void ModuleManager::run() {
         }
 
         // Increment event number
-        if(!noData) {
-            m_events++;
-        }
+        m_events++;
 
         // Check for user termination and stop the event loop:
         if(m_terminate) {
