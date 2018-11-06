@@ -13,8 +13,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-EventLoaderTimepix3::EventLoaderTimepix3(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)), temporalSplit(false), m_currentEvent(0), m_prevTime(0),
+EventLoaderTimepix3::EventLoaderTimepix3(Configuration config, std::shared_ptr<Detector> detector)
+    : Module(std::move(config), detector), m_detector(detector), temporalSplit(false), m_currentEvent(0), m_prevTime(0),
       m_shutterOpen(false) {
 
     // Take input directory from global parameters
@@ -53,7 +53,7 @@ void EventLoaderTimepix3::initialise() {
     dirent* file;
 
     // Buffer for file names:
-    std::map<std::string, std::vector<std::string>> detector_files;
+    std::vector<std::string> detector_files;
 
     // Read the entries in the folder
     while((entry = readdir(directory))) {
@@ -67,28 +67,15 @@ void EventLoaderTimepix3::initialise() {
         // For some file systems, dirent only returns DT_UNKNOWN - in this case, check the dir. entry starts with "W"
         if(entry->d_type == DT_DIR || (entry->d_type == DT_UNKNOWN && std::string(entry->d_name).at(0) == 'W')) {
 
+            // Only read files from correct directory:
+            if(entry->d_name != m_detector->name()) {
+                continue;
+            }
             LOG(DEBUG) << "Found directory for detector " << entry->d_name;
 
             // Open the folder for this device
-            string detectorID = entry->d_name;
             string dataDirName = m_inputDirectory + "/" + entry->d_name;
             DIR* dataDir = opendir(dataDirName.c_str());
-
-            // Check if this device has conditions loaded and is a Timepix3
-            std::shared_ptr<Detector> detector;
-            try {
-                LOG(DEBUG) << "Fetching detector with ID \"" << detectorID << "\"";
-                detector = get_detector(detectorID);
-            } catch(ModuleError& e) {
-                LOG(WARNING) << e.what();
-                continue;
-            }
-
-            LOG(DEBUG) << "Detector is of type \"" << detector->type() << "\"";
-            if(detector->type() != "Timepix3") {
-                LOG(WARNING) << "Device with detector ID " << entry->d_name << " is not of type Timepix3.";
-                continue;
-            }
 
             // Get all of the files for this chip
             while((file = readdir(dataDir))) {
@@ -96,8 +83,8 @@ void EventLoaderTimepix3::initialise() {
 
                 // Check if file has extension .dat
                 if(string(file->d_name).find(".dat") != string::npos) {
-                    LOG(INFO) << "Enqueuing data file for " << detectorID << ": " << filename;
-                    detector_files[detectorID].push_back(filename);
+                    LOG(INFO) << "Enqueuing data file for " << entry->d_name << ": " << filename;
+                    detector_files.push_back(filename);
                 }
 
                 // If not a data file, it might be a trimdac file, with the list of masked pixels etc.
@@ -105,97 +92,84 @@ void EventLoaderTimepix3::initialise() {
                     // Now that we have all of the data files and mask files for this detector, pass the mask file to
                     // parameters
                     LOG(INFO) << "Set mask file " << filename;
-                    detector->setMaskFile(filename);
+                    m_detector->setMaskFile(filename);
 
                     // Apply the pixel masking
-                    maskPixels(detector, filename);
+                    maskPixels(filename);
                 }
             }
         }
     }
 
-    // Check that we have files for every detector in the configuration file and sort them correctly:
-    for(auto& detector : get_detectors()) {
-        std::string detectorID = detector->name();
+    // Check that we have files for this detector and sort them correctly:
+    if(detector_files.empty()) {
+        LOG(ERROR) << "No data file found for detector " << m_detector->name();
+        return;
+    }
 
-        if(detector->type() != "Timepix3") {
-            continue;
-        }
+    // Initialise null values for later
+    m_syncTime = 0;
+    m_clearedHeader = false;
+    m_syncTimeTDC = 0;
+    m_TDCoverflowCounter = 0;
 
-        if(detector_files.count(detector->name()) == 0) {
-            LOG(ERROR) << "No data file found for detector " << detector->name();
-            continue;
-        }
+    // Sort all files by extracting the "serial number" from the file name while ignoring the timestamp:
+    std::sort(detector_files.begin(), detector_files.end(), [](std::string a, std::string b) {
+        auto get_serial = [](std::string name) {
+            const auto pos1 = name.find_last_of('-');
+            const auto pos2 = name.find_last_of('.');
+            return name.substr(pos1 + 1, pos2 - pos1 - 1);
+        };
+        return std::stoi(get_serial(a)) < std::stoi(get_serial(b));
+    });
 
-        // Initialise null values for later
-        m_syncTime[detectorID] = 0;
-        m_clearedHeader[detectorID] = false;
-        m_syncTimeTDC[detectorID] = 0;
-        m_TDCoverflowCounter[detectorID] = 0;
+    // Open them:
+    for(auto& filename : detector_files) {
 
-        // Sort all files by extracting the "serial number" from the file name while ignoring the timestamp:
-        std::sort(detector_files[detector->name()].begin(),
-                  detector_files[detector->name()].end(),
-                  [](std::string a, std::string b) {
-                      auto get_serial = [](std::string name) {
-                          const auto pos1 = name.find_last_of('-');
-                          const auto pos2 = name.find_last_of('.');
-                          return name.substr(pos1 + 1, pos2 - pos1 - 1);
-                      };
-                      return std::stoi(get_serial(a)) < std::stoi(get_serial(b));
-                  });
+        auto new_file = std::make_unique<std::ifstream>(filename);
+        if(new_file->is_open()) {
+            LOG(DEBUG) << "Opened data file for " << m_detector->name() << ": " << filename;
 
-        // Open them:
-        for(auto& filename : detector_files[detectorID]) {
-
-            auto new_file = std::make_unique<std::ifstream>(filename);
-            if(new_file->is_open()) {
-                LOG(DEBUG) << "Opened data file for " << detectorID << ": " << filename;
-
-                // The header is repeated in every new data file, thus skip it for all.
-                uint32_t headerID;
-                if(!new_file->read(reinterpret_cast<char*>(&headerID), sizeof headerID)) {
-                    throw ModuleError("Cannot read header ID for " + detectorID + " in file " + filename);
-                }
-                if(headerID != 1380208723) {
-                    throw ModuleError("Incorrect header ID for " + detectorID + " in file " + filename + ": " +
-                                      std::to_string(headerID));
-                }
-                LOG(TRACE) << "Header ID: \"" << headerID << "\"";
-
-                // Skip the rest of the file header
-                uint32_t headerSize;
-                if(!new_file->read(reinterpret_cast<char*>(&headerSize), sizeof headerSize)) {
-                    throw ModuleError("Cannot read header size for " + detectorID + " in file " + filename);
-                }
-
-                // Skip the full header:
-                new_file->seekg(headerSize);
-                LOG(TRACE) << "Skipped header (" << headerSize << "b)";
-
-                // Store the file in the data vector:
-                m_files[detectorID].push_back(std::move(new_file));
-            } else {
-                throw ModuleError("Could not open data file " + filename);
+            // The header is repeated in every new data file, thus skip it for all.
+            uint32_t headerID;
+            if(!new_file->read(reinterpret_cast<char*>(&headerID), sizeof headerID)) {
+                throw ModuleError("Cannot read header ID for " + m_detector->name() + " in file " + filename);
             }
+            if(headerID != 1380208723) {
+                throw ModuleError("Incorrect header ID for " + m_detector->name() + " in file " + filename + ": " +
+                                  std::to_string(headerID));
+            }
+            LOG(TRACE) << "Header ID: \"" << headerID << "\"";
+
+            // Skip the rest of the file header
+            uint32_t headerSize;
+            if(!new_file->read(reinterpret_cast<char*>(&headerSize), sizeof headerSize)) {
+                throw ModuleError("Cannot read header size for " + m_detector->name() + " in file " + filename);
+            }
+
+            // Skip the full header:
+            new_file->seekg(headerSize);
+            LOG(TRACE) << "Skipped header (" << headerSize << "b)";
+
+            // Store the file in the data vector:
+            m_files.push_back(std::move(new_file));
+        } else {
+            throw ModuleError("Could not open data file " + filename);
         }
     }
 
     // Set the file iterator to the first file for every detector:
-    for(auto& detector : m_files) {
-        m_file_iterator[detector.first] = detector.second.begin();
-    }
+    m_file_iterator = m_files.begin();
 
     // Calibration
     pixelToT_beforecalibration = new TH1F("pixelToT_beforecalibration", "pixelToT_beforecalibration", 100, 0, 200);
 
-    auto dut = get_dut();
-    if(dut != nullptr && m_config.has("calibrationPath") && m_config.has("threshold")) {
+    if(m_detector->role() == DetectorRole::DUT && m_config.has("calibrationPath") && m_config.has("threshold")) {
         LOG(INFO) << "Applying calibration from " << calibrationPath;
         applyCalibration = true;
 
         // get DUT plane name
-        std::string DUT = dut->name();
+        std::string DUT = m_detector->name();
 
         // make paths to calibration files and read
         std::string tmp;
@@ -255,43 +229,25 @@ StatusCode EventLoaderTimepix3::run(Clipboard* clipboard) {
     }
 
     LOG(TRACE) << "== New event";
-    int loadedData = 0;
 
-    // End the loop as soon as all detector files are finished:
-    StatusCode returnvalue = Failure;
-
-    // Loop through all registered detectors
-    for(auto& detector : get_detectors()) {
-
-        // Check if they are a Timepix3
-        if(detector->type() != "Timepix3") {
-            continue;
-        }
-
-        string detectorID = detector->name();
-        // If all files for this detector have been read, ignore it:
-        if(m_file_iterator[detectorID] == m_files[detectorID].end()) {
-            continue;
-        }
-
-        // This detector has data left:
-        returnvalue = Success;
-
-        // Make a new container for the data
-        Pixels* deviceData = new Pixels();
-        SpidrSignals* spidrData = new SpidrSignals();
-
-        // Load the next chunk of data
-        bool data = loadData(clipboard, detector, deviceData, spidrData);
-
-        // If data was loaded then put it on the clipboard
-        if(data) {
-            loadedData++;
-            LOG(DEBUG) << "Loaded " << deviceData->size() << " pixels for device " << detectorID;
-            clipboard->put(detectorID, "pixels", reinterpret_cast<Objects*>(deviceData));
-        }
-        clipboard->put(detectorID, "SpidrSignals", reinterpret_cast<Objects*>(spidrData));
+    // If all files for this detector have been read, ignore it:
+    if(m_file_iterator == m_files.end()) {
+        return NoData;
     }
+
+    // Make a new container for the data
+    Pixels* deviceData = new Pixels();
+    SpidrSignals* spidrData = new SpidrSignals();
+
+    // Load the next chunk of data
+    bool data = loadData(clipboard, deviceData, spidrData);
+
+    // If data was loaded then put it on the clipboard
+    if(data) {
+        LOG(DEBUG) << "Loaded " << deviceData->size() << " pixels for device " << m_detector->name();
+        clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(deviceData));
+    }
+    clipboard->put(m_detector->name(), "SpidrSignals", reinterpret_cast<Objects*>(spidrData));
 
     // Otherwise tell event loop to keep running
     IFLOG(INFO) {
@@ -303,16 +259,11 @@ StatusCode EventLoaderTimepix3::run(Clipboard* clipboard) {
         }
     }
 
-    // If no/not enough data in this event then tell the event loop to directly skip to the next event
-    if(returnvalue == Success && loadedData < m_minNumberOfPlanes) {
-        return NoData;
-    }
-
-    return returnvalue;
+    return Success;
 }
 
 // Function to load the pixel mask file
-void EventLoaderTimepix3::maskPixels(std::shared_ptr<Detector> detector, string trimdacfile) {
+void EventLoaderTimepix3::maskPixels(string trimdacfile) {
 
     // Open the mask file
     ifstream trimdacs;
@@ -328,7 +279,7 @@ void EventLoaderTimepix3::maskPixels(std::shared_ptr<Detector> detector, string 
         for(int row = 0; row < 256; row++) {
             trimdacs >> t_col >> t_row >> t_trim >> t_mask >> t_tpen;
             if(t_mask)
-                detector->maskChannel(t_col, t_row);
+                m_detector->maskChannel(t_col, t_row);
         }
     }
 
@@ -378,25 +329,22 @@ void EventLoaderTimepix3::loadCalibration(std::string path, char delim, std::vec
 }
 
 // Function to load data for a given device, into the relevant container
-bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
-                                   std::shared_ptr<Detector> detector,
-                                   Pixels* devicedata,
-                                   SpidrSignals* spidrData) {
+bool EventLoaderTimepix3::loadData(Clipboard* clipboard, Pixels* devicedata, SpidrSignals* spidrData) {
 
-    string detectorID = detector->name();
+    std::string detectorID = m_detector->name();
 
     bool extra = false; // temp
 
     LOG(DEBUG) << "Loading data for device " << detectorID;
     while(1) {
         // Check if current file is at its end and move to the next:
-        if((*m_file_iterator[detectorID])->eof()) {
-            m_file_iterator[detectorID]++;
-            LOG(INFO) << "Starting to read next file for " << detectorID << ": " << (*m_file_iterator[detectorID]).get();
+        if((*m_file_iterator)->eof()) {
+            m_file_iterator++;
+            LOG(INFO) << "Starting to read next file for " << detectorID << ": " << (*m_file_iterator).get();
         }
 
         // Check if the last file is finished:
-        if(m_file_iterator[detectorID] == m_files[detectorID].end()) {
+        if(m_file_iterator == m_files.end()) {
             LOG(INFO) << "EOF for all files of " << detectorID;
             break;
         }
@@ -405,8 +353,8 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
         ULong64_t pixdata = 0;
 
         // If we can't read data anymore, jump to begin of loop:
-        if(!(*m_file_iterator[detectorID])->read(reinterpret_cast<char*>(&pixdata), sizeof pixdata)) {
-            LOG(INFO) << "No more data in current file for " << detectorID << ": " << (*m_file_iterator[detectorID]).get();
+        if(!(*m_file_iterator)->read(reinterpret_cast<char*>(&pixdata), sizeof pixdata)) {
+            LOG(INFO) << "No more data in current file for " << detectorID << ": " << (*m_file_iterator).get();
             continue;
         }
 
@@ -439,17 +387,15 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
             if(header2 == 0x4) {
                 // The data is shifted 16 bits to the right, then 12 to the left in
                 // order to match the timestamp format (net 4 right)
-                m_syncTime[detectorID] =
-                    (m_syncTime[detectorID] & 0xFFFFF00000000000) + ((pixdata & 0x0000FFFFFFFF0000) >> 4);
+                m_syncTime = (m_syncTime & 0xFFFFF00000000000) + ((pixdata & 0x0000FFFFFFFF0000) >> 4);
             }
             // 0x5 is the most significant part of the timestamp
             if(header2 == 0x5) {
                 // The data is shifted 16 bits to the right, then 44 to the left in
                 // order to match the timestamp format (net 28 left)
-                m_syncTime[detectorID] =
-                    (m_syncTime[detectorID] & 0x00000FFFFFFFFFFF) + ((pixdata & 0x00000000FFFF0000) << 28);
-                if(!m_clearedHeader[detectorID] && static_cast<double>(m_syncTime[detectorID]) / (4096. * 40000000.) < 6.) {
-                    m_clearedHeader[detectorID] = true;
+                m_syncTime = (m_syncTime & 0x00000FFFFFFFFFFF) + ((pixdata & 0x00000000FFFF0000) << 28);
+                if(!m_clearedHeader && static_cast<double>(m_syncTime) / (4096. * 40000000.) < 6.) {
+                    m_clearedHeader = true;
                     LOG(DEBUG) << detectorID << ": Cleared header";
                 }
             }
@@ -458,7 +404,7 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
         // In data taking during 2015 there was sometimes still data left in the buffers at the start of
         // a run. For that reason we keep skipping data until this "header" data has been cleared, when
         // the heart beat signal starts from a low number (~few seconds max)
-        if(!m_clearedHeader[detectorID]) {
+        if(!m_clearedHeader) {
             LOG(TRACE) << "Header not cleared, skipping data block.";
             continue;
         }
@@ -467,7 +413,7 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
         if(header == 0x0) {
 
             // Only want to read these packets from the DUT
-            if(detector->isDUT()) {
+            if(m_detector->isDUT()) {
                 continue;
             }
 
@@ -490,7 +436,7 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
                 // reader so that we start with this signal next event)
                 if(temporalSplit) {
                     if(timestamp > clipboard->get_persistent("eventEnd")) {
-                        (*m_file_iterator[detectorID])->seekg(-1 * static_cast<int>(sizeof(pixdata)), std::ios_base::cur);
+                        (*m_file_iterator)->seekg(-1 * static_cast<int>(sizeof(pixdata)), std::ios_base::cur);
                         LOG(TRACE) << "Signal has a time beyond the current event: " << Units::display(timestamp, "ns");
                         break;
                     }
@@ -554,11 +500,11 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
                     continue;
 
                 // if jump back in time is larger than 1 sec, overflow detected...
-                if((m_syncTimeTDC[detectorID] - timestamp_raw) > 0x1312d000) {
-                    m_TDCoverflowCounter[detectorID]++;
+                if((m_syncTimeTDC - timestamp_raw) > 0x1312d000) {
+                    m_TDCoverflowCounter++;
                 }
-                m_syncTimeTDC[detectorID] = timestamp_raw;
-                timestamp = timestamp_raw + (static_cast<long long int>(m_TDCoverflowCounter[detectorID]) << 35);
+                m_syncTimeTDC = timestamp_raw;
+                timestamp = timestamp_raw + (static_cast<long long int>(m_TDCoverflowCounter) << 35);
 
                 double triggerTime =
                     static_cast<double>(timestamp + static_cast<long long int>(stamp) / 12) / (8. * 0.04); // 320 MHz clock
@@ -579,7 +525,7 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
             const UShort_t row = static_cast<UShort_t>(spix + (pix & 0x3));
 
             // Check if this pixel is masked
-            if(detector->masked(col, row)) {
+            if(m_detector->masked(col, row)) {
                 LOG(DEBUG) << "Detector " << detectorID << ": pixel " << col << "," << row << " masked";
                 continue;
             }
@@ -594,7 +540,7 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
 
             // Calculate the timestamp.
             unsigned long long int time =
-                (((spidrTime << 18) + (toa << 4) + (15 - ftoa)) << 8) + (m_syncTime[detectorID] & 0xFFFFFC0000000000);
+                (((spidrTime << 18) + (toa << 4) + (15 - ftoa)) << 8) + (m_syncTime & 0xFFFFFC0000000000);
 
             // Adjusting phases for double column shift
             time += ((static_cast<unsigned long long int>(col) / 2 - 1) % 16) * 256;
@@ -603,9 +549,9 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
             // signal (which has an overflow of ~4 years) and check if the pixel time has wrapped back around to 0
 
             // If the counter overflow happens before reading the new heartbeat
-            //      while( abs(m_syncTime[detectorID]-time) > 0x0000020000000000 ){
+            //      while( abs(m_syncTime-time) > 0x0000020000000000 ){
             if(!extra) {
-                while(static_cast<long long>(m_syncTime[detectorID]) - static_cast<long long>(time) > 0x0000020000000000) {
+                while(static_cast<long long>(m_syncTime) - static_cast<long long>(time) > 0x0000020000000000) {
                     time += 0x0000040000000000;
                 }
             } else {
@@ -615,7 +561,7 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
             }
 
             // Convert final timestamp into ns and add the timing offset (in nano seconds) from the detectors file (if any)
-            const double timestamp = static_cast<double>(time) / (4096. / 25.) + detector->timingOffset();
+            const double timestamp = static_cast<double>(time) / (4096. / 25.) + m_detector->timingOffset();
 
             // Ignore pixel data if it is before the "eventStart" read from the clipboard storage:
             if(temporalSplit && (timestamp < clipboard->get_persistent("eventStart"))) {
@@ -631,7 +577,7 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
                               "event window ("
                            << Units::display(timestamp, {"s", "us", "ns"}) << " > "
                            << Units::display(clipboard->get_persistent("eventEnd"), {"s", "us", "ns"}) << ")";
-                (*m_file_iterator[detectorID])->seekg(-1 * static_cast<int>(sizeof(pixdata)), std::ios_base::cur);
+                (*m_file_iterator)->seekg(-1 * static_cast<int>(sizeof(pixdata)), std::ios_base::cur);
                 break;
             }
 
@@ -639,7 +585,7 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
             pixelToT_beforecalibration->Fill(static_cast<int>(tot));
 
             // Apply calibration if applyCalibration is true
-            if(applyCalibration && detector->isDUT()) {
+            if(applyCalibration && m_detector->isDUT()) {
                 LOG(DEBUG) << "Applying calibration to DUT";
                 size_t scol = static_cast<size_t>(col);
                 size_t srow = static_cast<size_t>(row);
@@ -703,5 +649,3 @@ bool EventLoaderTimepix3::loadData(Clipboard* clipboard,
     m_currentEvent++;
     return true;
 }
-
-void EventLoaderTimepix3::finalise() {}

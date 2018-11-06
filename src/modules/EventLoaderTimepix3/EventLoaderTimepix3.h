@@ -16,13 +16,15 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        EventLoaderTimepix3(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        EventLoaderTimepix3(Configuration config, std::shared_ptr<Detector> detector);
         ~EventLoaderTimepix3() {}
 
         // Standard algorithm functions
         void initialise();
         StatusCode run(Clipboard* clipboard);
-        void finalise();
+
+    private:
+        std::shared_ptr<Detector> m_detector;
 
         // ROOT graphs
         TH1F* pixelToT_beforecalibration;
@@ -36,10 +38,9 @@ namespace corryvreckan {
         TH2F* pixelTOAParameterT;
         TH1F* timeshiftPlot;
 
-    private:
-        bool loadData(Clipboard* clipboard, std::shared_ptr<Detector> detector, Pixels*, SpidrSignals*);
+        bool loadData(Clipboard* clipboard, Pixels*, SpidrSignals*);
         void loadCalibration(std::string path, char delim, std::vector<std::vector<float>>& dat);
-        void maskPixels(std::shared_ptr<Detector>, std::string);
+        void maskPixels(std::string);
 
         // configuration paramaters:
         double m_triggerLatency;
@@ -57,20 +58,20 @@ namespace corryvreckan {
         std::vector<std::vector<float>> vtoa;
 
         // Member variables
-        std::map<std::string, std::vector<std::unique_ptr<std::ifstream>>> m_files;
-        std::map<std::string, std::vector<std::unique_ptr<std::ifstream>>::iterator> m_file_iterator;
+        std::vector<std::unique_ptr<std::ifstream>> m_files;
+        std::vector<std::unique_ptr<std::ifstream>>::iterator m_file_iterator;
 
-        std::map<std::string, unsigned long long int> m_syncTime;
-        std::map<std::string, bool> m_clearedHeader;
-        std::map<std::string, long long int> m_syncTimeTDC;
-        std::map<std::string, int> m_TDCoverflowCounter;
+        unsigned long long int m_syncTime;
+        bool m_clearedHeader;
+        long long int m_syncTimeTDC;
+        int m_TDCoverflowCounter;
 
         long long int m_currentEvent;
 
         unsigned long long int m_prevTime;
         bool m_shutterOpen;
-        std::map<std::string, Pixels*> bufferedData;
-        std::map<std::string, SpidrSignals*> bufferedSignals;
+        Pixels* bufferedData;
+        SpidrSignals* bufferedSignals;
     };
 } // namespace corryvreckan
 #endif // TIMEPIX3EVENTLOADER_H
