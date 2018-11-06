@@ -21,7 +21,7 @@
 using namespace ROOT::Math;
 using namespace corryvreckan;
 
-Detector::Detector(const Configuration& config) {
+Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     // Role of this detector:
     auto roles = config.getArray<std::string>("role", std::vector<std::string>{"none"});
     for(auto& role : roles) {
