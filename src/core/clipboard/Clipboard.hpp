@@ -98,11 +98,10 @@ namespace corryvreckan {
         std::vector<std::string> listCollections();
 
     private:
-        // Container for data, list of all data held
-        std::map<std::string, Objects*> m_data;
+        typedef std::map<std::string, Objects*> ClipboardData;
 
-        // List of available data collections
-        std::vector<std::string> m_dataID;
+        // Container for data, list of all data held
+        ClipboardData m_data;
 
         // Persistent clipboard storage
         std::unordered_map<std::string, double> m_persistent_data;

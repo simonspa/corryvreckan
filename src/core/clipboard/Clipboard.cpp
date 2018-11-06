@@ -5,13 +5,11 @@
 using namespace corryvreckan;
 
 void Clipboard::put(std::string name, Objects* objects) {
-    m_dataID.push_back(name);
-    m_data[name] = objects;
+    m_data.insert(ClipboardData::value_type(name, objects));
 }
 
 void Clipboard::put(std::string name, std::string type, Objects* objects) {
-    m_dataID.push_back(name + type);
-    m_data[name + type] = objects;
+    m_data.insert(ClipboardData::value_type(name + type, objects));
 }
 
 void Clipboard::put_persistent(std::string name, double value) {
@@ -38,20 +36,20 @@ bool Clipboard::has_persistent(std::string name) {
 }
 
 void Clipboard::clear() {
-    for(auto& id : m_dataID) {
-        Objects* collection = m_data[id];
-        for(Objects::iterator it = collection->begin(); it != collection->end(); ++it)
+    for(auto set = m_data.cbegin(); set != m_data.cend();) {
+        Objects* collection = set->second;
+        for(Objects::iterator it = collection->begin(); it != collection->end(); ++it) {
             delete(*it);
-        delete m_data[id];
-        m_data.erase(id);
+        }
+        delete collection;
+        set = m_data.erase(set);
     }
-    m_dataID.clear();
 }
 
 std::vector<std::string> Clipboard::listCollections() {
     std::vector<std::string> collections;
-    for(auto& name : m_dataID) {
-        collections.push_back(name);
+    for(auto& dataset : m_data) {
+        collections.push_back(dataset.first);
     }
     return collections;
 }
