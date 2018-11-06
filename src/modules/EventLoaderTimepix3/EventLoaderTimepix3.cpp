@@ -230,9 +230,9 @@ StatusCode EventLoaderTimepix3::run(Clipboard* clipboard) {
 
     LOG(TRACE) << "== New event";
 
-    // If all files for this detector have been read, ignore it:
+    // If all files for this detector have been read, end the run:
     if(m_file_iterator == m_files.end()) {
-        return NoData;
+        return Failure;
     }
 
     // Make a new container for the data
