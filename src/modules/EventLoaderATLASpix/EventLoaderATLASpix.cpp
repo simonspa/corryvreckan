@@ -1,11 +1,11 @@
-#include "ATLASpixEventLoader.h"
+#include "EventLoaderATLASpix.h"
 #include <regex>
 
 using namespace corryvreckan;
 using namespace std;
 
-ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
+EventLoaderATLASpix::EventLoaderATLASpix(Configuration config, std::shared_ptr<Detector> detector)
+    : Module(std::move(config), detector), m_detector(detector) {
 
     m_timewalkCorrectionFactors = m_config.getArray<double>("timewalkCorrectionFactors", std::vector<double>());
 
@@ -27,7 +27,7 @@ ATLASpixEventLoader::ATLASpixEventLoader(Configuration config, std::vector<std::
     ts2Range = 0x40 * m_clkdivend2M;
 }
 
-uint32_t ATLASpixEventLoader::gray_decode(uint32_t gray) {
+uint32_t EventLoaderATLASpix::gray_decode(uint32_t gray) {
     uint32_t bin = gray;
     while(gray >>= 1) {
         bin ^= gray;
@@ -35,7 +35,7 @@ uint32_t ATLASpixEventLoader::gray_decode(uint32_t gray) {
     return bin;
 }
 
-void ATLASpixEventLoader::initialise() {
+void EventLoaderATLASpix::initialise() {
 
     uint32_t datain;
 
@@ -111,8 +111,14 @@ void ATLASpixEventLoader::initialise() {
     }
 
     // Make histograms for debugging
-    auto det = get_dut();
-    hHitMap = new TH2F("hitMap", "hitMap", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
+    hHitMap = new TH2F("hitMap",
+                       "hitMap",
+                       m_detector->nPixelsX(),
+                       0,
+                       m_detector->nPixelsX(),
+                       m_detector->nPixelsY(),
+                       0,
+                       m_detector->nPixelsY());
     // hPixelToT = new TH1F("pixelToT", "pixelToT", 100, 0, 100);
     // std::string totTitle = "pixelToT;x ToT in " + string(m_clockCycle) + " ns units";
     // hPixelToT = new TH1F("pixelToT", "pixelToT", 64, 0, ts2Range*m_clockCycle);
@@ -124,7 +130,7 @@ void ATLASpixEventLoader::initialise() {
     hPixelsOverTime = new TH1F("pixelsOverTime", "pixelsOverTime", 2e6, 0, 2e6);
 
     // Read calibration:
-    m_calibrationFactors.resize(static_cast<size_t>(det->nPixelsX() * det->nPixelsY()), 1.0);
+    m_calibrationFactors.resize(static_cast<size_t>(m_detector->nPixelsX() * m_detector->nPixelsY()), 1.0);
     if(!m_calibrationFile.empty()) {
         std::ifstream calibration(m_calibrationFile);
         std::string line;
@@ -146,13 +152,11 @@ void ATLASpixEventLoader::initialise() {
 
     LOG(INFO) << "Using clock cycle length of " << m_clockCycle << std::endl;
 
-    // Initialise member variables
-    m_eventNumber = 0;
     m_oldtoa = 0;
     m_overflowcounter = 0;
 }
 
-StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
+StatusCode EventLoaderATLASpix::run(Clipboard* clipboard) {
 
     // Check if event frame is defined:
     if(!clipboard->has_persistent("eventStart") || !clipboard->has_persistent("eventEnd")) {
@@ -187,7 +191,7 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
 
     // Put the data on the clipboard
     if(!pixels->empty()) {
-        clipboard->put(get_dut()->name(), "pixels", reinterpret_cast<Objects*>(pixels));
+        clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
     } else {
         return NoData;
     }
@@ -196,16 +200,13 @@ StatusCode ATLASpixEventLoader::run(Clipboard* clipboard) {
     return Success;
 }
 
-Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_time) {
+Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_time) {
     LOG(DEBUG) << "Searching for events in interval from " << Units::display(start_time, {"s", "us", "ns"}) << " to "
                << Units::display(end_time, {"s", "us", "ns"}) << ", file read position " << m_file.tellg()
                << ", old_fpga_ts = " << old_fpga_ts << ".";
 
     // Pixel container
     Pixels* pixels = new Pixels();
-
-    // Detector we're looking at:
-    auto detector = get_dut();
 
     // Read file and load data
     uint32_t datain;
@@ -304,7 +305,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
             window_end = false;
             data_pixel_++;
             // If this pixel is masked, do not save it
-            if(detector->masked(col, row)) {
+            if(m_detector->masked(col, row)) {
                 continue;
             }
 
@@ -489,7 +490,7 @@ Pixels* ATLASpixEventLoader::read_caribou_data(double start_time, double end_tim
     return pixels;
 }
 
-Pixels* ATLASpixEventLoader::read_legacy_data(double, double) {
+Pixels* EventLoaderATLASpix::read_legacy_data(double, double) {
 
     // Pixel container
     Pixels* pixels = new Pixels();
@@ -502,9 +503,8 @@ Pixels* ATLASpixEventLoader::read_legacy_data(double, double) {
 
         m_file >> col >> row >> ts >> tot >> dummy >> dummy >> bincounter >> TriggerDebugTS;
 
-        auto detector = get_dut();
         // If this pixel is masked, do not save it
-        if(detector->masked(col, row)) {
+        if(m_detector->masked(col, row)) {
             continue;
         }
 
@@ -564,9 +564,8 @@ Pixels* ATLASpixEventLoader::read_legacy_data(double, double) {
     return pixels;
 }
 
-void ATLASpixEventLoader::finalise() {
+void EventLoaderATLASpix::finalise() {
 
-    LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
     LOG(INFO) << "Identifier distribution:";
     for(auto id : m_identifiers) {
         LOG(INFO) << "\t" << id.first << ": " << id.second;

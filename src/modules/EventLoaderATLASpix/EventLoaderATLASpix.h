@@ -1,5 +1,5 @@
-#ifndef ATLASpixEventLoader_H
-#define ATLASpixEventLoader_H 1
+#ifndef EventLoaderATLASpix_H
+#define EventLoaderATLASpix_H 1
 
 #include <TCanvas.h>
 #include <TH1F.h>
@@ -18,12 +18,12 @@
 namespace corryvreckan {
     /** @ingroup Modules
      */
-    class ATLASpixEventLoader : public Module {
+    class EventLoaderATLASpix : public Module {
 
     public:
         // Constructors and destructors
-        ATLASpixEventLoader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
-        ~ATLASpixEventLoader() {}
+        EventLoaderATLASpix(Configuration config, std::shared_ptr<Detector> detector);
+        ~EventLoaderATLASpix() {}
 
         // Functions
         void initialise();
@@ -46,8 +46,7 @@ namespace corryvreckan {
          */
         Pixels* read_caribou_data(double start_time, double end_time);
 
-        // Member variables
-        int m_eventNumber;
+        std::shared_ptr<Detector> m_detector;
         unsigned long long int m_oldtoa;
         unsigned long long int m_overflowcounter;
         std::string m_filename;
@@ -84,4 +83,4 @@ namespace corryvreckan {
         unsigned int data_pixel_{}, data_header_{};
     };
 } // namespace corryvreckan
-#endif // ATLASpixEventLoader_H
+#endif // EventLoaderATLASpix_H
