@@ -31,3 +31,6 @@ CMakeLists.txt.user
 *.d
 *.so
 *.pcm
+
+# Ignore conflict files:
+*.orig
