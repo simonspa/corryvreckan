@@ -102,7 +102,7 @@ void Prealignment::finalise() {
             LOG(ERROR) << "Detector " << detector->name() << ": RMS X = " << Units::display(rmsX, {"mm", "um"})
                        << " , RMS Y = " << Units::display(rmsY, {"mm", "um"});
         }
-        if(detector->role() != DetectorRole::REFERENCE) {
+        if(detector->isReference()) {
             double mean_X = correlationX[detector->name()]->GetMean();
             double mean_Y = correlationY[detector->name()]->GetMean();
             LOG(INFO) << "Detector " << detector->name() << ": x = " << Units::display(mean_X, {"mm", "um"})

@@ -131,12 +131,12 @@ void Analysis::load_detectors() {
             Detector* det_parm = new Detector(detector);
 
             // Check if we already found a reference plane:
-            if(found_reference && det_parm->role() == DetectorRole::REFERENCE) {
+            if(found_reference && det_parm->isReference()) {
                 throw InvalidValueError(global_config, "detectors_file", "Found more than one reference detector");
             }
 
             // Switch flag if we found the reference plane:
-            found_reference |= (det_parm->role() == DetectorRole::REFERENCE);
+            found_reference |= (det_parm->isReference());
 
             // Add the new detector to the global list:
             detectors.push_back(det_parm);
