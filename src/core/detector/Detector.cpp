@@ -29,12 +29,9 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         std::transform(role.begin(), role.end(), role.begin(), ::tolower);
         if(role == "none") {
             m_role |= DetectorRole::NONE;
-            LOG(ERROR) << config.getName() << " is none";
         } else if(role == "reference") {
-            LOG(ERROR) << config.getName() << " is reference";
             m_role |= DetectorRole::REFERENCE;
         } else if(role == "dut") {
-            LOG(ERROR) << config.getName() << " is dut";
             m_role |= DetectorRole::DUT;
         } else {
             throw InvalidValueError(config, "role", "Detector role does not exist.");
