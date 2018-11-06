@@ -83,8 +83,6 @@ namespace corryvreckan {
         Clusters getAllClustersInTimeWindow(Cluster* cluster, double timeWindow) {
 
             LOG(TRACE) << "Getting all clusters in time window " << timeWindow << "ns";
-            // Find out which iterator number this cluster corresponds to
-            //    int iterator = iteratorNumber[cluster];
 
             // Get iterators of all clusters within the time window
             std::vector<int> results;
@@ -109,7 +107,7 @@ namespace corryvreckan {
 
             // Get iterators of all clusters within the time window
             std::vector<int> results;
-            double* position = new double();
+            double position[2];
             position[0] = cluster->globalX();
             position[1] = cluster->globalY();
             positionKdtree->FindInRange(position, window, results);
@@ -147,9 +145,8 @@ namespace corryvreckan {
         Clusters clusters;
         std::map<Cluster*, size_t> iteratorNumber;
 
-        // ROOT I/O class definition - update version number when you change this
-        // class!
-        ClassDef(KDTree, 3)
+        // ROOT I/O class definition - update version number when you change this class!
+        ClassDef(KDTree, 4)
     };
 } // namespace corryvreckan
 
