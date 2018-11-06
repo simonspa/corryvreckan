@@ -8,20 +8,20 @@
 namespace corryvreckan {
     /** @ingroup Modules
      */
-    class Timepix3MaskCreator : public Module {
+    class MaskCreatorTimepix3 : public Module {
 
     public:
         // Constructors and destructors
-        Timepix3MaskCreator(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
-        ~Timepix3MaskCreator() {}
+        MaskCreatorTimepix3(Configuration config, std::shared_ptr<Detector> detector);
+        ~MaskCreatorTimepix3() {}
 
         // Functions
-        void initialise();
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
-        // Member variables
-        std::map<std::string, std::map<int, int>> pixelhits;
+    private:
+        std::shared_ptr<Detector> m_detector;
+        std::map<int, int> pixelhits;
     };
 } // namespace corryvreckan
 #endif // TIMEPIX3MASKCREATOR_H
