@@ -20,7 +20,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        EtaCalculation(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        EtaCalculation(Configuration config, std::shared_ptr<Detector> detector);
         ~EtaCalculation() {}
 
         // Functions
@@ -29,22 +29,22 @@ namespace corryvreckan {
         void finalise();
 
     private:
-        ROOT::Math::XYVector pixelIntercept(Track* tr, std::shared_ptr<Detector> det);
+        ROOT::Math::XYVector pixelIntercept(Track* tr);
         void calculateEta(Track* track, Cluster* cluster);
         std::string fit(TF1* function, std::string fname, TProfile* profile);
 
-        // Member variables
+        std::shared_ptr<Detector> m_detector;
         double m_chi2ndofCut;
         std::string m_etaFormulaX;
-        std::map<std::string, TF1*> m_etaFitX;
+        TF1* m_etaFitX;
         std::string m_etaFormulaY;
-        std::map<std::string, TF1*> m_etaFitY;
+        TF1* m_etaFitY;
 
         // Histograms
-        std::map<std::string, TH2F*> m_etaDistributionX;
-        std::map<std::string, TH2F*> m_etaDistributionY;
-        std::map<std::string, TProfile*> m_etaDistributionXprofile;
-        std::map<std::string, TProfile*> m_etaDistributionYprofile;
+        TH2F* m_etaDistributionX;
+        TH2F* m_etaDistributionY;
+        TProfile* m_etaDistributionXprofile;
+        TProfile* m_etaDistributionYprofile;
     };
 } // namespace corryvreckan
 #endif // EtaCalculation_H
