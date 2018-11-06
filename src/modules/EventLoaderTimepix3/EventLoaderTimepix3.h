@@ -70,8 +70,6 @@ namespace corryvreckan {
 
         unsigned long long int m_prevTime;
         bool m_shutterOpen;
-        Pixels* bufferedData;
-        SpidrSignals* bufferedSignals;
     };
 } // namespace corryvreckan
 #endif // TIMEPIX3EVENTLOADER_H
