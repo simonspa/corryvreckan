@@ -40,7 +40,7 @@ bool Clipboard::has_persistent(std::string name) {
 void Clipboard::clear() {
     for(auto& id : m_dataID) {
         Objects* collection = m_data[id];
-        for(Objects::iterator it = collection->begin(); it != collection->end(); it++)
+        for(Objects::iterator it = collection->begin(); it != collection->end(); ++it)
             delete(*it);
         delete m_data[id];
         m_data.erase(id);

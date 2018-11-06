@@ -49,8 +49,8 @@ namespace corryvreckan {
         ~Detector() {}
 
         // Functions to retrieve basic information
-        std::string type() { return m_detectorType; }
-        std::string name() { return m_detectorName; }
+        const std::string type() const { return m_detectorType; }
+        const std::string name() const { return m_detectorName; }
 
         // Detector role and helper functions
         DetectorRole role() { return m_role; }
