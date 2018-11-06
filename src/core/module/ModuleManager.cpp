@@ -135,12 +135,12 @@ void ModuleManager::load_detectors() {
             auto det_parm = std::make_shared<Detector>(detector);
 
             // Check if we already found a reference plane:
-            if(found_reference && det_parm->role() == DetectorRole::REFERENCE) {
+            if(found_reference && det_parm->isReference()) {
                 throw InvalidValueError(global_config, "detectors_file", "Found more than one reference detector");
             }
 
             // Switch flag if we found the reference plane:
-            if(det_parm->role() == DetectorRole::REFERENCE) {
+            if(det_parm->isReference()) {
                 found_reference = true;
                 m_reference = det_parm;
             }

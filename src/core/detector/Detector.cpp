@@ -21,19 +21,24 @@
 using namespace ROOT::Math;
 using namespace corryvreckan;
 
-Detector::Detector(const Configuration& config) {
-    // Role of this detector:
-    auto role = config.get<std::string>("role", "none");
-    std::transform(role.begin(), role.end(), role.begin(), ::tolower);
+Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
 
-    if(role == "none") {
-        m_role = DetectorRole::NONE;
-    } else if(role == "reference") {
-        m_role = DetectorRole::REFERENCE;
-    } else if(role == "dut") {
-        m_role = DetectorRole::DUT;
-    } else {
-        throw InvalidValueError(config, "role", "Detector role does not exist.");
+    // Role of this detector:
+    auto roles = config.getArray<std::string>("role", std::vector<std::string>{"none"});
+    for(auto& role : roles) {
+        std::transform(role.begin(), role.end(), role.begin(), ::tolower);
+        if(role == "none") {
+            m_role |= DetectorRole::NONE;
+            LOG(ERROR) << config.getName() << " is none";
+        } else if(role == "reference") {
+            LOG(ERROR) << config.getName() << " is reference";
+            m_role |= DetectorRole::REFERENCE;
+        } else if(role == "dut") {
+            LOG(ERROR) << config.getName() << " is dut";
+            m_role |= DetectorRole::DUT;
+        } else {
+            throw InvalidValueError(config, "role", "Detector role does not exist.");
+        }
     }
 
     // Detector position and orientation
@@ -86,11 +91,11 @@ Detector::Detector(const Configuration& config) {
 }
 
 bool Detector::isReference() {
-    return m_role == DetectorRole::REFERENCE;
+    return static_cast<bool>(m_role & DetectorRole::REFERENCE);
 }
 
 bool Detector::isDUT() {
-    return m_role == DetectorRole::DUT;
+    return static_cast<bool>(m_role & DetectorRole::DUT);
 }
 
 // Functions to set and check channel masking
@@ -182,10 +187,16 @@ Configuration Detector::getConfiguration() {
     config.set("type", m_detectorType);
 
     // Store the role of the detector
-    if(m_role == DetectorRole::REFERENCE) {
-        config.set("role", "reference");
-    } else if(m_role == DetectorRole::DUT) {
-        config.set("role", "dut");
+    std::vector<std::string> roles;
+    if(this->isDUT()) {
+        roles.push_back("dut");
+    }
+    if(this->isReference()) {
+        roles.push_back("reference");
+    }
+
+    if(!roles.empty()) {
+        config.setArray("role", roles);
     }
 
     config.set("position", m_displacement, {"um", "mm"});

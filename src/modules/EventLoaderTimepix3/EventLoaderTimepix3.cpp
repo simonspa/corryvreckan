@@ -164,7 +164,7 @@ void EventLoaderTimepix3::initialise() {
     // Calibration
     pixelToT_beforecalibration = new TH1F("pixelToT_beforecalibration", "pixelToT_beforecalibration", 100, 0, 200);
 
-    if(m_detector->role() == DetectorRole::DUT && m_config.has("calibrationPath") && m_config.has("threshold")) {
+    if(m_detector->isDUT() && m_config.has("calibrationPath") && m_config.has("threshold")) {
         LOG(INFO) << "Applying calibration from " << calibrationPath;
         applyCalibration = true;
 

@@ -30,11 +30,29 @@ namespace corryvreckan {
     /**
      * @brief Role of the detector
      */
-    enum class DetectorRole {
-        NONE = 0,  ///< No specific detector role
-        REFERENCE, ///< Reference detector
-        DUT,       ///< Detector used as device under test
+    enum class DetectorRole : int {
+        NONE = 0x0,      ///< No specific detector role
+        REFERENCE = 0x1, ///< Reference detector
+        DUT = 0x2,       ///< Detector used as device under test
     };
+
+    inline constexpr DetectorRole operator&(DetectorRole x, DetectorRole y) {
+        return static_cast<DetectorRole>(static_cast<int>(x) & static_cast<int>(y));
+    }
+
+    inline constexpr DetectorRole operator|(DetectorRole x, DetectorRole y) {
+        return static_cast<DetectorRole>(static_cast<int>(x) | static_cast<int>(y));
+    }
+
+    inline DetectorRole& operator&=(DetectorRole& x, DetectorRole y) {
+        x = x & y;
+        return x;
+    }
+
+    inline DetectorRole& operator|=(DetectorRole& x, DetectorRole y) {
+        x = x | y;
+        return x;
+    }
 
     /**
      * @brief Detector representation in the reconstruction chain
@@ -53,7 +71,6 @@ namespace corryvreckan {
         const std::string name() const { return m_detectorName; }
 
         // Detector role and helper functions
-        DetectorRole role() { return m_role; }
         bool isReference();
         bool isDUT();
 
