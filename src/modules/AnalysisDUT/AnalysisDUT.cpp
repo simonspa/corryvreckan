@@ -1,4 +1,4 @@
-#include "CLICpix2Analysis.h"
+#include "AnalysisDUT.h"
 
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
@@ -6,58 +6,72 @@
 
 using namespace corryvreckan;
 
-CLICpix2Analysis::CLICpix2Analysis(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
+AnalysisDUT::AnalysisDUT(Configuration config, std::shared_ptr<Detector> detector)
+    : Module(std::move(config), detector), m_detector(detector) {
 
     m_timeCutFrameEdge = m_config.get<double>("timeCutFrameEdge", static_cast<double>(Units::convert(20, "ns")));
-
     spatialCut = m_config.get<double>("spatialCut", static_cast<double>(Units::convert(50, "um")));
     chi2ndofCut = m_config.get<double>("chi2ndofCut", 3.);
 }
 
-void CLICpix2Analysis::initialise() {
+void AnalysisDUT::initialise() {
 
-    // Get DUT detector:
-    auto det = get_dut();
-
-    hClusterMapAssoc = new TH2F(
-        "clusterMapAssoc", "clusterMapAssoc", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
+    hClusterMapAssoc = new TH2F("clusterMapAssoc",
+                                "clusterMapAssoc",
+                                m_detector->nPixelsX(),
+                                0,
+                                m_detector->nPixelsX(),
+                                m_detector->nPixelsY(),
+                                0,
+                                m_detector->nPixelsY());
     hClusterSizeMapAssoc = new TProfile2D("clusterSizeMapAssoc",
                                           "clusterSizeMapAssoc",
-                                          det->nPixelsX(),
+                                          m_detector->nPixelsX(),
                                           0,
-                                          det->nPixelsX(),
-                                          det->nPixelsY(),
+                                          m_detector->nPixelsX(),
+                                          m_detector->nPixelsY(),
                                           0,
-                                          det->nPixelsY(),
+                                          m_detector->nPixelsY(),
                                           0,
                                           100);
 
     hClusterToTMapAssoc = new TProfile2D("clusterSizeToTAssoc",
                                          "clusterToTMapAssoc",
-                                         det->nPixelsX(),
+                                         m_detector->nPixelsX(),
                                          0,
-                                         det->nPixelsX(),
-                                         det->nPixelsY(),
+                                         m_detector->nPixelsX(),
+                                         m_detector->nPixelsY(),
                                          0,
-                                         det->nPixelsY(),
+                                         m_detector->nPixelsY(),
                                          0,
                                          1000);
 
     // Per-pixel histograms
-    hHitMapAssoc =
-        new TH2F("hitMapAssoc", "hitMapAssoc", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
-    hHitMapROI =
-        new TH2F("hitMapROI", "hitMapROI", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
+    hHitMapAssoc = new TH2F("hitMapAssoc",
+                            "hitMapAssoc",
+                            m_detector->nPixelsX(),
+                            0,
+                            m_detector->nPixelsX(),
+                            m_detector->nPixelsY(),
+                            0,
+                            m_detector->nPixelsY());
+    hHitMapROI = new TH2F("hitMapROI",
+                          "hitMapROI",
+                          m_detector->nPixelsX(),
+                          0,
+                          m_detector->nPixelsX(),
+                          m_detector->nPixelsY(),
+                          0,
+                          m_detector->nPixelsY());
     hPixelToTAssoc = new TH1F("pixelToTAssoc", "pixelToTAssoc", 32, 0, 31);
     hPixelToTMapAssoc = new TProfile2D("pixelToTMapAssoc",
                                        "pixelToTMapAssoc",
-                                       det->nPixelsX(),
+                                       m_detector->nPixelsX(),
                                        0,
-                                       det->nPixelsX(),
-                                       det->nPixelsY(),
+                                       m_detector->nPixelsX(),
+                                       m_detector->nPixelsY(),
                                        0,
-                                       det->nPixelsY(),
+                                       m_detector->nPixelsY(),
                                        0,
                                        255);
 
@@ -75,8 +89,8 @@ void CLICpix2Analysis::initialise() {
     clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
 
     // In-pixel studies:
-    auto pitch_x = static_cast<double>(Units::convert(det->pitch().X(), "um"));
-    auto pitch_y = static_cast<double>(Units::convert(det->pitch().Y(), "um"));
+    auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
+    auto pitch_y = static_cast<double>(Units::convert(m_detector->pitch().Y(), "um"));
     auto mod_axes = "x_{track} mod " + std::to_string(pitch_x) + "#mum;y_{track} mod " + std::to_string(pitch_y) + "#mum;";
 
     std::string title = "DUT x resolution;" + mod_axes + "MAD(#Deltax) [#mum]";
@@ -136,22 +150,22 @@ void CLICpix2Analysis::initialise() {
                                          1);
     hChipEfficiencyMap = new TProfile2D("hChipEfficiencyMap",
                                         "hChipEfficiencyMap",
-                                        det->nPixelsX(),
+                                        m_detector->nPixelsX(),
                                         0,
-                                        det->nPixelsX(),
-                                        det->nPixelsY(),
+                                        m_detector->nPixelsX(),
+                                        m_detector->nPixelsY(),
                                         0,
-                                        det->nPixelsY(),
+                                        m_detector->nPixelsY(),
                                         0,
                                         1);
     hGlobalEfficiencyMap = new TProfile2D("hGlobalEfficiencyMap",
                                           "hGlobalEfficiencyMap",
                                           300,
-                                          -1.5 * det->size().X(),
-                                          1.5 * det->size().X(),
+                                          -1.5 * m_detector->size().X(),
+                                          1.5 * m_detector->size().X(),
                                           300,
-                                          -1.5 * det->size().Y(),
-                                          1.5 * det->size().Y(),
+                                          -1.5 * m_detector->size().Y(),
+                                          1.5 * m_detector->size().Y(),
                                           0,
                                           1);
 
@@ -170,7 +184,7 @@ void CLICpix2Analysis::initialise() {
         new TH2F("hUnassociatedTracksGlobalPosition", "hUnassociatedTracksGlobalPosition", 200, -10, 10, 200, -10, 10);
 }
 
-StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
+StatusCode AnalysisDUT::run(Clipboard* clipboard) {
 
     // Get the telescope tracks from the clipboard
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
@@ -178,9 +192,6 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return Success;
     }
-
-    // Get the DUT detector:
-    auto detector = get_dut();
 
     // Loop over all tracks
     for(auto& track : (*tracks)) {
@@ -197,21 +208,21 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
         }
 
         // Check if it intercepts the DUT
-        auto globalIntercept = detector->getIntercept(track);
-        auto localIntercept = detector->globalToLocal(globalIntercept);
+        auto globalIntercept = m_detector->getIntercept(track);
+        auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
-        if(!detector->hasIntercept(track, 1.)) {
+        if(!m_detector->hasIntercept(track, 1.)) {
             LOG(DEBUG) << " - track outside DUT area";
             continue;
         }
 
         // Check that track is within region of interest using winding number algorithm
-        if(!detector->isWithinROI(track)) {
+        if(!m_detector->isWithinROI(track)) {
             is_within_roi = false;
         }
 
         // Check that it doesn't go through/near a masked pixel
-        if(detector->hitMasked(track, 1.)) {
+        if(m_detector->hitMasked(track, 1.)) {
             LOG(DEBUG) << " - track close to masked pixel";
             continue;
         }
@@ -232,11 +243,11 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
         }
 
         // Calculate in-pixel position of track in microns
-        auto xmod = static_cast<double>(Units::convert(detector->inPixelX(localIntercept), "um"));
-        auto ymod = static_cast<double>(Units::convert(detector->inPixelY(localIntercept), "um"));
+        auto xmod = static_cast<double>(Units::convert(m_detector->inPixelX(localIntercept), "um"));
+        auto ymod = static_cast<double>(Units::convert(m_detector->inPixelY(localIntercept), "um"));
 
         // Get the DUT clusters from the clipboard
-        Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(get_dut()->name(), "clusters"));
+        Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
         if(clusters == nullptr) {
             LOG(DEBUG) << " - no DUT clusters";
         } else {
@@ -268,11 +279,13 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
                 // We now have an associated cluster
                 has_associated_cluster = true;
                 // FIXME need to understand local coord of clusters - why shifted? what's normal?
-                auto clusterLocal = detector->globalToLocal(cluster->global());
-                hClusterMapAssoc->Fill(detector->getColumn(clusterLocal), detector->getRow(clusterLocal));
-                hClusterSizeMapAssoc->Fill(
-                    detector->getColumn(clusterLocal), detector->getRow(clusterLocal), static_cast<double>(cluster->size()));
-                hClusterToTMapAssoc->Fill(detector->getColumn(clusterLocal), detector->getRow(clusterLocal), cluster->tot());
+                auto clusterLocal = m_detector->globalToLocal(cluster->global());
+                hClusterMapAssoc->Fill(m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal));
+                hClusterSizeMapAssoc->Fill(m_detector->getColumn(clusterLocal),
+                                           m_detector->getRow(clusterLocal),
+                                           static_cast<double>(cluster->size()));
+                hClusterToTMapAssoc->Fill(
+                    m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), cluster->tot());
 
                 clusterTotAssoc->Fill(cluster->tot());
 
@@ -344,7 +357,7 @@ StatusCode CLICpix2Analysis::run(Clipboard* clipboard) {
         // Efficiency plots:
         hGlobalEfficiencyMap->Fill(globalIntercept.X(), globalIntercept.Y(), has_associated_cluster);
         hChipEfficiencyMap->Fill(
-            detector->getColumn(localIntercept), detector->getRow(localIntercept), has_associated_cluster);
+            m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept), has_associated_cluster);
 
         // For pixels, only look at the ROI:
         if(is_within_roi) {

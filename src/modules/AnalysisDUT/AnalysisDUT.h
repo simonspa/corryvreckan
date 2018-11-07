@@ -1,5 +1,5 @@
-#ifndef CORRYVRECKAN_CLICPIX2_ANALYSIS_H
-#define CORRYVRECKAN_CLICPIX2_ANALYSIS_H
+#ifndef CORRYVRECKAN_DUT_ANALYSIS_H
+#define CORRYVRECKAN_DUT_ANALYSIS_H
 
 #include <TCanvas.h>
 #include <TH1F.h>
@@ -11,18 +11,20 @@
 namespace corryvreckan {
     /** @ingroup Modules
      */
-    class CLICpix2Analysis : public Module {
+    class AnalysisDUT : public Module {
 
     public:
         // Constructors and destructors
-        CLICpix2Analysis(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
-        ~CLICpix2Analysis() {}
+        AnalysisDUT(Configuration config, std::shared_ptr<Detector> detector);
+        ~AnalysisDUT() {}
 
         // Functions
         void initialise();
         StatusCode run(Clipboard* clipboard);
 
     private:
+        std::shared_ptr<Detector> m_detector;
+
         // Histograms
         TH2F *hClusterMapAssoc, *hHitMapAssoc, *hHitMapROI;
         TProfile2D *hClusterSizeMapAssoc, *hClusterToTMapAssoc;
@@ -64,4 +66,4 @@ namespace corryvreckan {
     };
 } // namespace corryvreckan
 
-#endif // CORRYVRECKAN_CLICPIX2_ANALYSIS_H
+#endif // CORRYVRECKAN_DUT_ANALYSIS_H
