@@ -1,4 +1,4 @@
-#include "ClicpixAnalysis.h"
+#include "AnalysisCLICpix.h"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
 #include "objects/Track.h"
@@ -6,8 +6,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-ClicpixAnalysis::ClicpixAnalysis(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
+AnalysisCLICpix::AnalysisCLICpix(Configuration config, std::shared_ptr<Detector> detector)
+    : Module(std::move(config), detector), m_detector(detector) {
 
     m_associationCut = m_config.get<double>("associationCut", static_cast<double>(Units::convert(100, "um")));
     m_proximityCut = m_config.get<double>("proximityCut", static_cast<double>(Units::convert(125, "um")));
@@ -20,28 +20,33 @@ template <typename T> std::string convertToString(T number) {
     return ss.str();
 }
 
-void ClicpixAnalysis::initialise() {
+void AnalysisCLICpix::initialise() {
     // Initialise member variables
     m_eventNumber = 0;
     m_triggerNumber = 0;
-    auto det = get_dut();
     m_lostHits = 0.;
 
     int maxcounter = 256;
 
     // Cluster/pixel histograms
-    hHitPixels =
-        new TH2F("hHitPixels", "hHitPixels", det->nPixelsX(), 0, det->nPixelsX(), det->nPixelsY(), 0, det->nPixelsY());
-    hColumnHits = new TH1F("hColumnHits", "hColumnHits", det->nPixelsX(), 0, det->nPixelsX());
-    hRowHits = new TH1F("hRowHits", "hRowHits", det->nPixelsY(), 0, det->nPixelsY());
+    hHitPixels = new TH2F("hHitPixels",
+                          "hHitPixels",
+                          m_detector->nPixelsX(),
+                          0,
+                          m_detector->nPixelsX(),
+                          m_detector->nPixelsY(),
+                          0,
+                          m_detector->nPixelsY());
+    hColumnHits = new TH1F("hColumnHits", "hColumnHits", m_detector->nPixelsX(), 0, m_detector->nPixelsX());
+    hRowHits = new TH1F("hRowHits", "hRowHits", m_detector->nPixelsY(), 0, m_detector->nPixelsY());
     hPixelToTMap = new TProfile2D("pixelToTMap",
                                   "pixelToTMap",
-                                  det->nPixelsX(),
+                                  m_detector->nPixelsX(),
                                   0,
-                                  det->nPixelsX(),
-                                  det->nPixelsY(),
+                                  m_detector->nPixelsX(),
+                                  m_detector->nPixelsY(),
                                   0,
-                                  det->nPixelsY(),
+                                  m_detector->nPixelsY(),
                                   0,
                                   maxcounter - 1);
     hClusterSizeAll = new TH1F("hClusterSizeAll", "hClusterSizeAll", 20, 0, 20);
@@ -91,9 +96,10 @@ void ClicpixAnalysis::initialise() {
         new TH1F("hAssociatedClustersVersusEventNo", "hAssociatedClustersVersusEventNo", 60000, 0, 60000);
     hAssociatedClustersVersusTriggerNo =
         new TH1F("hAssociatedClustersVersusTriggerNo", "hAssociatedClustersVersusTriggerNo", 50, 0, 50);
-    hAssociatedClusterRow = new TH1F("hAssociatedClusterRow", "hAssociatedClusterRow", det->nPixelsY(), 0, det->nPixelsY());
+    hAssociatedClusterRow =
+        new TH1F("hAssociatedClusterRow", "hAssociatedClusterRow", m_detector->nPixelsY(), 0, m_detector->nPixelsY());
     hAssociatedClusterColumn =
-        new TH1F("hAssociatedClusterColumn", "hAssociatedClusterColumn", det->nPixelsX(), 0, det->nPixelsX());
+        new TH1F("hAssociatedClusterColumn", "hAssociatedClusterColumn", m_detector->nPixelsX(), 0, m_detector->nPixelsX());
     hFrameEfficiency = new TH1F("hFrameEfficiency", "hFrameEfficiency", 6000, 0, 6000);
     hFrameTracks = new TH1F("hFrameTracks", "hFrameTracks", 6000, 0, 6000);
     hFrameTracksAssociated = new TH1F("hFrameTracksAssociated", "hFrameTracksAssociated", 6000, 0, 6000);
@@ -142,46 +148,46 @@ void ClicpixAnalysis::initialise() {
         new TH2F("hTrackInterceptsPixelAssociated", "hTrackInterceptsPixelAssociated", 50, 0, 50, 25, 0, 25);
     hTrackInterceptsChip = new TH2F("hTrackInterceptsChip",
                                     "hTrackInterceptsChip",
-                                    det->nPixelsX() + 1,
+                                    m_detector->nPixelsX() + 1,
                                     -0.5,
-                                    det->nPixelsX() + 0.5,
-                                    det->nPixelsY() + 1,
+                                    m_detector->nPixelsX() + 0.5,
+                                    m_detector->nPixelsY() + 1,
                                     -0.5,
-                                    det->nPixelsY() + 0.5);
+                                    m_detector->nPixelsY() + 0.5);
     hTrackInterceptsChipAssociated = new TH2F("hTrackInterceptsChipAssociated",
                                               "hTrackInterceptsChipAssociated",
-                                              det->nPixelsX() + 1,
+                                              m_detector->nPixelsX() + 1,
                                               -0.5,
-                                              det->nPixelsX() + 0.5,
-                                              det->nPixelsY() + 1,
+                                              m_detector->nPixelsX() + 0.5,
+                                              m_detector->nPixelsY() + 1,
                                               -0.5,
-                                              det->nPixelsY() + 0.5);
+                                              m_detector->nPixelsY() + 0.5);
     hTrackInterceptsChipUnassociated = new TH2F("hTrackInterceptsChipUnassociated",
                                                 "hTrackInterceptsChipUnassociated",
-                                                det->nPixelsX() + 1,
+                                                m_detector->nPixelsX() + 1,
                                                 -0.5,
-                                                det->nPixelsX() + 0.5,
-                                                det->nPixelsY() + 1,
+                                                m_detector->nPixelsX() + 0.5,
+                                                m_detector->nPixelsY() + 1,
                                                 -0.5,
-                                                det->nPixelsY() + 0.5);
+                                                m_detector->nPixelsY() + 0.5);
     hTrackInterceptsChipLost = new TH2F("hTrackInterceptsChipLost",
                                         "hTrackInterceptsChipLost",
-                                        det->nPixelsX() + 1,
+                                        m_detector->nPixelsX() + 1,
                                         -0.5,
-                                        det->nPixelsX() + 0.5,
-                                        det->nPixelsY() + 1,
+                                        m_detector->nPixelsX() + 0.5,
+                                        m_detector->nPixelsY() + 1,
                                         -0.5,
-                                        det->nPixelsY() + 0.5);
+                                        m_detector->nPixelsY() + 0.5);
 
     hPixelEfficiencyMap = new TH2F("hPixelEfficiencyMap", "hPixelEfficiencyMap", 50, 0, 50, 25, 0, 25);
     hChipEfficiencyMap = new TH2F("hChipEfficiencyMap",
                                   "hChipEfficiencyMap",
-                                  det->nPixelsX() + 1,
+                                  m_detector->nPixelsX() + 1,
                                   -0.5,
-                                  det->nPixelsX() + 0.5,
-                                  det->nPixelsY() + 1,
+                                  m_detector->nPixelsX() + 0.5,
+                                  m_detector->nPixelsY() + 1,
                                   -0.5,
-                                  det->nPixelsY() + 0.5);
+                                  m_detector->nPixelsY() + 0.5);
     hGlobalEfficiencyMap = new TH2F("hGlobalEfficiencyMap", "hGlobalEfficiencyMap", 200, -2.0, 2.0, 300, -1., 2);
 
     hInterceptClusterSize1 = new TH2F("hInterceptClusterSize1", "hInterceptClusterSize1", 25, 0, 25, 25, 0, 25);
@@ -195,10 +201,10 @@ void ClicpixAnalysis::initialise() {
                                          "hMapClusterSizeAssociated",
                                          m_nBinsX,
                                          0,
-                                         det->nPixelsX(),
+                                         m_detector->nPixelsX(),
                                          m_nBinsY,
                                          0,
-                                         det->nPixelsY());
+                                         m_detector->nPixelsY());
 
     for(int x = 0; x < m_nBinsX; x++) {
         for(int y = 0; y < m_nBinsY; y++) {
@@ -210,13 +216,12 @@ void ClicpixAnalysis::initialise() {
     }
 }
 
-StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
+StatusCode AnalysisCLICpix::run(Clipboard* clipboard) {
 
     // Get the clicpix clusters in this event
-    auto detector = get_dut();
-    Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(detector->name(), "clusters"));
+    Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
     if(clusters == nullptr) {
-        LOG(DEBUG) << "No clusters for " << detector->name() << " on the clipboard";
+        LOG(DEBUG) << "No clusters for " << m_detector->name() << " on the clipboard";
         return Success;
     }
 
@@ -253,8 +258,8 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
 
         // Get the track intercept with the clicpix plane (global and local
         // co-ordinates)
-        PositionVector3D<Cartesian3D<double>> trackIntercept = detector->getIntercept(track);
-        PositionVector3D<Cartesian3D<double>> trackInterceptLocal = detector->globalToLocal(trackIntercept);
+        PositionVector3D<Cartesian3D<double>> trackIntercept = m_detector->getIntercept(track);
+        PositionVector3D<Cartesian3D<double>> trackInterceptLocal = m_detector->globalToLocal(trackIntercept);
 
         // Plot the difference between track intercepts and all clicpix clusters
         // Also record which cluster is the closest
@@ -295,17 +300,17 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
         }
 
         // Get the track intercept position along the chip
-        double chipInterceptCol = detector->getColumn(trackInterceptLocal);
-        double chipInterceptRow = detector->getRow(trackInterceptLocal);
+        double chipInterceptCol = m_detector->getColumn(trackInterceptLocal);
+        double chipInterceptRow = m_detector->getRow(trackInterceptLocal);
 
         // Get the track intercept position along the pixel
-        double pixelInterceptX = detector->inPixelX(trackInterceptLocal);
-        double pixelInterceptY = detector->inPixelY(trackInterceptLocal);
+        double pixelInterceptX = m_detector->inPixelX(trackInterceptLocal);
+        double pixelInterceptY = m_detector->inPixelY(trackInterceptLocal);
 
         // Cut on the track intercept - this makes sure that it actually went
         // through the chip
-        if(chipInterceptCol < 0.5 || chipInterceptRow < 0.5 || chipInterceptCol > (detector->nPixelsX() - 0.5) ||
-           chipInterceptRow > (detector->nPixelsY() - 0.5))
+        if(chipInterceptCol < 0.5 || chipInterceptRow < 0.5 || chipInterceptCol > (m_detector->nPixelsX() - 0.5) ||
+           chipInterceptRow > (m_detector->nPixelsY() - 0.5))
             continue;
 
         // Check if the hit is near a masked pixel
@@ -367,8 +372,8 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
             if((bestCluster)->size() == 1) {
                 hClusterTOTAssociated1pix->Fill((bestCluster)->tot());
                 hInterceptClusterSize1->Fill(pixelInterceptX, pixelInterceptY);
-                int id = static_cast<int>(floor(chipInterceptCol * m_nBinsX / detector->nPixelsX()) +
-                                          floor(chipInterceptRow * m_nBinsY / detector->nPixelsY()) * m_nBinsX);
+                int id = static_cast<int>(floor(chipInterceptCol * m_nBinsX / m_detector->nPixelsX()) +
+                                          floor(chipInterceptRow * m_nBinsY / m_detector->nPixelsY()) * m_nBinsX);
                 hMapClusterTOTAssociated1pix[id]->Fill((bestCluster)->tot());
             }
             if((bestCluster)->size() == 2) {
@@ -404,8 +409,8 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
           // Get the pixel global position
           LOG(TRACE) <<"New pixel, row = "<<(*itPixel)->row()<<", column = "<<(*itPixel)->column();
           PositionVector3D<Cartesian3D<double> > pixelPositionLocal =
-      detector->getLocalPosition((*itPixel)->row(),(*itPixel)->column()); PositionVector3D<Cartesian3D<double> >
-      pixelPositionGlobal = *(detector->m_localToGlobal) * pixelPositionLocal;
+      m_detector->getLocalPosition((*itPixel)->row(),(*itPixel)->column()); PositionVector3D<Cartesian3D<double> >
+      pixelPositionGlobal = *(m_detector->m_localToGlobal) * pixelPositionLocal;
 
           // Check if it is close to the track
           if( fabs( pixelPositionGlobal.X() - trackIntercept.X() ) > m_associationCut ||
@@ -441,7 +446,7 @@ StatusCode ClicpixAnalysis::run(Clipboard* clipboard) {
     return Success;
 }
 
-void ClicpixAnalysis::finalise() {
+void AnalysisCLICpix::finalise() {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 
@@ -465,33 +470,30 @@ void ClicpixAnalysis::finalise() {
 }
 
 // Check if a track has gone through or near a masked pixel
-bool ClicpixAnalysis::checkMasked(double chipInterceptRow, double chipInterceptCol) {
-
-    // Get the DUT detector:
-    auto detector = get_dut();
+bool AnalysisCLICpix::checkMasked(double chipInterceptRow, double chipInterceptCol) {
 
     // Get the pixel row and column number
     int rowNumber = static_cast<int>(ceil(chipInterceptRow));
     int colNumber = static_cast<int>(ceil(chipInterceptCol));
 
     // Check if that pixel is masked, or the neighbour to the left, right, etc...
-    if(detector->masked(colNumber - 1, rowNumber - 1))
+    if(m_detector->masked(colNumber - 1, rowNumber - 1))
         return true;
-    if(detector->masked(colNumber, rowNumber - 1))
+    if(m_detector->masked(colNumber, rowNumber - 1))
         return true;
-    if(detector->masked(colNumber + 1, rowNumber - 1))
+    if(m_detector->masked(colNumber + 1, rowNumber - 1))
         return true;
-    if(detector->masked(colNumber - 1, rowNumber))
+    if(m_detector->masked(colNumber - 1, rowNumber))
         return true;
-    if(detector->masked(colNumber, rowNumber))
+    if(m_detector->masked(colNumber, rowNumber))
         return true;
-    if(detector->masked(colNumber + 1, rowNumber))
+    if(m_detector->masked(colNumber + 1, rowNumber))
         return true;
-    if(detector->masked(colNumber - 1, rowNumber + 1))
+    if(m_detector->masked(colNumber - 1, rowNumber + 1))
         return true;
-    if(detector->masked(colNumber, rowNumber + 1))
+    if(m_detector->masked(colNumber, rowNumber + 1))
         return true;
-    if(detector->masked(colNumber + 1, rowNumber + 1))
+    if(m_detector->masked(colNumber + 1, rowNumber + 1))
         return true;
 
     // If not masked
@@ -500,12 +502,11 @@ bool ClicpixAnalysis::checkMasked(double chipInterceptRow, double chipInterceptC
 
 // Check if there is another track close to the selected track.
 // "Close" is defined as the intercept at the clicpix
-bool ClicpixAnalysis::checkProximity(Track* track, Tracks* tracks) {
+bool AnalysisCLICpix::checkProximity(Track* track, Tracks* tracks) {
 
-    auto detector = get_dut();
     // Get the intercept of the interested track at the dut
     bool close = false;
-    PositionVector3D<Cartesian3D<double>> trackIntercept = detector->getIntercept(track);
+    PositionVector3D<Cartesian3D<double>> trackIntercept = m_detector->getIntercept(track);
 
     // Loop over all other tracks and check if they intercept close to the track
     // we are considering
@@ -515,7 +516,7 @@ bool ClicpixAnalysis::checkProximity(Track* track, Tracks* tracks) {
         // Get the track
         Track* track2 = (*itTrack);
         // Get the track intercept with the clicpix plane (global co-ordinates)
-        PositionVector3D<Cartesian3D<double>> trackIntercept2 = detector->getIntercept(track2);
+        PositionVector3D<Cartesian3D<double>> trackIntercept2 = m_detector->getIntercept(track2);
         // If track == track2 do nothing
         if(trackIntercept.X() == trackIntercept2.X() && trackIntercept.Y() == trackIntercept2.Y())
             continue;
@@ -527,10 +528,10 @@ bool ClicpixAnalysis::checkProximity(Track* track, Tracks* tracks) {
 }
 
 // Small sub-routine to fill histograms that only need clusters
-void ClicpixAnalysis::fillClusterHistos(Clusters* clusters) {
+void AnalysisCLICpix::fillClusterHistos(Clusters* clusters) {
 
     // Pick up column to generate unique pixel id
-    int nCols = get_dut()->nPixelsX();
+    int nCols = m_detector->nPixelsX();
     Clusters::iterator itc;
 
     // Check if this is a new clicpix frame (each frame may be in several events)
@@ -573,9 +574,8 @@ void ClicpixAnalysis::fillClusterHistos(Clusters* clusters) {
 
 // Sub-routine to look at pixel response, ie. how far from the pixel is the
 // track intercept for the pixel to still see charge
-void ClicpixAnalysis::fillResponseHistos(double trackInterceptX, double trackInterceptY, Cluster* cluster) {
+void AnalysisCLICpix::fillResponseHistos(double trackInterceptX, double trackInterceptY, Cluster* cluster) {
 
-    auto detector = get_dut();
     // Loop over pixels in the cluster and show their distance from the track
     // intercept
     Pixels* pixels = cluster->pixels();
@@ -585,8 +585,9 @@ void ClicpixAnalysis::fillResponseHistos(double trackInterceptX, double trackInt
         // Get the pixel
         Pixel* pixel = (*itp);
         // Get the pixel local then global position
-        PositionVector3D<Cartesian3D<double>> pixelPositionLocal = detector->getLocalPosition(pixel->row(), pixel->column());
-        PositionVector3D<Cartesian3D<double>> pixelPositionGlobal = detector->localToGlobal(pixelPositionLocal);
+        PositionVector3D<Cartesian3D<double>> pixelPositionLocal =
+            m_detector->getLocalPosition(pixel->row(), pixel->column());
+        PositionVector3D<Cartesian3D<double>> pixelPositionGlobal = m_detector->localToGlobal(pixelPositionLocal);
 
         // Fill the response histograms
         hPixelResponseX->Fill(pixelPositionGlobal.X() - trackInterceptX);

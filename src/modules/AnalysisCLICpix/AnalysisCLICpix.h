@@ -1,5 +1,5 @@
-#ifndef ClicpixAnalysis_H
-#define ClicpixAnalysis_H 1
+#ifndef AnalysisCLICpix_H
+#define AnalysisCLICpix_H 1
 
 #include <TCanvas.h>
 #include <TH1F.h>
@@ -12,17 +12,19 @@
 namespace corryvreckan {
     /** @ingroup Modules
      */
-    class ClicpixAnalysis : public Module {
+    class AnalysisCLICpix : public Module {
 
     public:
         // Constructors and destructors
-        ClicpixAnalysis(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
-        ~ClicpixAnalysis() {}
+        AnalysisCLICpix(Configuration config, std::shared_ptr<Detector> detector);
 
         // Functions
         void initialise();
         StatusCode run(Clipboard* clipboard);
         void finalise();
+
+    private:
+        std::shared_ptr<Detector> m_detector;
         bool checkMasked(double, double);
         void fillClusterHistos(Clusters*);
         bool checkProximity(Track*, Tracks*);
@@ -128,4 +130,4 @@ namespace corryvreckan {
         bool timepix3Telescope;
     };
 } // namespace corryvreckan
-#endif // ClicpixAnalysis_H
+#endif // AnalysisCLICpix_H

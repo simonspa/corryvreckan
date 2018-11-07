@@ -1,10 +1,10 @@
 # Define module and return the generated name as MODULE_NAME
-CORRYVRECKAN_GLOBAL_MODULE(MODULE_NAME)
+CORRYVRECKAN_DUT_MODULE(MODULE_NAME)
+CORRYVRECKAN_DETECTOR_TYPE(${MODULE_NAME} "CLICpix")
 
 # Add source files to library
 CORRYVRECKAN_MODULE_SOURCES(${MODULE_NAME}
-    ClicpixAnalysis.cpp
-    # ADD SOURCE FILES HERE...
+    AnalysisCLICpix.cpp
 )
 
 # Provide standard install target
