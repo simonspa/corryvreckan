@@ -1,5 +1,5 @@
-#ifndef ALIGNMENT_H
-#define ALIGNMENT_H 1
+#ifndef AlignmentTrackChi2_H
+#define AlignmentTrackChi2_H 1
 
 // ROOT includes
 #include <Math/Functor.h>
@@ -17,21 +17,19 @@ namespace corryvreckan {
 
     /** @ingroup Modules
      */
-    class Alignment : public Module {
+    class AlignmentTrackChi2 : public Module {
 
     public:
         // Constructors and destructors
-        Alignment(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
-        ~Alignment() {}
+        AlignmentTrackChi2(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        ~AlignmentTrackChi2() {}
 
         // Functions
-        void initialise();
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
     private:
         static void MinimiseTrackChi2(Int_t& npar, Double_t* grad, Double_t& result, Double_t* par, Int_t flag);
-        static void MinimiseResiduals(Int_t& npar, Double_t* grad, Double_t& result, Double_t* par, Int_t flag);
 
         // Member variables
         Tracks m_alignmenttracks;
@@ -39,7 +37,6 @@ namespace corryvreckan {
 
         size_t nIterations;
         size_t m_numberOfTracksForAlignment;
-        int alignmentMethod;
         bool m_pruneTracks;
         bool m_alignPosition;
         bool m_alignOrientation;
@@ -62,4 +59,4 @@ namespace corryvreckan {
         std::map<std::string, TGraph*> align_correction_rotZ;
     };
 } // namespace corryvreckan
-#endif // ALIGNMENT_H
+#endif // AlignmentTrackChi2_H

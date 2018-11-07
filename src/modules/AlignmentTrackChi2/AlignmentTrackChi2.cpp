@@ -1,4 +1,4 @@
-#include "Alignment.h"
+#include "AlignmentTrackChi2.h"
 
 #include <TVirtualFitter.h>
 #include <numeric>
@@ -8,11 +8,10 @@ using namespace std;
 
 // Global container declarations
 Tracks globalTracks;
-std::string detectorToAlign;
 std::shared_ptr<Detector> globalDetector;
 int detNum;
 
-Alignment::Alignment(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+AlignmentTrackChi2::AlignmentTrackChi2(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
     m_numberOfTracksForAlignment = m_config.get<size_t>("number_of_tracks", 20000);
     nIterations = m_config.get<size_t>("iterations", 3);
@@ -28,43 +27,11 @@ Alignment::Alignment(Configuration config, std::vector<std::shared_ptr<Detector>
     }
     m_maxAssocClusters = m_config.get<size_t>("max_associated_clusters", 1);
     m_maxTrackChi2 = m_config.get<double>("max_track_chi2ndof", 10.);
-
-    // Get alignment method:
-    alignmentMethod = m_config.get<int>("alignmentMethod");
-
-    if(alignmentMethod == 1) {
-        if(m_config.has("detectorToAlign")) {
-            detectorToAlign = m_config.get<std::string>("detectorToAlign");
-        } else {
-            detectorToAlign = get_dut()->name();
-        }
-        LOG(INFO) << "Aligning detector \"" << detectorToAlign << "\"";
-    } else {
-        LOG(INFO) << "Aligning telescope";
-    }
-}
-
-void Alignment::initialise() {
-    if(alignmentMethod == 1) {
-        auto detector = get_detector(detectorToAlign);
-        auto detname = detector->name();
-        std::string title = detname + "_residualsX;residual X [#mum]";
-        residualsXPlot = new TH1F(title.c_str(), title.c_str(), 1000, -500, 500);
-        title = detname + "_residualsY;residual Y [#mum]";
-        residualsYPlot = new TH1F(title.c_str(), title.c_str(), 1000, -500, 500);
-        title = detname + "_profile_dY_X;position X [#mum];residual Y [#mum]";
-        profile_dY_X = new TProfile(title.c_str(), title.c_str(), 1000, -500, 500);
-        title = detname + "_profile_dY_Y;position Y [#mum];residual Y [#mum]";
-        profile_dY_Y = new TProfile(title.c_str(), title.c_str(), 1000, -500, 500);
-        title = detname + "_profile_dX_X;position X [#mum];residual X [#mum]";
-        profile_dX_X = new TProfile(title.c_str(), title.c_str(), 1000, -500, 500);
-        title = detname + "_profile_dX_Y;position Y [#mum];residual X [#mum]";
-        profile_dX_Y = new TProfile(title.c_str(), title.c_str(), 1000, -500, 500);
-    }
+    LOG(INFO) << "Aligning telescope";
 }
 
 // During run, just pick up tracks and save them till the end
-StatusCode Alignment::run(Clipboard* clipboard) {
+StatusCode AlignmentTrackChi2::run(Clipboard* clipboard) {
 
     // Get the tracks
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
@@ -94,40 +61,6 @@ StatusCode Alignment::run(Clipboard* clipboard) {
 
         Track* alignmentTrack = new Track(track);
         m_alignmenttracks.push_back(alignmentTrack);
-
-        if(alignmentMethod == 0)
-            continue;
-        // Find the cluster that needs to have its position recalculated
-        for(auto& associatedCluster : track->associatedClusters()) {
-            auto detector = get_detector(associatedCluster->detectorID());
-
-            // Local position of the cluster
-            auto position = associatedCluster->local();
-
-            // Get the track intercept with the detector
-            auto trackIntercept = detector->getIntercept(track);
-            auto intercept = detector->globalToLocal(trackIntercept);
-
-            // Calculate the local residuals
-            double residualX = intercept.X() - position.X();
-            double residualY = intercept.Y() - position.Y();
-
-            // Fill the alignment residual profile plots
-            residualsXPlot->Fill(static_cast<double>(Units::convert(residualX, "um")));
-            residualsYPlot->Fill(static_cast<double>(Units::convert(residualY, "um")));
-            profile_dY_X->Fill(static_cast<double>(Units::convert(residualY, "um")),
-                               static_cast<double>(Units::convert(position.X(), "um")),
-                               1);
-            profile_dY_Y->Fill(static_cast<double>(Units::convert(residualY, "um")),
-                               static_cast<double>(Units::convert(position.Y(), "um")),
-                               1);
-            profile_dX_X->Fill(static_cast<double>(Units::convert(residualX, "um")),
-                               static_cast<double>(Units::convert(position.X(), "um")),
-                               1);
-            profile_dX_Y->Fill(static_cast<double>(Units::convert(residualX, "um")),
-                               static_cast<double>(Units::convert(position.Y(), "um")),
-                               1);
-        }
     }
 
     // If we have enough tracks for the alignment, tell the event loop to finish
@@ -152,7 +85,7 @@ StatusCode Alignment::run(Clipboard* clipboard) {
 // try to minimise the
 // track chi2. If there were no clusters from this detector on any tracks then
 // it would do nothing!
-void Alignment::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, Double_t* par, Int_t) {
+void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, Double_t* par, Int_t) {
 
     // Pick up new alignment conditions
     globalDetector->displacementX(par[detNum * 6 + 0]);
@@ -195,92 +128,18 @@ void Alignment::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, Double_t*
     }
 }
 
-// METHOD 1
-// This method will move the detector in question and try to minimise the
-// (unbiased) residuals. It uses
-// the associated cluster container on the track (no refitting of the track)
-void Alignment::MinimiseResiduals(Int_t&, Double_t*, Double_t& result, Double_t* par, Int_t) {
-
-    // Pick up new alignment conditions
-    globalDetector->displacementX(par[0]);
-    globalDetector->displacementY(par[1]);
-    globalDetector->displacementZ(par[2]);
-    globalDetector->rotationX(par[3]);
-    globalDetector->rotationY(par[4]);
-    globalDetector->rotationZ(par[5]);
-
-    // Apply new alignment conditions
-    globalDetector->update();
-    LOG(DEBUG) << "Updated parameters for " << detectorToAlign;
-
-    // The chi2 value to be returned
-    result = 0.;
-
-    LOG(DEBUG) << "Looping over " << globalTracks.size() << " tracks";
-
-    // Loop over all tracks
-    for(auto& track : globalTracks) {
-        // Get all clusters on the track
-        Clusters associatedClusters = track->associatedClusters();
-
-        LOG(TRACE) << "track has chi2 " << track->chi2();
-        LOG(TRACE) << "- track has gradient x " << track->m_direction.X();
-        LOG(TRACE) << "- track has gradient y " << track->m_direction.Y();
-
-        // Find the cluster that needs to have its position recalculated
-        for(auto& associatedCluster : associatedClusters) {
-            string detectorID = associatedCluster->detectorID();
-            if(detectorID != detectorToAlign) {
-                continue;
-            }
-
-            auto position = associatedCluster->local();
-
-            // Get the track intercept with the detector
-            auto trackIntercept = globalDetector->getIntercept(track);
-            auto intercept = globalDetector->globalToLocal(trackIntercept);
-
-            /*
-                        // Recalculate the global position from the local
-                        auto positionLocal = associatedCluster->local();
-                        auto position = globalDetector->localToGlobal(positionLocal);
-
-                        // Get the track intercept with the detector
-                        ROOT::Math::XYZPoint intercept = track->intercept(position.Z());
-            */
-            // Calculate the residuals
-            double residualX = intercept.X() - position.X();
-            double residualY = intercept.Y() - position.Y();
-
-            double error = associatedCluster->error();
-            LOG(TRACE) << "- track has intercept (" << intercept.X() << "," << intercept.Y() << ")";
-            LOG(DEBUG) << "- cluster has position (" << position.X() << "," << position.Y() << ")";
-            double deltachi2 = ((residualX * residualX + residualY * residualY) / (error * error));
-            LOG(TRACE) << "- delta chi2 = " << deltachi2;
-            // Add the new residual2
-            result += deltachi2;
-            LOG(TRACE) << "- result is now " << result;
-        }
-    }
-}
-
 // ==================================================================
 //  The finalise function - effectively the brains of the alignment!
 // ==================================================================
 
-void Alignment::finalise() {
+void AlignmentTrackChi2::finalise() {
 
     // If not enough tracks were produced, do nothing
     // if(m_alignmenttracks.size() < m_numberOfTracksForAlignment) return;
 
     // Make the fitting object
     TVirtualFitter* residualFitter = TVirtualFitter::Fitter(nullptr, 50);
-
-    // Tell it what to minimise
-    if(alignmentMethod == 0)
-        residualFitter->SetFCN(MinimiseTrackChi2);
-    if(alignmentMethod == 1)
-        residualFitter->SetFCN(MinimiseResiduals);
+    residualFitter->SetFCN(MinimiseTrackChi2);
 
     // Set the global parameters
     globalTracks = m_alignmenttracks;
@@ -294,100 +153,6 @@ void Alignment::finalise() {
     arglist[0] = 1000;  // number of function calls
     arglist[1] = 0.001; // tolerance
 
-    // This has been inserted in a temporary way. If the alignment method is 1
-    // then it will align the single detector and then
-    // return. This should be made into separate functions.
-    if(alignmentMethod == 1) {
-        auto detector = get_detector(detectorToAlign);
-        globalDetector = detector;
-
-        size_t n_associatedClusters = 0;
-        // count associated clusters:
-        for(auto& track : globalTracks) {
-            Clusters associatedClusters = track->associatedClusters();
-            for(auto& associatedCluster : associatedClusters) {
-                string detectorID = associatedCluster->detectorID();
-                if(detectorID != detectorToAlign) {
-                    continue;
-                }
-                n_associatedClusters++;
-                break;
-            }
-        }
-        if(n_associatedClusters < globalTracks.size() / 2) {
-            LOG(WARNING) << "Only "
-                         << 100 * static_cast<double>(n_associatedClusters) / static_cast<double>(globalTracks.size())
-                         << "% of all tracks have associated clusters on detector " << detectorToAlign;
-        } else {
-            LOG(INFO) << 100 * static_cast<double>(n_associatedClusters) / static_cast<double>(globalTracks.size())
-                      << "% of all tracks have associated clusters on detector " << detectorToAlign;
-        }
-
-        LOG(STATUS) << detectorToAlign << " initial alignment: " << std::endl
-                    << "T" << Units::display(detector->displacement(), {"mm", "um"}) << " R"
-                    << Units::display(detector->rotation(), {"deg"});
-
-        // Add the parameters to the fitter (z displacement not allowed to move!)
-        if(m_alignPosition) {
-            residualFitter->SetParameter(
-                0, (detectorToAlign + "_displacementX").c_str(), detector->displacement().X(), 0.01, -50, 50);
-            residualFitter->SetParameter(
-                1, (detectorToAlign + "_displacementY").c_str(), detector->displacement().Y(), 0.01, -50, 50);
-        } else {
-            residualFitter->SetParameter(
-                0, (detectorToAlign + "_displacementX").c_str(), detector->displacement().X(), 0, -50, 50);
-            residualFitter->SetParameter(
-                1, (detectorToAlign + "_displacementY").c_str(), detector->displacement().Y(), 0, -50, 50);
-        }
-
-        // Z is never changed:
-        residualFitter->SetParameter(
-            2, (detectorToAlign + "_displacementZ").c_str(), detector->displacement().Z(), 0, -10, 500);
-
-        if(m_alignOrientation) {
-            residualFitter->SetParameter(
-                3, (detectorToAlign + "_rotationX").c_str(), detector->rotation().X(), 0.001, -6.30, 6.30);
-            residualFitter->SetParameter(
-                4, (detectorToAlign + "_rotationY").c_str(), detector->rotation().Y(), 0.001, -6.30, 6.30);
-            residualFitter->SetParameter(
-                5, (detectorToAlign + "_rotationZ").c_str(), detector->rotation().Z(), 0.001, -6.30, 6.30);
-        } else {
-            residualFitter->SetParameter(
-                3, (detectorToAlign + "_rotationX").c_str(), detector->rotation().X(), 0, -6.30, 6.30);
-            residualFitter->SetParameter(
-                4, (detectorToAlign + "_rotationY").c_str(), detector->rotation().Y(), 0, -6.30, 6.30);
-            residualFitter->SetParameter(
-                5, (detectorToAlign + "_rotationZ").c_str(), detector->rotation().Z(), 0, -6.30, 6.30);
-        }
-
-        for(size_t iteration = 0; iteration < nIterations; iteration++) {
-
-            auto old_position = detector->displacement();
-            auto old_orientation = detector->rotation();
-
-            // Fit this plane (minimising global track chi2)
-            residualFitter->ExecuteCommand("MIGRAD", arglist, 2);
-
-            // Set the alignment parameters of this plane to be the optimised values from the alignment
-            detector->displacementX(residualFitter->GetParameter(0));
-            detector->displacementY(residualFitter->GetParameter(1));
-            detector->displacementZ(residualFitter->GetParameter(2));
-            detector->rotationX(residualFitter->GetParameter(3));
-            detector->rotationY(residualFitter->GetParameter(4));
-            detector->rotationZ(residualFitter->GetParameter(5));
-
-            LOG(INFO) << detector->name() << "/" << iteration << " dT"
-                      << Units::display(detector->displacement() - old_position, {"mm", "um"}) << " dR"
-                      << Units::display(detector->rotation() - old_orientation, {"deg"});
-        }
-
-        LOG(STATUS) << detectorToAlign << " new alignment: " << std::endl
-                    << "T" << Units::display(detector->displacement(), {"mm", "um"}) << " R"
-                    << Units::display(detector->rotation(), {"deg"});
-
-        return;
-    }
-
     // Store the alignment shifts per detector:
     std::map<std::string, std::vector<double>> shiftsX;
     std::map<std::string, std::vector<double>> shiftsY;
@@ -398,7 +163,6 @@ void Alignment::finalise() {
 
     // Loop over all planes. For each plane, set the plane alignment parameters which will be varied, and then minimise the
     // track chi2 (sum of biased residuals). This means that tracks are refitted with each minimisation step.
-
     for(size_t iteration = 0; iteration < nIterations; iteration++) {
 
         LOG_PROGRESS(STATUS, "alignment_track") << "Alignment iteration " << (iteration + 1) << " of " << nIterations;
@@ -413,7 +177,6 @@ void Alignment::finalise() {
             }
 
             // Say that this is the detector we align
-            detectorToAlign = detectorID;
             globalDetector = detector;
 
             detNum = det;
