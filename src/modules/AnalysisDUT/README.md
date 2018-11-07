@@ -1,5 +1,7 @@
-# CLICpix2Analysis
+# AnalysisDUT
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Module Type**: *DUT*  
+**Detector Type**: *all*  
 **Status**: Work in progress
 
 ### Description

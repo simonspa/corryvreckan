@@ -1,5 +1,6 @@
-# SpatialTracking
+# TrackingSpatial
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)   
+**Module Type**: *GLOBAL*  
 **Status**: Functional  
 
 ### Description

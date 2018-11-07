@@ -1,5 +1,6 @@
 # ImproveReferenceTimestamp
 **Maintainer**: Florian Pitters (<florian.pitters@cern.ch>)  
+**Module Type**: *GLOBAL*  
 **Status**: Work in progress
 
 ### Description

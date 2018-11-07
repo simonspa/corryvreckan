@@ -1,5 +1,6 @@
-# Timepix1EventLoader
+# EventLoaderTimepix1
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)  
+**Module Type**: *GLOBAL*  
 **Status**: Functional  
 
 ### Description

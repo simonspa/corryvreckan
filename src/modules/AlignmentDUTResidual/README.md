@@ -1,6 +1,7 @@
 # AlignmentDUTResidual
-# Alignment
-**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)
+**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Module Type**: *DUT*  
+**Detector Type**: *all*  
 **Status**: Functional
 
 ### Description

@@ -1,5 +1,6 @@
-# TelescopeAnalysis
-**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)
+# AnalysisTelescope
+**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Module Type**: *GLOBAL*  
 **Status**: Work in progress
 
 ### Description

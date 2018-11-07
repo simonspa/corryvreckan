@@ -1,5 +1,7 @@
 # AnalysisPowerPulsing
 **Maintainer**: Estel Perez Codina  
+**Module Type**: *DUT*  
+**Module Type**: *Timepix3*  
 **Status**: Immature
 
 ### Description

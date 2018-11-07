@@ -1,5 +1,7 @@
-# CLICpix2EventLoader
+# EventLoaderCLICpix2
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>), Morag Williams (<morag.williams@cern.ch>)  
+**Module Type**: *DETECTOR*  
+**Detector Type**: *CLICpix2*  
 **Status**: Functional
 
 ### Description

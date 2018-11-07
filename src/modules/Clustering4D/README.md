@@ -1,5 +1,7 @@
-# Timepix3Clustering
+# Clustering4D
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)  
+**Module Type**: *DETECTOR*  
+**Detector Type**: *all*  
 **Status**: Functional
 
 ### Description

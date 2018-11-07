@@ -1,5 +1,7 @@
-# Timepix3MaskCreator
+# MaskCreatorTimepix3
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)  
+**Module Type**: *DETECTOR*  
+**Detector Type**: *Timepix3*  
 **Status**: Functional
 
 ### Description

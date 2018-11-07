@@ -1,5 +1,7 @@
-# DataOutput
+# TreeWriterDUT
 **Maintainer**: Morag Williams (<morag.williams@cern.ch>)   
+**Module Type**: *DUT*  
+**Detector Type**: *all*  
 **Status**: Functional  
 
 ### Description

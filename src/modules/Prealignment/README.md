@@ -1,5 +1,7 @@
 # Prealignment
 **Maintainer**: Morag Williams (<morag.williams@cern.ch>)   
+**Module Type**: *DETECTOR*  
+**Detector Type**: *all*  
 **Status**: Functional   
 
 ### Description

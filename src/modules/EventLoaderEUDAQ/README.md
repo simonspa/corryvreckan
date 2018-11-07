@@ -1,5 +1,6 @@
-# EUDAQEventLoader
+# EventLoaderEUDAQ
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Module Type**: *GLOBAL*  
 **Status**: Functional  
 
 ### Description

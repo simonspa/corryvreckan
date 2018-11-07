@@ -1,5 +1,7 @@
-# Timepix3EventLoader
+# EventLoaderTimepix3
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Module Type**: *DETECTOR*  
+**Detector Type**: *Timepix3*  
 **Status**: Functional
 
 ### Description

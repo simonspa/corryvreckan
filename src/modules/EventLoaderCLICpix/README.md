@@ -1,5 +1,7 @@
-# CLICpixEventLoader
+# EventLoaderCLICpix
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)   
+**Module Type**: *DETECTOR*  
+**Detector Type**: *CLICpix*  
 **Status**: Functional   
 
 ### Description

@@ -1,5 +1,7 @@
-# CLICpixAnalysis
+# AnalysisCLICpix
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)   
+**Module Type**: *DUT*  
+**Detector Type**: *CLICpix*  
 **Status**: Functional  
 
 ### Description

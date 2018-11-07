@@ -1,5 +1,6 @@
-# Millepede
+# AlignmentMillepede
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Module Type**: *GLOBAL*  
 **Status**: Work in progress  
 
 ### Description

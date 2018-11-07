@@ -1,5 +1,7 @@
-# ATLASpixEventLoader
+# EventLoaderATLASpix
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Module Type**: *DETECTOR*  
+**Detector Type**: *ATLASpix*  
 **Status**: Functional
 
 ### Description
