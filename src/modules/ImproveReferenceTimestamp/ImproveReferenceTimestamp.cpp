@@ -69,10 +69,10 @@ StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
                 avg_track_time += cluster->timestamp();
                 nhits++;
             }
-            avg_track_time = round(avg_track_time / nhits);
+            improved_time = round(avg_track_time / nhits);
             LOG(DEBUG) << setprecision(12) << "Reference track time "
                        << Units::display(track->timestamp(), {"ns", "us", "s"});
-            LOG(DEBUG) << setprecision(12) << "Average track time " << Units::display(avg_track_time, {"ns", "us", "s"});
+            LOG(DEBUG) << setprecision(12) << "Average track time " << Units::display(improved_time, {"ns", "us", "s"});
         }
 
         // Set improved reference timestamp
