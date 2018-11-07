@@ -321,7 +321,7 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
                        << "\tTS_FULL: " << hit_ts << "\t" << Units::display(timestamp, {"s", "us", "ns"})
                        << "\tTOT: " << tot; // << "\t" << Units::display(tot_ns, {"s", "us", "ns"});
 
-            Pixel* pixel = new Pixel(get_dut()->name(), row, col, tot, timestamp);
+            Pixel* pixel = new Pixel(m_detector->name(), row, col, tot, timestamp);
             LOG(DEBUG) << "PIXEL:\t" << *pixel;
             pixels->push_back(pixel);
 
@@ -556,7 +556,7 @@ Pixels* EventLoaderATLASpix::read_legacy_data(double, double) {
         // Convert TOA to nanoseconds:
         toa_timestamp /= (4096. * 0.04);
 
-        Pixel* pixel = new Pixel(get_dut()->name(), row, col, tot, toa_timestamp);
+        Pixel* pixel = new Pixel(m_detector->name(), row, col, tot, toa_timestamp);
         pixel->setCharge(cal_tot);
         pixels->push_back(pixel);
     }
