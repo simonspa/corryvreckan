@@ -1,10 +1,9 @@
 # Define module and return the generated name as MODULE_NAME
-CORRYVRECKAN_GLOBAL_MODULE(MODULE_NAME)
+CORRYVRECKAN_DUT_MODULE(MODULE_NAME)
 
 # Add source files to library
 CORRYVRECKAN_MODULE_SOURCES(${MODULE_NAME}
-    DataOutput.cpp
-    # ADD SOURCE FILES HERE...
+    TreeWriterDUT.cpp
 )
 
 # Provide standard install target

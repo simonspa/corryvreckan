@@ -1,11 +1,11 @@
-#include "DataOutput.h"
+#include "TreeWriterDUT.h"
 #include <vector>
 
 using namespace corryvreckan;
 using namespace std;
 
-DataOutput::DataOutput(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
+TreeWriterDUT::TreeWriterDUT(Configuration config, std::shared_ptr<Detector> detector)
+    : Module(std::move(config), detector), m_detector(detector) {
 
     m_fileName = m_config.get<std::string>("fileName", "outputTuples.root");
     m_treeName = m_config.get<std::string>("treeName", "tree");
@@ -29,8 +29,8 @@ DataOutput::DataOutput(Configuration config, std::vector<std::shared_ptr<Detecto
 
  */
 
-void DataOutput::initialise() {
-    LOG(DEBUG) << "Initialised DataOutput";
+void TreeWriterDUT::initialise() {
+    LOG(DEBUG) << "Initialised TreeWriterDUT";
 
     // Create output file and directories
     m_outputFile = new TFile(m_fileName.c_str(), "RECREATE");
@@ -55,16 +55,12 @@ void DataOutput::initialise() {
     m_outputTree->Branch("intercepts", &v_intercepts);
 }
 
-StatusCode DataOutput::run(Clipboard* clipboard) {
+StatusCode TreeWriterDUT::run(Clipboard* clipboard) {
     // Counter for cluster event ID
     eventID++;
 
-    // Get the DUT
-    auto DUT = get_dut();
+    // Clear data vectors before storing the cluster information for this event
     v_intercepts.clear();
-
-    // Clear data vectors before storing the cluster information for
-    // this event
     v_clusterSizeX.clear();
     v_clusterSizeY.clear();
     v_clusterEventID.clear();
@@ -98,10 +94,10 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
         LOG(DEBUG) << "Found track with associated cluster";
 
         // Get track intercept with DUT in global coordinates
-        trackIntercept = DUT->getIntercept(track);
+        trackIntercept = m_detector->getIntercept(track);
 
         // Calculate the intercept in local coordinates
-        trackInterceptLocal = DUT->globalToLocal(trackIntercept);
+        trackInterceptLocal = m_detector->globalToLocal(trackIntercept);
         v_intercepts.push_back(trackInterceptLocal);
 
         Cluster* cluster = associatedClusters.front();
@@ -161,15 +157,13 @@ StatusCode DataOutput::run(Clipboard* clipboard) {
     return Success;
 }
 
-void DataOutput::finalise() {
+void TreeWriterDUT::finalise() {
     LOG(DEBUG) << "Finalise";
-    // DUT angles for output
-    auto DUT = get_dut();
     auto directory = m_outputFile->mkdir("Directory");
     directory->cd();
     LOG(STATUS) << filledEvents << " events written to file " << m_fileName;
 
-    auto orientation = DUT->rotation();
+    auto orientation = m_detector->rotation();
     directory->WriteObject(&orientation, "DUTorientation");
 
     // Writing out outputfile

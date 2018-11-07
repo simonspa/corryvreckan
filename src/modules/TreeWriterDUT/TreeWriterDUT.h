@@ -1,5 +1,5 @@
-#ifndef DATAOUTPUT_H
-#define DATAOUTPUT_H 1
+#ifndef TreeWriterDUT_H
+#define TreeWriterDUT_H 1
 
 #include <Math/Point3D.h>
 #include <Math/Vector3D.h>
@@ -13,19 +13,21 @@
 namespace corryvreckan {
     /** @ingroup Modules
      */
-    class DataOutput : public Module {
+    class TreeWriterDUT : public Module {
 
     public:
         // Constructors and destructors
-        DataOutput(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
-        ~DataOutput() {}
+        TreeWriterDUT(Configuration config, std::shared_ptr<Detector> detector);
+        ~TreeWriterDUT() {}
 
         // Functions
         void initialise();
         StatusCode run(Clipboard* clipboard);
         void finalise();
 
-        // Member variables
+    private:
+        std::shared_ptr<Detector> m_detector;
+
         int numPixels;
         int eventID;
         int filledEvents;
@@ -54,4 +56,4 @@ namespace corryvreckan {
         std::string m_treeName;
     };
 } // namespace corryvreckan
-#endif // DATAOUTPUT_H
+#endif // TreeWriterDUT_H
