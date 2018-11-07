@@ -156,12 +156,19 @@ void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas
         // Do we need to plot with a LogY scale?
         bool log_scale = (plot.back().find("log") != std::string::npos) ? true : false;
 
-        // Replace other placeholders and add histogram
-        std::string name = std::regex_replace(plot.front(), std::regex("%DUT%"), get_dut()->name());
-        name = std::regex_replace(name, std::regex("%REFERENCE%"), get_reference()->name());
+        // Replace reference placeholders and add histogram
+        std::string name = std::regex_replace(name, std::regex("%REFERENCE%"), get_reference()->name());
 
-        // Do we have a detector placeholder?
-        if(name.find("%DETECTOR%") != std::string::npos) {
+        // Parse other placeholders:
+        if(name.find("%DUT%") != std::string::npos) {
+            // Do we have a DUT placeholder?
+            LOG(DEBUG) << "Adding plot " << name << " for all DUTs.";
+            for(auto& detector : get_detectors()) {
+                AddHisto(
+                    canvas_name, std::regex_replace(name, std::regex("%DUT%"), detector->name()), plot.back(), log_scale);
+            }
+        } else if(name.find("%DETECTOR%") != std::string::npos) {
+            // Do we have a detector placeholder?
             LOG(DEBUG) << "Adding plot " << name << " for all detectors.";
             for(auto& detector : get_detectors()) {
                 AddHisto(canvas_name,
