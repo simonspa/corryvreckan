@@ -60,7 +60,6 @@ namespace corryvreckan {
 
         size_t nIterations;
         size_t m_numberOfTracksForAlignment;
-        int alignmentMethod;
         bool m_pruneTracks;
         bool m_alignPosition;
         bool m_alignOrientation;
