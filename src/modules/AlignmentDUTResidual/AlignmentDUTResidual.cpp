@@ -159,22 +159,18 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
 
     // Loop over all tracks
     for(auto& track : globalTracks) {
-        // Get all clusters on the track
-        Clusters associatedClusters = track->associatedClusters();
-
         LOG(TRACE) << "track has chi2 " << track->chi2();
         LOG(TRACE) << "- track has gradient x " << track->m_direction.X();
         LOG(TRACE) << "- track has gradient y " << track->m_direction.Y();
 
         // Find the cluster that needs to have its position recalculated
-        for(auto& associatedCluster : associatedClusters) {
+        for(auto& associatedCluster : track->associatedClusters()) {
             if(associatedCluster->detectorID() != globalDetector->name()) {
                 continue;
             }
 
-            auto position = associatedCluster->local();
-
             // Get the track intercept with the detector
+            auto position = associatedCluster->local();
             auto trackIntercept = globalDetector->getIntercept(track);
             auto intercept = globalDetector->globalToLocal(trackIntercept);
 
@@ -194,6 +190,7 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
             double error = associatedCluster->error();
             LOG(TRACE) << "- track has intercept (" << intercept.X() << "," << intercept.Y() << ")";
             LOG(DEBUG) << "- cluster has position (" << position.X() << "," << position.Y() << ")";
+
             double deltachi2 = ((residualX * residualX + residualY * residualY) / (error * error));
             LOG(TRACE) << "- delta chi2 = " << deltachi2;
             // Add the new residual2
