@@ -33,6 +33,7 @@ namespace corryvreckan {
      * an module returns a Failure code, the event processing will stop.
      */
     class ModuleManager {
+        using ModuleList = std::list<std::shared_ptr<Module>>;
 
     public:
         // Constructors and destructors
@@ -56,12 +57,19 @@ namespace corryvreckan {
         // Member variables
         Clipboard* m_clipboard;
         Configuration global_config;
-        std::vector<std::shared_ptr<Detector>> detectors;
+        std::vector<std::shared_ptr<Detector>> m_detectors;
 
     private:
         void load_detectors();
         void load_modules();
         void add_units();
+
+        /**
+         * @brief Get a specific detector, identified by its name
+         * @param  name Name of the detector to retrieve
+         * @return Pointer to the requested detector, nullptr if detector with given name is not found
+         */
+        std::shared_ptr<Detector> get_detector(std::string name);
 
         std::shared_ptr<Detector> m_reference;
 
@@ -74,16 +82,34 @@ namespace corryvreckan {
         int m_events;
         int m_tracks;
 
-        std::vector<Module*> m_modules;
+        /**
+         * @brief Create unique modules
+         * @param library Void pointer to the loaded library
+         * @param config Configuration of the module
+         * @return An unique module together with its identifier
+         */
+        std::pair<ModuleIdentifier, Module*> create_unique_module(void* library, Configuration config);
+
+        /**
+         * @brief Create detector modules
+         * @param library Void pointer to the loaded library
+         * @param config Configuration of the module
+         * @param dut_only Bollean signalling whether should be instantiated only for DUT detectors
+         * @param types List of detector type restrictions imposed by the module itself
+         * @return A list of all created detector modules and their identifiers
+         */
+        std::vector<std::pair<ModuleIdentifier, Module*>>
+        create_detector_modules(void* library, Configuration config, bool dut_only, std::vector<std::string> types);
+
+        using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
+
+        ModuleList m_modules;
+        IdentifierToModuleMap id_to_module_;
+
         std::map<std::string, void*> loaded_libraries_;
 
         std::atomic<bool> m_terminate;
         std::unique_ptr<corryvreckan::ConfigManager> conf_mgr_;
-
-        std::pair<ModuleIdentifier, Module*>
-        create_unique_module(void* library, corryvreckan::Configuration config, std::vector<std::string> types);
-        std::vector<std::pair<ModuleIdentifier, Module*>>
-        create_detector_modules(void* library, Configuration config, bool dut_only, std::vector<std::string> types);
 
         std::tuple<LogLevel, LogFormat> set_module_before(const std::string&, const Configuration& config);
         void set_module_after(std::tuple<LogLevel, LogFormat> prev);

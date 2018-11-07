@@ -124,9 +124,9 @@ void ModuleManager::load_detectors() {
             std::string name = detector.getName();
 
             // Check if we have a duplicate:
-            if(std::find_if(detectors.begin(), detectors.end(), [&name](std::shared_ptr<Detector> obj) {
+            if(std::find_if(m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) {
                    return obj->name() == name;
-               }) != detectors.end()) {
+               }) != m_detectors.end()) {
                 throw InvalidValueError(
                     global_config, "detectors_file", "Detector " + detector.getName() + " defined twice");
             }
@@ -146,7 +146,7 @@ void ModuleManager::load_detectors() {
             }
 
             // Add the new detector to the global list:
-            detectors.push_back(det_parm);
+            m_detectors.push_back(det_parm);
         }
     }
 
@@ -155,10 +155,10 @@ void ModuleManager::load_detectors() {
         throw InvalidValueError(global_config, "detectors_file", "Found no detector marked as reference");
     }
 
-    LOG_PROGRESS(STATUS, "DET_LOAD_LOOP") << "Loaded " << detectors.size() << " detectors";
+    LOG_PROGRESS(STATUS, "DET_LOAD_LOOP") << "Loaded " << m_detectors.size() << " detectors";
 
     // Finally, sort the list of detectors by z position (from lowest to highest)
-    std::sort(detectors.begin(), detectors.end(), [](std::shared_ptr<Detector> det1, std::shared_ptr<Detector> det2) {
+    std::sort(m_detectors.begin(), m_detectors.end(), [](std::shared_ptr<Detector> det1, std::shared_ptr<Detector> det2) {
         return det1->displacement().Z() < det2->displacement().Z();
     });
 }
@@ -306,24 +306,52 @@ void ModuleManager::load_modules() {
         config.merge(global_config);
 
         // Create the modules from the library
+        std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(global) {
-            auto module = create_unique_module(loaded_libraries_[lib_name], config, types);
-            m_modules.push_back(module.second);
-            m_modules.back()->set_identifier(module.first);
+            mod_list.emplace_back(create_unique_module(loaded_libraries_[lib_name], config));
         } else {
-            auto modules = create_detector_modules(loaded_libraries_[lib_name], config, dut_only, types);
-            for(const auto& mod : modules) {
-                m_modules.push_back(mod.second);
-                m_modules.back()->set_identifier(mod.first);
+            mod_list = create_detector_modules(loaded_libraries_[lib_name], config, dut_only, types);
+        }
+
+        // Loop through all created instantiations
+        for(auto& id_mod : mod_list) {
+            // FIXME: This convert the module to an unique pointer. Check that this always works and we can do this earlier
+            std::unique_ptr<Module> mod(id_mod.second);
+            ModuleIdentifier identifier = id_mod.first;
+
+            // Check if the unique instantiation already exists
+            auto iter = id_to_module_.find(identifier);
+            if(iter != id_to_module_.end()) {
+                // Unique name exists, check if its needs to be replaced
+                if(identifier.getPriority() < iter->first.getPriority()) {
+                    // Priority of new instance is higher, replace the instance
+                    LOG(TRACE) << "Replacing model instance " << iter->first.getUniqueName()
+                               << " with instance with higher priority.";
+
+                    module_execution_time_.erase(iter->second->get());
+                    iter->second = m_modules.erase(iter->second);
+                    iter = id_to_module_.erase(iter);
+                } else {
+                    // Priority is equal, raise an error
+                    if(identifier.getPriority() == iter->first.getPriority()) {
+                        throw AmbiguousInstantiationError(config.getName());
+                    }
+                    // Priority is lower, do not add this module to the run list
+                    continue;
+                }
             }
+
+            // Save the identifier in the module
+            mod->set_identifier(identifier);
+            mod->setReference(m_reference);
+
+            // Add the new module to the run list
+            m_modules.emplace_back(std::move(mod));
+            id_to_module_[identifier] = --m_modules.end();
         }
     }
 
-    // Set the reference detector:
-    for(auto& module : m_modules) {
-        module->setReference(m_reference);
-    }
-    LOG_PROGRESS(STATUS, "MOD_LOAD_LOOP") << "Loaded " << configs.size() << " modules";
+    LOG_PROGRESS(STATUS, "MOD_LOAD_LOOP") << "Loaded " << m_modules.size() << " module instances";
 }
 
 std::vector<std::string> ModuleManager::get_type_vector(char* type_tokens) {
@@ -342,10 +370,23 @@ std::vector<std::string> ModuleManager::get_type_vector(char* type_tokens) {
     return types;
 }
 
-std::pair<ModuleIdentifier, Module*>
-ModuleManager::create_unique_module(void* library, Configuration config, std::vector<std::string>) {
+std::shared_ptr<Detector> ModuleManager::get_detector(std::string name) {
+    auto it = find_if(
+        m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->name() == name; });
+    return (it != m_detectors.end() ? (*it) : nullptr);
+}
+
+std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* library, Configuration config) {
     // Create the identifier
     ModuleIdentifier identifier(config.getName(), "", 0);
+
+    // Return error if user tried to specialize the unique module:
+    if(config.has("name")) {
+        throw InvalidValueError(config, "name", "unique modules cannot be specialized using the \"name\" keyword.");
+    }
+    if(config.has("type")) {
+        throw InvalidValueError(config, "type", "unique modules cannot be specialized using the \"type\" keyword.");
+    }
 
     LOG(TRACE) << "Creating module " << identifier.getUniqueName() << ", using generator \""
                << CORRYVRECKAN_GENERATOR_FUNCTION << "\"";
@@ -363,34 +404,6 @@ ModuleManager::create_unique_module(void* library, Configuration config, std::ve
     auto module_generator =
         reinterpret_cast<Module* (*)(Configuration, std::vector<std::shared_ptr<Detector>>)>(generator); // NOLINT
 
-    // Figure out which detectors should run on this module:
-    std::vector<std::shared_ptr<Detector>> module_det;
-    if(!config.has("detectors")) {
-        module_det = detectors;
-    } else {
-        std::vector<std::string> det_list = config.getArray<std::string>("detectors");
-
-        for(auto& d : detectors) {
-            if(std::find(det_list.begin(), det_list.end(), d->name()) != det_list.end()) {
-                module_det.push_back(d);
-            }
-        }
-    }
-
-    // Check for potentially masked detectors:
-    if(config.has("masked")) {
-        std::vector<std::string> mask_list = config.getArray<std::string>("masked");
-
-        for(auto it = module_det.begin(); it != module_det.end();) {
-            // Remove detectors which are masked:
-            if(std::find(mask_list.begin(), mask_list.end(), (*it)->name()) != mask_list.end()) {
-                it = module_det.erase(it);
-            } else {
-                it++;
-            }
-        }
-    }
-
     // Set the log section header
     std::string old_section_name = Log::getSection();
     std::string section_name = "C:";
@@ -399,7 +412,7 @@ ModuleManager::create_unique_module(void* library, Configuration config, std::ve
     // Set module specific log settings
     auto old_settings = set_module_before(config.getName(), config);
     // Build module
-    Module* module = module_generator(config, module_det);
+    Module* module = module_generator(config, m_detectors);
     // Reset log
     Log::setSection(old_section_name);
     set_module_after(old_settings);
@@ -424,39 +437,79 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
 
     // Convert to correct generator function
     auto module_generator = reinterpret_cast<Module* (*)(Configuration, std::shared_ptr<Detector>)>(generator); // NOLINT
+    auto module_base_name = config.getName();
 
     // Figure out which detectors should run on this module:
-    std::vector<std::shared_ptr<Detector>> module_det;
-    if(!config.has("detectors")) {
-        module_det = detectors;
-    } else {
-        std::vector<std::string> det_list = config.getArray<std::string>("detectors");
+    bool instances_created = false;
+    std::vector<std::pair<std::shared_ptr<Detector>, ModuleIdentifier>> instantiations;
 
-        for(auto& d : detectors) {
-            if(std::find(det_list.begin(), det_list.end(), d->name()) != det_list.end()) {
-                module_det.push_back(d);
+    // Create all names first with highest priority
+    std::set<std::string> module_names;
+    if(config.has("name")) {
+        std::vector<std::string> names = config.getArray<std::string>("name");
+        for(auto& name : names) {
+            auto det = get_detector(name);
+            if(det == nullptr) {
+                continue;
             }
+
+            LOG(TRACE) << "Preparing \"name\" instance for " << det->name();
+            instantiations.emplace_back(det, ModuleIdentifier(module_base_name, det->name(), 0));
+            // Save the name (to not instantiate it again later)
+            module_names.insert(name);
         }
+        instances_created = !names.empty();
     }
 
-    // Check for potentially masked detectors:
-    if(config.has("masked")) {
-        std::vector<std::string> mask_list = config.getArray<std::string>("masked");
+    // Then create all types that are not yet name instantiated
+    if(config.has("type")) {
+        // Prepare type list from configuration:
+        std::vector<std::string> ctypes = config.getArray<std::string>("type");
+        for(auto& type : ctypes) {
+            std::transform(type.begin(), type.end(), type.begin(), ::tolower);
+        }
 
-        for(auto it = module_det.begin(); it != module_det.end();) {
-            // Remove detectors which are masked:
-            if(std::find(mask_list.begin(), mask_list.end(), (*it)->name()) != mask_list.end()) {
-                it = module_det.erase(it);
-            } else {
-                it++;
+        // Check that this is possible at all:
+        std::vector<std::string> intersection;
+        std::set_intersection(ctypes.begin(), ctypes.end(), types.begin(), types.end(), std::back_inserter(intersection));
+        if(!types.empty() && intersection.empty()) {
+            throw InvalidInstantiationError(module_base_name, "type conflict");
+        }
+
+        for(auto& det : m_detectors) {
+            auto detectortype = det->type();
+            std::transform(detectortype.begin(), detectortype.end(), detectortype.begin(), ::tolower);
+
+            // Skip all that were already added by name
+            if(module_names.find(det->name()) != module_names.end()) {
+                continue;
             }
+            for(auto& type : ctypes) {
+                // Skip all with wrong type
+                if(detectortype != type) {
+                    continue;
+                }
+
+                LOG(TRACE) << "Preparing \"type\" instance for " << det->name();
+                instantiations.emplace_back(det, ModuleIdentifier(module_base_name, det->name(), 1));
+            }
+        }
+        instances_created = !ctypes.empty();
+    }
+
+    // Create for all detectors if no name / type provided
+    if(!instances_created) {
+        for(auto& det : m_detectors) {
+            LOG(TRACE) << "Preparing \"other\" instance for " << det->name();
+            instantiations.emplace_back(det, ModuleIdentifier(module_base_name, det->name(), 2));
         }
     }
 
     std::vector<std::pair<ModuleIdentifier, Module*>> modules;
-    auto module_base_name = config.getName();
-    for(const auto& detector : module_det) {
-        ModuleIdentifier identifier(module_base_name, detector->name(), 0);
+    for(const auto& instance : instantiations) {
+        auto detector = instance.first;
+        auto identifier = instance.second;
+
         // If this should only be instantiated for DUTs, skip otherwise:
         if(dut_only && !detector->isDUT()) {
             LOG(TRACE) << "Skipping instantiation \"" << identifier.getUniqueName() << "\", detector is no DUT";
@@ -470,7 +523,7 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
             LOG(TRACE) << "Skipping instantiation \"" << identifier.getUniqueName() << "\", detector type mismatch";
             continue;
         }
-        LOG(TRACE) << "Creating instantiation \"" << identifier.getUniqueName() << "\"";
+        LOG(DEBUG) << "Creating instantiation \"" << identifier.getUniqueName() << "\"";
 
         // Set the log section header
         std::string old_section_name = Log::getSection();
@@ -494,8 +547,8 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
 void ModuleManager::run() {
 
     // Check if we have an event or track limit:
-    int number_of_events = global_config.get<int>("number_of_events", -1);
-    int number_of_tracks = global_config.get<int>("number_of_tracks", -1);
+    auto number_of_events = global_config.get<int>("number_of_events", -1);
+    auto number_of_tracks = global_config.get<int>("number_of_tracks", -1);
     auto run_time = global_config.get<double>("run_time", static_cast<double>(Units::convert(-1.0, "s")));
 
     // Loop over all events, running each module on each "event"
@@ -541,7 +594,7 @@ void ModuleManager::run() {
 
             // Update execution time
             auto end = std::chrono::steady_clock::now();
-            module_execution_time_[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
+            module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
 
             if(check == Failure) {
                 run = false;
@@ -681,7 +734,7 @@ void ModuleManager::finaliseAll() {
         }
 
         ConfigReader final_detectors;
-        for(auto& detector : detectors) {
+        for(auto& detector : m_detectors) {
             final_detectors.addConfiguration(detector->getConfiguration());
         }
 
@@ -700,8 +753,8 @@ void ModuleManager::timing() {
         auto identifier = module->get_identifier().getIdentifier();
         LOG(STATUS) << std::setw(20) << module->getConfig().getName() << (identifier.empty() ? "   " : " : ")
                     << std::setw(10) << identifier << "  --  " << std::fixed << std::setprecision(5)
-                    << module_execution_time_[module] << "s = " << std::setprecision(6)
-                    << 1000 * module_execution_time_[module] / m_events << "ms/evt";
+                    << module_execution_time_[module.get()] << "s = " << std::setprecision(6)
+                    << 1000 * module_execution_time_[module.get()] / m_events << "ms/evt";
     }
     LOG(STATUS) << "==============================================================";
 }
