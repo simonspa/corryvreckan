@@ -25,8 +25,8 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
                                                        {"EventLoaderCLICpix2/%DUT%/pixelToA"},
                                                        {"EventLoaderCLICpix2/%DUT%/pixelCnt", "log"},
                                                        {"EventLoaderCLICpix2/%DUT%/pixelsPerFrame", "log"},
-                                                       {"DUTAnalysis/clusterTotAssociated"},
-                                                       {"DUTAnalysis/associatedTracksVersusTime"}});
+                                                       {"AnalysisDUT/clusterTotAssociated"},
+                                                       {"AnalysisDUT/associatedTracksVersusTime"}});
     canvas_tracking = m_config.getMatrix<std::string>("Tracking",
                                                       {{"Tracking4D/trackChi2"},
                                                        {"Tracking4D/trackAngleX"},
@@ -157,13 +157,16 @@ void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas
         bool log_scale = (plot.back().find("log") != std::string::npos) ? true : false;
 
         // Replace reference placeholders and add histogram
-        std::string name = std::regex_replace(name, std::regex("%REFERENCE%"), get_reference()->name());
+        std::string name = std::regex_replace(plot.front(), std::regex("%REFERENCE%"), get_reference()->name());
 
         // Parse other placeholders:
         if(name.find("%DUT%") != std::string::npos) {
             // Do we have a DUT placeholder?
             LOG(DEBUG) << "Adding plot " << name << " for all DUTs.";
             for(auto& detector : get_detectors()) {
+                if(!detector->isDUT()) {
+                    continue;
+                }
                 AddHisto(
                     canvas_name, std::regex_replace(name, std::regex("%DUT%"), detector->name()), plot.back(), log_scale);
             }
