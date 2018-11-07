@@ -213,7 +213,7 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
             avg_track_time += (Units::convert(trackCluster->timestamp(), "ns"));
             avg_track_time -= (Units::convert(trackCluster->globalZ(), "mm") / (299.792458));
         }
-        track->setTimestamp(avg_track_time / track->nClusters());
+        track->setTimestamp(avg_track_time / static_cast<double>(track->nClusters()));
     }
 
     // Save the tracks on the clipboard
