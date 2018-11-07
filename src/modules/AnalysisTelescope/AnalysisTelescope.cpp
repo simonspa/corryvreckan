@@ -2,6 +2,8 @@
 #include "objects/Cluster.h"
 #include "objects/MCParticle.h"
 
+#include <TDirectory.h>
+
 using namespace corryvreckan;
 using namespace std;
 
