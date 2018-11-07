@@ -210,8 +210,8 @@ StatusCode BasicTracking::run(Clipboard* clipboard) {
         // Improve the track timestamp by taking the average of all planes
         double avg_track_time = 0;
         for(auto& trackCluster : trackClusters) {
-            avg_track_time += (Units::convert(trackCluster->timestamp(), "ns"));
-            avg_track_time -= (Units::convert(trackCluster->globalZ(), "mm") / (299.792458));
+            avg_track_time += static_cast<double>(Units::convert(trackCluster->timestamp(), "ns"));
+            avg_track_time -= static_cast<double>(Units::convert(trackCluster->globalZ(), "mm") / (299.792458));
         }
         track->setTimestamp(avg_track_time / static_cast<double>(track->nClusters()));
     }
