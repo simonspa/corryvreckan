@@ -15,16 +15,8 @@ Module::Module(Configuration config, std::shared_ptr<Detector> detector)
 
 Module::~Module() {}
 
-Module::Module(Configuration config, std::vector<std::shared_ptr<Detector>> detectors) : m_config(std::move(config)) {
-    m_detectors = detectors;
-    IFLOG(TRACE) {
-        std::stringstream det;
-        for(auto& d : m_detectors) {
-            det << d->name() << ", ";
-        }
-        LOG(TRACE) << "Module determined to run on detectors: " << det.str();
-    }
-}
+Module::Module(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+    : m_config(std::move(config)), m_detectors(std::move(detectors)) {}
 
 /**
  * @throws InvalidModuleActionException If this method is called from the constructor
