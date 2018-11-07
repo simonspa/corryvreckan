@@ -1,5 +1,5 @@
-#ifndef TelescopeAnalysis_H
-#define TelescopeAnalysis_H 1
+#ifndef AnalysisTelescope_H
+#define AnalysisTelescope_H 1
 
 #include <TH1F.h>
 #include <iostream>
@@ -10,17 +10,15 @@
 namespace corryvreckan {
     /** @ingroup Modules
      */
-    class TelescopeAnalysis : public Module {
+    class AnalysisTelescope : public Module {
 
     public:
         // Constructors and destructors
-        TelescopeAnalysis(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
-        ~TelescopeAnalysis() {}
+        AnalysisTelescope(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
 
         // Functions
         void initialise();
         StatusCode run(Clipboard* clipboard);
-        void finalise(){};
 
     private:
         ROOT::Math::XYZPoint closestApproach(ROOT::Math::XYZPoint position, MCParticles* particles);
@@ -37,10 +35,11 @@ namespace corryvreckan {
         std::map<std::string, TH1F*> telescopeResidualsY;
 
         // Histograms at the position of the DUT
-        TH1F* telescopeResolution;
+        std::map<std::string, TH1F*> telescopeResolutionX;
+        std::map<std::string, TH1F*> telescopeResolutionY;
 
         // Parameters
         double chi2ndofCut;
     };
 } // namespace corryvreckan
-#endif // TelescopeAnalysis_H
+#endif // AnalysisTelescope_H
