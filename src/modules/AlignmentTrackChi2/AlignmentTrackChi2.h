@@ -43,14 +43,6 @@ namespace corryvreckan {
         size_t m_maxAssocClusters;
         double m_maxTrackChi2;
 
-        TH1F* residualsXPlot;
-        TH1F* residualsYPlot;
-
-        TProfile* profile_dY_X;
-        TProfile* profile_dY_Y;
-        TProfile* profile_dX_X;
-        TProfile* profile_dX_Y;
-
         std::map<std::string, TGraph*> align_correction_shiftX;
         std::map<std::string, TGraph*> align_correction_shiftY;
         std::map<std::string, TGraph*> align_correction_shiftZ;
