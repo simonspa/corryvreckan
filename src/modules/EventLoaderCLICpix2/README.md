@@ -14,7 +14,14 @@ The data is decoded using the CLICpix2 data decoder shipped with the Peary DAQ f
 
 ### Dependencies
 
-This module requires an installation of [Peary](https://gitlab.cern.ch/Caribou/peary) with its CLICPix2 component built. This is used for on-the-fly decoding of raw data.
+This module is not built by default since it requires an installation of [Peary](https://gitlab.cern.ch/Caribou/peary) with its CLICPix2 component built. 
+This is used for on-the-fly decoding of raw data.
+In order to build this module, Peary should be made available and the module should be explicitely switched on:
+
+```
+export PEARY_PATH=/path/to/peary
+cmake -DBUILD_eventLoaderCLICpix2=ON ..
+```
 
 ### Parameters
 * `inputDirectory`: Path to the directory containing the `.csv` file. This path should lead to the directory above the CLICpix directory, as this string is added onto the input directory in the module.
