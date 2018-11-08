@@ -4,7 +4,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration config, std::vector<Detector*> detectors)
+ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
     m_method = m_config.get<int>("improvementMethod", 1);
     m_source = m_config.get<std::string>("signalSource", "W0013_G02");
@@ -16,7 +16,7 @@ void ImproveReferenceTimestamp::initialise() {
     m_eventNumber = 0;
 }
 
-StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
+StatusCode ImproveReferenceTimestamp::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Recieved triggers
     std::vector<double> trigger_times;
@@ -69,10 +69,10 @@ StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
                 avg_track_time += cluster->timestamp();
                 nhits++;
             }
-            avg_track_time = round(avg_track_time / nhits);
+            improved_time = round(avg_track_time / nhits);
             LOG(DEBUG) << setprecision(12) << "Reference track time "
                        << Units::display(track->timestamp(), {"ns", "us", "s"});
-            LOG(DEBUG) << setprecision(12) << "Average track time " << Units::display(avg_track_time, {"ns", "us", "s"});
+            LOG(DEBUG) << setprecision(12) << "Average track time " << Units::display(improved_time, {"ns", "us", "s"});
         }
 
         // Set improved reference timestamp

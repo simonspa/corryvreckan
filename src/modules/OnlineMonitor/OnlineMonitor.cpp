@@ -5,43 +5,48 @@
 using namespace corryvreckan;
 using namespace std;
 
-OnlineMonitor::OnlineMonitor(Configuration config, std::vector<Detector*> detectors)
+OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
     canvasTitle = m_config.get<std::string>("canvasTitle", "Corryvreckan Testbeam Monitor");
     updateNumber = m_config.get<int>("update", 500);
 
     // Set up overview plots:
     canvas_overview = m_config.getMatrix<std::string>("Overview",
-                                                      {{"BasicTracking/trackChi2"},
-                                                       {"TestAlgorithm/clusterTot_%REFERENCE%"},
-                                                       {"TestAlgorithm/hitmap_%REFERENCE%", "colz"},
-                                                       {"BasicTracking/residualsX_%REFERENCE%"}});
+                                                      {{"Tracking4D/trackChi2"},
+                                                       {"TestAlgorithm/%REFERENCE%/clusterTot"},
+                                                       {"TestAlgorithm/%REFERENCE%/hitmap", "colz"},
+                                                       {"Tracking4D/%REFERENCE%/residualsX"}});
 
     // Set up individual plots for the DUT
     canvas_dutplots = m_config.getMatrix<std::string>("DUTPlots",
-                                                      {{"Clicpix2EventLoader/hitMap", "colz"},
-                                                       {"Clicpix2EventLoader/hitMapDiscarded", "colz"},
-                                                       {"Clicpix2EventLoader/pixelToT"},
-                                                       {"Clicpix2EventLoader/pixelToA"},
-                                                       {"Clicpix2EventLoader/pixelCnt", "log"},
-                                                       {"Clicpix2EventLoader/pixelsPerFrame", "log"},
-                                                       {"DUTAnalysis/clusterTotAssociated"},
-                                                       {"DUTAnalysis/associatedTracksVersusTime"}});
-    canvas_tracking =
-        m_config.getMatrix<std::string>("Tracking", {{"BasicTracking/trackChi2"}, {"BasicTracking/trackAngleX"}});
-    canvas_hitmaps = m_config.getMatrix<std::string>("HitMaps", {{"TestAlgorithm/hitmap_%DETECTOR%", "colz"}});
-    canvas_residuals = m_config.getMatrix<std::string>("Residuals", {{"BasicTracking/residualsX_%DETECTOR%"}});
+                                                      {{"EventLoaderCLICpix2/%DUT%/hitMap", "colz"},
+                                                       {"EventLoaderCLICpix2/%DUT%/hitMapDiscarded", "colz"},
+                                                       {"EventLoaderCLICpix2/%DUT%/pixelToT"},
+                                                       {"EventLoaderCLICpix2/%DUT%/pixelToA"},
+                                                       {"EventLoaderCLICpix2/%DUT%/pixelCnt", "log"},
+                                                       {"EventLoaderCLICpix2/%DUT%/pixelsPerFrame", "log"},
+                                                       {"AnalysisDUT/clusterTotAssociated"},
+                                                       {"AnalysisDUT/associatedTracksVersusTime"}});
+    canvas_tracking = m_config.getMatrix<std::string>("Tracking",
+                                                      {{"Tracking4D/trackChi2"},
+                                                       {"Tracking4D/trackAngleX"},
+                                                       {"Tracking4D/trackAngleY"},
+                                                       {"Tracking4D/trackChi2ndof"},
+                                                       {"Tracking4D/tracksPerEvent"},
+                                                       {"Tracking4D/clustersPerTrack"}});
+    canvas_hitmaps = m_config.getMatrix<std::string>("HitMaps", {{"TestAlgorithm/%DETECTOR%/hitmap", "colz"}});
+    canvas_residuals = m_config.getMatrix<std::string>("Residuals", {{"Tracking4D/%DETECTOR%/residualsX"}});
 
-    canvas_cx = m_config.getMatrix<std::string>("CorrelationX", {{"TestAlgorithm/correlationX_%DETECTOR%"}});
+    canvas_cx = m_config.getMatrix<std::string>("CorrelationX", {{"TestAlgorithm/%DETECTOR%/correlationX"}});
     canvas_cx2d =
-        m_config.getMatrix<std::string>("CorrelationX2D", {{"TestAlgorithm/correlationX_2Dlocal_%DETECTOR%", "colz"}});
-    canvas_cy = m_config.getMatrix<std::string>("CorrelationY", {{"TestAlgorithm/correlationY_%DETECTOR%"}});
+        m_config.getMatrix<std::string>("CorrelationX2D", {{"TestAlgorithm/%DETECTOR%/correlationX_2Dlocal", "colz"}});
+    canvas_cy = m_config.getMatrix<std::string>("CorrelationY", {{"TestAlgorithm/%DETECTOR%/correlationY"}});
     canvas_cy2d =
-        m_config.getMatrix<std::string>("CorrelationY2D", {{"TestAlgorithm/correlationY_2Dlocal_%DETECTOR%", "colz"}});
+        m_config.getMatrix<std::string>("CorrelationY2D", {{"TestAlgorithm/%DETECTOR%/correlationY_2Dlocal", "colz"}});
 
-    canvas_charge = m_config.getMatrix<std::string>("ChargeDistributions", {{"Timepix3Clustering/clusterTot_%DETECTOR%"}});
+    canvas_charge = m_config.getMatrix<std::string>("ChargeDistributions", {{"Clustering4D/%DETECTOR%/clusterTot"}});
 
-    canvas_time = m_config.getMatrix<std::string>("EventTimes", {{"TestAlgorithm/eventTimes_%DETECTOR%"}});
+    canvas_time = m_config.getMatrix<std::string>("EventTimes", {{"TestAlgorithm/%DETECTOR%/eventTimes"}});
 }
 
 void OnlineMonitor::initialise() {
@@ -104,7 +109,7 @@ void OnlineMonitor::initialise() {
     eventNumber = 0;
 }
 
-StatusCode OnlineMonitor::run(Clipboard* clipboard) {
+StatusCode OnlineMonitor::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Draw all histograms
     if(eventNumber % updateNumber == 0) {
@@ -151,12 +156,22 @@ void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas
         // Do we need to plot with a LogY scale?
         bool log_scale = (plot.back().find("log") != std::string::npos) ? true : false;
 
-        // Replace other placeholders and add histogram
-        std::string name = std::regex_replace(plot.front(), std::regex("%DUT%"), get_dut()->name());
-        name = std::regex_replace(name, std::regex("%REFERENCE%"), get_reference()->name());
+        // Replace reference placeholders and add histogram
+        std::string name = std::regex_replace(plot.front(), std::regex("%REFERENCE%"), get_reference()->name());
 
-        // Do we have a detector placeholder?
-        if(name.find("%DETECTOR%") != std::string::npos) {
+        // Parse other placeholders:
+        if(name.find("%DUT%") != std::string::npos) {
+            // Do we have a DUT placeholder?
+            LOG(DEBUG) << "Adding plot " << name << " for all DUTs.";
+            for(auto& detector : get_detectors()) {
+                if(!detector->isDUT()) {
+                    continue;
+                }
+                AddHisto(
+                    canvas_name, std::regex_replace(name, std::regex("%DUT%"), detector->name()), plot.back(), log_scale);
+            }
+        } else if(name.find("%DETECTOR%") != std::string::npos) {
+            // Do we have a detector placeholder?
             LOG(DEBUG) << "Adding plot " << name << " for all detectors.";
             for(auto& detector : get_detectors()) {
                 AddHisto(canvas_name,
@@ -173,8 +188,8 @@ void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas
 
 void OnlineMonitor::AddHisto(string canvasName, string histoName, string style, bool logy) {
 
-    // Add "corryvreckan" namespace:
-    histoName = "/corryvreckan/" + histoName;
+    // Add root directory to path:
+    histoName = "/" + histoName;
 
     TH1* histogram = static_cast<TH1*>(gDirectory->Get(histoName.c_str()));
     if(histogram) {

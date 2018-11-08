@@ -1,10 +1,10 @@
 #ifndef DUTAssociation_H
 #define DUTAssociation_H 1
 
+#include <TCanvas.h>
+#include <TH1F.h>
+#include <TH2F.h>
 #include <iostream>
-#include "TCanvas.h"
-#include "TH1F.h"
-#include "TH2F.h"
 #include "core/module/Module.hpp"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
@@ -17,14 +17,14 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        DUTAssociation(Configuration config, std::vector<Detector*> detectors);
+        DUTAssociation(Configuration config, std::shared_ptr<Detector> detector);
         ~DUTAssociation() = default;
 
         // Functions
-        StatusCode run(Clipboard* clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
     private:
-        std::string m_DUT;
+        std::shared_ptr<Detector> m_detector;
         double timingCut;
         ROOT::Math::XYVector spatialCut;
     };

@@ -1,0 +1,860 @@
+/** @file
+ *  @brief Interface to the core framework
+ *  @copyright Copyright (c) 2017 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
+// ROOT include files
+#include <Math/DisplacementVector2D.h>
+#include <Math/Vector2D.h>
+#include <Math/Vector3D.h>
+#include <TFile.h>
+#include <TSystem.h>
+
+// Local include files
+#include "ModuleManager.hpp"
+#include "core/utils/log.h"
+#include "exceptions.h"
+
+#include <chrono>
+#include <dlfcn.h>
+#include <fstream>
+#include <iomanip>
+
+#define CORRYVRECKAN_MODULE_PREFIX "libCorryvreckanModule"
+#define CORRYVRECKAN_GENERATOR_FUNCTION "corryvreckan_module_generator"
+#define CORRYVRECKAN_GLOBAL_FUNCTION "corryvreckan_module_is_global"
+#define CORRYVRECKAN_DUT_FUNCTION "corryvreckan_module_is_dut"
+#define CORRYVRECKAN_TYPE_FUNCTION "corryvreckan_detector_types"
+
+using namespace corryvreckan;
+
+// Default constructor
+ModuleManager::ModuleManager(std::string config_file_name, std::vector<std::string> options) : m_terminate(false) {
+
+    LOG(TRACE) << "Loading Corryvreckan";
+
+    // Put welcome message
+    LOG(STATUS) << "Welcome to Corryvreckan " << CORRYVRECKAN_PROJECT_VERSION;
+
+    // Load the global configuration
+    conf_mgr_ = std::make_unique<corryvreckan::ConfigManager>(std::move(config_file_name));
+
+    // Configure the standard special sections
+    conf_mgr_->setGlobalHeaderName("Corryvreckan");
+    conf_mgr_->addGlobalHeaderName("");
+    conf_mgr_->addIgnoreHeaderName("Ignore");
+
+    // Parse all command line options
+    for(auto& option : options) {
+        conf_mgr_->parseOption(option);
+    }
+
+    // Fetch the global configuration
+    global_config = conf_mgr_->getGlobalConfiguration();
+
+    // Set the log level from config if not specified earlier
+    std::string log_level_string;
+    if(Log::getReportingLevel() == LogLevel::NONE) {
+        log_level_string = global_config.get<std::string>("log_level", "INFO");
+        std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
+        try {
+            LogLevel log_level = Log::getLevelFromString(log_level_string);
+            Log::setReportingLevel(log_level);
+        } catch(std::invalid_argument& e) {
+            LOG(ERROR) << "Log level \"" << log_level_string
+                       << "\" specified in the configuration is invalid, defaulting to INFO instead";
+            Log::setReportingLevel(LogLevel::INFO);
+        }
+    } else {
+        log_level_string = Log::getStringFromLevel(Log::getReportingLevel());
+    }
+
+    // Set the log format from config
+    std::string log_format_string = global_config.get<std::string>("log_format", "DEFAULT");
+    std::transform(log_format_string.begin(), log_format_string.end(), log_format_string.begin(), ::toupper);
+    try {
+        LogFormat log_format = Log::getFormatFromString(log_format_string);
+        Log::setFormat(log_format);
+    } catch(std::invalid_argument& e) {
+        LOG(ERROR) << "Log format \"" << log_format_string
+                   << "\" specified in the configuration is invalid, using DEFAULT instead";
+        Log::setFormat(LogFormat::DEFAULT);
+    }
+
+    // Open log file to write output to
+    if(global_config.has("log_file")) {
+        // NOTE: this stream should be available for the duration of the logging
+        log_file_.open(global_config.getPath("log_file"), std::ios_base::out | std::ios_base::trunc);
+        Log::addStream(log_file_);
+    }
+
+    // Wait for the first detailed messages until level and format are properly set
+    LOG(TRACE) << "Global log level is set to " << log_level_string;
+    LOG(TRACE) << "Global log format is set to " << log_format_string;
+
+    // New clipboard for storage:
+    m_clipboard = std::make_shared<Clipboard>();
+}
+
+void ModuleManager::load() {
+
+    add_units();
+
+    load_detectors();
+    load_modules();
+}
+
+void ModuleManager::load_detectors() {
+
+    // Flag for the reference detector
+    bool found_reference = false;
+
+    std::vector<std::string> detectors_files = global_config.getPathArray("detectors_file");
+
+    for(auto& detectors_file : detectors_files) {
+        std::fstream file(detectors_file);
+        ConfigManager det_mgr(detectors_file);
+        det_mgr.addIgnoreHeaderName("Ignore");
+
+        for(auto& detector : det_mgr.getConfigurations()) {
+
+            std::string name = detector.getName();
+
+            // Check if we have a duplicate:
+            if(std::find_if(m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) {
+                   return obj->name() == name;
+               }) != m_detectors.end()) {
+                throw InvalidValueError(
+                    global_config, "detectors_file", "Detector " + detector.getName() + " defined twice");
+            }
+
+            LOG_PROGRESS(STATUS, "DET_LOAD_LOOP") << "Loading detector " << name;
+            auto det_parm = std::make_shared<Detector>(detector);
+
+            // Check if we already found a reference plane:
+            if(found_reference && det_parm->isReference()) {
+                throw InvalidValueError(global_config, "detectors_file", "Found more than one reference detector");
+            }
+
+            // Switch flag if we found the reference plane:
+            if(det_parm->isReference()) {
+                found_reference = true;
+                m_reference = det_parm;
+            }
+
+            // Add the new detector to the global list:
+            m_detectors.push_back(det_parm);
+        }
+    }
+
+    // Check that exactly one detector is marked as reference:
+    if(!found_reference) {
+        throw InvalidValueError(global_config, "detectors_file", "Found no detector marked as reference");
+    }
+
+    LOG_PROGRESS(STATUS, "DET_LOAD_LOOP") << "Loaded " << m_detectors.size() << " detectors";
+
+    // Finally, sort the list of detectors by z position (from lowest to highest)
+    std::sort(m_detectors.begin(), m_detectors.end(), [](std::shared_ptr<Detector> det1, std::shared_ptr<Detector> det2) {
+        return det1->displacement().Z() < det2->displacement().Z();
+    });
+}
+
+void ModuleManager::load_modules() {
+    std::vector<Configuration> configs = conf_mgr_->getConfigurations();
+
+    // Create histogram output file
+    global_config.setAlias("histogram_file", "histogramFile");
+    std::string histogramFile = global_config.getPath("histogram_file");
+
+    m_histogramFile = std::make_unique<TFile>(histogramFile.c_str(), "RECREATE");
+    if(m_histogramFile->IsZombie()) {
+        throw RuntimeError("Cannot create main ROOT file " + histogramFile);
+    }
+    m_histogramFile->cd();
+
+    LOG(DEBUG) << "Start loading modules, have " << configs.size() << " configurations.";
+    // Loop through all non-global configurations
+    for(auto& config : configs) {
+        // Load library for each module. Libraries are named (by convention + CMAKE libCorryvreckanModule Name.suffix
+        std::string lib_name =
+            std::string(CORRYVRECKAN_MODULE_PREFIX).append(config.getName()).append(SHARED_LIBRARY_SUFFIX);
+        LOG_PROGRESS(STATUS, "MOD_LOAD_LOOP") << "Loading module " << config.getName();
+
+        void* lib = nullptr;
+        bool load_error = false;
+        dlerror();
+        if(loaded_libraries_.count(lib_name) == 0) {
+            // If library is not loaded then try to load it first from the config
+            // directories
+            if(global_config.has("library_directories")) {
+                std::vector<std::string> lib_paths = global_config.getPathArray("library_directories", true);
+                for(auto& lib_path : lib_paths) {
+                    std::string full_lib_path = lib_path;
+                    full_lib_path += "/";
+                    full_lib_path += lib_name;
+
+                    // Check if the absolute file exists and try to load if it exists
+                    std::ifstream check_file(full_lib_path);
+                    if(check_file.good()) {
+                        lib = dlopen(full_lib_path.c_str(), RTLD_NOW);
+                        if(lib != nullptr) {
+                            LOG(DEBUG) << "Found library in configuration specified directory at " << full_lib_path;
+                        } else {
+                            load_error = true;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // Otherwise try to load from the standard paths if not found already
+            if(!load_error && lib == nullptr) {
+                lib = dlopen(lib_name.c_str(), RTLD_NOW);
+
+                if(lib != nullptr) {
+                    LOG(TRACE) << "Opened library";
+                    Dl_info dl_info;
+                    dl_info.dli_fname = "";
+
+                    // workaround to get the location of the library
+                    int ret = dladdr(dlsym(lib, CORRYVRECKAN_GENERATOR_FUNCTION), &dl_info);
+                    if(ret != 0) {
+                        LOG(DEBUG) << "Found library during global search in runtime paths at " << dl_info.dli_fname;
+                    } else {
+                        LOG(WARNING) << "Found library during global search but could not "
+                                        "deduce location, likely broken library";
+                    }
+                } else {
+                    load_error = true;
+                }
+            }
+        } else {
+            // Otherwise just fetch it from the cache
+            lib = loaded_libraries_[lib_name];
+        }
+
+        // If library did not load then throw exception
+        if(load_error) {
+            const char* lib_error = dlerror();
+
+            // Find the name of the loaded library if it exists
+            std::string lib_error_str = lib_error;
+            size_t end_pos = lib_error_str.find(':');
+            std::string problem_lib;
+            if(end_pos != std::string::npos) {
+                problem_lib = lib_error_str.substr(0, end_pos);
+            }
+
+            // FIXME is checking the error in this way portable?
+            if(lib_error != nullptr && std::strstr(lib_error, "cannot allocate memory in static TLS block") != nullptr) {
+                LOG(ERROR) << "Library could not be loaded: not enough thread local storage "
+                              "available"
+                           << std::endl
+                           << "Try one of below workarounds:" << std::endl
+                           << "- Rerun library with the environmental variable LD_PRELOAD='" << problem_lib << "'"
+                           << std::endl
+                           << "- Recompile the library " << problem_lib << " with tls-model=global-dynamic";
+            } else if(lib_error != nullptr && std::strstr(lib_error, "cannot open shared object file") != nullptr &&
+                      problem_lib.find(CORRYVRECKAN_MODULE_PREFIX) == std::string::npos) {
+                LOG(ERROR) << "Library could not be loaded: one of its dependencies is missing" << std::endl
+                           << "The name of the missing library is " << problem_lib << std::endl
+                           << "Please make sure the library is properly initialized and try "
+                              "again";
+            } else {
+                LOG(ERROR) << "Library could not be loaded: it is not available" << std::endl
+                           << " - Did you enable the library during building? " << std::endl
+                           << " - Did you spell the library name correctly (case-sensitive)? ";
+                if(lib_error != nullptr) {
+                    LOG(DEBUG) << "Detailed error: " << lib_error;
+                }
+            }
+
+            throw corryvreckan::DynamicLibraryError("Error loading " + config.getName());
+        }
+        // Remember that this library was loaded
+        loaded_libraries_[lib_name] = lib;
+
+        // Check if this module is produced once, or once per detector
+        void* globalFunction = dlsym(loaded_libraries_[lib_name], CORRYVRECKAN_GLOBAL_FUNCTION);
+        void* dutFunction = dlsym(loaded_libraries_[lib_name], CORRYVRECKAN_DUT_FUNCTION);
+        void* typeFunction = dlsym(loaded_libraries_[lib_name], CORRYVRECKAN_TYPE_FUNCTION);
+
+        // If the global function was not found, throw an error
+        if(globalFunction == nullptr || dutFunction == nullptr || typeFunction == nullptr) {
+            LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
+            throw corryvreckan::DynamicLibraryError(config.getName());
+        }
+
+        bool global = reinterpret_cast<bool (*)()>(globalFunction)();      // NOLINT
+        bool dut_only = reinterpret_cast<bool (*)()>(dutFunction)();       // NOLINT
+        char* type_tokens = reinterpret_cast<char* (*)()>(typeFunction)(); // NOLINT
+
+        std::vector<std::string> types = get_type_vector(type_tokens);
+
+        // Apply the module specific options to the module configuration
+        conf_mgr_->applyOptions(config.getName(), config);
+
+        // Add the global internal parameters to the configuration
+        std::string global_dir = gSystem->pwd();
+        config.set<std::string>("_global_dir", global_dir);
+
+        // Merge the global configuration into the modules config:
+        config.merge(global_config);
+
+        // Create the modules from the library
+        std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
+        if(global) {
+            mod_list.emplace_back(create_unique_module(loaded_libraries_[lib_name], config));
+        } else {
+            mod_list = create_detector_modules(loaded_libraries_[lib_name], config, dut_only, types);
+        }
+
+        // Loop through all created instantiations
+        for(auto& id_mod : mod_list) {
+            // FIXME: This convert the module to an unique pointer. Check that this always works and we can do this earlier
+            std::unique_ptr<Module> mod(id_mod.second);
+            ModuleIdentifier identifier = id_mod.first;
+
+            // Check if the unique instantiation already exists
+            auto iter = id_to_module_.find(identifier);
+            if(iter != id_to_module_.end()) {
+                // Unique name exists, check if its needs to be replaced
+                if(identifier.getPriority() < iter->first.getPriority()) {
+                    // Priority of new instance is higher, replace the instance
+                    LOG(TRACE) << "Replacing model instance " << iter->first.getUniqueName()
+                               << " with instance with higher priority.";
+
+                    module_execution_time_.erase(iter->second->get());
+                    iter->second = m_modules.erase(iter->second);
+                    iter = id_to_module_.erase(iter);
+                } else {
+                    // Priority is equal, raise an error
+                    if(identifier.getPriority() == iter->first.getPriority()) {
+                        throw AmbiguousInstantiationError(config.getName());
+                    }
+                    // Priority is lower, do not add this module to the run list
+                    continue;
+                }
+            }
+
+            // Save the identifier in the module
+            mod->set_identifier(identifier);
+            mod->setReference(m_reference);
+
+            // Add the new module to the run list
+            m_modules.emplace_back(std::move(mod));
+            id_to_module_[identifier] = --m_modules.end();
+        }
+    }
+
+    LOG_PROGRESS(STATUS, "MOD_LOAD_LOOP") << "Loaded " << m_modules.size() << " module instances";
+}
+
+std::vector<std::string> ModuleManager::get_type_vector(char* type_tokens) {
+    std::vector<std::string> types;
+
+    std::stringstream tokenstream(type_tokens);
+    while(tokenstream.good()) {
+        std::string token;
+        getline(tokenstream, token, ',');
+        if(token.empty()) {
+            continue;
+        }
+        std::transform(token.begin(), token.end(), token.begin(), ::tolower);
+        types.push_back(token);
+    }
+    return types;
+}
+
+std::shared_ptr<Detector> ModuleManager::get_detector(std::string name) {
+    auto it = find_if(
+        m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->name() == name; });
+    return (it != m_detectors.end() ? (*it) : nullptr);
+}
+
+std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* library, Configuration config) {
+    // Create the identifier
+    ModuleIdentifier identifier(config.getName(), "", 0);
+
+    // Return error if user tried to specialize the unique module:
+    if(config.has("name")) {
+        throw InvalidValueError(config, "name", "unique modules cannot be specialized using the \"name\" keyword.");
+    }
+    if(config.has("type")) {
+        throw InvalidValueError(config, "type", "unique modules cannot be specialized using the \"type\" keyword.");
+    }
+
+    LOG(TRACE) << "Creating module " << identifier.getUniqueName() << ", using generator \""
+               << CORRYVRECKAN_GENERATOR_FUNCTION << "\"";
+
+    // Get the generator function for this module
+    void* generator = dlsym(library, CORRYVRECKAN_GENERATOR_FUNCTION);
+    // If the generator function was not found, throw an error
+    if(generator == nullptr) {
+        LOG(ERROR) << "Module library is invalid or outdated: required "
+                      "interface function not found!";
+        throw corryvreckan::RuntimeError("Error instantiating module from " + config.getName());
+    }
+
+    // Convert to correct generator function
+    auto module_generator =
+        reinterpret_cast<Module* (*)(Configuration, std::vector<std::shared_ptr<Detector>>)>(generator); // NOLINT
+
+    // Set the log section header
+    std::string old_section_name = Log::getSection();
+    std::string section_name = "C:";
+    section_name += config.getName();
+    Log::setSection(section_name);
+    // Set module specific log settings
+    auto old_settings = set_module_before(config.getName(), config);
+    // Build module
+    Module* module = module_generator(config, m_detectors);
+    // Reset log
+    Log::setSection(old_section_name);
+    set_module_after(old_settings);
+
+    // Return the module to the analysis
+    return std::make_pair(identifier, module);
+}
+
+std::vector<std::pair<ModuleIdentifier, Module*>>
+ModuleManager::create_detector_modules(void* library, Configuration config, bool dut_only, std::vector<std::string> types) {
+    LOG(TRACE) << "Creating instantiations for module " << config.getName() << ", using generator \""
+               << CORRYVRECKAN_GENERATOR_FUNCTION << "\"";
+
+    // Get the generator function for this module
+    void* generator = dlsym(library, CORRYVRECKAN_GENERATOR_FUNCTION);
+    // If the generator function was not found, throw an error
+    if(generator == nullptr) {
+        LOG(ERROR) << "Module library is invalid or outdated: required "
+                      "interface function not found!";
+        throw corryvreckan::RuntimeError("Error instantiating module from " + config.getName());
+    }
+
+    // Convert to correct generator function
+    auto module_generator = reinterpret_cast<Module* (*)(Configuration, std::shared_ptr<Detector>)>(generator); // NOLINT
+    auto module_base_name = config.getName();
+
+    // Figure out which detectors should run on this module:
+    bool instances_created = false;
+    std::vector<std::pair<std::shared_ptr<Detector>, ModuleIdentifier>> instantiations;
+
+    // Create all names first with highest priority
+    std::set<std::string> module_names;
+    if(config.has("name")) {
+        std::vector<std::string> names = config.getArray<std::string>("name");
+        for(auto& name : names) {
+            auto det = get_detector(name);
+            if(det == nullptr) {
+                continue;
+            }
+
+            LOG(TRACE) << "Preparing \"name\" instance for " << det->name();
+            instantiations.emplace_back(det, ModuleIdentifier(module_base_name, det->name(), 0));
+            // Save the name (to not instantiate it again later)
+            module_names.insert(name);
+        }
+        instances_created = !names.empty();
+    }
+
+    // Then create all types that are not yet name instantiated
+    if(config.has("type")) {
+        // Prepare type list from configuration:
+        std::vector<std::string> ctypes = config.getArray<std::string>("type");
+        for(auto& type : ctypes) {
+            std::transform(type.begin(), type.end(), type.begin(), ::tolower);
+        }
+
+        // Check that this is possible at all:
+        std::vector<std::string> intersection;
+        std::set_intersection(ctypes.begin(), ctypes.end(), types.begin(), types.end(), std::back_inserter(intersection));
+        if(!types.empty() && intersection.empty()) {
+            throw InvalidInstantiationError(module_base_name, "type conflict");
+        }
+
+        for(auto& det : m_detectors) {
+            auto detectortype = det->type();
+            std::transform(detectortype.begin(), detectortype.end(), detectortype.begin(), ::tolower);
+
+            // Skip all that were already added by name
+            if(module_names.find(det->name()) != module_names.end()) {
+                continue;
+            }
+            for(auto& type : ctypes) {
+                // Skip all with wrong type
+                if(detectortype != type) {
+                    continue;
+                }
+
+                LOG(TRACE) << "Preparing \"type\" instance for " << det->name();
+                instantiations.emplace_back(det, ModuleIdentifier(module_base_name, det->name(), 1));
+            }
+        }
+        instances_created = !ctypes.empty();
+    }
+
+    // Create for all detectors if no name / type provided
+    if(!instances_created) {
+        for(auto& det : m_detectors) {
+            LOG(TRACE) << "Preparing \"other\" instance for " << det->name();
+            instantiations.emplace_back(det, ModuleIdentifier(module_base_name, det->name(), 2));
+        }
+    }
+
+    std::vector<std::pair<ModuleIdentifier, Module*>> modules;
+    for(const auto& instance : instantiations) {
+        auto detector = instance.first;
+        auto identifier = instance.second;
+
+        // If this should only be instantiated for DUTs, skip otherwise:
+        if(dut_only && !detector->isDUT()) {
+            LOG(TRACE) << "Skipping instantiation \"" << identifier.getUniqueName() << "\", detector is no DUT";
+            continue;
+        }
+
+        // Do not instantiate module if detector type is not mentioned as supported:
+        auto detectortype = detector->type();
+        std::transform(detectortype.begin(), detectortype.end(), detectortype.begin(), ::tolower);
+        if(!types.empty() && std::find(types.begin(), types.end(), detectortype) == types.end()) {
+            LOG(TRACE) << "Skipping instantiation \"" << identifier.getUniqueName() << "\", detector type mismatch";
+            continue;
+        }
+        LOG(DEBUG) << "Creating instantiation \"" << identifier.getUniqueName() << "\"";
+
+        // Set the log section header
+        std::string old_section_name = Log::getSection();
+        std::string section_name = "C:";
+        section_name += identifier.getUniqueName();
+        Log::setSection(section_name);
+        // Set module specific log settings
+        auto old_settings = set_module_before(identifier.getUniqueName(), config);
+        // Build module
+        modules.emplace_back(identifier, module_generator(config, detector));
+        // Reset log
+        Log::setSection(old_section_name);
+        set_module_after(old_settings);
+    }
+
+    // Return the list of modules to the analysis
+    return modules;
+}
+
+// Run the analysis loop - this initialises, runs and finalises all modules
+void ModuleManager::run() {
+
+    // Check if we have an event or track limit:
+    auto number_of_events = global_config.get<int>("number_of_events", -1);
+    auto number_of_tracks = global_config.get<int>("number_of_tracks", -1);
+    auto run_time = global_config.get<double>("run_time", static_cast<double>(Units::convert(-1.0, "s")));
+
+    // Loop over all events, running each module on each "event"
+    LOG(STATUS) << "========================| Event loop |========================";
+    m_events = 0;
+    m_tracks = 0;
+
+    while(1) {
+        bool run = true;
+
+        // Check if we have reached the maximum number of events
+
+        if(number_of_events > -1 && m_events >= number_of_events)
+            break;
+
+        if(run_time > 0.0 && (m_clipboard->get_persistent("eventStart")) >= run_time)
+            break;
+
+        // Check if we have reached the maximum number of tracks
+        if(number_of_tracks > -1 && m_tracks >= number_of_tracks)
+            break;
+
+        // Run all modules
+        for(auto& module : m_modules) {
+            // Get current time
+            auto start = std::chrono::steady_clock::now();
+
+            // Set run module section header
+            std::string old_section_name = Log::getSection();
+            std::string section_name = "R:";
+            section_name += module->getUniqueName();
+            Log::setSection(section_name);
+            // Set module specific settings
+            auto old_settings = set_module_before(module->getUniqueName(), module->getConfig());
+            // Change to the output file directory
+            module->getROOTDirectory()->cd();
+
+            StatusCode check = module->run(m_clipboard);
+
+            // Reset logging
+            Log::setSection(old_section_name);
+            set_module_after(old_settings);
+
+            // Update execution time
+            auto end = std::chrono::steady_clock::now();
+            module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
+
+            if(check == Failure) {
+                run = false;
+            }
+        }
+
+        // Print statistics:
+        Tracks* tracks = reinterpret_cast<Tracks*>(m_clipboard->get("tracks"));
+        m_tracks += (tracks == nullptr ? 0 : static_cast<int>(tracks->size()));
+
+        if(m_events % 100 == 0) {
+            LOG_PROGRESS(STATUS, "event_loop")
+                << "Ev: " << std::fixed << std::setprecision(1) << 0.001 * m_events << "k Tr: " << std::fixed
+                << std::setprecision(1) << 0.001 * m_tracks << "k (" << std::setprecision(3)
+                << (static_cast<double>(m_tracks) / m_events) << "/ev)"
+                << (m_clipboard->has_persistent("eventStart")
+                        ? " t = " + Units::display(m_clipboard->get_persistent("eventStart"), {"ns", "us", "ms", "s"})
+                        : "");
+        }
+
+        // Clear objects from this iteration from the clipboard
+        m_clipboard->clear();
+
+        // Check if any of the modules return a value saying it should stop
+        if(!run) {
+            break;
+        }
+
+        // Increment event number
+        m_events++;
+
+        // Check for user termination and stop the event loop:
+        if(m_terminate) {
+            break;
+        }
+    }
+}
+
+void ModuleManager::terminate() {
+    m_terminate = true;
+}
+
+// Initalise all modules
+void ModuleManager::initialiseAll() {
+    // Loop over all modules and initialise them
+    LOG(STATUS) << "=================| Initialising modules |==================";
+    for(auto& module : m_modules) {
+        // Create main ROOT directory for this module class if it does not exists yet
+        LOG(TRACE) << "Creating and accessing ROOT directory";
+        std::string module_name = module->getConfig().getName();
+        auto directory = m_histogramFile->GetDirectory(module_name.c_str());
+        if(directory == nullptr) {
+            directory = m_histogramFile->mkdir(module_name.c_str());
+            if(directory == nullptr) {
+                throw RuntimeError("Cannot create or access overall ROOT directory for module " + module_name);
+            }
+        }
+        directory->cd();
+
+        // Create local directory for this instance
+        TDirectory* local_directory = nullptr;
+        if(module->get_identifier().getIdentifier().empty()) {
+            local_directory = directory;
+        } else {
+            local_directory = directory->mkdir(module->get_identifier().getIdentifier().c_str());
+            if(local_directory == nullptr) {
+                throw RuntimeError("Cannot create or access local ROOT directory for module " + module->getUniqueName());
+            }
+        }
+
+        // Change to the directory and save it in the module
+        local_directory->cd();
+        module->set_ROOT_directory(local_directory);
+
+        // Set init module section header
+        std::string old_section_name = Log::getSection();
+        std::string section_name = "I:";
+        section_name += module->getUniqueName();
+        Log::setSection(section_name);
+        // Set module specific settings
+        auto old_settings = set_module_before(module->getUniqueName(), module->getConfig());
+        // Change to our ROOT directory
+        module->getROOTDirectory()->cd();
+
+        LOG_PROGRESS(STATUS, "MOD_INIT_LOOP") << "Initialising \"" << module->getUniqueName() << "\"";
+        // Initialise the module
+        module->initialise();
+
+        // Reset logging
+        Log::setSection(old_section_name);
+        set_module_after(old_settings);
+    }
+}
+
+// Finalise all modules
+void ModuleManager::finaliseAll() {
+
+    // Loop over all modules and finalise them
+    LOG(STATUS) << "===================| Finalising modules |===================";
+    for(auto& module : m_modules) {
+        // Set init module section header
+        std::string old_section_name = Log::getSection();
+        std::string section_name = "F:";
+        section_name += module->getUniqueName();
+        Log::setSection(section_name);
+        // Set module specific settings
+        auto old_settings = set_module_before(module->getUniqueName(), module->getConfig());
+        // Change to our ROOT directory
+        module->getROOTDirectory()->cd();
+
+        // Finalise the module
+        module->finalise();
+
+        // Store all ROOT objects:
+        module->getROOTDirectory()->Write();
+
+        // Remove the pointer to the ROOT directory after finalizing
+        module->set_ROOT_directory(nullptr);
+
+        // Reset logging
+        Log::setSection(old_section_name);
+        set_module_after(old_settings);
+    }
+
+    // Write the output histogram file
+    m_histogramFile->Close();
+
+    LOG(STATUS) << "Wrote histogram output file to " << global_config.getPath("histogramFile");
+
+    // Write out update detectors file:
+    if(global_config.has("detectors_file_updated")) {
+        std::string file_name = global_config.getPath("detectors_file_updated");
+        // Check if the file exists
+        std::ofstream file(file_name);
+        if(!file) {
+            throw ConfigFileUnavailableError(file_name);
+        }
+
+        ConfigReader final_detectors;
+        for(auto& detector : m_detectors) {
+            final_detectors.addConfiguration(detector->getConfiguration());
+        }
+
+        final_detectors.write(file);
+        LOG(STATUS) << "Wrote updated detector configuration to " << file_name;
+    }
+
+    // Check the timing for all events
+    timing();
+}
+
+// Display timing statistics for each module, over all events and per event
+void ModuleManager::timing() {
+    LOG(STATUS) << "===============| Wall-clock timing (seconds) |================";
+    for(auto& module : m_modules) {
+        auto identifier = module->get_identifier().getIdentifier();
+        LOG(STATUS) << std::setw(20) << module->getConfig().getName() << (identifier.empty() ? "   " : " : ")
+                    << std::setw(10) << identifier << "  --  " << std::fixed << std::setprecision(5)
+                    << module_execution_time_[module.get()] << "s = " << std::setprecision(6)
+                    << 1000 * module_execution_time_[module.get()] / m_events << "ms/evt";
+    }
+    LOG(STATUS) << "==============================================================";
+}
+
+// Helper functions to set the module specific log settings if necessary
+std::tuple<LogLevel, LogFormat> ModuleManager::set_module_before(const std::string&, const Configuration& config) {
+    // Set new log level if necessary
+    LogLevel prev_level = Log::getReportingLevel();
+    if(config.has("log_level")) {
+        std::string log_level_string = config.get<std::string>("log_level");
+        std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
+        try {
+            LogLevel log_level = Log::getLevelFromString(log_level_string);
+            if(log_level != prev_level) {
+                LOG(TRACE) << "Local log level is set to " << log_level_string;
+                Log::setReportingLevel(log_level);
+            }
+        } catch(std::invalid_argument& e) {
+            throw InvalidValueError(config, "log_level", e.what());
+        }
+    }
+
+    // Set new log format if necessary
+    LogFormat prev_format = Log::getFormat();
+    if(config.has("log_format")) {
+        std::string log_format_string = config.get<std::string>("log_format");
+        std::transform(log_format_string.begin(), log_format_string.end(), log_format_string.begin(), ::toupper);
+        try {
+            LogFormat log_format = Log::getFormatFromString(log_format_string);
+            if(log_format != prev_format) {
+                LOG(TRACE) << "Local log format is set to " << log_format_string;
+                Log::setFormat(log_format);
+            }
+        } catch(std::invalid_argument& e) {
+            throw InvalidValueError(config, "log_format", e.what());
+        }
+    }
+
+    return std::make_tuple(prev_level, prev_format);
+}
+void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
+    // Reset the previous log level
+    LogLevel cur_level = Log::getReportingLevel();
+    LogLevel old_level = std::get<0>(prev);
+    if(cur_level != old_level) {
+        Log::setReportingLevel(old_level);
+        LOG(TRACE) << "Reset log level to global level of " << Log::getStringFromLevel(old_level);
+    }
+
+    // Reset the previous log format
+    LogFormat cur_format = Log::getFormat();
+    LogFormat old_format = std::get<1>(prev);
+    if(cur_format != old_format) {
+        Log::setFormat(old_format);
+        LOG(TRACE) << "Reset log format to global level of " << Log::getStringFromFormat(old_format);
+    }
+}
+
+void ModuleManager::add_units() {
+
+    LOG(TRACE) << "Adding physical units";
+
+    // LENGTH
+    Units::add("nm", 1e-6);
+    Units::add("um", 1e-3);
+    Units::add("mm", 1);
+    Units::add("cm", 1e1);
+    Units::add("dm", 1e2);
+    Units::add("m", 1e3);
+    Units::add("km", 1e6);
+
+    // TIME
+    Units::add("ps", 1e-3);
+    Units::add("ns", 1);
+    Units::add("us", 1e3);
+    Units::add("ms", 1e6);
+    Units::add("s", 1e9);
+
+    // TEMPERATURE
+    Units::add("K", 1);
+
+    // ENERGY
+    Units::add("eV", 1e-6);
+    Units::add("keV", 1e-3);
+    Units::add("MeV", 1);
+    Units::add("GeV", 1e3);
+
+    // CHARGE
+    Units::add("e", 1);
+    Units::add("ke", 1e3);
+    Units::add("C", 1.6021766208e-19);
+
+    // VOLTAGE
+    // NOTE: fixed by above
+    Units::add("V", 1e-6);
+    Units::add("kV", 1e-3);
+
+    // ANGLES
+    // NOTE: these are fake units
+    Units::add("deg", 0.01745329252);
+    Units::add("rad", 1);
+    Units::add("mrad", 1e-3);
+}

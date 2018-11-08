@@ -3,44 +3,42 @@
 using namespace corryvreckan;
 using namespace std;
 
-EtaCalculation::EtaCalculation(Configuration config, std::vector<Detector*> detectors)
-    : Module(std::move(config), std::move(detectors)) {
+EtaCalculation::EtaCalculation(Configuration config, std::shared_ptr<Detector> detector)
+    : Module(std::move(config), detector), m_detector(detector) {
     m_chi2ndofCut = m_config.get<double>("chi2ndofCut", 100.);
     m_etaFormulaX = m_config.get<std::string>("EtaFormulaX", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
     m_etaFormulaY = m_config.get<std::string>("EtaFormulaY", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
 }
 
 void EtaCalculation::initialise() {
-    for(auto& detector : get_detectors()) {
 
-        // Initialise histograms
-        double pitchX = detector->pitch().X();
-        double pitchY = detector->pitch().Y();
-        string name = "etaDistributionX_" + detector->name();
-        m_etaDistributionX[detector->name()] = new TH2F(name.c_str(), name.c_str(), 100., 0., pitchX, 100., 0., pitchY);
-        name = "etaDistributionY_" + detector->name();
-        m_etaDistributionY[detector->name()] = new TH2F(name.c_str(), name.c_str(), 100., 0., pitchX, 100., 0., pitchY);
-        name = "etaDistributionXprofile_" + detector->name();
-        m_etaDistributionXprofile[detector->name()] = new TProfile(name.c_str(), name.c_str(), 100., 0., pitchX, 0., pitchY);
-        name = "etaDistributionYprofile_" + detector->name();
-        m_etaDistributionYprofile[detector->name()] = new TProfile(name.c_str(), name.c_str(), 100., 0., pitchX, 0., pitchY);
+    // Initialise histograms
+    double pitchX = m_detector->pitch().X();
+    double pitchY = m_detector->pitch().Y();
+    std::string title = m_detector->name() + " #eta distribution X";
+    m_etaDistributionX = new TH2F("etaDistributionX", title.c_str(), 100., 0., pitchX, 100., 0., pitchY);
+    title = m_detector->name() + " #eta distribution Y";
+    m_etaDistributionY = new TH2F("etaDistributionY", title.c_str(), 100., 0., pitchX, 100., 0., pitchY);
+    title = m_detector->name() + " #eta profile X";
+    m_etaDistributionXprofile = new TProfile("etaDistributionXprofile", title.c_str(), 100., 0., pitchX, 0., pitchY);
+    title = m_detector->name() + " #eta profile Y";
+    m_etaDistributionYprofile = new TProfile("etaDistributionYprofile", title.c_str(), 100., 0., pitchX, 0., pitchY);
 
-        // Prepare fit functions - we need them for every detector as they might have different pitches
-        m_etaFitX[detector->name()] = new TF1("etaFormulaX", m_etaFormulaX.c_str(), 0, pitchX);
-        m_etaFitY[detector->name()] = new TF1("etaFormulaY", m_etaFormulaY.c_str(), 0, pitchY);
-    }
+    // Prepare fit functions - we need them for every detector as they might have different pitches
+    m_etaFitX = new TF1("etaFormulaX", m_etaFormulaX.c_str(), 0, pitchX);
+    m_etaFitY = new TF1("etaFormulaY", m_etaFormulaY.c_str(), 0, pitchY);
 }
 
-ROOT::Math::XYVector EtaCalculation::pixelIntercept(Track* tr, Detector* det) {
+ROOT::Math::XYVector EtaCalculation::pixelIntercept(Track* tr) {
 
-    double pitchX = det->pitch().X();
-    double pitchY = det->pitch().Y();
+    double pitchX = m_detector->pitch().X();
+    double pitchY = m_detector->pitch().Y();
     // Get the in-pixel track intercept
-    PositionVector3D<Cartesian3D<double>> trackIntercept = det->getIntercept(tr);
-    PositionVector3D<Cartesian3D<double>> trackInterceptLocal = det->globalToLocal(trackIntercept);
-    double pixelInterceptX = det->inPixelX(trackInterceptLocal);
+    PositionVector3D<Cartesian3D<double>> trackIntercept = m_detector->getIntercept(tr);
+    PositionVector3D<Cartesian3D<double>> trackInterceptLocal = m_detector->globalToLocal(trackIntercept);
+    double pixelInterceptX = m_detector->inPixelX(trackInterceptLocal);
     (pixelInterceptX > pitchX / 2. ? pixelInterceptX -= pitchX / 2. : pixelInterceptX += pitchX / 2.);
-    double pixelInterceptY = det->inPixelY(trackInterceptLocal);
+    double pixelInterceptY = m_detector->inPixelY(trackInterceptLocal);
     (pixelInterceptY > pitchY / 2. ? pixelInterceptY -= pitchY / 2. : pixelInterceptY += pitchY / 2.);
     return ROOT::Math::XYVector(pixelInterceptX, pixelInterceptY);
 }
@@ -53,22 +51,22 @@ void EtaCalculation::calculateEta(Track* track, Cluster* cluster) {
 
     auto detector = get_detector(cluster->detectorID());
     // Get the in-pixel track intercept
-    auto pxIntercept = pixelIntercept(track, detector);
+    auto pxIntercept = pixelIntercept(track);
 
     if(cluster->columnWidth() == 2) {
-        double inPixelX = detector->pitch().X() * (cluster->column() - floor(cluster->column()));
-        m_etaDistributionX[detector->name()]->Fill(inPixelX, pxIntercept.X());
-        m_etaDistributionXprofile[detector->name()]->Fill(inPixelX, pxIntercept.X());
+        double inPixelX = m_detector->pitch().X() * (cluster->column() - floor(cluster->column()));
+        m_etaDistributionX->Fill(inPixelX, pxIntercept.X());
+        m_etaDistributionXprofile->Fill(inPixelX, pxIntercept.X());
     }
 
     if(cluster->rowWidth() == 2) {
-        double inPixelY = detector->pitch().Y() * (cluster->row() - floor(cluster->row()));
-        m_etaDistributionY[detector->name()]->Fill(inPixelY, pxIntercept.Y());
-        m_etaDistributionYprofile[detector->name()]->Fill(inPixelY, pxIntercept.Y());
+        double inPixelY = m_detector->pitch().Y() * (cluster->row() - floor(cluster->row()));
+        m_etaDistributionY->Fill(inPixelY, pxIntercept.Y());
+        m_etaDistributionYprofile->Fill(inPixelY, pxIntercept.Y());
     }
 }
 
-StatusCode EtaCalculation::run(Clipboard* clipboard) {
+StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks from the clipboard
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
@@ -87,10 +85,16 @@ StatusCode EtaCalculation::run(Clipboard* clipboard) {
 
         // Look at the associated clusters and plot the eta function
         for(auto& dutCluster : track->associatedClusters()) {
+            if(dutCluster->detectorID() != m_detector->name()) {
+                continue;
+            }
             calculateEta(track, dutCluster);
         }
         // Do the same for all clusters of the track:
         for(auto& cluster : track->clusters()) {
+            if(cluster->detectorID() != m_detector->name()) {
+                continue;
+            }
             calculateEta(track, cluster);
         }
     }
@@ -115,14 +119,10 @@ std::string EtaCalculation::fit(TF1* function, std::string fname, TProfile* prof
 void EtaCalculation::finalise() {
 
     std::stringstream config;
-    for(auto& detector : get_detectors()) {
-        config << std::endl
-               << "EtaConstantsX_" << detector->name() << " ="
-               << fit(m_etaFitX[detector->name()], "etaFormulaX", m_etaDistributionXprofile[detector->name()]);
-        config << std::endl
-               << "EtaConstantsY_" << detector->name() << " ="
-               << fit(m_etaFitY[detector->name()], "etaFormulaY", m_etaDistributionYprofile[detector->name()]);
-    }
+    config << std::endl
+           << "EtaConstantsX_" << m_detector->name() << " =" << fit(m_etaFitX, "etaFormulaX", m_etaDistributionXprofile);
+    config << std::endl
+           << "EtaConstantsY_" << m_detector->name() << " =" << fit(m_etaFitY, "etaFormulaY", m_etaDistributionYprofile);
 
-    LOG(INFO) << "Configuration for \"EtaCorrection\" algorithm:" << config.str();
+    LOG(INFO) << "\"EtaCorrection\":" << config.str();
 }

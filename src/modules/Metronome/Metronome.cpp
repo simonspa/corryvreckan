@@ -3,7 +3,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-Metronome::Metronome(Configuration config, std::vector<Detector*> detectors)
+Metronome::Metronome(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
     m_eventLength = m_config.get<double>("eventLength", static_cast<double>(Units::convert(10, "us")));
@@ -16,7 +16,7 @@ void Metronome::initialise() {
     m_eventEnd = m_eventLength;
 }
 
-StatusCode Metronome::run(Clipboard* clipboard) {
+StatusCode Metronome::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Set up the clipboard persistent storage for the current event:
     clipboard->put_persistent("eventStart", m_eventStart);

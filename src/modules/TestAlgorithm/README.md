@@ -1,15 +1,17 @@
 # TestAlgorithm
-**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>) ; Daniel Hynds (<daniel.hynds@cern.ch>)  
+**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>), Daniel Hynds (<daniel.hynds@cern.ch>)  
+**Module Type**: *DETECTOR*  
+**Detector Type**: *all*  
 **Status**: Functional   
 
 ### Description
-This module collects `pixel` and `cluster` objects from the clipboard and creates correlation and timing plots.
+This module collects `pixel` and `cluster` objects from the clipboard and creates correlation and timing plots with respect to the reference detector.
 
 
 ### Parameters
 * `makeCorrelatons`: Boolean to change if correlation plots should be outputted. Default value is `false`.
-* `reference`: Name of the plane to be used as the reference for the correlation plots.
-* `timingCut`: maximum time difference between clusters to be taken into account. Defaults to `100ns`.
+* `doTimingCut`: Boolean to switch on/off the cut on cluster times for correlations. Defaults to `false`.
+* `timingCut`: maximum time difference between clusters to be taken into account. Only used if `doTimingCut` is set to `true`, defaults to `100ns`.
 
 ### Plots produced
 For each device the following plots are produced:
@@ -29,5 +31,4 @@ For each device the following plots are produced:
 ```toml
 [TestAlgorithm]
 makeCorrelations = true
-reference = "W0013_E03"
 ```

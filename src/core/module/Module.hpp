@@ -11,6 +11,7 @@
 
 #include <string>
 
+#include "ModuleIdentifier.hpp"
 #include "core/clipboard/Clipboard.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/detector/Detector.hpp"
@@ -49,6 +50,7 @@ namespace corryvreckan {
      * - Module::finalise(): for finalising the module at the end
      */
     class Module {
+        friend class ModuleManager;
 
     public:
         /**
@@ -57,11 +59,18 @@ namespace corryvreckan {
         Module() = delete;
 
         /**
-         * @brief Base constructor for modules
+         * @brief Base constructor for detector modules
+         * @param config Configuration for this module
+         * @param detector Pointer to the detector this module is bound to
+         */
+        Module(Configuration config, std::shared_ptr<Detector> detector);
+
+        /**
+         * @brief Base constructor for unique modules
          * @param config Configuration for this module
          * @param detectors List of detectors this module should be aware of
          */
-        Module(Configuration config, std::vector<Detector*> detectors);
+        Module(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
 
         /**
          * @brief Essential virtual destructor.
@@ -75,10 +84,11 @@ namespace corryvreckan {
         Module& operator=(const Module&) = delete;
 
         /**
-         * @brief Get the name of this module
-         * @return Name of the module
+         * @brief Get the unique name of this module
+         * @return Unique name
+         * @note Can be used to interact with ROOT objects that require an unique name
          */
-        std::string getName() { return m_name; }
+        std::string getUniqueName() const;
 
         /**
          * @brief Get the configuration for this module
@@ -100,7 +110,7 @@ namespace corryvreckan {
          *
          * Does nothing if not overloaded.
          */
-        virtual StatusCode run(Clipboard*) { return Success; }
+        virtual StatusCode run(std::shared_ptr<Clipboard>) { return Success; }
 
         /**
          * @brief Finalise the module after the event sequence
@@ -110,6 +120,12 @@ namespace corryvreckan {
          */
         virtual void finalise(){};
 
+        /**
+         * @brief Get ROOT directory which should be used to output histograms et cetera
+         * @return ROOT directory for storage
+         */
+        TDirectory* getROOTDirectory() const;
+
     protected:
         // Configuration of this module
         Configuration m_config;
@@ -118,7 +134,7 @@ namespace corryvreckan {
          * @brief Get list of all detectors this module acts on
          * @return List of all detectors for this module
          */
-        std::vector<Detector*> get_detectors() { return m_detectors; };
+        std::vector<std::shared_ptr<Detector>> get_detectors() { return m_detectors; };
 
         /**
          * @brief Get the number of detectors this module takes care of
@@ -132,20 +148,20 @@ namespace corryvreckan {
          * @return Pointer to the requested detector
          * @throws ModuleError if detector with given name is not found for this module
          */
-        Detector* get_detector(std::string name);
+        std::shared_ptr<Detector> get_detector(std::string name);
 
         /**
          * @brief Get the reference detector for this setup
          * @return Pointer to the reference detector
          */
-        Detector* get_reference();
+        std::shared_ptr<Detector> get_reference();
 
         /**
          * @brief Get the device under test
          * @return Pointer to the DUT detector.  A nullptr is returned if no DUT is found.
          * FIXME This should allow retrieval of a vector of DUTs
          */
-        Detector* get_dut();
+        std::shared_ptr<Detector> get_dut();
 
         /**
          * @brief Check if this module should act on a given detector
@@ -155,11 +171,31 @@ namespace corryvreckan {
         bool has_detector(std::string name);
 
     private:
-        // Name of the module
-        std::string m_name;
+        /**
+         * @brief Set the module identifier for internal use
+         * @param identifier Identifier of the instantiation
+         */
+        void set_identifier(ModuleIdentifier identifier);
+        /**
+         * @brief Get the module identifier for internal use
+         * @return Identifier of the instantiation
+         */
+        ModuleIdentifier get_identifier() const;
+        ModuleIdentifier identifier_;
+
+        /**
+         * @brief Set the output ROOT directory for this module
+         * @param directory ROOT directory for storage
+         */
+        void set_ROOT_directory(TDirectory* directory);
+        TDirectory* directory_{nullptr};
+
+        // Configure the reference detector:
+        void setReference(std::shared_ptr<Detector> reference) { m_reference = reference; };
+        std::shared_ptr<Detector> m_reference;
 
         // List of detectors to act on
-        std::vector<Detector*> m_detectors;
+        std::vector<std::shared_ptr<Detector>> m_detectors;
     };
 
 } // namespace corryvreckan

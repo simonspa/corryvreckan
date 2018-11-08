@@ -15,11 +15,11 @@
 #ifndef CORRYVRECKAN_OBJECT_H
 #define CORRYVRECKAN_OBJECT_H
 
+#include <TTree.h>
 #include <iostream>
 #include <string>
 #include <vector>
 #include "TObject.h"
-#include "TTree.h"
 
 namespace corryvreckan {
 

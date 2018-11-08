@@ -1,9 +1,9 @@
 #ifndef MASKCREATOR_H
 #define MASKCREATOR_H 1
 
+#include <TCanvas.h>
+#include <TH2D.h>
 #include <iostream>
-#include "TCanvas.h"
-#include "TH2D.h"
 #include "core/module/Module.hpp"
 #include "objects/Pixel.h"
 
@@ -14,12 +14,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        MaskCreator(Configuration config, std::vector<Detector*> detectors);
+        MaskCreator(Configuration config, std::shared_ptr<Detector> detector);
         ~MaskCreator() {}
 
         // Functions
         void initialise();
-        StatusCode run(Clipboard* clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard);
         void finalise();
 
     private:
@@ -41,18 +41,18 @@ namespace corryvreckan {
         // Write out mask files for all detectors]
         void writeMaskFiles();
 
-        // Member variables
-        std::map<std::string, TH2D*> m_occupancy;
-        std::map<std::string, TH1D*> m_occupancyDist;
-        std::map<std::string, TH2D*> m_density;
-        std::map<std::string, TH2D*> m_significance;
-        std::map<std::string, TH1D*> m_significanceDist;
+        std::shared_ptr<Detector> m_detector;
+        TH2D* m_occupancy;
+        TH1D* m_occupancyDist;
+        TH2D* m_density;
+        TH2D* m_significance;
+        TH1D* m_significanceDist;
 
-        std::map<std::string, TH2F*> maskmap;
+        TH2F* maskmap;
 
         std::string m_method;
         double m_frequency, bandwidth;
-        std::map<std::string, int> m_bandwidthCol, m_bandwidthRow;
+        int m_bandwidthCol, m_bandwidthRow;
         double m_sigmaMax, m_rateMax;
         int m_numEvents, binsOccupancy;
 

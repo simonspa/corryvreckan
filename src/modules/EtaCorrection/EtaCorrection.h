@@ -1,12 +1,12 @@
 #ifndef EtaCorrection_H
 #define EtaCorrection_H 1
 
+#include <TCanvas.h>
+#include <TF1.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TProfile.h>
 #include <iostream>
-#include "TCanvas.h"
-#include "TF1.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TProfile.h"
 
 #include "core/module/Module.hpp"
 #include "objects/Cluster.h"
@@ -20,24 +20,24 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        EtaCorrection(Configuration config, std::vector<Detector*> detectors);
+        EtaCorrection(Configuration config, std::shared_ptr<Detector> detector);
         ~EtaCorrection() {}
 
         // Functions
         void initialise();
-        StatusCode run(Clipboard* clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard);
         void finalise(){};
 
     private:
-        void applyEta(Cluster* cluster, Detector* detector);
+        void applyEta(Cluster* cluster);
 
-        // Member variables
+        std::shared_ptr<Detector> m_detector;
         std::string m_etaFormulaX;
-        std::map<std::string, TF1*> m_etaCorrectorX;
-        std::map<std::string, bool> m_correctX;
+        TF1* m_etaCorrectorX;
+        bool m_correctX;
         std::string m_etaFormulaY;
-        std::map<std::string, TF1*> m_etaCorrectorY;
-        std::map<std::string, bool> m_correctY;
+        TF1* m_etaCorrectorY;
+        bool m_correctY;
     };
 } // namespace corryvreckan
 #endif // EtaCorrection_H

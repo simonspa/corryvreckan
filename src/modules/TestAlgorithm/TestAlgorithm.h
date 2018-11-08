@@ -1,10 +1,10 @@
 #ifndef TESTALGORITHM_H
 #define TESTALGORITHM_H 1
 
+#include <TCanvas.h>
+#include <TH1F.h>
+#include <TH2F.h>
 #include <iostream>
-#include "TCanvas.h"
-#include "TH1F.h"
-#include "TH2F.h"
 #include "core/module/Module.hpp"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
@@ -16,31 +16,34 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        TestAlgorithm(Configuration config, std::vector<Detector*> detectors);
+        TestAlgorithm(Configuration config, std::shared_ptr<Detector> detector);
         ~TestAlgorithm() {}
 
         // Functions
         void initialise();
-        StatusCode run(Clipboard* clipboard);
-        void finalise();
+        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+
+    private:
+        std::shared_ptr<Detector> m_detector;
 
         // Pixel histograms
-        std::map<std::string, TH2F*> hitmap;
-        std::map<std::string, TH1F*> eventTimes;
+        TH2F* hitmap;
+        TH1F* eventTimes;
 
         // Correlation plots
-        std::map<std::string, TH1F*> correlationX;
-        std::map<std::string, TH1F*> correlationY;
-        std::map<std::string, TH2F*> correlationX2Dlocal;
-        std::map<std::string, TH2F*> correlationY2Dlocal;
-        std::map<std::string, TH2F*> correlationX2D;
-        std::map<std::string, TH2F*> correlationY2D;
-        std::map<std::string, TH1F*> correlationTime;
-        std::map<std::string, TH1F*> correlationTimeInt;
+        TH1F* correlationX;
+        TH1F* correlationY;
+        TH2F* correlationX2Dlocal;
+        TH2F* correlationY2Dlocal;
+        TH2F* correlationX2D;
+        TH2F* correlationY2D;
+        TH1F* correlationTime;
+        TH1F* correlationTimeInt;
 
         // Parameters which can be set by user
         bool makeCorrelations;
         double timingCut;
+        bool do_timing_cut_;
 
         // parameters
         double m_eventLength;

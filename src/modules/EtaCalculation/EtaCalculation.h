@@ -1,12 +1,12 @@
 #ifndef EtaCalculation_H
 #define EtaCalculation_H 1
 
+#include <TCanvas.h>
+#include <TF1.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TProfile.h>
 #include <iostream>
-#include "TCanvas.h"
-#include "TF1.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TProfile.h"
 
 #include "core/module/Module.hpp"
 #include "objects/Cluster.h"
@@ -20,31 +20,31 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        EtaCalculation(Configuration config, std::vector<Detector*> detectors);
+        EtaCalculation(Configuration config, std::shared_ptr<Detector> detector);
         ~EtaCalculation() {}
 
         // Functions
         void initialise();
-        StatusCode run(Clipboard* clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard);
         void finalise();
 
     private:
-        ROOT::Math::XYVector pixelIntercept(Track* tr, Detector* det);
+        ROOT::Math::XYVector pixelIntercept(Track* tr);
         void calculateEta(Track* track, Cluster* cluster);
         std::string fit(TF1* function, std::string fname, TProfile* profile);
 
-        // Member variables
+        std::shared_ptr<Detector> m_detector;
         double m_chi2ndofCut;
         std::string m_etaFormulaX;
-        std::map<std::string, TF1*> m_etaFitX;
+        TF1* m_etaFitX;
         std::string m_etaFormulaY;
-        std::map<std::string, TF1*> m_etaFitY;
+        TF1* m_etaFitY;
 
         // Histograms
-        std::map<std::string, TH2F*> m_etaDistributionX;
-        std::map<std::string, TH2F*> m_etaDistributionY;
-        std::map<std::string, TProfile*> m_etaDistributionXprofile;
-        std::map<std::string, TProfile*> m_etaDistributionYprofile;
+        TH2F* m_etaDistributionX;
+        TH2F* m_etaDistributionY;
+        TProfile* m_etaDistributionXprofile;
+        TProfile* m_etaDistributionYprofile;
     };
 } // namespace corryvreckan
 #endif // EtaCalculation_H

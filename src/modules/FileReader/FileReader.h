@@ -1,9 +1,9 @@
 #ifndef FileReader_H
 #define FileReader_H 1
 
+#include <TFile.h>
+#include <TTree.h>
 #include <iostream>
-#include "TFile.h"
-#include "TTree.h"
 #include "core/module/Module.hpp"
 
 namespace corryvreckan {
@@ -13,12 +13,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        FileReader(Configuration config, std::vector<Detector*> detectors);
+        FileReader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~FileReader() {}
 
         // Functions
         void initialise();
-        StatusCode run(Clipboard* clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard);
         void finalise();
 
         // Member variables

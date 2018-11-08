@@ -3,7 +3,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-FileWriter::FileWriter(Configuration config, std::vector<Detector*> detectors)
+FileWriter::FileWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
     m_onlyDUT = m_config.get<bool>("onlyDUT", true);
@@ -92,7 +92,7 @@ void FileWriter::initialise() {
     m_eventNumber = 0;
 }
 
-StatusCode FileWriter::run(Clipboard* clipboard) {
+StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Loop over all objects to be written to file, and get the objects currently
     // held on the Clipboard

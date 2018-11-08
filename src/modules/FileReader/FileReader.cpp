@@ -3,7 +3,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-FileReader::FileReader(Configuration config, std::vector<Detector*> detectors)
+FileReader::FileReader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
     m_readPixels = m_config.get<bool>("readPixels", true);
@@ -114,7 +114,7 @@ void FileReader::initialise() {
     m_eventNumber = 0;
 }
 
-StatusCode FileReader::run(Clipboard* clipboard) {
+StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG_PROGRESS(INFO, "file_reader") << "Running over event " << m_eventNumber;
 

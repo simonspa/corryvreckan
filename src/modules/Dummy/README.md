@@ -1,5 +1,6 @@
 # Dummy
 **Maintainer**: *NAME* (*EMAIL*)
+**Module Type**: *GLOBAL*  
 **Status**: Functional
 
 ### Description

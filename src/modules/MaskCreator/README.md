@@ -1,5 +1,7 @@
 # MaskCreator
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Module Type**: *DETECTOR*  
+**Detector Type**: *all*  
 **Status**: Work in progress
 
 ### Description

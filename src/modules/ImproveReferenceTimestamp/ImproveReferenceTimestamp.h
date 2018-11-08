@@ -1,11 +1,11 @@
 #ifndef ImproveReferenceTimestamp_H
 #define ImproveReferenceTimestamp_H 1
 
+#include <TCanvas.h>
+#include <TH1F.h>
+#include <TH2F.h>
 #include <cmath>
 #include <iostream>
-#include "TCanvas.h"
-#include "TH1F.h"
-#include "TH2F.h"
 #include "core/module/Module.hpp"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
@@ -18,12 +18,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        ImproveReferenceTimestamp(Configuration config, std::vector<Detector*> detectors);
+        ImproveReferenceTimestamp(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~ImproveReferenceTimestamp() {}
 
         // Functions
         void initialise();
-        StatusCode run(Clipboard* clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard);
         void finalise();
 
         // Histograms for several devices

@@ -1,10 +1,10 @@
 #ifndef Metronome_H
 #define Metronome_H 1
 
+#include <TCanvas.h>
+#include <TH1F.h>
+#include <TH2F.h>
 #include <iostream>
-#include "TCanvas.h"
-#include "TH1F.h"
-#include "TH2F.h"
 #include "core/module/Module.hpp"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
@@ -17,12 +17,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Metronome(Configuration config, std::vector<Detector*> detectors);
+        Metronome(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~Metronome() {}
 
         // Functions
         void initialise();
-        StatusCode run(Clipboard* clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
     private:
         double m_eventStart, m_eventEnd, m_eventLength;

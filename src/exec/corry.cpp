@@ -6,8 +6,8 @@
 #include <string>
 #include <utility>
 
-#include "core/Analysis.hpp"
 #include "core/config/ConfigManager.hpp"
+#include "core/module/ModuleManager.hpp"
 #include "core/utils/exceptions.h"
 /**
  * @file
@@ -22,7 +22,7 @@ void clean();
 void abort_handler(int);
 void interrupt_handler(int);
 
-std::unique_ptr<Analysis> corry;
+std::unique_ptr<ModuleManager> corry;
 std::atomic<bool> cv_ready{false};
 
 /**
@@ -162,7 +162,7 @@ int main(int argc, const char* argv[]) {
 
     try {
         // Construct main Corryvreckan object
-        corry = std::make_unique<Analysis>(config_file_name, options);
+        corry = std::make_unique<ModuleManager>(config_file_name, options);
         cv_ready = true;
 
         // Load modules

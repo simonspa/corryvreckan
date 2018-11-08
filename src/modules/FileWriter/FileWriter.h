@@ -1,9 +1,9 @@
 #ifndef FileWriter_H
 #define FileWriter_H 1
 
+#include <TFile.h>
+#include <TTree.h>
 #include <iostream>
-#include "TFile.h"
-#include "TTree.h"
 #include "core/module/Module.hpp"
 
 namespace corryvreckan {
@@ -13,12 +13,12 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        FileWriter(Configuration config, std::vector<Detector*> detectors);
+        FileWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
         ~FileWriter() {}
 
         // Functions
         void initialise();
-        StatusCode run(Clipboard* clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard);
         void finalise();
 
         // Member variables
