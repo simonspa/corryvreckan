@@ -66,7 +66,7 @@ void EtaCalculation::calculateEta(Track* track, Cluster* cluster) {
     }
 }
 
-StatusCode EtaCalculation::run(Clipboard* clipboard) {
+StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks from the clipboard
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));

@@ -44,7 +44,7 @@ namespace corryvreckan {
         /**
          * @brief [Run the function of this module]
          */
-        StatusCode run(Clipboard* clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
         /**
          * @brief [Finalise module]

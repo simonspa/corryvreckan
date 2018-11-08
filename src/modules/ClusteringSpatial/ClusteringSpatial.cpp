@@ -39,7 +39,7 @@ void ClusteringSpatial::initialise() {
                                      m_detector->size().Y() / 1.5);
 }
 
-StatusCode ClusteringSpatial::run(Clipboard* clipboard) {
+StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
     Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));

@@ -16,7 +16,7 @@ namespace corryvreckan {
         ~MaskCreatorTimepix3() {}
 
         // Functions
-        StatusCode run(Clipboard* clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard);
         void finalise();
 
     private:

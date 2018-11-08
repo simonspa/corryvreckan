@@ -73,7 +73,7 @@ void TestAlgorithm::initialise() {
     eventTimes = new TH1F("eventTimes", title.c_str(), 3000000, 0, 300);
 }
 
-StatusCode TestAlgorithm::run(Clipboard* clipboard) {
+StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
     Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));

@@ -184,7 +184,7 @@ void AnalysisDUT::initialise() {
         new TH2F("hUnassociatedTracksGlobalPosition", "hUnassociatedTracksGlobalPosition", 200, -10, 10, 200, -10, 10);
 }
 
-StatusCode AnalysisDUT::run(Clipboard* clipboard) {
+StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the telescope tracks from the clipboard
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));

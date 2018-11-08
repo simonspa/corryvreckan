@@ -66,7 +66,7 @@ void AlignmentMillepede::initialise() {
 }
 
 // During run, just pick up tracks and save them till the end
-StatusCode AlignmentMillepede::run(Clipboard* clipboard) {
+StatusCode AlignmentMillepede::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));

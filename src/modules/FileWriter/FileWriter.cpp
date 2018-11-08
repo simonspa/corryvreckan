@@ -92,7 +92,7 @@ void FileWriter::initialise() {
     m_eventNumber = 0;
 }
 
-StatusCode FileWriter::run(Clipboard* clipboard) {
+StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Loop over all objects to be written to file, and get the objects currently
     // held on the Clipboard

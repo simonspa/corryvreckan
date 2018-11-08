@@ -166,7 +166,7 @@ void EventLoaderCLICpix2::initialise() {
     m_eventNumber = 0;
 }
 
-StatusCode EventLoaderCLICpix2::run(Clipboard* clipboard) {
+StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {

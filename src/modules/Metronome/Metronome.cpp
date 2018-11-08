@@ -16,7 +16,7 @@ void Metronome::initialise() {
     m_eventEnd = m_eventLength;
 }
 
-StatusCode Metronome::run(Clipboard* clipboard) {
+StatusCode Metronome::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Set up the clipboard persistent storage for the current event:
     clipboard->put_persistent("eventStart", m_eventStart);

@@ -26,7 +26,7 @@ void EventLoaderEUDAQ::initialise() {
     m_eventNumber = 0;
 }
 
-StatusCode EventLoaderEUDAQ::run(Clipboard* clipboard) {
+StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Read next event from EUDAQ reader:
     const eudaq::DetectorEvent& evt = reader->Event();

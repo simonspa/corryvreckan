@@ -46,7 +46,7 @@ void EventLoaderCLICpix::initialise() {
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 4100, 0, 4100);
 }
 
-StatusCode EventLoaderCLICpix::run(Clipboard* clipboard) {
+StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {

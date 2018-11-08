@@ -22,7 +22,7 @@ namespace corryvreckan {
 
         // Functions
         void initialise();
-        StatusCode run(Clipboard* clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
     private:
         // Histograms

@@ -217,7 +217,7 @@ void EventLoaderTimepix3::initialise() {
     }
 }
 
-StatusCode EventLoaderTimepix3::run(Clipboard* clipboard) {
+StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
 
     // This will loop through each timepix3 registered, and load data from each of them. This can
     // be done in one of two ways: by taking all data in the time interval (t,t+delta), or by
@@ -336,7 +336,7 @@ void EventLoaderTimepix3::loadCalibration(std::string path, char delim, std::vec
 }
 
 // Function to load data for a given device, into the relevant container
-bool EventLoaderTimepix3::loadData(Clipboard* clipboard, Pixels* devicedata, SpidrSignals* spidrData) {
+bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard, Pixels* devicedata, SpidrSignals* spidrData) {
 
     std::string detectorID = m_detector->name();
 

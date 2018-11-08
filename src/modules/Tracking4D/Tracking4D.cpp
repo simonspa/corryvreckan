@@ -64,7 +64,7 @@ void Tracking4D::initialise() {
     }
 }
 
-StatusCode Tracking4D::run(Clipboard* clipboard) {
+StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG(DEBUG) << "Start of event";
     // Container for all clusters, and detectors in tracking

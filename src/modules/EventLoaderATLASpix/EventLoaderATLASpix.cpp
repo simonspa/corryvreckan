@@ -156,7 +156,7 @@ void EventLoaderATLASpix::initialise() {
     m_overflowcounter = 0;
 }
 
-StatusCode EventLoaderATLASpix::run(Clipboard* clipboard) {
+StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Check if event frame is defined:
     if(!clipboard->has_persistent("eventStart") || !clipboard->has_persistent("eventEnd")) {

@@ -61,7 +61,7 @@ void AnalysisEfficiency::initialise() {
                                           1);
 }
 
-StatusCode AnalysisEfficiency::run(Clipboard* clipboard) {
+StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the telescope tracks from the clipboard
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));

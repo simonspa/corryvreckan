@@ -16,7 +16,7 @@ void ImproveReferenceTimestamp::initialise() {
     m_eventNumber = 0;
 }
 
-StatusCode ImproveReferenceTimestamp::run(Clipboard* clipboard) {
+StatusCode ImproveReferenceTimestamp::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Recieved triggers
     std::vector<double> trigger_times;

@@ -109,7 +109,7 @@ void OnlineMonitor::initialise() {
     eventNumber = 0;
 }
 
-StatusCode OnlineMonitor::run(Clipboard* clipboard) {
+StatusCode OnlineMonitor::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Draw all histograms
     if(eventNumber % updateNumber == 0) {

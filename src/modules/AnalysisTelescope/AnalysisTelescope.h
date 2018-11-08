@@ -18,7 +18,7 @@ namespace corryvreckan {
 
         // Functions
         void initialise();
-        StatusCode run(Clipboard* clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
     private:
         ROOT::Math::XYZPoint closestApproach(ROOT::Math::XYZPoint position, MCParticles* particles);

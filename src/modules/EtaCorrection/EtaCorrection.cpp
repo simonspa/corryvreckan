@@ -78,7 +78,7 @@ void EtaCorrection::applyEta(Cluster* cluster) {
     cluster->setClusterCentreLocal(positionLocal);
 }
 
-StatusCode EtaCorrection::run(Clipboard* clipboard) {
+StatusCode EtaCorrection::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the clusters
     Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));

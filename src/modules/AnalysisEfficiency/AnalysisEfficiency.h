@@ -33,7 +33,7 @@ namespace corryvreckan {
          */
         AnalysisEfficiency(Configuration config, std::shared_ptr<Detector> detector);
         void initialise();
-        StatusCode run(Clipboard* clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard);
         void finalise();
 
     private:

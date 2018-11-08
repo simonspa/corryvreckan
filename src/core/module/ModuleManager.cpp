@@ -96,7 +96,7 @@ ModuleManager::ModuleManager(std::string config_file_name, std::vector<std::stri
     LOG(TRACE) << "Global log format is set to " << log_format_string;
 
     // New clipboard for storage:
-    m_clipboard = new Clipboard();
+    m_clipboard = std::make_shared<Clipboard>();
 }
 
 void ModuleManager::load() {

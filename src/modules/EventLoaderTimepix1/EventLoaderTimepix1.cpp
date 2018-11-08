@@ -75,7 +75,7 @@ void EventLoaderTimepix1::initialise() {
 }
 
 // In each event, load one frame of data from all devices
-StatusCode EventLoaderTimepix1::run(Clipboard* clipboard) {
+StatusCode EventLoaderTimepix1::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG_PROGRESS(INFO, "tpx_loader") << "\rRunning over event " << m_eventNumber;
 

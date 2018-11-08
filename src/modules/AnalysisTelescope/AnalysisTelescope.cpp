@@ -71,7 +71,7 @@ ROOT::Math::XYZPoint AnalysisTelescope::closestApproach(ROOT::Math::XYZPoint pos
     return particlePosition;
 }
 
-StatusCode AnalysisTelescope::run(Clipboard* clipboard) {
+StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks from the clipboard
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));

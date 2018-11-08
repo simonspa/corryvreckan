@@ -31,7 +31,7 @@ bool Clustering4D::sortByTime(Pixel* pixel1, Pixel* pixel2) {
     return (pixel1->timestamp() < pixel2->timestamp());
 }
 
-StatusCode Clustering4D::run(Clipboard* clipboard) {
+StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Check if they are a Timepix3
     if(m_detector->type() != "Timepix3") {

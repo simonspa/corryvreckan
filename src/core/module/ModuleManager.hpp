@@ -55,7 +55,7 @@ namespace corryvreckan {
 
     protected:
         // Member variables
-        Clipboard* m_clipboard;
+        std::shared_ptr<Clipboard> m_clipboard;
         Configuration global_config;
         std::vector<std::shared_ptr<Detector>> m_detectors;
 

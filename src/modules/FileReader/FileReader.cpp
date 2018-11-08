@@ -114,7 +114,7 @@ void FileReader::initialise() {
     m_eventNumber = 0;
 }
 
-StatusCode FileReader::run(Clipboard* clipboard) {
+StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG_PROGRESS(INFO, "file_reader") << "Running over event " << m_eventNumber;
 

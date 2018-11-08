@@ -216,7 +216,7 @@ void AnalysisCLICpix::initialise() {
     }
 }
 
-StatusCode AnalysisCLICpix::run(Clipboard* clipboard) {
+StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the clicpix clusters in this event
     Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));

@@ -22,7 +22,7 @@ namespace corryvreckan {
 
         // Functions
         void initialise();
-        StatusCode run(Clipboard* clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
     private:
         double m_eventStart, m_eventEnd, m_eventLength;

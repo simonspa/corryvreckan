@@ -10,7 +10,7 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
     spatialCut = m_config.get<XYVector>("spatialCut", 2 * m_detector->pitch());
 }
 
-StatusCode DUTAssociation::run(Clipboard* clipboard) {
+StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks from the clipboard
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));

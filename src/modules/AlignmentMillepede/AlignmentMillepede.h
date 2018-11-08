@@ -22,7 +22,7 @@ namespace corryvreckan {
 
         void initialise();
         void finalise();
-        StatusCode run(Clipboard*);
+        StatusCode run(std::shared_ptr<Clipboard>);
 
         virtual void updateGeometry();
 

@@ -55,7 +55,7 @@ void TreeWriterDUT::initialise() {
     m_outputTree->Branch("intercepts", &v_intercepts);
 }
 
-StatusCode TreeWriterDUT::run(Clipboard* clipboard) {
+StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
     // Counter for cluster event ID
     eventID++;
 

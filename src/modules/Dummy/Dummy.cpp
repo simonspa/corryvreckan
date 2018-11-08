@@ -24,7 +24,7 @@ void Dummy::initialise() {
     m_eventNumber = 0;
 }
 
-StatusCode Dummy::run(Clipboard*) {
+StatusCode Dummy::run(std::shared_ptr<Clipboard>) {
 
     // Loop over all detectors
     for(auto& detector : get_detectors()) {

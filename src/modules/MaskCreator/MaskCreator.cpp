@@ -72,7 +72,7 @@ void MaskCreator::initialise() {
     m_significanceDist = new TH1D("local_significance_dist", title.c_str(), binsOccupancy, 0, 1);
 }
 
-StatusCode MaskCreator::run(Clipboard* clipboard) {
+StatusCode MaskCreator::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
     Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));
