@@ -210,7 +210,7 @@ In addition to the constructor, each module can override the following methods:
 \begin{itemize}
 \item \parameter{initialise()}: Called after loading and constructing all modules and before starting the analysis loop.
 This method can for example be used to initialize histograms.
-\item \parameter{run(Clipboard* clipboard)}: Called for every time frame or triggered event to be analyzed in the simulation. The argument represents a pointer to the clipboard where the event data is stored.
+\item \parameter{run(std::shared_ptr<Clipboard> clipboard)}: Called for every time frame or triggered event to be analyzed in the simulation. The argument represents a pointer to the clipboard where the event data is stored.
 A status code is returned to signal the framework whether to continue processing data or to end the run.
 \item \parameter{finalise()}: Called after processing all events in the run and before destructing the module.
 Typically used to save the output data (like histograms).
