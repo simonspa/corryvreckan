@@ -7,7 +7,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        SpidrSignal() = delete;
+        SpidrSignal(){};
         SpidrSignal(std::string type, double timestamp) : Object(timestamp), m_type(type){};
 
         // Set properties
