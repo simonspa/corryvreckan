@@ -1,5 +1,5 @@
 #include "ImproveReferenceTimestamp.h"
-#include "objects/SpidrSignal.h"
+#include "objects/SpidrSignal.hpp"
 
 using namespace corryvreckan;
 using namespace std;

@@ -1,6 +1,6 @@
 #include "AnalysisPowerPulsing.h"
 #include "objects/Cluster.hpp"
-#include "objects/SpidrSignal.h"
+#include "objects/SpidrSignal.hpp"
 
 using namespace corryvreckan;
 using namespace std;

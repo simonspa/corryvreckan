@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include "core/module/Module.hpp"
 #include "objects/Pixel.hpp"
-#include "objects/SpidrSignal.h"
+#include "objects/SpidrSignal.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules
