@@ -70,15 +70,6 @@ std::shared_ptr<Detector> Module::get_reference() {
     return m_reference;
 }
 
-std::shared_ptr<Detector> Module::get_dut() {
-    auto it = find_if(m_detectors.begin(), m_detectors.end(), [](std::shared_ptr<Detector> obj) { return obj->isDUT(); });
-    if(it == m_detectors.end()) {
-        return nullptr;
-    }
-
-    return (*it);
-}
-
 bool Module::has_detector(std::string name) {
     auto it = find_if(
         m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->name() == name; });
