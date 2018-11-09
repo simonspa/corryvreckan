@@ -178,6 +178,7 @@ void OnlineMonitor::AddHisto(string canvasName, string histoName, string style, 
 
     // Add root directory to path:
     histoName = "/" + histoName;
+    style += "hist";
 
     TH1* histogram = static_cast<TH1*>(gDirectory->Get(histoName.c_str()));
     if(histogram) {
