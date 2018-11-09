@@ -238,15 +238,17 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Disentangle data types from pixel:
-            int tot, toa = -1, cnt = -1;
+            int tot = -1, toa = -1, cnt = -1;
 
             // ToT will throw if longcounter is enabled:
             try {
                 tot = cp2_pixel->GetTOT();
-                hPixelToT->Fill(tot);
-                hPixelToTMap->Fill(col, row, tot);
+                if(!discardZeroToT || tot > 0) {
+                    hPixelToT->Fill(tot);
+                    hPixelToTMap->Fill(col, row, tot);
+                }
             } catch(caribou::WrongDataFormat&) {
-                // Set ToT to one of not defined.
+                // Set ToT to one if not defined.
                 tot = 1;
             }
 
