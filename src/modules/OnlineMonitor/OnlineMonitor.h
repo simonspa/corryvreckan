@@ -17,7 +17,7 @@
 
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
-#include "objects/GuiDisplay.h"
+#include "objects/GuiDisplay.hpp"
 #include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
 

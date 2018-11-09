@@ -17,7 +17,7 @@ ENDIF()
 # Generate the ROOT dictionary
 ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/Cluster.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/GuiDisplay.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/GuiDisplay.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/KDTree.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SpidrSignal.hpp
