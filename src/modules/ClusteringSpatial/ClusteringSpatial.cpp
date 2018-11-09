@@ -26,8 +26,8 @@ void ClusteringSpatial::initialise() {
     clusterWidthRow = new TH1F("clusterWidthRow", title.c_str(), 25, 0, 25);
     title = m_detector->name() + " Cluster Width - Columns;cluster width [columns];events";
     clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, 0, 100);
-    title = m_detector->name() + " Cluster Charge;cluster charge [e];events";
-    clusterTot = new TH1F("clusterTot", title.c_str(), 10000, 0, 100000);
+    title = m_detector->name() + " Cluster Charge;cluster charge [ke];events";
+    clusterTot = new TH1F("clusterTot", title.c_str(), 300, 0, 300);
     title = m_detector->name() + " Cluster Position (Global);x [mm];y [mm];events";
     clusterPositionGlobal = new TH2F("clusterPositionGlobal",
                                      title.c_str(),
@@ -120,7 +120,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         clusterSize->Fill(static_cast<double>(cluster->size()));
         clusterWidthRow->Fill(cluster->rowWidth());
         clusterWidthColumn->Fill(cluster->columnWidth());
-        clusterTot->Fill(cluster->tot());
+        clusterTot->Fill(cluster->tot() * 1e-3);
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
 
         deviceClusters->push_back(cluster);
