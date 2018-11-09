@@ -52,6 +52,7 @@ ADD_LIBRARY(CorryvreckanObjects SHARED
     Pixel.cpp
     Cluster.cpp
     Track.cpp
+    KDTree.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx.o
 )
 
