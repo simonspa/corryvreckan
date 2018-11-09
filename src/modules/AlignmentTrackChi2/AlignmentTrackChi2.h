@@ -10,7 +10,7 @@
 #include <TProfile.h>
 
 #include "core/module/Module.hpp"
-#include "objects/Cluster.h"
+#include "objects/Cluster.hpp"
 #include "objects/Track.hpp"
 
 namespace corryvreckan {

@@ -1,5 +1,5 @@
 #include "AnalysisPowerPulsing.h"
-#include "objects/Cluster.h"
+#include "objects/Cluster.hpp"
 #include "objects/SpidrSignal.h"
 
 using namespace corryvreckan;

@@ -1,7 +1,7 @@
 #ifndef TRACK_H
 #define TRACK_H 1
 
-#include "Cluster.h"
+#include "Cluster.hpp"
 #include "Math/Point3D.h"
 #include "Math/Vector3D.h"
 

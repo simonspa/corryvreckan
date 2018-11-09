@@ -1,5 +1,5 @@
 #include "AnalysisCLICpix.h"
-#include "objects/Cluster.h"
+#include "objects/Cluster.hpp"
 #include "objects/Pixel.h"
 #include "objects/Track.hpp"
 
@@ -273,8 +273,8 @@ StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
         for(auto& cluster : (trackclusters)) {
 
             // Get the distance between this cluster and the track intercept (global)
-            double xcorr = cluster->globalX() - trackIntercept.X();
-            double ycorr = cluster->globalY() - trackIntercept.Y();
+            double xcorr = cluster->global().x() - trackIntercept.X();
+            double ycorr = cluster->global().y() - trackIntercept.Y();
 
             // Fill histograms on correlations
             hGlobalTrackDifferenceX->Fill(xcorr);
@@ -343,7 +343,7 @@ StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
             hTrackInterceptsAssociated->Fill(trackIntercept.X(), trackIntercept.Y());
             hGlobalResidualsX->Fill(xresidualBest);
             hGlobalResidualsY->Fill(yresidualBest);
-            hGlobalAssociatedClusterPositions->Fill((bestCluster)->globalX(), (bestCluster)->globalY());
+            hGlobalAssociatedClusterPositions->Fill((bestCluster)->global().x(), (bestCluster)->global().y());
             nClustersAssociated++;
             hAssociatedClusterRow->Fill((bestCluster)->row());
             hAssociatedClusterColumn->Fill((bestCluster)->column());
@@ -563,7 +563,7 @@ void AnalysisCLICpix::fillClusterHistos(Clusters* clusters) {
         // Fill cluster histograms
         hClusterSizeAll->Fill(static_cast<double>((*itc)->size()));
         hClusterTOTAll->Fill((*itc)->tot());
-        hGlobalClusterPositions->Fill((*itc)->globalX(), (*itc)->globalY());
+        hGlobalClusterPositions->Fill((*itc)->global().x(), (*itc)->global().y());
     }
 
     hClustersPerEvent->Fill(static_cast<double>(clusters->size()));

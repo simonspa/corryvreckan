@@ -4,7 +4,7 @@
 
 // Local
 #include "AlignmentMillepede.h"
-#include "objects/Cluster.h"
+#include "objects/Cluster.hpp"
 
 using namespace corryvreckan;
 using namespace std;
@@ -152,9 +152,9 @@ void AlignmentMillepede::finalise() {
             for(auto& cluster : track->clusters()) {
                 auto detectorID = cluster->detectorID();
                 auto detector = get_detector(detectorID);
-                ROOT::Math::XYZPoint pLocal(cluster->localX(), cluster->localY(), 0.);
+                ROOT::Math::XYZPoint pLocal(cluster->local().x(), cluster->local().y(), 0.);
                 const auto pGlobal = detector->localToGlobal(pLocal);
-                cluster->setClusterCentre(pGlobal.x(), pGlobal.y(), pGlobal.z());
+                cluster->setClusterCentre(pGlobal);
             }
         }
         if(converg < m_convergence)
@@ -285,9 +285,9 @@ bool AlignmentMillepede::putTrack(Track* track, const size_t nPlanes) {
         const auto normal = detector->normal();
         double nx = normal.x() / normal.z();
         double ny = normal.y() / normal.z();
-        const double xg = cluster->globalX();
-        const double yg = cluster->globalY();
-        const double zg = cluster->globalZ();
+        const double xg = cluster->global().x();
+        const double yg = cluster->global().y();
+        const double zg = cluster->global().z();
         // Calculate quasi-local coordinates.
         const double zl = zg - detector->displacement().Z();
         const double xl = xg - detector->displacement().X();

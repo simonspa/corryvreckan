@@ -160,8 +160,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 interceptX = interceptPoint.X();
                 interceptY = interceptPoint.Y();
             } else {
-                interceptX = cluster->globalX();
-                interceptY = cluster->globalY();
+                interceptX = cluster->global().x();
+                interceptY = cluster->global().y();
             }
 
             // Loop over each neighbour in time
@@ -169,8 +169,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 Cluster* newCluster = neighbours[ne];
 
                 // Calculate the distance to the previous plane's cluster/intercept
-                double distance = sqrt((interceptX - newCluster->globalX()) * (interceptX - newCluster->globalX()) +
-                                       (interceptY - newCluster->globalY()) * (interceptY - newCluster->globalY()));
+                double distance = sqrt((interceptX - newCluster->global().x()) * (interceptX - newCluster->global().x()) +
+                                       (interceptY - newCluster->global().y()) * (interceptY - newCluster->global().y()));
 
                 // If this is the closest keep it
                 if(distance < closestClusterDistance) {
@@ -212,28 +212,28 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         Clusters trackClusters = track->clusters();
         for(auto& trackCluster : trackClusters) {
             string detectorID = trackCluster->detectorID();
-            ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->globalZ());
-            residualsX[detectorID]->Fill(intercept.X() - trackCluster->globalX());
+            ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->global().z());
+            residualsX[detectorID]->Fill(intercept.X() - trackCluster->global().x());
             if(trackCluster->columnWidth() == 1)
-                residualsXwidth1[detectorID]->Fill(intercept.X() - trackCluster->globalX());
+                residualsXwidth1[detectorID]->Fill(intercept.X() - trackCluster->global().x());
             if(trackCluster->columnWidth() == 2)
-                residualsXwidth2[detectorID]->Fill(intercept.X() - trackCluster->globalX());
+                residualsXwidth2[detectorID]->Fill(intercept.X() - trackCluster->global().x());
             if(trackCluster->columnWidth() == 3)
-                residualsXwidth3[detectorID]->Fill(intercept.X() - trackCluster->globalX());
-            residualsY[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
+                residualsXwidth3[detectorID]->Fill(intercept.X() - trackCluster->global().x());
+            residualsY[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
             if(trackCluster->rowWidth() == 1)
-                residualsYwidth1[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
+                residualsYwidth1[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
             if(trackCluster->rowWidth() == 2)
-                residualsYwidth2[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
+                residualsYwidth2[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
             if(trackCluster->rowWidth() == 3)
-                residualsYwidth3[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
+                residualsYwidth3[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
         }
 
         // Improve the track timestamp by taking the average of all planes
         double avg_track_time = 0;
         for(auto& trackCluster : trackClusters) {
             avg_track_time += static_cast<double>(Units::convert(trackCluster->timestamp(), "ns"));
-            avg_track_time -= static_cast<double>(Units::convert(trackCluster->globalZ(), "mm") / (299.792458));
+            avg_track_time -= static_cast<double>(Units::convert(trackCluster->global().z(), "mm") / (299.792458));
         }
         track->setTimestamp(avg_track_time / static_cast<double>(track->nClusters()));
     }

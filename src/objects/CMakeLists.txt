@@ -16,7 +16,7 @@ ENDIF()
 
 # Generate the ROOT dictionary
 ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
-    ${CMAKE_CURRENT_SOURCE_DIR}/Cluster.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Cluster.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GuiDisplay.h
     ${CMAKE_CURRENT_SOURCE_DIR}/KDTree.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.h
@@ -50,6 +50,7 @@ ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDiction
 ADD_LIBRARY(CorryvreckanObjects SHARED
     Object.cpp
     Pixel.cpp
+    Cluster.cpp
     Track.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx.o
 )

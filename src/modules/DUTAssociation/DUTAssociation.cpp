@@ -31,9 +31,9 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
         // Loop over all DUT clusters
         for(auto& cluster : (*clusters)) {
             // Check distance between track and cluster
-            ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
-            double xdistance = intercept.X() - cluster->globalX();
-            double ydistance = intercept.Y() - cluster->globalY();
+            ROOT::Math::XYZPoint intercept = track->intercept(cluster->global().z());
+            double xdistance = intercept.X() - cluster->global().x();
+            double ydistance = intercept.Y() - cluster->global().y();
             if(abs(xdistance) > spatialCut.x() || abs(ydistance) > spatialCut.y()) {
                 LOG(DEBUG) << "Discarding DUT cluster with distance (" << abs(xdistance) << "," << abs(ydistance) << ")";
                 continue;

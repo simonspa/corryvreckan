@@ -29,12 +29,12 @@ void Track::addAssociatedCluster(Cluster* cluster) {
 double Track::distance2(Cluster* cluster) const {
 
     // Get the track X and Y at the cluster z position
-    double trackX = m_state.X() + m_direction.X() * cluster->globalZ();
-    double trackY = m_state.Y() + m_direction.Y() * cluster->globalZ();
+    double trackX = m_state.X() + m_direction.X() * cluster->global().z();
+    double trackY = m_state.Y() + m_direction.Y() * cluster->global().z();
 
     // Calculate the 1D residuals
-    double dx = (trackX - cluster->globalX());
-    double dy = (trackY - cluster->globalY());
+    double dx = (trackX - cluster->global().x());
+    double dy = (trackY - cluster->global().y());
 
     // Return the distance^2
     return (dx * dx + dy * dy);
@@ -83,9 +83,9 @@ void Track::fit() {
     // Loop over all clusters and fill the matrices
     for(auto& cluster : m_trackClusters) {
         // Get the global point details
-        double x = cluster->globalX();
-        double y = cluster->globalY();
-        double z = cluster->globalZ();
+        double x = cluster->global().x();
+        double y = cluster->global().y();
+        double z = cluster->global().z();
         double er2 = cluster->error() * cluster->error();
         // Fill the matrices
         vecx[0] += x / er2;

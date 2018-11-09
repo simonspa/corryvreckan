@@ -149,9 +149,10 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
             //      if(used[closestCluster]) continue;
 
             // Check if it is within the spatial window
-            double distance =
-                sqrt((cluster->globalX() - closestCluster->globalX()) * (cluster->globalX() - closestCluster->globalX()) +
-                     (cluster->globalY() - closestCluster->globalY()) * (cluster->globalY() - closestCluster->globalY()));
+            double distance = sqrt((cluster->global().x() - closestCluster->global().x()) *
+                                       (cluster->global().x() - closestCluster->global().x()) +
+                                   (cluster->global().y() - closestCluster->global().y()) *
+                                       (cluster->global().y() - closestCluster->global().y()));
 
             if(distance > spatialCut)
                 continue;
@@ -185,18 +186,18 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         Clusters trackClusters = track->clusters();
         for(auto& trackCluster : trackClusters) {
             string detectorID = trackCluster->detectorID();
-            ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->globalZ());
-            residualsX[detectorID]->Fill(intercept.X() - trackCluster->globalX());
-            residualsY[detectorID]->Fill(intercept.Y() - trackCluster->globalY());
+            ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->global().z());
+            residualsX[detectorID]->Fill(intercept.X() - trackCluster->global().x());
+            residualsY[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
         }
 
         // Add potential associated clusters from the DUT:
         for(auto& dutcluster : dutClusters) {
 
             // Check distance between track and cluster
-            ROOT::Math::XYZPoint intercept = track->intercept(dutcluster->globalZ());
-            double xdistance = intercept.X() - dutcluster->globalX();
-            double ydistance = intercept.Y() - dutcluster->globalY();
+            ROOT::Math::XYZPoint intercept = track->intercept(dutcluster->global().z());
+            double xdistance = intercept.X() - dutcluster->global().x();
+            double ydistance = intercept.Y() - dutcluster->global().y();
             if(abs(xdistance) > spatialCut_DUT)
                 continue;
             if(abs(ydistance) > spatialCut_DUT)

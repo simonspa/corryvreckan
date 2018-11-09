@@ -1,6 +1,6 @@
 #include "AnalysisDUT.h"
 
-#include "objects/Cluster.h"
+#include "objects/Cluster.hpp"
 #include "objects/Pixel.h"
 #include "objects/Track.hpp"
 
@@ -257,11 +257,11 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 LOG(DEBUG) << " - Looking at next DUT cluster";
 
                 // Check distance between track and cluster
-                ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
+                ROOT::Math::XYZPoint intercept = track->intercept(cluster->global().z());
 
                 // Correlation plots
-                hTrackCorrelationX->Fill(intercept.X() - cluster->globalX());
-                hTrackCorrelationY->Fill(intercept.Y() - cluster->globalY());
+                hTrackCorrelationX->Fill(intercept.X() - cluster->global().x());
+                hTrackCorrelationY->Fill(intercept.Y() - cluster->global().y());
                 hTrackCorrelationTime->Fill(track->timestamp() - cluster->timestamp());
 
                 auto associated_clusters = track->associatedClusters();
@@ -271,8 +271,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 }
 
                 LOG(DEBUG) << "Found associated cluster";
-                double xdistance = intercept.X() - cluster->globalX();
-                double ydistance = intercept.Y() - cluster->globalY();
+                double xdistance = intercept.X() - cluster->global().x();
+                double ydistance = intercept.Y() - cluster->global().y();
                 double xabsdistance = fabs(xdistance);
                 double yabsdistance = fabs(ydistance);
 

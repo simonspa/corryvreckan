@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "core/module/Module.hpp"
-#include "objects/Cluster.h"
+#include "objects/Cluster.hpp"
 #include "objects/Pixel.h"
 #include "objects/Track.hpp"
 

@@ -1,5 +1,5 @@
 #include "AnalysisTelescope.h"
-#include "objects/Cluster.h"
+#include "objects/Cluster.hpp"
 #include "objects/MCParticle.h"
 
 #include <TDirectory.h>
@@ -95,12 +95,12 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             auto name = detector->name();
-            ROOT::Math::XYZPoint intercept = track->intercept(cluster->globalZ());
+            ROOT::Math::XYZPoint intercept = track->intercept(cluster->global().z());
             auto interceptLocal = detector->globalToLocal(intercept);
-            telescopeResidualsLocalX[name]->Fill(cluster->localX() - interceptLocal.X());
-            telescopeResidualsLocalY[name]->Fill(cluster->localY() - interceptLocal.Y());
-            telescopeResidualsX[name]->Fill(cluster->globalX() - intercept.X());
-            telescopeResidualsY[name]->Fill(cluster->globalY() - intercept.Y());
+            telescopeResidualsLocalX[name]->Fill(cluster->local().x() - interceptLocal.X());
+            telescopeResidualsLocalY[name]->Fill(cluster->local().y() - interceptLocal.Y());
+            telescopeResidualsX[name]->Fill(cluster->global().x() - intercept.X());
+            telescopeResidualsY[name]->Fill(cluster->global().y() - intercept.Y());
 
             // Get the MC particles from the clipboard
             MCParticles* mcParticles = reinterpret_cast<MCParticles*>(clipboard->get(name, "mcparticles"));
@@ -109,8 +109,8 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             ROOT::Math::XYZPoint particlePosition = closestApproach(cluster->local(), mcParticles);
-            telescopeMCresidualsLocalX[name]->Fill(cluster->localX() + detector->size().X() / 2 - particlePosition.X());
-            telescopeMCresidualsLocalY[name]->Fill(cluster->localY() + detector->size().Y() / 2 - particlePosition.Y());
+            telescopeMCresidualsLocalX[name]->Fill(cluster->local().x() + detector->size().X() / 2 - particlePosition.X());
+            telescopeMCresidualsLocalY[name]->Fill(cluster->local().y() + detector->size().Y() / 2 - particlePosition.Y());
             telescopeMCresidualsX[name]->Fill(interceptLocal.X() + detector->size().X() / 2 - particlePosition.X());
             telescopeMCresidualsY[name]->Fill(interceptLocal.Y() + detector->size().Y() / 2 - particlePosition.Y());
         }

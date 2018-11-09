@@ -9,7 +9,7 @@
 
 #include "AnalysisEfficiency.h"
 
-#include "objects/Cluster.h"
+#include "objects/Cluster.hpp"
 #include "objects/Pixel.h"
 #include "objects/Track.hpp"
 

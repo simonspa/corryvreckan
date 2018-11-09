@@ -121,7 +121,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         clusterWidthRow->Fill(cluster->rowWidth());
         clusterWidthColumn->Fill(cluster->columnWidth());
         clusterTot->Fill(cluster->tot());
-        clusterPositionGlobal->Fill(cluster->globalX(), cluster->globalY());
+        clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
 
         deviceClusters->push_back(cluster);
     }
@@ -179,6 +179,6 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
     cluster->setError(m_detector->resolution());
 
     cluster->setDetectorID(detectorID);
-    cluster->setClusterCentre(positionGlobal.X(), positionGlobal.Y(), positionGlobal.Z());
-    cluster->setClusterCentreLocal(positionLocal.X(), positionLocal.Y(), positionLocal.Z());
+    cluster->setClusterCentre(positionGlobal);
+    cluster->setClusterCentreLocal(positionLocal);
 }

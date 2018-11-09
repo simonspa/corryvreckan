@@ -74,11 +74,11 @@ StatusCode Prealignment::run(std::shared_ptr<Clipboard> clipboard) {
 
             // Correlation plots
             if(abs(timeDifference) < timingCut) {
-                correlationX->Fill(refCluster->globalX() - cluster->globalX());
-                correlationX2D->Fill(cluster->globalX(), refCluster->globalX());
+                correlationX->Fill(refCluster->global().x() - cluster->global().x());
+                correlationX2D->Fill(cluster->global().x(), refCluster->global().x());
                 correlationX2Dlocal->Fill(cluster->column(), refCluster->column());
-                correlationY->Fill(refCluster->globalY() - cluster->globalY());
-                correlationY2D->Fill(cluster->globalY(), refCluster->globalY());
+                correlationY->Fill(refCluster->global().y() - cluster->global().y());
+                correlationY2D->Fill(cluster->global().y(), refCluster->global().y());
                 correlationY2Dlocal->Fill(cluster->row(), refCluster->row());
             }
         }

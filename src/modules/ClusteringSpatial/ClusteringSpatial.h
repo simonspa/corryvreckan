@@ -6,7 +6,7 @@
 #include <TH2F.h>
 #include <iostream>
 #include "core/module/Module.hpp"
-#include "objects/Cluster.h"
+#include "objects/Cluster.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules

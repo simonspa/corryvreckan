@@ -2,7 +2,7 @@
 #define KDTREE__H 1
 
 #include <map>
-#include "Cluster.h"
+#include "Cluster.hpp"
 #include "Object.hpp"
 #include "TKDTree.h"
 #include "core/utils/log.h"
@@ -66,8 +66,8 @@ namespace corryvreckan {
 
             // Fill the x and y data from the clusters
             for(size_t cluster = 0; cluster < npoints; cluster++) {
-                xpositions[cluster] = clusters[cluster]->globalX();
-                ypositions[cluster] = clusters[cluster]->globalY();
+                xpositions[cluster] = clusters[cluster]->global().x();
+                ypositions[cluster] = clusters[cluster]->global().y();
                 iteratorNumber[clusters[cluster]] = cluster;
             }
 
@@ -108,8 +108,8 @@ namespace corryvreckan {
             // Get iterators of all clusters within the time window
             std::vector<int> results;
             double position[2];
-            position[0] = cluster->globalX();
-            position[1] = cluster->globalY();
+            position[0] = cluster->global().x();
+            position[1] = cluster->global().y();
             positionKdtree->FindInRange(position, window, results);
 
             // Turn this into a vector of clusters
@@ -128,8 +128,8 @@ namespace corryvreckan {
             int result;
             double distance;
             double position[2];
-            position[0] = cluster->globalX();
-            position[1] = cluster->globalY();
+            position[0] = cluster->global().x();
+            position[1] = cluster->global().y();
             positionKdtree->FindNearestNeighbors(position, 1, &result, &distance);
 
             // Return the cluster
