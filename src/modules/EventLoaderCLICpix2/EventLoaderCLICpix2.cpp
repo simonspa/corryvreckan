@@ -112,26 +112,29 @@ void EventLoaderCLICpix2::initialise() {
     }
 
     // Make histograms for debugging
+    std::string title = m_detector->name() + " Hit map;x [px];y [px];pixels";
     hHitMap = new TH2F("hitMap",
-                       "hitMap",
+                       title.c_str(),
                        m_detector->nPixelsX(),
                        0,
                        m_detector->nPixelsX(),
                        m_detector->nPixelsY(),
                        0,
                        m_detector->nPixelsY());
+    title = m_detector->name() + " Map of discarded hits;x [px];y [px];pixels";
     hHitMapDiscarded = new TH2F("hitMapDiscarded",
-                                "hitMapDiscarded",
+                                title.c_str(),
                                 m_detector->nPixelsX(),
                                 0,
                                 m_detector->nPixelsX(),
                                 m_detector->nPixelsY(),
                                 0,
                                 m_detector->nPixelsY());
-
+    title = m_detector->name() + " TOT spectrum;TOT;pixels";
     hPixelToT = new TH1F("pixelToT", "pixelToT", 32, 0, 31);
+    title = m_detector->name() + " TOT map;x [px];y [px];TOT";
     hPixelToTMap = new TProfile2D("pixelToTMap",
-                                  "pixelToTMap",
+                                  title.c_str(),
                                   m_detector->nPixelsX(),
                                   0,
                                   m_detector->nPixelsX(),
@@ -140,12 +143,16 @@ void EventLoaderCLICpix2::initialise() {
                                   m_detector->nPixelsY(),
                                   0,
                                   maxcounter - 1);
+    title = m_detector->name() + " TOA spectrum;TOA;pixels";
     hPixelToA = new TH1F("pixelToA", "pixelToA", maxcounter, 0, maxcounter - 1);
+    title = m_detector->name() + " CNT spectrum;CNT;pixels";
     hPixelCnt = new TH1F("pixelCnt", "pixelCnt", maxcounter, 0, maxcounter - 1);
+    title = m_detector->name() + " Pixel multiplicity;pixels;frames";
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 1000, 0, 1000);
 
+    title = m_detector->name() + " Map of masked pixels;x [px];y [px];mask code";
     hMaskMap = new TH2F("maskMap",
-                        "maskMap",
+                        title.c_str(),
                         m_detector->nPixelsX(),
                         0,
                         m_detector->nPixelsX(),
