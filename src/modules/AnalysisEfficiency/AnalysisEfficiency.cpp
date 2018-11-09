@@ -28,9 +28,10 @@ void AnalysisEfficiency::initialise() {
     auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
     auto pitch_y = static_cast<double>(Units::convert(m_detector->pitch().Y(), "um"));
 
-    // Efficiency maps
-    hPixelEfficiencyMap = new TProfile2D("hPixelEfficiencyMap",
-                                         "hPixelEfficiencyMap",
+    std::string title = m_detector->name() + " Pixel efficiency map;x_{track} mod " + std::to_string(pitch_x) +
+                        "#mum;y_{track} mod " + std::to_string(pitch_y) + "#mum;efficiency";
+    hPixelEfficiencyMap = new TProfile2D("pixelEfficiencyMap",
+                                         title.c_str(),
                                          static_cast<int>(pitch_x),
                                          0,
                                          pitch_x,
@@ -39,8 +40,9 @@ void AnalysisEfficiency::initialise() {
                                          pitch_y,
                                          0,
                                          1);
-    hChipEfficiencyMap = new TProfile2D("hChipEfficiencyMap",
-                                        "hChipEfficiencyMap",
+    title = m_detector->name() + " Chip efficiency map;x [px];y [px];efficiency";
+    hChipEfficiencyMap = new TProfile2D("chipEfficiencyMap",
+                                        title.c_str(),
                                         m_detector->nPixelsX(),
                                         0,
                                         m_detector->nPixelsX(),
@@ -49,8 +51,9 @@ void AnalysisEfficiency::initialise() {
                                         m_detector->nPixelsY(),
                                         0,
                                         1);
-    hGlobalEfficiencyMap = new TProfile2D("hGlobalEfficiencyMap",
-                                          "hGlobalEfficiencyMap",
+    title = m_detector->name() + " Global efficiency map;x [mm];y [mm];efficiency";
+    hGlobalEfficiencyMap = new TProfile2D("globalEfficiencyMap",
+                                          title.c_str(),
                                           300,
                                           -1.5 * m_detector->size().X(),
                                           1.5 * m_detector->size().X(),
