@@ -82,6 +82,11 @@ namespace corryvreckan {
         // Exit the monitoring
         inline void Exit() { raise(SIGINT); }
 
+        inline void Update() {
+            canvas->GetCanvas()->Paint();
+            canvas->GetCanvas()->Update();
+        }
+
         // ROOT I/O class definition - update version number when you change this class!
         ClassDef(GuiDisplay, 2)
     };

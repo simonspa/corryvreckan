@@ -34,7 +34,6 @@ namespace corryvreckan {
         // Functions
         void initialise();
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        void finalise();
 
         // Application to allow display persistancy
         TApplication* app;

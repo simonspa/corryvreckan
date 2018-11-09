@@ -8,7 +8,7 @@ using namespace std;
 OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
     canvasTitle = m_config.get<std::string>("canvasTitle", "Corryvreckan Testbeam Monitor");
-    updateNumber = m_config.get<int>("update", 500);
+    updateNumber = m_config.get<int>("update", 200);
 
     // Set up overview plots:
     canvas_overview = m_config.getMatrix<std::string>("Overview",
@@ -109,30 +109,18 @@ void OnlineMonitor::initialise() {
     eventNumber = 0;
 }
 
-StatusCode OnlineMonitor::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode OnlineMonitor::run(std::shared_ptr<Clipboard>) {
 
     // Draw all histograms
     if(eventNumber % updateNumber == 0) {
-        gui->canvas->GetCanvas()->Paint();
-        gui->canvas->GetCanvas()->Update();
+        gui->Update();
         eventNumber++;
     }
     gSystem->ProcessEvents();
 
-    // Get the tracks from the clipboard
-    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
-    if(tracks == nullptr) {
-        return Success;
-    }
-
-    // Otherwise increase the event number
+    // Increase the event number
     eventNumber++;
     return Success;
-}
-
-void OnlineMonitor::finalise() {
-
-    LOG(DEBUG) << "Analysed " << eventNumber << " events";
 }
 
 void OnlineMonitor::AddCanvas(std::string canvas_title, Matrix<std::string> canvas_plots) {
