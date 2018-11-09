@@ -2,7 +2,7 @@
 #include "Cluster.h"
 #include "MCParticle.h"
 #include "Pixel.h"
-#include "Track.h"
+#include "Track.hpp"
 
 #include "core/utils/exceptions.h"
 

@@ -22,7 +22,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/utils/ROOT.h"
 #include "core/utils/log.h"
-#include "objects/Track.h"
+#include "objects/Track.hpp"
 
 namespace corryvreckan {
     using namespace ROOT::Math;

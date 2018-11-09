@@ -11,7 +11,7 @@
 
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
-#include "objects/Track.h"
+#include "objects/Track.hpp"
 
 using namespace corryvreckan;
 

@@ -8,7 +8,7 @@
 #include "core/module/Module.hpp"
 #include "objects/Cluster.h"
 #include "objects/Pixel.h"
-#include "objects/Track.h"
+#include "objects/Track.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules

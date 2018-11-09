@@ -19,7 +19,7 @@
 #include "objects/Cluster.h"
 #include "objects/GuiDisplay.h"
 #include "objects/Pixel.h"
-#include "objects/Track.h"
+#include "objects/Track.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules
