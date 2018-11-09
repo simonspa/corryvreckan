@@ -22,7 +22,7 @@ ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.h
     ${CMAKE_CURRENT_SOURCE_DIR}/SpidrSignal.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Object.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Track.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Track.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.h
     LINKDEF
     ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
@@ -50,6 +50,7 @@ ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDiction
 ADD_LIBRARY(CorryvreckanObjects SHARED
     Object.cpp
     Pixel.cpp
+    Track.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx.o
 )
 

@@ -225,16 +225,16 @@ Configuration Detector::getConfiguration() {
 PositionVector3D<Cartesian3D<double>> Detector::getIntercept(const Track* track) {
 
     // Get the distance from the plane to the track initial state
-    double distance = (m_origin.X() - track->m_state.X()) * m_normal.X();
-    distance += (m_origin.Y() - track->m_state.Y()) * m_normal.Y();
-    distance += (m_origin.Z() - track->m_state.Z()) * m_normal.Z();
-    distance /= (track->m_direction.X() * m_normal.X() + track->m_direction.Y() * m_normal.Y() +
-                 track->m_direction.Z() * m_normal.Z());
+    double distance = (m_origin.X() - track->state().X()) * m_normal.X();
+    distance += (m_origin.Y() - track->state().Y()) * m_normal.Y();
+    distance += (m_origin.Z() - track->state().Z()) * m_normal.Z();
+    distance /= (track->direction().X() * m_normal.X() + track->direction().Y() * m_normal.Y() +
+                 track->direction().Z() * m_normal.Z());
 
     // Propagate the track
-    PositionVector3D<Cartesian3D<double>> globalIntercept(track->m_state.X() + distance * track->m_direction.X(),
-                                                          track->m_state.Y() + distance * track->m_direction.Y(),
-                                                          track->m_state.Z() + distance * track->m_direction.Z());
+    PositionVector3D<Cartesian3D<double>> globalIntercept(track->state().X() + distance * track->direction().X(),
+                                                          track->state().Y() + distance * track->direction().Y(),
+                                                          track->state().Z() + distance * track->direction().Z());
     return globalIntercept;
 }
 

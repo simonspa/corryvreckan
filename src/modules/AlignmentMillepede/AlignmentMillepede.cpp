@@ -273,8 +273,8 @@ bool AlignmentMillepede::putTrack(Track* track, const size_t nPlanes) {
 
     /// Refit the track for the reference states.
     track->fit();
-    const double tx = track->m_state.X();
-    const double ty = track->m_state.Y();
+    const double tx = track->state().X();
+    const double ty = track->state().Y();
 
     // Iterate over each cluster on the track.
     for(auto& cluster : track->clusters()) {
