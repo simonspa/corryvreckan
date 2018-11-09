@@ -1,6 +1,6 @@
 #include "TrackingSpatial.h"
 #include <TDirectory.h>
-#include "objects/KDTree.h"
+#include "objects/KDTree.hpp"
 
 using namespace corryvreckan;
 using namespace std;

@@ -4,7 +4,7 @@
 #include <TH1F.h>
 #include <iostream>
 #include "core/module/Module.hpp"
-#include "objects/MCParticle.h"
+#include "objects/MCParticle.hpp"
 #include "objects/Track.hpp"
 
 namespace corryvreckan {

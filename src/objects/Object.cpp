@@ -1,6 +1,6 @@
 #include "Object.hpp"
 #include "Cluster.hpp"
-#include "MCParticle.h"
+#include "MCParticle.hpp"
 #include "Pixel.hpp"
 #include "Track.hpp"
 

@@ -1,6 +1,6 @@
 #include "AnalysisTelescope.h"
 #include "objects/Cluster.hpp"
-#include "objects/MCParticle.h"
+#include "objects/MCParticle.hpp"
 
 #include <TDirectory.h>
 
