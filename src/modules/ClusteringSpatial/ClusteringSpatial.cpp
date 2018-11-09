@@ -58,10 +58,12 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     int nRows = m_detector->nPixelsY();
     int nCols = m_detector->nPixelsX();
 
-    // Fill the hitmap with pixels
-    for(auto& pixel : (*pixels)) {
+    // Pre-fill the hitmap with pixels
+    for(auto pixel : (*pixels)) {
         hitmap[pixel->row()][pixel->column()] = pixel;
+    }
 
+    for(auto pixel : (*pixels)) {
         if(used[pixel]) {
             continue;
         }
@@ -75,8 +77,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         // Somewhere to store found neighbours
         Pixels neighbours;
 
-        // Now we check the neighbours and keep adding more hits while there are
-        // connected pixels
+        // Now we check the neighbours and keep adding more hits while there are connected pixels
         while(addedPixel) {
 
             addedPixel = false;
@@ -89,8 +90,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
                     if(col < 0 || col >= nCols)
                         continue;
 
-                    // If no pixel in this position, or is already in a cluster, do
-                    // nothing
+                    // If no pixel in this position, or is already in a cluster, do nothing
                     if(!hitmap[row][col])
                         continue;
                     if(used[hitmap[row][col]])
