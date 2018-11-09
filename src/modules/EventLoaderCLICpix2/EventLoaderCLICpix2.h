@@ -14,7 +14,7 @@
 
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
-#include "objects/Pixel.h"
+#include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
 
 #include "CLICpix2/clicpix2_pixels.hpp"

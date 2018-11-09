@@ -1,5 +1,5 @@
 #include "ClusteringSpatial.h"
-#include "objects/Pixel.h"
+#include "objects/Pixel.hpp"
 
 using namespace corryvreckan;
 using namespace std;

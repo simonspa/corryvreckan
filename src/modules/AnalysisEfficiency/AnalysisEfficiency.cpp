@@ -10,7 +10,7 @@
 #include "AnalysisEfficiency.h"
 
 #include "objects/Cluster.hpp"
-#include "objects/Pixel.h"
+#include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
 
 using namespace corryvreckan;

@@ -1,7 +1,7 @@
 #include "Object.hpp"
 #include "Cluster.hpp"
 #include "MCParticle.h"
-#include "Pixel.h"
+#include "Pixel.hpp"
 #include "Track.hpp"
 
 #include "core/utils/exceptions.h"

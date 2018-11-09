@@ -4,7 +4,8 @@
 #include <Math/Point3D.h>
 #include <Math/Vector2D.h>
 #include <iostream>
-#include "Pixel.h"
+
+#include "Pixel.hpp"
 
 /*
 

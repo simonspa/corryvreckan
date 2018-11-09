@@ -5,7 +5,7 @@
 #include <TH2D.h>
 #include <iostream>
 #include "core/module/Module.hpp"
-#include "objects/Pixel.h"
+#include "objects/Pixel.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules

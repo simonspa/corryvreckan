@@ -6,7 +6,7 @@
 #include <TH2F.h>
 #include <stdio.h>
 #include "core/module/Module.hpp"
-#include "objects/Pixel.h"
+#include "objects/Pixel.hpp"
 #include "objects/SpidrSignal.h"
 
 namespace corryvreckan {
