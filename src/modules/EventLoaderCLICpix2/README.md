@@ -14,7 +14,7 @@ The data is decoded using the CLICpix2 data decoder shipped with the Peary DAQ f
 
 ### Dependencies
 
-This module is not built by default since it requires an installation of [Peary](https://gitlab.cern.ch/Caribou/peary) with its CLICPix2 component built. 
+This module is not built by default since it requires an installation of [Peary](https://gitlab.cern.ch/Caribou/peary) with its CLICPix2 component built.
 This is used for on-the-fly decoding of raw data.
 In order to build this module, Peary should be made available and the module should be explicitely switched on:
 
@@ -29,7 +29,7 @@ cmake -DBUILD_eventLoaderCLICpix2=ON ..
 
 ### Plots produced
 * 2D Hit map
-* 2D maps of masked pixels, encoded with online masked (value 1) and offline masked (value 2)
+* 2D maps of masked pixels, encoded with online masked (value 1) and offline masked (value 2), or in both (value 3)
 * 1D Pixel ToT histogram (if value is available)
 * 1D Pixel ToA histogram (if value is available)
 * 1D Pixel particle count histogram (if value is available)

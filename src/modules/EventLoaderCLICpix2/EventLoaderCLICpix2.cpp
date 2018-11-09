@@ -156,7 +156,8 @@ void EventLoaderCLICpix2::initialise() {
         for(int row = 0; row < m_detector->nPixelsY(); row++) {
             if(m_detector->masked(column, row)) {
                 hMaskMap->Fill(column, row, 2);
-            } else if(matrix_config[std::make_pair(row, column)].GetMask()) {
+            }
+            if(matrix_config[std::make_pair(row, column)].GetMask()) {
                 hMaskMap->Fill(column, row, 1);
             }
         }
