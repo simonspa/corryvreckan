@@ -150,6 +150,9 @@ void EventLoaderCLICpix2::initialise() {
     title = m_detector->name() + " Pixel multiplicity;pixels;frames";
     hPixelsPerFrame = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
 
+    title = m_detector->name() + " Timewalk;TOA;TOT;pixels";
+    hTimeWalk = new TH2F("timewalk", title.c_str(), maxcounter, 0, maxcounter - 1, 32, 0, 31);
+
     title = m_detector->name() + " Map of masked pixels;x [px];y [px];mask code";
     hMaskMap = new TH2F("maskMap",
                         title.c_str(),
@@ -276,6 +279,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
                 timestamp = shutterStopTime - static_cast<double>(toa) / 0.1 + m_detector->timingOffset();
                 if(!discardZeroToT || tot > 0) {
                     hPixelToA->Fill(toa);
+                    hTimeWalk->Fill(toa, tot);
                 }
             }
 
