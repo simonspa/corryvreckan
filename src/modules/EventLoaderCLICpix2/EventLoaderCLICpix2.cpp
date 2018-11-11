@@ -271,8 +271,9 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
                 }
             } else {
                 toa = cp2_pixel->GetTOA();
-                // Convert ToA form 100MHz clk into ns and sutract form shutterStopTime:
-                timestamp = shutterStopTime - static_cast<double>(toa) / 0.1;
+                // Convert ToA form 100MHz clk into ns and sutract from shutterStopTime. Then add configured detector time
+                // offset
+                timestamp = shutterStopTime - static_cast<double>(toa) / 0.1 + m_detector->timingOffset();
                 if(!discardZeroToT || tot > 0) {
                     hPixelToA->Fill(toa);
                 }
