@@ -260,16 +260,21 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
                 tot = 1;
             }
 
+            // Time defaults ot rising shutter edge:
+            double timestamp = shutterStartTime;
+
             // Decide whether information is counter of ToA
             if(matrix_config[std::make_pair(row, col)].GetCountingMode()) {
                 cnt = cp2_pixel->GetCounter();
                 hPixelCnt->Fill(cnt);
             } else {
                 toa = cp2_pixel->GetTOA();
+                // Convert ToA form 100MHz clk into ns and sutract form shutterStopTime:
+                timestamp = shutterStopTime - static_cast<double>(toa) / 0.1;
                 hPixelToA->Fill(toa);
             }
 
-            Pixel* pixel = new Pixel(m_detector->name(), row, col, tot, shutterStartTime);
+            Pixel* pixel = new Pixel(m_detector->name(), row, col, tot, timestamp);
 
             if(tot == 0 && discardZeroToT) {
                 hHitMapDiscarded->Fill(col, row);
