@@ -8,9 +8,10 @@
 #pragma link off all functions;
 
 // Missing ROOT objects
-#pragma link C++ class ROOT::Math::Cartesian2D < unsigned int > +;
-#pragma link C++ class ROOT::Math::DisplacementVector2D < ROOT::Math::Cartesian2D < unsigned int >,                         \
-    ROOT::Math::DefaultCoordinateSystemTag > +;
+#pragma link C++ class ROOT::Math::Cartesian2D < unsigned int> + ;
+#pragma link C++ class ROOT::Math::DisplacementVector2D < ROOT::Math::Cartesian2D < unsigned int>,                          \
+    ROOT::Math::DefaultCoordinateSystemTag> +                                                                               \
+    ;
 
 // AP2 objects
 #pragma link C++ class corryvreckan::Object + ;
@@ -23,4 +24,4 @@
 #pragma link C++ class corryvreckan::MCParticle + ;
 
 // Vector of Object for internal storage
-#pragma link C++ class std::vector < corryvreckan::Object* > +;
+#pragma link C++ class std::vector < corryvreckan::Object*> + ;
