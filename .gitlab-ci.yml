@@ -319,6 +319,26 @@ deploy-eos:
     before_script: []
     after_script: []
 
+deploy-cvmfs:
+    stage: deployment
+    dependencies:
+        - pkg:cc7-gcc
+        - pkg:slc6-gcc
+    variables:
+        GIT_STRATEGY: none
+    tags:
+        - cvmfs-deploy
+    only:
+        - tags
+        - schedules # Only execute this on scheduled "nightly" pipelines
+    script:
+        - ./.gitlab-ci.d/download_artifacts.py $API_TOKEN $CI_PROJECT_ID $CI_PIPELINE_ID
+        - export RUNNER_LOCATION=$(pwd)
+        - if [ -z ${CI_COMMIT_TAG} ]; then export BUILD_PATH='latest'; else export BUILD_PATH=${CI_COMMIT_TAG}; fi
+        - sudo -u cvclicdp -i $RUNNER_LOCATION/.gitlab-ci.d/gitlab_deploy.sh $RUNNER_LOCATION $BUILD_PATH
+        - rm -f corryvreckan-*.tar.gz
+    retry: 1
+
 deploy-docker-latest:
     stage: deployment
     tags:
