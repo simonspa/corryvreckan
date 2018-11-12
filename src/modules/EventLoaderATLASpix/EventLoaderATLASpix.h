@@ -73,6 +73,7 @@ namespace corryvreckan {
         std::string m_calibrationFile;
         double m_startTime;
         bool m_toaMode;
+        bool m_detectorBusy;
         bool m_legacyFormat;
         double m_clockCycle;
         // int m_clkdivendM;

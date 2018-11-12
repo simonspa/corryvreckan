@@ -39,6 +39,8 @@ void EventLoaderATLASpix::initialise() {
 
     uint32_t datain;
 
+    m_detectorBusy = false;
+
     // File structure is RunX/ATLASpix/data.dat
     // Assume that the ATLASpix is the DUT (if running this algorithm
 
@@ -84,9 +86,11 @@ void EventLoaderATLASpix::initialise() {
             LOG(STATUS) << "Found T0 event at position " << m_file.tellg() << ". Skipping all data before this event.";
             oldpos = m_file.tellg();
             unsigned long ts3 = datain & 0x00FFFFFF;
-            std::streampos tmppos = static_cast<int>(oldpos) - 8;
-            m_file.seekg(tmppos);
-            while(static_cast<int>(m_file.tellg()) > 0) {
+            old_fpga_ts = (static_cast<unsigned long long>(ts3));
+            int checkpos = static_cast<int>(oldpos) - 8;
+            while(checkpos > 0) {
+                std::streampos tmppos = checkpos;
+                m_file.seekg(tmppos);
                 m_file.read(reinterpret_cast<char*>(&datain), 4);
                 unsigned int message_type = (datain >> 24);
                 // TS2
