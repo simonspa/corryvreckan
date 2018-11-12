@@ -101,6 +101,20 @@ There are htree different kind of modules which can be defined:
 The type of module determines the constructor used, the internal unique name and the supported configuration parameters.
 For more details about the instantiation logic for the different types of modules, see Section~\ref{sec:module_instantiation}.
 
+\subsection{Module Status Codes}
+
+The \command{run()} function of each module returns a status code to the module manager, indicating the status of the module.
+These codes can be used to e.g. request an end of the current run, or to signal problems in data processing.
+The following status codes are currently supported:
+
+\begin{description}
+    \item{\command{Success}}: Indicates that the module successfully finished processing all data. The framework continues with the next module.
+    \item{\command{NoData}}: Indicates that the respective module did not find any data to process. The framework continues with the next module.
+    \item{\command{DeadTime}}: Indicates that the detector handled by the respective module currently is in data acquisition dead time. The framework skips all remaining modules for this event and continues with the subsequent event. By this, measurements such as efficiency are not affected by known inefficiencies during detector dead times.
+    \item{\command{EndRun}}: Allows the module to request a premature end of the run. This can e.g.\ be used by alignment modules to stop the run after they have accumulated enough tracks for the alignment procedure. The framework executes all modules for the current event and then enters the finalization stage.
+    \item{\command{Failure}}: Indicates that there was a severe problem when processing data in the respective module. The framework skips all remaining modules for this event end enters the finalization stage.
+\end{description}
+
 \subsection{Files of a Module}
 \label{sec:module_files}
 Every module directory should at minimum contain the following documents (with \texttt{ModuleName} replaced by the name of the module):

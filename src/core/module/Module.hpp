@@ -22,18 +22,14 @@ namespace corryvreckan {
      * @brief Flags to signal the status of a module processing a given event
      *
      * These flags are to be used as return values for the Module::run() function to signal the framework the outcome of the
-     * event processing. Here, three different states are supported:
-     * - Success: the event processing finished successfully and the framework should continue processing this event with the
-     * next module.
-     * - NoData: there was no data found to process by this module. The framework should skip all following modules and
-     * proceed with the next event.
-     * - Failure: the module failed to process the event correctly or requests an end of the event processing for other
-     * reasons. The framework should stop processing events and call Module::finalise for all modules.
+     * event processing.
      */
-    enum StatusCode {
-        Success,
-        NoData,
-        Failure,
+    enum class StatusCode {
+        Success,  // < Module finished processing data successfully
+        NoData,   // < Module did not receive any data to process
+        DeadTime, // < Module indicated that the respective detector is in deadtime
+        EndRun,   // < Module requested pemature end of the run
+        Failure,  // < Processing of data failed
     };
 
     /** Base class for all modules
