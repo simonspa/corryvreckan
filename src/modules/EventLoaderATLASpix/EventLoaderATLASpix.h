@@ -56,6 +56,7 @@ namespace corryvreckan {
         std::streampos oldpos;
         unsigned long long old_readout_ts;
         unsigned long long old_fpga_ts;
+        unsigned long long busy_readout_ts;
         // int ts1Range;
         int ts2Range;
 
@@ -73,6 +74,7 @@ namespace corryvreckan {
         std::string m_calibrationFile;
         double m_startTime;
         bool m_toaMode;
+        bool m_detectorBusy;
         bool m_legacyFormat;
         double m_clockCycle;
         // int m_clkdivendM;
