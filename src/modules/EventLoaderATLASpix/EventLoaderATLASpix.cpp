@@ -88,7 +88,7 @@ void EventLoaderATLASpix::initialise() {
             unsigned long ts3 = datain & 0x00FFFFFF;
             old_fpga_ts = (static_cast<unsigned long long>(ts3));
             int checkpos = static_cast<int>(oldpos) - 8;
-            while(checkpos > 0) {
+            while(checkpos >= 0) {
                 std::streampos tmppos = checkpos;
                 m_file.seekg(tmppos);
                 m_file.read(reinterpret_cast<char*>(&datain), 4);
@@ -106,8 +106,7 @@ void EventLoaderATLASpix::initialise() {
                                      << ts3 << ". Some timestamps at the begining might be corrupted.";
                     }
                 }
-                tmppos = static_cast<int>(tmppos) - 4;
-                m_file.seekg(tmppos);
+                checkpos = static_cast<int>(tmppos) - 4;
             }
             m_file.seekg(oldpos);
             break;
@@ -304,9 +303,15 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
                            << Units::display(start_time, {"s", "us", "ns"}) << ")";
                 continue;
             }
-
             // this window still contains data in the event window, do not stop processing
             window_end = false;
+            if(m_detectorBusy && (busy_readout_ts < readout_ts)) {
+                LOG(WARNING) << "ATLASPix went BUSY between "
+                             << Units::display((m_clockCycle * static_cast<double>(busy_readout_ts)), {"s", "us", "ns"})
+                             << " and "
+                             << Units::display((m_clockCycle * static_cast<double>(readout_ts)), {"s", "us", "ns"}) << ".";
+                m_detectorBusy = false;
+            }
             data_pixel_++;
             // If this pixel is masked, do not save it
             if(m_detector->masked(col, row)) {
@@ -435,7 +440,8 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
             // BUSY was asserted due to FIFO_FULL + 24 LSBs of FPGA timestamp when it happened
             case 0b00000010:
                 m_identifiers["BUSY_ASSERT"]++;
-
+                busy_readout_ts = readout_ts;
+                m_detectorBusy = true;
                 // LOG(DEBUG) << "BUSY_ASSERTED\t" << ((datain)&0xFFFFFF);
                 break;
 
