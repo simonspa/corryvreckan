@@ -90,7 +90,7 @@ Another (additional) location to write to can be specified on the command line u
 These modules are located in the subdirectory \textit{src/modules/} of the repository, with the name of the directory the unique name of the module.
 The suggested naming scheme is CamelCase, thus an example module name would be \textit{OnlineMonitor}.
 A \emph{specifying} part of a module name should precede the \emph{functional} part of the name, e.g.\ \textit{EventLoaderCLICpix2} rather than \textit{CLICpix2EventLoader}.
-There are htree different kind of modules which can be defined:
+There are three different kind of modules which can be defined:
 \begin{itemize}
     \item \textbf{Global}: Modules for which a single instance runs, irrespective of the number of detectors.
     \item \textbf{Detector}: Modules which are concerned with only a single detector at a time.
@@ -114,6 +114,12 @@ The following status codes are currently supported:
     \item{\command{EndRun}}: Allows the module to request a premature end of the run. This can e.g.\ be used by alignment modules to stop the run after they have accumulated enough tracks for the alignment procedure. The framework executes all modules for the current event and then enters the finalization stage.
     \item{\command{Failure}}: Indicates that there was a severe problem when processing data in the respective module. The framework skips all remaining modules for this event end enters the finalization stage.
 \end{description}
+
+\subsection{Execution Order}
+
+Modules are executed in the order in which they appear in the configuration file, the sequence is repeated for every time frame or event.
+If one module in the chain raises e.g.\ a \command{DeadTime} status, subsequent modules are not executed anymore.
+This should be taken into account when choosing the order of modules in the configuration, since e.g.\ data from detectors catered by subsequent event loaders is not processed and hit maps are not updated if an earlier module requested to skip the rest of the module chain.
 
 \subsection{Files of a Module}
 \label{sec:module_files}
