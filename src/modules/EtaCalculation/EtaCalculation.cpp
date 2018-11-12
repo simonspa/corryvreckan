@@ -72,7 +72,7 @@ StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
-        return Success;
+        return StatusCode::Success;
     }
 
     // Loop over all tracks and look at the associated clusters to plot the eta distribution
@@ -100,7 +100,7 @@ StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Return value telling analysis to keep running
-    return Success;
+    return StatusCode::Success;
 }
 
 std::string EtaCalculation::fit(TF1* function, std::string fname, TProfile* profile) {

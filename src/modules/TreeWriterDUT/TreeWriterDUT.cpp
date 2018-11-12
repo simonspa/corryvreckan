@@ -74,7 +74,7 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
-        return Success;
+        return StatusCode::Success;
     }
 
     // Iterate through tracks found
@@ -143,7 +143,7 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     if(v_intercepts.empty()) {
-        return NoData;
+        return StatusCode::NoData;
     }
 
     filledEvents++;
@@ -154,7 +154,7 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
     m_outputTree->Fill();
 
     // Return value telling analysis to keep running
-    return Success;
+    return StatusCode::Success;
 }
 
 void TreeWriterDUT::finalise() {

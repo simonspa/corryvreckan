@@ -71,7 +71,7 @@ StatusCode AlignmentMillepede::run(std::shared_ptr<Clipboard> clipboard) {
     // Get the tracks
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
     if(tracks == nullptr) {
-        return Success;
+        return StatusCode::Success;
     }
 
     // Make a local copy and store it
@@ -83,11 +83,11 @@ StatusCode AlignmentMillepede::run(std::shared_ptr<Clipboard> clipboard) {
     // If we have enough tracks for the alignment, tell the event loop to finish
     if(m_alignmenttracks.size() >= m_numberOfTracksForAlignment) {
         LOG(STATUS) << "Accumulated " << m_alignmenttracks.size() << " tracks, interrupting processing.";
-        return Failure;
+        return StatusCode::Failure;
     }
 
     // Otherwise keep going
-    return Success;
+    return StatusCode::Success;
 }
 
 //=============================================================================

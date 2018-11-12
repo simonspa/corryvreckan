@@ -35,14 +35,14 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Check if they are a Timepix3
     if(m_detector->type() != "Timepix3") {
-        return Success;
+        return StatusCode::Success;
     }
 
     // Get the pixels
     Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));
     if(pixels == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
-        return Success;
+        return StatusCode::Success;
     }
     LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << m_detector->name();
 
@@ -128,7 +128,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
     }
     LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << m_detector->name();
 
-    return Success;
+    return StatusCode::Success;
 }
 
 // Check if a pixel touches any of the pixels in a cluster

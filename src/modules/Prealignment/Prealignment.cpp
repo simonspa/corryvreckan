@@ -55,7 +55,7 @@ StatusCode Prealignment::run(std::shared_ptr<Clipboard> clipboard) {
     Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
     if(clusters == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any clusters on the clipboard";
-        return Success;
+        return StatusCode::Success;
     }
 
     // Get clusters from reference detector
@@ -63,7 +63,7 @@ StatusCode Prealignment::run(std::shared_ptr<Clipboard> clipboard) {
     Clusters* referenceClusters = reinterpret_cast<Clusters*>(clipboard->get(reference->name(), "clusters"));
     if(referenceClusters == nullptr) {
         LOG(DEBUG) << "Reference detector " << reference->name() << " does not have any clusters on the clipboard";
-        return Success;
+        return StatusCode::Success;
     }
 
     // Loop over all clusters and fill histograms
@@ -84,7 +84,7 @@ StatusCode Prealignment::run(std::shared_ptr<Clipboard> clipboard) {
         }
     }
 
-    return Success;
+    return StatusCode::Success;
 }
 
 void Prealignment::finalise() {

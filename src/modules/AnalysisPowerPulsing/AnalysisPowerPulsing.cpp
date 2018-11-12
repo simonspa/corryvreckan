@@ -138,7 +138,7 @@ StatusCode AnalysisPowerPulsing::run(std::shared_ptr<Clipboard> clipboard) {
     auto clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
     if(clusters == nullptr) {
         LOG(DEBUG) << "No DUT clusters on the clipboard!";
-        return Success;
+        return StatusCode::Success;
     }
 
     double minTimePerEvent = 99999.;
@@ -179,5 +179,5 @@ StatusCode AnalysisPowerPulsing::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Return value telling analysis to keep running
-    return Success;
+    return StatusCode::Success;
 }

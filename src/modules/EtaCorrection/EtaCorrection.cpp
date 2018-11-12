@@ -84,7 +84,7 @@ StatusCode EtaCorrection::run(std::shared_ptr<Clipboard> clipboard) {
     Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
     if(clusters == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any clusters on the clipboard";
-        return Success;
+        return StatusCode::Success;
     }
 
     for(auto& cluster : (*clusters)) {
@@ -92,5 +92,5 @@ StatusCode EtaCorrection::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Return value telling analysis to keep running
-    return Success;
+    return StatusCode::Success;
 }

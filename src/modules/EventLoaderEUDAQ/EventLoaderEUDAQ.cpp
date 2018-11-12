@@ -89,11 +89,11 @@ StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
     // Advance to next event if possible, otherwise end this run:
     if(!reader->NextEvent()) {
         LOG(INFO) << "No more events in data stream.";
-        return Failure;
+        return StatusCode::Failure;
     };
 
     // Return value telling analysis to keep running
-    return Success;
+    return StatusCode::Success;
 }
 
 void EventLoaderEUDAQ::finalise() {

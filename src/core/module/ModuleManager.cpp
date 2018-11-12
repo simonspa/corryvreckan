@@ -596,7 +596,7 @@ void ModuleManager::run() {
             auto end = std::chrono::steady_clock::now();
             module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
 
-            if(check == Failure) {
+            if(check == StatusCode::Failure) {
                 run = false;
             }
         }

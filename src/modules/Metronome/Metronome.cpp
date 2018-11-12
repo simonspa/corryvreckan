@@ -28,5 +28,5 @@ StatusCode Metronome::run(std::shared_ptr<Clipboard> clipboard) {
     m_eventEnd += m_eventLength;
 
     // Return value telling analysis to keep running
-    return Success;
+    return StatusCode::Success;
 }

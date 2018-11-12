@@ -232,7 +232,7 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
 
     // If all files for this detector have been read, end the run:
     if(m_file_iterator == m_files.end()) {
-        return Failure;
+        return StatusCode::Failure;
     }
 
     // Make a new container for the data
@@ -266,7 +266,7 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
         }
     }
 
-    return Success;
+    return StatusCode::Success;
 }
 
 // Function to load the pixel mask file

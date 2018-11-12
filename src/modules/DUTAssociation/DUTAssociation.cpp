@@ -16,14 +16,14 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
-        return Success;
+        return StatusCode::Success;
     }
 
     // Get the DUT clusters from the clipboard
     Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
     if(clusters == nullptr) {
         LOG(DEBUG) << "No DUT clusters on the clipboard";
-        return Success;
+        return StatusCode::Success;
     }
 
     // Loop over all tracks
@@ -50,5 +50,5 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Return value telling analysis to keep running
-    return Success;
+    return StatusCode::Success;
 }

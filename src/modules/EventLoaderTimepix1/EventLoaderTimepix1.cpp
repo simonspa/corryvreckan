@@ -98,7 +98,7 @@ StatusCode EventLoaderTimepix1::run(std::shared_ptr<Clipboard> clipboard) {
             newFile = true;
         } else {
             // Finished looking at all files
-            return Failure;
+            return StatusCode::Failure;
         }
     }
 
@@ -188,7 +188,7 @@ StatusCode EventLoaderTimepix1::run(std::shared_ptr<Clipboard> clipboard) {
     // Increment the event number
     m_eventNumber++;
 
-    return Success;
+    return StatusCode::Success;
 }
 
 void EventLoaderTimepix1::processHeader(string header, string& device, long long int& time) {

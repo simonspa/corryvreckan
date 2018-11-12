@@ -182,7 +182,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
         m_file.close();
-        return Failure;
+        return StatusCode::Failure;
     }
 
     // Pixel container, shutter information
@@ -310,13 +310,14 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
         clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
     } else {
         delete pixels;
+        return StatusCode::NoData;
     }
 
     // Fill histograms
     hPixelsPerFrame->Fill(npixels);
 
     // Return value telling analysis to keep running
-    return Success;
+    return StatusCode::Success;
 }
 
 void EventLoaderCLICpix2::finalise() {

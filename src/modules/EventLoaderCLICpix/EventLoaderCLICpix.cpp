@@ -51,7 +51,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
         m_file.close();
-        return Failure;
+        return StatusCode::Failure;
     }
 
     // Otherwise load a new frame
@@ -129,7 +129,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     hShutterLength->Fill(shutterStopTime - shutterStartTime);
 
     // Return value telling analysis to keep running
-    return Success;
+    return StatusCode::Success;
 }
 
 void EventLoaderCLICpix::finalise() {

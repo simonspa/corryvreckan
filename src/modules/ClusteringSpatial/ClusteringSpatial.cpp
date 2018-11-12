@@ -45,7 +45,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));
     if(pixels == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
-        return Success;
+        return StatusCode::Success;
     }
 
     // Make the cluster container and the maps for clustering
@@ -131,7 +131,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
                << ". From " << pixels->size() << " pixels";
 
     // Return value telling analysis to keep running
-    return Success;
+    return StatusCode::Success;
 }
 
 /*

@@ -166,7 +166,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
         m_file.close();
-        return Failure;
+        return StatusCode::Failure;
     }
 
     double start_time = clipboard->get_persistent("eventStart");
@@ -193,11 +193,11 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     if(!pixels->empty()) {
         clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
     } else {
-        return NoData;
+        return StatusCode::NoData;
     }
 
     // Return value telling analysis to keep running
-    return Success;
+    return StatusCode::Success;
 }
 
 Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_time) {

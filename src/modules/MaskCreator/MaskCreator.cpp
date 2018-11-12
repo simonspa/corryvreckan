@@ -78,7 +78,7 @@ StatusCode MaskCreator::run(std::shared_ptr<Clipboard> clipboard) {
     Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));
     if(pixels == nullptr) {
         LOG(TRACE) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
-        return NoData;
+        return StatusCode::NoData;
     }
     LOG(TRACE) << "Picked up " << pixels->size() << " pixels for device " << m_detector->name();
 
@@ -88,7 +88,7 @@ StatusCode MaskCreator::run(std::shared_ptr<Clipboard> clipboard) {
         m_occupancy->Fill(pixel->column(), pixel->row());
     }
 
-    return Success;
+    return StatusCode::Success;
 }
 
 void MaskCreator::finalise() {

@@ -107,7 +107,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             tree = trees.erase(tree);
         }
 
-        return Success;
+        return StatusCode::Success;
     }
 
     // Output track container
@@ -251,5 +251,5 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     LOG(DEBUG) << "End of event";
-    return Success;
+    return StatusCode::Success;
 }

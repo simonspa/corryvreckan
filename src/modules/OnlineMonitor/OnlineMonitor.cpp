@@ -120,7 +120,7 @@ StatusCode OnlineMonitor::run(std::shared_ptr<Clipboard>) {
 
     // Increase the event number
     eventNumber++;
-    return Success;
+    return StatusCode::Success;
 }
 
 void OnlineMonitor::AddCanvas(std::string canvas_title, Matrix<std::string> canvas_plots) {

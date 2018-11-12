@@ -223,14 +223,14 @@ StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
 
     // If no data was loaded then do nothing
     if(!dataLoaded && m_eventNumber != 0) {
-        return Failure;
+        return StatusCode::Failure;
     }
 
     // Increment event counter
     m_eventNumber++;
 
     // Return value telling analysis to keep running
-    return Success;
+    return StatusCode::Success;
 }
 
 void FileReader::finalise() {

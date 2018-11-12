@@ -70,7 +70,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
-        return Success;
+        return StatusCode::Success;
     }
 
     // Loop over all tracks
@@ -158,7 +158,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         }
     }
 
-    return Success;
+    return StatusCode::Success;
 }
 
 void AnalysisEfficiency::finalise() {

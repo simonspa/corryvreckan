@@ -103,7 +103,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // If there are no detectors then stop trying to track
     if(detectors.empty()) {
-        return Success;
+        return StatusCode::Success;
     }
 
     // Output track container
@@ -220,7 +220,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
             delete trees[detector->name()];
     }
 
-    return Success;
+    return StatusCode::Success;
 }
 
 void TrackingSpatial::finalise() {

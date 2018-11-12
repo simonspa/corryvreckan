@@ -36,7 +36,7 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
     // Get the tracks
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
     if(tracks == nullptr) {
-        return Success;
+        return StatusCode::Success;
     }
 
     // Make a local copy and store it
@@ -69,11 +69,11 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
         if(m_discardedtracks > 0) {
             LOG(INFO) << "Discarded " << m_discardedtracks << " input tracks.";
         }
-        return Failure;
+        return StatusCode::Failure;
     }
 
     // Otherwise keep going
-    return Success;
+    return StatusCode::Success;
 }
 
 // ========================================

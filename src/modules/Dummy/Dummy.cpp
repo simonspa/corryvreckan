@@ -37,7 +37,7 @@ StatusCode Dummy::run(std::shared_ptr<Clipboard>) {
     m_eventNumber++;
 
     // Return value telling analysis to keep running
-    return Success;
+    return StatusCode::Success;
 }
 
 void Dummy::finalise() {

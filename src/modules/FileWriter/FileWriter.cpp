@@ -161,7 +161,7 @@ StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
     m_eventNumber++;
 
     // Return value telling analysis to keep running
-    return Success;
+    return StatusCode::Success;
 }
 
 void FileWriter::finalise() {

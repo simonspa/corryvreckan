@@ -222,14 +222,14 @@ StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
     if(clusters == nullptr) {
         LOG(DEBUG) << "No clusters for " << m_detector->name() << " on the clipboard";
-        return Success;
+        return StatusCode::Success;
     }
 
     // If this is the first or last trigger don't use the data
     if((m_triggerNumber == 0 || m_triggerNumber == 19) && !timepix3Telescope) {
         m_eventNumber++;
         m_triggerNumber++;
-        return Success;
+        return StatusCode::Success;
     }
 
     // Fill the histograms that only need clusters/pixels
@@ -239,7 +239,7 @@ StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
-        return Success;
+        return StatusCode::Success;
     }
 
     // Set counters
@@ -443,7 +443,7 @@ StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     m_triggerNumber++;
 
     // Return value telling analysis to keep running
-    return Success;
+    return StatusCode::Success;
 }
 
 void AnalysisCLICpix::finalise() {
