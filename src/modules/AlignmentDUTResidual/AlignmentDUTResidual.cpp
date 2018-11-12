@@ -127,7 +127,7 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
         if(m_discardedtracks > 0) {
             LOG(STATUS) << "Discarded " << m_discardedtracks << " input tracks.";
         }
-        return StatusCode::Failure;
+        return StatusCode::EndRun;
     }
 
     // Otherwise keep going

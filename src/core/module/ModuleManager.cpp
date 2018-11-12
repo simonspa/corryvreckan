@@ -596,7 +596,15 @@ void ModuleManager::run() {
             auto end = std::chrono::steady_clock::now();
             module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
 
-            if(check == StatusCode::Failure) {
+            if(check == StatusCode::DeadTime) {
+                // If status code indicates dead time, just silently continue with next event:
+                continue;
+            } else if(check == StatusCode::Failure) {
+                // If the status code indicates failure, break immediately and finish:
+                run = false;
+                break;
+            } else if(check == StatusCode::EndRun) {
+                // If the returned status code asks for end-of-run, finish module list and finish:
                 run = false;
             }
         }

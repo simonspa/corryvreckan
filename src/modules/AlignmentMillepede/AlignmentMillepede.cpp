@@ -83,7 +83,7 @@ StatusCode AlignmentMillepede::run(std::shared_ptr<Clipboard> clipboard) {
     // If we have enough tracks for the alignment, tell the event loop to finish
     if(m_alignmenttracks.size() >= m_numberOfTracksForAlignment) {
         LOG(STATUS) << "Accumulated " << m_alignmenttracks.size() << " tracks, interrupting processing.";
-        return StatusCode::Failure;
+        return StatusCode::EndRun;
     }
 
     // Otherwise keep going
