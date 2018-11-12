@@ -1,4 +1,7 @@
 variables:
+    EOS_PATH: "/eos/project/c/corryvreckan/www/"
+
+variables:
     DOCKER_FILE: etc/docker/Dockerfile
 
 stages:
@@ -248,6 +251,49 @@ pkg:cc7-gcc:
 ########################
 # Automatic Deployment #
 ########################
+
+# Automatically deploy documentation to the website
+# Deployment job only executed for new tag pushs, not for every commit.
+deploy-documentation:
+    stage: deployment
+    tags:
+      - docker
+    variables:
+        GIT_STRATEGY: none
+    # Only run for new tags:
+    only:
+        - tags
+    dependencies:
+        - cmp:usermanual
+        - cmp:doxygen
+    # Docker image with tools to deploy to EOS
+    image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
+    script:
+        - deploy-eos
+    # do not run any globally defined before_script or after_script for this step
+    before_script: []
+    after_script: []
+
+deploy-eos:
+    stage: deployment
+    tags:
+      - docker
+    variables:
+        GIT_STRATEGY: none
+    # Only run for new tags:
+    only:
+        - tags
+        - schedules # Only execute this on scheduled "nightly" pipelines
+    dependencies:
+        - pkg:cc7-gcc
+        - pkg:slc6-gcc
+    # Docker image with tools to deploy to EOS
+    image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
+    script:
+        - deploy-eos
+    # do not run any globally defined before_script or after_script for this step
+    before_script: []
+    after_script: []
 
 deploy-docker-latest:
     stage: deployment
