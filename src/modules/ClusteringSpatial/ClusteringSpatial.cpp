@@ -81,20 +81,25 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         while(addedPixel) {
 
             addedPixel = false;
-            for(int row = (pixel->row() - 1); row <= (pixel->row() + 1); row++) {
+            for(int row = pixel->row() - 1; row <= pixel->row() + 1; row++) {
                 // If out of bounds for row
-                if(row < 0 || row >= nRows)
+                if(row < 0 || row >= nRows) {
                     continue;
-                for(int col = (pixel->column() - 1); col <= (pixel->column() + 1); col++) {
+                }
+
+                for(int col = pixel->column() - 1; col <= pixel->column() + 1; col++) {
                     // If out of bounds for column
-                    if(col < 0 || col >= nCols)
+                    if(col < 0 || col >= nCols) {
                         continue;
+                    }
 
                     // If no pixel in this position, or is already in a cluster, do nothing
-                    if(!hitmap[row][col])
+                    if(!hitmap[row][col]) {
                         continue;
-                    if(used[hitmap[row][col]])
+                    }
+                    if(used[hitmap[row][col]]) {
                         continue;
+                    }
 
                     // Otherwise add the pixel to the cluster and store it as a found
                     // neighbour
