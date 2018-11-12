@@ -182,8 +182,8 @@ void OnlineMonitor::AddHisto(string canvasName, string histoName, string style, 
     TH1* histogram = static_cast<TH1*>(gDirectory->Get(histoName.c_str()));
     if(histogram) {
         gui->histograms[canvasName].push_back(static_cast<TH1*>(gDirectory->Get(histoName.c_str())));
-        gui->styles[gui->histograms[canvasName].back()] = style;
         gui->logarithmic[gui->histograms[canvasName].back()] = logy;
+        gui->styles[gui->histograms[canvasName].back()] = style;
     } else {
         LOG(WARNING) << "Histogram " << histoName << " does not exist";
     }

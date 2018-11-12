@@ -112,26 +112,29 @@ void EventLoaderCLICpix2::initialise() {
     }
 
     // Make histograms for debugging
+    std::string title = m_detector->name() + " Hit map;x [px];y [px];pixels";
     hHitMap = new TH2F("hitMap",
-                       "hitMap",
+                       title.c_str(),
                        m_detector->nPixelsX(),
                        0,
                        m_detector->nPixelsX(),
                        m_detector->nPixelsY(),
                        0,
                        m_detector->nPixelsY());
+    title = m_detector->name() + " Map of discarded hits;x [px];y [px];pixels";
     hHitMapDiscarded = new TH2F("hitMapDiscarded",
-                                "hitMapDiscarded",
+                                title.c_str(),
                                 m_detector->nPixelsX(),
                                 0,
                                 m_detector->nPixelsX(),
                                 m_detector->nPixelsY(),
                                 0,
                                 m_detector->nPixelsY());
-
-    hPixelToT = new TH1F("pixelToT", "pixelToT", 32, 0, 31);
+    title = m_detector->name() + " TOT spectrum;TOT;pixels";
+    hPixelToT = new TH1F("pixelToT", title.c_str(), 32, 0, 31);
+    title = m_detector->name() + " TOT map;x [px];y [px];TOT";
     hPixelToTMap = new TProfile2D("pixelToTMap",
-                                  "pixelToTMap",
+                                  title.c_str(),
                                   m_detector->nPixelsX(),
                                   0,
                                   m_detector->nPixelsX(),
@@ -140,12 +143,19 @@ void EventLoaderCLICpix2::initialise() {
                                   m_detector->nPixelsY(),
                                   0,
                                   maxcounter - 1);
-    hPixelToA = new TH1F("pixelToA", "pixelToA", maxcounter, 0, maxcounter - 1);
-    hPixelCnt = new TH1F("pixelCnt", "pixelCnt", maxcounter, 0, maxcounter - 1);
-    hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 1000, 0, 1000);
+    title = m_detector->name() + " TOA spectrum;TOA;pixels";
+    hPixelToA = new TH1F("pixelToA", title.c_str(), maxcounter, 0, maxcounter - 1);
+    title = m_detector->name() + " CNT spectrum;CNT;pixels";
+    hPixelCnt = new TH1F("pixelCnt", title.c_str(), maxcounter, 0, maxcounter - 1);
+    title = m_detector->name() + " Pixel multiplicity;pixels;frames";
+    hPixelsPerFrame = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
 
+    title = m_detector->name() + " Timewalk;TOA;TOT;pixels";
+    hTimeWalk = new TH2F("timewalk", title.c_str(), maxcounter, 0, maxcounter - 1, 32, 0, 31);
+
+    title = m_detector->name() + " Map of masked pixels;x [px];y [px];mask code";
     hMaskMap = new TH2F("maskMap",
-                        "maskMap",
+                        title.c_str(),
                         m_detector->nPixelsX(),
                         0,
                         m_detector->nPixelsX(),
@@ -156,7 +166,8 @@ void EventLoaderCLICpix2::initialise() {
         for(int row = 0; row < m_detector->nPixelsY(); row++) {
             if(m_detector->masked(column, row)) {
                 hMaskMap->Fill(column, row, 2);
-            } else if(matrix_config[std::make_pair(row, column)].GetMask()) {
+            }
+            if(matrix_config[std::make_pair(row, column)].GetMask()) {
                 hMaskMap->Fill(column, row, 1);
             }
         }
@@ -238,28 +249,41 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Disentangle data types from pixel:
-            int tot, toa = -1, cnt = -1;
+            int tot = -1, toa = -1, cnt = -1;
 
             // ToT will throw if longcounter is enabled:
             try {
                 tot = cp2_pixel->GetTOT();
-                hPixelToT->Fill(tot);
-                hPixelToTMap->Fill(col, row, tot);
+                if(!discardZeroToT || tot > 0) {
+                    hPixelToT->Fill(tot);
+                    hPixelToTMap->Fill(col, row, tot);
+                }
             } catch(caribou::WrongDataFormat&) {
-                // Set ToT to one of not defined.
+                // Set ToT to one if not defined.
                 tot = 1;
             }
+
+            // Time defaults ot rising shutter edge:
+            double timestamp = shutterStartTime;
 
             // Decide whether information is counter of ToA
             if(matrix_config[std::make_pair(row, col)].GetCountingMode()) {
                 cnt = cp2_pixel->GetCounter();
-                hPixelCnt->Fill(cnt);
+                if(!discardZeroToT || tot > 0) {
+                    hPixelCnt->Fill(cnt);
+                }
             } else {
                 toa = cp2_pixel->GetTOA();
-                hPixelToA->Fill(toa);
+                // Convert ToA form 100MHz clk into ns and sutract from shutterStopTime. Then add configured detector time
+                // offset
+                timestamp = shutterStopTime - static_cast<double>(toa) / 0.1 + m_detector->timingOffset();
+                if(!discardZeroToT || tot > 0) {
+                    hPixelToA->Fill(toa);
+                    hTimeWalk->Fill(toa, tot);
+                }
             }
 
-            Pixel* pixel = new Pixel(m_detector->name(), row, col, tot, shutterStartTime);
+            Pixel* pixel = new Pixel(m_detector->name(), row, col, tot, timestamp);
 
             if(tot == 0 && discardZeroToT) {
                 hHitMapDiscarded->Fill(col, row);

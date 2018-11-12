@@ -26,8 +26,8 @@ void ClusteringSpatial::initialise() {
     clusterWidthRow = new TH1F("clusterWidthRow", title.c_str(), 25, 0, 25);
     title = m_detector->name() + " Cluster Width - Columns;cluster width [columns];events";
     clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, 0, 100);
-    title = m_detector->name() + " Cluster Charge;cluster charge [e];events";
-    clusterTot = new TH1F("clusterTot", title.c_str(), 10000, 0, 100000);
+    title = m_detector->name() + " Cluster Charge;cluster charge [ke];events";
+    clusterTot = new TH1F("clusterTot", title.c_str(), 300, 0, 300);
     title = m_detector->name() + " Cluster Position (Global);x [mm];y [mm];events";
     clusterPositionGlobal = new TH2F("clusterPositionGlobal",
                                      title.c_str(),
@@ -58,10 +58,12 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     int nRows = m_detector->nPixelsY();
     int nCols = m_detector->nPixelsX();
 
-    // Fill the hitmap with pixels
-    for(auto& pixel : (*pixels)) {
+    // Pre-fill the hitmap with pixels
+    for(auto pixel : (*pixels)) {
         hitmap[pixel->row()][pixel->column()] = pixel;
+    }
 
+    for(auto pixel : (*pixels)) {
         if(used[pixel]) {
             continue;
         }
@@ -75,8 +77,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         // Somewhere to store found neighbours
         Pixels neighbours;
 
-        // Now we check the neighbours and keep adding more hits while there are
-        // connected pixels
+        // Now we check the neighbours and keep adding more hits while there are connected pixels
         while(addedPixel) {
 
             addedPixel = false;
@@ -89,8 +90,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
                     if(col < 0 || col >= nCols)
                         continue;
 
-                    // If no pixel in this position, or is already in a cluster, do
-                    // nothing
+                    // If no pixel in this position, or is already in a cluster, do nothing
                     if(!hitmap[row][col])
                         continue;
                     if(used[hitmap[row][col]])
@@ -120,7 +120,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         clusterSize->Fill(static_cast<double>(cluster->size()));
         clusterWidthRow->Fill(cluster->rowWidth());
         clusterWidthColumn->Fill(cluster->columnWidth());
-        clusterTot->Fill(cluster->tot());
+        clusterTot->Fill(cluster->tot() * 1e-3);
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
 
         deviceClusters->push_back(cluster);
