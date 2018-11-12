@@ -169,14 +169,21 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
         m_file.close();
+        LOG(DEBUG) << "Returning <Failure> status, ATLASPix data file reached the end.";
         return StatusCode::Failure;
     }
 
     double start_time = clipboard->get_persistent("eventStart");
     double end_time = clipboard->get_persistent("eventEnd");
+    bool busy_at_start = m_detectorBusy;
 
     // Read pixel data
     Pixels* pixels = (m_legacyFormat ? read_legacy_data(start_time, end_time) : read_caribou_data(start_time, end_time));
+
+    if(busy_at_start || m_detectorBusy) {
+        LOG(DEBUG) << "Returning <DeadTime> status, ATLASPix is BUSY.";
+        return StatusCode::DeadTime;
+    }
 
     for(auto px : (*pixels)) {
         hHitMap->Fill(px->column(), px->row());
@@ -196,10 +203,12 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     if(!pixels->empty()) {
         clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
     } else {
+        LOG(DEBUG) << "Returning <NoData> status, no hits found.";
         return StatusCode::NoData;
     }
 
     // Return value telling analysis to keep running
+    LOG(DEBUG) << "Returning <Success> status, hits found in this event window.";
     return StatusCode::Success;
 }
 
@@ -370,9 +379,11 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
                 }
                 readout_ts = static_cast<unsigned long long>(static_cast<long long>(fpga_ts) + ts_diff);
 
+                /*
                 LOG(DEBUG) << "ATP_TS:\t" << atp_ts << "\t" << std::hex << atp_ts;
                 LOG(DEBUG) << "READOUT_TS:\t" << readout_ts << "\t" << std::hex << readout_ts;
                 LOG(DEBUG) << "TS_DIFF:\t" << ts_diff << "\t" << std::hex << ts_diff;
+                */
 
                 if(!keep_pointer_stored) {
                     // Store this position in the file in case we need to rewind:
