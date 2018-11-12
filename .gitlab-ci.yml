@@ -1,7 +1,5 @@
 variables:
     EOS_PATH: "/eos/project/c/corryvreckan/www/"
-
-variables:
     DOCKER_FILE: etc/docker/Dockerfile
 
 stages:

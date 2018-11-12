@@ -32,7 +32,8 @@
 using namespace corryvreckan;
 
 // Default constructor
-ModuleManager::ModuleManager(std::string config_file_name, std::vector<std::string> options) : m_terminate(false) {
+ModuleManager::ModuleManager(std::string config_file_name, std::vector<std::string> options)
+    : m_reference(nullptr), m_terminate(false) {
 
     LOG(TRACE) << "Loading Corryvreckan";
 
@@ -109,9 +110,6 @@ void ModuleManager::load() {
 
 void ModuleManager::load_detectors() {
 
-    // Flag for the reference detector
-    bool found_reference = false;
-
     std::vector<std::string> detectors_files = global_config.getPathArray("detectors_file");
 
     for(auto& detectors_file : detectors_files) {
@@ -135,13 +133,12 @@ void ModuleManager::load_detectors() {
             auto det_parm = std::make_shared<Detector>(detector);
 
             // Check if we already found a reference plane:
-            if(found_reference && det_parm->isReference()) {
+            if(m_reference != nullptr && det_parm->isReference()) {
                 throw InvalidValueError(global_config, "detectors_file", "Found more than one reference detector");
             }
 
             // Switch flag if we found the reference plane:
             if(det_parm->isReference()) {
-                found_reference = true;
                 m_reference = det_parm;
             }
 
@@ -151,7 +148,7 @@ void ModuleManager::load_detectors() {
     }
 
     // Check that exactly one detector is marked as reference:
-    if(!found_reference) {
+    if(m_reference == nullptr) {
         throw InvalidValueError(global_config, "detectors_file", "Found no detector marked as reference");
     }
 
