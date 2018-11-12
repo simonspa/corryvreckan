@@ -11,6 +11,9 @@
 \newcommand{\needref}{\comment{[REF?] }}
 \newcommand{\todo}[1]{\comment{[TODO: #1] }}
 
+% Allow compilation with recent pandoc versions:
+\newcommand{\passthrough}[1]{\lstset{mathescape=false}#1\lstset{mathescape=true}}
+
 \newcommand{\wip}{\textit{This section is not written yet.}}
 
 % Paragraph with new line
