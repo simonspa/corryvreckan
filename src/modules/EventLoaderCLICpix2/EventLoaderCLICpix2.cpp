@@ -50,13 +50,6 @@ void EventLoaderCLICpix2::initialise() {
 
     // Read the matrix configuration:
     matrix_config = clicpix2_utils::readMatrix(m_matrix);
-    // Make sure we initializefd all pixels:
-    for(size_t column = 0; column < 128; column++) {
-        for(size_t row = 0; row < 128; row++) {
-            pixelConfig px = matrix_config[std::make_pair(row, column)];
-        }
-    }
-
     // If no data was loaded, give a warning
     if(m_filename.empty()) {
         LOG(WARNING) << "No data file was found for CLICpix2 in " << inputDirectory;
