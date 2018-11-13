@@ -12,8 +12,14 @@ This chapter contains details on the standard installation process and informati
 Furthermore, the continuous integration of the project ensures correct building and functioning of the software framework on CentOS\,7 (with GCC and LLVM), SLC\,6 (with GCC and LLVM) and Mac OS Sierra (OS X 10.12, with AppleClang).
 
 \section{CMVFS}
+\label{sec:cvmfs}
+The software is automatically deployed to CERN's VM file system (CVMFS)~\cite{cvmfs} for every new tag.
+In addition, the \parameter{master} branch is built and deployed every night.
+New versions are published to the folder \dir{/cvmfs/clicdp.cern.ch/software/corryvreckan/} where a new folder is created for every new tag, while updates via the \parameter{master} branch are always stored in the \dir{latest} folder.
 
-\cite{cvmfs}
+The deployed version currently comprises all modules which are active by default and do not require additional dependencies.
+A \file{setup.sh} is placed in the root folder of the respective release, which allows to set up all runtime dependencies necessary for executing this version.
+Versions both for SLC\,6 and CentOS\,7 are provided.
 
 \section{Docker}
 \label{sec:docker}
@@ -48,7 +54,11 @@ For tagged versions, the tag name should be appended to the image name, e.g.\ \p
 
 \section{Binaries}
 
-\section{Compilation}
+Binary release tarballs are deployed to EOS to serve as downloads from the web to the directory \dir{/eos/project/c/corryvreckan/www/releases}.
+New tarballs are produced for every tag as well as for nightly builds of the \parameter{master} branch, which are deployed with the name \file{allpix-squared-latest-<system-tag>-opt.tar.gz}.
+
+
+\section{Compilation from Source}
 
 The following paragraphs describe how to compile the \corry framework and its individual analysis and reconstruction modules from the source code.
 
@@ -58,7 +68,7 @@ The core framework is compiled separately from the individual modules and \corry
 Please refer to~\cite{rootinstallation} for instructions on how to install ROOT.
 ROOT has several components of which the GenVector package is required to run \corry, a package included in the default build.
 
-\section{Downloading the source code}
+\subsection{Downloading the source code}
 The latest version of \corry can be downloaded from the CERN Gitlab repository~\cite{corry-repo}.
 For production environments it is recommended to only download and use tagged software versions, as many of the available git branches are considered development versions and might exhibit unexpected behavior.
 
@@ -70,7 +80,7 @@ $ git clone https://gitlab.cern.ch/corryvreckan/corryvreckan
 $ cd corryvreckan
 \end{verbatim}
 
-\section{Configuration via CMake}
+\subsection{Configuration via CMake}
 \label{sec:cmake_config}
 \corry uses the CMake build system to configure, build and install the core framework as well as all modules.
 An out-of-source build is recommended: this means CMake should not be directly executed in the source folder.
@@ -107,7 +117,7 @@ $ cmake -DCMAKE_INSTALL_PREFIX=../install/ \
         -DBUILD_EventLoaderCLICpix2=OFF ..
 \end{verbatim}
 
-\section{Compilation and installation}
+\subsection{Compilation and installation}
 Compiling the framework is now a single command in the build folder created earlier (replacing \textit{\textless number\_of\_cores> \textgreater} with the number of cores to use for compilation):
 \begin{verbatim}
 $ make -j<number_of_cores>
