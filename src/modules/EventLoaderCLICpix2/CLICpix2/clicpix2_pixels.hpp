@@ -86,7 +86,7 @@ namespace caribou {
         /* Individual threshold adjustment (4bit)
          */
         void SetThreshold(uint8_t thr_adjust) {
-            m_latches = (m_latches & 0xf0ff) | static_cast<uint16_t>((thr_adjust & 0x0f) << 8);
+            m_latches = static_cast<uint16_t>(m_latches & 0xf0ff) | static_cast<uint16_t>((thr_adjust & 0x0f) << 8);
         }
         uint8_t GetThreshold() const { return (m_latches >> 8) & 0x0f; }
 
@@ -155,7 +155,9 @@ namespace caribou {
         bool GetFlag() const { return (m_latches >> 13) & 0x1; }
 
         // TOT setting of the pixel (5bit)
-        void SetTOT(uint8_t tot) { m_latches = (m_latches & 0xe0ff) | static_cast<uint16_t>((tot & 0x1f) << 8); }
+        void SetTOT(uint8_t tot) {
+            m_latches = static_cast<uint16_t>(m_latches & 0xe0ff) | static_cast<uint16_t>((tot & 0x1f) << 8);
+        }
         uint8_t GetTOT() const {
             if(longflag)
                 throw DataException("LongCnt set, no TOT available.");
@@ -165,12 +167,12 @@ namespace caribou {
 
         // TOA setting of the pixel (13bit)
         void SetTOA(uint16_t toa) {
-            m_latches = (m_latches & 0xe000) | (toa & 0x1fff);
+            m_latches = static_cast<uint16_t>(m_latches & 0xe000) | static_cast<uint16_t>(toa & 0x1fff);
             longflag = true;
         }
         // TOA setting of the pixel (8bit)
         void SetTOA(uint8_t toa) {
-            m_latches = (m_latches & 0xff00) | static_cast<uint16_t>(toa & 0x00ff);
+            m_latches = static_cast<uint16_t>(m_latches & 0xff00) | static_cast<uint16_t>(toa & 0x00ff);
             longflag = false;
         }
         uint16_t GetTOA() const {
