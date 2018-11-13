@@ -21,7 +21,7 @@ if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
   for filename in $1/*.tar.gz; do
     echo " - $filename"
 
-    if [[ $filename =~ squared-(.+?)-x ]]; then
+    if [[ $filename =~ corryvreckan-(.+?)-x ]]; then
       version=${BASH_REMATCH[1]}
       if [ "$version" != "$tag" ]; then
         echo "Build version does not match: $version"
