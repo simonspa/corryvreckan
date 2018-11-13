@@ -81,31 +81,29 @@ void clicpix2_frameDecoder::extractColumns(std::vector<clicpix2_frameDecoder::WO
     std::array<std::array<pixelReadout, 8>, CLICPIX2_ROW * 2>
         pixels_dc; // stores results of the processed doube columns (up to 8 if compression is enabled)
     std::array<size_t, 8> row_index = {
-        0, 0, 0, 0, 0, 0, 0, 0}; // 8 independent (in case of compression) counters navigating through the <pixels_dc>
-    std::array<int, 8> row_slice = {
-        CLICPIX2_PIXEL_SIZE - 1,
-        CLICPIX2_PIXEL_SIZE - 1,
-        CLICPIX2_PIXEL_SIZE - 1,
-        CLICPIX2_PIXEL_SIZE - 1,
-        CLICPIX2_PIXEL_SIZE - 1,
-        CLICPIX2_PIXEL_SIZE - 1,
-        CLICPIX2_PIXEL_SIZE - 1,
-        CLICPIX2_PIXEL_SIZE - 1,
-    }; // 8 independent
+        {0, 0, 0, 0, 0, 0, 0, 0}}; // 8 independent (in case of compression) counters navigating through the <pixels_dc>
+    std::array<int, 8> row_slice = {{CLICPIX2_PIXEL_SIZE - 1,
+                                     CLICPIX2_PIXEL_SIZE - 1,
+                                     CLICPIX2_PIXEL_SIZE - 1,
+                                     CLICPIX2_PIXEL_SIZE - 1,
+                                     CLICPIX2_PIXEL_SIZE - 1,
+                                     CLICPIX2_PIXEL_SIZE - 1,
+                                     CLICPIX2_PIXEL_SIZE - 1,
+                                     CLICPIX2_PIXEL_SIZE - 1}}; // 8 independent
 //(in case of compression) counters navigating through the <pixels_dc>
 #define DC_COUNTER_INIT (2 * (CLICPIX2_ROW * CLICPIX2_PIXEL_SIZE + CLICPIX2_ROW / CLICPIX2_SUPERPIXEL_SIZE) + 1)
-    std::array<unsigned int, 8> dc_counter = {DC_COUNTER_INIT,
-                                              DC_COUNTER_INIT,
-                                              DC_COUNTER_INIT,
-                                              DC_COUNTER_INIT,
-                                              DC_COUNTER_INIT,
-                                              DC_COUNTER_INIT,
-                                              DC_COUNTER_INIT,
-                                              DC_COUNTER_INIT}; // 8 independent (in case of compression)
+    std::array<unsigned int, 8> dc_counter = {{DC_COUNTER_INIT,
+                                               DC_COUNTER_INIT,
+                                               DC_COUNTER_INIT,
+                                               DC_COUNTER_INIT,
+                                               DC_COUNTER_INIT,
+                                               DC_COUNTER_INIT,
+                                               DC_COUNTER_INIT,
+                                               DC_COUNTER_INIT}}; // 8 independent (in case of compression)
     // counters indicating number of bits processed for the given double-column
     // value 3601 indicates beginning of the double-column
     std::array<unsigned int, 8> sp_counter = {
-        0, 0, 0, 0, 0, 0, 0, 0}; // number of pixels in the processed super-pixel for the given column
+        {0, 0, 0, 0, 0, 0, 0, 0}}; // number of pixels in the processed super-pixel for the given column
 
     do {
         WORD_TYPE word = *data++;
