@@ -102,8 +102,8 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // If there are no detectors then stop trying to track
-    if(detectors.empty()) {
-        return StatusCode::Success;
+    if(detectors.empty() || referenceClusters == nullptr) {
+        return StatusCode::NoData;
     }
 
     // Output track container
