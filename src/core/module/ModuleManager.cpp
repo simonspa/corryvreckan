@@ -598,7 +598,7 @@ void ModuleManager::run() {
 
             if(check == StatusCode::DeadTime) {
                 // If status code indicates dead time, just silently continue with next event:
-                continue;
+                break;
             } else if(check == StatusCode::Failure) {
                 // If the status code indicates failure, break immediately and finish:
                 run = false;
