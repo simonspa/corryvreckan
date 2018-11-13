@@ -51,7 +51,7 @@ fi
 # General variables
 CLICREPO=/cvmfs/clicdp.cern.ch
 SFTREPO=/cvmfs/sft.cern.ch
-BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
+export BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
 
 #--------------------------------------------------------------------------------
 #     Compiler
