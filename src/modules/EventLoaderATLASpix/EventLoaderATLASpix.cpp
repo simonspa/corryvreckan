@@ -41,8 +41,8 @@ void EventLoaderATLASpix::initialise() {
 
     m_detectorBusy = false;
 
-    // File structure is RunX/ATLASpix/data.dat
-    // Assume that the ATLASpix is the DUT (if running this algorithm
+    // File structure is RunX/data.bin
+    // Assume that the ATLASpix is the DUT (if running this algorithm)
 
     // Open the root directory
     DIR* directory = opendir(m_inputDirectory.c_str());
@@ -224,7 +224,6 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
     uint32_t datain;
     long long ts_diff; // tmp
 
-    // *TBD: Can be cleared only in the first call and kept for next call:
     // Initialize all to 0 for a case that hit data come before timestamp/trigger data
     long long hit_ts = 0;            // 64bit value of a hit timestamp combined from readout and pixel hit timestamp
     unsigned long long atp_ts = 0;   // 16bit value of ATLASpix readout timestamp
@@ -265,11 +264,6 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
             int row = ((datain >> (6 + 10)) & 0x01FF);
             int col = ((datain >> (6 + 10 + 9)) & 0x003F);
             // long tot = 0;
-
-            // correction for clkdivend
-            // ts1 *= (m_clkdivendM);
-            // correction for clkdivend2
-            // ts2 *= (m_clkdivend2M);
 
             ts_diff = ts1 - static_cast<long long>(readout_ts & 0x07FF);
 
@@ -379,12 +373,6 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
                 }
                 readout_ts = static_cast<unsigned long long>(static_cast<long long>(fpga_ts) + ts_diff);
 
-                /*
-                LOG(DEBUG) << "ATP_TS:\t" << atp_ts << "\t" << std::hex << atp_ts;
-                LOG(DEBUG) << "READOUT_TS:\t" << readout_ts << "\t" << std::hex << readout_ts;
-                LOG(DEBUG) << "TS_DIFF:\t" << ts_diff << "\t" << std::hex << ts_diff;
-                */
-
                 if(!keep_pointer_stored) {
                     // Store this position in the file in case we need to rewind:
                     LOG(TRACE) << "Storing file pointer position: " << m_file.tellg() << " and readout TS: " << readout_ts;
@@ -403,27 +391,19 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
 
             // Trigger counter from FPGA [23:0] (1/4)
             case 0b00010000:
-                // LOG(DEBUG) << "...FPGA_TS 1/4";
                 trig_cnt = datain & 0x00FFFFFF;
-
-                // LOG(DEBUG) << "TRG_FPGA_1:\t" << trig_cnt << "\t" << std::hex << trig_cnt;
                 break;
 
             // Trigger counter from FPGA [31:24] and timestamp from FPGA [63:48] (2/4)
             case 0b00110000:
                 trig_cnt |= (datain << 8) & 0xFF000000;
                 fpga_ts1 = ((static_cast<unsigned long long>(datain) << 48) & 0xFFFF000000000000);
-                // LOG(DEBUG) << "TRIGGER\t" << trig_cnt;
-
-                // LOG(DEBUG) << "TRG_FPGA_2:\t" << trig_cnt << "\t" << std::hex << trig_cnt;
-                // LOG(DEBUG) << "TS_FPGA_1:\t" << fpga_ts1 << "\t" << std::hex << fpga_ts1;
                 new_ts1 = true;
                 break;
 
             // Timestamp from FPGA [47:24] (3/4)
             case 0b00100000:
                 fpga_tsx = ((static_cast<unsigned long long>(datain) << 24) & 0x0000FFFFFF000000);
-                // LOG(DEBUG) << "TS_FPGA_2:\t" << fpga_tsx << "\t" << std::hex << fpga_tsx;
                 if((!new_ts1) && (fpga_tsx < fpga_ts2)) {
                     fpga_ts1 += 0x0001000000000000;
                     LOG(WARNING) << "Missing TS_FPGA_1, adding one";
@@ -437,7 +417,6 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
             case 0b01100000:
                 m_identifiers["FPGA_TS"]++;
                 fpga_tsx = ((datain)&0xFFFFFF);
-                // LOG(DEBUG) << "TS_FPGA_3:\t" << fpga_tsx << "\t" << std::hex << fpga_tsx;
                 if((!new_ts2) && (fpga_tsx < fpga_ts3)) {
                     fpga_ts2 += 0x0000000001000000;
                     LOG(WARNING) << "Missing TS_FPGA_2, adding one";
@@ -445,7 +424,6 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
                 new_ts2 = false;
                 fpga_ts3 = fpga_tsx;
                 fpga_ts = fpga_ts1 | fpga_ts2 | fpga_ts3;
-                // LOG(DEBUG) << "TS_FPGA_M:\t" << fpga_ts << "\t" << std::hex << fpga_ts;
                 break;
 
             // BUSY was asserted due to FIFO_FULL + 24 LSBs of FPGA timestamp when it happened
@@ -453,7 +431,6 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
                 m_identifiers["BUSY_ASSERT"]++;
                 busy_readout_ts = readout_ts;
                 m_detectorBusy = true;
-                // LOG(DEBUG) << "BUSY_ASSERTED\t" << ((datain)&0xFFFFFF);
                 break;
 
             // T0 received
@@ -464,8 +441,7 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
             // Empty data - should not happen
             case 0b00000000:
                 m_identifiers["EMPTY_DATA"]++;
-                // LOG(DEBUG) << "...Emtpy";
-                // LOG(DEBUG) << "EMPTY_DATA";
+                LOG(DEBUG) << "EMPTY_DATA";
                 break;
 
             // Other options...
@@ -474,27 +450,27 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
                 // Unknown message identifier
                 if(message_type & 0b11110010) {
                     m_identifiers["UNKNOWN_MESSAGE"]++;
-                    // LOG(DEBUG) << "UNKNOWN_MESSAGE";
+                    LOG(DEBUG) << "UNKNOWN_MESSAGE";
                 } else {
                     // Buffer for chip data overflow (data that came after this word were lost)
                     if((message_type & 0b11110011) == 0b00000001) {
                         m_identifiers["BUFFER_OVERFLOW"]++;
-                        // LOG(DEBUG) << "BUFFER_OVERFLOW";
+                        LOG(DEBUG) << "BUFFER_OVERFLOW";
                     }
                     // SERDES lock established (after reset or after lock lost)
                     if((message_type & 0b11111110) == 0b00001000) {
                         m_identifiers["SERDES_LOCK_ESTABLISHED"]++;
-                        // LOG(DEBUG) << "SERDES_LOCK_ESTABLISHED";
+                        LOG(DEBUG) << "SERDES_LOCK_ESTABLISHED";
                     }
                     // SERDES lock lost (data might be nonsense, including up to 2 previous messages)
                     else if((message_type & 0b11111110) == 0b00001100) {
                         m_identifiers["SERDES_LOCK_LOST"]++;
-                        // LOG(DEBUG) << "SERDES_LOCK_LOST";
+                        LOG(DEBUG) << "SERDES_LOCK_LOST";
                     }
                     // Unexpected data came from the chip or there was a checksum error.
                     else if((message_type & 0b11111110) == 0b00000100) {
                         m_identifiers["WEIRD_DATA"]++;
-                        // LOG(DEBUG) << "WEIRD_DATA";
+                        LOG(DEBUG) << "WEIRD_DATA";
                     }
                     // Unknown message identifier
                     else {
