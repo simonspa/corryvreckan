@@ -15,8 +15,6 @@ namespace caribou {
     // The individual values are set via the member functions of a specialized classes
     class clicpix2_pixel : public virtual pixel {
     public:
-        virtual ~clicpix2_pixel(){};
-
         // direct latch access
         void setLatches(uint16_t latches) { m_latches = latches; }
 
