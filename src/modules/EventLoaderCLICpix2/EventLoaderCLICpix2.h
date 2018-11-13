@@ -17,8 +17,8 @@
 #include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
 
+#include "CLICpix2/clicpix2_frameDecoder.hpp"
 #include "CLICpix2/clicpix2_pixels.hpp"
-#include "CLICpix2/framedecoder/clicpix2_frameDecoder.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules

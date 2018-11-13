@@ -2,7 +2,6 @@
 
 #include "CLICpix2/clicpix2_pixels.hpp"
 #include "CLICpix2/clicpix2_utilities.hpp"
-#include "datatypes.hpp"
 
 using namespace corryvreckan;
 using namespace std;
@@ -51,13 +50,6 @@ void EventLoaderCLICpix2::initialise() {
 
     // Read the matrix configuration:
     matrix_config = clicpix2_utils::readMatrix(m_matrix);
-    // Make sure we initializefd all pixels:
-    for(size_t column = 0; column < 128; column++) {
-        for(size_t row = 0; row < 128; row++) {
-            pixelConfig px = matrix_config[std::make_pair(row, column)];
-        }
-    }
-
     // If no data was loaded, give a warning
     if(m_filename.empty()) {
         LOG(WARNING) << "No data file was found for CLICpix2 in " << inputDirectory;
@@ -258,7 +250,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
                     hPixelToT->Fill(tot);
                     hPixelToTMap->Fill(col, row, tot);
                 }
-            } catch(caribou::WrongDataFormat&) {
+            } catch(caribou::DataException&) {
                 // Set ToT to one if not defined.
                 tot = 1;
             }
