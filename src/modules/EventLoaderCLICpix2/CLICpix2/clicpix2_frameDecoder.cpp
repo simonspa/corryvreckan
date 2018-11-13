@@ -215,7 +215,7 @@ void clicpix2_frameDecoder::processDCbit(std::array<std::array<pixelReadout, 8>,
         }
 
         // pixel bit
-        else if(row_slice == CLICPIX2_PIXEL_SIZE - 1) {
+        else if(row_slice == static_cast<int>(CLICPIX2_PIXEL_SIZE - 1)) {
 
             if(data ||                     // not empty pixel
                !pixelCompressionEnabled) { // or pixel compression disabled
