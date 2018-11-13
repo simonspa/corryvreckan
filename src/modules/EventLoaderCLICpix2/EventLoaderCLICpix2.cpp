@@ -2,7 +2,6 @@
 
 #include "CLICpix2/clicpix2_pixels.hpp"
 #include "CLICpix2/clicpix2_utilities.hpp"
-#include "datatypes.hpp"
 
 using namespace corryvreckan;
 using namespace std;
@@ -258,7 +257,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
                     hPixelToT->Fill(tot);
                     hPixelToTMap->Fill(col, row, tot);
                 }
-            } catch(caribou::WrongDataFormat&) {
+            } catch(caribou::DataException&) {
                 // Set ToT to one if not defined.
                 tot = 1;
             }
