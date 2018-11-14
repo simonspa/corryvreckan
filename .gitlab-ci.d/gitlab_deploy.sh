@@ -3,7 +3,7 @@
 #Get the line for the CVMFS status and chech if server is transaction
 clicdp_status=`cvmfs_server list | grep clicdp`
 if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
-  echo "I am not in transaction"
+  echo "No ongoing CVMFS transaction detected, initializing new transaction."
   # Start transaction
   cvmfs_server transaction clicdp.cern.ch
 
@@ -17,7 +17,7 @@ if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
   cd /home/cvclicdp/
 
   # Extract artifact tars
-  echo "Extract artifact tarballs"
+  echo "Extracting artifact tarballs"
   for filename in $1/*.tar.gz; do
     echo " - $filename"
 
@@ -48,6 +48,7 @@ if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
   # Check if we found any version and flavor to be installed:
   if [[ -z $version || -z $flavor ]]; then
     echo "Did not find suitable version or flavor to install."
+    echo "Aborting CVMFS transaction."
     cvmfs_server abort clicdp.cern.ch
     exit 1
   fi
@@ -66,6 +67,7 @@ if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
   rm -rf /home/cvclicdp/release
 
   # Publish changes
+  echo "Publishing CVMFS transaction."
   cvmfs_server publish clicdp.cern.ch
   exit 0
 else
