@@ -49,7 +49,7 @@ if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
   if [[ -z $version || -z $flavor ]]; then
     echo "Did not find suitable version or flavor to install."
     echo "Aborting CVMFS transaction."
-    cvmfs_server abort clicdp.cern.ch
+    cvmfs_server abort -f clicdp.cern.ch
     exit 1
   fi
 
