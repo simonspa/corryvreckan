@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <string>
+#include <typeindex>
 #include <unordered_map>
 
 #include "core/utils/log.h"
@@ -44,17 +45,10 @@ namespace corryvreckan {
         /**
          * @brief Add object to the clipboard
          * @param name Name of the collection to be stored
-         * @param objects vector of Objects to store
-         */
-        void put(std::string name, Objects* objects);
-
-        /**
-         * @brief Add object to the clipboard
-         * @param name Name of the collection to be stored
          * @param type Type of the object collection to be stored
          * @param Objects vector of Objects to store
          */
-        void put(std::string name, std::string type, Objects* objects);
+        template <typename T> void put(T* objects, const std::string& key = "");
 
         /**
          * @brief Retrieve objects from the clipboard
@@ -62,7 +56,7 @@ namespace corryvreckan {
          * @param type Type of objects to be retrieved
          * @return Vector of Object pointers
          */
-        Objects* get(std::string name, std::string type = "");
+        template <typename T> T* get(const std::string& key = "") const;
 
         /**
          * @brief Store or update variable on the persistent clipboard storage
@@ -77,14 +71,14 @@ namespace corryvreckan {
          * @return Stored value from the persistent clipboard storage
          * @throws MissingKeyError in case the key is not found.
          */
-        double get_persistent(std::string name);
+        double get_persistent(std::string name) const;
 
         /**
          * @brief Check if variable exists on the persistent clipboard storage
          * @param name Name of the variable
          * @return True if value exists, false if it does not exist.
          */
-        bool has_persistent(std::string name);
+        bool has_persistent(std::string name) const;
 
         /**
          * @brief Clear the event storage of the clipboard
@@ -98,7 +92,7 @@ namespace corryvreckan {
         std::vector<std::string> listCollections();
 
     private:
-        typedef std::map<std::string, Objects*> ClipboardData;
+        typedef std::map<std::type_index, std::map<std::string, Objects*>> ClipboardData;
 
         // Container for data, list of all data held
         ClipboardData m_data;
@@ -107,5 +101,8 @@ namespace corryvreckan {
         std::unordered_map<std::string, double> m_persistent_data;
     };
 } // namespace corryvreckan
+
+// Include template members
+#include "Clipboard.tpp"
 
 #endif // CORRYVRECKAN_CLIPBOARD_H

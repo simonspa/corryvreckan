@@ -122,7 +122,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     LOG(TRACE) << "Loaded " << npixels << " pixels";
     // Put the data on the clipboard
     if(pixels->size() > 0)
-        clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
+        clipboard->put(pixels, m_detector->name());
 
     // Fill histograms
     hPixelsPerFrame->Fill(npixels);

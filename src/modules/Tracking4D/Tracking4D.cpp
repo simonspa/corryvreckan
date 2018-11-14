@@ -79,7 +79,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         string detectorID = detector->name();
 
         // Get the clusters
-        Clusters* tempClusters = reinterpret_cast<Clusters*>(clipboard->get(detectorID, "clusters"));
+        auto tempClusters = clipboard->get<Clusters>(detectorID);
         if(tempClusters == nullptr || tempClusters->size() == 0) {
             LOG(DEBUG) << "Detector " << detectorID << " does not have any clusters on the clipboard";
         } else {
@@ -240,7 +240,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Save the tracks on the clipboard
     if(tracks->size() > 0) {
-        clipboard->put("tracks", reinterpret_cast<Objects*>(tracks));
+        clipboard->put(tracks);
         tracksPerEvent->Fill(static_cast<double>(tracks->size()));
     }
 

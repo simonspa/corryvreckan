@@ -34,7 +34,7 @@ AlignmentTrackChi2::AlignmentTrackChi2(Configuration config, std::vector<std::sh
 StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks
-    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    auto tracks = clipboard->get<Tracks>();
     if(tracks == nullptr) {
         return StatusCode::Success;
     }

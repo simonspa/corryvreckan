@@ -299,7 +299,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Put the data on the clipboard
     if(!pixels->empty()) {
-        clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
+        clipboard->put(pixels, m_detector->name());
     } else {
         delete pixels;
         return StatusCode::NoData;

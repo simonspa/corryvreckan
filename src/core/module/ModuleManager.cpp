@@ -607,7 +607,7 @@ void ModuleManager::run() {
         }
 
         // Print statistics:
-        Tracks* tracks = reinterpret_cast<Tracks*>(m_clipboard->get("tracks"));
+        auto tracks = m_clipboard->get<Tracks>();
         m_tracks += (tracks == nullptr ? 0 : static_cast<int>(tracks->size()));
 
         if(m_events % 100 == 0) {

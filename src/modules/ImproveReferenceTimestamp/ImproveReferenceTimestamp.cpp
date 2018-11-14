@@ -22,7 +22,7 @@ StatusCode ImproveReferenceTimestamp::run(std::shared_ptr<Clipboard> clipboard) 
     std::vector<double> trigger_times;
 
     // Get trigger signals
-    SpidrSignals* spidrData = reinterpret_cast<SpidrSignals*>(clipboard->get(m_source, "SpidrSignals"));
+    auto spidrData = clipboard->get<SpidrSignals>(m_source);
     if(spidrData != nullptr) {
         // Loop over all signals registered
         for(auto& signal : (*spidrData)) {
@@ -34,7 +34,7 @@ StatusCode ImproveReferenceTimestamp::run(std::shared_ptr<Clipboard> clipboard) 
     }
 
     // Get the tracks from the clipboard
-    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    auto tracks = clipboard->get<Tracks>();
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;

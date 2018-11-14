@@ -39,7 +39,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Get the pixels
-    Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));
+    auto pixels = clipboard->get<Pixels>(m_detector->name());
     if(pixels == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
@@ -124,7 +124,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Put the clusters on the clipboard
     if(deviceClusters->size() > 0) {
-        clipboard->put(m_detector->name(), "clusters", reinterpret_cast<Objects*>(deviceClusters));
+        clipboard->put(deviceClusters, m_detector->name());
     }
     LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << m_detector->name();
 

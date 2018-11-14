@@ -10,7 +10,7 @@ MaskCreatorTimepix3::MaskCreatorTimepix3(Configuration config, std::shared_ptr<D
 StatusCode MaskCreatorTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
-    Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));
+    auto pixels = clipboard->get<Pixels>(m_detector->name());
     if(pixels == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return StatusCode::NoData;

@@ -245,13 +245,13 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     // If data was loaded then put it on the clipboard
     if(data) {
         LOG(DEBUG) << "Loaded " << deviceData->size() << " pixels for device " << m_detector->name();
-        clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(deviceData));
+        clipboard->put(deviceData, m_detector->name());
     } else {
         delete deviceData;
     }
 
     if(!spidrData->empty()) {
-        clipboard->put(m_detector->name(), "SpidrSignals", reinterpret_cast<Objects*>(spidrData));
+        clipboard->put(spidrData, m_detector->name());
     } else {
         delete spidrData;
     }

@@ -4,26 +4,11 @@
 
 using namespace corryvreckan;
 
-void Clipboard::put(std::string name, Objects* objects) {
-    m_data.insert(ClipboardData::value_type(name, objects));
-}
-
-void Clipboard::put(std::string name, std::string type, Objects* objects) {
-    m_data.insert(ClipboardData::value_type(name + type, objects));
-}
-
 void Clipboard::put_persistent(std::string name, double value) {
     m_persistent_data[name] = value;
 }
 
-Objects* Clipboard::get(std::string name, std::string type) {
-    if(m_data.count(name + type) == 0) {
-        return nullptr;
-    }
-    return m_data[name + type];
-}
-
-double Clipboard::get_persistent(std::string name) {
+double Clipboard::get_persistent(std::string name) const {
     try {
         return m_persistent_data.at(name);
     } catch(std::out_of_range&) {
@@ -31,25 +16,40 @@ double Clipboard::get_persistent(std::string name) {
     }
 }
 
-bool Clipboard::has_persistent(std::string name) {
+bool Clipboard::has_persistent(std::string name) const {
     return m_persistent_data.find(name) != m_persistent_data.end();
 }
 
 void Clipboard::clear() {
-    for(auto set = m_data.cbegin(); set != m_data.cend();) {
-        Objects* collection = set->second;
-        for(Objects::iterator it = collection->begin(); it != collection->end(); ++it) {
-            delete(*it);
+    // Loop over all data types
+    for(auto block = m_data.cbegin(); block != m_data.cend();) {
+        auto collections = block->second;
+
+        // Loop over all stored collections of this type
+        for(auto set = collections.cbegin(); set != collections.cend();) {
+            Objects* collection = set->second;
+            // Loop over all objects and delete them
+            for(Objects::iterator it = collection->begin(); it != collection->end(); ++it) {
+                delete(*it);
+            }
+            delete collection;
+            set = collections.erase(set);
         }
-        delete collection;
-        set = m_data.erase(set);
+        block = m_data.erase(block);
     }
 }
 
 std::vector<std::string> Clipboard::listCollections() {
     std::vector<std::string> collections;
-    for(auto& dataset : m_data) {
-        collections.push_back(dataset.first);
+
+    for(const auto& block : m_data) {
+        std::string line(corryvreckan::demangle(block.first.name()));
+        line += ": ";
+        for(const auto& set : block.second) {
+            line += set.first + " (" + set.second->size() + ") ";
+        }
+        line += "\n";
+        collections.push_back(line);
     }
     return collections;
 }

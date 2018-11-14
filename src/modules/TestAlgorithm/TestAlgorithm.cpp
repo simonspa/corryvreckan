@@ -76,7 +76,7 @@ void TestAlgorithm::initialise() {
 StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
-    Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));
+    auto pixels = clipboard->get<Pixels>(m_detector->name());
     if(pixels == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
@@ -91,7 +91,7 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Get the clusters
-    Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
+    auto clusters = clipboard->get<Clusters>(m_detector->name());
     if(clusters == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any clusters on the clipboard";
         return StatusCode::Success;
@@ -99,7 +99,7 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get clusters from reference detector
     auto reference = get_reference();
-    Clusters* referenceClusters = reinterpret_cast<Clusters*>(clipboard->get(reference->name(), "clusters"));
+    auto referenceClusters = clipboard->get<Clusters>(reference->name());
     if(referenceClusters == nullptr) {
         LOG(DEBUG) << "Reference detector " << reference->name() << " does not have any clusters on the clipboard";
         return StatusCode::Success;

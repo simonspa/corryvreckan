@@ -80,7 +80,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         //     continue;
 
         // Get the clusters
-        Clusters* tempClusters = reinterpret_cast<Clusters*>(clipboard->get(detectorID, "clusters"));
+        auto tempClusters = clipboard->get<Clusters>(detectorID);
         if(tempClusters == nullptr) {
             LOG(DEBUG) << "Detector " << detectorID << " does not have any clusters on the clipboard";
         } else {
@@ -211,7 +211,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     // Save the tracks on the clipboard
     tracksPerEvent->Fill(static_cast<double>(tracks->size()));
     if(tracks->size() > 0) {
-        clipboard->put("tracks", reinterpret_cast<Objects*>(tracks));
+        clipboard->put(tracks);
     }
 
     // Clean up tree objects
