@@ -418,11 +418,23 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard, Pixels*
 
         // Header 0x06 and 0x07 are the start and stop signals for power pulsing
         if(header == 0x0) {
-
-            // Only want to read these packets from the DUT
-            if(m_detector->isDUT()) {
+            // These packets should only come from the DUT. Otherwise ignore and throw warning.
+            // (We observed these packets a few times per run in various telescope planes in the
+            // November 2018 test beam.)
+            if(!m_detector->isDUT()) {
+                if(temporalSplit) {
+                    LOG(WARNING) << "Current time: "
+                                 << Units::display(clipboard->get_persistent("eventStart"), {"s", "ms", "us", "ns"})
+                                 << " detector " << detectorID << " "
+                                 << "header == 0x0! (indicates power pulsing.) Ignoring this.";
+                } else {
+                    LOG(WARNING) << "Current event: " << m_currentEvent << " detector " << detectorID << " "
+                                 << "header == 0x0! (indicates power pulsing.) Ignoring this.";
+                }
                 continue;
             }
+            // Note that the following code is probably outdated and/or not much tested
+            // (Estel used her private code for her power-pulsing studies.) To be fixed!
 
             // Get the second part of the header
             const UChar_t header2 = ((pixdata & 0x0F00000000000000) >> 56) & 0xF;
