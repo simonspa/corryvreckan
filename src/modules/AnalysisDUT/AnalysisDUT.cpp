@@ -275,6 +275,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 double ydistance = intercept.Y() - cluster->global().y();
                 double xabsdistance = fabs(xdistance);
                 double yabsdistance = fabs(ydistance);
+                double tdistance = track->timestamp() - cluster->timestamp();
 
                 // We now have an associated cluster
                 has_associated_cluster = true;
@@ -318,6 +319,11 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                     residualsX2pix->Fill(xdistance);
                     residualsY2pix->Fill(ydistance);
                 }
+
+                // Time residuals
+                residualsTime->Fill(tdistance);
+                residualsTimeVsTime->Fill(tdistance, track->timestamp());
+                residualsTimeVsSignal->Fill(tdistance, cluster->tot());
 
                 clusterSizeAssoc->Fill(static_cast<double>(cluster->size()));
 
