@@ -291,11 +291,13 @@ bool Detector::hitMasked(Track* track, int tolerance) {
 
 // Functions to get row and column from local position
 double Detector::getRow(const PositionVector3D<Cartesian3D<double>> localPosition) {
-    double row = ((localPosition.Y() + m_pitch.Y() / 2.) / m_pitch.Y()) + m_nPixelsY / 2.;
+    // (1-m_nPixelsY%2)/2. --> add 1/2 pixel pitch if even number of rows
+    double row = localPosition.Y() / m_pitch.Y() + static_cast<double>(m_nPixelsY) / 2. + (1 - m_nPixelsY % 2) / 2.;
     return row;
 }
 double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosition) {
-    double column = ((localPosition.X() + m_pitch.X() / 2.) / m_pitch.X()) + m_nPixelsX / 2.;
+    // (1-m_nPixelsX%2)/2. --> add 1/2 pixel pitch if even number of columns
+    double column = localPosition.X() / m_pitch.X() + static_cast<double>(m_nPixelsX) / 2. + (1 - m_nPixelsX % 2) / 2.;
     return column;
 }
 
