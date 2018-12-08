@@ -28,22 +28,22 @@ void MaskCreator::initialise() {
     std::string title = m_detector->name() + " Mask Map;x [px];y [px];mask";
     maskmap = new TH2F("maskmap",
                        title.c_str(),
-                       m_detector->nPixelsX(),
+                       m_detector->nPixels().X(),
                        0,
-                       m_detector->nPixelsX(),
-                       m_detector->nPixelsY(),
+                       m_detector->nPixels().X(),
+                       m_detector->nPixels().Y(),
                        0,
-                       m_detector->nPixelsY());
+                       m_detector->nPixels().Y());
 
     title = m_detector->name() + " Occupancy;x [px];y [px];entries";
     m_occupancy = new TH2D("occupancy",
                            title.c_str(),
-                           m_detector->nPixelsX(),
+                           m_detector->nPixels().X(),
                            0,
-                           m_detector->nPixelsX(),
-                           m_detector->nPixelsY(),
+                           m_detector->nPixels().X(),
+                           m_detector->nPixels().Y(),
                            0,
-                           m_detector->nPixelsY());
+                           m_detector->nPixels().Y());
 
     title = m_detector->name() + " Occupancy distance;x [px];y [px]";
     m_occupancyDist = new TH1D("occupancy_dist", title.c_str(), binsOccupancy, 0, 1);
@@ -51,22 +51,22 @@ void MaskCreator::initialise() {
     title = m_detector->name() + " Density;x [px]; y [px]";
     m_density = new TH2D("density",
                          title.c_str(),
-                         m_detector->nPixelsX(),
+                         m_detector->nPixels().X(),
                          0,
-                         m_detector->nPixelsX(),
-                         m_detector->nPixelsY(),
+                         m_detector->nPixels().X(),
+                         m_detector->nPixels().Y(),
                          0,
-                         m_detector->nPixelsY());
+                         m_detector->nPixels().Y());
 
     title = m_detector->name() + " Local significance;x [px];y [px]";
     m_significance = new TH2D("local_significance",
                               title.c_str(),
-                              m_detector->nPixelsX(),
+                              m_detector->nPixels().X(),
                               0,
-                              m_detector->nPixelsX(),
-                              m_detector->nPixelsY(),
+                              m_detector->nPixels().X(),
+                              m_detector->nPixels().Y(),
                               0,
-                              m_detector->nPixelsY());
+                              m_detector->nPixels().Y());
 
     title = m_detector->name() + " Local significance distance;x [px];y [px]";
     m_significanceDist = new TH1D("local_significance_dist", title.c_str(), binsOccupancy, 0, 1);
@@ -162,12 +162,12 @@ void MaskCreator::globalFrequencyFilter() {
             meanHits += m_occupancy->GetBinContent(col, row);
         }
     }
-    meanHits /= (m_detector->nPixelsX() * m_detector->nPixelsY());
+    meanHits /= (m_detector->nPixels().X() * m_detector->nPixels().Y());
 
     // Loop again and mask any pixels which are noisy
     int masked = 0, new_masked = 0;
-    for(int col = 0; col < m_detector->nPixelsX(); col++) {
-        for(int row = 0; row < m_detector->nPixelsY(); row++) {
+    for(int col = 0; col < m_detector->nPixels().X(); col++) {
+        for(int row = 0; row < m_detector->nPixels().Y(); row++) {
             if(m_detector->masked(col, row)) {
                 LOG(DEBUG) << "Found existing mask for pixel " << col << "," << row << ", keeping.";
                 maskmap->Fill(col, row);

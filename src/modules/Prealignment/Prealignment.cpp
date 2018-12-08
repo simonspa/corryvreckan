@@ -28,21 +28,21 @@ void Prealignment::initialise() {
     title = m_detector->name() + ": 2D correlation X (local);x [px];x_{ref} [px];events";
     correlationX2Dlocal = new TH2F("correlationX_2Dlocal",
                                    title.c_str(),
-                                   m_detector->nPixelsX(),
+                                   m_detector->nPixels().X(),
                                    0,
-                                   m_detector->nPixelsX(),
-                                   reference->nPixelsX(),
+                                   m_detector->nPixels().X(),
+                                   reference->nPixels().X(),
                                    0,
-                                   reference->nPixelsX());
+                                   reference->nPixels().X());
     title = m_detector->name() + ": 2D correlation Y (local);y [px];y_{ref} [px];events";
     correlationY2Dlocal = new TH2F("correlationY_2Dlocal",
                                    title.c_str(),
-                                   m_detector->nPixelsY(),
+                                   m_detector->nPixels().Y(),
                                    0,
-                                   m_detector->nPixelsY(),
-                                   reference->nPixelsY(),
+                                   m_detector->nPixels().Y(),
+                                   reference->nPixels().Y(),
                                    0,
-                                   reference->nPixelsY());
+                                   reference->nPixels().Y());
     title = m_detector->name() + ": 2D correlation X (global);x [mm];x_{ref} [mm];events";
     correlationX2D = new TH2F("correlationX_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);
     title = m_detector->name() + ": 2D correlation Y (global);y [mm];y_{ref} [mm];events";

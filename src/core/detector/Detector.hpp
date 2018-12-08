@@ -120,8 +120,7 @@ namespace corryvreckan {
          */
         XYVector resolution() const { return m_resolution; }
 
-        int nPixelsX() const { return m_nPixels.X(); }
-        int nPixelsY() const { return m_nPixels.Y(); }
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const { return m_nPixels; }
         double timingOffset() const { return m_timingOffset; }
 
         /**

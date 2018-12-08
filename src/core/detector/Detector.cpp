@@ -123,13 +123,13 @@ void Detector::processMaskFile() {
         while(inputMaskFile >> id >> col >> row) {
             if(id == "c") {
                 LOG(TRACE) << "Masking column " << col;
-                int nRows = nPixelsY();
+                int nRows = nPixels().Y();
                 for(int r = 0; r < nRows; r++) {
                     maskChannel(col, r);
                 }
             } else if(id == "r") {
                 LOG(TRACE) << "Masking row " << row;
-                int nColumns = nPixelsX();
+                int nColumns = nPixels().X();
                 for(int c = 0; c < nColumns; c++) {
                     maskChannel(c, row);
                 }

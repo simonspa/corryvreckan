@@ -43,12 +43,12 @@ void AnalysisEfficiency::initialise() {
     title = m_detector->name() + " Chip efficiency map;x [px];y [px];efficiency";
     hChipEfficiencyMap = new TProfile2D("chipEfficiencyMap",
                                         title.c_str(),
-                                        m_detector->nPixelsX(),
+                                        m_detector->nPixels().X(),
                                         0,
-                                        m_detector->nPixelsX(),
-                                        m_detector->nPixelsY(),
+                                        m_detector->nPixels().X(),
+                                        m_detector->nPixels().Y(),
                                         0,
-                                        m_detector->nPixelsY(),
+                                        m_detector->nPixels().Y(),
                                         0,
                                         1);
     title = m_detector->name() + " Global efficiency map;x [mm];y [mm];efficiency";
