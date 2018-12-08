@@ -47,7 +47,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     }
 
     // Number of pixels
-    auto npixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
+    m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
     // Size of the pixels
     m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
 
@@ -63,14 +63,12 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     }
 
     m_detectorType = config.get<std::string>("type");
-    m_nPixelsX = npixels.x();
-    m_nPixelsY = npixels.y();
     m_timingOffset = config.get<double>("time_offset", 0.0);
     m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
 
     this->initialise();
 
-    LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixelsX << "x" << m_nPixelsY << " px, pitch of "
+    LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixels.X() << "x" << m_nPixels.Y() << " px, pitch of "
                << Units::display(m_pitch, {"mm", "um"});
     LOG(TRACE) << "  Position:    " << Units::display(m_displacement, {"mm", "um"});
     LOG(TRACE) << "  Orientation: " << Units::display(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
@@ -85,6 +83,18 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         setMaskFile(mask_file);
         processMaskFile();
     }
+}
+
+std::string Detector::name() const {
+    return m_detectorName;
+}
+
+std::string Detector::type() const {
+    return m_detectorType;
+}
+
+XYVector Detector::size() const {
+    return XYVector(m_pitch.X() * m_nPixels.X(), m_pitch.Y() * m_nPixels.Y());
 }
 
 bool Detector::isReference() const {
@@ -135,12 +145,12 @@ void Detector::processMaskFile() {
 }
 
 void Detector::maskChannel(int chX, int chY) {
-    int channelID = chX + m_nPixelsX * chY;
+    int channelID = chX + m_nPixels.X() * chY;
     m_masked[channelID] = true;
 }
 
 bool Detector::masked(int chX, int chY) const {
-    int channelID = chX + m_nPixelsX * chY;
+    int channelID = chX + m_nPixels.X() * chY;
     if(m_masked.count(channelID) > 0)
         return true;
     return false;
@@ -199,8 +209,7 @@ Configuration Detector::getConfiguration() const {
     config.set("position", m_displacement, {"um", "mm"});
     config.set("orientation_mode", m_orientation_mode);
     config.set("orientation", m_orientation, {"deg"});
-    auto npixels = ROOT::Math::DisplacementVector2D<Cartesian2D<int>>(m_nPixelsX, m_nPixelsY);
-    config.set("number_of_pixels", npixels);
+    config.set("number_of_pixels", m_nPixels);
 
     // Size of the pixels
     config.set("pixel_pitch", m_pitch, {"um"});
@@ -257,8 +266,8 @@ bool Detector::hasIntercept(const Track* track, double pixelTolerance) const {
 
     // Check if the row and column are outside of the chip
     bool intercept = true;
-    if(row < (pixelTolerance - 0.5) || row > (this->m_nPixelsY - 0.5 - pixelTolerance) || column < (pixelTolerance - 0.5) ||
-       column > (this->m_nPixelsX - 0.5 - pixelTolerance))
+    if(row < (pixelTolerance - 0.5) || row > (this->m_nPixels.Y() - 0.5 - pixelTolerance) ||
+       column < (pixelTolerance - 0.5) || column > (this->m_nPixels.X() - 0.5 - pixelTolerance))
         intercept = false;
 
     return intercept;
@@ -292,12 +301,12 @@ bool Detector::hitMasked(Track* track, int tolerance) const {
 // Functions to get row and column from local position
 double Detector::getRow(const PositionVector3D<Cartesian3D<double>> localPosition) const {
     // (1-m_nPixelsY%2)/2. --> add 1/2 pixel pitch if even number of rows
-    double row = localPosition.Y() / m_pitch.Y() + static_cast<double>(m_nPixelsY) / 2. + (1 - m_nPixelsY % 2) / 2.;
+    double row = localPosition.Y() / m_pitch.Y() + static_cast<double>(m_nPixels.Y()) / 2. + (1 - m_nPixels.Y() % 2) / 2.;
     return row;
 }
 double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosition) const {
     // (1-m_nPixelsX%2)/2. --> add 1/2 pixel pitch if even number of columns
-    double column = localPosition.X() / m_pitch.X() + static_cast<double>(m_nPixelsX) / 2. + (1 - m_nPixelsX % 2) / 2.;
+    double column = localPosition.X() / m_pitch.X() + static_cast<double>(m_nPixels.X()) / 2. + (1 - m_nPixels.X() % 2) / 2.;
     return column;
 }
 
@@ -305,7 +314,7 @@ double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosi
 PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double row, double column) const {
 
     return PositionVector3D<Cartesian3D<double>>(
-        m_pitch.X() * (column - m_nPixelsX / 2.), m_pitch.Y() * (row - m_nPixelsY / 2.), 0.);
+        m_pitch.X() * (column - m_nPixels.X() / 2.), m_pitch.Y() * (row - m_nPixels.Y() / 2.), 0.);
 }
 
 // Function to get in-pixel position

@@ -61,41 +61,118 @@ namespace corryvreckan {
      */
     class Detector {
     public:
-        // Constructors and desctructors
+        /**
+         * Delete default constructor
+         */
         Detector() = delete;
+
+        /**
+         * @brief Constructs a detector in the geometry
+         * @param config Configuration object describing the detector
+         */
         Detector(const Configuration& config);
-        ~Detector() {}
 
-        // Functions to retrieve basic information
-        const std::string type() const { return m_detectorType; }
-        const std::string name() const { return m_detectorName; }
+        /**
+         * @brief Get type of the detector
+         * @return Type of the detector model
+         */
+        std::string type() const;
 
-        // Detector role and helper functions
+        /**
+         * @brief Get name of the detector
+         * @return Detector name
+         */
+        std::string name() const;
+
+        /**
+         * @brief Check whether detector is registered as reference
+         * @return Reference status
+         */
         bool isReference() const;
+
+        /**
+         * @brief Check whether detector is registered as DUT
+         * @return DUT status
+         */
         bool isDUT() const;
 
+        /**
+         * @brief Retrieve configuration object from detector, containing all (potentially updated) parameters
+         * @return Configuration object for this detector
+         */
         Configuration getConfiguration() const;
 
-        XYVector size() const { return XYVector(m_pitch.X() * m_nPixelsX, m_pitch.Y() * m_nPixelsY); }
+        /**
+         * @brief Get the total size of the active matrix, i.e. pitch * number of pixels in both dimensions
+         * @return 2D vector with the dimensions of the pixle matrix in X and Y
+         */
+        XYVector size() const;
+
+        /**
+         * @brief Get pitch of a single pixel
+         * @return Pitch of a pixel
+         */
         XYVector pitch() const { return m_pitch; }
+
+        /**
+         * @brief Get intrinsic resolution of the detector
+         * @return Intrinsic resolution in X and Y
+         */
         XYVector resolution() const { return m_resolution; }
 
-        int nPixelsX() const { return m_nPixelsX; }
-        int nPixelsY() const { return m_nPixelsY; }
+        int nPixelsX() const { return m_nPixels.X(); }
+        int nPixelsY() const { return m_nPixels.Y(); }
         double timingOffset() const { return m_timingOffset; }
 
-        // Functions to set and retrieve basic translation parameters
+        /**
+         * @brief Update detector position in the world
+         * @param displacement Vector with three position coordinates
+         */
         void displacement(XYZPoint displacement) { m_displacement = displacement; }
+
+        /**
+         * @brief Get position in the world
+         * @return Global position in Cartesian coordinates
+         */
         XYZPoint displacement() const { return m_displacement; }
 
-        // Functions to set and retrieve basic rotation parameters
+        /**
+         * @brief Get orientation in the world
+         * @return Vector with three rotation angles
+         */
         XYZVector rotation() const { return m_orientation; }
+
+        /**
+         * @brief Update detector orientation in the world
+         * @param rotation Vector with three rotation angles
+         */
         void rotation(XYZVector rotation) { m_orientation = rotation; }
 
+        /**
+         * @brief Get normal vector to sensor surface
+         * @return Normal vector to sensor surface
+         */
         PositionVector3D<Cartesian3D<double>> normal() const { return m_normal; };
 
+        /**
+         * @brief Get path of the file with pixel mask information
+         * @return Path of the pixel mask file
+         */
         std::string maskFile() const { return m_maskfile; }
+
+        /**
+         * @brief Mark a detector channel as masked
+         * @param chX X coordinate of the pixel to be masked
+         * @param chY Y coordinate of the pixel to be masked
+         */
         void maskChannel(int chX, int chY);
+
+        /**
+         * @brief Check if a detector channel is masked
+         * @param chX X coordinate of the pixel to check
+         * @param chY Y coordinate of the pixel to check
+         * @return    Mask status of the pixel in question
+         */
         bool masked(int chX, int chY) const;
 
         // Function to initialise transforms
@@ -144,8 +221,7 @@ namespace corryvreckan {
         std::string m_detectorName;
         XYVector m_pitch;
         XYVector m_resolution;
-        int m_nPixelsX;
-        int m_nPixelsY;
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels;
         double m_timingOffset;
 
         std::vector<std::vector<int>> m_roi;
