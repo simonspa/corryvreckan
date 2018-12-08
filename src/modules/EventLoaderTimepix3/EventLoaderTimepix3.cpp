@@ -89,11 +89,6 @@ void EventLoaderTimepix3::initialise() {
 
                 // If not a data file, it might be a trimdac file, with the list of masked pixels etc.
                 if(string(file->d_name).find("trimdac") != string::npos) {
-                    // Now that we have all of the data files and mask files for this detector, pass the mask file to
-                    // parameters
-                    LOG(INFO) << "Set mask file " << filename;
-                    m_detector->setMaskFile(filename);
-
                     // Apply the pixel masking
                     maskPixels(filename);
                 }
