@@ -104,9 +104,8 @@ void Prealignment::finalise() {
                   << " , y = " << Units::display(mean_Y, {"mm", "um"});
         LOG(INFO) << "Move in x by = " << Units::display(mean_X * damping_factor, {"mm", "um"})
                   << " , and in y by = " << Units::display(mean_Y * damping_factor, {"mm", "um"});
-        double x = m_detector->displacement().X();
-        double y = m_detector->displacement().Y();
-        m_detector->displacementX(x + damping_factor * mean_X);
-        m_detector->displacementY(y + damping_factor * mean_Y);
+        m_detector->displacement(XYZPoint(m_detector->displacement().X() + damping_factor * mean_X,
+                                          m_detector->displacement().Y() + damping_factor * mean_Y,
+                                          m_detector->displacement().Z()));
     }
 }

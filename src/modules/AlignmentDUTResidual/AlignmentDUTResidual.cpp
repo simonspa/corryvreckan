@@ -141,12 +141,8 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
 void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result, Double_t* par, Int_t) {
 
     // Pick up new alignment conditions
-    globalDetector->displacementX(par[0]);
-    globalDetector->displacementY(par[1]);
-    globalDetector->displacementZ(par[2]);
-    globalDetector->rotationX(par[3]);
-    globalDetector->rotationY(par[4]);
-    globalDetector->rotationZ(par[5]);
+    globalDetector->displacement(XYZPoint(par[0], par[1], par[2]));
+    globalDetector->rotation(XYZVector(par[3], par[4], par[5]));
 
     // Apply new alignment conditions
     globalDetector->update();
@@ -277,12 +273,10 @@ void AlignmentDUTResidual::finalise() {
         residualFitter->ExecuteCommand("MIGRAD", arglist, 2);
 
         // Set the alignment parameters of this plane to be the optimised values from the alignment
-        m_detector->displacementX(residualFitter->GetParameter(0));
-        m_detector->displacementY(residualFitter->GetParameter(1));
-        m_detector->displacementZ(residualFitter->GetParameter(2));
-        m_detector->rotationX(residualFitter->GetParameter(3));
-        m_detector->rotationY(residualFitter->GetParameter(4));
-        m_detector->rotationZ(residualFitter->GetParameter(5));
+        m_detector->displacement(
+            XYZPoint(residualFitter->GetParameter(0), residualFitter->GetParameter(1), residualFitter->GetParameter(2)));
+        m_detector->rotation(
+            XYZVector(residualFitter->GetParameter(3), residualFitter->GetParameter(4), residualFitter->GetParameter(5)));
 
         LOG(INFO) << m_detector->name() << "/" << iteration << " dT"
                   << Units::display(m_detector->displacement() - old_position, {"mm", "um"}) << " dR"
