@@ -71,31 +71,31 @@ namespace corryvreckan {
         const std::string name() const { return m_detectorName; }
 
         // Detector role and helper functions
-        bool isReference();
-        bool isDUT();
+        bool isReference() const;
+        bool isDUT() const;
 
         Configuration getConfiguration();
 
-        XYVector size() { return XYVector(m_pitch.X() * m_nPixelsX, m_pitch.Y() * m_nPixelsY); }
-        XYVector pitch() { return m_pitch; }
-        XYVector resolution() { return m_resolution; }
+        XYVector size() const { return XYVector(m_pitch.X() * m_nPixelsX, m_pitch.Y() * m_nPixelsY); }
+        XYVector pitch() const { return m_pitch; }
+        XYVector resolution() const { return m_resolution; }
 
-        int nPixelsX() { return m_nPixelsX; }
-        int nPixelsY() { return m_nPixelsY; }
-        double timingOffset() { return m_timingOffset; }
+        int nPixelsX() const { return m_nPixelsX; }
+        int nPixelsY() const { return m_nPixelsY; }
+        double timingOffset() const { return m_timingOffset; }
 
         // Functions to set and retrieve basic translation parameters
         void displacementX(double x) { m_displacement.SetX(x); }
         void displacementY(double y) { m_displacement.SetY(y); }
         void displacementZ(double z) { m_displacement.SetZ(z); }
         void displacement(XYZPoint displacement) { m_displacement = displacement; }
-        XYZPoint displacement() { return m_displacement; }
+        XYZPoint displacement() const { return m_displacement; }
 
         // Functions to set and retrieve basic rotation parameters
         void rotationX(double rx) { m_orientation.SetX(rx); }
         void rotationY(double ry) { m_orientation.SetY(ry); }
         void rotationZ(double rz) { m_orientation.SetZ(rz); }
-        XYZVector rotation() { return m_orientation; }
+        XYZVector rotation() const { return m_orientation; }
         void rotation(XYZVector rotation) { m_orientation = rotation; }
 
         PositionVector3D<Cartesian3D<double>> normal() { return m_normal; };

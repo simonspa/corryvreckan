@@ -87,11 +87,11 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     }
 }
 
-bool Detector::isReference() {
+bool Detector::isReference() const {
     return static_cast<bool>(m_role & DetectorRole::REFERENCE);
 }
 
-bool Detector::isDUT() {
+bool Detector::isDUT() const {
     return static_cast<bool>(m_role & DetectorRole::DUT);
 }
 
