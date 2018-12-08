@@ -100,10 +100,6 @@ namespace corryvreckan {
 
         PositionVector3D<Cartesian3D<double>> normal() { return m_normal; };
 
-        // Functions to set and check channel masking
-        void setMaskFile(std::string file);
-        void processMaskFile();
-
         std::string maskFile() { return m_maskfile; }
         void maskChannel(int chX, int chY);
         bool masked(int chX, int chY);
@@ -144,6 +140,10 @@ namespace corryvreckan {
 
     private:
         DetectorRole m_role;
+
+        // Functions to set and check channel masking
+        void setMaskFile(std::string file);
+        void processMaskFile();
 
         // Detector information
         std::string m_detectorType;
