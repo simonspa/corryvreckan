@@ -74,7 +74,7 @@ namespace corryvreckan {
         bool isReference() const;
         bool isDUT() const;
 
-        Configuration getConfiguration();
+        Configuration getConfiguration() const;
 
         XYVector size() const { return XYVector(m_pitch.X() * m_nPixelsX, m_pitch.Y() * m_nPixelsY); }
         XYVector pitch() const { return m_pitch; }
@@ -92,11 +92,11 @@ namespace corryvreckan {
         XYZVector rotation() const { return m_orientation; }
         void rotation(XYZVector rotation) { m_orientation = rotation; }
 
-        PositionVector3D<Cartesian3D<double>> normal() { return m_normal; };
+        PositionVector3D<Cartesian3D<double>> normal() const { return m_normal; };
 
-        std::string maskFile() { return m_maskfile; }
+        std::string maskFile() const { return m_maskfile; }
         void maskChannel(int chX, int chY);
-        bool masked(int chX, int chY);
+        bool masked(int chX, int chY) const;
 
         // Function to initialise transforms
         void initialise();
@@ -105,32 +105,32 @@ namespace corryvreckan {
         void update();
 
         // Function to get global intercept with a track
-        PositionVector3D<Cartesian3D<double>> getIntercept(const Track* track);
+        PositionVector3D<Cartesian3D<double>> getIntercept(const Track* track) const;
         // Function to get local intercept with a track
-        PositionVector3D<Cartesian3D<double>> getLocalIntercept(const Track* track);
+        PositionVector3D<Cartesian3D<double>> getLocalIntercept(const Track* track) const;
 
         // Function to check if a track intercepts with a plane
-        bool hasIntercept(const Track* track, double pixelTolerance = 0.);
+        bool hasIntercept(const Track* track, double pixelTolerance = 0.) const;
 
         // Function to check if a track goes through/near a masked pixel
-        bool hitMasked(Track* track, int tolerance = 0.);
+        bool hitMasked(Track* track, int tolerance = 0.) const;
 
         // Functions to get row and column from local position
-        double getRow(PositionVector3D<Cartesian3D<double>> localPosition);
-        double getColumn(PositionVector3D<Cartesian3D<double>> localPosition);
+        double getRow(PositionVector3D<Cartesian3D<double>> localPosition) const;
+        double getColumn(PositionVector3D<Cartesian3D<double>> localPosition) const;
 
         // Function to get local position from row and column
-        PositionVector3D<Cartesian3D<double>> getLocalPosition(double row, double column);
+        PositionVector3D<Cartesian3D<double>> getLocalPosition(double row, double column) const;
 
         // Function to get in-pixel position
-        double inPixelX(PositionVector3D<Cartesian3D<double>> localPosition);
-        double inPixelY(PositionVector3D<Cartesian3D<double>> localPosition);
+        double inPixelX(PositionVector3D<Cartesian3D<double>> localPosition) const;
+        double inPixelY(PositionVector3D<Cartesian3D<double>> localPosition) const;
 
-        XYZPoint localToGlobal(XYZPoint local) { return m_localToGlobal * local; };
-        XYZPoint globalToLocal(XYZPoint global) { return m_globalToLocal * global; };
+        XYZPoint localToGlobal(XYZPoint local) const { return m_localToGlobal * local; };
+        XYZPoint globalToLocal(XYZPoint global) const { return m_globalToLocal * global; };
 
-        bool isWithinROI(const Track* track);
-        bool isWithinROI(Cluster* cluster);
+        bool isWithinROI(const Track* track) const;
+        bool isWithinROI(Cluster* cluster) const;
 
     private:
         DetectorRole m_role;

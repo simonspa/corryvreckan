@@ -139,7 +139,7 @@ void Detector::maskChannel(int chX, int chY) {
     m_masked[channelID] = true;
 }
 
-bool Detector::masked(int chX, int chY) {
+bool Detector::masked(int chX, int chY) const {
     int channelID = chX + m_nPixelsX * chY;
     if(m_masked.count(channelID) > 0)
         return true;
@@ -178,7 +178,7 @@ void Detector::update() {
     this->initialise();
 }
 
-Configuration Detector::getConfiguration() {
+Configuration Detector::getConfiguration() const {
 
     Configuration config(name());
     config.set("type", m_detectorType);
@@ -222,7 +222,7 @@ Configuration Detector::getConfiguration() {
 }
 
 // Function to get global intercept with a track
-PositionVector3D<Cartesian3D<double>> Detector::getIntercept(const Track* track) {
+PositionVector3D<Cartesian3D<double>> Detector::getIntercept(const Track* track) const {
 
     // Get the distance from the plane to the track initial state
     double distance = (m_origin.X() - track->state().X()) * m_normal.X();
@@ -238,12 +238,12 @@ PositionVector3D<Cartesian3D<double>> Detector::getIntercept(const Track* track)
     return globalIntercept;
 }
 
-PositionVector3D<Cartesian3D<double>> Detector::getLocalIntercept(const Track* track) {
+PositionVector3D<Cartesian3D<double>> Detector::getLocalIntercept(const Track* track) const {
     return globalToLocal(getIntercept(track));
 }
 
 // Function to check if a track intercepts with a plane
-bool Detector::hasIntercept(const Track* track, double pixelTolerance) {
+bool Detector::hasIntercept(const Track* track, double pixelTolerance) const {
 
     // First, get the track intercept in global co-ordinates with the plane
     PositionVector3D<Cartesian3D<double>> globalIntercept = this->getIntercept(track);
@@ -265,7 +265,7 @@ bool Detector::hasIntercept(const Track* track, double pixelTolerance) {
 }
 
 // Function to check if a track goes through/near a masked pixel
-bool Detector::hitMasked(Track* track, int tolerance) {
+bool Detector::hitMasked(Track* track, int tolerance) const {
 
     // First, get the track intercept in global co-ordinates with the plane
     PositionVector3D<Cartesian3D<double>> globalIntercept = this->getIntercept(track);
@@ -290,38 +290,38 @@ bool Detector::hitMasked(Track* track, int tolerance) {
 }
 
 // Functions to get row and column from local position
-double Detector::getRow(const PositionVector3D<Cartesian3D<double>> localPosition) {
+double Detector::getRow(const PositionVector3D<Cartesian3D<double>> localPosition) const {
     // (1-m_nPixelsY%2)/2. --> add 1/2 pixel pitch if even number of rows
     double row = localPosition.Y() / m_pitch.Y() + static_cast<double>(m_nPixelsY) / 2. + (1 - m_nPixelsY % 2) / 2.;
     return row;
 }
-double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosition) {
+double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosition) const {
     // (1-m_nPixelsX%2)/2. --> add 1/2 pixel pitch if even number of columns
     double column = localPosition.X() / m_pitch.X() + static_cast<double>(m_nPixelsX) / 2. + (1 - m_nPixelsX % 2) / 2.;
     return column;
 }
 
 // Function to get local position from row and column
-PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double row, double column) {
+PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double row, double column) const {
 
     return PositionVector3D<Cartesian3D<double>>(
         m_pitch.X() * (column - m_nPixelsX / 2.), m_pitch.Y() * (row - m_nPixelsY / 2.), 0.);
 }
 
 // Function to get in-pixel position
-double Detector::inPixelX(const PositionVector3D<Cartesian3D<double>> localPosition) {
+double Detector::inPixelX(const PositionVector3D<Cartesian3D<double>> localPosition) const {
     double column = getColumn(localPosition);
     double inPixelX = m_pitch.X() * (column - floor(column));
     return inPixelX;
 }
-double Detector::inPixelY(const PositionVector3D<Cartesian3D<double>> localPosition) {
+double Detector::inPixelY(const PositionVector3D<Cartesian3D<double>> localPosition) const {
     double row = getRow(localPosition);
     double inPixelY = m_pitch.Y() * (row - floor(row));
     return inPixelY;
 }
 
 // Check if track position is within ROI:
-bool Detector::isWithinROI(const Track* track) {
+bool Detector::isWithinROI(const Track* track) const {
 
     // Empty region of interest:
     if(m_roi.empty()) {
@@ -340,7 +340,7 @@ bool Detector::isWithinROI(const Track* track) {
 }
 
 // Check if cluster is within ROI and/or touches ROI border:
-bool Detector::isWithinROI(Cluster* cluster) {
+bool Detector::isWithinROI(Cluster* cluster) const {
 
     // Empty region of interest:
     if(m_roi.empty()) {
