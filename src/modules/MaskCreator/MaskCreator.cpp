@@ -45,34 +45,39 @@ void MaskCreator::initialise() {
                            0,
                            m_detector->nPixels().Y());
 
-    title = m_detector->name() + " Occupancy distance;x [px];y [px]";
-    m_occupancyDist = new TH1D("occupancy_dist", title.c_str(), binsOccupancy, 0, 1);
+    if(m_method == "localdensity") {
+        title = m_detector->name() + " Occupancy distance;x [px];y [px]";
+        m_occupancyDist = new TH1D("occupancy_dist", title.c_str(), binsOccupancy, 0, 1);
 
-    title = m_detector->name() + " Density;x [px]; y [px]";
-    m_density = new TH2D("density",
-                         title.c_str(),
-                         m_detector->nPixels().X(),
-                         0,
-                         m_detector->nPixels().X(),
-                         m_detector->nPixels().Y(),
-                         0,
-                         m_detector->nPixels().Y());
+        title = m_detector->name() + " Density;x [px]; y [px]";
+        m_density = new TH2D("density",
+                             title.c_str(),
+                             m_detector->nPixels().X(),
+                             0,
+                             m_detector->nPixels().X(),
+                             m_detector->nPixels().Y(),
+                             0,
+                             m_detector->nPixels().Y());
 
-    title = m_detector->name() + " Local significance;x [px];y [px]";
-    m_significance = new TH2D("local_significance",
-                              title.c_str(),
-                              m_detector->nPixels().X(),
-                              0,
-                              m_detector->nPixels().X(),
-                              m_detector->nPixels().Y(),
-                              0,
-                              m_detector->nPixels().Y());
+        title = m_detector->name() + " Local significance;x [px];y [px]";
+        m_significance = new TH2D("local_significance",
+                                  title.c_str(),
+                                  m_detector->nPixels().X(),
+                                  0,
+                                  m_detector->nPixels().X(),
+                                  m_detector->nPixels().Y(),
+                                  0,
+                                  m_detector->nPixels().Y());
 
-    title = m_detector->name() + " Local significance distance;x [px];y [px]";
-    m_significanceDist = new TH1D("local_significance_dist", title.c_str(), binsOccupancy, 0, 1);
+        title = m_detector->name() + " Local significance distance;x [px];y [px]";
+        m_significanceDist = new TH1D("local_significance_dist", title.c_str(), binsOccupancy, 0, 1);
+    }
 }
 
 StatusCode MaskCreator::run(std::shared_ptr<Clipboard> clipboard) {
+
+    // Count this event:
+    m_numEvents++;
 
     // Get the pixels
     Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));
@@ -110,6 +115,7 @@ void MaskCreator::finalise() {
 void MaskCreator::localDensityEstimator() {
 
     estimateDensity(m_occupancy, m_bandwidthCol, m_bandwidthRow, m_density);
+
     // calculate local signifance, i.e. (hits - density) / sqrt(density)
     for(int icol = 1; icol <= m_occupancy->GetNbinsX(); ++icol) {
         for(int irow = 1; irow <= m_occupancy->GetNbinsY(); ++irow) {
