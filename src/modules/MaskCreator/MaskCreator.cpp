@@ -201,7 +201,7 @@ void MaskCreator::writeMaskFiles() {
     for(int col = 1; col <= maskmap->GetNbinsX(); ++col) {
         for(int row = 1; row <= maskmap->GetNbinsY(); ++row) {
             if(0 < maskmap->GetBinContent(col, row)) {
-                maskfile << "p\t" << col << "\t" << row << std::endl;
+                maskfile << "p\t" << (col - 1) << "\t" << (row - 1) << std::endl;
             }
         }
     }
