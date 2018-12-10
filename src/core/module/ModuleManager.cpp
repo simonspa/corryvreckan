@@ -611,9 +611,17 @@ void ModuleManager::run() {
         m_tracks += (tracks == nullptr ? 0 : static_cast<int>(tracks->size()));
 
         if(m_events % 100 == 0) {
+
+            auto kilo_or_mega = [](const double& input) {
+                bool mega = (input > 1e6 ? true : false);
+                auto value = (mega ? input * 1e-6 : input * 1e-3);
+                std::stringstream output;
+                output << std::fixed << std::setprecision(mega ? 2 : 1) << value << (mega ? "M" : "k");
+                return output.str();
+            };
+
             LOG_PROGRESS(STATUS, "event_loop")
-                << "Ev: " << std::fixed << std::setprecision(1) << 0.001 * m_events << "k Tr: " << std::fixed
-                << std::setprecision(1) << 0.001 * m_tracks << "k (" << std::setprecision(3)
+                << "Ev: " << kilo_or_mega(m_events) << " Tr: " << kilo_or_mega(m_tracks) << " (" << std::setprecision(3)
                 << (static_cast<double>(m_tracks) / m_events) << "/ev)"
                 << (m_clipboard->has_persistent("eventStart")
                         ? " t = " + Units::display(m_clipboard->get_persistent("eventStart"), {"ns", "us", "ms", "s"})
