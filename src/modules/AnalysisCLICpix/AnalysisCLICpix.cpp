@@ -31,22 +31,22 @@ void AnalysisCLICpix::initialise() {
     // Cluster/pixel histograms
     hHitPixels = new TH2F("hHitPixels",
                           "hHitPixels",
-                          m_detector->nPixelsX(),
+                          m_detector->nPixels().X(),
                           0,
-                          m_detector->nPixelsX(),
-                          m_detector->nPixelsY(),
+                          m_detector->nPixels().X(),
+                          m_detector->nPixels().Y(),
                           0,
-                          m_detector->nPixelsY());
-    hColumnHits = new TH1F("hColumnHits", "hColumnHits", m_detector->nPixelsX(), 0, m_detector->nPixelsX());
-    hRowHits = new TH1F("hRowHits", "hRowHits", m_detector->nPixelsY(), 0, m_detector->nPixelsY());
+                          m_detector->nPixels().Y());
+    hColumnHits = new TH1F("hColumnHits", "hColumnHits", m_detector->nPixels().X(), 0, m_detector->nPixels().X());
+    hRowHits = new TH1F("hRowHits", "hRowHits", m_detector->nPixels().Y(), 0, m_detector->nPixels().Y());
     hPixelToTMap = new TProfile2D("pixelToTMap",
                                   "pixelToTMap",
-                                  m_detector->nPixelsX(),
+                                  m_detector->nPixels().X(),
                                   0,
-                                  m_detector->nPixelsX(),
-                                  m_detector->nPixelsY(),
+                                  m_detector->nPixels().X(),
+                                  m_detector->nPixels().Y(),
                                   0,
-                                  m_detector->nPixelsY(),
+                                  m_detector->nPixels().Y(),
                                   0,
                                   maxcounter - 1);
     hClusterSizeAll = new TH1F("hClusterSizeAll", "hClusterSizeAll", 20, 0, 20);
@@ -97,9 +97,9 @@ void AnalysisCLICpix::initialise() {
     hAssociatedClustersVersusTriggerNo =
         new TH1F("hAssociatedClustersVersusTriggerNo", "hAssociatedClustersVersusTriggerNo", 50, 0, 50);
     hAssociatedClusterRow =
-        new TH1F("hAssociatedClusterRow", "hAssociatedClusterRow", m_detector->nPixelsY(), 0, m_detector->nPixelsY());
-    hAssociatedClusterColumn =
-        new TH1F("hAssociatedClusterColumn", "hAssociatedClusterColumn", m_detector->nPixelsX(), 0, m_detector->nPixelsX());
+        new TH1F("hAssociatedClusterRow", "hAssociatedClusterRow", m_detector->nPixels().Y(), 0, m_detector->nPixels().Y());
+    hAssociatedClusterColumn = new TH1F(
+        "hAssociatedClusterColumn", "hAssociatedClusterColumn", m_detector->nPixels().X(), 0, m_detector->nPixels().X());
     hFrameEfficiency = new TH1F("hFrameEfficiency", "hFrameEfficiency", 6000, 0, 6000);
     hFrameTracks = new TH1F("hFrameTracks", "hFrameTracks", 6000, 0, 6000);
     hFrameTracksAssociated = new TH1F("hFrameTracksAssociated", "hFrameTracksAssociated", 6000, 0, 6000);
@@ -148,46 +148,46 @@ void AnalysisCLICpix::initialise() {
         new TH2F("hTrackInterceptsPixelAssociated", "hTrackInterceptsPixelAssociated", 50, 0, 50, 25, 0, 25);
     hTrackInterceptsChip = new TH2F("hTrackInterceptsChip",
                                     "hTrackInterceptsChip",
-                                    m_detector->nPixelsX() + 1,
+                                    m_detector->nPixels().X() + 1,
                                     -0.5,
-                                    m_detector->nPixelsX() + 0.5,
-                                    m_detector->nPixelsY() + 1,
+                                    m_detector->nPixels().X() + 0.5,
+                                    m_detector->nPixels().Y() + 1,
                                     -0.5,
-                                    m_detector->nPixelsY() + 0.5);
+                                    m_detector->nPixels().Y() + 0.5);
     hTrackInterceptsChipAssociated = new TH2F("hTrackInterceptsChipAssociated",
                                               "hTrackInterceptsChipAssociated",
-                                              m_detector->nPixelsX() + 1,
+                                              m_detector->nPixels().X() + 1,
                                               -0.5,
-                                              m_detector->nPixelsX() + 0.5,
-                                              m_detector->nPixelsY() + 1,
+                                              m_detector->nPixels().X() + 0.5,
+                                              m_detector->nPixels().Y() + 1,
                                               -0.5,
-                                              m_detector->nPixelsY() + 0.5);
+                                              m_detector->nPixels().Y() + 0.5);
     hTrackInterceptsChipUnassociated = new TH2F("hTrackInterceptsChipUnassociated",
                                                 "hTrackInterceptsChipUnassociated",
-                                                m_detector->nPixelsX() + 1,
+                                                m_detector->nPixels().X() + 1,
                                                 -0.5,
-                                                m_detector->nPixelsX() + 0.5,
-                                                m_detector->nPixelsY() + 1,
+                                                m_detector->nPixels().X() + 0.5,
+                                                m_detector->nPixels().Y() + 1,
                                                 -0.5,
-                                                m_detector->nPixelsY() + 0.5);
+                                                m_detector->nPixels().Y() + 0.5);
     hTrackInterceptsChipLost = new TH2F("hTrackInterceptsChipLost",
                                         "hTrackInterceptsChipLost",
-                                        m_detector->nPixelsX() + 1,
+                                        m_detector->nPixels().X() + 1,
                                         -0.5,
-                                        m_detector->nPixelsX() + 0.5,
-                                        m_detector->nPixelsY() + 1,
+                                        m_detector->nPixels().X() + 0.5,
+                                        m_detector->nPixels().Y() + 1,
                                         -0.5,
-                                        m_detector->nPixelsY() + 0.5);
+                                        m_detector->nPixels().Y() + 0.5);
 
     hPixelEfficiencyMap = new TH2F("hPixelEfficiencyMap", "hPixelEfficiencyMap", 50, 0, 50, 25, 0, 25);
     hChipEfficiencyMap = new TH2F("hChipEfficiencyMap",
                                   "hChipEfficiencyMap",
-                                  m_detector->nPixelsX() + 1,
+                                  m_detector->nPixels().X() + 1,
                                   -0.5,
-                                  m_detector->nPixelsX() + 0.5,
-                                  m_detector->nPixelsY() + 1,
+                                  m_detector->nPixels().X() + 0.5,
+                                  m_detector->nPixels().Y() + 1,
                                   -0.5,
-                                  m_detector->nPixelsY() + 0.5);
+                                  m_detector->nPixels().Y() + 0.5);
     hGlobalEfficiencyMap = new TH2F("hGlobalEfficiencyMap", "hGlobalEfficiencyMap", 200, -2.0, 2.0, 300, -1., 2);
 
     hInterceptClusterSize1 = new TH2F("hInterceptClusterSize1", "hInterceptClusterSize1", 25, 0, 25, 25, 0, 25);
@@ -201,10 +201,10 @@ void AnalysisCLICpix::initialise() {
                                          "hMapClusterSizeAssociated",
                                          m_nBinsX,
                                          0,
-                                         m_detector->nPixelsX(),
+                                         m_detector->nPixels().X(),
                                          m_nBinsY,
                                          0,
-                                         m_detector->nPixelsY());
+                                         m_detector->nPixels().Y());
 
     for(int x = 0; x < m_nBinsX; x++) {
         for(int y = 0; y < m_nBinsY; y++) {
@@ -304,13 +304,13 @@ StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
         double chipInterceptRow = m_detector->getRow(trackInterceptLocal);
 
         // Get the track intercept position along the pixel
-        double pixelInterceptX = m_detector->inPixelX(trackInterceptLocal);
-        double pixelInterceptY = m_detector->inPixelY(trackInterceptLocal);
+        double pixelInterceptX = m_detector->inPixel(trackInterceptLocal).X();
+        double pixelInterceptY = m_detector->inPixel(trackInterceptLocal).Y();
 
         // Cut on the track intercept - this makes sure that it actually went
         // through the chip
-        if(chipInterceptCol < 0.5 || chipInterceptRow < 0.5 || chipInterceptCol > (m_detector->nPixelsX() - 0.5) ||
-           chipInterceptRow > (m_detector->nPixelsY() - 0.5))
+        if(chipInterceptCol < 0.5 || chipInterceptRow < 0.5 || chipInterceptCol > (m_detector->nPixels().X() - 0.5) ||
+           chipInterceptRow > (m_detector->nPixels().Y() - 0.5))
             continue;
 
         // Check if the hit is near a masked pixel
@@ -372,8 +372,8 @@ StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
             if((bestCluster)->size() == 1) {
                 hClusterTOTAssociated1pix->Fill((bestCluster)->tot());
                 hInterceptClusterSize1->Fill(pixelInterceptX, pixelInterceptY);
-                int id = static_cast<int>(floor(chipInterceptCol * m_nBinsX / m_detector->nPixelsX()) +
-                                          floor(chipInterceptRow * m_nBinsY / m_detector->nPixelsY()) * m_nBinsX);
+                int id = static_cast<int>(floor(chipInterceptCol * m_nBinsX / m_detector->nPixels().X()) +
+                                          floor(chipInterceptRow * m_nBinsY / m_detector->nPixels().Y()) * m_nBinsX);
                 hMapClusterTOTAssociated1pix[id]->Fill((bestCluster)->tot());
             }
             if((bestCluster)->size() == 2) {
@@ -531,7 +531,7 @@ bool AnalysisCLICpix::checkProximity(Track* track, Tracks* tracks) {
 void AnalysisCLICpix::fillClusterHistos(Clusters* clusters) {
 
     // Pick up column to generate unique pixel id
-    int nCols = m_detector->nPixelsX();
+    int nCols = m_detector->nPixels().X();
     Clusters::iterator itc;
 
     // Check if this is a new clicpix frame (each frame may be in several events)

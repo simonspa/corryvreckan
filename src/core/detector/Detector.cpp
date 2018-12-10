@@ -47,7 +47,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     }
 
     // Number of pixels
-    auto npixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
+    m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
     // Size of the pixels
     m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
 
@@ -63,14 +63,12 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     }
 
     m_detectorType = config.get<std::string>("type");
-    m_nPixelsX = npixels.x();
-    m_nPixelsY = npixels.y();
     m_timingOffset = config.get<double>("time_offset", 0.0);
     m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
 
     this->initialise();
 
-    LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixelsX << "x" << m_nPixelsY << " px, pitch of "
+    LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixels.X() << "x" << m_nPixels.Y() << " px, pitch of "
                << Units::display(m_pitch, {"mm", "um"});
     LOG(TRACE) << "  Position:    " << Units::display(m_displacement, {"mm", "um"});
     LOG(TRACE) << "  Orientation: " << Units::display(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
@@ -87,11 +85,23 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     }
 }
 
-bool Detector::isReference() {
+std::string Detector::name() const {
+    return m_detectorName;
+}
+
+std::string Detector::type() const {
+    return m_detectorType;
+}
+
+XYVector Detector::size() const {
+    return XYVector(m_pitch.X() * m_nPixels.X(), m_pitch.Y() * m_nPixels.Y());
+}
+
+bool Detector::isReference() const {
     return static_cast<bool>(m_role & DetectorRole::REFERENCE);
 }
 
-bool Detector::isDUT() {
+bool Detector::isDUT() const {
     return static_cast<bool>(m_role & DetectorRole::DUT);
 }
 
@@ -112,28 +122,28 @@ void Detector::processMaskFile() {
         while(inputMaskFile >> id) {
             if(id == "c") {
                 inputMaskFile >> col;
-                if(col > nPixelsX() - 1) {
-                    LOG(ERROR) << "Column " << col << " outside of pixel matrix, chip has only " << nPixelsX()
+                if(col > nPixels().X() - 1) {
+                    LOG(ERROR) << "Column " << col << " outside of pixel matrix, chip has only " << nPixels().X()
                                << " columns!";
                 }
                 LOG(TRACE) << "Masking column " << col;
-                for(int r = 0; r < nPixelsY(); r++) {
+                for(int r = 0; r < nPixels().Y(); r++) {
                     maskChannel(col, r);
                 }
             } else if(id == "r") {
                 inputMaskFile >> row;
-                if(row > nPixelsY() - 1) {
-                    LOG(ERROR) << "Row " << col << " outside of pixel matrix, chip has only " << nPixelsY() << " rows!";
+                if(row > nPixels().Y() - 1) {
+                    LOG(ERROR) << "Row " << col << " outside of pixel matrix, chip has only " << nPixels().Y() << " rows!";
                 }
                 LOG(TRACE) << "Masking row " << row;
-                for(int c = 0; c < nPixelsX(); c++) {
+                for(int c = 0; c < nPixels().X(); c++) {
                     maskChannel(c, row);
                 }
             } else if(id == "p") {
                 inputMaskFile >> col >> row;
-                if(col > nPixelsX() - 1 || row > nPixelsY() - 1) {
-                    LOG(ERROR) << "Pixel " << col << " " << row << " outside of pixel matrix, chip has only " << nPixelsX()
-                               << " x " << nPixelsY() << " pixels!";
+                if(col > nPixels().X() - 1 || row > nPixels().Y() - 1) {
+                    LOG(ERROR) << "Pixel " << col << " " << row << " outside of pixel matrix, chip has only "
+                               << nPixels().X() << " x " << nPixels().Y() << " pixels!";
                 }
                 LOG(TRACE) << "Masking pixel " << col << " " << row;
                 maskChannel(col, row); // Flag to mask a pixel
@@ -146,12 +156,12 @@ void Detector::processMaskFile() {
 }
 
 void Detector::maskChannel(int chX, int chY) {
-    int channelID = chX + m_nPixelsX * chY;
+    int channelID = chX + m_nPixels.X() * chY;
     m_masked[channelID] = true;
 }
 
-bool Detector::masked(int chX, int chY) {
-    int channelID = chX + m_nPixelsX * chY;
+bool Detector::masked(int chX, int chY) const {
+    int channelID = chX + m_nPixels.X() * chY;
     if(m_masked.count(channelID) > 0)
         return true;
     return false;
@@ -189,7 +199,7 @@ void Detector::update() {
     this->initialise();
 }
 
-Configuration Detector::getConfiguration() {
+Configuration Detector::getConfiguration() const {
 
     Configuration config(name());
     config.set("type", m_detectorType);
@@ -210,8 +220,7 @@ Configuration Detector::getConfiguration() {
     config.set("position", m_displacement, {"um", "mm"});
     config.set("orientation_mode", m_orientation_mode);
     config.set("orientation", m_orientation, {"deg"});
-    auto npixels = ROOT::Math::DisplacementVector2D<Cartesian2D<int>>(m_nPixelsX, m_nPixelsY);
-    config.set("number_of_pixels", npixels);
+    config.set("number_of_pixels", m_nPixels);
 
     // Size of the pixels
     config.set("pixel_pitch", m_pitch, {"um"});
@@ -233,7 +242,7 @@ Configuration Detector::getConfiguration() {
 }
 
 // Function to get global intercept with a track
-PositionVector3D<Cartesian3D<double>> Detector::getIntercept(const Track* track) {
+PositionVector3D<Cartesian3D<double>> Detector::getIntercept(const Track* track) const {
 
     // Get the distance from the plane to the track initial state
     double distance = (m_origin.X() - track->state().X()) * m_normal.X();
@@ -249,12 +258,12 @@ PositionVector3D<Cartesian3D<double>> Detector::getIntercept(const Track* track)
     return globalIntercept;
 }
 
-PositionVector3D<Cartesian3D<double>> Detector::getLocalIntercept(const Track* track) {
+PositionVector3D<Cartesian3D<double>> Detector::getLocalIntercept(const Track* track) const {
     return globalToLocal(getIntercept(track));
 }
 
 // Function to check if a track intercepts with a plane
-bool Detector::hasIntercept(const Track* track, double pixelTolerance) {
+bool Detector::hasIntercept(const Track* track, double pixelTolerance) const {
 
     // First, get the track intercept in global co-ordinates with the plane
     PositionVector3D<Cartesian3D<double>> globalIntercept = this->getIntercept(track);
@@ -268,15 +277,15 @@ bool Detector::hasIntercept(const Track* track, double pixelTolerance) {
 
     // Check if the row and column are outside of the chip
     bool intercept = true;
-    if(row < (pixelTolerance - 0.5) || row > (this->m_nPixelsY - 0.5 - pixelTolerance) || column < (pixelTolerance - 0.5) ||
-       column > (this->m_nPixelsX - 0.5 - pixelTolerance))
+    if(row < (pixelTolerance - 0.5) || row > (this->m_nPixels.Y() - 0.5 - pixelTolerance) ||
+       column < (pixelTolerance - 0.5) || column > (this->m_nPixels.X() - 0.5 - pixelTolerance))
         intercept = false;
 
     return intercept;
 }
 
 // Function to check if a track goes through/near a masked pixel
-bool Detector::hitMasked(Track* track, int tolerance) {
+bool Detector::hitMasked(Track* track, int tolerance) const {
 
     // First, get the track intercept in global co-ordinates with the plane
     PositionVector3D<Cartesian3D<double>> globalIntercept = this->getIntercept(track);
@@ -301,38 +310,33 @@ bool Detector::hitMasked(Track* track, int tolerance) {
 }
 
 // Functions to get row and column from local position
-double Detector::getRow(const PositionVector3D<Cartesian3D<double>> localPosition) {
+double Detector::getRow(const PositionVector3D<Cartesian3D<double>> localPosition) const {
     // (1-m_nPixelsY%2)/2. --> add 1/2 pixel pitch if even number of rows
-    double row = localPosition.Y() / m_pitch.Y() + static_cast<double>(m_nPixelsY) / 2. + (1 - m_nPixelsY % 2) / 2.;
+    double row = localPosition.Y() / m_pitch.Y() + static_cast<double>(m_nPixels.Y()) / 2. + (1 - m_nPixels.Y() % 2) / 2.;
     return row;
 }
-double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosition) {
+double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosition) const {
     // (1-m_nPixelsX%2)/2. --> add 1/2 pixel pitch if even number of columns
-    double column = localPosition.X() / m_pitch.X() + static_cast<double>(m_nPixelsX) / 2. + (1 - m_nPixelsX % 2) / 2.;
+    double column = localPosition.X() / m_pitch.X() + static_cast<double>(m_nPixels.X()) / 2. + (1 - m_nPixels.X() % 2) / 2.;
     return column;
 }
 
 // Function to get local position from row and column
-PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double row, double column) {
+PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double row, double column) const {
 
     return PositionVector3D<Cartesian3D<double>>(
-        m_pitch.X() * (column - m_nPixelsX / 2.), m_pitch.Y() * (row - m_nPixelsY / 2.), 0.);
+        m_pitch.X() * (column - m_nPixels.X() / 2.), m_pitch.Y() * (row - m_nPixels.Y() / 2.), 0.);
 }
 
 // Function to get in-pixel position
-double Detector::inPixelX(const PositionVector3D<Cartesian3D<double>> localPosition) {
+ROOT::Math::XYVector Detector::inPixel(const PositionVector3D<Cartesian3D<double>> localPosition) const {
     double column = getColumn(localPosition);
-    double inPixelX = m_pitch.X() * (column - floor(column));
-    return inPixelX;
-}
-double Detector::inPixelY(const PositionVector3D<Cartesian3D<double>> localPosition) {
     double row = getRow(localPosition);
-    double inPixelY = m_pitch.Y() * (row - floor(row));
-    return inPixelY;
+    return XYVector(m_pitch.X() * (column - floor(column)), m_pitch.Y() * (row - floor(row)));
 }
 
 // Check if track position is within ROI:
-bool Detector::isWithinROI(const Track* track) {
+bool Detector::isWithinROI(const Track* track) const {
 
     // Empty region of interest:
     if(m_roi.empty()) {
@@ -351,7 +355,7 @@ bool Detector::isWithinROI(const Track* track) {
 }
 
 // Check if cluster is within ROI and/or touches ROI border:
-bool Detector::isWithinROI(Cluster* cluster) {
+bool Detector::isWithinROI(Cluster* cluster) const {
 
     // Empty region of interest:
     if(m_roi.empty()) {
