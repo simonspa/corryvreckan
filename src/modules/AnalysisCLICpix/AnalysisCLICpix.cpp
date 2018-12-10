@@ -304,8 +304,8 @@ StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
         double chipInterceptRow = m_detector->getRow(trackInterceptLocal);
 
         // Get the track intercept position along the pixel
-        double pixelInterceptX = m_detector->inPixelX(trackInterceptLocal);
-        double pixelInterceptY = m_detector->inPixelY(trackInterceptLocal);
+        double pixelInterceptX = m_detector->inPixel(trackInterceptLocal).X();
+        double pixelInterceptY = m_detector->inPixel(trackInterceptLocal).Y();
 
         // Cut on the track intercept - this makes sure that it actually went
         // through the chip

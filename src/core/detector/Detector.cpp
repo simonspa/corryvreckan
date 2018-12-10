@@ -318,15 +318,10 @@ PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double row, dou
 }
 
 // Function to get in-pixel position
-double Detector::inPixelX(const PositionVector3D<Cartesian3D<double>> localPosition) const {
+ROOT::Math::XYVector Detector::inPixel(const PositionVector3D<Cartesian3D<double>> localPosition) const {
     double column = getColumn(localPosition);
-    double inPixelX = m_pitch.X() * (column - floor(column));
-    return inPixelX;
-}
-double Detector::inPixelY(const PositionVector3D<Cartesian3D<double>> localPosition) const {
     double row = getRow(localPosition);
-    double inPixelY = m_pitch.Y() * (row - floor(row));
-    return inPixelY;
+    return XYVector(m_pitch.X() * (column - floor(column)), m_pitch.Y() * (row - floor(row)));
 }
 
 // Check if track position is within ROI:

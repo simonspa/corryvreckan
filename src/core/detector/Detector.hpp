@@ -120,7 +120,16 @@ namespace corryvreckan {
          */
         XYVector resolution() const { return m_resolution; }
 
+        /**
+         * @brief Get number of pixels in x and y
+         * @return Number of two dimensional pixels
+         */
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const { return m_nPixels; }
+
+        /**
+         * @brief Get detector time offset from global clock, can be used to correct for constant shifts or time of flight
+         * @return Timing offset fo respective detector
+         */
         double timingOffset() const { return m_timingOffset; }
 
         /**
@@ -174,10 +183,9 @@ namespace corryvreckan {
          */
         bool masked(int chX, int chY) const;
 
-        // Function to initialise transforms
-        void initialise();
-
-        // Function to update transforms (such as during alignment)
+        /**
+         * @brief Update coordinate transformations based on currently configured position and orientation values
+         */
         void update();
 
         // Function to get global intercept with a track
@@ -198,18 +206,47 @@ namespace corryvreckan {
         // Function to get local position from row and column
         PositionVector3D<Cartesian3D<double>> getLocalPosition(double row, double column) const;
 
-        // Function to get in-pixel position
-        double inPixelX(PositionVector3D<Cartesian3D<double>> localPosition) const;
-        double inPixelY(PositionVector3D<Cartesian3D<double>> localPosition) const;
+        /**
+         * Transformation from local (sensor) coordinates to in-pixel coordinates
+         * @param  localPosition Local position on the sensor
+         * @return               Position within a single pixel cell, given in units of length
+         */
+        XYVector inPixel(PositionVector3D<Cartesian3D<double>> localPosition) const;
 
+        /**
+         * @brief Transform local coordinates of this detector into global coordinates
+         * @param  local Local coordinates in the reference frame of this detector
+         * @return       Global coordinates
+         */
         XYZPoint localToGlobal(XYZPoint local) const { return m_localToGlobal * local; };
+
+        /**
+         * @brief Transform global coordinates into detector-local coordinates
+         * @param  global Global coordinates
+         * @return        Local coordinates in the reference frame of this detector
+         */
         XYZPoint globalToLocal(XYZPoint global) const { return m_globalToLocal * global; };
 
+        /**
+         * @brief Check whether given track is within the detector's region-of-interest
+         * @param  track The track to be checked
+         * @return       Boolean indicating cluster affiliation with region-of-interest
+         */
         bool isWithinROI(const Track* track) const;
+
+        /**
+         * @brief Check whether given cluster is within the detector's region-of-interest
+         * @param  cluster The cluster to be checked
+         * @return         Boolean indicating cluster affiliation with region-of-interest
+         */
         bool isWithinROI(Cluster* cluster) const;
 
     private:
+        // Roles of the detector
         DetectorRole m_role;
+
+        // Initialize coordinate transformations
+        void initialise();
 
         // Functions to set and check channel masking
         void setMaskFile(std::string file);

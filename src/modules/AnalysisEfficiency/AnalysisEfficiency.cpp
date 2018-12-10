@@ -125,8 +125,9 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         total_tracks++;
 
         // Calculate in-pixel position of track in microns
-        auto xmod = static_cast<double>(Units::convert(m_detector->inPixelX(localIntercept), "um"));
-        auto ymod = static_cast<double>(Units::convert(m_detector->inPixelY(localIntercept), "um"));
+        auto inpixel = m_detector->inPixel(localIntercept);
+        auto xmod = static_cast<double>(Units::convert(inpixel.X(), "um"));
+        auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
 
         // Get the DUT clusters from the clipboard
         Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
