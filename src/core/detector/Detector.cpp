@@ -118,26 +118,37 @@ void Detector::processMaskFile() {
     } else {
         int row = 0, col = 0;
         std::string id;
-        std::string line;
         // loop over all lines and apply masks
-        while(inputMaskFile >> id >> col >> row) {
+        while(inputMaskFile >> id) {
             if(id == "c") {
+                inputMaskFile >> col;
+                if(col > nPixels().X() - 1) {
+                    LOG(ERROR) << "Column " << col << " outside of pixel matrix, chip has only " << nPixels().X()
+                               << " columns!";
+                }
                 LOG(TRACE) << "Masking column " << col;
-                int nRows = nPixels().Y();
-                for(int r = 0; r < nRows; r++) {
+                for(int r = 0; r < nPixels().Y(); r++) {
                     maskChannel(col, r);
                 }
             } else if(id == "r") {
+                inputMaskFile >> row;
+                if(row > nPixels().Y() - 1) {
+                    LOG(ERROR) << "Row " << col << " outside of pixel matrix, chip has only " << nPixels().Y() << " rows!";
+                }
                 LOG(TRACE) << "Masking row " << row;
-                int nColumns = nPixels().X();
-                for(int c = 0; c < nColumns; c++) {
+                for(int c = 0; c < nPixels().X(); c++) {
                     maskChannel(c, row);
                 }
             } else if(id == "p") {
+                inputMaskFile >> col >> row;
+                if(col > nPixels().X() - 1 || row > nPixels().Y() - 1) {
+                    LOG(ERROR) << "Pixel " << col << " " << row << " outside of pixel matrix, chip has only "
+                               << nPixels().X() << " x " << nPixels().Y() << " pixels!";
+                }
                 LOG(TRACE) << "Masking pixel " << col << " " << row;
                 maskChannel(col, row); // Flag to mask a pixel
             } else {
-                LOG(WARNING) << "Could not parse mask entry (id \"" << id << "\", col " << col << " row " << row << ")";
+                LOG(ERROR) << "Could not parse mask entry (id \"" << id << "\")";
             }
         }
         LOG(INFO) << m_masked.size() << " masked pixels";
