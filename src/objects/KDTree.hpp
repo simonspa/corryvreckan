@@ -7,16 +7,12 @@
 #include "TKDTree.h"
 #include "core/utils/log.h"
 
-/*
-
- This class is effectively just a wrapper for the root TKDTree class that
- handles  clusters and converts them into the format needed by
- ROOT.
-
-*/
-
 namespace corryvreckan {
-
+    /**
+     * @ingroup Objects
+     * @brief This class is effectively just a wrapper for the root TKDTree class that handles  clusters and converts them
+     * into the format needed by ROOT.
+     */
     class KDTree : public Object {
 
     public:

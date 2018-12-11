@@ -25,7 +25,10 @@
 #include "TSystem.h"
 
 namespace corryvreckan {
-
+    /**
+     * @ingroup Objects
+     * @brief Display class for ROOT GUIs
+     */
     class GuiDisplay : public Object {
 
         RQ_OBJECT("GuiDisplay")

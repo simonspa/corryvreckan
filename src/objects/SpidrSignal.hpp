@@ -2,7 +2,10 @@
 #define SPIDRSIGNAL_H 1
 
 namespace corryvreckan {
-
+    /**
+     * @ingroup Objects
+     * @brief Signal recorded by the SPIDR readout system
+     */
     class SpidrSignal : public Object {
 
     public:

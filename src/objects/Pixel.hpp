@@ -4,7 +4,10 @@
 #include "Object.hpp"
 
 namespace corryvreckan {
-
+    /**
+     * @ingroup Objects
+     * @brief Pixel hit object
+     */
     class Pixel : public Object {
 
     public:
