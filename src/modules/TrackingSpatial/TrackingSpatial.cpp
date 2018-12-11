@@ -95,6 +95,12 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // If there are no detectors then stop trying to track
     if(detectors.empty() || referenceClusters == nullptr) {
+        // Clean up tree objects
+        for(auto tree = trees.cbegin(); tree != trees.cend();) {
+            delete tree->second;
+            tree = trees.erase(tree);
+        }
+
         return StatusCode::NoData;
     }
 
@@ -183,9 +189,9 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Clean up tree objects
-    for(auto& detector : get_detectors()) {
-        if(trees.count(detector->name()) != 0)
-            delete trees[detector->name()];
+    for(auto tree = trees.cbegin(); tree != trees.cend();) {
+        delete tree->second;
+        tree = trees.erase(tree);
     }
 
     return StatusCode::Success;
