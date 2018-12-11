@@ -148,7 +148,6 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
             // Add the cluster to the track
             track->addCluster(closestCluster);
-            cluster = closestCluster;
             LOG(DEBUG) << "- added cluster to track. Distance is " << distance;
         }
 
