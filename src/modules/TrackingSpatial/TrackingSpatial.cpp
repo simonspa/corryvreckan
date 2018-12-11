@@ -72,9 +72,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Get the clusters
         Clusters* tempClusters = reinterpret_cast<Clusters*>(clipboard->get(detectorID, "clusters"));
-        if(tempClusters == nullptr) {
-            LOG(DEBUG) << "Detector " << detectorID << " does not have any clusters on the clipboard";
-        } else {
+        if(tempClusters != nullptr) {
             // Store the clusters of the first plane in Z as the reference
             if(detector->displacement().Z() < minZ) {
                 referenceClusters = tempClusters;
