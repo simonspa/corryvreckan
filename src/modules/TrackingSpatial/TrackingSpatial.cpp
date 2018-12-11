@@ -194,9 +194,6 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         tree = trees.erase(tree);
     }
 
+    LOG(DEBUG) << "End of event";
     return StatusCode::Success;
-}
-
-void TrackingSpatial::finalise() {
-    LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }

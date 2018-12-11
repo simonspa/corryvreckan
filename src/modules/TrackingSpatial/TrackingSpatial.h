@@ -25,8 +25,8 @@ namespace corryvreckan {
         // Functions
         void initialise();
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        void finalise();
 
+    private:
         // Histograms
         TH1F* trackChi2;
         TH1F* clustersPerTrack;
