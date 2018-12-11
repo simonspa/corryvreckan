@@ -133,6 +133,7 @@ tst:telescope:
     extends: .test
     script:
         - cd build/
+        - mkdir -p ../testing/data
         - ctest -R test_timepix3tel --output-on-failure -j4
 
 
