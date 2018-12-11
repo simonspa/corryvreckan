@@ -55,10 +55,6 @@ void TrackingSpatial::initialise() {
 
         directory->cd();
     }
-
-    // Initialise member variables
-    m_eventNumber = 0;
-    nTracksTotal = 0.;
 }
 
 StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
@@ -70,6 +66,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Loop over all detectors and get clusters
     double minZ = 1000.;
+    std::string seedPlane;
     for(auto& detector : get_detectors()) {
         string detectorID = detector->name();
 
@@ -81,6 +78,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
             // Store the clusters of the first plane in Z as the reference
             if(detector->displacement().Z() < minZ) {
                 referenceClusters = tempClusters;
+                seedPlane = detector->name();
                 minZ = detector->displacement().Z();
             }
             if(tempClusters->size() == 0)
@@ -103,9 +101,6 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     // Output track container
     Tracks* tracks = new Tracks();
 
-    // Keep a note of which clusters have been used
-    map<Cluster*, bool> used;
-
     // Loop over all clusters
     for(auto& cluster : (*referenceClusters)) {
 
@@ -114,7 +109,6 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Add the cluster to the track
         track->addCluster(cluster);
-        used[cluster] = true;
 
         // Loop over each subsequent planes. For each plane, if extrapolate
         // the hit from the previous plane along the z axis, and look for
@@ -125,6 +119,8 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
             if(trees.count(detectorID) == 0) {
                 continue;
             }
+            if(detectorID == seedPlane)
+                continue;
 
             // Check if the DUT should be excluded and obey:
             if(excludeDUT && detector->isDUT()) {
@@ -134,10 +130,6 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
             // Get the closest neighbour
             LOG(DEBUG) << "- looking for nearest cluster on device " << detectorID;
             Cluster* closestCluster = trees[detectorID]->getClosestNeighbour(cluster);
-
-            LOG(DEBUG) << "still alive";
-            // If it is used do nothing
-            //      if(used[closestCluster]) continue;
 
             // Check if it is within the spatial window
             double distance = sqrt((cluster->global().x() - closestCluster->global().x()) *
@@ -156,6 +148,8 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Now should have a track with one cluster from each plane
         if(track->nClusters() < minHitsOnTrack) {
+            LOG(DEBUG) << "Not enough clusters on the track, found " << track->nClusters() << " but " << minHitsOnTrack
+                       << " required.";
             delete track;
             continue;
         }
@@ -174,8 +168,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         trackAngleY->Fill(atan(track->direction().Y()));
 
         // Make residuals
-        Clusters trackClusters = track->clusters();
-        for(auto& trackCluster : trackClusters) {
+        for(auto& trackCluster : track->clusters()) {
             string detectorID = trackCluster->detectorID();
             ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->global().z());
             residualsX[detectorID]->Fill(intercept.X() - trackCluster->global().x());

@@ -38,10 +38,8 @@ namespace corryvreckan {
         std::map<std::string, TH1F*> residualsY;
 
         // Member variables
-        int m_eventNumber;
         double spatialCut;
         size_t minHitsOnTrack;
-        double nTracksTotal;
         bool excludeDUT;
     };
 } // namespace corryvreckan
