@@ -33,11 +33,6 @@ bool Clustering4D::sortByTime(Pixel* pixel1, Pixel* pixel2) {
 
 StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
 
-    // Check if they are a Timepix3
-    if(m_detector->type() != "Timepix3") {
-        return StatusCode::Success;
-    }
-
     // Get the pixels
     auto pixels = clipboard->get<Pixels>(m_detector->name());
     if(pixels == nullptr) {
@@ -199,8 +194,8 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
     }
 
     // Create object with local cluster position
-    PositionVector3D<Cartesian3D<double>> positionLocal(m_detector->pitch().X() * (column - m_detector->nPixelsX() / 2),
-                                                        m_detector->pitch().Y() * (row - m_detector->nPixelsY() / 2),
+    PositionVector3D<Cartesian3D<double>> positionLocal(m_detector->pitch().X() * (column - m_detector->nPixels().X() / 2),
+                                                        m_detector->pitch().Y() * (row - m_detector->nPixels().Y() / 2),
                                                         0);
     // Calculate global cluster position
     PositionVector3D<Cartesian3D<double>> positionGlobal = m_detector->localToGlobal(positionLocal);

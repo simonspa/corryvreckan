@@ -70,14 +70,10 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     Clusters* referenceClusters = nullptr;
     Clusters dutClusters;
 
-    // Loop over all Timepix1 and get clusters
+    // Loop over all detectors and get clusters
     double minZ = 1000.;
     for(auto& detector : get_detectors()) {
-
-        // Check if they are a Timepix1
         string detectorID = detector->name();
-        // if(detector->type() != "Timepix1")
-        //     continue;
 
         // Get the clusters
         auto tempClusters = clipboard->get<Clusters>(detectorID);

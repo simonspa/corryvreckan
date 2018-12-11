@@ -61,97 +61,203 @@ namespace corryvreckan {
      */
     class Detector {
     public:
-        // Constructors and desctructors
+        /**
+         * Delete default constructor
+         */
         Detector() = delete;
+
+        /**
+         * @brief Constructs a detector in the geometry
+         * @param config Configuration object describing the detector
+         */
         Detector(const Configuration& config);
-        ~Detector() {}
 
-        // Functions to retrieve basic information
-        const std::string type() const { return m_detectorType; }
-        const std::string name() const { return m_detectorName; }
+        /**
+         * @brief Get type of the detector
+         * @return Type of the detector model
+         */
+        std::string type() const;
 
-        // Detector role and helper functions
-        bool isReference();
-        bool isDUT();
+        /**
+         * @brief Get name of the detector
+         * @return Detector name
+         */
+        std::string name() const;
 
-        Configuration getConfiguration();
+        /**
+         * @brief Check whether detector is registered as reference
+         * @return Reference status
+         */
+        bool isReference() const;
 
-        XYVector size() { return XYVector(m_pitch.X() * m_nPixelsX, m_pitch.Y() * m_nPixelsY); }
-        XYVector pitch() { return m_pitch; }
-        XYVector resolution() { return m_resolution; }
+        /**
+         * @brief Check whether detector is registered as DUT
+         * @return DUT status
+         */
+        bool isDUT() const;
 
-        int nPixelsX() { return m_nPixelsX; }
-        int nPixelsY() { return m_nPixelsY; }
-        double timingOffset() { return m_timingOffset; }
+        /**
+         * @brief Retrieve configuration object from detector, containing all (potentially updated) parameters
+         * @return Configuration object for this detector
+         */
+        Configuration getConfiguration() const;
 
-        // Functions to set and retrieve basic translation parameters
-        void displacementX(double x) { m_displacement.SetX(x); }
-        void displacementY(double y) { m_displacement.SetY(y); }
-        void displacementZ(double z) { m_displacement.SetZ(z); }
+        /**
+         * @brief Get the total size of the active matrix, i.e. pitch * number of pixels in both dimensions
+         * @return 2D vector with the dimensions of the pixle matrix in X and Y
+         */
+        XYVector size() const;
+
+        /**
+         * @brief Get pitch of a single pixel
+         * @return Pitch of a pixel
+         */
+        XYVector pitch() const { return m_pitch; }
+
+        /**
+         * @brief Get intrinsic resolution of the detector
+         * @return Intrinsic resolution in X and Y
+         */
+        XYVector resolution() const { return m_resolution; }
+
+        /**
+         * @brief Get number of pixels in x and y
+         * @return Number of two dimensional pixels
+         */
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const { return m_nPixels; }
+
+        /**
+         * @brief Get detector time offset from global clock, can be used to correct for constant shifts or time of flight
+         * @return Timing offset fo respective detector
+         */
+        double timingOffset() const { return m_timingOffset; }
+
+        /**
+         * @brief Update detector position in the world
+         * @param displacement Vector with three position coordinates
+         */
         void displacement(XYZPoint displacement) { m_displacement = displacement; }
-        XYZPoint displacement() { return m_displacement; }
 
-        // Functions to set and retrieve basic rotation parameters
-        void rotationX(double rx) { m_orientation.SetX(rx); }
-        void rotationY(double ry) { m_orientation.SetY(ry); }
-        void rotationZ(double rz) { m_orientation.SetZ(rz); }
-        XYZVector rotation() { return m_orientation; }
+        /**
+         * @brief Get position in the world
+         * @return Global position in Cartesian coordinates
+         */
+        XYZPoint displacement() const { return m_displacement; }
+
+        /**
+         * @brief Get orientation in the world
+         * @return Vector with three rotation angles
+         */
+        XYZVector rotation() const { return m_orientation; }
+
+        /**
+         * @brief Update detector orientation in the world
+         * @param rotation Vector with three rotation angles
+         */
         void rotation(XYZVector rotation) { m_orientation = rotation; }
 
-        PositionVector3D<Cartesian3D<double>> normal() { return m_normal; };
+        /**
+         * @brief Get normal vector to sensor surface
+         * @return Normal vector to sensor surface
+         */
+        PositionVector3D<Cartesian3D<double>> normal() const { return m_normal; };
+
+        /**
+         * @brief Get path of the file with pixel mask information
+         * @return Path of the pixel mask file
+         */
+        std::string maskFile() const { return m_maskfile; }
+
+        /**
+         * @brief Mark a detector channel as masked
+         * @param chX X coordinate of the pixel to be masked
+         * @param chY Y coordinate of the pixel to be masked
+         */
+        void maskChannel(int chX, int chY);
+
+        /**
+         * @brief Check if a detector channel is masked
+         * @param chX X coordinate of the pixel to check
+         * @param chY Y coordinate of the pixel to check
+         * @return    Mask status of the pixel in question
+         */
+        bool masked(int chX, int chY) const;
+
+        /**
+         * @brief Update coordinate transformations based on currently configured position and orientation values
+         */
+        void update();
+
+        // Function to get global intercept with a track
+        PositionVector3D<Cartesian3D<double>> getIntercept(const Track* track) const;
+        // Function to get local intercept with a track
+        PositionVector3D<Cartesian3D<double>> getLocalIntercept(const Track* track) const;
+
+        // Function to check if a track intercepts with a plane
+        bool hasIntercept(const Track* track, double pixelTolerance = 0.) const;
+
+        // Function to check if a track goes through/near a masked pixel
+        bool hitMasked(Track* track, int tolerance = 0.) const;
+
+        // Functions to get row and column from local position
+        double getRow(PositionVector3D<Cartesian3D<double>> localPosition) const;
+        double getColumn(PositionVector3D<Cartesian3D<double>> localPosition) const;
+
+        // Function to get local position from row and column
+        PositionVector3D<Cartesian3D<double>> getLocalPosition(double row, double column) const;
+
+        /**
+         * Transformation from local (sensor) coordinates to in-pixel coordinates
+         * @param  localPosition Local position on the sensor
+         * @return               Position within a single pixel cell, given in units of length
+         */
+        XYVector inPixel(PositionVector3D<Cartesian3D<double>> localPosition) const;
+
+        /**
+         * @brief Transform local coordinates of this detector into global coordinates
+         * @param  local Local coordinates in the reference frame of this detector
+         * @return       Global coordinates
+         */
+        XYZPoint localToGlobal(XYZPoint local) const { return m_localToGlobal * local; };
+
+        /**
+         * @brief Transform global coordinates into detector-local coordinates
+         * @param  global Global coordinates
+         * @return        Local coordinates in the reference frame of this detector
+         */
+        XYZPoint globalToLocal(XYZPoint global) const { return m_globalToLocal * global; };
+
+        /**
+         * @brief Check whether given track is within the detector's region-of-interest
+         * @param  track The track to be checked
+         * @return       Boolean indicating cluster affiliation with region-of-interest
+         */
+        bool isWithinROI(const Track* track) const;
+
+        /**
+         * @brief Check whether given cluster is within the detector's region-of-interest
+         * @param  cluster The cluster to be checked
+         * @return         Boolean indicating cluster affiliation with region-of-interest
+         */
+        bool isWithinROI(Cluster* cluster) const;
+
+    private:
+        // Roles of the detector
+        DetectorRole m_role;
+
+        // Initialize coordinate transformations
+        void initialise();
 
         // Functions to set and check channel masking
         void setMaskFile(std::string file);
         void processMaskFile();
-
-        std::string maskFile() { return m_maskfile; }
-        void maskChannel(int chX, int chY);
-        bool masked(int chX, int chY);
-
-        // Function to initialise transforms
-        void initialise();
-
-        // Function to update transforms (such as during alignment)
-        void update();
-
-        // Function to get global intercept with a track
-        PositionVector3D<Cartesian3D<double>> getIntercept(const Track* track);
-        // Function to get local intercept with a track
-        PositionVector3D<Cartesian3D<double>> getLocalIntercept(const Track* track);
-
-        // Function to check if a track intercepts with a plane
-        bool hasIntercept(const Track* track, double pixelTolerance = 0.);
-
-        // Function to check if a track goes through/near a masked pixel
-        bool hitMasked(Track* track, int tolerance = 0.);
-
-        // Functions to get row and column from local position
-        double getRow(PositionVector3D<Cartesian3D<double>> localPosition);
-        double getColumn(PositionVector3D<Cartesian3D<double>> localPosition);
-
-        // Function to get local position from row and column
-        PositionVector3D<Cartesian3D<double>> getLocalPosition(double row, double column);
-
-        // Function to get in-pixel position
-        double inPixelX(PositionVector3D<Cartesian3D<double>> localPosition);
-        double inPixelY(PositionVector3D<Cartesian3D<double>> localPosition);
-
-        XYZPoint localToGlobal(XYZPoint local) { return m_localToGlobal * local; };
-        XYZPoint globalToLocal(XYZPoint global) { return m_globalToLocal * global; };
-
-        bool isWithinROI(const Track* track);
-        bool isWithinROI(Cluster* cluster);
-
-    private:
-        DetectorRole m_role;
 
         // Detector information
         std::string m_detectorType;
         std::string m_detectorName;
         XYVector m_pitch;
         XYVector m_resolution;
-        int m_nPixelsX;
-        int m_nPixelsY;
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels;
         double m_timingOffset;
 
         std::vector<std::vector<int>> m_roi;

@@ -43,12 +43,12 @@ void AnalysisEfficiency::initialise() {
     title = m_detector->name() + " Chip efficiency map;x [px];y [px];efficiency";
     hChipEfficiencyMap = new TProfile2D("chipEfficiencyMap",
                                         title.c_str(),
-                                        m_detector->nPixelsX(),
+                                        m_detector->nPixels().X(),
                                         0,
-                                        m_detector->nPixelsX(),
-                                        m_detector->nPixelsY(),
+                                        m_detector->nPixels().X(),
+                                        m_detector->nPixels().Y(),
                                         0,
-                                        m_detector->nPixelsY(),
+                                        m_detector->nPixels().Y(),
                                         0,
                                         1);
     title = m_detector->name() + " Global efficiency map;x [mm];y [mm];efficiency";
@@ -125,8 +125,9 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         total_tracks++;
 
         // Calculate in-pixel position of track in microns
-        auto xmod = static_cast<double>(Units::convert(m_detector->inPixelX(localIntercept), "um"));
-        auto ymod = static_cast<double>(Units::convert(m_detector->inPixelY(localIntercept), "um"));
+        auto inpixel = m_detector->inPixel(localIntercept);
+        auto xmod = static_cast<double>(Units::convert(inpixel.X(), "um"));
+        auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
 
         // Get the DUT clusters from the clipboard
         auto clusters = clipboard->get<Clusters>(m_detector->name());

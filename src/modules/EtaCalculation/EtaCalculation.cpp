@@ -36,9 +36,10 @@ ROOT::Math::XYVector EtaCalculation::pixelIntercept(Track* tr) {
     // Get the in-pixel track intercept
     PositionVector3D<Cartesian3D<double>> trackIntercept = m_detector->getIntercept(tr);
     PositionVector3D<Cartesian3D<double>> trackInterceptLocal = m_detector->globalToLocal(trackIntercept);
-    double pixelInterceptX = m_detector->inPixelX(trackInterceptLocal);
+    auto pixelIntercept = m_detector->inPixel(trackInterceptLocal);
+    double pixelInterceptX = pixelIntercept.X();
     (pixelInterceptX > pitchX / 2. ? pixelInterceptX -= pitchX / 2. : pixelInterceptX += pitchX / 2.);
-    double pixelInterceptY = m_detector->inPixelY(trackInterceptLocal);
+    double pixelInterceptY = pixelIntercept.Y();
     (pixelInterceptY > pitchY / 2. ? pixelInterceptY -= pitchY / 2. : pixelInterceptY += pitchY / 2.);
     return ROOT::Math::XYVector(pixelInterceptX, pixelInterceptY);
 }

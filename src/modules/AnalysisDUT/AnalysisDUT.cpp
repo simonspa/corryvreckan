@@ -18,60 +18,60 @@ void AnalysisDUT::initialise() {
 
     hClusterMapAssoc = new TH2F("clusterMapAssoc",
                                 "clusterMapAssoc",
-                                m_detector->nPixelsX(),
+                                m_detector->nPixels().X(),
                                 0,
-                                m_detector->nPixelsX(),
-                                m_detector->nPixelsY(),
+                                m_detector->nPixels().X(),
+                                m_detector->nPixels().Y(),
                                 0,
-                                m_detector->nPixelsY());
+                                m_detector->nPixels().Y());
     hClusterSizeMapAssoc = new TProfile2D("clusterSizeMapAssoc",
                                           "clusterSizeMapAssoc",
-                                          m_detector->nPixelsX(),
+                                          m_detector->nPixels().X(),
                                           0,
-                                          m_detector->nPixelsX(),
-                                          m_detector->nPixelsY(),
+                                          m_detector->nPixels().X(),
+                                          m_detector->nPixels().Y(),
                                           0,
-                                          m_detector->nPixelsY(),
+                                          m_detector->nPixels().Y(),
                                           0,
                                           100);
 
     hClusterToTMapAssoc = new TProfile2D("clusterSizeToTAssoc",
                                          "clusterToTMapAssoc",
-                                         m_detector->nPixelsX(),
+                                         m_detector->nPixels().X(),
                                          0,
-                                         m_detector->nPixelsX(),
-                                         m_detector->nPixelsY(),
+                                         m_detector->nPixels().X(),
+                                         m_detector->nPixels().Y(),
                                          0,
-                                         m_detector->nPixelsY(),
+                                         m_detector->nPixels().Y(),
                                          0,
                                          1000);
 
     // Per-pixel histograms
     hHitMapAssoc = new TH2F("hitMapAssoc",
                             "hitMapAssoc",
-                            m_detector->nPixelsX(),
+                            m_detector->nPixels().X(),
                             0,
-                            m_detector->nPixelsX(),
-                            m_detector->nPixelsY(),
+                            m_detector->nPixels().X(),
+                            m_detector->nPixels().Y(),
                             0,
-                            m_detector->nPixelsY());
+                            m_detector->nPixels().Y());
     hHitMapROI = new TH2F("hitMapROI",
                           "hitMapROI",
-                          m_detector->nPixelsX(),
+                          m_detector->nPixels().X(),
                           0,
-                          m_detector->nPixelsX(),
-                          m_detector->nPixelsY(),
+                          m_detector->nPixels().X(),
+                          m_detector->nPixels().Y(),
                           0,
-                          m_detector->nPixelsY());
+                          m_detector->nPixels().Y());
     hPixelToTAssoc = new TH1F("pixelToTAssoc", "pixelToTAssoc", 32, 0, 31);
     hPixelToTMapAssoc = new TProfile2D("pixelToTMapAssoc",
                                        "pixelToTMapAssoc",
-                                       m_detector->nPixelsX(),
+                                       m_detector->nPixels().X(),
                                        0,
-                                       m_detector->nPixelsX(),
-                                       m_detector->nPixelsY(),
+                                       m_detector->nPixels().X(),
+                                       m_detector->nPixels().Y(),
                                        0,
-                                       m_detector->nPixelsY(),
+                                       m_detector->nPixels().Y(),
                                        0,
                                        255);
 
@@ -150,12 +150,12 @@ void AnalysisDUT::initialise() {
                                          1);
     hChipEfficiencyMap = new TProfile2D("hChipEfficiencyMap",
                                         "hChipEfficiencyMap",
-                                        m_detector->nPixelsX(),
+                                        m_detector->nPixels().X(),
                                         0,
-                                        m_detector->nPixelsX(),
-                                        m_detector->nPixelsY(),
+                                        m_detector->nPixels().X(),
+                                        m_detector->nPixels().Y(),
                                         0,
-                                        m_detector->nPixelsY(),
+                                        m_detector->nPixels().Y(),
                                         0,
                                         1);
     hGlobalEfficiencyMap = new TProfile2D("hGlobalEfficiencyMap",
@@ -243,8 +243,9 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Calculate in-pixel position of track in microns
-        auto xmod = static_cast<double>(Units::convert(m_detector->inPixelX(localIntercept), "um"));
-        auto ymod = static_cast<double>(Units::convert(m_detector->inPixelY(localIntercept), "um"));
+        auto inpixel = m_detector->inPixel(localIntercept);
+        auto xmod = static_cast<double>(Units::convert(inpixel.X(), "um"));
+        auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
 
         // Get the DUT clusters from the clipboard
         auto clusters = clipboard->get<Clusters>(m_detector->name());
@@ -275,6 +276,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 double ydistance = intercept.Y() - cluster->global().y();
                 double xabsdistance = fabs(xdistance);
                 double yabsdistance = fabs(ydistance);
+                double tdistance = track->timestamp() - cluster->timestamp();
 
                 // We now have an associated cluster
                 has_associated_cluster = true;
@@ -318,6 +320,11 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                     residualsX2pix->Fill(xdistance);
                     residualsY2pix->Fill(ydistance);
                 }
+
+                // Time residuals
+                residualsTime->Fill(tdistance);
+                residualsTimeVsTime->Fill(tdistance, track->timestamp());
+                residualsTimeVsSignal->Fill(tdistance, cluster->tot());
 
                 clusterSizeAssoc->Fill(static_cast<double>(cluster->size()));
 

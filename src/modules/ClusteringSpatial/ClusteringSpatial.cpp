@@ -55,8 +55,8 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     bool addedPixel;
 
     // Get the device dimensions
-    int nRows = m_detector->nPixelsY();
-    int nCols = m_detector->nPixelsX();
+    int nRows = m_detector->nPixels().Y();
+    int nCols = m_detector->nPixels().X();
 
     // Pre-fill the hitmap with pixels
     for(auto pixel : (*pixels)) {
@@ -169,8 +169,8 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
     LOG(DEBUG) << "- cluster row, col: " << row << "," << column;
 
     // Create object with local cluster position
-    PositionVector3D<Cartesian3D<double>> positionLocal(m_detector->pitch().X() * (column - m_detector->nPixelsX() / 2.),
-                                                        m_detector->pitch().Y() * (row - m_detector->nPixelsY() / 2.),
+    PositionVector3D<Cartesian3D<double>> positionLocal(m_detector->pitch().X() * (column - m_detector->nPixels().X() / 2.),
+                                                        m_detector->pitch().Y() * (row - m_detector->nPixels().Y() / 2.),
                                                         0);
     // Calculate global cluster position
     PositionVector3D<Cartesian3D<double>> positionGlobal = m_detector->localToGlobal(positionLocal);

@@ -116,12 +116,12 @@ void EventLoaderATLASpix::initialise() {
     // Make histograms for debugging
     hHitMap = new TH2F("hitMap",
                        "hitMap",
-                       m_detector->nPixelsX(),
+                       m_detector->nPixels().X(),
                        0,
-                       m_detector->nPixelsX(),
-                       m_detector->nPixelsY(),
+                       m_detector->nPixels().X(),
+                       m_detector->nPixels().Y(),
                        0,
-                       m_detector->nPixelsY());
+                       m_detector->nPixels().Y());
     // hPixelToT = new TH1F("pixelToT", "pixelToT", 100, 0, 100);
     // std::string totTitle = "pixelToT;x ToT in " + string(m_clockCycle) + " ns units";
     // hPixelToT = new TH1F("pixelToT", "pixelToT", 64, 0, ts2Range*m_clockCycle);
@@ -133,7 +133,7 @@ void EventLoaderATLASpix::initialise() {
     hPixelsOverTime = new TH1F("pixelsOverTime", "pixelsOverTime", 2e6, 0, 2e6);
 
     // Read calibration:
-    m_calibrationFactors.resize(static_cast<size_t>(m_detector->nPixelsX() * m_detector->nPixelsY()), 1.0);
+    m_calibrationFactors.resize(static_cast<size_t>(m_detector->nPixels().X() * m_detector->nPixels().Y()), 1.0);
     if(!m_calibrationFile.empty()) {
         std::ifstream calibration(m_calibrationFile);
         std::string line;

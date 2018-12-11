@@ -589,12 +589,11 @@ void AlignmentMillepede::updateGeometry() {
         }
         auto plane = m_millePlanes[det->name()];
 
-        det->displacementX(det->displacement().X() + m_dparm[plane + 0 * nPlanes]);
-        det->displacementY(det->displacement().Y() + m_dparm[plane + 1 * nPlanes]);
-        det->displacementZ(det->displacement().Z() + m_dparm[plane + 2 * nPlanes]);
-        det->rotationX(det->rotation().X() + m_dparm[plane + 3 * nPlanes]);
-        det->rotationY(det->rotation().Y() + m_dparm[plane + 4 * nPlanes]);
-        det->rotationZ(det->rotation().Z() + m_dparm[plane + 5 * nPlanes]);
+        det->displacement(XYZPoint(det->displacement().X() + m_dparm[plane + 0 * nPlanes],
+                                   det->displacement().Y() + m_dparm[plane + 1 * nPlanes],
+                                   det->displacement().Z() + m_dparm[plane + 2 * nPlanes]));
+        det->rotation(det->rotation() +
+                      XYZVector(m_dparm[plane + 3 * nPlanes], m_dparm[plane + 4 * nPlanes], m_dparm[plane + 5 * nPlanes]));
         det->update();
     }
     /*

@@ -88,12 +88,8 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
 void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, Double_t* par, Int_t) {
 
     // Pick up new alignment conditions
-    globalDetector->displacementX(par[detNum * 6 + 0]);
-    globalDetector->displacementY(par[detNum * 6 + 1]);
-    globalDetector->displacementZ(par[detNum * 6 + 2]);
-    globalDetector->rotationX(par[detNum * 6 + 3]);
-    globalDetector->rotationY(par[detNum * 6 + 4]);
-    globalDetector->rotationZ(par[detNum * 6 + 5]);
+    globalDetector->displacement(XYZPoint(par[detNum * 6 + 0], par[detNum * 6 + 1], par[detNum * 6 + 2]));
+    globalDetector->rotation(XYZVector(par[detNum * 6 + 3], par[detNum * 6 + 4], par[detNum * 6 + 5]));
 
     // Apply new alignment conditions
     globalDetector->update();
@@ -254,12 +250,8 @@ void AlignmentTrackChi2::finalise() {
 
             // Set the alignment parameters of this plane to be the optimised values
             // from the alignment
-            detector->displacementX(displacementX);
-            detector->displacementY(displacementY);
-            detector->displacementZ(displacementZ);
-            detector->rotationX(rotationX);
-            detector->rotationY(rotationY);
-            detector->rotationZ(rotationZ);
+            detector->displacement(XYZPoint(displacementX, displacementY, displacementZ));
+            detector->rotation(XYZVector(rotationX, rotationY, rotationZ));
             detector->update();
             det++;
         }
