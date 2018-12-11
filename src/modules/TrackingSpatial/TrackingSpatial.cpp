@@ -8,7 +8,6 @@ using namespace std;
 TrackingSpatial::TrackingSpatial(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
     spatialCut = m_config.get<double>("spatialCut", static_cast<double>(Units::convert(200, "um")));
-    spatialCut_DUT = m_config.get<double>("spatialCutDUT", static_cast<double>(Units::convert(200, "um")));
     minHitsOnTrack = m_config.get<size_t>("minHitsOnTrack", 6);
     excludeDUT = m_config.get<bool>("excludeDUT", true);
 }
@@ -68,7 +67,6 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     map<string, KDTree*> trees;
     vector<std::shared_ptr<Detector>> detectors;
     Clusters* referenceClusters = nullptr;
-    Clusters dutClusters;
 
     // Loop over all detectors and get clusters
     double minZ = 1000.;
@@ -130,9 +128,6 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
             // Check if the DUT should be excluded and obey:
             if(excludeDUT && detector->isDUT()) {
-                // Keep all DUT clusters, so we can add them as associated clusters later:
-                Cluster* dutCluster = trees[detectorID]->getClosestNeighbour(cluster);
-                dutClusters.push_back(dutCluster);
                 continue;
             }
 
@@ -185,22 +180,6 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
             ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->global().z());
             residualsX[detectorID]->Fill(intercept.X() - trackCluster->global().x());
             residualsY[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
-        }
-
-        // Add potential associated clusters from the DUT:
-        for(auto& dutcluster : dutClusters) {
-
-            // Check distance between track and cluster
-            ROOT::Math::XYZPoint intercept = track->intercept(dutcluster->global().z());
-            double xdistance = intercept.X() - dutcluster->global().x();
-            double ydistance = intercept.Y() - dutcluster->global().y();
-            if(abs(xdistance) > spatialCut_DUT)
-                continue;
-            if(abs(ydistance) > spatialCut_DUT)
-                continue;
-
-            LOG(DEBUG) << "Found associated cluster";
-            track->addAssociatedCluster(dutcluster);
         }
     }
 
