@@ -178,7 +178,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Pixel container, shutter information
-    Pixels* pixels = new Pixels();
+    std::shared_ptr<Pixels> pixels;
     long long int shutterStartTimeInt = 0, shutterStopTimeInt = 0;
     double shutterStartTime, shutterStopTime;
     string datastring;
@@ -301,7 +301,6 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     if(!pixels->empty()) {
         clipboard->put(pixels, m_detector->name());
     } else {
-        delete pixels;
         return StatusCode::NoData;
     }
 

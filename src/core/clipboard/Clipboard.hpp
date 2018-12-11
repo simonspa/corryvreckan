@@ -48,7 +48,7 @@ namespace corryvreckan {
          * @param type Type of the object collection to be stored
          * @param Objects vector of Objects to store
          */
-        template <typename T> void put(T* objects, const std::string& key = "");
+        template <typename T> void put(std::shared_ptr<T> objects, const std::string& key = "");
 
         /**
          * @brief Retrieve objects from the clipboard
@@ -56,7 +56,7 @@ namespace corryvreckan {
          * @param type Type of objects to be retrieved
          * @return Vector of Object pointers
          */
-        template <typename T> T* get(const std::string& key = "") const;
+        template <typename T> std::shared_ptr<T> get(const std::string& key = "") const;
 
         /**
          * @brief Store or update variable on the persistent clipboard storage
@@ -92,7 +92,7 @@ namespace corryvreckan {
         std::vector<std::string> listCollections();
 
     private:
-        typedef std::map<std::type_index, std::map<std::string, Objects*>> ClipboardData;
+        typedef std::map<std::type_index, std::map<std::string, std::shared_ptr<void>>> ClipboardData;
 
         // Container for data, list of all data held
         ClipboardData m_data;

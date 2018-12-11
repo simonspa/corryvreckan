@@ -231,8 +231,8 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Make a new container for the data
-    Pixels* deviceData = new Pixels();
-    SpidrSignals* spidrData = new SpidrSignals();
+    std::shared_ptr<Pixels> deviceData;
+    std::shared_ptr<SpidrSignals> spidrData;
 
     // Load the next chunk of data
     bool data = loadData(clipboard, deviceData, spidrData);
@@ -241,14 +241,10 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     if(data) {
         LOG(DEBUG) << "Loaded " << deviceData->size() << " pixels for device " << m_detector->name();
         clipboard->put(deviceData, m_detector->name());
-    } else {
-        delete deviceData;
     }
 
     if(!spidrData->empty()) {
         clipboard->put(spidrData, m_detector->name());
-    } else {
-        delete spidrData;
     }
 
     // Otherwise tell event loop to keep running
@@ -331,7 +327,9 @@ void EventLoaderTimepix3::loadCalibration(std::string path, char delim, std::vec
 }
 
 // Function to load data for a given device, into the relevant container
-bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard, Pixels* devicedata, SpidrSignals* spidrData) {
+bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
+                                   std::shared_ptr<Pixels>& devicedata,
+                                   std::shared_ptr<SpidrSignals>& spidrData) {
 
     std::string detectorID = m_detector->name();
 

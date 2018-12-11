@@ -54,7 +54,8 @@ void AnalysisTelescope::initialise() {
     }
 }
 
-ROOT::Math::XYZPoint AnalysisTelescope::closestApproach(ROOT::Math::XYZPoint position, MCParticles* particles) {
+ROOT::Math::XYZPoint AnalysisTelescope::closestApproach(ROOT::Math::XYZPoint position,
+                                                        std::shared_ptr<MCParticles> particles) {
     // Find the closest MC particle
     double smallestDistance(DBL_MAX);
     ROOT::Math::XYZPoint particlePosition;

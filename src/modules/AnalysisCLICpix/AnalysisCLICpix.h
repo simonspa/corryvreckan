@@ -26,8 +26,8 @@ namespace corryvreckan {
     private:
         std::shared_ptr<Detector> m_detector;
         bool checkMasked(double, double);
-        void fillClusterHistos(Clusters*);
-        bool checkProximity(Track*, Tracks*);
+        void fillClusterHistos(std::shared_ptr<Clusters>);
+        bool checkProximity(Track*, std::shared_ptr<Tracks>);
         void fillResponseHistos(double, double, Cluster*);
 
         // Cluster/pixel histograms

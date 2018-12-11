@@ -70,7 +70,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     // Container for all clusters, and detectors in tracking
     map<string, KDTree*> trees;
     vector<string> detectors;
-    Clusters* referenceClusters = nullptr;
+    std::shared_ptr<Clusters> referenceClusters = nullptr;
 
     // Loop over all planes and get clusters
     bool firstDetector = true;
@@ -111,7 +111,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Output track container
-    Tracks* tracks = new Tracks();
+    std::shared_ptr<Tracks> tracks;
 
     // Loop over all clusters
     map<Cluster*, bool> used;

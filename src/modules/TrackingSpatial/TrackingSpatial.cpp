@@ -67,7 +67,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     // Container for all clusters, and detectors in tracking
     map<string, KDTree*> trees;
     vector<std::shared_ptr<Detector>> detectors;
-    Clusters* referenceClusters = nullptr;
+    std::shared_ptr<Clusters> referenceClusters = nullptr;
     Clusters dutClusters;
 
     // Loop over all detectors and get clusters
@@ -103,7 +103,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Output track container
-    Tracks* tracks = new Tracks();
+    std::shared_ptr<Tracks> tracks;
 
     // Keep a note of which clusters have been used
     map<Cluster*, bool> used;

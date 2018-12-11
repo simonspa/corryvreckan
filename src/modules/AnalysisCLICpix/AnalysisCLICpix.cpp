@@ -502,7 +502,7 @@ bool AnalysisCLICpix::checkMasked(double chipInterceptRow, double chipInterceptC
 
 // Check if there is another track close to the selected track.
 // "Close" is defined as the intercept at the clicpix
-bool AnalysisCLICpix::checkProximity(Track* track, Tracks* tracks) {
+bool AnalysisCLICpix::checkProximity(Track* track, std::shared_ptr<Tracks> tracks) {
 
     // Get the intercept of the interested track at the dut
     bool close = false;
@@ -528,7 +528,7 @@ bool AnalysisCLICpix::checkProximity(Track* track, Tracks* tracks) {
 }
 
 // Small sub-routine to fill histograms that only need clusters
-void AnalysisCLICpix::fillClusterHistos(Clusters* clusters) {
+void AnalysisCLICpix::fillClusterHistos(std::shared_ptr<Clusters> clusters) {
 
     // Pick up column to generate unique pixel id
     int nCols = m_detector->nPixels().X();

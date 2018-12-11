@@ -46,7 +46,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
     size_t totalPixels = pixels->size();
 
     // Make the cluster storage
-    Clusters* deviceClusters = new Clusters();
+    std::shared_ptr<Clusters> deviceClusters;
 
     // Keep track of which pixels are used
     map<Pixel*, bool> used;

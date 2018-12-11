@@ -57,7 +57,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     // Otherwise load a new frame
 
     // Pixel container, shutter information
-    Pixels* pixels = new Pixels();
+    std::shared_ptr<Pixels> pixels;
     double shutterStartTime = 0, shutterStopTime = 0;
     string data;
 
