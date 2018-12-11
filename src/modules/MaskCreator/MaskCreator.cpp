@@ -72,6 +72,16 @@ void MaskCreator::initialise() {
         title = m_detector->name() + " Local significance distance;x [px];y [px]";
         m_significanceDist = new TH1D("local_significance_dist", title.c_str(), binsOccupancy, 0, 1);
     }
+
+    // Pre-fill mask map with existing pixel masks:
+    for(int col = 0; col < m_detector->nPixels().X(); col++) {
+        for(int row = 0; row < m_detector->nPixels().Y(); row++) {
+            if(m_detector->masked(col, row)) {
+                LOG(DEBUG) << "Found existing mask for pixel " << col << "," << row << ", keeping.";
+                maskmap->Fill(col, row);
+            }
+        }
+    }
 }
 
 StatusCode MaskCreator::run(std::shared_ptr<Clipboard> clipboard) {
@@ -138,6 +148,7 @@ void MaskCreator::localDensityEstimator() {
     fillDist(m_significance, m_significanceDist);
 
     // select noisy pixels
+    int new_masked = 0;
     for(int icol = 1; icol <= m_significance->GetNbinsX(); ++icol) {
         for(int irow = 1; irow <= m_significance->GetNbinsY(); ++irow) {
             auto sig = m_significance->GetBinContent(icol, irow);
@@ -146,8 +157,9 @@ void MaskCreator::localDensityEstimator() {
             bool isAboveRelative = (m_sigmaMax < sig);
             // pixel occupancy is above absolute limit
             bool isAboveAbsolute = (m_rateMax < rate);
-            if(isAboveRelative || isAboveAbsolute) {
+            if(!m_detector->masked(icol - 1, irow - 1) && (isAboveRelative || isAboveAbsolute)) {
                 maskmap->SetBinContent(icol, irow, 1);
+                new_masked++;
             }
         }
     }
@@ -156,7 +168,8 @@ void MaskCreator::localDensityEstimator() {
     LOG(INFO) << "  cut relative: local mean + " << m_sigmaMax << " * local sigma";
     LOG(INFO) << "  cut absolute: " << m_rateMax << " hits/pixel/event";
     LOG(INFO) << "  max occupancy: " << m_occupancy->GetMaximum() << " hits/pixel/event";
-    LOG(INFO) << "  noisy pixels: " << maskmap->GetEntries();
+    LOG(INFO) << "  total masked pixels:   " << maskmap->GetEntries();
+    LOG(INFO) << "  of which newly masked: " << new_masked;
 }
 
 void MaskCreator::globalFrequencyFilter() {
@@ -171,14 +184,10 @@ void MaskCreator::globalFrequencyFilter() {
     meanHits /= (m_detector->nPixels().X() * m_detector->nPixels().Y());
 
     // Loop again and mask any pixels which are noisy
-    int masked = 0, new_masked = 0;
+    int new_masked = 0;
     for(int col = 0; col < m_detector->nPixels().X(); col++) {
         for(int row = 0; row < m_detector->nPixels().Y(); row++) {
-            if(m_detector->masked(col, row)) {
-                LOG(DEBUG) << "Found existing mask for pixel " << col << "," << row << ", keeping.";
-                maskmap->Fill(col, row);
-                masked++;
-            } else if(m_occupancy->GetBinContent(col + 1, row + 1) > m_frequency * meanHits) {
+            if(!m_detector->masked(col, row) && m_occupancy->GetBinContent(col + 1, row + 1) > m_frequency * meanHits) {
                 LOG(DEBUG) << "Masking pixel " << col << "," << row << " on detector " << m_detector->name() << " with "
                            << m_occupancy->GetBinContent(col + 1, row + 1) << " counts";
                 maskmap->Fill(col, row);
@@ -189,7 +198,7 @@ void MaskCreator::globalFrequencyFilter() {
 
     LOG(INFO) << "Detector " << m_detector->name() << ":";
     LOG(INFO) << "  mean hits/pixel:       " << meanHits;
-    LOG(INFO) << "  total masked pixels:   " << (masked + new_masked);
+    LOG(INFO) << "  total masked pixels:   " << maskmap->GetEntries();
     LOG(INFO) << "  of which newly masked: " << new_masked;
 }
 
