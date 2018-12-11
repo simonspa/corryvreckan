@@ -100,7 +100,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // If there are no detectors then stop trying to track
-    if(detectors.size() == 0 || referenceClusters == nullptr) {
+    if(detectors.empty() || referenceClusters == nullptr) {
         // Clean up tree objects
         for(auto tree = trees.cbegin(); tree != trees.cend();) {
             delete tree->second;
@@ -114,7 +114,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     Tracks* tracks = new Tracks();
 
     // Loop over all clusters
-    map<Cluster*, bool> used;
     for(auto& cluster : (*referenceClusters)) {
 
         // Make a new track
@@ -124,7 +123,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         // Add the cluster to the track
         track->addCluster(cluster);
         track->setTimestamp(cluster->timestamp());
-        used[cluster] = true;
 
         // Loop over each subsequent plane and look for a cluster within the timing cuts
         for(auto& detectorID : detectors) {
@@ -238,10 +236,11 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         track->setTimestamp(avg_track_time / static_cast<double>(track->nClusters()));
     }
 
+    tracksPerEvent->Fill(static_cast<double>(tracks->size()));
+
     // Save the tracks on the clipboard
     if(tracks->size() > 0) {
         clipboard->put("tracks", reinterpret_cast<Objects*>(tracks));
-        tracksPerEvent->Fill(static_cast<double>(tracks->size()));
     }
 
     // Clean up tree objects
