@@ -1,7 +1,19 @@
 \chapter{Extending the \corry Framework}
+
+This chapter provides some initial information for developers planning on extending the \corry framework.
+\corry is a community project that benefits from active participation in the development and code contributions from users.
+Users are encouraged to discuss their needs via the issue tracker of the repository~\cite{corry-issue-tracker} to receive ideas and guidance on how to implement a specific feature.
+Getting in touch with other developers early in the development cycle avoids spending time on features which already exist or are currently under development by other users.
+
+The repository contains a few tools to facilitate contributions and to ensure code quality as detailed in Chapter~\ref{ch:testing}.
+
 \section{Writing Additional Modules}
 
-use \command{addModule.sh} script in \dir{etc/}.
+Given the modular structure of the framework, its functionality can be easily extended by adding a new module.
+To facilitate the creation of new modules including their CMake files and initial documentation, the script \command{addModule.sh} is provided in the \dir{etc/} directory of the repository.
+It will ask for a name and type of the module and create all code necessary to compile a first (and empty) version of the files.
+
+The content of each of the files is described in detail in the following paragraphs.
 
 \subsection{Files of a Module}
 \label{sec:module_files}
