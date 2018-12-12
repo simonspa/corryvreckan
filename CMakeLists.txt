@@ -159,6 +159,16 @@ ADD_SUBDIRECTORY(src/modules)
 # Build the executable
 ADD_SUBDIRECTORY(src/exec)
 
+###################################
+# Setup tests for allpix          #
+###################################
+
+# Enable testing
+ENABLE_TESTING()
+
+# Include all tests
+ADD_SUBDIRECTORY(testing)
+
 #############################
 # Create a local setup file #
 #############################
