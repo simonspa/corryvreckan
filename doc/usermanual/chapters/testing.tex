@@ -247,3 +247,9 @@ If different functionality and thus outputs need to be tested, a second test sho
 \end{description}
 
 \paragraph{Providing Reference Datasets}
+
+Reference datasets for testing are centrally stored on EOS at \dir{/eos/project/c/corryvreckan/www/data/} and are accessible over the internet. The \file{download_data.py} tool provided in the \dir{testing/} directory of the framework is capable of downloading individual data files, checking their integrity via an SHA256 hash and decompressing the tar archives.
+
+Each test can specify one or several data sets it requires to be present in order to successfully run via the \parameter{#DATASET} tag in the configuration file. The datasets have to be made known to the download script together with their calculated SHA256 hashes when adding a new test to the repository. The file name and hash have to be added to the Python \parameter{DATASETS} array, and the file of the dataset has to be uploaded manually to EOS by one of the framework maintainers.
+
+Paths in the test configuration files should be provided relative to the \dir{testing/} directory, all downloaded data will be stored in individual subdirectories per dataset following the naming scheme \dir{testing/data/<dataset>}.
