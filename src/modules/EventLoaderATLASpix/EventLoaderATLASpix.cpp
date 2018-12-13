@@ -122,9 +122,27 @@ void EventLoaderATLASpix::initialise() {
                        m_detector->nPixels().Y(),
                        0,
                        m_detector->nPixels().Y());
-    // hPixelToT = new TH1F("pixelToT", "pixelToT", 100, 0, 100);
-    // std::string totTitle = "pixelToT;x ToT in " + string(m_clockCycle) + " ns units";
-    // hPixelToT = new TH1F("pixelToT", "pixelToT", 64, 0, ts2Range*m_clockCycle);
+
+    hHitMap_highTot = new TH2F("hitMap_highTot",
+                               "hitMap_hithTot",
+                               m_detector->nPixels().X(),
+                               0,
+                               m_detector->nPixels().X(),
+                               m_detector->nPixels().Y(),
+                               0,
+                               m_detector->nPixels().Y());
+
+    hHitMap_totWeighted = new TProfile2D("hHitMap_totWeighted",
+                                         "hHitMap_totWeighted",
+                                         m_detector->nPixels().X(),
+                                         0,
+                                         m_detector->nPixels().X(),
+                                         m_detector->nPixels().Y(),
+                                         0,
+                                         m_detector->nPixels().Y(),
+                                         0,
+                                         100);
+
     hPixelToT = new TH1F("pixelToT", "pixelToT", 64, 0, 64);
     hPixelToT->GetXaxis()->SetTitle("ToT in TS2 clock cycles.");
     hPixelToTCal = new TH1F("pixelToTCal", "pixelToT", 100, 0, 100);
@@ -153,7 +171,7 @@ void EventLoaderATLASpix::initialise() {
         LOG(INFO) << ts;
     }
 
-    LOG(INFO) << "Using clock cycle length of " << m_clockCycle << std::endl;
+    LOG(INFO) << "Using clock cycle length of " << m_clockCycle << " ns." << std::endl;
 
     m_oldtoa = 0;
     m_overflowcounter = 0;
@@ -187,7 +205,10 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     for(auto px : (*pixels)) {
         hHitMap->Fill(px->column(), px->row());
-        // hPixelToT->Fill((px->tot())*m_clockCycle);
+        if(px->tot() > 40) {
+            hHitMap_highTot->Fill(px->column(), px->row());
+        }
+        hHitMap_totWeighted->Fill(px->column(), px->row(), px->tot());
         hPixelToT->Fill(px->tot());
         hPixelToTCal->Fill(px->charge());
         hPixelToA->Fill(px->timestamp());
@@ -203,6 +224,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     if(!pixels->empty()) {
         clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
     } else {
+        delete pixels;
         LOG(DEBUG) << "Returning <NoData> status, no hits found.";
         return StatusCode::NoData;
     }

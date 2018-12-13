@@ -242,6 +242,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     if(tracks->size() > 0) {
         clipboard->put("tracks", reinterpret_cast<Objects*>(tracks));
         tracksPerEvent->Fill(static_cast<double>(tracks->size()));
+    } else {
+        delete tracks;
     }
 
     // Clean up tree objects
