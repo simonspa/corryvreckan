@@ -123,26 +123,6 @@ void EventLoaderATLASpix::initialise() {
                        0,
                        m_detector->nPixels().Y());
 
-    hHitMap_highTot = new TH2F("hitMap_highTot",
-                               "hitMap_hithTot",
-                               m_detector->nPixels().X(),
-                               0,
-                               m_detector->nPixels().X(),
-                               m_detector->nPixels().Y(),
-                               0,
-                               m_detector->nPixels().Y());
-
-    hHitMap_totWeighted = new TProfile2D("hHitMap_totWeighted",
-                                         "hHitMap_totWeighted",
-                                         m_detector->nPixels().X(),
-                                         0,
-                                         m_detector->nPixels().X(),
-                                         m_detector->nPixels().Y(),
-                                         0,
-                                         m_detector->nPixels().Y(),
-                                         0,
-                                         100);
-
     hPixelToT = new TH1F("pixelToT", "pixelToT", 64, 0, 64);
     hPixelToT->GetXaxis()->SetTitle("ToT in TS2 clock cycles.");
     hPixelToTCal = new TH1F("pixelToTCal", "pixelToT", 100, 0, 100);
@@ -205,10 +185,6 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     for(auto px : (*pixels)) {
         hHitMap->Fill(px->column(), px->row());
-        if(px->tot() > 40) {
-            hHitMap_highTot->Fill(px->column(), px->row());
-        }
-        hHitMap_totWeighted->Fill(px->column(), px->row(), px->tot());
         hPixelToT->Fill(px->tot());
         hPixelToTCal->Fill(px->charge());
         hPixelToA->Fill(px->timestamp());
