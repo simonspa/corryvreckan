@@ -21,7 +21,7 @@ $ ./etc/addModule.sh
 
 Preparing code basis for a new module:
 
-Name of the module? jensTest
+Name of the module? MyNewModule
 Type of the module?
 
 1) global

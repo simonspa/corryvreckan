@@ -1,4 +1,4 @@
-if [ ! -d "/cvmfs/sft.cern.ch" ]; then
+if [ ! -d "/cvmfs/clicdp.cern.ch" ]; then
     echo "CVMFS not available"
     return
 fi
