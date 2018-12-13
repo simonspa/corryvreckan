@@ -37,7 +37,8 @@ ConfigManager::ConfigManager(std::string file_name) : file_name_(std::move(file_
     file_name_ = corryvreckan::get_canonical_path(file_name_);
 
     // Initialize global base configuration with absolute file name
-    global_base_config_ = Configuration("", file_name_);
+    // FIXME do not hard-code name!
+    global_base_config_ = Configuration("Corryvreckan", file_name_);
 
     // Read the file
     reader_.add(file, file_name_);
@@ -62,7 +63,8 @@ void ConfigManager::addGlobalHeaderName(std::string name) {
 Configuration ConfigManager::getGlobalConfiguration() {
     // Copy base config and set name
     Configuration global_config = global_base_config_;
-    global_config.setName(global_default_name_);
+    // FIXME needs to be done when loading
+    // global_config.setName(global_default_name_);
 
     // Add all other global configuration
     for(auto& global_name : global_names_) {

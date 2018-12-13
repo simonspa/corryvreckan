@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of configuration
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -25,11 +25,22 @@ bool Configuration::has(const std::string& key) const {
     return config_.find(key) != config_.cend();
 }
 
+unsigned int Configuration::count(std::initializer_list<std::string> keys) const {
+    if(keys.size() == 0) {
+        throw std::invalid_argument("list of keys cannot be empty");
+    }
+
+    unsigned int found = 0;
+    for(auto& key : keys) {
+        if(has(key)) {
+            found++;
+        }
+    }
+    return found;
+}
+
 std::string Configuration::getName() const {
     return name_;
-}
-void Configuration::setName(const std::string& name) {
-    name_ = name;
 }
 std::string Configuration::getFilePath() const {
     return path_;
@@ -93,12 +104,12 @@ std::string Configuration::path_to_absolute(std::string path, bool canonicalize_
 
         // Set new path
         path = directory + "/" + path;
+    }
 
-        // Normalize path only if we have to check if it exists
-        // NOTE: This throws an error if the path does not exist
-        if(canonicalize_path) {
-            path = corryvreckan::get_canonical_path(path);
-        }
+    // Normalize path only if we have to check if it exists
+    // NOTE: This throws an error if the path does not exist
+    if(canonicalize_path) {
+        path = corryvreckan::get_canonical_path(path);
     }
     return path;
 }
