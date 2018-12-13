@@ -7,16 +7,12 @@
 
 #include "Pixel.hpp"
 
-/*
-
- This class is a simple cluster class which is used as a base class
- to interface with the track class. Anything which inherits from it
- can be placed on a track and used for fitting.
-
- */
-
 namespace corryvreckan {
-
+    /**
+     * @ingroup Objects
+     * @brief This class is a simple cluster class which is used as a base class to interface with the track class. Anything
+     * which inherits from it can be placed on a track and used for fitting.
+     */
     class Cluster : public Object {
 
     public:

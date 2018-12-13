@@ -115,6 +115,7 @@ IF(LATEX_COMPILER)
             usermanual/chapters/onlinemonitoring.tex
             usermanual/chapters/modules.tex
             usermanual/chapters/development.tex
+            usermanual/chapters/testing.tex
             usermanual/chapters/tools.tex
             usermanual/config.tex
 

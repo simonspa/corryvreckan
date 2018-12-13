@@ -5,7 +5,10 @@
 #include "Object.hpp"
 
 namespace corryvreckan {
-
+    /**
+     * @ingroup Objects
+     * @brief Monte Carlo particle from simulation
+     */
     class MCParticle : public Object {
 
     public:

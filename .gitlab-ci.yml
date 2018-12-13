@@ -4,6 +4,7 @@ variables:
 
 stages:
     - compilation
+    - testing
     - formatting
     - documentation
     - packaging
@@ -113,6 +114,27 @@ cmp:mac1013-clang:
             - bin
             - lib
         expire_in: 3 hour
+
+##############
+# Unit tests #
+##############
+
+.test:
+    stage: testing
+    tags:
+        - docker
+    dependencies:
+        - cmp:cc7-gcc
+    image: clicdp/cc7-base
+    before_script:
+        - source .gitlab-ci.d/init_x86_64.sh
+
+tst:telescope:
+    extends: .test
+    script:
+        - cd build/
+        - mkdir -p ../testing/data
+        - ctest -R test_timepix3tel --output-on-failure -j4
 
 
 ############################
