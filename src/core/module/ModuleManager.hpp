@@ -37,7 +37,9 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        explicit ModuleManager(std::string config_file_name, std::vector<std::string> options = std::vector<std::string>());
+        explicit ModuleManager(std::string config_file_name,
+                               const std::vector<std::string>& module_options = std::vector<std::string>(),
+                               const std::vector<std::string>& detector_options = std::vector<std::string>());
         virtual ~ModuleManager(){};
 
         // Member functions
@@ -56,7 +58,6 @@ namespace corryvreckan {
     protected:
         // Member variables
         std::shared_ptr<Clipboard> m_clipboard;
-        Configuration global_config;
         std::vector<std::shared_ptr<Detector>> m_detectors;
 
     private:
@@ -109,7 +110,7 @@ namespace corryvreckan {
         std::map<std::string, void*> loaded_libraries_;
 
         std::atomic<bool> m_terminate;
-        std::unique_ptr<corryvreckan::ConfigManager> conf_mgr_;
+        std::unique_ptr<corryvreckan::ConfigManager> conf_manager_;
 
         std::tuple<LogLevel, LogFormat> set_module_before(const std::string&, const Configuration& config);
         void set_module_after(std::tuple<LogLevel, LogFormat> prev);
