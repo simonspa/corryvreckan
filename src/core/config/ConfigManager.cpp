@@ -71,13 +71,16 @@ ConfigManager::ConfigManager(std::string file_name,
     }
 
     // Reading detector file
-    std::string detector_file_name = global_config_.getPath("detectors_file", true);
-    LOG(TRACE) << "Reading detector configuration";
+    auto detector_file_names = global_config_.getPathArray("detectors_file", true);
+    LOG(TRACE) << "Reading detector configurations";
 
-    std::ifstream detector_file(detector_file_name);
-    ConfigReader detector_reader(detector_file, detector_file_name);
-    auto detector_configs = detector_reader.getConfigurations();
-    detector_configs_ = std::list<Configuration>(detector_configs.begin(), detector_configs.end());
+    for(auto& detector_file_name : detector_file_names) {
+        std::ifstream detector_file(detector_file_name);
+        ConfigReader detector_reader(detector_file, detector_file_name);
+        auto detector_configs = detector_reader.getConfigurations();
+        detector_configs_.splice(detector_configs_.end(),
+                                 std::list<Configuration>(detector_configs.begin(), detector_configs.end()));
+    }
 }
 
 /**
