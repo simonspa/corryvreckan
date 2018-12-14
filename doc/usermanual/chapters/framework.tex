@@ -17,16 +17,20 @@ This is the only \textbf{required} argument, the simulation will fail to start i
 \item \texttt{-v <level>}: Sets the global log verbosity level, overwriting the value specified in the configuration file described in Section~\ref{sec:framework_parameters}.
 Possible values are \texttt{FATAL}, \texttt{STATUS}, \texttt{ERROR}, \texttt{WARNING}, \texttt{INFO} and \texttt{DEBUG}, where all options are case-insensitive.
 The module specific logging level introduced in Section~\ref{sec:logging_verbosity} is not overwritten.
-\item \texttt{-o <option>}: Passes extra options which are added and overwritten in the main configuration file.
+\item \texttt{-o <option>}: Passes extra framework or module options which are added and overwritten in the main configuration file.
 This argument may be specified multiple times, to add multiple options.
-
-Options are specified as key/value pairs in the same syntax as used in the configuration files (refer to Chapter~\ref{ch:configuration_files} for more details), but the key is extended to include a reference to a configuration section in shorthand notation.
-There are two types of keys that can be specified:
+Options are specified as key/value pairs in the same syntax as used in the configuration files described in Chapter~\ref{ch:configuration_files}, but the key is extended to include a reference to a configuration section or instantiation in shorthand notation.
+There are three types of keys that can be specified:
 \begin{itemize}
-\item Keys to set \textbf{framework parameters}. These have to be provided in exactly the same way as they would be in the main configuration file (a section does not need to be specified). An example to overwrite the standard output directory would be \command{corry -c <file> -o output_directory="run123456"}.
-\item Keys for \textbf{module configurations}. These are specified by adding a dot (\texttt{.}) between the module and the actual key as it would be given in the configuration file (thus \textit{module}.\textit{key}). An example to overwrite the information written by the FileWiter module would be \command{corry -c <file> -o FileWriter.onlyDUT="true"}.
+\item Keys to set \textbf{framework parameters}. These have to be provided in exactly the same way as they would be in the main configuration file (a section does not need to be specified). An example to overwrite the standard output directory would be \texttt{corry -c <file> -o output\_directory="run123456"}.
+\item Keys for \textbf{module configurations}. These are specified by adding a dot (\texttt{.}) between the module and the actual key as it would be given in the configuration file (thus \textit{module}.\textit{key}). An example to overwrite the deposited particle to a positron would be \texttt{corry -c <file> -o Tracking4D.timingCut="100ns"}.
+\item Keys to specify values for a particular \textbf{module instantiation}. The identifier of the instantiation and the name of the actual key are split by a dot (\texttt{.}), in the same way as for keys for module configurations (thus \textit{identifier}.\textit{key}). The unique identifier for a module can contains one or more colons (\texttt{:}) to distinguish between various instantiations of the same module. The exact name of an identifier depends on the name of the detector and the optional input and output name. Those identifiers can be extracted from the logging section headers. An example to change the temperature of propagation for a particular instantiation for a detector named \textit{dut} could be \texttt{corry -c <file> -o Clustering4D:dut.timingCut="1us"}.
 \end{itemize}
 Note that only the single argument directly following the \texttt{-o} is interpreted as the option. If there is whitespace in the key/value pair this should be properly enclosed in quotation marks to ensure the argument is parsed correctly.
+\item \texttt{-g <option>}: Passes extra detector options which are added and overwritten in the detector configuration file.
+This argument can be specified multiple times, to add multiple options.
+The options are parsed in the same way as described above for module options, but only one type of key can be specified to overwrite an option for a single detector.
+These are specified by adding a dot (\texttt{.}) between the detector and the actual key as it would be given in the detector configuration file (thus \textit{detector}.\textit{key}). An example to change the orientation of a particular detector named \texttt{detector1} would be \texttt{corry -c <file> -g detector1.orientation=0deg,0deg,45deg}.
 \end{itemize}
 
 No interaction with the framework is possible during the reconstruction. Signals can however be send using keyboard shortcuts to terminate the run, either gracefully or with force. The executable understand the following signals:

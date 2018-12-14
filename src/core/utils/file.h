@@ -1,11 +1,9 @@
 /**
  * @file
  * @brief Collection of simple file system utilities
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied
- * verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities
- * granted to it by virtue of its status as an
+ * @copyright Copyright (c) 2017 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -37,8 +35,7 @@ namespace corryvreckan {
      * @return The canonical path (without dots)
      * @throws std::invalid_argument If absolute path does not exist on the system
      */
-    // TODO [DOC] should be renamed get_canonical_path
-    inline std::string get_absolute_path(const std::string& path) {
+    inline std::string get_canonical_path(const std::string& path) {
         char* path_ptr = realpath(path.c_str(), nullptr);
         if(path_ptr == nullptr) {
             // Throw an error if the path does not exist
@@ -80,8 +77,7 @@ namespace corryvreckan {
      * @param path The base directory
      * @return A list with the full names of all files in the directory
      *
-     * Does not recurse on subdirectories, but only return the files that are
-     * directly in the directory.
+     * Does not recurse on subdirectories, but only return the files that are directly in the directory.
      */
     // TODO [doc] check if path exists and ensure canonical paths
     inline std::vector<std::string> get_files_in_directory(const std::string& path) {
@@ -122,11 +118,9 @@ namespace corryvreckan {
      * @brief Create a directory
      * @param path The path to create
      * @param mode The flags permissions of the file to create
-     * @throws std::invalid_argument If the directory or one of its subpaths cannot
-     * be created
+     * @throws std::invalid_argument If the directory or one of its subpaths cannot be created
      *
-     * All the required directories are created from the top-directory until the
-     * last folder. Therefore it can be used to
+     * All the required directories are created from the top-directory until the last folder. Therefore it can be used to
      * create a structure of directories.
      */
     inline void create_directories(std::string path, mode_t mode = 0777) {
@@ -160,8 +154,7 @@ namespace corryvreckan {
      * @throws std::invalid_argument If the path cannot be removed
      * @warning This method is not thread-safe
      *
-     * All the required directories are deleted recursively from the top-directory
-     * (use this with caution).
+     * All the required directories are deleted recursively from the top-directory (use this with caution).
      */
     inline void remove_path(const std::string& path) {
         int status = nftw(path.c_str(),
@@ -172,6 +165,45 @@ namespace corryvreckan {
         if(status != 0) {
             throw std::invalid_argument("path cannot be completely deleted");
         }
+    }
+
+    /*
+     * @brief Removes a single file from the file system
+     * @param path Path to the file
+     * @throws std::invalid_argument If the file cannot be removed
+     *
+     * Remove a single file at the given path. If the function returns the deletion was successfull.
+     */
+    inline void remove_file(const std::string& path) {
+        int status = unlink(path.c_str());
+
+        if(status != 0) {
+            throw std::invalid_argument("file cannot be deleted");
+        }
+    }
+
+    /**
+     * @brief Check for the existence of the file extension and add it if not present
+     * @param path File name or path to file
+     * @param extension File extension (without separating dot) to be checked for or added
+     * @return File name or path to file including the appropriate file extension
+     */
+    inline std::string add_file_extension(const std::string& path, std::string extension) {
+        if(extension.empty()) {
+            return path;
+        }
+        // Add separating dot if not present:
+        if(extension.at(0) != '.') {
+            extension.insert(0, 1, '.');
+        }
+
+        if(path.size() > extension.size()) {
+            if(std::equal(extension.rbegin(), extension.rend(), path.rbegin())) {
+                return path;
+            }
+        }
+
+        return path + extension;
     }
 
     /**

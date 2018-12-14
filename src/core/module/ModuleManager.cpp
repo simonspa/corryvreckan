@@ -32,7 +32,9 @@
 using namespace corryvreckan;
 
 // Default constructor
-ModuleManager::ModuleManager(std::string config_file_name, std::vector<std::string> options)
+ModuleManager::ModuleManager(std::string config_file_name,
+                             const std::vector<std::string>& module_options,
+                             const std::vector<std::string>& detector_options)
     : m_reference(nullptr), m_terminate(false) {
 
     LOG(TRACE) << "Loading Corryvreckan";
@@ -41,20 +43,18 @@ ModuleManager::ModuleManager(std::string config_file_name, std::vector<std::stri
     LOG(STATUS) << "Welcome to Corryvreckan " << CORRYVRECKAN_PROJECT_VERSION;
 
     // Load the global configuration
-    conf_mgr_ = std::make_unique<corryvreckan::ConfigManager>(std::move(config_file_name));
+    conf_manager_ = std::make_unique<corryvreckan::ConfigManager>(std::move(config_file_name),
+                                                                  std::initializer_list<std::string>({"Corryvreckan", ""}),
+                                                                  std::initializer_list<std::string>({"Ignore"}));
 
-    // Configure the standard special sections
-    conf_mgr_->setGlobalHeaderName("Corryvreckan");
-    conf_mgr_->addGlobalHeaderName("");
-    conf_mgr_->addIgnoreHeaderName("Ignore");
+    // Load and apply the provided module options
+    conf_manager_->loadModuleOptions(module_options);
 
-    // Parse all command line options
-    for(auto& option : options) {
-        conf_mgr_->parseOption(option);
-    }
+    // Load and apply the provided detector options
+    conf_manager_->loadDetectorOptions(detector_options);
 
     // Fetch the global configuration
-    global_config = conf_mgr_->getGlobalConfiguration();
+    Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
     // Set the log level from config if not specified earlier
     std::string log_level_string;
@@ -109,42 +109,35 @@ void ModuleManager::load() {
 }
 
 void ModuleManager::load_detectors() {
+    Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
-    std::vector<std::string> detectors_files = global_config.getPathArray("detectors_file");
+    for(auto& detector_section : conf_manager_->getDetectorConfigurations()) {
 
-    for(auto& detectors_file : detectors_files) {
-        std::fstream file(detectors_file);
-        ConfigManager det_mgr(detectors_file);
-        det_mgr.addIgnoreHeaderName("Ignore");
+        std::string name = detector_section.getName();
 
-        for(auto& detector : det_mgr.getConfigurations()) {
-
-            std::string name = detector.getName();
-
-            // Check if we have a duplicate:
-            if(std::find_if(m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) {
-                   return obj->name() == name;
-               }) != m_detectors.end()) {
-                throw InvalidValueError(
-                    global_config, "detectors_file", "Detector " + detector.getName() + " defined twice");
-            }
-
-            LOG_PROGRESS(STATUS, "DET_LOAD_LOOP") << "Loading detector " << name;
-            auto det_parm = std::make_shared<Detector>(detector);
-
-            // Check if we already found a reference plane:
-            if(m_reference != nullptr && det_parm->isReference()) {
-                throw InvalidValueError(global_config, "detectors_file", "Found more than one reference detector");
-            }
-
-            // Switch flag if we found the reference plane:
-            if(det_parm->isReference()) {
-                m_reference = det_parm;
-            }
-
-            // Add the new detector to the global list:
-            m_detectors.push_back(det_parm);
+        // Check if we have a duplicate:
+        if(std::find_if(m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) {
+               return obj->name() == name;
+           }) != m_detectors.end()) {
+            throw InvalidValueError(
+                global_config, "detectors_file", "Detector " + detector_section.getName() + " defined twice");
         }
+
+        LOG_PROGRESS(STATUS, "DET_LOAD_LOOP") << "Loading detector " << name;
+        auto detector = std::make_shared<Detector>(detector_section);
+
+        // Check if we already found a reference plane:
+        if(m_reference != nullptr && detector->isReference()) {
+            throw InvalidValueError(global_config, "detectors_file", "Found more than one reference detector");
+        }
+
+        // Switch flag if we found the reference plane:
+        if(detector->isReference()) {
+            m_reference = detector;
+        }
+
+        // Add the new detector to the global list:
+        m_detectors.push_back(detector);
     }
 
     // Check that exactly one detector is marked as reference:
@@ -161,7 +154,8 @@ void ModuleManager::load_detectors() {
 }
 
 void ModuleManager::load_modules() {
-    std::vector<Configuration> configs = conf_mgr_->getConfigurations();
+    auto& configs = conf_manager_->getModuleConfigurations();
+    Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
     // Create histogram output file
     global_config.setAlias("histogram_file", "histogramFile");
@@ -292,9 +286,6 @@ void ModuleManager::load_modules() {
 
         std::vector<std::string> types = get_type_vector(type_tokens);
 
-        // Apply the module specific options to the module configuration
-        conf_mgr_->applyOptions(config.getName(), config);
-
         // Add the global internal parameters to the configuration
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
@@ -397,6 +388,9 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* l
         throw corryvreckan::RuntimeError("Error instantiating module from " + config.getName());
     }
 
+    // Create and add module instance config
+    Configuration& instance_config = conf_manager_->addInstanceConfiguration(identifier, config);
+
     // Convert to correct generator function
     auto module_generator =
         reinterpret_cast<Module* (*)(Configuration, std::vector<std::shared_ptr<Detector>>)>(generator); // NOLINT
@@ -404,12 +398,12 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* l
     // Set the log section header
     std::string old_section_name = Log::getSection();
     std::string section_name = "C:";
-    section_name += config.getName();
+    section_name += identifier.getUniqueName();
     Log::setSection(section_name);
     // Set module specific log settings
-    auto old_settings = set_module_before(config.getName(), config);
+    auto old_settings = set_module_before(identifier.getUniqueName(), instance_config);
     // Build module
-    Module* module = module_generator(config, m_detectors);
+    Module* module = module_generator(instance_config, m_detectors);
     // Reset log
     Log::setSection(old_section_name);
     set_module_after(old_settings);
@@ -522,15 +516,18 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
         }
         LOG(DEBUG) << "Creating instantiation \"" << identifier.getUniqueName() << "\"";
 
+        // Create and add module instance config
+        Configuration& instance_config = conf_manager_->addInstanceConfiguration(instance.second, config);
+
         // Set the log section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "C:";
         section_name += identifier.getUniqueName();
         Log::setSection(section_name);
         // Set module specific log settings
-        auto old_settings = set_module_before(identifier.getUniqueName(), config);
+        auto old_settings = set_module_before(identifier.getUniqueName(), instance_config);
         // Build module
-        modules.emplace_back(identifier, module_generator(config, detector));
+        modules.emplace_back(identifier, module_generator(instance_config, detector));
         // Reset log
         Log::setSection(old_section_name);
         set_module_after(old_settings);
@@ -542,6 +539,7 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
 
 // Run the analysis loop - this initialises, runs and finalises all modules
 void ModuleManager::run() {
+    Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
     // Check if we have an event or track limit:
     auto number_of_events = global_config.get<int>("number_of_events", -1);
@@ -704,6 +702,7 @@ void ModuleManager::initialiseAll() {
 
 // Finalise all modules
 void ModuleManager::finaliseAll() {
+    Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
     // Loop over all modules and finalise them
     LOG(STATUS) << "===================| Finalising modules |===================";
