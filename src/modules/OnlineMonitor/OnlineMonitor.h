@@ -40,7 +40,11 @@ namespace corryvreckan {
         GuiDisplay* gui;
 
     private:
-        void AddCanvas(std::string canvas_title, Matrix<std::string> canvas_plots, std::string detector_name = "");
+        void AddCanvasGroup(std::string group_title);
+        void AddCanvas(std::string canvas_title,
+                       std::string canvasGroup,
+                       Matrix<std::string> canvas_plots,
+                       std::string detector_name = "");
         void AddPlots(std::string canvas_name, Matrix<std::string> canvas_plots, std::string detector_name = "");
         void AddHisto(std::string, std::string, std::string style = "", bool logy = false);
 
