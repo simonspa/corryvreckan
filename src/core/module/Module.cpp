@@ -7,6 +7,7 @@
  */
 
 #include "Module.hpp"
+#include "core/utils/file.h"
 
 using namespace corryvreckan;
 

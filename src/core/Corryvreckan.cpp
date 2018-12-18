@@ -111,6 +111,38 @@ void Corryvreckan::load() {
     LOG(STATUS) << "Welcome to Corryvreckan " << CORRYVRECKAN_PROJECT_VERSION;
     global_config.set<std::string>("version", CORRYVRECKAN_PROJECT_VERSION);
 
+    // Get output directory
+    std::string directory = gSystem->pwd();
+    directory += "/output";
+    if(global_config.has("output_directory")) {
+        // Use config specified one if available
+        directory = global_config.getPath("output_directory");
+    }
+
+    // Use existing output directory if it exists
+    bool create_output_dir = true;
+    if(corryvreckan::path_is_directory(directory)) {
+        if(global_config.get<bool>("purge_output_directory", false)) {
+            LOG(DEBUG) << "Deleting previous output directory " << directory;
+            corryvreckan::remove_path(directory);
+        } else {
+            LOG(DEBUG) << "Output directory " << directory << " already exists";
+            create_output_dir = false;
+        }
+    }
+    // Create the output directory
+    try {
+        if(create_output_dir) {
+            LOG(DEBUG) << "Creating output directory " << directory;
+            corryvreckan::create_directories(directory);
+        }
+        // Change to the new/existing output directory
+        gSystem->ChangeDirectory(directory.c_str());
+    } catch(std::invalid_argument& e) {
+        LOG(ERROR) << "Cannot create output directory " << directory << ": " << e.what()
+                   << ". Using current directory instead.";
+    }
+
     // Set the default units to use
     add_units();
 

@@ -15,6 +15,7 @@
 
 // Local include files
 #include "ModuleManager.hpp"
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "exceptions.h"
 
@@ -93,13 +94,21 @@ void ModuleManager::load_modules() {
     auto& configs = conf_manager_->getModuleConfigurations();
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
-    // Create histogram output file
+    // (Re)create the main ROOT file
     global_config.setAlias("histogram_file", "histogramFile");
-    std::string histogramFile = global_config.getPath("histogram_file");
+    auto path = std::string(gSystem->pwd()) + "/" + global_config.get<std::string>("histogram_file", "histograms");
+    path = corryvreckan::add_file_extension(path, "root");
 
-    m_histogramFile = std::make_unique<TFile>(histogramFile.c_str(), "RECREATE");
+    if(corryvreckan::path_is_file(path)) {
+        if(global_config.get<bool>("deny_overwrite", false)) {
+            throw RuntimeError("Overwriting of existing main ROOT file " + path + " denied");
+        }
+        LOG(WARNING) << "Main ROOT file " << path << " exists and will be overwritten.";
+        corryvreckan::remove_file(path);
+    }
+    m_histogramFile = std::make_unique<TFile>(path.c_str(), "RECREATE");
     if(m_histogramFile->IsZombie()) {
-        throw RuntimeError("Cannot create main ROOT file " + histogramFile);
+        throw RuntimeError("Cannot create main ROOT file " + path);
     }
     m_histogramFile->cd();
 
