@@ -235,9 +235,6 @@ void ModuleManager::load_modules() {
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
 
-        // Merge the global configuration into the modules config:
-        config.merge(global_config);
-
         // Create the modules from the library
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(global) {
