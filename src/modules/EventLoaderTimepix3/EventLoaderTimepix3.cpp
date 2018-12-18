@@ -18,7 +18,7 @@ EventLoaderTimepix3::EventLoaderTimepix3(Configuration config, std::shared_ptr<D
       m_shutterOpen(false) {
 
     // Take input directory from global parameters
-    m_inputDirectory = m_config.get<std::string>("inputDirectory");
+    m_inputDirectory = m_config.getPath("inputDirectory");
     m_triggerLatency = m_config.get<double>("triggerLatency", 0.0);
     m_minNumberOfPlanes = m_config.get<int>("minNumerOfPlanes", 1);
 
@@ -26,7 +26,7 @@ EventLoaderTimepix3::EventLoaderTimepix3(Configuration config, std::shared_ptr<D
     m_numberPixelHits = m_config.get<size_t>("number_of_pixelhits", 2000);
 
     // Calibration parameters
-    calibrationPath = m_config.get<std::string>("calibrationPath", "");
+    calibrationPath = m_config.getPath("calibrationPath", "");
     threshold = m_config.get<std::string>("threshold", "");
 }
 
