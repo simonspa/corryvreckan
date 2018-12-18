@@ -69,7 +69,9 @@ ConfigManager::ConfigManager(std::string file_name,
 
         module_configs_.push_back(config);
     }
+}
 
+void ConfigManager::parse_detectors() {
     // Reading detector file
     auto detector_file_names = global_config_.getPathArray("detectors_file", true);
     LOG(TRACE) << "Reading detector configurations";
@@ -129,6 +131,10 @@ bool ConfigManager::loadDetectorOptions(const std::vector<std::string>& options)
         detector_option_parser.parseOption(option);
     }
 
+    if(detector_configs_.empty()) {
+        parse_detectors();
+    }
+
     // Apply detector options
     for(auto& config : detector_configs_) {
         optionsApplied = detector_option_parser.applyOptions(config.getName(), config) || optionsApplied;
@@ -147,6 +153,10 @@ std::list<Configuration>& ConfigManager::getModuleConfigurations() {
  * The list of detector configurations is read from the configuration defined in 'detector_file'
  */
 std::list<Configuration>& ConfigManager::getDetectorConfigurations() {
+    if(detector_configs_.empty()) {
+        parse_detectors();
+    }
+
     return detector_configs_;
 }
 

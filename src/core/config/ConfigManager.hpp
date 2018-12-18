@@ -113,6 +113,9 @@ namespace corryvreckan {
         std::set<std::string> global_names_{};
         std::set<std::string> ignore_names_{};
 
+        // Helper function to parse detectors file
+        void parse_detectors();
+
         OptionParser module_option_parser_;
 
         std::list<Configuration> module_configs_;

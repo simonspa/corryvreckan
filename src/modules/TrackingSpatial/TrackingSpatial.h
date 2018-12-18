@@ -25,8 +25,8 @@ namespace corryvreckan {
         // Functions
         void initialise();
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        void finalise();
 
+    private:
         // Histograms
         TH1F* trackChi2;
         TH1F* clustersPerTrack;
@@ -38,10 +38,8 @@ namespace corryvreckan {
         std::map<std::string, TH1F*> residualsY;
 
         // Member variables
-        int m_eventNumber;
-        double spatialCut, spatialCut_DUT;
+        double spatialCut;
         size_t minHitsOnTrack;
-        double nTracksTotal;
         bool excludeDUT;
     };
 } // namespace corryvreckan
