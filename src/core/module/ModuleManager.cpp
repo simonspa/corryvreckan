@@ -32,77 +32,13 @@
 using namespace corryvreckan;
 
 // Default constructor
-ModuleManager::ModuleManager(std::string config_file_name,
-                             const std::vector<std::string>& module_options,
-                             const std::vector<std::string>& detector_options)
-    : m_reference(nullptr), m_terminate(false) {
-
-    LOG(TRACE) << "Loading Corryvreckan";
-
-    // Put welcome message
-    LOG(STATUS) << "Welcome to Corryvreckan " << CORRYVRECKAN_PROJECT_VERSION;
-
-    // Load the global configuration
-    conf_manager_ = std::make_unique<corryvreckan::ConfigManager>(std::move(config_file_name),
-                                                                  std::initializer_list<std::string>({"Corryvreckan", ""}),
-                                                                  std::initializer_list<std::string>({"Ignore"}));
-
-    // Load and apply the provided module options
-    conf_manager_->loadModuleOptions(module_options);
-
-    // Load and apply the provided detector options
-    conf_manager_->loadDetectorOptions(detector_options);
-
-    // Fetch the global configuration
-    Configuration& global_config = conf_manager_->getGlobalConfiguration();
-
-    // Set the log level from config if not specified earlier
-    std::string log_level_string;
-    if(Log::getReportingLevel() == LogLevel::NONE) {
-        log_level_string = global_config.get<std::string>("log_level", "INFO");
-        std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
-        try {
-            LogLevel log_level = Log::getLevelFromString(log_level_string);
-            Log::setReportingLevel(log_level);
-        } catch(std::invalid_argument& e) {
-            LOG(ERROR) << "Log level \"" << log_level_string
-                       << "\" specified in the configuration is invalid, defaulting to INFO instead";
-            Log::setReportingLevel(LogLevel::INFO);
-        }
-    } else {
-        log_level_string = Log::getStringFromLevel(Log::getReportingLevel());
-    }
-
-    // Set the log format from config
-    std::string log_format_string = global_config.get<std::string>("log_format", "DEFAULT");
-    std::transform(log_format_string.begin(), log_format_string.end(), log_format_string.begin(), ::toupper);
-    try {
-        LogFormat log_format = Log::getFormatFromString(log_format_string);
-        Log::setFormat(log_format);
-    } catch(std::invalid_argument& e) {
-        LOG(ERROR) << "Log format \"" << log_format_string
-                   << "\" specified in the configuration is invalid, using DEFAULT instead";
-        Log::setFormat(LogFormat::DEFAULT);
-    }
-
-    // Open log file to write output to
-    if(global_config.has("log_file")) {
-        // NOTE: this stream should be available for the duration of the logging
-        log_file_.open(global_config.getPath("log_file"), std::ios_base::out | std::ios_base::trunc);
-        Log::addStream(log_file_);
-    }
-
-    // Wait for the first detailed messages until level and format are properly set
-    LOG(TRACE) << "Global log level is set to " << log_level_string;
-    LOG(TRACE) << "Global log format is set to " << log_format_string;
-
+ModuleManager::ModuleManager() : m_reference(nullptr), m_terminate(false) {
     // New clipboard for storage:
     m_clipboard = std::make_shared<Clipboard>();
 }
 
-void ModuleManager::load() {
-
-    add_units();
+void ModuleManager::load(ConfigManager* conf_mgr) {
+    conf_manager_ = conf_mgr;
 
     load_detectors();
     load_modules();
@@ -823,50 +759,4 @@ void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
         Log::setFormat(old_format);
         LOG(TRACE) << "Reset log format to global level of " << Log::getStringFromFormat(old_format);
     }
-}
-
-void ModuleManager::add_units() {
-
-    LOG(TRACE) << "Adding physical units";
-
-    // LENGTH
-    Units::add("nm", 1e-6);
-    Units::add("um", 1e-3);
-    Units::add("mm", 1);
-    Units::add("cm", 1e1);
-    Units::add("dm", 1e2);
-    Units::add("m", 1e3);
-    Units::add("km", 1e6);
-
-    // TIME
-    Units::add("ps", 1e-3);
-    Units::add("ns", 1);
-    Units::add("us", 1e3);
-    Units::add("ms", 1e6);
-    Units::add("s", 1e9);
-
-    // TEMPERATURE
-    Units::add("K", 1);
-
-    // ENERGY
-    Units::add("eV", 1e-6);
-    Units::add("keV", 1e-3);
-    Units::add("MeV", 1);
-    Units::add("GeV", 1e3);
-
-    // CHARGE
-    Units::add("e", 1);
-    Units::add("ke", 1e3);
-    Units::add("C", 1.6021766208e-19);
-
-    // VOLTAGE
-    // NOTE: fixed by above
-    Units::add("V", 1e-6);
-    Units::add("kV", 1e-3);
-
-    // ANGLES
-    // NOTE: these are fake units
-    Units::add("deg", 0.01745329252);
-    Units::add("rad", 1);
-    Units::add("mrad", 1e-3);
 }

@@ -3,6 +3,7 @@ INCLUDE_DIRECTORIES(SYSTEM ${CORRYVRECKAN_DEPS_INCLUDE_DIRS})
 
 # Create core library
 ADD_LIBRARY(CorryvreckanCore SHARED
+    Corryvreckan.cpp
     detector/Detector.cpp
     utils/log.cpp
     utils/unit.cpp
