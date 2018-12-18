@@ -26,8 +26,10 @@ EventLoaderTimepix3::EventLoaderTimepix3(Configuration config, std::shared_ptr<D
     m_numberPixelHits = m_config.get<size_t>("number_of_pixelhits", 2000);
 
     // Calibration parameters
-    calibrationPath = m_config.getPath("calibrationPath", "");
-    threshold = m_config.get<std::string>("threshold", "");
+    if(m_config.has("calibrationPath")) {
+        calibrationPath = m_config.getPath("calibrationPath", "");
+        threshold = m_config.get<std::string>("threshold", "");
+    }
 }
 
 void EventLoaderTimepix3::initialise() {

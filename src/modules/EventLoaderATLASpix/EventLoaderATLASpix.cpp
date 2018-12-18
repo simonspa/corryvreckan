@@ -10,7 +10,10 @@ EventLoaderATLASpix::EventLoaderATLASpix(Configuration config, std::shared_ptr<D
     m_timewalkCorrectionFactors = m_config.getArray<double>("timewalkCorrectionFactors", std::vector<double>());
 
     m_inputDirectory = m_config.getPath("inputDirectory");
-    m_calibrationFile = m_config.getPath("calibrationFile");
+
+    if(m_config.has("calibrationFile")) {
+        m_calibrationFile = m_config.getPath("calibrationFile");
+    }
 
     m_clockCycle = m_config.get<double>("clockCycle", static_cast<double>(Units::convert(6.25, "ns")));
 
