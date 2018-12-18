@@ -93,6 +93,14 @@ namespace corryvreckan {
         Configuration& getConfig() { return m_config; }
 
         /**
+         * @brief Create and return an absolute path to be used for output from a relative path
+         * @param path Relative path to add after the main output directory
+         * @param global True if the global output directory should be used instead of the module-specific version
+         * @return Canonical path to an output file
+         */
+        std::string createOutputFile(const std::string& path, bool global = false);
+
+        /**
          * @brief Initialise the module before the event sequence
          *
          * Does nothing if not overloaded.

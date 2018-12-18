@@ -336,6 +336,13 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* l
     // Create and add module instance config
     Configuration& instance_config = conf_manager_->addInstanceConfiguration(identifier, config);
 
+    // Specialize instance configuration
+    auto output_dir = instance_config.get<std::string>("_global_dir");
+    output_dir += "/";
+    std::string path_mod_name = identifier.getUniqueName();
+    std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '_');
+    output_dir += path_mod_name;
+
     // Convert to correct generator function
     auto module_generator =
         reinterpret_cast<Module* (*)(Configuration, std::vector<std::shared_ptr<Detector>>)>(generator); // NOLINT
@@ -353,7 +360,10 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* l
     Log::setSection(old_section_name);
     set_module_after(old_settings);
 
-    // Return the module to the analysis
+    // Set the module directory afterwards to catch invalid access in constructor
+    module->get_configuration().set<std::string>("_output_dir", output_dir);
+
+    // Return the module to the ModuleManager
     return std::make_pair(identifier, module);
 }
 
@@ -464,6 +474,13 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
         // Create and add module instance config
         Configuration& instance_config = conf_manager_->addInstanceConfiguration(instance.second, config);
 
+        // Add internal module config
+        auto output_dir = instance_config.get<std::string>("_global_dir");
+        output_dir += "/";
+        std::string path_mod_name = instance.second.getUniqueName();
+        std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '/');
+        output_dir += path_mod_name;
+
         // Set the log section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "C:";
@@ -472,10 +489,15 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
         // Set module specific log settings
         auto old_settings = set_module_before(identifier.getUniqueName(), instance_config);
         // Build module
-        modules.emplace_back(identifier, module_generator(instance_config, detector));
+        Module* module = module_generator(instance_config, detector);
         // Reset log
         Log::setSection(old_section_name);
         set_module_after(old_settings);
+
+        // Set the module directory afterwards to catch invalid access in constructor
+        module->get_configuration().set<std::string>("_output_dir", output_dir);
+
+        modules.emplace_back(identifier, module);
     }
 
     // Return the list of modules to the analysis
