@@ -78,7 +78,11 @@ void OnlineMonitor::initialise() {
     AddCanvas("CorrelationsX2D", canvas_cx2d);
     AddCanvas("CorrelationsY2D", canvas_cy2d);
 
-    AddCanvas("DUTPlots", canvas_dutplots);
+    for(auto& detector : get_detectors()) {
+        if(detector->isDUT()) {
+            AddCanvas("DUT: " + detector->name(), canvas_dutplots, detector->name());
+        }
+    }
 
     // Set up the main frame before drawing
     // Exit button
@@ -123,7 +127,7 @@ StatusCode OnlineMonitor::run(std::shared_ptr<Clipboard>) {
     return StatusCode::Success;
 }
 
-void OnlineMonitor::AddCanvas(std::string canvas_title, Matrix<std::string> canvas_plots) {
+void OnlineMonitor::AddCanvas(std::string canvas_title, Matrix<std::string> canvas_plots, std::string detector_name) {
     std::string canvas_name = canvas_title + "Canvas";
 
     gui->buttons[canvas_title] = new TGTextButton(gui->buttonMenu, canvas_title.c_str());
@@ -132,10 +136,10 @@ void OnlineMonitor::AddCanvas(std::string canvas_title, Matrix<std::string> canv
     LOG(INFO) << "Connecting button with command " << command.c_str();
     gui->buttons[canvas_title]->Connect("Pressed()", "corryvreckan::GuiDisplay", gui, command.c_str());
 
-    AddPlots(canvas_name, canvas_plots);
+    AddPlots(canvas_name, canvas_plots, detector_name);
 }
 
-void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas_plots) {
+void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas_plots, std::string detector_name) {
     for(auto plot : canvas_plots) {
 
         // Add default plotting style if not set:
@@ -150,22 +154,41 @@ void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas
         // Parse other placeholders:
         if(name.find("%DUT%") != std::string::npos) {
             // Do we have a DUT placeholder?
-            LOG(DEBUG) << "Adding plot " << name << " for all DUTs.";
-            for(auto& detector : get_detectors()) {
-                if(!detector->isDUT()) {
-                    continue;
-                }
+            if(!detector_name.empty()) {
+                LOG(DEBUG) << "Adding plot " << name << " for detector " << detector_name;
+                auto detector = get_detector(detector_name);
                 AddHisto(
                     canvas_name, std::regex_replace(name, std::regex("%DUT%"), detector->name()), plot.back(), log_scale);
+
+            } else {
+                LOG(DEBUG) << "Adding plot " << name << " for all DUTs.";
+                for(auto& detector : get_detectors()) {
+                    if(!detector->isDUT()) {
+                        continue;
+                    }
+                    AddHisto(canvas_name,
+                             std::regex_replace(name, std::regex("%DUT%"), detector->name()),
+                             plot.back(),
+                             log_scale);
+                }
             }
         } else if(name.find("%DETECTOR%") != std::string::npos) {
             // Do we have a detector placeholder?
-            LOG(DEBUG) << "Adding plot " << name << " for all detectors.";
-            for(auto& detector : get_detectors()) {
+            if(!detector_name.empty()) {
+                LOG(DEBUG) << "Adding plot " << name << " for detector " << detector_name;
+                auto detector = get_detector(detector_name);
                 AddHisto(canvas_name,
                          std::regex_replace(name, std::regex("%DETECTOR%"), detector->name()),
                          plot.back(),
                          log_scale);
+            } else {
+                LOG(DEBUG) << "Adding plot " << name << " for all detectors.";
+                for(auto& detector : get_detectors()) {
+                    AddHisto(canvas_name,
+                             std::regex_replace(name, std::regex("%DETECTOR%"), detector->name()),
+                             plot.back(),
+                             log_scale);
+                }
             }
         } else {
             // Single histogram only.
