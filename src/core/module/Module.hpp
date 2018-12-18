@@ -123,7 +123,11 @@ namespace corryvreckan {
         TDirectory* getROOTDirectory() const;
 
     protected:
-        // Configuration of this module
+        /**
+         * @brief Get the module configuration for internal use
+         * @return Configuration of the module
+         */
+        Configuration& get_configuration();
         Configuration m_config;
 
         /**

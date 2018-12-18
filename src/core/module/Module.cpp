@@ -78,3 +78,7 @@ bool Module::has_detector(std::string name) {
     }
     return true;
 }
+
+Configuration& Module::get_configuration() {
+    return m_config;
+}
