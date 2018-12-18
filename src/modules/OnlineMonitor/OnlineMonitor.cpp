@@ -88,7 +88,7 @@ void OnlineMonitor::initialise() {
     AddCanvasGroup("DUTs");
     for(auto& detector : get_detectors()) {
         if(detector->isDUT()) {
-            AddCanvas("DUT: " + detector->name(), "DUTs", canvas_dutplots, detector->name());
+            AddCanvas(detector->name(), "DUTs", canvas_dutplots, detector->name());
         }
     }
 
