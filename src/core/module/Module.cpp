@@ -82,3 +82,17 @@ bool Module::has_detector(std::string name) {
 Configuration& Module::get_configuration() {
     return m_config;
 }
+
+/**
+ * @throws InvalidModuleActionException If this method is called from the constructor or destructor
+ * @warning This function technically allows to write to the configurations of other modules, but this should never be done
+ */
+ConfigManager* Module::getConfigManager() {
+    if(conf_manager_ == nullptr) {
+        throw InvalidModuleActionException("Cannot access the config manager in constructor or destructor.");
+    };
+    return conf_manager_;
+}
+void Module::set_config_manager(ConfigManager* conf_manager) {
+    conf_manager_ = conf_manager;
+}

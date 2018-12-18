@@ -589,6 +589,9 @@ void ModuleManager::initialiseAll() {
     // Loop over all modules and initialise them
     LOG(STATUS) << "=================| Initialising modules |==================";
     for(auto& module : m_modules) {
+        // Pass the config manager to this instance
+        module->set_config_manager(conf_manager_);
+
         // Create main ROOT directory for this module class if it does not exists yet
         LOG(TRACE) << "Creating and accessing ROOT directory";
         std::string module_name = module->getConfig().getName();
