@@ -27,7 +27,7 @@ EventLoaderTimepix3::EventLoaderTimepix3(Configuration config, std::shared_ptr<D
 
     // Calibration parameters
     if(m_config.has("calibrationPath")) {
-        calibrationPath = m_config.getPath("calibrationPath", "");
+        calibrationPath = m_config.getPath("calibrationPath");
         threshold = m_config.get<std::string>("threshold", "");
     }
 }
