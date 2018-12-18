@@ -1,4 +1,5 @@
 #include "FileWriter.h"
+#include "core/utils/file.h"
 
 using namespace corryvreckan;
 using namespace std;
@@ -37,7 +38,8 @@ void FileWriter::initialise() {
         m_objectList.push_back("tracks");
 
     // Create output file and directories
-    m_outputFile = new TFile(m_fileName.c_str(), "RECREATE");
+    auto path = createOutputFile(add_file_extension(m_fileName, "root"), true);
+    m_outputFile = new TFile(path.c_str(), "RECREATE");
     m_outputFile->cd();
 
     // Loop over all objects to be written to file, and set up the trees
