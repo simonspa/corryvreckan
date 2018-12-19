@@ -14,7 +14,7 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
     // Set up overview plots:
     canvas_overview = m_config.getMatrix<std::string>("Overview",
                                                       {{"Tracking4D/trackChi2"},
-                                                       {"TestAlgorithm/%REFERENCE%/clusterTot"},
+                                                       {"Clustering4D/%REFERENCE%/clusterTot"},
                                                        {"TestAlgorithm/%REFERENCE%/hitmap", "colz"},
                                                        {"Tracking4D/%REFERENCE%/residualsX"}});
 
