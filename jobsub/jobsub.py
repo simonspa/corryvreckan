@@ -331,7 +331,7 @@ def submitCondor(filenamebase, jobtask, subfile, runnr):
         log.error("Corryvreckan executable not found in PATH!")
         exit(1)
 
-    cmd = cmd+" arguments=\"-c "+filenamebase+".conf\""
+    cmd = cmd+" arguments=\"-c "+os.path.abspath(filenamebase+".conf")+"\""
 
     # Add Condor submission configuration file:
     cmd = cmd+" "+subfile
@@ -343,7 +343,7 @@ def submitCondor(filenamebase, jobtask, subfile, runnr):
         log.debug ("Executing: "+cmd)
         os.popen(cmd)
     except OSError, e:
-        log.critical("Problem with NAF submission: Command '%s' resulted in error #%s, %s", cmd, e.errno, e.strerror)
+        log.critical("Problem with HTCondor submission: Command '%s' resulted in error #%s, %s", cmd, e.errno, e.strerror)
         exit(1)
     return 0
 
