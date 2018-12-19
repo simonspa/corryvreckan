@@ -35,8 +35,10 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        GuiDisplay(){};
+        GuiDisplay() : running_(true){};
         ~GuiDisplay() {}
+
+        bool isPaused() { return !running_; }
 
         // Graphics associated with GUI
         TGMainFrame* m_mainFrame;
@@ -45,8 +47,11 @@ namespace corryvreckan {
         std::map<TH1*, std::string> styles;
         std::map<TH1*, bool> logarithmic;
         std::map<std::string, TGTextButton*> buttons;
+        std::map<std::string, TGButtonGroup*> buttonGroups;
         std::map<TRootEmbeddedCanvas*, bool> stackedCanvas;
         TGHorizontalFrame* buttonMenu;
+
+        bool running_;
 
         // Button functions
         inline void Display(char* canvasNameC) {
@@ -85,13 +90,32 @@ namespace corryvreckan {
         // Exit the monitoring
         inline void Exit() { raise(SIGINT); }
 
+        // Pause monitoring
+        void TogglePause() {
+            running_ = !running_;
+
+            auto button = buttons["pause"];
+            button->SetState(kButtonDown);
+            ULong_t color;
+            if(!running_) {
+                button->SetText("&Resume Monitoring");
+                gClient->GetColorByName("gray", color);
+
+            } else {
+                button->SetText("&Pause Monitoring ");
+                gClient->GetColorByName("green", color);
+            }
+            button->ChangeBackground(color);
+            button->SetState(kButtonUp);
+        }
+
         inline void Update() {
             canvas->GetCanvas()->Paint();
             canvas->GetCanvas()->Update();
         }
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(GuiDisplay, 2)
+        ClassDef(GuiDisplay, 3)
     };
 } // namespace corryvreckan
 
