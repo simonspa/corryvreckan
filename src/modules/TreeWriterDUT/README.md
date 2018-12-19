@@ -26,17 +26,15 @@ For each `track` with associated DUT `clusters` the following information is wri
 * Intercept with the DUT (3D position vector)
 
 ### Parameters
-* `DUT`: Name of the DUT plane.
-* `fileName`: Name of the data file to create, relative to the output directory of the framework. The file extension `.root` will be appended if not present. Default value is `outputTuples.root`.
-* `treeName`: Name of the tree inside the outputted ROOT file. Default value is `tree`.
+* `file_name`: Name of the data file to create, relative to the output directory of the framework. The file extension `.root` will be appended if not present. Default value is `outputTuples.root`.
+* `tree_name`: Name of the tree inside the outputted ROOT file. Default value is `tree`.
 
 ### Plots produced
 No plots are produced.
 
 ### Usage
 ```toml
-[DataOutput]
-DUT = "W0005_H03"
-fileName = "myOutputFile.root"
-treeName = "myTree"
+[TreeWriterDUT]
+file_name = "myOutputFile.root"
+tree_name = "myTree"
 ```
