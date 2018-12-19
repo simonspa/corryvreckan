@@ -65,6 +65,7 @@ The currently available global parameters are:
 \begin{itemize}
 \item \parameter{detectors_file}: Location of the file describing the detector configuration described in Section~\ref{sec:detector_config}.
 The only \textit{required} global parameter: the framework will fail to start if it is not specified.
+This parameter can take multiple paths, all provided files will be combined into one geometry description of the setup.
 \item \parameter{detectors_file_updated}: Location of the file that the (potentially) updated detector configuration should be written into. If this file does not already exist, it will be created. If the same file is given as for \parameter{detectors_file}, the file is overwritten with the updated values.
 \item \parameter{histogram_file}: Location of the file where the ROOT output histograms of all modules will be written to. The file extension \texttt{.root} will be appended if not present. Directories within the ROOT file will be created automatically for all modules.
 \item \parameter{number_of_events}: Determines the total number of events the framework should process, negative numbers allow processing of all data available.
@@ -73,7 +74,7 @@ Defaults to $-1$.
 \item \parameter{number_of_tracks}: Determines the total number of tracks the framework should reconstruct, negative numbers indicate no limit on the number of reconstructed tracks.
 After reaching the specified number of events, reconstruction is stopped.
 Defaults to $-1$.
-\item \parameter{run_time}: Determines the wall-clock time of data acquisition the framework should reconstruct up until. Negative numbers inidcate no limit on the time slice to reconstruct.
+\item \parameter{run_time}: Determines the wall-clock time of data acquisition the framework should reconstruct up until. Negative numbers indicate no limit on the time slice to reconstruct.
 Defaults to $-1$.
 \item \parameter{log_level}: Specifies the lowest log level which should be reported.
 Possible values are \texttt{FATAL}, \texttt{STATUS}, \texttt{ERROR}, \texttt{WARNING}, \texttt{INFO} and \texttt{DEBUG}, where all options are case-insensitive.
