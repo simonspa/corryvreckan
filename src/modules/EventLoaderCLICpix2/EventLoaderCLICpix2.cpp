@@ -11,13 +11,13 @@ using namespace clicpix2_utils;
 EventLoaderCLICpix2::EventLoaderCLICpix2(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    discardZeroToT = m_config.get<bool>("discardZeroToT", false);
+    discardZeroToT = m_config.get<bool>("discard_zero_tot", false);
 }
 
 void EventLoaderCLICpix2::initialise() {
 
     // Take input directory from global parameters
-    string inputDirectory = m_config.getPath("inputDirectory");
+    string inputDirectory = m_config.getPath("input_directory");
 
     // Open the root directory
     DIR* directory = opendir(inputDirectory.c_str());

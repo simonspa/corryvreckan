@@ -24,6 +24,5 @@ This module requires either another event loader of another detector type before
 ### Usage
 ```toml
 [ATLASpixEventLoader]
-DUT = "W0005_H03"
 input_directory = /user/data/directory
 ```
