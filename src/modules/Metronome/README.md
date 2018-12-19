@@ -14,5 +14,5 @@ Subsequent modules should read these values and adhere to them.
 ### Usage
 ```toml
 [Metronome]
-eventLength = 500ns
+event_length = 500ns
 ```

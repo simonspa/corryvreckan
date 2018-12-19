@@ -30,5 +30,5 @@ For each device the following plots are produced:
 ### Usage
 ```toml
 [TestAlgorithm]
-makeCorrelations = true
+make_correlations = true
 ```

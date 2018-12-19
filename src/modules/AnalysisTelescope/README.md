@@ -24,5 +24,5 @@ For each detector participating in tracking, the following plots are produced:
 ### Usage
 ```toml
 [NAME]
-chi2ndofCut = 3
+chi2ndof_cut = 3
 ```
