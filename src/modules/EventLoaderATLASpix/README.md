@@ -12,9 +12,8 @@ The module opens and reads one data file named `data.bin` in the specified input
 This module requires either another event loader of another detector type before which defines the event start and end times (variables `eventStart` and `eventEnd` on the clipboard) or an instance of the Metronome module which provides this information.
 
 ### Parameters
-* `inputDirectory`: Path to the directory containing the `data.bin` file. This path should lead to the directory above the ALTASpix directory, as this string is added to the input directory in the module.
-* `clockCycle`: Period of the clock used to count the trigger timestamps in, defaults to `6.25ns`.
-* `DUT`: Name of the DUT plane.
+* `input_directory`: Path to the directory containing the `data.bin` file. This path should lead to the directory above the ALTASpix directory, as this string is added to the input directory in the module.
+* `clock_cycle`: Period of the clock used to count the trigger timestamps in, defaults to `6.25ns`.
 * `clkdivend2`: Value of clkdivend2 register in ATLASPix specifying the speed of TS2 counter. Default is `0`.
 
 ### Plots produced
@@ -26,5 +25,5 @@ This module requires either another event loader of another detector type before
 ```toml
 [ATLASpixEventLoader]
 DUT = "W0005_H03"
-inputDirectory = /user/data/directory
+input_directory = /user/data/directory
 ```
