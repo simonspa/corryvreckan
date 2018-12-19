@@ -6,7 +6,7 @@ using namespace std;
 Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(100, "ns"))); // 100 ns
+    timingCut = m_config.get<double>("timing_cut", static_cast<double>(Units::convert(100, "ns"))); // 100 ns
     neighbour_radius_row = m_config.get<int>("neighbour_radius_row", 1);
     neighbour_radius_col = m_config.get<int>("neighbour_radius_col", 1);
 }

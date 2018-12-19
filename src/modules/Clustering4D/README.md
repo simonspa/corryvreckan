@@ -10,7 +10,7 @@ This module performs clustering on data from a Timepix3 device. The clustering m
 Split clusters can be recovered using a larger search radius for neighbouring pixels.
 
 ### Parameters
-* `timingCut`: The maximum value of the time difference between two pixels for them to be associated in a cluster. Default value is `100ns`.
+* `timing_cut`: The maximum value of the time difference between two pixels for them to be associated in a cluster. Default value is `100ns`.
 * `neighbour_radius_col`: Search radius for neighbouring pixels in column direction, defaults to `1` (do not allow split clusters)
 * `neighbour_radius_row`:  Search radius for neighbouring pixels in row direction, defaults to `1` (do not allow split clusters)
 
