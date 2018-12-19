@@ -13,7 +13,7 @@
 
 #include "ModuleIdentifier.hpp"
 #include "core/clipboard/Clipboard.hpp"
-#include "core/config/Configuration.hpp"
+#include "core/config/ConfigManager.hpp"
 #include "core/detector/Detector.hpp"
 #include "exceptions.h"
 
@@ -93,6 +93,14 @@ namespace corryvreckan {
         Configuration& getConfig() { return m_config; }
 
         /**
+         * @brief Create and return an absolute path to be used for output from a relative path
+         * @param path Relative path to add after the main output directory
+         * @param global True if the global output directory should be used instead of the module-specific version
+         * @return Canonical path to an output file
+         */
+        std::string createOutputFile(const std::string& path, bool global = false);
+
+        /**
          * @brief Initialise the module before the event sequence
          *
          * Does nothing if not overloaded.
@@ -117,13 +125,23 @@ namespace corryvreckan {
         virtual void finalise(){};
 
         /**
+         * @brief Get the config manager object to allow to read the global and other module configurations
+         * @return Pointer to the config manager
+         */
+        ConfigManager* getConfigManager();
+
+        /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
          * @return ROOT directory for storage
          */
         TDirectory* getROOTDirectory() const;
 
     protected:
-        // Configuration of this module
+        /**
+         * @brief Get the module configuration for internal use
+         * @return Configuration of the module
+         */
+        Configuration& get_configuration();
         Configuration m_config;
 
         /**
@@ -171,6 +189,13 @@ namespace corryvreckan {
          */
         ModuleIdentifier get_identifier() const;
         ModuleIdentifier identifier_;
+
+        /**
+         * @brief Set the link to the config manager
+         * @param conf_manager ConfigManager holding all relevant configurations
+         */
+        void set_config_manager(ConfigManager* config);
+        ConfigManager* conf_manager_{nullptr};
 
         /**
          * @brief Set the output ROOT directory for this module

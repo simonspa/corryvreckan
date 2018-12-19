@@ -11,7 +11,7 @@ Currently, two methods are available. The `localdensity` noise estimation method
 It uses a local estimate of the expected hit rate to find pixels that are a certain number of standard deviations away from this estimate.
 The second method, `frequency`, is a simple cut on a global pixel firing frequency which masks pixels with a hit rate larger than `frequency_cut` times the mean global hit rate.
 
-The module writes new mask file with all masked pixels for each device. Already existing masks are maintained. No masks are applied as this is done by other modules directly when reading input data.
+The module writes new mask file with all masked pixels for each device. Already existing masks are maintained. No masks are applied as this is done by other modules directly when reading input data. The file with the mask is either replacing the detector's mask file (if set) or is stored in the globally configured output directory.
 
 ### Parameters
 * `method`: Select the method to evaluate noisy pixels. Can be either `localdensity` or `frequency`, where the latter is chosen by default.

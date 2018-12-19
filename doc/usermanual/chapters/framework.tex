@@ -87,6 +87,12 @@ More information can be found in Section~\ref{sec:logging_verbosity}.
 \item \parameter{log_file}: File where the log output should be written to in addition to printing to the standard output (usually the terminal).
 Another (additional) location to write to can be specified on the command line using the \texttt{-l} parameter (see Section~\ref{sec:executable}).
 \item \parameter{library_directories}: Additional directories to search for module libraries, before searching the default paths.
+\item \parameter{output_directory}: Directory to write all output files into.
+Subdirectories are created automatically for all module instantiations.
+This directory will also contain the \parameter{histogram_file} specified via the parameter described above.
+Defaults to the current working directory with the subdirectory \textit{output/} attached.
+\item \parameter{purge_output_directory}: Decides whether the content of an already existing output directory is deleted before a new run starts. Defaults to \texttt{false}, i.e. files are kept but will be overwritten by new files created by the framework.
+\item \parameter{deny_overwrite}: Forces the framework to abort the run and throw an exception when attempting to overwrite an existing file. Defaults to \texttt{false}, i.e. files are overwritten when requested. This setting is inherited by all modules, but can be overwritten in the configuration section of each of the modules.
 \end{itemize}
 
 \section{Modules and the Module Manager}

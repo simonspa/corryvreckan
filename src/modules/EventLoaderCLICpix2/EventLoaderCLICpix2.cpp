@@ -17,7 +17,7 @@ EventLoaderCLICpix2::EventLoaderCLICpix2(Configuration config, std::shared_ptr<D
 void EventLoaderCLICpix2::initialise() {
 
     // Take input directory from global parameters
-    string inputDirectory = m_config.get<std::string>("inputDirectory");
+    string inputDirectory = m_config.getPath("inputDirectory");
 
     // Open the root directory
     DIR* directory = opendir(inputDirectory.c_str());
