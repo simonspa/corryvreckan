@@ -194,6 +194,7 @@ def runCorryvreckan(filenamebase, jobtask, silent):
         log.debug("Found Corryvreckan executable: " + cmd)
     else:
         log.error("Corryvreckan executable not found in PATH!")
+	log.error(os.getcwd())
         exit(1)
 
     # search for stdbuf command: adjust stdout buffering
@@ -304,84 +305,47 @@ def runCorryvreckan(filenamebase, jobtask, silent):
         exit(1)
     return rcode
 
-def submitNAF(filenamebase, jobtask, qsubfile, runnr):
-    """ Submits the Corryvreckan job to NAF """
+def submitCondor(filenamebase, jobtask, subfile, runnr):
+    """ Submits the Corryvreckan job to HTCondor """
     import os
     from sys import exit # use sys.exit instead of built-in exit (latter raises exception)
     log = logging.getLogger('jobsub.' + jobtask)
-    # We are running on NAF.
+    # We are running on HTCondor.
 
     # check for qsub executable
-    cmd = check_program("qsub")
+    cmd = check_program("condor_submit")
     if cmd:
-        log.debug("Found qsub executable: " + cmd)
+        log.debug("Found condor_submit executable: " + cmd)
     else:
-        log.error("qsub executable not found in PATH!")
+        log.error("condor_submit executable not found in PATH!")
         exit(1)
 
-    # Add qsub parameters:
+    # Add condor_submit parameters: ### WORK ON THIS!!!
     #qsub -@ qsubParams.txt BIN
-    cmd = cmd+" -@ "+qsubfile+" -N \"Run"+runnr+"\" "
+    cmd = cmd+" -batch-name \"Run"+runnr+"\" "
 
     # check for Corryvreckan executable
     corry = check_program("corry")
     if corry:
         log.debug("Found Corryvreckan executable: " + corry)
-        cmd = cmd+" "+corry
+        cmd = cmd+" executable="+corry
     else:
         log.error("Corryvreckan executable not found in PATH!")
         exit(1)
 
-    cmd = cmd+" -c "+filenamebase+".conf"
+    cmd = cmd+" arguments=\"-c "+filenamebase+".conf\""
+
+    # Add Condor submission configuration file:
+    cmd = cmd+" "+subfile
+
     rcode = None # the return code that will be set by a later subprocess method
     try:
         # run process
-        log.info ("Now submitting Corryvreckan job: "+filenamebase+".conf to NAF")
+        log.info ("Now submitting Corryvreckan job: "+filenamebase+".conf to HTCOndor")
         log.debug ("Executing: "+cmd)
         os.popen(cmd)
     except OSError, e:
         log.critical("Problem with NAF submission: Command '%s' resulted in error #%s, %s", cmd, e.errno, e.strerror)
-        exit(1)
-    return 0
-
-def submitLXPLUS(filenamebase, jobtask, bsubfile, runnr):
-    """ Submits the Corryvreckan job to LXPLUS """
-    import os
-    from sys import exit # use sys.exit instead of built-in exit (latter raises exception)
-    log = logging.getLogger('jobsub.' + jobtask)
-    # We are running on LXPLUS.
-
-    # check for bsub executable
-    cmd = check_program("bsub")
-    if cmd:
-        log.debug("Found bsub executable: " + cmd)
-    else:
-        log.error("bsub executable not found in PATH!")
-        exit(1)
-
-    # Add bsub parameters:
-    #bsub < bsubparams.txt BIN
-    cmd = cmd+" < "+bsubfile+" -J \"Run"+runnr+"\" "
-
-    # check for Corryvreckan executable
-    corry = check_program("corry")
-    if corry:
-        log.debug("Found Corryvreckan executable: " + corry)
-        cmd = cmd+" "+corry
-    else:
-        log.error("Corryvreckan executable not found in PATH!")
-        exit(1)
-
-    filename = os.path.abspath(filenamebase+".conf")
-    cmd = cmd+" -c "+filename
-    rcode = None # the return code that will be set by a later subprocess method
-    try:
-        # run process
-        log.info ("Now submitting Corryvreckan job: "+filenamebase+".conf to LXPLUS")
-        log.debug ("Executing: "+cmd)
-        os.popen(cmd)
-    except OSError, e:
-        log.critical("Problem with LXPLUS submission: Command '%s' resulted in error #%s, %s", cmd, e.errno, e.strerror)
         exit(1)
     return 0
 
@@ -458,8 +422,7 @@ def main(argv=None):
     parser.add_argument('--version', action='version', version='Revision: $Revision$, $LastChangedDate$')
     parser.add_argument("-c", "--conf-file", "--config", help="Configuration file with all Corryvreckan algorithms defined", metavar="FILE")
     parser.add_argument('--option', '-o', action='append', metavar="NAME=VALUE", help="Specify further options such as 'beamenergy=5.3'. This switch be specified several times for multiple options or can parse a comma-separated list of options. This switch overrides any config file options and also overwrites hard-coded settings on the Corryvreckan configration file.")
-    parser.add_argument("-n", "--naf-file", "--naf", help="Specify qsub parameter file for NAF submission. Run NAF submission via qsub instead of calling Corryvreckan directly", metavar="FILE")
-    parser.add_argument("-lx", "--lxplus-file", "--lxplus", help="Specify bsub parameter file for LXPLUS submission. Run LXPLUS submission via bsub instead of calling Corryvreckan directly", metavar="FILE")
+    parser.add_argument("-htc", "--htcondor-file", "--batch", help="Specify condor_submit parameter file for LXPLUS submission. Run LXPLUS submission via bsub instead of calling Corryvreckan directly", metavar="FILE")
     parser.add_argument("-csv", "--csv-file", help="Load additional run-specific variables from table (text file in csv format)", metavar="FILE")
     parser.add_argument("--log-file", help="Save submission log to specified file", metavar="FILE")
     parser.add_argument("-v", "--verbosity", default="info", help="Sets the verbosity of log messages during job submission where LEVEL is either debug, info, warning or error", metavar="LEVEL")
@@ -612,19 +575,10 @@ def main(argv=None):
         if not checkSteer(steeringString):
             return 1
 
-        if args.naf_file and args.lxplus_file:
-            log.critical("Not possible to submit to both NAF and LXPLUS at the same time!")
-            return 1
-
-        if args.naf_file:
-            args.naf_file = os.path.abspath(args.naf_file)
-            if not os.path.isfile(args.naf_file):
-                log.critical("NAF submission parameters file '"+args.naf_file+"' not found!")
-                return 1
-        elif args.lxplus_file:
-            args.lxplus_file = os.path.abspath(args.lxplus_file)
-            if not os.path.isfile(args.lxplus_file):
-                log.critical("LXPLUS submission parameters file '"+args.lxplus_file+"' not found!")
+        if args.htcondor_file:
+            args.htcondor_file = os.path.abspath(args.htcondor_file)
+            if not os.path.isfile(args.htcondor_file):
+                log.critical("HTCondor submission parameters file '"+args.htcondor_file+"' not found!")
                 return 1
 
         log.debug ("Writing steering file for run number "+runnr)
@@ -652,18 +606,12 @@ def main(argv=None):
         # bail out if running a dry run
         if args.dry_run:
             log.info("Dry run: skipping Corryvreckan execution. Steering file written to "+basefilename+'.conf')
-        elif args.naf_file:
-            rcode = submitNAF(basefilename, runnr, args.naf_file, runnr) # start NAF submission
+        elif args.htcondor_file:
+            rcode = submitCondor(basefilename, runnr, args.htcondor_file, runnr) # start HTCondor submission
             if rcode == 0:
-                log.info("NAF job submitted")
+                log.info("HTCondor job submitted")
             else:
-                log.error("NAF submission returned with error code "+str(rcode))
-        elif args.lxplus_file:
-            rcode = submitLXPLUS(basefilename, runnr, args.lxplus_file, runnr) # start LXPLUS submission
-            if rcode == 0:
-                log.info("LXPLUS job submitted")
-            else:
-                log.error("LXPLUS submission returned with error code "+str(rcode))
+                log.error("HTCondor submission returned with error code "+str(rcode))
         else:
             rcode = runCorryvreckan(basefilename, runnr, args.silent) # start Corryvreckan execution
             if rcode == 0:
