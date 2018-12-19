@@ -194,7 +194,6 @@ def runCorryvreckan(filenamebase, jobtask, silent):
         log.debug("Found Corryvreckan executable: " + cmd)
     else:
         log.error("Corryvreckan executable not found in PATH!")
-	log.error(os.getcwd())
         exit(1)
 
     # search for stdbuf command: adjust stdout buffering
@@ -320,8 +319,7 @@ def submitCondor(filenamebase, jobtask, subfile, runnr):
         log.error("condor_submit executable not found in PATH!")
         exit(1)
 
-    # Add condor_submit parameters: ### WORK ON THIS!!!
-    #qsub -@ qsubParams.txt BIN
+    # Add condor_submit parameters:
     cmd = cmd+" -batch-name \"Run"+runnr+"\" "
 
     # check for Corryvreckan executable
@@ -341,7 +339,7 @@ def submitCondor(filenamebase, jobtask, subfile, runnr):
     rcode = None # the return code that will be set by a later subprocess method
     try:
         # run process
-        log.info ("Now submitting Corryvreckan job: "+filenamebase+".conf to HTCOndor")
+        log.info ("Now submitting Corryvreckan job: "+filenamebase+".conf to HTCondor")
         log.debug ("Executing: "+cmd)
         os.popen(cmd)
     except OSError, e:
