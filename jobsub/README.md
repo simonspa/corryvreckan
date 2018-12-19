@@ -11,7 +11,7 @@ The following help text is printed when invoking `jobsub` with the `-h` argument
 ```result
 usage: jobsub.py [-h] [--option NAME=VALUE] [-c FILE] [-csv FILE]
                  [--log-file FILE] [-l LEVEL] [-s] [--dry-run]
-		 [--naf FILE | --lxplus FILE] [--subdir]
+		 [--batch FILE] [--subdir]
                  jobtask [runs [runs ...]]
 
 A tool for the convenient run-specific modification of Marlin steering files
@@ -34,13 +34,9 @@ optional arguments:
                         switch overrides any config file options and also
                         overwrites hard-coded settings on the Corryvreckan
                         configration file.
-  -n FILE, --naf-file FILE, --naf FILE
-                        Specify qsub parameter file for NAF submission. Run
-                        NAF submission via qsub instead of calling
-                        Corryvreckan directly
-  -lx FILE, --lxplus-file FILE, --lxplus FILE
-                        Specify bsub parameter file for LXPLUS submission. Run
-                        LXPLUS submission via bsub instead of calling
+  -htc FILE, --htcondor-file FILE, --batch FILE
+                        Specify condor_submit parameter file for HTCondor submission. Run
+                        HTCondor submission via condor_submit instead of calling
                         Corryvreckan directly
   -csv FILE, --csv-file FILE
                         Load additional run-specific variables from table
