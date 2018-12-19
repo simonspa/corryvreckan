@@ -11,7 +11,7 @@ MaskCreator::MaskCreator(Configuration config, std::shared_ptr<Detector> detecto
 
     m_frequency = m_config.get<double>("frequency_cut", 50);
 
-    binsOccupancy = m_config.get<int>("binsOccupancy", 128);
+    binsOccupancy = m_config.get<int>("bins_occupancy", 128);
     bandwidth = m_config.get<double>("density_bandwidth", 2.);
     m_sigmaMax = m_config.get<double>("sigma_above_avg_max", 5.);
     m_rateMax = m_config.get<double>("rate_max", 1.);
