@@ -5,8 +5,8 @@ using namespace std;
 
 EtaCorrection::EtaCorrection(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
-    m_etaFormulaX = m_config.get<std::string>("EtaFormulaX", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
-    m_etaFormulaY = m_config.get<std::string>("EtaFormulaY", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
+    m_etaFormulaX = m_config.get<std::string>("eta_formula_x", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
+    m_etaFormulaY = m_config.get<std::string>("eta_formula_y", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
 }
 
 void EtaCorrection::initialise() {
@@ -16,8 +16,8 @@ void EtaCorrection::initialise() {
     double pitchY = m_detector->pitch().Y();
 
     // Get info from configuration:
-    std::vector<double> m_etaConstantsX = m_config.getArray<double>("EtaConstantsX_" + m_detector->name(), {});
-    std::vector<double> m_etaConstantsY = m_config.getArray<double>("EtaConstantsY_" + m_detector->name(), {});
+    std::vector<double> m_etaConstantsX = m_config.getArray<double>("eta_constants_x_" + m_detector->name(), {});
+    std::vector<double> m_etaConstantsY = m_config.getArray<double>("eta_constants_y_" + m_detector->name(), {});
     if(!m_etaConstantsX.empty() || !m_etaConstantsY.empty()) {
         LOG(INFO) << "Found Eta correction factors for detector \"" << m_detector->name()
                   << "\": " << (m_etaConstantsX.empty() ? "" : "X ") << (m_etaConstantsY.empty() ? "" : "Y ");
