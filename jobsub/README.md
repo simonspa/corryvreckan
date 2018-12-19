@@ -62,6 +62,10 @@ optional arguments:
                         digits
 ```
 
+Make sure to set environment variable.
+For this, ```sourc etc/setup_lxplus.sh```.
+When using a submission file, use getenv = True (see example.sub).
+
 ### Preparation of Configuration File Templates
 
 Configuration file templates are valid Corryvreckan configuration files in TOML format, where single values are replaced by variables in the form `@SomeVariable@`.
