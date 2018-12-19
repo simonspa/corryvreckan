@@ -11,7 +11,6 @@ The module opens and reads one data file in the specified input directory with t
 
 ### Parameters
 * `input_directory`: Path to the directory containing the `.dat` file.
-* `DUT`: Name of the DUT plane. The CLICpix device is assumed to be the DUT device.
 
 ### Plots produced
 * 2D Hit map
@@ -22,6 +21,5 @@ The module opens and reads one data file in the specified input directory with t
 ### Usage
 ```toml
 [CLICpixEventLoader]
-DUT = "W0005_H03"
 input_directory = /user/data/directory/CLICpix/
 ```

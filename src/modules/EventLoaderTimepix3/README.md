@@ -30,13 +30,10 @@ When running in time mode (`number_of_pixelhits` not set), this module requires 
 ### Usage
 ```toml
 [Timepix3EventLoader]
-inputDirectory = "path/to/directory"
-calibrationPath = "path/to/calibration"
+input_directory = "path/to/directory"
+calibration_path = "path/to/calibration"
 threshold = 1148
-minNumberOfPlanes = 5
-eventLength = 0.0000002
 number_of_pixelhits = 0
-DUT = "W0005_H03"
 ```
 
 [@timepix-talk] X. Llopart, The Timepix3 chip, EP-ESE seminar, https://indico.cern.ch/event/267425,
