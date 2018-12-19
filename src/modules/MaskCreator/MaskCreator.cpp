@@ -109,11 +109,11 @@ StatusCode MaskCreator::run(std::shared_ptr<Clipboard> clipboard) {
 void MaskCreator::finalise() {
 
     if(m_method == "localdensity") {
-        LOG(STATUS) << "Using local density estimator";
+        LOG(INFO) << "Using local density estimator";
         // Reject noisy pixels based on local density estimator:
         localDensityEstimator();
     } else {
-        LOG(STATUS) << "Using global frequency filter";
+        LOG(INFO) << "Using global frequency filter";
         // Use global frequency filter to detect noisy pixels:
         globalFrequencyFilter();
     }
@@ -207,7 +207,7 @@ void MaskCreator::writeMaskFiles() {
     // Get the mask file from detector or use default name:
     std::string maskfile_path = m_detector->maskFile();
     if(maskfile_path.empty()) {
-        maskfile_path = "mask_" + m_detector->name() + ".txt";
+        maskfile_path = createOutputFile("mask_" + m_detector->name() + ".txt");
     }
 
     // Open the new mask file for writing
@@ -220,7 +220,7 @@ void MaskCreator::writeMaskFiles() {
             }
         }
     }
-    LOG(INFO) << m_detector->name() << " mask written to:  " << std::endl << maskfile_path;
+    LOG(STATUS) << m_detector->name() << " mask written to:  " << std::endl << maskfile_path;
 }
 
 double MaskCreator::estimateDensityAtPosition(const TH2D* values, int i, int j, int bwi, int bwj) {

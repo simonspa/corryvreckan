@@ -12,7 +12,7 @@ This module reads in an input file containing trees with data previously written
 * `readClusters`: Boolean to choose if cluster objects are to be read in. Default value is `false`.
 * `readTracks`: Boolean to choose if track objects are to be read in. Default value is `false`.
 * `readMCParticles`: Boolean to choose if Monte-Carlo particle objects are to be read in. Default value is `false`.
-* `fileName`: Name of the file from which data will be read. Default value is `outputTuples.root`.
+* `fileName`: Name of the file from which data will be read.
 * `timeWindow`: Data with time lower than this value will be read in. Default value is `1s`.
 * `DUT`: Name of the DUT plane.
 

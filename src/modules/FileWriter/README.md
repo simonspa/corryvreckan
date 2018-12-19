@@ -12,7 +12,7 @@ This module writes an output file and fills it with trees containing the request
 * `writePixels`: Boolean to choose if pixel objects are to be written out. Default value is `true`.
 * `writeClusters`: Boolean to choose if cluster objects are to be written out. Default value is `false`.
 * `writeTracks`: Boolean to choose if track objects are to be written out. Default value is `true`.
-* `fileName`: Name of the output file. Default value is `outputTuples.root`.
+* `fileName`: Name of the data file to create, relative to the output directory of the framework. The file extension `.root` will be appended if not present. Default value is `outputTuples.root`.
 
 ### Usage
 ```toml

@@ -15,6 +15,7 @@
 
 // Local include files
 #include "ModuleManager.hpp"
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "exceptions.h"
 
@@ -32,77 +33,13 @@
 using namespace corryvreckan;
 
 // Default constructor
-ModuleManager::ModuleManager(std::string config_file_name,
-                             const std::vector<std::string>& module_options,
-                             const std::vector<std::string>& detector_options)
-    : m_reference(nullptr), m_terminate(false) {
-
-    LOG(TRACE) << "Loading Corryvreckan";
-
-    // Put welcome message
-    LOG(STATUS) << "Welcome to Corryvreckan " << CORRYVRECKAN_PROJECT_VERSION;
-
-    // Load the global configuration
-    conf_manager_ = std::make_unique<corryvreckan::ConfigManager>(std::move(config_file_name),
-                                                                  std::initializer_list<std::string>({"Corryvreckan", ""}),
-                                                                  std::initializer_list<std::string>({"Ignore"}));
-
-    // Load and apply the provided module options
-    conf_manager_->loadModuleOptions(module_options);
-
-    // Load and apply the provided detector options
-    conf_manager_->loadDetectorOptions(detector_options);
-
-    // Fetch the global configuration
-    Configuration& global_config = conf_manager_->getGlobalConfiguration();
-
-    // Set the log level from config if not specified earlier
-    std::string log_level_string;
-    if(Log::getReportingLevel() == LogLevel::NONE) {
-        log_level_string = global_config.get<std::string>("log_level", "INFO");
-        std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
-        try {
-            LogLevel log_level = Log::getLevelFromString(log_level_string);
-            Log::setReportingLevel(log_level);
-        } catch(std::invalid_argument& e) {
-            LOG(ERROR) << "Log level \"" << log_level_string
-                       << "\" specified in the configuration is invalid, defaulting to INFO instead";
-            Log::setReportingLevel(LogLevel::INFO);
-        }
-    } else {
-        log_level_string = Log::getStringFromLevel(Log::getReportingLevel());
-    }
-
-    // Set the log format from config
-    std::string log_format_string = global_config.get<std::string>("log_format", "DEFAULT");
-    std::transform(log_format_string.begin(), log_format_string.end(), log_format_string.begin(), ::toupper);
-    try {
-        LogFormat log_format = Log::getFormatFromString(log_format_string);
-        Log::setFormat(log_format);
-    } catch(std::invalid_argument& e) {
-        LOG(ERROR) << "Log format \"" << log_format_string
-                   << "\" specified in the configuration is invalid, using DEFAULT instead";
-        Log::setFormat(LogFormat::DEFAULT);
-    }
-
-    // Open log file to write output to
-    if(global_config.has("log_file")) {
-        // NOTE: this stream should be available for the duration of the logging
-        log_file_.open(global_config.getPath("log_file"), std::ios_base::out | std::ios_base::trunc);
-        Log::addStream(log_file_);
-    }
-
-    // Wait for the first detailed messages until level and format are properly set
-    LOG(TRACE) << "Global log level is set to " << log_level_string;
-    LOG(TRACE) << "Global log format is set to " << log_format_string;
-
+ModuleManager::ModuleManager() : m_reference(nullptr), m_terminate(false) {
     // New clipboard for storage:
     m_clipboard = std::make_shared<Clipboard>();
 }
 
-void ModuleManager::load() {
-
-    add_units();
+void ModuleManager::load(ConfigManager* conf_mgr) {
+    conf_manager_ = conf_mgr;
 
     load_detectors();
     load_modules();
@@ -157,13 +94,21 @@ void ModuleManager::load_modules() {
     auto& configs = conf_manager_->getModuleConfigurations();
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
-    // Create histogram output file
+    // (Re)create the main ROOT file
     global_config.setAlias("histogram_file", "histogramFile");
-    std::string histogramFile = global_config.getPath("histogram_file");
+    auto path = std::string(gSystem->pwd()) + "/" + global_config.get<std::string>("histogram_file", "histograms");
+    path = corryvreckan::add_file_extension(path, "root");
 
-    m_histogramFile = std::make_unique<TFile>(histogramFile.c_str(), "RECREATE");
+    if(corryvreckan::path_is_file(path)) {
+        if(global_config.get<bool>("deny_overwrite", false)) {
+            throw RuntimeError("Overwriting of existing main ROOT file " + path + " denied");
+        }
+        LOG(WARNING) << "Main ROOT file " << path << " exists and will be overwritten.";
+        corryvreckan::remove_file(path);
+    }
+    m_histogramFile = std::make_unique<TFile>(path.c_str(), "RECREATE");
     if(m_histogramFile->IsZombie()) {
-        throw RuntimeError("Cannot create main ROOT file " + histogramFile);
+        throw RuntimeError("Cannot create main ROOT file " + path);
     }
     m_histogramFile->cd();
 
@@ -290,9 +235,6 @@ void ModuleManager::load_modules() {
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
 
-        // Merge the global configuration into the modules config:
-        config.merge(global_config);
-
         // Create the modules from the library
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(global) {
@@ -391,6 +333,13 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* l
     // Create and add module instance config
     Configuration& instance_config = conf_manager_->addInstanceConfiguration(identifier, config);
 
+    // Specialize instance configuration
+    auto output_dir = instance_config.get<std::string>("_global_dir");
+    output_dir += "/";
+    std::string path_mod_name = identifier.getUniqueName();
+    std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '_');
+    output_dir += path_mod_name;
+
     // Convert to correct generator function
     auto module_generator =
         reinterpret_cast<Module* (*)(Configuration, std::vector<std::shared_ptr<Detector>>)>(generator); // NOLINT
@@ -408,7 +357,10 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* l
     Log::setSection(old_section_name);
     set_module_after(old_settings);
 
-    // Return the module to the analysis
+    // Set the module directory afterwards to catch invalid access in constructor
+    module->get_configuration().set<std::string>("_output_dir", output_dir);
+
+    // Return the module to the ModuleManager
     return std::make_pair(identifier, module);
 }
 
@@ -519,6 +471,13 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
         // Create and add module instance config
         Configuration& instance_config = conf_manager_->addInstanceConfiguration(instance.second, config);
 
+        // Add internal module config
+        auto output_dir = instance_config.get<std::string>("_global_dir");
+        output_dir += "/";
+        std::string path_mod_name = instance.second.getUniqueName();
+        std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '/');
+        output_dir += path_mod_name;
+
         // Set the log section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "C:";
@@ -527,10 +486,15 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
         // Set module specific log settings
         auto old_settings = set_module_before(identifier.getUniqueName(), instance_config);
         // Build module
-        modules.emplace_back(identifier, module_generator(instance_config, detector));
+        Module* module = module_generator(instance_config, detector);
         // Reset log
         Log::setSection(old_section_name);
         set_module_after(old_settings);
+
+        // Set the module directory afterwards to catch invalid access in constructor
+        module->get_configuration().set<std::string>("_output_dir", output_dir);
+
+        modules.emplace_back(identifier, module);
     }
 
     // Return the list of modules to the analysis
@@ -653,6 +617,9 @@ void ModuleManager::initialiseAll() {
     // Loop over all modules and initialise them
     LOG(STATUS) << "=================| Initialising modules |==================";
     for(auto& module : m_modules) {
+        // Pass the config manager to this instance
+        module->set_config_manager(conf_manager_);
+
         // Create main ROOT directory for this module class if it does not exists yet
         LOG(TRACE) << "Creating and accessing ROOT directory";
         std::string module_name = module->getConfig().getName();
@@ -823,50 +790,4 @@ void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
         Log::setFormat(old_format);
         LOG(TRACE) << "Reset log format to global level of " << Log::getStringFromFormat(old_format);
     }
-}
-
-void ModuleManager::add_units() {
-
-    LOG(TRACE) << "Adding physical units";
-
-    // LENGTH
-    Units::add("nm", 1e-6);
-    Units::add("um", 1e-3);
-    Units::add("mm", 1);
-    Units::add("cm", 1e1);
-    Units::add("dm", 1e2);
-    Units::add("m", 1e3);
-    Units::add("km", 1e6);
-
-    // TIME
-    Units::add("ps", 1e-3);
-    Units::add("ns", 1);
-    Units::add("us", 1e3);
-    Units::add("ms", 1e6);
-    Units::add("s", 1e9);
-
-    // TEMPERATURE
-    Units::add("K", 1);
-
-    // ENERGY
-    Units::add("eV", 1e-6);
-    Units::add("keV", 1e-3);
-    Units::add("MeV", 1);
-    Units::add("GeV", 1e3);
-
-    // CHARGE
-    Units::add("e", 1);
-    Units::add("ke", 1e3);
-    Units::add("C", 1.6021766208e-19);
-
-    // VOLTAGE
-    // NOTE: fixed by above
-    Units::add("V", 1e-6);
-    Units::add("kV", 1e-3);
-
-    // ANGLES
-    // NOTE: these are fake units
-    Units::add("deg", 0.01745329252);
-    Units::add("rad", 1);
-    Units::add("mrad", 1e-3);
 }

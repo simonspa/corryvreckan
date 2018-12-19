@@ -6,8 +6,7 @@
 #include <string>
 #include <utility>
 
-#include "core/config/ConfigManager.hpp"
-#include "core/module/ModuleManager.hpp"
+#include "core/Corryvreckan.hpp"
 #include "core/utils/exceptions.h"
 /**
  * @file
@@ -22,7 +21,7 @@ void clean();
 void abort_handler(int);
 void interrupt_handler(int);
 
-std::unique_ptr<ModuleManager> corry;
+std::unique_ptr<Corryvreckan> corry;
 std::atomic<bool> cv_ready{false};
 
 /**
@@ -169,20 +168,20 @@ int main(int argc, const char* argv[]) {
 
     try {
         // Construct main Corryvreckan object
-        corry = std::make_unique<ModuleManager>(config_file_name, module_options, detector_options);
+        corry = std::make_unique<Corryvreckan>(config_file_name, module_options, detector_options);
         cv_ready = true;
 
         // Load modules
         corry->load();
 
         // Initialize modules (pre-run)
-        corry->initialiseAll();
+        corry->init();
 
         // Run modules and event-loop
         corry->run();
 
         // Finalize modules (post-run)
-        corry->finaliseAll();
+        corry->finalize();
 
     } catch(ConfigurationError& e) {
         LOG(FATAL) << "Error in the configuration file:" << std::endl
