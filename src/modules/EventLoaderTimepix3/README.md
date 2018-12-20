@@ -20,8 +20,8 @@ When running in time mode (`number_of_pixelhits` not set), this module requires 
 * `input_directory`: Path to the directory above the data directory for each device. The device name is added to the path during the module.
 * `number_of_pixelhits`: Maximum number of pixel hits on each detector per event. Default value is `2000`. This is only used if this parameter is present in the configuration file, otherwise the data is split into events using the event length information from the clipboard.
 * `trigger_latency`:
-* `calibration_path`: Path to the calibration directory. If this parameter is set, calibration will be applied to the DUT. Assumed folder structure is `"[calibration_path]/[detector name]/cal_thr_[thr dac]_ik_[ikrum dac]/[detector name]_cal_[tot/toa].txt"`. The assumed file structure is `[col | row | val1 | val2 | etc.]`.
-* `threshold`: String defining the `[thr dac]` value for loading the appropriate calibration file, See above.
+* `calibration_path`: Path to the calibration directory. If this parameter is set, calibration will be applied to the DUT. Assumed folder structure is `[calibration_path]/[detector name]/cal_thr_[threshold]_ik_[ikrum dac]/[detector name]_cal_[tot/toa].txt`. The assumed file structure is `[col | row | val1 | val2 | etc.]`.
+* `threshold`: String defining the `[threshold]` DAC value for loading the appropriate calibration file, See above.
 
 ### Plots produced
 * Histogram with pixel ToT before and after calibration
