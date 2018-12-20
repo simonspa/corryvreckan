@@ -109,9 +109,3 @@ export PATH="$Doxygen_HOME:$PATH"
 export Git_HOME=${CLICREPO}/software/git/2.13.2/${BUILD_FLAVOUR}
 export PATH=${Git_HOME}/bin:${PATH}
 
-#--------------------------------------------------------------------------------
-#     Corryvreckan itself
-#--------------------------------------------------------------------------------
-
-CORRY_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )/../bin
-export PATH=$PATH:$CORRY_PATH
