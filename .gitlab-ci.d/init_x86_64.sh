@@ -108,3 +108,4 @@ export PATH="$Doxygen_HOME:$PATH"
 
 export Git_HOME=${CLICREPO}/software/git/2.13.2/${BUILD_FLAVOUR}
 export PATH=${Git_HOME}/bin:${PATH}
+
