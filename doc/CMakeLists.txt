@@ -106,6 +106,14 @@ IF(LATEX_COMPILER)
             IMAGES
             logo.png
             cc-by.png
+            usermanual/figures/correlationX_D04_29519.pdf
+            usermanual/figures/correlationX_D04_29531.pdf
+            usermanual/figures/trackChi2_29531.pdf
+            usermanual/figures/trackChi2_29519.pdf
+            usermanual/figures/residualX_D04_29531.pdf
+            usermanual/figures/residualX_D04_29519.pdf
+            usermanual/figures/wisdom_of_the_ancients.png
+            usermanual/figures/obama.jpg
             INPUTS
             usermanual/chapters/introduction.tex
             usermanual/chapters/installation.tex
@@ -117,6 +125,7 @@ IF(LATEX_COMPILER)
             usermanual/chapters/development.tex
             usermanual/chapters/testing.tex
             usermanual/chapters/tools.tex
+            usermanual/chapters/howtoalign.tex
             usermanual/config.tex
 
             CONFIGURE
