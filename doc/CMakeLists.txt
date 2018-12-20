@@ -106,12 +106,9 @@ IF(LATEX_COMPILER)
             IMAGES
             logo.png
             cc-by.png
-            usermanual/figures/correlationX_D04_29519.pdf
-            usermanual/figures/correlationX_D04_29531.pdf
-            usermanual/figures/trackChi2_29531.pdf
-            usermanual/figures/trackChi2_29519.pdf
-            usermanual/figures/residualX_D04_29531.pdf
-            usermanual/figures/residualX_D04_29519.pdf
+            usermanual/figures/trackChi2ndof_goodexample.pdf
+            usermanual/figures/residualX_goodexample.pdf
+            usermanual/figures/correlationX_goodexample.pdf
             usermanual/figures/wisdom_of_the_ancients.png
             usermanual/figures/obama.jpg
             INPUTS
