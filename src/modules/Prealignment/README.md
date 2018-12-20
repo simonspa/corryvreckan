@@ -12,10 +12,9 @@ This initial alignment along the X and Y axes is designed to be performed before
 The required translational shifts in X and Y are calculated for each detector as the mean of the 1D correlation histogram along the axis.
 
 ### Parameters
-* `reference`: Name of the detector used as the alignment reference plane. All other telescope planes are aligned with respect to the reference plane.
 * `damping_factor`: A factor to change the percentage of the calcuated shift applied to each detector. Default value is `1`.
 * `max_correlation_rms`: The maximum RMS of the 1D correlation histograms allowed for the shifts to be applied. This factor should be tuned for each run, and is combat the effect of flat distributions. Default value is `6mm`.
-* `timingCut`: maximum time difference between clusters to be taken into account. Defaults to `100ns`.
+* `timing_cut`: maximum time difference between clusters to be taken into account. Defaults to `100ns`.
 
 ### Plots Created
 For each detector the following plots are produced:
@@ -31,8 +30,6 @@ For each detector the following plots are produced:
 ```toml
 [Prealignment]
 log_level = INFO
-reference = "W0013_D04"
-masked = "W0005_H03" #excluding the DUT from the prelaignment
 max_correlation_rms = 6.0
 damping_factor = 1.0
 ```

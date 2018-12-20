@@ -21,7 +21,7 @@ AlignmentMillepede::AlignmentMillepede(Configuration config, std::vector<std::sh
 
     m_rescut = m_config.get<double>("residual_cut", 0.05);
     m_rescut_init = m_config.get<double>("residual_cut_init", 0.6);
-    m_nstdev = m_config.get<int>("NStdDev", 0);
+    m_nstdev = m_config.get<int>("number_of_stddev", 0);
 
     m_convergence = m_config.get<double>("convergence", 0.00001);
 

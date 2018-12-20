@@ -71,11 +71,10 @@ The section of a configuration file template with variable geometry file and DUT
 ```toml
 [Corryvreckan]
 detectors_file = "@telescopeGeometry@"
-histogramFile = "histograms_run@RunNumber@.root"
+histogram_file = "histograms_run@RunNumber@.root"
 
 number_of_events = 5000000
 
-DUT = "@DUTName@"
 log_level = WARNING
 ```
 
@@ -84,11 +83,10 @@ When `jobsub` is executed, these placeholders are replaced with user-defined val
 ```toml
 [Corryvreckan]
 detectors_file = "my_telescope_Nov2017_1.conf"
-histogramFile = "histograms_run999.root"
+histogram_file = "histograms_run999.root"
 
 number_of_events = 5000000
 
-DUT = "W0019_G07"
 log_level = WARNING
 ```
 

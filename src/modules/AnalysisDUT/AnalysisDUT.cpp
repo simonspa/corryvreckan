@@ -9,9 +9,9 @@ using namespace corryvreckan;
 AnalysisDUT::AnalysisDUT(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    m_timeCutFrameEdge = m_config.get<double>("timeCutFrameEdge", static_cast<double>(Units::convert(20, "ns")));
-    spatialCut = m_config.get<double>("spatialCut", static_cast<double>(Units::convert(50, "um")));
-    chi2ndofCut = m_config.get<double>("chi2ndofCut", 3.);
+    m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", static_cast<double>(Units::convert(20, "ns")));
+    spatialCut = m_config.get<double>("spatial_cut", static_cast<double>(Units::convert(50, "um")));
+    chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
 }
 
 void AnalysisDUT::initialise() {

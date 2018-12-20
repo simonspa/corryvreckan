@@ -62,17 +62,20 @@ The internal base units of the framework are not chosen for user convenience but
                                   &                                         & ms (millisecond)         \\
                                   &                                         & s (second)               \\
 \midrule
-\multirow{3}{*}{\textit{Energy}}  & \multirow{4}{*}{MeV (megaelectronvolt)} & eV (electronvolt)        \\
+\multirow{3}{*}{\textit{Energy}}  & \multirow{3}{*}{MeV (megaelectronvolt)} & eV (electronvolt)        \\
                                   &                                         & keV (kiloelectronvolt)   \\
                                   &                                         & GeV (gigaelectronvolt)   \\
 \midrule
 \textit{Temperature}              & K (kelvin)                              & ---                      \\
 \midrule
-\multirow{2}{*}{\textit{Charge}}  & e (elementary charge)                   & C (coulomb)              \\
-                                  &                                         & ke (kiloelectrons)       \\
+\multirow{3}{*}{\textit{Charge}}  & \multirow{3}{*}{e (elementary charge)}  & ke (kiloelectrons)       \\
+                                  &                                         & fC (femtocoulomb)        \\
+                                  &                                         & C (coulomb)              \\
 \midrule
 \multirow{2}{*}{\textit{Voltage}} & \multirow{2}{*}{MV (megavolt)}          & V (volt)                 \\
                                   &                                         & kV (kilovolt)            \\
+\midrule
+\textit{Magnetic field strength}  & T (tesla)                               & mT (millitesla)                 \\
 \midrule
 \multirow{2}{*}{\textit{Angle}}   & \multirow{2}{*}{rad (radian)}           & deg (degree)             \\
                                   &                                         & mrad (milliradian)       \\
@@ -194,10 +197,10 @@ All supported rotations are extrinsic active rotations, i.e. the vector itself i
 \item The intrinsic resolution of the detector can be specified using the \parameter{resolution} parameter, a two-dimensional vector holding the position resolution for the column and row directions.
 \item The \parameter{time_offset} can be used to shift the individual detector time frames of reference to e.g.\ account for time of flight effects between different detector planes by adding a fixed offset.
 \item Pixels to be masked in the offline analysis can be placed in a separate file specified by the \parameter{mask_file} parameter explained in detail in Section~\ref{sec:masking}.
-\item A region of interest in the given detector can be defined using the \parameter{roi} parameter. More details on this functionality cna be found in Section~\ref{sec:roi}.
+\item A region of interest in the given detector can be defined using the \parameter{roi} parameter. More details on this functionality can be found in Section~\ref{sec:roi}.
 \end{itemize}
 
-An example configuration file describing a setup with one CLICpix2 detector (named \parameter{016_CP_PS} and two Timepix3~\cite{timepix} detectors (\parameter{W0013_D04}and \parameter{W0013_J05}) is the following:
+An example configuration file describing a setup with one CLICpix2 detector named \parameter{016_CP_PS} and two Timepix3~\cite{timepix} detectors (\parameter{W0013_D04} and \parameter{W0013_J05}) is the following:
 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 [W0013_D04]
@@ -215,6 +218,7 @@ orientation = -0.02deg, 0.0deg, -0.015deg
 orientation_mode = "xyz"
 pixel_pitch = 25um, 25um
 position = -0.9mm, 0.21mm, 106.0mm
+role = "dut"
 type = "CLICpix2"
 
 [W0013_J05]
@@ -223,6 +227,7 @@ orientation = -9deg, 9deg, 0deg
 orientation_mode = "xyz"
 pixel_pitch = 55um, 55um
 position = 0um, 0um, 204mm
+role = "reference"
 type = "Timepix3"
 \end{minted}
 

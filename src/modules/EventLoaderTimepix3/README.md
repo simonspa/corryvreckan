@@ -17,11 +17,11 @@ See also the Timepix3 chip manual version 1.9, section 3.2.1 and/or [@timepix3-t
 When running in time mode (`number_of_pixelhits` not set), this module requires either another event loader of another detector type before which defines the event start and end times (variables `eventStart` and `eventEnd` on the clipboard) or an instance of the Metronome module which provides this information.
 
 ### Parameters
-* `inputDirectory`: Path to the directory above the data directory for each device. The device name is added to the path during the module.
-* `minNumberOfPlanes`: Minimum number of planes with loaded data required for each event to be stored. Default value is `1`.
+* `input_directory`: Path to the directory above the data directory for each device. The device name is added to the path during the module.
 * `number_of_pixelhits`: Maximum number of pixel hits on each detector per event. Default value is `2000`. This is only used if this parameter is present in the configuration file, otherwise the data is split into events using the event length information from the clipboard.
-* `calibrationPath`: Path to the calibration directory. If this parameter is set, calibration will be applied to the DUT. Assumed folder structure is `"[calibrationPath]/[detector name]/cal_thr_[thr dac]_ik_[ikrum dac]/[detector name]_cal_[tot/toa].txt"`. The assumed file structure is `[col | row | val1 | val2 | etc.]`.
-* `DUT`: Name of the DUT plane.
+* `trigger_latency`:
+* `calibration_path`: Path to the calibration directory. If this parameter is set, calibration will be applied to the DUT. Assumed folder structure is `[calibration_path]/[detector name]/cal_thr_[threshold]_ik_[ikrum dac]/[detector name]_cal_[tot/toa].txt`. The assumed file structure is `[col | row | val1 | val2 | etc.]`.
+* `threshold`: String defining the `[threshold]` DAC value for loading the appropriate calibration file, See above.
 
 ### Plots produced
 * Histogram with pixel ToT before and after calibration
@@ -30,13 +30,10 @@ When running in time mode (`number_of_pixelhits` not set), this module requires 
 ### Usage
 ```toml
 [Timepix3EventLoader]
-inputDirectory = "path/to/directory"
-calibrationPath = "path/to/calibration"
+input_directory = "path/to/directory"
+calibration_path = "path/to/calibration"
 threshold = 1148
-minNumberOfPlanes = 5
-eventLength = 0.0000002
 number_of_pixelhits = 0
-DUT = "W0005_H03"
 ```
 
 [@timepix-talk] X. Llopart, The Timepix3 chip, EP-ESE seminar, https://indico.cern.ch/event/267425,

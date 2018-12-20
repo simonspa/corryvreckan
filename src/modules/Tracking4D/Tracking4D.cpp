@@ -10,10 +10,10 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     : Module(std::move(config), std::move(detectors)) {
 
     // Default values for cuts
-    timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(200, "ns")));
-    spatialCut = m_config.get<double>("spatialCut", static_cast<double>(Units::convert(0.2, "mm")));
-    minHitsOnTrack = m_config.get<size_t>("minHitsOnTrack", 6);
-    excludeDUT = m_config.get<bool>("excludeDUT", true);
+    timingCut = m_config.get<double>("timing_cut", static_cast<double>(Units::convert(200, "ns")));
+    spatialCut = m_config.get<double>("spatial_cut", static_cast<double>(Units::convert(0.2, "mm")));
+    minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
+    excludeDUT = m_config.get<bool>("exclude_dut", true);
 }
 
 void Tracking4D::initialise() {

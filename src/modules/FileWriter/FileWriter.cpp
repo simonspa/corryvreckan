@@ -7,11 +7,11 @@ using namespace std;
 FileWriter::FileWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
-    m_onlyDUT = m_config.get<bool>("onlyDUT", true);
-    m_writePixels = m_config.get<bool>("writePixels", true);
-    m_writeClusters = m_config.get<bool>("writeClusters", false);
-    m_writeTracks = m_config.get<bool>("writeTracks", true);
-    m_fileName = m_config.get<std::string>("fileName", "outputTuples.root");
+    m_onlyDUT = m_config.get<bool>("only_dut", true);
+    m_writePixels = m_config.get<bool>("write_pixels", true);
+    m_writeClusters = m_config.get<bool>("write_clusters", false);
+    m_writeTracks = m_config.get<bool>("write_tracks", true);
+    m_fileName = m_config.get<std::string>("file_name", "outputTuples.root");
 }
 
 /*

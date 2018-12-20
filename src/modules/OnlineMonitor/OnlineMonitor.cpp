@@ -8,18 +8,18 @@ using namespace std;
 
 OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
-    canvasTitle = m_config.get<std::string>("canvasTitle", "Corryvreckan Testbeam Monitor");
+    canvasTitle = m_config.get<std::string>("canvas_title", "Corryvreckan Testbeam Monitor");
     updateNumber = m_config.get<int>("update", 200);
 
     // Set up overview plots:
-    canvas_overview = m_config.getMatrix<std::string>("Overview",
+    canvas_overview = m_config.getMatrix<std::string>("overview",
                                                       {{"Tracking4D/trackChi2"},
                                                        {"Clustering4D/%REFERENCE%/clusterTot"},
                                                        {"TestAlgorithm/%REFERENCE%/hitmap", "colz"},
                                                        {"Tracking4D/%REFERENCE%/residualsX"}});
 
     // Set up individual plots for the DUT
-    canvas_dutplots = m_config.getMatrix<std::string>("DUTPlots",
+    canvas_dutplots = m_config.getMatrix<std::string>("dut_plots",
                                                       {{"EventLoaderCLICpix2/%DUT%/hitMap", "colz"},
                                                        {"EventLoaderCLICpix2/%DUT%/hitMapDiscarded", "colz"},
                                                        {"EventLoaderCLICpix2/%DUT%/pixelToT"},
@@ -28,26 +28,26 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
                                                        {"EventLoaderCLICpix2/%DUT%/pixelsPerFrame", "log"},
                                                        {"AnalysisDUT/clusterTotAssociated"},
                                                        {"AnalysisDUT/associatedTracksVersusTime"}});
-    canvas_tracking = m_config.getMatrix<std::string>("Tracking",
+    canvas_tracking = m_config.getMatrix<std::string>("tracking",
                                                       {{"Tracking4D/trackChi2"},
                                                        {"Tracking4D/trackAngleX"},
                                                        {"Tracking4D/trackAngleY"},
                                                        {"Tracking4D/trackChi2ndof"},
                                                        {"Tracking4D/tracksPerEvent"},
                                                        {"Tracking4D/clustersPerTrack"}});
-    canvas_hitmaps = m_config.getMatrix<std::string>("HitMaps", {{"TestAlgorithm/%DETECTOR%/hitmap", "colz"}});
-    canvas_residuals = m_config.getMatrix<std::string>("Residuals", {{"Tracking4D/%DETECTOR%/residualsX"}});
+    canvas_hitmaps = m_config.getMatrix<std::string>("hitmaps", {{"TestAlgorithm/%DETECTOR%/hitmap", "colz"}});
+    canvas_residuals = m_config.getMatrix<std::string>("residuals", {{"Tracking4D/%DETECTOR%/residualsX"}});
 
-    canvas_cx = m_config.getMatrix<std::string>("CorrelationX", {{"TestAlgorithm/%DETECTOR%/correlationX"}});
+    canvas_cx = m_config.getMatrix<std::string>("correlation_x", {{"TestAlgorithm/%DETECTOR%/correlationX"}});
     canvas_cx2d =
-        m_config.getMatrix<std::string>("CorrelationX2D", {{"TestAlgorithm/%DETECTOR%/correlationX_2Dlocal", "colz"}});
-    canvas_cy = m_config.getMatrix<std::string>("CorrelationY", {{"TestAlgorithm/%DETECTOR%/correlationY"}});
+        m_config.getMatrix<std::string>("correlation_x2d", {{"TestAlgorithm/%DETECTOR%/correlationX_2Dlocal", "colz"}});
+    canvas_cy = m_config.getMatrix<std::string>("correlation_y", {{"TestAlgorithm/%DETECTOR%/correlationY"}});
     canvas_cy2d =
-        m_config.getMatrix<std::string>("CorrelationY2D", {{"TestAlgorithm/%DETECTOR%/correlationY_2Dlocal", "colz"}});
+        m_config.getMatrix<std::string>("correlation_y2d", {{"TestAlgorithm/%DETECTOR%/correlationY_2Dlocal", "colz"}});
 
-    canvas_charge = m_config.getMatrix<std::string>("ChargeDistributions", {{"Clustering4D/%DETECTOR%/clusterTot"}});
+    canvas_charge = m_config.getMatrix<std::string>("charge_distributions", {{"Clustering4D/%DETECTOR%/clusterTot"}});
 
-    canvas_time = m_config.getMatrix<std::string>("EventTimes", {{"TestAlgorithm/%DETECTOR%/eventTimes"}});
+    canvas_time = m_config.getMatrix<std::string>("event_times", {{"TestAlgorithm/%DETECTOR%/eventTimes"}});
 }
 
 void OnlineMonitor::initialise() {

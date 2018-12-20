@@ -16,7 +16,7 @@ The module writes new mask file with all masked pixels for each device. Already 
 ### Parameters
 * `method`: Select the method to evaluate noisy pixels. Can be either `localdensity` or `frequency`, where the latter is chosen by default.
 * `frequency_cut`: Frequency threshold to declare a pixel as noisy, defaults to 50. This means, if a pixel exhibits 50 times more hits than the average pixel on the sensor, it is considered noisy and is masked. Only used in `frequency` mode.
-* `binsOccupancy`: Number of bins for occupancy distribution histograms, defaults to 128.
+* `bins_occupancy`: Number of bins for occupancy distribution histograms, defaults to 128.
 * `density_bandwidth`: Bandwidth for local density estimator, defaults to `2` and is only used in `localdensity` mode.
 * `sigma_above_avg_max`: Cut for noisy pixels, sigma above average, defaults to `5`. Only used in `localdensity` mode.
 * `rate_max`: Maximum rate, defaults to `1`. Only used in `localdensity` mode.

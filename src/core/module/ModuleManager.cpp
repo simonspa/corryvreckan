@@ -701,7 +701,7 @@ void ModuleManager::finaliseAll() {
     // Write the output histogram file
     m_histogramFile->Close();
 
-    LOG(STATUS) << "Wrote histogram output file to " << global_config.getPath("histogramFile");
+    LOG(STATUS) << "Wrote histogram output file to " << global_config.getPath("histogram_file");
 
     // Write out update detectors file:
     if(global_config.has("detectors_file_updated")) {

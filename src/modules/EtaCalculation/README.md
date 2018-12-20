@@ -11,8 +11,8 @@ At the end of the run, fits to the recorded profiles are performed using the pro
 In order to measure the correct $`\eta`$-distribution, no additional $`\eta`$-correction should be applied during this calculation, i.e. by using the EtaCorrection module.
 
 ### Parameters
-* `chi2ndofCut`: Track quality cut on its Chi2 over numbers of degrees of freedom. Default value is `100`.
-* `EtaFormulaX` / `EtaFormulaY`: Formula to for to the recorded $`\eta`$-distributions, defaults to a polynomial of fifth order, i.e. `[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5`.
+* `chi2ndof_cut`: Track quality cut on its Chi2 over numbers of degrees of freedom. Default value is `100`.
+* `eta_formula_x` / `eta_formula_y`: Formula to for to the recorded $`\eta`$-distributions, defaults to a polynomial of fifth order, i.e. `[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5`.
 
 ### Plots produced
 For each detector the following plots are produced:
@@ -23,5 +23,5 @@ For each detector the following plots are produced:
 ### Usage
 ```toml
 [EtaCalculation]
-chi2ndofCut = 100
+chi2ndof_cut = 100
 ```
