@@ -35,3 +35,10 @@ CMakeLists.txt.user
 
 # Ignore conflict files:
 *.orig
+
+# ignore latex compiler outputs:
+*.aux
+*.bcf
+*.out
+*.pyg
+*.toc
