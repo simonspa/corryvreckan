@@ -58,9 +58,8 @@ optional arguments:
                         digits
 ```
 
-Make sure to set environment variable.
-For this, ```sourc etc/setup_lxplus.sh```.
-When using a submission file, use getenv = True (see example.sub).
+The environment variables need to be set using ```source etc/setup_lxplus.sh```.
+When using a submission file, `getenv = True` should be used (see example.sub).
 
 ### Preparation of Configuration File Templates
 
