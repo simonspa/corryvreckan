@@ -12,15 +12,12 @@ For the alignment of the telescope and DUT, these modules are available in \corr
 \end{itemize}
 
 Scripts to run and configure \corry should be stored in a separate git repository.
-Working examples can be found here: \textbf{path/to/corryvreckan/testing/}.
+Working examples can be found here: path/to/corryvreckan/\textbf{testing/}.
 
-It consists of two subdirectories (\textcolor{red}{not complete yet...will work on this}):
-\begin{itemize}
-\item \textbf{geometries/} contains all the detector files which provide detector information and alignment information
-\item \textbf{configurations/} contains the scripts that are run to call and configure \corry for alignment and analysis.
-\end{itemize}
+It contains the subdirectory \textbf{geometries/} with all the detector files which provide detector and alignment information.
+It also contains the scripts that are run to call and configure \corry for alignment and analysis.
 
-\textbf{Note:} \corry can handle any file extensions for geometry and configuration files. The examples, however, follow the convention of using \texttt{*.geo} for geometry and \texttt{*.conf} for configuration files for clarity.
+\textbf{Note:} \corry can handle any file extensions for geometry and configuration files. The examples, however, follow the convention of using the extension \texttt{*.conf} for both detector and configuration files.
 
 The general procedure that needs to be followed for a sucessful alignment is outlined here and explained in detail below.
 \begin{enumerate}
@@ -52,9 +49,9 @@ To have a first look at the initial alignment guess, one can run
 \begin{verbatim}
     /path/to/corryvreckan/bin/corry 
         -c analyse_telescope.conf
-    	-o detectors_file=<detectorsFile> 
+    	[-o detectors_file=<detectorsFile> 
     	-o histogramFile=<histogramFile> 
-    	-o EventLoaderTimepix3.inputDirectory=<inputDir>
+    	-o EventLoaderTimepix3.inputDirectory=<inputDir>]
 \end{verbatim}
 
 The \texttt{spatialCut} in \texttt{[Tracking4D]} should be set to mulitple ($\sim4$) pixel size.
@@ -91,10 +88,10 @@ Then run
 \begin{verbatim}
     /path/to/corryvreckan/bin/corry 
         -c align_telescope.conf
-    	-o detectors_file=<detectorsFile> 
+    	[-o detectors_file=<detectorsFile> 
     	-o detectors_file_updated=<detectorsFileUpdated> 
     	-o histogramFile=<histogramFile> 
-    	-o EventLoaderTimepix3.inputDirectory=<inputDir>
+    	-o EventLoaderTimepix3.inputDirectory=<inputDir>]
 \end{verbatim}
 
 The actual prealignment is only performed after the events have been analysed and written to the detectors file in the finalizing step. 
@@ -152,13 +149,6 @@ If the alignment keeps to fail, it is possible to allow only for rotational or t
 
 \textbf{Note:} when re-running the procedure from a slightly different initial geometry, the resulting alignment (i.e.~the numbers in the detectors file) will differ slightly which is acceptable. What should \textbf{not} differ is the width of the residuals.
 
-%\begin{figure}[h]
-%	\centering
-%	\includegraphics[width=0.35\textwidth]{obama}
-%	\caption{Placeholder}
-%	\label{fig:placeholder}
-%\end{figure}
-
 \section{Aligning the DUT}
 \label{sec:align_dut}
 Once the telescope is aligned, its geometry is not touched anymore. From now on, it is used to build tracks which are then matched to clusters on the DUT.
@@ -168,10 +158,10 @@ The prealignment of the DUT follows the same strategy as for the telescope. To l
 \begin{verbatim}
     /path/to/corryvreckan/bin/corry 
     	-c analyse_atlaspix.conf 
-    	-o detectors_file=<detectorsFile> 
+    	[-o detectors_file=<detectorsFile> 
     	-o histogramFile=<histogramFile> 
     	-o EventLoaderTimepix3.inputDirectory=<inputDir_TPX>
-    	-o EventLoaderATLASpix.inputDirectory=<inputDir_APX>
+    	-o EventLoaderATLASpix.inputDirectory=<inputDir_APX>]
 \end{verbatim}
 needs to be run.
 If no better guess is available, the initial alignment of the DUT should be set to $x=y=z=0$.
@@ -215,11 +205,11 @@ Then run
 \begin{verbatim}
     /path/to/corryvreckan/bin/corry 
     	-c align_dut.conf 
-    	-o detectors_file=<detectorsFile> 
+    	[-o detectors_file=<detectorsFile> 
     	-o detectors_file_updated=<detectorsFileUpdated> 
     	-o histogramFile=<histogramFile> 
     	-o EventLoaderTimepix3.inputDirectory=<inputDir_TPX>
-    	-o EventLoaderATLASpix.inputDirectory=<inputDir_APX>
+    	-o EventLoaderATLASpix.inputDirectory=<inputDir_APX>]
 \end{verbatim}
 
 \textbf{Note:} The histograms of the residuals for the DUT in \texttt{[Tracking4D]} are empty. The correct ones can be found in \texttt{[AnalysisDUT]}.
