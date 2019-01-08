@@ -1,9 +1,0 @@
-output                  = log/corryvreckan.$(ClusterId).$(ProcId).out
-error                   = log/corryvreckan.$(ClusterId).$(ProcId).err
-log                     = log/corryvreckan.$(ClusterId).log
-should_transfer_files   = Yes
-when_to_transfer_output = ON_EXIT
-transfer_output_files   = output/histograms.root
-#transfer_output_remaps  = "output/histograms.root = histograms_$(ClusterId).$(ProcId).root"
-getenv                  = True
-queue
