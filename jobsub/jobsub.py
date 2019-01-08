@@ -336,6 +336,9 @@ def submitCondor(filenamebase, jobtask, subfile, runnr):
     # Add Condor submission configuration file:
     cmd = cmd+" "+subfile
 
+    # Add attribute RunNumber to rename ouput file:
+    cmd = cmd+" RunNumber="+runnr
+
     rcode = None # the return code that will be set by a later subprocess method
     try:
         # run process
