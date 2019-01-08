@@ -70,7 +70,7 @@ The section of a configuration file template with variable geometry file and DUT
 ```toml
 [Corryvreckan]
 detectors_file = "@telescopeGeometry@"
-histogram_file = "histograms_run@RunNumber@.root"
+histogramFile = "histograms_@RunNumber@.root"
 
 number_of_events = 5000000
 
@@ -128,3 +128,23 @@ Two sources of values are currently supported, and are described in the followin
     ```
 
     Using this table, the variables `@BeamEnergy@` and `@telescopeGeometry@` in the templates would be replaced by the values corresponding to the current run number.
+    
+### Example Usage with a Batch File:
+
+Example command line usage:
+```bash
+./jobsub.py -c /path/to/example.conf -v DEBUG --batch /path/to/example.sub --subdir <run_number>
+```
+
+The batch file needs to look like `example.sub`:
+```
+output                  = log/corryvreckan.$(ClusterId).$(ProcId).out
+error                   = log/corryvreckan.$(ClusterId).$(ProcId).err
+log                     = log/corryvreckan.$(ClusterId).log
+should_transfer_files   = Yes
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = output/histograms_$(RunNumber).root
+getenv                  = True
+queue
+```
+where it is important that the output file name corresponds to the one set in the configuration file.
