@@ -420,7 +420,7 @@ def main(argv=None):
     parser.add_argument('--version', action='version', version='Revision: $Revision$, $LastChangedDate$')
     parser.add_argument("-c", "--conf-file", "--config", help="Configuration file with all Corryvreckan algorithms defined", metavar="FILE")
     parser.add_argument('--option', '-o', action='append', metavar="NAME=VALUE", help="Specify further options such as 'beamenergy=5.3'. This switch be specified several times for multiple options or can parse a comma-separated list of options. This switch overrides any config file options and also overwrites hard-coded settings on the Corryvreckan configration file.")
-    parser.add_argument("-htc", "--htcondor-file", "--batch", help="Specify condor_submit parameter file for LXPLUS submission. Run LXPLUS submission via bsub instead of calling Corryvreckan directly", metavar="FILE")
+    parser.add_argument("-htc", "--htcondor-file", "--batch", help="Specify condor_submit parameter file for HTCondor submission. Run HTCondor submission via condor_submit instead of calling Corryvreckan directly", metavar="FILE")
     parser.add_argument("-csv", "--csv-file", help="Load additional run-specific variables from table (text file in csv format)", metavar="FILE")
     parser.add_argument("--log-file", help="Save submission log to specified file", metavar="FILE")
     parser.add_argument("-v", "--verbosity", default="info", help="Sets the verbosity of log messages during job submission where LEVEL is either debug, info, warning or error", metavar="LEVEL")
