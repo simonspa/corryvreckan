@@ -138,14 +138,14 @@ Example command line usage:
 
 The batch file needs to look like `example.sub`:
 ```
-output                  = log/corryvreckan.$(ClusterId).$(ProcId).out
-error                   = log/corryvreckan.$(ClusterId).$(ProcId).err
-log                     = log/corryvreckan.$(ClusterId).log
+output                  = corryvreckan.$(ClusterId).$(ProcId).out
+error                   = corryvreckan.$(ClusterId).$(ProcId).err
+log                     = corryvreckan.$(ClusterId).log
 getenv                  = True
 queue
 ```
 Complicated and error-prone `transfer_output_files` commands can be avoided. It is much simpler to set an absolute path like
 ```
-output_directory = "/afs/cern.ch/user/y/yourname/whateveryouwant/run@RunNumber@"
+output_directory = "/eos/y/yourname/whateveryouwant/run@RunNumber@"
 ```
 directly in the Corryvreckan config file.
