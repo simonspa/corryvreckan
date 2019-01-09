@@ -146,6 +146,6 @@ queue
 ```
 Complicated and error-prone `transfer_output_files` commands can be avoided. It is much simpler to set an absolute path like
 ```
-output_directory = "/eos/y/yourname/whateveryouwant/run@RunNumber@"
+output_directory = "/eos/user/y/yourname/whateveryouwant/run@RunNumber@"
 ```
 directly in the Corryvreckan config file.
