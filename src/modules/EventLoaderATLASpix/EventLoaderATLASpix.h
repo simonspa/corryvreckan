@@ -68,12 +68,7 @@ namespace corryvreckan {
         TH1F* hPixelsOverTime;
 
         // Parameters:
-        std::vector<double> m_timewalkCorrectionFactors;
-        std::vector<double> m_calibrationFactors;
         std::string m_inputDirectory;
-        std::string m_calibrationFile;
-        double m_startTime;
-        bool m_toaMode;
         bool m_detectorBusy;
         bool m_legacyFormat;
         double m_clockCycle;

@@ -7,21 +7,11 @@ using namespace std;
 EventLoaderATLASpix::EventLoaderATLASpix(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    m_timewalkCorrectionFactors = m_config.getArray<double>("timewalk_correction_factors", std::vector<double>());
-
     m_inputDirectory = m_config.getPath("input_directory");
-
-    if(m_config.has("calibration_file")) {
-        m_calibrationFile = m_config.getPath("calibration_file");
-    }
-
     m_clockCycle = m_config.get<double>("clock_cycle", static_cast<double>(Units::convert(6.25, "ns")));
 
     // Allow reading of legacy data format using the Karlsruhe readout system:
     m_legacyFormat = m_config.get<bool>("legacy_format", false);
-
-    m_startTime = m_config.get<double>("start_time", 0.);
-    m_toaMode = m_config.get<bool>("toa_mode", false);
 
     // m_clkdivendM = m_config.get<int>("clkdivend", 0.) + 1;
     m_clkdivend2M = m_config.get<int>("clkdivend2", 0.) + 1;
