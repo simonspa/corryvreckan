@@ -70,7 +70,7 @@ The section of a configuration file template with variable geometry file and DUT
 ```toml
 [Corryvreckan]
 detectors_file = "@telescopeGeometry@"
-histogramFile = "histograms_@RunNumber@.root"
+histogram_file = "histograms_@RunNumber@.root"
 
 number_of_events = 5000000
 
