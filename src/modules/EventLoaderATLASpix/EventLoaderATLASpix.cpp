@@ -16,6 +16,10 @@ EventLoaderATLASpix::EventLoaderATLASpix(Configuration config, std::shared_ptr<D
     // m_clkdivendM = m_config.get<int>("clkdivend", 0.) + 1;
     m_clkdivend2M = m_config.get<int>("clkdivend2", 0.) + 1;
 
+    if(m_config.has("calibration_file")) {
+        m_calibrationFile = m_config.getPath("calibration_file");
+    }
+
     // ts1Range = 0x800 * m_clkdivendM;
     ts2Range = 0x40 * m_clkdivend2M;
 }
@@ -137,11 +141,6 @@ void EventLoaderATLASpix::initialise() {
             m_calibrationFactors.at(static_cast<size_t>(row * 25 + col)) = calibfactor;
         }
         calibration.close();
-    }
-
-    LOG(INFO) << "Timewalk correction factors: ";
-    for(auto& ts : m_timewalkCorrectionFactors) {
-        LOG(INFO) << ts;
     }
 
     LOG(INFO) << "Using clock cycle length of " << m_clockCycle << " ns." << std::endl;
@@ -531,15 +530,6 @@ Pixels* EventLoaderATLASpix::read_legacy_data(double, double) {
         // TriggerDebugTS *= 4096. / 5;              // runs with 200MHz, divide by 5 to scale counter value to 40MHz
         double toa_timestamp =
             4096. * 2 * static_cast<double>(toa); // runs with 20MHz, multiply by 2 to scale counter value to 40MHz
-
-        // Timewalk correction:
-        if(m_timewalkCorrectionFactors.size() == 5) {
-            double corr = m_timewalkCorrectionFactors.at(0) + m_timewalkCorrectionFactors.at(1) * tot +
-                          m_timewalkCorrectionFactors.at(2) * tot * tot +
-                          m_timewalkCorrectionFactors.at(3) * tot * tot * tot +
-                          m_timewalkCorrectionFactors.at(4) * tot * tot * tot * tot;
-            toa_timestamp -= corr * 163840000000; //(40000000 * 4096)
-        }
 
         // Convert TOA to nanoseconds:
         toa_timestamp /= (4096. * 0.04);
