@@ -1,0 +1,5 @@
+output                  = corryvreckan.$(ClusterId).$(ProcId).out
+error                   = corryvreckan.$(ClusterId).$(ProcId).err
+log                     = corryvreckan.$(ClusterId).log
+getenv                  = True
+queue

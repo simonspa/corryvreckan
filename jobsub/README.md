@@ -11,7 +11,7 @@ The following help text is printed when invoking `jobsub` with the `-h` argument
 ```result
 usage: jobsub.py [-h] [--option NAME=VALUE] [-c FILE] [-csv FILE]
                  [--log-file FILE] [-l LEVEL] [-s] [--dry-run]
-		 [--naf FILE | --lxplus FILE] [--subdir]
+		 [--batch FILE] [--subdir]
                  jobtask [runs [runs ...]]
 
 A tool for the convenient run-specific modification of Marlin steering files
@@ -34,13 +34,9 @@ optional arguments:
                         switch overrides any config file options and also
                         overwrites hard-coded settings on the Corryvreckan
                         configration file.
-  -n FILE, --naf-file FILE, --naf FILE
-                        Specify qsub parameter file for NAF submission. Run
-                        NAF submission via qsub instead of calling
-                        Corryvreckan directly
-  -lx FILE, --lxplus-file FILE, --lxplus FILE
-                        Specify bsub parameter file for LXPLUS submission. Run
-                        LXPLUS submission via bsub instead of calling
+  -htc FILE, --htcondor-file FILE, --batch FILE
+                        Specify condor_submit parameter file for HTCondor submission. Run
+                        HTCondor submission via condor_submit instead of calling
                         Corryvreckan directly
   -csv FILE, --csv-file FILE
                         Load additional run-specific variables from table
@@ -62,6 +58,9 @@ optional arguments:
                         digits
 ```
 
+The environment variables need to be set using ```source etc/setup_lxplus.sh```.
+When using a submission file, `getenv = True` should be used (see example.sub).
+
 ### Preparation of Configuration File Templates
 
 Configuration file templates are valid Corryvreckan configuration files in TOML format, where single values are replaced by variables in the form `@SomeVariable@`.
@@ -71,7 +70,7 @@ The section of a configuration file template with variable geometry file and DUT
 ```toml
 [Corryvreckan]
 detectors_file = "@telescopeGeometry@"
-histogram_file = "histograms_run@RunNumber@.root"
+histogram_file = "histograms_@RunNumber@.root"
 
 number_of_events = 5000000
 
@@ -129,3 +128,24 @@ Two sources of values are currently supported, and are described in the followin
     ```
 
     Using this table, the variables `@BeamEnergy@` and `@telescopeGeometry@` in the templates would be replaced by the values corresponding to the current run number.
+    
+### Example Usage with a Batch File:
+
+Example command line usage:
+```bash
+./jobsub.py -c /path/to/example.conf -v DEBUG --batch /path/to/example.sub --subdir <run_number>
+```
+
+The batch file needs to look like `example.sub`:
+```
+output                  = corryvreckan.$(ClusterId).$(ProcId).out
+error                   = corryvreckan.$(ClusterId).$(ProcId).err
+log                     = corryvreckan.$(ClusterId).log
+getenv                  = True
+queue
+```
+Complicated and error-prone `transfer_output_files` commands can be avoided. It is much simpler to set an absolute path like
+```
+output_directory = "/eos/user/y/yourname/whateveryouwant/run@RunNumber@"
+```
+directly in the Corryvreckan config file.
