@@ -320,7 +320,7 @@ def submitCondor(filenamebase, jobtask, subfile, runnr):
         exit(1)
 
     # Add condor_submit parameters:
-    cmd = cmd+" -batch-name \"Run"+runnr+"\" "
+    cmd = cmd+" -batch-name \"Corry"+runnr+"\" "
 
     # check for Corryvreckan executable
     corry = check_program("corry")
