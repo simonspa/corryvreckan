@@ -5,7 +5,7 @@
 **Status**: Functional
 
 ### Description
-This module reads in data for the ATLASpix device from an input file created by the CaRIBou readout system. It supports binary output format.
+This module reads in data for the ATLASpix device from an input file created by the Caribou readout system. It supports binary output format.
 
 The module opens and reads one data file named `data.bin` in the specified input directory. For each hit it, stores the detectorID, row, column, and ToT.
 
@@ -13,6 +13,7 @@ This module requires either another event loader of another detector type before
 
 ### Parameters
 * `input_directory`: Path to the directory containing the `data.bin` file. This path should lead to the directory above the ALTASpix directory, as this string is added to the input directory in the module.
+* `legacy_format`: Set `true` if using legacy data format of the Karlsruhe readout system. Default is `false`, corresponding the the format of the Caribou readout system.
 * `clock_cycle`: Period of the clock used to count the trigger timestamps in, defaults to `6.25ns`.
 * `clkdivend2`: Value of clkdivend2 register in ATLASPix specifying the speed of TS2 counter. Default is `0`.
 
