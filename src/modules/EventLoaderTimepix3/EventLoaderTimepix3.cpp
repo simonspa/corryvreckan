@@ -254,10 +254,10 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     // Otherwise tell event loop to keep running
     IFLOG(INFO) {
         if(temporalSplit) {
-            LOG_PROGRESS(INFO, "tpx3_loader")
+            LOG_PROGRESS(DEBUG, "tpx3_loader")
                 << "Current time: " << Units::display(clipboard->get_persistent("eventStart"), {"s", "ms", "us", "ns"});
         } else {
-            LOG_PROGRESS(INFO, "tpx3_loader") << "Current event: " << m_currentEvent;
+            LOG_PROGRESS(DEBUG, "tpx3_loader") << "Current event: " << m_currentEvent;
         }
     }
 
