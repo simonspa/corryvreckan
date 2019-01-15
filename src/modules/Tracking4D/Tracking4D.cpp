@@ -36,6 +36,11 @@ void Tracking4D::initialise() {
     for(auto& detector : get_detectors()) {
         auto detectorID = detector->name();
 
+        // Do not create plots for detector snot participating in the tracking:
+        if(excludeDUT && detector->isDUT()) {
+            continue;
+        }
+
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detectorID.c_str());
         if(local_directory == nullptr) {
