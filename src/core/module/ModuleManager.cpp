@@ -112,6 +112,9 @@ void ModuleManager::load_modules() {
     }
     m_histogramFile->cd();
 
+    // Update the histogram file path:
+    global_config.set("histogram_file", path);
+
     LOG(DEBUG) << "Start loading modules, have " << configs.size() << " configurations.";
     // Loop through all non-global configurations
     for(auto& config : configs) {
