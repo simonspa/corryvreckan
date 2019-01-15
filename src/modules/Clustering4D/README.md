@@ -25,6 +25,6 @@ For each detector the following plots are produced:
 
 ### Usage
 ```toml
-[Timepix3Clustering]
+[Clustering4D]
 timing_cut = 200ns
 ```
