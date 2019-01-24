@@ -55,12 +55,19 @@ namespace corryvreckan {
 
     private:
         int m_eventNumber;
-        std::string m_filePath;
+        std::string m_inputDirectory;
         bool m_isSorted;
         bool m_ts2IsGray;
         int m_runNumber;
         BlockFile* m_blockFile;
         TelescopeFrame m_tf;
+
+        // Histograms
+        TH2F* hHitMap;
+        TH1F* hPixelToT;
+        TH1F* hPixelToA;
+        TH1F* hPixelsPerFrame;
+        TH1F* hPixelsOverTime;
     };
 
 } // namespace corryvreckan
