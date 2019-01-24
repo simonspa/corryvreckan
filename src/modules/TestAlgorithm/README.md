@@ -9,7 +9,7 @@ This module collects `pixel` and `cluster` objects from the clipboard and create
 
 
 ### Parameters
-* `make_correlatons`: Boolean to change if correlation plots should be outputted. Default value is `false`.
+* `make_correlations`: Boolean to change if correlation plots should be outputted. Default value is `false`.
 * `do_timing_cut`: Boolean to switch on/off the cut on cluster times for correlations. Defaults to `false`.
 * `timing_cut`: maximum time difference between clusters to be taken into account. Only used if `do_timing_cut` is set to `true`, defaults to `100ns`.
 
