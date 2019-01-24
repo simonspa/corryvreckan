@@ -90,7 +90,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
         if(!m_detector->hasIntercept(track, 1.)) {
-            LOG(DEBUG) << " - track outside DUT area";
+            LOG(DEBUG) << " - track outside DUT area: " << localIntercept;
             continue;
         }
 
