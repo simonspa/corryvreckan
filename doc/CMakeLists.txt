@@ -109,8 +109,6 @@ IF(LATEX_COMPILER)
             usermanual/figures/trackChi2ndof_goodexample.pdf
             usermanual/figures/residualX_goodexample.pdf
             usermanual/figures/correlationX_goodexample.pdf
-            usermanual/figures/wisdom_of_the_ancients.png
-            usermanual/figures/obama.jpg
             INPUTS
             usermanual/chapters/introduction.tex
             usermanual/chapters/installation.tex
@@ -118,11 +116,11 @@ IF(LATEX_COMPILER)
             usermanual/chapters/configuration.tex
             usermanual/chapters/correlation.tex
             usermanual/chapters/onlinemonitoring.tex
+            usermanual/chapters/howtoalign.tex
             usermanual/chapters/modules.tex
             usermanual/chapters/development.tex
             usermanual/chapters/testing.tex
             usermanual/chapters/tools.tex
-            usermanual/chapters/howtoalign.tex
             usermanual/config.tex
 
             CONFIGURE
