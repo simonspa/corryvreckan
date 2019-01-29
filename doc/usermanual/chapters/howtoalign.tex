@@ -161,6 +161,11 @@ If the alignment keeps to fail, it is possible to allow only for rotational or t
     \label{fig:exampleAlignment}
 \end{figure}
 
+The alignment can be further improved by using the module \texttt{[AlignmentMillepede]}.
+It requires a rather good alignment already, so it should not be used directly after a coarse prealignment by hand or \texttt{[Prealignment]}.
+It is recommended to use the last (tightest) cuts that have been used for the telescope alignment in the previous step and then reduce them further.
+Once the alignment has converged, this module stops and the alignment is complete.
+
 \textbf{Note:} When starting the alignment procedure from a slightly different initial geometry, the resulting alignment (i.e.~the numbers in the detectors file) will differ slightly which is acceptable. What should \textbf{not} differ is the width of the residuals.
 
 \section{Aligning the DUT}
