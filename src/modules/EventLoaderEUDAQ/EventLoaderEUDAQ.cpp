@@ -9,7 +9,7 @@ using namespace std;
 EventLoaderEUDAQ::EventLoaderEUDAQ(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)), m_longID(true) {
 
-    m_filename = m_config.get<std::string>("file_name");
+    m_filename = m_config.getPath("file_name", true);
     m_longID = m_config.get<bool>("long_detector_id", true);
 }
 
