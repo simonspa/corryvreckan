@@ -107,9 +107,6 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     // Output track container
     auto tracks = std::make_shared<Tracks>();
 
-    // Keep a note of which clusters have been used
-    map<Cluster*, bool> used;
-
     // Loop over all clusters
     for(auto& cluster : (*referenceClusters)) {
 

@@ -119,7 +119,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     auto tracks = std::make_shared<Tracks>();
 
     // Loop over all clusters
-    map<Cluster*, bool> used;
     for(auto& cluster : (*referenceClusters)) {
 
         // Make a new track
@@ -129,7 +128,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         // Add the cluster to the track
         track->addCluster(cluster);
         track->setTimestamp(cluster->timestamp());
-        used[cluster] = true;
 
         // Loop over each subsequent plane and look for a cluster within the timing cuts
         for(auto& detectorID : detectors) {
@@ -243,10 +241,11 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         track->setTimestamp(avg_track_time / static_cast<double>(track->nClusters()));
     }
 
+    tracksPerEvent->Fill(static_cast<double>(tracks->size()));
+
     // Save the tracks on the clipboard
     if(tracks->size() > 0) {
         clipboard->put(tracks);
-        tracksPerEvent->Fill(static_cast<double>(tracks->size()));
     }
 
     // Clean up tree objects
