@@ -128,7 +128,7 @@ Two sources of values are currently supported, and are described in the followin
     ```
 
     Using this table, the variables `@BeamEnergy@` and `@telescopeGeometry@` in the templates would be replaced by the values corresponding to the current run number.
-    
+
 ### Example Usage with a Batch File:
 
 Example command line usage:
@@ -136,14 +136,7 @@ Example command line usage:
 ./jobsub.py -c /path/to/example.conf -v DEBUG --batch /path/to/example.sub --subdir <run_number>
 ```
 
-The batch file needs to look like `example.sub`:
-```
-output                  = corryvreckan.$(ClusterId).$(ProcId).out
-error                   = corryvreckan.$(ClusterId).$(ProcId).err
-log                     = corryvreckan.$(ClusterId).$(ProcId).log
-getenv                  = True
-queue
-```
+An example batch file is provided in the repository as `htcondor.sub`.
 Complicated and error-prone `transfer_output_files` commands can be avoided. It is much simpler to set an absolute path like
 ```
 output_directory = "/eos/user/y/yourname/whateveryouwant/run@RunNumber@"
