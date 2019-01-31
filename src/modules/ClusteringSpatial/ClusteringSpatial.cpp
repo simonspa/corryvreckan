@@ -49,7 +49,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Make the cluster container and the maps for clustering
-    std::shared_ptr<Clusters> deviceClusters;
+    auto deviceClusters = std::make_shared<Clusters>();
     map<Pixel*, bool> used;
     map<int, map<int, Pixel*>> hitmap;
     bool addedPixel;

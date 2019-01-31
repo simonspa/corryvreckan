@@ -208,7 +208,7 @@ std::shared_ptr<Pixels> EventLoaderATLASpix::read_caribou_data(double start_time
                << ", old_fpga_ts = " << old_fpga_ts << ".";
 
     // Pixel container
-    std::shared_ptr<Pixels> pixels;
+    auto pixels = std::make_shared<Pixels>();
 
     // Read file and load data
     uint32_t datain;
@@ -480,7 +480,7 @@ std::shared_ptr<Pixels> EventLoaderATLASpix::read_caribou_data(double start_time
 std::shared_ptr<Pixels> EventLoaderATLASpix::read_legacy_data(double, double) {
 
     // Pixel container
-    std::shared_ptr<Pixels> pixels;
+    auto pixels = std::make_shared<Pixels>();
 
     // Read file and load data
     while(!m_file.eof()) {

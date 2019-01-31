@@ -116,7 +116,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Output track container
-    std::shared_ptr<Tracks> tracks;
+    auto tracks = std::make_shared<Tracks>();
 
     // Loop over all clusters
     map<Cluster*, bool> used;

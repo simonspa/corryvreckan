@@ -232,8 +232,8 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Make a new container for the data
-    std::shared_ptr<Pixels> deviceData;
-    std::shared_ptr<SpidrSignals> spidrData;
+    auto deviceData = std::make_shared<Pixels>();
+    auto spidrData = std::make_shared<SpidrSignals>();
 
     // Load the next chunk of data
     bool data = loadData(clipboard, deviceData, spidrData);
