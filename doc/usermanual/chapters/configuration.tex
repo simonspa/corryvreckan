@@ -5,6 +5,12 @@ The configuration format consists of section headers within $[$ and $]$ brackets
 Each of these sections contains a set of key/value pairs separated by the \texttt{=} character.
 Comments are indicated using the hash symbol (\texttt{\#}).
 
+Since configuration files are highly user-specific and do not directly belong to the \corry framework, they should not be stored in the \corry repository.
+However, working examples can be found in the \texttt{\textbf{testing/}} directory of the repository.
+
+\textbf{Note:} \corry can handle any file extensions for geometry and configuration files.
+The examples, however, follow the convention of using the extension \texttt{*.conf} for both detector and configuration files.
+
 The framework has the following two required layers of configuration files:
 \begin{itemize}
 \item The \textbf{main} configuration: The most important configuration file and the file that is passed directly to the binary.
