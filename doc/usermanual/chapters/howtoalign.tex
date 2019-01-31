@@ -20,8 +20,10 @@ The general procedure that needs to be followed for a successful alignment is ou
 \item Alignment of the DUT (telescope alignment is frozen)
 \end{enumerate}
 
+\begin{warning}
 \textbf{Note:} When using the alignment modules, the new geometry is written out to a new geometry file which needs to be specified using the parameter \texttt{detectors\_file\_updated}.
 For details, see Section~\ref{sec:framework_parameters}.
+\end{warning}
 
 \section{Aligning the Telescope}
 \label{sec:align_tel}
@@ -55,7 +57,9 @@ The \texttt{spatialCut} in \texttt{[Tracking4D]} should be set to mulitple ($\si
 
 One can inspect the track $\chi^2$, the correlation in x and y and the residuals with the online monitoring or by opening the generated ROOT file after finishing the script (see \texttt{[Tracking4D]} and \texttt{[TestAlgorithm]}).
 
+\begin{warning}
 \textbf{Tip:} To save time, one can terminate \corry with \texttt{Ctrl+C} after a while (see also Section~\ref{sec:executable}).
+\end{warning}
 
 If no peak at all is apparent in the correlations, the hitmaps can be checked to see if valid data is actually available for all planes.
 
@@ -167,7 +171,9 @@ It requires a rather good alignment already, so it should not be used directly a
 It is recommended to use the last (tightest) cuts that have been used for the telescope alignment in the previous step and then reduce them further.
 Once the alignment has converged, this module stops and the alignment is complete.
 
+\begin{warning}
 \textbf{Note:} When starting the alignment procedure from a slightly different initial geometry, the resulting alignment (i.e.~the numbers in the detectors file) will differ slightly which is acceptable. What should \textbf{not} differ is the width of the residuals.
+\end{warning}
 
 \section{Aligning the DUT}
 \label{sec:align_dut}
@@ -190,9 +196,11 @@ Then, by repeatedly running \corry and modifying the position of the DUT in the 
 If no peak at all can be seen in the correlation plots, potentially some values need to be corrected in the configuration file.
 If working with an ATLASpix, these are most likely \texttt{clockCycle} or \texttt{clkdivend2} in \texttt{[EventLoaderATLASpix]} (see Section~\ref{eventloaderatlaspix}).
 
+\begin{warning}
 \textbf{Important: }If using the \texttt{[Prealignment]} module, it is possible to prealign all planes at once as described above in Section~\ref{sec:align_tel}.
 If only the DUT shall be prealigned here, the parameter \texttt{name = <name\_of\_dut>} needs to be used.
 Otherwise, the telescope planes are also shifted again destroying the telescope alignment.
+\end{warning}
 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 ...
@@ -234,7 +242,9 @@ Then run
     	-o EventLoaderATLASpix.inputDirectory=<inputDir_APX>]
 \end{verbatim}
 
+\begin{warning}
 \textbf{Note:} The histograms of the residuals for the DUT in \texttt{[Tracking4D]} are empty. The correct ones can be found in \texttt{[AnalysisDUT]} (see Section~\ref{analysisdut}).
+\end{warning}
 
 Like for the telescope alignment, the widths of the residuals can be interpreted as the spatial resolution of the DUT (convoluted with the resolution of the telescope) and should thus be $\lesssim$~pixel size.
 Again, starting with a \texttt{spatialCut} in \texttt{[DUTAssociation]} (see Section~\ref{dutassociation}) of multiple ($\sim4$) pixel sizes, it should be decreased incrementally down to the pixel size. Note that an asymmetric pixel geometry requires the \texttt{spatialCut} to be chosen accordingly.
