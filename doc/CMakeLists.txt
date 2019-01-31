@@ -106,6 +106,11 @@ IF(LATEX_COMPILER)
             IMAGES
             logo.png
             cc-by.png
+            usermanual/figures/datadrivenandframebased.png
+            usermanual/figures/datadrivendevice.png
+            usermanual/figures/framebaseddevice.png
+            usermanual/figures/reconstruction-chain-simple.png
+            usermanual/figures/reconstruction-chain-complicated.png
             INPUTS
             usermanual/chapters/introduction.tex
             usermanual/chapters/installation.tex
