@@ -33,8 +33,8 @@ The \texttt{AlignmentTrackChi2} module requires a careful prealignment. Otherwis
 For the prealignment, two strategies can be applied.
 \begin{itemize}
 \item A rough manual prealignment can be performed by having a look at correlations plots between a defined reference plane and the others planes in both x and y.
-These can be found in the module \texttt{TestAlgorithm} (see Section~\ref{sec:test_algorithm}).
-\item The \texttt{Prealignment} module can be used (see Section~\ref{sec:prealignment}).
+These can be found in the module \texttt{TestAlgorithm} (see Section~\ref{testalgorithm}).
+\item The \texttt{Prealignment} module can be used (see Section~\ref{prealignment}).
 \end{itemize}
 
 The z-position of all planes needs to be measured by hand \textbf{in the existing testbeam setup} and then adjusted in the detectors file. 
@@ -68,7 +68,7 @@ These steps need to be iterated a few times until the peaks of the \textbf{resid
 It is important not to force the peak of the \textbf{correlations} to be at exactly 0 because the position of the peak in fact corresponds to the physical offset of a plane from its ideal position. 
 
 Instead of a prealignment by hand, the \texttt{Prealignment} module can be used.
-As explained in Section~\ref{sec:prealignment}, it is a \textit{DETECTOR} type module so it is instantiated once for each plane (including DUTs).
+As explained in Section~\ref{prealignment}, it is a \textit{DETECTOR} type module so it is instantiated once for each plane (including DUTs).
 To prealign only the telescope, the DUT can be masked by setting \texttt{mask = <name\_of\_dut>}.
 However, all planes can be prealigned at once.
 
@@ -104,7 +104,7 @@ This is the case for every iteration of the prealignment or alignment.
 Generally, it suffices to run the \texttt{[Prealignment]} module once and then proceed with the next step.
 
 \subsection*{Alignment of the Telescope}
-After the prealignment, the actual \textbf{precise} alignment can be performed using the \texttt{AlignmentTrackChi2} module (see Section~\ref{sec:alignmenttrackchi2}).
+After the prealignment, the actual \textbf{precise} alignment can be performed using the \texttt{AlignmentTrackChi2} module (see Section~\ref{alignmenttrackchi2}).
 To this end, \texttt{align\_tel.conf} needs to be modified such that the prealignment is disabled and the alignment is enabled:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 ...
@@ -162,7 +162,7 @@ alignPosition=true
     \label{fig:exampleAlignment}
 \end{figure}
 
-The alignment can be further improved by using the module \texttt{[AlignmentMillepede]} (see Section~\ref{sec:alignmentmillepede}).
+The alignment can be further improved by using the module \texttt{[AlignmentMillepede]} (see Section~\ref{alignmentmillepede}).
 It requires a rather good alignment already, so it should not be used directly after a coarse prealignment by hand or \texttt{[Prealignment]}.
 It is recommended to use the last (tightest) cuts that have been used for the telescope alignment in the previous step and then reduce them further.
 Once the alignment has converged, this module stops and the alignment is complete.
@@ -234,10 +234,10 @@ Then run
     	-o EventLoaderATLASpix.inputDirectory=<inputDir_APX>]
 \end{verbatim}
 
-\textbf{Note:} The histograms of the residuals for the DUT in \texttt{[Tracking4D]} are empty. The correct ones can be found in \texttt{[AnalysisDUT]} (see Section~\ref{sec:analysisdut}).
+\textbf{Note:} The histograms of the residuals for the DUT in \texttt{[Tracking4D]} are empty. The correct ones can be found in \texttt{[AnalysisDUT]} (see Section~\ref{analysisdut}).
 
 Like for the telescope alignment, the widths of the residuals can be interpreted as the spatial resolution of the DUT (convoluted with the resolution of the telescope) and should thus be $\lesssim$~pixel size.
-Again, starting with a \texttt{spatialCut} in \texttt{[DUTAssociation]} (see Section~\ref{sec:dutassociation}) of multiple ($\sim4$) pixel sizes, it should be decreased incrementally down to the pixel size. Note that an asymmetric pixel geometry requires the \texttt{spatialCut} to be chosen accordingly.
+Again, starting with a \texttt{spatialCut} in \texttt{[DUTAssociation]} (see Section~\ref{dutassociation}) of multiple ($\sim4$) pixel sizes, it should be decreased incrementally down to the pixel size. Note that an asymmetric pixel geometry requires the \texttt{spatialCut} to be chosen accordingly.
 
 If the alignment keeps to fail, it is possible to allow only for rotational or translational alignment while freezing the other for one or a few iterations.
 
