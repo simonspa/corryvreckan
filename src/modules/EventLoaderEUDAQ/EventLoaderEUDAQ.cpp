@@ -21,9 +21,6 @@ void EventLoaderEUDAQ::initialise() {
     } catch(...) {
         throw ModuleError("Unable to read input file \"" + m_filename + "\"");
     }
-
-    // Initialise member variables
-    m_eventNumber = 0;
 }
 
 StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
@@ -31,6 +28,13 @@ StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
     // Read next event from EUDAQ reader:
     const eudaq::DetectorEvent& evt = reader->Event();
     LOG(TRACE) << evt;
+
+    // Convert timestamp to nanoseconds, using
+    // TLU frequency: 48.001e6 Hz
+    // TLU frequency multiplier: 8
+    // FIXME cross-check that this conversion is correct
+    auto timestamp = Units::get(static_cast<double>(evt.GetTimestamp()) / (48.001e6 * 8), "s");
+    LOG(DEBUG) << "EUDAQ event " << evt.GetEventNumber() << " at " << Units::display(timestamp, {"ns", "us"});
 
     if(evt.IsBORE()) {
         // Process begin-of-run
@@ -74,7 +78,9 @@ StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
 
                 Pixel* pixel = new Pixel(detectorID, row, col, static_cast<int>(plane.GetPixel(ipix)));
                 pixel->setCharge(plane.GetPixel(ipix));
-                pixel->timestamp(m_eventNumber);
+
+                // Pixel gets timestamp of trigger assigned:
+                pixel->timestamp(timestamp);
                 deviceData->push_back(pixel);
             }
 
@@ -83,8 +89,12 @@ StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
         }
     }
 
-    // Increment event counter
-    m_eventNumber++;
+    // Store event time on clipboard for subsequent modules
+    // FIXME assumes trigger in center of two Mimosa26 frames:
+    auto frame_length = Units::get(115.2, "us");
+    clipboard->put_persistent("eventStart", timestamp - frame_length);
+    clipboard->put_persistent("eventEnd", timestamp + frame_length);
+    clipboard->put_persistent("eventLength", 2 * frame_length);
 
     // Advance to next event if possible, otherwise end this run:
     if(!reader->NextEvent()) {
@@ -94,9 +104,4 @@ StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Return value telling analysis to keep running
     return StatusCode::Success;
-}
-
-void EventLoaderEUDAQ::finalise() {
-
-    LOG(DEBUG) << "Read " << m_eventNumber << " events";
 }
