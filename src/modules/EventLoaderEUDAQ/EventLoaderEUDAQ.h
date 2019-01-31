@@ -21,13 +21,11 @@ namespace corryvreckan {
         // Functions
         void initialise();
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        void finalise();
 
         // EUDAQ file reader instance:
         eudaq::FileReader* reader;
 
         // Member variables
-        int m_eventNumber;
         std::string m_filename{};
         bool m_longID;
     };

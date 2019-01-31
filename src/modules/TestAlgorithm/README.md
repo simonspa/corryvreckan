@@ -9,9 +9,9 @@ This module collects `pixel` and `cluster` objects from the clipboard and create
 
 
 ### Parameters
-* `makeCorrelatons`: Boolean to change if correlation plots should be outputted. Default value is `false`.
-* `doTimingCut`: Boolean to switch on/off the cut on cluster times for correlations. Defaults to `false`.
-* `timingCut`: maximum time difference between clusters to be taken into account. Only used if `doTimingCut` is set to `true`, defaults to `100ns`.
+* `make_correlations`: Boolean to change if correlation plots should be outputted. Default value is `false`.
+* `do_timing_cut`: Boolean to switch on/off the cut on cluster times for correlations. Defaults to `false`.
+* `timing_cut`: maximum time difference between clusters to be taken into account. Only used if `do_timing_cut` is set to `true`, defaults to `100ns`.
 
 ### Plots produced
 For each device the following plots are produced:
@@ -30,5 +30,5 @@ For each device the following plots are produced:
 ### Usage
 ```toml
 [TestAlgorithm]
-makeCorrelations = true
+make_correlations = true
 ```

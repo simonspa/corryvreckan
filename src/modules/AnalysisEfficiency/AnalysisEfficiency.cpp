@@ -19,8 +19,8 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration config, std::shared_ptr<Det
     : Module(std::move(config), detector) {
     m_detector = detector;
 
-    m_timeCutFrameEdge = m_config.get<double>("timeCutFrameEdge", static_cast<double>(Units::convert(20, "ns")));
-    m_chi2ndofCut = m_config.get<double>("chi2ndofCut", 3.);
+    m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", static_cast<double>(Units::convert(20, "ns")));
+    m_chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
 }
 
 void AnalysisEfficiency::initialise() {

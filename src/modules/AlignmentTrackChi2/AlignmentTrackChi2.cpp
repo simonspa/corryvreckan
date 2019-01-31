@@ -17,11 +17,11 @@ AlignmentTrackChi2::AlignmentTrackChi2(Configuration config, std::vector<std::sh
     nIterations = m_config.get<size_t>("iterations", 3);
 
     m_pruneTracks = m_config.get<bool>("prune_tracks", false);
-    m_alignPosition = m_config.get<bool>("alignPosition", true);
+    m_alignPosition = m_config.get<bool>("align_position", true);
     if(m_alignPosition) {
         LOG(INFO) << "Aligning positions";
     }
-    m_alignOrientation = m_config.get<bool>("alignOrientation", true);
+    m_alignOrientation = m_config.get<bool>("align_orientation", true);
     if(m_alignOrientation) {
         LOG(INFO) << "Aligning orientations";
     }

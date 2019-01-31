@@ -5,9 +5,9 @@ using namespace std;
 
 EtaCalculation::EtaCalculation(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
-    m_chi2ndofCut = m_config.get<double>("chi2ndofCut", 100.);
-    m_etaFormulaX = m_config.get<std::string>("EtaFormulaX", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
-    m_etaFormulaY = m_config.get<std::string>("EtaFormulaY", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
+    m_chi2ndofCut = m_config.get<double>("chi2ndof_cut", 100.);
+    m_etaFormulaX = m_config.get<std::string>("eta_formula_x", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
+    m_etaFormulaY = m_config.get<std::string>("eta_formula_y", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
 }
 
 void EtaCalculation::initialise() {
@@ -121,9 +121,9 @@ void EtaCalculation::finalise() {
 
     std::stringstream config;
     config << std::endl
-           << "EtaConstantsX_" << m_detector->name() << " =" << fit(m_etaFitX, "etaFormulaX", m_etaDistributionXprofile);
+           << "eta_constants_x_" << m_detector->name() << " =" << fit(m_etaFitX, "etaFormulaX", m_etaDistributionXprofile);
     config << std::endl
-           << "EtaConstantsY_" << m_detector->name() << " =" << fit(m_etaFitY, "etaFormulaY", m_etaDistributionYprofile);
+           << "eta_constants_y_" << m_detector->name() << " =" << fit(m_etaFitY, "etaFormulaY", m_etaDistributionYprofile);
 
     LOG(INFO) << "\"EtaCorrection\":" << config.str();
 }

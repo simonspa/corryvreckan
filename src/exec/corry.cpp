@@ -6,8 +6,7 @@
 #include <string>
 #include <utility>
 
-#include "core/config/ConfigManager.hpp"
-#include "core/module/ModuleManager.hpp"
+#include "core/Corryvreckan.hpp"
 #include "core/utils/exceptions.h"
 /**
  * @file
@@ -22,7 +21,7 @@ void clean();
 void abort_handler(int);
 void interrupt_handler(int);
 
-std::unique_ptr<ModuleManager> corry;
+std::unique_ptr<Corryvreckan> corry;
 std::atomic<bool> cv_ready{false};
 
 /**
@@ -75,6 +74,9 @@ int main(int argc, const char* argv[]) {
     // Install interrupt handler (CTRL+C)
     std::signal(SIGINT, interrupt_handler);
 
+    // Install termination handler (kill)
+    std::signal(SIGTERM, interrupt_handler);
+
     // If no arguments are provided, print the help:
     bool print_help = false;
     int return_code = 0;
@@ -86,7 +88,8 @@ int main(int argc, const char* argv[]) {
     // Parse arguments
     std::string config_file_name;
     std::string log_file_name;
-    std::vector<std::string> options;
+    std::vector<std::string> module_options;
+    std::vector<std::string> detector_options;
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
@@ -113,7 +116,9 @@ int main(int argc, const char* argv[]) {
         } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
             log_file_name = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
-            options.emplace_back(std::string(argv[++i]));
+            module_options.emplace_back(std::string(argv[++i]));
+        } else if(strcmp(argv[i], "-g") == 0 && (i + 1 < argc)) {
+            detector_options.emplace_back(std::string(argv[++i]));
         } else {
             LOG(ERROR) << "Unrecognized command line argument \"" << argv[i] << "\"";
             print_help = true;
@@ -132,6 +137,7 @@ int main(int argc, const char* argv[]) {
         std::cout << "  -c <file>    configuration file to be used" << std::endl;
         std::cout << "  -l <file>    file to log to besides standard output" << std::endl;
         std::cout << "  -o <option>  extra configuration option(s) to pass" << std::endl;
+        std::cout << "  -g <option>  extra detector configuration options(s) to pass" << std::endl;
         std::cout << "  -v <level>   verbosity level, overwriting the global level" << std::endl;
         std::cout << "  --version    print version information and quit" << std::endl;
         clean();
@@ -162,20 +168,20 @@ int main(int argc, const char* argv[]) {
 
     try {
         // Construct main Corryvreckan object
-        corry = std::make_unique<ModuleManager>(config_file_name, options);
+        corry = std::make_unique<Corryvreckan>(config_file_name, module_options, detector_options);
         cv_ready = true;
 
         // Load modules
         corry->load();
 
         // Initialize modules (pre-run)
-        corry->initialiseAll();
+        corry->init();
 
         // Run modules and event-loop
         corry->run();
 
         // Finalize modules (post-run)
-        corry->finaliseAll();
+        corry->finalize();
 
     } catch(ConfigurationError& e) {
         LOG(FATAL) << "Error in the configuration file:" << std::endl

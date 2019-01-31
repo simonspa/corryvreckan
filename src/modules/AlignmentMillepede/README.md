@@ -16,7 +16,7 @@ The modules stops if the convergence, i.e. the absolute sum of all corrections o
 * `dofs`: Degrees of freedom to be aligned. This parameter should be given as vector of six boolean values for the parameters "Translation X", "Translation Y", "Translation Z", "Rotation X", "Rotation Y" and "Rotation Z". The default setting is an alignment of all parameters except for "Translation Z", i.e. `dofs = true, true, false, true, true, true`.
 * `residual_cut`: Residual cut to reject a track as an outlier. Default value is `0.05mm`;
 * `residual_cut_init`: Initial residual cut for outlier rejection in the first iteration. This value is applied for the first iteration and replaced by `residual_cut` thereafter. Default value is `0.6mm`.
-* `nstddev`: Cut to reject track candidates based on their Chi2/ndof value. Default value is `0`, i.e. the feature is disabled.
+* `number_of_stddev`: Cut to reject track candidates based on their Chi2/ndof value. Default value is `0`, i.e. the feature is disabled.
 * `sigmas`: Uncertainties for each of the alignment parameters. Defaults to `0.05, 0.05, 0.5, 0.005, 0.005, 0.005`.
 * `convergence`: Convergence value at which the module stops iterating. Default value is `10e-5`.
 

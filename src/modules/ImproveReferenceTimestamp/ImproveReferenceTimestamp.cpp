@@ -6,9 +6,9 @@ using namespace std;
 
 ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
-    m_method = m_config.get<int>("improvementMethod", 1);
-    m_source = m_config.get<std::string>("signalSource", "W0013_G02");
-    m_triggerLatency = m_config.get<double>("triggerLatency", static_cast<double>(Units::convert(0, "ns")));
+    m_method = m_config.get<int>("improvement_method", 1);
+    m_source = m_config.get<std::string>("signal_source", "W0013_G02");
+    m_triggerLatency = m_config.get<double>("trigger_latency", static_cast<double>(Units::convert(0, "ns")));
 }
 
 void ImproveReferenceTimestamp::initialise() {

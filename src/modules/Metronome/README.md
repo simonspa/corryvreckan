@@ -9,10 +9,10 @@ The `Metronome` module is can be used to slice data without strict event structu
 Subsequent modules should read these values and adhere to them.
 
 ### Parameters
-* `eventLength`: Length of the event to be defined in physical units (not clock cycles of a specific device). Default value is `10us`.
+* `event_length`: Length of the event to be defined in physical units (not clock cycles of a specific device). Default value is `10us`.
 
 ### Usage
 ```toml
 [Metronome]
-eventLength = 500ns
+event_length = 500ns
 ```

@@ -6,10 +6,9 @@ using namespace std;
 TestAlgorithm::TestAlgorithm(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    makeCorrelations = m_config.get<bool>("makeCorrelations", false);
-    timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(100, "ns")));
-    do_timing_cut_ = m_config.get<bool>("doTimingCut", false);
-    m_eventLength = m_config.get<double>("eventLength", 1);
+    makeCorrelations = m_config.get<bool>("make_correlations", false);
+    timingCut = m_config.get<double>("timing_cut", static_cast<double>(Units::convert(100, "ns")));
+    do_timing_cut_ = m_config.get<bool>("do_timing_cut", false);
 }
 
 void TestAlgorithm::initialise() {
@@ -38,8 +37,8 @@ void TestAlgorithm::initialise() {
 
         // time correlation plot range should cover length of events. nanosecond binning.
         title = m_detector->name() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [ns];events";
-        correlationTime = new TH1F(
-            "correlationTime", title.c_str(), static_cast<int>(2. * m_eventLength), -1 * m_eventLength, m_eventLength);
+        correlationTime =
+            new TH1F("correlationTime", title.c_str(), static_cast<int>(2. * timingCut), -1 * timingCut, timingCut);
         title = m_detector->name() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [1/40MHz];events";
         correlationTimeInt = new TH1F("correlationTimeInt", title.c_str(), 8000, -40000, 40000);
 

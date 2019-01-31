@@ -5,16 +5,14 @@
 #include "Math/Point3D.h"
 #include "Math/Vector3D.h"
 
-/*
-
- This class is a simple track class which knows how to fit itself.
- It holds a collection of clusters, which may or may not be included
- in the track fit.
-
- */
-
 namespace corryvreckan {
-
+    /**
+     * @ingroup Objects
+     * @brief Track object
+     *
+     * This class is a simple track class which knows how to fit itself. It holds a collection of clusters, which may or may
+     * not be included in the track fit.
+     */
     class Track : public Object {
 
     public:

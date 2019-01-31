@@ -43,9 +43,7 @@ namespace corryvreckan {
         void maskPixels(std::string);
 
         // configuration paramaters:
-        double m_triggerLatency;
         std::string m_inputDirectory;
-        int m_minNumberOfPlanes;
 
         bool temporalSplit;
         size_t m_numberPixelHits;

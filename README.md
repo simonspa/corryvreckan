@@ -25,6 +25,8 @@ $ make install
 For more detailed installation instructions, please refer to the documentation below.
 
 ## Documentation
+The PDF user manual is automatically compiled by the continuous integration and can be [downloaded here](https://gitlab.cern.ch/corryvreckan/corryvreckan/-/jobs/artifacts/master/raw/public/usermanual/corryvreckan-manual.pdf?job=cmp%3Ausermanual).
+
 The latest PDF version of the User Manual can be created from source by executing
 ```
 $ make pdf
@@ -50,6 +52,7 @@ The following authors, in alphabetical order, have contributed to Corryvreckan:
 * Matthew Daniel Buckland, University of Liverpool, @mbucklan
 * Dominik Dannheim, CERN, @dannheim
 * Adrian Fiergolski, CERN, @afiergol
+* Lennart Huth, DESY, @lhuth
 * Jens Kroeger, University of Heidelberg/CERN, @jekroege
 * Andreas Matthias Nürnberg, CERN, @nurnberg
 * Florian Pitters, CERN, @fpipper

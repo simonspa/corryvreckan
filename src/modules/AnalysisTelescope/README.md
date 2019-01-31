@@ -9,7 +9,7 @@ This module produces reference histograms for the telescope performance used for
 Furthermore, the telescope resolution at the position of the DUT detector is plotted of Monte Carlo information is available. The Monte Carlo particle position is compared with the track interception with the DUT.
 
 ### Parameters
-* `chi2ndofCut`: Chi2 over number of degrees of freedom for the track to be taken into account. Tracks with a larger value are discarded. Default value is `3`.
+* `chi2ndof_cut`: Chi2 over number of degrees of freedom for the track to be taken into account. Tracks with a larger value are discarded. Default value is `3`.
 
 ### Plots produced
 * Telescope resolution at position of DUT
@@ -24,5 +24,5 @@ For each detector participating in tracking, the following plots are produced:
 ### Usage
 ```toml
 [NAME]
-chi2ndofCut = 3
+chi2ndof_cut = 3
 ```

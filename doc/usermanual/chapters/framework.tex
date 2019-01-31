@@ -17,22 +17,27 @@ This is the only \textbf{required} argument, the simulation will fail to start i
 \item \texttt{-v <level>}: Sets the global log verbosity level, overwriting the value specified in the configuration file described in Section~\ref{sec:framework_parameters}.
 Possible values are \texttt{FATAL}, \texttt{STATUS}, \texttt{ERROR}, \texttt{WARNING}, \texttt{INFO} and \texttt{DEBUG}, where all options are case-insensitive.
 The module specific logging level introduced in Section~\ref{sec:logging_verbosity} is not overwritten.
-\item \texttt{-o <option>}: Passes extra options which are added and overwritten in the main configuration file.
+\item \texttt{-o <option>}: Passes extra framework or module options which are added and overwritten in the main configuration file.
 This argument may be specified multiple times, to add multiple options.
-
-Options are specified as key/value pairs in the same syntax as used in the configuration files (refer to Chapter~\ref{ch:configuration_files} for more details), but the key is extended to include a reference to a configuration section in shorthand notation.
-There are two types of keys that can be specified:
+Options are specified as key/value pairs in the same syntax as used in the configuration files described in Chapter~\ref{ch:configuration_files}, but the key is extended to include a reference to a configuration section or instantiation in shorthand notation.
+There are three types of keys that can be specified:
 \begin{itemize}
-\item Keys to set \textbf{framework parameters}. These have to be provided in exactly the same way as they would be in the main configuration file (a section does not need to be specified). An example to overwrite the standard output directory would be \command{corry -c <file> -o output_directory="run123456"}.
-\item Keys for \textbf{module configurations}. These are specified by adding a dot (\texttt{.}) between the module and the actual key as it would be given in the configuration file (thus \textit{module}.\textit{key}). An example to overwrite the information written by the FileWiter module would be \command{corry -c <file> -o FileWriter.onlyDUT="true"}.
+\item Keys to set \textbf{framework parameters}. These have to be provided in exactly the same way as they would be in the main configuration file (a section does not need to be specified). An example to overwrite the standard output directory would be \texttt{corry -c <file> -o output\_directory="run123456"}.
+\item Keys for \textbf{module configurations}. These are specified by adding a dot (\texttt{.}) between the module and the actual key as it would be given in the configuration file (thus \textit{module}.\textit{key}). An example to overwrite the deposited particle to a positron would be \texttt{corry -c <file> -o Tracking4D.timingCut="100ns"}.
+\item Keys to specify values for a particular \textbf{module instantiation}. The identifier of the instantiation and the name of the actual key are split by a dot (\texttt{.}), in the same way as for keys for module configurations (thus \textit{identifier}.\textit{key}). The unique identifier for a module can contains one or more colons (\texttt{:}) to distinguish between various instantiations of the same module. The exact name of an identifier depends on the name of the detector and the optional input and output name. Those identifiers can be extracted from the logging section headers. An example to change the temperature of propagation for a particular instantiation for a detector named \textit{dut} could be \texttt{corry -c <file> -o Clustering4D:dut.timingCut="1us"}.
 \end{itemize}
 Note that only the single argument directly following the \texttt{-o} is interpreted as the option. If there is whitespace in the key/value pair this should be properly enclosed in quotation marks to ensure the argument is parsed correctly.
+\item \texttt{-g <option>}: Passes extra detector options which are added and overwritten in the detector configuration file.
+This argument can be specified multiple times, to add multiple options.
+The options are parsed in the same way as described above for module options, but only one type of key can be specified to overwrite an option for a single detector.
+These are specified by adding a dot (\texttt{.}) between the detector and the actual key as it would be given in the detector configuration file (thus \textit{detector}.\textit{key}). An example to change the orientation of a particular detector named \texttt{detector1} would be \texttt{corry -c <file> -g detector1.orientation=0deg,0deg,45deg}.
 \end{itemize}
 
 No interaction with the framework is possible during the reconstruction. Signals can however be send using keyboard shortcuts to terminate the run, either gracefully or with force. The executable understand the following signals:
 \begin{itemize}
-\item \texttt{CTRL+C} (SIGINT): Request a graceful shutdown of the reconstruction. This means the currently processed event is finished, while all other events requested in the configuration file are ignored. After finishing the event, the finalization stage is executed for every module to ensure all modules finish properly.
-\item \texttt{CTRL+\textbackslash} (SIGQUIT): Forcefully terminates the framework. It is not recommended to use this signal as it will normally lead to the loss of all generated data. This signal should only be used when graceful termination is for any reason not possible.
+\item SIGINT (\texttt{CTRL+C}): Request a graceful shutdown of the reconstruction. This means the currently processed event is finished, while all other events requested in the configuration file are ignored. After finishing the event, the finalization stage is executed for every module to ensure all modules finish properly.
+\item SIGTERM: Same as SIGINT, request a graceful shutdown of the reconstruction. This signal is emitted e.g.\ by the \command{kill} command or by cluster computing schedulers to ask for a termination of the job.
+\item SIGQUIT (\texttt{CTRL+\textbackslash}): Forcefully terminates the framework. It is not recommended to use this signal as it will normally lead to the loss of all generated data. This signal should only be used when graceful termination is for any reason not possible.
 \end{itemize}
 
 \section{The Clipboard}
@@ -61,6 +66,7 @@ The currently available global parameters are:
 \begin{itemize}
 \item \parameter{detectors_file}: Location of the file describing the detector configuration described in Section~\ref{sec:detector_config}.
 The only \textit{required} global parameter: the framework will fail to start if it is not specified.
+This parameter can take multiple paths, all provided files will be combined into one geometry description of the setup.
 \item \parameter{detectors_file_updated}: Location of the file that the (potentially) updated detector configuration should be written into. If this file does not already exist, it will be created. If the same file is given as for \parameter{detectors_file}, the file is overwritten with the updated values.
 \item \parameter{histogram_file}: Location of the file where the ROOT output histograms of all modules will be written to. The file extension \texttt{.root} will be appended if not present. Directories within the ROOT file will be created automatically for all modules.
 \item \parameter{number_of_events}: Determines the total number of events the framework should process, negative numbers allow processing of all data available.
@@ -69,7 +75,7 @@ Defaults to $-1$.
 \item \parameter{number_of_tracks}: Determines the total number of tracks the framework should reconstruct, negative numbers indicate no limit on the number of reconstructed tracks.
 After reaching the specified number of events, reconstruction is stopped.
 Defaults to $-1$.
-\item \parameter{run_time}: Determines the wall-clock time of data acquisition the framework should reconstruct up until. Negative numbers inidcate no limit on the time slice to reconstruct.
+\item \parameter{run_time}: Determines the wall-clock time of data acquisition the framework should reconstruct up until. Negative numbers indicate no limit on the time slice to reconstruct.
 Defaults to $-1$.
 \item \parameter{log_level}: Specifies the lowest log level which should be reported.
 Possible values are \texttt{FATAL}, \texttt{STATUS}, \texttt{ERROR}, \texttt{WARNING}, \texttt{INFO} and \texttt{DEBUG}, where all options are case-insensitive.
@@ -82,6 +88,12 @@ More information can be found in Section~\ref{sec:logging_verbosity}.
 \item \parameter{log_file}: File where the log output should be written to in addition to printing to the standard output (usually the terminal).
 Another (additional) location to write to can be specified on the command line using the \texttt{-l} parameter (see Section~\ref{sec:executable}).
 \item \parameter{library_directories}: Additional directories to search for module libraries, before searching the default paths.
+\item \parameter{output_directory}: Directory to write all output files into.
+Subdirectories are created automatically for all module instantiations.
+This directory will also contain the \parameter{histogram_file} specified via the parameter described above.
+Defaults to the current working directory with the subdirectory \textit{output/} attached.
+\item \parameter{purge_output_directory}: Decides whether the content of an already existing output directory is deleted before a new run starts. Defaults to \texttt{false}, i.e. files are kept but will be overwritten by new files created by the framework.
+\item \parameter{deny_overwrite}: Forces the framework to abort the run and throw an exception when attempting to overwrite an existing file. Defaults to \texttt{false}, i.e. files are overwritten when requested. This setting is inherited by all modules, but can be overwritten in the configuration section of each of the modules.
 \end{itemize}
 
 \section{Modules and the Module Manager}
@@ -121,127 +133,11 @@ Modules are executed in the order in which they appear in the configuration file
 If one module in the chain raises e.g.\ a \command{DeadTime} status, subsequent modules are not executed anymore.
 This should be taken into account when choosing the order of modules in the configuration, since e.g.\ data from detectors catered by subsequent event loaders is not processed and hit maps are not updated if an earlier module requested to skip the rest of the module chain.
 
-\subsection{Files of a Module}
-\label{sec:module_files}
-Every module directory should at minimum contain the following documents (with \texttt{ModuleName} replaced by the name of the module):
-\begin{itemize}
-\item \textbf{CMakeLists.txt}: The build script to load the dependencies and define the source files of the library.
-\item \textbf{README.md}: Full documentation of the module.
-\item \textbf{\textit{ModuleName}.h}: The header file of the module.
-\item \textbf{\textit{ModuleName}.cpp}: The implementation file of the module.
-\end{itemize}
-These files are discussed in more detail below.
-By default, all modules added to the \textit{src/modules/} directory will be built automatically by CMake.
-If a module depends on additional packages which not every user may have installed, one can consider adding the following line to the top of the module's \textit{CMakeLists.txt}:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
-CORRYVRECKAN_ENABLE_DEFAULT(OFF)
-\end{minted}
-
-\paragraph{CMakeLists.txt}
-Contains the build description of the module with the following components:
-\begin{enumerate}
-\item On the first line either \parameter{CORRYVRECKAN_DETECTOR_MODULE(MODULE_NAME)}, \parameter{CORRYVRECKAN_DUT_MODULE(MODULE_NAME)} or \parameter{CORRYVRECKAN_GLOBAL_MODULE(MODULE_NAME)} depending on the type of module defined.
-The internal name of the module is automatically saved in the variable \parameter{${MODULE_NAME}} which should be used as an argument to other functions.
-Another name can be used by overwriting the variable content, but in the examples below, \parameter{${MODULE_NAME}} is used exclusively and is the preferred method of implementation.
-For DUT and Detector modules, the type of detector this module is capable of handling can be specified by adding so-called type restrictions, e.g.\
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
-CORRYVRECKAN_DETECTOR_TYPE(${MODULE_NAME} "Timepix3" "CLICpix2")
-\end{minted}
-The module will then only be instantiated for detectors of one of the given types. This is particularly useful for event loader modules which read a very specific file format.
-
-\item The following lines should contain the logic to load possible dependencies of the module (below is an example to load Geant4).
-Only ROOT is automatically included and linked to the module.
-\item A line with \texttt{\textbf{CORRYVRECKAN\_MODULE\_SOURCES(\$\{MODULE\_NAME\} \textit{sources})}} defines the module source files. Here, \texttt{sources} should be replaced by a list of all source files relevant to this module.
-\item Possible lines to include additional directories and to link libraries for dependencies loaded earlier.
-\item A line containing \parameter{CORRYVRECKAN_MODULE_INSTALL(${MODULE_NAME})} to set up the required target for the module to be installed to.
-\end{enumerate}
-
-A simple CMakeLists.txt for a module named \parameter{Test} which should run only on DUT detectors of type \emph{Timepix3} is provided below as an example.
-\vspace{5pt}
-
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
-# Define module and save name to MODULE_NAME
-CORRYVRECKAN_DUT_MODULE(MODULE_NAME)
-CORRYVRECKAN_DETECTOR_TYPE(${MODULE_NAME} "Timepix3")
-
-# Add the sources for this module
-CORRYVRECKAN_MODULE_SOURCES(${MODULE_NAME}
-    Test.cpp
-)
-
-# Provide standard install target
-CORRYVRECKAN_MODULE_INSTALL(${MODULE_NAME})
-\end{minted}
-
-\paragraph{README.md}
-The \file{README.md} serves as the documentation for the module and should be written in Markdown format~\cite{markdown}.
-It is automatically converted to \LaTeX using Pandoc~\cite{pandoc} and included in the user manual in Chapter~\ref{ch:modules}.
-By documenting the module functionality in Markdown, the information is also viewable with a web browser in the repository within the module sub-folder.
-
-The \file{README.md} should follow the structure indicated in the \file{README.md} file of the \parameter{Dummy} module in \dir{src/modules/Dummy}, and should contain at least the following sections:
-\begin{itemize}
-\item The H1-size header with the name of the module and at least the following required elements: the \textbf{Maintainer}, the \textbf{Module Type} and the \textbf{Status} of the module.
-The module type should be either \textbf{GLOBAL}, \textbf{DETECTOR}, \textbf{DUT}.
-If the module is working and well-tested, the status of the module should be \textbf{Functional}.
-By default, new modules are given the status \textbf{Immature}.
-The maintainer should mention the full name of the module maintainer, with their email address in parentheses.
-A minimal header is therefore:
-\begin{verbatim}
-# ModuleName
-Maintainer: Example Author (<example@example.org>)
-Module Type: GLOBAL
-Status: Functional
-\end{verbatim}
-In addition, the \textbf{Detector Type} should be mentioned for modules of types \textbf{DETECTOR} and \textbf{DUT}.
-\item An H3-size section named \textbf{Description}, containing a short description of the module.
-\item An H3-size section named \textbf{Parameters}, with all available configuration parameters of the module.
-The parameters should be briefly explained in an itemised list with the name of the parameter set as an inline code block.
-\item An H3-size section named \textbf{Plots Created}, listing all plots created by this module.
-\item An H3-size section with the title \textbf{Usage} which should contain at least one simple example of a valid configuration for the module.
-\end{itemize}
-
-\paragraph{\texttt{ModuleName}.h and \texttt{ModuleName}.cpp}
-All modules should consist of both a header file and a source file.
-In the header file, the module is defined together with all of its methods.
-Brief Doxygen documentation should be added to explain what each method does.
-The source file should provide the implementation of every method and also its more detailed Doxygen documentation.
-Methods should only be declared in the header and defined in the source file in order to keep the interface clean.
-
-\subsection{Module structure}
-\label{sec:module_structure}
-All modules must inherit from the \texttt{Module} base class, which can be found in \textit{src/core/module/Module.hpp}.
-The module base class provides two base constructors, a few convenient methods and several methods which the user is required to override.
-Each module should provide a constructor using the fixed set of arguments defined by the framework; this particular constructor is always called during by the module instantiation logic.
-These arguments for the constructor differ for global and detector/DUT modules.
-
-For global modules, the constructor for a \texttt{TestModule} should be:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-TestModule(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors): Module(std::move(config), detectors) {}
-\end{minted}
-
-For detector and DUT modules, the first argument are the same, but the last argument is a \texttt{std::shared\_ptr} to the linked detector.
-It should always forward this detector to the base class together with the configuration object.
-Thus, the constructor of a detector module is:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-TestModule(Configuration& config, std::shared_ptr<Detector> detector): Module(std::move(config), std::move(detector)) {}
-\end{minted}
-
-In addition to the constructor, each module can override the following methods:
-\begin{itemize}
-\item \parameter{initialise()}: Called after loading and constructing all modules and before starting the analysis loop.
-This method can for example be used to initialize histograms.
-\item \parameter{run(std::shared_ptr<Clipboard> clipboard)}: Called for every time frame or triggered event to be analyzed in the simulation. The argument represents a pointer to the clipboard where the event data is stored.
-A status code is returned to signal the framework whether to continue processing data or to end the run.
-\item \parameter{finalise()}: Called after processing all events in the run and before destructing the module.
-Typically used to save the output data (like histograms).
-Any exceptions should be thrown from here instead of the destructor.
-\end{itemize}
-
 \subsection{Module instantiation}
 \label{sec:module_instantiation}
 Modules are dynamically loaded and instantiated by the Module Manager.
 They are constructed, initialized, executed and finalized in the linear order in which they are defined in the configuration file; for this reason the configuration file should follow the order of the real process.
-For each section in the main configuration file (see~\ref{sec:config_parameters} for more details), a corresponding library is searched for which contains the module (the exception being the global framework section).
+For each section in the main configuration file (see~\ref{ch:configuration_files} for more details), a corresponding library is searched for which contains the module (the exception being the global framework section).
 Module libraries are always named following the scheme \textbf{libCorryvreckanModule\texttt{ModuleName}}, reflecting the \texttt{ModuleName} configured via CMake.
 The module search order is as follows:
 \begin{enumerate}

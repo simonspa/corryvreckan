@@ -1,4 +1,6 @@
 #include "TreeWriterDUT.h"
+#include "core/utils/file.h"
+
 #include <vector>
 
 using namespace corryvreckan;
@@ -7,8 +9,8 @@ using namespace std;
 TreeWriterDUT::TreeWriterDUT(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    m_fileName = m_config.get<std::string>("fileName", "outputTuples.root");
-    m_treeName = m_config.get<std::string>("treeName", "tree");
+    m_fileName = m_config.get<std::string>("file_name", "outputTuples.root");
+    m_treeName = m_config.get<std::string>("tree_name", "tree");
 }
 
 /*
@@ -33,8 +35,9 @@ void TreeWriterDUT::initialise() {
     LOG(DEBUG) << "Initialised TreeWriterDUT";
 
     // Create output file and directories
-    m_outputFile = new TFile(m_fileName.c_str(), "RECREATE");
-    LOG(DEBUG) << "Made and moved to output file: " << m_fileName;
+    auto path = createOutputFile(add_file_extension(m_fileName, "root"));
+    m_outputFile = new TFile(path.c_str(), "RECREATE");
+    LOG(DEBUG) << "Made and moved to output file: " << path;
     gDirectory->Delete("tree;*");
     m_outputTree = new TTree(m_treeName.c_str(), m_treeName.c_str());
     LOG(DEBUG) << "Created tree: " << m_treeName;

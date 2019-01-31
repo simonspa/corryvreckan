@@ -3,6 +3,7 @@ build/
 bin/
 lib/
 obj/
+testing/data
 
 # root and data files do not belong into the repository
 *.root

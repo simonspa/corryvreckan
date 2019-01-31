@@ -7,21 +7,18 @@ using namespace std;
 EventLoaderATLASpix::EventLoaderATLASpix(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    m_timewalkCorrectionFactors = m_config.getArray<double>("timewalkCorrectionFactors", std::vector<double>());
-
-    m_inputDirectory = m_config.get<std::string>("inputDirectory");
-    m_calibrationFile = m_config.get<std::string>("calibrationFile", std::string());
-
-    m_clockCycle = m_config.get<double>("clockCycle", static_cast<double>(Units::convert(6.25, "ns")));
+    m_inputDirectory = m_config.getPath("input_directory");
+    m_clockCycle = m_config.get<double>("clock_cycle", static_cast<double>(Units::convert(6.25, "ns")));
 
     // Allow reading of legacy data format using the Karlsruhe readout system:
-    m_legacyFormat = m_config.get<bool>("legacyFormat", false);
-
-    m_startTime = m_config.get<double>("startTime", 0.);
-    m_toaMode = m_config.get<bool>("toaMode", false);
+    m_legacyFormat = m_config.get<bool>("legacy_format", false);
 
     // m_clkdivendM = m_config.get<int>("clkdivend", 0.) + 1;
     m_clkdivend2M = m_config.get<int>("clkdivend2", 0.) + 1;
+
+    if(m_config.has("calibration_file")) {
+        m_calibrationFile = m_config.getPath("calibration_file");
+    }
 
     // ts1Range = 0x800 * m_clkdivendM;
     ts2Range = 0x40 * m_clkdivend2M;
@@ -122,9 +119,7 @@ void EventLoaderATLASpix::initialise() {
                        m_detector->nPixels().Y(),
                        0,
                        m_detector->nPixels().Y());
-    // hPixelToT = new TH1F("pixelToT", "pixelToT", 100, 0, 100);
-    // std::string totTitle = "pixelToT;x ToT in " + string(m_clockCycle) + " ns units";
-    // hPixelToT = new TH1F("pixelToT", "pixelToT", 64, 0, ts2Range*m_clockCycle);
+
     hPixelToT = new TH1F("pixelToT", "pixelToT", 64, 0, 64);
     hPixelToT->GetXaxis()->SetTitle("ToT in TS2 clock cycles.");
     hPixelToTCal = new TH1F("pixelToTCal", "pixelToT", 100, 0, 100);
@@ -148,12 +143,7 @@ void EventLoaderATLASpix::initialise() {
         calibration.close();
     }
 
-    LOG(INFO) << "Timewalk correction factors: ";
-    for(auto& ts : m_timewalkCorrectionFactors) {
-        LOG(INFO) << ts;
-    }
-
-    LOG(INFO) << "Using clock cycle length of " << m_clockCycle << std::endl;
+    LOG(INFO) << "Using clock cycle length of " << m_clockCycle << " ns." << std::endl;
 
     m_oldtoa = 0;
     m_overflowcounter = 0;
@@ -188,7 +178,6 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     for(auto px : (*pixels)) {
         hHitMap->Fill(px->column(), px->row());
-        // hPixelToT->Fill((px->tot())*m_clockCycle);
         hPixelToT->Fill(px->tot());
         hPixelToTCal->Fill(px->charge());
         hPixelToA->Fill(px->timestamp());
@@ -541,15 +530,6 @@ std::shared_ptr<Pixels> EventLoaderATLASpix::read_legacy_data(double, double) {
         // TriggerDebugTS *= 4096. / 5;              // runs with 200MHz, divide by 5 to scale counter value to 40MHz
         double toa_timestamp =
             4096. * 2 * static_cast<double>(toa); // runs with 20MHz, multiply by 2 to scale counter value to 40MHz
-
-        // Timewalk correction:
-        if(m_timewalkCorrectionFactors.size() == 5) {
-            double corr = m_timewalkCorrectionFactors.at(0) + m_timewalkCorrectionFactors.at(1) * tot +
-                          m_timewalkCorrectionFactors.at(2) * tot * tot +
-                          m_timewalkCorrectionFactors.at(3) * tot * tot * tot +
-                          m_timewalkCorrectionFactors.at(4) * tot * tot * tot * tot;
-            toa_timestamp -= corr * 163840000000; //(40000000 * 4096)
-        }
 
         // Convert TOA to nanoseconds:
         toa_timestamp /= (4096. * 0.04);

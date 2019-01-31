@@ -63,6 +63,13 @@ namespace corryvreckan {
         bool has(const std::string& key) const;
 
         /**
+         * @brief Check how many of the given keys are defined
+         * @param keys Keys to check for existence
+         * @return number of existing keys from the given list
+         */
+        unsigned int count(std::initializer_list<std::string> keys) const;
+
+        /**
          * @brief Get value of a key in requested type
          * @param key Key to get value of
          * @return Value of the key in the type of the requested template parameter
@@ -143,19 +150,19 @@ namespace corryvreckan {
         std::vector<std::string> getPathArray(const std::string& key, bool check_exists = false) const;
 
         /**
-         * @brief Set value for a key in a given type with units
-         * @param key Key to set value of
-         * @param val Value to assign to the key
-         * @param units List of possible output units
-         */
-        template <typename T> void set(const std::string& key, const T& val, std::initializer_list<std::string> units);
-
-        /**
          * @brief Set value for a key in a given type
          * @param key Key to set value of
          * @param val Value to assign to the key
          */
         template <typename T> void set(const std::string& key, const T& val);
+
+        /**
+         * @brief Store value for a key in a given type, including units
+         * @param key Key to set value of
+         * @param val Value to assign to the key
+         * @param units List of possible output units
+         */
+        template <typename T> void set(const std::string& key, const T& val, std::initializer_list<std::string> units);
 
         /**
          * @brief Set list of values for a key in a given type
@@ -210,11 +217,6 @@ namespace corryvreckan {
          * @return Configuration name
          */
         std::string getName() const;
-
-        /**
-         * @brief Set name of the configuration header
-         */
-        void setName(const std::string& name);
 
         /**
          * @brief Get path to the file containing the configuration if it has one

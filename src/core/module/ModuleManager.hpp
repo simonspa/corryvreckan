@@ -6,8 +6,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef CORRYVRECKAN_ANALYSIS_H
-#define CORRYVRECKAN_ANALYSIS_H
+#ifndef CORRYVRECKAN_MODULE_MANAGER_H
+#define CORRYVRECKAN_MODULE_MANAGER_H
 
 #include <fstream>
 #include <map>
@@ -25,9 +25,10 @@
 namespace corryvreckan {
 
     /**
-     * @brief Core class of the Corryvreckan analysis framework
+     * @ingroup Managers
+     * @brief Manager responsible for dynamically loading all modules and running their event sequence
      *
-     * The analysis class is the core class which allows the event processing to run. It basically contains a vector of
+     * The module manager class is the core class which allows the event processing to run. It basically contains a vector of
      * modules, each of which is initialised, run on each event and finalised. It does not define what an event is, merely
      * runs each module sequentially and passes the clipboard between them (erasing it at the end of each run sequence). When
      * an module returns a Failure code, the event processing will stop.
@@ -36,33 +37,51 @@ namespace corryvreckan {
         using ModuleList = std::list<std::shared_ptr<Module>>;
 
     public:
-        // Constructors and destructors
-        explicit ModuleManager(std::string config_file_name, std::vector<std::string> options = std::vector<std::string>());
-        virtual ~ModuleManager(){};
+        /**
+         * @brief Construct manager
+         */
+        ModuleManager();
+        /**
+         * @brief Use default destructor
+         */
+        ~ModuleManager() = default;
+
+        /// @{
+        /**
+         * @brief Copying the manager is not allowed
+         */
+        ModuleManager(const ModuleManager&) = delete;
+        ModuleManager& operator=(const ModuleManager&) = delete;
+        /// @}
+
+        /// @{
+        /**
+         * @brief Moving the manager is not allowed
+         */
+        ModuleManager(ModuleManager&&) = delete;
+        ModuleManager& operator=(ModuleManager&&) = delete;
+        /// @}
 
         // Member functions
-        void load();
+        void load(ConfigManager* conf_mgr);
 
         void run();
-        void timing();
         void initialiseAll();
         void finaliseAll();
-
         void terminate();
-        void reset(){};
 
         TBrowser* browser;
 
     protected:
         // Member variables
         std::shared_ptr<Clipboard> m_clipboard;
-        Configuration global_config;
         std::vector<std::shared_ptr<Detector>> m_detectors;
 
     private:
+        void timing();
+
         void load_detectors();
         void load_modules();
-        void add_units();
 
         /**
          * @brief Get a specific detector, identified by its name
@@ -109,7 +128,7 @@ namespace corryvreckan {
         std::map<std::string, void*> loaded_libraries_;
 
         std::atomic<bool> m_terminate;
-        std::unique_ptr<corryvreckan::ConfigManager> conf_mgr_;
+        ConfigManager* conf_manager_;
 
         std::tuple<LogLevel, LogFormat> set_module_before(const std::string&, const Configuration& config);
         void set_module_after(std::tuple<LogLevel, LogFormat> prev);
@@ -118,4 +137,4 @@ namespace corryvreckan {
     };
 } // namespace corryvreckan
 
-#endif // CORRYVRECKAN_ANALYSIS_H
+#endif // CORRYVRECKAN_MODULE_MANAGER_H

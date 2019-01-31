@@ -34,7 +34,7 @@ bool EventLoaderTimepix1::sortByTime(string filename1, string filename2) {
 void EventLoaderTimepix1::initialise() {
 
     // Take input directory from global parameters
-    m_inputDirectory = m_config.get<std::string>("inputDirectory");
+    m_inputDirectory = m_config.getPath("input_directory");
 
     // Each input directory contains a series of .txt files. Each of these
     // contains several events (frames) with different times

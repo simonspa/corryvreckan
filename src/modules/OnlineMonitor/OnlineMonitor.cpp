@@ -1,4 +1,5 @@
 #include "OnlineMonitor.h"
+#include <TGButtonGroup.h>
 #include <TVirtualPadEditor.h>
 #include <regex>
 
@@ -7,18 +8,18 @@ using namespace std;
 
 OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
-    canvasTitle = m_config.get<std::string>("canvasTitle", "Corryvreckan Testbeam Monitor");
+    canvasTitle = m_config.get<std::string>("canvas_title", "Corryvreckan Testbeam Monitor");
     updateNumber = m_config.get<int>("update", 200);
 
     // Set up overview plots:
-    canvas_overview = m_config.getMatrix<std::string>("Overview",
+    canvas_overview = m_config.getMatrix<std::string>("overview",
                                                       {{"Tracking4D/trackChi2"},
-                                                       {"TestAlgorithm/%REFERENCE%/clusterTot"},
+                                                       {"Clustering4D/%REFERENCE%/clusterTot"},
                                                        {"TestAlgorithm/%REFERENCE%/hitmap", "colz"},
                                                        {"Tracking4D/%REFERENCE%/residualsX"}});
 
     // Set up individual plots for the DUT
-    canvas_dutplots = m_config.getMatrix<std::string>("DUTPlots",
+    canvas_dutplots = m_config.getMatrix<std::string>("dut_plots",
                                                       {{"EventLoaderCLICpix2/%DUT%/hitMap", "colz"},
                                                        {"EventLoaderCLICpix2/%DUT%/hitMapDiscarded", "colz"},
                                                        {"EventLoaderCLICpix2/%DUT%/pixelToT"},
@@ -27,26 +28,26 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
                                                        {"EventLoaderCLICpix2/%DUT%/pixelsPerFrame", "log"},
                                                        {"AnalysisDUT/clusterTotAssociated"},
                                                        {"AnalysisDUT/associatedTracksVersusTime"}});
-    canvas_tracking = m_config.getMatrix<std::string>("Tracking",
+    canvas_tracking = m_config.getMatrix<std::string>("tracking",
                                                       {{"Tracking4D/trackChi2"},
                                                        {"Tracking4D/trackAngleX"},
                                                        {"Tracking4D/trackAngleY"},
                                                        {"Tracking4D/trackChi2ndof"},
                                                        {"Tracking4D/tracksPerEvent"},
                                                        {"Tracking4D/clustersPerTrack"}});
-    canvas_hitmaps = m_config.getMatrix<std::string>("HitMaps", {{"TestAlgorithm/%DETECTOR%/hitmap", "colz"}});
-    canvas_residuals = m_config.getMatrix<std::string>("Residuals", {{"Tracking4D/%DETECTOR%/residualsX"}});
+    canvas_hitmaps = m_config.getMatrix<std::string>("hitmaps", {{"TestAlgorithm/%DETECTOR%/hitmap", "colz"}});
+    canvas_residuals = m_config.getMatrix<std::string>("residuals", {{"Tracking4D/%DETECTOR%/residualsX"}});
 
-    canvas_cx = m_config.getMatrix<std::string>("CorrelationX", {{"TestAlgorithm/%DETECTOR%/correlationX"}});
+    canvas_cx = m_config.getMatrix<std::string>("correlation_x", {{"TestAlgorithm/%DETECTOR%/correlationX"}});
     canvas_cx2d =
-        m_config.getMatrix<std::string>("CorrelationX2D", {{"TestAlgorithm/%DETECTOR%/correlationX_2Dlocal", "colz"}});
-    canvas_cy = m_config.getMatrix<std::string>("CorrelationY", {{"TestAlgorithm/%DETECTOR%/correlationY"}});
+        m_config.getMatrix<std::string>("correlation_x2d", {{"TestAlgorithm/%DETECTOR%/correlationX_2Dlocal", "colz"}});
+    canvas_cy = m_config.getMatrix<std::string>("correlation_y", {{"TestAlgorithm/%DETECTOR%/correlationY"}});
     canvas_cy2d =
-        m_config.getMatrix<std::string>("CorrelationY2D", {{"TestAlgorithm/%DETECTOR%/correlationY_2Dlocal", "colz"}});
+        m_config.getMatrix<std::string>("correlation_y2d", {{"TestAlgorithm/%DETECTOR%/correlationY_2Dlocal", "colz"}});
 
-    canvas_charge = m_config.getMatrix<std::string>("ChargeDistributions", {{"Clustering4D/%DETECTOR%/clusterTot"}});
+    canvas_charge = m_config.getMatrix<std::string>("charge_distributions", {{"Clustering4D/%DETECTOR%/clusterTot"}});
 
-    canvas_time = m_config.getMatrix<std::string>("EventTimes", {{"TestAlgorithm/%DETECTOR%/eventTimes"}});
+    canvas_time = m_config.getMatrix<std::string>("event_times", {{"TestAlgorithm/%DETECTOR%/eventTimes"}});
 }
 
 void OnlineMonitor::initialise() {
@@ -58,34 +59,56 @@ void OnlineMonitor::initialise() {
     gui = new GuiDisplay();
 
     // Make the main window object and set the attributes
-    gui->m_mainFrame = new TGMainFrame(gClient->GetRoot(), 800, 600);
-    gui->buttonMenu = new TGHorizontalFrame(gui->m_mainFrame, 800, 50);
-    gui->canvas = new TRootEmbeddedCanvas("canvas", gui->m_mainFrame, 800, 600);
+    gui->m_mainFrame = new TGMainFrame(gClient->GetRoot(), 1200, 600);
+    gui->buttonMenu = new TGHorizontalFrame(gui->m_mainFrame, 1200, 50);
+    gui->canvas = new TRootEmbeddedCanvas("canvas", gui->m_mainFrame, 1200, 600);
     gui->m_mainFrame->AddFrame(gui->canvas, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10, 10, 10, 10));
     gui->m_mainFrame->SetCleanup(kDeepCleanup);
     gui->m_mainFrame->DontCallClose();
 
     // Add canvases and histograms
-    AddCanvas("Overview", canvas_overview);
-    AddCanvas("Tracking", canvas_tracking);
-    AddCanvas("HitMaps", canvas_hitmaps);
-    AddCanvas("Residuals", canvas_residuals);
-    AddCanvas("EventTimes", canvas_time);
-    AddCanvas("ChargeDistributions", canvas_charge);
+    AddCanvasGroup("Tracking");
+    AddCanvas("Overview", "Tracking", canvas_overview);
+    AddCanvas("Tracking Performance", "Tracking", canvas_tracking);
+    AddCanvas("Residuals", "Tracking", canvas_residuals);
 
-    AddCanvas("CorrelationsX", canvas_cx);
-    AddCanvas("CorrelationsY", canvas_cy);
-    AddCanvas("CorrelationsX2D", canvas_cx2d);
-    AddCanvas("CorrelationsY2D", canvas_cy2d);
+    AddCanvasGroup("Detectors");
+    AddCanvas("Hitmaps", "Detectors", canvas_hitmaps);
+    AddCanvas("Event Times", "Detectors", canvas_time);
+    AddCanvas("Charge Distributions", "Detectors", canvas_charge);
 
-    AddCanvas("DUTPlots", canvas_dutplots);
+    AddCanvasGroup("Correlations 1D");
+    AddCanvas("1D X", "Correlations 1D", canvas_cx);
+    AddCanvas("1D Y", "Correlations 1D", canvas_cy);
+
+    AddCanvasGroup("Correlations 2D");
+    AddCanvas("2D X", "Correlations 2D", canvas_cx2d);
+    AddCanvas("2D Y", "Correlations 2D", canvas_cy2d);
+
+    AddCanvasGroup("DUTs");
+    for(auto& detector : get_detectors()) {
+        if(detector->isDUT()) {
+            AddCanvas(detector->name(), "DUTs", canvas_dutplots, detector->name());
+        }
+    }
 
     // Set up the main frame before drawing
+    AddCanvasGroup("Controls");
+    ULong_t color;
+
+    // Pause button
+    gClient->GetColorByName("green", color);
+    gui->buttons["pause"] = new TGTextButton(gui->buttonGroups["Controls"], "   &Pause Monitoring   ");
+    gui->buttons["pause"]->ChangeBackground(color);
+    gui->buttons["pause"]->Connect("Pressed()", "corryvreckan::GuiDisplay", gui, "TogglePause()");
+    gui->buttonGroups["Controls"]->AddFrame(gui->buttons["pause"], new TGLayoutHints(kLHintsTop | kLHintsExpandX));
+
     // Exit button
-    string exitButton = "StopMonitoring";
-    gui->buttons[exitButton] = new TGTextButton(gui->buttonMenu, exitButton.c_str());
-    gui->buttonMenu->AddFrame(gui->buttons[exitButton], new TGLayoutHints(kLHintsLeft, 10, 10, 10, 10));
-    gui->buttons[exitButton]->Connect("Pressed()", "corryvreckan::GuiDisplay", gui, "Exit()");
+    gClient->GetColorByName("yellow", color);
+    gui->buttons["exit"] = new TGTextButton(gui->buttonGroups["Controls"], "&Exit Monitor");
+    gui->buttons["exit"]->ChangeBackground(color);
+    gui->buttons["exit"]->Connect("Pressed()", "corryvreckan::GuiDisplay", gui, "Exit()");
+    gui->buttonGroups["Controls"]->AddFrame(gui->buttons["exit"], new TGLayoutHints(kLHintsTop | kLHintsExpandX));
 
     // Main frame resizing
     gui->m_mainFrame->AddFrame(gui->buttonMenu, new TGLayoutHints(kLHintsLeft, 10, 10, 10, 10));
@@ -111,10 +134,11 @@ void OnlineMonitor::initialise() {
 
 StatusCode OnlineMonitor::run(std::shared_ptr<Clipboard>) {
 
-    // Draw all histograms
-    if(eventNumber % updateNumber == 0) {
-        gui->Update();
-        eventNumber++;
+    if(!gui->isPaused()) {
+        // Draw all histograms
+        if(eventNumber % updateNumber == 0) {
+            gui->Update();
+        }
     }
     gSystem->ProcessEvents();
 
@@ -123,19 +147,35 @@ StatusCode OnlineMonitor::run(std::shared_ptr<Clipboard>) {
     return StatusCode::Success;
 }
 
-void OnlineMonitor::AddCanvas(std::string canvas_title, Matrix<std::string> canvas_plots) {
+void OnlineMonitor::AddCanvasGroup(std::string group_title) {
+    gui->buttonGroups[group_title] = new TGVButtonGroup(gui->buttonMenu, group_title.c_str());
+    gui->buttonMenu->AddFrame(gui->buttonGroups[group_title], new TGLayoutHints(kLHintsLeft | kLHintsTop, 10, 10, 10, 10));
+    gui->buttonGroups[group_title]->Show();
+}
+
+void OnlineMonitor::AddCanvas(std::string canvas_title,
+                              std::string canvasGroup,
+                              Matrix<std::string> canvas_plots,
+                              std::string detector_name) {
     std::string canvas_name = canvas_title + "Canvas";
 
-    gui->buttons[canvas_title] = new TGTextButton(gui->buttonMenu, canvas_title.c_str());
-    gui->buttonMenu->AddFrame(gui->buttons[canvas_title], new TGLayoutHints(kLHintsLeft, 10, 10, 10, 10));
+    if(canvasGroup.empty()) {
+        gui->buttons[canvas_title] = new TGTextButton(gui->buttonMenu, canvas_title.c_str());
+        gui->buttonMenu->AddFrame(gui->buttons[canvas_title], new TGLayoutHints(kLHintsLeft, 10, 10, 10, 10));
+    } else {
+        gui->buttons[canvas_title] = new TGTextButton(gui->buttonGroups[canvasGroup], canvas_title.c_str());
+        gui->buttonGroups[canvasGroup]->AddFrame(gui->buttons[canvas_title],
+                                                 new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0, 0, 0, 0));
+    }
+
     string command = "Display(=\"" + canvas_name + "\")";
     LOG(INFO) << "Connecting button with command " << command.c_str();
     gui->buttons[canvas_title]->Connect("Pressed()", "corryvreckan::GuiDisplay", gui, command.c_str());
 
-    AddPlots(canvas_name, canvas_plots);
+    AddPlots(canvas_name, canvas_plots, detector_name);
 }
 
-void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas_plots) {
+void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas_plots, std::string detector_name) {
     for(auto plot : canvas_plots) {
 
         // Add default plotting style if not set:
@@ -150,22 +190,41 @@ void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas
         // Parse other placeholders:
         if(name.find("%DUT%") != std::string::npos) {
             // Do we have a DUT placeholder?
-            LOG(DEBUG) << "Adding plot " << name << " for all DUTs.";
-            for(auto& detector : get_detectors()) {
-                if(!detector->isDUT()) {
-                    continue;
-                }
+            if(!detector_name.empty()) {
+                LOG(DEBUG) << "Adding plot " << name << " for detector " << detector_name;
+                auto detector = get_detector(detector_name);
                 AddHisto(
                     canvas_name, std::regex_replace(name, std::regex("%DUT%"), detector->name()), plot.back(), log_scale);
+
+            } else {
+                LOG(DEBUG) << "Adding plot " << name << " for all DUTs.";
+                for(auto& detector : get_detectors()) {
+                    if(!detector->isDUT()) {
+                        continue;
+                    }
+                    AddHisto(canvas_name,
+                             std::regex_replace(name, std::regex("%DUT%"), detector->name()),
+                             plot.back(),
+                             log_scale);
+                }
             }
         } else if(name.find("%DETECTOR%") != std::string::npos) {
             // Do we have a detector placeholder?
-            LOG(DEBUG) << "Adding plot " << name << " for all detectors.";
-            for(auto& detector : get_detectors()) {
+            if(!detector_name.empty()) {
+                LOG(DEBUG) << "Adding plot " << name << " for detector " << detector_name;
+                auto detector = get_detector(detector_name);
                 AddHisto(canvas_name,
                          std::regex_replace(name, std::regex("%DETECTOR%"), detector->name()),
                          plot.back(),
                          log_scale);
+            } else {
+                LOG(DEBUG) << "Adding plot " << name << " for all detectors.";
+                for(auto& detector : get_detectors()) {
+                    AddHisto(canvas_name,
+                             std::regex_replace(name, std::regex("%DETECTOR%"), detector->name()),
+                             plot.back(),
+                             log_scale);
+                }
             }
         } else {
             // Single histogram only.

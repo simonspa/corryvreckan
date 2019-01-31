@@ -6,8 +6,8 @@ using namespace std;
 DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(200, "ns")));
-    spatialCut = m_config.get<XYVector>("spatialCut", 2 * m_detector->pitch());
+    timingCut = m_config.get<double>("timing_cut", static_cast<double>(Units::convert(200, "ns")));
+    spatialCut = m_config.get<XYVector>("spatial_cut", 2 * m_detector->pitch());
 }
 
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {

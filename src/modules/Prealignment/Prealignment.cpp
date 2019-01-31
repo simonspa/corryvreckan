@@ -6,10 +6,9 @@ using namespace std;
 Prealignment::Prealignment(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    LOG(INFO) << "Starting prealignment of detectors";
     max_correlation_rms = m_config.get<double>("max_correlation_rms", static_cast<double>(Units::convert(6.0, "mm")));
     damping_factor = m_config.get<double>("damping_factor", 1.0);
-    timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(100, "ns")));
+    timingCut = m_config.get<double>("timing_cut", static_cast<double>(Units::convert(100, "ns")));
     LOG(DEBUG) << "Setting max_correlation_rms to : " << max_correlation_rms;
     LOG(DEBUG) << "Setting damping_factor to : " << damping_factor;
 }
@@ -97,7 +96,8 @@ void Prealignment::finalise() {
                    << " , RMS Y = " << Units::display(rmsY, {"mm", "um"});
     }
 
-    if(m_detector->isReference()) {
+    // Move all but the reference:
+    if(!m_detector->isReference()) {
         double mean_X = correlationX->GetMean();
         double mean_Y = correlationY->GetMean();
         LOG(INFO) << "Detector " << m_detector->name() << ": x = " << Units::display(mean_X, {"mm", "um"})

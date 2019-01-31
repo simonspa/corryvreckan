@@ -10,10 +10,10 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     : Module(std::move(config), std::move(detectors)) {
 
     // Default values for cuts
-    timingCut = m_config.get<double>("timingCut", static_cast<double>(Units::convert(200, "ns")));
-    spatialCut = m_config.get<double>("spatialCut", static_cast<double>(Units::convert(0.2, "mm")));
-    minHitsOnTrack = m_config.get<size_t>("minHitsOnTrack", 6);
-    excludeDUT = m_config.get<bool>("excludeDUT", true);
+    timingCut = m_config.get<double>("timing_cut", static_cast<double>(Units::convert(200, "ns")));
+    spatialCut = m_config.get<double>("spatial_cut", static_cast<double>(Units::convert(0.2, "mm")));
+    minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
+    excludeDUT = m_config.get<bool>("exclude_dut", true);
 }
 
 void Tracking4D::initialise() {
@@ -35,6 +35,11 @@ void Tracking4D::initialise() {
     // Loop over all planes
     for(auto& detector : get_detectors()) {
         auto detectorID = detector->name();
+
+        // Do not create plots for detector snot participating in the tracking:
+        if(excludeDUT && detector->isDUT()) {
+            continue;
+        }
 
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detectorID.c_str());
@@ -100,7 +105,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // If there are no detectors then stop trying to track
-    if(detectors.size() == 0 || referenceClusters == nullptr) {
+    if(detectors.empty() || referenceClusters == nullptr) {
         // Clean up tree objects
         for(auto tree = trees.cbegin(); tree != trees.cend();) {
             delete tree->second;
