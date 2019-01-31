@@ -140,7 +140,7 @@ The batch file needs to look like `example.sub`:
 ```
 output                  = corryvreckan.$(ClusterId).$(ProcId).out
 error                   = corryvreckan.$(ClusterId).$(ProcId).err
-log                     = corryvreckan.$(ClusterId).log
+log                     = corryvreckan.$(ClusterId).$(ProcId).log
 getenv                  = True
 queue
 ```
