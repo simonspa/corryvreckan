@@ -14,8 +14,8 @@ For the alignment of the \textbf{reference telescope} and \textbf{device-under-t
 
 The general procedure that needs to be followed for a successful alignment is outlined here and explained in detail below.
 \begin{enumerate}
-\item Prealignment of the telescope (ignore DUT).
-\item Alignment of the telescope (ignore DUT).
+\item Prealignment of the telescope (ignoring the DUT).
+\item Alignment of the telescope (ignoring the DUT).
 \item Prealignment of the DUT (telescope geometry is frozen).
 \item Alignment of the DUT (telescope alignment is frozen).
 \end{enumerate}
@@ -35,11 +35,11 @@ The \texttt{[AlignmentTrackChi2]} module requires a careful prealignment. Otherw
 For the prealignment, two strategies can be applied.
 \begin{itemize}
 \item The \texttt{[Prealignment]} module can be used (see Section~\ref{prealignment}).
-\item If the above does not bring the expected result, a manual prealignment can be performed by having a look at correlations plots between a defined reference plane and the others planes in both x and y and the residuals of tracks with respect to hits on the DUT.
+\item If the above does not bring the expected result, a manual prealignment can be performed by having a look at correlations plots between a defined reference plane and the other planes in both x and y and the residuals of tracks with respect to hits on the DUT.
 \end{itemize}
 
-The z-position of all planes needs to be measured by hand \textbf{in the existing testbeam setup} and then adjusted in the detectors file. 
-It will not be changed during the alignment process.
+The z-positions of all planes need to be measured by hand \textbf{in the existing testbeam setup} and then adjusted in the detectors file. 
+These will not be changed during the alignment process.
 For x and y, the alignment file from the last testbeam is a solid basis to start from.
 If no previous alignment is available, all values for x and y should be set to 0.
 
@@ -52,7 +52,7 @@ $ /path/to/corryvreckan/bin/corry                     \
     -o EventLoaderTimepix3.input_directory=<inputDir>]
 \end{verbatim}
 
-The \parameter{spatial_cut} in \texttt{[Tracking4D]} should be set to multiple ($\sim4$) pixel size.
+The \parameter{spatial_cut} in \texttt{[Tracking4D]} should be set to multiple ($\sim4$) pixel pitch.
 
 One can inspect the track $\chi^2$, the correlation in x and y and the residuals with the online monitoring or by opening the generated ROOT file after finishing the script.
 These can be found in the modules \texttt{[Tracking4D]} (see Section~\ref{tracking4d}) and \texttt{[TestAlgorithm]} (see Section~\ref{testalgorithm}).
@@ -64,8 +64,8 @@ These can be found in the modules \texttt{[Tracking4D]} (see Section~\ref{tracki
 If no peak at all is apparent in the correlations, the hitmaps can be checked to see if valid data is actually available for all planes.
 
 Now, the \texttt{[Prealignment]} module can be used.
-To prealign only the telescope, the DUT can be excluded by using \parameter{type = <detector_type_of_telescope>} (e.g.~\parameter{CLICPIX2}).
-However, all planes can be prealigned at once.
+To prealign only the telescope, the DUT can be excluded by using \parameter{type = <detector_type_of_telescope>} (e.g.~\parameter{CLICPIX2}). For details, see Section~\ref{sec:module_manager}.
+However, all planes including the DUT can be prealigned at once.
 
 Since the prealignment utilizes hit correlations rather than tracks, no cuts are needed here.
 
@@ -92,7 +92,7 @@ $ /path/to/corryvreckan/bin/corry                      \
     -o EventLoaderTimepix3.input_directory=<inputDir>]
 \end{verbatim}
 
-The actual prealignment is only performed after the events have been analysed and written to the detectors file in the finalizing step. 
+The actual prealignment is only performed after the events have been analyzed and written to the detectors file in the finalizing step. 
 This means to check whether the alignment has improved, one needs to re-run the analysis or the next iteration of the alignment as the previously generated ROOT file corresponds to the initial alignment.
 This is the case for every iteration of the prealignment or alignment.
 
@@ -124,13 +124,13 @@ align_position=true
 
 The algorithm performs an optimisation of the track $\chi^2$.
 Typically, the alignment needs to be iterated a handful of times until the residuals (which again can be inspected in the ROOT file after re-running the analysis) are nicely centered around 0 and narrow.
-In fact, the width of the residuals corresponds to the spatial resolution of each plane (convolved with the resolution of the telescope) and should thus be smaller than the respective pixel size.
-Starting with a \parameter{spatial_cut} in \texttt{[Tracking4D]} (see Section~\ref{tracking4d}) of multiple ($\sim4$) pixel sizes, it should be decreased incrementally down to the pixel size (e.g. run \SI{200}{\micro\m} twice, then run \SI{150}{\micro\m} twice, then \SI{100}{\micro\m} twice, and then \SI{50}{\micro\m}) twice.
+In fact, the RMS of the residuals corresponds to the spatial resolution of each plane (convolved with the resolution of the telescope) and should thus be $\lesssim$ pixel pitch$/\sqrt{12}$.
+Starting with a \parameter{spatial_cut} in \texttt{[Tracking4D]} (see Section~\ref{tracking4d}) of multiple ($\sim4$) pixel pitches, it should be decreased incrementally down to the pixel pitch (e.g. run \SI{200}{\micro\m} twice, then run \SI{150}{\micro\m} twice, then \SI{100}{\micro\m} twice, and then \SI{50}{\micro\m}) twice.
 This allows to perform the alignment with a tight selection of very high quality tracks only.
 Also the \parameter{max_track_chi2ndof} should be decrease for the same reason.
 For the further analysis, the cuts can be released again.
 
-It may happen that the procedure runs into a 'false minimum', i.e. it converges to a wrong alignment in which the residuals are clearly not centered around 0.
+It may happen that the procedure runs into a 'false minimum', i.e. it converges in a wrong alignment in which the residuals are clearly not centered around 0.
 In this case, it is required to go one step back and improve the prealignment.
 
 Once the alignment is done, one should obtain narrow residuals centered around 0 and a good distribution of the track $\chi^2$ as shown in Figures~\ref{fig:exampleAlignment}.
@@ -198,7 +198,7 @@ If no peak at all can be seen in the correlation plots, potentially parameters r
 
 \begin{warning}
 If using the \texttt{[Prealignment]} module, it is possible to prealign all planes at once as described above in Section~\ref{sec:align_tel}.
-If only the DUT shall be prealigned here, the parameter \parameter{name = <name_of_dut>} or \parameter{type = <detector_type_of_dut>} needs to be used.
+If only the DUT shall be prealigned here, the parameter \parameter{name = <name_of_dut>} or \parameter{type = <detector_type_of_dut>} need to be used.
 Otherwise, the telescope planes are also shifted again destroying the telescope alignment.
 \end{warning}
 
@@ -242,8 +242,8 @@ $ /path/to/corryvreckan/bin/corry                          \
     -o EventLoaderATLASpix.input_directory=<inputDir_APX>]
 \end{verbatim}
 
-Like for the telescope alignment, the widths of the residuals can be interpreted as the spatial resolution of the DUT (convoluted with the resolution of the telescope) and should thus be $\lesssim$~pixel size.
-Again, starting with a \parameter{spatial_cut} in \texttt{[DUTAssociation]} (see Section~\ref{dutassociation}) of multiple ($\sim4$) pixel sizes, it should be decreased incrementally down to the pixel size. Note that an asymmetric pixel geometry requires the \parameter{spatial_cut} to be chosen accordingly.
+Like for the telescope alignment, the RMS of the residuals can be interpreted as the spatial resolution of the DUT (convolved with the resolution of the telescope) and should thus be $\lesssim$~pixel pitch$/\sqrt{12}$.
+Again, starting with a \parameter{spatial_cut} in \texttt{[DUTAssociation]} (see Section~\ref{dutassociation}) of multiple ($\sim4$) pixel pitches, it should be decreased incrementally down to the pixel pitch. Note that an asymmetric pixel geometry requires the \parameter{spatial_cut} to be chosen accordingly.
 
 If the alignment keeps to fail, it is possible to allow only for rotational or translational alignment while freezing the other for one or a few iterations.
 
