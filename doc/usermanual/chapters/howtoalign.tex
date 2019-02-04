@@ -6,22 +6,22 @@ It also includes step-by-step instructions on how to align a new set of testbeam
 
 For the alignment of the \textbf{reference telescope} and \textbf{device-under-test (DUT)}, the following modules are available in \corry.
 \begin{itemize}
-\item \texttt{Prealignment} for both telescope and DUT prealignment (see Section~\ref{prealignment}).
-\item \texttt{AlignmentTrackChi2} used for telescope alignment (see Section~\ref{alignmenttrackchi2}).
-\item \texttt{AlignmentMillepede} for an improved telescope alignment (see Section~\ref{alignmentmillepede}).
-\item \texttt{AlignmentDUTResidual} used for DUT alignment (see Section~\ref{alignmentdutresidual}).
+\item \texttt{[Prealignment]} for both telescope and DUT prealignment (see Section~\ref{prealignment}).
+\item \texttt{[AlignmentTrackChi2]} used for telescope alignment (see Section~\ref{alignmenttrackchi2}).
+\item \texttt{[AlignmentMillepede]}, an alternative telescope alignment algorithm (see Section~\ref{alignmentmillepede}).
+\item \texttt{[AlignmentDUTResidual]} used for DUT alignment (see Section~\ref{alignmentdutresidual}).
 \end{itemize}
 
 The general procedure that needs to be followed for a successful alignment is outlined here and explained in detail below.
 \begin{enumerate}
-\item Prealignment of the telescope (ignore DUT)
-\item Alignment of the telescope (ignore DUT)
-\item Prealignment of the DUT (telescope geometry is frozen)
-\item Alignment of the DUT (telescope alignment is frozen)
+\item Prealignment of the telescope (ignore DUT).
+\item Alignment of the telescope (ignore DUT).
+\item Prealignment of the DUT (telescope geometry is frozen).
+\item Alignment of the DUT (telescope alignment is frozen).
 \end{enumerate}
 
 \begin{warning}
-\textbf{Note:} When using the alignment modules, the new geometry is written out to a new geometry file which needs to be specified using the parameter \texttt{detectors\_file\_updated}.
+When using the alignment modules, the new geometry is written out to a new geometry file which needs to be specified using the parameter \parameter{detectors_file_updated}.
 For details, see Section~\ref{sec:framework_parameters}.
 \end{warning}
 
@@ -31,12 +31,11 @@ Initially, the telescope needs to be aligned.
 For this, the DUT is ignored.
 
 \subsection*{Prealignment of the Telescope}
-The \texttt{AlignmentTrackChi2} module requires a careful prealignment. Otherwise it does not converge and the alignment will fail.
+The \texttt{[AlignmentTrackChi2]} module requires a careful prealignment. Otherwise it does not converge and the alignment will fail.
 For the prealignment, two strategies can be applied.
 \begin{itemize}
-\item A rough manual prealignment can be performed by having a look at correlations plots between a defined reference plane and the others planes in both x and y.
-These can be found in the module \texttt{TestAlgorithm} (see Section~\ref{testalgorithm}).
-\item The \texttt{Prealignment} module can be used (see Section~\ref{prealignment}).
+\item The \texttt{[Prealignment]} module can be used (see Section~\ref{prealignment}).
+\item If the above does not bring the expected result, a manual prealignment can be performed by having a look at correlations plots between a defined reference plane and the others planes in both x and y and the residuals of tracks with respect to hits on the DUT.
 \end{itemize}
 
 The z-position of all planes needs to be measured by hand \textbf{in the existing testbeam setup} and then adjusted in the detectors file. 
@@ -46,59 +45,51 @@ If no previous alignment is available, all values for x and y should be set to 0
 
 To have a first look at the initial alignment guess, one can run
 \begin{verbatim}
-    /path/to/corryvreckan/bin/corry 
-        -c analyse_telescope.conf
-    	[-o detectors_file=<detectorsFile> 
-    	-o histogramFile=<histogramFile> 
-    	-o EventLoaderTimepix3.inputDirectory=<inputDir>]
+$ /path/to/corryvreckan/bin/corry                     \
+    -c analyse_telescope.conf                         \
+   [-o detectors_file=<detectorsFile>                 \
+    -o histogram_file=<histogramFile>                 \
+    -o EventLoaderTimepix3.input_directory=<inputDir>]
 \end{verbatim}
 
-The \texttt{spatialCut} in \texttt{[Tracking4D]} should be set to mulitple ($\sim4$) pixel size.
+The \parameter{spatial_cut} in \texttt{[Tracking4D]} should be set to multiple ($\sim4$) pixel size.
 
-One can inspect the track $\chi^2$, the correlation in x and y and the residuals with the online monitoring or by opening the generated ROOT file after finishing the script (see \texttt{[Tracking4D]} and \texttt{[TestAlgorithm]}).
+One can inspect the track $\chi^2$, the correlation in x and y and the residuals with the online monitoring or by opening the generated ROOT file after finishing the script.
+These can be found in the modules \texttt{[Tracking4D]} (see Section~\ref{tracking4d}) and \texttt{[TestAlgorithm]} (see Section~\ref{testalgorithm}).
 
 \begin{warning}
-\textbf{Tip:} To save time, one can terminate \corry with \texttt{Ctrl+C} after a while (see also Section~\ref{sec:executable}).
+\textbf{Tip:} To save time, one can limit the number of processed tracks. For instance, set \parameter{number_of_tracks = 100000} (see Section~\ref{sec:framework_parameters}).
 \end{warning}
 
 If no peak at all is apparent in the correlations, the hitmaps can be checked to see if valid data is actually available for all planes.
 
-For the residuals, the shift of the peak from 0 can be estimated with a precision of $\mathcal{O}(\SI{100}{\micro m})$ by zooming in using the \texttt{TBrowser}.
-For instance, if the peak is shifted by +\SI{+300}{\micro m}, the detectors file needs to be edited and \SI{+300}{\micro m} should be added to the respective position, if \SI{-300}{\micro m}, subtracted.
-
-After modifying the positions of individual planes in the configuration file, \corry can be re-run to check the correlation plots for the updated geometry.
-These steps need to be iterated a few times until the peaks of the \textbf{residuals} are centered around 0.
- 
-It is important not to force the peak of the \textbf{correlations} to be at exactly 0 because the position of the peak in fact corresponds to the physical offset of a plane from its ideal position. 
-
-Instead of a prealignment by hand, the \texttt{Prealignment} module can be used.
-As explained in Section~\ref{prealignment}, it is a \textit{DETECTOR} type module so it is instantiated once for each plane (including DUTs).
-To prealign only the telescope, the DUT can be masked by setting \texttt{mask = <name\_of\_dut>}.
+Now, the \texttt{[Prealignment]} module can be used.
+To prealign only the telescope, the DUT can be excluded by using \parameter{type = <detector_type_of_telescope>} (e.g.~\parameter{CLICPIX2}).
 However, all planes can be prealigned at once.
 
 Since the prealignment utilizes hit correlations rather than tracks, no cuts are needed here.
 
-To use the module, \texttt{align\_tel.conf} needs to be edited such that \texttt{Prealignment} is enabled and \texttt{Alignment} is disabled:
+To use the module, \file{align_tel.conf} needs to be edited such that \texttt{[Prealignment]} is enabled and \texttt{[Alignment]} is disabled:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 ...
 [Prealignment]
-mask = <name_of_dut> # <-- optional!
+type = <detector_type_of_telescope> # <-- optional!
 [Ignore]
 #[AlignmentTrackChi2]
 log_level=INFO
 iterations = 4
-alignOrientation=true
-alignPosition=true
+align_orientation=true
+align_position=true
 \end{minted}
 
 Then one can run
 \begin{verbatim}
-    /path/to/corryvreckan/bin/corry 
-        -c align_telescope.conf
-    	[-o detectors_file=<detectorsFile> 
-    	-o detectors_file_updated=<detectorsFileUpdated> 
-    	-o histogramFile=<histogramFile> 
-    	-o EventLoaderTimepix3.inputDirectory=<inputDir>]
+$ /path/to/corryvreckan/bin/corry                      \
+    -c align_telescope.conf                            \
+   [-o detectors_file=<detectorsFile>                  \
+    -o detectors_file_updated=<detectorsFileUpdated>   \
+    -o histogram_file=<histogramFile>                  \
+    -o EventLoaderTimepix3.input_directory=<inputDir>]
 \end{verbatim}
 
 The actual prealignment is only performed after the events have been analysed and written to the detectors file in the finalizing step. 
@@ -107,9 +98,19 @@ This is the case for every iteration of the prealignment or alignment.
 
 Generally, it suffices to run the \texttt{[Prealignment]} module once and then proceed with the next step.
 
+If the prealignment using the modulde \texttt{[Prealignment]} does not bring the expected results, one can also perform the same steps manually by investigating the residuals of the DUT with respect to tracks.
+For the residuals, the shift of the peak from 0 can be estimated with a precision of $\mathcal{O}(\SI{100}{\micro m})$ by zooming in using the \texttt{TBrowser}.
+For instance, if the peak is shifted by +\SI{+300}{\micro m}, the detectors file needs to be edited and \SI{+300}{\micro m} should be added to the respective position, if \SI{-300}{\micro m}, subtracted.
+
+After modifying the positions of individual planes in the configuration file, \corry can be re-run to check the correlation plots for the updated geometry.
+These steps need to be iterated a few times until the peaks of the \textbf{residuals} are centered around 0.
+ 
+It is important \textbf{not} to force the peak of the \textbf{correlations} to be at exactly 0 because the position of the peak in fact corresponds to the physical offset of a plane from its ideal position. 
+
+
 \subsection*{Alignment of the Telescope}
-After the prealignment, the actual \textbf{precise} alignment can be performed using the \texttt{AlignmentTrackChi2} module (see Section~\ref{alignmenttrackchi2}).
-To this end, \texttt{align\_tel.conf} needs to be modified such that the prealignment is disabled and the alignment is enabled:
+After the prealignment, the actual \textbf{precise} alignment can be performed using the \texttt{[AlignmentTrackChi2]} module (see Section~\ref{alignmenttrackchi2}).
+To this end, \file{align_tel.conf} needs to be modified such that the prealignment is disabled and the alignment is enabled:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 ...
 #[Prealignment]
@@ -117,19 +118,20 @@ To this end, \texttt{align\_tel.conf} needs to be modified such that the prealig
 [AlignmentTrackChi2]
 log_level=INFO
 iterations = 4
-alignOrientation=true
-alignPosition=true
+align_orientation=true
+align_position=true
 \end{minted}
 
 The algorithm performs an optimisation of the track $\chi^2$.
 Typically, the alignment needs to be iterated a handful of times until the residuals (which again can be inspected in the ROOT file after re-running the analysis) are nicely centered around 0 and narrow.
-In fact, the width of the residuals corresponds to the spatial resolution of each plane (convoluted with the resolution of the telescope) and should thus be smaller than the respective pixel size.
-Starting with a \texttt{spatialCut} in \texttt{[Tracking4D]} (see Section~\ref{tracking4d}) of multiple ($\sim4$) pixel sizes, it should be decreased incrementally down to the pixel size (e.g. run \SI{200}{\micro\m} twice, then run \SI{150}{\micro\m} twice, then \SI{100}{\micro\m} twice, and then \SI{50}{\micro\m}) twice.
+In fact, the width of the residuals corresponds to the spatial resolution of each plane (convolved with the resolution of the telescope) and should thus be smaller than the respective pixel size.
+Starting with a \parameter{spatial_cut} in \texttt{[Tracking4D]} (see Section~\ref{tracking4d}) of multiple ($\sim4$) pixel sizes, it should be decreased incrementally down to the pixel size (e.g. run \SI{200}{\micro\m} twice, then run \SI{150}{\micro\m} twice, then \SI{100}{\micro\m} twice, and then \SI{50}{\micro\m}) twice.
 This allows to perform the alignment with a tight selection of very high quality tracks only.
-Also the \texttt{max\_track\_chi2ndof} should be decrease for the same reason.
+Also the \parameter{max_track_chi2ndof} should be decrease for the same reason.
 For the further analysis, the cuts can be released again.
 
-Sometimes, the procedure runs into a 'false minimum' or 'gets stuck' and does not converge properly which requires to go one step back and improve the prealignment.
+It may happen that the procedure runs into a 'false minimum', i.e. it converges to a wrong alignment in which the residuals are clearly not centered around 0.
+In this case, it is required to go one step back and improve the prealignment.
 
 Once the alignment is done, one should obtain narrow residuals centered around 0 and a good distribution of the track $\chi^2$ as shown in Figures~\ref{fig:exampleAlignment}.
 If the alignment keeps to fail, it is possible to allow only for rotational or translational alignment while freezing the other for one or a few iterations.
@@ -141,8 +143,8 @@ If the alignment keeps to fail, it is possible to allow only for rotational or t
 [AlignmentTrackChi2]
 log_level=INFO
 iterations = 4
-alignOrientation=false #<-- disable rotational alignment
-alignPosition=true
+align_orientation=false #<-- disable rotational alignment
+align_position=true
 \end{minted}
 
 \begin{figure}
@@ -166,13 +168,12 @@ alignPosition=true
     \label{fig:exampleAlignment}
 \end{figure}
 
-The alignment can be further improved by using the module \texttt{[AlignmentMillepede]} (see Section~\ref{alignmentmillepede}).
-It requires a rather good alignment already, so it should not be used directly after a coarse prealignment by hand or \texttt{[Prealignment]}.
-It is recommended to use the last (tightest) cuts that have been used for the telescope alignment in the previous step and then reduce them further.
+Instead of using \texttt{[AlignmentTrackChi2]}, one can also use the module \texttt{[AlignmentMillepede]} (see Section~\ref{alignmentmillepede}).
+It should be noted that this module requires a rather good alignment already.
 Once the alignment has converged, this module stops and the alignment is complete.
 
 \begin{warning}
-\textbf{Note:} When starting the alignment procedure from a slightly different initial geometry, the resulting alignment (i.e.~the numbers in the detectors file) will differ slightly which is acceptable. What should \textbf{not} differ is the width of the residuals.
+\textbf{Note:} When starting the alignment procedure from a slightly different initial geometry, the resulting alignment (i.e.~the numbers in the detectors file) might differ slightly in some digits after the comma. which is acceptable. What should \textbf{not} differ is the width of the residuals.
 \end{warning}
 
 \section{Aligning the DUT}
@@ -182,23 +183,22 @@ Once the telescope is aligned, its geometry is not touched anymore. From now on,
 \subsection*{Prealignment of the DUT}
 The prealignment of the DUT follows the same strategy as for the telescope. To look at the current alignment, the script
 \begin{verbatim}
-    /path/to/corryvreckan/bin/corry 
-    	-c analyse_atlaspix.conf 
-    	[-o detectors_file=<detectorsFile> 
-    	-o histogramFile=<histogramFile> 
-    	-o EventLoaderTimepix3.inputDirectory=<inputDir_TPX>
-    	-o EventLoaderATLASpix.inputDirectory=<inputDir_APX>]
+$ /path/to/corryvreckan/bin/corry                          \
+    -c analyse_atlaspix.conf                               \
+   [-o detectors_file=<detectorsFile>                      \
+    -o histogram_file=<histogramFile>                      \
+    -o EventLoaderTimepix3.input_directory=<inputDir_TPX>  \
+    -o EventLoaderATLASpix.input_directory=<inputDir_APX>]
 \end{verbatim}
 needs to be run.
-If no better guess is available, the initial alignment of the DUT should be set to $x=y=z=0$.
+If no better guess is available, the initial alignment of the DUT should be set to $x=y=0$.
 
 Then, by repeatedly running \corry and modifying the position of the DUT in the detectors file one should be able to bring the peaks of the correlations in x and y close to 0.
-If no peak at all can be seen in the correlation plots, potentially some values need to be corrected in the configuration file.
-If working with an ATLASpix, these are most likely \texttt{clockCycle} or \texttt{clkdivend2} in \texttt{[EventLoaderATLASpix]} (see Section~\ref{eventloaderatlaspix}).
+If no peak at all can be seen in the correlation plots, potentially parameters related to the corresponding event loader need to be corrected in the configuration file.
 
 \begin{warning}
-\textbf{Important: }If using the \texttt{[Prealignment]} module, it is possible to prealign all planes at once as described above in Section~\ref{sec:align_tel}.
-If only the DUT shall be prealigned here, the parameter \texttt{name = <name\_of\_dut>} needs to be used.
+If using the \texttt{[Prealignment]} module, it is possible to prealign all planes at once as described above in Section~\ref{sec:align_tel}.
+If only the DUT shall be prealigned here, the parameter \parameter{name = <name_of_dut>} or \parameter{type = <detector_type_of_dut>} needs to be used.
 Otherwise, the telescope planes are also shifted again destroying the telescope alignment.
 \end{warning}
 
@@ -211,13 +211,13 @@ name = <name_of_dut> # <-- otherwise the telescope planes will be moved!
 #[AlignmentDUTResiduals]
 log_level=INFO
 iterations = 4
-alignOrientation=true
-alignPosition=true
+align_orientation=true
+align_position=true
 \end{minted}
 
 \subsection*{Alignment of the DUT}
 Again, the alignment strategy for the DUT is similar as for the telescope and requires multiple iterations.
-In \texttt{align\_dut.conf}, the prealignment needs to be disabled and the alignment enabled.
+In \file{align_dut.conf}, the prealignment needs to be disabled and the alignment enabled.
 Now, the algorithm optimizes the residuals of the tracks through the DUT.
 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
@@ -227,27 +227,23 @@ Now, the algorithm optimizes the residuals of the tracks through the DUT.
 [AlignmentDUTResiduals]
 log_level=INFO
 iterations = 4
-alignOrientation=true
-alignPosition=true
+align_orientation=true
+align_position=true
 \end{minted}
 
 Then run
 \begin{verbatim}
-    /path/to/corryvreckan/bin/corry 
-    	-c align_dut.conf 
-    	[-o detectors_file=<detectorsFile> 
-    	-o detectors_file_updated=<detectorsFileUpdated> 
-    	-o histogramFile=<histogramFile> 
-    	-o EventLoaderTimepix3.inputDirectory=<inputDir_TPX>
-    	-o EventLoaderATLASpix.inputDirectory=<inputDir_APX>]
+$ /path/to/corryvreckan/bin/corry                          \
+    -c align_dut.conf                                      \
+   [-o detectors_file=<detectorsFile>                      \
+    -o detectors_file_updated=<detectorsFileUpdated>       \
+    -o histogram_file=<histogramFile>                      \
+    -o EventLoaderTimepix3.input_directory=<inputDir_TPX>  \
+    -o EventLoaderATLASpix.input_directory=<inputDir_APX>]
 \end{verbatim}
 
-\begin{warning}
-\textbf{Note:} The histograms of the residuals for the DUT in \texttt{[Tracking4D]} are empty. The correct ones can be found in \texttt{[AnalysisDUT]} (see Section~\ref{analysisdut}).
-\end{warning}
-
 Like for the telescope alignment, the widths of the residuals can be interpreted as the spatial resolution of the DUT (convoluted with the resolution of the telescope) and should thus be $\lesssim$~pixel size.
-Again, starting with a \texttt{spatialCut} in \texttt{[DUTAssociation]} (see Section~\ref{dutassociation}) of multiple ($\sim4$) pixel sizes, it should be decreased incrementally down to the pixel size. Note that an asymmetric pixel geometry requires the \texttt{spatialCut} to be chosen accordingly.
+Again, starting with a \parameter{spatial_cut} in \texttt{[DUTAssociation]} (see Section~\ref{dutassociation}) of multiple ($\sim4$) pixel sizes, it should be decreased incrementally down to the pixel size. Note that an asymmetric pixel geometry requires the \parameter{spatial_cut} to be chosen accordingly.
 
 If the alignment keeps to fail, it is possible to allow only for rotational or translational alignment while freezing the other for one or a few iterations.
 
@@ -258,6 +254,6 @@ If the alignment keeps to fail, it is possible to allow only for rotational or t
 [AlignmentDUTResiduals]
 log_level=INFO
 iterations = 4
-alignOrientation=false #<-- disable rotational alignment
-alignPosition=true
+align_orientation=false #<-- disable rotational alignment
+align_position=true
 \end{minted}
