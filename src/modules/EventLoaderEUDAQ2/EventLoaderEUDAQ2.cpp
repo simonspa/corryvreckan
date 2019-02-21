@@ -59,29 +59,47 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     // Convert event to standard event:
     if(eudaq::StdEventConverter::Convert(evt, stdev, nullptr)) {
         if(stdev->NumPlanes() == 0) {
-            // return if plane is empty
-            LOG(DEBUG) << "empty plane";
+            LOG(DEBUG) << "No plane found in event.";
             return StatusCode::NoData;
         }
-        LOG(INFO) << "number of planes: " << stdev->NumPlanes();
-        // for now assume only 1 plane (for telescope think again!!!
-        auto plane = stdev->GetPlane(0);
-        auto nHits = plane.GetPixels<int>().size(); // number of hits
-        auto nPixels = plane.TotalPixels();         // total pixels in matrix
-        LOG(INFO) << "Number of Hits: " << nHits << " / total pixel number: " << nPixels;
+        LOG(INFO) << "Number of planes: " << stdev->NumPlanes();
+        // loop over all planes and take only the one corresponding to current detector:
+        for(size_t i_plane = 0; i_plane < stdev->NumPlanes(); i_plane++) {
 
-        // loop over all hits and add to pixels vector:
-        for(unsigned int i = 0; i < nHits; i++) {
-            LOG(INFO) << "\t x: " << plane.GetX(i, 0) << " y: " << plane.GetY(i, 0) << " tot: " << plane.GetPixel(i)
-                      << " ts: " << Units::display(plane.GetTimestamp(i), {"ns", "us", "ms"});
-            Pixel* pixel = new Pixel(m_detector->name(),
-                                     static_cast<int>(plane.GetY(i, 0)),
-                                     static_cast<int>(plane.GetX(i, 0)),
-                                     static_cast<int>(plane.GetPixel(i)),
-                                     plane.GetTimestamp(i));
-            pixels->push_back(pixel);
+            auto plane = stdev->GetPlane(i_plane);
+            // concatenate plane name according to naming convention: "sensor_type + int"
+            auto plane_name = plane.Sensor() + "_" + std::to_string(i_plane);
+            if(m_detector->name() != plane_name) {
+                LOG(DEBUG) << "Wrong plane, continue. Detector: " << m_detector->name() << " != " << plane_name;
+                continue;
+            }
+            auto nHits = plane.GetPixels<int>().size(); // number of hits
+            auto nPixels = plane.TotalPixels();         // total pixels in matrix
+            LOG(INFO) << "Number of hits: " << nHits << " / total pixel number: " << nPixels;
+
+            LOG(DEBUG) << "Type: " << plane.Type() << " Name: " << plane.Sensor();
+            // loop over all hits and add to pixels vector:
+            for(unsigned int i = 0; i < nHits; i++) {
+                LOG(INFO) << "\t x: " << plane.GetX(i, 0) << " y: " << plane.GetY(i, 0) << " tot: " << plane.GetPixel(i)
+                          << " ts: " << Units::display(plane.GetTimestamp(i), {"ns", "us", "ms"});
+                Pixel* pixel = new Pixel(m_detector->name(),
+                                         static_cast<int>(plane.GetY(i, 0)),
+                                         static_cast<int>(plane.GetX(i, 0)),
+                                         static_cast<int>(plane.GetPixel(i)),
+                                         plane.GetTimestamp(i));
+                pixels->push_back(pixel);
+            }
         }
     }
+    // Check if event is fully inside frame of previous detector:
+    auto evt_ts_begin = stdev->GetTimestampBegin();
+    auto evt_ts_begin = stdev->GetTimestampEnd();
+    LOG(DEBUG) << "Event time: " << Units::display(stdev->GetTimestampBegin(), {"ns", "us", "s"})
+               << ", length: " << Units::display((stdev->GetTimestampEnd() - stdev->GetTimestampBegin()), {"ns", "us", "s"});
+    // clipboard->put_persistent("eventStart", shutterStartTime);
+    // clipboard->put_persistent("eventEnd", shutterStopTime);
+    // clipboard->put_persistent("eventLength", (shutterStopTime - shutterStartTime));
+
     // Put the data on the clipboard
     if(!pixels->empty()) {
         clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
