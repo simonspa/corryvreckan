@@ -1,4 +1,5 @@
 #include "Metronome.h"
+#include "objects/Event.hpp"
 
 using namespace corryvreckan;
 using namespace std;
@@ -17,6 +18,8 @@ void Metronome::initialise() {
 }
 
 StatusCode Metronome::run(std::shared_ptr<Clipboard> clipboard) {
+
+    clipboard->put_event(std::make_shared<Event>(m_eventStart, m_eventEnd));
 
     // Set up the clipboard persistent storage for the current event:
     clipboard->put_persistent("eventStart", m_eventStart);

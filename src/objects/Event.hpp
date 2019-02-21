@@ -1,6 +1,8 @@
 #ifndef CORRYVRECKAN_EVENT_H
 #define CORRYVRECKAN_EVENT_H 1
 
+#include "Object.hpp"
+
 namespace corryvreckan {
 
     class Event : public Object {
