@@ -24,6 +24,7 @@ void EventLoaderEUDAQ2::initialise() {
 
     auto detectorID = m_detector->name();
     LOG(DEBUG) << "Initialise for detector " + detectorID;
+
     // Initialise member variables
     m_eventNumber = 0;
     m_totalEvents = 0;
@@ -51,13 +52,26 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         return StatusCode::NoData;
     }
 
-    LOG(DEBUG) << "#ev: " << evt->GetEventNumber() << ", descr " << evt->GetDescription();
+    LOG(DEBUG) << "#ev: " << evt->GetEventNumber() << ", descr " << evt->GetDescription() << ", version "
+               << evt->GetVersion() << ", type " << evt->GetType() << ", devN " << evt->GetDeviceN() << ", trigN "
+               << evt->GetTriggerN() << ", evID " << evt->GetEventID();
 
     // prepare standard event:
     auto stdev = eudaq::StandardEvent::MakeShared();
 
+    // check if there are subevents and understand :
+    auto sub_events = evt->GetSubEvents();
+    LOG(DEBUG) << "# sub events : " << sub_events.size();
+
+    for(auto& subev : (sub_events)) {
+        LOG(DEBUG) << "\t subev : " << subev->GetDescription();
+    }
+
     // Convert event to standard event:
-    if(eudaq::StdEventConverter::Convert(evt, stdev, nullptr)) {
+    if(!(eudaq::StdEventConverter::Convert(evt, stdev, nullptr))) {
+        LOG(DEBUG) << "eudaq::StdEventConverter -> cannot convert.";
+        // return StatusCode::NoData;
+    } else {
         if(stdev->NumPlanes() == 0) {
             LOG(DEBUG) << "No plane found in event.";
             return StatusCode::NoData;
@@ -92,15 +106,16 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         }
     }
     // Check if event is fully inside frame of previous detector:
-    auto evt_ts_begin = stdev->GetTimestampBegin();
-    auto evt_ts_begin = stdev->GetTimestampEnd();
-    LOG(DEBUG) << "Event time: " << Units::display(stdev->GetTimestampBegin(), {"ns", "us", "s"})
-               << ", length: " << Units::display((stdev->GetTimestampEnd() - stdev->GetTimestampBegin()), {"ns", "us", "s"});
+    auto evt_start = stdev->GetTimestampBegin();
+    auto evt_stop = stdev->GetTimestampEnd();
+
+    LOG(DEBUG) << "Event time: " << Units::display(evt_start, {"ns", "us", "s"})
+               << ", length: " << Units::display((evt_stop - evt_start), {"ns", "us", "s"});
     // clipboard->put_persistent("eventStart", shutterStartTime);
     // clipboard->put_persistent("eventEnd", shutterStopTime);
     // clipboard->put_persistent("eventLength", (shutterStopTime - shutterStartTime));
 
-    // Put the data on the clipboard
+    // Put the pixel data on the clipboard:
     if(!pixels->empty()) {
         clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
     } else {
@@ -116,4 +131,6 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 void EventLoaderEUDAQ2::finalise() {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
+    LOG(DEBUG) << "eudaq::cstr2hash(\"TriggerIDSyncOnline\") = " << eudaq::cstr2hash("TriggerIDSyncOnline");
+    LOG(DEBUG) << "eudaq::cstr2hash(\"TluRawDataEvent\") = " << eudaq::cstr2hash("TluRawDataEvent");
 }
