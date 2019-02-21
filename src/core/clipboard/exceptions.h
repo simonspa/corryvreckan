@@ -30,15 +30,26 @@ namespace corryvreckan {
     class MissingDataError : public ClipboardError {
     public:
         /**
-         * @brief Construct an error for a missing key
-         * @param key Name of the missing key
-         * @param section Section where the key should have been defined
+         * @brief Construct an error for a missing data item
+         * @param name Name of the missing item
          */
         MissingDataError(const std::string& name) {
             error_message_ = "No data with key '" + name + "' exists on the clipboard";
         }
     };
 
+    /**
+     * @ingroup Exceptions
+     * @brief Informs of invalid data
+     */
+    class InvalidDataError : public ClipboardError {
+    public:
+        /**
+         * @brief Construct an error for invalid data element
+         * @param reason Reason why the data is invalid
+         */
+        InvalidDataError(const std::string& reason) { error_message_ = "Data invalid: " + reason; }
+    };
 } // namespace corryvreckan
 
 #endif /* CORRYVRECKAN_CONFIG_EXCEPTIONS_H */

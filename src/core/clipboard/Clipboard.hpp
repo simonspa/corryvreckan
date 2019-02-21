@@ -75,7 +75,7 @@ namespace corryvreckan {
          * @brief Retrieve variable from the persistent clipboard storage
          * @param name Name of the variable
          * @return Stored value from the persistent clipboard storage
-         * @throws MissingKeyError in case the key is not found.
+         * @throws MissingDataError in case the key is not found.
          */
         double get_persistent(std::string name);
 
