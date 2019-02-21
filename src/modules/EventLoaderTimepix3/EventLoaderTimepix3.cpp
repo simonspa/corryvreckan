@@ -577,9 +577,9 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard, Pixels*
             const double timestamp = static_cast<double>(time) / (4096. / 25.) + m_detector->timingOffset();
 
             // Ignore pixel data if it is before the "eventStart" read from the clipboard storage:
-            if(temporalSplit && (timestamp < event->end())) {
+            if(temporalSplit && (timestamp < event->start())) {
                 LOG(TRACE) << "Skipping pixel, is before event window (" << Units::display(timestamp, {"s", "us", "ns"})
-                           << " < " << Units::display(event->end(), {"s", "us", "ns"}) << ")";
+                           << " < " << Units::display(event->start(), {"s", "us", "ns"}) << ")";
                 continue;
             }
 
