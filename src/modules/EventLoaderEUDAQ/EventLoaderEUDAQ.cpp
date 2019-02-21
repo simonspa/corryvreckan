@@ -92,9 +92,7 @@ StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
     // Store event time on clipboard for subsequent modules
     // FIXME assumes trigger in center of two Mimosa26 frames:
     auto frame_length = Units::get(115.2, "us");
-    clipboard->put_persistent("eventStart", timestamp - frame_length);
-    clipboard->put_persistent("eventEnd", timestamp + frame_length);
-    clipboard->put_persistent("eventLength", 2 * frame_length);
+    clipboard->put_event(std::make_shared<Event>(timestamp - frame_length, timestamp + frame_length));
 
     // Advance to next event if possible, otherwise end this run:
     if(!reader->NextEvent()) {

@@ -24,6 +24,7 @@ ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/Object.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Track.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Event.hpp
     LINKDEF
     ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
     OPTIONS

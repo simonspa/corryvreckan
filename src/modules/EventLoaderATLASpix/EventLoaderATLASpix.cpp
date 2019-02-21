@@ -152,9 +152,7 @@ void EventLoaderATLASpix::initialise() {
 StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Check if event frame is defined:
-    if(!clipboard->has_persistent("eventStart") || !clipboard->has_persistent("eventEnd")) {
-        throw ModuleError("Event not defined. Add Metronome module or Event reader defining the event.");
-    }
+    auto event = clipboard->get_event();
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
@@ -163,8 +161,8 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         return StatusCode::Failure;
     }
 
-    double start_time = clipboard->get_persistent("eventStart");
-    double end_time = clipboard->get_persistent("eventEnd");
+    double start_time = event->start();
+    double end_time = event->end();
     bool busy_at_start = m_detectorBusy;
 
     // Read pixel data

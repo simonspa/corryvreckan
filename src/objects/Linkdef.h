@@ -21,6 +21,7 @@
 #pragma link C++ class corryvreckan::SpidrSignal + ;
 #pragma link C++ class corryvreckan::Track + ;
 #pragma link C++ class corryvreckan::MCParticle + ;
+#pragma link C++ class corryvreckan::Event + ;
 
 // Vector of Object for internal storage
 #pragma link C++ class std::vector < corryvreckan::Object* > +;

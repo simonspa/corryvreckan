@@ -521,18 +521,6 @@ void ModuleManager::run() {
     while(1) {
         bool run = true;
 
-        // Check if we have reached the maximum number of events
-
-        if(number_of_events > -1 && m_events >= number_of_events)
-            break;
-
-        if(run_time > 0.0 && (m_clipboard->get_persistent("eventStart")) >= run_time)
-            break;
-
-        // Check if we have reached the maximum number of tracks
-        if(number_of_tracks > -1 && m_tracks >= number_of_tracks)
-            break;
-
         // Run all modules
         for(auto& module : m_modules) {
             // Get current time
@@ -571,6 +559,20 @@ void ModuleManager::run() {
             }
         }
 
+        // Check if we have reached the maximum number of events
+        if(number_of_events > -1 && m_events >= number_of_events) {
+            break;
+        }
+
+        if(m_clipboard->event_defined() && run_time > 0.0 && m_clipboard->get_event()->start() >= run_time) {
+            break;
+        }
+
+        // Check if we have reached the maximum number of tracks
+        if(number_of_tracks > -1 && m_tracks >= number_of_tracks) {
+            break;
+        }
+
         // Print statistics:
         Tracks* tracks = reinterpret_cast<Tracks*>(m_clipboard->get("tracks"));
         m_tracks += (tracks == nullptr ? 0 : static_cast<int>(tracks->size()));
@@ -588,8 +590,8 @@ void ModuleManager::run() {
             LOG_PROGRESS(STATUS, "event_loop")
                 << "Ev: " << kilo_or_mega(m_events) << " Tr: " << kilo_or_mega(m_tracks) << " (" << std::setprecision(3)
                 << (static_cast<double>(m_tracks) / m_events) << "/ev)"
-                << (m_clipboard->has_persistent("eventStart")
-                        ? " t = " + Units::display(m_clipboard->get_persistent("eventStart"), {"ns", "us", "ms", "s"})
+                << (m_clipboard->event_defined()
+                        ? " t = " + Units::display(m_clipboard->get_event()->start(), {"ns", "us", "ms", "s"})
                         : "");
         }
 

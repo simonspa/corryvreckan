@@ -45,9 +45,6 @@ namespace corryvreckan {
         // configuration paramaters:
         std::string m_inputDirectory;
 
-        bool temporalSplit;
-        size_t m_numberPixelHits;
-
         bool applyCalibration;
         std::string calibrationPath;
         std::string threshold;
