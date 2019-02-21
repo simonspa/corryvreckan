@@ -18,7 +18,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     m_filename = m_config.getPath("file_name", true);
 }
 
-void EventLoaderEUDAQ2::convert_to_std_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard> clipboard) {
+void EventLoaderEUDAQ2::convert_to_std_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard) {
 
     // Create vector of pixels:
     Pixels* pixels = new Pixels();
@@ -127,15 +127,13 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     LOG(DEBUG) << "# sub events : " << sub_events.size();
 
     if(sub_events.size() == 0) {
-        // convert event:
         convert_to_std_event(evt, clipboard);
 
     } else {
         // loop over subevents:
-        for(auto& subevt : (sub_events)) {
+        for(auto& subevt : sub_events) {
             LOG(DEBUG) << "\t subevt : " << subevt->GetDescription() << " ts_beg = " << subevt->GetTimestampBegin()
                        << " ts_end = " << subevt->GetTimestampEnd();
-            // convert subevtent (use function here)
             convert_to_std_event(subevt, clipboard);
         }
     } // end else
@@ -147,6 +145,4 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 void EventLoaderEUDAQ2::finalise() {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
-    LOG(DEBUG) << "eudaq::cstr2hash(\"TriggerIDSyncOnline\") = " << eudaq::cstr2hash("TriggerIDSyncOnline");
-    LOG(DEBUG) << "eudaq::cstr2hash(\"TluRawDataEvent\") = " << eudaq::cstr2hash("TluRawDataEvent");
 }
