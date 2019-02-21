@@ -16,6 +16,7 @@
 #include <TH2F.h>
 #include <iostream>
 #include "core/module/Module.hpp"
+#include "eudaq/FileReader.hh"
 #include "objects/Cluster.hpp"
 #include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
@@ -34,7 +35,7 @@ namespace corryvreckan {
          * @param config Configuration object for this module as retrieved from the steering file
          * @param detector Pointer to the detector for this module instance
          */
-        EventLoaderEUDAQ2(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detector> detector);
 
         /**
          * @brief [Initialise this module]
@@ -53,6 +54,11 @@ namespace corryvreckan {
 
     private:
         int m_eventNumber;
+        int m_totalEvents;
+        std::shared_ptr<Detector> m_detector;
+        std::string m_filename{};
+
+        eudaq::FileReaderUP reader;
     };
 
 } // namespace corryvreckan
