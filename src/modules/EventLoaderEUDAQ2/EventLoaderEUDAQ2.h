@@ -17,6 +17,8 @@
 #include <iostream>
 #include "core/module/Module.hpp"
 #include "eudaq/FileReader.hh"
+#include "eudaq/StandardEvent.hh"
+#include "eudaq/StdEventConverter.hh"
 #include "objects/Cluster.hpp"
 #include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
@@ -53,6 +55,11 @@ namespace corryvreckan {
         void finalise();
 
     private:
+        /**
+         * @brief Converts gray encoded data to binary number
+         */
+        void convert_to_std_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard> clipboard);
+
         int m_eventNumber;
         int m_totalEvents;
         std::shared_ptr<Detector> m_detector;
