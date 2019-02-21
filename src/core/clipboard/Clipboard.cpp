@@ -23,7 +23,7 @@ Objects* Clipboard::get(std::string name, std::string type) {
     return m_data[name + type];
 }
 
-double Clipboard::get_persistent(std::string name) {
+double Clipboard::get_persistent(std::string name) const {
     try {
         return m_persistent_data.at(name);
     } catch(std::out_of_range&) {
@@ -31,7 +31,7 @@ double Clipboard::get_persistent(std::string name) {
     }
 }
 
-bool Clipboard::event_defined() {
+bool Clipboard::event_defined() const {
     return (m_event != nullptr);
 }
 
@@ -44,14 +44,14 @@ void Clipboard::put_event(std::shared_ptr<Event> event) {
     }
 }
 
-std::shared_ptr<Event> Clipboard::get_event() {
+std::shared_ptr<Event> Clipboard::get_event() const {
     if(!m_event) {
         throw InvalidDataError("Event not defined. Add Metronome module or Event reader defining the event");
     }
     return m_event;
 }
 
-bool Clipboard::has_persistent(std::string name) {
+bool Clipboard::has_persistent(std::string name) const {
     return m_persistent_data.find(name) != m_persistent_data.end();
 }
 
@@ -69,7 +69,7 @@ void Clipboard::clear() {
     m_event.reset();
 }
 
-std::vector<std::string> Clipboard::listCollections() {
+std::vector<std::string> Clipboard::listCollections() const {
     std::vector<std::string> collections;
     for(auto& dataset : m_data) {
         collections.push_back(dataset.first);
