@@ -38,7 +38,10 @@ void EventLoaderEUDAQ2::initialise() {
     }
 }
 
-StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard>) {
+StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
+
+    // Create vector of pixels:
+    Pixels* pixels = new Pixels();
 
     // Read next event from EUDAQ2 reader:
     m_eventNumber++;
@@ -48,63 +51,45 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard>) {
         return StatusCode::NoData;
     }
 
-    //        auto evt_tags = [] (const std::map<std::string, std::string>& tags) {
-    //            std::stringstream output;
-    //            for(const auto& tag : tags) {
-    //                output << tag.first << ": " << tag.second << ", ";
-    //            }
-    //            return output.str();
-    //        };
+    LOG(DEBUG) << "#ev: " << evt->GetEventNumber() << ", descr " << evt->GetDescription();
 
-    //        LOG(DEBUG) << "#ev: "<< evt->GetEventNumber()
-    //                    << ", #Run " << evt->GetRunNumber()
-    //                    << ", TSBeg " << evt->GetTimestampBegin()
-    //                    << ", TSEnd " << evt->GetTimestampEnd()
-    //                    << ", descr " << evt->GetDescription()
-    //                    << ", evID " << evt->GetEventID()
-    //                    << ", isBORE " << evt->IsBORE()
-    //                    << ", isEORE " << evt->IsEORE()
-    ////                    << ", isFake " << evt->IsFlagFake()
-    ////                    << ", isPacket " << evt->IsFlagPacket()
-    ////                    << ", isTS " << evt->IsFlagTimestamp()
-    ////                    << ", istTrg " << evt->IsFlagTrigger()
-    //                    << ", tags " << evt_tags(evt->GetTags());
-
+    // prepare standard event:
     auto stdev = eudaq::StandardEvent::MakeShared();
+
+    // Convert event to standard event:
     if(eudaq::StdEventConverter::Convert(evt, stdev, nullptr)) {
         if(stdev->NumPlanes() == 0) {
+            // return if plane is empty
+            LOG(DEBUG) << "empty plane";
             return StatusCode::NoData;
         }
+        LOG(INFO) << "number of planes: " << stdev->NumPlanes();
+        // for now assume only 1 plane (for telescope think again!!!
         auto plane = stdev->GetPlane(0);
         auto nHits = plane.GetPixels<int>().size(); // number of hits
         auto nPixels = plane.TotalPixels();         // total pixels in matrix
         LOG(INFO) << "Number of Hits: " << nHits << " / total pixel number: " << nPixels;
+
+        // loop over all hits and add to pixels vector:
         for(unsigned int i = 0; i < nHits; i++) {
-            LOG(INFO) << "\t x: " << plane.GetX(i, 0) << " y: " << plane.GetY(i, 0);
+            LOG(INFO) << "\t x: " << plane.GetX(i, 0) << " y: " << plane.GetY(i, 0) << " tot: " << plane.GetPixel(i)
+                      << " ts: " << Units::display(plane.GetTimestamp(i), {"ns", "us", "ms"});
+            Pixel* pixel = new Pixel(m_detector->name(),
+                                     static_cast<int>(plane.GetY(i, 0)),
+                                     static_cast<int>(plane.GetX(i, 0)),
+                                     static_cast<int>(plane.GetPixel(i)),
+                                     plane.GetTimestamp(i));
+            pixels->push_back(pixel);
         }
     }
-
-    // Convert timestamp to nanoseconds, using
-    // AIDA TLU frequency: 40 MHz
-    // (see https://github.com/PaoloGB/firmware_AIDA/raw/master/Documentation/Latex/Main_TLU.pdf)
-    // TLU frequency multiplier: 25
-    //        auto timestamp = Units::get(static_cast<double>(evt.GetTimestamp()) * 25, "ns");
-    //        LOG(DEBUG) << "EUDAQ event " << evt.GetEventNumber() << " at " << Units::display(timestamp, {"ns", "us"});
-
-    //        if(evt.IsBORE()) {
-    //            // Process begin-of-run
-    //            LOG(DEBUG) << "Found BORE";
-    //            try {
-    //                eudaq::PluginManager::Initialize(evt);
-    //            } catch(const eudaq::Exception&) {
-    //                throw ModuleError("Unknown event types encountered");
-    //            }
-    //        } else if(evt.IsEORE()) {
-    //            LOG(INFO) << "Found EORE";
-    //        } else {
-    //            eudaq::StandardEvent sevt = eudaq::PluginManager::ConvertToStandard(evt);
-    //        }
-    //    }
+    // Put the data on the clipboard
+    if(!pixels->empty()) {
+        clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
+    } else {
+        // if empty, clean up --> delete pixels object
+        delete pixels;
+        return StatusCode::NoData;
+    }
 
     // Return value telling analysis to keep running
     return StatusCode::Success;
