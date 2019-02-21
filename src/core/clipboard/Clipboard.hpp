@@ -11,6 +11,7 @@
 #define CORRYVRECKAN_CLIPBOARD_H
 
 #include <iostream>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
