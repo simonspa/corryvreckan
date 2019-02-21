@@ -15,6 +15,7 @@
 #include <unordered_map>
 
 #include "core/utils/log.h"
+#include "objects/Event.hpp"
 #include "objects/Object.hpp"
 
 namespace corryvreckan {
@@ -65,6 +66,26 @@ namespace corryvreckan {
         Objects* get(std::string name, std::string type = "");
 
         /**
+         * @brief Check whether an event has been defined
+         * @return true if an event has been defined, false otherwise
+         */
+        bool event_defined();
+
+        /**
+         * @brief Store the event object
+         * @param event The event object to be stored
+         * @thorws InvalidDataError in case an event exist already
+         */
+        void put_event(std::shared_ptr<Event> event);
+
+        /**
+         * @brief Retrieve the event object
+         * @returnShared pointer to the event
+         * @throws MissingDataError in case no event is available.
+         */
+        std::shared_ptr<Event> get_event();
+
+        /**
          * @brief Store or update variable on the persistent clipboard storage
          * @param name Name of the variable
          * @param value Value to be stored
@@ -105,6 +126,9 @@ namespace corryvreckan {
 
         // Persistent clipboard storage
         std::unordered_map<std::string, double> m_persistent_data;
+
+        // Store the current time slice:
+        std::shared_ptr<Event> m_event{};
     };
 } // namespace corryvreckan
 

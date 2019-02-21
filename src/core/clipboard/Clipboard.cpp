@@ -31,6 +31,26 @@ double Clipboard::get_persistent(std::string name) {
     }
 }
 
+bool Clipboard::event_defined() {
+    return (m_event != nullptr);
+}
+
+void Clipboard::put_event(std::shared_ptr<Event> event) {
+    // Already defined:
+    if(m_event) {
+        throw InvalidDataError("event already defined");
+    } else {
+        m_event = event;
+    }
+}
+
+std::shared_ptr<Event> Clipboard::get_event() {
+    if(!m_event) {
+        throw MissingDataError("event");
+    }
+    return m_event;
+}
+
 bool Clipboard::has_persistent(std::string name) {
     return m_persistent_data.find(name) != m_persistent_data.end();
 }
