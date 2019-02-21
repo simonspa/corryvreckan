@@ -18,66 +18,79 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     m_filename = m_config.getPath("file_name", true);
 }
 
-void EventLoaderEUDAQ2::convert_to_std_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard) {
+void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard) {
+
+    LOG(DEBUG) << "\t evt_description : " << evt->GetDescription() << " ts_begin = " << evt->GetTimestampBegin()
+               << " ts_end = " << evt->GetTimestampEnd();
 
     // Create vector of pixels:
     Pixels* pixels = new Pixels();
 
     // Prepare standard event:
-    auto stdev = eudaq::StandardEvent::MakeShared();
+    auto stdevt = eudaq::StandardEvent::MakeShared();
 
     // Convert event to standard event:
-    if(!(eudaq::StdEventConverter::Convert(evt, stdev, nullptr))) {
+    if(!(eudaq::StdEventConverter::Convert(evt, stdevt, nullptr))) {
         LOG(DEBUG) << "eudaq::StdEventConverter -> cannot convert.";
-        // return StatusCode::NoData;
-    } else {
-        if(stdev->NumPlanes() == 0) {
-            LOG(DEBUG) << "No plane found in event.";
-            return;
+        return;
+    }
+
+    auto evt_start = stdevt->GetTimeBegin();
+    auto evt_end = stdevt->GetTimeEnd();
+
+    if(stdevt->NumPlanes() == 0) {
+        LOG(DEBUG) << "No plane found in event.";
+        return;
+    }
+
+    LOG(INFO) << "Number of planes: " << stdevt->NumPlanes();
+    // Loop over all planes and take only the one corresponding to current detector:
+    for(size_t i_plane = 0; i_plane < stdevt->NumPlanes(); i_plane++) {
+
+        auto plane = stdevt->GetPlane(i_plane);
+        // Concatenate plane name according to naming convention: "sensor_type + int"
+        auto plane_name = plane.Sensor() + "_" + std::to_string(i_plane);
+        if(m_detector->name() != plane_name) {
+            LOG(DEBUG) << "Wrong plane, continue. Detector: " << m_detector->name() << " != " << plane_name;
+            continue;
         }
-        LOG(INFO) << "Number of planes: " << stdev->NumPlanes();
-        // Loop over all planes and take only the one corresponding to current detector:
-        for(size_t i_plane = 0; i_plane < stdev->NumPlanes(); i_plane++) {
 
-            auto plane = stdev->GetPlane(i_plane);
-            // Concatenate plane name according to naming convention: "sensor_type + int"
-            auto plane_name = plane.Sensor() + "_" + std::to_string(i_plane);
-            if(m_detector->name() != plane_name) {
-                LOG(DEBUG) << "Wrong plane, continue. Detector: " << m_detector->name() << " != " << plane_name;
-                continue;
-            }
-            auto nHits = plane.GetPixels<int>().size(); // number of hits
-            auto nPixels = plane.TotalPixels();         // total pixels in matrix
-            LOG(INFO) << "Number of hits: " << nHits << " / total pixel number: " << nPixels;
+        auto nHits = plane.GetPixels<int>().size(); // number of hits
+        auto nPixels = plane.TotalPixels();         // total pixels in matrix
+        LOG(INFO) << "Number of hits: " << nHits << " / total pixel number: " << nPixels;
 
-            LOG(DEBUG) << "Type: " << plane.Type() << " Name: " << plane.Sensor();
-            // Loop over all hits and add to pixels vector:
-            for(unsigned int i = 0; i < nHits; i++) {
-                LOG(INFO) << "\t x: " << plane.GetX(i, 0) << " y: " << plane.GetY(i, 0) << " tot: " << plane.GetPixel(i)
-                          << " ts: " << Units::display(plane.GetTimestamp(i), {"ns", "us", "ms"});
-                Pixel* pixel = new Pixel(m_detector->name(),
-                                         static_cast<int>(plane.GetY(i, 0)),
-                                         static_cast<int>(plane.GetX(i, 0)),
-                                         static_cast<int>(plane.GetPixel(i)),
-                                         plane.GetTimestamp(i));
-                pixels->push_back(pixel);
-            } // loop over hits
-        }     // loop over planes
-    }         // NumPlanes > 0
+        LOG(DEBUG) << "Type: " << plane.Type() << " Name: " << plane.Sensor();
+        // Loop over all hits and add to pixels vector:
+        for(unsigned int i = 0; i < nHits; i++) {
+            LOG(INFO) << "\t x: " << plane.GetX(i, 0) << " y: " << plane.GetY(i, 0) << " tot: " << plane.GetPixel(i)
+                      << " ts: " << Units::display(plane.GetTimestamp(i), {"ns", "us", "ms"});
+            Pixel* pixel = new Pixel(m_detector->name(),
+                                     static_cast<int>(plane.GetY(i, 0)),
+                                     static_cast<int>(plane.GetX(i, 0)),
+                                     static_cast<int>(plane.GetPixel(i)),
+                                     plane.GetTimestamp(i));
+            pixels->push_back(pixel);
+        } // loop over hits
+    }     // loop over planes
 
     // Check if event is fully inside frame of previous detector:
-    auto evt_start = stdev->GetTimestampBegin();
-    auto evt_stop = stdev->GetTimestampEnd();
+    LOG(DEBUG) << "Event time: " << Units::display(evt_start, {"ns", "us", "ms", "s"})
+               << ", length: " << Units::display((evt_end - evt_start), {"ns", "us", "ms", "s"});
 
-    LOG(DEBUG) << "Event time: " << Units::display(evt_start, {"ns", "us", "s"})
-               << ", length: " << Units::display((evt_stop - evt_start), {"ns", "us", "s"});
+    //
+    // Implement the correct logic here!!!
+    //
+    std::shared_ptr<Event> event;
+    if(clipboard->event_defined()) {
+        event = clipboard->get_event();
+        LOG(DEBUG) << "\t\t\t --> eventStart = " << event->start() << " eventEnd = " << event->end();
+    } else {
+        LOG(DEBUG) << "Event not yet defined.";
+        clipboard->put_event(std::make_shared<Event>(evt_start, evt_end));
+        event = clipboard->get_event();
+        LOG(DEBUG) << "New event times - start: " << event->start() << " , end: " << event->end();
 
-    //    LOG(DEBUG) << "eventStart = " << clipboard->get_persistent("eventStart")
-    //               << "eventStop = " << clipboard->get_persistent("eventStop");
-
-    // clipboard->put_persistent("eventStart", shutterStartTime);
-    // clipboard->put_persistent("eventEnd", shutterStopTime);
-    // clipboard->put_persistent("eventLength", (shutterStopTime - shutterStartTime));
+    } // end else
 
     // Put the pixel data on the clipboard:
     if(!pixels->empty()) {
@@ -97,10 +110,6 @@ void EventLoaderEUDAQ2::initialise() {
     auto detectorID = m_detector->name();
     LOG(DEBUG) << "Initialise for detector " + detectorID;
 
-    // Initialise member variables
-    m_eventNumber = 0;
-    m_totalEvents = 0;
-
     // open the input file with the eudaq reader
     try {
         reader = eudaq::Factory<eudaq::FileReader>::MakeUnique(eudaq::str2hash("native"), m_filename);
@@ -113,8 +122,6 @@ void EventLoaderEUDAQ2::initialise() {
 
 StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
-    // Read next event from EUDAQ2 reader:
-    m_eventNumber++;
     auto evt = reader->GetNextEvent();
     if(!evt) {
         LOG(DEBUG) << "!ev --> return, empty event!";
@@ -131,22 +138,14 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     LOG(DEBUG) << "# sub events : " << sub_events.size();
 
     if(sub_events.size() == 0) {
-        convert_to_std_event(evt, clipboard);
+        process_event(evt, clipboard);
 
     } else {
         // loop over subevents:
         for(auto& subevt : sub_events) {
-            LOG(DEBUG) << "\t subevt : " << subevt->GetDescription() << " ts_beg = " << subevt->GetTimestampBegin()
-                       << " ts_end = " << subevt->GetTimestampEnd();
-            convert_to_std_event(subevt, clipboard);
+            process_event(subevt, clipboard);
         }
     } // end else
 
-    // Return value telling analysis to keep running
     return StatusCode::Success;
-}
-
-void EventLoaderEUDAQ2::finalise() {
-
-    LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }

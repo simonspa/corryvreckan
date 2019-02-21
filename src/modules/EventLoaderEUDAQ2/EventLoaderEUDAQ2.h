@@ -49,19 +49,12 @@ namespace corryvreckan {
          */
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
-        /**
-         * @brief [Finalise module]
-         */
-        void finalise();
-
     private:
         /**
-         * @brief Converts gray encoded data to binary number
+         * @brief Process events: extract hits and put onto clipboard, also define event start/end
          */
-        void convert_to_std_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard);
+        void process_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard);
 
-        int m_eventNumber;
-        int m_totalEvents;
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
 
