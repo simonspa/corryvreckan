@@ -38,7 +38,7 @@ bool Clipboard::event_defined() {
 void Clipboard::put_event(std::shared_ptr<Event> event) {
     // Already defined:
     if(m_event) {
-        throw InvalidDataError("event already defined");
+        throw InvalidDataError("Event already defined. Only one module can place an event definition");
     } else {
         m_event = event;
     }
@@ -46,7 +46,7 @@ void Clipboard::put_event(std::shared_ptr<Event> event) {
 
 std::shared_ptr<Event> Clipboard::get_event() {
     if(!m_event) {
-        throw MissingDataError("event");
+        throw InvalidDataError("Event not defined. Add Metronome module or Event reader defining the event");
     }
     return m_event;
 }
@@ -64,6 +64,9 @@ void Clipboard::clear() {
         delete collection;
         set = m_data.erase(set);
     }
+
+    // Resetting the event definition:
+    m_event.reset();
 }
 
 std::vector<std::string> Clipboard::listCollections() {
