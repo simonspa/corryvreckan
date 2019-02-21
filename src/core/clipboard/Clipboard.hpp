@@ -11,10 +11,12 @@
 #define CORRYVRECKAN_CLIPBOARD_H
 
 #include <iostream>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
 #include "core/utils/log.h"
+#include "objects/Event.hpp"
 #include "objects/Object.hpp"
 
 namespace corryvreckan {
@@ -65,6 +67,26 @@ namespace corryvreckan {
         Objects* get(std::string name, std::string type = "");
 
         /**
+         * @brief Check whether an event has been defined
+         * @return true if an event has been defined, false otherwise
+         */
+        bool event_defined() const;
+
+        /**
+         * @brief Store the event object
+         * @param event The event object to be stored
+         * @thorws InvalidDataError in case an event exist already
+         */
+        void put_event(std::shared_ptr<Event> event);
+
+        /**
+         * @brief Retrieve the event object
+         * @returnShared pointer to the event
+         * @throws MissingDataError in case no event is available.
+         */
+        std::shared_ptr<Event> get_event() const;
+
+        /**
          * @brief Store or update variable on the persistent clipboard storage
          * @param name Name of the variable
          * @param value Value to be stored
@@ -75,16 +97,16 @@ namespace corryvreckan {
          * @brief Retrieve variable from the persistent clipboard storage
          * @param name Name of the variable
          * @return Stored value from the persistent clipboard storage
-         * @throws MissingKeyError in case the key is not found.
+         * @throws MissingDataError in case the key is not found.
          */
-        double get_persistent(std::string name);
+        double get_persistent(std::string name) const;
 
         /**
          * @brief Check if variable exists on the persistent clipboard storage
          * @param name Name of the variable
          * @return True if value exists, false if it does not exist.
          */
-        bool has_persistent(std::string name);
+        bool has_persistent(std::string name) const;
 
         /**
          * @brief Clear the event storage of the clipboard
@@ -95,7 +117,7 @@ namespace corryvreckan {
          * @brief Get a list of currently held collections on the clipboard event storage
          * @return Vector of collections names currently stored on the clipboard
          */
-        std::vector<std::string> listCollections();
+        std::vector<std::string> listCollections() const;
 
     private:
         typedef std::map<std::string, Objects*> ClipboardData;
@@ -105,6 +127,9 @@ namespace corryvreckan {
 
         // Persistent clipboard storage
         std::unordered_map<std::string, double> m_persistent_data;
+
+        // Store the current time slice:
+        std::shared_ptr<Event> m_event{};
     };
 } // namespace corryvreckan
 

@@ -115,9 +115,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Now set the event time so that the Timepix3 data is loaded correctly
-    clipboard->put_persistent("eventStart", shutterStartTime);
-    clipboard->put_persistent("eventEnd", shutterStopTime);
-    clipboard->put_persistent("eventLength", (shutterStopTime - shutterStartTime));
+    clipboard->put_event(std::make_shared<Event>(shutterStartTime, shutterStopTime));
 
     LOG(TRACE) << "Loaded " << npixels << " pixels";
     // Put the data on the clipboard
