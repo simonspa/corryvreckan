@@ -71,6 +71,10 @@ void EventLoaderEUDAQ2::convert_to_std_event(eudaq::EventSPC evt, std::shared_pt
 
     LOG(DEBUG) << "Event time: " << Units::display(evt_start, {"ns", "us", "s"})
                << ", length: " << Units::display((evt_stop - evt_start), {"ns", "us", "s"});
+
+    //    LOG(DEBUG) << "eventStart = " << clipboard->get_persistent("eventStart")
+    //               << "eventStop = " << clipboard->get_persistent("eventStop");
+
     // clipboard->put_persistent("eventStart", shutterStartTime);
     // clipboard->put_persistent("eventEnd", shutterStopTime);
     // clipboard->put_persistent("eventLength", (shutterStopTime - shutterStartTime));

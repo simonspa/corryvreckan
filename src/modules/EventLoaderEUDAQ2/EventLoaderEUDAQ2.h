@@ -58,7 +58,7 @@ namespace corryvreckan {
         /**
          * @brief Converts gray encoded data to binary number
          */
-        void convert_to_std_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard> clipboard);
+        void convert_to_std_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard);
 
         int m_eventNumber;
         int m_totalEvents;
