@@ -220,9 +220,7 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     // loading a fixed number of pixels (ie. 2000 at a time)
 
     // Check if event frame is defined:
-    if(!clipboard->has_persistent("eventStart") || !clipboard->has_persistent("eventEnd")) {
-        throw ModuleError("Event not defined. Add Metronome module or Event reader defining the event.");
-    }
+    auto event = clipboard->get_event();
 
     LOG(TRACE) << "== New event";
 
@@ -256,7 +254,7 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     IFLOG(INFO) {
         if(temporalSplit) {
             LOG_PROGRESS(DEBUG, "tpx3_loader")
-                << "Current time: " << Units::display(clipboard->get_persistent("eventStart"), {"s", "ms", "us", "ns"});
+                << "Current time: " << Units::display(event->start(), {"s", "ms", "us", "ns"});
         } else {
             LOG_PROGRESS(DEBUG, "tpx3_loader") << "Current event: " << m_currentEvent;
         }
@@ -335,6 +333,7 @@ void EventLoaderTimepix3::loadCalibration(std::string path, char delim, std::vec
 bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard, Pixels* devicedata, SpidrSignals* spidrData) {
 
     std::string detectorID = m_detector->name();
+    auto event = clipboard->get_event();
 
     bool extra = false; // temp
 
@@ -419,8 +418,7 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard, Pixels*
             // November 2018 test beam.)
             if(!m_detector->isDUT()) {
                 if(temporalSplit) {
-                    LOG(WARNING) << "Current time: "
-                                 << Units::display(clipboard->get_persistent("eventStart"), {"s", "ms", "us", "ns"})
+                    LOG(WARNING) << "Current time: " << Units::display(event->start(), {"s", "ms", "us", "ns"})
                                  << " detector " << detectorID << " "
                                  << "header == 0x0! (indicates power pulsing.) Ignoring this.";
                 } else {
@@ -450,7 +448,7 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard, Pixels*
                 // (and rewind the file
                 // reader so that we start with this signal next event)
                 if(temporalSplit) {
-                    if(timestamp > clipboard->get_persistent("eventEnd")) {
+                    if(timestamp > event->end()) {
                         (*m_file_iterator)->seekg(-1 * static_cast<int>(sizeof(pixdata)), std::ios_base::cur);
                         LOG(TRACE) << "Signal has a time beyond the current event: " << Units::display(timestamp, "ns");
                         break;
@@ -579,19 +577,19 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard, Pixels*
             const double timestamp = static_cast<double>(time) / (4096. / 25.) + m_detector->timingOffset();
 
             // Ignore pixel data if it is before the "eventStart" read from the clipboard storage:
-            if(temporalSplit && (timestamp < clipboard->get_persistent("eventStart"))) {
+            if(temporalSplit && (timestamp < event->end())) {
                 LOG(TRACE) << "Skipping pixel, is before event window (" << Units::display(timestamp, {"s", "us", "ns"})
-                           << " < " << Units::display(clipboard->get_persistent("eventStart"), {"s", "us", "ns"}) << ")";
+                           << " < " << Units::display(event->end(), {"s", "us", "ns"}) << ")";
                 continue;
             }
 
             // Stop looking at data if the pixel is after the current event window
             // (and rewind the file reader so that we start with this pixel next event)
-            if(temporalSplit && (timestamp > clipboard->get_persistent("eventEnd"))) {
+            if(temporalSplit && (timestamp > event->end())) {
                 LOG(DEBUG) << "Stopping processing event, pixel is after "
                               "event window ("
                            << Units::display(timestamp, {"s", "us", "ns"}) << " > "
-                           << Units::display(clipboard->get_persistent("eventEnd"), {"s", "us", "ns"}) << ")";
+                           << Units::display(event->end(), {"s", "us", "ns"}) << ")";
                 (*m_file_iterator)->seekg(-1 * static_cast<int>(sizeof(pixdata)), std::ios_base::cur);
                 break;
             }

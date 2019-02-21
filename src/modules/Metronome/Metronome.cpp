@@ -19,12 +19,10 @@ void Metronome::initialise() {
 
 StatusCode Metronome::run(std::shared_ptr<Clipboard> clipboard) {
 
+    // Set up the current event:
+    LOG(DEBUG) << "Defining event, time frame " << Units::display(m_eventStart, {"us", "ms", "s"}) << " to "
+               << Units::display(m_eventEnd, {"us", "ms", "s"});
     clipboard->put_event(std::make_shared<Event>(m_eventStart, m_eventEnd));
-
-    // Set up the clipboard persistent storage for the current event:
-    clipboard->put_persistent("eventStart", m_eventStart);
-    clipboard->put_persistent("eventEnd", m_eventEnd);
-    clipboard->put_persistent("eventLength", m_eventLength);
 
     // Increment the current event's start and end times by the configured event length
     m_eventStart = m_eventEnd;
