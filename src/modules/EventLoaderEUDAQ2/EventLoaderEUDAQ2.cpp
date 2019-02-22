@@ -62,8 +62,8 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
         LOG(DEBUG) << "Type: " << plane.Type() << " Name: " << plane.Sensor();
         // Loop over all hits and add to pixels vector:
         for(unsigned int i = 0; i < nHits; i++) {
-            LOG(INFO) << "\t x: " << plane.GetX(i, 0) << " y: " << plane.GetY(i, 0) << " tot: " << plane.GetPixel(i)
-                      << " ts: " << Units::display(plane.GetTimestamp(i), {"ns", "us", "ms"});
+            LOG(INFO) << "\t x: " << plane.GetX(i, 0) << "\ty: " << plane.GetY(i, 0) << "\ttot: " << plane.GetPixel(i)
+                      << "\tts: " << Units::display(plane.GetTimestamp(i), {"ns", "us", "ms"});
             Pixel* pixel = new Pixel(m_detector->name(),
                                      static_cast<int>(plane.GetY(i, 0)),
                                      static_cast<int>(plane.GetX(i, 0)),
