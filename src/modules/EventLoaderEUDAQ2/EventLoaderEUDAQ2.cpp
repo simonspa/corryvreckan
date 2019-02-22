@@ -111,7 +111,7 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
                << Units::display(event_times.first, {"ns", "us", "ms", "s"})
                << ", event_times.second = " << Units::display(event_times.second, {"ns", "us", "ms", "s"});
 
-    // Check if event is fully inside frame of previous detector:
+    // Check if event is fully inside frame:
     // ...
     // ... think about logic here ...
     // ...
@@ -160,18 +160,34 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     // check if there are subevents:
     // if not --> convert event, if yes, loop over subevents and convert each
     auto sub_events = evt->GetSubEvents();
-    LOG(DEBUG) << "# sub events : " << sub_events.size();
+    LOG(DEBUG) << "There are " << sub_events.size() << " sub events.";
 
     if(sub_events.size() == 0) {
         LOG(DEBUG) << "No subevent, process event.";
         process_event(evt, clipboard);
 
     } else {
-        // loop over subevents:
+        // Important: first process TLU event (if available) --> sets event begin/end, then others
+
+        // loop over subevents and process only TLU event:
         for(auto& subevt : sub_events) {
-            LOG(DEBUG) << "There are " << sub_events.size() << " subevents, process subevent.";
+            LOG(DEBUG) << "Processing subevent.";
+            if(subevt->GetDescription() != "TluRawDataEvent") {
+                LOG(DEBUG) << "\t---> subevent is no TLU event -> continue.";
+                continue;
+            } // end if
             process_event(subevt, clipboard);
-        }
+        } // end for
+        // loop over subevents and process all other events (except TLU):
+        for(auto& subevt : sub_events) {
+            LOG(DEBUG) << "Processing subevent.";
+            if(subevt->GetDescription() == "TluRawDataEvent") {
+                LOG(DEBUG) << "\t---> subevent is no TLU event -> continue.";
+                continue;
+            } // end if
+            process_event(subevt, clipboard);
+        } // end for
+
     } // end else
 
     return StatusCode::Success;
