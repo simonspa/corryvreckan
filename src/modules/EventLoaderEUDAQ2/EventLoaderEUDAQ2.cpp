@@ -38,7 +38,7 @@ void EventLoaderEUDAQ2::get_event_times(std::pair<double, double>& evt_times, st
 void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard) {
 
     LOG(DEBUG) << "\tEvent description: " << evt->GetDescription() << ", ts_begin = " << evt->GetTimestampBegin()
-               << "lsb, ts_end = " << evt->GetTimestampEnd() << "lsb";
+               << " lsb, ts_end = " << evt->GetTimestampEnd() << " lsb";
 
     std::pair<double, double> event_times(-1., -1.); // initialize to illogical value
 
@@ -104,6 +104,8 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
     }     // loop over planes
 
     // get event begin/end:
+    event_times.first = stdevt->GetTimeBegin();
+    event_times.second = stdevt->GetTimeEnd();
     get_event_times(event_times, clipboard);
     LOG(DEBUG) << "after calling get_event_times(): event_times.first = "
                << Units::display(event_times.first, {"ns", "us", "ms", "s"})
