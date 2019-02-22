@@ -40,7 +40,7 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
     LOG(DEBUG) << "\tEvent description: " << evt->GetDescription() << ", ts_begin = " << evt->GetTimestampBegin()
                << "lsb, ts_end = " << evt->GetTimestampEnd() << "lsb";
 
-    std::pair<double, double> event_times;
+    std::pair<double, double> event_times(-1., -1.); // initialize to illogical value
 
     // If TLU event: don't convert to standard event but only use time information
     if(evt->GetDescription() == "TluRawDataEvent") {
@@ -103,28 +103,16 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
         } // loop over hits
     }     // loop over planes
 
-    auto evt_start = stdevt->GetTimeBegin();
-    auto evt_end = stdevt->GetTimeEnd();
+    // get event begin/end:
+    get_event_times(event_times, clipboard);
+    LOG(DEBUG) << "after calling get_event_times(): event_times.first = "
+               << Units::display(event_times.first, {"ns", "us", "ms", "s"})
+               << ", event_times.second = " << Units::display(event_times.second, {"ns", "us", "ms", "s"});
 
     // Check if event is fully inside frame of previous detector:
-    LOG(DEBUG) << "\tCurrent event: begin = " << Units::display(evt_start, {"ns", "us", "ms", "s"})
-               << ", length = " << Units::display((evt_end - evt_start), {"ns", "us", "ms", "s"});
-
-    //
-    // Implement the correct logic here!!!
-    //
-    std::shared_ptr<Event> event;
-    if(clipboard->event_defined()) {
-        event = clipboard->get_event();
-        LOG(DEBUG) << "Event found on clipboard: eventStart = " << Units::display(event->start(), {"ns", "us", "ms", "s"})
-                   << ", end = " << Units::display(event->end(), {"ns", "us", "ms", "s"})
-                   << ", length = " << Units::display(event->end() - event->start(), {"ns", "us", "ms", "s"});
-    } else {
-        clipboard->put_event(std::make_shared<Event>(evt_start, evt_end));
-        event = clipboard->get_event();
-        LOG(DEBUG) << "Event not yet defined. New event times: start " << event->start() << " , end " << event->end();
-
-    } // end else
+    // ...
+    // ... think about logic here ...
+    // ...
 
     // Put the pixel data on the clipboard:
     if(!pixels->empty()) {
