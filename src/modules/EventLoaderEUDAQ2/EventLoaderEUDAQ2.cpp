@@ -18,28 +18,43 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     m_filename = m_config.getPath("file_name", true);
 }
 
+void EventLoaderEUDAQ2::get_event_times(std::pair<double, double>& evt_times, std::shared_ptr<Clipboard>& clipboard) {
+
+    if(clipboard->event_defined()) {
+        LOG(DEBUG) << "\tEvent found on clipboard:";
+        evt_times.first = clipboard->get_event()->start();
+        evt_times.second = clipboard->get_event()->end();
+    } else {
+        LOG(DEBUG) << "\tNo event found on clipboard. New event times: ";
+        clipboard->put_event(std::make_shared<Event>(evt_times.first, evt_times.second));
+    } // end else
+
+    LOG(DEBUG) << "\t--> start = " << Units::display(evt_times.first, {"ns", "us", "ms", "s"})
+               << ", end = " << Units::display(evt_times.second, {"ns", "us", "ms", "s"})
+               << ", length = " << Units::display(evt_times.second - evt_times.first, {"ns", "us", "ms", "s"});
+    return;
+}
+
 void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard) {
 
-    LOG(DEBUG) << "\t Event description: " << evt->GetDescription() << " ,ts_begin = " << evt->GetTimestampBegin()
-               << " ,ts_end = " << evt->GetTimestampEnd();
+    LOG(DEBUG) << "\tEvent description: " << evt->GetDescription() << ", ts_begin = " << evt->GetTimestampBegin()
+               << "lsb, ts_end = " << evt->GetTimestampEnd() << "lsb";
 
+    std::pair<double, double> event_times;
+
+    // If TLU event: don't convert to standard event but only use time information
     if(evt->GetDescription() == "TluRawDataEvent") {
-        LOG(DEBUG) << "--> Found TLU Event.";
-        std::shared_ptr<Event> event;
-        if(clipboard->event_defined()) {
-            event = clipboard->get_event();
-            LOG(DEBUG) << "\t\t\t--> eventStart = " << event->start() << " eventEnd = " << event->end();
-        } else {
-            auto evt_start = static_cast<double>(evt->GetTimestampBegin()) * 25.; // 40 MHz --> ns
-            auto evt_end = static_cast<double>(evt->GetTimestampBegin()) * 25.;   // 40 MHz --> ns
-            clipboard->put_event(std::make_shared<Event>(evt_start, evt_end));
-            event = clipboard->get_event();
-            LOG(DEBUG) << "\tClipboard Event not yet defined. New event times: start " << event->start() << " , end "
-                       << event->end() << "\n ";
+        LOG(DEBUG) << "\t--> Found TLU Event.";
 
-        } // end else
+        event_times.first = static_cast<double>(evt->GetTimestampBegin()) * 25.; // 40 MHz --> ns
+        event_times.second = static_cast<double>(evt->GetTimestampEnd()) * 25.;  // 40 MHz --> ns
+        get_event_times(event_times, clipboard);
+
+        LOG(DEBUG) << "after get_event_times(): event_times.first = "
+                   << Units::display(event_times.first, {"ns", "us", "ms", "s"})
+                   << ", event_times.second = " << Units::display(event_times.second, {"ns", "us", "ms", "s"});
         return;
-    } // end if(TLU event)
+    } // end if
 
     // Create vector of pixels:
     Pixels* pixels = new Pixels();
@@ -53,15 +68,12 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
         return;
     }
 
-    auto evt_start = stdevt->GetTimeBegin();
-    auto evt_end = stdevt->GetTimeEnd();
-
     if(stdevt->NumPlanes() == 0) {
         LOG(DEBUG) << "No plane found in event.";
         return;
     }
 
-    LOG(INFO) << "Number of planes: " << stdevt->NumPlanes();
+    LOG(INFO) << "\tNumber of planes: " << stdevt->NumPlanes();
     // Loop over all planes and take only the one corresponding to current detector:
     for(size_t i_plane = 0; i_plane < stdevt->NumPlanes(); i_plane++) {
 
@@ -69,18 +81,18 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
         // Concatenate plane name according to naming convention: "sensor_type + int"
         auto plane_name = plane.Sensor() + "_" + std::to_string(i_plane);
         if(m_detector->name() != plane_name) {
-            LOG(DEBUG) << "Wrong plane, continue. Detector: " << m_detector->name() << " != " << plane_name;
+            LOG(DEBUG) << "\tWrong plane, continue. Detector: " << m_detector->name() << " != " << plane_name;
             continue;
         }
 
         auto nHits = plane.GetPixels<int>().size(); // number of hits
         auto nPixels = plane.TotalPixels();         // total pixels in matrix
-        LOG(INFO) << "Number of hits: " << nHits << " / total pixel number: " << nPixels;
+        LOG(INFO) << "\tNumber of hits: " << nHits << " / total pixel number: " << nPixels;
 
-        LOG(DEBUG) << "Type: " << plane.Type() << " Name: " << plane.Sensor();
+        LOG(DEBUG) << "\tType: " << plane.Type() << " Name: " << plane.Sensor();
         // Loop over all hits and add to pixels vector:
         for(unsigned int i = 0; i < nHits; i++) {
-            LOG(INFO) << "\t x: " << plane.GetX(i, 0) << "\ty: " << plane.GetY(i, 0) << "\ttot: " << plane.GetPixel(i)
+            LOG(INFO) << "\t\t x: " << plane.GetX(i, 0) << "\ty: " << plane.GetY(i, 0) << "\ttot: " << plane.GetPixel(i)
                       << "\tts: " << Units::display(plane.GetTimestamp(i), {"ns", "us", "ms"});
             Pixel* pixel = new Pixel(m_detector->name(),
                                      static_cast<int>(plane.GetY(i, 0)),
@@ -91,9 +103,12 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
         } // loop over hits
     }     // loop over planes
 
+    auto evt_start = stdevt->GetTimeBegin();
+    auto evt_end = stdevt->GetTimeEnd();
+
     // Check if event is fully inside frame of previous detector:
-    LOG(DEBUG) << "Event time: " << Units::display(evt_start, {"ns", "us", "ms", "s"})
-               << ", length: " << Units::display((evt_end - evt_start), {"ns", "us", "ms", "s"});
+    LOG(DEBUG) << "\tCurrent event: begin = " << Units::display(evt_start, {"ns", "us", "ms", "s"})
+               << ", length = " << Units::display((evt_end - evt_start), {"ns", "us", "ms", "s"});
 
     //
     // Implement the correct logic here!!!
@@ -101,7 +116,9 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
     std::shared_ptr<Event> event;
     if(clipboard->event_defined()) {
         event = clipboard->get_event();
-        LOG(DEBUG) << "\t\t\t --> eventStart = " << event->start() << " eventEnd = " << event->end();
+        LOG(DEBUG) << "Event found on clipboard: eventStart = " << Units::display(event->start(), {"ns", "us", "ms", "s"})
+                   << ", end = " << Units::display(event->end(), {"ns", "us", "ms", "s"})
+                   << ", length = " << Units::display(event->end() - event->start(), {"ns", "us", "ms", "s"});
     } else {
         clipboard->put_event(std::make_shared<Event>(evt_start, evt_end));
         event = clipboard->get_event();
@@ -139,6 +156,7 @@ void EventLoaderEUDAQ2::initialise() {
 
 StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
+    LOG(DEBUG) << "=====================\n==== Next event: ====\n=====================";
     auto evt = reader->GetNextEvent();
     if(!evt) {
         LOG(DEBUG) << "!ev --> return, empty event!";
@@ -155,11 +173,13 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     LOG(DEBUG) << "# sub events : " << sub_events.size();
 
     if(sub_events.size() == 0) {
+        LOG(DEBUG) << "No subevent, process event.";
         process_event(evt, clipboard);
 
     } else {
         // loop over subevents:
         for(auto& subevt : sub_events) {
+            LOG(DEBUG) << "There are " << sub_events.size() << " subevents, process subevent.";
             process_event(subevt, clipboard);
         }
     } // end else

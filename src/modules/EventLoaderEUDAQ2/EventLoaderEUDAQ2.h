@@ -51,7 +51,15 @@ namespace corryvreckan {
 
     private:
         /**
+         * @brief get event start/end: if event exists on clipboard --> take this, otherwise take input values and put new
+         * event onto clipboard
+         * @param evt_times = pair of {event_start, event_end}, clipboard
+         */
+        void get_event_times(std::pair<double, double>& evt_times, std::shared_ptr<Clipboard>& clipboard);
+
+        /**
          * @brief Process events: extract hits and put onto clipboard, also define event start/end
+         * @param evt: event or subevent to be processed, clipboard
          */
         void process_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard);
 
