@@ -41,7 +41,8 @@ EventLoaderEUDAQ2::get_event_times(double start, double end, std::shared_ptr<Cli
 void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard) {
 
     LOG(DEBUG) << "\tEvent description: " << evt->GetDescription() << ", ts_begin = " << evt->GetTimestampBegin()
-               << " lsb, ts_end = " << evt->GetTimestampEnd() << " lsb";
+               << " lsb, ts_end = " << evt->GetTimestampEnd() << " lsb"
+               << ", trigN = " << evt->GetTriggerN();
 
     double evt_start = -1; // initialize to unreasonable value
     double evt_end = -1;   // initialize to unreasonable value
@@ -51,15 +52,41 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
         LOG(DEBUG) << "\t--> Found TLU Event.";
 
         evt_start = static_cast<double>(evt->GetTimestampBegin());
-        evt_end = static_cast<double>(evt->GetTimestampEnd());
+        // Do not use:
+        // "evt_end = static_cast<double>(evt->GetTimestampEnd());"
+        // because this is only 25ns larger than begin and doesn't have a meaning!
+        // Instead hardcode:
+        evt_end = evt_start + 115000; // 115 us until rolling shutter goes across full matrix
         auto event_times = get_event_times(evt_start, evt_end, clipboard);
 
         LOG(DEBUG) << "after get_event_times(): event_times.first = "
                    << Units::display(event_times.first, {"ns", "us", "ms", "s"})
                    << ", event_times.second = " << Units::display(event_times.second, {"ns", "us", "ms", "s"});
+
+        // use knowledge of 115 us frame length for rolling shutter to go across full matrix:
+        if(evt_start < event_times.first) {
+            LOG(INFO) << "Frame dropped because frame begins BEFORE event: " << evt_start << " earlier than "
+                      << event_times.first;
+            return;
+        }
+
+        if(evt_end > event_times.second) {
+            LOG(INFO) << "Frame dropped because frame begins AFTER event: " << evt_end << " later than "
+                      << event_times.second;
+            return;
+        }
+
+        // if frame is not rejected: add trigger ID --> use it for Mimosa hits to check if reject or not
+        if(!clipboard->event_defined()) {
+            LOG(WARNING) << "No event defined! Something went wrong!";
+            return;
+        }
+        LOG(DEBUG) << "-------------- adding triggerID " << evt->GetTriggerN();
+        clipboard->get_event()->add_trigger_id(evt->GetTriggerN());
         return;
     } // end if
 
+    // // // // // // // //
     // If other than TLU:
     // Prepare standard event:
     auto stdevt = eudaq::StandardEvent::MakeShared();
@@ -81,14 +108,24 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
                << Units::display(event_times.first, {"ns", "us", "ms", "s"})
                << ", event_times.second = " << Units::display(event_times.second, {"ns", "us", "ms", "s"});
 
-    // Check if event is fully inside frame:
-    // ...
-    // ... think about logic here ...
-    // ... What if TLU/telescope --> all timestamps are CRAP!
-    // ...
-
-    // Don't filter this way when looking at NiRawDataEvent as all timestamps are 0!
-    if(evt->GetDescription() != "NiRawDataEvent") {
+    // If hit timestamps are invalid/non-existent (like for MIMOSA26 telescope),
+    // we need to make sure there is a corresponding TLU event with the same triggerID:
+    if(!clipboard->event_defined()) {
+        LOG(WARNING) << "No event defined! Something went wrong!";
+        return;
+    }
+    // Process MIMOSA26 telescope frames separately because they don't have sensible hit timestamps:
+    // But do not use "if(evt->GetTimestampBegin()==0) {" because sometimes the timestamps are not 0 but 1ns
+    // Pay attention to this when working with a different chip without hit timestamps!
+    if(evt->GetDescription() == "NiRawDataEvent") {
+        if(!clipboard->get_event()->has_trigger_id(evt->GetTriggerN())) {
+            LOG(DEBUG) << "Frame dropped because event does not contain triggerID " << evt->GetTriggerN();
+        } else {
+            LOG(DEBUG) << "Found trigger ID.";
+        }
+    }
+    // For chips with valid hit timestamps:
+    else {
         if(stdevt->GetTimeBegin() < event_times.first) {
             LOG(INFO) << "Frame dropped because frame begins BEFORE event: " << stdevt->GetTimeBegin() << " earlier than "
                       << event_times.first;
@@ -227,7 +264,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         for(auto& subevt : sub_events) {
             LOG(DEBUG) << "Processing subevent.";
             if(subevt->GetDescription() == "TluRawDataEvent") {
-                LOG(DEBUG) << "\t---> subevent is no TLU event -> continue.";
+                LOG(DEBUG) << "\t---> subevent is TLU event -> continue.";
                 continue;
             } // end if
             process_event(subevt, clipboard);
