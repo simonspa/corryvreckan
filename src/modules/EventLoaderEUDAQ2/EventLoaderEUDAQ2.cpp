@@ -20,8 +20,26 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
 
 void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard) {
 
-    LOG(DEBUG) << "\t evt_description : " << evt->GetDescription() << " ts_begin = " << evt->GetTimestampBegin()
-               << " ts_end = " << evt->GetTimestampEnd();
+    LOG(DEBUG) << "\t Event description: " << evt->GetDescription() << " ,ts_begin = " << evt->GetTimestampBegin()
+               << " ,ts_end = " << evt->GetTimestampEnd();
+
+    if(evt->GetDescription() == "TluRawDataEvent") {
+        LOG(DEBUG) << "--> Found TLU Event.";
+        std::shared_ptr<Event> event;
+        if(clipboard->event_defined()) {
+            event = clipboard->get_event();
+            LOG(DEBUG) << "\t\t\t--> eventStart = " << event->start() << " eventEnd = " << event->end();
+        } else {
+            auto evt_start = static_cast<double>(evt->GetTimestampBegin()) * 25.; // 40 MHz --> ns
+            auto evt_end = static_cast<double>(evt->GetTimestampBegin()) * 25.;   // 40 MHz --> ns
+            clipboard->put_event(std::make_shared<Event>(evt_start, evt_end));
+            event = clipboard->get_event();
+            LOG(DEBUG) << "\tClipboard Event not yet defined. New event times: start " << event->start() << " , end "
+                       << event->end() << "\n ";
+
+        } // end else
+        return;
+    } // end if(TLU event)
 
     // Create vector of pixels:
     Pixels* pixels = new Pixels();
@@ -85,10 +103,9 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
         event = clipboard->get_event();
         LOG(DEBUG) << "\t\t\t --> eventStart = " << event->start() << " eventEnd = " << event->end();
     } else {
-        LOG(DEBUG) << "Event not yet defined.";
         clipboard->put_event(std::make_shared<Event>(evt_start, evt_end));
         event = clipboard->get_event();
-        LOG(DEBUG) << "New event times - start: " << event->start() << " , end: " << event->end();
+        LOG(DEBUG) << "Event not yet defined. New event times: start " << event->start() << " , end " << event->end();
 
     } // end else
 
