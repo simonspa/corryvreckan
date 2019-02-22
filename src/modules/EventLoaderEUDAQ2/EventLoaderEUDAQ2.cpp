@@ -99,6 +99,11 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
                                      static_cast<int>(plane.GetX(i, 0)),
                                      static_cast<int>(plane.GetPixel(i)),
                                      plane.GetTimestamp(i));
+
+            // Fill pixel-related histograms here:
+            hitmap->Fill(pixel->column(), pixel->row());
+            hEventTimes->Fill(pixel->timestamp()); // this can be 0, e.g. for MIMOSA telescope hits!
+
             pixels->push_back(pixel);
         } // loop over hits
     }     // loop over planes
@@ -134,6 +139,19 @@ void EventLoaderEUDAQ2::initialise() {
     auto detectorID = m_detector->name();
     LOG(DEBUG) << "Initialise for detector " + detectorID;
 
+    // Some simple histograms:
+    std::string title = detectorID + ": hitmap;x [px];y [px];events";
+    hitmap = new TH2F("hitmap",
+                      title.c_str(),
+                      m_detector->nPixels().X(),
+                      0,
+                      m_detector->nPixels().X(),
+                      m_detector->nPixels().Y(),
+                      0,
+                      m_detector->nPixels().Y());
+    title = detectorID + ": eventTimes;eventTimes [ns]; events";
+    hEventTimes = new TH1F("eventTimes", title.c_str(), 3000000, 0, 300);
+
     // open the input file with the eudaq reader
     try {
         reader = eudaq::Factory<eudaq::FileReader>::MakeUnique(eudaq::str2hash("native"), m_filename);
@@ -168,6 +186,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
     } else {
         // Important: first process TLU event (if available) --> sets event begin/end, then others
+        // Note: at the moment, we're not checking if there is a 2nd TLU subevent (but that shouldn't occur).
 
         // loop over subevents and process only TLU event:
         for(auto& subevt : sub_events) {

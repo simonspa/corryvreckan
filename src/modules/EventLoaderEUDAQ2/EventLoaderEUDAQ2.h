@@ -67,6 +67,10 @@ namespace corryvreckan {
         std::string m_filename{};
 
         eudaq::FileReaderUP reader;
+
+        // Pixel histograms
+        TH2F* hitmap;
+        TH1F* hEventTimes;
     };
 
 } // namespace corryvreckan
