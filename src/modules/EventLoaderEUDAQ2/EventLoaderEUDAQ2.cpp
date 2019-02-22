@@ -18,21 +18,24 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     m_filename = m_config.getPath("file_name", true);
 }
 
-void EventLoaderEUDAQ2::get_event_times(std::pair<double, double>& evt_times, std::shared_ptr<Clipboard>& clipboard) {
+std::pair<double, double>
+EventLoaderEUDAQ2::get_event_times(double start, double end, std::shared_ptr<Clipboard>& clipboard) {
 
+    std::pair<double, double> evt_times;
     if(clipboard->event_defined()) {
         LOG(DEBUG) << "\tEvent found on clipboard:";
         evt_times.first = clipboard->get_event()->start();
         evt_times.second = clipboard->get_event()->end();
     } else {
         LOG(DEBUG) << "\tNo event found on clipboard. New event times: ";
-        clipboard->put_event(std::make_shared<Event>(evt_times.first, evt_times.second));
+        clipboard->put_event(std::make_shared<Event>(start, end));
+        evt_times = {start, end};
     } // end else
 
     LOG(DEBUG) << "\t--> start = " << Units::display(evt_times.first, {"ns", "us", "ms", "s"})
                << ", end = " << Units::display(evt_times.second, {"ns", "us", "ms", "s"})
                << ", length = " << Units::display(evt_times.second - evt_times.first, {"ns", "us", "ms", "s"});
-    return;
+    return evt_times;
 }
 
 void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard) {
@@ -40,15 +43,16 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
     LOG(DEBUG) << "\tEvent description: " << evt->GetDescription() << ", ts_begin = " << evt->GetTimestampBegin()
                << " lsb, ts_end = " << evt->GetTimestampEnd() << " lsb";
 
-    std::pair<double, double> event_times(-1., -1.); // initialize to illogical value
+    double evt_start = -1; // initialize to unreasonable value
+    double evt_end = -1;   // initialize to unreasonable value
 
     // If TLU event: don't convert to standard event but only use time information
     if(evt->GetDescription() == "TluRawDataEvent") {
         LOG(DEBUG) << "\t--> Found TLU Event.";
 
-        event_times.first = static_cast<double>(evt->GetTimestampBegin()) * 25.; // 40 MHz --> ns
-        event_times.second = static_cast<double>(evt->GetTimestampEnd()) * 25.;  // 40 MHz --> ns
-        get_event_times(event_times, clipboard);
+        evt_start = static_cast<double>(evt->GetTimestampBegin());
+        evt_end = static_cast<double>(evt->GetTimestampEnd());
+        auto event_times = get_event_times(evt_start, evt_end, clipboard);
 
         LOG(DEBUG) << "after get_event_times(): event_times.first = "
                    << Units::display(event_times.first, {"ns", "us", "ms", "s"})
@@ -56,15 +60,13 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
         return;
     } // end if
 
-    // Create vector of pixels:
-    Pixels* pixels = new Pixels();
-
+    // If other than TLU:
     // Prepare standard event:
     auto stdevt = eudaq::StandardEvent::MakeShared();
 
     // Convert event to standard event:
     if(!(eudaq::StdEventConverter::Convert(evt, stdevt, nullptr))) {
-        LOG(DEBUG) << "eudaq::StdEventConverter -> cannot convert.";
+        LOG(DEBUG) << "Cannot convert to StandardEvent.";
         return;
     }
 
@@ -72,6 +74,35 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
         LOG(DEBUG) << "No plane found in event.";
         return;
     }
+
+    // Get event begin/end:
+    auto event_times = get_event_times(stdevt->GetTimeBegin(), stdevt->GetTimeEnd(), clipboard);
+    LOG(DEBUG) << "after calling get_event_times(): event_times.first = "
+               << Units::display(event_times.first, {"ns", "us", "ms", "s"})
+               << ", event_times.second = " << Units::display(event_times.second, {"ns", "us", "ms", "s"});
+
+    // Check if event is fully inside frame:
+    // ...
+    // ... think about logic here ...
+    // ... What if TLU/telescope --> all timestamps are CRAP!
+    // ...
+
+    // Don't filter this way when looking at NiRawDataEvent as all timestamps are 0!
+    if(evt->GetDescription() != "2NiRawDataEvent") {
+        if(stdevt->GetTimeBegin() < event_times.first) {
+            LOG(INFO) << "Frame dropped because frame begins BEFORE event: " << stdevt->GetTimeBegin() << " earlier than "
+                      << event_times.first;
+            return;
+        }
+        if(stdevt->GetTimeEnd() > event_times.second) {
+            LOG(INFO) << "Frame dropped because frame begins AFTER event: " << stdevt->GetTimeBegin() << " later than "
+                      << event_times.second;
+            return;
+        }
+    } // end if not NiRawDataEvent
+
+    // Create vector of pixels:
+    Pixels* pixels = new Pixels();
 
     LOG(INFO) << "\tNumber of planes: " << stdevt->NumPlanes();
     // Loop over all planes and take only the one corresponding to current detector:
@@ -92,34 +123,29 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
         LOG(DEBUG) << "\tType: " << plane.Type() << " Name: " << plane.Sensor();
         // Loop over all hits and add to pixels vector:
         for(unsigned int i = 0; i < nHits; i++) {
-            LOG(INFO) << "\t\t x: " << plane.GetX(i, 0) << "\ty: " << plane.GetY(i, 0) << "\ttot: " << plane.GetPixel(i)
-                      << "\tts: " << Units::display(plane.GetTimestamp(i), {"ns", "us", "ms"});
-            Pixel* pixel = new Pixel(m_detector->name(),
-                                     static_cast<int>(plane.GetY(i, 0)),
-                                     static_cast<int>(plane.GetX(i, 0)),
-                                     static_cast<int>(plane.GetPixel(i)),
-                                     plane.GetTimestamp(i));
+
+            auto col = static_cast<int>(plane.GetY(i)); // X/Y: This is counter-intuitive!
+            auto row = static_cast<int>(plane.GetX(i)); // X/Y: This is counter-intuitive!
+            auto tot = static_cast<int>(plane.GetPixel(i));
+            auto ts = plane.GetTimestamp(i);
+
+            LOG(INFO) << "\t\t x: " << col << "\ty: " << row << "\ttot: " << tot
+                      << "\tts: " << Units::display(ts, {"ns", "us", "ms"});
+
+            // If this pixel is masked, do not save it
+            if(m_detector->masked(col, row)) {
+                continue;
+            }
+            Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, ts);
 
             // Fill pixel-related histograms here:
             hitmap->Fill(pixel->column(), pixel->row());
-            hEventTimes->Fill(pixel->timestamp()); // this can be 0, e.g. for MIMOSA telescope hits!
+            hEventTimes->Fill(pixel->timestamp()); // this doesn't always make sense, e.g. for MIMOSA telescope, there are no
+                                                   // pixel timestamps
 
             pixels->push_back(pixel);
         } // loop over hits
     }     // loop over planes
-
-    // get event begin/end:
-    event_times.first = stdevt->GetTimeBegin();
-    event_times.second = stdevt->GetTimeEnd();
-    get_event_times(event_times, clipboard);
-    LOG(DEBUG) << "after calling get_event_times(): event_times.first = "
-               << Units::display(event_times.first, {"ns", "us", "ms", "s"})
-               << ", event_times.second = " << Units::display(event_times.second, {"ns", "us", "ms", "s"});
-
-    // Check if event is fully inside frame:
-    // ...
-    // ... think about logic here ...
-    // ...
 
     // Put the pixel data on the clipboard:
     if(!pixels->empty()) {
@@ -150,7 +176,7 @@ void EventLoaderEUDAQ2::initialise() {
                       0,
                       m_detector->nPixels().Y());
     title = detectorID + ": eventTimes;eventTimes [ns]; events";
-    hEventTimes = new TH1F("eventTimes", title.c_str(), 3000000, 0, 300);
+    hEventTimes = new TH1F("eventTimes", title.c_str(), 3000000, 0, 3e12);
 
     // open the input file with the eudaq reader
     try {

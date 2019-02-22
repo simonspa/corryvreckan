@@ -53,9 +53,12 @@ namespace corryvreckan {
         /**
          * @brief get event start/end: if event exists on clipboard --> take this, otherwise take input values and put new
          * event onto clipboard
-         * @param evt_times = pair of {event_start, event_end}, clipboard
+         * @param start Start time of the currently read detector data
+         * @param end End time of the currently read detector data
+         * @param clipboard The clipboard of the event
+         * @return pair with event start and end time, either from definded event on clipboard or from local data
          */
-        void get_event_times(std::pair<double, double>& evt_times, std::shared_ptr<Clipboard>& clipboard);
+        std::pair<double, double> get_event_times(double start, double end, std::shared_ptr<Clipboard>& clipboard);
 
         /**
          * @brief Process events: extract hits and put onto clipboard, also define event start/end
