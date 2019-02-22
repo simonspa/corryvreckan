@@ -88,7 +88,7 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
     // ...
 
     // Don't filter this way when looking at NiRawDataEvent as all timestamps are 0!
-    if(evt->GetDescription() != "2NiRawDataEvent") {
+    if(evt->GetDescription() != "NiRawDataEvent") {
         if(stdevt->GetTimeBegin() < event_times.first) {
             LOG(INFO) << "Frame dropped because frame begins BEFORE event: " << stdevt->GetTimeBegin() << " earlier than "
                       << event_times.first;
