@@ -176,14 +176,8 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
         // Loop over all hits and add to pixels vector:
         for(unsigned int i = 0; i < nHits; i++) {
 
-            int col, row;
-            if(evt->GetDescription() == "NiRawDataEvent") {
-                col = static_cast<int>(plane.GetY(i)); // Where is the function plane.SetPixel() used for MIMOSA???
-                row = static_cast<int>(plane.GetX(i)); // This seems to be swapped!!
-            } else {
-                col = static_cast<int>(plane.GetX(i));
-                row = static_cast<int>(plane.GetY(i));
-            }
+            auto col = static_cast<int>(plane.GetX(i));
+            auto row = static_cast<int>(plane.GetY(i));
             auto tot = static_cast<int>(plane.GetPixel(i));
             auto ts = plane.GetTimestamp(i);
 
