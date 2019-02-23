@@ -178,8 +178,19 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
         // Loop over all hits and add to pixels vector:
         for(unsigned int i = 0; i < nHits; i++) {
 
-            auto col = static_cast<int>(plane.GetX(i));
-            auto row = static_cast<int>(plane.GetY(i));
+            // auto col = static_cast<int>(plane.GetX(i));
+            // auto row = static_cast<int>(plane.GetY(i));
+
+            int col, row;
+            // UGLY HACK to check if CLICpix2 col/row are swapped:
+            if(evt->GetDescription() == "CaribouCLICpix2Event") {
+                col = static_cast<int>(plane.GetY(i));
+                row = static_cast<int>(plane.GetX(i));
+            } else {
+                col = static_cast<int>(plane.GetX(i));
+                row = static_cast<int>(plane.GetY(i));
+            }
+
             auto tot = static_cast<int>(plane.GetPixel(i));
             auto ts = plane.GetTimestamp(i);
 
