@@ -44,35 +44,42 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
                << " lsb, ts_end = " << evt->GetTimestampEnd() << " lsb"
                << ", trigN = " << evt->GetTriggerN();
 
-    double evt_start = -1; // initialize to unreasonable value
-    double evt_end = -1;   // initialize to unreasonable value
-
     // If TLU event: don't convert to standard event but only use time information
     if(evt->GetDescription() == "TluRawDataEvent") {
         LOG(DEBUG) << "\t--> Found TLU Event.";
 
-        evt_start = static_cast<double>(evt->GetTimestampBegin());
+        std::pair<double, double> current_event_times;
+        current_event_times.first = static_cast<double>(evt->GetTimestampBegin());
         // Do not use:
         // "evt_end = static_cast<double>(evt->GetTimestampEnd());"
         // because this is only 25ns larger than begin and doesn't have a meaning!
         // Instead hardcode:
-        evt_end = evt_start + 115000; // 115 us until rolling shutter goes across full matrix
-        auto event_times = get_event_times(evt_start, evt_end, clipboard);
+        current_event_times.second =
+            current_event_times.first + 115000; // 115 us until rolling shutter goes across full matrix
+        auto clipboard_event_times = get_event_times(current_event_times.first, current_event_times.second, clipboard);
 
-        LOG(DEBUG) << "after get_event_times(): event_times.first = "
-                   << Units::display(event_times.first, {"ns", "us", "ms", "s"})
-                   << ", event_times.second = " << Units::display(event_times.second, {"ns", "us", "ms", "s"});
+        hEventBegin->Fill(current_event_times.first);
+
+        LOG(DEBUG) << "Check current_event_times.first = "
+                   << Units::display(current_event_times.first, {"ns", "us", "ms", "s"}) << ", current_event_times.second = "
+                   << Units::display(current_event_times.second, {"ns", "us", "ms", "s"});
+        LOG(DEBUG) << "Check clipboard_event_times.first = "
+                   << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"})
+                   << ", clipboard_event_times.second = "
+                   << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
 
         // use knowledge of 115 us frame length for rolling shutter to go across full matrix:
-        if(evt_start < event_times.first) {
-            LOG(INFO) << "Frame dropped because frame begins BEFORE event: " << evt_start << " earlier than "
-                      << event_times.first;
+        if(current_event_times.first + 0.5e6 < clipboard_event_times.first) {
+            LOG(INFO) << "Frame dropped because frame begins BEFORE event: "
+                      << Units::display(current_event_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
+                      << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"});
             return;
         }
 
-        if(evt_end > event_times.second) {
-            LOG(INFO) << "Frame dropped because frame begins AFTER event: " << evt_end << " later than "
-                      << event_times.second;
+        if(current_event_times.second - 0.5e6 > clipboard_event_times.second) {
+            LOG(INFO) << "Frame dropped because frame begins AFTER event: "
+                      << Units::display(current_event_times.second, {"ns", "us", "ms", "s"}) << " later than "
+                      << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
             return;
         }
 
@@ -103,10 +110,16 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
     }
 
     // Get event begin/end:
-    auto event_times = get_event_times(stdevt->GetTimeBegin(), stdevt->GetTimeEnd(), clipboard);
-    LOG(DEBUG) << "after calling get_event_times(): event_times.first = "
-               << Units::display(event_times.first, {"ns", "us", "ms", "s"})
-               << ", event_times.second = " << Units::display(event_times.second, {"ns", "us", "ms", "s"});
+    std::pair<double, double> current_event_times;
+    current_event_times.first = stdevt->GetTimeBegin();
+    current_event_times.second = stdevt->GetTimeEnd();
+
+    auto clipboard_event_times = get_event_times(current_event_times.first, current_event_times.second, clipboard);
+    LOG(DEBUG) << "Check current_event_times.first = " << Units::display(current_event_times.first, {"ns", "us", "ms", "s"})
+               << ", current_event_times.second = " << Units::display(current_event_times.second, {"ns", "us", "ms", "s"});
+    LOG(DEBUG) << "Check clipboard_event_times.first = "
+               << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"}) << ", clipboard_event_times.second = "
+               << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
 
     // If hit timestamps are invalid/non-existent (like for MIMOSA26 telescope),
     // we need to make sure there is a corresponding TLU event with the same triggerID:
@@ -126,14 +139,16 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
     }
     // For chips with valid hit timestamps:
     else {
-        if(stdevt->GetTimeBegin() < event_times.first) {
-            LOG(INFO) << "Frame dropped because frame begins BEFORE event: " << stdevt->GetTimeBegin() << " earlier than "
-                      << event_times.first;
+        if(current_event_times.first < clipboard_event_times.first) {
+            LOG(INFO) << "Frame dropped because frame begins BEFORE event: "
+                      << Units::display(current_event_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
+                      << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"});
             return;
         }
-        if(stdevt->GetTimeEnd() > event_times.second) {
-            LOG(INFO) << "Frame dropped because frame begins AFTER event: " << stdevt->GetTimeBegin() << " later than "
-                      << event_times.second;
+        if(current_event_times.second > clipboard_event_times.second) {
+            LOG(INFO) << "Frame dropped because frame begins AFTER event: "
+                      << Units::display(current_event_times.second, {"ns", "us", "ms", "s"}) << " later than "
+                      << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
             return;
         }
     } // end if not NiRawDataEvent
@@ -173,16 +188,20 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
             if(m_detector->masked(col, row)) {
                 continue;
             }
-            Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, ts);
+            Pixel* pixel = new Pixel(m_detector->name(), row, col, tot, ts);
 
             // Fill pixel-related histograms here:
             hitmap->Fill(pixel->column(), pixel->row());
-            hEventTimes->Fill(pixel->timestamp()); // this doesn't always make sense, e.g. for MIMOSA telescope, there are no
-                                                   // pixel timestamps
+            hHitTimes->Fill(pixel->timestamp()); // this doesn't always make sense, e.g. for MIMOSA telescope, there are no
+                                                 // pixel timestamps
 
             pixels->push_back(pixel);
         } // loop over hits
     }     // loop over planes
+
+    hPixelsPerFrame->Fill(static_cast<int>(pixels->size()));
+    // hEventBegin->Fill(clipboard_event_times.first,static_cast<double>(pixels->size()));
+    hEventBegin->Fill(clipboard_event_times.first);
 
     // Put the pixel data on the clipboard:
     if(!pixels->empty()) {
@@ -191,7 +210,6 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
     } else {
         // if empty, clean up --> delete pixels object
         delete pixels;
-        return;
     }
 
     return;
@@ -212,8 +230,13 @@ void EventLoaderEUDAQ2::initialise() {
                       m_detector->nPixels().Y(),
                       0,
                       m_detector->nPixels().Y());
-    title = detectorID + ": eventTimes;eventTimes [ns]; events";
-    hEventTimes = new TH1F("eventTimes", title.c_str(), 3000000, 0, 3e12);
+    title = detectorID + ": hitTimes;hitTimes [ns]; events";
+    hHitTimes = new TH1F("hitTimes", title.c_str(), 3000000, 0, 3e12);
+
+    title = m_detector->name() + " Pixel multiplicity;pixels;frames";
+    hPixelsPerFrame = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
+    title = m_detector->name() + " eventBegin;eventBegin [ns];entries";
+    hEventBegin = new TH1D("eventBegin", title.c_str(), 1e6, 0, 1e9);
 
     // open the input file with the eudaq reader
     try {
@@ -251,7 +274,13 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         // Important: first process TLU event (if available) --> sets event begin/end, then others
         // Note: at the moment, we're not checking if there is a 2nd TLU subevent (but that shouldn't occur).
 
-        // loop over subevents and process only TLU event:
+        // drop frame if number of subevents==1, i.e. there is only telescope but not tlu data or vice versa
+        if(sub_events.size() == 1) {
+            LOG(INFO) << "Dropping frame because there is only 1 subevent.";
+            return StatusCode::NoData;
+        }
+
+        // loop over subevents and process ONLY TLU event:
         for(auto& subevt : sub_events) {
             LOG(DEBUG) << "Processing subevent.";
             if(subevt->GetDescription() != "TluRawDataEvent") {
@@ -260,7 +289,8 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
             } // end if
             process_event(subevt, clipboard);
         } // end for
-        // loop over subevents and process all other events (except TLU):
+
+        // loop over subevents and process all OTHER events (except TLU):
         for(auto& subevt : sub_events) {
             LOG(DEBUG) << "Processing subevent.";
             if(subevt->GetDescription() == "TluRawDataEvent") {

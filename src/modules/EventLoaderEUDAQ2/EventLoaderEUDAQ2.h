@@ -73,7 +73,10 @@ namespace corryvreckan {
 
         // Pixel histograms
         TH2F* hitmap;
-        TH1F* hEventTimes;
+        TH1F* hHitTimes;
+
+        TH1F* hPixelsPerFrame;
+        TH1D* hEventBegin;
     };
 
 } // namespace corryvreckan
