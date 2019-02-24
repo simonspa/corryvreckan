@@ -301,15 +301,15 @@ void EventLoaderEUDAQ2::initialise() {
             }
             // If there are subevents, find TLU subevent:
             else {
-                LOG(DEBUG) << "There is no T0 in TLU events. Don't skip anything, start from file beginning.";
+                LOG(INFO) << "There is no T0 in TLU events. Don't skip anything, start from file beginning.";
                 return;
-            }     // end else (there are subevents)
+            } // end else (there are subevents)
 
             if(found_timestamp) {
                 if(this_timestamp < prev_timestamp) {
-                    LOG(DEBUG) << "Found T0 at timestamp = " << this_timestamp
-                               << " lsb after prev_timestamp = " << prev_timestamp << " lsb at event number "
-                               << this_event_number;
+                    LOG(INFO) << "Found T0 at timestamp = " << this_timestamp
+                              << " lsb after prev_timestamp = " << prev_timestamp << " lsb at event number "
+                              << this_event_number;
                     break;
                 } // end if
                 prev_timestamp = this_timestamp;
