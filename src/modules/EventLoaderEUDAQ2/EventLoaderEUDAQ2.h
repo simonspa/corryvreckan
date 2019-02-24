@@ -68,6 +68,7 @@ namespace corryvreckan {
 
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
+        bool m_skipBeforeT0;
 
         eudaq::FileReaderUP reader;
 

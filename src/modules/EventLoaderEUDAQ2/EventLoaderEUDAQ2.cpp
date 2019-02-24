@@ -242,6 +242,8 @@ void EventLoaderEUDAQ2::initialise() {
     auto detectorID = m_detector->name();
     LOG(DEBUG) << "Initialise for detector " + detectorID;
 
+    m_skipBeforeT0 = m_config.get<bool>("skip_before_t0", false);
+
     // Some simple histograms:
     std::string title = detectorID + ": hitmap;x [px];y [px];events";
     hitmap = new TH2F("hitmap",
@@ -268,6 +270,66 @@ void EventLoaderEUDAQ2::initialise() {
                    << " '. Please verify that the path and file name are correct.";
         throw InvalidValueError(m_config, "file_path", "Parsing error!");
     }
+
+    // skip everything before T0:
+    if(m_skipBeforeT0) {
+        LOG(INFO) << "Skipping all events before T0.";
+
+        unsigned int prev_event_number = 0;
+        long unsigned prev_timestamp = 0;
+        while(1) {
+            auto evt = reader->GetNextEvent();
+            if(!evt) {
+                LOG(DEBUG) << "Previous event number: " << prev_event_number
+                           << ". Reached end of file without finding T0! Something's wrong!";
+                return;
+            } else {
+                LOG(DEBUG) << "Looking at event number " << evt->GetEventNumber();
+            }
+
+            auto sub_events = evt->GetSubEvents();
+            LOG(DEBUG) << "There are " << sub_events.size() << " sub events.";
+
+            auto this_event_number = evt->GetEventNumber();
+            long unsigned int this_timestamp = 0;
+            bool found_timestamp = false;
+
+            if(sub_events.size() == 0) {
+                LOG(DEBUG) << "\tNo subevent, process event.";
+                this_timestamp = evt->GetTimestampBegin();
+                found_timestamp = true;
+            }
+            // If there are subevents, find TLU subevent:
+            else {
+                // loop over subevents and process ONLY TLU event:
+                for(auto& subevt : sub_events) {
+                    LOG(DEBUG) << "\tProcessing subevent.";
+                    if(subevt->GetDescription() != "TluRawDataEvent") {
+                        LOG(DEBUG) << "\t---> subevent is no TLU event -> continue.";
+                        continue;
+                    }
+                    // found TLU event:
+                    this_timestamp = subevt->GetTimestampBegin();
+                    found_timestamp = true;
+                    LOG(DEBUG) << "\tFound TLU timestamp: " << this_timestamp;
+                } // end for
+            }     // end else (there are subevents)
+
+            if(found_timestamp) {
+                if(this_timestamp < prev_timestamp) {
+                    LOG(DEBUG) << "Found T0 at timestamp = " << this_timestamp
+                               << " lsb after prev_timestamp = " << prev_timestamp << " lsb at event number "
+                               << this_event_number;
+                    break;
+                } // end if
+                prev_timestamp = this_timestamp;
+                prev_event_number = this_event_number;
+
+            } else {
+                LOG(WARNING) << "In event " << this_event_number << ": Couldn't find a timestamp! Something is wrong!";
+            }
+        } // end while(1)
+    }     // end if skip before t0
 }
 
 StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
@@ -285,7 +347,8 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG(DEBUG) << "#ev: " << evt->GetEventNumber() << ", descr " << evt->GetDescription() << ", version "
                << evt->GetVersion() << ", type " << evt->GetType() << ", devN " << evt->GetDeviceN() << ", trigN "
-               << evt->GetTriggerN() << ", evID " << evt->GetEventID();
+               << evt->GetTriggerN() << ", evID " << evt->GetEventID() << ", ts_begin " << evt->GetTimestampBegin()
+               << ", ts_end " << evt->GetTimestampEnd();
 
     // check if there are subevents:
     // if not --> convert event, if yes, loop over subevents and convert each
@@ -302,7 +365,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
         // drop frame if number of subevents==1, i.e. there is only telescope but not tlu data or vice versa
         if(sub_events.size() == 1) {
-            LOG(INFO) << "Dropping frame because there is only 1 subevent.";
+            LOG(INFO) << "Dropping frame because there is only 1 subevent of type " << sub_events[0]->GetDescription();
             return StatusCode::NoData;
         }
 
