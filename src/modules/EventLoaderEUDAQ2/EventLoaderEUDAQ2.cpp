@@ -301,18 +301,8 @@ void EventLoaderEUDAQ2::initialise() {
             }
             // If there are subevents, find TLU subevent:
             else {
-                // loop over subevents and process ONLY TLU event:
-                for(auto& subevt : sub_events) {
-                    LOG(DEBUG) << "\tProcessing subevent.";
-                    if(subevt->GetDescription() != "TluRawDataEvent") {
-                        LOG(DEBUG) << "\t---> subevent is no TLU event -> continue.";
-                        continue;
-                    }
-                    // found TLU event:
-                    this_timestamp = subevt->GetTimestampBegin();
-                    found_timestamp = true;
-                    LOG(DEBUG) << "\tFound TLU timestamp: " << this_timestamp;
-                } // end for
+                LOG(DEBUG) << "There is no T0 in TLU events. Don't skip anything, start from file beginning.";
+                return;
             }     // end else (there are subevents)
 
             if(found_timestamp) {
