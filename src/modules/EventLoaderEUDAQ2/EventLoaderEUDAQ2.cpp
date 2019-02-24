@@ -40,63 +40,65 @@ EventLoaderEUDAQ2::get_event_times(double start, double end, std::shared_ptr<Cli
     return evt_times;
 }
 
+EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::EventSPC evt,
+                                                                      std::shared_ptr<Clipboard>& clipboard) {
+
+    // If TLU event: don't convert to standard event but only use time information
+    LOG(DEBUG) << "\tEvent description: " << evt->GetDescription() << ", ts_begin = " << evt->GetTimestampBegin()
+               << " lsb, ts_end = " << evt->GetTimestampEnd() << " lsb"
+               << ", trigN = " << evt->GetTriggerN();
+
+    std::pair<double, double> current_event_times;
+    std::pair<double, double> event_search_times;
+    // parameters to
+    // 115 us until rolling shutter goes across full matrix
+
+    current_event_times.first = static_cast<double>(evt->GetTimestampBegin()) - 115000;  // in ns
+    current_event_times.second = static_cast<double>(evt->GetTimestampBegin()) + 230000; // in ns
+    event_search_times.first = static_cast<double>(evt->GetTimestampBegin()) + 1000;     // in ns
+    event_search_times.second = static_cast<double>(evt->GetTimestampBegin()) - 1000;    // in ns
+    // Do not use:
+    // "evt_end = static_cast<double>(evt->GetTimestampEnd());"
+    // because this is only 25ns larger than GetTimeStampBegin and doesn't have a meaning!
+
+    auto clipboard_event_times = get_event_times(current_event_times.first, current_event_times.second, clipboard);
+
+    hEventBegin->Fill(static_cast<double>(evt->GetTimestampBegin()));
+
+    LOG(DEBUG) << "Check current_event_times.first = " << Units::display(current_event_times.first, {"ns", "us", "ms", "s"})
+               << ", current_event_times.second = " << Units::display(current_event_times.second, {"ns", "us", "ms", "s"});
+    LOG(DEBUG) << "Check clipboard_event_times.first = "
+               << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"}) << ", clipboard_event_times.second = "
+               << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
+
+    // Drop events which are outside of the clipboard time window:
+    if(event_search_times.first < clipboard_event_times.first) {
+        LOG(DEBUG) << "Frame dropped because frame begins BEFORE event: "
+                   << Units::display(event_search_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
+                   << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"});
+        return before_window;
+    }
+
+    if(event_search_times.second > clipboard_event_times.second) {
+        LOG(DEBUG) << "Frame dropped because frame begins AFTER event: "
+                   << Units::display(event_search_times.second, {"ns", "us", "ms", "s"}) << " later than "
+                   << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
+        return after_window;
+    }
+
+    LOG(DEBUG) << "-------------- adding TriggerID " << evt->GetTriggerN();
+    clipboard->get_event()->add_trigger_id(evt->GetTriggerN());
+    return in_window;
+}
+
 void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard) {
 
     LOG(DEBUG) << "\tEvent description: " << evt->GetDescription() << ", ts_begin = " << evt->GetTimestampBegin()
                << " lsb, ts_end = " << evt->GetTimestampEnd() << " lsb"
                << ", trigN = " << evt->GetTriggerN();
 
-    // If TLU event: don't convert to standard event but only use time information
-    if(evt->GetDescription() == "TluRawDataEvent") {
-        LOG(DEBUG) << "\t--> Found TLU Event.";
+    // If other than TLU event:
 
-        std::pair<double, double> current_event_times;
-        current_event_times.first = static_cast<double>(evt->GetTimestampBegin());
-        // Do not use:
-        // "evt_end = static_cast<double>(evt->GetTimestampEnd());"
-        // because this is only 25ns larger than GetTimeStampBegin and doesn't have a meaning!
-        // Instead hardcode:
-        current_event_times.second =
-            current_event_times.first + 115000; // 115 us until rolling shutter goes across full matrix
-        auto clipboard_event_times = get_event_times(current_event_times.first, current_event_times.second, clipboard);
-
-        hEventBegin->Fill(current_event_times.first);
-
-        LOG(DEBUG) << "Check current_event_times.first = "
-                   << Units::display(current_event_times.first, {"ns", "us", "ms", "s"}) << ", current_event_times.second = "
-                   << Units::display(current_event_times.second, {"ns", "us", "ms", "s"});
-        LOG(DEBUG) << "Check clipboard_event_times.first = "
-                   << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"})
-                   << ", clipboard_event_times.second = "
-                   << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
-
-        // use knowledge of 115 us frame length for rolling shutter to go across full matrix:
-        if(current_event_times.first + 0.5e6 < clipboard_event_times.first) {
-            LOG(INFO) << "Frame dropped because frame begins BEFORE event: "
-                      << Units::display(current_event_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
-                      << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"});
-            return;
-        }
-
-        if(current_event_times.second - 0.5e6 > clipboard_event_times.second) {
-            LOG(INFO) << "Frame dropped because frame begins AFTER event: "
-                      << Units::display(current_event_times.second, {"ns", "us", "ms", "s"}) << " later than "
-                      << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
-            return;
-        }
-
-        // if frame is not rejected: add TriggerID --> use it for Mimosa hits to check if reject or not
-        if(!clipboard->event_defined()) {
-            LOG(WARNING) << "No event defined! Something went wrong!";
-            return;
-        }
-        LOG(DEBUG) << "-------------- adding TriggerID " << evt->GetTriggerN();
-        clipboard->get_event()->add_trigger_id(evt->GetTriggerN());
-        return;
-    } // end if
-
-    // // // // // // // //
-    // If other than TLU:
     // Prepare standard event:
     auto stdevt = eudaq::StandardEvent::MakeShared();
 
@@ -142,15 +144,15 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
     // For chips with valid hit timestamps:
     else {
         if(current_event_times.first < clipboard_event_times.first) {
-            LOG(INFO) << "Frame dropped because frame begins BEFORE event: "
-                      << Units::display(current_event_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
-                      << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"});
+            LOG(DEBUG) << "Frame dropped because frame begins BEFORE event: "
+                       << Units::display(current_event_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
+                       << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"});
             return;
         }
         if(current_event_times.second > clipboard_event_times.second) {
-            LOG(INFO) << "Frame dropped because frame begins AFTER event: "
-                      << Units::display(current_event_times.second, {"ns", "us", "ms", "s"}) << " later than "
-                      << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
+            LOG(DEBUG) << "Frame dropped because frame begins AFTER event: "
+                       << Units::display(current_event_times.second, {"ns", "us", "ms", "s"}) << " later than "
+                       << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
             return;
         }
     } // end if not NiRawDataEvent
@@ -158,7 +160,7 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
     // Create vector of pixels:
     Pixels* pixels = new Pixels();
 
-    LOG(INFO) << "\tNumber of planes: " << stdevt->NumPlanes();
+    LOG(DEBUG) << "\tNumber of planes: " << stdevt->NumPlanes();
     // Loop over all planes and take only the one corresponding to current detector:
     for(size_t i_plane = 0; i_plane < stdevt->NumPlanes(); i_plane++) {
 
@@ -172,7 +174,7 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
 
         auto nHits = plane.GetPixels<int>().size(); // number of hits
         auto nPixels = plane.TotalPixels();         // total pixels in matrix
-        LOG(INFO) << "\tNumber of hits: " << nHits << " / total pixel number: " << nPixels;
+        LOG(DEBUG) << "\tNumber of hits: " << nHits << " / total pixel number: " << nPixels;
 
         LOG(DEBUG) << "\tType: " << plane.Type() << " Name: " << plane.Sensor();
         // Loop over all hits and add to pixels vector:
@@ -203,8 +205,8 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
                 ts = plane.GetTimestamp(i);
             }
 
-            LOG(INFO) << "\t\t x: " << col << "\ty: " << row << "\ttot: " << tot
-                      << "\tts: " << Units::display(ts, {"ns", "us", "ms"});
+            LOG(DEBUG) << "\t\t x: " << col << "\ty: " << row << "\ttot: " << tot
+                       << "\tts: " << Units::display(ts, {"ns", "us", "ms"});
 
             // If this pixel is masked, do not save it
             if(m_detector->masked(col, row)) {
@@ -271,32 +273,36 @@ void EventLoaderEUDAQ2::initialise() {
         throw InvalidValueError(m_config, "file_path", "Parsing error!");
     }
 
-    // skip everything before T0:
-    if(m_skipBeforeT0) {
+    // Read first event to a global variable:
+    if(!m_skipBeforeT0) {
+        current_evt = reader->GetNextEvent();
+    }
+    // Skip everything before T0:
+    else {
         LOG(INFO) << "Skipping all events before T0.";
 
         unsigned int prev_event_number = 0;
         long unsigned prev_timestamp = 0;
         while(1) {
-            auto evt = reader->GetNextEvent();
-            if(!evt) {
+            current_evt = reader->GetNextEvent();
+            if(!current_evt) {
                 LOG(DEBUG) << "Previous event number: " << prev_event_number
                            << ". Reached end of file without finding T0! Something's wrong!";
                 return;
             } else {
-                LOG(DEBUG) << "Looking at event number " << evt->GetEventNumber();
+                LOG(DEBUG) << "Looking at event number " << current_evt->GetEventNumber();
             }
 
-            auto sub_events = evt->GetSubEvents();
+            auto sub_events = current_evt->GetSubEvents();
             LOG(DEBUG) << "There are " << sub_events.size() << " sub events.";
 
-            auto this_event_number = evt->GetEventNumber();
+            auto this_event_number = current_evt->GetEventNumber();
             long unsigned int this_timestamp = 0;
             bool found_timestamp = false;
 
             if(sub_events.size() == 0) {
                 LOG(DEBUG) << "\tNo subevent, process event.";
-                this_timestamp = evt->GetTimestampBegin();
+                this_timestamp = current_evt->GetTimestampBegin();
                 found_timestamp = true;
             }
             // If there are subevents, find TLU subevent:
@@ -329,57 +335,97 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     // Consequently we can't measure the efficiency of the CLICpix2!
     //
     // This also means we keep running forever because no event != end_of_file
-    auto evt = reader->GetNextEvent();
-    if(!evt) {
-        LOG(DEBUG) << "!ev --> return, empty event --> end of file!";
-        return StatusCode::Failure;
-    }
 
-    LOG(DEBUG) << "#ev: " << evt->GetEventNumber() << ", descr " << evt->GetDescription() << ", version "
-               << evt->GetVersion() << ", type " << evt->GetType() << ", devN " << evt->GetDeviceN() << ", trigN "
-               << evt->GetTriggerN() << ", evID " << evt->GetEventID() << ", ts_begin " << evt->GetTimestampBegin()
-               << ", ts_end " << evt->GetTimestampEnd();
+    // Global variable with an event stored from init or previous run: current_evt
 
-    // check if there are subevents:
-    // if not --> convert event, if yes, loop over subevents and convert each
-    auto sub_events = evt->GetSubEvents();
-    LOG(DEBUG) << "There are " << sub_events.size() << " sub events.";
-
-    if(sub_events.size() == 0) {
-        LOG(DEBUG) << "No subevent, process event.";
-        process_event(evt, clipboard);
-
-    } else {
-        // Important: first process TLU event (if available) --> sets event begin/end, then others
-        // Note: at the moment, we're not checking if there is a 2nd TLU subevent (but that shouldn't occur).
-
-        // drop frame if number of subevents==1, i.e. there is only telescope but not tlu data or vice versa
-        if(sub_events.size() == 1) {
-            LOG(INFO) << "Dropping frame because there is only 1 subevent of type " << sub_events[0]->GetDescription();
-            return StatusCode::NoData;
+    // explain
+    while(1) {
+        if(!current_evt) {
+            LOG(DEBUG) << "!ev --> return, empty event --> end of file!";
+            return StatusCode::Failure;
         }
 
-        // loop over subevents and process ONLY TLU event:
-        for(auto& subevt : sub_events) {
-            LOG(DEBUG) << "Processing subevent.";
-            if(subevt->GetDescription() != "TluRawDataEvent") {
-                LOG(DEBUG) << "\t---> subevent is no TLU event -> continue.";
+        LOG(DEBUG) << "#ev: " << current_evt->GetEventNumber() << ", descr " << current_evt->GetDescription() << ", version "
+                   << current_evt->GetVersion() << ", type " << current_evt->GetType() << ", devN "
+                   << current_evt->GetDeviceN() << ", trigN " << current_evt->GetTriggerN() << ", evID "
+                   << current_evt->GetEventID() << ", ts_begin " << current_evt->GetTimestampBegin() << ", ts_end "
+                   << current_evt->GetTimestampEnd();
+
+        // check if there are subevents:
+        // if not --> convert event, if yes, loop over subevents and convert each
+        auto sub_events = current_evt->GetSubEvents();
+        LOG(DEBUG) << "There are " << sub_events.size() << " sub events.";
+
+        if(sub_events.size() == 0) {
+            LOG(DEBUG) << "No subevent, process event.";
+            process_event(current_evt, clipboard);
+            // read next event for next run:
+            current_evt = reader->GetNextEvent();
+            return StatusCode::Success;
+
+        } else {
+            // Important: first process TLU event (if available) --> sets event begin/end, then others
+            // Note: at the moment, we're not checking if there is a 2nd TLU subevent (but that shouldn't occur).
+
+            // drop frame if number of subevents==1, i.e. there is only telescope but not tlu data or vice versa
+            if(sub_events.size() == 1) {
+                LOG(INFO) << "Dropping frame because there is only 1 subevent of type " << sub_events[0]->GetDescription();
+                current_evt = reader->GetNextEvent();
+                return StatusCode::NoData;
+            }
+
+            // loop over subevents and process ONLY TLU event:
+            bool found_tlu_event = false;
+            enum EventPosition event_position;
+            for(auto& subevt : sub_events) {
+                LOG(DEBUG) << "Processing subevent.";
+                if(subevt->GetDescription() != "TluRawDataEvent") {
+                    LOG(DEBUG) << "\t---> Subevent is no TLU event -> continue.";
+                    continue;
+                } // end if
+                LOG(DEBUG) << "\t---> Found TLU subevent -> process.";
+                found_tlu_event = true;
+                event_position = process_tlu_event(subevt, clipboard);
+                break;
+            } // end for
+
+            if(!found_tlu_event) {
+                LOG(WARNING) << "Did not find TLU subevent. Something is wrong.";
+                current_evt = reader->GetNextEvent();
+                continue;
+            }
+
+            // If before, read next event and check again:
+            if(event_position == before_window) {
+                LOG(DEBUG) << "Trigger is before event window. Read next event and continue.";
+                current_evt = reader->GetNextEvent();
+                continue;
+            }
+
+            // if in,
+            if(event_position == in_window) {
+                LOG(DEBUG) << "Trigger is inside event window. Loop over subevents.";
+                // loop over subevents and process all OTHER events (except TLU):
+                for(auto& subevt : sub_events) {
+                    LOG(DEBUG) << "Processing subevent.";
+                    if(subevt->GetDescription() == "TluRawDataEvent") {
+                        LOG(DEBUG) << "\t---> Subevent is TLU event -> continue.";
+                        continue;
+                    } // end if
+                    process_event(subevt, clipboard);
+                } // end for
+
+                // read next event for next run() iteration
+                current_evt = reader->GetNextEvent();
                 continue;
             } // end if
-            process_event(subevt, clipboard);
-        } // end for
 
-        // loop over subevents and process all OTHER events (except TLU):
-        for(auto& subevt : sub_events) {
-            LOG(DEBUG) << "Processing subevent.";
-            if(subevt->GetDescription() == "TluRawDataEvent") {
-                LOG(DEBUG) << "\t---> subevent is TLU event -> continue.";
-                continue;
-            } // end if
-            process_event(subevt, clipboard);
-        } // end for
+            // if after:
+            if(event_position == after_window) {
+                LOG(DEBUG) << "Trigger is after event window. Finish event window.";
+                return StatusCode::Success;
+            }
+        } // end else (sub_events.size() > 0)
 
-    } // end else
-
-    return StatusCode::Success;
+    } // end while(1)
 }
