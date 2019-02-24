@@ -55,8 +55,8 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
 
     current_event_times.first = static_cast<double>(evt->GetTimestampBegin()) - 115000;  // in ns
     current_event_times.second = static_cast<double>(evt->GetTimestampBegin()) + 230000; // in ns
-    event_search_times.first = static_cast<double>(evt->GetTimestampBegin()) + 1000;     // in ns
-    event_search_times.second = static_cast<double>(evt->GetTimestampBegin()) - 1000;    // in ns
+    event_search_times.first = static_cast<double>(evt->GetTimestampBegin()) + 100;      // in ns
+    event_search_times.second = static_cast<double>(evt->GetTimestampBegin()) - 100;     // in ns
     // Do not use:
     // "evt_end = static_cast<double>(evt->GetTimestampEnd());"
     // because this is only 25ns larger than GetTimeStampBegin and doesn't have a meaning!
@@ -183,15 +183,8 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
             // auto col = static_cast<int>(plane.GetX(i));
             // auto row = static_cast<int>(plane.GetY(i));
 
-            int col, row;
-            // UGLY HACK to check if CLICpix2 col/row are swapped:
-            if(evt->GetDescription() == "CaribouCLICpix2Event") {
-                col = static_cast<int>(plane.GetY(i));
-                row = static_cast<int>(plane.GetX(i));
-            } else {
-                col = static_cast<int>(plane.GetX(i));
-                row = static_cast<int>(plane.GetY(i));
-            }
+            auto col = static_cast<int>(plane.GetX(i));
+            auto row = static_cast<int>(plane.GetY(i));
 
             auto tot = static_cast<int>(plane.GetPixel(i));
             double ts;
