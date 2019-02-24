@@ -273,10 +273,14 @@ void EventLoaderEUDAQ2::initialise() {
 StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG(DEBUG) << "=====================\n==== Next event: ====\n=====================";
+    // So this means that CLICpix2 frames without hits are discarded?
+    // Consequently we can't measure the efficiency of the CLICpix2!
+    //
+    // This also means we keep running forever because no event != end_of_file
     auto evt = reader->GetNextEvent();
     if(!evt) {
-        LOG(DEBUG) << "!ev --> return, empty event!";
-        return StatusCode::NoData;
+        LOG(DEBUG) << "!ev --> return, empty event --> end of file!";
+        return StatusCode::Failure;
     }
 
     LOG(DEBUG) << "#ev: " << evt->GetEventNumber() << ", descr " << evt->GetDescription() << ", version "
