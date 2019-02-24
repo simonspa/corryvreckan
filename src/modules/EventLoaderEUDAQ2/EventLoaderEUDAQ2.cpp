@@ -54,7 +54,7 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
         current_event_times.first = static_cast<double>(evt->GetTimestampBegin());
         // Do not use:
         // "evt_end = static_cast<double>(evt->GetTimestampEnd());"
-        // because this is only 25ns larger than begin and doesn't have a meaning!
+        // because this is only 25ns larger than GetTimeStampBegin and doesn't have a meaning!
         // Instead hardcode:
         current_event_times.second =
             current_event_times.first + 115000; // 115 us until rolling shutter goes across full matrix
@@ -85,12 +85,12 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
             return;
         }
 
-        // if frame is not rejected: add trigger ID --> use it for Mimosa hits to check if reject or not
+        // if frame is not rejected: add TriggerID --> use it for Mimosa hits to check if reject or not
         if(!clipboard->event_defined()) {
             LOG(WARNING) << "No event defined! Something went wrong!";
             return;
         }
-        LOG(DEBUG) << "-------------- adding triggerID " << evt->GetTriggerN();
+        LOG(DEBUG) << "-------------- adding TriggerID " << evt->GetTriggerN();
         clipboard->get_event()->add_trigger_id(evt->GetTriggerN());
         return;
     } // end if
@@ -134,9 +134,9 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
     // Pay attention to this when working with a different chip without hit timestamps!
     if(evt->GetDescription() == "NiRawDataEvent") {
         if(!clipboard->get_event()->has_trigger_id(evt->GetTriggerN())) {
-            LOG(DEBUG) << "Frame dropped because event does not contain triggerID " << evt->GetTriggerN();
+            LOG(DEBUG) << "Frame dropped because event does not contain TriggerID " << evt->GetTriggerN();
         } else {
-            LOG(DEBUG) << "Found trigger ID.";
+            LOG(DEBUG) << "Found TriggerID.";
         }
     }
     // For chips with valid hit timestamps:
@@ -192,7 +192,16 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
             }
 
             auto tot = static_cast<int>(plane.GetPixel(i));
-            auto ts = plane.GetTimestamp(i);
+            double ts;
+
+            // for pixels without valid timestamp use event timestamp:
+            if(evt->GetTimestampBegin() == 0) {
+                ts = current_event_times.first;
+            }
+            // for valid pixel timestamps (like CLICpix2) use plane timestamp:
+            else {
+                ts = plane.GetTimestamp(i);
+            }
 
             LOG(INFO) << "\t\t x: " << col << "\ty: " << row << "\ttot: " << tot
                       << "\tts: " << Units::display(ts, {"ns", "us", "ms"});
