@@ -12,15 +12,15 @@ namespace corryvreckan {
         Event(){};
         Event(double start,
               double end,
-              std::vector<std::pair<uint32_t, uint64_t>> trigger_list = std::vector<std::pair<uint32_t, uint64_t>>())
+              std::vector<std::pair<uint32_t, double>> trigger_list = std::vector<std::pair<uint32_t, double>>())
             : Object(start), end_(end), trigger_list_(trigger_list){};
 
         double start() const { return timestamp(); };
         double end() const { return end_; };
         double duration() const { return (end_ - timestamp()); };
 
-        void add_trigger(uint32_t trigger_id, uint64_t trigger_ts) {
-            std::pair<uint32_t, uint64_t> trigger = {trigger_id, trigger_ts};
+        void add_trigger(uint32_t trigger_id, double trigger_ts) {
+            std::pair<uint32_t, double> trigger = {trigger_id, trigger_ts};
             trigger_list_.push_back(trigger);
         }
 
@@ -33,7 +33,7 @@ namespace corryvreckan {
             return false;
         }
 
-        uint64_t get_trigger_time(uint64_t trigger_id) {
+        double get_trigger_time(uint32_t trigger_id) {
             for(auto& trigger : trigger_list_) {
                 if(trigger_id == trigger.first) {
                     return trigger.second;
@@ -42,11 +42,11 @@ namespace corryvreckan {
             return 0;
         }
 
-        std::vector<std::pair<uint32_t, uint64_t>> trigger_list() { return trigger_list_; }
+        std::vector<std::pair<uint32_t, double>> trigger_list() { return trigger_list_; }
 
     protected:
         double end_;
-        std::vector<std::pair<uint32_t, uint64_t>> trigger_list_{};
+        std::vector<std::pair<uint32_t, double>> trigger_list_{};
 
         // ROOT I/O class definition - update version number when you change this class!
         ClassDef(Event, 1)

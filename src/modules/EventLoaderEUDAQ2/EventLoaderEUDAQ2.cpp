@@ -50,20 +50,21 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
 
     std::pair<double, double> current_event_times;
     std::pair<double, double> event_search_times;
+    double tlu_timestamp = static_cast<double>(evt->GetTimestampBegin());
     // parameters to
     // 115 us until rolling shutter goes across full matrix
 
-    current_event_times.first = static_cast<double>(evt->GetTimestampBegin()) - 115000;  // in ns
-    current_event_times.second = static_cast<double>(evt->GetTimestampBegin()) + 230000; // in ns
-    event_search_times.first = static_cast<double>(evt->GetTimestampBegin()) + 100;      // in ns
-    event_search_times.second = static_cast<double>(evt->GetTimestampBegin()) - 100;     // in ns
+    current_event_times.first = tlu_timestamp - 115000;  // in ns
+    current_event_times.second = tlu_timestamp + 230000; // in ns
+    event_search_times.first = tlu_timestamp + 100;      // in ns
+    event_search_times.second = tlu_timestamp - 100;     // in ns
     // Do not use:
     // "evt_end = static_cast<double>(evt->GetTimestampEnd());"
     // because this is only 25ns larger than GetTimeStampBegin and doesn't have a meaning!
 
     auto clipboard_event_times = get_event_times(current_event_times.first, current_event_times.second, clipboard);
 
-    hEventBegin->Fill(static_cast<double>(evt->GetTimestampBegin()));
+    hEventBegin->Fill(tlu_timestamp);
 
     LOG(DEBUG) << "Check current_event_times.first = " << Units::display(current_event_times.first, {"ns", "us", "ms", "s"})
                << ", current_event_times.second = " << Units::display(current_event_times.second, {"ns", "us", "ms", "s"});
@@ -76,7 +77,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
         LOG(DEBUG) << "Frame dropped because frame begins BEFORE event: "
                    << Units::display(event_search_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
                    << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"});
-        // hTluTrigTimeToFrameBegin->Fill(clipboard_event_times.first - static_cast<double>(evt->GetTimestampBegin()));
+        // hTluTrigTimeToFrameBegin->Fill(clipboard_event_times.first - tlu_timestamp));
         return before_window;
     }
 
@@ -88,8 +89,8 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
     }
 
     LOG(DEBUG) << "-------------- adding TriggerID " << evt->GetTriggerN();
-    clipboard->get_event()->add_trigger(evt->GetTriggerN(), evt->GetTimestampBegin());
-    hTluTrigTimeToFrameBegin->Fill(clipboard_event_times.first - static_cast<double>(evt->GetTimestampBegin()));
+    clipboard->get_event()->add_trigger(evt->GetTriggerN(), tlu_timestamp);
+    hTluTrigTimeToFrameBegin->Fill(clipboard_event_times.first - tlu_timestamp);
     return in_window;
 }
 
@@ -139,7 +140,7 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
 
     // If Mimosa we read this only once (from trigger_list) because it's the same for all pixels.
     // If other chip with valid pixel timestamps, it's not needed.
-    uint64_t trigger_ts = 0;
+    double trigger_ts = 0;
     if(evt->GetDescription() == "NiRawDataEvent") {
         if(!clipboard->get_event()->has_trigger_id(evt->GetTriggerN())) {
             LOG(ERROR) << "Frame dropped because event does not contain TriggerID " << evt->GetTriggerN();
@@ -195,7 +196,7 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
 
             // for pixels without valid timestamp use event timestamp:
             if(evt->GetTimestampBegin() == 0) {
-                ts = static_cast<double>(trigger_ts);
+                ts = trigger_ts;
             }
             // for valid pixel timestamps (like CLICpix2) use plane timestamp:
             else {
