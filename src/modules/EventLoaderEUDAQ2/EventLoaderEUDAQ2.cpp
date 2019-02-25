@@ -337,7 +337,8 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Global variable with an event stored from init or previous run: current_evt
 
-    // explain
+    // All this is necessary because 1 DUT event (e.g. CLICpix2 event) might need to be compared to multiple Mimosa frames.
+    // However, it's implemented in a generic way so it also works for the simple case of only 1 detector.
     while(1) {
         if(!current_evt) {
             LOG(DEBUG) << "!ev --> return, empty event --> end of file!";
