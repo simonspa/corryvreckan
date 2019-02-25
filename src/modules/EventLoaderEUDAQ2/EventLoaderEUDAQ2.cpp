@@ -40,6 +40,32 @@ EventLoaderEUDAQ2::get_event_times(double start, double end, std::shared_ptr<Cli
     return evt_times;
 }
 
+void EventLoaderEUDAQ2::increment_event_type_counter(eudaq::EventSPC evt) {
+    if(evt->GetDescription() == "CaribouCLICpix2Event") {
+        m_eventCount_cpx2++;
+    }
+    if(m_detector->name() != "MIMOSA26_0")
+        return;
+    if(evt->GetDescription() == "TluRawDataEvent") {
+        m_eventCount_tlu++;
+    } else if(evt->GetDescription() == "NiRawDataEvent") {
+        m_eventCount_ni++;
+    }
+}
+
+void EventLoaderEUDAQ2::increment_event_type_counter_in_frame(eudaq::EventSPC evt) {
+    if(evt->GetDescription() == "CaribouCLICpix2Event") {
+        m_eventCount_cpx2_inFrame++;
+    }
+    if(m_detector->name() != "MIMOSA26_0")
+        return;
+    if(evt->GetDescription() == "TluRawDataEvent") {
+        m_eventCount_tlu_inFrame++;
+    } else if(evt->GetDescription() == "NiRawDataEvent") {
+        m_eventCount_ni_inFrame++;
+    }
+}
+
 EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::EventSPC evt,
                                                                       std::shared_ptr<Clipboard>& clipboard) {
 
@@ -77,7 +103,8 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
         LOG(DEBUG) << "Frame dropped because frame begins BEFORE event: "
                    << Units::display(event_search_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
                    << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"});
-        // hTluTrigTimeToFrameBegin->Fill(clipboard_event_times.first - tlu_timestamp));
+        // hTluTrigTimeToFrameBegin->Fill   (clipboard_event_times.first - tlu_timestamp));
+        increment_event_type_counter_in_frame(evt);
         return before_window;
     }
 
@@ -242,6 +269,10 @@ void EventLoaderEUDAQ2::initialise() {
     auto detectorID = m_detector->name();
     LOG(DEBUG) << "Initialise for detector " + detectorID;
 
+    m_eventCount_cpx2 = 0;
+    m_eventCount_ni = 0;
+    m_eventCount_tlu = 0;
+
     m_skipBeforeT0 = m_config.get<bool>("skip_before_t0", false);
 
     // Some simple histograms:
@@ -340,6 +371,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
     // All this is necessary because 1 DUT event (e.g. CLICpix2 event) might need to be compared to multiple Mimosa frames.
     // However, it's implemented in a generic way so it also works for the simple case of only 1 detector.
+
     while(1) {
         if(!current_evt) {
             LOG(DEBUG) << "!ev --> return, empty event --> end of file!";
@@ -359,6 +391,8 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
         if(sub_events.size() == 0) {
             LOG(DEBUG) << "No subevent, process event.";
+
+            increment_event_type_counter(current_evt);
             process_event(current_evt, clipboard);
             // read next event for next run:
             current_evt = reader->GetNextEvent();
@@ -368,18 +402,19 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
             // Important: first process TLU event (if available) --> sets event begin/end, then others
             // Note: at the moment, we're not checking if there is a 2nd TLU subevent (but that shouldn't occur).
 
-            // drop frame if number of subevents==1, i.e. there is only telescope but not tlu data or vice versa
-            if(sub_events.size() == 1) {
-                LOG(INFO) << "Dropping frame because there is only 1 subevent of type " << sub_events[0]->GetDescription();
-                current_evt = reader->GetNextEvent();
-                return StatusCode::NoData;
-            }
+            //            // drop frame if number of subevents==1, i.e. there is only telescope but not tlu data or vice
+            //            versa if(sub_events.size() == 1) {
+            //                LOG(INFO) << "Dropping frame because there is only 1 subevent of type " <<
+            //                sub_events[0]->GetDescription(); increment_event_type_counter(sub_events[0]); current_evt =
+            //                reader->GetNextEvent(); return StatusCode::NoData;
+            //            }
 
             // loop over subevents and process ONLY TLU event:
             bool found_tlu_event = false;
             enum EventPosition event_position;
             for(auto& subevt : sub_events) {
                 LOG(DEBUG) << "Processing subevent.";
+                increment_event_type_counter(subevt);
                 if(subevt->GetDescription() != "TluRawDataEvent") {
                     LOG(DEBUG) << "\t---> Subevent is no TLU event -> continue.";
                     continue;
@@ -413,6 +448,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                         LOG(DEBUG) << "\t---> Subevent is TLU event -> continue.";
                         continue;
                     } // end if
+                    increment_event_type_counter_in_frame(subevt);
                     process_event(subevt, clipboard);
                 } // end for
 
@@ -429,4 +465,13 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         } // end else (sub_events.size() > 0)
 
     } // end while(1)
+}
+
+void EventLoaderEUDAQ2::finalise() {
+    LOG(STATUS) << "Number of CPX2 events:  " << m_eventCount_cpx2 << ",\t"
+                << "Number of TLU events:  " << m_eventCount_tlu << ",\t"
+                << "Number of NI events:  " << m_eventCount_ni << ",\n"
+                << "Number of CPX2 events in frame:  " << m_eventCount_cpx2_inFrame << ",\t"
+                << "Number of TLU events in frame:  " << m_eventCount_tlu_inFrame << ",\t"
+                << "Number of NI events in frame:  " << m_eventCount_ni_inFrame;
 }

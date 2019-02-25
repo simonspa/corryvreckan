@@ -48,6 +48,10 @@ namespace corryvreckan {
          * @brief [Run the function of this module]
          */
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        /**
+         * @brief [Finalize this module]
+         */
+        void finalise();
 
     private:
         /**
@@ -59,6 +63,9 @@ namespace corryvreckan {
          * @return pair with event start and end time, either from definded event on clipboard or from local data
          */
         std::pair<double, double> get_event_times(double start, double end, std::shared_ptr<Clipboard>& clipboard);
+
+        void increment_event_type_counter(eudaq::EventSPC evt);
+        void increment_event_type_counter_in_frame(eudaq::EventSPC evt);
 
         /**
          * @brief Process events: extract hits and put onto clipboard, also define event start/end
@@ -84,6 +91,13 @@ namespace corryvreckan {
         TH1F* hPixelsPerFrame;
         TH1D* hEventBegin;
         TH1D* hTluTrigTimeToFrameBegin;
+
+        int m_eventCount_cpx2;
+        int m_eventCount_ni;
+        int m_eventCount_tlu;
+        int m_eventCount_cpx2_inFrame;
+        int m_eventCount_ni_inFrame;
+        int m_eventCount_tlu_inFrame;
     };
 
 } // namespace corryvreckan
