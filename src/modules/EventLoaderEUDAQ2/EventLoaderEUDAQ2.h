@@ -83,6 +83,7 @@ namespace corryvreckan {
 
         TH1F* hPixelsPerFrame;
         TH1D* hEventBegin;
+        TH1D* hTluTrigTimeToFrameBegin;
     };
 
 } // namespace corryvreckan

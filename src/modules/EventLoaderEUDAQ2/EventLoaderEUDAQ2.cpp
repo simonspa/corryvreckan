@@ -76,6 +76,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
         LOG(DEBUG) << "Frame dropped because frame begins BEFORE event: "
                    << Units::display(event_search_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
                    << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"});
+        // hTluTrigTimeToFrameBegin->Fill(clipboard_event_times.first - static_cast<double>(evt->GetTimestampBegin()));
         return before_window;
     }
 
@@ -87,7 +88,8 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
     }
 
     LOG(DEBUG) << "-------------- adding TriggerID " << evt->GetTriggerN();
-    clipboard->get_event()->add_trigger_id(evt->GetTriggerN());
+    clipboard->get_event()->add_trigger(evt->GetTriggerN(), evt->GetTimestampBegin());
+    hTluTrigTimeToFrameBegin->Fill(clipboard_event_times.first - static_cast<double>(evt->GetTimestampBegin()));
     return in_window;
 }
 
@@ -134,11 +136,17 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
     // Process MIMOSA26 telescope frames separately because they don't have sensible hit timestamps:
     // But do not use "if(evt->GetTimestampBegin()==0) {" because sometimes the timestamps are not 0 but 1ns
     // Pay attention to this when working with a different chip without hit timestamps!
+
+    // If Mimosa we read this only once (from trigger_list) because it's the same for all pixels.
+    // If other chip with valid pixel timestamps, it's not needed.
+    uint64_t trigger_ts = 0;
     if(evt->GetDescription() == "NiRawDataEvent") {
         if(!clipboard->get_event()->has_trigger_id(evt->GetTriggerN())) {
-            LOG(DEBUG) << "Frame dropped because event does not contain TriggerID " << evt->GetTriggerN();
+            LOG(ERROR) << "Frame dropped because event does not contain TriggerID " << evt->GetTriggerN();
+            return;
         } else {
             LOG(DEBUG) << "Found TriggerID.";
+            trigger_ts = clipboard->get_event()->get_trigger_time(evt->GetTriggerN());
         }
     }
     // For chips with valid hit timestamps:
@@ -180,18 +188,14 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
         // Loop over all hits and add to pixels vector:
         for(unsigned int i = 0; i < nHits; i++) {
 
-            // auto col = static_cast<int>(plane.GetX(i));
-            // auto row = static_cast<int>(plane.GetY(i));
-
             auto col = static_cast<int>(plane.GetX(i));
             auto row = static_cast<int>(plane.GetY(i));
-
             auto tot = static_cast<int>(plane.GetPixel(i));
             double ts;
 
             // for pixels without valid timestamp use event timestamp:
             if(evt->GetTimestampBegin() == 0) {
-                ts = current_event_times.first;
+                ts = static_cast<double>(trigger_ts);
             }
             // for valid pixel timestamps (like CLICpix2) use plane timestamp:
             else {
@@ -256,6 +260,8 @@ void EventLoaderEUDAQ2::initialise() {
     hPixelsPerFrame = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
     title = m_detector->name() + " eventBegin;eventBegin [ns];entries";
     hEventBegin = new TH1D("eventBegin", title.c_str(), 1e6, 0, 1e9);
+    title = m_detector->name() + " TluTrigTimeToFrameBegin;frame begin - TLU trigger time [ns];entries";
+    hTluTrigTimeToFrameBegin = new TH1D("tluTrigTimeToFrameBegin", title.c_str(), 2e6, -1e9, 1e9);
 
     // open the input file with the eudaq reader
     try {
