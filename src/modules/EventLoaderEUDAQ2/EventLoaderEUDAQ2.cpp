@@ -42,6 +42,7 @@ EventLoaderEUDAQ2::get_event_times(double start, double end, std::shared_ptr<Cli
 
 void EventLoaderEUDAQ2::increment_event_type_counter(eudaq::EventSPC evt, bool in_frame) {
 
+    LOG(DEBUG) << "Incrementing event counter for type: " << evt->GetDescription();
     // Increment respective counter by one. Bool to int conversion is implicit.
     if(evt->GetDescription() == "Timepix3RawDataEvent") {
         m_eventCount_tpx3 += !in_frame;
@@ -64,10 +65,10 @@ void EventLoaderEUDAQ2::increment_event_type_counter(eudaq::EventSPC evt, bool i
         return;
     }
     if(evt->GetDescription() == "TluRawDataEvent") {
-        m_eventCount_tlu += in_frame;
+        m_eventCount_tlu += !in_frame;
         m_eventCount_tlu_inFrame += in_frame;
     } else if(evt->GetDescription() == "NiRawDataEvent") {
-        m_eventCount_ni += in_frame;
+        m_eventCount_ni += !in_frame;
         m_eventCount_ni_inFrame += in_frame;
     }
 }
@@ -420,7 +421,6 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
             enum EventPosition event_position;
             for(auto& subevt : sub_events) {
                 LOG(DEBUG) << "Processing subevent.";
-                increment_event_type_counter(subevt);
                 if(subevt->GetDescription() != "TluRawDataEvent") {
                     LOG(DEBUG) << "\t---> Subevent is no TLU event -> continue.";
                     continue;
@@ -428,7 +428,13 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 LOG(DEBUG) << "\t---> Found TLU subevent -> process.";
                 found_tlu_event = true;
                 event_position = process_tlu_event(subevt, clipboard);
+                if(event_position == before_window) {
+                    LOG(DEBUG) << "\t---> TLU event is before window.";
+                    increment_event_type_counter(subevt);
+                }
                 if(event_position == in_window) {
+                    LOG(DEBUG) << "\t---> TLU event is in window.";
+                    increment_event_type_counter(subevt);
                     increment_event_type_counter(subevt, true); // want to increment in-frame counter -> in_frame = true
                 }
                 break;
@@ -440,23 +446,27 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 continue;
             }
 
-            // If before, read next event and check again:
-            if(event_position == before_window) {
-                LOG(DEBUG) << "Trigger is before event window. Read next event and continue.";
-                current_evt = reader->GetNextEvent();
-                continue;
-            }
-
-            // if in,
-            if(event_position == in_window) {
-                LOG(DEBUG) << "Trigger is inside event window. Loop over subevents.";
+            // If before or in the window:
+            if(event_position != after_window) {
+                LOG(DEBUG) << "Trigger is before or inside event window. Loop over subevents.";
                 // loop over subevents and process all OTHER events (except TLU):
                 for(auto& subevt : sub_events) {
                     LOG(DEBUG) << "Processing subevent.";
                     if(subevt->GetDescription() == "TluRawDataEvent") {
                         LOG(DEBUG) << "\t---> Subevent is TLU event -> continue.";
                         continue;
-                    }                                           // end if
+                    } // end if
+                    LOG(DEBUG) << "\t---> Found non-TLU subevent -> process.";
+                    increment_event_type_counter(subevt);
+
+                    // if before, read next event and check again (but still increment event type counter), if inside ->
+                    // process
+                    if(event_position == before_window) {
+                        LOG(DEBUG) << "Trigger is before event window. Read next event and continue.";
+                        break; // jump out of for loop
+                    }          // end if
+
+                    // if in window:
                     increment_event_type_counter(subevt, true); // want to increment in-frame counter -> in_frame = true
                     process_event(subevt, clipboard);
                 } // end for
@@ -467,10 +477,9 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
             } // end if
 
             // if after:
-            if(event_position == after_window) {
-                LOG(DEBUG) << "Trigger is after event window. Finish event window.";
-                return StatusCode::Success;
-            }
+            LOG(DEBUG) << "Trigger is after event window. Finish event window.";
+            return StatusCode::Success;
+
         } // end else (sub_events.size() > 0)
 
     } // end while(1)
