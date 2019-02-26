@@ -89,6 +89,10 @@ namespace corryvreckan {
 
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
+        // ToDo:
+        // If skip_before_t0 is set true but the data does not contain t0
+        // (because during data taking drop_before_t0 was set), at the moment
+        // we go through the entire file, don't find it and return with a WARNING.
         bool m_skipBeforeT0;
         eudaq::EventSPC current_evt;
 

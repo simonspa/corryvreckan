@@ -44,15 +44,15 @@ void EventLoaderEUDAQ2::increment_event_type_counter(eudaq::EventSPC evt, bool i
 
     // Increment respective counter by one. Bool to int conversion is implicit.
     if(evt->GetDescription() == "Timepix3RawDataEvent") {
-        m_eventCount_tpx3 += in_frame;
+        m_eventCount_tpx3 += !in_frame;
         m_eventCount_tpx3_inFrame += in_frame;
     }
     if(evt->GetDescription() == "CaribouCLICpix2Event") {
-        m_eventCount_cpx2 += in_frame;
+        m_eventCount_cpx2 += !in_frame;
         m_eventCount_cpx2_inFrame += in_frame;
     }
     if(evt->GetDescription() == "CaribouATLASpixEvent") {
-        m_eventCount_apx += in_frame;
+        m_eventCount_apx += !in_frame;
         m_eventCount_apx_inFrame += in_frame;
     }
     // In case of TLU or Mimosa events we have 6 planes of the same type
@@ -273,11 +273,12 @@ void EventLoaderEUDAQ2::initialise() {
     auto detectorID = m_detector->name();
     LOG(DEBUG) << "Initialise for detector " + detectorID;
 
-    m_eventCount_tpx3 = 0;
-    m_eventCount_cpx2 = 0;
-    m_eventCount_apx = 0;
-    m_eventCount_ni = 0;
-    m_eventCount_tlu = 0;
+    // Initializing all counters to 0
+    m_eventCount_tpx3 = 0, m_eventCount_tpx3_inFrame = 0;
+    m_eventCount_cpx2 = 0, m_eventCount_cpx2_inFrame = 0;
+    m_eventCount_apx = 0, m_eventCount_apx_inFrame = 0;
+    m_eventCount_ni = 0, m_eventCount_ni_inFrame = 0;
+    m_eventCount_tlu = 0, m_eventCount_tlu_inFrame = 0;
 
     m_skipBeforeT0 = m_config.get<bool>("skip_before_t0", false);
 
@@ -323,8 +324,8 @@ void EventLoaderEUDAQ2::initialise() {
         while(1) {
             current_evt = reader->GetNextEvent();
             if(!current_evt) {
-                LOG(DEBUG) << "Previous event number: " << prev_event_number
-                           << ". Reached end of file without finding T0! Something's wrong!";
+                LOG(WARNING) << "Previous event number: " << prev_event_number
+                             << ". Reached end of file without finding T0! Something's wrong!";
                 return;
             } else {
                 LOG(DEBUG) << "Looking at event number " << current_evt->GetEventNumber();
@@ -474,10 +475,11 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 }
 
 void EventLoaderEUDAQ2::finalise() {
-    LOG(STATUS) << "Number of CPX2 events:  " << m_eventCount_cpx2 << ",\t"
-                << "Number of TLU events:  " << m_eventCount_tlu << ",\t"
-                << "Number of NI events:  " << m_eventCount_ni << ",\n"
-                << "Number of CPX2 events in frame:  " << m_eventCount_cpx2_inFrame << ",\t"
-                << "Number of TLU events in frame:  " << m_eventCount_tlu_inFrame << ",\t"
-                << "Number of NI events in frame:  " << m_eventCount_ni_inFrame;
+    LOG(STATUS) << "Number of Timepix3 events: " << m_eventCount_tpx3 << ",\t in frame:  " << m_eventCount_tpx3_inFrame
+                << "\n"
+                << "Number of CLICpix2 events: " << m_eventCount_cpx2 << ",\t in frame:  " << m_eventCount_cpx2_inFrame
+                << "\n"
+                << "Number of ATLASpix events: " << m_eventCount_apx << ",\t in frame:  " << m_eventCount_apx_inFrame << "\n"
+                << "Number of TLU events:\t" << m_eventCount_tlu << ",\t in frame:  " << m_eventCount_tlu_inFrame << "\n"
+                << "Number of NI events:\t" << m_eventCount_ni << ",\t in frame:  " << m_eventCount_ni_inFrame << "\n";
 }
