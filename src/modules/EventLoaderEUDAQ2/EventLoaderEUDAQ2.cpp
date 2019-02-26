@@ -41,6 +41,9 @@ EventLoaderEUDAQ2::get_event_times(double start, double end, std::shared_ptr<Cli
 }
 
 void EventLoaderEUDAQ2::increment_event_type_counter(eudaq::EventSPC evt) {
+    if(evt->GetDescription() == "Timepix3RawDataEvent") {
+        m_eventCount_tpx3++;
+    }
     if(evt->GetDescription() == "CaribouCLICpix2Event") {
         m_eventCount_cpx2++;
     }
@@ -54,6 +57,9 @@ void EventLoaderEUDAQ2::increment_event_type_counter(eudaq::EventSPC evt) {
 }
 
 void EventLoaderEUDAQ2::increment_event_type_counter_in_frame(eudaq::EventSPC evt) {
+    if(evt->GetDescription() == "Timepix3RawDataEvent") {
+        m_eventCount_tpx3_inFrame++;
+    }
     if(evt->GetDescription() == "CaribouCLICpix2Event") {
         m_eventCount_cpx2_inFrame++;
     }
@@ -269,6 +275,7 @@ void EventLoaderEUDAQ2::initialise() {
     auto detectorID = m_detector->name();
     LOG(DEBUG) << "Initialise for detector " + detectorID;
 
+    m_eventCount_tpx3 = 0;
     m_eventCount_cpx2 = 0;
     m_eventCount_ni = 0;
     m_eventCount_tlu = 0;

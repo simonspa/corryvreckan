@@ -55,8 +55,8 @@ namespace corryvreckan {
 
     private:
         /**
-         * @brief get event start/end: if event exists on clipboard --> take this, otherwise take input values and put new
-         * event onto clipboard
+         * @brief Get event start/end time: if event exists on clipboard --> take this, otherwise take input values and put
+         * new event onto clipboard
          * @param start Start time of the currently read detector data
          * @param end End time of the currently read detector data
          * @param clipboard The clipboard of the event
@@ -64,17 +64,32 @@ namespace corryvreckan {
          */
         std::pair<double, double> get_event_times(double start, double end, std::shared_ptr<Clipboard>& clipboard);
 
+        /**
+         * @brief Increment respective counter of input event type
+         * @param evt Event object (event or subevent)
+         */
         void increment_event_type_counter(eudaq::EventSPC evt);
+
+        /**
+         * @brief Increment respective counter of input event type which is in the current event frame
+         * @param evt Event object (event or subevent)
+         */
         void increment_event_type_counter_in_frame(eudaq::EventSPC evt);
 
         /**
          * @brief Process events: extract hits and put onto clipboard, also define event start/end
-         * @param evt: event or subevent to be processed, clipboard
+         * @param evt Event object (event or subevent) to be processed
+         * @param clipboard The clipboard of the event
+         * @return EventPosition: before, in or after event window
          */
-        // Status for process_tlu_event:
         enum EventPosition { before_window, in_window, after_window };
-
         enum EventPosition process_tlu_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard);
+
+        /**
+         * @brief Process events: extract hits and put onto clipboard, also define event start/end
+         * @param evt Event object (event or subevent) to be processed
+         * @param clipboard The clipboard of the event
+         */
         void process_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard);
 
         std::shared_ptr<Detector> m_detector;
@@ -92,9 +107,11 @@ namespace corryvreckan {
         TH1D* hEventBegin;
         TH1D* hTluTrigTimeToFrameBegin;
 
-        int m_eventCount_cpx2;
-        int m_eventCount_ni;
-        int m_eventCount_tlu;
+        int m_eventCount_tpx3; // Timepix3
+        int m_eventCount_cpx2; // CLICpix2
+        int m_eventCount_ni;   // Mimosa26
+        int m_eventCount_tlu;  // AIDA TLU
+        int m_eventCount_tpx3_inFrame;
         int m_eventCount_cpx2_inFrame;
         int m_eventCount_ni_inFrame;
         int m_eventCount_tlu_inFrame;
