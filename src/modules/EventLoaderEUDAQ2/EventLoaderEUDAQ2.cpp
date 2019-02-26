@@ -121,7 +121,6 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
     LOG(DEBUG) << "-------------- adding TriggerID " << evt->GetTriggerN();
     clipboard->get_event()->add_trigger(evt->GetTriggerN(), tlu_timestamp);
     hTluTrigTimeToFrameBegin->Fill(clipboard_event_times.first - tlu_timestamp);
-    increment_event_type_counter(evt, true); // want to increment in-frame counter -> in_frame = true
     return in_window;
 }
 
@@ -343,7 +342,7 @@ void EventLoaderEUDAQ2::initialise() {
                 this_timestamp = current_evt->GetTimestampBegin();
                 found_timestamp = true;
             }
-            // If there are subevents, find TLU subevent:
+            // If there are subevents, i.e. TLU+other, data taking doesn't start before T0:
             else {
                 LOG(INFO) << "There is no T0 in TLU events. Don't skip anything, start from file beginning.";
                 return;
@@ -429,6 +428,9 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 LOG(DEBUG) << "\t---> Found TLU subevent -> process.";
                 found_tlu_event = true;
                 event_position = process_tlu_event(subevt, clipboard);
+                if(event_position == in_window) {
+                    increment_event_type_counter(subevt, true); // want to increment in-frame counter -> in_frame = true
+                }
                 break;
             } // end for
 
