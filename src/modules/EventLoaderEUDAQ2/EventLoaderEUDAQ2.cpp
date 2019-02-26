@@ -40,35 +40,35 @@ EventLoaderEUDAQ2::get_event_times(double start, double end, std::shared_ptr<Cli
     return evt_times;
 }
 
-void EventLoaderEUDAQ2::increment_event_type_counter(eudaq::EventSPC evt) {
-    if(evt->GetDescription() == "Timepix3RawDataEvent") {
-        m_eventCount_tpx3++;
-    }
-    if(evt->GetDescription() == "CaribouCLICpix2Event") {
-        m_eventCount_cpx2++;
-    }
-    if(m_detector->name() != "MIMOSA26_0")
-        return;
-    if(evt->GetDescription() == "TluRawDataEvent") {
-        m_eventCount_tlu++;
-    } else if(evt->GetDescription() == "NiRawDataEvent") {
-        m_eventCount_ni++;
-    }
-}
+void EventLoaderEUDAQ2::increment_event_type_counter(eudaq::EventSPC evt, bool in_frame) {
 
-void EventLoaderEUDAQ2::increment_event_type_counter_in_frame(eudaq::EventSPC evt) {
+    // Increment respective counter by one. Bool to int conversion is implicit.
     if(evt->GetDescription() == "Timepix3RawDataEvent") {
-        m_eventCount_tpx3_inFrame++;
+        m_eventCount_tpx3 += in_frame;
+        m_eventCount_tpx3_inFrame += in_frame;
     }
     if(evt->GetDescription() == "CaribouCLICpix2Event") {
-        m_eventCount_cpx2_inFrame++;
+        m_eventCount_cpx2 += in_frame;
+        m_eventCount_cpx2_inFrame += in_frame;
     }
-    if(m_detector->name() != "MIMOSA26_0")
+    if(evt->GetDescription() == "CaribouATLASpixEvent") {
+        m_eventCount_apx += in_frame;
+        m_eventCount_apx_inFrame += in_frame;
+    }
+    // In case of TLU or Mimosa events we have 6 planes of the same type
+    // Therefore, the counter should only increase only once and not with every plane we look at.
+
+    // ToDo: find a more generic way to implement this (because it fails when there are multiple planes of different detector
+    // type!
+    if(m_detector->name() != "MIMOSA26_0") {
         return;
+    }
     if(evt->GetDescription() == "TluRawDataEvent") {
-        m_eventCount_tlu_inFrame++;
+        m_eventCount_tlu += in_frame;
+        m_eventCount_tlu_inFrame += in_frame;
     } else if(evt->GetDescription() == "NiRawDataEvent") {
-        m_eventCount_ni_inFrame++;
+        m_eventCount_ni += in_frame;
+        m_eventCount_ni_inFrame += in_frame;
     }
 }
 
@@ -83,16 +83,14 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
     std::pair<double, double> current_event_times;
     std::pair<double, double> event_search_times;
     double tlu_timestamp = static_cast<double>(evt->GetTimestampBegin());
-    // parameters to
-    // 115 us until rolling shutter goes across full matrix
+    // Do not use:
+    // "evt_end = static_cast<double>(evt->GetTimestampEnd());"
+    // because this is only 25ns larger than GetTimeStampBegin and doesn't have a meaning!
 
     current_event_times.first = tlu_timestamp - 115000;  // in ns
     current_event_times.second = tlu_timestamp + 230000; // in ns
     event_search_times.first = tlu_timestamp + 100;      // in ns
     event_search_times.second = tlu_timestamp - 100;     // in ns
-    // Do not use:
-    // "evt_end = static_cast<double>(evt->GetTimestampEnd());"
-    // because this is only 25ns larger than GetTimeStampBegin and doesn't have a meaning!
 
     auto clipboard_event_times = get_event_times(current_event_times.first, current_event_times.second, clipboard);
 
@@ -110,7 +108,6 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
                    << Units::display(event_search_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
                    << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"});
         // hTluTrigTimeToFrameBegin->Fill   (clipboard_event_times.first - tlu_timestamp));
-        increment_event_type_counter_in_frame(evt);
         return before_window;
     }
 
@@ -124,6 +121,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
     LOG(DEBUG) << "-------------- adding TriggerID " << evt->GetTriggerN();
     clipboard->get_event()->add_trigger(evt->GetTriggerN(), tlu_timestamp);
     hTluTrigTimeToFrameBegin->Fill(clipboard_event_times.first - tlu_timestamp);
+    increment_event_type_counter(evt, true); // want to increment in-frame counter -> in_frame = true
     return in_window;
 }
 
@@ -277,6 +275,7 @@ void EventLoaderEUDAQ2::initialise() {
 
     m_eventCount_tpx3 = 0;
     m_eventCount_cpx2 = 0;
+    m_eventCount_apx = 0;
     m_eventCount_ni = 0;
     m_eventCount_tlu = 0;
 
@@ -454,8 +453,8 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                     if(subevt->GetDescription() == "TluRawDataEvent") {
                         LOG(DEBUG) << "\t---> Subevent is TLU event -> continue.";
                         continue;
-                    } // end if
-                    increment_event_type_counter_in_frame(subevt);
+                    }                                           // end if
+                    increment_event_type_counter(subevt, true); // want to increment in-frame counter -> in_frame = true
                     process_event(subevt, clipboard);
                 } // end for
 
