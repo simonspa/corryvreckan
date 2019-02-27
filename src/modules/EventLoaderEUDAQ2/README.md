@@ -23,13 +23,6 @@ when running CMake to find the library to link against and headers to include.
 ### Parameters
 * `file_name`: File name of the EUDAQ2 raw data file. This parameter is mandatory.
 
-TH2F* hitmap;
-TH1F* hHitTimes;
-
-TH1F* hPixelsPerFrame;
-TH1D* hEventBegin;
-TH1D* hTluTrigTimeToFrameBegin;
-
 ### Plots produced
 * Histogram of event numbers
 
