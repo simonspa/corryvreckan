@@ -430,39 +430,39 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 continue;
             }
 
+            // If after window:
+            if(event_position == after_window) {
+                LOG(DEBUG) << "Trigger is after event window. Finish event window.";
+                return StatusCode::Success;
+            }
+
             // If before or in the window:
-            if(event_position != after_window) {
-                LOG(DEBUG) << "Trigger is before or inside event window. Loop over subevents.";
-                // loop over subevents and process all OTHER events (except TLU):
-                for(auto& subevt : sub_events) {
-                    LOG(DEBUG) << "Processing subevent.";
-                    if(subevt->GetDescription() == "TluRawDataEvent") {
-                        LOG(DEBUG) << "\t---> Subevent is TLU event -> continue.";
-                        continue;
-                    } // end if
-                    LOG(DEBUG) << "\t---> Found non-TLU subevent -> process.";
-                    increment_event_type_counter(subevt);
+            LOG(DEBUG) << "Trigger is before or inside event window. Loop over subevents.";
 
-                    // if before, read next event and check again (but still increment event type counter), if inside ->
-                    // process
-                    if(event_position == before_window) {
-                        LOG(DEBUG) << "Trigger is before event window. Read next event and continue.";
-                        break; // jump out of for loop
-                    }          // end if
+            // loop over subevents and process all OTHER events (except TLU):
+            for(auto& subevt : sub_events) {
+                LOG(DEBUG) << "Processing subevent.";
+                if(subevt->GetDescription() == "TluRawDataEvent") {
+                    LOG(DEBUG) << "\t---> Subevent is TLU event -> continue.";
+                    continue;
+                } // end if
+                LOG(DEBUG) << "\t---> Found non-TLU subevent -> process.";
+                increment_event_type_counter(subevt);
 
-                    // if in window:
-                    increment_event_type_counter(subevt, true); // want to increment in-frame counter -> in_frame = true
-                    process_event(subevt, clipboard);
-                } // end for
+                // if before -> read next event and check again (but still increment event type counter)
+                if(event_position == before_window) {
+                    LOG(DEBUG) << "Trigger is before event window. Read next event and continue.";
+                    break; // jump out of for loop
+                }          // end if
 
-                // read next event for next run() iteration
-                current_evt = reader->GetNextEvent();
-                continue;
-            } // end if
+                // if in window -> process
+                increment_event_type_counter(subevt, true); // want to increment in-frame counter -> in_frame = true
+                process_event(subevt, clipboard);
+            } // end for loop over subevents
 
-            // if after:
-            LOG(DEBUG) << "Trigger is after event window. Finish event window.";
-            return StatusCode::Success;
+            // read next event for next run() iteration
+            current_evt = reader->GetNextEvent();
+            continue;
 
         } // end else (sub_events.size() > 0)
 
