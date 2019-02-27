@@ -51,19 +51,19 @@ if [ -z "$MYMAIL" ]; then
 fi
 
 if [ "$type" == 1 ]; then
-    MODTYPE="GLOBAL"
+    MODTYPE="\*GLOBAL\*"
 fi
 if [ "$type" == 2 ]; then
-    MODTYPE="DETECTOR"
+    MODTYPE="*DETECTOR* **Detector Type**: *<add types here>*"
 fi
 if [ "$type" == 3 ]; then
-    MODTYPE="DUT"
+    MODTYPE="\*DUT\*"
 fi
 
 sed -e "s/Dummy/$MODNAME/g" \
     -e "s/\*NAME\*/$MYNAME/g" \
     -e "s/\*EMAIL\*/$MYMAIL/g" \
-    -e "s/\*GLOBAL\*/\*$MODTYPE\*/g" \
+    -e "s/\*GLOBAL\*/$MODTYPE/g" \
     -e "s/Functional/Immature/g" \
     "$MODDIR/Dummy/README.md" > "$MODDIR/$MODNAME/README.md"
 
