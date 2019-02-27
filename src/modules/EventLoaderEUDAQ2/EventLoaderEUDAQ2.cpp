@@ -369,16 +369,10 @@ void EventLoaderEUDAQ2::initialise() {
 StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG(DEBUG) << "=====================\n==== Next event: ====\n=====================";
-    // So this means that CLICpix2 frames without hits are discarded?
-    // Consequently we can't measure the efficiency of the CLICpix2!
-    //
-    // This also means we keep running forever because no event != end_of_file
-
-    // Global variable with an event stored from init or previous run: current_evt
-
     // All this is necessary because 1 DUT event (e.g. CLICpix2 event) might need to be compared to multiple Mimosa frames.
     // However, it's implemented in a generic way so it also works for the simple case of only 1 detector.
 
+    // current_evt: Global variable with an event stored from init or previous iteration of run()
     while(1) {
         if(!current_evt) {
             LOG(DEBUG) << "!ev --> return, empty event --> end of file!";
@@ -406,16 +400,6 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
             return StatusCode::Success;
 
         } else {
-            // Important: first process TLU event (if available) --> sets event begin/end, then others
-            // Note: at the moment, we're not checking if there is a 2nd TLU subevent (but that shouldn't occur).
-
-            //            // drop frame if number of subevents==1, i.e. there is only telescope but not tlu data or vice
-            //            versa if(sub_events.size() == 1) {
-            //                LOG(INFO) << "Dropping frame because there is only 1 subevent of type " <<
-            //                sub_events[0]->GetDescription(); increment_event_type_counter(sub_events[0]); current_evt =
-            //                reader->GetNextEvent(); return StatusCode::NoData;
-            //            }
-
             // loop over subevents and process ONLY TLU event:
             bool found_tlu_event = false;
             enum EventPosition event_position;
