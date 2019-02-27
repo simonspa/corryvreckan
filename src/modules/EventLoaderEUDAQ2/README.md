@@ -1,7 +1,7 @@
 # EventLoaderEUDAQ2
-**Maintainer**: Jens Kroeger (kroeger@physi.uni-heidelberg.de)
-**Module Type**: *DETECTOR*
-**Detector Types**: CLICpix2, TLU, M26, (near future: Timepix3, ATLASpix)
+**Maintainer**: Jens Kroeger (kroeger@physi.uni-heidelberg.de)  
+**Module Type**: *DETECTOR*     
+**Detector Types**: *CLICpix2*, *TLU*, *MIMOSA26*, (near future: *Timepix3*, *ATLASpix*)   
 **Status**: Immature
 
 ### Description
