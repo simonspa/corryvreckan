@@ -384,7 +384,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     while(1) {
         if(!current_evt) {
             LOG(DEBUG) << "!ev --> return, empty event --> end of file!";
-            return StatusCode::Failure;
+            return StatusCode::EndRun;
         }
 
         LOG(DEBUG) << "#ev: " << current_evt->GetEventNumber() << ", descr " << current_evt->GetDescription() << ", version "
