@@ -133,6 +133,14 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
 
     // If other than TLU event:
 
+    // if we have ADC data:
+    std::string adc_data = current_evt->GetTag("DAC_OUT", "");
+    double adc_value;
+    if(adc_data.length() > 0) {
+        adc_value = stod(adc_data, nullptr);
+        LOG(DEBUG) << "ADC_DATA was " << adc_value;
+    }
+
     // Prepare standard event:
     auto stdevt = eudaq::StandardEvent::MakeShared();
 
