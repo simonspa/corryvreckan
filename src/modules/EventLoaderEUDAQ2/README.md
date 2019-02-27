@@ -24,10 +24,7 @@ when running CMake to find the library to link against and headers to include.
 * `file_name`: File name of the EUDAQ2 raw data file. This parameter is mandatory.
 
 ### Plots produced
-* Histogram of event numbers
-
 For each detector the following plots are produced:
-
 * 2D hitmap
 * Hit timestamps
 * Pixels per frame
