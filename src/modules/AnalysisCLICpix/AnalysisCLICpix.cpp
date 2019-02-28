@@ -9,8 +9,8 @@ using namespace std;
 AnalysisCLICpix::AnalysisCLICpix(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    m_associationCut = m_config.get<double>("association_cut", static_cast<double>(Units::convert(100, "um")));
-    m_proximityCut = m_config.get<double>("proximity_cut", static_cast<double>(Units::convert(125, "um")));
+    m_associationCut = m_config.get<double>("association_cut", Units::get(100.0, "um"));
+    m_proximityCut = m_config.get<double>("proximity_cut", Units::get(125.0, "um"));
     timepix3Telescope = m_config.get<bool>("timepix3Telescope", false);
 }
 
