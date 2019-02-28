@@ -8,6 +8,9 @@ using namespace std;
 TrackingSpatial::TrackingSpatial(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
     spatialCut = m_config.get<double>("spatial_cut", static_cast<double>(Units::convert(200, "um")));
+    spatialCut_nm = m_config.get<double>("spatial_cut_nm", static_cast<double>(Units::convert(200000, "nm")));
+    spatialCut_um = m_config.get<double>("spatial_cut_um", static_cast<double>(Units::convert(200, "um")));
+    spatialCut_mm = m_config.get<double>("spatial_cut_mm", static_cast<double>(Units::convert(0.2, "mm")));
     minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
     excludeDUT = m_config.get<bool>("exclude_dut", true);
 }
@@ -22,6 +25,13 @@ TrackingSpatial::TrackingSpatial(Configuration config, std::vector<std::shared_p
  */
 
 void TrackingSpatial::initialise() {
+
+    LOG(STATUS) << "spatialCut_nm = " << spatialCut_nm
+                << " and in Units::display(): " << Units::display(spatialCut_nm, "nm");
+    LOG(STATUS) << "spatialCut_um = " << spatialCut_um
+                << " and in Units::display(): " << Units::display(spatialCut_um, "um");
+    LOG(STATUS) << "spatialCut_mm = " << spatialCut_mm
+                << " and in Units::display(): " << Units::display(spatialCut_mm, "mm");
 
     // Set up histograms
     std::string title = "Track #chi^{2};#chi^{2};events";
