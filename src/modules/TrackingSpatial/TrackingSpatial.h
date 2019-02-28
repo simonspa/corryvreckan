@@ -39,9 +39,6 @@ namespace corryvreckan {
 
         // Member variables
         double spatialCut;
-        double spatialCut_nm;
-        double spatialCut_um;
-        double spatialCut_mm;
         size_t minHitsOnTrack;
         bool excludeDUT;
     };
