@@ -10,7 +10,7 @@ FileReader::FileReader(Configuration config, std::vector<std::shared_ptr<Detecto
     m_readClusters = m_config.get<bool>("read_clusters", false);
     m_readTracks = m_config.get<bool>("read_tracks", false);
     m_fileName = m_config.getPath("file_name", true);
-    m_timeWindow = m_config.get<double>("time_window", static_cast<double>(Units::convert(1., "s")));
+    m_timeWindow = m_config.get<double>("time_window", Units::get(1.0, "s"));
     m_readMCParticles = m_config.get<bool>("read_mcparticles", false);
     // checking if DUT parameter is in the configuration file, if so then check if should only output the DUT
     m_onlyDUT = m_config.get<bool>("only_dut", false);
