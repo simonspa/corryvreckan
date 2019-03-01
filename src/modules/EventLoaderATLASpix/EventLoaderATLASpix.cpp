@@ -8,7 +8,7 @@ EventLoaderATLASpix::EventLoaderATLASpix(Configuration config, std::shared_ptr<D
     : Module(std::move(config), detector), m_detector(detector) {
 
     m_inputDirectory = m_config.getPath("input_directory");
-    m_clockCycle = m_config.get<double>("clock_cycle", Units::get(6.25, "ns"));
+    m_clockCycle = m_config.get<double>("clock_cycle", Units::get<double>(6.25, "ns"));
 
     // Allow reading of legacy data format using the Karlsruhe readout system:
     m_legacyFormat = m_config.get<bool>("legacy_format", false);

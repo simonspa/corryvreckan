@@ -7,7 +7,7 @@ using namespace std;
 Metronome::Metronome(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
-    m_eventLength = m_config.get<double>("event_length", Units::get(10.0, "us"));
+    m_eventLength = m_config.get<double>("event_length", Units::get<double>(10, "us"));
 }
 
 void Metronome::initialise() {

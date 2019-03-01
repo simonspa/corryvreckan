@@ -7,7 +7,7 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::shared_ptr<Detector> det
     : Module(std::move(config), detector), m_detector(detector) {
 
     makeCorrelations = m_config.get<bool>("make_correlations", false);
-    timingCut = m_config.get<double>("timing_cut", Units::get(100.0, "ns"));
+    timingCut = m_config.get<double>("timing_cut", Units::get<double>(100, "ns"));
     do_timing_cut_ = m_config.get<bool>("do_timing_cut", false);
 }
 

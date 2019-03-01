@@ -6,9 +6,9 @@ using namespace std;
 Prealignment::Prealignment(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    max_correlation_rms = m_config.get<double>("max_correlation_rms", Units::get(6.0, "mm"));
+    max_correlation_rms = m_config.get<double>("max_correlation_rms", Units::get<double>(6, "mm"));
     damping_factor = m_config.get<double>("damping_factor", 1.0);
-    timingCut = m_config.get<double>("timing_cut", Units::get(100.0, "ns"));
+    timingCut = m_config.get<double>("timing_cut", Units::get<double>(100, "ns"));
     LOG(DEBUG) << "Setting max_correlation_rms to : " << max_correlation_rms;
     LOG(DEBUG) << "Setting damping_factor to : " << damping_factor;
 }
