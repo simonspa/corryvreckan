@@ -24,7 +24,7 @@ namespace corryvreckan {
             trigger_list_.push_back(trigger);
         }
 
-        bool has_trigger_id(uint64_t trigger_id) {
+        bool has_trigger_id(uint64_t trigger_id) const {
             for(auto& trigger : trigger_list_) {
                 if(trigger_id == trigger.first) {
                     return true;
@@ -33,7 +33,7 @@ namespace corryvreckan {
             return false;
         }
 
-        double get_trigger_time(uint32_t trigger_id) {
+        double get_trigger_time(uint32_t trigger_id) const {
             for(auto& trigger : trigger_list_) {
                 if(trigger_id == trigger.first) {
                     return trigger.second;
