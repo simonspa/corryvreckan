@@ -28,8 +28,6 @@ EventLoaderEUDAQ2::get_event_times(double start, double end, std::shared_ptr<Cli
         evt_times.second = clipboard->get_event()->end();
     } else {
         LOG(DEBUG) << "\tNo event found on clipboard. New event times: ";
-        // clipboard->put_event(std::make_shared<Event>(start-1e6, end+1e6)); // UGLY HACK: increasing event time interval
-        // artificially!!!
         clipboard->put_event(std::make_shared<Event>(start, end));
         evt_times = {start, end};
     } // end else
