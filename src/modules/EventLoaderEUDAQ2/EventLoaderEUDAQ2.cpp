@@ -401,7 +401,6 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         if(sub_events.size() == 0) {
             LOG(DEBUG) << "No subevent, process event.";
 
-            increment_event_type_counter(current_evt);
             event_counts[current_evt->GetDescription()]++;
             process_event(current_evt, clipboard);
             // read next event for next run:
@@ -423,13 +422,10 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 event_position = process_tlu_event(subevt, clipboard);
                 if(event_position == before_window) {
                     LOG(DEBUG) << "\t---> TLU event is before window.";
-                    increment_event_type_counter(subevt);
                     event_counts[subevt->GetDescription()]++;
                 }
                 if(event_position == in_window) {
                     LOG(DEBUG) << "\t---> TLU event is in window.";
-                    increment_event_type_counter(subevt);
-                    increment_event_type_counter(subevt, true); // want to increment in-frame counter -> in_frame = true
                     event_counts[subevt->GetDescription()]++;
                     event_counts_inframe[subevt->GetDescription()]++;
                 }
@@ -459,7 +455,6 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                     continue;
                 } // end if
                 LOG(DEBUG) << "\t---> Found non-TLU subevent -> process.";
-                increment_event_type_counter(subevt);
                 event_counts[subevt->GetDescription()]++;
 
                 // if before -> read next event and check again (but still increment event type counter)
@@ -469,7 +464,6 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 }          // end if
 
                 // if in window -> process
-                increment_event_type_counter(subevt, true); // want to increment in-frame counter -> in_frame = true
                 event_counts_inframe[subevt->GetDescription()]++;
                 process_event(subevt, clipboard);
             } // end for loop over subevents

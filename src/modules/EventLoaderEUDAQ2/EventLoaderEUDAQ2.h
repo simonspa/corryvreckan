@@ -65,13 +65,6 @@ namespace corryvreckan {
         std::pair<double, double> get_event_times(double start, double end, std::shared_ptr<Clipboard>& clipboard);
 
         /**
-         * @brief Increment respective counter of input event type (general and in event frame)
-         * @param evt Event object (event or subevent)
-         * @param in_frame Bool: set true if you want to increment the respective counter for events in frame
-         */
-        void increment_event_type_counter(eudaq::EventSPC evt, bool in_frame = false);
-
-        /**
          * @brief Process events: extract hits and put onto clipboard, also define event start/end
          * @param evt Event object (event or subevent) to be processed
          * @param clipboard The clipboard of the event
@@ -108,17 +101,6 @@ namespace corryvreckan {
 
         std::map<std::string, size_t> event_counts{};
         std::map<std::string, size_t> event_counts_inframe{};
-
-        int m_eventCount_tpx3; // Timepix3
-        int m_eventCount_cpx2; // CLICpix2
-        int m_eventCount_apx;  // ATLASpix
-        int m_eventCount_ni;   // Mimosa26
-        int m_eventCount_tlu;  // AIDA TLU
-        int m_eventCount_tpx3_inFrame;
-        int m_eventCount_cpx2_inFrame;
-        int m_eventCount_apx_inFrame;
-        int m_eventCount_ni_inFrame;
-        int m_eventCount_tlu_inFrame;
     };
 
 } // namespace corryvreckan
