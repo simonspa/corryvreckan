@@ -49,7 +49,7 @@ namespace corryvreckan {
         std::vector<std::pair<uint32_t, double>> trigger_list_{};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Event, 1)
+        ClassDef(Event, 2)
     };
 } // namespace corryvreckan
 
