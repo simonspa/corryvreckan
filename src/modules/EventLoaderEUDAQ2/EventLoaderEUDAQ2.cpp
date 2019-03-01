@@ -16,14 +16,10 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     : Module(std::move(config), detector), m_detector(detector) {
 
     m_filename = m_config.getPath("file_name", true);
-    m_timeBeforeTLUtimestamp =
-        m_config.get<double>("time_before_tlu_timestamp", static_cast<double>(Units::get<double>(115.0, "us")));
-    m_timeAfterTLUtimestamp =
-        m_config.get<double>("time_after_tlu_timestamp", static_cast<double>(Units::get<double>(230.0, "us")));
-    m_searchTimeBeforeTLUtimestamp =
-        m_config.get<double>("search_time_before_tlu_timestamp", static_cast<double>(Units::get<double>(100.0, "ns")));
-    m_searchTimeAfterTLUtimestamp =
-        m_config.get<double>("search_time_after_tlu_timestamp", static_cast<double>(Units::get<double>(100.0, "ns")));
+    m_timeBeforeTLUtimestamp = m_config.get<double>("time_before_tlu_timestamp", Units::get(115.0, "us"));
+    m_timeAfterTLUtimestamp = m_config.get<double>("time_after_tlu_timestamp", Units::get(230.0, "us"));
+    m_searchTimeBeforeTLUtimestamp = m_config.get<double>("search_time_before_tlu_timestamp", Units::get(100.0, "ns"));
+    m_searchTimeAfterTLUtimestamp = m_config.get<double>("search_time_after_tlu_timestamp", Units::get(100.0, "ns"));
 }
 
 std::pair<double, double>
@@ -44,39 +40,6 @@ EventLoaderEUDAQ2::get_event_times(double start, double end, std::shared_ptr<Cli
                << ", end = " << Units::display(evt_times.second, {"ns", "us", "ms", "s"})
                << ", length = " << Units::display(evt_times.second - evt_times.first, {"ns", "us", "ms", "s"});
     return evt_times;
-}
-
-void EventLoaderEUDAQ2::increment_event_type_counter(eudaq::EventSPC evt, bool in_frame) {
-
-    LOG(DEBUG) << "Incrementing event counter for type: " << evt->GetDescription();
-    // Increment respective counter by one. Bool to int conversion is implicit.
-    if(evt->GetDescription() == "Timepix3RawDataEvent") {
-        m_eventCount_tpx3 += !in_frame;
-        m_eventCount_tpx3_inFrame += in_frame;
-    }
-    if(evt->GetDescription() == "CaribouCLICpix2Event") {
-        m_eventCount_cpx2 += !in_frame;
-        m_eventCount_cpx2_inFrame += in_frame;
-    }
-    if(evt->GetDescription() == "CaribouATLASpixEvent") {
-        m_eventCount_apx += !in_frame;
-        m_eventCount_apx_inFrame += in_frame;
-    }
-    // In case of TLU or Mimosa events we have 6 planes of the same type
-    // Therefore, the counter should only increase only once and not with every plane we look at.
-
-    // ToDo: find a more generic way to implement this (because it fails when there are multiple planes of different detector
-    // type!
-    if(m_detector->name() != "MIMOSA26_0") {
-        return;
-    }
-    if(evt->GetDescription() == "TluRawDataEvent") {
-        m_eventCount_tlu += !in_frame;
-        m_eventCount_tlu_inFrame += in_frame;
-    } else if(evt->GetDescription() == "NiRawDataEvent") {
-        m_eventCount_ni += !in_frame;
-        m_eventCount_ni_inFrame += in_frame;
-    }
 }
 
 EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::EventSPC evt,
@@ -294,13 +257,6 @@ void EventLoaderEUDAQ2::initialise() {
     auto detectorID = m_detector->name();
     LOG(DEBUG) << "Initialise for detector " + detectorID;
 
-    // Initializing all counters to 0
-    m_eventCount_tpx3 = 0, m_eventCount_tpx3_inFrame = 0;
-    m_eventCount_cpx2 = 0, m_eventCount_cpx2_inFrame = 0;
-    m_eventCount_apx = 0, m_eventCount_apx_inFrame = 0;
-    m_eventCount_ni = 0, m_eventCount_ni_inFrame = 0;
-    m_eventCount_tlu = 0, m_eventCount_tlu_inFrame = 0;
-
     m_skipBeforeT0 = m_config.get<bool>("skip_before_t0", false);
 
     // Some simple histograms:
@@ -491,21 +447,12 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 }
 
 void EventLoaderEUDAQ2::finalise() {
-    LOG(STATUS) << "Number of Timepix3 events: " << m_eventCount_tpx3 << ",\t in frame:  " << m_eventCount_tpx3_inFrame
-                << "\n"
-                << "Number of CLICpix2 events: " << m_eventCount_cpx2 << ",\t in frame:  " << m_eventCount_cpx2_inFrame
-                << "\n"
-                << "Number of ATLASpix events: " << m_eventCount_apx << ",\t in frame:  " << m_eventCount_apx_inFrame << "\n"
-                << "Number of TLU events:\t" << m_eventCount_tlu << ",\t in frame:  " << m_eventCount_tlu_inFrame << "\n"
-                << "Number of NI events:\t" << m_eventCount_ni << ",\t in frame:  " << m_eventCount_ni_inFrame << "\n";
 
-    LOG(STATUS) << "*****************************************************";
+    // Print event counts (and event counts in frame) for different detector types:
     for(auto const& evt_type : event_counts) {
-        LOG(STATUS) << "Number of " << evt_type.first << "s:\t" << evt_type.second;
+        LOG(INFO) << "Number of " << evt_type.first << "s:\t" << evt_type.second;
     }
     for(auto const& evt_type : event_counts_inframe) {
-        LOG(STATUS) << "Number of " << evt_type.first << "s in frame:\t" << evt_type.second;
+        LOG(INFO) << "Number of " << evt_type.first << "s in frame:\t" << evt_type.second;
     }
-    LOG(STATUS) << "*****************************************************";
-    LOG(STATUS) << "*****************************************************";
 }
