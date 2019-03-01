@@ -19,10 +19,7 @@ namespace corryvreckan {
         double end() const { return end_; };
         double duration() const { return (end_ - timestamp()); };
 
-        void add_trigger(uint32_t trigger_id, double trigger_ts) {
-            std::pair<uint32_t, double> trigger = {trigger_id, trigger_ts};
-            trigger_list_.push_back(trigger);
-        }
+        void add_trigger(uint32_t trigger_id, double trigger_ts) { trigger_list_.emplace_back(trigger_id, trigger_ts); }
 
         bool has_trigger_id(uint64_t trigger_id) const {
             for(auto& trigger : trigger_list_) {
