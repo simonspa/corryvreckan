@@ -16,6 +16,14 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     : Module(std::move(config), detector), m_detector(detector) {
 
     m_filename = m_config.getPath("file_name", true);
+    m_timeBeforeTLUtimestamp =
+        m_config.get<double>("time_before_tlu_timestamp", static_cast<double>(Units::get<double>(115.0, "us")));
+    m_timeAfterTLUtimestamp =
+        m_config.get<double>("time_after_tlu_timestamp", static_cast<double>(Units::get<double>(230.0, "us")));
+    m_searchTimeBeforeTLUtimestamp =
+        m_config.get<double>("search_time_before_tlu_timestamp", static_cast<double>(Units::get<double>(100.0, "ns")));
+    m_searchTimeAfterTLUtimestamp =
+        m_config.get<double>("search_time_after_tlu_timestamp", static_cast<double>(Units::get<double>(100.0, "ns")));
 }
 
 std::pair<double, double>
@@ -90,6 +98,11 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
     current_event_times.second = tlu_timestamp + 230000; // in ns
     event_search_times.first = tlu_timestamp + 100;      // in ns
     event_search_times.second = tlu_timestamp - 100;     // in ns
+
+    current_event_times.first = tlu_timestamp - m_timeBeforeTLUtimestamp;      // in ns
+    current_event_times.second = tlu_timestamp + m_timeAfterTLUtimestamp;      // in ns
+    event_search_times.first = tlu_timestamp + m_searchTimeBeforeTLUtimestamp; // in ns
+    event_search_times.second = tlu_timestamp - m_searchTimeAfterTLUtimestamp; // in ns
 
     auto clipboard_event_times = get_event_times(current_event_times.first, current_event_times.second, clipboard);
 

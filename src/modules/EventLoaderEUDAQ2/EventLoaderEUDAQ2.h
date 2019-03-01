@@ -82,6 +82,12 @@ namespace corryvreckan {
 
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
+
+        double m_timeBeforeTLUtimestamp;
+        double m_timeAfterTLUtimestamp;
+        double m_searchTimeBeforeTLUtimestamp;
+        double m_searchTimeAfterTLUtimestamp;
+
         // ToDo:
         // If skip_before_t0 is set true but the data does not contain t0
         // (because during data taking drop_before_t0 was set), at the moment
