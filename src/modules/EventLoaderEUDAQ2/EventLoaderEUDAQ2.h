@@ -106,6 +106,9 @@ namespace corryvreckan {
         TH1D* hEventBegin;
         TH1D* hTluTrigTimeToFrameBegin;
 
+        std::map<std::string, size_t> event_counts{};
+        std::map<std::string, size_t> event_counts_inframe{};
+
         int m_eventCount_tpx3; // Timepix3
         int m_eventCount_cpx2; // CLICpix2
         int m_eventCount_apx;  // ATLASpix

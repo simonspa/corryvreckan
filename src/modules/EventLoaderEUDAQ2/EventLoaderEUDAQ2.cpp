@@ -201,7 +201,9 @@ void EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt, std::shared_ptr<Clipb
                        << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
             return;
         }
-    } // end if not NiRawDataEvent
+        // else: increase counter for in frame:
+        event_counts_inframe[evt->GetDescription()]++;
+    } // end if chip with valid hit timestamps
 
     // Create vector of pixels:
     Pixels* pixels = new Pixels();
@@ -400,6 +402,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "No subevent, process event.";
 
             increment_event_type_counter(current_evt);
+            event_counts[current_evt->GetDescription()]++;
             process_event(current_evt, clipboard);
             // read next event for next run:
             current_evt = reader->GetNextEvent();
@@ -421,11 +424,14 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 if(event_position == before_window) {
                     LOG(DEBUG) << "\t---> TLU event is before window.";
                     increment_event_type_counter(subevt);
+                    event_counts[subevt->GetDescription()]++;
                 }
                 if(event_position == in_window) {
                     LOG(DEBUG) << "\t---> TLU event is in window.";
                     increment_event_type_counter(subevt);
                     increment_event_type_counter(subevt, true); // want to increment in-frame counter -> in_frame = true
+                    event_counts[subevt->GetDescription()]++;
+                    event_counts_inframe[subevt->GetDescription()]++;
                 }
                 break;
             } // end for
@@ -454,6 +460,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 } // end if
                 LOG(DEBUG) << "\t---> Found non-TLU subevent -> process.";
                 increment_event_type_counter(subevt);
+                event_counts[subevt->GetDescription()]++;
 
                 // if before -> read next event and check again (but still increment event type counter)
                 if(event_position == before_window) {
@@ -463,6 +470,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
                 // if in window -> process
                 increment_event_type_counter(subevt, true); // want to increment in-frame counter -> in_frame = true
+                event_counts_inframe[subevt->GetDescription()]++;
                 process_event(subevt, clipboard);
             } // end for loop over subevents
 
@@ -483,4 +491,14 @@ void EventLoaderEUDAQ2::finalise() {
                 << "Number of ATLASpix events: " << m_eventCount_apx << ",\t in frame:  " << m_eventCount_apx_inFrame << "\n"
                 << "Number of TLU events:\t" << m_eventCount_tlu << ",\t in frame:  " << m_eventCount_tlu_inFrame << "\n"
                 << "Number of NI events:\t" << m_eventCount_ni << ",\t in frame:  " << m_eventCount_ni_inFrame << "\n";
+
+    LOG(STATUS) << "*****************************************************";
+    for(auto const& evt_type : event_counts) {
+        LOG(STATUS) << "Number of " << evt_type.first << "s:\t" << evt_type.second;
+    }
+    for(auto const& evt_type : event_counts_inframe) {
+        LOG(STATUS) << "Number of " << evt_type.first << "s in frame:\t" << evt_type.second;
+    }
+    LOG(STATUS) << "*****************************************************";
+    LOG(STATUS) << "*****************************************************";
 }
