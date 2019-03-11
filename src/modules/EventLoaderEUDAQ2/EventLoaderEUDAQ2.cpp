@@ -109,16 +109,6 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
         return process_tlu_event(evt, clipboard);
     }
 
-    // If other than TLU event:
-
-    //    // if we have ADC data:
-    //    std::string adc_data = current_evt->GetTag("DAC_OUT", "");
-    //    double adc_value;
-    //    if(adc_data.length() > 0) {
-    //        adc_value = stod(adc_data, nullptr);
-    //        LOG(DEBUG) << "ADC_DATA was " << adc_value;
-    //    }
-
     // Prepare standard event:
     auto stdevt = eudaq::StandardEvent::MakeShared();
 
@@ -383,8 +373,8 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
             return StatusCode::Success;
 
         } else {
-            // We have to process the TLU event first. Therefore
-            // loop over subevents and process ONLY TLU event:
+            // We have to process the TLU event first.
+            // Therefore, loop over subevents and process ONLY TLU event:
             bool found_tlu_event = false;
             enum EventPosition event_position;
             for(auto& subevt : sub_events) {
@@ -396,15 +386,6 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 LOG(DEBUG) << "\t---> Found TLU subevent -> process.";
                 found_tlu_event = true;
                 event_position = process_event(subevt, clipboard);
-                //                if(event_position == before_window) {
-                //                    LOG(DEBUG) << "\t---> TLU event is before window.";
-                //                    event_counts[subevt->GetDescription()]++;
-                //                }
-                //                if(event_position == in_window) {
-                //                    LOG(DEBUG) << "\t---> TLU event is in window.";
-                //                    event_counts[subevt->GetDescription()]++;
-                //                    event_counts_inframe[subevt->GetDescription()]++;
-                //                }
                 break; // there can only be 1 TLU event in all subevents
             }          // end for
 
@@ -431,16 +412,14 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                     continue;
                 } // end if
                 LOG(DEBUG) << "\t---> Found non-TLU subevent -> process.";
-                // event_counts[subevt->GetDescription()]++;
 
-                // if before -> read next event and check again (but still increment event type counter)
+                // if before -> read next event and check again
                 if(event_position == before_window) {
                     LOG(DEBUG) << "Trigger is before event window. Read next event and continue.";
                     break; // jump out of for loop
                 }          // end if
 
                 // if in window -> process
-                // event_counts_inframe[subevt->GetDescription()]++;
                 process_event(subevt, clipboard);
             } // end for loop over subevents
 
