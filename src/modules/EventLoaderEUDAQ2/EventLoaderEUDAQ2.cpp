@@ -367,7 +367,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         auto sub_events = current_evt->GetSubEvents();
         LOG(DEBUG) << "There are " << sub_events.size() << " sub events.";
 
-        if(sub_events.size() == 0) {
+        if(sub_events.empty()) {
             LOG(DEBUG) << "No subevent, process event.";
 
             event_counts[current_evt->GetDescription()]++;
