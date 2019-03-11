@@ -68,9 +68,9 @@ namespace corryvreckan {
          * @brief Process events: extract hits and put onto clipboard, also define event start/end
          * @param evt Event object (event or subevent) to be processed
          * @param clipboard The clipboard of the event
-         * @return EventPosition: before, in or after event window
+         * @return EventPosition: before/in/after event window or invalid
          */
-        enum EventPosition { before_window, in_window, after_window };
+        enum EventPosition { before_window, in_window, after_window, invalid };
         enum EventPosition process_tlu_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard);
 
         /**
@@ -78,7 +78,7 @@ namespace corryvreckan {
          * @param evt Event object (event or subevent) to be processed
          * @param clipboard The clipboard of the event
          */
-        void process_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard);
+        enum EventPosition process_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard);
 
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
