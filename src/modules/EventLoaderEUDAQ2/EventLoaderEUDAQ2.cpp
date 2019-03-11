@@ -77,7 +77,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
                    << Units::display(event_search_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
                    << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"});
         // hTluTrigTimeToFrameBegin->Fill   (clipboard_event_times.first - tlu_timestamp));
-        event_counts[subevt->GetDescription()]++;
+        event_counts[evt->GetDescription()]++;
         return before_window;
     }
 
@@ -100,14 +100,15 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
                                                                   std::shared_ptr<Clipboard>& clipboard) {
 
     LOG(DEBUG) << "\tEvent description: " << evt->GetDescription() << ", ts_begin = " << evt->GetTimestampBegin()
-               << " lsb, ts_end = " << evt->GetTimestampEnd() << " lsb"
-               << ", trigN = " << evt->GetTriggerN();
+               << " lsb, ts_end = " << evt->GetTimestampEnd() << " lsb, trigN = " << evt->GetTriggerN();
 
     // If TLU event: don't convert to standard event but only use time information:
     if(evt->GetDescription() == "TluRawDataEvent") {
         LOG(DEBUG) << "Processing TLU event.";
         return process_tlu_event(evt, clipboard);
     }
+
+    // If other than TLU event:
 
     // Prepare standard event:
     auto stdevt = eudaq::StandardEvent::MakeShared();
@@ -150,8 +151,9 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
     double trigger_ts = 0;
     if(evt->GetDescription() == "NiRawDataEvent") {
         if(!clipboard->get_event()->has_trigger_id(evt->GetTriggerN())) {
-            LOG(ERROR) << "Frame dropped because event does not contain TriggerID " << evt->GetTriggerN();
-            return invalid;
+            LOG(DEBUG) << "Frame dropped because event does not contain TriggerID " << evt->GetTriggerN();
+            event_counts[evt->GetDescription()]++;
+            return trigger_id_not_found;
         } else {
             LOG(DEBUG) << "Found TriggerID.";
             trigger_ts = clipboard->get_event()->get_trigger_time(evt->GetTriggerN());
@@ -172,10 +174,11 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
                        << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
             return after_window;
         }
-        // else: increase counter for in frame:
-        event_counts[evt->GetDescription()]++;
-        event_counts_inframe[evt->GetDescription()]++;
     } // end if chip with valid hit timestamps
+
+    // increase counter for in frame:
+    event_counts[evt->GetDescription()]++;
+    event_counts_inframe[evt->GetDescription()]++;
 
     // Create vector of pixels:
     Pixels* pixels = new Pixels();
@@ -366,17 +369,18 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         if(sub_events.empty()) {
             LOG(DEBUG) << "No subevent, process event.";
 
-            event_counts[current_evt->GetDescription()]++;
-            process_event(current_evt, clipboard);
+            // keep reading and processing new events until we're after the event window:
+            if(process_event(current_evt, clipboard) == after_window) {
+                return StatusCode::Success;
+            }
             // read next event for next run:
             current_evt = reader->GetNextEvent();
-            return StatusCode::Success;
 
         } else {
             // We have to process the TLU event first.
             // Therefore, loop over subevents and process ONLY TLU event:
             bool found_tlu_event = false;
-            enum EventPosition event_position;
+
             for(auto& subevt : sub_events) {
                 LOG(DEBUG) << "Processing subevent.";
                 if(subevt->GetDescription() != "TluRawDataEvent") {
@@ -385,7 +389,10 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 } // end if
                 LOG(DEBUG) << "\t---> Found TLU subevent -> process.";
                 found_tlu_event = true;
-                event_position = process_event(subevt, clipboard);
+                if(process_event(subevt, clipboard) == after_window) {
+                    // return and don't process other subevent
+                    return StatusCode::Success;
+                }
                 break; // there can only be 1 TLU event in all subevents
             }          // end for
 
@@ -393,12 +400,6 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 LOG(WARNING) << "Did not find TLU subevent. Something is wrong.";
                 current_evt = reader->GetNextEvent();
                 continue;
-            }
-
-            // If after window:
-            if(event_position == after_window) {
-                LOG(DEBUG) << "Trigger is after event window. Finish event window.";
-                return StatusCode::Success;
             }
 
             // If before or in the window:
@@ -413,14 +414,11 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 } // end if
                 LOG(DEBUG) << "\t---> Found non-TLU subevent -> process.";
 
-                // if before -> read next event and check again
-                if(event_position == before_window) {
-                    LOG(DEBUG) << "Trigger is before event window. Read next event and continue.";
-                    break; // jump out of for loop
-                }          // end if
-
-                // if in window -> process
-                process_event(subevt, clipboard);
+                // if in window -> process regularly
+                // if before window: trigger ID will not be found
+                if(process_event(subevt, clipboard) == trigger_id_not_found) {
+                    LOG(DEBUG) << "Trigger ID not found.";
+                }
             } // end for loop over subevents
 
             // read next event for next run() iteration
