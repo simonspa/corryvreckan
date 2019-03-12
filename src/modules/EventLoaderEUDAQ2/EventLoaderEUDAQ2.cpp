@@ -416,9 +416,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
                 // if in window -> process regularly
                 // if before window: trigger ID will not be found
-                if(process_event(subevt, clipboard) == trigger_id_not_found) {
-                    LOG(DEBUG) << "Trigger ID not found.";
-                }
+                process_event(subevt, clipboard);
             } // end for loop over subevents
 
             // read next event for next run() iteration
