@@ -180,8 +180,14 @@ void AnalysisDUT::initialise() {
 
     hAssociatedTracksGlobalPosition =
         new TH2F("hAssociatedTracksGlobalPosition", "hAssociatedTracksGlobalPosition", 200, -10, 10, 200, -10, 10);
-    hUnassociatedTracksGlobalPosition =
-        new TH2F("hUnassociatedTracksGlobalPosition", "hUnassociatedTracksGlobalPosition", 200, -10, 10, 200, -10, 10);
+    hAssociatedTracksLocalPosition = new TH2F("hAssociatedTracksLocalPosition",
+                                              "hAssociatedTracksLocalPosition",
+                                              m_detector->nPixels().X(),
+                                              0,
+                                              m_detector->nPixels().X(),
+                                              m_detector->nPixels().Y(),
+                                              0,
+                                              m_detector->nPixels().Y());
 }
 
 StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
@@ -211,7 +217,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         auto globalIntercept = m_detector->getIntercept(track);
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
-        if(!m_detector->hasIntercept(track, 1.)) {
+        if(!m_detector->hasIntercept(track, 0.5)) {
             LOG(DEBUG) << " - track outside DUT area";
             continue;
         }
@@ -358,6 +364,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
                 track->addAssociatedCluster(cluster);
                 hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
+                hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept),
+                                                     m_detector->getRow(localIntercept));
 
                 // Only allow one associated cluster per track
                 break;

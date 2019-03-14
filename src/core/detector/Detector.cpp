@@ -277,8 +277,8 @@ bool Detector::hasIntercept(const Track* track, double pixelTolerance) const {
 
     // Check if the row and column are outside of the chip
     bool intercept = true;
-    if(row < (pixelTolerance - 0.5) || row > (this->m_nPixels.Y() - 0.5 - pixelTolerance) ||
-       column < (pixelTolerance - 0.5) || column > (this->m_nPixels.X() - 0.5 - pixelTolerance))
+    if(row < pixelTolerance || row > (this->m_nPixels.Y() - pixelTolerance) || column < pixelTolerance ||
+       column > (this->m_nPixels.X() - pixelTolerance))
         intercept = false;
 
     return intercept;

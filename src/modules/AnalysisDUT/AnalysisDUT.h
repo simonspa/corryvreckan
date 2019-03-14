@@ -58,7 +58,7 @@ namespace corryvreckan {
         TH2F* residualsTimeVsSignal;
 
         TH2F* hAssociatedTracksGlobalPosition;
-        TH2F* hUnassociatedTracksGlobalPosition;
+        TH2F* hAssociatedTracksLocalPosition;
 
         // Member variables
         double spatialCut, m_timeCutFrameEdge;
