@@ -13,8 +13,10 @@ This module measures the efficiency of the device under test by comparing its cl
 
 ### Plots produced
 * 2D Map of in-pixel efficiency
-* 2D Map of the chip efficiency in local coordinates
-* 2D Map of the chip efficiency on global coordinates
+* 2D Map of the chip efficiency in local coordinates, filled at the position of the track intercept point
+* 2D Map of the chip efficiency on global coordinates, filled at the position of the track intercept point
+* 2D Map of the chip efficiency in local coordinates, filled at the position of the associated cluster centre
+* 2D Map of the chip efficiency on global coordinates, filled at the position of the associated cluster centre
 
 ### Usage
 ```toml
