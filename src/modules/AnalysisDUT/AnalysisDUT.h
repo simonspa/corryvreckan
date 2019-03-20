@@ -21,6 +21,7 @@ namespace corryvreckan {
         // Functions
         void initialise();
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        void finalise();
 
     private:
         std::shared_ptr<Detector> m_detector;
@@ -40,6 +41,7 @@ namespace corryvreckan {
 
         TH1F *clusterTotAssoc, *clusterTotAssocNorm;
         TH1F* clusterSizeAssoc;
+        TH1F* clusterSizeAssocNorm;
 
         TProfile2D *rmsxvsxmym, *rmsyvsxmym, *rmsxyvsxmym;
         TProfile2D *qvsxmym, *qMoyalvsxmym, *pxqvsxmym;
