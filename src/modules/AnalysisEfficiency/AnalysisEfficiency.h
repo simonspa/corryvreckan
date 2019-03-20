@@ -39,9 +39,12 @@ namespace corryvreckan {
     private:
         std::shared_ptr<Detector> m_detector;
 
-        TProfile2D* hPixelEfficiencyMap;
-        TProfile2D* hChipEfficiencyMap;
-        TProfile2D* hGlobalEfficiencyMap;
+        TProfile2D* hPixelEfficiencyMap_trackPos;
+        TProfile2D* hChipEfficiencyMap_trackPos;
+        TProfile2D* hGlobalEfficiencyMap_trackPos;
+        TProfile2D* hPixelEfficiencyMap_clustPos;
+        TProfile2D* hChipEfficiencyMap_clustPos;
+        TProfile2D* hGlobalEfficiencyMap_clustPos;
 
         double m_chi2ndofCut, m_timeCutFrameEdge;
         int total_tracks, matched_tracks;
