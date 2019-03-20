@@ -42,7 +42,6 @@ namespace corryvreckan {
         TProfile2D* hPixelEfficiencyMap_trackPos;
         TProfile2D* hChipEfficiencyMap_trackPos;
         TProfile2D* hGlobalEfficiencyMap_trackPos;
-        TProfile2D* hPixelEfficiencyMap_clustPos;
         TProfile2D* hChipEfficiencyMap_clustPos;
         TProfile2D* hGlobalEfficiencyMap_clustPos;
 
