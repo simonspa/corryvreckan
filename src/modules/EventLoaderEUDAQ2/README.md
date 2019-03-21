@@ -8,7 +8,7 @@ This module allows data recorded by EUDAQ2 and stored in a EUDAQ2 binary file as
 For each detector type, the corresponding converter module in EUDAQ2 is used to transform the data into the `StandardPlane` event type before storing the individual `Pixel` objects on the Corryvreckan clipboard.
 TLU event are not converted into `StandardEvents` but their timestamps can be used directly without conversion.
 
-The detectors need to be named according to the following scheme: `<detector_type>_<plane>` where `detector_type` is either of the types above and `<plane>` is an iterative number over the planes of the same type.
+The detectors need to be named according to the following scheme: `<detector_type>_<plane>` where `detector_type` is either of the types above and `<plane>` is an integer number iterating over the planes of the same type.
 
 If the data of different detectors is stored in separate files, the parameters `name` or `type` can be used as shown in the usage example below.
 It should be noted that the order of the detectors is crucial.
