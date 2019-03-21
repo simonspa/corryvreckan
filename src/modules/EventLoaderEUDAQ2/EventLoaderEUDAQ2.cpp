@@ -36,7 +36,7 @@ EventLoaderEUDAQ2::get_event_times(double start, double end, std::shared_ptr<Cli
         evt_times = {start, end};
     } // end else
 
-    // evt_begin starts with std::numeric_limits<double>::max()
+    // evt_start starts with std::numeric_limits<double>::max()
     // evt_end starts with std::numeric_limits<double>::lowest()
     // so in case they are not set properly in the converter, here we'd calculate lowest - max -> crash
     double evt_length =
@@ -63,7 +63,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
     event_search_times.second = tlu_timestamp + m_searchTimeAfterTLUtimestamp; // in ns
     auto clipboard_event_times = get_event_times(current_event_times.first, current_event_times.second, clipboard);
 
-    hEventBegin->Fill(current_event_times.first);
+    hEventStart->Fill(current_event_times.first);
 
     LOG(DEBUG) << "Check current_event_times.first = " << Units::display(current_event_times.first, {"ns", "us", "ms", "s"})
                << ", current_event_times.second = " << Units::display(current_event_times.second, {"ns", "us", "ms", "s"});
@@ -76,7 +76,6 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
         LOG(DEBUG) << "Frame dropped because frame begins BEFORE event: "
                    << Units::display(event_search_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
                    << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"});
-        // hTluTrigTimeToFrameBegin->Fill   (clipboard_event_times.first - tlu_timestamp));
         event_counts[evt->GetDescription()]++;
         return before_window;
     }
@@ -90,7 +89,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
 
     LOG(DEBUG) << "-------------- adding TriggerID " << evt->GetTriggerN();
     clipboard->get_event()->add_trigger(evt->GetTriggerN(), tlu_timestamp);
-    hTluTrigTimeToFrameBegin->Fill(tlu_timestamp - clipboard_event_times.first);
+    hTluTrigTimeToFrameStart->Fill(tlu_timestamp - clipboard_event_times.first);
     event_counts[evt->GetDescription()]++;
     event_counts_inframe[evt->GetDescription()]++;
     return in_window;
@@ -99,7 +98,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
 EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSPC evt,
                                                                   std::shared_ptr<Clipboard>& clipboard) {
 
-    LOG(DEBUG) << "\tEvent description: " << evt->GetDescription() << ", ts_begin = " << evt->GetTimestampBegin()
+    LOG(DEBUG) << "\tEvent description: " << evt->GetDescription() << ", ts_start = " << evt->GetTimestampBegin()
                << " lsb, ts_end = " << evt->GetTimestampEnd() << " lsb, trigN = " << evt->GetTriggerN();
 
     // If TLU event: don't convert to standard event (EUDAQ2) but only use time information:
@@ -152,13 +151,13 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
     }
     // For chips with valid hit timestamps:
     else {
-        // Get event begin/end:
+        // Get event start/end:
         std::pair<double, double> current_event_times;
         current_event_times.first = stdevt->GetTimeBegin();
         current_event_times.second = stdevt->GetTimeEnd();
 
         auto clipboard_event_times = get_event_times(current_event_times.first, current_event_times.second, clipboard);
-        hEventBegin->Fill(clipboard_event_times.first);
+        hEventStart->Fill(clipboard_event_times.first);
 
         LOG(DEBUG) << "Check current_event_times.first = "
                    << Units::display(current_event_times.first, {"ns", "us", "ms", "s"}) << ", current_event_times.second = "
@@ -279,10 +278,10 @@ void EventLoaderEUDAQ2::initialise() {
 
     title = m_detector->name() + " Pixel multiplicity;pixels;frames";
     hPixelsPerFrame = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
-    title = m_detector->name() + " eventBegin;eventBegin [ns];entries";
-    hEventBegin = new TH1D("eventBegin", title.c_str(), 1e6, 0, 1e9);
-    title = m_detector->name() + " TluTrigTimeToFrameBegin;frame begin - TLU trigger time [ns];entries";
-    hTluTrigTimeToFrameBegin = new TH1D("tluTrigTimeToFrameBegin", title.c_str(), 2e6, -1e9, 1e9);
+    title = m_detector->name() + " eventStart;eventStart [ns];entries";
+    hEventStart = new TH1D("eventStart", title.c_str(), 1e6, 0, 1e9);
+    title = m_detector->name() + " TluTrigTimeToFrameStart;TLU trigger time - frame start [ns];entries";
+    hTluTrigTimeToFrameStart = new TH1D("tluTrigTimeToFrameStart", title.c_str(), 2e6, -1e9, 1e9);
 
     // open the input file with the eudaq reader
     try {
@@ -372,7 +371,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "#ev: " << current_evt->GetEventNumber() << ", descr " << current_evt->GetDescription() << ", version "
                    << current_evt->GetVersion() << ", type " << current_evt->GetType() << ", devN "
                    << current_evt->GetDeviceN() << ", trigN " << current_evt->GetTriggerN() << ", evID "
-                   << current_evt->GetEventID() << ", ts_begin " << current_evt->GetTimestampBegin() << ", ts_end "
+                   << current_evt->GetEventID() << ", ts_start " << current_evt->GetTimestampBegin() << ", ts_end "
                    << current_evt->GetTimestampEnd();
 
         // check if there are subevents:

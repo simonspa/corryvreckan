@@ -89,13 +89,13 @@ namespace corryvreckan {
         double m_searchTimeBeforeTLUtimestamp;
         double m_searchTimeAfterTLUtimestamp;
 
-        // ToDo:
         // If skip_before_t0 is set true but the data does not contain t0
-        // (because during data taking drop_before_t0 was set), at the moment
-        // we go through the entire file, don't find it and return with a WARNING.
+        // (because during data taking drop_before_t0 was set),we go
+        // through the entire file, don't find it and return with an ERROR
+        // such that the user doesn't think they're skipping before T0 when
+        // this is not what's done behind the scenes.
         bool m_skipBeforeT0;
         eudaq::EventSPC current_evt;
-
         eudaq::FileReaderUP reader;
 
         // Pixel histograms
@@ -103,8 +103,8 @@ namespace corryvreckan {
         TH1F* hHitTimes;
 
         TH1F* hPixelsPerFrame;
-        TH1D* hEventBegin;
-        TH1D* hTluTrigTimeToFrameBegin;
+        TH1D* hEventStart;
+        TH1D* hTluTrigTimeToFrameStart;
 
         std::map<std::string, size_t> event_counts{};
         std::map<std::string, size_t> event_counts_inframe{};
