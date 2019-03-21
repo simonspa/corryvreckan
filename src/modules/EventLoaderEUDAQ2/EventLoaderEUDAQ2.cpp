@@ -119,8 +119,12 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
     // Prepare standard event:
     auto stdevt = eudaq::StandardEvent::MakeShared();
 
+    bool can_convert = eudaq::StdEventConverter::Convert(evt, stdevt, nullptr);
+    LOG(DEBUG) << "can_convert = " << can_convert;
+
     // Convert event to standard event:
-    if(!(eudaq::StdEventConverter::Convert(evt, stdevt, nullptr))) {
+    if(!can_convert) {
+        // if(!(eudaq::StdEventConverter::Convert(evt, stdevt, nullptr))) {
         LOG(DEBUG) << "Cannot convert to StandardEvent.";
         return invalid;
     }
