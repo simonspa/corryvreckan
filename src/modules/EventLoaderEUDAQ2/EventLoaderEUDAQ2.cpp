@@ -36,9 +36,15 @@ EventLoaderEUDAQ2::get_event_times(double start, double end, std::shared_ptr<Cli
         evt_times = {start, end};
     } // end else
 
+    // evt_begin starts with std::numeric_limits<double>::max()
+    // evt_end starts with std::numeric_limits<double>::lowest()
+    // so in case they are not set properly in the converter, here we'd calculate lowest - max -> crash
+    double evt_length =
+        (evt_times.second >= evt_times.first) ? (evt_times.second - evt_times.first) : std::numeric_limits<double>::lowest();
+
     LOG(DEBUG) << "\t--> start = " << Units::display(evt_times.first, {"ns", "us", "ms", "s"})
                << ", end = " << Units::display(evt_times.second, {"ns", "us", "ms", "s"})
-               << ", length = " << Units::display(evt_times.second - evt_times.first, {"ns", "us", "ms", "s"});
+               << ", length = " << Units::display(evt_length, {"ns", "us", "ms", "s"});
     return evt_times;
 }
 
