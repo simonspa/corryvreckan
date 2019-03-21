@@ -31,17 +31,18 @@ when running CMake to find the library to link against and headers to include.
 
 ### Parameters
 * `file_name`: File name of the EUDAQ2 raw data file. This parameter is mandatory.
-* `time_before_tlu_timestamp`: Defines how much earlier than the TLU timestamp the event window should begin
-* `time_after_tlu_timestamp`: Defines how much later than the TLU timestamp the event window should end.
-* `search_time_before_tlu_timestamp`: Defines the begin of the window around the TLU timestamp that needs to lie within the current event window for the respective frame of the TLU triggered detector to be matched.
-* `search_time_after_tlu_timestamp`: Defines the end of the window around the TLU timestamp that needs to lie within the current event window for the respective frame of the TLU triggered detector to be matched.
+* `time_before_tlu_timestamp`: Defines how much earlier than the TLU timestamp the event window should begin. Default value is `115 us`.
+* `time_after_tlu_timestamp`: Defines how much later than the TLU timestamp the event window should end. Default value is `230 us`.
+* `search_time_before_tlu_timestamp`: Defines the start of the window around the TLU timestamp that needs to lie within the current event window for the respective frame of the TLU triggered detector to be matched. Default value is `100 ns`.
+* `search_time_after_tlu_timestamp`: Defines the end of the window around the TLU timestamp that needs to lie within the current event window for the respective frame of the TLU triggered detector to be matched. Default value is `100 ns`.
+The default values for the latter four parameters are not yet tuned and might need to be optimised.
 
 ### Plots produced
-For each detector the following plots are produced:
+For each detector the following histograms are produced:
 * 2D hitmap
 * Hit timestamps
 * Pixels per frame
-* event begin times
+* Event start times
 * TLU trigger time difference to frame begin (filled only if TLU events exist)
 
 ### Usage
