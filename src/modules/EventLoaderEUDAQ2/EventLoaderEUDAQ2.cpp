@@ -243,8 +243,6 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
     }     // loop over planes
 
     hPixelsPerFrame->Fill(static_cast<int>(pixels->size()));
-    // hEventBegin->Fill(clipboard_event_times.first,static_cast<double>(pixels->size()));
-    hEventBegin->Fill(clipboard_event_times.first);
 
     // Put the pixel data on the clipboard:
     if(!pixels->empty()) {
