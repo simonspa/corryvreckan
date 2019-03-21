@@ -57,19 +57,13 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
     // "evt_end = static_cast<double>(evt->GetTimestampEnd());"
     // because this is only 25ns larger than GetTimeStampBegin and doesn't have a meaning!
 
-    current_event_times.first = tlu_timestamp - 115000;  // in ns
-    current_event_times.second = tlu_timestamp + 230000; // in ns
-    event_search_times.first = tlu_timestamp + 100;      // in ns
-    event_search_times.second = tlu_timestamp - 100;     // in ns
-
     current_event_times.first = tlu_timestamp - m_timeBeforeTLUtimestamp;      // in ns
     current_event_times.second = tlu_timestamp + m_timeAfterTLUtimestamp;      // in ns
-    event_search_times.first = tlu_timestamp + m_searchTimeBeforeTLUtimestamp; // in ns
-    event_search_times.second = tlu_timestamp - m_searchTimeAfterTLUtimestamp; // in ns
-
+    event_search_times.first = tlu_timestamp - m_searchTimeBeforeTLUtimestamp; // in ns
+    event_search_times.second = tlu_timestamp + m_searchTimeAfterTLUtimestamp; // in ns
     auto clipboard_event_times = get_event_times(current_event_times.first, current_event_times.second, clipboard);
 
-    hEventBegin->Fill(tlu_timestamp);
+    hEventBegin->Fill(current_event_times.first);
 
     LOG(DEBUG) << "Check current_event_times.first = " << Units::display(current_event_times.first, {"ns", "us", "ms", "s"})
                << ", current_event_times.second = " << Units::display(current_event_times.second, {"ns", "us", "ms", "s"});
@@ -96,7 +90,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
 
     LOG(DEBUG) << "-------------- adding TriggerID " << evt->GetTriggerN();
     clipboard->get_event()->add_trigger(evt->GetTriggerN(), tlu_timestamp);
-    hTluTrigTimeToFrameBegin->Fill(clipboard_event_times.first - tlu_timestamp);
+    hTluTrigTimeToFrameBegin->Fill(tlu_timestamp - clipboard_event_times.first);
     event_counts[evt->GetDescription()]++;
     event_counts_inframe[evt->GetDescription()]++;
     return in_window;
