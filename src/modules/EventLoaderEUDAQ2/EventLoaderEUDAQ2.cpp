@@ -354,7 +354,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     // All this is necessary because 1 DUT event (e.g. CLICpix2 event) might need to be compared to multiple Mimosa frames.
     // However, it's implemented in a generic way so it also works for the simple case of only 1 detector.
 
-    // current_evt: Global variable with an event stored from init or previous iteration of run()
+    // current_evt: Global variable with an event stored from initialise() or previous iteration of run()
     while(1) {
         if(!current_evt) {
             LOG(DEBUG) << "!ev --> return, empty event --> end of file!";
@@ -376,11 +376,18 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "No subevent, process event.";
 
             // keep reading and processing new events until we're after the event window:
-            if(process_event(current_evt, clipboard) == after_window) {
+            auto event_position = process_event(current_evt, clipboard);
+            LOG(DEBUG) << "event position = " << static_cast<int>(event_position);
+
+            if(event_position == after_window) {
                 return StatusCode::Success;
             }
             // read next event for next run:
             current_evt = reader->GetNextEvent();
+            if(event_position == invalid) {
+                LOG(DEBUG) << "No valid data!";
+                return StatusCode::NoData;
+            }
 
         } else {
             // We have to process the TLU event first.
