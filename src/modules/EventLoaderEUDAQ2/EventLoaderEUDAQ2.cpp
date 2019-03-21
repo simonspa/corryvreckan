@@ -102,7 +102,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
     LOG(DEBUG) << "\tEvent description: " << evt->GetDescription() << ", ts_begin = " << evt->GetTimestampBegin()
                << " lsb, ts_end = " << evt->GetTimestampEnd() << " lsb, trigN = " << evt->GetTriggerN();
 
-    // If TLU event: don't convert to standard event but only use time information:
+    // If TLU event: don't convert to standard event (EUDAQ2) but only use time information:
     if(evt->GetDescription() == "TluRawDataEvent") {
         LOG(DEBUG) << "Processing TLU event.";
         return process_tlu_event(evt, clipboard);
@@ -118,27 +118,14 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
 
     // Convert event to standard event:
     if(!can_convert) {
-        // if(!(eudaq::StdEventConverter::Convert(evt, stdevt, nullptr))) {
-        LOG(DEBUG) << "Cannot convert to StandardEvent.";
+        LOG(DEBUG) << "Cannot convert to EUDAQ2 StandardEvent.";
         return invalid;
     }
 
     if(stdevt->NumPlanes() == 0) {
-        LOG(DEBUG) << "No plane found in event.";
+        LOG(DEBUG) << "No plane found in EUDAQ2 event, no pixel data.";
         return invalid;
     }
-
-    // Get event begin/end:
-    std::pair<double, double> current_event_times;
-    current_event_times.first = stdevt->GetTimeBegin();
-    current_event_times.second = stdevt->GetTimeEnd();
-
-    auto clipboard_event_times = get_event_times(current_event_times.first, current_event_times.second, clipboard);
-    LOG(DEBUG) << "Check current_event_times.first = " << Units::display(current_event_times.first, {"ns", "us", "ms", "s"})
-               << ", current_event_times.second = " << Units::display(current_event_times.second, {"ns", "us", "ms", "s"});
-    LOG(DEBUG) << "Check clipboard_event_times.first = "
-               << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"}) << ", clipboard_event_times.second = "
-               << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
 
     // If hit timestamps are invalid/non-existent (like for MIMOSA26 telescope),
     // we need to make sure there is a corresponding TLU event with the same triggerID:
@@ -165,6 +152,22 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
     }
     // For chips with valid hit timestamps:
     else {
+        // Get event begin/end:
+        std::pair<double, double> current_event_times;
+        current_event_times.first = stdevt->GetTimeBegin();
+        current_event_times.second = stdevt->GetTimeEnd();
+
+        auto clipboard_event_times = get_event_times(current_event_times.first, current_event_times.second, clipboard);
+        hEventBegin->Fill(clipboard_event_times.first);
+
+        LOG(DEBUG) << "Check current_event_times.first = "
+                   << Units::display(current_event_times.first, {"ns", "us", "ms", "s"}) << ", current_event_times.second = "
+                   << Units::display(current_event_times.second, {"ns", "us", "ms", "s"});
+        LOG(DEBUG) << "Check clipboard_event_times.first = "
+                   << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"})
+                   << ", clipboard_event_times.second = "
+                   << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
+
         if(current_event_times.first < clipboard_event_times.first) {
             LOG(DEBUG) << "Frame dropped because frame begins BEFORE event: "
                        << Units::display(current_event_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
@@ -304,8 +307,8 @@ void EventLoaderEUDAQ2::initialise() {
         while(1) {
             current_evt = reader->GetNextEvent();
             if(!current_evt) {
-                LOG(WARNING) << "Previous event number: " << prev_event_number
-                             << ". Reached end of file without finding T0! Something's wrong!";
+                LOG(ERROR) << "Previous event number: " << prev_event_number
+                           << ". Reached end of file without finding T0! Something's wrong!";
                 return;
             } else {
                 LOG(DEBUG) << "Looking at event number " << current_evt->GetEventNumber();
@@ -325,7 +328,7 @@ void EventLoaderEUDAQ2::initialise() {
             }
             // If there are subevents, i.e. TLU+other, data taking doesn't start before T0:
             else {
-                LOG(INFO) << "There is no T0 in TLU events. Don't skip anything, start from file beginning.";
+                LOG(WARNING) << "There is no T0 in TLU events. Don't skip anything, start from file beginning.";
                 return;
             } // end else (there are subevents)
 
@@ -348,11 +351,19 @@ void EventLoaderEUDAQ2::initialise() {
 
 StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
-    LOG(DEBUG) << "Next event:";
-    // All this is necessary because 1 DUT event (e.g. CLICpix2 event) might need to be compared to multiple Mimosa frames.
-    // However, it's implemented in a generic way so it also works for the simple case of only 1 detector.
+    m_corry_events++; // number of corryvreckan events
+    LOG(DEBUG) << "New CORRYVRECKAN Event:" << m_corry_events;
+    // All this is necessary because 1 DUT event (e.g. CLICpix2 EUDAQ2 event) might need to be compared to multiple Mimosa
+    // frames. This is due to the fact that EUDAQ2 frames from different detectors can have significantly different event
+    // lengths: e.g. CLICpix2: 200us, 2ms etc. and MIMOSO26: 115us However, it's implemented in a generic way so it also
+    // works for the simple case of only 1 detector.
 
-    // current_evt: Global variable with an event stored from initialise() or previous iteration of run()
+    // Also: In EUDAQ2, there is the option to save the data from each detector into separate files in which case
+    // the data consists of events which can be converted into standard events by the respective EUDAQ2 converter.
+    // The other option is to merge the data from multiple detectors (e.g. TLU+Mimosa) into one file in which case
+    // the data consists of events with subevents for each detector which can each be handled as EUDAQ2 'events'.
+
+    // current_evt: Global variable with an EUDAQ2 event stored from initialise() or previous iteration of run()
     while(1) {
         if(!current_evt) {
             LOG(DEBUG) << "!ev --> return, empty event --> end of file!";
