@@ -65,29 +65,28 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
 
     hEventStart->Fill(current_event_times.first);
 
-    LOG(DEBUG) << "Check current_event_times.first = " << Units::display(current_event_times.first, {"ns", "us", "ms", "s"})
-               << ", current_event_times.second = " << Units::display(current_event_times.second, {"ns", "us", "ms", "s"});
-    LOG(DEBUG) << "Check clipboard_event_times.first = "
-               << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"}) << ", clipboard_event_times.second = "
-               << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
+    LOG(DEBUG) << "\t\tCurrent event:   start = " << Units::display(current_event_times.first, {"ns", "us", "ms", "s"})
+               << ", end = " << Units::display(current_event_times.second, {"ns", "us", "ms", "s"});
+    LOG(DEBUG) << "\t\tClipboard event: start = " << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"})
+               << ", end = " << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
 
     // Drop events which are outside of the clipboard time window:
     if(event_search_times.first < clipboard_event_times.first) {
-        LOG(DEBUG) << "Frame dropped because frame begins BEFORE event: "
+        LOG(DEBUG) << "\tFrame dropped because it begins BEFORE event: "
                    << Units::display(event_search_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
-                   << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"});
+                   << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"}) << ".";
         event_counts[evt->GetDescription()]++;
         return before_window;
     }
 
     if(event_search_times.second > clipboard_event_times.second) {
-        LOG(DEBUG) << "Frame dropped because frame begins AFTER event: "
+        LOG(DEBUG) << "\tFrame dropped because it begins AFTER event: "
                    << Units::display(event_search_times.second, {"ns", "us", "ms", "s"}) << " later than "
-                   << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
+                   << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"}) << ".";
         return after_window;
     }
 
-    LOG(DEBUG) << "-------------- adding TriggerID " << evt->GetTriggerN();
+    LOG(DEBUG) << "\t--> Adding TriggerID " << evt->GetTriggerN() << " to event on clipboard.";
     clipboard->get_event()->add_trigger(evt->GetTriggerN(), tlu_timestamp);
     hTluTrigTimeToFrameStart->Fill(tlu_timestamp - clipboard_event_times.first);
     event_counts[evt->GetDescription()]++;
@@ -99,7 +98,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
                                                                   std::shared_ptr<Clipboard>& clipboard) {
 
     LOG(DEBUG) << "\tEvent description: " << evt->GetDescription() << ", ts_start = " << evt->GetTimestampBegin()
-               << " lsb, ts_end = " << evt->GetTimestampEnd() << " lsb, trigN = " << evt->GetTriggerN();
+               << " lsb, ts_end = " << evt->GetTimestampEnd() << " lsb, trigID = " << evt->GetTriggerN();
 
     // If TLU event: don't convert to standard event (EUDAQ2) but only use time information:
     if(evt->GetDescription() == "TluRawDataEvent") {
@@ -112,24 +111,23 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
     // Prepare standard event:
     auto stdevt = eudaq::StandardEvent::MakeShared();
 
-    bool can_convert = eudaq::StdEventConverter::Convert(evt, stdevt, nullptr);
-    LOG(DEBUG) << "can_convert = " << can_convert;
-
     // Convert event to standard event:
-    if(!can_convert) {
-        LOG(DEBUG) << "Cannot convert to EUDAQ2 StandardEvent.";
+    if(eudaq::StdEventConverter::Convert(evt, stdevt, nullptr)) {
+        LOG(DEBUG) << "\t  Conversion to EUDAQ2 StandardEvent successful.";
+    } else {
+        LOG(DEBUG) << "\t  Cannot convert to EUDAQ2 StandardEvent.";
         return invalid;
     }
 
     if(stdevt->NumPlanes() == 0) {
-        LOG(DEBUG) << "No plane found in EUDAQ2 event, no pixel data.";
+        LOG(DEBUG) << "\t  No plane found in EUDAQ2 event, no pixel data.";
         return invalid;
     }
 
     // If hit timestamps are invalid/non-existent (like for MIMOSA26 telescope),
     // we need to make sure there is a corresponding TLU event with the same triggerID:
     if(!clipboard->event_defined()) {
-        LOG(WARNING) << "No event defined! Something went wrong!";
+        LOG(WARNING) << "\t  No event defined! Something went wrong!";
         return invalid;
     }
     // Process MIMOSA26 telescope frames separately because they don't have sensible hit timestamps:
@@ -145,7 +143,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
             event_counts[evt->GetDescription()]++;
             return trigger_id_not_found;
         } else {
-            LOG(DEBUG) << "Found TriggerID.";
+            LOG(DEBUG) << "\t  Found TriggerID on clipboard.";
             trigger_ts = clipboard->get_event()->get_trigger_time(evt->GetTriggerN());
         }
     }
@@ -168,14 +166,14 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
                    << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
 
         if(current_event_times.first < clipboard_event_times.first) {
-            LOG(DEBUG) << "Frame dropped because frame begins BEFORE event: "
+            LOG(DEBUG) << "Frame dropped it frame begins BEFORE event: "
                        << Units::display(current_event_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
                        << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"});
             event_counts[evt->GetDescription()]++;
             return before_window;
         }
         if(current_event_times.second > clipboard_event_times.second) {
-            LOG(DEBUG) << "Frame dropped because frame begins AFTER event: "
+            LOG(DEBUG) << "Frame dropped it frame begins AFTER event: "
                        << Units::display(current_event_times.second, {"ns", "us", "ms", "s"}) << " later than "
                        << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
             return after_window;
@@ -197,15 +195,14 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
         // Concatenate plane name according to naming convention: "sensor_type + int"
         auto plane_name = plane.Sensor() + "_" + std::to_string(i_plane);
         if(m_detector->name() != plane_name) {
-            LOG(DEBUG) << "\tWrong plane, continue. Detector: " << m_detector->name() << " != " << plane_name;
+            LOG(DEBUG) << "\t  Wrong plane, continue. Detector: " << m_detector->name() << " != " << plane_name;
             continue;
         }
 
         auto nHits = plane.GetPixels<int>().size(); // number of hits
         auto nPixels = plane.TotalPixels();         // total pixels in matrix
-        LOG(DEBUG) << "\tNumber of hits: " << nHits << " / total pixel number: " << nPixels;
-
-        LOG(DEBUG) << "\tType: " << plane.Type() << " Name: " << plane.Sensor();
+        LOG(DEBUG) << "\t  Found correct plane: type: " << plane.Type() << ", name: " << plane.Sensor();
+        LOG(DEBUG) << "\t  Number of hits: " << nHits << " / total pixel number: " << nPixels;
         // Loop over all hits and add to pixels vector:
         for(unsigned int i = 0; i < nHits; i++) {
 
@@ -223,7 +220,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
                 ts = plane.GetTimestamp(i);
             }
 
-            LOG(DEBUG) << "\t\t x: " << col << "\ty: " << row << "\ttot: " << tot
+            LOG(DEBUG) << "\t\t  x: " << col << "\ty: " << row << "\ttot: " << tot
                        << "\tts: " << Units::display(ts, {"ns", "us", "ms"});
 
             // If this pixel is masked, do not save it
@@ -246,7 +243,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
     // Put the pixel data on the clipboard:
     if(!pixels->empty()) {
         clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
-        LOG(DEBUG) << "Add pixels to clipboard.";
+        LOG(DEBUG) << "\t -->Add pixels to clipboard.";
     } else {
         // if empty, clean up --> delete pixels object
         delete pixels;
@@ -298,18 +295,18 @@ void EventLoaderEUDAQ2::initialise() {
     }
     // Skip everything before T0:
     else {
-        LOG(INFO) << "Skipping all events before T0.";
+        LOG(INFO) << "Skipping all EUDAQ2 events before T0.";
 
         unsigned int prev_event_number = 0;
         long unsigned prev_timestamp = 0;
         while(1) {
             current_evt = reader->GetNextEvent();
             if(!current_evt) {
-                LOG(ERROR) << "Previous event number: " << prev_event_number
+                LOG(ERROR) << "Previous EUDAQ2 event number: " << prev_event_number
                            << ". Reached end of file without finding T0! Something's wrong!";
                 return;
             } else {
-                LOG(DEBUG) << "Looking at event number " << current_evt->GetEventNumber();
+                LOG(DEBUG) << "Looking at EUDAQ2 event number " << current_evt->GetEventNumber();
             }
 
             auto sub_events = current_evt->GetSubEvents();
@@ -349,8 +346,13 @@ void EventLoaderEUDAQ2::initialise() {
 
 StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
+    // Note: at the moment we're systematically processing one event more
+    // than specified by number_of_events in the configuration file.
+
     m_corry_events++; // number of corryvreckan events
-    LOG(DEBUG) << "New CORRYVRECKAN Event:" << m_corry_events;
+    // This needs to catch the eye.
+    LOG(DEBUG) << "";
+    LOG(DEBUG) << "====|New Corryvreckan Event: #" << m_corry_events << "|====";
     // All this is necessary because 1 DUT event (e.g. CLICpix2 EUDAQ2 event) might need to be compared to multiple Mimosa
     // frames. This is due to the fact that EUDAQ2 frames from different detectors can have significantly different event
     // lengths: e.g. CLICpix2: 200us, 2ms etc. and MIMOSO26: 115us However, it's implemented in a generic way so it also
@@ -364,15 +366,16 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     // current_evt: Global variable with an EUDAQ2 event stored from initialise() or previous iteration of run()
     while(1) {
         if(!current_evt) {
-            LOG(DEBUG) << "!ev --> return, empty event --> end of file!";
+            LOG(DEBUG) << "Empty event: Reached end of file!";
             return StatusCode::EndRun;
         }
 
-        LOG(DEBUG) << "#ev: " << current_evt->GetEventNumber() << ", descr " << current_evt->GetDescription() << ", version "
-                   << current_evt->GetVersion() << ", type " << current_evt->GetType() << ", devN "
-                   << current_evt->GetDeviceN() << ", trigN " << current_evt->GetTriggerN() << ", evID "
-                   << current_evt->GetEventID() << ", ts_start " << current_evt->GetTimestampBegin() << ", ts_end "
-                   << current_evt->GetTimestampEnd();
+        // general information obtained from EUDAQ2 event:
+        LOG(DEBUG) << "EUDAQ2 evt #" << current_evt->GetEventNumber() << ", evt descr: " << current_evt->GetDescription()
+                   << ", version: " << current_evt->GetVersion() << ", type: " << current_evt->GetType() << ", dev no. "
+                   << current_evt->GetDeviceN() << ", trigID. " << current_evt->GetTriggerN()
+                   << ", evtID: " << current_evt->GetEventID() << ", ts_start: " << current_evt->GetTimestampBegin()
+                   << ", ts_end:" << current_evt->GetTimestampEnd();
 
         // check if there are subevents:
         // if not --> convert event, if yes, loop over subevents and convert each
@@ -423,7 +426,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // If before or in the window:
-            LOG(DEBUG) << "Trigger is before or inside event window. Loop over subevents.";
+            LOG(DEBUG) << "\tTrigger is before or inside event window. Loop over subevents.";
 
             // loop over subevents and process all OTHER events (except TLU):
             for(auto& subevt : sub_events) {
