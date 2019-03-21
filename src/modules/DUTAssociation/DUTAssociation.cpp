@@ -12,6 +12,9 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
 
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
+    LOG(DEBUG) << "spatial_cut = " << Units::display(spatialCut, {"um", "mm"})
+               << ", timing_cut = " << Units::display(timingCut, {"ms", "s"});
+
     // Get the tracks from the clipboard
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
     if(tracks == nullptr) {
@@ -35,20 +38,29 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             double xdistance = intercept.X() - cluster->global().x();
             double ydistance = intercept.Y() - cluster->global().y();
             if(abs(xdistance) > spatialCut.x() || abs(ydistance) > spatialCut.y()) {
-                LOG(DEBUG) << "Discarding DUT cluster with distance (" << abs(xdistance) << "," << abs(ydistance) << ")";
+                LOG(DEBUG) << "Discarding DUT cluster with distance (" << Units::display(abs(xdistance), {"um", "mm"}) << ","
+                           << Units::display(abs(ydistance), {"um", "mm"}) << ")";
                 continue;
             }
 
             // Check if the cluster is close in time
             if(std::abs(cluster->timestamp() - track->timestamp()) > timingCut) {
+                LOG(DEBUG) << "Discarding DUT cluster with time difference "
+                           << Units::display(std::abs(cluster->timestamp() - track->timestamp()), {"ms", "s"});
                 continue;
             }
 
             LOG(DEBUG) << "Found associated cluster with distance (" << abs(xdistance) << "," << abs(ydistance) << ")";
             track->addAssociatedCluster(cluster);
+            assoc_cluster_counter++;
         }
     }
 
     // Return value telling analysis to keep running
     return StatusCode::Success;
+}
+
+void DUTAssociation::finalise() {
+    LOG(STATUS) << "Added " << assoc_cluster_counter << " clusters to track.";
+    return;
 }
