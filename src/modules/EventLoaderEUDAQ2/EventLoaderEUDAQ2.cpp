@@ -258,6 +258,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
 
 void EventLoaderEUDAQ2::initialise() {
 
+    m_corry_events = 0;
     auto detectorID = m_detector->name();
     LOG(DEBUG) << "Initialise for detector " + detectorID;
 

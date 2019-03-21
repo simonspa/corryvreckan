@@ -83,6 +83,7 @@ namespace corryvreckan {
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
 
+        int m_corry_events;
         double m_timeBeforeTLUtimestamp;
         double m_timeAfterTLUtimestamp;
         double m_searchTimeBeforeTLUtimestamp;
