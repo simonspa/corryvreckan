@@ -72,7 +72,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
 
     // Drop events which are outside of the clipboard time window:
     if(event_search_times.first < clipboard_event_times.first) {
-        LOG(DEBUG) << "\tFrame dropped because it begins BEFORE event: "
+        LOG(DEBUG) << "\tFrame dropped because it begins BEFORE current clipboard event: "
                    << Units::display(event_search_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
                    << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"}) << ".";
         event_counts[evt->GetDescription()]++;
@@ -80,7 +80,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
     }
 
     if(event_search_times.second > clipboard_event_times.second) {
-        LOG(DEBUG) << "\tFrame dropped because it begins AFTER event: "
+        LOG(DEBUG) << "\tFrame dropped because it begins current clipboard AFTER event: "
                    << Units::display(event_search_times.second, {"ns", "us", "ms", "s"}) << " later than "
                    << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"}) << ".";
         return after_window;
@@ -130,9 +130,9 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
         LOG(WARNING) << "\t  No event defined! Something went wrong!";
         return invalid;
     }
-    // Process MIMOSA26 telescope frames separately because they don't have sensible hit timestamps:
+    // Process NI telescope frames separately because they don't have sensible hit timestamps:
     // But do not use "if(evt->GetTimestampBegin()==0) {" because sometimes the timestamps are not 0 but 1ns
-    // Pay attention to this when working with a different chip without hit timestamps!
+    // Pay attention to this when working with a chip without hit timestamps!
 
     // If Mimosa we read this only once (from trigger_list) because it's the same for all pixels.
     // If other chip with valid pixel timestamps, it's not needed.
@@ -166,14 +166,14 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
                    << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
 
         if(current_event_times.first < clipboard_event_times.first) {
-            LOG(DEBUG) << "Frame dropped it frame begins BEFORE event: "
+            LOG(DEBUG) << "Frame dropped because it begins BEFORE current clipboard event: "
                        << Units::display(current_event_times.first, {"ns", "us", "ms", "s"}) << " earlier than "
                        << Units::display(clipboard_event_times.first, {"ns", "us", "ms", "s"});
             event_counts[evt->GetDescription()]++;
             return before_window;
         }
         if(current_event_times.second > clipboard_event_times.second) {
-            LOG(DEBUG) << "Frame dropped it frame begins AFTER event: "
+            LOG(DEBUG) << "Frame dropped because it begins AFTER current clipboard event: "
                        << Units::display(current_event_times.second, {"ns", "us", "ms", "s"}) << " later than "
                        << Units::display(clipboard_event_times.second, {"ns", "us", "ms", "s"});
             return after_window;
