@@ -17,20 +17,20 @@ namespace corryvreckan {
         double end() const { return end_; };
         double duration() const { return (end_ - timestamp()); };
 
-        void add_trigger(uint32_t trigger_id, double trigger_ts) { trigger_list_.emplace(trigger_id, trigger_ts); }
+        void addTrigger(uint32_t trigger_id, double trigger_ts) { trigger_list_.emplace(trigger_id, trigger_ts); }
 
-        bool has_trigger_id(uint32_t trigger_id) const { return (trigger_list_.find(trigger_id) != trigger_list_.end()); }
+        bool hasTriggerID(uint32_t trigger_id) const { return (trigger_list_.find(trigger_id) != trigger_list_.end()); }
 
-        double get_trigger_time(uint32_t trigger_id) const { return trigger_list_.find(trigger_id)->second; }
+        double getTriggerTime(uint32_t trigger_id) const { return trigger_list_.find(trigger_id)->second; }
 
-        std::map<uint32_t, double> trigger_list() { return trigger_list_; }
+        std::map<uint32_t, double> triggerList() const { return trigger_list_; }
 
     protected:
         double end_;
         std::map<uint32_t, double> trigger_list_{};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Event, 2)
+        ClassDef(Event, 3)
     };
 } // namespace corryvreckan
 

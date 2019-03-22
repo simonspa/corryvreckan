@@ -87,7 +87,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_tlu_event(eudaq::Eve
     }
 
     LOG(DEBUG) << "\t--> Adding TriggerID " << evt->GetTriggerN() << " to event on clipboard.";
-    clipboard->get_event()->add_trigger(evt->GetTriggerN(), tlu_timestamp);
+    clipboard->get_event()->addTrigger(evt->GetTriggerN(), tlu_timestamp);
     hTluTrigTimeToFrameStart->Fill(tlu_timestamp - clipboard_event_times.first);
     event_counts[evt->GetDescription()]++;
     event_counts_inframe[evt->GetDescription()]++;
@@ -138,13 +138,13 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
     // If other chip with valid pixel timestamps, it's not needed.
     double trigger_ts = 0;
     if(evt->GetDescription() == "NiRawDataEvent") {
-        if(!clipboard->get_event()->has_trigger_id(evt->GetTriggerN())) {
+        if(!clipboard->get_event()->hasTriggerID(evt->GetTriggerN())) {
             LOG(DEBUG) << "Frame dropped because event does not contain TriggerID " << evt->GetTriggerN();
             event_counts[evt->GetDescription()]++;
             return trigger_id_not_found;
         } else {
             LOG(DEBUG) << "\t  Found TriggerID on clipboard.";
-            trigger_ts = clipboard->get_event()->get_trigger_time(evt->GetTriggerN());
+            trigger_ts = clipboard->get_event()->getTriggerTime(evt->GetTriggerN());
         }
     }
     // For chips with valid hit timestamps:
