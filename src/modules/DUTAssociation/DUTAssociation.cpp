@@ -12,9 +12,6 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
 
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
-    LOG(DEBUG) << "spatial_cut = " << Units::display(spatialCut, {"um", "mm"})
-               << ", timing_cut = " << Units::display(timingCut, {"ms", "s"});
-
     // Get the tracks from the clipboard
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
     if(tracks == nullptr) {
@@ -61,6 +58,6 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 }
 
 void DUTAssociation::finalise() {
-    LOG(STATUS) << "Added " << assoc_cluster_counter << " clusters to track.";
+    LOG(INFO) << "In total, " << assoc_cluster_counter << " clusters are associated to tracks.";
     return;
 }
