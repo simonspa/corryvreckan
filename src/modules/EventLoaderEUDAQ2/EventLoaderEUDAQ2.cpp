@@ -116,12 +116,12 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::process_event(eudaq::EventSP
         LOG(DEBUG) << "\t  Conversion to EUDAQ2 StandardEvent successful.";
     } else {
         LOG(DEBUG) << "\t  Cannot convert to EUDAQ2 StandardEvent.";
-        return invalid;
+        return before_window;
     }
 
     if(stdevt->NumPlanes() == 0) {
         LOG(DEBUG) << "\t  No plane found in EUDAQ2 event, no pixel data.";
-        return invalid;
+        return before_window;
     }
 
     // If hit timestamps are invalid/non-existent (like for MIMOSA26 telescope),
