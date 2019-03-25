@@ -22,11 +22,14 @@ namespace corryvreckan {
 
         // Functions
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        void finalise();
 
     private:
         std::shared_ptr<Detector> m_detector;
         double timingCut;
         ROOT::Math::XYVector spatialCut;
+
+        int assoc_cluster_counter = 0;
     };
 } // namespace corryvreckan
 #endif // DUTAssociation_H

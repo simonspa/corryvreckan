@@ -1,4 +1,5 @@
 #include "Clipboard.hpp"
+#include "core/utils/log.h"
 #include "exceptions.h"
 #include "objects/Object.hpp"
 
