@@ -298,28 +298,26 @@ void EventLoaderEUDAQ2::initialise() {
         LOG(INFO) << "Skipping all EUDAQ2 events before T0.";
 
         unsigned int prev_event_number = 0;
-        long unsigned prev_timestamp = 0;
+        double prev_timestamp = 0;
         while(1) {
             current_evt = reader->GetNextEvent();
             if(!current_evt) {
                 LOG(ERROR) << "Previous EUDAQ2 event number: " << prev_event_number
                            << ". Reached end of file without finding T0! Something's wrong!";
                 return;
-            } else {
-                LOG(DEBUG) << "Looking at EUDAQ2 event number " << current_evt->GetEventNumber();
             }
-
             auto sub_events = current_evt->GetSubEvents();
-            LOG(DEBUG) << "There are " << sub_events.size() << " sub events.";
-
             auto this_event_number = current_evt->GetEventNumber();
-            long unsigned int this_timestamp = 0;
+            double this_timestamp = 0;
             bool found_timestamp = false;
 
             if(sub_events.size() == 0) {
-                LOG(DEBUG) << "\tNo subevent, process event.";
-                this_timestamp = current_evt->GetTimestampBegin();
-                found_timestamp = true;
+		auto stdevt = eudaq::StandardEvent::MakeShared();
+		if(eudaq::StdEventConverter::Convert(current_evt, stdevt, nullptr)) {
+		  this_timestamp = stdevt->GetTimeBegin();
+		  LOG_PROGRESS(DEBUG, "t0") << "Evt = " << this_event_number << "\tTime = " << Units::display(this_timestamp, {"ns", "us"});
+		  found_timestamp = true;
+		}
             }
             // If there are subevents, i.e. TLU+other, data taking doesn't start before T0:
             else {
@@ -328,17 +326,14 @@ void EventLoaderEUDAQ2::initialise() {
             } // end else (there are subevents)
 
             if(found_timestamp) {
-                if(this_timestamp < prev_timestamp) {
-                    LOG(INFO) << "Found T0 at timestamp = " << this_timestamp
-                              << " lsb after prev_timestamp = " << prev_timestamp << " lsb at event number "
+                if(this_timestamp < prev_timestamp && this_timestamp < 1000000) {
+		  LOG(INFO) << "Found T0 at timestamp = " << Units::display(this_timestamp, "ns")
+			    << " lsb after prev_timestamp = " << Units::display(prev_timestamp, "ns") << " at event number "
                               << this_event_number;
                     break;
                 } // end if
                 prev_timestamp = this_timestamp;
                 prev_event_number = this_event_number;
-
-            } else {
-                LOG(WARNING) << "In event " << this_event_number << ": Couldn't find a timestamp! Something is wrong!";
             }
         } // end while(1)
     }     // end if skip before t0
