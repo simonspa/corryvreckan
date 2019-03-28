@@ -43,14 +43,12 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
                 LOG(DEBUG) << "Reached EOF";
                 throw EndOfFile();
             }
-
+            // Build buffer from all sub-events:
             events_ = new_event->GetSubEvents();
-            // If there are no sub-events just add the one event we have to the list:
-            if(events_.empty()) {
-                events_.push_back(new_event);
-            }
+            // The main event might also contain data, so add it to the buffer:
+            events_.push_back(new_event);
 
-            // FIXME get TLu before Ni - sort by name, reversed
+            // FIXME get TLU events with trigger IDs before Ni - sort by name, reversed
             sort(events_.begin(), events_.end(), [](const eudaq::EventSPC& a, const eudaq::EventSPC& b) -> bool {
                 return a->GetDescription() > b->GetDescription();
             });
@@ -70,7 +68,7 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
 EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> clipboard,
                                                                     std::shared_ptr<eudaq::StandardEvent> evt) {
 
-    // FIXME for checking if timestamp is availale
+    // Check if this event has timestamps available:
     if(evt->GetTimeBegin() == 0) {
         LOG(DEBUG) << "Event " << evt->GetDescription() << " has no timestamp, comparing trigger number";
 
