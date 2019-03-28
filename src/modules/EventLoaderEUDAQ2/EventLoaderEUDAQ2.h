@@ -31,6 +31,15 @@ namespace corryvreckan {
      */
     class EventLoaderEUDAQ2 : public Module {
 
+        enum class EventPosition {
+            UNKNOWN, // StandardEvent position unknown
+            BEFORE,  // StandardEvent is before current event
+            DURING,  // StandardEvent is during current event
+            AFTER,   // StandardEvent is after current event
+        };
+
+        class EndOfFile : public Exception {};
+
     public:
         /**
          * @brief Constructor for this unique module
@@ -48,66 +57,37 @@ namespace corryvreckan {
          * @brief [Run the function of this module]
          */
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        /**
-         * @brief [Finalize this module]
-         */
-        void finalise();
 
     private:
         /**
-         * @brief Get event start/end time: if event exists on clipboard --> take this, otherwise take input values and put
-         * new event onto clipboard
-         * @param start Start time of the currently read detector data
-         * @param end End time of the currently read detector data
-         * @param clipboard The clipboard of the event
-         * @return pair with event start and end time, either from definded event on clipboard or from local data
+         * @brief Read and return the next event (smallest possible granularity) and return the decoded StandardEvent
          */
-        std::pair<double, double> get_event_times(double start, double end, std::shared_ptr<Clipboard>& clipboard);
+        std::shared_ptr<eudaq::StandardEvent> get_next_event();
 
         /**
-         * @brief Process events: extract hits and put onto clipboard, also define event start/end
-         * @param evt Event object (event or subevent) to be processed
-         * @param clipboard The clipboard of the event
-         * @return EventPosition: before/in/after event window, trigger_id_not_found or invalid
+         * @brief Check whether the current EUDAQ StandardEvent is within the defined Corryvreckan event
+         * @param  clipboard  Shared pointer to the event clipboard
+         * @param  evt        The EUDAQ StandardEvent to check
+         * @return            Position of the StandardEvent with respect to the current Corryvreckan event
          */
-        enum EventPosition { before_window, in_window, after_window, trigger_id_not_found, invalid };
-        enum EventPosition process_tlu_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard);
+        EventPosition is_within_event(std::shared_ptr<Clipboard> clipboard, std::shared_ptr<eudaq::StandardEvent> evt);
 
         /**
-         * @brief Process events: extract hits and put onto clipboard, also define event start/end
-         * @param evt Event object (event or subevent) to be processed
-         * @param clipboard The clipboard of the event
+         * @brief Store pixel data from relevant detectors on the clipboard
+         * @param clipboard Shared pointer to the event clipboard
+         * @param evt       StandardEvent to read the pixel data from
          */
-        enum EventPosition process_event(eudaq::EventSPC evt, std::shared_ptr<Clipboard>& clipboard);
+        void store_data(std::shared_ptr<Clipboard> clipboard, std::shared_ptr<eudaq::StandardEvent> evt);
 
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
 
-        int m_corry_events;
-        double m_timeBeforeTLUtimestamp;
-        double m_timeAfterTLUtimestamp;
-        double m_searchTimeBeforeTLUtimestamp;
-        double m_searchTimeAfterTLUtimestamp;
-
-        // If skip_before_t0 is set true but the data does not contain t0
-        // (because during data taking drop_before_t0 was set),we go
-        // through the entire file, don't find it and return with an ERROR
-        // such that the user doesn't think they're skipping before T0 when
-        // this is not what's done behind the scenes.
-        bool m_skipBeforeT0;
-        eudaq::EventSPC current_evt;
-        eudaq::FileReaderUP reader;
-
-        // Pixel histograms
-        TH2F* hitmap;
-        TH1F* hHitTimes;
-
-        TH1F* hPixelsPerFrame;
-        TH1D* hEventStart;
-        TH1D* hTluTrigTimeToFrameStart;
-
-        std::map<std::string, size_t> event_counts{};
-        std::map<std::string, size_t> event_counts_inframe{};
+        // EUDAQ file reader instance to retrieve data from
+        eudaq::FileReaderUP reader_;
+        // Buffer of undecoded EUDAQ events
+        std::vector<eudaq::EventSPC> events_;
+        // Currently processed decoded EUDAQ StandardEvent:
+        std::shared_ptr<eudaq::StandardEvent> event_;
     };
 
 } // namespace corryvreckan
