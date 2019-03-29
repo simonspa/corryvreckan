@@ -91,7 +91,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
 
     if(!clipboard->event_defined()) {
         LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " - "
-                   << Units::display(event_end, {"us", "ns"});
+                   << Units::display(event_end, {"us", "ns"}) << ", length " << Units::display(event_end - event_start, {"us", "ns"});
         clipboard->put_event(std::make_shared<Event>(event_start, event_end));
     }
 
