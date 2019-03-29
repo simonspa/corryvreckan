@@ -46,7 +46,9 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
             // Build buffer from all sub-events:
             events_ = new_event->GetSubEvents();
             // The main event might also contain data, so add it to the buffer:
-            events_.push_back(new_event);
+            if(events_.empty()) {
+                events_.push_back(new_event);
+            }
 
             // FIXME get TLU events with trigger IDs before Ni - sort by name, reversed
             sort(events_.begin(), events_.end(), [](const eudaq::EventSPC& a, const eudaq::EventSPC& b) -> bool {
@@ -58,10 +60,8 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
         auto event = events_.front();
         events_.erase(events_.begin());
         decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, nullptr);
-        LOG(DEBUG) << "Decoding of " << event->GetDescription() << (decoding_failed ? " failed" : " succeeded");
+        LOG(DEBUG) << event->GetDescription() << ": Decoding " << (decoding_failed ? "failed" : "succeeded");
     } while(decoding_failed);
-
-    LOG(DEBUG) << "Returning StandardEvent";
     return stdevt;
 }
 
@@ -70,7 +70,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
 
     // Check if this event has timestamps available:
     if(evt->GetTimeBegin() == 0) {
-        LOG(DEBUG) << "Event " << evt->GetDescription() << " has no timestamp, comparing trigger number";
+        LOG(DEBUG) << evt->GetDescription() << ": Event has no timestamp, comparing trigger number";
 
         // If there is no event defined yet or the trigger number is unkown, there is little we can do:
         if(!clipboard->event_defined() || !clipboard->get_event()->hasTriggerID(evt->GetTriggerN())) {
@@ -91,7 +91,8 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
 
     if(!clipboard->event_defined()) {
         LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " - "
-                   << Units::display(event_end, {"us", "ns"}) << ", length " << Units::display(event_end - event_start, {"us", "ns"});
+                   << Units::display(event_end, {"us", "ns"}) << ", length "
+                   << Units::display(event_end - event_start, {"us", "ns"});
         clipboard->put_event(std::make_shared<Event>(event_start, event_end));
     }
 
