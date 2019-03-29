@@ -182,6 +182,6 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         event_.reset();
     }
 
-    LOG(INFO) << "Finished Corryvreckan event";
+    LOG(DEBUG) << "Finished Corryvreckan event";
     return StatusCode::Success;
 }
