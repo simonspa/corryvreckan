@@ -16,6 +16,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     : Module(std::move(config), detector), m_detector(detector) {
 
     m_filename = m_config.getPath("file_name", true);
+    m_skip_time = m_config.get("skip_time", 0.);
 }
 
 void EventLoaderEUDAQ2::initialise() {
@@ -88,6 +89,13 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
 
     double event_start = evt->GetTimeBegin();
     double event_end = evt->GetTimeEnd();
+
+    // Skip if later start is requested:
+    if(event_start < m_skip_time) {
+        LOG(DEBUG) << "Event start before requested skip time: " << Units::display(event_start, {"us", "ns"}) << " < "
+                   << Units::display(m_skip_time, {"us", "ns"});
+        return EventPosition::BEFORE;
+    }
 
     if(!clipboard->event_defined()) {
         LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " - "

@@ -81,6 +81,7 @@ namespace corryvreckan {
 
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
+        double m_skip_time{};
 
         // EUDAQ file reader instance to retrieve data from
         eudaq::FileReaderUP reader_;
