@@ -115,7 +115,6 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
 
     double event_start = evt->GetTimeBegin();
     double event_end = evt->GetTimeEnd();
-    hEudaqEventStart->Fill(event_start);
 
     // Skip if later start is requested:
     if(event_start < m_skip_time) {
@@ -133,7 +132,6 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
 
     double clipboard_start = clipboard->get_event()->start();
     double clipboard_end = clipboard->get_event()->end();
-    hClipboardEventStart->Fill(clipboard_start);
 
     if(event_start < clipboard_start) {
         LOG(DEBUG) << "Event start before Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " < "
@@ -221,6 +219,9 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         if(current_position == EventPosition::AFTER) {
             break;
         }
+        // Do not fill if current_position == EventPosition::AFTER to avoid double-counting!
+        hEudaqEventStart->Fill(event_->GetTimeBegin());
+        hClipboardEventStart->Fill(clipboard->get_event()->start());
 
         // Reset this event to get a new one:
         event_.reset();
