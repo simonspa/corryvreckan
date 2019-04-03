@@ -21,6 +21,32 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
 
 void EventLoaderEUDAQ2::initialise() {
 
+    // Declare histograms
+    std::string title = m_detector->name() + ": hitmap;x [px];y [px];events";
+    hitmap = new TH2F("hitmap",
+                      title.c_str(),
+                      m_detector->nPixels().X(),
+                      0,
+                      m_detector->nPixels().X(),
+                      m_detector->nPixels().Y(),
+                      0,
+                      m_detector->nPixels().Y());
+
+    title = m_detector->name() + ": hitTimes;hitTimes [ns]; events";
+    hHitTimes = new TH1F("hitTimes", title.c_str(), 3e6, 0, 3e12);
+
+    title = m_detector->name() + ": pixelTot;pixelTot [lsb]; events";
+    hPixelTot = new TH1F("pixelTot", title.c_str(), 1024, 0, 1024);
+
+    title = m_detector->name() + ": Pixel multiplicity;pixels;frames";
+    hPixelsPerFrame = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
+
+    title = m_detector->name() + ": eudaqEventStart;eudaq event start [ns];entries";
+    hEudaqEventStart = new TH1D("eudaqEventStart", title.c_str(), 1e6, 0, 1e9);
+
+    title = m_detector->name() + ": clipboardEventStart;clipboard event start [ns];entries";
+    hClipboardEventStart = new TH1D("clipboardEventStart", title.c_str(), 1e6, 0, 1e9);
+
     // open the input file with the eudaq reader
     try {
         reader_ = eudaq::Factory<eudaq::FileReader>::MakeUnique(eudaq::str2hash("native"), m_filename);
@@ -89,6 +115,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
 
     double event_start = evt->GetTimeBegin();
     double event_end = evt->GetTimeEnd();
+    hEudaqEventStart->Fill(event_start);
 
     // Skip if later start is requested:
     if(event_start < m_skip_time) {
@@ -106,6 +133,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
 
     double clipboard_start = clipboard->get_event()->start();
     double clipboard_end = clipboard->get_event()->end();
+    hClipboardEventStart->Fill(clipboard_start);
 
     if(event_start < clipboard_start) {
         LOG(DEBUG) << "Event start before Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " < "
@@ -142,14 +170,22 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
         for(unsigned int i = 0; i < plane.GetPixels<int>().size(); i++) {
             auto col = static_cast<int>(plane.GetX(i));
             auto row = static_cast<int>(plane.GetY(i));
+            auto tot = static_cast<int>(plane.GetPixel(i));
+            auto ts = plane.GetTimestamp(i);
+
+            LOG(DEBUG) << "col " << col << ", row " << row;
             if(m_detector->masked(col, row)) {
                 continue;
             }
 
-            Pixel* pixel =
-                new Pixel(m_detector->name(), row, col, static_cast<int>(plane.GetPixel(i)), plane.GetTimestamp(i));
+            Pixel* pixel = new Pixel(m_detector->name(), row, col, tot, ts);
+
+            hitmap->Fill(col, row);
+            hHitTimes->Fill(ts);
+            hPixelTot->Fill(tot);
             pixels->push_back(pixel);
         }
+        hPixelsPerFrame->Fill(static_cast<int>(pixels->size()));
     }
 
     if(!pixels->empty()) {

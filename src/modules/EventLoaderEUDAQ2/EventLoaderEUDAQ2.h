@@ -89,6 +89,16 @@ namespace corryvreckan {
         std::vector<eudaq::EventSPC> events_;
         // Currently processed decoded EUDAQ StandardEvent:
         std::shared_ptr<eudaq::StandardEvent> event_;
+
+        // 2D histograms
+        TH2F* hitmap;
+
+        // 1D histograms
+        TH1F* hHitTimes;
+        TH1F* hPixelTot;
+        TH1F* hPixelsPerFrame;
+        TH1D* hEudaqEventStart;
+        TH1D* hClipboardEventStart;
     };
 
 } // namespace corryvreckan
