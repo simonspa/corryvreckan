@@ -17,10 +17,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
 
     m_filename = m_config.getPath("file_name", true);
     m_skip_time = m_config.get("skip_time", 0.);
-    do_adjust_event_times = m_config.has("adjust_event_times");
-    if(do_adjust_event_times) {
-        adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times");
-    }
+    adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {});
 }
 
 void EventLoaderEUDAQ2::initialise() {
@@ -61,15 +58,14 @@ void EventLoaderEUDAQ2::initialise() {
     }
 
     // Check if all elements of adjust_event_times have a valid size of 3, if not throw error.
-    if(do_adjust_event_times) {
-        for(auto& shift_times : adjust_event_times) {
-            if(shift_times.size() != 3) {
-                LOG(ERROR)
-                    << "Parameter \"adjust_event_times\" needs 3 values per row: event type, shift event start, shift";
-                throw InvalidValueError(m_config, "adjust_event_length", "Parsing error in calibration file!");
-            }
+    for(auto& shift_times : adjust_event_times) {
+        if(shift_times.size() != 3) {
+            throw InvalidValueError(
+                m_config,
+                "adjust_event_length",
+                "Parameter \"adjust_event_times\" needs 3 values per row: event type, shift event start, shift");
         }
-    }
+    } // end for
 }
 
 std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
@@ -135,7 +131,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
     double event_end = evt->GetTimeEnd();
 
     // If adjustment of event start/end is required:
-    if(do_adjust_event_times) {
+    if(!adjust_event_times.empty()) {
         for(auto& shift_times : adjust_event_times) {
             if(shift_times.front() == (evt->GetDescription())) {
                 LOG(DEBUG) << "Adjusting " << shift_times.at(0) << ": event_start by " << shift_times.at(1)
