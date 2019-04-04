@@ -17,12 +17,13 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
 
     m_filename = m_config.getPath("file_name", true);
     m_skip_time = m_config.get("skip_time", 0.);
+    adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {{"none", "0", "0"}});
 }
 
 void EventLoaderEUDAQ2::initialise() {
 
     // Declare histograms
-    std::string title = m_detector->name() + ": hitmap;x [px];y [px];events";
+    std::string title = "hitmap;column;row;# events";
     hitmap = new TH2F("hitmap",
                       title.c_str(),
                       m_detector->nPixels().X(),
@@ -32,19 +33,19 @@ void EventLoaderEUDAQ2::initialise() {
                       0,
                       m_detector->nPixels().Y());
 
-    title = m_detector->name() + ": hitTimes;hitTimes [ns]; events";
+    title = ";hit timestamp [ns]; # events";
     hHitTimes = new TH1F("hitTimes", title.c_str(), 3e6, 0, 3e12);
 
-    title = m_detector->name() + ": pixelTot;pixelTot [lsb]; events";
-    hPixelTot = new TH1F("pixelTot", title.c_str(), 1024, 0, 1024);
+    title = ";pixel ADC values [a.u.];# events";
+    hPixelAdc = new TH1F("hPixelAdc", title.c_str(), 1024, 0, 1024);
 
-    title = m_detector->name() + ": Pixel multiplicity;pixels;frames";
+    title = "Pixel multiplicity per frame;# pixels per frame;# frames";
     hPixelsPerFrame = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
 
-    title = m_detector->name() + ": eudaqEventStart;eudaq event start [ns];entries";
+    title = ";EUDAQ event start time[ns];# entries";
     hEudaqEventStart = new TH1D("eudaqEventStart", title.c_str(), 1e6, 0, 1e9);
 
-    title = m_detector->name() + ": clipboardEventStart;clipboard event start [ns];entries";
+    title = "Corryvreckan event start times (on clipboard); Corryvreckan event start time [ns];# entries";
     hClipboardEventStart = new TH1D("clipboardEventStart", title.c_str(), 1e6, 0, 1e9);
 
     // open the input file with the eudaq reader
@@ -168,7 +169,7 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
         for(unsigned int i = 0; i < plane.GetPixels<int>().size(); i++) {
             auto col = static_cast<int>(plane.GetX(i));
             auto row = static_cast<int>(plane.GetY(i));
-            auto tot = static_cast<int>(plane.GetPixel(i));
+            auto adc = static_cast<int>(plane.GetPixel(i));
             auto ts = plane.GetTimestamp(i);
 
             LOG(DEBUG) << "col " << col << ", row " << row;
@@ -176,11 +177,12 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
                 continue;
             }
 
-            Pixel* pixel = new Pixel(m_detector->name(), row, col, tot, ts);
+            // Note: in many cases, the pixel adc value corresponds to the pixel ToT:
+            Pixel* pixel = new Pixel(m_detector->name(), row, col, adc, ts);
 
             hitmap->Fill(col, row);
             hHitTimes->Fill(ts);
-            hPixelTot->Fill(tot);
+            hPixelAdc->Fill(adc);
             pixels->push_back(pixel);
         }
         hPixelsPerFrame->Fill(static_cast<int>(pixels->size()));
@@ -219,9 +221,12 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         if(current_position == EventPosition::AFTER) {
             break;
         }
+
         // Do not fill if current_position == EventPosition::AFTER to avoid double-counting!
         hEudaqEventStart->Fill(event_->GetTimeBegin());
-        hClipboardEventStart->Fill(clipboard->get_event()->start());
+        if(clipboard->event_defined()) {
+            hClipboardEventStart->Fill(clipboard->get_event()->start());
+        }
 
         // Reset this event to get a new one:
         event_.reset();

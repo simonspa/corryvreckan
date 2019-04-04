@@ -82,6 +82,7 @@ namespace corryvreckan {
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
         double m_skip_time{};
+        Matrix<std::string> adjust_event_times;
 
         // EUDAQ file reader instance to retrieve data from
         eudaq::FileReaderUP reader_;
@@ -95,7 +96,7 @@ namespace corryvreckan {
 
         // 1D histograms
         TH1F* hHitTimes;
-        TH1F* hPixelTot;
+        TH1F* hPixelAdc;
         TH1F* hPixelsPerFrame;
         TH1D* hEudaqEventStart;
         TH1D* hClipboardEventStart;
