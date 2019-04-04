@@ -83,7 +83,10 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
                 return a->GetDescription() > b->GetDescription();
             });
         }
-        LOG(TRACE) << "Buffer contains " << events_.size() << " (sub-) events";
+        LOG(TRACE) << "Buffer contains " << events_.size() << " (sub-) events:";
+        for(int i = 0; i < static_cast<int>(events_.size()); i++) {
+            LOG(TRACE) << "  (sub-) event " << i << " is a " << events_[static_cast<long unsigned int>(i)]->GetDescription();
+        }
 
         auto event = events_.front();
         events_.erase(events_.begin());
@@ -116,6 +119,22 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
 
     double event_start = evt->GetTimeBegin();
     double event_end = evt->GetTimeEnd();
+
+    // If adjustment of event start/end is required:
+    for(auto& shift_times : adjust_event_times) {
+        if(shift_times.size() != 3) {
+            LOG(FATAL) << "Parameter \"adjust_event_times\" needs 3 values per row: event type, shift event start, shift "
+                          "event end!";
+        }
+        if(shift_times.front() == (evt->GetDescription())) {
+            LOG(DEBUG) << "Adjusting " << shift_times[0] << ": event_start by " << shift_times[1] << ", event_end by "
+                       << shift_times[2];
+            event_start += corryvreckan::from_string<double>(shift_times[1]);
+            event_end += corryvreckan::from_string<double>(shift_times[2]);
+        } else {
+            LOG(DEBUG) << "No adjustment of event times.";
+        }
+    } // end for
 
     // Skip if later start is requested:
     if(event_start < m_skip_time) {
