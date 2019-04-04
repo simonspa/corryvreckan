@@ -97,7 +97,7 @@ namespace corryvreckan {
 
         // 1D histograms
         TH1F* hHitTimes;
-        TH1F* hPixelAdc;
+        TH1F* hPixelValues;
         TH1F* hPixelsPerFrame;
         TH1D* hEudaqEventStart;
         TH1D* hClipboardEventStart;

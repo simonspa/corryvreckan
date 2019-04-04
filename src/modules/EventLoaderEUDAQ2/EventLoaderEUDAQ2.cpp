@@ -39,8 +39,8 @@ void EventLoaderEUDAQ2::initialise() {
     title = ";hit timestamp [ns]; # events";
     hHitTimes = new TH1F("hitTimes", title.c_str(), 3e6, 0, 3e12);
 
-    title = ";pixel ADC values [a.u.];# events";
-    hPixelAdc = new TH1F("hPixelAdc", title.c_str(), 1024, 0, 1024);
+    title = "pixel values (depending on chip functionality: pixelToT, ADC, ...);pixel values [a.u.];# events";
+    hPixelValues = new TH1F("hPixelValues", title.c_str(), 1024, 0, 1024);
 
     title = "Pixel multiplicity per frame;# pixels per frame;# frames";
     hPixelsPerFrame = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
@@ -198,7 +198,7 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
         for(unsigned int i = 0; i < plane.GetPixels<int>().size(); i++) {
             auto col = static_cast<int>(plane.GetX(i));
             auto row = static_cast<int>(plane.GetY(i));
-            auto adc = static_cast<int>(plane.GetPixel(i));
+            auto value = static_cast<int>(plane.GetPixel(i)); // generic pixel value (could be ToT, ADC, ...)
             auto ts = plane.GetTimestamp(i);
 
             LOG(DEBUG) << "col " << col << ", row " << row;
@@ -206,12 +206,12 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
                 continue;
             }
 
-            // Note: in many cases, the pixel adc value corresponds to the pixel ToT:
-            Pixel* pixel = new Pixel(m_detector->name(), row, col, adc, ts);
+            // Note: in many cases, the pixel value corresponds to the pixel ToT or ADC value:
+            Pixel* pixel = new Pixel(m_detector->name(), row, col, value, ts);
 
             hitmap->Fill(col, row);
             hHitTimes->Fill(ts);
-            hPixelAdc->Fill(adc);
+            hPixelValues->Fill(value);
             pixels->push_back(pixel);
         }
         hPixelsPerFrame->Fill(static_cast<int>(pixels->size()));
