@@ -138,10 +138,10 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
     if(do_adjust_event_times) {
         for(auto& shift_times : adjust_event_times) {
             if(shift_times.front() == (evt->GetDescription())) {
-                LOG(DEBUG) << "Adjusting " << shift_times[0] << ": event_start by " << shift_times[1] << ", event_end by "
-                           << shift_times[2];
-                event_start += corryvreckan::from_string<double>(shift_times[1]);
-                event_end += corryvreckan::from_string<double>(shift_times[2]);
+                LOG(DEBUG) << "Adjusting " << shift_times.at(0) << ": event_start by " << shift_times.at(1)
+                           << ", event_end by " << shift_times.at(2);
+                event_start += corryvreckan::from_string<double>(shift_times.at(1));
+                event_end += corryvreckan::from_string<double>(shift_times.at(2));
             }
         } // end for
     }     // end if(do_adjust_event_times)
