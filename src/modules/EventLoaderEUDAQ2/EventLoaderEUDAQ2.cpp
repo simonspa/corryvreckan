@@ -62,7 +62,7 @@ void EventLoaderEUDAQ2::initialise() {
         if(shift_times.size() != 3) {
             throw InvalidValueError(
                 m_config,
-                "adjust_event_length",
+                "adjust_event_times",
                 "Parameter \"adjust_event_times\" needs 3 values per row: event type, shift event start, shift");
         }
     } // end for
