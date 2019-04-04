@@ -17,7 +17,10 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
 
     m_filename = m_config.getPath("file_name", true);
     m_skip_time = m_config.get("skip_time", 0.);
-    adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {{"none", "0", "0"}});
+    do_adjust_event_times = m_config.has("adjust_event_times");
+    if(do_adjust_event_times) {
+        adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times");
+    }
 }
 
 void EventLoaderEUDAQ2::initialise() {
@@ -55,6 +58,17 @@ void EventLoaderEUDAQ2::initialise() {
         LOG(ERROR) << "eudaq::FileReader could not read the input file ' " << m_filename
                    << " '. Please verify that the path and file name are correct.";
         throw InvalidValueError(m_config, "file_path", "Parsing error!");
+    }
+
+    // Check if all elements of adjust_event_times have a valid size of 3, if not throw error.
+    if(do_adjust_event_times) {
+        for(auto& shift_times : adjust_event_times) {
+            if(shift_times.size() != 3) {
+                LOG(ERROR)
+                    << "Parameter \"adjust_event_times\" needs 3 values per row: event type, shift event start, shift";
+                throw InvalidValueError(m_config, "adjust_event_length", "Parsing error in calibration file!");
+            }
+        }
     }
 }
 
@@ -121,20 +135,16 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
     double event_end = evt->GetTimeEnd();
 
     // If adjustment of event start/end is required:
-    for(auto& shift_times : adjust_event_times) {
-        if(shift_times.size() != 3) {
-            LOG(FATAL) << "Parameter \"adjust_event_times\" needs 3 values per row: event type, shift event start, shift "
-                          "event end!";
-        }
-        if(shift_times.front() == (evt->GetDescription())) {
-            LOG(DEBUG) << "Adjusting " << shift_times[0] << ": event_start by " << shift_times[1] << ", event_end by "
-                       << shift_times[2];
-            event_start += corryvreckan::from_string<double>(shift_times[1]);
-            event_end += corryvreckan::from_string<double>(shift_times[2]);
-        } else {
-            LOG(DEBUG) << "No adjustment of event times.";
-        }
-    } // end for
+    if(do_adjust_event_times) {
+        for(auto& shift_times : adjust_event_times) {
+            if(shift_times.front() == (evt->GetDescription())) {
+                LOG(DEBUG) << "Adjusting " << shift_times[0] << ": event_start by " << shift_times[1] << ", event_end by "
+                           << shift_times[2];
+                event_start += corryvreckan::from_string<double>(shift_times[1]);
+                event_end += corryvreckan::from_string<double>(shift_times[2]);
+            }
+        } // end for
+    }     // end if(do_adjust_event_times)
 
     // Skip if later start is requested:
     if(event_start < m_skip_time) {
