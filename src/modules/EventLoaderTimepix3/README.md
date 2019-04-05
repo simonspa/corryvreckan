@@ -23,6 +23,7 @@ This module requires either another event loader of another detector type before
 * `threshold`: String defining the `[threshold]` DAC value for loading the appropriate calibration file, See above.
 
 ### Plots produced
+* 2D map of pixel hits
 * Histogram with pixel ToT before and after calibration
 * Map for each calibration parameter if calibration is used
 
