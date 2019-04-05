@@ -13,22 +13,24 @@ namespace corryvreckan {
     public:
         // Constructors and destructors
         Pixel() = default;
-        Pixel(std::string detectorID, int row, int col, int tot) : Pixel(detectorID, row, col, tot, 0.) {}
-        Pixel(std::string detectorID, int row, int col, int tot, double timestamp)
-            : Pixel(detectorID, row, col, tot, timestamp, false) {}
-        Pixel(std::string detectorID, int row, int col, int tot, double timestamp, bool binary)
-            : Object(detectorID, timestamp), m_row(row), m_column(col), m_adc(tot), m_charge(tot), m_isBinary(binary) {}
+        Pixel(std::string detectorID, int row, int col, int value) : Pixel(detectorID, row, col, value, 0.) {}
+        Pixel(std::string detectorID, int row, int col, int value, double timestamp)
+            : Pixel(detectorID, row, col, value, timestamp, false) {}
+        Pixel(std::string detectorID, int row, int col, int value, double timestamp, bool binary)
+            : Object(detectorID, timestamp), m_row(row), m_column(col), m_value(value), m_charge(value), m_isBinary(binary) {
+        }
 
         int row() const { return m_row; }
         int column() const { return m_column; }
         std::pair<int, int> coordinates() { return std::make_pair(m_column, m_row); }
 
-        int adc() const { return (m_isBinary == true ? 1 : m_adc); }
-        int tot() const { return adc(); }
+        // value is a generic pixel value which can be ToT, ADC, ..., depending on the detector
+        // if isBinary==true, the value will always be 1
+        int value() const { return (m_isBinary == true ? 1 : m_value); }
 
         double charge() const { return m_charge; }
         void setCharge(double charge) { m_charge = charge; }
-        void setToT(int tot) { m_adc = tot; }
+        void setValue(int value) { m_value = value; }
         void setBinary(bool binary) { m_isBinary = binary; }
 
         /**
@@ -40,13 +42,13 @@ namespace corryvreckan {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(Pixel, 5);
+        ClassDefOverride(Pixel, 6);
 
     private:
         // Member variables
         int m_row;
         int m_column;
-        int m_adc;
+        int m_value;
         double m_charge;
         bool m_isBinary;
     };
