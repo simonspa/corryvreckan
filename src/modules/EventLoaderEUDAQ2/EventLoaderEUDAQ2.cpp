@@ -132,15 +132,17 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
 
     // If adjustment of event start/end is required:
     if(!adjust_event_times.empty()) {
-        for(auto& shift_times : adjust_event_times) {
-            if(shift_times.front() == (evt->GetDescription())) {
-                LOG(DEBUG) << "Adjusting " << shift_times.at(0) << ": event_start by " << shift_times.at(1)
-                           << ", event_end by " << shift_times.at(2);
-                event_start += corryvreckan::from_string<double>(shift_times.at(1));
-                event_end += corryvreckan::from_string<double>(shift_times.at(2));
-            }
-        } // end for
-    }     // end if(do_adjust_event_times)
+        const auto it =
+            std::find_if(adjust_event_times.begin(),
+                         adjust_event_times.end(),
+                         [name = evt->GetDescription()](const std::vector<std::string>& x) { return x.front() == name; });
+        if(it != adjust_event_times.end()) {
+            LOG(DEBUG) << "Adjusting " << (*it).at(0) << ": event_start by " << (*it).at(1) << ", event_end by "
+                       << (*it).at(2);
+            event_start += corryvreckan::from_string<double>((*it).at(1));
+            event_end += corryvreckan::from_string<double>((*it).at(2));
+        } // end if(it!=adjust_event_times.end())
+    }     // end if(!adjust_event_times.empty())
 
     // Skip if later start is requested:
     if(event_start < m_skip_time) {
