@@ -131,18 +131,17 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
     double event_end = evt->GetTimeEnd();
 
     // If adjustment of event start/end is required:
-    if(!adjust_event_times.empty()) {
-        const auto it =
-            std::find_if(adjust_event_times.begin(),
-                         adjust_event_times.end(),
-                         [name = evt->GetDescription()](const std::vector<std::string>& x) { return x.front() == name; });
-        if(it != adjust_event_times.end()) {
-            LOG(DEBUG) << "Adjusting " << (*it).at(0) << ": event_start by " << (*it).at(1) << ", event_end by "
-                       << (*it).at(2);
-            event_start += corryvreckan::from_string<double>((*it).at(1));
-            event_end += corryvreckan::from_string<double>((*it).at(2));
-        } // end if(it!=adjust_event_times.end())
-    }     // end if(!adjust_event_times.empty())
+    const auto it = std::find_if(adjust_event_times.begin(),
+                                 adjust_event_times.end(),
+                                 [evt](const std::vector<std::string>& x) { return x.front() == evt->GetDescription(); });
+    if(it != adjust_event_times.end()) {
+        double shift_start = corryvreckan::from_string<double>((*it).at(1));
+        double shift_end = corryvreckan::from_string<double>((*it).at(2));
+        event_start += shift_start;
+        event_end += shift_end;
+        LOG(DEBUG) << "Adjusting " << (*it).at(0) << ": event_start by " << Units::display(shift_start, {"us", "ns"})
+                   << ", event_end by " << Units::display(event_end, {"us", "ns"});
+    } // end if
 
     // Skip if later start is requested:
     if(event_start < m_skip_time) {
