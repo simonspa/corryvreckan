@@ -115,7 +115,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
 
         // If there is no event defined yet or the trigger number is unkown, there is little we can do:
         if(!clipboard->event_defined() || !clipboard->get_event()->hasTriggerID(evt->GetTriggerN())) {
-            LOG(DEBUG) << "Trigger ID not found in current event.";
+            LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " not found in current event.";
             return EventPosition::UNKNOWN;
         }
 
