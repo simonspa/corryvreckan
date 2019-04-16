@@ -307,11 +307,11 @@ def runCorryvreckan(filenamebase, jobtask, silent):
         exit(1)
     return rcode
 
-def submitCondor(filenamebase, jobtask, subfile, runnr):
+def submitCondor(filenamebase, subfile, runnr):
     """ Submits the Corryvreckan job to HTCondor """
     import os
     from sys import exit # use sys.exit instead of built-in exit (latter raises exception)
-    log = logging.getLogger('jobsub.' + jobtask)
+    log = logging.getLogger('jobsub.' + runnr)
     # We are running on HTCondor.
 
     # check for qsub executable
@@ -612,13 +612,13 @@ def main(argv=None):
                 if args.dry_run:
                     log.info("Dry run: skipping Corryvreckan execution. Steering file written to "+basefilename+'.conf')
                 elif args.htcondor_file:
-                    rcode = submitCondor(basefilename, runnr, args.htcondor_file, runnr) # start HTCondor submission
+                    rcode = submitCondor(basefilename, args.htcondor_file, runnr+str(run_iterator-1)) # start HTCondor submission
                     if rcode == 0:
                         log.info("HTCondor job submitted")
                     else:
                         log.error("HTCondor submission returned with error code "+str(rcode))
                 else:
-                    rcode = runCorryvreckan(basefilename, runnr, args.silent) # start Corryvreckan execution
+                    rcode = runCorryvreckan(basefilename, runnr+str(run_iterator-1), args.silent) # start Corryvreckan execution
                     if rcode == 0:
                         log.info("Corryvreckan execution done")
                     else:
