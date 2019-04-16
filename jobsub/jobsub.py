@@ -560,7 +560,6 @@ def main(argv=None):
 
         if parameters_csv:
             for line in parameters_csv: # go through line by line
-
                 # make a copy of the preprocessed steering file content
                 steeringString = steeringStringBase
                 # if we have a csv file we can parse, we will check for the runnumber and replace any
@@ -625,9 +624,9 @@ def main(argv=None):
                         log.error("Corryvreckan returned with error code "+str(rcode))
                     zipLogs(parameters["logpath"], basefilename)
 
-                # Return to old directory:
-                if args.subdir:
-                    os.chdir(savedPath)
+        # Return to old directory:
+        if args.subdir:
+            os.chdir(savedPath)
 
         # return to the previous signal handler
         signal.signal(signal.SIGINT, prevINTHandler)
