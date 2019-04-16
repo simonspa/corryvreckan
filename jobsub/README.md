@@ -91,6 +91,11 @@ log_level = WARNING
 
 There is only one predefined placeholder, `@RunNumber@`, which will be substituted with the current run number. Run numbers are not padded with leading zeros unless the `--zfill` option is provided.
 
+To avoid confusion with the text-field delimiter (see below), "paired" parameters such as `spatialCut = 100um, 150um` should be provided separately in the configuration template such as
+```toml
+spatialCut = @spatialCutX@, @spatialCutY@
+```
+
 ### Using Configuration Variables
 
 As described in the previous paragraph, variables in the configuration file template are replaced with values at run time.
@@ -103,7 +108,7 @@ Two sources of values are currently supported, and are described in the followin
    jobsub.py --option beamenergy=5.3 -c alignment.conf 1234
    ```
 
-   This switch be specified several times for multiple options or can parse a comma-separated list of options. This switch overrides any config file options.
+   This switch can be specified several times for multiple options or can parse a comma-separated list of options. This switch overrides any config file options.
 
 #### Table (comma-separated text file)
    - format: e.g.
@@ -114,7 +119,9 @@ Two sources of values are currently supported, and are described in the followin
    - first row (after comments) has to provide column headers which identify the variables in the steering template to replace (case-insensitive)
    - requires one column labeled "RunNumber"
    - only considers placeholders left in the steering template after processing command-line arguments and config file options
-   -
+
+   It is also possible to specify multiple different settings for the same run number in different lines.
+
 ##### Example
     The CSV file could have the following form:
 
