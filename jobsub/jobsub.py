@@ -140,23 +140,21 @@ def loadparamsfromcsv(csvfilename, runs):
             filteredfile.rewind() # back to beginning of file
             reader.next()   # .. and skip the header line
             missingRuns = list(runs) # list of runs to look for in csv file
-
-            cnt = 0
             for row in reader: # loop over all rows once
                 try:
-                    cnt += 1
                     for run in missingRuns: # check all runs if runnumber matches
                         if int(row["runnumber"]) == run:
                             log.debug("Found entry in csv file for run "+str(run)+" on line "+ str(filteredfile.linecount))
+                            parameters_csv[run] = {}
+                            parameters_csv[run].update(row)
                             missingRuns.remove(run)
-                    parameters_csv[cnt-1] = {} # start counting at 0
-                    parameters_csv[cnt-1].update(row) # start counting at 0
+                            break
                 except ValueError: # int conversion error
                     log.warn("Could not interpret run number on line "+str(filteredfile.linecount)+" in file '"+csvfilename+"'.")
                     continue
-            if len(missingRuns)==0:
-                log.debug("Found eat least one line for each run we were searching for.")
-
+                if len(missingRuns)==0:
+                    log.debug("Finished search for runs in csv file before reaching end of file")
+                    break
             log.debug("Searched over "+str(filteredfile.linecount)+" lines in file '"+csvfilename+"'.")
             if not len(missingRuns)==0:
                 log.error("Could not find an entry for the following run numbers in '"+csvfilename+"': "+', '.join(map(str, missingRuns)))
@@ -196,7 +194,6 @@ def runCorryvreckan(filenamebase, jobtask, silent):
         log.debug("Found Corryvreckan executable: " + cmd)
     else:
         log.error("Corryvreckan executable not found in PATH!")
-	log.error(os.getcwd())
         exit(1)
 
     # search for stdbuf command: adjust stdout buffering
@@ -537,7 +534,6 @@ def main(argv=None):
     log.info("Will now start processing the following runs: "+', '.join(map(str, runs)))
     # now loop over all runs
     for run in runs:
-        run_iterator = 0 # counts how many times one run occurs in the config file with different configurations
         if keepRunning['Sigint'] == 'seen':
             log.critical("Stopping to process remaining runs now")
             break  # if we received ctrl-c (SIGINT) we stop processing here
@@ -548,9 +544,45 @@ def main(argv=None):
             runnr = str(run)
         log.info ("Now generating configuration file for run number "+runnr+"..")
 
+        # make a copy of the preprocessed steering file content
+        steeringString = steeringStringBase
+
+        # if we have a csv file we can parse, we will lookup the runnumber and replace any
+        # variables identified by the csv header by the run specific value
+        if parameters_csv:
+            try:
+                for field in parameters_csv[run].keys():
+                    # check if we actually find all parameters from the csv file in the steering file - warn if not
+                    log.debug("Parsing steering file for csv field name '%s'", field)
+                    try:
+                        # check that the field name is not empty and do not yet replace the runnumber
+                        if not field == "" and not field == "runnumber":
+                            steeringString = ireplace("@" + field + "@", parameters_csv[run][field], steeringString)
+                    except EOFError:
+                        log.warn("Parameter '" + field + "' from the csv file was not found in the template file (already overwritten by config file parameters?)")
+            except KeyError:
+                log.warning("Run #" + runnr + " was not found in the specified CSV file - will skip this run! ")
+                continue
+
+        try:
+            steeringString = ireplace("@RunNumber@", runnr, steeringString)
+        except EOFError:
+            log.error("No reference to run number ('@RunNumber@') found in configuration template "+args.conf_file)
+            return 1
+
+        if not checkSteer(steeringString):
+            return 1
+
+        if args.htcondor_file:
+            args.htcondor_file = os.path.abspath(args.htcondor_file)
+            if not os.path.isfile(args.htcondor_file):
+                log.critical("HTCondor submission parameters file '"+args.htcondor_file+"' not found!")
+                return 1
+
+        log.debug ("Writing steering file for run number "+runnr)
         # When  running in subdirectories for every job, create it:
         if args.subdir:
-            basedirectory = "run_"+runnr
+            basedirectory = "run"+runnr
             if not os.path.exists(basedirectory):
                 os.makedirs(basedirectory)
 
@@ -558,81 +590,42 @@ def main(argv=None):
             savedPath = os.getcwd()
             os.chdir(basedirectory)
 
-        if parameters_csv:
-            for line in parameters_csv: # go through line by line
+        # Get "jobtask" as basename of the configuration file:
+        jobtask = os.path.splitext(os.path.basename(args.conf_file))[0]
+        # Write the steering file:
+        basefilename = runnr+"-"+jobtask
+        steeringFile = open(basefilename+".conf", "w")
 
-                # make a copy of the preprocessed steering file content
-                steeringString = steeringStringBase
-                # if we have a csv file we can parse, we will check for the runnumber and replace any
-                # variables identified by the csv header by the run specific value
+        try:
+            steeringFile.write(steeringString)
+        finally:
+            steeringFile.close()
 
-                try:
-                    if parameters_csv[line]["runnumber"] != runnr:
-                        continue
-                    run_iterator += 1
-                    log.debug("Found run %i for the %ith time.", run, run_iterator-1) # start counting at 0
+        # bail out if running a dry run
+        if args.dry_run:
+            log.info("Dry run: skipping Corryvreckan execution. Steering file written to "+basefilename+'.conf')
+        elif args.htcondor_file:
+            rcode = submitCondor(basefilename, runnr, args.htcondor_file, runnr) # start HTCondor submission
+            if rcode == 0:
+                log.info("HTCondor job submitted")
+            else:
+                log.error("HTCondor submission returned with error code "+str(rcode))
+        else:
+            rcode = runCorryvreckan(basefilename, runnr, args.silent) # start Corryvreckan execution
+            if rcode == 0:
+                log.info("Corryvreckan execution done")
+            else:
+                log.error("Corryvreckan returned with error code "+str(rcode))
+            zipLogs(parameters["logpath"], basefilename)
 
-                    for field in parameters_csv[line].keys():
-                        # check if we actually find all parameters from the csv file in the steering file - warn if not
-                        log.debug("Parsing steering file for csv field name '%s'", field)
-                        try:
-                            # check that the field name is not empty and do not yet replace the runnumber
-                            if not field == "":
-                                steeringString = ireplace("@" + field + "@", parameters_csv[line][field], steeringString)
-                        except EOFError:
-                            log.warn("Parameter '" + field + "' from the csv file was not found in the template file (already overwritten by config file parameters?)")
-                except KeyError:
-                    log.warning("Run #" + runnr + " was not found in the specified CSV file - will skip this run! ")
-                    continue
+        # Return to old directory:
+        if args.subdir:
+            os.chdir(savedPath)
 
-                if not checkSteer(steeringString):
-                    return 1
-
-                if args.htcondor_file:
-                    args.htcondor_file = os.path.abspath(args.htcondor_file)
-                    if not os.path.isfile(args.htcondor_file):
-                        log.critical("HTCondor submission parameters file '"+args.htcondor_file+"' not found!")
-                        return 1
-
-                log.debug ("Writing steering file for run %i_%i", run, run_iterator-1) # start counting at 0
-
-                # Get "jobtask" as basename of the configuration file:
-                jobtask = os.path.splitext(os.path.basename(args.conf_file))[0]
-                # Write the steering file:
-                basefilename = jobtask+"_"+runnr+"_"+str(run_iterator-1) # start counting at 0
-                log.info("basefilename = " + basefilename)
-                steeringFile = open(basefilename+".conf", "w")
-
-                try:
-                    steeringFile.write(steeringString)
-                finally:
-                    steeringFile.close()
-
-                # bail out if running a dry run
-                if args.dry_run:
-                    log.info("Dry run: skipping Corryvreckan execution. Steering file written to "+basefilename+'.conf')
-                elif args.htcondor_file:
-                    rcode = submitCondor(basefilename, runnr, args.htcondor_file, runnr) # start HTCondor submission
-                    if rcode == 0:
-                        log.info("HTCondor job submitted")
-                    else:
-                        log.error("HTCondor submission returned with error code "+str(rcode))
-                else:
-                    rcode = runCorryvreckan(basefilename, runnr, args.silent) # start Corryvreckan execution
-                    if rcode == 0:
-                        log.info("Corryvreckan execution done")
-                    else:
-                        log.error("Corryvreckan returned with error code "+str(rcode))
-                    zipLogs(parameters["logpath"], basefilename)
-
-                # Return to old directory:
-                if args.subdir:
-                    os.chdir(savedPath)
-
-        # return to the previous signal handler
-        signal.signal(signal.SIGINT, prevINTHandler)
-        if log.error.counter>0:
-            log.warning("There were "+str(log.error.counter)+" error messages reported")
+    # return to the previous signal handler
+    signal.signal(signal.SIGINT, prevINTHandler)
+    if log.error.counter>0:
+        log.warning("There were "+str(log.error.counter)+" error messages reported")
 
     return 0
 
