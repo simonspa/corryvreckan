@@ -121,6 +121,7 @@ This switch can be specified several times for multiple options or can parse a c
 - only considers placeholders left in the steering template after processing command-line arguments and config file options
 
 It is also possible to specify multiple different settings for the same run number in different lines.
+If so, it should be ensured that the output file is not called `histograms_@RunNumber@` but rather `histograms_@RunNumber@_@OtherParameter@` to prevent overwriting the output file.
 
 ##### Example
 The CSV file could have the following form:
