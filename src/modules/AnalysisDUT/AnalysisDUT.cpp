@@ -278,6 +278,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 auto associated_clusters = track->associatedClusters();
                 if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) == associated_clusters.end()) {
                     LOG(DEBUG) << "No associated cluster found";
+                    hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
                     continue;
                 }
 
