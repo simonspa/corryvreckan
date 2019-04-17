@@ -15,6 +15,7 @@ using namespace std;
 AlignmentMillepede::AlignmentMillepede(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
+    m_excludeDUT = m_config.get<bool>("excludeDUT", false);
     m_numberOfTracksForAlignment = m_config.get<size_t>("number_of_tracks", 20000);
     m_dofs = m_config.getArray<bool>("dofs", {});
     m_nIterations = m_config.get<size_t>("iterations", 5);
@@ -99,11 +100,11 @@ void AlignmentMillepede::finalise() {
 
     size_t nPlanes = num_detectors();
     for(const auto& det : get_detectors()) {
-        if(det->isDUT()) {
+        if(det->isDUT() && m_excludeDUT) {
             nPlanes--;
         }
     }
-
+    LOG(INFO) << "Aligning " << nPlanes << "planes";
     const size_t nParameters = 6 * nPlanes;
     for(unsigned int iteration = 0; iteration < m_nIterations; ++iteration) {
         // Define the constraint equations.
@@ -160,6 +161,7 @@ void AlignmentMillepede::finalise() {
         if(converg < m_convergence)
             break;
     }
+    // save the new geometry?
 }
 
 //=============================================================================
