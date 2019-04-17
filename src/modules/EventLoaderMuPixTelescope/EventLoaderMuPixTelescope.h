@@ -16,11 +16,13 @@
 #include <TH2F.h>
 #include <iostream>
 #include "core/module/Module.hpp"
-#include "library/blockfile.hpp"
-#include "library/telescope_frame.hpp"
-#include "objects/Cluster.hpp"
-#include "objects/Pixel.hpp"
-#include "objects/Track.hpp"
+
+#include "blockfile.hpp"
+#include "monitor_histograms.hpp"
+
+//#include "objects/Cluster.hpp"
+//#include "objects/Pixel.hpp"
+//#include "objects/Track.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules
@@ -59,15 +61,18 @@ namespace corryvreckan {
         bool m_isSorted;
         bool m_ts2IsGray;
         int m_runNumber;
+        int m_counter;
         BlockFile* m_blockFile;
         TelescopeFrame m_tf;
 
         // Histograms
+        vector<mudaq::SensorHistograms*> _sensors;
         TH2F* hHitMap;
         TH1F* hPixelToT;
-        TH1F* hPixelToA;
-        TH1F* hPixelsPerFrame;
-        TH1F* hPixelsOverTime;
+        //        TH1F* hPixelToA;
+        //        TH1F* hPixelsPerFrame;
+        //        TH1F* hPixelsOverTime;
+        TH1F* hTimeStamp;
     };
 
 } // namespace corryvreckan
