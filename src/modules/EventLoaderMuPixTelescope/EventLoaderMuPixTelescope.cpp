@@ -9,6 +9,9 @@
 
 #include "EventLoaderMuPixTelescope.h"
 #include "dirent.h"
+#include "objects/Cluster.hpp"
+#include "objects/Pixel.hpp"
+#include "objects/Track.hpp"
 
 using namespace corryvreckan;
 // using namespace std;
@@ -28,7 +31,7 @@ void EventLoaderMuPixTelescope::initialise() {
     int i = 0;
     for(auto& detector : get_detectors()) {
         LOG(DEBUG) << "Initialise for detector " + detector->name();
-        _sensors.push_back(new SensorHistograms(i, detector->name(), false));
+        _sensors.push_back(new mudaq::SensorHistograms(i, detector->name(), false));
         i++;
     }
 

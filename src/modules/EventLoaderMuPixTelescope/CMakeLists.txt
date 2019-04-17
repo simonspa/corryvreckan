@@ -11,8 +11,8 @@ IF(NOT MUPIX8DAQ_FOUND)
     MESSAGE(FATAL_ERROR "Could not find MuPix-telescope. You need to do: \n export MUPIX8DAQ=/path/to/repo")
 ENDIF()
 
-#INCLUDE_DIRECTORIES(SYSTEM ${MUPIX8DAQ_INCLUDE_DIR})
-#include_directories(${EIGEN3_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(SYSTEM ${MUPIX8DAQ_INCLUDE_DIR})
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 # Add source files to library
 CORRYVRECKAN_MODULE_SOURCES(${MODULE_NAME}

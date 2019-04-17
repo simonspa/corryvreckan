@@ -6,7 +6,7 @@
 
 MESSAGE(STATUS "Looking for MuPix Telescope Readout...")
 
-FIND_PATH(MUPIX8DAQ_INCLUDE_DIR  NAMES "telescope_frame.hpp" "*.hpp" "*.h" PATHS "$ENV{MUPIX8DAQ}/include/")
+FIND_PATH(MUPIX8DAQ_INCLUDE_DIR  NAMES "telescope_frame.hpp" "*.hpp" "*.h" PATHS "$ENV{MUPIX8DAQ}/library")
 MESSAGE(STATUS "telescope_frame.hpp => ${MUPIX8DAQ_INCLUDE_DIR}")
 IF(MUPIX8DAQ_INCLUDE_DIR)
    SET(MUPIX8DAQ_INC_FOUND TRUE)
