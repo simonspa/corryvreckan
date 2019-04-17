@@ -1,12 +1,12 @@
 # - Try to find the MuPix telescope DAQ
 # Once done this will define
-#  MUPIX8DAQ_FOUND - System has EUDAQ
-#  MUPIX8DAQ_INCLUDE_DIR - The EUDAQ main include directories
-#  MUPIX8DAQ_LIBRARY - The libraries needed to use EUDAQ
+#  MUPIX8DAQ_FOUND - System has MuPixDAQ
+#  MUPIX8DAQ_INCLUDE_DIR - The MuPixDAQ main include directories
+#  MUPIX8DAQ_LIBRARY - The libraries needed to use MuPixDAQ
 
 MESSAGE(STATUS "Looking for MuPix Telescope Readout...")
 
-FIND_PATH(MUPIX8DAQ_INCLUDE_DIR NAMES "library/telescope_frame.hpp" "library/blockfile.hpp" PATHS "$ENV{MUPIX8DAQ}")
+FIND_PATH(MUPIX8DAQ_INCLUDE_DIR  NAMES "telescope_frame.hpp" "*.hpp" "*.h" PATHS "$ENV{MUPIX8DAQ}/include/")
 MESSAGE(STATUS "telescope_frame.hpp => ${MUPIX8DAQ_INCLUDE_DIR}")
 IF(MUPIX8DAQ_INCLUDE_DIR)
    SET(MUPIX8DAQ_INC_FOUND TRUE)
