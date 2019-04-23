@@ -22,17 +22,13 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration config, std::
     m_runNumber = m_config.get<int>("Run", -1); // meaningless default runnumber
     m_isSorted = m_config.get<bool>("isSorted", false);
     m_ts2IsGray = m_config.get<bool>("ts2IsGray", false);
-    m_counter = 0;
     // We need to check for the config files in case of scans... TBI
 }
 
 void EventLoaderMuPixTelescope::initialise() {
 
-    int i = 0;
     for(auto& detector : get_detectors()) {
         LOG(DEBUG) << "Initialise for detector " + detector->name();
-        _sensors.push_back(new mudaq::SensorHistograms(i, detector->name(), false));
-        i++;
     }
 
     // Need to check if the files do exist
@@ -91,24 +87,20 @@ StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) 
     if(!m_blockFile->read_next(tf))
         return StatusCode::EndRun;
     else {
-        m_counter += 500;
         LOG(DEBUG) << "Found " << tf.num_hits() << " in event " << m_eventNumber;
         for(uint i = 0; i < tf.num_hits(); ++i) {
             RawHit h = tf.get_hit(i);
             if(h.tag() == 0x4)
                 h = tf.get_hit(i, 66);
             Pixel* p = new Pixel(detectors.at(h.tag() / 4), h.row(), h.column(), 1, 0, true);
-            p->setTimestamp(static_cast<double>(m_counter)); // tf.timestamp()));//8*static_cast<double>(((tf.timestamp()>>2)
-                                                             // & 0xFFFFF700)+h.timestamp_raw()));
-            // p->setTimestamp(static_cast<double>(h.timestamp_raw()));
-            p->setToT(0); // int(h.get_tot_ns(0,8)));
+            p->setTimestamp(8 * static_cast<double>(((tf.timestamp() >> 2) & 0xFFFFF700) + h.timestamp_raw()));
+            p->setToT(0);
 
             if(!dataContainers.count(detectors.at(h.tag() / 4)))
                 dataContainers[detectors.at(h.tag() / 4)] = new Objects();
             dataContainers.at(detectors.at(h.tag() / 4))->push_back(p);
             hHitMap->Fill(h.column(), h.row());
             hTimeStamp->Fill(h.timestamp_raw());
-            _sensors.at(h.tag() / 4)->Fill({h.column()}, {h.row()});
         }
     }
 
@@ -118,7 +110,7 @@ StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) 
         try {
             clipboard->put(d, "pixels", dataContainers[d]);
         } catch(ModuleError& e) {
-            LOG(WARNING) << "Unknown detector ";
+            LOG(ERROR) << "Unknown detector ";
         }
     }
     // Increment event counter
@@ -130,6 +122,5 @@ StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) 
 
 void EventLoaderMuPixTelescope::finalise() {
 
-    _sensors.at(0)->Write();
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }
