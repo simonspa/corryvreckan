@@ -18,7 +18,7 @@
 #include "core/module/Module.hpp"
 
 #include "blockfile.hpp"
-#include "monitor_histograms.hpp"
+#include "telescope_frame.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules
@@ -57,12 +57,10 @@ namespace corryvreckan {
         bool m_isSorted;
         bool m_ts2IsGray;
         int m_runNumber;
-        int m_counter;
         BlockFile* m_blockFile;
         TelescopeFrame m_tf;
 
         // Histograms
-        vector<mudaq::SensorHistograms*> _sensors;
         TH2F* hHitMap;
         TH1F* hPixelToT;
         //        TH1F* hPixelToA;
