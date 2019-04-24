@@ -1,24 +1,29 @@
 # EventLoaderMuPixTelescope
-**Maintainer**: Lennart Huth (huth@phsi.uni-heidelberg.de)
+**Maintainer**: Lennart Huth (lennart.huth@desy.de)
 **Module Type**: *GLOBAL*  
-**Status**: Immature
+**Status**: work in progress with some hard coded parts - needs polishing
 
 ### Description
-This is a demonstrator module only, taking data every detector on the clipboard and plots the pixel hit positions.
-It serves as template to create new modules.
+This modul reads in and converts data taken with the MuPix-Telescope.
 
 ### Parameters
-No parameters are used from the configuration file.
+* `input_directory`: Defines the input file. No default
+* `Run`: not in use. Defaults to `-1`
+* `is_sorted`: Defines if data recorded is on FPGA timestamp
+sorted. Defaults to `false`
+* `ts2_is_gray`: Defines if the timestamp is gray encoded or not. Defaults to `false`.
 
 ### Plots produced
-* Histogram of event numbers
-
-For each detector the following plots are produced:
 
 * 2D histogram of pixel hit positions
+* 1D histogram of the pixel timestamps
 
 ### Usage
 ```toml
 [EventLoaderMuPixTelescope]
+input_directory = "/path/to/file"
+Run = -1
+is_sorted = false
+ts2_is_gray = false
 
 ```
