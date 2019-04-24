@@ -20,6 +20,7 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration config, std::shared_ptr<Det
     m_detector = detector;
 
     m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
+    m_pixelTolerance = m_config.get<double>("pixel_toleracnce", 1.);
     m_chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
 }
 
@@ -111,7 +112,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         auto globalIntercept = m_detector->getIntercept(track);
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
-        if(!m_detector->hasIntercept(track, 1.)) {
+        if(!m_detector->hasIntercept(track, m_pixelTolerance)) {
             LOG(DEBUG) << " - track outside DUT area: " << localIntercept;
             continue;
         }
