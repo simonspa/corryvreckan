@@ -11,7 +11,7 @@ The Millepede algorthm allows a simultaneous fit of both the tracks and the alig
 The modules stops if the convergence, i.e. the absolute sum of all corrections over the total number of parameters, is smaller than the configured value.
 
 ### Parameters
-* `exlude_dut` : Exclude the DUT from the alignment procedure. Default value
+* `exclude_dut` : Exclude the DUT from the alignment procedure. Default value
 is `false`.
 * `number_of_tracks`: Number of tracks used in the alignment method chosen. Default value is `20000`.
 * `iterations`: Number of times the chosen alignment method is to be iterated. Default value is `3`.
@@ -27,4 +27,5 @@ is `false`.
 [Millepede]
 iterations = 10
 dofs = true, true, false, true, true, true
+exclude_dut = false
 ```

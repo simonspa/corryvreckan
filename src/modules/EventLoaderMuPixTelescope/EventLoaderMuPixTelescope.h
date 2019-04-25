@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Definition of [EventLoaderMuPixTelescope] module
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * Copyright (c) 2019 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -63,9 +63,6 @@ namespace corryvreckan {
         // Histograms
         TH2F* hHitMap;
         TH1F* hPixelToT;
-        //        TH1F* hPixelToA;
-        //        TH1F* hPixelsPerFrame;
-        //        TH1F* hPixelsOverTime;
         TH1F* hTimeStamp;
     };
 

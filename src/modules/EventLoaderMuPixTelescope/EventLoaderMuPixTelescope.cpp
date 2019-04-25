@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of [EventLoaderMuPixTelescope] module
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * Copyright (c) 2019 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -20,8 +20,8 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration config, std::
     : Module(std::move(config), std::move(detectors)), m_blockFile(nullptr) {
     m_inputDirectory = m_config.getPath("input_directory");
     m_runNumber = m_config.get<int>("Run", -1); // meaningless default runnumber
-    m_isSorted = m_config.get<bool>("isSorted", false);
-    m_ts2IsGray = m_config.get<bool>("ts2IsGray", false);
+    m_isSorted = m_config.get<bool>("is_sorted", false);
+    m_ts2IsGray = m_config.get<bool>("ts2_is_gray", false);
     // We need to check for the config files in case of scans... TBI
 }
 
@@ -59,30 +59,22 @@ void EventLoaderMuPixTelescope::initialise() {
         return;
     } else
         LOG(STATUS) << "Loaded Reader";
-    hHitMap = new TH2F("hitMap", "hitMap", 50, -.5, 49.5, 202, -.5, 201.5);
-    hPixelToT = new TH1F("pixelToT", "pixelToT", 64, 0, 64);
-    hTimeStamp = new TH1F("pixelTS", "pixelTS", 1024, -.5, 1023.5);
-    hPixelToT->GetXaxis()->SetTitle("ToT in TS2 clock cycles.");
-
-    // hPixelToA = new TH1F("pixelToA", "pixelToA", 100, 0, 100);
-    // hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 200, 0, 200);
-    // hPixelsOverTime = new TH1F("pixelsOverTime", "pixelsOverTime", 2e6, 0, 2e6);
+    hHitMap = new TH2F("hitMap", "hitMap; column; row", 50, -.5, 49.5, 202, -.5, 201.5);
+    hPixelToT = new TH1F("pixelToT", "pixelToT; ToT in TS2 clock cycles.; ", 64, 0, 64);
+    hTimeStamp = new TH1F("pixelTS", "pixelTS; TS in clock cycles; ", 1024, -.5, 1023.5);
 }
 
 StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Loop over all detectors
+    vector<string> detectors;
     for(auto& detector : get_detectors()) {
         // Get the detector name
         std::string detectorName = detector->name();
+        detectors.push_back(detectorName);
         LOG(DEBUG) << "Detector with name " << detectorName;
     }
     map<string, Objects*> dataContainers;
-    vector<string> detectors;
-    detectors.push_back("detector0");
-    detectors.push_back("detector1");
-    detectors.push_back("detector2");
-    detectors.push_back("detector3");
     TelescopeFrame tf;
     if(!m_blockFile->read_next(tf))
         return StatusCode::EndRun;

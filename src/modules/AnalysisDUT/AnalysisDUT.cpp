@@ -189,8 +189,14 @@ void AnalysisDUT::initialise() {
                                               m_detector->nPixels().Y(),
                                               0,
                                               m_detector->nPixels().Y());
-    hUnassociatedTracksGlobalPosition =
-        new TH2F("hUnassociatedTracksGlobalPosition", "hUnassociatedTracksGlobalPosition", 200, -10, 10, 200, -10, 10);
+    hUnassociatedTracksGlobalPosition = new TH2F("hUnassociatedTracksGlobalPosition",
+                                                 "hUnassociatedTracksGlobalPosition; x / mm; y / mm",
+                                                 200,
+                                                 -10,
+                                                 10,
+                                                 200,
+                                                 -10,
+                                                 10);
 }
 
 StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
