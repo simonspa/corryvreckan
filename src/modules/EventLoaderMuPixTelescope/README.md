@@ -4,7 +4,7 @@
 **Status**: work in progress with some hard coded parts - needs polishing
 
 ### Description
-This modul reads in and converts data taken with the MuPix-Telescope.
+This module reads in and converts data taken with the MuPix-Telescope.
 
 ### Parameters
 * `input_directory`: Defines the input file. No default
