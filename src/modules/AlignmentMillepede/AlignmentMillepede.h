@@ -153,6 +153,8 @@ namespace corryvreckan {
         std::vector<unsigned int> m_fixedPlanes;
         /// Flag to fix all degrees of freedom or only the translations.
         bool m_fix_all;
+        /// It can be also reasonable to include the DUT in the alignemnt
+        bool m_excludeDUT;
     };
 } // namespace corryvreckan
 
