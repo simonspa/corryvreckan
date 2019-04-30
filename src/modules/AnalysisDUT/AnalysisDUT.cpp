@@ -189,6 +189,14 @@ void AnalysisDUT::initialise() {
                                               m_detector->nPixels().Y(),
                                               0,
                                               m_detector->nPixels().Y());
+    hUnassociatedTracksGlobalPosition = new TH2F("hUnassociatedTracksGlobalPosition",
+                                                 "hUnassociatedTracksGlobalPosition; x / mm; y / mm",
+                                                 200,
+                                                 -10,
+                                                 10,
+                                                 200,
+                                                 -10,
+                                                 10);
 }
 
 StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
@@ -278,6 +286,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 auto associated_clusters = track->associatedClusters();
                 if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) == associated_clusters.end()) {
                     LOG(DEBUG) << "No associated cluster found";
+                    hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
                     continue;
                 }
 
