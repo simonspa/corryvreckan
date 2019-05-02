@@ -20,8 +20,9 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration config, std::shared_ptr<Det
     m_detector = detector;
 
     m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
-    m_pixelTolerance = m_config.get<double>("pixel_toleracnce", 1.);
+    m_pixelTolerance = m_config.get<double>("pixel_tolerance", 1.);
     m_chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
+    m_inpixelBinSize = m_config.get<double>("inpixel_bin_size", Units::get<double>(1.0, "um"));
 }
 
 void AnalysisEfficiency::initialise() {
@@ -33,10 +34,10 @@ void AnalysisEfficiency::initialise() {
                         "#mum;y_{track} mod " + std::to_string(pitch_y) + "#mum;efficiency";
     hPixelEfficiencyMap_trackPos = new TProfile2D("pixelEfficiencyMap_trackPos",
                                                   title.c_str(),
-                                                  static_cast<int>(pitch_x),
+                                                  static_cast<int>(ceil(pitch_x / m_inpixelBinSize)),
                                                   0,
                                                   pitch_x,
-                                                  static_cast<int>(pitch_y),
+                                                  static_cast<int>(ceil(pitch_y / m_inpixelBinSize)),
                                                   0,
                                                   pitch_y,
                                                   0,
