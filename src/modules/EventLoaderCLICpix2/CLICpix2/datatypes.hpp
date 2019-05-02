@@ -48,16 +48,16 @@ namespace caribou {
         /**
          * @brief Use default copy behaviour
          */
-        pixel(const pixel&);
-        pixel& operator=(const pixel&);
+        pixel(const pixel&) = default;
+        pixel& operator=(const pixel&) = default;
         /// @}
 
         /// @{
         /**
          * @brief Use default move behaviour
          */
-        pixel(pixel&&);
-        pixel& operator=(pixel&&);
+        pixel(pixel&&) = default;
+        pixel& operator=(pixel&&) = default;
         /// @}
 
         /** Overloaded ostream operator for printing of pixel data
