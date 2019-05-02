@@ -147,7 +147,7 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
             }
 
             Pixel* pixel =
-                new Pixel(m_detector->name(), row, col, static_cast<int>(plane.GetPixel(i)), plane.GetTimestamp(i));
+                new Pixel(m_detector->name(), col, row, static_cast<int>(plane.GetPixel(i)), plane.GetTimestamp(i));
             pixels->push_back(pixel);
         }
     }

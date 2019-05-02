@@ -76,7 +76,7 @@ StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
                     continue;
                 }
 
-                Pixel* pixel = new Pixel(detectorID, row, col, static_cast<int>(plane.GetPixel(ipix)));
+                Pixel* pixel = new Pixel(detectorID, col, row, static_cast<int>(plane.GetPixel(ipix)));
                 pixel->setCharge(plane.GetPixel(ipix));
 
                 // Pixel gets timestamp of trigger assigned:

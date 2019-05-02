@@ -84,7 +84,7 @@ StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) 
             RawHit h = tf.get_hit(i);
             if(h.tag() == 0x4)
                 h = tf.get_hit(i, 66);
-            Pixel* p = new Pixel(detectors.at(h.tag() / 4), h.row(), h.column(), 1, 0, true);
+            Pixel* p = new Pixel(detectors.at(h.tag() / 4), h.column(), h.row(), 1, 0, true);
             p->setTimestamp(8 * static_cast<double>(((tf.timestamp() >> 2) & 0xFFFFF700) + h.timestamp_raw()));
             p->setToT(0);
 
