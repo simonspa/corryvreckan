@@ -40,6 +40,7 @@ namespace caribou {
     public:
         pixel(){};
         virtual ~pixel(){};
+        pixel(const pixel&) = default;
 
         /** Overloaded ostream operator for printing of pixel data
          */
