@@ -39,6 +39,7 @@ namespace caribou {
     class pixel {
     public:
         pixel(){};
+        virtual ~pixel(){};
 
         /** Overloaded ostream operator for printing of pixel data
          */
