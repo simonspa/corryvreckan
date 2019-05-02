@@ -42,7 +42,7 @@ namespace caribou {
         /**
          * @brief Required virtual destructor
          */
-        ~pixel() override = default;
+        virtual ~pixel() = default;
 
         /// @{
         /**
