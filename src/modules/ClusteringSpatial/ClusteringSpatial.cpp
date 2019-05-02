@@ -70,7 +70,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Pre-fill the hitmap with pixels
     for(auto pixel : (*pixels)) {
-        hitmap[pixel->row()][pixel->column()] = pixel;
+        hitmap[pixel->column()][pixel->row()] = pixel;
     }
 
     for(auto pixel : (*pixels)) {
@@ -104,18 +104,18 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
                     }
 
                     // If no pixel in this position, or is already in a cluster, do nothing
-                    if(!hitmap[row][col]) {
+                    if(!hitmap[col][row]) {
                         continue;
                     }
-                    if(used[hitmap[row][col]]) {
+                    if(used[hitmap[col][row]]) {
                         continue;
                     }
 
                     // Otherwise add the pixel to the cluster and store it as a found
                     // neighbour
-                    cluster->addPixel(hitmap[row][col]);
-                    used[hitmap[row][col]] = true;
-                    neighbours.push_back(hitmap[row][col]);
+                    cluster->addPixel(hitmap[col][row]);
+                    used[hitmap[col][row]] = true;
+                    neighbours.push_back(hitmap[col][row]);
                 }
             }
 
@@ -170,14 +170,14 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
         tot += pixel->adc();
         row += (pixel->row() * pixel->adc());
         column += (pixel->column() * pixel->adc());
-        LOG(DEBUG) << "- pixel row, col: " << pixel->row() << "," << pixel->column();
+        LOG(DEBUG) << "- pixel col, row: " << pixel->column() << "," << pixel->row();
     }
 
     // Row and column positions are tot-weighted
     row /= (tot > 0 ? tot : 1);
     column /= (tot > 0 ? tot : 1);
 
-    LOG(DEBUG) << "- cluster row, col: " << row << "," << column;
+    LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
 
     // Create object with local cluster position
     PositionVector3D<Cartesian3D<double>> positionLocal(m_detector->pitch().X() * (column - m_detector->nPixels().X() / 2.),
