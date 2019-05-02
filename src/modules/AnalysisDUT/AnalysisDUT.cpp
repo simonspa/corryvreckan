@@ -87,6 +87,7 @@ void AnalysisDUT::initialise() {
     clusterTotAssoc = new TH1F("clusterTotAssociated", "clusterTotAssociated", 10000, 0, 10000);
     clusterTotAssocNorm = new TH1F("clusterTotAssociatedNormalized", "clusterTotAssociatedNormalized", 10000, 0, 10000);
     clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
+    clusterSizeAssocNorm = new TH1F("clusterSizeAssociatedNormalized", "clusterSizeAssociatedNormalized", 30, 0, 30);
 
     // In-pixel studies:
     auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
@@ -188,6 +189,14 @@ void AnalysisDUT::initialise() {
                                               m_detector->nPixels().Y(),
                                               0,
                                               m_detector->nPixels().Y());
+    hUnassociatedTracksGlobalPosition = new TH2F("hUnassociatedTracksGlobalPosition",
+                                                 "hUnassociatedTracksGlobalPosition; x / mm; y / mm",
+                                                 200,
+                                                 -10,
+                                                 10,
+                                                 200,
+                                                 -10,
+                                                 10);
 }
 
 StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
@@ -277,6 +286,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 auto associated_clusters = track->associatedClusters();
                 if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) == associated_clusters.end()) {
                     LOG(DEBUG) << "No associated cluster found";
+                    hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
                     continue;
                 }
 
@@ -336,6 +346,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 residualsTimeVsSignal->Fill(tdistance, cluster->tot());
 
                 clusterSizeAssoc->Fill(static_cast<double>(cluster->size()));
+                clusterSizeAssocNorm->Fill(static_cast<double>(cluster->size()));
 
                 // Fill in-pixel plots: (all as function of track position within pixel cell)
                 if(is_within_roi) {
@@ -382,7 +393,10 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             hPixelEfficiencyMap->Fill(xmod, ymod, has_associated_cluster);
         }
     }
-
     // Return value telling analysis to keep running
     return StatusCode::Success;
+}
+
+void AnalysisDUT::finalise() {
+    clusterSizeAssocNorm->Scale(1 / clusterSizeAssoc->Integral());
 }

@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Definition of [Dummy] module
+ * @brief Definition of [EventLoaderMuPixTelescope] module
  * Copyright (c) 2019 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
@@ -16,9 +16,9 @@
 #include <TH2F.h>
 #include <iostream>
 #include "core/module/Module.hpp"
-#include "objects/Cluster.hpp"
-#include "objects/Pixel.hpp"
-#include "objects/Track.hpp"
+
+#include "blockfile.hpp"
+#include "telescope_frame.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules
@@ -26,7 +26,7 @@ namespace corryvreckan {
      *
      * More detailed explanation of module
      */
-    class Dummy : public Module {
+    class EventLoaderMuPixTelescope : public Module {
 
     public:
         /**
@@ -34,7 +34,7 @@ namespace corryvreckan {
          * @param config Configuration object for this module as retrieved from the steering file
          * @param detectors Vector of pointers to the detectors
          */
-        Dummy(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        EventLoaderMuPixTelescope(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
 
         /**
          * @brief [Initialise this module]
@@ -53,6 +53,17 @@ namespace corryvreckan {
 
     private:
         int m_eventNumber;
+        std::string m_inputDirectory;
+        bool m_isSorted;
+        bool m_ts2IsGray;
+        int m_runNumber;
+        BlockFile* m_blockFile;
+        TelescopeFrame m_tf;
+
+        // Histograms
+        TH2F* hHitMap;
+        TH1F* hPixelToT;
+        TH1F* hTimeStamp;
     };
 
 } // namespace corryvreckan

@@ -17,6 +17,7 @@ Analysis module for CLICpix2 prototypes. This module is still work in progress, 
 * 2D Map of cluster sizes for associated clusters
 * 2D Map of cluster ToT values from associated clusters
 * 2D Map of associated hits
+* 2D Map of tracks not associated to a cluster
 * 2D Map of associated hits within the defined region-of-interest
 * Distribution of pixel ToT values from associated clusters
 * 2D Map of pixel ToT values from associated clusters
@@ -25,6 +26,7 @@ Analysis module for CLICpix2 prototypes. This module is still work in progress, 
 * Track residuals for 2-pixel-clusters in X and Y
 * Distribution of cluster Tot values from associated clusters
 * Distribution of sizes from associated clusters
+* Normalised distribution of sizes from associated clusters
 * 2D Map of in-pixel efficiency
 * 2D Map of the chip efficiency in local coordinates
 * 2D Map of the chip efficiency on global coordinates

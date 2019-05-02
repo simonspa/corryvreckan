@@ -13,8 +13,8 @@ Metronome::Metronome(Configuration config, std::vector<std::shared_ptr<Detector>
 void Metronome::initialise() {
 
     // Set initial values for the start and stop time of the first event:
-    m_eventStart = 0.0;
-    m_eventEnd = m_eventLength;
+    m_eventStart = m_config.get<double>("skip_time", 0.);
+    m_eventEnd = m_eventStart + m_eventLength;
 }
 
 StatusCode Metronome::run(std::shared_ptr<Clipboard> clipboard) {

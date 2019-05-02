@@ -37,6 +37,16 @@ void ClusteringSpatial::initialise() {
                                      400,
                                      -m_detector->size().Y() / 1.5,
                                      m_detector->size().Y() / 1.5);
+    title = m_detector->name() + " Cluster Position (Local);x [px];y [px];events";
+
+    clusterPositionLocal = new TH2F("clusterPositionLocal",
+                                    title.c_str(),
+                                    m_detector->nPixels().X(),
+                                    -m_detector->nPixels().X() / 2.,
+                                    m_detector->nPixels().X() / 2.,
+                                    m_detector->nPixels().Y(),
+                                    -m_detector->nPixels().Y() / 2.,
+                                    m_detector->nPixels().Y() / 2.);
 }
 
 StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
@@ -127,7 +137,8 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         clusterWidthColumn->Fill(cluster->columnWidth());
         clusterTot->Fill(cluster->tot() * 1e-3);
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
-
+        clusterPositionLocal->Fill(cluster->local().x(), cluster->local().y());
+        LOG(DEBUG) << "cluster local: " << cluster->local();
         deviceClusters->push_back(cluster);
     }
 
