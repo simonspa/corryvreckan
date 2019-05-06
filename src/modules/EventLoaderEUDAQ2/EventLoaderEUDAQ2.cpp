@@ -17,9 +17,36 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
 
     m_filename = m_config.getPath("file_name", true);
     m_skip_time = m_config.get("skip_time", 0.);
+    adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {});
 }
 
 void EventLoaderEUDAQ2::initialise() {
+
+    // Declare histograms
+    std::string title = "hitmap;column;row;# events";
+    hitmap = new TH2F("hitmap",
+                      title.c_str(),
+                      m_detector->nPixels().X(),
+                      0,
+                      m_detector->nPixels().X(),
+                      m_detector->nPixels().Y(),
+                      0,
+                      m_detector->nPixels().Y());
+
+    title = ";hit timestamp [ns]; # events";
+    hHitTimes = new TH1F("hitTimes", title.c_str(), 3e6, 0, 3e12);
+
+    title = "pixel raw values";
+    hPixelRawValues = new TH1F("hPixelRawValues", title.c_str(), 1024, 0, 1024);
+
+    title = "Pixel multiplicity per Corry frame;# pixels per event;# entries";
+    hPixelsPerEvent = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
+
+    title = ";EUDAQ event start time[ns];# entries";
+    hEudaqEventStart = new TH1D("eudaqEventStart", title.c_str(), 1e6, 0, 1e9);
+
+    title = "Corryvreckan event start times (on clipboard); Corryvreckan event start time [ns];# entries";
+    hClipboardEventStart = new TH1D("clipboardEventStart", title.c_str(), 1e6, 0, 1e9);
 
     // open the input file with the eudaq reader
     try {
@@ -28,6 +55,16 @@ void EventLoaderEUDAQ2::initialise() {
         LOG(ERROR) << "eudaq::FileReader could not read the input file ' " << m_filename
                    << " '. Please verify that the path and file name are correct.";
         throw InvalidValueError(m_config, "file_path", "Parsing error!");
+    }
+
+    // Check if all elements of adjust_event_times have a valid size of 3, if not throw error.
+    for(auto& shift_times : adjust_event_times) {
+        if(shift_times.size() != 3) {
+            throw InvalidValueError(
+                m_config,
+                "adjust_event_times",
+                "Parameter needs 3 values per row: [\"event type\", shift event start, shift event end]");
+        }
     }
 }
 
@@ -56,7 +93,10 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
                 return a->GetDescription() > b->GetDescription();
             });
         }
-        LOG(TRACE) << "Buffer contains " << events_.size() << " (sub-) events";
+        LOG(TRACE) << "Buffer contains " << events_.size() << " (sub-) events:";
+        for(int i = 0; i < static_cast<int>(events_.size()); i++) {
+            LOG(TRACE) << "  (sub-) event " << i << " is a " << events_[static_cast<long unsigned int>(i)]->GetDescription();
+        }
 
         auto event = events_.front();
         events_.erase(events_.begin());
@@ -75,7 +115,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
 
         // If there is no event defined yet or the trigger number is unkown, there is little we can do:
         if(!clipboard->event_defined() || !clipboard->get_event()->hasTriggerID(evt->GetTriggerN())) {
-            LOG(DEBUG) << "Trigger ID not found in current event.";
+            LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " not found in current event.";
             return EventPosition::UNKNOWN;
         }
 
@@ -89,6 +129,19 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
 
     double event_start = evt->GetTimeBegin();
     double event_end = evt->GetTimeEnd();
+
+    // If adjustment of event start/end is required:
+    const auto it = std::find_if(adjust_event_times.begin(),
+                                 adjust_event_times.end(),
+                                 [evt](const std::vector<std::string>& x) { return x.front() == evt->GetDescription(); });
+    if(it != adjust_event_times.end()) {
+        double shift_start = corryvreckan::from_string<double>(it->at(1));
+        double shift_end = corryvreckan::from_string<double>(it->at(2));
+        event_start += shift_start;
+        event_end += shift_end;
+        LOG(DEBUG) << "Adjusting " << it->at(0) << ": event_start by " << Units::display(shift_start, {"us", "ns"})
+                   << ", event_end by " << Units::display(event_end, {"us", "ns"});
+    }
 
     // Skip if later start is requested:
     if(event_start < m_skip_time) {
@@ -135,21 +188,31 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
         // Concatenate plane name according to naming convention: sensor_type + "_" + int
         auto plane_name = plane.Sensor() + "_" + std::to_string(i_plane);
         if(m_detector->name() != plane_name) {
+            LOG(DEBUG) << "Wrong plane: " << m_detector->name() << "!=" << plane_name << ". Continue.";
             continue;
         }
 
+        LOG(DEBUG) << "Found correct plane.";
         // Loop over all hits and add to pixels vector:
         for(unsigned int i = 0; i < plane.GetPixels<int>().size(); i++) {
             auto col = static_cast<int>(plane.GetX(i));
             auto row = static_cast<int>(plane.GetY(i));
+            auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
+            auto ts = plane.GetTimestamp(i);
+
+            LOG(DEBUG) << "Read pixel (col, row) = (" << col << ", " << row << " from EUDAQ2 event data (before masking).";
             if(m_detector->masked(col, row)) {
                 continue;
             }
 
-            Pixel* pixel =
-                new Pixel(m_detector->name(), col, row, static_cast<int>(plane.GetPixel(i)), plane.GetTimestamp(i));
+            Pixel* pixel = new Pixel(m_detector->name(), col, row, raw, ts);
+
+            hitmap->Fill(col, row);
+            hHitTimes->Fill(ts);
+            hPixelRawValues->Fill(raw);
             pixels->push_back(pixel);
         }
+        hPixelsPerEvent->Fill(static_cast<int>(pixels->size()));
     }
 
     if(!pixels->empty()) {
@@ -184,6 +247,12 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         // If this event was after the current event, stop reading:
         if(current_position == EventPosition::AFTER) {
             break;
+        }
+
+        // Do not fill if current_position == EventPosition::AFTER to avoid double-counting!
+        hEudaqEventStart->Fill(event_->GetTimeBegin());
+        if(clipboard->event_defined()) {
+            hClipboardEventStart->Fill(clipboard->get_event()->start());
         }
 
         // Reset this event to get a new one:

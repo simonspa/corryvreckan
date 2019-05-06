@@ -82,6 +82,7 @@ namespace corryvreckan {
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
         double m_skip_time{};
+        Matrix<std::string> adjust_event_times;
 
         // EUDAQ file reader instance to retrieve data from
         eudaq::FileReaderUP reader_;
@@ -89,6 +90,16 @@ namespace corryvreckan {
         std::vector<eudaq::EventSPC> events_;
         // Currently processed decoded EUDAQ StandardEvent:
         std::shared_ptr<eudaq::StandardEvent> event_;
+
+        // 2D histograms
+        TH2F* hitmap;
+
+        // 1D histograms
+        TH1F* hHitTimes;
+        TH1F* hPixelRawValues;
+        TH1F* hPixelsPerEvent;
+        TH1D* hEudaqEventStart;
+        TH1D* hClipboardEventStart;
     };
 
 } // namespace corryvreckan
