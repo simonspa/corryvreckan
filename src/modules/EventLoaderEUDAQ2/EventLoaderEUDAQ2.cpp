@@ -36,8 +36,8 @@ void EventLoaderEUDAQ2::initialise() {
     title = ";hit timestamp [ns]; # events";
     hHitTimes = new TH1F("hitTimes", title.c_str(), 3e6, 0, 3e12);
 
-    title = "pixel values (depending on chip functionality: pixelToT, ADC, ...);pixel values [a.u.];# events";
-    hPixelValues = new TH1F("hPixelValues", title.c_str(), 1024, 0, 1024);
+    title = "pixel raw values";
+    hPixelRawValues = new TH1F("hPixelRawValues", title.c_str(), 1024, 0, 1024);
 
     title = "Pixel multiplicity per frame;# pixels per frame;# frames";
     hPixelsPerFrame = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
