@@ -275,7 +275,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
                 }
             }
 
-            Pixel* pixel = new Pixel(m_detector->name(), row, col, tot, timestamp);
+            Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, timestamp);
 
             if(tot == 0 && discardZeroToT) {
                 hHitMapDiscarded->Fill(col, row);

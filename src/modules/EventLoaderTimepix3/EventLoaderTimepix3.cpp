@@ -199,6 +199,16 @@ void EventLoaderTimepix3::initialise() {
         LOG(INFO) << "No calibration file path or no DUT name given; data will be uncalibrated.";
         applyCalibration = false;
     }
+    // Make debugging plots
+    std::string title = m_detector->name() + " Hit map;x [px];y [px];pixels";
+    hHitMap = new TH2F("hitMap",
+                       title.c_str(),
+                       m_detector->nPixels().X(),
+                       0,
+                       m_detector->nPixels().X(),
+                       m_detector->nPixels().Y(),
+                       0,
+                       m_detector->nPixels().Y());
 }
 
 StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
@@ -603,16 +613,18 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard, Pixels*
                 LOG(DEBUG) << "Time shift= " << Units::display(t_shift, {"s", "ns"});
                 LOG(DEBUG) << "Timestamp calibrated = " << Units::display(ftimestamp, {"s", "ns"});
                 // creating new pixel object with calibrated values of tot and toa
-                Pixel* pixel = new Pixel(detectorID, row, col, static_cast<int>(tot), ftimestamp);
+                Pixel* pixel = new Pixel(detectorID, col, row, static_cast<int>(tot), ftimestamp);
                 pixel->setCharge(fcharge);
                 devicedata->push_back(pixel);
+                hHitMap->Fill(col, row);
                 LOG(DEBUG) << "Pixel Charge = " << fcharge << "; ToT value = " << tot;
                 pixelToT_aftercalibration->Fill(fcharge);
             } else {
                 LOG(DEBUG) << "Pixel hit at " << Units::display(timestamp, {"s", "ns"});
                 // creating new pixel object with non-calibrated values of tot and toa
-                Pixel* pixel = new Pixel(detectorID, row, col, static_cast<int>(tot), timestamp);
+                Pixel* pixel = new Pixel(detectorID, col, row, static_cast<int>(tot), timestamp);
                 devicedata->push_back(pixel);
+                hHitMap->Fill(col, row);
             }
 
             m_prevTime = time;

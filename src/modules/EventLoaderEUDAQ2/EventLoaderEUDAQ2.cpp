@@ -205,7 +205,7 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
                 continue;
             }
 
-            Pixel* pixel = new Pixel(m_detector->name(), row, col, raw, ts);
+            Pixel* pixel = new Pixel(m_detector->name(), col, row, raw, ts);
 
             hitmap->Fill(col, row);
             hHitTimes->Fill(ts);

@@ -38,7 +38,27 @@ namespace caribou {
      */
     class pixel {
     public:
-        pixel(){};
+        pixel() = default;
+        /**
+         * @brief Required virtual destructor
+         */
+        virtual ~pixel() = default;
+
+        /// @{
+        /**
+         * @brief Use default copy behaviour
+         */
+        pixel(const pixel&) = default;
+        pixel& operator=(const pixel&) = default;
+        /// @}
+
+        /// @{
+        /**
+         * @brief Use default move behaviour
+         */
+        pixel(pixel&&) = default;
+        pixel& operator=(pixel&&) = default;
+        /// @}
 
         /** Overloaded ostream operator for printing of pixel data
          */

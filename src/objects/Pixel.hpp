@@ -13,10 +13,10 @@ namespace corryvreckan {
     public:
         // Constructors and destructors
         Pixel() = default;
-        Pixel(std::string detectorID, int row, int col, int tot) : Pixel(detectorID, row, col, tot, 0.) {}
-        Pixel(std::string detectorID, int row, int col, int tot, double timestamp)
-            : Pixel(detectorID, row, col, tot, timestamp, false) {}
-        Pixel(std::string detectorID, int row, int col, int tot, double timestamp, bool binary)
+        Pixel(std::string detectorID, int col, int row, int tot) : Pixel(detectorID, col, row, tot, 0.) {}
+        Pixel(std::string detectorID, int col, int row, int tot, double timestamp)
+            : Pixel(detectorID, col, row, tot, timestamp, false) {}
+        Pixel(std::string detectorID, int col, int row, int tot, double timestamp, bool binary)
             : Object(detectorID, timestamp), m_row(row), m_column(col), m_adc(tot), m_charge(tot), m_isBinary(binary) {}
 
         int row() const { return m_row; }
@@ -40,7 +40,7 @@ namespace corryvreckan {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(Pixel, 5);
+        ClassDefOverride(Pixel, 6);
 
     private:
         // Member variables
