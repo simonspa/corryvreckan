@@ -208,7 +208,7 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
 
             hitmap->Fill(col, row);
             hHitTimes->Fill(ts);
-            hPixelValues->Fill(value);
+            hPixelRawValues->Fill(value);
             pixels->push_back(pixel);
         }
         hPixelsPerEvent->Fill(static_cast<int>(pixels->size()));
