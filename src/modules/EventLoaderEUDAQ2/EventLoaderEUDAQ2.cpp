@@ -195,7 +195,7 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
         for(unsigned int i = 0; i < plane.GetPixels<int>().size(); i++) {
             auto col = static_cast<int>(plane.GetX(i));
             auto row = static_cast<int>(plane.GetY(i));
-            auto value = static_cast<int>(plane.GetPixel(i)); // generic pixel value (could be ToT, ADC, ...)
+            auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
             auto ts = plane.GetTimestamp(i);
 
             LOG(DEBUG) << "col " << col << ", row " << row;
@@ -203,12 +203,11 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
                 continue;
             }
 
-            // Note: in many cases, the pixel value corresponds to the pixel ToT or ADC value:
-            Pixel* pixel = new Pixel(m_detector->name(), row, col, value, ts);
+            Pixel* pixel = new Pixel(m_detector->name(), row, col, raw, ts);
 
             hitmap->Fill(col, row);
             hHitTimes->Fill(ts);
-            hPixelRawValues->Fill(value);
+            hPixelRawValues->Fill(raw);
             pixels->push_back(pixel);
         }
         hPixelsPerEvent->Fill(static_cast<int>(pixels->size()));
