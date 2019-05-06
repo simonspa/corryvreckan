@@ -107,7 +107,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
         // If this pixel is masked, do not save it
         if(m_detector->masked(col, row))
             continue;
-        Pixel* pixel = new Pixel(m_detector->name(), row, col, tot, 0);
+        Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, 0);
         pixels->push_back(pixel);
         npixels++;
         hHitMap->Fill(col, row);
