@@ -188,9 +188,11 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
         // Concatenate plane name according to naming convention: sensor_type + "_" + int
         auto plane_name = plane.Sensor() + "_" + std::to_string(i_plane);
         if(m_detector->name() != plane_name) {
+            LOG(DEBUG) << "Wrong plane: " << m_detector->name() << "!=" << plane_name << ". Continue.";
             continue;
         }
 
+        LOG(DEBUG) << "Found correct plane.";
         // Loop over all hits and add to pixels vector:
         for(unsigned int i = 0; i < plane.GetPixels<int>().size(); i++) {
             auto col = static_cast<int>(plane.GetX(i));
@@ -198,7 +200,7 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
             auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
             auto ts = plane.GetTimestamp(i);
 
-            LOG(DEBUG) << "col " << col << ", row " << row;
+            LOG(DEBUG) << "Read pixel (col, row) = (" << col << ", " << row << " from EUDAQ2 event data (before masking).";
             if(m_detector->masked(col, row)) {
                 continue;
             }
