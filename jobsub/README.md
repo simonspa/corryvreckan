@@ -112,9 +112,9 @@ This switch can be specified several times for multiple options or can parse a c
 
 #### Table (comma-separated text file)
 - format: e.g.
- - export from Open/LibreOffice with default settings (UTF-8,comma-separated, text-field delimiter: ")
- - emacs org-mode table (see http://orgmode.org/manual/Tables.html)
- - use Atom's *tablr* extension
+   - export from Open/LibreOffice with default settings (UTF-8,comma-separated, text-field delimiter: ")
+   - emacs org-mode table (see http://orgmode.org/manual/Tables.html)
+   - use Atom's *tablr* extension
 - commented lines (starting with #) are ignored
 - first row (after comments) has to provide column headers which identify the variables in the steering template to replace (case-insensitive)
 - requires one column labeled "RunNumber"
