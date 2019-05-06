@@ -39,8 +39,8 @@ void EventLoaderEUDAQ2::initialise() {
     title = "pixel raw values";
     hPixelRawValues = new TH1F("hPixelRawValues", title.c_str(), 1024, 0, 1024);
 
-    title = "Pixel multiplicity per frame;# pixels per frame;# frames";
-    hPixelsPerFrame = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
+    title = "Pixel multiplicity per Corry frame;# pixels per event;# entries";
+    hPixelsPerEvent = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
 
     title = ";EUDAQ event start time[ns];# entries";
     hEudaqEventStart = new TH1D("eudaqEventStart", title.c_str(), 1e6, 0, 1e9);
@@ -211,7 +211,7 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
             hPixelValues->Fill(value);
             pixels->push_back(pixel);
         }
-        hPixelsPerFrame->Fill(static_cast<int>(pixels->size()));
+        hPixelsPerEvent->Fill(static_cast<int>(pixels->size()));
     }
 
     if(!pixels->empty()) {
