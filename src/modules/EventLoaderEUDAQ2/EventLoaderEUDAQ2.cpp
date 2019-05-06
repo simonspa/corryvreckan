@@ -65,7 +65,7 @@ void EventLoaderEUDAQ2::initialise() {
                 "adjust_event_times",
                 "Parameter needs 3 values per row: [\"event type\", shift event start, shift event end]");
         }
-    } // end for
+    }
 }
 
 std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
@@ -141,7 +141,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
         event_end += shift_end;
         LOG(DEBUG) << "Adjusting " << (*it).at(0) << ": event_start by " << Units::display(shift_start, {"us", "ns"})
                    << ", event_end by " << Units::display(event_end, {"us", "ns"});
-    } // end if
+    }
 
     // Skip if later start is requested:
     if(event_start < m_skip_time) {
