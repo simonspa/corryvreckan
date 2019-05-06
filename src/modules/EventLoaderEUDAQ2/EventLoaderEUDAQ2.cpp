@@ -135,11 +135,11 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
                                  adjust_event_times.end(),
                                  [evt](const std::vector<std::string>& x) { return x.front() == evt->GetDescription(); });
     if(it != adjust_event_times.end()) {
-        double shift_start = corryvreckan::from_string<double>((*it).at(1));
-        double shift_end = corryvreckan::from_string<double>((*it).at(2));
+        double shift_start = corryvreckan::from_string<double>(it->at(1));
+        double shift_end = corryvreckan::from_string<double>(it->at(2));
         event_start += shift_start;
         event_end += shift_end;
-        LOG(DEBUG) << "Adjusting " << (*it).at(0) << ": event_start by " << Units::display(shift_start, {"us", "ns"})
+        LOG(DEBUG) << "Adjusting " << it->at(0) << ": event_start by " << Units::display(shift_start, {"us", "ns"})
                    << ", event_end by " << Units::display(event_end, {"us", "ns"});
     }
 
