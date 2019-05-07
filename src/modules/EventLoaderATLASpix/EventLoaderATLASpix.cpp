@@ -175,7 +175,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     for(auto px : (*pixels)) {
         hHitMap->Fill(px->column(), px->row());
-        hPixelToT->Fill(px->tot());
+        hPixelToT->Fill(px->raw());
         hPixelToTCal->Fill(px->charge());
         hPixelToA->Fill(px->timestamp());
 
