@@ -28,7 +28,7 @@ namespace corryvreckan {
 
         // Histograms
         TH2F *hClusterMapAssoc, *hHitMapAssoc, *hHitMapROI;
-        TProfile2D* hClusterSizeMapAssoc;
+        TProfile2D *hClusterSizeMapAssoc, *hClusterChargeMapAssoc;
 
         TH1F* hPixelRawValueAssoc;
         TProfile2D* hPixelRawValueMapAssoc;

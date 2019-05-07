@@ -34,6 +34,16 @@ void AnalysisDUT::initialise() {
                                           m_detector->nPixels().Y(),
                                           0,
                                           100);
+    hClusterChargeMapAssoc = new TProfile2D("clusterChargeMapAssoc",
+                                            "clusterSizeChargeAssoc",
+                                            m_detector->nPixels().X(),
+                                            0,
+                                            m_detector->nPixels().X(),
+                                            m_detector->nPixels().Y(),
+                                            0,
+                                            m_detector->nPixels().Y(),
+                                            0,
+                                            500);
 
     // Per-pixel histograms
     hHitMapAssoc = new TH2F("hitMapAssoc",
@@ -301,6 +311,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
                 // clusterChargeAssoc->Fill(normalized_charge);
                 clusterChargeAssoc->Fill(cluster->charge());
+                hClusterChargeMapAssoc->Fill(
+                    m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), cluster->size());
 
                 // Fill per-pixel histograms
                 for(auto& pixel : (*cluster->pixels())) {
