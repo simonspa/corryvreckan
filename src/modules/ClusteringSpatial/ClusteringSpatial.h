@@ -31,7 +31,7 @@ namespace corryvreckan {
         TH1F* clusterSize;
         TH1F* clusterWidthRow;
         TH1F* clusterWidthColumn;
-        TH1F* clusterTot;
+        TH1F* clusterCharge;
         TH2F* clusterPositionGlobal;
     };
 } // namespace corryvreckan
