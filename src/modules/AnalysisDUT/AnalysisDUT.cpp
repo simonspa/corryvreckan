@@ -35,17 +35,6 @@ void AnalysisDUT::initialise() {
                                           0,
                                           100);
 
-    hClusterToTMapAssoc = new TProfile2D("clusterSizeToTAssoc",
-                                         "clusterToTMapAssoc",
-                                         m_detector->nPixels().X(),
-                                         0,
-                                         m_detector->nPixels().X(),
-                                         m_detector->nPixels().Y(),
-                                         0,
-                                         m_detector->nPixels().Y(),
-                                         0,
-                                         1000);
-
     // Per-pixel histograms
     hHitMapAssoc = new TH2F("hitMapAssoc",
                             "hitMapAssoc",
@@ -63,17 +52,17 @@ void AnalysisDUT::initialise() {
                           m_detector->nPixels().Y(),
                           0,
                           m_detector->nPixels().Y());
-    hPixelToTAssoc = new TH1F("pixelToTAssoc", "pixelToTAssoc", 32, 0, 31);
-    hPixelToTMapAssoc = new TProfile2D("pixelToTMapAssoc",
-                                       "pixelToTMapAssoc",
-                                       m_detector->nPixels().X(),
-                                       0,
-                                       m_detector->nPixels().X(),
-                                       m_detector->nPixels().Y(),
-                                       0,
-                                       m_detector->nPixels().Y(),
-                                       0,
-                                       255);
+    hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc", "pixelRawValueAssoc", 32, 0, 31);
+    hPixelRawValueMapAssoc = new TProfile2D("pixelRawValueMapAssoc",
+                                            "pixelRawValueMapAssoc",
+                                            m_detector->nPixels().X(),
+                                            0,
+                                            m_detector->nPixels().X(),
+                                            m_detector->nPixels().Y(),
+                                            0,
+                                            m_detector->nPixels().Y(),
+                                            0,
+                                            255);
 
     associatedTracksVersusTime = new TH1F("associatedTracksVersusTime", "associatedTracksVersusTime", 300000, 0, 300);
     residualsX = new TH1F("residualsX", "residualsX", 800, -0.1, 0.1);
@@ -84,8 +73,7 @@ void AnalysisDUT::initialise() {
     residualsX2pix = new TH1F("residualsX2pix", "residualsX2pix", 400, -0.2, 0.2);
     residualsY2pix = new TH1F("residualsY2pix", "residualsY2pix", 400, -0.2, 0.2);
 
-    clusterTotAssoc = new TH1F("clusterTotAssociated", "clusterTotAssociated", 10000, 0, 10000);
-    clusterTotAssocNorm = new TH1F("clusterTotAssociatedNormalized", "clusterTotAssociatedNormalized", 10000, 0, 10000);
+    clusterChargeAssoc = new TH1F("clusterChargeAssociated", "clusterChargeAssociated", 10000, 0, 10000);
     clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
     clusterSizeAssocNorm = new TH1F("clusterSizeAssociatedNormalized", "clusterSizeAssociatedNormalized", 30, 0, 30);
 
@@ -296,15 +284,14 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 hClusterSizeMapAssoc->Fill(m_detector->getColumn(clusterLocal),
                                            m_detector->getRow(clusterLocal),
                                            static_cast<double>(cluster->size()));
-                hClusterToTMapAssoc->Fill(
-                    m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), cluster->tot());
-
-                clusterTotAssoc->Fill(cluster->tot());
 
                 // Cluster charge normalized to path length in sensor:
                 double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
-                auto normalized_charge = cluster->tot() * norm;
-                clusterTotAssocNorm->Fill(normalized_charge);
+                // FIXME: what does this mean? To my understanding we have the correct charge here already...
+                auto normalized_charge = cluster->charge() * norm;
+
+                // clusterChargeAssoc->Fill(normalized_charge);
+                clusterChargeAssoc->Fill(cluster->charge());
 
                 // Fill per-pixel histograms
                 for(auto& pixel : (*cluster->pixels())) {
@@ -312,8 +299,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                     if(is_within_roi) {
                         hHitMapROI->Fill(pixel->column(), pixel->row());
                     }
-                    hPixelToTAssoc->Fill(pixel->tot());
-                    hPixelToTMapAssoc->Fill(pixel->column(), pixel->row(), pixel->tot());
+                    hPixelRawValueAssoc->Fill(pixel->raw());
+                    hPixelRawValueMapAssoc->Fill(pixel->column(), pixel->row(), pixel->raw());
                 }
 
                 associatedTracksVersusTime->Fill(static_cast<double>(Units::convert(track->timestamp(), "s")));
@@ -334,14 +321,14 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 // Time residuals
                 residualsTime->Fill(tdistance);
                 residualsTimeVsTime->Fill(tdistance, track->timestamp());
-                residualsTimeVsSignal->Fill(tdistance, cluster->tot());
+                residualsTimeVsSignal->Fill(tdistance, cluster->charge());
 
                 clusterSizeAssoc->Fill(static_cast<double>(cluster->size()));
                 clusterSizeAssocNorm->Fill(static_cast<double>(cluster->size()));
 
                 // Fill in-pixel plots: (all as function of track position within pixel cell)
                 if(is_within_roi) {
-                    qvsxmym->Fill(xmod, ymod, cluster->tot());                     // cluster charge profile
+                    qvsxmym->Fill(xmod, ymod, cluster->charge());                  // cluster charge profile
                     qMoyalvsxmym->Fill(xmod, ymod, exp(-normalized_charge / 3.5)); // norm. cluster charge profile
 
                     // mean charge of cluster seed
