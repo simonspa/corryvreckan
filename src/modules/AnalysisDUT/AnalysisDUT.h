@@ -28,10 +28,10 @@ namespace corryvreckan {
 
         // Histograms
         TH2F *hClusterMapAssoc, *hHitMapAssoc, *hHitMapROI;
-        TProfile2D *hClusterSizeMapAssoc, *hClusterToTMapAssoc;
+        TProfile2D* hClusterSizeMapAssoc;
 
-        TH1F* hPixelToTAssoc;
-        TProfile2D* hPixelToTMapAssoc;
+        TH1F* hPixelRawValueAssoc;
+        TProfile2D* hPixelRawValueMapAssoc;
 
         TH1F* associatedTracksVersusTime;
         TH1F *residualsX, *residualsY;
@@ -39,7 +39,7 @@ namespace corryvreckan {
         TH1F *residualsX1pix, *residualsY1pix;
         TH1F *residualsX2pix, *residualsY2pix;
 
-        TH1F *clusterTotAssoc, *clusterTotAssocNorm;
+        TH1F* clusterChargeAssoc;
         TH1F* clusterSizeAssoc;
         TH1F* clusterSizeAssocNorm;
 
