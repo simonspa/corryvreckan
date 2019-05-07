@@ -36,7 +36,7 @@ namespace corryvreckan {
         TH1F* hRowHits;
 
         TH1F* hClusterSizeAll;
-        TH1F* hClusterTOTAll;
+        TH1F* hClusterChargeAll;
         TH1F* hClustersPerEvent;
         TH1F* hClustersVersusEventNo;
         TH1F* hClusterWidthRow;
@@ -71,11 +71,11 @@ namespace corryvreckan {
         TH1F* hClusterSizeAssociated;
         TH1F* hClusterWidthRowAssociated;
         TH1F* hClusterWidthColAssociated;
-        TH1F* hClusterTOTAssociated;
-        TH1F* hClusterTOTAssociated1pix;
-        TH1F* hClusterTOTAssociated2pix;
-        TH1F* hClusterTOTAssociated3pix;
-        TH1F* hClusterTOTAssociated4pix;
+        TH1F* hClusterChargeAssociated;
+        TH1F* hClusterChargeAssociated1pix;
+        TH1F* hClusterChargeAssociated2pix;
+        TH1F* hClusterChargeAssociated3pix;
+        TH1F* hClusterChargeAssociated4pix;
         TH1F* hPixelResponseX;
         TH1F* hPixelResponseGlobalX;
         TH1F* hPixelResponseXOddCol;
@@ -88,12 +88,12 @@ namespace corryvreckan {
         TH2F* hEtaDistributionY;
         TH1F* hResidualsLocalRow2pix;
         TH1F* hResidualsLocalCol2pix;
-        TH1F* hClusterTOTRow2pix;
-        TH1F* hClusterTOTCol2pix;
+        TH1F* hClusterChargeRow2pix;
+        TH1F* hClusterChargeCol2pix;
         TH1F* hPixelTOTRow2pix;
         TH1F* hPixelTOTCol2pix;
-        TH1F* hClusterTOTRatioRow2pix;
-        TH1F* hClusterTOTRatioCol2pix;
+        TH1F* hClusterChargeRatioRow2pix;
+        TH1F* hClusterChargeRatioCol2pix;
 
         // Maps
         TH2F* hTrackIntercepts;
@@ -118,7 +118,7 @@ namespace corryvreckan {
         TH2F* hMapClusterSizeAssociated;
         int m_nBinsX;
         int m_nBinsY;
-        std::map<int, TH1F*> hMapClusterTOTAssociated1pix;
+        std::map<int, TH1F*> hMapClusterChargeAssociated1pix;
 
         // Member variables
         int m_eventNumber;
