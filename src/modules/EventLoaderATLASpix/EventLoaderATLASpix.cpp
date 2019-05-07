@@ -322,6 +322,14 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
                        << "\tTOT: " << tot; // << "\t" << Units::display(tot_ns, {"s", "us", "ns"});
 
             Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, timestamp);
+
+            // FIXME: implement more elegant conversion from ToT to charge:
+            // Conversion by Mathieu Benoit (e-mail to Jens on 2018-11-29)
+            // thres-->e: 1620e/0.15V, or 1080e/100mV
+            // How to get from ToT to charge?
+            double charge = tot;
+
+            pixel->setCharge(charge);
             LOG(DEBUG) << "PIXEL:\t" << *pixel;
             pixels->push_back(pixel);
 
