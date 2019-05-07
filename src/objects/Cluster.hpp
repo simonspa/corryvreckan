@@ -27,10 +27,9 @@ namespace corryvreckan {
         void addPixel(Pixel* pixel);
 
         // Retrieve cluster parameters
-        // FIXME these should be renamed seed_row and seed_column!
-        double row() const { return m_row; }
         double column() const { return m_column; }
-        double tot() const { return m_tot; }
+        double row() const { return m_row; }
+        double charge() const { return m_charge; }
         double error() const;
         double errorX() const { return m_error.X(); }
         double errorY() const { return m_error.Y(); }
@@ -50,9 +49,9 @@ namespace corryvreckan {
         Pixel* getSeedPixel();
 
         // Set cluster parameters
-        void setRow(double row) { m_row = row; }
         void setColumn(double col) { m_column = col; }
-        void setTot(double tot) { m_tot = tot; }
+        void setRow(double row) { m_row = row; }
+        void setCharge(double charge) { m_charge = charge; }
         void setClusterCentre(ROOT::Math::XYZPoint global) { m_global = global; }
         void setClusterCentreLocal(ROOT::Math::XYZPoint local) { m_local = local; }
         void setErrorX(double error) { m_error.SetX(error); }
@@ -62,9 +61,9 @@ namespace corryvreckan {
     private:
         // Member variables
         Pixels m_pixels;
-        double m_row;
         double m_column;
-        double m_tot;
+        double m_row;
+        double m_charge; // detector specific: ToT, ADC, ...
         ROOT::Math::XYVector m_error;
         double m_columnWidth;
         double m_rowWidth;
@@ -77,7 +76,7 @@ namespace corryvreckan {
         std::map<int, bool> m_columnHits;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Cluster, 9)
+        ClassDef(Cluster, 10)
     };
 
     // Vector type declaration
