@@ -409,7 +409,7 @@ StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
           // Get the pixel global position
           LOG(TRACE) <<"New pixel, row = "<<(*itPixel)->row()<<", column = "<<(*itPixel)->column();
           PositionVector3D<Cartesian3D<double> > pixelPositionLocal =
-      m_detector->getLocalPosition((*itPixel)->row(),(*itPixel)->column()); PositionVector3D<Cartesian3D<double> >
+      m_detector->getLocalPosition((*itPixel)->column(),(*itPixel)->row()); PositionVector3D<Cartesian3D<double> >
       pixelPositionGlobal = *(m_detector->m_localToGlobal) * pixelPositionLocal;
 
           // Check if it is close to the track
@@ -586,7 +586,7 @@ void AnalysisCLICpix::fillResponseHistos(double trackInterceptX, double trackInt
         Pixel* pixel = (*itp);
         // Get the pixel local then global position
         PositionVector3D<Cartesian3D<double>> pixelPositionLocal =
-            m_detector->getLocalPosition(pixel->row(), pixel->column());
+            m_detector->getLocalPosition(pixel->column(), pixel->row());
         PositionVector3D<Cartesian3D<double>> pixelPositionGlobal = m_detector->localToGlobal(pixelPositionLocal);
 
         // Fill the response histograms

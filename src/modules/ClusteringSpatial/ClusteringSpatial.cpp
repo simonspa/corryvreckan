@@ -37,6 +37,16 @@ void ClusteringSpatial::initialise() {
                                      400,
                                      -m_detector->size().Y() / 1.5,
                                      m_detector->size().Y() / 1.5);
+    title = m_detector->name() + " Cluster Position (Local);x [px];y [px];events";
+
+    clusterPositionLocal = new TH2F("clusterPositionLocal",
+                                    title.c_str(),
+                                    m_detector->nPixels().X(),
+                                    -m_detector->nPixels().X() / 2.,
+                                    m_detector->nPixels().X() / 2.,
+                                    m_detector->nPixels().Y(),
+                                    -m_detector->nPixels().Y() / 2.,
+                                    m_detector->nPixels().Y() / 2.);
 }
 
 StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
@@ -60,7 +70,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Pre-fill the hitmap with pixels
     for(auto pixel : (*pixels)) {
-        hitmap[pixel->row()][pixel->column()] = pixel;
+        hitmap[pixel->column()][pixel->row()] = pixel;
     }
 
     for(auto pixel : (*pixels)) {
@@ -94,18 +104,18 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
                     }
 
                     // If no pixel in this position, or is already in a cluster, do nothing
-                    if(!hitmap[row][col]) {
+                    if(!hitmap[col][row]) {
                         continue;
                     }
-                    if(used[hitmap[row][col]]) {
+                    if(used[hitmap[col][row]]) {
                         continue;
                     }
 
                     // Otherwise add the pixel to the cluster and store it as a found
                     // neighbour
-                    cluster->addPixel(hitmap[row][col]);
-                    used[hitmap[row][col]] = true;
-                    neighbours.push_back(hitmap[row][col]);
+                    cluster->addPixel(hitmap[col][row]);
+                    used[hitmap[col][row]] = true;
+                    neighbours.push_back(hitmap[col][row]);
                 }
             }
 
@@ -127,7 +137,8 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         clusterWidthColumn->Fill(cluster->columnWidth());
         clusterCharge->Fill(cluster->charge() * 1e-3); // what's the reason for the 1e-3 here???
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
-
+        clusterPositionLocal->Fill(cluster->local().x(), cluster->local().y());
+        LOG(DEBUG) << "cluster local: " << cluster->local();
         deviceClusters->push_back(cluster);
     }
 
@@ -156,6 +167,7 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
 
     // Loop over all pixels
     for(auto& pixel : (*pixels)) {
+<<<<<<< HEAD
         double pixelCharge = pixel->charge();
 
         if(pixel->isBinary()) {
@@ -172,6 +184,11 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
         column += (pixel->column() * pixelCharge);
         row += (pixel->row() * pixelCharge);
 
+=======
+        tot += pixel->adc();
+        row += (pixel->row() * pixel->adc());
+        column += (pixel->column() * pixel->adc());
+>>>>>>> master
         LOG(DEBUG) << "- pixel col, row: " << pixel->column() << "," << pixel->row();
     }
 
@@ -179,7 +196,7 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
     row /= charge;
     column /= charge;
 
-    LOG(DEBUG) << "- cluster row, col: " << row << "," << column;
+    LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
 
     // Create object with local cluster position
     PositionVector3D<Cartesian3D<double>> positionLocal(m_detector->pitch().X() * (column - m_detector->nPixels().X() / 2.),

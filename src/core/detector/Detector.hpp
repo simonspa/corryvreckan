@@ -203,8 +203,8 @@ namespace corryvreckan {
         double getRow(PositionVector3D<Cartesian3D<double>> localPosition) const;
         double getColumn(PositionVector3D<Cartesian3D<double>> localPosition) const;
 
-        // Function to get local position from row and column
-        PositionVector3D<Cartesian3D<double>> getLocalPosition(double row, double column) const;
+        // Function to get local position from column (x) and row (y) coordinates
+        PositionVector3D<Cartesian3D<double>> getLocalPosition(double column, double row) const;
 
         /**
          * Transformation from local (sensor) coordinates to in-pixel coordinates

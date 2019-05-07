@@ -45,7 +45,7 @@ namespace corryvreckan {
         TProfile2D* hChipEfficiencyMap_clustPos;
         TProfile2D* hGlobalEfficiencyMap_clustPos;
 
-        double m_chi2ndofCut, m_timeCutFrameEdge;
+        double m_chi2ndofCut, m_timeCutFrameEdge, m_pixelTolerance, m_inpixelBinSize;
         int total_tracks, matched_tracks;
     };
 
