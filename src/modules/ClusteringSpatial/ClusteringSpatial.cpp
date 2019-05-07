@@ -135,7 +135,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         clusterSize->Fill(static_cast<double>(cluster->size()));
         clusterWidthRow->Fill(cluster->rowWidth());
         clusterWidthColumn->Fill(cluster->columnWidth());
-        clusterCharge->Fill(cluster->charge() * 1e-3); // what's the reason for the 1e-3 here???
+        clusterCharge->Fill(cluster->charge() * 1e-3); //  1e-3 because unit is [ke]
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
         clusterPositionLocal->Fill(cluster->local().x(), cluster->local().y());
         LOG(DEBUG) << "cluster local: " << cluster->local();

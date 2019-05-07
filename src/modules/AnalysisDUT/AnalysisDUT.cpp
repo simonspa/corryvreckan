@@ -17,7 +17,7 @@ AnalysisDUT::AnalysisDUT(Configuration config, std::shared_ptr<Detector> detecto
 void AnalysisDUT::initialise() {
 
     hClusterMapAssoc = new TH2F("clusterMapAssoc",
-                                "clusterMapAssoc",
+                                "clusterMapAssoc; cluster col; cluster row",
                                 m_detector->nPixels().X(),
                                 0,
                                 m_detector->nPixels().X(),
@@ -25,7 +25,7 @@ void AnalysisDUT::initialise() {
                                 0,
                                 m_detector->nPixels().Y());
     hClusterSizeMapAssoc = new TProfile2D("clusterSizeMapAssoc",
-                                          "clusterSizeMapAssoc",
+                                          "clusterSizeMapAssoc; cluster size; #entries",
                                           m_detector->nPixels().X(),
                                           0,
                                           m_detector->nPixels().X(),
@@ -35,7 +35,7 @@ void AnalysisDUT::initialise() {
                                           0,
                                           100);
     hClusterChargeMapAssoc = new TProfile2D("clusterChargeMapAssoc",
-                                            "clusterSizeChargeAssoc",
+                                            "clusterSizeChargeAssoc; cluster charge [e]; #entries",
                                             m_detector->nPixels().X(),
                                             0,
                                             m_detector->nPixels().X(),
@@ -47,7 +47,7 @@ void AnalysisDUT::initialise() {
 
     // Per-pixel histograms
     hHitMapAssoc = new TH2F("hitMapAssoc",
-                            "hitMapAssoc",
+                            "hitMapAssoc; hit column; hit row",
                             m_detector->nPixels().X(),
                             0,
                             m_detector->nPixels().X(),
@@ -55,7 +55,7 @@ void AnalysisDUT::initialise() {
                             0,
                             m_detector->nPixels().Y());
     hHitMapROI = new TH2F("hitMapROI",
-                          "hitMapROI",
+                          "hitMapROI; hit column; hit row",
                           m_detector->nPixels().X(),
                           0,
                           m_detector->nPixels().X(),
@@ -83,7 +83,7 @@ void AnalysisDUT::initialise() {
     residualsX2pix = new TH1F("residualsX2pix", "residualsX2pix", 400, -0.2, 0.2);
     residualsY2pix = new TH1F("residualsY2pix", "residualsY2pix", 400, -0.2, 0.2);
 
-    clusterChargeAssoc = new TH1F("clusterChargeAssociated", "clusterChargeAssociated", 10000, 0, 10000);
+    clusterChargeAssoc = new TH1F("clusterChargeAssociated", "clusterChargeAssociated [e]", 10000, 0, 10000);
     clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
     clusterSizeAssocNorm = new TH1F("clusterSizeAssociatedNormalized", "clusterSizeAssociatedNormalized", 30, 0, 30);
 
@@ -312,7 +312,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 // clusterChargeAssoc->Fill(normalized_charge);
                 clusterChargeAssoc->Fill(cluster->charge());
                 hClusterChargeMapAssoc->Fill(
-                    m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), cluster->size());
+                    m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), cluster->charge());
 
                 // Fill per-pixel histograms
                 for(auto& pixel : (*cluster->pixels())) {
