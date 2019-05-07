@@ -72,7 +72,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
         cluster->addPixel(pixel);
         double clusterTime = pixel->timestamp();
         used[pixel] = true;
-        LOG(DEBUG) << "Adding pixel: " << pixel->row() << "," << pixel->column();
+        LOG(DEBUG) << "Adding pixel: " << pixel->column() << "," << pixel->row();
         size_t nPixels = 0;
         while(cluster->size() != nPixels) {
 
@@ -99,7 +99,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
                 cluster->addPixel(neighbour);
                 clusterTime = neighbour->timestamp();
                 used[neighbour] = true;
-                LOG(DEBUG) << "Adding pixel: " << neighbour->row() << "," << neighbour->column() << " time "
+                LOG(DEBUG) << "Adding pixel: " << neighbour->column() << "," << neighbour->row() << " time "
                            << Units::display(neighbour->timestamp(), {"ns", "us", "s"});
             }
         }

@@ -322,7 +322,7 @@ double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosi
 }
 
 // Function to get local position from row and column
-PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double row, double column) const {
+PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double column, double row) const {
 
     return PositionVector3D<Cartesian3D<double>>(
         m_pitch.X() * (column - m_nPixels.X() / 2.), m_pitch.Y() * (row - m_nPixels.Y() / 2.), 0.);
