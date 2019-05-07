@@ -15,13 +15,13 @@ namespace corryvreckan {
         Pixel() = default;
 
         // constructors for binary pixels (no charge equivalent value)
-        Pixel(std::string detectorID, int col, int row) : Pixel(detectorID, row, col, 0.) { m_isBinary = true; }
-        Pixel(std::string detectorID, int col, int row, double timestamp) : Pixel(detectorID, row, col, 0, timestamp) {
+        Pixel(std::string detectorID, int col, int row) : Pixel(detectorID, col, row, 0.) { m_isBinary = true; }
+        Pixel(std::string detectorID, int col, int row, double timestamp) : Pixel(detectorID, col, row, 0, timestamp) {
             m_isBinary = true;
         }
 
         // constructors for pixels with tot or other charge equivalent value
-        Pixel(std::string detectorID, int col, int row, int raw) : Pixel(detectorID, row, col, raw, 0.) {
+        Pixel(std::string detectorID, int col, int row, int raw) : Pixel(detectorID, col, row, raw, 0.) {
             m_isBinary = false;
         }
         Pixel(std::string detectorID, int col, int row, int raw, double timestamp)
@@ -54,16 +54,12 @@ namespace corryvreckan {
         /**
          * @brief ROOT class definition
          */
-<<<<<<< HEAD
         ClassDefOverride(Pixel, 7);
-=======
-        ClassDefOverride(Pixel, 6);
->>>>>>> master
 
     private:
         // Member variables
-        int m_row;
         int m_column;
+        int m_row;
         int m_raw;
         double m_charge;
         bool m_isBinary;

@@ -167,7 +167,6 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
 
     // Loop over all pixels
     for(auto& pixel : (*pixels)) {
-<<<<<<< HEAD
         double pixelCharge = pixel->charge();
 
         if(pixel->isBinary()) {
@@ -184,11 +183,6 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
         column += (pixel->column() * pixelCharge);
         row += (pixel->row() * pixelCharge);
 
-=======
-        tot += pixel->adc();
-        row += (pixel->row() * pixel->adc());
-        column += (pixel->column() * pixel->adc());
->>>>>>> master
         LOG(DEBUG) << "- pixel col, row: " << pixel->column() << "," << pixel->row();
     }
 
