@@ -19,31 +19,33 @@ namespace corryvreckan {
         Pixel(std::string detectorID, int col, int row, double timestamp) : Pixel(detectorID, col, row, 0, timestamp) {
             m_isBinary = true;
         }
+        // I couldn't figure out how to do it like:
+        // Pixel(std::string detectorID, int col, int row, double timestamp) : Pixel(detectorID, col, row, 0, timestamp),
+        // m_isBinary(true) {}
 
-        // constructors for pixels with tot or other charge equivalent value
-        Pixel(std::string detectorID, int col, int row, int raw) : Pixel(detectorID, col, row, raw, 0.) {
-            m_isBinary = false;
-        }
+        // constructors for pixels with ToT or other charge equivalent value
+        Pixel(std::string detectorID, int col, int row, int raw) : Pixel(detectorID, col, row, raw, 0.) {}
         Pixel(std::string detectorID, int col, int row, int raw, double timestamp)
-            : Object(detectorID, timestamp), m_column(col), m_row(row), m_raw(raw), m_charge(raw) {
-            // FIXME: I don't like that m_charge(raw) is used here...
-            m_isBinary = false;
-        }
+            : Object(detectorID, timestamp), m_column(col), m_row(row), m_raw(raw), m_charge(raw), m_isBinary(false),
+              m_isCalibrated(false) {}
+        // NOTE: m_charge is also initialised with raw, i.e. the uncalibrated value of the charge equivalent measurement
 
         int row() const { return m_row; }
         int column() const { return m_column; }
         std::pair<int, int> coordinates() { return std::make_pair(m_column, m_row); }
 
         // raw is a generic charge equivalent pixel value which can be ToT, ADC, ..., depending on the detector
-        // if isBinary==true, the value will always be 0 and shouldn't be used for anything
+        // if isBinary==true, the value will always be 1 and shouldn't be used for anything
         int raw() const { return m_raw; }
 
         double charge() const { return m_charge; }
         bool isBinary() const { return m_isBinary; }
+        bool isCalibrated() const { return m_isCalibrated; }
 
         void setCharge(double charge) { m_charge = charge; }
         void setRaw(int raw) { m_raw = raw; }
-        void setBinary(bool binary) { m_isBinary = binary; }
+        // void setBinary(bool binary) { m_isBinary = binary; } // cannot be changed later!
+        void setCalibrated(bool calibrated) { m_isCalibrated = calibrated; }
 
         /**
          * @brief Print an ASCII representation of Pixel to the given stream
@@ -58,11 +60,13 @@ namespace corryvreckan {
 
     private:
         // Member variables
+        // shouldn't these be const: m_column, m_row, m_raw, m_isBinary???
         int m_column;
         int m_row;
         int m_raw;
         double m_charge;
         bool m_isBinary;
+        bool m_isCalibrated; // when false: charge = raw
     };
 
     // Vector type declaration
