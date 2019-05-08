@@ -26,7 +26,7 @@ namespace corryvreckan {
          * @param charge Pixel charge, initialised to 0
          * @param timestamp Pixel timestamp, initialised to 0
          */
-        Pixel(std::string detectorID, int col, int row, int raw, double charge = 0., double timestamp = 0.)
+        Pixel(std::string detectorID, int col, int row, int raw = 1, double charge = 1., double timestamp = 0.)
             : Object(detectorID, timestamp), m_column(col), m_row(row), m_raw(raw), m_charge(charge) {}
 
         // Methods to get member variables:
