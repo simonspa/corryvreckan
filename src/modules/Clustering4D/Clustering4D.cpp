@@ -177,12 +177,9 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
     for(auto& pixel : (*pixels)) {
         double pixelCharge = pixel->charge();
 
-        if(pixel->isBinary()) {
-            LOG(DEBUG) << "Pixel is binary. Setting charge = 1.";
-            pixelCharge = 1;
-        }
-
-        if(pixelCharge == 0) {
+        if(pixel->ToT() == 0) {
+            // if ToT is zero, also charge is zero,
+            // this avoids a floating-point comparison
             LOG(DEBUG) << "Pixel with charge 0!";
             pixelCharge = 1;
         }
