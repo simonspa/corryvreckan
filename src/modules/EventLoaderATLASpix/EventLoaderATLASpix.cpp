@@ -543,7 +543,8 @@ Pixels* EventLoaderATLASpix::read_legacy_data(double, double) {
         // Convert TOA to nanoseconds:
         toa_timestamp /= (4096. * 0.04);
 
-        Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, toa_timestamp);
+        // when calibration is not available, set charge = tot
+        Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, tot, toa_timestamp);
         pixel->setCharge(cal_tot);
         pixels->push_back(pixel);
     }
