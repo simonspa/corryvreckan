@@ -321,7 +321,8 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
                        << "\tTS_FULL: " << hit_ts << "\t" << Units::display(timestamp, {"s", "us", "ns"})
                        << "\tTOT: " << tot; // << "\t" << Units::display(tot_ns, {"s", "us", "ns"});
 
-            Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, timestamp);
+            // when calibration is not available, set charge = tot
+            Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, tot, timestamp);
 
             // FIXME: implement conversion from ToT to charge:
             // thres-->e: 1620e/0.15V, or 1080e/100mV
