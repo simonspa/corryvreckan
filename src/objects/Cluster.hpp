@@ -63,7 +63,7 @@ namespace corryvreckan {
         Pixels m_pixels;
         double m_column;
         double m_row;
-        double m_charge; // detector specific: ToT, ADC, ...
+        double m_charge;
         ROOT::Math::XYVector m_error;
         double m_columnWidth;
         double m_rowWidth;
