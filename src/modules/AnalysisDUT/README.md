@@ -5,7 +5,7 @@
 **Status**: Work in progress
 
 ### Description
-Analysis module for CLICpix2 prototypes. This module is still work in progress, changes to functionality and behaviour are to be expected.
+Generic analysis module for all prototypes. This module is still work in progress, changes to functionality and behaviour are to be expected.
 
 ### Parameters
 * `time_cut_frameedge`: Parameter to discard telescope tracks at the frame edges (start and end of the current CLICpix2 frame). Defaults to `20ns`.
