@@ -124,6 +124,16 @@ void EventLoaderATLASpix::initialise() {
     hPixelToT->GetXaxis()->SetTitle("ToT in TS2 clock cycles.");
     hPixelToTCal = new TH1F("pixelToTCal", "pixelToT", 100, 0, 100);
     hPixelToA = new TH1F("pixelToA", "pixelToA", 100, 0, 100);
+    hTluApxTimeResidual =
+        new TH1F("hTluApxTimeResidual", "hTluApxTimeResidual; ts(tlu) - ts(apx) [us]; # entries", 2e4, -100, 100);
+    hTluApxTimeResidualvsTime = new TH2F("hTluApxTimeResidualvsTime",
+                                         "hTluApxTimeResidualvsTime; event_time [s]; ts(tlu) - ts(apx) [s]",
+                                         1e2,
+                                         0,
+                                         1e4,
+                                         2e3,
+                                         -10,
+                                         10);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 200, 0, 200);
     hPixelsOverTime = new TH1F("pixelsOverTime", "pixelsOverTime", 2e6, 0, 2e6);
 
@@ -179,8 +189,14 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         hPixelToTCal->Fill(px->charge());
         hPixelToA->Fill(px->timestamp());
 
+        hTluApxTimeResidual->Fill(
+            static_cast<double>(Units::convert(start_time - px->timestamp(), "us") + 10)); // revert adjust_event_times
+        hTluApxTimeResidualvsTime->Fill(
+            static_cast<double>(Units::convert(px->timestamp(), "s")),
+            static_cast<double>(Units::convert(start_time - px->timestamp(), "us") + 10)); // revert adjust_event_times
+
         // Pixels per 100us:
-        hPixelsOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "ms")));
+        hPixelsOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "us")));
     }
 
     // Fill histograms
