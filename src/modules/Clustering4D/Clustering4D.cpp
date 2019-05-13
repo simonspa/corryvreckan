@@ -175,27 +175,21 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
 
     // Loop over all pixels
     for(auto& pixel : (*pixels)) {
-        double pixelCharge = pixel->charge();
-
-        if(pixel->ToT() == 0) {
-            // if ToT is zero, also charge is zero,
-            // this avoids a floating-point comparison
-            LOG(DEBUG) << "Pixel with charge 0!";
-            pixelCharge = 1;
-        }
-        charge += pixelCharge;
-        column += (pixel->column() * pixelCharge);
-        row += (pixel->row() * pixelCharge);
+        charge += pixel->charge();
+        column += (pixel->column() * pixel->charge());
+        row += (pixel->row() * pixel->charge());
         if(pixel->timestamp() < timestamp) {
             timestamp = pixel->timestamp();
         }
     }
 
-    // Row and column positions are charge-weighted
-    column /= charge;
-    row /= charge;
+    // Column and row positions are charge-weighted
+    // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics)
+    // calculate simple arithmetic mean
+    column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
+    row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
 
-    LOG(DEBUG) << "- cluster row, col: " << row << "," << column;
+    LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
 
     if(detectorID != m_detector->name()) {
         // Should never happen...
