@@ -82,13 +82,10 @@ namespace corryvreckan {
 
     private:
         // Member variables
-        // shouldn't these be const: m_column, m_row, m_raw, m_isBinary???
         int m_column;
         int m_row;
         int m_raw;
         double m_charge;
-        bool m_isBinary;
-        bool m_isCalibrated; // when false: charge = raw
     };
 
     // Vector type declaration
