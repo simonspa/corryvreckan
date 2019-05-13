@@ -28,6 +28,8 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
     m_timeCutFrameEdge = m_config.get<double>("time_cut_frame_edge", static_cast<double>(Units::convert(20, "ns")));
     m_clusterTotCut = m_config.get<double>("cluster_tot_cut", static_cast<double>(Units::convert(500, "ns")));
     m_clusterSizeCut = m_config.get<size_t>("cluster_size_cut", static_cast<size_t>(100));
+    m_highTotCut = m_config.get<int>("high_tot_cut", 40);
+    m_leftTailCut = m_config.get<double>("left_tail_cut", static_cast<double>(Units::convert(-10, "ns")));
 
     if(m_config.has("correction_file_row")) {
         m_correctionFile_row = m_config.get<std::string>("correction_file_row");
@@ -237,7 +239,7 @@ void AnalysisTimingATLASpix::initialise() {
     hTotVsTime_low->GetXaxis()->SetTitle("pixel ToT [ns]");
     hTotVsTime_low->GetXaxis()->SetTitle("time [s]");
     hTotVsTime_high = new TH2F("hTotVsTime_high", "hTotVsTime_high", 64, 0, 64, 1e6, 0, 100);
-    hTotVsTime_high->GetXaxis()->SetTitle("pixel ToT [ns] if > 40");
+    hTotVsTime_high->GetXaxis()->SetTitle("pixel ToT [ns] if > high_tot_cut");
     hTotVsTime_high->GetXaxis()->SetTitle("time [s]");
 
     // control plots for "left tail":
@@ -454,7 +456,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     auto xmod = static_cast<double>(Units::convert(inpixel.X(), "um"));
                     auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
                     hHitMapAssoc_inPixel->Fill(xmod, ymod);
-                    if(cluster->tot() > 50 && cluster->size() == 1) {
+                    if(cluster->tot() > m_highTotCut && cluster->size() == 1) {
                         hHitMapAssoc_inPixel_highTot->Fill(xmod, ymod);
                     }
 
@@ -469,8 +471,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                         hClusterSizeVsTot_Assoc->Fill(static_cast<double>(cluster->size()), pixel->tot());
                         hHitMapAssoc->Fill(pixel->column(), pixel->row());
                         hTotVsTime_low->Fill(pixel->tot(), static_cast<double>(Units::convert(pixel->timestamp(), "s")));
-                        // if(pixel->tot() > 40) {
-                        if(pixel->tot() > 55) {
+                        if(pixel->tot() > m_highTotCut) {
                             hHitMapAssoc_highTot->Fill(pixel->column(), pixel->row());
                             hTotVsTime_high->Fill(pixel->tot(),
                                                   static_cast<double>(Units::convert(pixel->timestamp(), "s")));
