@@ -24,7 +24,7 @@ namespace corryvreckan {
          * @param row Pixel row
          * @param timestamp Pixel timestamp
          * @param raw Charge-equivalent pixel raw value. If not available set to 1.
-         * @param charge Pixel charge. if not available, set to raw for correct charge-weighted clustering.
+         * @param charge Pixel charge. If not available, set to raw for correct charge-weighted clustering.
          */
         Pixel(std::string detectorID, int col, int row, int raw, double charge, double timestamp)
             : Object(detectorID, timestamp), m_column(col), m_row(row), m_raw(raw), m_charge(charge) {}
