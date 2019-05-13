@@ -105,6 +105,8 @@ namespace corryvreckan {
         double m_timeCutFrameEdge;
         double m_clusterTotCut;
         size_t m_clusterSizeCut;
+        int m_highTotCut;
+        double m_leftTailCut;
 
         std::string m_correctionFile_row;
         std::string m_correctionFile_timewalk;
