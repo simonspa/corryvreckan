@@ -16,6 +16,8 @@ EventLoaderATLASpix::EventLoaderATLASpix(Configuration config, std::shared_ptr<D
     // m_clkdivendM = m_config.get<int>("clkdivend", 0.) + 1;
     m_clkdivend2M = m_config.get<int>("clkdivend2", 0.) + 1;
 
+    m_highToTCut = m_config.get<int>("high_tot_cut", 40);
+
     if(m_config.has("calibration_file")) {
         m_calibrationFile = m_config.getPath("calibration_file");
     }
@@ -112,7 +114,7 @@ void EventLoaderATLASpix::initialise() {
 
     // Make histograms for debugging
     hHitMap = new TH2F("hitMap",
-                       "hitMap",
+                       "hitMap; pixel column; pixel row; # events",
                        m_detector->nPixels().X(),
                        0,
                        m_detector->nPixels().X(),
@@ -120,12 +122,54 @@ void EventLoaderATLASpix::initialise() {
                        0,
                        m_detector->nPixels().Y());
 
-    hPixelToT = new TH1F("pixelToT", "pixelToT", 64, 0, 64);
-    hPixelToT->GetXaxis()->SetTitle("ToT in TS2 clock cycles.");
-    hPixelToTCal = new TH1F("pixelToTCal", "pixelToT", 100, 0, 100);
-    hPixelToA = new TH1F("pixelToA", "pixelToA", 100, 0, 100);
-    hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 200, 0, 200);
-    hPixelsOverTime = new TH1F("pixelsOverTime", "pixelsOverTime", 2e6, 0, 2e6);
+    hHitMap_highTot = new TH2F("hitMap_highTot",
+                               "hitMap_hithTot; pixel column; pixel row; # events",
+                               m_detector->nPixels().X(),
+                               0,
+                               m_detector->nPixels().X(),
+                               m_detector->nPixels().Y(),
+                               0,
+                               m_detector->nPixels().Y());
+
+    hHitMap_totWeighted = new TProfile2D("hHitMap_totWeighted",
+                                         "hHitMap_totWeighted; pixel column; pixel row; # events",
+                                         m_detector->nPixels().X(),
+                                         0,
+                                         m_detector->nPixels().X(),
+                                         m_detector->nPixels().Y(),
+                                         0,
+                                         m_detector->nPixels().Y(),
+                                         0,
+                                         100);
+
+    hPixelToT = new TH1F("pixelToT", "pixelToT; pixel ToT in TS2 clock cycles; # events", 64, 0, 64);
+    hPixelToT_beforeCorrection = new TH1F(
+        "pixelToT_beforeCorrection", "pixelToT_beforeCorrection; pixel ToT in TS2 clock cycles; # events", 2 * 64, -64, 64);
+    hPixelCharge = new TH1F("pixelCharge", "pixelCharge; pixel charge [e]; # events", 100, 0, 100);
+    hPixelToA = new TH1F("pixelToA", "pixelToA; pixel ToA [ns]; # events", 100, 0, 100);
+    hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame; pixels per frame; # events", 200, 0, 200);
+    hPixelsOverTime = new TH1F("pixelsOverTime", "pixelsOverTime; time [ms]; # events", 2e6, 0, 2e6);
+
+    hPixelTS1 = new TH1F("pixelTS1", "pixelTS1; pixel TS1 [lsb]; # events", 2050, 0, 2050);
+    hPixelTS2 = new TH1F("pixelTS2", "pixelTS2; pixel TS2 [lsb]; # events", 130, 0, 130);
+    hPixelTS1bits = new TH1F("pixelTS1bits", "pixelTS1bits; pixel TS1 bit [lsb->msb]; # events", 12, 0, 12);
+    hPixelTS2bits = new TH1F("pixelTS2bits", "pixelTS2bits; pixel TS2 bit [lsb->msb]; # events", 8, 0, 8);
+
+    // low ToT:
+    hPixelTS1_lowToT = new TH1F("pixelTS1_lowToT", "pixelTS1_lowToT; pixel TS1 [lsb]; # events", 2050, 0, 2050);
+    hPixelTS2_lowToT = new TH1F("pixelTS2_lowToT", "pixelTS2_lowToT; pixel TS2 [lsb]; # events", 130, 0, 130);
+    hPixelTS1bits_lowToT =
+        new TH1F("pixelTS1bits_lowToT", "pixelTS1bits_lowToT; pixel TS1 bit [lsb->msb]; # events", 12, 0, 12);
+    hPixelTS2bits_lowToT =
+        new TH1F("pixelTS2bits_lowToT", "pixelTS2bits_lowToT; pixel TS2 bit [lsb->msb]; # events", 8, 0, 8);
+
+    // high ToT:
+    hPixelTS1_highToT = new TH1F("pixelTS1_highToT", "pixelTS1_highToT; pixel TS1 [lsb]; # events", 2050, 0, 2050);
+    hPixelTS2_highToT = new TH1F("pixelTS2_highToT", "pixelTS2_highToT; pixel TS2 [lsb]; # events", 130, 0, 130);
+    hPixelTS1bits_highToT =
+        new TH1F("pixelTS1bits_highToT", "pixelTS1bits_highToT; pixel TS1 bit [lsb->msb]; # events", 12, 0, 12);
+    hPixelTS2bits_highToT =
+        new TH1F("pixelTS2bits_highToT", "pixelTS2bits_highToT; pixel TS2 bit [lsb->msb]; # events", 8, 0, 8);
 
     // Read calibration:
     m_calibrationFactors.resize(static_cast<size_t>(m_detector->nPixels().X() * m_detector->nPixels().Y()), 1.0);
@@ -175,8 +219,12 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     for(auto px : (*pixels)) {
         hHitMap->Fill(px->column(), px->row());
+        if(px->tot() > m_highToTCut) {
+            hHitMap_highTot->Fill(px->column(), px->row());
+        }
+        hHitMap_totWeighted->Fill(px->column(), px->row(), px->tot());
         hPixelToT->Fill(px->tot());
-        hPixelToTCal->Fill(px->charge());
+        hPixelCharge->Fill(px->charge());
         hPixelToA->Fill(px->timestamp());
 
         // Pixels per 100us:
@@ -311,11 +359,41 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
 
             // calculate ToT only when pixel is good for storing (division is time consuming)
             int tot = static_cast<int>(ts2 - ((hit_ts % static_cast<long long>(64 * m_clkdivend2M)) / m_clkdivend2M));
+            hPixelToT_beforeCorrection->Fill(tot);
             if(tot < 0) {
                 tot += 64;
             }
             // convert ToT to nanoseconds
             // double tot_ns = tot * m_clockCycle;
+
+            hPixelTS1->Fill(static_cast<double>(ts1));
+            hPixelTS2->Fill(static_cast<double>(ts2));
+            if(tot < m_highToTCut) {
+                hPixelTS1_lowToT->Fill(static_cast<double>(ts1));
+                hPixelTS2_lowToT->Fill(static_cast<double>(ts2));
+            } else {
+                hPixelTS1_highToT->Fill(static_cast<double>(ts1));
+                hPixelTS2_highToT->Fill(static_cast<double>(ts2));
+            }
+
+            // histogram each bit of the 10-bit TS1
+            for(int i = 0; i < 12; i++) {
+                hPixelTS1bits->Fill(static_cast<double>(i), static_cast<double>((ts1 >> i) & 0b1));
+                if(tot < m_highToTCut) {
+                    hPixelTS1bits_lowToT->Fill(static_cast<double>(i), static_cast<double>((ts1 >> i) & 0b1));
+                } else {
+                    hPixelTS1bits_highToT->Fill(static_cast<double>(i), static_cast<double>((ts1 >> i) & 0b1));
+                }
+            }
+            // histogram each bit of the 6-bit TS2
+            for(int i = 0; i < 8; i++) {
+                hPixelTS2bits->Fill(static_cast<double>(i), static_cast<double>((ts2 >> i) & 0b1));
+                if(tot < m_highToTCut) {
+                    hPixelTS2bits_lowToT->Fill(static_cast<double>(i), static_cast<double>((ts1 >> i) & 0b1));
+                } else {
+                    hPixelTS2bits_highToT->Fill(static_cast<double>(i), static_cast<double>((ts1 >> i) & 0b1));
+                }
+            }
 
             LOG(TRACE) << "HIT: TS1: " << ts1 << "\t0x" << std::hex << ts1 << "\tTS2: " << ts2 << "\t0x" << std::hex << ts2
                        << "\tTS_FULL: " << hit_ts << "\t" << Units::display(timestamp, {"s", "us", "ns"})
