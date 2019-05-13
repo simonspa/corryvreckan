@@ -22,11 +22,11 @@ namespace corryvreckan {
          * @param detectorID detectorID
          * @param col Pixel column
          * @param row Pixel row
-         * @param raw Charge-equivalent pixel raw value, initialised to 0
-         * @param charge Pixel charge, initialised to 0
-         * @param timestamp Pixel timestamp, initialised to 0
+         * @param timestamp Pixel timestamp
+         * @param raw Charge-equivalent pixel raw value. If not available set to 1.
+         * @param charge Pixel charge. if not available, set to raw for correct charge-weighted clustering.
          */
-        Pixel(std::string detectorID, int col, int row, int raw = 1, double charge = 1., double timestamp = 0.)
+        Pixel(std::string detectorID, int col, int row, int raw, double charge, double timestamp)
             : Object(detectorID, timestamp), m_column(col), m_row(row), m_raw(raw), m_charge(charge) {}
 
         // Methods to get member variables:
