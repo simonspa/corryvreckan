@@ -250,26 +250,20 @@ void AnalysisTimingATLASpix::initialise() {
                                     0,
                                     m_detector->nPixels().Y());
     hTot_leftTail = new TH1F("hTot_leftTail", "hTot_leftTail", 2 * 64, -64, 64);
-    hPixelTS1_leftTail = new TH1F("pixelTS1_leftTail", "pixelTS1_leftTail", 2050, 0, 2050);
-    hPixelTS2_leftTail = new TH1F("pixelTS2_leftTail", "pixelTS2_leftTail", 130, 0, 130);
-    hPixelTS1bits_leftTail = new TH1F("pixelTS1bits_leftTail", "pixelTS1bits_leftTail", 12, 0, 12);
-    hPixelTS2bits_leftTail = new TH1F("pixelTS2bits_leftTail", "pixelTS2bits_leftTail", 8, 0, 8);
+    hPixelTimestamp_leftTail = new TH1F("pixelTS1_leftTail", "pixelTimestamp_leftTail", 2050, 0, 2050);
     hClusterSize_leftTail = new TH1F("clusterSize_leftTail", "clusterSize_leftTail", 100, 0, 100);
     // right tail = main distribution
-    hClusterMap_rightTail = new TH2F("hClusterMap_rightTail",
-                                     "hClusterMap_rightTail",
-                                     m_detector->nPixels().X(),
-                                     0,
-                                     m_detector->nPixels().X(),
-                                     m_detector->nPixels().Y(),
-                                     0,
-                                     m_detector->nPixels().Y());
-    hTot_rightTail = new TH1F("hTot_rightTail", "hTot_rightTail", 2 * 64, -64, 64);
-    hPixelTS1_rightTail = new TH1F("pixelTS1_rightTail", "pixelTS1_rightTail", 2050, 0, 2050);
-    hPixelTS2_rightTail = new TH1F("pixelTS2_rightTail", "pixelTS2_rightTail", 130, 0, 130);
-    hPixelTS1bits_rightTail = new TH1F("pixelTS1bits_rightTail", "pixelTS1bits_rightTail", 12, 0, 12);
-    hPixelTS2bits_rightTail = new TH1F("pixelTS2bits_rightTail", "pixelTS2bits_rightTail", 8, 0, 8);
-    hClusterSize_rightTail = new TH1F("clusterSize_rightTail", "clusterSize_rightTail", 100, 0, 100);
+    hClusterMap_mainpeak = new TH2F("hClusterMap_mainpeak",
+                                    "hClusterMap_mainpeak",
+                                    m_detector->nPixels().X(),
+                                    0,
+                                    m_detector->nPixels().X(),
+                                    m_detector->nPixels().Y(),
+                                    0,
+                                    m_detector->nPixels().Y());
+    hTot_mainpeak = new TH1F("hTot_mainpeak", "hTot_mainpeak", 2 * 64, -64, 64);
+    hPixelTimestamp_mainpeak = new TH1F("pixelTimestamp_mainpeak", "pixelTS1_mainpeak", 2050, 0, 2050);
+    hClusterSize_mainpeak = new TH1F("clusterSize_mainpeak", "clusterSize_mainpeak", 100, 0, 100);
 
     // /////////////////////////////////////////// //
     // TGraphErrors for Timewalk & Row Correction: //
@@ -526,39 +520,17 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                             track->timestamp() - cluster->getSeedPixel()->timestamp(), cluster->getSeedPixel()->tot());
 
                         // control plots to investigate "left tail" in time correlation:
-                        if(track->timestamp() - cluster->timestamp() < -10) {
+                        if(track->timestamp() - cluster->timestamp() < m_leftTailCut) {
                             hClusterMap_leftTail->Fill(cluster->column(), cluster->row());
                             hTot_leftTail->Fill(cluster->getSeedPixel()->tot());
-                            hPixelTS1_leftTail->Fill(static_cast<double>(cluster->getSeedPixel()->ts1()));
-                            hPixelTS2_leftTail->Fill(static_cast<double>(cluster->getSeedPixel()->ts2()));
-                            for(int i = 0; i < 12; i++) {
-                                hPixelTS1bits_leftTail->Fill(
-                                    static_cast<double>(i),
-                                    static_cast<double>((cluster->getSeedPixel()->ts1() >> i) & 0b1));
-                            }
-                            for(int i = 0; i < 8; i++) {
-                                hPixelTS2bits_leftTail->Fill(
-                                    static_cast<double>(i),
-                                    static_cast<double>((cluster->getSeedPixel()->ts2() >> i) & 0b1));
-                            }
+                            hPixelTimestamp_leftTail->Fill(cluster->getSeedPixel()->timestamp());
                             hClusterSize_leftTail->Fill(static_cast<double>(cluster->size()));
                         }
-                        if(track->timestamp() - cluster->timestamp() > -10) {
-                            hClusterMap_rightTail->Fill(cluster->column(), cluster->row());
-                            hTot_rightTail->Fill(cluster->getSeedPixel()->tot());
-                            hPixelTS1_rightTail->Fill(static_cast<double>(cluster->getSeedPixel()->ts1()));
-                            hPixelTS2_rightTail->Fill(static_cast<double>(cluster->getSeedPixel()->ts2()));
-                            for(int i = 0; i < 12; i++) {
-                                hPixelTS1bits_rightTail->Fill(
-                                    static_cast<double>(i),
-                                    static_cast<double>((cluster->getSeedPixel()->ts1() >> i) & 0b1));
-                            }
-                            for(int i = 0; i < 8; i++) {
-                                hPixelTS2bits_rightTail->Fill(
-                                    static_cast<double>(i),
-                                    static_cast<double>((cluster->getSeedPixel()->ts2() >> i) & 0b1));
-                            }
-                            hClusterSize_rightTail->Fill(static_cast<double>(cluster->size()));
+                        if(track->timestamp() - cluster->timestamp() > m_leftTailCut) {
+                            hClusterMap_mainpeak->Fill(cluster->column(), cluster->row());
+                            hTot_mainpeak->Fill(cluster->getSeedPixel()->tot());
+                            hPixelTimestamp_mainpeak->Fill(cluster->getSeedPixel()->timestamp());
+                            hClusterSize_mainpeak->Fill(static_cast<double>(cluster->size()));
                         }
                     }
                 }

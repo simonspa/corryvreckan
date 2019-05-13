@@ -81,19 +81,13 @@ namespace corryvreckan {
         // Control Plots for "left tail":
         TH2F* hClusterMap_leftTail;
         TH1F* hTot_leftTail;
-        TH1F* hPixelTS1_leftTail;
-        TH1F* hPixelTS2_leftTail;
-        TH1F* hPixelTS1bits_leftTail;
-        TH1F* hPixelTS2bits_leftTail;
+        TH1F* hPixelTimestamp_leftTail;
         TH1F* hClusterSize_leftTail;
 
-        TH2F* hClusterMap_rightTail;
-        TH1F* hTot_rightTail;
-        TH1F* hPixelTS1_rightTail;
-        TH1F* hPixelTS2_rightTail;
-        TH1F* hPixelTS1bits_rightTail;
-        TH1F* hPixelTS2bits_rightTail;
-        TH1F* hClusterSize_rightTail;
+        TH2F* hClusterMap_mainpeak;
+        TH1F* hTot_mainpeak;
+        TH1F* hPixelTimestamp_mainpeak;
+        TH1F* hClusterSize_mainpeak;
 
         // TGraphErrors:
         TGraphErrors* gTimeCorrelationVsRow;
