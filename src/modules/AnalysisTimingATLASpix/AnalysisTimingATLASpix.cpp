@@ -424,12 +424,6 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     has_associated_cluster = true;
                     matched_tracks++;
 
-                    //                    // UGLY HACK:
-                    //                    if(cluster->row() > 390) {
-                    //                        continue;
-                    //                    }
-
-                    // clusterTotCut:
                     if(cluster->tot() > m_clusterTotCut) {
                         LOG(DEBUG) << " - track discarded due to clusterTotCut";
                         continue;
