@@ -50,6 +50,7 @@ namespace corryvreckan {
         TH1F* hTrackCorrelationTime_rowAndTimeWalkCorr_l40;
         TH1F* hTrackCorrelationTime_rowAndTimeWalkCorr_g40;
         TH1D* hTrackCorrelationTime_example;
+        TH1F* hClusterTimeMinusPixelTime;
 
         // 2D histograms:
         TH2F* hTrackCorrelationTimeVsCol; // control plot only
@@ -60,7 +61,6 @@ namespace corryvreckan {
         TH2F* hTrackCorrelationTimeVsTot;
         TH2F* hTrackCorrelationTimeVsTot_1px;
         TH2F* hTrackCorrelationTimeVsTot_npx;
-        TH1F* hClusterTimeMinusPixelTime;
         TH2F* hTrackCorrelationTimeVsTot_rowCorr;
         TH2F* hTrackCorrelationTimeVsTot_rowCorr_1px;
         TH2F* hTrackCorrelationTimeVsTot_rowCorr_npx;
