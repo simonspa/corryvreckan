@@ -25,6 +25,13 @@ namespace corryvreckan {
          * @param timestamp Pixel timestamp in nanoseconds
          * @param raw Charge-equivalent pixel raw value. If not available set to 1.
          * @param charge Pixel charge in electrons. If not available, set to raw for correct charge-weighted clustering.
+         *
+         * `column` and `row` correspond to the position of a hit. `raw` is a generic charge equivalent pixel value which can
+         * be `ToT`, `ADC`, etc., depending on the detector. `charge` is the total charge of the integrated signal of a hit
+         * and the `timestamp` is pixel timestamp. Not all of these values are available for all detector types. If a
+         * detector doesn't provide a pixel `timestamp`, for instance, it should simply be set to 0. As cluster (spatial as
+         * well as 4D) are charge-weighting the cluster position the `charge` should be set to `raw` if no other information
+         * is available. If `raw` is not available either, it should be set to 1.
          */
         Pixel(std::string detectorID, int col, int row, int raw, double charge, double timestamp)
             : Object(detectorID, timestamp), m_column(col), m_row(row), m_raw(raw), m_charge(charge) {}
