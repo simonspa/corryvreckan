@@ -7,7 +7,7 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include "AnalysisTiming.h"
+#include "AnalysisTimingATLASpix.h"
 
 #include "objects/Cluster.hpp"
 #include "objects/Pixel.hpp"
@@ -18,7 +18,7 @@
 
 using namespace corryvreckan;
 
-AnalysisTiming::AnalysisTiming(Configuration config, std::shared_ptr<Detector> detector)
+AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector) {
 
     using namespace ROOT::Math;
@@ -56,7 +56,7 @@ AnalysisTiming::AnalysisTiming(Configuration config, std::shared_ptr<Detector> d
     tracks_afterClusterSizeCut = 0;
 }
 
-void AnalysisTiming::initialise() {
+void AnalysisTimingATLASpix::initialise() {
 
     auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
     auto pitch_y = static_cast<double>(Units::convert(m_detector->pitch().Y(), "um"));
@@ -337,7 +337,7 @@ void AnalysisTiming::initialise() {
     }
 }
 
-StatusCode AnalysisTiming::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the telescope tracks from the clipboard
     Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
@@ -574,7 +574,7 @@ StatusCode AnalysisTiming::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void AnalysisTiming::finalise() {
+void AnalysisTimingATLASpix::finalise() {
     LOG(STATUS) << "Timing analysis finished for detector " << m_detector->name() << ": ";
 
     if(m_calcCorrections) {
@@ -757,7 +757,7 @@ void AnalysisTiming::finalise() {
     LOG(INFO) << "after clusterSizeCut:\t" << tracks_afterClusterSizeCut;
 }
 
-void AnalysisTiming::correctClusterTimestamp(Cluster* cluster, int mode) {
+void AnalysisTimingATLASpix::correctClusterTimestamp(Cluster* cluster, int mode) {
 
     /* copied over from
      * Clustering4D::calculateClusterCentre()

@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Definition of [AnalysisTiming] module
+ * @brief Definition of [AnalysisTimingATLASpix] module
  * @copyright Copyright (c) 2018 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
@@ -22,7 +22,7 @@ namespace corryvreckan {
      *
      * More detailed explanation of module
      */
-    class AnalysisTiming : public Module {
+    class AnalysisTimingATLASpix : public Module {
 
     public:
         /**
@@ -30,7 +30,7 @@ namespace corryvreckan {
          * @param config Configuration object for this module as retrieved from the steering file
          * @param detector Pointer to the detector for this module instance
          */
-        AnalysisTiming(Configuration config, std::shared_ptr<Detector> detector);
+        AnalysisTimingATLASpix(Configuration config, std::shared_ptr<Detector> detector);
         void initialise();
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
         void finalise();
