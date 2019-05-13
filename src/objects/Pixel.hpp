@@ -22,25 +22,51 @@ namespace corryvreckan {
          * @param detectorID detectorID
          * @param col Pixel column
          * @param row Pixel row
-         * @param timestamp Pixel timestamp
+         * @param timestamp Pixel timestamp in nanoseconds
          * @param raw Charge-equivalent pixel raw value. If not available set to 1.
-         * @param charge Pixel charge. If not available, set to raw for correct charge-weighted clustering.
+         * @param charge Pixel charge in electrons. If not available, set to raw for correct charge-weighted clustering.
          */
         Pixel(std::string detectorID, int col, int row, int raw, double charge, double timestamp)
             : Object(detectorID, timestamp), m_column(col), m_row(row), m_raw(raw), m_charge(charge) {}
 
         // Methods to get member variables:
+        /**
+         * @brief Get pixel row
+         * @return Pixel row
+         */
         int row() const { return m_row; }
+        /**
+         * @brief Get pixel column
+         * @return Pixel column
+         */
         int column() const { return m_column; }
+        /**
+         * @brief Get pixel coordinates
+         * @return Pixel coordinates (column, row)
+         */
         std::pair<int, int> coordinates() const { return std::make_pair(m_column, m_row); }
 
         // raw is a generic charge equivalent pixel value which can be ToT, ADC, ..., depending on the detector
         // if isBinary==true, the value will always be 1 and shouldn't be used for anything
+        /**
+         * @brief Get pixel raw value (charge equivalent depending on detector, e.g. ToT, ADC, ...)
+         * @return Pixel raw value
+         */
         int raw() const { return m_raw; }
+        /**
+         * @brief Get pixel charge in electrons
+         * @return Pixel charge
+         */
         double charge() const { return m_charge; }
 
         // Methods to set member variables:
+        /**
+         * @brief Set pixel raw value (charge equivalent depending on detector, e.g. ToT, ADC, ...)
+         */
         void setRaw(int raw) { m_raw = raw; }
+        /**
+         * @brief Set pixel charge in electrons
+         */
         void setCharge(double charge) { m_charge = charge; }
 
         /**
