@@ -167,28 +167,18 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
 
     // Loop over all pixels
     for(auto& pixel : (*pixels)) {
-        double pixelCharge = pixel->charge();
-
-        if(pixel->isBinary()) {
-            LOG(DEBUG) << "Pixel is binary. Setting charge = 1.";
-            pixelCharge = 1;
-        }
-
-        if(pixelCharge == 0) {
-            LOG(DEBUG) << "Pixel with charge 0!";
-            pixelCharge = 1;
-        }
-
-        charge += pixelCharge;
-        column += (pixel->column() * pixelCharge);
-        row += (pixel->row() * pixelCharge);
+        charge += pixel->charge();
+        column += (pixel->column() * pixel->charge());
+        row += (pixel->row() * pixel->charge());
 
         LOG(DEBUG) << "- pixel col, row: " << pixel->column() << "," << pixel->row();
     }
 
-    // Row and column positions are charge-weighted
-    row /= charge;
-    column /= charge;
+    // Column and row positions are charge-weighted
+    // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics)
+    // calculate simple arithmetic mean
+    column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
+    row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
 
     LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
 
