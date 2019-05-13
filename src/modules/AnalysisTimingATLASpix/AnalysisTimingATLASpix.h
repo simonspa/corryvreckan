@@ -109,7 +109,9 @@ namespace corryvreckan {
         double m_leftTailCut;
 
         std::string m_correctionFile_row;
+        std::string m_correctionGraph_row;
         std::string m_correctionFile_timewalk;
+        std::string m_correctionGraph_timewalk;
         bool m_calcCorrections;
         bool m_pointwise_correction_row;
         bool m_pointwise_correction_timewalk;

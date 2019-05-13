@@ -33,12 +33,14 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
 
     if(m_config.has("correction_file_row")) {
         m_correctionFile_row = m_config.get<std::string>("correction_file_row");
+        m_correctionGraph_row = m_config.get<std::string>("correction_graph_row");
         m_pointwise_correction_row = true;
     } else {
         m_pointwise_correction_row = false;
     }
     if(m_config.has("correction_file_timewalk")) {
         m_correctionFile_timewalk = m_config.get<std::string>("correction_file_timewalk");
+        m_correctionGraph_timewalk = m_config.get<std::string>("correction_graph_timewalk");
         m_pointwise_correction_timewalk = true;
     } else {
         m_pointwise_correction_timewalk = false;
@@ -308,9 +310,7 @@ void AnalysisTimingATLASpix::initialise() {
         if(!file->IsOpen()) {
             LOG(ERROR) << "Cannot open " << fileName << "!\n";
         }
-        std::string gName = "AnalysisTiming/ap1b02w23s15/gTimeCorrelationVsRow";
-        // std::string gName = "row_correction_full_matrix";
-        gRowCorr = static_cast<TGraphErrors*>(file->Get(gName.c_str()));
+        gRowCorr = static_cast<TGraphErrors*>(file->Get(m_correctionGraph_row.c_str()));
         file->Close();
         delete file;
     } else {
@@ -323,9 +323,7 @@ void AnalysisTimingATLASpix::initialise() {
         if(!file->IsOpen()) {
             LOG(ERROR) << "Cannot open " << fileName << "!\n";
         }
-        std::string gName = "AnalysisTiming/ap1b02w23s15/gTimeCorrelationVsTot";
-        // std::string gName = "timewalk_correction";
-        gTimeWalkCorr = static_cast<TGraphErrors*>(file->Get(gName.c_str()));
+        gTimeWalkCorr = static_cast<TGraphErrors*>(file->Get(m_correctionGraph_timewalk.c_str()));
         file->Close();
         delete file;
     } else {
