@@ -5,7 +5,7 @@
 **Status**: Functional
 
 ### Description
-This module performs clustering for detectors with valid individual hit timestamps. The clustering method is a charge-weighted centre of gravity calculation, using a positional cut and a timing cut on proximity.
+This module performs clustering for detectors with valid individual hit timestamps. The clustering method is a charge-weighted centre of gravity calculation, using a positional cut and a timing cut on proximity. If the pixel information is binary (i.e. no valid charge-equivalent information is available), the arithmetic mean is calculated for the position.
 
 Split clusters can be recovered using a larger search radius for neighbouring pixels.
 
