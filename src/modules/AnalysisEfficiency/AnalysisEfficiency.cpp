@@ -331,7 +331,7 @@ void AnalysisEfficiency::finalise() {
             // calculate total efficiency: (just to double check the other calculation)
             double eff = hChipEfficiencyMap_trackPos->GetBinContent(icol, irow);
             if(eff > 0) {
-                LOG(DEBUG) << "col/row = " << icol << "/" << irow << ", binContent = " << eff;
+                LOG(TRACE) << "col/row = " << icol << "/" << irow << ", binContent = " << eff;
                 hPixelEfficiency->Fill(hChipEfficiencyMap_trackPos->GetBinContent(icol, irow));
             }
         }
