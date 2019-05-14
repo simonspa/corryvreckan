@@ -267,8 +267,8 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
             eTotalEfficiency->Fill(has_associated_cluster, 0); // use 0th bin for total efficiency
         }
 
-        size_t intercept_col = static_cast<size_t>(m_detector->getColumn(localIntercept));
-        size_t intercept_row = static_cast<size_t>(m_detector->getRow(localIntercept));
+        auto intercept_col = static_cast<size_t>(m_detector->getColumn(localIntercept));
+        auto intercept_row = static_cast<size_t>(m_detector->getRow(localIntercept));
 
         if(has_associated_cluster) {
             hTimeDiffPrevTrack_assocCluster->Fill(
