@@ -30,18 +30,16 @@ void AnalysisEfficiency::initialise() {
     auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
     auto pitch_y = static_cast<double>(Units::convert(m_detector->pitch().Y(), "um"));
 
+    auto nbins_x = static_cast<int>(std::ceil(pitch_x / Units::convert(m_inpixelBinSize, "um")));
+    auto nbins_y = static_cast<int>(std::ceil(pitch_y / Units::convert(m_inpixelBinSize, "um")));
+    if(nbins_x > 1e4 || nbins_y > 1e4) {
+        throw ModuleError("Parameter \"inpixel_bin_size\" is too small. Too many bins for ROOT. Please increase "
+                          "\"inpixel_bin_size\" in your configuration file.");
+    }
     std::string title = m_detector->name() + " Pixel efficiency map;x_{track} mod " + std::to_string(pitch_x) +
                         "#mum;y_{track} mod " + std::to_string(pitch_y) + "#mum;efficiency";
-    hPixelEfficiencyMap_trackPos = new TProfile2D("pixelEfficiencyMap_trackPos",
-                                                  title.c_str(),
-                                                  static_cast<int>(ceil(pitch_x / m_inpixelBinSize)),
-                                                  0,
-                                                  pitch_x,
-                                                  static_cast<int>(ceil(pitch_y / m_inpixelBinSize)),
-                                                  0,
-                                                  pitch_y,
-                                                  0,
-                                                  1);
+    hPixelEfficiencyMap_trackPos =
+        new TProfile2D("pixelEfficiencyMap_trackPos", title.c_str(), nbins_x, 0, pitch_x, nbins_y, 0, pitch_y, 0, 1);
     title = m_detector->name() + " Chip efficiency map;x [px];y [px];efficiency";
     hChipEfficiencyMap_trackPos = new TProfile2D("chipEfficiencyMap_trackPos",
                                                  title.c_str(),
