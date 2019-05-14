@@ -60,10 +60,6 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
             continue;
         }
 
-        if((!pixel->isBinary()) && pixel->charge() == 0.) {
-            continue;
-        }
-
         // Make the new cluster object
         Cluster* cluster = new Cluster();
         LOG(DEBUG) << "==== New cluster";
@@ -86,9 +82,6 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
                 //          if(!closeInTime(neighbour,cluster)) break;
                 // Check if they have been used
                 if(used[neighbour])
-                    continue;
-
-                if((!neighbour->isBinary()) && neighbour->charge() == 0.)
                     continue;
 
                 // Check if they are touching cluster pixels
