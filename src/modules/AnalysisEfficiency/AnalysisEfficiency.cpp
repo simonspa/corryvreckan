@@ -27,7 +27,8 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration config, std::shared_ptr<Det
 
 void AnalysisEfficiency::initialise() {
 
-    hPixelEfficiency = new TH1D("hPixelEfficiency", "hPixelEfficiency", 201, 0, 1.005); // get 0.5%-wide bins
+    hPixelEfficiency = new TH1D(
+        "hPixelEfficiency", "hPixelEfficiency; single pixel efficiency; # entries", 201, 0, 1.005); // get 0.5%-wide bins
 
     auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
     auto pitch_y = static_cast<double>(Units::convert(m_detector->pitch().Y(), "um"));
@@ -85,7 +86,8 @@ void AnalysisEfficiency::initialise() {
                                                    1.5 * m_detector->size().Y(),
                                                    0,
                                                    1);
-    eTotalEfficiency = new TEfficiency("eTotalEfficiency", "totalEfficiency", 1, 0, 1);
+    eTotalEfficiency =
+        new TEfficiency("eTotalEfficiency", "totalEfficiency; axis has no meaning; total chip efficiency", 1, 0, 1);
     totalEfficiency = new TNamed("totalEffiency", "totalEffiency");
 
     hTrackTimeToPrevHit_matched =
@@ -107,29 +109,29 @@ void AnalysisEfficiency::initialise() {
                                               2 * m_detector->nPixels().Y(),
                                               -m_detector->nPixels().Y(),
                                               m_detector->nPixels().Y());
-    hRowDiffPrevTrack_assocCluster->GetXaxis()->SetTitle("row difference");
-    hRowDiffPrevTrack_assocCluster->GetYaxis()->SetTitle("events");
+    hRowDiffPrevTrack_assocCluster->GetXaxis()->SetTitle("row difference (matched track to prev track) [px]");
+    hRowDiffPrevTrack_assocCluster->GetYaxis()->SetTitle("# events");
     hColDiffPrevTrack_assocCluster = new TH1D("colDiffPrevTrack_assocCluster",
                                               "colDiffPrevTrack_assocCluster",
                                               2 * m_detector->nPixels().X(),
                                               -m_detector->nPixels().X(),
                                               m_detector->nPixels().X());
-    hColDiffPrevTrack_assocCluster->GetXaxis()->SetTitle("column difference");
-    hColDiffPrevTrack_assocCluster->GetYaxis()->SetTitle("events");
+    hColDiffPrevTrack_assocCluster->GetXaxis()->SetTitle("column difference (matched track to prev track) [px]");
+    hColDiffPrevTrack_assocCluster->GetYaxis()->SetTitle("# events");
 
     hRowDiffPrevTrack_noAssocCluster = new TH1D("rowDiffPrevTrack_noAssocCluster",
-                                                "rowDiffPrevTrack_assocCluster",
+                                                "rowDiffPrevTrack_noAssocCluster",
                                                 2 * m_detector->nPixels().Y(),
                                                 -m_detector->nPixels().Y(),
                                                 m_detector->nPixels().Y());
-    hRowDiffPrevTrack_noAssocCluster->GetXaxis()->SetTitle("row difference");
+    hRowDiffPrevTrack_noAssocCluster->GetXaxis()->SetTitle("row difference (non-matched track - prev track) [px]");
     hRowDiffPrevTrack_noAssocCluster->GetYaxis()->SetTitle("events");
     hColDiffPrevTrack_noAssocCluster = new TH1D("colDiffPrevTrack_noAassocCluster",
-                                                "colDiffPrevTrack_assocCluster",
+                                                "colDiffPrevTrack_noAssocCluster",
                                                 2 * m_detector->nPixels().X(),
                                                 -m_detector->nPixels().X(),
                                                 m_detector->nPixels().X());
-    hColDiffPrevTrack_noAssocCluster->GetXaxis()->SetTitle("column difference");
+    hColDiffPrevTrack_noAssocCluster->GetXaxis()->SetTitle("column difference (non-matched track - prev track) [px]");
     hColDiffPrevTrack_noAssocCluster->GetYaxis()->SetTitle("events");
 
     hPosDiffPrevTrack_assocCluster = new TH2D("posDiffPrevTrack_assocCluster",
@@ -140,6 +142,8 @@ void AnalysisEfficiency::initialise() {
                                               2 * m_detector->nPixels().Y(),
                                               -m_detector->nPixels().Y(),
                                               m_detector->nPixels().Y());
+    hPosDiffPrevTrack_assocCluster->GetXaxis()->SetTitle("column difference (matched track - prev track) [px]");
+    hPosDiffPrevTrack_assocCluster->GetYaxis()->SetTitle("row difference (matched track - prev track) [px]");
     hPosDiffPrevTrack_noAssocCluster = new TH2D("posDiffPrevTrack_noAssocCluster",
                                                 "posDiffPrevTrack_noAssocCluster",
                                                 2 * m_detector->nPixels().X(),
@@ -148,6 +152,8 @@ void AnalysisEfficiency::initialise() {
                                                 2 * m_detector->nPixels().Y(),
                                                 -m_detector->nPixels().Y(),
                                                 m_detector->nPixels().Y());
+    hPosDiffPrevTrack_noAssocCluster->GetXaxis()->SetTitle("column difference (non-matched track - prev track) [px]");
+    hPosDiffPrevTrack_noAssocCluster->GetYaxis()->SetTitle("row difference (non-matched track - prev track) [px]");
 
     // initialize matrix with hit timestamps to all 0:
     std::vector<double> v_row;
