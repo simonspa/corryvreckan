@@ -156,13 +156,10 @@ void AnalysisEfficiency::initialise() {
     hPosDiffPrevTrack_noAssocCluster->GetYaxis()->SetTitle("row difference (non-matched track - prev track) [px]");
 
     // initialize matrix with hit timestamps to all 0:
-    std::vector<double> v_row;
-    for(int irow = 0; irow < m_detector->nPixels().Y(); irow++) { // create vector will zeros of length <nRows>
-        v_row.push_back(0);
-    }
-    for(int icol = 0; icol < m_detector->nPixels().X(); icol++) { // push back to prev_hits_ts <nCols> times
-        prev_hit_ts.push_back(v_row);
-    }
+    auto nRows = static_cast<size_t>(m_detector->nPixels().Y());
+    auto nCols = static_cast<size_t>(m_detector->nPixels().X());
+    std::vector<double> v_row(nRows, 0.); // create vector will zeros of length <nRows>
+    prev_hit_ts.assign(nCols, v_row);     // use vector v_row to construct matrix
 }
 
 StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
