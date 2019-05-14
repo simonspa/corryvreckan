@@ -53,11 +53,12 @@ namespace corryvreckan {
          */
         std::pair<int, int> coordinates() const { return std::make_pair(m_column, m_row); }
 
-        // raw is a generic charge equivalent pixel value which can be ToT, ADC, ..., depending on the detector
-        // if isBinary==true, the value will always be 1 and shouldn't be used for anything
         /**
          * @brief Get pixel raw value (charge equivalent depending on detector, e.g. ToT, ADC, ...)
          * @return Pixel raw value
+         *
+         * raw is a generic charge equivalent pixel value which can be ToT, ADC, ..., depending on the detector
+         * if isBinary==true, the value will always be 1 and shouldn't be used for anything
          */
         int raw() const { return m_raw; }
         /**
