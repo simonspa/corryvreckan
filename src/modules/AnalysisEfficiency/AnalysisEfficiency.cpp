@@ -27,7 +27,7 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration config, std::shared_ptr<Det
 
 void AnalysisEfficiency::initialise() {
 
-    hPixelEfficiency = new TH1D("hPixelEfficiency", "hPixelEfficiency", 220, 0, 1.1);
+    hPixelEfficiency = new TH1D("hPixelEfficiency", "hPixelEfficiency", 201, 0, 1.005); // get 0.5%-wide bins
 
     auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
     auto pitch_y = static_cast<double>(Units::convert(m_detector->pitch().Y(), "um"));
