@@ -294,9 +294,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
                                                    m_detector->getRow(localIntercept) - last_track_row);
             if((prev_hit_ts.at(intercept_col)).at(intercept_row) != 0) {
                 LOG(DEBUG) << "Found a time difference of "
-                           << static_cast<double>(
-                                  Units::convert(track->timestamp() - prev_hit_ts.at(intercept_col).at(intercept_row), "us"))
-                           << " us";
+                           << Units::display(track->timestamp() - prev_hit_ts.at(intercept_col).at(intercept_row), "us");
                 hTrackTimeToPrevHit_notmatched->Fill(static_cast<double>(
                     Units::convert(track->timestamp() - prev_hit_ts.at(intercept_col).at(intercept_row), "us")));
             }
@@ -321,8 +319,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 }
 
 void AnalysisEfficiency::finalise() {
-    double totalEff =
-        100 * static_cast<double>(matched_tracks) / (total_tracks > 0 ? static_cast<double>(total_tracks) : 1.);
+    double totalEff = 100 * static_cast<double>(matched_tracks) / (total_tracks > 0 ? total_tracks : 1);
     LOG(STATUS) << "Total efficiency of detector " << m_detector->name() << ": " << totalEff << "%, measured with "
                 << matched_tracks << "/" << total_tracks << " matched/total tracks";
 
