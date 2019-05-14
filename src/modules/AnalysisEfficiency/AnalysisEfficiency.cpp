@@ -33,8 +33,7 @@ void AnalysisEfficiency::initialise() {
     auto nbins_x = static_cast<int>(std::ceil(pitch_x / Units::convert(m_inpixelBinSize, "um")));
     auto nbins_y = static_cast<int>(std::ceil(pitch_y / Units::convert(m_inpixelBinSize, "um")));
     if(nbins_x > 1e4 || nbins_y > 1e4) {
-        throw ModuleError("Parameter \"inpixel_bin_size\" is too small. Too many bins for ROOT. Please increase "
-                          "\"inpixel_bin_size\" in your configuration file.");
+        throw InvalidValueError(m_config, "inpixel_bin_size", "Too many bins for in-pixel histograms.");
     }
     std::string title = m_detector->name() + " Pixel efficiency map;x_{track} mod " + std::to_string(pitch_x) +
                         "#mum;y_{track} mod " + std::to_string(pitch_y) + "#mum;efficiency";
