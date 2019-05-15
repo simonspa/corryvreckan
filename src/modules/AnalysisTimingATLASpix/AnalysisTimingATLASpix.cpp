@@ -789,26 +789,6 @@ void AnalysisTimingATLASpix::correctClusterTimestamp(Cluster* cluster, int mode)
             timestamp = pixel->timestamp();
         }
     }
-    // Row and column positions are tot-weighted
-    row /= (tot > 0 ? tot : 1);
-    column /= (tot > 0 ? tot : 1);
-
-    // Create object with local cluster position
-    PositionVector3D<Cartesian3D<double>> positionLocal(m_detector->pitch().X() * (column - m_detector->nPixels().X() / 2),
-                                                        m_detector->pitch().Y() * (row - m_detector->nPixels().Y() / 2),
-                                                        0);
-    // Calculate global cluster position
-    PositionVector3D<Cartesian3D<double>> positionGlobal = m_detector->localToGlobal(positionLocal);
-
-    // Set the cluster parameters
-    cluster->setRow(row);
-    cluster->setColumn(column);
-    cluster->setTot(tot);
-
-    // Set uncertainty on position from intrinstic detector resolution:
-    cluster->setError(m_detector->resolution());
 
     cluster->setTimestamp(timestamp);
-    cluster->setClusterCentre(positionGlobal);
-    cluster->setClusterCentreLocal(positionLocal);
 }
