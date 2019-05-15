@@ -5,7 +5,7 @@
 **Status**: Functional
 
 ### Description
-This module performs clustering on data from a Timepix3 device. The clustering method is a charge-weighted centre of gravity calculation, using a positional cut and a timing cut on proximity.
+This module performs clustering for detectors with valid individual hit timestamps. The clustering method is a charge-weighted centre of gravity calculation, using a positional cut and a timing cut on proximity. If the pixel information is binary (i.e. no valid charge-equivalent information is available), the arithmetic mean is calculated for the position.
 
 Split clusters can be recovered using a larger search radius for neighbouring pixels.
 
@@ -20,7 +20,7 @@ For each detector the following plots are produced:
 * Cluster size histogram
 * Cluster width (rows, in X) histogram
 * Cluster width (columns, in Y) histogram
-* Cluster ToT histogram
+* Cluster charge histogram
 * 2D cluster positions in global coordinates
 
 ### Usage

@@ -21,7 +21,7 @@ void Clustering4D::initialise() {
     title = m_detector->name() + " Cluster Width - Columns;cluster width [columns];events";
     clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, 0, 100);
     title = m_detector->name() + " Cluster Charge;cluster charge [e];events";
-    clusterTot = new TH1F("clusterTot", title.c_str(), 10000, 0, 100000);
+    clusterCharge = new TH1F("clusterCharge", title.c_str(), 10000, 0, 100000);
     title = m_detector->name() + " Cluster Position (Global);x [mm];y [mm];events";
     clusterPositionGlobal = new TH2F("clusterPositionGlobal", title.c_str(), 400, -10., 10., 400, -10., 10.);
 }
@@ -60,10 +60,6 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
             continue;
         }
 
-        if(pixel->adc() == 0.) {
-            continue;
-        }
-
         // Make the new cluster object
         Cluster* cluster = new Cluster();
         LOG(DEBUG) << "==== New cluster";
@@ -88,9 +84,6 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
                 if(used[neighbour])
                     continue;
 
-                if(neighbour->adc() == 0.)
-                    continue;
-
                 // Check if they are touching cluster pixels
                 if(!touching(neighbour, cluster))
                     continue;
@@ -111,7 +104,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
         clusterSize->Fill(static_cast<double>(cluster->size()));
         clusterWidthRow->Fill(cluster->rowWidth());
         clusterWidthColumn->Fill(cluster->columnWidth());
-        clusterTot->Fill(cluster->tot());
+        clusterCharge->Fill(cluster->charge());
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
 
         deviceClusters->push_back(cluster);
@@ -163,30 +156,33 @@ bool Clustering4D::closeInTime(Pixel* neighbour, Cluster* cluster) {
 
 void Clustering4D::calculateClusterCentre(Cluster* cluster) {
 
+    LOG(DEBUG) << "== Making cluster centre";
     // Empty variables to calculate cluster position
-    double row(0), column(0), tot(0);
+    double column(0), row(0), charge(0);
 
     // Get the pixels on this cluster
     Pixels* pixels = cluster->pixels();
     string detectorID = (*pixels)[0]->detectorID();
     double timestamp = (*pixels)[0]->timestamp();
+    LOG(DEBUG) << "- cluster has " << (*pixels).size() << " pixels";
 
     // Loop over all pixels
     for(auto& pixel : (*pixels)) {
-        double pixelToT = pixel->adc();
-        if(pixelToT == 0) {
-            LOG(DEBUG) << "Pixel with ToT 0!";
-            pixelToT = 1;
-        }
-        tot += pixelToT;
-        row += (pixel->row() * pixelToT);
-        column += (pixel->column() * pixelToT);
-        if(pixel->timestamp() < timestamp)
+        charge += pixel->charge();
+        column += (pixel->column() * pixel->charge());
+        row += (pixel->row() * pixel->charge());
+        if(pixel->timestamp() < timestamp) {
             timestamp = pixel->timestamp();
+        }
     }
-    // Row and column positions are tot-weighted
-    row /= (tot > 0 ? tot : 1);
-    column /= (tot > 0 ? tot : 1);
+
+    // Column and row positions are charge-weighted
+    // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics)
+    // calculate simple arithmetic mean
+    column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
+    row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
+
+    LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
 
     if(detectorID != m_detector->name()) {
         // Should never happen...
@@ -201,9 +197,9 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
     PositionVector3D<Cartesian3D<double>> positionGlobal = m_detector->localToGlobal(positionLocal);
 
     // Set the cluster parameters
-    cluster->setRow(row);
     cluster->setColumn(column);
-    cluster->setTot(tot);
+    cluster->setRow(row);
+    cluster->setCharge(charge);
 
     // Set uncertainty on position from intrinstic detector resolution:
     cluster->setError(m_detector->resolution());

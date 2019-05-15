@@ -76,8 +76,9 @@ StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
                     continue;
                 }
 
-                Pixel* pixel = new Pixel(detectorID, col, row, static_cast<int>(plane.GetPixel(ipix)));
-                pixel->setCharge(plane.GetPixel(ipix));
+                // when calibration is not available, set charge = tot, timestamp not available -> set to 0
+                Pixel* pixel =
+                    new Pixel(detectorID, col, row, static_cast<int>(plane.GetPixel(ipix)), plane.GetPixel(ipix), 0.);
 
                 // Pixel gets timestamp of trigger assigned:
                 pixel->timestamp(timestamp);

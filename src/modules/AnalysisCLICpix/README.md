@@ -13,20 +13,20 @@ This module associates CLICpix2 DUT clusters to tracks using a spatial cut (devi
 * `timepix3_telescope`: Boolean to set whether the Timepix3 telescope is being used. Default value is `false`.
 
 ### Plots produced
-The following plots are produced:
+The following plots are produced: (Quite many of them are not filled currently!)
 
 * 2D hitmap
 * Column hits histogram
 * Row hits histogram
 
 * Cluster size histogram
-* CLuster ToT histogram
+* Cluster charge histogram
 * Clusters per event histogram
 * Clusters vs event number
 * Cluster width histogram (rows, Y-axis)
 * Cluster width histogram (columns, X-axis)
 
-* Global track difference
+* Global track difference in X
 * Global track difference in Y
 * Global residuals in X
 * Global residuals in Y
@@ -55,10 +55,10 @@ The following plots are produced:
 * Associated cluster size
 * Associated cluster width (row)
 * Associated cluster width (column)
-* Associated 1-pixel cluster ToT
-* Associated 2-pixel cluster ToT
-* Associated 3-pixel cluster ToT
-* Associated 4-pixel cluster ToT
+* Associated 1-pixel cluster charge
+* Associated 2-pixel cluster charge
+* Associated 3-pixel cluster charge
+* Associated 4-pixel cluster charge
 * Pixel response in X
 * Pixel response in X in global coordinates
 * Pixel response in X for odd columns
@@ -72,12 +72,12 @@ The following plots are produced:
 
 * Local residual for rows for 2-pixel clusters
 * Local residual for columns for 2-pixel clusters
-* Cluster ToT for rows for 2-pixel clusters
-* Cluster ToT for columns for 2-pixel clusters
+* Cluster charge for rows for 2-pixel clusters
+* Cluster charge for columns for 2-pixel clusters
 * Pixel ToT for rows for 2-pixel clusters
 * Pixel ToT for columns for 2-pixel clusters
-* Cluster ToT ratio for rows for 2-pixel clusters
-* Cluster ToT ratio for rows for 2-pixel clusters
+* Cluster charge ratio for rows for 2-pixel clusters
+* Cluster charge ratio for rows for 2-pixel clusters
 * Local residuals for rows for 2-pixel clusters
 
 * 2D track intercepts
