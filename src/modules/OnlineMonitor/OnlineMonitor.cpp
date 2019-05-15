@@ -14,7 +14,7 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
     // Set up overview plots:
     canvas_overview = m_config.getMatrix<std::string>("overview",
                                                       {{"Tracking4D/trackChi2"},
-                                                       {"Clustering4D/%REFERENCE%/clusterTot"},
+                                                       {"Clustering4D/%REFERENCE%/clusterCharge"},
                                                        {"TestAlgorithm/%REFERENCE%/hitmap", "colz"},
                                                        {"Tracking4D/%REFERENCE%/residualsX"}});
 
@@ -26,7 +26,7 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
                                                        {"EventLoaderCLICpix2/%DUT%/pixelToA"},
                                                        {"EventLoaderCLICpix2/%DUT%/pixelCnt", "log"},
                                                        {"EventLoaderCLICpix2/%DUT%/pixelsPerFrame", "log"},
-                                                       {"AnalysisDUT/clusterTotAssociated"},
+                                                       {"AnalysisDUT/clusterChargeAssociated"},
                                                        {"AnalysisDUT/associatedTracksVersusTime"}});
     canvas_tracking = m_config.getMatrix<std::string>("tracking",
                                                       {{"Tracking4D/trackChi2"},
@@ -45,7 +45,7 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
     canvas_cy2d =
         m_config.getMatrix<std::string>("correlation_y2d", {{"TestAlgorithm/%DETECTOR%/correlationY_2Dlocal", "colz"}});
 
-    canvas_charge = m_config.getMatrix<std::string>("charge_distributions", {{"Clustering4D/%DETECTOR%/clusterTot"}});
+    canvas_charge = m_config.getMatrix<std::string>("charge_distributions", {{"Clustering4D/%DETECTOR%/clusterCharge"}});
 
     canvas_time = m_config.getMatrix<std::string>("event_times", {{"TestAlgorithm/%DETECTOR%/eventTimes"}});
 }
