@@ -19,12 +19,13 @@ After this both corrections can be applied on top of each other.
 * `timing_cut`: Timing cut for associating a track with an ATLASpix cluster. Defaults to `1us`.
 * `chi2ndof_cut`: Acceptance criterion for telescope tracks, defaults to a value of `3`.
 * `time_cut_frame_edge`: Parameter to discard telescope tracks at the frame edges (start and end of the current frame). Defaults to `20ns`.
-* `cluster_tot_cut`: Parameter to discard clusters with a ToT larger than the cut. Defaults to `500lsb` (inifitely large).
+* `cluster_charge_cut`: Parameter to discard clusters with a charge larger than the cut. Defaults to `100000e` (inifitely large).
 * `cluster_size_cut`: Parameter to discard clusters with a size too large, only for debugging purposes, default is 100 (inifitely large).
-* `high_tot_cut`: Cut dividing 'low' and 'high' ToT events. Defaults to `40`.
+* `high_tot_cut`: Cut dividing 'low' and 'high' ToT events (based on seed pixel ToT). Defaults to `40`.
+* `high_charge_cut`: Cut dividing 'low' and 'high' charge events (based on cluster charge). Defaults to `40e`.
 * `left_tail_cut`: Cut to divide into left tail and main peak of time correlation histogram. Only used to investigate characteristics of left tail. Defaults to `-10ns`.
 * `calc_corrections`: If `true`, TGraphErrors for row and timewalk corrections are produced.
-*  `correction_file_row`, `correction_file_timewalk`. Defaults to `false`.
+* `correction_file_row`, `correction_file_timewalk`. Defaults to `false`.
 * `correction_file_row`: Path to file which contains TGraphErrors for row correction. If this parameter is set, also `correction_graph_row` needs to be set. No default.
 * `correction_file_timewalk`: Path to file which contains TGraphErrors for timewalk correction. If this parameter is set, also `correction_graph_timewalk` needs to be set. No default.
 * `correction_graph_row`: Name of the TGraphErrors including its path in the root file used for row correction. E.g. "AnalysisTimingATLASpix/apx_0/gTimeCorrelationVsRow". No default.
