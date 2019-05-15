@@ -15,6 +15,9 @@
 
 #include "core/module/Module.hpp"
 
+#include "TEfficiency.h"
+#include "TH2D.h"
+#include "TNamed.h"
 #include "TProfile2D.h"
 
 namespace corryvreckan {
@@ -39,12 +42,38 @@ namespace corryvreckan {
     private:
         std::shared_ptr<Detector> m_detector;
 
-        TProfile2D* hPixelEfficiencyMap;
-        TProfile2D* hChipEfficiencyMap;
-        TProfile2D* hGlobalEfficiencyMap;
+        TH1D* hPixelEfficiency;
 
-        double m_chi2ndofCut, m_timeCutFrameEdge;
-        int total_tracks, matched_tracks;
+        TProfile2D* hPixelEfficiencyMap_trackPos;
+        TProfile2D* hChipEfficiencyMap_trackPos;
+        TProfile2D* hGlobalEfficiencyMap_trackPos;
+        TProfile2D* hChipEfficiencyMap_clustPos;
+        TProfile2D* hGlobalEfficiencyMap_clustPos;
+
+        TEfficiency* eTotalEfficiency;
+        TNamed* totalEfficiency;
+
+        TH1D* hTimeDiffPrevTrack_assocCluster;
+        TH1D* hTimeDiffPrevTrack_noAssocCluster;
+        TH1D* hRowDiffPrevTrack_assocCluster;
+        TH1D* hColDiffPrevTrack_assocCluster;
+        TH1D* hRowDiffPrevTrack_noAssocCluster;
+        TH1D* hColDiffPrevTrack_noAssocCluster;
+        TH1D* hTrackTimeToPrevHit_matched;
+        TH1D* hTrackTimeToPrevHit_notmatched;
+
+        TH2D* hPosDiffPrevTrack_assocCluster;
+        TH2D* hPosDiffPrevTrack_noAssocCluster;
+
+        double m_chi2ndofCut, m_timeCutFrameEdge, m_pixelTolerance, m_inpixelBinSize;
+        int total_tracks = 0;
+        int matched_tracks = 0;
+
+        double last_track_timestamp = 0;
+        double last_track_col = 0.;
+        double last_track_row = 0.;
+
+        Matrix<double> prev_hit_ts; // matrix containing previous hit timestamp for every pixel
     };
 
 } // namespace corryvreckan

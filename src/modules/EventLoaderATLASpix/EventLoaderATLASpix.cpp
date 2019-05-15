@@ -8,7 +8,7 @@ EventLoaderATLASpix::EventLoaderATLASpix(Configuration config, std::shared_ptr<D
     : Module(std::move(config), detector), m_detector(detector) {
 
     m_inputDirectory = m_config.getPath("input_directory");
-    m_clockCycle = m_config.get<double>("clock_cycle", static_cast<double>(Units::convert(6.25, "ns")));
+    m_clockCycle = m_config.get<double>("clock_cycle", Units::get<double>(6.25, "ns"));
 
     // Allow reading of legacy data format using the Karlsruhe readout system:
     m_legacyFormat = m_config.get<bool>("legacy_format", false);
@@ -152,9 +152,7 @@ void EventLoaderATLASpix::initialise() {
 StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Check if event frame is defined:
-    if(!clipboard->has_persistent("eventStart") || !clipboard->has_persistent("eventEnd")) {
-        throw ModuleError("Event not defined. Add Metronome module or Event reader defining the event.");
-    }
+    auto event = clipboard->get_event();
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
@@ -163,8 +161,8 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         return StatusCode::Failure;
     }
 
-    double start_time = clipboard->get_persistent("eventStart");
-    double end_time = clipboard->get_persistent("eventEnd");
+    double start_time = event->start();
+    double end_time = event->end();
     bool busy_at_start = m_detectorBusy;
 
     // Read pixel data
@@ -323,7 +321,7 @@ std::shared_ptr<Pixels> EventLoaderATLASpix::read_caribou_data(double start_time
                        << "\tTS_FULL: " << hit_ts << "\t" << Units::display(timestamp, {"s", "us", "ns"})
                        << "\tTOT: " << tot; // << "\t" << Units::display(tot_ns, {"s", "us", "ns"});
 
-            Pixel* pixel = new Pixel(m_detector->name(), row, col, tot, timestamp);
+            Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, timestamp);
             LOG(DEBUG) << "PIXEL:\t" << *pixel;
             pixels->push_back(pixel);
 
@@ -534,7 +532,7 @@ std::shared_ptr<Pixels> EventLoaderATLASpix::read_legacy_data(double, double) {
         // Convert TOA to nanoseconds:
         toa_timestamp /= (4096. * 0.04);
 
-        Pixel* pixel = new Pixel(m_detector->name(), row, col, tot, toa_timestamp);
+        Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, toa_timestamp);
         pixel->setCharge(cal_tot);
         pixels->push_back(pixel);
     }

@@ -106,6 +106,9 @@ IF(LATEX_COMPILER)
             IMAGES
             logo.png
             cc-by.png
+            usermanual/figures/trackChi2ndof_goodexample.pdf
+            usermanual/figures/residualX_goodexample.pdf
+            usermanual/figures/correlationX_goodexample.pdf
             usermanual/figures/datadrivenandframebased.png
             usermanual/figures/datadrivendevice.png
             usermanual/figures/framebaseddevice.png
@@ -118,6 +121,7 @@ IF(LATEX_COMPILER)
             usermanual/chapters/configuration.tex
             usermanual/chapters/correlation.tex
             usermanual/chapters/onlinemonitoring.tex
+            usermanual/chapters/howtoalign.tex
             usermanual/chapters/modules.tex
             usermanual/chapters/development.tex
             usermanual/chapters/testing.tex

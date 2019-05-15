@@ -91,44 +91,52 @@ log_level = WARNING
 
 There is only one predefined placeholder, `@RunNumber@`, which will be substituted with the current run number. Run numbers are not padded with leading zeros unless the `--zfill` option is provided.
 
+To avoid confusion with the text-field delimiter (see below), "paired" parameters such as `spatialCut = 100um, 150um` should be provided separately in the configuration template such as
+```toml
+spatialCut = @spatialCutX@, @spatialCutY@
+```
+
 ### Using Configuration Variables
 
 As described in the previous paragraph, variables in the configuration file template are replaced with values at run time.
 Two sources of values are currently supported, and are described in the following.
 
 #### Command Line
-   Variable substitutions can be specified using the `--option` or `-o` command line switches, e.g.
+Variable substitutions can be specified using the `--option` or `-o` command line switches, e.g.
 
-   ```bash
-   jobsub.py --option beamenergy=5.3 -c alignment.conf 1234
-   ```
+```bash
+jobsub.py --option beamenergy=5.3 -c alignment.conf 1234
+```
 
-   This switch be specified several times for multiple options or can parse a comma-separated list of options. This switch overrides any config file options.
+This switch can be specified several times for multiple options or can parse a comma-separated list of options. This switch overrides any config file options.
 
 #### Table (comma-separated text file)
-   - format: e.g.
-     - export from Open/LibreOffice with default settings (UTF-8,comma-separated, text-field delimiter: ")
-     - emacs org-mode table (see http://orgmode.org/manual/Tables.html)
-     - use Atom's *tablr* extension
-   - commented lines (starting with #) are ignored
-   - first row (after comments) has to provide column headers which identify the variables in the steering template to replace (case-insensitive)
-   - requires one column labeled "RunNumber"
-   - only considers placeholders left in the steering template after processing command-line arguments and config file options
-   -
+- format: e.g.
+   - export from Open/LibreOffice with default settings (UTF-8,comma-separated, text-field delimiter: ")
+   - emacs org-mode table (see http://orgmode.org/manual/Tables.html)
+   - use Atom's *tablr* extension
+- commented lines (starting with #) are ignored
+- first row (after comments) has to provide column headers which identify the variables in the steering template to replace (case-insensitive)
+- requires one column labeled "RunNumber"
+- only considers placeholders left in the steering template after processing command-line arguments and config file options
+
+It is also possible to specify multiple different settings for the same run number in different lines.
+If so, it should be ensured that the output file is not called `histograms_@RunNumber@` but rather `histograms_@RunNumber@_@OtherParameter@` to prevent overwriting the output file.
+
 ##### Example
-    The CSV file could have the following form:
+The CSV file could have the following form:
 
-    ```csv
-    RunNumber, BeamEnergy, telescopeGeometry
-          4115,          1, telescope_june2017_1.conf
-          4116,          2, telescope_june2017_1.conf
-          4117,          3, telescope_june2017_1.conf
-          4118,          4, telescope_june2017_1.conf
-          4119,          5, telescope_june2017_1.conf
-    ```
+```csv
+RunNumber, BeamEnergy, telescopeGeometry
+      4115,          1, telescope_june2017_1.conf
+      4116,          2, telescope_june2017_1.conf
+      4117,          3, telescope_june2017_1.conf
+      4118,          4, telescope_june2017_1.conf
+      4119,          5, telescope_june2017_1.conf
+```
 
-    Using this table, the variables `@BeamEnergy@` and `@telescopeGeometry@` in the templates would be replaced by the values corresponding to the current run number.
-    
+Using this table, the variables `@BeamEnergy@` and `@telescopeGeometry@` in the templates would be replaced by the values corresponding to the current run number.
+
 ### Example Usage with a Batch File:
 
 Example command line usage:
@@ -136,14 +144,7 @@ Example command line usage:
 ./jobsub.py -c /path/to/example.conf -v DEBUG --batch /path/to/example.sub --subdir <run_number>
 ```
 
-The batch file needs to look like `example.sub`:
-```
-output                  = corryvreckan.$(ClusterId).$(ProcId).out
-error                   = corryvreckan.$(ClusterId).$(ProcId).err
-log                     = corryvreckan.$(ClusterId).$(ProcId).log
-getenv                  = True
-queue
-```
+An example batch file is provided in the repository as `htcondor.sub`.
 Complicated and error-prone `transfer_output_files` commands can be avoided. It is much simpler to set an absolute path like
 ```
 output_directory = "/eos/user/y/yourname/whateveryouwant/run@RunNumber@"

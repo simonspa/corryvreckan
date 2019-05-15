@@ -27,6 +27,7 @@ namespace corryvreckan {
         std::shared_ptr<Detector> m_detector;
 
         // ROOT graphs
+        TH2F* hHitMap;
         TH1F* pixelToT_beforecalibration;
         TH1F* pixelToT_aftercalibration;
         TH2F* pixelTOTParameterA;
@@ -44,9 +45,6 @@ namespace corryvreckan {
 
         // configuration paramaters:
         std::string m_inputDirectory;
-
-        bool temporalSplit;
-        size_t m_numberPixelHits;
 
         bool applyCalibration;
         std::string calibrationPath;

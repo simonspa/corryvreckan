@@ -10,6 +10,7 @@ Subsequent modules should read these values and adhere to them.
 
 ### Parameters
 * `event_length`: Length of the event to be defined in physical units (not clock cycles of a specific device). Default value is `10us`.
+* `skip_time`: Time to skip at the begin of the run before processing the first event. Defaults to `0us`.
 
 ### Usage
 ```toml

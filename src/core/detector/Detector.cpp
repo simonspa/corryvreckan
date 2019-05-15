@@ -277,8 +277,8 @@ bool Detector::hasIntercept(const Track* track, double pixelTolerance) const {
 
     // Check if the row and column are outside of the chip
     bool intercept = true;
-    if(row < (pixelTolerance - 0.5) || row > (this->m_nPixels.Y() - 0.5 - pixelTolerance) ||
-       column < (pixelTolerance - 0.5) || column > (this->m_nPixels.X() - 0.5 - pixelTolerance))
+    if(row < pixelTolerance || row > (this->m_nPixels.Y() - pixelTolerance) || column < pixelTolerance ||
+       column > (this->m_nPixels.X() - pixelTolerance))
         intercept = false;
 
     return intercept;
@@ -322,7 +322,7 @@ double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosi
 }
 
 // Function to get local position from row and column
-PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double row, double column) const {
+PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double column, double row) const {
 
     return PositionVector3D<Cartesian3D<double>>(
         m_pitch.X() * (column - m_nPixels.X() / 2.), m_pitch.Y() * (row - m_nPixels.Y() / 2.), 0.);

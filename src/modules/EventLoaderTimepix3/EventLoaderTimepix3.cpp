@@ -14,14 +14,10 @@ using namespace corryvreckan;
 using namespace std;
 
 EventLoaderTimepix3::EventLoaderTimepix3(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector), temporalSplit(false), m_currentEvent(0), m_prevTime(0),
-      m_shutterOpen(false) {
+    : Module(std::move(config), detector), m_detector(detector), m_currentEvent(0), m_prevTime(0), m_shutterOpen(false) {
 
     // Take input directory from global parameters
     m_inputDirectory = m_config.getPath("input_directory");
-
-    // Check whether event length or pixel count should be used to separate events:
-    m_numberPixelHits = m_config.get<size_t>("number_of_pixelhits", 2000);
 
     // Calibration parameters
     if(m_config.has("calibration_path")) {
@@ -31,14 +27,6 @@ EventLoaderTimepix3::EventLoaderTimepix3(Configuration config, std::shared_ptr<D
 }
 
 void EventLoaderTimepix3::initialise() {
-
-    if(m_config.has("number_of_pixelhits")) {
-        LOG(INFO) << "Splitting events by number of pixel hits on detector plane.";
-        temporalSplit = false;
-    } else {
-        LOG(INFO) << "Event length set, splitting events by time.";
-        temporalSplit = true;
-    }
 
     // File structure is RunX/ChipID/files.dat
 
@@ -211,6 +199,16 @@ void EventLoaderTimepix3::initialise() {
         LOG(INFO) << "No calibration file path or no DUT name given; data will be uncalibrated.";
         applyCalibration = false;
     }
+    // Make debugging plots
+    std::string title = m_detector->name() + " Hit map;x [px];y [px];pixels";
+    hHitMap = new TH2F("hitMap",
+                       title.c_str(),
+                       m_detector->nPixels().X(),
+                       0,
+                       m_detector->nPixels().X(),
+                       m_detector->nPixels().Y(),
+                       0,
+                       m_detector->nPixels().Y());
 }
 
 StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
@@ -220,9 +218,7 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     // loading a fixed number of pixels (ie. 2000 at a time)
 
     // Check if event frame is defined:
-    if(!clipboard->has_persistent("eventStart") || !clipboard->has_persistent("eventEnd")) {
-        throw ModuleError("Event not defined. Add Metronome module or Event reader defining the event.");
-    }
+    auto event = clipboard->get_event();
 
     LOG(TRACE) << "== New event";
 
@@ -249,14 +245,7 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Otherwise tell event loop to keep running
-    IFLOG(INFO) {
-        if(temporalSplit) {
-            LOG_PROGRESS(DEBUG, "tpx3_loader")
-                << "Current time: " << Units::display(clipboard->get_persistent("eventStart"), {"s", "ms", "us", "ns"});
-        } else {
-            LOG_PROGRESS(DEBUG, "tpx3_loader") << "Current event: " << m_currentEvent;
-        }
-    }
+    LOG_PROGRESS(DEBUG, "tpx3_loader") << "Current time: " << Units::display(event->start(), {"s", "ms", "us", "ns"});
 
     return StatusCode::Success;
 }
@@ -333,6 +322,7 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
                                    std::shared_ptr<SpidrSignals>& spidrData) {
 
     std::string detectorID = m_detector->name();
+    auto event = clipboard->get_event();
 
     bool extra = false; // temp
 
@@ -416,15 +406,9 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
             // (We observed these packets a few times per run in various telescope planes in the
             // November 2018 test beam.)
             if(!m_detector->isDUT()) {
-                if(temporalSplit) {
-                    LOG(WARNING) << "Current time: "
-                                 << Units::display(clipboard->get_persistent("eventStart"), {"s", "ms", "us", "ns"})
-                                 << " detector " << detectorID << " "
-                                 << "header == 0x0! (indicates power pulsing.) Ignoring this.";
-                } else {
-                    LOG(WARNING) << "Current event: " << m_currentEvent << " detector " << detectorID << " "
-                                 << "header == 0x0! (indicates power pulsing.) Ignoring this.";
-                }
+                LOG(WARNING) << "Current time: " << Units::display(event->start(), {"s", "ms", "us", "ns"}) << " detector "
+                             << detectorID << " "
+                             << "header == 0x0! (indicates power pulsing.) Ignoring this.";
                 continue;
             }
             // Note that the following code is probably outdated and/or not much tested
@@ -447,12 +431,10 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
                 // Stop looking at data if the signal is after the current event window
                 // (and rewind the file
                 // reader so that we start with this signal next event)
-                if(temporalSplit) {
-                    if(timestamp > clipboard->get_persistent("eventEnd")) {
-                        (*m_file_iterator)->seekg(-1 * static_cast<int>(sizeof(pixdata)), std::ios_base::cur);
-                        LOG(TRACE) << "Signal has a time beyond the current event: " << Units::display(timestamp, "ns");
-                        break;
-                    }
+                if(timestamp > event->end()) {
+                    (*m_file_iterator)->seekg(-1 * static_cast<int>(sizeof(pixdata)), std::ios_base::cur);
+                    LOG(TRACE) << "Signal has a time beyond the current event: " << Units::display(timestamp, "ns");
+                    break;
                 }
 
                 SpidrSignal* powerSignal =
@@ -577,19 +559,19 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
             const double timestamp = static_cast<double>(time) / (4096. / 25.) + m_detector->timingOffset();
 
             // Ignore pixel data if it is before the "eventStart" read from the clipboard storage:
-            if(temporalSplit && (timestamp < clipboard->get_persistent("eventStart"))) {
+            if(timestamp < event->start()) {
                 LOG(TRACE) << "Skipping pixel, is before event window (" << Units::display(timestamp, {"s", "us", "ns"})
-                           << " < " << Units::display(clipboard->get_persistent("eventStart"), {"s", "us", "ns"}) << ")";
+                           << " < " << Units::display(event->start(), {"s", "us", "ns"}) << ")";
                 continue;
             }
 
             // Stop looking at data if the pixel is after the current event window
             // (and rewind the file reader so that we start with this pixel next event)
-            if(temporalSplit && (timestamp > clipboard->get_persistent("eventEnd"))) {
+            if(timestamp > event->end()) {
                 LOG(DEBUG) << "Stopping processing event, pixel is after "
                               "event window ("
                            << Units::display(timestamp, {"s", "us", "ns"}) << " > "
-                           << Units::display(clipboard->get_persistent("eventEnd"), {"s", "us", "ns"}) << ")";
+                           << Units::display(event->end(), {"s", "us", "ns"}) << ")";
                 (*m_file_iterator)->seekg(-1 * static_cast<int>(sizeof(pixdata)), std::ios_base::cur);
                 break;
             }
@@ -629,24 +611,21 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
                 LOG(DEBUG) << "Time shift= " << Units::display(t_shift, {"s", "ns"});
                 LOG(DEBUG) << "Timestamp calibrated = " << Units::display(ftimestamp, {"s", "ns"});
                 // creating new pixel object with calibrated values of tot and toa
-                Pixel* pixel = new Pixel(detectorID, row, col, static_cast<int>(tot), ftimestamp);
+                Pixel* pixel = new Pixel(detectorID, col, row, static_cast<int>(tot), ftimestamp);
                 pixel->setCharge(fcharge);
                 devicedata->push_back(pixel);
+                hHitMap->Fill(col, row);
                 LOG(DEBUG) << "Pixel Charge = " << fcharge << "; ToT value = " << tot;
                 pixelToT_aftercalibration->Fill(fcharge);
             } else {
                 LOG(DEBUG) << "Pixel hit at " << Units::display(timestamp, {"s", "ns"});
                 // creating new pixel object with non-calibrated values of tot and toa
-                Pixel* pixel = new Pixel(detectorID, row, col, static_cast<int>(tot), timestamp);
+                Pixel* pixel = new Pixel(detectorID, col, row, static_cast<int>(tot), timestamp);
                 devicedata->push_back(pixel);
+                hHitMap->Fill(col, row);
             }
 
             m_prevTime = time;
-        }
-
-        // Stop when we reach some large number of pixels (if events not based on time)
-        if(!temporalSplit && devicedata->size() >= m_numberPixelHits) {
-            break;
         }
     }
 

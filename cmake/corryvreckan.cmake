@@ -15,13 +15,13 @@ MACRO(_corryvreckan_module_define_common name)
     # Build all modules by default if not specified otherwise
     OPTION(BUILD_${_corryvreckan_module_dir} "Build module in directory ${_corryvreckan_module_dir}?" ON)
 
+    # Put message
+    MESSAGE(STATUS "Building module " ${BUILD_${_corryvreckan_module_dir}} "\t- " ${_corryvreckan_module_dir})
+
     # Quit the file if not building this file or all modules
     IF(NOT (BUILD_${_corryvreckan_module_dir} OR BUILD_ALL_MODULES))
         RETURN()
     ENDIF()
-
-    # Put message
-    MESSAGE( STATUS "Building module: " ${_corryvreckan_module_dir} )
 
     # Prepend with the module prefix to create the name of the module
     SET(${name} "CorryvreckanModule${_corryvreckan_module_dir}")

@@ -107,7 +107,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
         // If this pixel is masked, do not save it
         if(m_detector->masked(col, row))
             continue;
-        Pixel* pixel = new Pixel(m_detector->name(), row, col, tot, 0);
+        Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, 0);
         pixels->push_back(pixel);
         npixels++;
         hHitMap->Fill(col, row);
@@ -115,9 +115,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Now set the event time so that the Timepix3 data is loaded correctly
-    clipboard->put_persistent("eventStart", shutterStartTime);
-    clipboard->put_persistent("eventEnd", shutterStopTime);
-    clipboard->put_persistent("eventLength", (shutterStopTime - shutterStartTime));
+    clipboard->put_event(std::make_shared<Event>(shutterStartTime, shutterStopTime));
 
     LOG(TRACE) << "Loaded " << npixels << " pixels";
     // Put the data on the clipboard

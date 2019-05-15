@@ -9,8 +9,8 @@ using namespace corryvreckan;
 AnalysisDUT::AnalysisDUT(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", static_cast<double>(Units::convert(20, "ns")));
-    spatialCut = m_config.get<double>("spatial_cut", static_cast<double>(Units::convert(50, "um")));
+    m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
+    spatialCut = m_config.get<double>("spatial_cut", Units::get<double>(50, "um"));
     chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
 }
 
@@ -87,6 +87,7 @@ void AnalysisDUT::initialise() {
     clusterTotAssoc = new TH1F("clusterTotAssociated", "clusterTotAssociated", 10000, 0, 10000);
     clusterTotAssocNorm = new TH1F("clusterTotAssociatedNormalized", "clusterTotAssociatedNormalized", 10000, 0, 10000);
     clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
+    clusterSizeAssocNorm = new TH1F("clusterSizeAssociatedNormalized", "clusterSizeAssociatedNormalized", 30, 0, 30);
 
     // In-pixel studies:
     auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
@@ -180,8 +181,22 @@ void AnalysisDUT::initialise() {
 
     hAssociatedTracksGlobalPosition =
         new TH2F("hAssociatedTracksGlobalPosition", "hAssociatedTracksGlobalPosition", 200, -10, 10, 200, -10, 10);
-    hUnassociatedTracksGlobalPosition =
-        new TH2F("hUnassociatedTracksGlobalPosition", "hUnassociatedTracksGlobalPosition", 200, -10, 10, 200, -10, 10);
+    hAssociatedTracksLocalPosition = new TH2F("hAssociatedTracksLocalPosition",
+                                              "hAssociatedTracksLocalPosition",
+                                              m_detector->nPixels().X(),
+                                              0,
+                                              m_detector->nPixels().X(),
+                                              m_detector->nPixels().Y(),
+                                              0,
+                                              m_detector->nPixels().Y());
+    hUnassociatedTracksGlobalPosition = new TH2F("hUnassociatedTracksGlobalPosition",
+                                                 "hUnassociatedTracksGlobalPosition; x / mm; y / mm",
+                                                 200,
+                                                 -10,
+                                                 10,
+                                                 200,
+                                                 -10,
+                                                 10);
 }
 
 StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
@@ -211,7 +226,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         auto globalIntercept = m_detector->getIntercept(track);
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
-        if(!m_detector->hasIntercept(track, 1.)) {
+        if(!m_detector->hasIntercept(track, 0.5)) {
             LOG(DEBUG) << " - track outside DUT area";
             continue;
         }
@@ -227,18 +242,21 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             continue;
         }
 
+        // Get the event:
+        auto event = clipboard->get_event();
+
         // Discard tracks which are very close to the frame edges
-        if(fabs(track->timestamp() - clipboard->get_persistent("eventEnd")) < m_timeCutFrameEdge) {
+        if(fabs(track->timestamp() - event->end()) < m_timeCutFrameEdge) {
             // Late edge - eventEnd points to the end of the frame`
             LOG(DEBUG) << " - track close to end of readout frame: "
-                       << Units::display(fabs(track->timestamp() - clipboard->get_persistent("eventEnd")), {"us", "ns"})
-                       << " at " << Units::display(track->timestamp(), {"us"});
+                       << Units::display(fabs(track->timestamp() - event->end()), {"us", "ns"}) << " at "
+                       << Units::display(track->timestamp(), {"us"});
             continue;
-        } else if(fabs(track->timestamp() - clipboard->get_persistent("eventStart")) < m_timeCutFrameEdge) {
+        } else if(fabs(track->timestamp() - event->start()) < m_timeCutFrameEdge) {
             // Early edge - eventStart points to the beginning of the frame
             LOG(DEBUG) << " - track close to start of readout frame: "
-                       << Units::display(fabs(track->timestamp() - clipboard->get_persistent("eventStart")), {"us", "ns"})
-                       << " at " << Units::display(track->timestamp(), {"us"});
+                       << Units::display(fabs(track->timestamp() - event->start()), {"us", "ns"}) << " at "
+                       << Units::display(track->timestamp(), {"us"});
             continue;
         }
 
@@ -268,6 +286,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 auto associated_clusters = track->associatedClusters();
                 if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) == associated_clusters.end()) {
                     LOG(DEBUG) << "No associated cluster found";
+                    hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
                     continue;
                 }
 
@@ -327,6 +346,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 residualsTimeVsSignal->Fill(tdistance, cluster->tot());
 
                 clusterSizeAssoc->Fill(static_cast<double>(cluster->size()));
+                clusterSizeAssocNorm->Fill(static_cast<double>(cluster->size()));
 
                 // Fill in-pixel plots: (all as function of track position within pixel cell)
                 if(is_within_roi) {
@@ -355,6 +375,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
                 track->addAssociatedCluster(cluster);
                 hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
+                hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept),
+                                                     m_detector->getRow(localIntercept));
 
                 // Only allow one associated cluster per track
                 break;
@@ -371,7 +393,10 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             hPixelEfficiencyMap->Fill(xmod, ymod, has_associated_cluster);
         }
     }
-
     // Return value telling analysis to keep running
     return StatusCode::Success;
+}
+
+void AnalysisDUT::finalise() {
+    clusterSizeAssocNorm->Scale(1 / clusterSizeAssoc->Integral());
 }
