@@ -70,9 +70,9 @@ namespace corryvreckan {
         TH2F* hClusterSizeVsTot_Assoc;
 
         TH2F* hHitMapAssoc;
-        TH2F* hHitMapAssoc_highTot;
+        TH2F* hHitMapAssoc_highCharge;
         TH2F* hHitMapAssoc_inPixel;
-        TH2F* hHitMapAssoc_inPixel_highTot;
+        TH2F* hHitMapAssoc_inPixel_highCharge;
         TH2F* hClusterMapAssoc;
 
         TH2F* hTotVsTime_low;
@@ -103,9 +103,10 @@ namespace corryvreckan {
         double m_timingCut;
         double m_chi2ndofCut;
         double m_timeCutFrameEdge;
-        double m_clusterTotCut;
+        double m_clusterChargeCut;
         size_t m_clusterSizeCut;
-        int m_highTotCut;
+        int m_highTotCut;       // for pixel->tot()
+        double m_highChargeCut; // for cluster->charge()
         double m_leftTailCut;
 
         std::string m_correctionFile_row;
@@ -124,7 +125,7 @@ namespace corryvreckan {
         int tracks_afterMasking;
         int total_tracks;
         int matched_tracks;
-        int tracks_afterClusterTotCut;
+        int tracks_afterClusterChargeCut;
         int tracks_afterClusterSizeCut;
     };
 
