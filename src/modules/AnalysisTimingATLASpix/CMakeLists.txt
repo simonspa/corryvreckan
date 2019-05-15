@@ -1,4 +1,5 @@
 # Define module and return the generated name as MODULE_NAME
+CORRYVRECKAN_DETECTOR_MODULE(MODULE_NAME)
 CORRYVRECKAN_DETECTOR_TYPE(${MODULE_NAME} "ATLASpix")
 
 # Add source files to library
