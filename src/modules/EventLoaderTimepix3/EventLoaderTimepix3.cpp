@@ -613,7 +613,8 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard, Pixels*
                 LOG(DEBUG) << "Time shift= " << Units::display(t_shift, {"s", "ns"});
                 LOG(DEBUG) << "Timestamp calibrated = " << Units::display(ftimestamp, {"s", "ns"});
                 // creating new pixel object with calibrated values of tot and toa
-                Pixel* pixel = new Pixel(detectorID, col, row, static_cast<int>(tot), ftimestamp);
+                // when calibration is not available, set charge = tot
+                Pixel* pixel = new Pixel(detectorID, col, row, static_cast<int>(tot), tot, ftimestamp);
                 pixel->setCharge(fcharge);
                 devicedata->push_back(pixel);
                 hHitMap->Fill(col, row);
@@ -622,7 +623,8 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard, Pixels*
             } else {
                 LOG(DEBUG) << "Pixel hit at " << Units::display(timestamp, {"s", "ns"});
                 // creating new pixel object with non-calibrated values of tot and toa
-                Pixel* pixel = new Pixel(detectorID, col, row, static_cast<int>(tot), timestamp);
+                // when calibration is not available, set charge = tot
+                Pixel* pixel = new Pixel(detectorID, col, row, static_cast<int>(tot), tot, timestamp);
                 devicedata->push_back(pixel);
                 hHitMap->Fill(col, row);
             }
