@@ -219,11 +219,11 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     for(auto px : (*pixels)) {
         hHitMap->Fill(px->column(), px->row());
-        if(px->tot() > m_highToTCut) {
+        if(px->raw() > m_highToTCut) {
             hHitMap_highTot->Fill(px->column(), px->row());
         }
-        hHitMap_totWeighted->Fill(px->column(), px->row(), px->tot());
-        hPixelToT->Fill(px->tot());
+        hHitMap_totWeighted->Fill(px->column(), px->row(), px->raw());
+        hPixelToT->Fill(px->raw());
         hPixelCharge->Fill(px->charge());
         hPixelToA->Fill(px->timestamp());
 
