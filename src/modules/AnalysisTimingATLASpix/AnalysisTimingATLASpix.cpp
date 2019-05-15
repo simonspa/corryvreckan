@@ -26,9 +26,10 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
     m_timingCut = m_config.get<double>("timing_cut", static_cast<double>(Units::convert(1000, "ns")));
     m_chi2ndofCut = m_config.get<double>("chi2_ndof_cut", 3.);
     m_timeCutFrameEdge = m_config.get<double>("time_cut_frame_edge", static_cast<double>(Units::convert(20, "ns")));
-    m_clusterTotCut = m_config.get<double>("cluster_tot_cut", static_cast<double>(Units::convert(500, "ns")));
+    m_clusterChargeCut = m_config.get<double>("cluster_charge_cut", 100000.);
     m_clusterSizeCut = m_config.get<size_t>("cluster_size_cut", static_cast<size_t>(100));
     m_highTotCut = m_config.get<int>("high_tot_cut", 40);
+    m_highChargeCut = m_config.get<double>("high_charge_cut", 40.);
     m_leftTailCut = m_config.get<double>("left_tail_cut", static_cast<double>(Units::convert(-10, "ns")));
 
     if(m_config.has("correction_file_row")) {
@@ -56,7 +57,7 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
     tracks_afterMasking = 0;
     total_tracks = 0;
     matched_tracks = 0;
-    tracks_afterClusterTotCut = 0;
+    tracks_afterClusterChargeCut = 0;
     tracks_afterClusterSizeCut = 0;
 }
 
@@ -212,14 +213,14 @@ void AnalysisTimingATLASpix::initialise() {
                             m_detector->nPixels().Y(),
                             0,
                             m_detector->nPixels().Y());
-    hHitMapAssoc_highTot = new TH2F("hitMapAssoc_highTot",
-                                    "hitMapAssoc_highTot; x_{track} [px]; x_{track} [px]; # entries",
-                                    m_detector->nPixels().X(),
-                                    0,
-                                    m_detector->nPixels().X(),
-                                    m_detector->nPixels().Y(),
-                                    0,
-                                    m_detector->nPixels().Y());
+    hHitMapAssoc_highCharge = new TH2F("hitMapAssoc_highCharge",
+                                       "hitMapAssoc_highCharge; x_{track} [px]; x_{track} [px]; # entries",
+                                       m_detector->nPixels().X(),
+                                       0,
+                                       m_detector->nPixels().X(),
+                                       m_detector->nPixels().Y(),
+                                       0,
+                                       m_detector->nPixels().Y());
     hHitMapAssoc_inPixel = new TH2F("hitMapAssoc_inPixel",
                                     "hitMapAssoc_inPixel; x_{track} mod 130 #mum; y_{track} mod 130 #mum",
                                     static_cast<int>(pitch_x),
@@ -228,14 +229,15 @@ void AnalysisTimingATLASpix::initialise() {
                                     static_cast<int>(pitch_y),
                                     0,
                                     pitch_y);
-    hHitMapAssoc_inPixel_highTot = new TH2F("hitMapAssoc_inPixel_highTot",
-                                            "hitMapAssoc_inPixel_highTot;  x_{track} mod 130 #mum; y_{track} mod 130 #mum",
-                                            static_cast<int>(pitch_x),
-                                            0,
-                                            pitch_x,
-                                            static_cast<int>(pitch_y),
-                                            0,
-                                            pitch_y);
+    hHitMapAssoc_inPixel_highCharge =
+        new TH2F("hitMapAssoc_inPixel_highCharge",
+                 "hitMapAssoc_inPixel_highCharge;  x_{track} mod 130 #mum; y_{track} mod 130 #mum",
+                 static_cast<int>(pitch_x),
+                 0,
+                 pitch_x,
+                 static_cast<int>(pitch_y),
+                 0,
+                 pitch_y);
     hClusterMapAssoc = new TH2F("hClusterMapAssoc",
                                 "hClusterMapAssoc; x_{cluster} [px]; x_{cluster} [px]; # entries",
                                 m_detector->nPixels().X(),
@@ -424,11 +426,11 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     has_associated_cluster = true;
                     matched_tracks++;
 
-                    if(cluster->tot() > m_clusterTotCut) {
-                        LOG(DEBUG) << " - track discarded due to clusterTotCut";
+                    if(cluster->charge() > m_clusterChargeCut) {
+                        LOG(DEBUG) << " - track discarded due to clusterChargeCut";
                         continue;
                     }
-                    tracks_afterClusterTotCut++;
+                    tracks_afterClusterChargeCut++;
 
                     if(cluster->size() > m_clusterSizeCut) {
                         LOG(DEBUG) << " - track discarded due to clusterSizeCut";
@@ -439,11 +441,11 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     double timeDiff = track->timestamp() - cluster->timestamp();
                     hTrackCorrelationTimeAssoc->Fill(timeDiff);
 
-                    hTrackCorrelationTimeVsTot->Fill(timeDiff, cluster->getSeedPixel()->tot());
+                    hTrackCorrelationTimeVsTot->Fill(timeDiff, cluster->getSeedPixel()->raw());
                     if(cluster->size() == 1) {
-                        hTrackCorrelationTimeVsTot_1px->Fill(timeDiff, cluster->getSeedPixel()->tot());
+                        hTrackCorrelationTimeVsTot_1px->Fill(timeDiff, cluster->getSeedPixel()->raw());
                     } else {
-                        hTrackCorrelationTimeVsTot_npx->Fill(timeDiff, cluster->getSeedPixel()->tot());
+                        hTrackCorrelationTimeVsTot_npx->Fill(timeDiff, cluster->getSeedPixel()->raw());
                     }
                     hTrackCorrelationTimeVsCol->Fill(timeDiff, cluster->getSeedPixel()->column());
                     hTrackCorrelationTimeVsRow->Fill(timeDiff, cluster->getSeedPixel()->row());
@@ -455,8 +457,8 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     auto xmod = static_cast<double>(Units::convert(inpixel.X(), "um"));
                     auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
                     hHitMapAssoc_inPixel->Fill(xmod, ymod);
-                    if(cluster->tot() > m_highTotCut && cluster->size() == 1) {
-                        hHitMapAssoc_inPixel_highTot->Fill(xmod, ymod);
+                    if(cluster->charge() > m_highChargeCut && cluster->size() == 1) {
+                        hHitMapAssoc_inPixel_highCharge->Fill(xmod, ymod);
                     }
 
                     // 2D histograms: --> fill for all pixels from cluster
@@ -467,12 +469,12 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                             hClusterTimeMinusPixelTime->Fill(cluster->timestamp() - pixel->timestamp());
                         }
 
-                        hClusterSizeVsTot_Assoc->Fill(static_cast<double>(cluster->size()), pixel->tot());
+                        hClusterSizeVsTot_Assoc->Fill(static_cast<double>(cluster->size()), pixel->raw());
                         hHitMapAssoc->Fill(pixel->column(), pixel->row());
-                        hTotVsTime_low->Fill(pixel->tot(), static_cast<double>(Units::convert(pixel->timestamp(), "s")));
-                        if(pixel->tot() > m_highTotCut) {
-                            hHitMapAssoc_highTot->Fill(pixel->column(), pixel->row());
-                            hTotVsTime_high->Fill(pixel->tot(),
+                        hTotVsTime_low->Fill(pixel->raw(), static_cast<double>(Units::convert(pixel->timestamp(), "s")));
+                        if(pixel->raw() > m_highTotCut) {
+                            hHitMapAssoc_highCharge->Fill(pixel->column(), pixel->row());
+                            hTotVsTime_high->Fill(pixel->raw(),
                                                   static_cast<double>(Units::convert(pixel->timestamp(), "s")));
                         }
                     }
@@ -489,14 +491,14 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                         hTrackCorrelationTimeVsRow_rowCorr->Fill(track->timestamp() - cluster->getSeedPixel()->timestamp(),
                                                                  cluster->getSeedPixel()->row());
                         hTrackCorrelationTimeVsTot_rowCorr->Fill(track->timestamp() - cluster->getSeedPixel()->timestamp(),
-                                                                 cluster->getSeedPixel()->tot());
+                                                                 cluster->getSeedPixel()->raw());
                         if(cluster->size() == 1) {
                             hTrackCorrelationTimeVsTot_rowCorr_1px->Fill(
-                                track->timestamp() - cluster->getSeedPixel()->timestamp(), cluster->getSeedPixel()->tot());
+                                track->timestamp() - cluster->getSeedPixel()->timestamp(), cluster->getSeedPixel()->raw());
                         }
                         if(cluster->size() > 1) {
                             hTrackCorrelationTimeVsTot_rowCorr_npx->Fill(
-                                track->timestamp() - cluster->getSeedPixel()->timestamp(), cluster->getSeedPixel()->tot());
+                                track->timestamp() - cluster->getSeedPixel()->timestamp(), cluster->getSeedPixel()->raw());
                         }
                         //} for(auto& pixels : ...)
                     }
@@ -504,31 +506,31 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     if(m_pointwise_correction_timewalk) {
                         correctClusterTimestamp(cluster, 1); // mode=1 --> timewalk correction
                         hTrackCorrelationTime_rowAndTimeWalkCorr->Fill(track->timestamp() - cluster->timestamp());
-                        if(cluster->getSeedPixel()->tot() < 25) {
+                        if(cluster->getSeedPixel()->raw() < 25) {
                             hTrackCorrelationTime_rowAndTimeWalkCorr_l25->Fill(track->timestamp() - cluster->timestamp());
                         }
-                        if(cluster->getSeedPixel()->tot() < 40) {
+                        if(cluster->getSeedPixel()->raw() < 40) {
                             hTrackCorrelationTime_rowAndTimeWalkCorr_l40->Fill(track->timestamp() - cluster->timestamp());
                         }
-                        if(cluster->getSeedPixel()->tot() > 40) {
+                        if(cluster->getSeedPixel()->raw() > 40) {
                             hTrackCorrelationTime_rowAndTimeWalkCorr_g40->Fill(track->timestamp() - cluster->timestamp());
                         }
 
                         hTrackCorrelationTimeVsRow_rowAndTimeWalkCorr->Fill(
                             track->timestamp() - cluster->getSeedPixel()->timestamp(), cluster->getSeedPixel()->row());
                         hTrackCorrelationTimeVsTot_rowAndTimeWalkCorr->Fill(
-                            track->timestamp() - cluster->getSeedPixel()->timestamp(), cluster->getSeedPixel()->tot());
+                            track->timestamp() - cluster->getSeedPixel()->timestamp(), cluster->getSeedPixel()->raw());
 
                         // control plots to investigate "left tail" in time correlation:
                         if(track->timestamp() - cluster->timestamp() < m_leftTailCut) {
                             hClusterMap_leftTail->Fill(cluster->column(), cluster->row());
-                            hTot_leftTail->Fill(cluster->getSeedPixel()->tot());
+                            hTot_leftTail->Fill(cluster->getSeedPixel()->raw());
                             hPixelTimestamp_leftTail->Fill(cluster->getSeedPixel()->timestamp());
                             hClusterSize_leftTail->Fill(static_cast<double>(cluster->size()));
                         }
                         if(track->timestamp() - cluster->timestamp() > m_leftTailCut) {
                             hClusterMap_mainpeak->Fill(cluster->column(), cluster->row());
-                            hTot_mainpeak->Fill(cluster->getSeedPixel()->tot());
+                            hTot_mainpeak->Fill(cluster->getSeedPixel()->raw());
                             hPixelTimestamp_mainpeak->Fill(cluster->getSeedPixel()->timestamp());
                             hClusterSize_mainpeak->Fill(static_cast<double>(cluster->size()));
                         }
@@ -725,7 +727,7 @@ void AnalysisTimingATLASpix::finalise() {
     LOG(INFO) << "with intercept:\t" << tracks_hasIntercept;
     LOG(INFO) << "withing ROI:\t\t" << tracks_isWithinROI;
     LOG(INFO) << "frameEdge cut:\t\t" << matched_tracks;
-    LOG(INFO) << "after clusterTotCut:\t" << tracks_afterClusterTotCut;
+    LOG(INFO) << "after clusterTotCut:\t" << tracks_afterClusterChargeCut;
     LOG(INFO) << "after clusterSizeCut:\t" << tracks_afterClusterSizeCut;
 }
 
@@ -749,7 +751,7 @@ void AnalysisTimingATLASpix::correctClusterTimestamp(Cluster* cluster, int mode)
     if(mode == 0) {
         correction = gRowCorr->Eval((*pixels)[0]->row());
     } else if(mode == 1) {
-        correction = gTimeWalkCorr->Eval((*pixels)[0]->tot());
+        correction = gTimeWalkCorr->Eval((*pixels)[0]->raw());
     } else {
         LOG(ERROR) << "Mode " << mode << " does not exist!\n"
                    << "Choose\n\t0 --> row correction \n\t1-->timewalk correction";
@@ -761,7 +763,7 @@ void AnalysisTimingATLASpix::correctClusterTimestamp(Cluster* cluster, int mode)
 
     // Loop over all pixels:
     for(auto& pixel : (*pixels)) {
-        double pixelToT = pixel->adc();
+        double pixelToT = pixel->raw();
         if(pixelToT == 0) {
             LOG(DEBUG) << "Pixel with ToT 0!";
             pixelToT = 1;
@@ -774,7 +776,7 @@ void AnalysisTimingATLASpix::correctClusterTimestamp(Cluster* cluster, int mode)
         if(mode == 0) {
             correction = gRowCorr->Eval(pixel->row());
         } else if(mode == 1) {
-            correction = gTimeWalkCorr->Eval(pixel->tot());
+            correction = gTimeWalkCorr->Eval(pixel->raw());
         } else {
             return;
         }
