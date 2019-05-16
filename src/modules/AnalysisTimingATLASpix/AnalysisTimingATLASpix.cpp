@@ -317,27 +317,37 @@ void AnalysisTimingATLASpix::initialise() {
 
     if(m_pointwise_correction_row) {
         // Import TGraphErrors for row corection:
-        std::string fileName = m_correctionFile_row;
-        TFile* file = TFile::Open(fileName.c_str());
-        if(!file->IsOpen()) {
-            LOG(ERROR) << "Cannot open " << fileName << "!\n";
+        TFile file(m_correctionFile_row.c_str());
+        if(!file.IsOpen()) {
+            throw InvalidValueError(m_config,
+                                    "correction_file_row",
+                                    "ROOT file doesn't exist. If no row correction shall be applied, remove this parameter "
+                                    "from the configuration file.");
         }
-        gRowCorr = static_cast<TGraphErrors*>(file->Get(m_correctionGraph_row.c_str()));
-        file->Close();
-        delete file;
+        // Check if graph exists in ROOT file:
+        if(!file.GetListOfKeys()->Contains(m_correctionGraph_row.c_str())) {
+            throw InvalidValueError(
+                m_config, "correction_graph_row", "Graph doesn't exist in ROOT file. Use full/path/to/graph.");
+        }
+        gRowCorr = static_cast<TGraphErrors*>(file.Get(m_correctionGraph_row.c_str()));
     } else {
         LOG(STATUS) << "----> NO POINTWISE ROW CORRECTION!!!";
     }
     if(m_pointwise_correction_timewalk) {
         // Import TGraphErrors for timewalk corection:
-        std::string fileName = m_correctionFile_timewalk;
-        TFile* file = TFile::Open(fileName.c_str());
-        if(!file->IsOpen()) {
-            LOG(ERROR) << "Cannot open " << fileName << "!\n";
+        TFile file(m_correctionFile_timewalk.c_str());
+        if(!file.IsOpen()) {
+            throw InvalidValueError(m_config,
+                                    "correction_file_timewalk",
+                                    "ROOT file doesn't exist. If no row correction shall be applied, remove this parameter "
+                                    "from the configuration file.");
         }
-        gTimeWalkCorr = static_cast<TGraphErrors*>(file->Get(m_correctionGraph_timewalk.c_str()));
-        file->Close();
-        delete file;
+        // Check if graph exists in ROOT file:
+        if(!file.GetListOfKeys()->Contains(m_correctionGraph_timewalk.c_str())) {
+            throw InvalidValueError(
+                m_config, "correction_graph_timewalk", "Graph doesn't exist in ROOT file. Use full/path/to/graph.");
+        }
+        gTimeWalkCorr = static_cast<TGraphErrors*>(file.Get(m_correctionGraph_timewalk.c_str()));
     } else {
         LOG(STATUS) << "----> NO POINTWISE TIMEWALK CORRECTION!!!";
     }
