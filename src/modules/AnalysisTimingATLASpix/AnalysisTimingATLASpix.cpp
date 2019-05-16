@@ -247,14 +247,14 @@ void AnalysisTimingATLASpix::initialise() {
                                 0,
                                 m_detector->nPixels().Y());
 
-    hTotVsTime_low = new TH2F("hTotVsTime_low", "hTotVsTime_low", 64, 0, 64, 1e6, 0, 100);
-    hTotVsTime_low->GetXaxis()->SetTitle("pixel ToT [lsb]");
-    hTotVsTime_low->GetYaxis()->SetTitle("time [s]");
+    hTotVsTime = new TH2F("hTotVsTime", "hTotVsTime", 64, 0, 64, 1e6, 0, 100);
+    hTotVsTime->GetXaxis()->SetTitle("pixel ToT [lsb]");
+    hTotVsTime->GetYaxis()->SetTitle("time [s]");
     hTotVsTime_high = new TH2F("hTotVsTime_high", "hTotVsTime_high", 64, 0, 64, 1e6, 0, 100);
     hTotVsTime_high->GetXaxis()->SetTitle("pixel ToT [lsb] if > high_tot_cut");
     hTotVsTime_high->GetYaxis()->SetTitle("time [s]");
 
-    // control plots for "left tail":
+    // control plots for "left tail" and "main peak" of time correlation
     hClusterMap_leftTail = new TH2F("hClusterMap_leftTail",
                                     "hClusterMap_leftTail; x_{cluster} [px]; x_{cluster} [px]; # entries",
                                     m_detector->nPixels().X(),
@@ -263,23 +263,22 @@ void AnalysisTimingATLASpix::initialise() {
                                     m_detector->nPixels().Y(),
                                     0,
                                     m_detector->nPixels().Y());
-    hTot_leftTail = new TH1F("hTot_leftTail", "hTot_leftTail; pixel ToT [lsb]; # events", 2 * 64, -64, 64);
-    hPixelTimestamp_leftTail =
-        new TH1F("pixelTS1_leftTail", "pixelTimestamp_leftTail; pixel timestamp [ns]; # entries", 2050, 0, 2050);
-    hClusterSize_leftTail = new TH1F("clusterSize_leftTail", "clusterSize_leftTail; cluster size; # entries", 100, 0, 100);
-    // right tail = main distribution
-    hClusterMap_mainpeak = new TH2F("hClusterMap_mainpeak",
-                                    "hClusterMap_mainpeak; x_{cluster} [px]; x_{cluster} [px]; # entries",
+    hClusterMap_mainPeak = new TH2F("hClusterMap_mainPeak",
+                                    "hClusterMap_mainPeak; x_{cluster} [px]; x_{cluster} [px]; # entries",
                                     m_detector->nPixels().X(),
                                     0,
                                     m_detector->nPixels().X(),
                                     m_detector->nPixels().Y(),
                                     0,
                                     m_detector->nPixels().Y());
-    hTot_mainpeak = new TH1F("hTot_mainpeak", "hTot_mainpeak", 2 * 64, -64, 64);
-    hPixelTimestamp_mainpeak =
-        new TH1F("pixelTimestamp_mainpeak", "pixelTimestamp_mainpeak; pixel timestamp [ns]; # entries", 2050, 0, 2050);
-    hClusterSize_mainpeak = new TH1F("clusterSize_mainpeak", "clusterSize_mainpeak; cluster size; # entries", 100, 0, 100);
+    hClusterSize_leftTail = new TH1F("clusterSize_leftTail", "clusterSize_leftTail; cluster size; # entries", 100, 0, 100);
+    hClusterSize_mainPeak = new TH1F("clusterSize_mainPeak", "clusterSize_mainPeak; cluster size; # entries", 100, 0, 100);
+    hTot_leftTail = new TH1F("hTot_leftTail", "hTot_leftTail; pixel ToT [lsb]; # events", 2 * 64, -64, 64);
+    hTot_mainPeak = new TH1F("hTot_mainPeak", "hTot_mainPeak; pixel ToT [lsb]; # events", 2 * 64, -64, 64);
+    hPixelTimestamp_leftTail =
+        new TH1F("pixelTimestamp_leftTail", "pixelTimestamp_leftTail; pixel timestamp [ns]; # entries", 2050, 0, 2050);
+    hPixelTimestamp_mainPeak =
+        new TH1F("pixelTimestamp_mainPeak", "pixelTimestamp_mainPeak; pixel timestamp [ns]; # entries", 2050, 0, 2050);
 
     // /////////////////////////////////////////// //
     // TGraphErrors for Timewalk & Row Correction: //
@@ -317,27 +316,37 @@ void AnalysisTimingATLASpix::initialise() {
 
     if(m_pointwise_correction_row) {
         // Import TGraphErrors for row corection:
-        std::string fileName = m_correctionFile_row;
-        TFile* file = TFile::Open(fileName.c_str());
-        if(!file->IsOpen()) {
-            LOG(ERROR) << "Cannot open " << fileName << "!\n";
+        TFile file(m_correctionFile_row.c_str());
+        if(!file.IsOpen()) {
+            throw InvalidValueError(m_config,
+                                    "correction_file_row",
+                                    "ROOT file doesn't exist. If no row correction shall be applied, remove this parameter "
+                                    "from the configuration file.");
         }
-        gRowCorr = static_cast<TGraphErrors*>(file->Get(m_correctionGraph_row.c_str()));
-        file->Close();
-        delete file;
+        // Check if graph exists in ROOT file:
+        if(!file.GetListOfKeys()->Contains(m_correctionGraph_row.c_str())) {
+            throw InvalidValueError(
+                m_config, "correction_graph_row", "Graph doesn't exist in ROOT file. Use full/path/to/graph.");
+        }
+        gRowCorr = static_cast<TGraphErrors*>(file.Get(m_correctionGraph_row.c_str()));
     } else {
         LOG(STATUS) << "----> NO POINTWISE ROW CORRECTION!!!";
     }
     if(m_pointwise_correction_timewalk) {
         // Import TGraphErrors for timewalk corection:
-        std::string fileName = m_correctionFile_timewalk;
-        TFile* file = TFile::Open(fileName.c_str());
-        if(!file->IsOpen()) {
-            LOG(ERROR) << "Cannot open " << fileName << "!\n";
+        TFile file(m_correctionFile_timewalk.c_str());
+        if(!file.IsOpen()) {
+            throw InvalidValueError(m_config,
+                                    "correction_file_timewalk",
+                                    "ROOT file doesn't exist. If no row correction shall be applied, remove this parameter "
+                                    "from the configuration file.");
         }
-        gTimeWalkCorr = static_cast<TGraphErrors*>(file->Get(m_correctionGraph_timewalk.c_str()));
-        file->Close();
-        delete file;
+        // Check if graph exists in ROOT file:
+        if(!file.GetListOfKeys()->Contains(m_correctionGraph_timewalk.c_str())) {
+            throw InvalidValueError(
+                m_config, "correction_graph_timewalk", "Graph doesn't exist in ROOT file. Use full/path/to/graph.");
+        }
+        gTimeWalkCorr = static_cast<TGraphErrors*>(file.Get(m_correctionGraph_timewalk.c_str()));
     } else {
         LOG(STATUS) << "----> NO POINTWISE TIMEWALK CORRECTION!!!";
     }
@@ -442,13 +451,16 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     hTrackCorrelationTimeAssoc->Fill(timeDiff);
 
                     hTrackCorrelationTimeVsTot->Fill(timeDiff, cluster->getSeedPixel()->raw());
-                    if(cluster->size() == 1) {
-                        hTrackCorrelationTimeVsTot_1px->Fill(timeDiff, cluster->getSeedPixel()->raw());
-                    } else {
-                        hTrackCorrelationTimeVsTot_npx->Fill(timeDiff, cluster->getSeedPixel()->raw());
-                    }
                     hTrackCorrelationTimeVsCol->Fill(timeDiff, cluster->getSeedPixel()->column());
                     hTrackCorrelationTimeVsRow->Fill(timeDiff, cluster->getSeedPixel()->row());
+                    // single-pixel and multi-pixel clusters:
+                    if(cluster->size() == 1) {
+                        hTrackCorrelationTimeVsTot_1px->Fill(timeDiff, cluster->getSeedPixel()->raw());
+                        hTrackCorrelationTimeVsRow_1px->Fill(timeDiff, cluster->getSeedPixel()->row());
+                    } else {
+                        hTrackCorrelationTimeVsTot_npx->Fill(timeDiff, cluster->getSeedPixel()->raw());
+                        hTrackCorrelationTimeVsRow_npx->Fill(timeDiff, cluster->getSeedPixel()->row());
+                    }
 
                     // Calculate in-pixel position of track in microns
                     auto globalIntercept = m_detector->getIntercept(track);
@@ -471,7 +483,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
                         hClusterSizeVsTot_Assoc->Fill(static_cast<double>(cluster->size()), pixel->raw());
                         hHitMapAssoc->Fill(pixel->column(), pixel->row());
-                        hTotVsTime_low->Fill(pixel->raw(), static_cast<double>(Units::convert(pixel->timestamp(), "s")));
+                        hTotVsTime->Fill(pixel->raw(), static_cast<double>(Units::convert(pixel->timestamp(), "s")));
                         if(pixel->raw() > m_highTotCut) {
                             hHitMapAssoc_highCharge->Fill(pixel->column(), pixel->row());
                             hTotVsTime_high->Fill(pixel->raw(),
@@ -529,10 +541,10 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                             hClusterSize_leftTail->Fill(static_cast<double>(cluster->size()));
                         }
                         if(track->timestamp() - cluster->timestamp() > m_leftTailCut) {
-                            hClusterMap_mainpeak->Fill(cluster->column(), cluster->row());
-                            hTot_mainpeak->Fill(cluster->getSeedPixel()->raw());
-                            hPixelTimestamp_mainpeak->Fill(cluster->getSeedPixel()->timestamp());
-                            hClusterSize_mainpeak->Fill(static_cast<double>(cluster->size()));
+                            hClusterMap_mainPeak->Fill(cluster->column(), cluster->row());
+                            hTot_mainPeak->Fill(cluster->getSeedPixel()->raw());
+                            hPixelTimestamp_mainPeak->Fill(cluster->getSeedPixel()->timestamp());
+                            hClusterSize_mainPeak->Fill(static_cast<double>(cluster->size()));
                         }
                     }
                 }
@@ -733,20 +745,15 @@ void AnalysisTimingATLASpix::finalise() {
 
 void AnalysisTimingATLASpix::correctClusterTimestamp(Cluster* cluster, int mode) {
 
-    /* copied over from
-     * Clustering4D::calculateClusterCentre()
-     * and modified
-     *
+    /*
      * MODE:
      *  0 --> row correction
      *  1 --> timewalk correction
      */
 
-    // Empty variables to calculate cluster position
-    double row(0), column(0), tot(0), correction(0);
-
     // Get the pixels on this cluster
     Pixels* pixels = cluster->pixels();
+    double correction = 0;
 
     if(mode == 0) {
         correction = gRowCorr->Eval((*pixels)[0]->row());
@@ -763,15 +770,6 @@ void AnalysisTimingATLASpix::correctClusterTimestamp(Cluster* cluster, int mode)
 
     // Loop over all pixels:
     for(auto& pixel : (*pixels)) {
-        double pixelToT = pixel->raw();
-        if(pixelToT == 0) {
-            LOG(DEBUG) << "Pixel with ToT 0!";
-            pixelToT = 1;
-        }
-
-        tot += pixelToT;
-        row += (pixel->row() * pixelToT);
-        column += (pixel->column() * pixelToT);
 
         if(mode == 0) {
             correction = gRowCorr->Eval(pixel->row());

@@ -75,19 +75,18 @@ namespace corryvreckan {
         TH2F* hHitMapAssoc_inPixel_highCharge;
         TH2F* hClusterMapAssoc;
 
-        TH2F* hTotVsTime_low;
+        TH2F* hTotVsTime;
         TH2F* hTotVsTime_high;
 
-        // Control Plots for "left tail":
+        // Control Plots for "left tail" and "main peak" of time correlation
         TH2F* hClusterMap_leftTail;
+        TH2F* hClusterMap_mainPeak;
         TH1F* hTot_leftTail;
+        TH1F* hTot_mainPeak;
         TH1F* hPixelTimestamp_leftTail;
+        TH1F* hPixelTimestamp_mainPeak;
         TH1F* hClusterSize_leftTail;
-
-        TH2F* hClusterMap_mainpeak;
-        TH1F* hTot_mainpeak;
-        TH1F* hPixelTimestamp_mainpeak;
-        TH1F* hClusterSize_mainpeak;
+        TH1F* hClusterSize_mainPeak;
 
         // TGraphErrors:
         TGraphErrors* gTimeCorrelationVsRow;
