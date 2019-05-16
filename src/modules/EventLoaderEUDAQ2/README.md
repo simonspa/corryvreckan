@@ -15,6 +15,10 @@ It should be noted that the order of the detectors is crucial.
 The first detector that appears in the configuration defines the event window to which the hits of all other detectors are compared.
 In the example below this is the CLICpix2.
 
+If the data of multiple detectors is stored in the same file as sub-events, it must be ensured that the event defining the time frame is processed first.
+Currently, this is not implemented in a generic way (yet): the sub-events are sorted in reverse alphabetic order and then processed.
+This works if dealing with TLU (`TluRawDataEvent`) and Mimosa26 (`NiRawDataEvent`).
+
 For each event, the algorithm checks for an event on the clipboard.
 If none is available, the current event defines the event on the clipboard.
 Otherwise, it is checked whether or not the current event lies within the clipboard event.
@@ -22,7 +26,7 @@ If yes, the corresponding pixels are added to the clipboard for this event.
 If earlier, the next event is read until a matching event is found.
 If later, the pointer to this event is kept and it continues with the next detector.
 
-If no detector is capable of defining events, the `[Metronome]` modele needs to be used.
+If no detector is capable of defining events, the `[Metronome]` model needs to be used.
 
 ### Requirements
 This module requires an installation of [EUDAQ2](https://eudaq.github.io/). The installation path needs to be set to
