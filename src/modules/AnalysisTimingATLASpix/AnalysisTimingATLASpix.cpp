@@ -733,20 +733,15 @@ void AnalysisTimingATLASpix::finalise() {
 
 void AnalysisTimingATLASpix::correctClusterTimestamp(Cluster* cluster, int mode) {
 
-    /* copied over from
-     * Clustering4D::calculateClusterCentre()
-     * and modified
-     *
+    /*
      * MODE:
      *  0 --> row correction
      *  1 --> timewalk correction
      */
 
-    // Empty variables to calculate cluster position
-    double row(0), column(0), tot(0), correction(0);
-
     // Get the pixels on this cluster
     Pixels* pixels = cluster->pixels();
+    double correction = 0;
 
     if(mode == 0) {
         correction = gRowCorr->Eval((*pixels)[0]->row());
@@ -763,15 +758,6 @@ void AnalysisTimingATLASpix::correctClusterTimestamp(Cluster* cluster, int mode)
 
     // Loop over all pixels:
     for(auto& pixel : (*pixels)) {
-        double pixelToT = pixel->raw();
-        if(pixelToT == 0) {
-            LOG(DEBUG) << "Pixel with ToT 0!";
-            pixelToT = 1;
-        }
-
-        tot += pixelToT;
-        row += (pixel->row() * pixelToT);
-        column += (pixel->column() * pixelToT);
 
         if(mode == 0) {
             correction = gRowCorr->Eval(pixel->row());
