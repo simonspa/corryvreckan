@@ -75,7 +75,7 @@ namespace corryvreckan {
         TH2F* hHitMapAssoc_inPixel_highCharge;
         TH2F* hClusterMapAssoc;
 
-        TH2F* hTotVsTime_low;
+        TH2F* hTotVsTime;
         TH2F* hTotVsTime_high;
 
         // Control Plots for "left tail":

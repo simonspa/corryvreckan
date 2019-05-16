@@ -247,9 +247,9 @@ void AnalysisTimingATLASpix::initialise() {
                                 0,
                                 m_detector->nPixels().Y());
 
-    hTotVsTime_low = new TH2F("hTotVsTime_low", "hTotVsTime_low", 64, 0, 64, 1e6, 0, 100);
-    hTotVsTime_low->GetXaxis()->SetTitle("pixel ToT [lsb]");
-    hTotVsTime_low->GetYaxis()->SetTitle("time [s]");
+    hTotVsTime = new TH2F("hTotVsTime", "hTotVsTime", 64, 0, 64, 1e6, 0, 100);
+    hTotVsTime->GetXaxis()->SetTitle("pixel ToT [lsb]");
+    hTotVsTime->GetYaxis()->SetTitle("time [s]");
     hTotVsTime_high = new TH2F("hTotVsTime_high", "hTotVsTime_high", 64, 0, 64, 1e6, 0, 100);
     hTotVsTime_high->GetXaxis()->SetTitle("pixel ToT [lsb] if > high_tot_cut");
     hTotVsTime_high->GetYaxis()->SetTitle("time [s]");
@@ -484,7 +484,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
                         hClusterSizeVsTot_Assoc->Fill(static_cast<double>(cluster->size()), pixel->raw());
                         hHitMapAssoc->Fill(pixel->column(), pixel->row());
-                        hTotVsTime_low->Fill(pixel->raw(), static_cast<double>(Units::convert(pixel->timestamp(), "s")));
+                        hTotVsTime->Fill(pixel->raw(), static_cast<double>(Units::convert(pixel->timestamp(), "s")));
                         if(pixel->raw() > m_highTotCut) {
                             hHitMapAssoc_highCharge->Fill(pixel->column(), pixel->row());
                             hTotVsTime_high->Fill(pixel->raw(),

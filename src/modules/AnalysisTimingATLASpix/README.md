@@ -69,7 +69,7 @@ After this both corrections can be applied on top of each other.
   * In-pixel distribution of tracks
   * In-pixel distribution of tracks (for clusters with high ToT)
   * Map of associated clusters
-  * Pixel ToT vs. time for low ToT clusters
+  * Pixel ToT vs. time for all clusters
   * Pixel ToT vs. time for high ToT clusters
   * Cluster map for left tail events in time correlation (track timestamp - cluster timestamp < left_tail_cut)
   * Cluster map for main peak events in time correlation (track timestamp - cluster timestamp > left_tail_cut)
