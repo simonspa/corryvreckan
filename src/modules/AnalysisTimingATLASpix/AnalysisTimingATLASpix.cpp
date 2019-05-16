@@ -254,7 +254,7 @@ void AnalysisTimingATLASpix::initialise() {
     hTotVsTime_high->GetXaxis()->SetTitle("pixel ToT [lsb] if > high_tot_cut");
     hTotVsTime_high->GetYaxis()->SetTitle("time [s]");
 
-    // control plots for "left tail":
+    // control plots for "left tail" and "main peak" of time correlation
     hClusterMap_leftTail = new TH2F("hClusterMap_leftTail",
                                     "hClusterMap_leftTail; x_{cluster} [px]; x_{cluster} [px]; # entries",
                                     m_detector->nPixels().X(),
@@ -263,23 +263,22 @@ void AnalysisTimingATLASpix::initialise() {
                                     m_detector->nPixels().Y(),
                                     0,
                                     m_detector->nPixels().Y());
-    hTot_leftTail = new TH1F("hTot_leftTail", "hTot_leftTail; pixel ToT [lsb]; # events", 2 * 64, -64, 64);
-    hPixelTimestamp_leftTail =
-        new TH1F("pixelTS1_leftTail", "pixelTimestamp_leftTail; pixel timestamp [ns]; # entries", 2050, 0, 2050);
-    hClusterSize_leftTail = new TH1F("clusterSize_leftTail", "clusterSize_leftTail; cluster size; # entries", 100, 0, 100);
-    // right tail = main distribution
-    hClusterMap_mainpeak = new TH2F("hClusterMap_mainpeak",
-                                    "hClusterMap_mainpeak; x_{cluster} [px]; x_{cluster} [px]; # entries",
+    hClusterMap_mainPeak = new TH2F("hClusterMap_mainPeak",
+                                    "hClusterMap_mainPeak; x_{cluster} [px]; x_{cluster} [px]; # entries",
                                     m_detector->nPixels().X(),
                                     0,
                                     m_detector->nPixels().X(),
                                     m_detector->nPixels().Y(),
                                     0,
                                     m_detector->nPixels().Y());
-    hTot_mainpeak = new TH1F("hTot_mainpeak", "hTot_mainpeak", 2 * 64, -64, 64);
-    hPixelTimestamp_mainpeak =
-        new TH1F("pixelTimestamp_mainpeak", "pixelTimestamp_mainpeak; pixel timestamp [ns]; # entries", 2050, 0, 2050);
-    hClusterSize_mainpeak = new TH1F("clusterSize_mainpeak", "clusterSize_mainpeak; cluster size; # entries", 100, 0, 100);
+    hClusterSize_leftTail = new TH1F("clusterSize_leftTail", "clusterSize_leftTail; cluster size; # entries", 100, 0, 100);
+    hClusterSize_mainPeak = new TH1F("clusterSize_mainPeak", "clusterSize_mainPeak; cluster size; # entries", 100, 0, 100);
+    hTot_leftTail = new TH1F("hTot_leftTail", "hTot_leftTail; pixel ToT [lsb]; # events", 2 * 64, -64, 64);
+    hTot_mainPeak = new TH1F("hTot_mainPeak", "hTot_mainPeak; pixel ToT [lsb]; # events", 2 * 64, -64, 64);
+    hPixelTimestamp_leftTail =
+        new TH1F("pixelTimestamp_leftTail", "pixelTimestamp_leftTail; pixel timestamp [ns]; # entries", 2050, 0, 2050);
+    hPixelTimestamp_mainPeak =
+        new TH1F("pixelTimestamp_mainPeak", "pixelTimestamp_mainPeak; pixel timestamp [ns]; # entries", 2050, 0, 2050);
 
     // /////////////////////////////////////////// //
     // TGraphErrors for Timewalk & Row Correction: //
@@ -542,10 +541,10 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                             hClusterSize_leftTail->Fill(static_cast<double>(cluster->size()));
                         }
                         if(track->timestamp() - cluster->timestamp() > m_leftTailCut) {
-                            hClusterMap_mainpeak->Fill(cluster->column(), cluster->row());
-                            hTot_mainpeak->Fill(cluster->getSeedPixel()->raw());
-                            hPixelTimestamp_mainpeak->Fill(cluster->getSeedPixel()->timestamp());
-                            hClusterSize_mainpeak->Fill(static_cast<double>(cluster->size()));
+                            hClusterMap_mainPeak->Fill(cluster->column(), cluster->row());
+                            hTot_mainPeak->Fill(cluster->getSeedPixel()->raw());
+                            hPixelTimestamp_mainPeak->Fill(cluster->getSeedPixel()->timestamp());
+                            hClusterSize_mainPeak->Fill(static_cast<double>(cluster->size()));
                         }
                     }
                 }
