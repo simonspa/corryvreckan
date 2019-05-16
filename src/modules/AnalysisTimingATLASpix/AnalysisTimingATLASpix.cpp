@@ -442,13 +442,16 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     hTrackCorrelationTimeAssoc->Fill(timeDiff);
 
                     hTrackCorrelationTimeVsTot->Fill(timeDiff, cluster->getSeedPixel()->raw());
-                    if(cluster->size() == 1) {
-                        hTrackCorrelationTimeVsTot_1px->Fill(timeDiff, cluster->getSeedPixel()->raw());
-                    } else {
-                        hTrackCorrelationTimeVsTot_npx->Fill(timeDiff, cluster->getSeedPixel()->raw());
-                    }
                     hTrackCorrelationTimeVsCol->Fill(timeDiff, cluster->getSeedPixel()->column());
                     hTrackCorrelationTimeVsRow->Fill(timeDiff, cluster->getSeedPixel()->row());
+                    // single-pixel and multi-pixel clusters:
+                    if(cluster->size() == 1) {
+                        hTrackCorrelationTimeVsTot_1px->Fill(timeDiff, cluster->getSeedPixel()->raw());
+                        hTrackCorrelationTimeVsRow_1px->Fill(timeDiff, cluster->getSeedPixel()->row());
+                    } else {
+                        hTrackCorrelationTimeVsTot_npx->Fill(timeDiff, cluster->getSeedPixel()->raw());
+                        hTrackCorrelationTimeVsRow_npx->Fill(timeDiff, cluster->getSeedPixel()->row());
+                    }
 
                     // Calculate in-pixel position of track in microns
                     auto globalIntercept = m_detector->getIntercept(track);
