@@ -27,7 +27,11 @@ The decoder promises to
 * `adjust_event_times`: Matrix that allows the user to shift the event start/end of all different types of EUDAQ events. The first entry of each row specifies the data type, the second is the offset which is added to the event start and the third entry is the offset added to the event end. A usage example is shown below. Default is `0ms, 0ms`.
 
 ### Plots produced
-*none*
+* 2D hitmap
+* 1D pixel raw data histogram
+* 1D pixels per event histogram
+* 1D eudaq event start histogram
+* 1D clipboard event start histogram
 
 ### Usage
 ```toml
