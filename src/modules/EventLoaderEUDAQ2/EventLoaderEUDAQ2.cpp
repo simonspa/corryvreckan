@@ -85,6 +85,7 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
             events_ = new_event->GetSubEvents();
             // The main event might also contain data, so add it to the buffer:
             if(events_.empty()) {
+                LOG(WARNING) << "no subevents";
                 events_.push_back(new_event);
             }
 
@@ -97,12 +98,12 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
         for(int i = 0; i < static_cast<int>(events_.size()); i++) {
             LOG(TRACE) << "  (sub-) event " << i << " is a " << events_[static_cast<long unsigned int>(i)]->GetDescription();
         }
-
         auto event = events_.front();
         events_.erase(events_.begin());
         decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, nullptr);
         LOG(DEBUG) << event->GetDescription() << ": Decoding " << (decoding_failed ? "failed" : "succeeded");
     } while(decoding_failed);
+    // LOG(DEBUG) << "num Planes in Event: "<<stdevt->NumPlanes();
     return stdevt;
 }
 
@@ -115,7 +116,13 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
 
         // If there is no event defined yet or the trigger number is unkown, there is little we can do:
         if(!clipboard->event_defined() || !clipboard->get_event()->hasTriggerID(evt->GetTriggerN())) {
-            LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " not found in current event.";
+            LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN()
+                       << " not found in current event. - return unknown event position";
+            if(clipboard->event_defined()) {
+                LOG(DEBUG) << clipboard->get_event()->getTriggerTime(0);
+            } else {
+                LOG(DEBUG) << "No event on the clipboard";
+            }
             return EventPosition::UNKNOWN;
         }
 
@@ -181,24 +188,35 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
 
     Pixels* pixels = new Pixels();
 
+    LOG(TRACE) << "Event with " << evt->NumPlanes() << " planes";
     // Loop over all planes, select the relevant detector:
     for(size_t i_plane = 0; i_plane < evt->NumPlanes(); i_plane++) {
         auto plane = evt->GetPlane(i_plane);
 
         // Concatenate plane name according to naming convention: sensor_type + "_" + int
-        auto plane_name = plane.Sensor() + "_" + std::to_string(i_plane);
+        // This is heavily sensor dependent - need a kind of case switch
+        auto planeID = std::to_string(i_plane);
+        auto detectorType = m_detector->type();
+        std::transform(detectorType.begin(), detectorType.end(), detectorType.begin(), ::tolower);
+        if(detectorType == "alpide")
+            planeID = std::to_string(evt->GetStreamN());
+        auto plane_name = plane.Sensor() + "_" + planeID;
         auto detector_name = m_detector->name();
+        //  LOG(DEBUG) << plane_name <<", "<<detector_name;
         // Convert to lower case before string comparison to avoid errors by the user:
         std::transform(plane_name.begin(), plane_name.end(), plane_name.begin(), ::tolower);
         std::transform(detector_name.begin(), detector_name.end(), detector_name.begin(), ::tolower);
+        LOG(TRACE) << plane_name << " with  " << plane.HitPixels() << " hit pixels";
+
         if(detector_name != plane_name) {
             LOG(DEBUG) << "Wrong plane: " << detector_name << "!=" << plane_name << ". Continue.";
             continue;
         }
 
-        LOG(DEBUG) << "Found correct plane.";
+        LOG(DEBUG) << "Found correct plane: " << plane_name << "with hits " << plane.HitPixels();
+        // plane.Print(std::cout);
         // Loop over all hits and add to pixels vector:
-        for(unsigned int i = 0; i < plane.GetPixels<int>().size(); i++) {
+        for(unsigned int i = 0; i < plane.HitPixels(); i++) {
             auto col = static_cast<int>(plane.GetX(i));
             auto row = static_cast<int>(plane.GetY(i));
             auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
@@ -242,14 +260,18 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Check if this event is within the currently defined Corryvreckan event:
         current_position = is_within_event(clipboard, event_);
+
+        // LOG(TRACE) << "Num planes in event: " << event_->NumPlanes();
+        // LOG(TRACE) << "Event Status Code " << int(current_position);
         if(current_position == EventPosition::DURING) {
-            LOG(DEBUG) << "Is withing current event, storing data";
+            LOG(DEBUG) << "Is within current event, storing data";
             // Store data on the clipboard
             store_data(clipboard, event_);
         }
 
         // If this event was after the current event, stop reading:
         if(current_position == EventPosition::AFTER) {
+            LOG(DEBUG) << "Is too late stop reading";
             break;
         }
 
