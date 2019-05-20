@@ -185,13 +185,7 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
         auto plane = evt->GetPlane(i_plane);
 
         // Concatenate plane name according to naming convention: sensor_type + "_" + int
-        // This is heavily sensor dependent - need a kind of case switch
-        auto planeID = std::to_string(i_plane);
-        auto detectorType = m_detector->type();
-        std::transform(detectorType.begin(), detectorType.end(), detectorType.begin(), ::tolower);
-        if(detectorType == "alpide")
-            planeID = std::to_string(evt->GetStreamN());
-        auto plane_name = plane.Sensor() + "_" + planeID;
+        auto plane_name = plane.Sensor() + "_" + std::to_string(plane.ID());
         auto detector_name = m_detector->name();
         //  LOG(DEBUG) << plane_name <<", "<<detector_name;
         // Convert to lower case before string comparison to avoid errors by the user:
