@@ -85,7 +85,6 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
             events_ = new_event->GetSubEvents();
             // The main event might also contain data, so add it to the buffer:
             if(events_.empty()) {
-                LOG(WARNING) << "no subevents";
                 events_.push_back(new_event);
             }
 
@@ -103,7 +102,6 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
         decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, nullptr);
         LOG(DEBUG) << event->GetDescription() << ": Decoding " << (decoding_failed ? "failed" : "succeeded");
     } while(decoding_failed);
-    // LOG(DEBUG) << "num Planes in Event: "<<stdevt->NumPlanes();
     return stdevt;
 }
 
@@ -116,13 +114,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
 
         // If there is no event defined yet or the trigger number is unkown, there is little we can do:
         if(!clipboard->event_defined() || !clipboard->get_event()->hasTriggerID(evt->GetTriggerN())) {
-            LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN()
-                       << " not found in current event. - return unknown event position";
-            if(clipboard->event_defined()) {
-                LOG(DEBUG) << clipboard->get_event()->getTriggerTime(0);
-            } else {
-                LOG(DEBUG) << "No event on the clipboard";
-            }
+            LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " not found in current event.";
             return EventPosition::UNKNOWN;
         }
 
@@ -188,7 +180,6 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
 
     Pixels* pixels = new Pixels();
 
-    LOG(TRACE) << "Event with " << evt->NumPlanes() << " planes";
     // Loop over all planes, select the relevant detector:
     for(size_t i_plane = 0; i_plane < evt->NumPlanes(); i_plane++) {
         auto plane = evt->GetPlane(i_plane);
@@ -213,8 +204,7 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
             continue;
         }
 
-        LOG(DEBUG) << "Found correct plane: " << plane_name << "with hits " << plane.HitPixels();
-        // plane.Print(std::cout);
+        LOG(DEBUG) << "Found correct plane.";
         // Loop over all hits and add to pixels vector:
         for(unsigned int i = 0; i < plane.HitPixels(); i++) {
             auto col = static_cast<int>(plane.GetX(i));
@@ -261,8 +251,6 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         // Check if this event is within the currently defined Corryvreckan event:
         current_position = is_within_event(clipboard, event_);
 
-        // LOG(TRACE) << "Num planes in event: " << event_->NumPlanes();
-        // LOG(TRACE) << "Event Status Code " << int(current_position);
         if(current_position == EventPosition::DURING) {
             LOG(DEBUG) << "Is within current event, storing data";
             // Store data on the clipboard
@@ -271,7 +259,6 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
         // If this event was after the current event, stop reading:
         if(current_position == EventPosition::AFTER) {
-            LOG(DEBUG) << "Is too late stop reading";
             break;
         }
 
