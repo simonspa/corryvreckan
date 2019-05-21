@@ -21,6 +21,7 @@
 #include "objects/Object.hpp"
 
 namespace corryvreckan {
+    typedef std::map<std::type_index, std::map<std::string, std::shared_ptr<void>>> ClipboardData;
 
     /**
      * @brief Class for temporary data storage for exachange between modules
@@ -113,9 +114,13 @@ namespace corryvreckan {
          */
         std::vector<std::string> listCollections() const;
 
-    private:
-        typedef std::map<std::type_index, std::map<std::string, std::shared_ptr<void>>> ClipboardData;
+        /**
+         * @brief Retrieve all currently stored clipboard data
+         * @return All clipboard data
+         */
+        const ClipboardData& getAll() const;
 
+    private:
         // Container for data, list of all data held
         ClipboardData m_data;
 

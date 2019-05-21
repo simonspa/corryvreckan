@@ -76,3 +76,7 @@ std::vector<std::string> Clipboard::listCollections() const {
     }
     return collections;
 }
+
+const ClipboardData& Clipboard::getAll() const {
+    return m_data;
+}
