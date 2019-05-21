@@ -236,9 +236,9 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     hPixelsPerFrame->Fill(static_cast<double>(pixels->size()));
 
     // Put the data on the clipboard
-    if(!pixels->empty()) {
-        clipboard->put(pixels, m_detector->name());
-    } else {
+    clipboard->put(pixels, m_detector->name());
+
+    if(pixels->empty()) {
         LOG(DEBUG) << "Returning <NoData> status, no hits found.";
         return StatusCode::NoData;
     }

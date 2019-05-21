@@ -111,9 +111,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Put the clusters on the clipboard
-    if(deviceClusters->size() > 0) {
-        clipboard->put(deviceClusters, m_detector->name());
-    }
+    clipboard->put(deviceClusters, m_detector->name());
     LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << m_detector->name();
 
     return StatusCode::Success;

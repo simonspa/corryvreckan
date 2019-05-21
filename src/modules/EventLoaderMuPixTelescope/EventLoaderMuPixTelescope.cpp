@@ -99,7 +99,7 @@ StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) 
         if(!dataContainers.count(d))
             continue;
         try {
-            clipboard->put(d, "pixels", dataContainers[d]);
+            clipboard->put(dataContainers[d], d);
         } catch(ModuleError& e) {
             LOG(ERROR) << "Unknown detector ";
         }

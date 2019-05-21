@@ -297,9 +297,9 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     clipboard->put_event(std::make_shared<Event>(shutterStartTime, shutterStopTime));
 
     // Put the data on the clipboard
-    if(!pixels->empty()) {
-        clipboard->put(pixels, m_detector->name());
-    } else {
+    clipboard->put(pixels, m_detector->name());
+
+    if(pixels->empty()) {
         return StatusCode::NoData;
     }
 
