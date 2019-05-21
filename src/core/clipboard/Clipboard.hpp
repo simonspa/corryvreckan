@@ -50,7 +50,7 @@ namespace corryvreckan {
          * @param type Type of the object collection to be stored
          * @param Objects vector of Objects to store
          */
-        template <typename T> void put(std::shared_ptr<T> objects, const std::string& key = "");
+        template <typename T> void put(std::shared_ptr<std::vector<T*>> objects, const std::string& key = "");
 
         /**
          * @brief Retrieve objects from the clipboard
@@ -58,7 +58,7 @@ namespace corryvreckan {
          * @param type Type of objects to be retrieved
          * @return Vector of Object pointers
          */
-        template <typename T> std::shared_ptr<T> get(const std::string& key = "") const;
+        template <typename T> std::shared_ptr<std::vector<T*>> get(const std::string& key = "") const;
 
         /**
          * @brief Check whether an event has been defined

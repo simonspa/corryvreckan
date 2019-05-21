@@ -13,14 +13,14 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks from the clipboard
-    auto tracks = clipboard->get<Tracks>();
+    auto tracks = clipboard->get<Track>();
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
     }
 
     // Get the DUT clusters from the clipboard
-    auto clusters = clipboard->get<Clusters>(m_detector->name());
+    auto clusters = clipboard->get<Cluster>(m_detector->name());
     if(clusters == nullptr) {
         LOG(DEBUG) << "No DUT clusters on the clipboard";
         return StatusCode::Success;

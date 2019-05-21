@@ -75,7 +75,7 @@ ROOT::Math::XYZPoint AnalysisTelescope::closestApproach(ROOT::Math::XYZPoint pos
 StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks from the clipboard
-    auto tracks = clipboard->get<Tracks>();
+    auto tracks = clipboard->get<Track>();
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
@@ -104,7 +104,7 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
             telescopeResidualsY[name]->Fill(cluster->global().y() - intercept.Y());
 
             // Get the MC particles from the clipboard
-            auto mcParticles = clipboard->get<MCParticles>(name);
+            auto mcParticles = clipboard->get<MCParticle>(name);
             if(mcParticles == nullptr) {
                 continue;
             }
@@ -123,7 +123,7 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Get the MC particles from the clipboard
-            auto mcParticles = clipboard->get<MCParticles>(detector->name());
+            auto mcParticles = clipboard->get<MCParticle>(detector->name());
             if(mcParticles == nullptr) {
                 continue;
             }

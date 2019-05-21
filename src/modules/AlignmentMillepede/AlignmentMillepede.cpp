@@ -70,7 +70,7 @@ void AlignmentMillepede::initialise() {
 StatusCode AlignmentMillepede::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks
-    auto tracks = clipboard->get<Tracks>();
+    auto tracks = clipboard->get<Track>();
     if(tracks == nullptr) {
         return StatusCode::Success;
     }

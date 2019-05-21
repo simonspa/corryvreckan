@@ -90,7 +90,7 @@ StatusCode MaskCreator::run(std::shared_ptr<Clipboard> clipboard) {
     m_numEvents++;
 
     // Get the pixels
-    auto pixels = clipboard->get<Pixels>(m_detector->name());
+    auto pixels = clipboard->get<Pixel>(m_detector->name());
     if(pixels == nullptr) {
         LOG(TRACE) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return StatusCode::NoData;

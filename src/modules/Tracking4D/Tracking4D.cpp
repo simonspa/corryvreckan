@@ -84,7 +84,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         string detectorID = detector->name();
 
         // Get the clusters
-        auto tempClusters = clipboard->get<Clusters>(detectorID);
+        auto tempClusters = clipboard->get<Cluster>(detectorID);
         if(tempClusters == nullptr || tempClusters->size() == 0) {
             LOG(DEBUG) << "Detector " << detectorID << " does not have any clusters on the clipboard";
         } else {

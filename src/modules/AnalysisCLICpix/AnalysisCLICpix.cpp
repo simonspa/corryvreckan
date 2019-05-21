@@ -219,7 +219,7 @@ void AnalysisCLICpix::initialise() {
 StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the clicpix clusters in this event
-    auto clusters = clipboard->get<Clusters>(m_detector->name());
+    auto clusters = clipboard->get<Cluster>(m_detector->name());
     if(clusters == nullptr) {
         LOG(DEBUG) << "No clusters for " << m_detector->name() << " on the clipboard";
         return StatusCode::Success;
@@ -236,7 +236,7 @@ StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     fillClusterHistos(clusters);
 
     // Get the tracks in this event
-    auto tracks = clipboard->get<Tracks>();
+    auto tracks = clipboard->get<Track>();
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
