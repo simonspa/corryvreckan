@@ -157,7 +157,8 @@ StatusCode EventLoaderTimepix1::run(std::shared_ptr<Clipboard> clipboard) {
             // load the real event data, and make a new pixel object
             istringstream detectorData(data);
             detectorData >> col >> row >> tot;
-            Pixel* pixel = new Pixel(m_currentDevice, col, row, tot);
+            // when calibration is not available -> set charge = tot, timestamp not available -> set to 0.
+            Pixel* pixel = new Pixel(m_currentDevice, col, row, tot, tot, 0.);
             // FIXME to work properly, m_eventTime needs to be converted to nanoseconds!
             pixel->timestamp(static_cast<double>(m_eventTime));
             dataContainers[m_currentDevice]->push_back(pixel);

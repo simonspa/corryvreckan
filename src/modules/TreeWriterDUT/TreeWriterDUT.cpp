@@ -135,8 +135,8 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
             v_pixelY.push_back(pixel->row());
 
             // ToT
-            LOG(DEBUG) << "Gets pixel tot = " << pixel->adc();
-            v_pixelToT.push_back(pixel->adc());
+            LOG(DEBUG) << "Gets pixel raw value = " << pixel->raw();
+            v_pixelToT.push_back(pixel->raw());
 
             // ToA
             LOG(DEBUG) << "Gets pixel timestamp = " << pixel->timestamp();

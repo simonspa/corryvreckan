@@ -4,7 +4,28 @@
 **Status**: under development
 
 ### Description
-Correlate EUDAQ2 devices, based on time.
+This module allows data recorded by EUDAQ2 and stored in a EUDAQ2 binary file as raw detector data to be read into Corryvreckan.
+For each detector type, the corresponding converter module in EUDAQ2 is used to transform the data into the `StandardPlane` event type before storing the individual `Pixel` objects on the Corryvreckan clipboard.
+
+The detectors need to be named according to the following scheme: `<detector_type>_<plane_number>` where `detector_type` is the type specified in the detectors file and `<plane_number>` is an iterative number over the planes of the same type.
+
+If the data of different detectors is stored in separate files, the parameters `name` or `type` can be used as shown in the usage example below.
+It should be noted that the order of the detectors is crucial.
+The first detector that appears in the configuration defines the event window to which the hits of all other detectors are compared.
+In the example below this is the CLICpix2.
+
+If the data of multiple detectors is stored in the same file as sub-events, it must be ensured that the event defining the time frame is processed first.
+Currently, this is not implemented in a generic way (yet): the sub-events are sorted in reverse alphabetic order and then processed.
+This works if dealing with TLU (`TluRawDataEvent`) and Mimosa26 (`NiRawDataEvent`).
+
+For each event, the algorithm checks for an event on the clipboard.
+If none is available, the current event defines the event on the clipboard.
+Otherwise, it is checked whether or not the current event lies within the clipboard event.
+If yes, the corresponding pixels are added to the clipboard for this event.
+If earlier, the next event is read until a matching event is found.
+If later, the pointer to this event is kept and it continues with the next detector.
+
+If no detector is capable of defining events, the `[Metronome]` model needs to be used.
 
 ### Requirements
 This module requires an installation of [EUDAQ2](https://eudaq.github.io/). The installation path needs to be set to
@@ -27,7 +48,11 @@ The decoder promises to
 * `adjust_event_times`: Matrix that allows the user to shift the event start/end of all different types of EUDAQ events. The first entry of each row specifies the data type, the second is the offset which is added to the event start and the third entry is the offset added to the event end. A usage example is shown below. Default is `0ms, 0ms`.
 
 ### Plots produced
-*none*
+* 2D hitmap
+* 1D pixel raw data histogram
+* 1D pixels per event histogram
+* 1D eudaq event start histogram
+* 1D clipboard event start histogram
 
 ### Usage
 ```toml

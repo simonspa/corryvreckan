@@ -12,24 +12,70 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
+        /**
+         * @brief Required default constructor
+         */
         Pixel() = default;
-        Pixel(std::string detectorID, int col, int row, int tot) : Pixel(detectorID, col, row, tot, 0.) {}
-        Pixel(std::string detectorID, int col, int row, int tot, double timestamp)
-            : Pixel(detectorID, col, row, tot, timestamp, false) {}
-        Pixel(std::string detectorID, int col, int row, int tot, double timestamp, bool binary)
-            : Object(detectorID, timestamp), m_row(row), m_column(col), m_adc(tot), m_charge(tot), m_isBinary(binary) {}
 
+        /**
+         * @brief Class constructor
+         * @param detectorID detectorID
+         * @param col Pixel column
+         * @param row Pixel row
+         * @param timestamp Pixel timestamp in nanoseconds
+         * @param raw Charge-equivalent pixel raw value. If not available set to 1.
+         * @param charge Pixel charge in electrons. If not available, set to raw for correct charge-weighted clustering.
+         *
+         * `column` and `row` correspond to the position of a hit. `raw` is a generic charge equivalent pixel value which can
+         * be `ToT`, `ADC`, etc., depending on the detector. `charge` is the total charge of the integrated signal of a hit
+         * and the `timestamp` is pixel timestamp. Not all of these values are available for all detector types. If a
+         * detector doesn't provide a pixel `timestamp`, for instance, it should simply be set to 0. As cluster (spatial as
+         * well as 4D) are charge-weighting the cluster position the `charge` should be set to `raw` if no other information
+         * is available. If `raw` is not available either, it should be set to 1.
+         */
+        Pixel(std::string detectorID, int col, int row, int raw, double charge, double timestamp)
+            : Object(detectorID, timestamp), m_column(col), m_row(row), m_raw(raw), m_charge(charge) {}
+
+        // Methods to get member variables:
+        /**
+         * @brief Get pixel row
+         * @return Pixel row
+         */
         int row() const { return m_row; }
+        /**
+         * @brief Get pixel column
+         * @return Pixel column
+         */
         int column() const { return m_column; }
-        std::pair<int, int> coordinates() { return std::make_pair(m_column, m_row); }
+        /**
+         * @brief Get pixel coordinates
+         * @return Pixel coordinates (column, row)
+         */
+        std::pair<int, int> coordinates() const { return std::make_pair(m_column, m_row); }
 
-        int adc() const { return (m_isBinary == true ? 1 : m_adc); }
-        int tot() const { return adc(); }
-
+        /**
+         * @brief Get pixel raw value (charge equivalent depending on detector, e.g. ToT, ADC, ...)
+         * @return Pixel raw value
+         *
+         * raw is a generic charge equivalent pixel value which can be ToT, ADC, ..., depending on the detector
+         * if isBinary==true, the value will always be 1 and shouldn't be used for anything
+         */
+        int raw() const { return m_raw; }
+        /**
+         * @brief Get pixel charge in electrons
+         * @return Pixel charge
+         */
         double charge() const { return m_charge; }
+
+        // Methods to set member variables:
+        /**
+         * @brief Set pixel raw value (charge equivalent depending on detector, e.g. ToT, ADC, ...)
+         */
+        void setRaw(int raw) { m_raw = raw; }
+        /**
+         * @brief Set pixel charge in electrons
+         */
         void setCharge(double charge) { m_charge = charge; }
-        void setToT(int tot) { m_adc = tot; }
-        void setBinary(bool binary) { m_isBinary = binary; }
 
         /**
          * @brief Print an ASCII representation of Pixel to the given stream
@@ -40,15 +86,14 @@ namespace corryvreckan {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(Pixel, 6);
+        ClassDefOverride(Pixel, 7);
 
     private:
         // Member variables
-        int m_row;
         int m_column;
-        int m_adc;
+        int m_row;
+        int m_raw;
         double m_charge;
-        bool m_isBinary;
     };
 
     // Vector type declaration

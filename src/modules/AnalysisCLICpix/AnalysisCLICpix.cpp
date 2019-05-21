@@ -50,7 +50,7 @@ void AnalysisCLICpix::initialise() {
                                   0,
                                   maxcounter - 1);
     hClusterSizeAll = new TH1F("hClusterSizeAll", "hClusterSizeAll", 20, 0, 20);
-    hClusterTOTAll = new TH1F("hClusterTOTAll", "hClusterTOTAll", 50, 0, 50);
+    hClusterChargeAll = new TH1F("hClusterChargeAll", "hClusterChargeAll", 50, 0, 50);
     hClustersPerEvent = new TH1F("hClustersPerEvent", "hClustersPerEvent", 500, 0, 500);
     hClustersVersusEventNo = new TH1F("hClustersVersusEventNo", "hClustersVersusEventNo", 60000, 0, 60000);
     hGlobalClusterPositions = new TH2F("hGlobalClusterPositions", "hGlobalClusterPositions", 200, -2.0, 2.0, 300, -1., 2);
@@ -108,11 +108,11 @@ void AnalysisCLICpix::initialise() {
     hClusterWidthRowAssociated = new TH1F("hClusterWidthRowAssociated", "hClusterWidthRowAssociated", 20, 0, 20);
     hClusterWidthColAssociated = new TH1F("hClusterWidthColAssociated", "hClusterWidthColAssociated", 20, 0, 20);
 
-    hClusterTOTAssociated = new TH1F("hClusterTOTAssociated", "hClusterTOTAssociated", 50, 0, 50);
-    hClusterTOTAssociated1pix = new TH1F("hClusterTOTAssociated1pix", "hClusterTOTAssociated1pix", 50, 0, 50);
-    hClusterTOTAssociated2pix = new TH1F("hClusterTOTAssociated2pix", "hClusterTOTAssociated2pix", 50, 0, 50);
-    hClusterTOTAssociated3pix = new TH1F("hClusterTOTAssociated3pix", "hClusterTOTAssociated3pix", 50, 0, 50);
-    hClusterTOTAssociated4pix = new TH1F("hClusterTOTAssociated4pix", "hClusterTOTAssociated4pix", 50, 0, 50);
+    hClusterChargeAssociated = new TH1F("hClusterChargeAssociated", "hClusterChargeAssociated", 50, 0, 50);
+    hClusterChargeAssociated1pix = new TH1F("hClusterChargeAssociated1pix", "hClusterChargeAssociated1pix", 50, 0, 50);
+    hClusterChargeAssociated2pix = new TH1F("hClusterChargeAssociated2pix", "hClusterChargeAssociated2pix", 50, 0, 50);
+    hClusterChargeAssociated3pix = new TH1F("hClusterChargeAssociated3pix", "hClusterChargeAssociated3pix", 50, 0, 50);
+    hClusterChargeAssociated4pix = new TH1F("hClusterChargeAssociated4pix", "hClusterChargeAssociated4pix", 50, 0, 50);
 
     hPixelResponseX = new TH1F("hPixelResponseX", "hPixelResponseX", 600, -0.3, 0.3);
     hPixelResponseY = new TH1F("hPixelResponseY", "hPixelResponseY", 600, -0.3, 0.3);
@@ -130,10 +130,10 @@ void AnalysisCLICpix::initialise() {
 
     hResidualsLocalRow2pix = new TH1F("hResidualsLocalRow2pix", "hResidualsLocalRow2pix", 600, -0.3, 0.3);
     hResidualsLocalCol2pix = new TH1F("hResidualsLocalCol2pix", "hResidualsLocalCol2pix", 600, -0.3, 0.3);
-    hClusterTOTRow2pix = new TH1F("hClusterTOTRow2pix", "hClusterTOTRow2pix", 50, 0, 50);
-    hClusterTOTCol2pix = new TH1F("hClusterTOTCol2pix", "hClusterTOTCol2pix", 50, 0, 50);
-    hClusterTOTRatioRow2pix = new TH1F("hClusterTOTRatioRow2pix", "hClusterTOTRatioRow2pix", 100, 0, 1);
-    hClusterTOTRatioCol2pix = new TH1F("hClusterTOTRatioCol2pix", "hClusterTOTRatioCol2pix", 100, 0, 1);
+    hClusterChargeRow2pix = new TH1F("hClusterChargeRow2pix", "hClusterChargeRow2pix", 50, 0, 50);
+    hClusterChargeCol2pix = new TH1F("hClusterChargeCol2pix", "hClusterChargeCol2pix", 50, 0, 50);
+    hClusterChargeRatioRow2pix = new TH1F("hClusterChargeRatioRow2pix", "hClusterChargeRatioRow2pix", 100, 0, 1);
+    hClusterChargeRatioCol2pix = new TH1F("hClusterChargeRatioCol2pix", "hClusterChargeRatioCol2pix", 100, 0, 1);
     hPixelTOTRow2pix = new TH1F("hPixelTOTRow2pix", "hPixelTOTRow2pix", 50, 0, 50);
     hPixelTOTCol2pix = new TH1F("hPixelTOTCol2pix", "hPixelTOTCol2pix", 50, 0, 50);
 
@@ -209,9 +209,9 @@ void AnalysisCLICpix::initialise() {
     for(int x = 0; x < m_nBinsX; x++) {
         for(int y = 0; y < m_nBinsY; y++) {
             int id = x + y * m_nBinsX;
-            std::string name = "hMapClusterTOTAssociated1pix" + convertToString(id);
-            TH1F* hMapEntryClusterTOTAssociated1pix = new TH1F(name.c_str(), name.c_str(), 50, 0, 50);
-            hMapClusterTOTAssociated1pix[id] = hMapEntryClusterTOTAssociated1pix;
+            std::string name = "hMapClusterChargeAssociated1pix" + convertToString(id);
+            TH1F* hMapEntryClusterChargeAssociated1pix = new TH1F(name.c_str(), name.c_str(), 50, 0, 50);
+            hMapClusterChargeAssociated1pix[id] = hMapEntryClusterChargeAssociated1pix;
         }
     }
 }
@@ -362,35 +362,35 @@ StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
                 pixelInterceptX, pixelInterceptY, sqrt(xresidualBest * xresidualBest + yresidualBest * yresidualBest));
             hXresidualVersusYresidual->Fill(xresidualBest, yresidualBest);
             hAbsoluteResiduals->Fill(sqrt(xresidualBest * xresidualBest + yresidualBest * yresidualBest));
-            hClusterTOTAssociated->Fill((bestCluster)->tot());
+            hClusterChargeAssociated->Fill((bestCluster)->charge());
             hClusterSizeAssociated->Fill(static_cast<double>(bestCluster->size()));
             //      hClusterWidthColAssociated->Fill((*bestCluster)->colWidth());
             //      hClusterWidthRowAssociated->Fill((*bestCluster)->rowWidth());
 
-            hMapClusterSizeAssociated->Fill(chipInterceptCol, chipInterceptRow, (bestCluster)->tot());
+            hMapClusterSizeAssociated->Fill(chipInterceptCol, chipInterceptRow, (bestCluster)->charge());
 
             if((bestCluster)->size() == 1) {
-                hClusterTOTAssociated1pix->Fill((bestCluster)->tot());
+                hClusterChargeAssociated1pix->Fill((bestCluster)->charge());
                 hInterceptClusterSize1->Fill(pixelInterceptX, pixelInterceptY);
                 int id = static_cast<int>(floor(chipInterceptCol * m_nBinsX / m_detector->nPixels().X()) +
                                           floor(chipInterceptRow * m_nBinsY / m_detector->nPixels().Y()) * m_nBinsX);
-                hMapClusterTOTAssociated1pix[id]->Fill((bestCluster)->tot());
+                hMapClusterChargeAssociated1pix[id]->Fill((bestCluster)->charge());
             }
             if((bestCluster)->size() == 2) {
-                hClusterTOTAssociated2pix->Fill((bestCluster)->tot());
+                hClusterChargeAssociated2pix->Fill((bestCluster)->charge());
                 hInterceptClusterSize2->Fill(pixelInterceptX, pixelInterceptY);
             }
             if((bestCluster)->size() == 3) {
-                hClusterTOTAssociated3pix->Fill((bestCluster)->tot());
+                hClusterChargeAssociated3pix->Fill((bestCluster)->charge());
                 hInterceptClusterSize3->Fill(pixelInterceptX, pixelInterceptY);
             }
             if((bestCluster)->size() == 4) {
-                hClusterTOTAssociated4pix->Fill((bestCluster)->tot());
+                hClusterChargeAssociated4pix->Fill((bestCluster)->charge());
                 hInterceptClusterSize4->Fill(pixelInterceptX, pixelInterceptY);
             }
             Pixels* pixels = bestCluster->pixels();
             for(auto& pixel : (*pixels)) {
-                hPixelToTMap->Fill(pixel->column(), pixel->row(), pixel->adc());
+                hPixelToTMap->Fill(pixel->column(), pixel->row(), pixel->raw());
             }
 
         } else {
@@ -546,13 +546,13 @@ void AnalysisCLICpix::fillClusterHistos(std::shared_ptr<Clusters> clusters) {
         for(itp = pixels->begin(); itp != pixels->end(); itp++) {
             // Check if this clicpix frame is still the current
             int pixelID = (*itp)->column() + nCols * (*itp)->row();
-            if(m_hitPixels[pixelID] != (*itp)->adc()) {
+            if(m_hitPixels[pixelID] != (*itp)->raw()) {
                 // New frame! Reset the stored pixels and trigger number
                 if(!newFrame) {
                     m_hitPixels.clear();
                     newFrame = true;
                 }
-                m_hitPixels[pixelID] = (*itp)->adc();
+                m_hitPixels[pixelID] = (*itp)->raw();
                 m_triggerNumber = 0;
             }
             hHitPixels->Fill((*itp)->column(), (*itp)->row());
@@ -562,7 +562,7 @@ void AnalysisCLICpix::fillClusterHistos(std::shared_ptr<Clusters> clusters) {
 
         // Fill cluster histograms
         hClusterSizeAll->Fill(static_cast<double>((*itc)->size()));
-        hClusterTOTAll->Fill((*itc)->tot());
+        hClusterChargeAll->Fill((*itc)->charge());
         hGlobalClusterPositions->Fill((*itc)->global().x(), (*itc)->global().y());
     }
 
