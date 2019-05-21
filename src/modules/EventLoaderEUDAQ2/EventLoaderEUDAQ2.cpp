@@ -218,6 +218,7 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
             hHitTimes->Fill(ts);
             hPixelRawValues->Fill(raw);
             pixels->push_back(pixel);
+            m_hits++;
         }
         hPixelsPerEvent->Fill(static_cast<int>(pixels->size()));
     }
@@ -269,4 +270,10 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG(DEBUG) << "Finished Corryvreckan event";
     return StatusCode::Success;
+}
+
+void EventLoaderEUDAQ2::finalise() {
+
+    // Info message to check for in automated CI testing:
+    LOG(INFO) << "Found " << m_hits << " hits in the data.";
 }

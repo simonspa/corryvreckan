@@ -58,6 +58,11 @@ namespace corryvreckan {
          */
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
+        /**
+         * @brief [Finalise this module]
+         */
+        void finalise();
+
     private:
         /**
          * @brief Read and return the next event (smallest possible granularity) and return the decoded StandardEvent
@@ -83,6 +88,8 @@ namespace corryvreckan {
         std::string m_filename{};
         double m_skip_time{};
         Matrix<std::string> adjust_event_times;
+
+        int m_hits = 0;
 
         // EUDAQ file reader instance to retrieve data from
         eudaq::FileReaderUP reader_;
