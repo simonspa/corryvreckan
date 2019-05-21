@@ -315,7 +315,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                     m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), cluster->charge());
 
                 // Fill per-pixel histograms
-                for(auto& pixel : (*cluster->pixels())) {
+                for(auto& pixel : cluster->pixels()) {
                     hHitMapAssoc->Fill(pixel->column(), pixel->row());
                     if(is_within_roi) {
                         hHitMapROI->Fill(pixel->column(), pixel->row());

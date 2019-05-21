@@ -161,12 +161,12 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
     double column(0), row(0), charge(0);
 
     // Get the pixels on this cluster
-    Pixels* pixels = cluster->pixels();
-    string detectorID = (*pixels)[0]->detectorID();
-    LOG(DEBUG) << "- cluster has " << (*pixels).size() << " pixels";
+    auto pixels = cluster->pixels();
+    string detectorID = pixels.front()->detectorID();
+    LOG(DEBUG) << "- cluster has " << pixels.size() << " pixels";
 
     // Loop over all pixels
-    for(auto& pixel : (*pixels)) {
+    for(auto& pixel : pixels) {
         charge += pixel->charge();
         column += (pixel->column() * pixel->charge());
         row += (pixel->row() * pixel->charge());

@@ -388,8 +388,8 @@ StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
                 hClusterChargeAssociated4pix->Fill((bestCluster)->charge());
                 hInterceptClusterSize4->Fill(pixelInterceptX, pixelInterceptY);
             }
-            Pixels* pixels = bestCluster->pixels();
-            for(auto& pixel : (*pixels)) {
+            auto pixels = bestCluster->pixels();
+            for(auto& pixel : pixels) {
                 hPixelToTMap->Fill(pixel->column(), pixel->row(), pixel->raw());
             }
 
@@ -541,23 +541,22 @@ void AnalysisCLICpix::fillClusterHistos(std::shared_ptr<Clusters> clusters) {
     for(itc = clusters->begin(); itc != clusters->end(); ++itc) {
 
         // Loop over pixels and check if there are pixels not known
-        Pixels* pixels = (*itc)->pixels();
-        Pixels::iterator itp;
-        for(itp = pixels->begin(); itp != pixels->end(); itp++) {
+        auto pixels = (*itc)->pixels();
+        for(auto& itp : pixels) {
             // Check if this clicpix frame is still the current
-            int pixelID = (*itp)->column() + nCols * (*itp)->row();
-            if(m_hitPixels[pixelID] != (*itp)->raw()) {
+            int pixelID = itp->column() + nCols * itp->row();
+            if(m_hitPixels[pixelID] != itp->raw()) {
                 // New frame! Reset the stored pixels and trigger number
                 if(!newFrame) {
                     m_hitPixels.clear();
                     newFrame = true;
                 }
-                m_hitPixels[pixelID] = (*itp)->raw();
+                m_hitPixels[pixelID] = itp->raw();
                 m_triggerNumber = 0;
             }
-            hHitPixels->Fill((*itp)->column(), (*itp)->row());
-            hColumnHits->Fill((*itp)->column());
-            hRowHits->Fill((*itp)->row());
+            hHitPixels->Fill(itp->column(), itp->row());
+            hColumnHits->Fill(itp->column());
+            hRowHits->Fill(itp->row());
         }
 
         // Fill cluster histograms
@@ -578,12 +577,8 @@ void AnalysisCLICpix::fillResponseHistos(double trackInterceptX, double trackInt
 
     // Loop over pixels in the cluster and show their distance from the track
     // intercept
-    Pixels* pixels = cluster->pixels();
-    Pixels::iterator itp;
-    for(itp = pixels->begin(); itp != pixels->end(); itp++) {
-
-        // Get the pixel
-        Pixel* pixel = (*itp);
+    auto pixels = cluster->pixels();
+    for(auto& pixel : pixels) {
         // Get the pixel local then global position
         PositionVector3D<Cartesian3D<double>> pixelPositionLocal =
             m_detector->getLocalPosition(pixel->column(), pixel->row());

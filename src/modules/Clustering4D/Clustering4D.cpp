@@ -122,7 +122,7 @@ bool Clustering4D::touching(Pixel* neighbour, Cluster* cluster) {
 
     bool Touching = false;
 
-    for(auto pixel : (*cluster->pixels())) {
+    for(auto pixel : cluster->pixels()) {
         int row_distance = abs(pixel->row() - neighbour->row());
         int col_distance = abs(pixel->column() - neighbour->column());
 
@@ -142,10 +142,10 @@ bool Clustering4D::closeInTime(Pixel* neighbour, Cluster* cluster) {
 
     bool CloseInTime = false;
 
-    Pixels* pixels = cluster->pixels();
-    for(size_t iPix = 0; iPix < pixels->size(); iPix++) {
+    auto pixels = cluster->pixels();
+    for(auto& px : pixels) {
 
-        double timeDifference = abs(neighbour->timestamp() - (*pixels)[iPix]->timestamp());
+        double timeDifference = abs(neighbour->timestamp() - px->timestamp());
         if(timeDifference < timingCut)
             CloseInTime = true;
     }
@@ -159,13 +159,13 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
     double column(0), row(0), charge(0);
 
     // Get the pixels on this cluster
-    Pixels* pixels = cluster->pixels();
-    string detectorID = (*pixels)[0]->detectorID();
-    double timestamp = (*pixels)[0]->timestamp();
-    LOG(DEBUG) << "- cluster has " << (*pixels).size() << " pixels";
+    auto pixels = cluster->pixels();
+    string detectorID = pixels.front()->detectorID();
+    double timestamp = pixels.front()->timestamp();
+    LOG(DEBUG) << "- cluster has " << pixels.size() << " pixels";
 
     // Loop over all pixels
-    for(auto& pixel : (*pixels)) {
+    for(auto& pixel : pixels) {
         charge += pixel->charge();
         column += (pixel->column() * pixel->charge());
         row += (pixel->row() * pixel->charge());

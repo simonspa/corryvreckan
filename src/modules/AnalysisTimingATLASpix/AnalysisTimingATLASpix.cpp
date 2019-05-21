@@ -474,7 +474,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     }
 
                     // 2D histograms: --> fill for all pixels from cluster
-                    for(auto& pixel : (*cluster->pixels())) {
+                    for(auto& pixel : cluster->pixels()) {
 
                         // to check that cluster timestamp = earliest pixel timestamp
                         if(cluster->size() > 1) {
@@ -752,13 +752,14 @@ void AnalysisTimingATLASpix::correctClusterTimestamp(Cluster* cluster, int mode)
      */
 
     // Get the pixels on this cluster
-    Pixels* pixels = cluster->pixels();
+    auto pixels = cluster->pixels();
+    auto first_pixel = pixels.front();
     double correction = 0;
 
     if(mode == 0) {
-        correction = gRowCorr->Eval((*pixels)[0]->row());
+        correction = gRowCorr->Eval(first_pixel->row());
     } else if(mode == 1) {
-        correction = gTimeWalkCorr->Eval((*pixels)[0]->raw());
+        correction = gTimeWalkCorr->Eval(first_pixel->raw());
     } else {
         LOG(ERROR) << "Mode " << mode << " does not exist!\n"
                    << "Choose\n\t0 --> row correction \n\t1-->timewalk correction";
@@ -766,10 +767,12 @@ void AnalysisTimingATLASpix::correctClusterTimestamp(Cluster* cluster, int mode)
     }
 
     // Initial guess for cluster timestamp:
-    double timestamp = (*pixels)[0]->timestamp() + correction;
+    double timestamp = first_pixel->timestamp() + correction;
 
     // Loop over all pixels:
-    for(auto& pixel : (*pixels)) {
+    for(auto& pixel : pixels) {
+        // FIXME ugly hack
+        auto px = const_cast<Pixel*>(pixel);
 
         if(mode == 0) {
             correction = gRowCorr->Eval(pixel->row());
@@ -780,7 +783,7 @@ void AnalysisTimingATLASpix::correctClusterTimestamp(Cluster* cluster, int mode)
         }
 
         // Override pixel timestamps:
-        pixel->setTimestamp(pixel->timestamp() + correction);
+        px->setTimestamp(pixel->timestamp() + correction);
 
         // timestamp = earliest pixel:
         if(pixel->timestamp() < timestamp) {

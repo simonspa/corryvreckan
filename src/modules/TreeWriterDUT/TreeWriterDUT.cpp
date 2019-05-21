@@ -118,11 +118,11 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "Gets cluster eventID = " << eventID;
 
         // Get the pixels in the current cluster
-        Pixels* pixels = cluster->pixels();
+        auto pixels = cluster->pixels();
 
         // Iterate through all pixels in the cluster
         numPixels = 0;
-        for(auto& pixel : (*pixels)) {
+        for(auto& pixel : pixels) {
             // Increase counter for number of pixels in the cluster
             numPixels++;
 
