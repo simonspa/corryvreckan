@@ -206,7 +206,7 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
             auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
             auto ts = plane.GetTimestamp(i);
 
-            LOG(DEBUG) << "Read pixel (col, row) = (" << col << ", " << row << " from EUDAQ2 event data (before masking).";
+            LOG(DEBUG) << "Read pixel (col, row) = (" << col << ", " << row << ") from EUDAQ2 event data (before masking).";
             if(m_detector->masked(col, row)) {
                 continue;
             }
