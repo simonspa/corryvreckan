@@ -1,9 +1,11 @@
 #ifndef TRACK_H
 #define TRACK_H 1
 
+#include <Math/Point3D.h>
+#include <Math/Vector3D.h>
+#include <TRef.h>
+
 #include "Cluster.hpp"
-#include "Math/Point3D.h"
-#include "Math/Vector3D.h"
 
 namespace corryvreckan {
     /**
@@ -18,17 +20,15 @@ namespace corryvreckan {
     public:
         // Constructors and destructors
         Track();
-
-        // Copy constructor (also copies clusters from the original track)
         Track(Track* track);
 
         // Add a new cluster to the track
-        void addCluster(Cluster* cluster);
+        void addCluster(const Cluster* cluster);
         // Add a new cluster to the track (which will not be in the fit)
-        void addAssociatedCluster(Cluster* cluster);
+        void addAssociatedCluster(const Cluster* cluster);
 
         // Calculate the 2D distance^2 between the fitted track and a cluster
-        double distance2(Cluster* cluster) const;
+        double distance2(const Cluster* cluster) const;
 
         // Minimisation operator used by Minuit. Minuit passes the current iteration of the parameters and checks if the chi2
         // is better or worse
@@ -41,8 +41,8 @@ namespace corryvreckan {
         double chi2() const { return m_chi2; }
         double chi2ndof() const { return m_chi2ndof; }
         double ndof() const { return m_ndof; }
-        Clusters clusters() const { return m_trackClusters; }
-        Clusters associatedClusters() const { return m_associatedClusters; }
+        std::vector<Cluster*> clusters() const;
+        std::vector<Cluster*> associatedClusters() const;
         bool isAssociated(Cluster* cluster) const;
 
         size_t nClusters() const { return m_trackClusters.size(); }
@@ -56,8 +56,8 @@ namespace corryvreckan {
         void calculateChi2();
 
         // Member variables
-        Clusters m_trackClusters;
-        Clusters m_associatedClusters;
+        std::vector<TRef> m_trackClusters;
+        std::vector<TRef> m_associatedClusters;
         double m_chi2;
         double m_ndof;
         double m_chi2ndof;
@@ -65,7 +65,7 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint m_state;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Track, 3)
+        ClassDef(Track, 4)
     };
 
     // Vector type declaration

@@ -22,7 +22,7 @@ namespace corryvreckan {
         Cluster();
 
         // Copy constructor
-        Cluster(Cluster* cluster);
+        Cluster(const Cluster* cluster);
 
         // Functions
         // Add a new pixel to the cluster
@@ -35,7 +35,6 @@ namespace corryvreckan {
         double error() const;
         double errorX() const { return m_error.X(); }
         double errorY() const { return m_error.Y(); }
-
         bool isSplit() const { return m_split; }
         void setSplit(bool split);
 

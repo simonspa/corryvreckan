@@ -4,7 +4,7 @@
 using namespace corryvreckan;
 
 Cluster::Cluster() : m_columnWidth(0.), m_rowWidth(0.), m_split(false) {}
-Cluster::Cluster(Cluster* cluster) {
+Cluster::Cluster(const Cluster* cluster) {
     m_global = cluster->global();
     m_local = cluster->local();
     m_error = ROOT::Math::XYVector(cluster->errorX(), cluster->errorY());
