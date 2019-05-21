@@ -97,7 +97,6 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
         for(int i = 0; i < static_cast<int>(events_.size()); i++) {
             LOG(TRACE) << "  (sub-) event " << i << " is a " << events_[static_cast<long unsigned int>(i)]->GetDescription();
         }
-
         auto event = events_.front();
         events_.erase(events_.begin());
         decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, nullptr);
@@ -186,11 +185,14 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
         auto plane = evt->GetPlane(i_plane);
 
         // Concatenate plane name according to naming convention: sensor_type + "_" + int
-        auto plane_name = plane.Sensor() + "_" + std::to_string(i_plane);
+        auto plane_name = plane.Sensor() + "_" + std::to_string(plane.ID());
         auto detector_name = m_detector->name();
+        //  LOG(DEBUG) << plane_name <<", "<<detector_name;
         // Convert to lower case before string comparison to avoid errors by the user:
         std::transform(plane_name.begin(), plane_name.end(), plane_name.begin(), ::tolower);
         std::transform(detector_name.begin(), detector_name.end(), detector_name.begin(), ::tolower);
+        LOG(TRACE) << plane_name << " with  " << plane.HitPixels() << " hit pixels";
+
         if(detector_name != plane_name) {
             LOG(DEBUG) << "Wrong plane: " << detector_name << "!=" << plane_name << ". Continue.";
             continue;
@@ -198,13 +200,13 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
 
         LOG(DEBUG) << "Found correct plane.";
         // Loop over all hits and add to pixels vector:
-        for(unsigned int i = 0; i < plane.GetPixels<int>().size(); i++) {
+        for(unsigned int i = 0; i < plane.HitPixels(); i++) {
             auto col = static_cast<int>(plane.GetX(i));
             auto row = static_cast<int>(plane.GetY(i));
             auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
             auto ts = plane.GetTimestamp(i);
 
-            LOG(DEBUG) << "Read pixel (col, row) = (" << col << ", " << row << " from EUDAQ2 event data (before masking).";
+            LOG(DEBUG) << "Read pixel (col, row) = (" << col << ", " << row << ") from EUDAQ2 event data (before masking).";
             if(m_detector->masked(col, row)) {
                 continue;
             }
@@ -243,8 +245,9 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Check if this event is within the currently defined Corryvreckan event:
         current_position = is_within_event(clipboard, event_);
+
         if(current_position == EventPosition::DURING) {
-            LOG(DEBUG) << "Is withing current event, storing data";
+            LOG(DEBUG) << "Is within current event, storing data";
             // Store data on the clipboard
             store_data(clipboard, event_);
         }
