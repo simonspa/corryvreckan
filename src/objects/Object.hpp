@@ -50,7 +50,7 @@ namespace corryvreckan {
 
         // Methods to get member variables
         std::string getDetectorID() const { return m_detectorID; }
-        std::string detectorID() { return getDetectorID(); }
+        std::string detectorID() const { return getDetectorID(); }
 
         double timestamp() const { return m_timestamp; }
         void timestamp(double time) { m_timestamp = time; }
@@ -66,7 +66,7 @@ namespace corryvreckan {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(Object, 4);
+        ClassDefOverride(Object, 5);
 
     protected:
         // Member variables
