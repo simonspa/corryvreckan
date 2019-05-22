@@ -21,6 +21,7 @@ namespace corryvreckan {
         ~DUTAssociation() = default;
 
         // Functions
+        void initialise();
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
         void finalise();
 
@@ -28,8 +29,18 @@ namespace corryvreckan {
         std::shared_ptr<Detector> m_detector;
         double timingCut;
         ROOT::Math::XYVector spatialCut;
+        bool useClusterCentre;
 
         int assoc_cluster_counter = 0;
+
+        // temp histogram for debuggin:
+        TH1D* hX1X2;
+        TH1D* hY1Y2;
+        TH1D* hX1X2_1px;
+        TH1D* hY1Y2_1px;
+        TH1D* hX1X2_npx;
+        TH1D* hY1Y2_npx;
+        TH1D* hClusterSize_largeDistance;
     };
 } // namespace corryvreckan
 #endif // DUTAssociation_H
