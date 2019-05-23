@@ -27,10 +27,9 @@ namespace corryvreckan {
     class ROOTObjectWriter : public Module {
     public:
         /**
-         * @brief Constructor for this unique module
+         * @brief Constructor for this global module
          * @param config Configuration object for this module as retrieved from the steering file
-         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
-         * @param geo_mgr Pointer to the geometry manager, containing the detectors
+         * @param detectors List of detectors to perform task on
          */
         ROOTObjectWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
 
@@ -50,8 +49,7 @@ namespace corryvreckan {
         StatusCode run(std::shared_ptr<Clipboard> clipboard) override;
 
         /**
-         * @brief Add the main configuration and the detector setup to the data file and write it, also write statistics
-         * information.
+         * @brief Finalize file writing, provide statistics information
          */
         void finalise() override;
 
