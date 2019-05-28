@@ -7,8 +7,9 @@ Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detec
     : Module(std::move(config), detector), m_detector(detector) {
 
     timingCut = m_config.get<double>("timing_cut", Units::get<double>(100, "ns"));
-    neighbour_radius_row = m_config.get<int>("neighbour_radius_row", 1);
-    neighbour_radius_col = m_config.get<int>("neighbour_radius_col", 1);
+    neighbourRadiusRow = m_config.get<int>("neighbour_radius_row", 1);
+    neighbourRadiusCol = m_config.get<int>("neighbour_radius_col", 1);
+    chargeWeighting = m_config.get<bool>("charge_weighting", true);
 }
 
 void Clustering4D::initialise() {
@@ -150,7 +151,7 @@ bool Clustering4D::touching(Pixel* neighbour, Cluster* cluster) {
         int row_distance = abs(pixel->row() - neighbour->row());
         int col_distance = abs(pixel->column() - neighbour->column());
 
-        if(row_distance <= neighbour_radius_row && col_distance <= neighbour_radius_col) {
+        if(row_distance <= neighbourRadiusRow && col_distance <= neighbourRadiusCol) {
             if(row_distance > 1 || col_distance > 1) {
                 cluster->setSplit(true);
             }
