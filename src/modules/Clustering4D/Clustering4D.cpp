@@ -21,9 +21,31 @@ void Clustering4D::initialise() {
     title = m_detector->name() + " Cluster Width - Columns;cluster width [columns];events";
     clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, 0, 100);
     title = m_detector->name() + " Cluster Charge;cluster charge [e];events";
-    clusterCharge = new TH1F("clusterCharge", title.c_str(), 10000, 0, 100000);
+    clusterCharge = new TH1F("clusterCharge", title.c_str(), 100000, 0, 100000);
     title = m_detector->name() + " Cluster Position (Global);x [mm];y [mm];events";
     clusterPositionGlobal = new TH2F("clusterPositionGlobal", title.c_str(), 400, -10., 10., 400, -10., 10.);
+
+    // only temporary histograms for debugging
+    hDistXClusterPixel =
+        new TH1D("hDistXClusterPixel", "hDistXClusterPixel; cluster centre x - pixel pos x [um]; # events", 550, -50, 500);
+    hDistYClusterPixel =
+        new TH1D("hDistYClusterPixel", "hDistYClusterPixel; cluster centre y - pixel pos y [um]; # events", 550, -50, 500);
+    hDistXClusterPixel_1px = new TH1D(
+        "hDistXClusterPixel_1px", "hDistXClusterPixel_1px; cluster centre x - pixel pos x [um]; # events", 550, -50, 500);
+    hDistYClusterPixel_1px = new TH1D(
+        "hDistYClusterPixel_1px", "hDistYClusterPixel_1px; cluster centre y - pixel pos y [um]; # events", 550, -50, 500);
+    hDistXClusterPixel_2px = new TH1D(
+        "hDistXClusterPixel_2px", "hDistXClusterPixel_2px; cluster centre x - pixel pos x [um]; # events", 550, -50, 500);
+    hDistYClusterPixel_2px = new TH1D(
+        "hDistYClusterPixel_2px", "hDistYClusterPixel_2px; cluster centre y - pixel pos y [um]; # events", 550, -50, 500);
+    hDistXClusterPixel_3px = new TH1D(
+        "hDistXClusterPixel_3px", "hDistXClusterPixel_3px; cluster centre x - pixel pos x [um]; # events", 550, -50, 500);
+    hDistYClusterPixel_3px = new TH1D(
+        "hDistYClusterPixel_3px", "hDistYClusterPixel_3px; cluster centre y - pixel pos y [um]; # events", 550, -50, 500);
+    hDistXClusterPixel_npx = new TH1D(
+        "hDistXClusterPixel_npx", "hDistXClusterPixel_npx; cluster centre x - pixel pos x [um]; # events", 550, -50, 500);
+    hDistYClusterPixel_npx = new TH1D(
+        "hDistYClusterPixel_npx", "hDistYClusterPixel_npx; cluster centre y - pixel pos y [um]; # events", 550, -50, 500);
 }
 
 // Sort function for pixels from low to high times
@@ -208,4 +230,37 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
     cluster->setDetectorID(detectorID);
     cluster->setClusterCentre(positionGlobal);
     cluster->setClusterCentreLocal(positionLocal);
+
+    // for debugging: loop over pixels of cluster again and histogram them:
+    for(auto& pixel : (*cluster->pixels())) {
+
+        auto pixelPosLocal = m_detector->getLocalPosition(pixel->column(), pixel->row());
+
+        hDistXClusterPixel->Fill(static_cast<double>(Units::convert(abs(cluster->local().x() - pixelPosLocal.x()), "um")));
+        hDistYClusterPixel->Fill(static_cast<double>(Units::convert(abs(cluster->local().y() - pixelPosLocal.y()), "um")));
+        if(cluster->size() == 1) {
+            hDistXClusterPixel_1px->Fill(
+                static_cast<double>(Units::convert(abs(cluster->local().x() - pixelPosLocal.x()), "um")));
+            hDistYClusterPixel_1px->Fill(
+                static_cast<double>(Units::convert(abs(cluster->local().y() - pixelPosLocal.y()), "um")));
+        }
+        if(cluster->size() == 2) {
+            hDistXClusterPixel_2px->Fill(
+                static_cast<double>(Units::convert(abs(cluster->local().x() - pixelPosLocal.x()), "um")));
+            hDistYClusterPixel_2px->Fill(
+                static_cast<double>(Units::convert(abs(cluster->local().y() - pixelPosLocal.y()), "um")));
+        }
+        if(cluster->size() == 3) {
+            hDistXClusterPixel_3px->Fill(
+                static_cast<double>(Units::convert(abs(cluster->local().x() - pixelPosLocal.x()), "um")));
+            hDistYClusterPixel_3px->Fill(
+                static_cast<double>(Units::convert(abs(cluster->local().y() - pixelPosLocal.y()), "um")));
+        }
+        if(cluster->size() > 1) {
+            hDistXClusterPixel_npx->Fill(
+                static_cast<double>(Units::convert(abs(cluster->local().x() - pixelPosLocal.x()), "um")));
+            hDistYClusterPixel_npx->Fill(
+                static_cast<double>(Units::convert(abs(cluster->local().y() - pixelPosLocal.y()), "um")));
+        }
+    } // end for
 }
