@@ -38,9 +38,10 @@ namespace corryvreckan {
         TH1D* hY1Y2;
         TH1D* hX1X2_1px;
         TH1D* hY1Y2_1px;
-        TH1D* hX1X2_npx;
-        TH1D* hY1Y2_npx;
-        TH1D* hClusterSize_largeDistance;
+        TH1D* hX1X2_2px;
+        TH1D* hY1Y2_2px;
+        TH1D* hX1X2_3px;
+        TH1D* hY1Y2_3px;
     };
 } // namespace corryvreckan
 #endif // DUTAssociation_H
