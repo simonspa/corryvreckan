@@ -216,6 +216,11 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
             timestamp = pixel->timestamp();
         }
     }
+    // remove this debug stuff later!!!
+    if(cluster->size() > 2 && m_detector->name() == "ap1b02w23s15") {
+        LOG(DEBUG) << "clusterSize = " << cluster->size() << ", column, row = " << column << ", " << row
+                   << ", cluster size = " << cluster->size() << ", charge = " << charge;
+    }
 
     if(chargeWeighting) {
         // Charge-weighted cluster centre:
@@ -228,7 +233,9 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         row /= static_cast<double>(cluster->size());
     }
 
-    LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
+    if(cluster->size() > 2 && m_detector->name() == "ap1b02w23s15") {
+        LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
+    }
 
     if(detectorID != m_detector->name()) {
         // Should never happen...
