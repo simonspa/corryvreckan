@@ -53,21 +53,18 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             ROOT::Math::XYZPoint intercept = track->intercept(cluster->global().z());
             auto interceptLocal = m_detector->globalToLocal(intercept);
 
-            double xdistance = 0;
-            double ydistance = 0;
-            double xdistance2 = 0;
-            double ydistance2 = 0;
-            // if(useClusterCentre) {
+            double xdistance = 1e4;
+            double ydistance = 1e4;
+            double xdistance_nearest = 1e4;
+            double ydistance_nearest = 1e4;
+            //            if(useClusterCentre) {
             // use cluster centre for distance to track:
-            // xdistance = abs(intercept.X() - cluster->global().x());
-            // ydistance = abs(intercept.Y() - cluster->global().y());
             xdistance = abs(interceptLocal.X() - cluster->local().x());
             ydistance = abs(interceptLocal.Y() - cluster->local().y());
-            // } else {
+            //            } else {
             // use nearest pixel for distance to track (for efficiency analysis):
             for(auto& pixel : (*cluster->pixels())) {
-
-                // convert pixel address to global coordinates:
+                // convert pixel address to local coordinates:
                 auto pixelPositionLocal =
                     m_detector->getLocalPosition(static_cast<double>(pixel->column()), static_cast<double>(pixel->row()));
 
@@ -101,6 +98,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
                 hY1Y2_3px->Fill(static_cast<double>(Units::convert(ydistance - ydistance_nearest, "um")));
             }
 
+            // Check if the cluster is close in space
             if(abs(xdistance) > spatialCut.x() || abs(ydistance) > spatialCut.y()) {
                 LOG(DEBUG) << "Discarding DUT cluster with distance (" << Units::display(abs(xdistance), {"um", "mm"}) << ","
                            << Units::display(abs(ydistance), {"um", "mm"}) << ")";
