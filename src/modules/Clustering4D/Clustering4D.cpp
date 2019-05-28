@@ -192,18 +192,37 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
     // Loop over all pixels
     for(auto& pixel : (*pixels)) {
         charge += pixel->charge();
-        column += (pixel->column() * pixel->charge());
-        row += (pixel->row() * pixel->charge());
+
+        if(chargeWeighting) {
+            // charge-weighted cluster centre
+            column += (pixel->column() * pixel->charge());
+            row += (pixel->row() * pixel->charge());
+        } else {
+            // arithmetic cluster centre:
+            column += pixel->column();
+            row += pixel->row();
+        }
+
+        // better but still not ideal (if cluster->size==2, and 1 of the pixels has charge 0 for example, then WHAT?)
+        // column += (pixel->charge() > std::numeric_limits<double>::epsilon() ? pixel->column()*pixel->charge() :
+        // pixel->column()); row += (pixel->charge() > std::numeric_limits<double>::epsilon() ? pixel->row()*pixel->charge()
+        // : pixel->row());
+
         if(pixel->timestamp() < timestamp) {
             timestamp = pixel->timestamp();
         }
     }
 
-    // Column and row positions are charge-weighted
-    // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics)
-    // calculate simple arithmetic mean
-    column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
-    row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
+    if(chargeWeighting) {
+        // Charge-weighted cluster centre:
+        // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics)
+        column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
+        row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
+    } else {
+        // Arightmetic cluster centre:
+        column /= static_cast<double>(cluster->size());
+        row /= static_cast<double>(cluster->size());
+    }
 
     LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
 
@@ -212,12 +231,10 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         return;
     }
 
-    // Create object with local cluster position
-    PositionVector3D<Cartesian3D<double>> positionLocal(m_detector->pitch().X() * (column - m_detector->nPixels().X() / 2),
-                                                        m_detector->pitch().Y() * (row - m_detector->nPixels().Y() / 2),
-                                                        0);
+    // Get hit position in local coordinates:
+    auto positionLocal = m_detector->getLocalPosition(column, row);
     // Calculate global cluster position
-    PositionVector3D<Cartesian3D<double>> positionGlobal = m_detector->localToGlobal(positionLocal);
+    auto positionGlobal = m_detector->localToGlobal(positionLocal);
 
     // Set the cluster parameters
     cluster->setColumn(column);
