@@ -83,6 +83,10 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
             continue;
         }
 
+        if(pixel->charge() < std::numeric_limits<double>::epsilon()) {
+            continue;
+        }
+
         // Make the new cluster object
         Cluster* cluster = new Cluster();
         LOG(DEBUG) << "==== New cluster";
