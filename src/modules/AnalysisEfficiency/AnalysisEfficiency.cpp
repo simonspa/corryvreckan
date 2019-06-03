@@ -37,10 +37,18 @@ void AnalysisEfficiency::initialise() {
     if(nbins_x > 1e4 || nbins_y > 1e4) {
         throw InvalidValueError(m_config, "inpixel_bin_size", "Too many bins for in-pixel histograms.");
     }
-    std::string title = m_detector->name() + " Pixel efficiency map;x_{track} mod " + std::to_string(pitch_x) +
-                        "#mum;y_{track} mod " + std::to_string(pitch_y) + "#mum;efficiency";
-    hPixelEfficiencyMap_trackPos =
-        new TProfile2D("pixelEfficiencyMap_trackPos", title.c_str(), nbins_x, 0, pitch_x, nbins_y, 0, pitch_y, 0, 1);
+    std::string title =
+        m_detector->name() + " Pixel efficiency map;in-pixel x_{track} [#mum];in-pixel y_{track} #mum;efficiency";
+    hPixelEfficiencyMap_trackPos = new TProfile2D("pixelEfficiencyMap_trackPos",
+                                                  title.c_str(),
+                                                  nbins_x,
+                                                  -pitch_x / 2.,
+                                                  pitch_x / 2.,
+                                                  nbins_y,
+                                                  -pitch_y / 2.,
+                                                  pitch_y / 2.,
+                                                  0,
+                                                  1);
     title = m_detector->name() + " Chip efficiency map;x [px];y [px];efficiency";
     hChipEfficiencyMap_trackPos = new TProfile2D("chipEfficiencyMap_trackPos",
                                                  title.c_str(),
