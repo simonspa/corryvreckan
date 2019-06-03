@@ -33,7 +33,6 @@ namespace corryvreckan {
 
         int assoc_cluster_counter = 0;
 
-        // temp histogram for debuggin:
         TH1D* hX1X2;
         TH1D* hY1Y2;
         TH1D* hX1X2_1px;
