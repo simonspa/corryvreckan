@@ -66,13 +66,8 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
                 auto pixelPositionLocal =
                     m_detector->getLocalPosition(static_cast<double>(pixel->column()), static_cast<double>(pixel->row()));
 
-                auto xdistance_px = abs(interceptLocal.X() - pixelPositionLocal.x());
-                auto ydistance_px = abs(interceptLocal.Y() - pixelPositionLocal.y());
-                // xdistance = (xdistance < xdistance_px) ? xdistance : xdistance_px;
-                // ydistance = (ydistance < ydistance_px) ? xdistance : ydistance_px;
-                xdistance_nearest = (xdistance_nearest < xdistance_px) ? xdistance_nearest : xdistance_px;
-                ydistance_nearest = (ydistance_nearest < ydistance_px) ? xdistance_nearest : ydistance_px;
-                //              }
+                xdistance_nearest = std::min(xdistance_nearest, std::abs(interceptLocal.X() - pixelPositionLocal.x()));
+                ydistance_nearest = std::min(ydistance_nearest, std::abs(interceptLocal.Y() - pixelPositionLocal.y()));
             }
 
             hX1X2->Fill(xdistance - xdistance_nearest);
