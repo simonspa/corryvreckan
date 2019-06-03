@@ -53,16 +53,14 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             ROOT::Math::XYZPoint intercept = track->intercept(cluster->global().z());
             auto interceptLocal = m_detector->globalToLocal(intercept);
 
-            double xdistance = 1e4;
-            double ydistance = 1e4;
-            double xdistance_nearest = 1e4;
-            double ydistance_nearest = 1e4;
-            //            if(useClusterCentre) {
-            // use cluster centre for distance to track:
-            xdistance = abs(interceptLocal.X() - cluster->local().x());
-            ydistance = abs(interceptLocal.Y() - cluster->local().y());
-            //            } else {
-            // use nearest pixel for distance to track (for efficiency analysis):
+            // distance of track to cluster centre
+            double xdistance_centre = std::abs(interceptLocal.X() - cluster->local().x());
+            double ydistance_centre = std::abs(interceptLocal.Y() - cluster->local().y());
+
+            // distance of track to nearest pixel: initialise to maximal possible value
+            auto xdistance_nearest = std::numeric_limits<double>::max();
+            auto ydistance_nearest = std::numeric_limits<double>::max();
+
             for(auto& pixel : (*cluster->pixels())) {
                 // convert pixel address to local coordinates:
                 auto pixelPositionLocal =
