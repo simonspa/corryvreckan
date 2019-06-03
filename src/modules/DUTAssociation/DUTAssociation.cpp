@@ -91,10 +91,12 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
                 hY1Y2_3px->Fill(static_cast<double>(Units::convert(ydistance_centre - ydistance_nearest, "um")));
             }
 
-            // Check if the cluster is close in space
-            if(abs(xdistance) > spatialCut.x() || abs(ydistance) > spatialCut.y()) {
-                LOG(DEBUG) << "Discarding DUT cluster with distance (" << Units::display(abs(xdistance), {"um", "mm"}) << ","
-                           << Units::display(abs(ydistance), {"um", "mm"}) << ")";
+            // Check if the cluster is close in space (either use cluster centre of closest pixel to track)
+            auto xdistance = (useClusterCentre ? xdistance_centre : xdistance_nearest);
+            auto ydistance = (useClusterCentre ? ydistance_centre : ydistance_nearest);
+            if(std::abs(xdistance) > spatialCut.x() || std::abs(ydistance) > spatialCut.y()) {
+                LOG(DEBUG) << "Discarding DUT cluster with distance (" << Units::display(std::abs(xdistance), {"um", "mm"})
+                           << "," << Units::display(std::abs(ydistance), {"um", "mm"}) << ")";
                 continue;
             }
 
@@ -105,7 +107,8 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
                 continue;
             }
 
-            LOG(DEBUG) << "Found associated cluster with distance (" << abs(xdistance) << "," << abs(ydistance) << ")";
+            LOG(DEBUG) << "Found associated cluster with distance (" << std::abs(xdistance) << "," << std::abs(ydistance)
+                       << ")";
             track->addAssociatedCluster(cluster);
             assoc_cluster_counter++;
         }
