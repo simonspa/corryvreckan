@@ -70,25 +70,25 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
                 ydistance_nearest = std::min(ydistance_nearest, std::abs(interceptLocal.Y() - pixelPositionLocal.y()));
             }
 
-            hX1X2->Fill(xdistance - xdistance_nearest);
-            hY1Y2->Fill(ydistance - ydistance_nearest);
+            hX1X2->Fill(xdistance_centre - xdistance_nearest);
+            hY1Y2->Fill(ydistance_centre - ydistance_nearest);
             if(cluster->columnWidth() == 1) {
-                hX1X2_1px->Fill(static_cast<double>(Units::convert(xdistance - xdistance_nearest, "um")));
+                hX1X2_1px->Fill(static_cast<double>(Units::convert(xdistance_centre - xdistance_nearest, "um")));
             }
             if(cluster->rowWidth() == 1) {
-                hY1Y2_1px->Fill(static_cast<double>(Units::convert(ydistance - ydistance_nearest, "um")));
+                hY1Y2_1px->Fill(static_cast<double>(Units::convert(ydistance_centre - ydistance_nearest, "um")));
             }
             if(cluster->columnWidth() == 2) {
-                hX1X2_2px->Fill(static_cast<double>(Units::convert(xdistance - xdistance_nearest, "um")));
+                hX1X2_2px->Fill(static_cast<double>(Units::convert(xdistance_centre - xdistance_nearest, "um")));
             }
             if(cluster->rowWidth() == 2) {
-                hY1Y2_2px->Fill(static_cast<double>(Units::convert(ydistance - ydistance_nearest, "um")));
+                hY1Y2_2px->Fill(static_cast<double>(Units::convert(ydistance_centre - ydistance_nearest, "um")));
             }
             if(cluster->columnWidth() == 3) {
-                hX1X2_3px->Fill(static_cast<double>(Units::convert(xdistance - xdistance_nearest, "um")));
+                hX1X2_3px->Fill(static_cast<double>(Units::convert(xdistance_centre - xdistance_nearest, "um")));
             }
             if(cluster->rowWidth() == 3) {
-                hY1Y2_3px->Fill(static_cast<double>(Units::convert(ydistance - ydistance_nearest, "um")));
+                hY1Y2_3px->Fill(static_cast<double>(Units::convert(ydistance_centre - ydistance_nearest, "um")));
             }
 
             // Check if the cluster is close in space
