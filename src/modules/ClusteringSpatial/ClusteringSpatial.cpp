@@ -183,11 +183,10 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
     LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
 
     // Create object with local cluster position
-    PositionVector3D<Cartesian3D<double>> positionLocal(m_detector->pitch().X() * (column - m_detector->nPixels().X() / 2.),
-                                                        m_detector->pitch().Y() * (row - m_detector->nPixels().Y() / 2.),
-                                                        0);
+    auto positionLocal = m_detector->getLocalPosition(column, row);
+
     // Calculate global cluster position
-    PositionVector3D<Cartesian3D<double>> positionGlobal = m_detector->localToGlobal(positionLocal);
+    auto positionGlobal = m_detector->localToGlobal(positionLocal);
 
     // Set the cluster parameters
     cluster->setRow(row);
