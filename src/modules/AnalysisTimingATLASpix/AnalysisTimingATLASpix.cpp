@@ -222,22 +222,22 @@ void AnalysisTimingATLASpix::initialise() {
                                        0,
                                        m_detector->nPixels().Y());
     hHitMapAssoc_inPixel = new TH2F("hitMapAssoc_inPixel",
-                                    "hitMapAssoc_inPixel; x_{track} mod 130 #mum; y_{track} mod 130 #mum",
+                                    "hitMapAssoc_inPixel; in-pixel x_{track} [#mum]; in-pixel y_{track} [#mum]",
                                     static_cast<int>(pitch_x),
-                                    0,
-                                    pitch_x,
+                                    -pitch_x / 2.,
+                                    pitch_x / 2.,
                                     static_cast<int>(pitch_y),
-                                    0,
-                                    pitch_y);
+                                    -pitch_y / 2.,
+                                    pitch_y / 2.);
     hHitMapAssoc_inPixel_highCharge =
         new TH2F("hitMapAssoc_inPixel_highCharge",
-                 "hitMapAssoc_inPixel_highCharge;  x_{track} mod 130 #mum; y_{track} mod 130 #mum",
+                 "hitMapAssoc_inPixel_highCharge;  in-pixel x_{track} [#mum]; in-pixel y_{track} [#mum]",
                  static_cast<int>(pitch_x),
-                 0,
-                 pitch_x,
+                 -pitch_x / 2.,
+                 pitch_x / 2.,
                  static_cast<int>(pitch_y),
-                 0,
-                 pitch_y);
+                 -pitch_y / 2.,
+                 pitch_y / 2.);
     hClusterMapAssoc = new TH2F("hClusterMapAssoc",
                                 "hClusterMapAssoc; x_{cluster} [px]; x_{cluster} [px]; # entries",
                                 m_detector->nPixels().X(),
