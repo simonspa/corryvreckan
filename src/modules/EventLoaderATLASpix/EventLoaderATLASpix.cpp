@@ -190,10 +190,10 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         hPixelToA->Fill(px->timestamp());
 
         hTluApxTimeResidual->Fill(
-            static_cast<double>(Units::convert(start_time - px->timestamp(), "us") + 10)); // revert adjust_event_times
+            static_cast<double>(Units::convert(start_time - px->timestamp(), "us") + 115)); // revert adjust_event_times
         hTluApxTimeResidualvsTime->Fill(
             static_cast<double>(Units::convert(px->timestamp(), "s")),
-            static_cast<double>(Units::convert(start_time - px->timestamp(), "us") + 10)); // revert adjust_event_times
+            static_cast<double>(Units::convert(start_time - px->timestamp(), "us") + 115)); // revert adjust_event_times
 
         // Pixels per 100us:
         hPixelsOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "us")));
