@@ -100,6 +100,9 @@ namespace corryvreckan {
         TH1F* hPixelsPerEvent;
         TH1D* hEudaqEventStart;
         TH1D* hClipboardEventStart;
+
+        TH1F* hTluChipTimeResidual;
+        TH2F* hTluChipTimeResidualvsTime;
     };
 
 } // namespace corryvreckan

@@ -48,6 +48,17 @@ void EventLoaderEUDAQ2::initialise() {
     title = "Corryvreckan event start times (on clipboard); Corryvreckan event start time [ns];# entries";
     hClipboardEventStart = new TH1D("clipboardEventStart", title.c_str(), 1e6, 0, 1e9);
 
+    hTluChipTimeResidual =
+        new TH1F("hTluChipTimeResidual", "hTluChipTimeResidual; ts(tlu) - ts(Chip) [us]; # entries", 2e4, -1000, 1000);
+    hTluChipTimeResidualvsTime = new TH2F("hTluChipTimeResidualvsTime",
+                                          "hTluChipTimeResidualvsTime; event_time [s]; ts(tlu) - ts(Chip) [s]",
+                                          1e2,
+                                          0,
+                                          1e4,
+                                          2e3,
+                                          -10,
+                                          10);
+
     // open the input file with the eudaq reader
     try {
         reader_ = eudaq::Factory<eudaq::FileReader>::MakeUnique(eudaq::str2hash("native"), m_filename);
@@ -210,6 +221,14 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
             hitmap->Fill(col, row);
             hHitTimes->Fill(ts);
             hPixelRawValues->Fill(raw);
+
+            auto event = clipboard->get_event();
+            hTluChipTimeResidual->Fill(
+                static_cast<double>(Units::convert(event->start() - ts, "us") + 250)); // revert adjust_event_times: 10us
+            hTluChipTimeResidualvsTime->Fill(
+                static_cast<double>(Units::convert(pixel->timestamp(), "s")),
+                static_cast<double>(Units::convert(event->start() - ts, "us") + 250)); // revert adjust_event_times 10us
+
             pixels->push_back(pixel);
         }
         hPixelsPerEvent->Fill(static_cast<int>(pixels->size()));
