@@ -5,7 +5,7 @@
 **Status**: Work in progress
 
 ### Description
-Analysis module for CLICpix2 prototypes. This module is still work in progress, changes to functionality and behaviour are to be expected.
+Generic analysis module for all prototypes. This module is still work in progress, changes to functionality and behaviour are to be expected.
 
 ### Parameters
 * `time_cut_frameedge`: Parameter to discard telescope tracks at the frame edges (start and end of the current CLICpix2 frame). Defaults to `20ns`.
@@ -15,16 +15,16 @@ Analysis module for CLICpix2 prototypes. This module is still work in progress, 
 ### Plots produced
 * 2D Map of associated cluster positions
 * 2D Map of cluster sizes for associated clusters
-* 2D Map of cluster ToT values from associated clusters
+* 2D Map of cluster charge values from associated clusters
 * 2D Map of associated hits
 * 2D Map of tracks not associated to a cluster
 * 2D Map of associated hits within the defined region-of-interest
-* Distribution of pixel ToT values from associated clusters
-* 2D Map of pixel ToT values from associated clusters
+* Distribution of pixel raw value (ToT, ADC, ...) values from associated clusters
+* 2D Map of pixel raw value (ToT, ADC, ...) values from associated clusters
 * Track residuals in X and Y
 * Track residuals for 1-pixel-clusters in X and Y
 * Track residuals for 2-pixel-clusters in X and Y
-* Distribution of cluster Tot values from associated clusters
+* Distribution of cluster charge values from associated clusters
 * Distribution of sizes from associated clusters
 * Normalised distribution of sizes from associated clusters
 * 2D Map of in-pixel efficiency

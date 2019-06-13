@@ -4,6 +4,7 @@
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TProfile2D.h>
 #include <dirent.h>
 #include <fstream>
 #include <iostream>
@@ -61,19 +62,37 @@ namespace corryvreckan {
         int ts2Range;
 
         TH2F* hHitMap;
+        TH2F* hHitMap_highTot;
+        TProfile2D* hHitMap_totWeighted;
         TH1F* hPixelToT;
-        TH1F* hPixelToTCal;
+        TH1F* hPixelToT_beforeCorrection;
+        TH1F* hPixelCharge;
         TH1F* hPixelToA;
         TH1F* hTluApxTimeResidual;
         TH2F* hTluApxTimeResidualvsTime;
         TH1F* hPixelsPerFrame;
         TH1F* hPixelsOverTime;
 
+        // TS1 and TS2 specific histograms:
+        TH1F* hPixelTS1;
+        TH1F* hPixelTS2;
+        TH1F* hPixelTS1bits;
+        TH1F* hPixelTS2bits;
+        TH1F* hPixelTS1_lowToT;
+        TH1F* hPixelTS2_lowToT;
+        TH1F* hPixelTS1bits_lowToT;
+        TH1F* hPixelTS2bits_lowToT;
+        TH1F* hPixelTS1_highToT;
+        TH1F* hPixelTS2_highToT;
+        TH1F* hPixelTS1bits_highToT;
+        TH1F* hPixelTS2bits_highToT;
+
         // Parameters:
         std::string m_inputDirectory;
         bool m_detectorBusy;
         bool m_legacyFormat;
         double m_clockCycle;
+        int m_highToTCut;
         std::string m_calibrationFile;
         std::vector<double> m_calibrationFactors;
         // int m_clkdivendM;
