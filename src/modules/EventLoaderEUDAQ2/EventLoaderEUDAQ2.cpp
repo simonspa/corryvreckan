@@ -49,13 +49,13 @@ void EventLoaderEUDAQ2::initialise() {
     hClipboardEventStart = new TH1D("clipboardEventStart", title.c_str(), 1e6, 0, 1e9);
 
     hTluChipTimeResidual =
-        new TH1F("hTluChipTimeResidual", "hTluChipTimeResidual; ts(tlu) - ts(Chip) [us]; # entries", 2e4, -1000, 1000);
+        new TH1F("hTluChipTimeResidual", "hTluChipTimeResidual; ts(tlu) - ts(Chip) [us]; # entries", 2e5, -100, 100);
     hTluChipTimeResidualvsTime = new TH2F("hTluChipTimeResidualvsTime",
-                                          "hTluChipTimeResidualvsTime; event_time [s]; ts(tlu) - ts(Chip) [s]",
-                                          1e2,
+                                          "hTluChipTimeResidualvsTime; event_time [s]; ts(tlu) - ts(Chip) [us]",
+                                          3e3,
                                           0,
-                                          1e4,
-                                          2e3,
+                                          3e3,
+                                          3e4,
                                           -10,
                                           10);
 
@@ -236,10 +236,10 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
 
             auto event = clipboard->get_event();
             hTluChipTimeResidual->Fill(
-                static_cast<double>(Units::convert(event->start() - ts, "us") + 250)); // revert adjust_event_times: 10us
+                static_cast<double>(Units::convert(event->start() - ts, "us") + 115)); // revert adjust_event_times: 10us
             hTluChipTimeResidualvsTime->Fill(
                 static_cast<double>(Units::convert(pixel->timestamp(), "s")),
-                static_cast<double>(Units::convert(event->start() - ts, "us") + 250)); // revert adjust_event_times 10us
+                static_cast<double>(Units::convert(event->start() - ts, "us") + 115)); // revert adjust_event_times 10us
 
             pixels->push_back(pixel);
         }
