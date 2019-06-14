@@ -156,13 +156,13 @@ void EventLoaderATLASpix::initialise() {
     hPixelTS2bits = new TH1F("pixelTS2bits", "pixelTS2bits; pixel TS2 bit [lsb->msb]; # events", 8, 0, 8);
 
     hTluApxTimeResidual =
-        new TH1F("hTluApxTimeResidual", "hTluApxTimeResidual; ts(tlu) - ts(apx) [us]; # entries", 2e4, -100, 100);
+        new TH1F("hTluApxTimeResidual", "hTluApxTimeResidual; ts(tlu) - ts(apx) [us]; # entries", 2e5, -100, 100);
     hTluApxTimeResidualvsTime = new TH2F("hTluApxTimeResidualvsTime",
                                          "hTluApxTimeResidualvsTime; event_time [s]; ts(tlu) - ts(apx) [us]",
                                          3e3,
                                          0,
                                          3e3,
-                                         3e3,
+                                         3e4,
                                          -10,
                                          10);
 
@@ -239,10 +239,10 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         hPixelToA->Fill(px->timestamp());
 
         hTluApxTimeResidual->Fill(
-            static_cast<double>(Units::convert(start_time - px->timestamp(), "us") + 10)); // revert adjust_event_times
+            static_cast<double>(Units::convert(start_time - px->timestamp(), "us") + 115)); // revert adjust_event_times
         hTluApxTimeResidualvsTime->Fill(
             static_cast<double>(Units::convert(px->timestamp(), "s")),
-            static_cast<double>(Units::convert(start_time - px->timestamp(), "us") + 10)); // revert adjust_event_times
+            static_cast<double>(Units::convert(start_time - px->timestamp(), "us") + 115)); // revert adjust_event_times
 
         // Pixels per 100us:
         hPixelsOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "us")));
