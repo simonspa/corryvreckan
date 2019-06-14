@@ -139,6 +139,8 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
 
     double event_start = evt->GetTimeBegin();
     double event_end = evt->GetTimeEnd();
+    LOG(DEBUG) << "event_start = " << Units::display(event_start, "us")
+               << ", event_end = " << Units::display(event_end, "us");
 
     // If adjustment of event start/end is required:
     const auto it = std::find_if(adjust_event_times.begin(),
