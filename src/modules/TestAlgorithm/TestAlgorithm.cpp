@@ -27,6 +27,15 @@ void TestAlgorithm::initialise() {
                       m_detector->nPixels().Y(),
                       0,
                       m_detector->nPixels().Y());
+    title = m_detector->name() + ": hitmap of clusters;x [px];y [px];events";
+    hitmap_clusters = new TH2F("hitmap_clusters",
+                               title.c_str(),
+                               m_detector->nPixels().X(),
+                               0,
+                               m_detector->nPixels().X(),
+                               m_detector->nPixels().Y(),
+                               0,
+                               m_detector->nPixels().Y());
 
     if(makeCorrelations) {
         // Correlation plots
@@ -34,11 +43,18 @@ void TestAlgorithm::initialise() {
         correlationX = new TH1F("correlationX", title.c_str(), 1000, -10., 10.);
         title = m_detector->name() + ": correlation Y;y_{ref}-y [mm];events";
         correlationY = new TH1F("correlationY", title.c_str(), 1000, -10., 10.);
+        title = m_detector->name() + ": correlation XY;y_{ref}-x [mm];events";
+        correlationXY = new TH1F("correlationXY", title.c_str(), 1000, -10., 10.);
+        title = m_detector->name() + ": correlation YX;x_{ref}-y [mm];events";
+        correlationYX = new TH1F("correlationYX", title.c_str(), 1000, -10., 10.);
 
         // time correlation plot range should cover length of events. nanosecond binning.
         title = m_detector->name() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [ns];events";
         correlationTime =
             new TH1F("correlationTime", title.c_str(), static_cast<int>(2. * timingCut), -1 * timingCut, timingCut);
+        title = m_detector->name() + "Reference pixel time stamp - pixel time stamp;t_{ref}-t [ns];events";
+        correlationTime_px =
+            new TH1F("correlationTime_px", title.c_str(), static_cast<int>(2. * timingCut), -1 * timingCut, timingCut);
         title = m_detector->name() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [1/40MHz];events";
         correlationTimeInt = new TH1F("correlationTimeInt", title.c_str(), 8000, -40000, 40000);
 
@@ -61,6 +77,42 @@ void TestAlgorithm::initialise() {
                                        reference->nPixels().Y(),
                                        0,
                                        reference->nPixels().Y());
+        title = m_detector->name() + ": correlation col to col;col [px];col_{ref} [px];events";
+        correlationColCol_px = new TH2F("correlationColCol_px",
+                                        title.c_str(),
+                                        m_detector->nPixels().X(),
+                                        0,
+                                        m_detector->nPixels().X(),
+                                        reference->nPixels().X(),
+                                        0,
+                                        reference->nPixels().X());
+        title = m_detector->name() + ": correlation col to row;col [px];row_{ref} [px];events";
+        correlationColRow_px = new TH2F("correlationColRow_px",
+                                        title.c_str(),
+                                        m_detector->nPixels().X(),
+                                        0,
+                                        m_detector->nPixels().X(),
+                                        reference->nPixels().Y(),
+                                        0,
+                                        reference->nPixels().Y());
+        title = m_detector->name() + ": correlation row to col;row [px];col_{ref} [px];events";
+        correlationRowCol_px = new TH2F("correlationRowCol_px",
+                                        title.c_str(),
+                                        m_detector->nPixels().Y(),
+                                        0,
+                                        m_detector->nPixels().Y(),
+                                        reference->nPixels().X(),
+                                        0,
+                                        reference->nPixels().X());
+        title = m_detector->name() + ": correlation row to row;row [px];row_{ref} [px];events";
+        correlationRowRow_px = new TH2F("correlationRowRow_px",
+                                        title.c_str(),
+                                        m_detector->nPixels().Y(),
+                                        0,
+                                        m_detector->nPixels().Y(),
+                                        reference->nPixels().Y(),
+                                        0,
+                                        reference->nPixels().Y());
 
         title = m_detector->name() + ": 2D correlation X (global);x [mm];x_{ref} [mm];events";
         correlationX2D = new TH2F("correlationX_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);
@@ -95,9 +147,14 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any clusters on the clipboard";
         return StatusCode::Success;
     }
+    for(auto& cluster : (*clusters)) {
+        hitmap_clusters->Fill(cluster->column(), cluster->row());
+    }
 
-    // Get clusters from reference detector
+    // Get pixels/clusters from reference detector
     auto reference = get_reference();
+    // Get the pixels of reference detector
+    Pixels* referencePixels = reinterpret_cast<Pixels*>(clipboard->get(reference->name(), "pixels"));
     Clusters* referenceClusters = reinterpret_cast<Clusters*>(clipboard->get(reference->name(), "clusters"));
     if(referenceClusters == nullptr) {
         LOG(DEBUG) << "Reference detector " << reference->name() << " does not have any clusters on the clipboard";
@@ -106,8 +163,21 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Loop over all clusters and fill histograms
     if(makeCorrelations) {
+
+        for(auto& pixel : (*pixels)) {
+            // Loop over reference plane pixels:
+            for(auto& refPixel : (*referencePixels)) {
+                correlationColCol_px->Fill(pixel->column(), refPixel->column());
+                correlationColRow_px->Fill(pixel->column(), refPixel->row());
+                correlationRowCol_px->Fill(pixel->row(), refPixel->column());
+                correlationRowRow_px->Fill(pixel->row(), refPixel->row());
+
+                correlationTime_px->Fill(refPixel->timestamp() - pixel->timestamp());
+            }
+        }
+
         for(auto& cluster : (*clusters)) {
-            // Loop over reference plane pixels to make correlation plots
+            // Loop over reference plane clusters to make correlation plots
             for(auto& refCluster : (*referenceClusters)) {
 
                 double timeDifference = refCluster->timestamp() - cluster->timestamp();
@@ -119,11 +189,13 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
                     correlationX->Fill(refCluster->global().x() - cluster->global().x());
                     correlationX2D->Fill(cluster->global().x(), refCluster->global().x());
                     correlationX2Dlocal->Fill(cluster->column(), refCluster->column());
-                }
-                if(abs(timeDifference) < timingCut || !do_timing_cut_) {
+
                     correlationY->Fill(refCluster->global().y() - cluster->global().y());
                     correlationY2D->Fill(cluster->global().y(), refCluster->global().y());
                     correlationY2Dlocal->Fill(cluster->row(), refCluster->row());
+
+                    correlationXY->Fill(refCluster->global().y() - cluster->global().x());
+                    correlationYX->Fill(refCluster->global().x() - cluster->global().y());
                 }
                 //                    correlationTime[m_detector->name()]->Fill(Units::convert(timeDifference, "s"));
                 correlationTime->Fill(timeDifference); // time difference in ns

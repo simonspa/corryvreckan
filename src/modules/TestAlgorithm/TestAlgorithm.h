@@ -28,16 +28,26 @@ namespace corryvreckan {
 
         // Pixel histograms
         TH2F* hitmap;
+        TH2F* hitmap_clusters;
         TH1F* eventTimes;
 
         // Correlation plots
         TH1F* correlationX;
+        TH1F* correlationXY;
+        TH1F* correlationXY_neg;
         TH1F* correlationY;
+        TH1F* correlationYX;
+        TH1F* correlationYX_neg;
         TH2F* correlationX2Dlocal;
         TH2F* correlationY2Dlocal;
+        TH2F* correlationColCol_px;
+        TH2F* correlationColRow_px;
+        TH2F* correlationRowCol_px;
+        TH2F* correlationRowRow_px;
         TH2F* correlationX2D;
         TH2F* correlationY2D;
         TH1F* correlationTime;
+        TH1F* correlationTime_px;
         TH1F* correlationTimeInt;
 
         // Parameters which can be set by user
