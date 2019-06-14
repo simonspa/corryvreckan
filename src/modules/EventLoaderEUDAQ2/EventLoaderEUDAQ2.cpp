@@ -183,6 +183,11 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
         clipboard->get_event()->addTrigger(evt->GetTriggerN(), (event_start + event_start) / 2);
         LOG(DEBUG) << "Stored trigger ID " << evt->GetTriggerN() << " at "
                    << Units::display((event_start + event_start) / 2, {"us", "ns"});
+
+        if(evt->GetTriggerN() >= old_trigger_id + 2) {
+            LOG(DEBUG) << "Trigger ID jumps from " << old_trigger_id << " to " << evt->GetTriggerN();
+        }
+        old_trigger_id = evt->GetTriggerN();
         return EventPosition::DURING;
     }
 }
@@ -238,7 +243,8 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
 
             pixels->push_back(pixel);
         }
-        hPixelsPerEvent->Fill(static_cast<int>(pixels->size()));
+        // hPixelsPerEvent->Fill(static_cast<int>(pixels->size()));
+        cnt_pixelsPerEvent += static_cast<int>(pixels->size());
     }
 
     if(!pixels->empty()) {
@@ -287,5 +293,8 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     LOG(DEBUG) << "Finished Corryvreckan event";
+    hPixelsPerEvent->Fill(cnt_pixelsPerEvent);
+    cnt_pixelsPerEvent = 0;
+
     return StatusCode::Success;
 }

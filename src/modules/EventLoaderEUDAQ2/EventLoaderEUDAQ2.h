@@ -103,6 +103,9 @@ namespace corryvreckan {
 
         TH1F* hTluChipTimeResidual;
         TH2F* hTluChipTimeResidualvsTime;
+
+        uint32_t old_trigger_id = 0;
+        int cnt_pixelsPerEvent = 0;
     };
 
 } // namespace corryvreckan
