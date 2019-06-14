@@ -146,14 +146,6 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
     const auto it = std::find_if(adjust_event_times.begin(),
                                  adjust_event_times.end(),
                                  [evt](const std::vector<std::string>& x) { return x.front() == evt->GetDescription(); });
-    if(it != adjust_event_times.end()) {
-        double shift_start = corryvreckan::from_string<double>(it->at(1));
-        double shift_end = corryvreckan::from_string<double>(it->at(2));
-        event_start += shift_start;
-        event_end += shift_end;
-        LOG(DEBUG) << "Adjusting " << it->at(0) << ": event_start by " << Units::display(shift_start, {"us", "ns"})
-                   << ", event_end by " << Units::display(event_end, {"us", "ns"});
-    }
 
     // Skip if later start is requested:
     if(event_start < m_skip_time) {
@@ -166,6 +158,14 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
         LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " - "
                    << Units::display(event_end, {"us", "ns"}) << ", length "
                    << Units::display(event_end - event_start, {"us", "ns"});
+        if(it != adjust_event_times.end()) {
+            double shift_start = corryvreckan::from_string<double>(it->at(1));
+            double shift_end = corryvreckan::from_string<double>(it->at(2));
+            event_start += shift_start;
+            event_end += shift_end;
+            LOG(DEBUG) << "Adjusting " << it->at(0) << ": event_start by " << Units::display(shift_start, {"us", "ns"})
+                       << ", event_end by " << Units::display(shift_end, {"us", "ns"});
+        }
         clipboard->put_event(std::make_shared<Event>(event_start, event_end));
     }
 
