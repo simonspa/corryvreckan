@@ -34,7 +34,7 @@ void EventLoaderEUDAQ2::initialise() {
                       m_detector->nPixels().Y());
 
     title = ";hit timestamp [ns]; # events";
-    hHitTimes = new TH1F("hitTimes", title.c_str(), 3e6, 0, 3e12);
+    hHitTimes = new TH1F("hitTimes", title.c_str(), 3e6, 0, 3e9);
 
     title = "pixel raw values";
     hPixelRawValues = new TH1F("hPixelRawValues", title.c_str(), 1024, 0, 1024);
@@ -43,10 +43,10 @@ void EventLoaderEUDAQ2::initialise() {
     hPixelsPerEvent = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
 
     title = ";EUDAQ event start time[ns];# entries";
-    hEudaqEventStart = new TH1D("eudaqEventStart", title.c_str(), 1e6, 0, 1e9);
+    hEudaqEventStart = new TH1D("eudaqEventStart", title.c_str(), 3e6, 0, 3e9);
 
     title = "Corryvreckan event start times (on clipboard); Corryvreckan event start time [ns];# entries";
-    hClipboardEventStart = new TH1D("clipboardEventStart", title.c_str(), 1e6, 0, 1e9);
+    hClipboardEventStart = new TH1D("clipboardEventStart", title.c_str(), 3e6, 0, 3e9);
 
     hTluChipTimeResidual =
         new TH1F("hTluChipTimeResidual", "hTluChipTimeResidual; ts(tlu) - ts(Chip) [us]; # entries", 2e5, -100, 100);

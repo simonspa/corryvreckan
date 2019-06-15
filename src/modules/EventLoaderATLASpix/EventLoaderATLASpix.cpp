@@ -148,7 +148,7 @@ void EventLoaderATLASpix::initialise() {
     hPixelCharge = new TH1F("pixelCharge", "pixelCharge; pixel charge [e]; # events", 100, 0, 100);
     hPixelToA = new TH1F("pixelToA", "pixelToA; pixel ToA [ns]; # events", 100, 0, 100);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame; pixels per frame; # events", 200, 0, 200);
-    hPixelsOverTime = new TH1F("pixelsOverTime", "pixelsOverTime; time [ms]; # events", 2e6, 0, 2e6);
+    hPixelsOverTime = new TH1F("pixelsOverTime", "pixelsOverTime; time [ns]; # events", 3e6, 0, 3e9);
 
     hPixelTS1 = new TH1F("pixelTS1", "pixelTS1; pixel TS1 [lsb]; # events", 2050, 0, 2050);
     hPixelTS2 = new TH1F("pixelTS2", "pixelTS2; pixel TS2 [lsb]; # events", 130, 0, 130);
@@ -245,7 +245,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
             static_cast<double>(Units::convert(start_time - px->timestamp(), "us") + 115)); // revert adjust_event_times
 
         // Pixels per 100us:
-        hPixelsOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "us")));
+        hPixelsOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "ns")));
     }
 
     // Fill histograms
