@@ -154,18 +154,24 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
         return EventPosition::BEFORE;
     }
 
+    double shift_start = 0;
+    double shift_end = 0;
+
     if(!clipboard->event_defined()) {
         LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " - "
                    << Units::display(event_end, {"us", "ns"}) << ", length "
                    << Units::display(event_end - event_start, {"us", "ns"});
         if(it != adjust_event_times.end()) {
-            double shift_start = corryvreckan::from_string<double>(it->at(1));
-            double shift_end = corryvreckan::from_string<double>(it->at(2));
+            shift_start = corryvreckan::from_string<double>(it->at(1));
+            shift_end = corryvreckan::from_string<double>(it->at(2));
             event_start += shift_start;
             event_end += shift_end;
             LOG(DEBUG) << "Adjusting " << it->at(0) << ": event_start by " << Units::display(shift_start, {"us", "ns"})
                        << ", event_end by " << Units::display(shift_end, {"us", "ns"});
         }
+        LOG(DEBUG) << "Shifted Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " - "
+                   << Units::display(event_end, {"us", "ns"}) << ", length "
+                   << Units::display(event_end - event_start, {"us", "ns"});
         clipboard->put_event(std::make_shared<Event>(event_start, event_end));
     }
 
@@ -182,9 +188,9 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
         return EventPosition::AFTER;
     } else {
         // Store potential trigger numbers, assign to center of event:
-        clipboard->get_event()->addTrigger(evt->GetTriggerN(), (event_start + event_start) / 2);
+        clipboard->get_event()->addTrigger(evt->GetTriggerN(), event_start - shift_start);
         LOG(DEBUG) << "Stored trigger ID " << evt->GetTriggerN() << " at "
-                   << Units::display((event_start + event_start) / 2, {"us", "ns"});
+                   << Units::display(event_start - shift_start, {"us", "ns"});
 
         if(evt->GetTriggerN() >= old_trigger_id + 2) {
             LOG(DEBUG) << "Trigger ID jumps from " << old_trigger_id << " to " << evt->GetTriggerN();
