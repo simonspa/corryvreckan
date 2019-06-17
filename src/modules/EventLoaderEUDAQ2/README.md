@@ -46,7 +46,7 @@ The decoder promises to
 
 Some data formats depend on external configuration parameters for interpretation.
 The EventLoaderEUDAQ2 takes all key-value pairs available in the configuration and forwards them to the appropriate StandardEvent converter on the EUDAQ side.
-It should be kept in mind that the resulting configuration strings are parsed by EUDAQ2, not bey Corryvreckan, and that therefore the functionality is reduced.
+It should be kept in mind that the resulting configuration strings are parsed by EUDAQ2, not by Corryvreckan, and that therefore the functionality is reduced.
 For example, it does not interpret `true` or `false` alphabetic value of a Boolean variable but will return false in both cases. Thus. `key = 0` or `key = 1` have to be used in these cases.
 Also, more complex constructs such as arrays or matrices read by the Corryvreckan configuration are simply interpreted as strings.
 
