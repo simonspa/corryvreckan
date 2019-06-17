@@ -123,7 +123,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
                                                                     std::shared_ptr<eudaq::StandardEvent> evt) {
 
     // Check if this event has timestamps available:
-    if(evt->GetTimeBegin() == 0) {
+    if(evt->GetTimeBegin() <= std::numeric_limits<double>::epsilon()) {
         LOG(DEBUG) << evt->GetDescription() << ": Event has no timestamp, comparing trigger number";
 
         // If there is no event defined yet or the trigger number is unkown, there is little we can do:
