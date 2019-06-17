@@ -1,6 +1,6 @@
 # EventLoaderEUDAQ2
-**Maintainer**: Jens Kroeger (<jens.kroeger@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)
-**Module Type**: *DETECTOR*
+**Maintainer**: Jens Kroeger (<jens.kroeger@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Module Type**: *DETECTOR*  
 **Status**: under development
 
 ### Description
