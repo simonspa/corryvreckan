@@ -18,6 +18,20 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     m_filename = m_config.getPath("file_name", true);
     m_skip_time = m_config.get("skip_time", 0.);
     adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {});
+
+    // Forward all settings to EUDAQ
+    // WARNING: the EUDAQ Configuration class is not very flexible and e.g. booleans have to be passed as 1 and 0.
+    eudaq::Configuration cfg;
+    auto configs = m_config.getAll();
+    for(const auto& key : configs) {
+        LOG(DEBUG) << "Forwarding key \"" << key.first << " = " << key.second << "\" to EUDAQ converter";
+        cfg.Set(key.first, key.second);
+    }
+
+    // Converting the newly built configuration to a shared pointer of a cont configuration object
+    // Unfortunbately EUDAQ does not provide appropriate member functions for their configuration class to avoid this dance
+    const eudaq::Configuration eu_cfg = cfg;
+    eudaq_config_ = std::make_shared<const eudaq::Configuration>(eu_cfg);
 }
 
 void EventLoaderEUDAQ2::initialise() {
@@ -99,8 +113,8 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
         }
         auto event = events_.front();
         events_.erase(events_.begin());
-        decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, nullptr);
-        LOG(DEBUG) << event->GetDescription() << ": Decoding " << (decoding_failed ? "failed" : "succeeded");
+        decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, eudaq_config_);
+        LOG(DEBUG) << event->GetDescription() << ": EventConverter returned " << (decoding_failed ? "false" : "true");
     } while(decoding_failed);
     return stdevt;
 }
