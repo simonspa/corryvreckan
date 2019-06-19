@@ -115,7 +115,7 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
         auto event = events_.front();
         events_.erase(events_.begin());
         decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, eudaq_config_);
-        LOG(DEBUG) << event->GetDescription() << ": Decoding " << (decoding_failed ? "failed" : "succeeded");
+        LOG(DEBUG) << event->GetDescription() << ": EventConverter returned " << (decoding_failed ? "false" : "true");
     } while(decoding_failed);
     return stdevt;
 }
