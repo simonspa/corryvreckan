@@ -65,6 +65,9 @@ void EventLoaderEUDAQ2::initialise() {
     title = "Corryvreckan event end times (on clipboard); Corryvreckan event end time [ns];# entries";
     hClipboardEventEnd = new TH1D("clipboardEventEnd", title.c_str(), 3e6, 0, 3e9);
 
+    title = "Corryvreckan event end times (on clipboard); Corryvreckan event end time [ns];# entries";
+    hClipboardEventDuration = new TH1D("clipboardEventDuration", title.c_str(), 3e6, 0, 3e9);
+
     hTluChipTimeResidual =
         new TH1F("hTluChipTimeResidual", "hTluChipTimeResidual; ts(tlu) - ts(Chip) [us]; # entries", 2e5, -100, 100);
     hTluChipTimeResidualvsTime = new TH2F("hTluChipTimeResidualvsTime",
@@ -302,8 +305,10 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         // Do not fill if current_position == EventPosition::AFTER to avoid double-counting!
         hEudaqEventStart->Fill(event_->GetTimeBegin());
         if(clipboard->event_defined()) {
-            hClipboardEventStart->Fill(clipboard->get_event()->start());
-            hClipboardEventEnd->Fill(clipboard->get_event()->end());
+            hClipboardEventStart->Fill(static_cast<double>(Units::convert(clipboard->get_event()->start(), "ns")));
+            hClipboardEventEnd->Fill(static_cast<double>(Units::convert(clipboard->get_event()->end(), "ns")));
+            hClipboardEventDuration->Fill(
+                static_cast<double>(Units::convert(clipboard->get_event()->end() - clipboard->get_event()->start(), "ns")));
         }
 
         // Reset this event to get a new one:
