@@ -251,7 +251,7 @@ Pixels* EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> 
 
             LOG(DEBUG) << "Read pixel (col, row) = (" << col << ", " << row << ") from EUDAQ2 event data (before masking).";
             if(m_detector->masked(col, row)) {
-                LOG(DEBUG) << "Masking pixel (col, row) = (" << col << ", " << row << ")";
+                LOG(TRACE) << "Masked pixel (col, row) = (" << col << ", " << row << ")";
                 continue;
             }
 
