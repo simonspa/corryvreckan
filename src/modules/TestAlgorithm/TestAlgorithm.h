@@ -34,10 +34,8 @@ namespace corryvreckan {
         // Correlation plots
         TH1F* correlationX;
         TH1F* correlationXY;
-        TH1F* correlationXY_neg;
         TH1F* correlationY;
         TH1F* correlationYX;
-        TH1F* correlationYX_neg;
         TH2F* correlationX2Dlocal;
         TH2F* correlationY2Dlocal;
         TH2F* correlationColCol_px;
