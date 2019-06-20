@@ -91,6 +91,9 @@ namespace corryvreckan {
         // Currently processed decoded EUDAQ StandardEvent:
         std::shared_ptr<eudaq::StandardEvent> event_;
 
+        // EUDAQ configuration to be passed to the decoder instance
+        eudaq::ConfigurationSPC eudaq_config_;
+
         // 2D histograms
         TH2F* hitmap;
 

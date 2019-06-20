@@ -1,6 +1,6 @@
 # EventLoaderEUDAQ2
-**Maintainer**: Jens Kroeger (<jens.kroeger@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)
-**Module Type**: *DETECTOR*
+**Maintainer**: Jens Kroeger (<jens.kroeger@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Module Type**: *DETECTOR*  
 **Status**: under development
 
 ### Description
@@ -41,6 +41,14 @@ The decoder promises to
 * not return any event before a possible T0 signal in the data.
 * return the smallest possible granularity of data in time either as even or as sub-events within one event.
 * always return valid event time stamps. If the device does not have timestamps, it should return zero for the beginning of the event and have a valid trigger number set.
+
+### Configuring EUDAQ2 Event Converters
+
+Some data formats depend on external configuration parameters for interpretation.
+The EventLoaderEUDAQ2 takes all key-value pairs available in the configuration and forwards them to the appropriate StandardEvent converter on the EUDAQ side.
+It should be kept in mind that the resulting configuration strings are parsed by EUDAQ2, not by Corryvreckan, and that therefore the functionality is reduced.
+For example, it does not interpret `true` or `false` alphabetic value of a Boolean variable but will return false in both cases. Thus. `key = 0` or `key = 1` have to be used in these cases.
+Also, more complex constructs such as arrays or matrices read by the Corryvreckan configuration are simply interpreted as strings.
 
 ### Parameters
 * `file_name`: File name of the EUDAQ2 raw data file. This parameter is mandatory.
