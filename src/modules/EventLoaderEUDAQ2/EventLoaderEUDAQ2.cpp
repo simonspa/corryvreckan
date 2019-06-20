@@ -206,7 +206,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
     }
 }
 
-void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::shared_ptr<eudaq::StandardEvent> evt) {
+Pixels* EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt) {
 
     Pixels* pixels = new Pixels();
 
@@ -249,28 +249,18 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
             hHitTimes->Fill(ts);
             hPixelRawValues->Fill(raw);
 
-            auto event = clipboard->get_event();
-            hTluChipTimeResidual->Fill(
-                static_cast<double>(Units::convert(event->start() - ts, "us") + 115)); // revert adjust_event_times: 10us
-            hTluChipTimeResidualvsTime->Fill(
-                static_cast<double>(Units::convert(pixel->timestamp(), "s")),
-                static_cast<double>(Units::convert(event->start() - ts, "us") + 115)); // revert adjust_event_times 10us
-
             pixels->push_back(pixel);
         }
-        // hPixelsPerEvent->Fill(static_cast<int>(pixels->size()));
-        cnt_pixelsPerEvent += static_cast<int>(pixels->size());
+        hPixelsPerEvent->Fill(static_cast<int>(pixels->size()));
+        LOG(DEBUG) << m_detector->name() << ": Plane contains " << pixels->size() << " pixels";
     }
 
-    if(!pixels->empty()) {
-        LOG(DEBUG) << "Detector " << m_detector->name() << " has " << pixels->size() << " pixels";
-        clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
-    } else {
-        delete pixels;
-    }
+    return pixels;
 }
 
 StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
+
+    Pixels* pixels = new Pixels();
 
     EventPosition current_position = EventPosition::UNKNOWN;
     while(1) {
@@ -289,7 +279,9 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         if(current_position == EventPosition::DURING) {
             LOG(DEBUG) << "Is within current Corryvreckan event, storing data";
             // Store data on the clipboard
-            store_data(clipboard, event_);
+            auto new_pixels = get_pixel_data(event_);
+            pixels->insert(pixels->end(), new_pixels->begin(), new_pixels->end());
+            delete new_pixels;
         }
 
         // If this event was after the current event, stop reading:
@@ -307,6 +299,19 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         // Reset this event to get a new one:
         event_.reset();
     }
+
+    // Loop over pixels for plotting
+    for(auto& pixel : (*pixels)) {
+        auto event = clipboard->get_event();
+        hTluChipTimeResidual->Fill(static_cast<double>(Units::convert(event->start() - pixel->timestamp(), "us") +
+                                                       115)); // revert adjust_event_times: 10us
+        hTluChipTimeResidualvsTime->Fill(static_cast<double>(Units::convert(pixel->timestamp(), "s")),
+                                         static_cast<double>(Units::convert(event->start() - pixel->timestamp(), "us") +
+                                                             115)); // revert adjust_event_times 10us
+    }
+
+    // Store the full event data on the clipboard:
+    clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
 
     LOG(DEBUG) << "Finished Corryvreckan event";
     return StatusCode::Success;
