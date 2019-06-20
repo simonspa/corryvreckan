@@ -198,7 +198,6 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
         if(evt->GetTriggerN() >= old_trigger_id + 2) {
             LOG(DEBUG) << "Trigger ID jumps from " << old_trigger_id << " to " << evt->GetTriggerN();
         }
-        old_trigger_id = evt->GetTriggerN();
         return EventPosition::DURING;
     }
 }
@@ -305,8 +304,5 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     LOG(DEBUG) << "Finished Corryvreckan event";
-    hPixelsPerEvent->Fill(cnt_pixelsPerEvent);
-    cnt_pixelsPerEvent = 0;
-
     return StatusCode::Success;
 }
