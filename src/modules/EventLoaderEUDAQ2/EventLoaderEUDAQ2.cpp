@@ -176,6 +176,8 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
                    << Units::display(event_end, {"us", "ns"}) << ", length "
                    << Units::display(event_end - event_start, {"us", "ns"});
         clipboard->put_event(std::make_shared<Event>(event_start, event_end));
+    } else {
+        LOG(DEBUG) << "Corryvreckan event found on clipboard.";
     }
 
     double clipboard_start = clipboard->get_event()->start();
@@ -213,14 +215,14 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
         // Concatenate plane name according to naming convention: sensor_type + "_" + int
         auto plane_name = plane.Sensor() + "_" + std::to_string(plane.ID());
         auto detector_name = m_detector->name();
-        //  LOG(DEBUG) << plane_name <<", "<<detector_name;
         // Convert to lower case before string comparison to avoid errors by the user:
         std::transform(plane_name.begin(), plane_name.end(), plane_name.begin(), ::tolower);
         std::transform(detector_name.begin(), detector_name.end(), detector_name.begin(), ::tolower);
-        LOG(TRACE) << plane_name << " with  " << plane.HitPixels() << " hit pixels";
+        LOG(TRACE) << plane_name << " (" << i_plane << " out of " << evt->NumPlanes() << ") with  " << plane.HitPixels()
+                   << " hit pixels";
 
         if(detector_name != plane_name) {
-            LOG(DEBUG) << "Wrong plane: " << detector_name << "!=" << plane_name << ". Continue.";
+            LOG(TRACE) << "Wrong plane: " << detector_name << "!=" << plane_name << ". Continue.";
             continue;
         }
 
@@ -234,6 +236,7 @@ void EventLoaderEUDAQ2::store_data(std::shared_ptr<Clipboard> clipboard, std::sh
 
             LOG(DEBUG) << "Read pixel (col, row) = (" << col << ", " << row << ") from EUDAQ2 event data (before masking).";
             if(m_detector->masked(col, row)) {
+                LOG(DEBUG) << "Masking pixel (col, row) = (" << col << ", " << row << ")";
                 continue;
             }
 
@@ -282,7 +285,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         current_position = is_within_event(clipboard, event_);
 
         if(current_position == EventPosition::DURING) {
-            LOG(DEBUG) << "Is within current event, storing data";
+            LOG(DEBUG) << "Is within current Corryvreckan event, storing data";
             // Store data on the clipboard
             store_data(clipboard, event_);
         }
