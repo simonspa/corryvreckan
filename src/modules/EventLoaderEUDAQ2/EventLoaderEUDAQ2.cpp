@@ -198,10 +198,6 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
         clipboard->get_event()->addTrigger(evt->GetTriggerN(), event_start - shift_start);
         LOG(DEBUG) << "Stored trigger ID " << evt->GetTriggerN() << " at "
                    << Units::display(event_start - shift_start, {"us", "ns"});
-
-        if(evt->GetTriggerN() >= old_trigger_id + 2) {
-            LOG(DEBUG) << "Trigger ID jumps from " << old_trigger_id << " to " << evt->GetTriggerN();
-        }
         return EventPosition::DURING;
     }
 }
