@@ -52,9 +52,16 @@ void TestAlgorithm::initialise() {
         title = m_detector->name() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [ns];events";
         correlationTime =
             new TH1F("correlationTime", title.c_str(), static_cast<int>(2. * timingCut), -1 * timingCut, timingCut);
-	title = m_detector->name() + "Reference cluster time stamp - cluster time stamp over time;t [s];t_{ref}-t [ns];events";
-        correlationTimeOverTime =
-	  new TH2F("correlationTimeOverTime", title.c_str(),3e3, 0, 3e3, static_cast<int>(2. * timingCut), -1 * timingCut, timingCut);
+        title =
+            m_detector->name() + "Reference cluster time stamp - cluster time stamp over time;t [s];t_{ref}-t [ns];events";
+        correlationTimeOverTime = new TH2F("correlationTimeOverTime",
+                                           title.c_str(),
+                                           3e3,
+                                           0,
+                                           3e3,
+                                           static_cast<int>(2. * timingCut),
+                                           -1 * timingCut,
+                                           timingCut);
 
         title = m_detector->name() + "Reference pixel time stamp - pixel time stamp;t_{ref}-t [ns];events";
         correlationTime_px =
@@ -176,7 +183,8 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
                 correlationRowCol_px->Fill(pixel->row(), refPixel->column());
                 correlationRowRow_px->Fill(pixel->row(), refPixel->row());
 
-                correlationTime_px->Fill(static_cast<double>(Units::convert(refPixel->timestamp() - pixel->timestamp(),"ns")));
+                correlationTime_px->Fill(
+                    static_cast<double>(Units::convert(refPixel->timestamp() - pixel->timestamp(), "ns")));
             }
         }
 
@@ -203,7 +211,8 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
                 }
                 //                    correlationTime[m_detector->name()]->Fill(Units::convert(timeDifference, "s"));
                 correlationTime->Fill(timeDifference); // time difference in ns
-		correlationTimeOverTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(),"s")), timeDifference); // time difference in ns
+                correlationTimeOverTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                              timeDifference); // time difference in ns
                 correlationTimeInt->Fill(static_cast<double>(timeDifferenceInt));
             }
         }
