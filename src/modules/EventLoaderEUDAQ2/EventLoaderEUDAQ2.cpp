@@ -183,11 +183,13 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
     double clipboard_start = clipboard->get_event()->start();
     double clipboard_end = clipboard->get_event()->end();
 
-    if(event_start < clipboard_start) {
+    // if(event_start < clipboard_start) { // we still need to discuss about the logic here!
+    if(event_end < clipboard_start) {
         LOG(DEBUG) << "Event start before Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " < "
                    << Units::display(clipboard_start, {"us", "ns"});
         return EventPosition::BEFORE;
-    } else if(clipboard_end < event_end) {
+        // } else if(clipboard_end < event_end) { // we still need to discuss about the logic here!
+    } else if(clipboard_end < event_start) {
         LOG(DEBUG) << "Event end after Corryvreckan event: " << Units::display(event_end, {"us", "ns"}) << " > "
                    << Units::display(clipboard_end, {"us", "ns"});
         return EventPosition::AFTER;
