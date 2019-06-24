@@ -170,6 +170,8 @@ void EventLoaderATLASpix::initialise() {
                  -10,
                  10);
 
+    hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;entries", 20, 0, 20);
+
     // low ToT:
     hPixelTS1_lowToT = new TH1F("pixelTS1_lowToT", "pixelTS1_lowToT; pixel TS1 [lsb]; # events", 2050, 0, 2050);
     hPixelTS2_lowToT = new TH1F("pixelTS2_lowToT", "pixelTS2_lowToT; pixel TS2 [lsb]; # events", 130, 0, 130);
@@ -245,6 +247,9 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
         hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(px->timestamp(), "s")),
                                            static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
+
+        auto nTriggers = event->triggerList().size();
+        hTriggersPerEvent->Fill(static_cast<double>(nTriggers));
 
         // Pixels per 100us:
         hPixelsOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "ns")));
