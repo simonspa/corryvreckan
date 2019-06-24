@@ -68,16 +68,20 @@ void EventLoaderEUDAQ2::initialise() {
     title = "Corryvreckan event end times (on clipboard); Corryvreckan event end time [ns];# entries";
     hClipboardEventDuration = new TH1D("clipboardEventDuration", title.c_str(), 3e6, 0, 3e9);
 
-    hTluChipTimeResidual =
-        new TH1F("hTluChipTimeResidual", "hTluChipTimeResidual; ts(tlu) - ts(Chip) [us]; # entries", 2e5, -100, 100);
-    hTluChipTimeResidualvsTime = new TH2F("hTluChipTimeResidualvsTime",
-                                          "hTluChipTimeResidualvsTime; event_time [s]; ts(tlu) - ts(Chip) [us]",
-                                          3e3,
-                                          0,
-                                          3e3,
-                                          3e4,
-                                          -10,
-                                          10);
+    hPixelTimeEventBeginResidual = new TH1F("hPixelTimeEventBeginResidual",
+                                            "hPixelTimeEventBeginResidual;pixel_ts - clipboard event begin [us]; # entries",
+                                            2.1e5,
+                                            -10,
+                                            200);
+    hPixelTimeEventBeginResidualvsTime =
+        new TH2F("hPixelTimeEventBeginResidualvsTime",
+                 "hPixelTimeEventBeginResidualvsTime; pixel time [s];pixel_ts - clipboard event begin [us]",
+                 3e3,
+                 0,
+                 3e3,
+                 3e4,
+                 -10,
+                 10);
 
     // open the input file with the eudaq reader
     try {
@@ -318,11 +322,10 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     // Loop over pixels for plotting
     for(auto& pixel : (*pixels)) {
         auto event = clipboard->get_event();
-        hTluChipTimeResidual->Fill(static_cast<double>(Units::convert(event->start() - pixel->timestamp(), "us") +
-                                                       115)); // revert adjust_event_times: 10us
-        hTluChipTimeResidualvsTime->Fill(static_cast<double>(Units::convert(pixel->timestamp(), "s")),
-                                         static_cast<double>(Units::convert(event->start() - pixel->timestamp(), "us") +
-                                                             115)); // revert adjust_event_times 10us
+        hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
+        hPixelTimeEventBeginResidualvsTime->Fill(
+            static_cast<double>(Units::convert(pixel->timestamp(), "s")),
+            static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
     }
 
     // Store the full event data on the clipboard:
