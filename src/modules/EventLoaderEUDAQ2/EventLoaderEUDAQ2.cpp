@@ -73,15 +73,15 @@ void EventLoaderEUDAQ2::initialise() {
                                             2.1e5,
                                             -10,
                                             200);
-    hPixelTimeEventBeginResidualvsTime =
-        new TH2F("hPixelTimeEventBeginResidualvsTime",
-                 "hPixelTimeEventBeginResidualvsTime; pixel time [s];pixel_ts - clipboard event begin [us]",
+    hPixelTimeEventBeginResidualOverTime =
+        new TH2F("hPixelTimeEventBeginResidualOverTime",
+                 "hPixelTimeEventBeginResidualOverTime; pixel time [s];pixel_ts - clipboard event begin [us]",
                  3e3,
                  0,
                  3e3,
-                 3e4,
+                 2.1e4,
                  -10,
-                 10);
+                 200);
 
     // open the input file with the eudaq reader
     try {
@@ -323,7 +323,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     for(auto& pixel : (*pixels)) {
         auto event = clipboard->get_event();
         hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
-        hPixelTimeEventBeginResidualvsTime->Fill(
+        hPixelTimeEventBeginResidualOverTime->Fill(
             static_cast<double>(Units::convert(pixel->timestamp(), "s")),
             static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
     }
