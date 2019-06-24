@@ -155,21 +155,6 @@ void EventLoaderATLASpix::initialise() {
     hPixelTS1bits = new TH1F("pixelTS1bits", "pixelTS1bits; pixel TS1 bit [lsb->msb]; # events", 12, 0, 12);
     hPixelTS2bits = new TH1F("pixelTS2bits", "pixelTS2bits; pixel TS2 bit [lsb->msb]; # events", 8, 0, 8);
 
-    hPixelTimeEventBeginResidual = new TH1F("hPixelTimeEventBeginResidual",
-                                            "hPixelTimeEventBeginResidual;pixel_ts [us] - clipboard event begin; # entries",
-                                            2.1e5,
-                                            -10,
-                                            200);
-    hPixelTimeEventBeginResidualvsTime =
-        new TH2F("hPixelTimeEventBeginResidualvsTime",
-                 "hPixelTimeEventBeginResidualvsTime; pixel time [s];pixel_ts - clipboard event begin [us]",
-                 3e3,
-                 0,
-                 3e3,
-                 3e4,
-                 -10,
-                 10);
-
     hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;entries", 20, 0, 20);
 
     // low ToT:
@@ -187,6 +172,21 @@ void EventLoaderATLASpix::initialise() {
         new TH1F("pixelTS1bits_highToT", "pixelTS1bits_highToT; pixel TS1 bit [lsb->msb]; # events", 12, 0, 12);
     hPixelTS2bits_highToT =
         new TH1F("pixelTS2bits_highToT", "pixelTS2bits_highToT; pixel TS2 bit [lsb->msb]; # events", 8, 0, 8);
+
+    hPixelTimeEventBeginResidual = new TH1F("hPixelTimeEventBeginResidual",
+                                            "hPixelTimeEventBeginResidual;pixel_ts - clipboard event begin [us]; # entries",
+                                            2.1e5,
+                                            -10,
+                                            200);
+    hPixelTimeEventBeginResidualOverTime =
+        new TH2F("hPixelTimeEventBeginResidualOverTime",
+                 "hPixelTimeEventBeginResidualOverTime; pixel time [s];pixel_ts - clipboard event begin [us]",
+                 3e3,
+                 0,
+                 3e3,
+                 2.1e4,
+                 -10,
+                 200);
 
     // Read calibration:
     m_calibrationFactors.resize(static_cast<size_t>(m_detector->nPixels().X() * m_detector->nPixels().Y()), 1.0);
@@ -245,8 +245,8 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         hPixelToA->Fill(px->timestamp());
 
         hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
-        hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(px->timestamp(), "s")),
-                                           static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
+        hPixelTimeEventBeginResidualOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "s")),
+                                                   static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
 
         auto nTriggers = event->triggerList().size();
         hTriggersPerEvent->Fill(static_cast<double>(nTriggers));
