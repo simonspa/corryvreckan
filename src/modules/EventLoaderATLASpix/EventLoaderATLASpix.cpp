@@ -155,16 +155,20 @@ void EventLoaderATLASpix::initialise() {
     hPixelTS1bits = new TH1F("pixelTS1bits", "pixelTS1bits; pixel TS1 bit [lsb->msb]; # events", 12, 0, 12);
     hPixelTS2bits = new TH1F("pixelTS2bits", "pixelTS2bits; pixel TS2 bit [lsb->msb]; # events", 8, 0, 8);
 
-    hTluApxTimeResidual =
-        new TH1F("hTluApxTimeResidual", "hTluApxTimeResidual; ts(tlu) - ts(apx) [us]; # entries", 2e5, -100, 100);
-    hTluApxTimeResidualvsTime = new TH2F("hTluApxTimeResidualvsTime",
-                                         "hTluApxTimeResidualvsTime; event_time [s]; ts(tlu) - ts(apx) [us]",
-                                         3e3,
-                                         0,
-                                         3e3,
-                                         3e4,
-                                         -10,
-                                         10);
+    hPixelTimeEventBeginResidual = new TH1F("hPixelTimeEventBeginResidual",
+                                            "hPixelTimeEventBeginResidual;pixel_ts [us] - clipboard event begin; # entries",
+                                            2.1e5,
+                                            -10,
+                                            200);
+    hPixelTimeEventBeginResidualvsTime =
+        new TH2F("hPixelTimeEventBeginResidualvsTime",
+                 "hPixelTimeEventBeginResidualvsTime; pixel time [s];pixel_ts - clipboard event begin [us]",
+                 3e3,
+                 0,
+                 3e3,
+                 3e4,
+                 -10,
+                 10);
 
     // low ToT:
     hPixelTS1_lowToT = new TH1F("pixelTS1_lowToT", "pixelTS1_lowToT; pixel TS1 [lsb]; # events", 2050, 0, 2050);
@@ -238,11 +242,9 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         hPixelCharge->Fill(px->charge());
         hPixelToA->Fill(px->timestamp());
 
-        hTluApxTimeResidual->Fill(
-            static_cast<double>(Units::convert(start_time - px->timestamp(), "us") + 115)); // revert adjust_event_times
-        hTluApxTimeResidualvsTime->Fill(
-            static_cast<double>(Units::convert(px->timestamp(), "s")),
-            static_cast<double>(Units::convert(start_time - px->timestamp(), "us") + 115)); // revert adjust_event_times
+        hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
+        hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(px->timestamp(), "s")),
+                                           static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
 
         // Pixels per 100us:
         hPixelsOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "ns")));

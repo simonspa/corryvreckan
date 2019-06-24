@@ -68,8 +68,9 @@ namespace corryvreckan {
         TH1F* hPixelToT_beforeCorrection;
         TH1F* hPixelCharge;
         TH1F* hPixelToA;
-        TH1F* hTluApxTimeResidual;
-        TH2F* hTluApxTimeResidualvsTime;
+        TH1F* hPixelTimeEventBeginResidual;
+        TH2F* hPixelTimeEventBeginResidualvsTime;
+
         TH1F* hPixelsPerFrame;
         TH1F* hPixelsOverTime;
 
