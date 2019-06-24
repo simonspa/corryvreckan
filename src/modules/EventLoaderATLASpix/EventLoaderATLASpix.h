@@ -70,6 +70,9 @@ namespace corryvreckan {
         TH1F* hPixelToA;
         TH1F* hPixelTimeEventBeginResidual;
         TH2F* hPixelTimeEventBeginResidualvsTime;
+
+        std::map<size_t, TH1D*> hPixelTriggerTimeResidual;
+        std::map<size_t, TH2D*> hPixelTriggerTimeResidualOverTime;
         TH1D* hTriggersPerEvent;
 
         TH1F* hPixelsPerFrame;
