@@ -337,7 +337,6 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Loop over pixels for plotting
     for(auto& pixel : (*pixels)) {
-        continue; // only for debugging
         hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
         hPixelTimeEventBeginResidualOverTime->Fill(
             static_cast<double>(Units::convert(pixel->timestamp(), "s")),
