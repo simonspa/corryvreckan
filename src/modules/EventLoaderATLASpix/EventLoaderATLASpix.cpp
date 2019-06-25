@@ -236,7 +236,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Here fill some histograms for data quality monitoring:
     auto nTriggers = event->triggerList().size();
-    LOG(STATUS) << "nTriggers = " << nTriggers;
+    LOG(DEBUG) << "nTriggers = " << nTriggers;
     hTriggersPerEvent->Fill(static_cast<double>(nTriggers));
 
     for(auto px : (*pixels)) {
@@ -256,14 +256,14 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         for(auto& trigger : event->triggerList()) {
             // check if histogram exists already, if not: create it
             if(hPixelTriggerTimeResidual.find(iTrigger) == hPixelTriggerTimeResidual.end()) {
-                std::string histName = "hPixelTriggerTimeResidual" + to_string(iTrigger);
+                std::string histName = "hPixelTriggerTimeResidual_" + to_string(iTrigger);
                 std::string histTitle = histName + ";trigger_ts - pixel_ts [us];# entries";
                 hPixelTriggerTimeResidual[iTrigger] = new TH1D(histName.c_str(), histTitle.c_str(), 2e5, -100, 100);
             }
             // I know, the histogram below should always exist when the one above exists but I think it's bad
             // practice to put it into the above if statement as well...
             if(hPixelTriggerTimeResidualOverTime.find(iTrigger) == hPixelTriggerTimeResidualOverTime.end()) {
-                std::string histName = "hPixelTriggerTimeResidualOverTime" + to_string(iTrigger);
+                std::string histName = "hPixelTriggerTimeResidualOverTime_" + to_string(iTrigger);
                 std::string histTitle = histName + ";time [us];trigger_ts - pixel_ts [us];# entries";
                 hPixelTriggerTimeResidualOverTime[iTrigger] =
                     new TH2D(histName.c_str(), histTitle.c_str(), 3e3, 0, 3e3, 1e4, -50, 50);
