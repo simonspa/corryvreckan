@@ -83,6 +83,8 @@ void EventLoaderEUDAQ2::initialise() {
                  -10,
                  200);
 
+    hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;entries", 20, 0, 20);
+
     // open the input file with the eudaq reader
     try {
         reader_ = eudaq::Factory<eudaq::FileReader>::MakeUnique(eudaq::str2hash("native"), m_filename);
@@ -322,13 +324,54 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         event_.reset();
     }
 
+    auto event = clipboard->get_event();
+    auto nTriggers = event->triggerList().size();
+    LOG(STATUS) << "nTriggers = " << nTriggers;
+    for(auto& trigger : event->triggerList()) {
+        LOG(STATUS) << trigger.first << ", " << Units::display(trigger.second, "us");
+    }
+    // strange observation: nTriggers is the same for TLU and all Mimosas in one event (as expected)
+    // but always 1 higher for TPX3...
+
+    hTriggersPerEvent->Fill(static_cast<double>(nTriggers));
+
     // Loop over pixels for plotting
     for(auto& pixel : (*pixels)) {
-        auto event = clipboard->get_event();
+        continue; // only for debugging
         hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
         hPixelTimeEventBeginResidualOverTime->Fill(
             static_cast<double>(Units::convert(pixel->timestamp(), "s")),
             static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
+
+        size_t iTrigger = 0;
+        for(auto& trigger : event->triggerList()) {
+            // check if histogram exists already, if not: create it
+            if(hPixelTriggerTimeResidual.find(iTrigger) == hPixelTriggerTimeResidual.end()) {
+                std::string histName = "hPixelTriggerTimeResidual" + to_string(iTrigger);
+                std::string histTitle = histName + ";trigger_ts - pixel_ts [us];# entries";
+                hPixelTriggerTimeResidual[iTrigger] = new TH1D(histName.c_str(), histTitle.c_str(), 2e5, -100, 100);
+            }
+            // I know, the histogram below should always exist when the one above exists but I think it's bad
+            // practice to put it into the above if statement as well...
+            if(hPixelTriggerTimeResidualOverTime.find(iTrigger) == hPixelTriggerTimeResidualOverTime.end()) {
+                if(iTrigger != 0) {
+                    // If I don't continue here, corry ends with message "Killed"
+                    // Do I get too many memory-hungy 2D plots again here?
+                    continue;
+                }
+                std::string histName = "hPixelTriggerTimeResidualOverTime_" + to_string(iTrigger);
+                std::string histTitle = histName + ";time [us];trigger_ts - pixel_ts [us];# entries";
+                hPixelTriggerTimeResidualOverTime[iTrigger] =
+                    new TH2D(histName.c_str(), histTitle.c_str(), 3e3, 0, 3e3, 1e4, -50, 50);
+            }
+            // use iTrigger, not trigger ID (=trigger.first) (which is unique and continuously incrementing over the runtime)
+            hPixelTriggerTimeResidual[iTrigger]->Fill(
+                static_cast<double>(Units::convert(pixel->timestamp() - trigger.second, "us")));
+            hPixelTriggerTimeResidualOverTime[iTrigger]->Fill(
+                static_cast<double>(Units::convert(pixel->timestamp(), "s")),
+                static_cast<double>(Units::convert(pixel->timestamp() - trigger.second, "us")));
+            iTrigger++;
+        }
     }
 
     // Store the full event data on the clipboard:
