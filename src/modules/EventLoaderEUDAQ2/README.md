@@ -57,10 +57,18 @@ Also, more complex constructs such as arrays or matrices read by the Corryvrecka
 
 ### Plots produced
 * 2D hitmap
+* 1D pixel hit times
 * 1D pixel raw data histogram
 * 1D pixels per event histogram
 * 1D eudaq event start histogram
 * 1D clipboard event start histogram
+* 1D clipboard event end histogram
+* 1D clipboard event duration histogram
+* 1D pixel time minus event begin residual histogram
+* 2D pixel time minus event begin residual over time histogram
+* 1D triggers per event histogram
+* map of all available 1D pixel time minus trigger time residual histograms
+* map of all available 2D pixel time minus trigger time residual over time histograms
 
 ### Usage
 ```toml
