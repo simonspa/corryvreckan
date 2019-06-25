@@ -276,12 +276,9 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                 static_cast<double>(Units::convert(px->timestamp() - trigger.second, "us")));
             iTrigger++;
         }
-
-        // Pixels per 100us:
         hPixelsOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "ns")));
     }
 
-    // Fill histograms
     hPixelsPerFrame->Fill(static_cast<double>(pixels->size()));
 
     // Put the data on the clipboard
