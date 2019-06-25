@@ -234,6 +234,11 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         return StatusCode::DeadTime;
     }
 
+    // Here fill some histograms for data quality monitoring:
+    auto nTriggers = event->triggerList().size();
+    LOG(STATUS) << "nTriggers = " << nTriggers;
+    hTriggersPerEvent->Fill(static_cast<double>(nTriggers));
+
     for(auto px : (*pixels)) {
         hHitMap->Fill(px->column(), px->row());
         if(px->raw() > m_highToTCut) {
@@ -247,10 +252,6 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
         hPixelTimeEventBeginResidualOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "s")),
                                                    static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
-
-        auto nTriggers = event->triggerList().size();
-        hTriggersPerEvent->Fill(static_cast<double>(nTriggers));
-
         size_t iTrigger = 0;
         for(auto& trigger : event->triggerList()) {
             // check if histogram exists already, if not: create it
@@ -263,7 +264,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
             // practice to put it into the above if statement as well...
             if(hPixelTriggerTimeResidualOverTime.find(iTrigger) == hPixelTriggerTimeResidualOverTime.end()) {
                 std::string histName = "hPixelTriggerTimeResidualOverTime" + to_string(iTrigger);
-                std::string histTitle = histName + "time [us];trigger_ts - pixel_ts [us];# entries";
+                std::string histTitle = histName + ";time [us];trigger_ts - pixel_ts [us];# entries";
                 hPixelTriggerTimeResidualOverTime[iTrigger] =
                     new TH2D(histName.c_str(), histTitle.c_str(), 3e3, 0, 3e3, 1e4, -50, 50);
             }
