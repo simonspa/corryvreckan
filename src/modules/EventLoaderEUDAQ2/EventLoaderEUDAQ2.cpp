@@ -326,9 +326,9 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
     auto event = clipboard->get_event();
     auto nTriggers = event->triggerList().size();
-    LOG(STATUS) << "nTriggers = " << nTriggers;
+    LOG(DEBUG) << "nTriggers = " << nTriggers;
     for(auto& trigger : event->triggerList()) {
-        LOG(STATUS) << trigger.first << ", " << Units::display(trigger.second, "us");
+        LOG(TRACE) << trigger.first << ", " << Units::display(trigger.second, "us");
     }
     // strange observation: nTriggers is the same for TLU and all Mimosas in one event (as expected)
     // but always 1 higher for TPX3...
