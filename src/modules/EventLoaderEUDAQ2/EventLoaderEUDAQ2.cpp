@@ -330,8 +330,6 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     for(auto& trigger : event->triggerList()) {
         LOG(TRACE) << trigger.first << ", " << Units::display(trigger.second, "us");
     }
-    // strange observation: nTriggers is the same for TLU and all Mimosas in one event (as expected)
-    // but always 1 higher for TPX3...
 
     hTriggersPerEvent->Fill(static_cast<double>(nTriggers));
 
@@ -350,8 +348,6 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 std::string histTitle = histName + ";trigger_ts - pixel_ts [us];# entries";
                 hPixelTriggerTimeResidual[iTrigger] = new TH1D(histName.c_str(), histTitle.c_str(), 2e5, -100, 100);
             }
-            // I know, the histogram below should always exist when the one above exists but I think it's bad
-            // practice to put it into the above if statement as well...
             if(hPixelTriggerTimeResidualOverTime.find(iTrigger) == hPixelTriggerTimeResidualOverTime.end()) {
                 if(iTrigger == 0) {
                     // If I don't use this if here, corry ends with message "Killed"

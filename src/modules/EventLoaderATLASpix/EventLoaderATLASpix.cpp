@@ -260,8 +260,6 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                 std::string histTitle = histName + ";trigger_ts - pixel_ts [us];# entries";
                 hPixelTriggerTimeResidual[iTrigger] = new TH1D(histName.c_str(), histTitle.c_str(), 2e5, -100, 100);
             }
-            // I know, the histogram below should always exist when the one above exists but I think it's bad
-            // practice to put it into the above if statement as well...
             if(hPixelTriggerTimeResidualOverTime.find(iTrigger) == hPixelTriggerTimeResidualOverTime.end()) {
                 std::string histName = "hPixelTriggerTimeResidualOverTime_" + to_string(iTrigger);
                 std::string histTitle = histName + ";time [us];trigger_ts - pixel_ts [us];# entries";
