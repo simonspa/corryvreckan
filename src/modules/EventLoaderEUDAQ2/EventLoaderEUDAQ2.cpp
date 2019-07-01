@@ -217,8 +217,8 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
                    << Units::display(clipboard_end, {"us", "ns"});
         return EventPosition::AFTER;
     } else {
-        // check if event has valid trigger ID:
-        if(evt->GetFlag() == 0x10) {
+        // check if event has valid trigger ID (flag = 0x10):
+        if(evt->IsFlagTrigger()) {
             // Store potential trigger numbers, assign to center of event:
             clipboard->get_event()->addTrigger(evt->GetTriggerN(), event_start - shift_start);
             LOG(DEBUG) << "Stored trigger ID " << evt->GetTriggerN() << " at "
