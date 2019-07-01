@@ -217,8 +217,8 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
                    << Units::display(clipboard_end, {"us", "ns"});
         return EventPosition::AFTER;
     } else {
-        // without this if we're adding (trigger ID = 0) to the event when processing TPX3
-        if(evt->GetDescription() == "TluRawDataEvent") {
+        // check if event has valid trigger ID:
+        if(evt->GetFlag() == 0x10) {
             // Store potential trigger numbers, assign to center of event:
             clipboard->get_event()->addTrigger(evt->GetTriggerN(), event_start - shift_start);
             LOG(DEBUG) << "Stored trigger ID " << evt->GetTriggerN() << " at "
