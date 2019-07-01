@@ -328,7 +328,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     auto nTriggers = event->triggerList().size();
     LOG(DEBUG) << "nTriggers = " << nTriggers;
     for(auto& trigger : event->triggerList()) {
-        LOG(TRACE) << trigger.first << ", " << Units::display(trigger.second, "us");
+        LOG(DEBUG) << "triggerID: " << trigger.first << ", trigger time: " << Units::display(trigger.second, "us");
     }
 
     hTriggersPerEvent->Fill(static_cast<double>(nTriggers));
