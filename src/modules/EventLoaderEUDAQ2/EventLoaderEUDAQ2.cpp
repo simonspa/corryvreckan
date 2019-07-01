@@ -85,6 +85,10 @@ void EventLoaderEUDAQ2::initialise() {
 
     hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;entries", 20, 0, 20);
 
+    std::string histTitle = "hPixelTriggerTimeResidualOverTime_0;time [us];trigger_ts - pixel_ts [us];# entries";
+    hPixelTriggerTimeResidualOverTime =
+        new TH2D("hPixelTriggerTimeResidualOverTime_0", histTitle.c_str(), 3e3, 0, 3e3, 1e4, -50, 50);
+
     // open the input file with the eudaq reader
     try {
         reader_ = eudaq::Factory<eudaq::FileReader>::MakeUnique(eudaq::str2hash("native"), m_filename);
@@ -348,21 +352,11 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 std::string histTitle = histName + ";trigger_ts - pixel_ts [us];# entries";
                 hPixelTriggerTimeResidual[iTrigger] = new TH1D(histName.c_str(), histTitle.c_str(), 2e5, -100, 100);
             }
-            if(hPixelTriggerTimeResidualOverTime.find(iTrigger) == hPixelTriggerTimeResidualOverTime.end()) {
-                if(iTrigger == 0) {
-                    // If I don't use this if here, corry ends with message "Killed"
-                    // Do I get too many memory-hungy 2D plots again here?
-                    std::string histName = "hPixelTriggerTimeResidualOverTime_" + to_string(iTrigger);
-                    std::string histTitle = histName + ";time [us];trigger_ts - pixel_ts [us];# entries";
-                    hPixelTriggerTimeResidualOverTime[iTrigger] =
-                        new TH2D(histName.c_str(), histTitle.c_str(), 3e3, 0, 3e3, 1e4, -50, 50);
-                }
-            }
             // use iTrigger, not trigger ID (=trigger.first) (which is unique and continuously incrementing over the runtime)
             hPixelTriggerTimeResidual[iTrigger]->Fill(
                 static_cast<double>(Units::convert(pixel->timestamp() - trigger.second, "us")));
-            if(iTrigger == 0) {
-                hPixelTriggerTimeResidualOverTime[iTrigger]->Fill(
+            if(iTrigger == 0) { // fill only for 0th trigger
+                hPixelTriggerTimeResidualOverTime->Fill(
                     static_cast<double>(Units::convert(pixel->timestamp(), "s")),
                     static_cast<double>(Units::convert(pixel->timestamp() - trigger.second, "us")));
             }
