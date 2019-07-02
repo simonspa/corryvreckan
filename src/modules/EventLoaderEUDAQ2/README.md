@@ -41,6 +41,7 @@ The decoder promises to
 * not return any event before a possible T0 signal in the data.
 * return the smallest possible granularity of data in time either as even or as sub-events within one event.
 * always return valid event time stamps. If the device does not have timestamps, it should return zero for the beginning of the event and have a valid trigger number set.
+* return events in a the correct time order
 
 ### Configuring EUDAQ2 Event Converters
 
@@ -57,10 +58,18 @@ Also, more complex constructs such as arrays or matrices read by the Corryvrecka
 
 ### Plots produced
 * 2D hitmap
-* 1D pixel raw data histogram
+* 1D pixel hit times
+* 1D pixel raw value histogram (corresponds to chip-specific charge equivalent measurement, e.g. ToT)
 * 1D pixels per event histogram
 * 1D eudaq event start histogram
 * 1D clipboard event start histogram
+* 1D clipboard event end histogram
+* 1D clipboard event duration histogram
+* 1D pixel time minus event begin residual histogram
+* 2D pixel time minus event begin residual over time histogram
+* map of all available 1D pixel time minus trigger time residual histograms
+* 2D pixel time minus trigger time residual over time histogram for 0th trigger
+* 1D triggers per event histogram
 
 ### Usage
 ```toml

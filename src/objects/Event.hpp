@@ -17,10 +17,28 @@ namespace corryvreckan {
         double end() const { return end_; };
         double duration() const { return (end_ - timestamp()); };
 
+        /**
+         * @brief Add a new trigger ID to this event
+         * @param trigger_id ID of the trigger to be added
+         * @param trigger_ts Timestamp corresponding to the trigger
+         *
+         * Trigger IDs are only added if they do not exist yet. Adding the same trigger ID twice will not change the
+         *corresponding timestamp, the list remains unchanged.
+         **/
         void addTrigger(uint32_t trigger_id, double trigger_ts) { trigger_list_.emplace(trigger_id, trigger_ts); }
 
+        /**
+         * @brief Check if trigger ID exists in current event
+         * @param trigger_id ID of the trigger to be checked for
+         * @return Bool whether trigger ID was found
+         **/
         bool hasTriggerID(uint32_t trigger_id) const { return (trigger_list_.find(trigger_id) != trigger_list_.end()); }
 
+        /**
+         * @brief Get trigger timestamp corresponding to a given trigger ID
+         * @param trigger_id ID of the trigger for which the timestamp shall be returned
+         * @return Timestamp corresponding to the trigger
+         **/
         double getTriggerTime(uint32_t trigger_id) const { return trigger_list_.find(trigger_id)->second; }
 
         std::map<uint32_t, double> triggerList() const { return trigger_list_; }
