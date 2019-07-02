@@ -38,7 +38,6 @@ void ClusteringSpatial::initialise() {
                                      -m_detector->size().Y() / 1.5,
                                      m_detector->size().Y() / 1.5);
     title = m_detector->name() + " Cluster Position (Local);x [px];y [px];events";
-
     clusterPositionLocal = new TH2F("clusterPositionLocal",
                                     title.c_str(),
                                     m_detector->nPixels().X(),
@@ -47,6 +46,9 @@ void ClusteringSpatial::initialise() {
                                     m_detector->nPixels().Y(),
                                     -m_detector->nPixels().Y() / 2.,
                                     m_detector->nPixels().Y() / 2.);
+
+    title = ";cluster timestamp [ns]; # events";
+    clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
 }
 
 StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
@@ -138,6 +140,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         clusterCharge->Fill(cluster->charge() * 1e-3); //  1e-3 because unit is [ke]
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
         clusterPositionLocal->Fill(cluster->local().x(), cluster->local().y());
+        clusterTimes->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "ns")));
         LOG(DEBUG) << "cluster local: " << cluster->local();
         deviceClusters->push_back(cluster);
     }
@@ -180,7 +183,8 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
     column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
     row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
 
-    LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
+    LOG(DEBUG) << "- cluster col, row: " << column << "," << row << " at time "
+               << Units::display(cluster->timestamp(), "us");
 
     // Create object with local cluster position
     PositionVector3D<Cartesian3D<double>> positionLocal(m_detector->pitch().X() * (column - m_detector->nPixels().X() / 2.),
