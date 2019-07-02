@@ -36,6 +36,7 @@ namespace corryvreckan {
         TH1F* clusterWidthColumn;
         TH1F* clusterCharge;
         TH2F* clusterPositionGlobal;
+        TH1F* clusterTimes;
 
         double timingCut;
         int neighbour_radius_row;

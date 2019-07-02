@@ -24,6 +24,8 @@ void Clustering4D::initialise() {
     clusterCharge = new TH1F("clusterCharge", title.c_str(), 10000, 0, 100000);
     title = m_detector->name() + " Cluster Position (Global);x [mm];y [mm];events";
     clusterPositionGlobal = new TH2F("clusterPositionGlobal", title.c_str(), 400, -10., 10., 400, -10., 10.);
+    title = ";cluster timestamp [ns]; # events";
+    clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
 }
 
 // Sort function for pixels from low to high times
@@ -106,6 +108,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
         clusterWidthColumn->Fill(cluster->columnWidth());
         clusterCharge->Fill(cluster->charge());
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
+        clusterTimes->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "ns")));
 
         deviceClusters->push_back(cluster);
     }
