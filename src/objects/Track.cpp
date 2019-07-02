@@ -135,6 +135,26 @@ bool Track::isAssociated(Cluster* cluster) const {
     return false;
 }
 
+bool Track::hasDetector(std::string detectorID) {
+    auto it = find_if(m_trackClusters.begin(), m_trackClusters.end(), [&detectorID](Cluster* cluster) {
+        return cluster->getDetectorID() == detectorID;
+    });
+    if(it == m_trackClusters.end()) {
+        return false;
+    }
+    return true;
+}
+
+Cluster* Track::getClusterFromDetector(std::string detectorID) const {
+    auto it = find_if(m_trackClusters.begin(), m_trackClusters.end(), [&detectorID](Cluster* cluster) {
+        return cluster->getDetectorID() == detectorID;
+    });
+    if(it == m_trackClusters.end()) {
+        return nullptr;
+    }
+    return (*it);
+}
+
 ROOT::Math::XYZPoint Track::intercept(double z) const {
     return m_state + m_direction * z;
 }
