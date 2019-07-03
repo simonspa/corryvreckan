@@ -80,16 +80,17 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         if(useTriggerTimestamp) {
             if(!clipboard->get_event()->triggerList().empty()) {
                 // set pixel timestamp as cluster timestamp
-                LOG(DEBUG) << "Using trigger timestamp " << clipboard->get_event()->triggerList().begin()->second
-                           << " as cluster timestamp.";
-                cluster->setTimestamp(clipboard->get_event()->triggerList().begin()->second);
+                double trigger_ts = clipboard->get_event()->triggerList().begin()->second;
+                LOG(DEBUG) << "Using trigger timestamp " << Units::display(trigger_ts, "us") << " as cluster timestamp.";
+                cluster->setTimestamp(trigger_ts);
             } else {
                 LOG(WARNING) << "No time information available. Set timestamp to 0.";
                 cluster->setTimestamp(0.);
             }
         } else {
             // assign pixel timestamp
-            LOG(DEBUG) << "Pixel has timestamp " << pixel->timestamp() << ", set as cluster timestamp. ";
+            LOG(DEBUG) << "Pixel has timestamp " << Units::display(pixel->timestamp(), "us")
+                       << ", set as cluster timestamp. ";
             cluster->setTimestamp(pixel->timestamp());
         }
 
