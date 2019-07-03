@@ -5,17 +5,10 @@ using namespace corryvreckan;
 using namespace std;
 
 ClusteringSpatial::ClusteringSpatial(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {}
+    : Module(std::move(config), detector), m_detector(detector) {
 
-/*
-
- This algorithm clusters the input data, at the moment only if the detector type
- is defined as Timepix1. The clustering is based on touching neighbours, and
- uses
- no timing information whatsoever. It is based on filling a map and checking
- neighbours in the neighbouring row and column positions.
-
-*/
+    useTriggerTimestamp = m_config.get<bool>("use_trigger_timestamp", false);
+}
 
 void ClusteringSpatial::initialise() {
 
@@ -83,7 +76,23 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         // New pixel => new cluster
         Cluster* cluster = new Cluster();
         cluster->addPixel(pixel);
-        cluster->setTimestamp(pixel->timestamp());
+
+        if(useTriggerTimestamp) {
+            if(!clipboard->get_event()->triggerList().empty()) {
+                // set pixel timestamp as cluster timestamp
+                LOG(DEBUG) << "Using trigger timestamp " << clipboard->get_event()->triggerList().begin()->second
+                           << " as cluster timestamp.";
+                cluster->setTimestamp(clipboard->get_event()->triggerList().begin()->second);
+            } else {
+                LOG(WARNING) << "No time information available. Set timestamp to 0.";
+                cluster->setTimestamp(0.);
+            }
+        } else {
+            // assign pixel timestamp
+            LOG(DEBUG) << "Pixel has timestamp " << pixel->timestamp() << ", set as cluster timestamp. ";
+            cluster->setTimestamp(pixel->timestamp());
+        }
+
         used[pixel] = true;
         addedPixel = true;
         // Somewhere to store found neighbours

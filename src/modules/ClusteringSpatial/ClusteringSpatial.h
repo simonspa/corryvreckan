@@ -35,6 +35,8 @@ namespace corryvreckan {
         TH2F* clusterPositionGlobal;
         TH2F* clusterPositionLocal;
         TH1F* clusterTimes;
+
+        bool useTriggerTimestamp;
     };
 } // namespace corryvreckan
 #endif // ClusteringSpatial_H
