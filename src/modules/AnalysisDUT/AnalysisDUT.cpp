@@ -62,7 +62,7 @@ void AnalysisDUT::initialise() {
                           m_detector->nPixels().Y(),
                           0,
                           m_detector->nPixels().Y());
-    hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc", "pixelRawValueAssoc", 32, 0, 31);
+    hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc", "pixelRawValueAssoc", 1024, 0, 1024);
     hPixelRawValueMapAssoc = new TProfile2D("pixelRawValueMapAssoc",
                                             "pixelRawValueMapAssoc",
                                             m_detector->nPixels().X(),
