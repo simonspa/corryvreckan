@@ -188,6 +188,10 @@ void EventLoaderATLASpix::initialise() {
                  -10,
                  200);
 
+    std::string histTitle = "hPixelTriggerTimeResidualOverTime_0;time [us];trigger_ts - pixel_ts [us];# entries";
+    hPixelTriggerTimeResidualOverTime =
+        new TH2D("hPixelTriggerTimeResidualOverTime_0", histTitle.c_str(), 3e3, 0, 3e3, 1e4, -50, 50);
+
     // Read calibration:
     m_calibrationFactors.resize(static_cast<size_t>(m_detector->nPixels().X() * m_detector->nPixels().Y()), 1.0);
     if(!m_calibrationFile.empty()) {
@@ -260,18 +264,14 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                 std::string histTitle = histName + ";trigger_ts - pixel_ts [us];# entries";
                 hPixelTriggerTimeResidual[iTrigger] = new TH1D(histName.c_str(), histTitle.c_str(), 2e5, -100, 100);
             }
-            if(hPixelTriggerTimeResidualOverTime.find(iTrigger) == hPixelTriggerTimeResidualOverTime.end()) {
-                std::string histName = "hPixelTriggerTimeResidualOverTime_" + to_string(iTrigger);
-                std::string histTitle = histName + ";time [us];trigger_ts - pixel_ts [us];# entries";
-                hPixelTriggerTimeResidualOverTime[iTrigger] =
-                    new TH2D(histName.c_str(), histTitle.c_str(), 3e3, 0, 3e3, 1e4, -50, 50);
-            }
             // use iTrigger, not trigger ID (=trigger.first) (which is unique and continuously incrementing over the runtime)
             hPixelTriggerTimeResidual[iTrigger]->Fill(
                 static_cast<double>(Units::convert(px->timestamp() - trigger.second, "us")));
-            hPixelTriggerTimeResidualOverTime[iTrigger]->Fill(
-                static_cast<double>(Units::convert(px->timestamp(), "s")),
-                static_cast<double>(Units::convert(px->timestamp() - trigger.second, "us")));
+            if(iTrigger == 0) { // fill only for 0th trigger
+                hPixelTriggerTimeResidualOverTime->Fill(
+                    static_cast<double>(Units::convert(px->timestamp(), "s")),
+                    static_cast<double>(Units::convert(px->timestamp() - trigger.second, "us")));
+            }
             iTrigger++;
         }
         hPixelsOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "ns")));
