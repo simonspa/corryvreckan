@@ -169,8 +169,8 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
     }
 
     // Read time from EUDAQ2 event and convert from picoseconds to nanoseconds:
-    double event_start = static_cast<double>(evt->GetTimeBegin()) / 1000 + m_detector->timeOffset();
-    double event_end = static_cast<double>(evt->GetTimeEnd()) / 1000 + m_detector->timeOffset();
+    double event_start = static_cast<double>(evt->GetTimeBegin()) / 1000 + m_detector->timingOffset();
+    double event_end = static_cast<double>(evt->GetTimeEnd()) / 1000 + m_detector->timingOffset();
     LOG(DEBUG) << "event_start = " << Units::display(event_start, "us")
                << ", event_end = " << Units::display(event_end, "us");
 
