@@ -150,7 +150,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
                                                                     std::shared_ptr<eudaq::StandardEvent> evt) {
 
     // Check if this event has timestamps available:
-    if(evt->GetTimeBegin() <= std::numeric_limits<double>::epsilon()) {
+    if(evt->GetTimeBegin() == 0) {
         LOG(DEBUG) << evt->GetDescription() << ": Event has no timestamp, comparing trigger number";
 
         // If there is no event defined yet or the trigger number is unkown, there is little we can do:
@@ -163,12 +163,14 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
         auto trigger_time = clipboard->get_event()->getTriggerTime(evt->GetTriggerN());
         LOG(DEBUG) << "Assigning trigger time " << Units::display(trigger_time, {"us", "ns"}) << " to event with trigger ID "
                    << evt->GetTriggerN();
-        evt->SetTimeBegin(trigger_time);
-        evt->SetTimeEnd(trigger_time);
+        // Set EUDAQ StandardEvent timestamp in picoseconds:
+        evt->SetTimeBegin(static_cast<uint64_t>(trigger_time * 1000));
+        evt->SetTimeEnd(static_cast<uint64_t>(trigger_time * 1000));
     }
 
-    double event_start = evt->GetTimeBegin();
-    double event_end = evt->GetTimeEnd();
+    // Read time from EUDAQ2 event and convert from picoseconds to nanoseconds:
+    double event_start = static_cast<double>(evt->GetTimeBegin()) / 1000;
+    double event_end = static_cast<double>(evt->GetTimeEnd()) / 1000;
     LOG(DEBUG) << "event_start = " << Units::display(event_start, "us")
                << ", event_end = " << Units::display(event_end, "us");
 
@@ -260,7 +262,7 @@ Pixels* EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> 
             auto col = static_cast<int>(plane.GetX(i));
             auto row = static_cast<int>(plane.GetY(i));
             auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
-            auto ts = plane.GetTimestamp(i);
+            auto ts = static_cast<double>(plane.GetTimestamp(i)) / 1000;
 
             LOG(DEBUG) << "Read pixel (col, row) = (" << col << ", " << row << ") from EUDAQ2 event data (before masking).";
             if(m_detector->masked(col, row)) {
@@ -316,7 +318,8 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Do not fill if current_position == EventPosition::AFTER to avoid double-counting!
-        hEudaqEventStart->Fill(event_->GetTimeBegin());
+        // Converting EUDAQ2 picoseconds into Corryvreckan nanoseconds:
+        hEudaqEventStart->Fill(static_cast<double>(event_->GetTimeBegin()) / 1000);
         if(clipboard->event_defined()) {
             hClipboardEventStart->Fill(static_cast<double>(Units::convert(clipboard->get_event()->start(), "ns")));
             hClipboardEventEnd->Fill(static_cast<double>(Units::convert(clipboard->get_event()->end(), "ns")));
@@ -324,18 +327,16 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 static_cast<double>(Units::convert(clipboard->get_event()->end() - clipboard->get_event()->start(), "ns")));
         }
 
-        // Reset this event to get a new one:
+        // Reset this shared event pointer to get a new event from the stack:
         event_.reset();
     }
 
     auto event = clipboard->get_event();
-    auto nTriggers = event->triggerList().size();
-    LOG(DEBUG) << "nTriggers = " << nTriggers;
+    hTriggersPerEvent->Fill(static_cast<double>(event->triggerList().size()));
+    LOG(DEBUG) << "Triggers on clipboard event: " << event->triggerList().size();
     for(auto& trigger : event->triggerList()) {
-        LOG(DEBUG) << "triggerID: " << trigger.first << ", trigger time: " << Units::display(trigger.second, "us");
+        LOG(DEBUG) << "\t ID: " << trigger.first << ", time: " << Units::display(trigger.second, "us");
     }
-
-    hTriggersPerEvent->Fill(static_cast<double>(nTriggers));
 
     // Loop over pixels for plotting
     for(auto& pixel : (*pixels)) {
