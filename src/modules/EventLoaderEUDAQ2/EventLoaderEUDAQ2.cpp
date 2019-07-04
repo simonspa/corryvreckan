@@ -47,11 +47,11 @@ void EventLoaderEUDAQ2::initialise() {
                       0,
                       m_detector->nPixels().Y());
 
-    title = ";hit timestamp [ns]; # events";
+    title = ";hit timestamp [ns];# events";
     hHitTimes = new TH1F("hitTimes", title.c_str(), 3e6, 0, 3e9);
 
-    title = "pixel raw values";
-    hPixelRawValues = new TH1F("hPixelRawValues", title.c_str(), 1024, 0, 1024);
+    title = ";pixel raw values;# events";
+    hPixelRawValues = new TH1F("hPixelRawValues;", title.c_str(), 1024, 0, 1024);
 
     title = "Pixel multiplicity per Corry frame;# pixels per event;# entries";
     hPixelsPerEvent = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
