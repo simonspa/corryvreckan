@@ -371,7 +371,7 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
             hit_ts = static_cast<long long>(readout_ts) + ts_diff;
 
             // Convert the timestamp to nanoseconds:
-            double timestamp = m_clockCycle * static_cast<double>(hit_ts);
+            double timestamp = m_clockCycle * static_cast<double>(hit_ts) + m_detector->timingOffset();
 
             if(timestamp > end_time) {
                 keep_pointer_stored = true;
