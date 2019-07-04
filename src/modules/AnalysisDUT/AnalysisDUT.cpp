@@ -62,9 +62,9 @@ void AnalysisDUT::initialise() {
                           m_detector->nPixels().Y(),
                           0,
                           m_detector->nPixels().Y());
-    hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc", "pixelRawValueAssoc", 1024, 0, 1024);
+    hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc", "pixelRawValueAssoc;pixel raw value;#entries", 1024, 0, 1024);
     hPixelRawValueMapAssoc = new TProfile2D("pixelRawValueMapAssoc",
-                                            "pixelRawValueMapAssoc",
+                                            "pixelRawValueMapAssoc;pixel raw values;# entries",
                                             m_detector->nPixels().X(),
                                             0,
                                             m_detector->nPixels().X(),
@@ -74,18 +74,21 @@ void AnalysisDUT::initialise() {
                                             0,
                                             255);
 
-    associatedTracksVersusTime = new TH1F("associatedTracksVersusTime", "associatedTracksVersusTime", 300000, 0, 300);
-    residualsX = new TH1F("residualsX", "residualsX", 800, -0.1, 0.1);
-    residualsY = new TH1F("residualsY", "residualsY", 800, -0.1, 0.1);
+    associatedTracksVersusTime =
+        new TH1F("associatedTracksVersusTime", "associatedTracksVersusTime;time [s];# associated tracks", 300000, 0, 300);
+    residualsX = new TH1F("residualsX", "residualsX;residualX [mm];# entries", 800, -0.1, 0.1);
+    residualsY = new TH1F("residualsY", "residualsY;residualY [mm];# entries", 800, -0.1, 0.1);
 
-    residualsX1pix = new TH1F("residualsX1pix", "residualsX1pix", 400, -0.2, 0.2);
-    residualsY1pix = new TH1F("residualsY1pix", "residualsY1pix", 400, -0.2, 0.2);
-    residualsX2pix = new TH1F("residualsX2pix", "residualsX2pix", 400, -0.2, 0.2);
-    residualsY2pix = new TH1F("residualsY2pix", "residualsY2pix", 400, -0.2, 0.2);
+    residualsX1pix = new TH1F("residualsX1pix", "residualsX1pix;residualX1pix [mm];# entries", 400, -0.2, 0.2);
+    residualsY1pix = new TH1F("residualsY1pix", "residualsY1pix;residualY1pix [mm];# entries", 400, -0.2, 0.2);
+    residualsX2pix = new TH1F("residualsX2pix", "residualsX2pix;residualX2pix [mm];# entries", 400, -0.2, 0.2);
+    residualsY2pix = new TH1F("residualsY2pix", "residualsY2pix;residualY2pix [mm];# entries", 400, -0.2, 0.2);
 
-    clusterChargeAssoc = new TH1F("clusterChargeAssociated", "clusterChargeAssociated [e]", 10000, 0, 10000);
-    clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
-    clusterSizeAssocNorm = new TH1F("clusterSizeAssociatedNormalized", "clusterSizeAssociatedNormalized", 30, 0, 30);
+    clusterChargeAssoc =
+        new TH1F("clusterChargeAssociated", "clusterChargeAssociated;cluster charge [e];# entries", 10000, 0, 10000);
+    clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated;cluster size; # entries", 30, 0, 30);
+    clusterSizeAssocNorm = new TH1F(
+        "clusterSizeAssociatedNormalized", "clusterSizeAssociatedNormalized;cluster size normalized;#entries", 30, 0, 30);
 
     // In-pixel studies:
     auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
@@ -168,7 +171,7 @@ void AnalysisDUT::initialise() {
                                           0,
                                           1);
 
-    residualsTime = new TH1F("residualsTime", "residualsTime", 20000, -1000, +1000);
+    residualsTime = new TH1F("residualsTime", "residualsTime;residuals time [ns];#entries", 20000, -1000, +1000);
 
     hTrackCorrelationX = new TH1F("hTrackCorrelationX", "hTrackCorrelationX", 4000, -10., 10.);
     hTrackCorrelationY = new TH1F("hTrackCorrelationY", "hTrackCorrelationY", 4000, -10., 10.);
