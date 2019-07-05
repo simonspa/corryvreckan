@@ -44,6 +44,7 @@ The main page of the reference can then be found at `reference/html/index.html` 
 Corryvreckan has been developed and is maintained by
 
 * Morag Williams, University of Glasgow/CERN, @williamm
+* Jens Kroeger, University of Heidelberg/CERN, @jekroege
 * Daniel Hynds, CERN, @dhynds
 * Simon Spannagel, CERN, @simonspa
 
@@ -53,7 +54,6 @@ The following authors, in alphabetical order, have contributed to Corryvreckan:
 * Dominik Dannheim, CERN, @dannheim
 * Adrian Fiergolski, CERN, @afiergol
 * Lennart Huth, DESY, @lhuth
-* Jens Kroeger, University of Heidelberg/CERN, @jekroege
 * Andreas Matthias Nürnberg, CERN, @nurnberg
 * Florian Pitters, CERN, @fpipper
 * Tomas Vanat, CERN, @tvanat
