@@ -76,13 +76,13 @@ void AnalysisDUT::initialise() {
 
     associatedTracksVersusTime =
         new TH1F("associatedTracksVersusTime", "associatedTracksVersusTime;time [s];# associated tracks", 300000, 0, 300);
-    residualsX = new TH1F("residualsX", "residualsX;residualX [mm];# entries", 800, -0.1, 0.1);
-    residualsY = new TH1F("residualsY", "residualsY;residualY [mm];# entries", 800, -0.1, 0.1);
+    residualsX = new TH1F("residualsX", "residualsX;x_{track}-x_{hit}  [mm];# entries", 800, -0.1, 0.1);
+    residualsY = new TH1F("residualsY", "residualsY;y_{track}-y_{hit}  [mm];# entries", 800, -0.1, 0.1);
 
-    residualsX1pix = new TH1F("residualsX1pix", "residualsX1pix;residualX1pix [mm];# entries", 400, -0.2, 0.2);
-    residualsY1pix = new TH1F("residualsY1pix", "residualsY1pix;residualY1pix [mm];# entries", 400, -0.2, 0.2);
-    residualsX2pix = new TH1F("residualsX2pix", "residualsX2pix;residualX2pix [mm];# entries", 400, -0.2, 0.2);
-    residualsY2pix = new TH1F("residualsY2pix", "residualsY2pix;residualY2pix [mm];# entries", 400, -0.2, 0.2);
+    residualsX1pix = new TH1F("residualsX1pix", "residualsX1pix;x_{track}-x_{hit} [mm];# entries", 400, -0.2, 0.2);
+    residualsY1pix = new TH1F("residualsY1pix", "residualsY1pix;y_{track}-y_{hit} [mm];# entries", 400, -0.2, 0.2);
+    residualsX2pix = new TH1F("residualsX2pix", "residualsX2pix;x_{track}-x_{hit} [mm];# entries", 400, -0.2, 0.2);
+    residualsY2pix = new TH1F("residualsY2pix", "residualsY2pix;y_{track}-y_{hit} [mm];# entries", 400, -0.2, 0.2);
 
     clusterChargeAssoc =
         new TH1F("clusterChargeAssociated", "clusterChargeAssociated;cluster charge [e];# entries", 10000, 0, 10000);
@@ -141,7 +141,7 @@ void AnalysisDUT::initialise() {
 
     // Efficiency maps
     hPixelEfficiencyMap = new TProfile2D("hPixelEfficiencyMap",
-                                         "hPixelEfficiencyMap",
+                                         "hPixelEfficiencyMap;column;row;efficiency",
                                          static_cast<int>(pitch_x),
                                          0,
                                          pitch_x,
@@ -151,7 +151,7 @@ void AnalysisDUT::initialise() {
                                          0,
                                          1);
     hChipEfficiencyMap = new TProfile2D("hChipEfficiencyMap",
-                                        "hChipEfficiencyMap",
+                                        "hChipEfficiencyMap;column;row;efficiency",
                                         m_detector->nPixels().X(),
                                         0,
                                         m_detector->nPixels().X(),
@@ -161,7 +161,7 @@ void AnalysisDUT::initialise() {
                                         0,
                                         1);
     hGlobalEfficiencyMap = new TProfile2D("hGlobalEfficiencyMap",
-                                          "hGlobalEfficiencyMap",
+                                          "hGlobalEfficiencyMap;column;row;efficiency",
                                           300,
                                           -1.5 * m_detector->size().X(),
                                           1.5 * m_detector->size().X(),
@@ -171,33 +171,58 @@ void AnalysisDUT::initialise() {
                                           0,
                                           1);
 
-    residualsTime = new TH1F("residualsTime", "residualsTime;residuals time [ns];#entries", 20000, -1000, +1000);
+    residualsTime = new TH1F("residualsTime", "residualsTime;time_{track}-time_{hit} [ns];#entries", 20000, -1000, +1000);
 
-    hTrackCorrelationX = new TH1F("hTrackCorrelationX", "hTrackCorrelationX", 4000, -10., 10.);
-    hTrackCorrelationY = new TH1F("hTrackCorrelationY", "hTrackCorrelationY", 4000, -10., 10.);
-    hTrackCorrelationTime = new TH1F("hTrackCorrelationTime", "hTrackCorrelationTime", 2000000, -5000, 5000);
+    hTrackCorrelationX =
+        new TH1F("hTrackCorrelationX", "hTrackCorrelationX;x_{track}-x_{hit} [mm];# entries", 4000, -10., 10.);
+    hTrackCorrelationY =
+        new TH1F("hTrackCorrelationY", "hTrackCorrelationY;y_{track}-y_{hit} [mm];# entries", 4000, -10., 10.);
+    hTrackCorrelationTime = new TH1F(
+        "hTrackCorrelationTime", "hTrackCorrelationTime;time_{track}-time_{hit} [mm];# entries", 2000000, -5000, 5000);
 
-    residualsTimeVsTime = new TH2F("residualsTimeVsTime", "residualsTimeVsTime", 20000, 0, 200, 1000, -1000, +1000);
-    residualsTimeVsSignal = new TH2F("residualsTimeVsSignal", "residualsTimeVsSignal", 20000, 0, 100000, 1000, -1000, +1000);
+    residualsTimeVsTime = new TH2F("residualsTimeVsTime",
+                                   "residualsTimeVsTime;time [ns];time_{track}-time_{hit} [mm];# entries",
+                                   20000,
+                                   0,
+                                   200,
+                                   1000,
+                                   -1000,
+                                   +1000);
+    residualsTimeVsSignal = new TH2F("residualsTimeVsSignal",
+                                     "residualsTimeVsSignal;cluster charge [e];time_{track}-time_{hit} [mm];# entries",
+                                     20000,
+                                     0,
+                                     100000,
+                                     1000,
+                                     -1000,
+                                     +1000);
 
     hAssociatedTracksGlobalPosition =
-        new TH2F("hAssociatedTracksGlobalPosition", "hAssociatedTracksGlobalPosition", 200, -10, 10, 200, -10, 10);
+        new TH2F("hAssociatedTracksGlobalPosition",
+                 "hAssociatedTracksGlobalPosition;global intercept x [mm];global intercept y [mm]",
+                 200,
+                 -10,
+                 10,
+                 200,
+                 -10,
+                 10);
     hAssociatedTracksLocalPosition = new TH2F("hAssociatedTracksLocalPosition",
-                                              "hAssociatedTracksLocalPosition",
+                                              "hAssociatedTracksLocalPosition;local intercept x [mm];local intercept y [mm]",
                                               m_detector->nPixels().X(),
                                               0,
                                               m_detector->nPixels().X(),
                                               m_detector->nPixels().Y(),
                                               0,
                                               m_detector->nPixels().Y());
-    hUnassociatedTracksGlobalPosition = new TH2F("hUnassociatedTracksGlobalPosition",
-                                                 "hUnassociatedTracksGlobalPosition; x / mm; y / mm",
-                                                 200,
-                                                 -10,
-                                                 10,
-                                                 200,
-                                                 -10,
-                                                 10);
+    hUnassociatedTracksGlobalPosition =
+        new TH2F("hUnassociatedTracksGlobalPosition",
+                 "hUnassociatedTracksGlobalPosition; global intercept x [mm]; global intercept y [mm]",
+                 200,
+                 -10,
+                 10,
+                 200,
+                 -10,
+                 10);
 }
 
 StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
