@@ -54,7 +54,7 @@ Also, more complex constructs such as arrays or matrices read by the Corryvrecka
 ### Parameters
 * `file_name`: File name of the EUDAQ2 raw data file. This parameter is mandatory.
 * `skip_time`: Time that can be skipped at the start of a run. Default is `0ms`.
-* `adjust_event_times`: Matrix that allows the user to shift the event start/end of all different types of EUDAQ events. The first entry of each row specifies the data type, the second is the offset which is added to the event start and the third entry is the offset added to the event end. A usage example is shown below. Default is `0ms, 0ms`.
+* `adjust_event_times`: Matrix that allows the user to shift the event start/end of all different types of EUDAQ events. The first entry of each row specifies the data type, the second is the offset which is added to the event start and the third entry is the offset added to the event end. A usage example is shown below. Default is `0ms, 0ms`, `"other"` is just a placeholder.
 
 ### Plots produced
 * 2D hitmap
@@ -80,5 +80,5 @@ file_name = /path/to/data/examplerun_clicpix2.raw
 [EventLoaderEUDAQ2]
 type = "MIMOSA26"
 file_name = /path/to/data/examplerun_telescope.raw
-adjust_event_times = ["NiRawDataEvent", -10ns, +10ns], ["TluRawDataEvent", -115us, +200us]
+adjust_event_times = ["TluRawDataEvent", -115us, +230us], ["other", 0ns, 0ns]
 ```
