@@ -84,8 +84,9 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
                 LOG(DEBUG) << "Using trigger timestamp " << Units::display(trigger_ts, "us") << " as cluster timestamp.";
                 cluster->setTimestamp(trigger_ts);
             } else {
-                LOG(WARNING) << "No time information available. Set timestamp to 0.";
-                cluster->setTimestamp(0.);
+                LOG(WARNING) << "No time information available. Set timestamp to pixel timestamp "
+                             << Units::display(pixel->timestamp(), "us");
+                cluster->setTimestamp(pixel->timestamp());
             }
         } else {
             // assign pixel timestamp
