@@ -63,7 +63,7 @@ namespace corryvreckan {
         TH2F* hAssociatedTracksLocalPosition;
         TH2F* hUnassociatedTracksGlobalPosition;
         // Member variables
-        double spatialCut, m_timeCutFrameEdge;
+        double m_timeCutFrameEdge;
         double chi2ndofCut;
     };
 } // namespace corryvreckan

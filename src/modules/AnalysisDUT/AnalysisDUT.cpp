@@ -10,7 +10,6 @@ AnalysisDUT::AnalysisDUT(Configuration config, std::shared_ptr<Detector> detecto
     : Module(std::move(config), detector), m_detector(detector) {
 
     m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
-    spatialCut = m_config.get<double>("spatial_cut", Units::get<double>(50, "um"));
     chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
 }
 
