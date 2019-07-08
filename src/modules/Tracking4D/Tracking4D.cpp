@@ -14,10 +14,9 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     spatialCut = m_config.get<double>("spatial_cut", Units::get<double>(200, "um"));
     minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
     excludeDUT = m_config.get<bool>("exclude_dut", true);
-    requireDetector = m_config.get<std::string>("require_detector", "Timepix3_0");  // add to documentation!
-    useAvgClusterTimestamp = m_config.get<bool>("use_avg_cluster_timestamp", true); // add to documentation!!!
-    detectorToSetTrackTimestamp = m_config.get<std::string>("detector_to_set_track_timestamp",
-                                                            "Timepix3_0"); // add to documentation and find better name!!!
+    requireDetector = m_config.get<std::string>("require_detector", "");
+    useAvgClusterTimestamp = m_config.get<bool>("use_avg_cluster_timestamp", true);
+    detectorToSetTrackTimestamp = m_config.get<std::string>("detector_to_set_track_timestamp", "Timepix3_0");
 }
 
 void Tracking4D::initialise() {
