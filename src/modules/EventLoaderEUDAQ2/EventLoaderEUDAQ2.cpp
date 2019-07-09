@@ -146,6 +146,26 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
     return stdevt;
 }
 
+void EventLoaderEUDAQ2::retrieve_event_tags(const std::shared_ptr<eudaq::StandardEvent> evt) {
+    auto tags = evt->GetTags();
+
+    for(auto tag_pair : tags) {
+        // Trying to convert tag value to double:
+        try {
+            double value = std::stod(tag_pair.second);
+
+            // Check if histogram exists already, if not: create it
+            if(hTagValues.find(tag_pair.first) == hTagValues.end()) {
+                std::string histName = "hTagValues_" + tag_pair.first;
+                std::string histTitle = tag_pair.first + ";event / 1000;tag value";
+                hTagValues[tag_pair.first] = new TProfile(histName.c_str(), histTitle.c_str(), 2e5, 0, 100);
+            }
+            hTagValues[tag_pair.first]->Fill(evt->GetEventN(), value, 1);
+        } catch(std::exception& e) {
+        }
+    }
+}
+
 EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> clipboard,
                                                                     std::shared_ptr<eudaq::StandardEvent> evt) {
 
@@ -300,6 +320,9 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 return StatusCode::EndRun;
             }
         }
+
+        // Read and store tag information:
+        retrieve_event_tags(event_);
 
         // Check if this event is within the currently defined Corryvreckan event:
         current_position = is_within_event(clipboard, event_);
