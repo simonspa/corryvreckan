@@ -27,6 +27,8 @@ If later, the pointer to this event is kept and it continues with the next detec
 
 If no detector is capable of defining events, the `[Metronome]` model needs to be used.
 
+Tags stores in the EUDAQ2 event header are read, a conversion to a double value is attempted and, if successful, a profile with the value over the number of events in the respective run is automatically allocated and filled. This feature can e.g. be used to log temperatures of the devices during data taking, simply storing the temperature as event tags.
+
 ### Requirements
 This module requires an installation of [EUDAQ2](https://eudaq.github.io/). The installation path needs to be set to
 ```bash
