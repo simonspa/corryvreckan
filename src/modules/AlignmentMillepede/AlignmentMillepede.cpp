@@ -103,6 +103,9 @@ void AlignmentMillepede::finalise() {
         if(det->isDUT() && m_excludeDUT) {
             nPlanes--;
         }
+        if(det->type() == "TLU") {
+            nPlanes--;
+        }
     }
     LOG(INFO) << "Aligning " << nPlanes << "planes";
     const size_t nParameters = 6 * nPlanes;
