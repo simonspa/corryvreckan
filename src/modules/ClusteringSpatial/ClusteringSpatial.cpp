@@ -79,7 +79,6 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
         if(useTriggerTimestamp) {
             if(!clipboard->get_event()->triggerList().empty()) {
-                // set pixel timestamp as cluster timestamp
                 double trigger_ts = clipboard->get_event()->triggerList().begin()->second;
                 LOG(DEBUG) << "Using trigger timestamp " << Units::display(trigger_ts, "us") << " as cluster timestamp.";
                 cluster->setTimestamp(trigger_ts);
