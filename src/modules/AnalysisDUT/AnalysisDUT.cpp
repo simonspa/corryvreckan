@@ -88,6 +88,8 @@ void AnalysisDUT::initialise() {
     clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated;cluster size; # entries", 30, 0, 30);
     clusterSizeAssocNorm = new TH1F(
         "clusterSizeAssociatedNormalized", "clusterSizeAssociatedNormalized;cluster size normalized;#entries", 30, 0, 30);
+    clusterSizeRowAssoc = new TH1F("clusterSizeRowAssociated", "clusterSizeRowAssociated;cluster size row; # entries", 30, 0, 30);
+    clusterSizeColAssoc = new TH1F("clusterSizeColAssociated", "clusterSizeColAssociated;cluster size col; # entries", 30, 0, 30);
 
     // In-pixel studies:
     auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
@@ -373,6 +375,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
                 clusterSizeAssoc->Fill(static_cast<double>(cluster->size()));
                 clusterSizeAssocNorm->Fill(static_cast<double>(cluster->size()));
+                clusterSizeRowAssoc->Fill(static_cast<double>(cluster->rowWidth());
+                clusterSizeColAssoc->Fill(static_cast<double>(cluster->columnWidth());
 
                 // Fill in-pixel plots: (all as function of track position within pixel cell)
                 if(is_within_roi) {
