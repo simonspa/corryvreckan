@@ -26,6 +26,7 @@ Generic analysis module for all prototypes. This module is still work in progres
 * Distribution of cluster charge values from associated clusters
 * Distribution of sizes from associated clusters
 * Normalised distribution of sizes from associated clusters
+* Distribution of sizes from associated clusters in column and rows
 * 2D Map of in-pixel efficiency
 * 2D Map of the chip efficiency in local coordinates
 * 2D Map of the chip efficiency on global coordinates
