@@ -18,7 +18,14 @@ This option can be chosen, e.g. for an efficiency analysis, when the cluster cen
 * `use_cluster_centre`: If set true, the cluster centre will be compared to the track position for the spatial cut. If false, the nearest pixel will be used. Defaults to `true`.
 
 ### Plots produced
-No histograms are produced.
+* distance in x of cluster centre to closest pixel to track
+* distance in y of cluster centre to closest pixel to track
+* distance in x of cluster centre to closest pixel to track for pixels with column width = 1
+* distance in y of cluster centre to closest pixel to track for pixels with row width = 1
+* distance in x of cluster centre to closest pixel to track for pixels with column width = 2
+* distance in y of cluster centre to closest pixel to track for pixels with row width = 2
+* distance in x of cluster centre to closest pixel to track for pixels with column width = 3
+* distance in y of cluster centre to closest pixel to track for pixels with row width = 3
 
 ### Usage
 ```toml
