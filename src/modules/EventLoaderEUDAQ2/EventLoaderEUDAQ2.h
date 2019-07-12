@@ -74,10 +74,10 @@ namespace corryvreckan {
 
         /**
          * @brief Store pixel data from relevant detectors on the clipboard
-         * @param clipboard Shared pointer to the event clipboard
          * @param evt       StandardEvent to read the pixel data from
+         * @return Vector of pointers to pixels read from this event
          */
-        void store_data(std::shared_ptr<Clipboard> clipboard, std::shared_ptr<eudaq::StandardEvent> evt);
+        Pixels* get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt);
 
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
@@ -91,6 +91,9 @@ namespace corryvreckan {
         // Currently processed decoded EUDAQ StandardEvent:
         std::shared_ptr<eudaq::StandardEvent> event_;
 
+        // EUDAQ configuration to be passed to the decoder instance
+        eudaq::ConfigurationSPC eudaq_config_;
+
         // 2D histograms
         TH2F* hitmap;
 
@@ -100,6 +103,15 @@ namespace corryvreckan {
         TH1F* hPixelsPerEvent;
         TH1D* hEudaqEventStart;
         TH1D* hClipboardEventStart;
+        TH1D* hClipboardEventEnd;
+        TH1D* hClipboardEventDuration;
+
+        TH1F* hPixelTimeEventBeginResidual;
+        TH2F* hPixelTimeEventBeginResidualOverTime;
+
+        std::map<size_t, TH1D*> hPixelTriggerTimeResidual;
+        TH2D* hPixelTriggerTimeResidualOverTime;
+        TH1D* hTriggersPerEvent;
     };
 
 } // namespace corryvreckan

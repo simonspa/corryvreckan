@@ -148,12 +148,14 @@ void EventLoaderATLASpix::initialise() {
     hPixelCharge = new TH1F("pixelCharge", "pixelCharge; pixel charge [e]; # events", 100, 0, 100);
     hPixelToA = new TH1F("pixelToA", "pixelToA; pixel ToA [ns]; # events", 100, 0, 100);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame; pixels per frame; # events", 200, 0, 200);
-    hPixelsOverTime = new TH1F("pixelsOverTime", "pixelsOverTime; time [ms]; # events", 2e6, 0, 2e6);
+    hPixelsOverTime = new TH1F("pixelsOverTime", "pixelsOverTime; time [ns]; # events", 3e6, 0, 3e9);
 
     hPixelTS1 = new TH1F("pixelTS1", "pixelTS1; pixel TS1 [lsb]; # events", 2050, 0, 2050);
     hPixelTS2 = new TH1F("pixelTS2", "pixelTS2; pixel TS2 [lsb]; # events", 130, 0, 130);
     hPixelTS1bits = new TH1F("pixelTS1bits", "pixelTS1bits; pixel TS1 bit [lsb->msb]; # events", 12, 0, 12);
     hPixelTS2bits = new TH1F("pixelTS2bits", "pixelTS2bits; pixel TS2 bit [lsb->msb]; # events", 8, 0, 8);
+
+    hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;entries", 20, 0, 20);
 
     // low ToT:
     hPixelTS1_lowToT = new TH1F("pixelTS1_lowToT", "pixelTS1_lowToT; pixel TS1 [lsb]; # events", 2050, 0, 2050);
@@ -170,6 +172,21 @@ void EventLoaderATLASpix::initialise() {
         new TH1F("pixelTS1bits_highToT", "pixelTS1bits_highToT; pixel TS1 bit [lsb->msb]; # events", 12, 0, 12);
     hPixelTS2bits_highToT =
         new TH1F("pixelTS2bits_highToT", "pixelTS2bits_highToT; pixel TS2 bit [lsb->msb]; # events", 8, 0, 8);
+
+    hPixelTimeEventBeginResidual = new TH1F("hPixelTimeEventBeginResidual",
+                                            "hPixelTimeEventBeginResidual;pixel_ts - clipboard event begin [us]; # entries",
+                                            2.1e5,
+                                            -10,
+                                            200);
+    hPixelTimeEventBeginResidualOverTime =
+        new TH2F("hPixelTimeEventBeginResidualOverTime",
+                 "hPixelTimeEventBeginResidualOverTime; pixel time [s];pixel_ts - clipboard event begin [us]",
+                 3e3,
+                 0,
+                 3e3,
+                 2.1e4,
+                 -10,
+                 200);
 
     // Read calibration:
     m_calibrationFactors.resize(static_cast<size_t>(m_detector->nPixels().X() * m_detector->nPixels().Y()), 1.0);
@@ -217,6 +234,11 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         return StatusCode::DeadTime;
     }
 
+    // Here fill some histograms for data quality monitoring:
+    auto nTriggers = event->triggerList().size();
+    LOG(DEBUG) << "nTriggers = " << nTriggers;
+    hTriggersPerEvent->Fill(static_cast<double>(nTriggers));
+
     for(auto px : (*pixels)) {
         hHitMap->Fill(px->column(), px->row());
         if(px->raw() > m_highToTCut) {
@@ -227,11 +249,34 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         hPixelCharge->Fill(px->charge());
         hPixelToA->Fill(px->timestamp());
 
-        // Pixels per 100us:
-        hPixelsOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "ms")));
+        hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
+        hPixelTimeEventBeginResidualOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "s")),
+                                                   static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
+        size_t iTrigger = 0;
+        for(auto& trigger : event->triggerList()) {
+            // check if histogram exists already, if not: create it
+            if(hPixelTriggerTimeResidual.find(iTrigger) == hPixelTriggerTimeResidual.end()) {
+                std::string histName = "hPixelTriggerTimeResidual_" + to_string(iTrigger);
+                std::string histTitle = histName + ";trigger_ts - pixel_ts [us];# entries";
+                hPixelTriggerTimeResidual[iTrigger] = new TH1D(histName.c_str(), histTitle.c_str(), 2e5, -100, 100);
+            }
+            if(hPixelTriggerTimeResidualOverTime.find(iTrigger) == hPixelTriggerTimeResidualOverTime.end()) {
+                std::string histName = "hPixelTriggerTimeResidualOverTime_" + to_string(iTrigger);
+                std::string histTitle = histName + ";time [us];trigger_ts - pixel_ts [us];# entries";
+                hPixelTriggerTimeResidualOverTime[iTrigger] =
+                    new TH2D(histName.c_str(), histTitle.c_str(), 3e3, 0, 3e3, 1e4, -50, 50);
+            }
+            // use iTrigger, not trigger ID (=trigger.first) (which is unique and continuously incrementing over the runtime)
+            hPixelTriggerTimeResidual[iTrigger]->Fill(
+                static_cast<double>(Units::convert(px->timestamp() - trigger.second, "us")));
+            hPixelTriggerTimeResidualOverTime[iTrigger]->Fill(
+                static_cast<double>(Units::convert(px->timestamp(), "s")),
+                static_cast<double>(Units::convert(px->timestamp() - trigger.second, "us")));
+            iTrigger++;
+        }
+        hPixelsOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "ns")));
     }
 
-    // Fill histograms
     hPixelsPerFrame->Fill(static_cast<double>(pixels->size()));
 
     // Put the data on the clipboard
