@@ -50,6 +50,9 @@ void EventLoaderEUDAQ2::initialise() {
     title = ";hit timestamp [ns];# events";
     hHitTimes = new TH1F("hitTimes", title.c_str(), 3e6, 0, 3e9);
 
+    title = ";hit timestamp [s];# events";
+    hHitTimes_long = new TH1F("hitTimes_long", title.c_str(), 3e6, 0, 3e3);
+
     title = ";pixel raw values;# events";
     hPixelRawValues = new TH1F("hPixelRawValues;", title.c_str(), 1024, 0, 1024);
 
@@ -58,6 +61,9 @@ void EventLoaderEUDAQ2::initialise() {
 
     title = ";EUDAQ event start time[ns];# entries";
     hEudaqEventStart = new TH1D("eudaqEventStart", title.c_str(), 3e6, 0, 3e9);
+
+    title = ";EUDAQ event start time[s];# entries";
+    hEudaqEventStart_long = new TH1D("eudaqEventStart_long", title.c_str(), 3e6, 0, 3e3);
 
     title = "Corryvreckan event start times (on clipboard); Corryvreckan event start time [ns];# entries";
     hClipboardEventStart = new TH1D("clipboardEventStart", title.c_str(), 3e6, 0, 3e9);
@@ -275,6 +281,7 @@ Pixels* EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> 
 
             hitmap->Fill(col, row);
             hHitTimes->Fill(ts);
+            hHitTimes_long->Fill(static_cast<double>(Units::convert(ts, "s")));
             hPixelRawValues->Fill(raw);
 
             pixels->push_back(pixel);
@@ -320,6 +327,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         // Do not fill if current_position == EventPosition::AFTER to avoid double-counting!
         // Converting EUDAQ2 picoseconds into Corryvreckan nanoseconds:
         hEudaqEventStart->Fill(static_cast<double>(event_->GetTimeBegin()) / 1000);
+        hEudaqEventStart_long->Fill(static_cast<double>(event_->GetTimeBegin()) * 1e9); // here convert from ns to seconds
         if(clipboard->event_defined()) {
             hClipboardEventStart->Fill(static_cast<double>(Units::convert(clipboard->get_event()->start(), "ns")));
             hClipboardEventEnd->Fill(static_cast<double>(Units::convert(clipboard->get_event()->end(), "ns")));
