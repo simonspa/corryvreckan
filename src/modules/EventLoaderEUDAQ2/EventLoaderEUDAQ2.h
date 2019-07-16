@@ -105,6 +105,7 @@ namespace corryvreckan {
         TH1D* hEudaqEventStart;
         TH1D* hEudaqEventStart_long;
         TH1D* hClipboardEventStart;
+        TH1D* hClipboardEventStart_long;
         TH1D* hClipboardEventEnd;
         TH1D* hClipboardEventDuration;
 
