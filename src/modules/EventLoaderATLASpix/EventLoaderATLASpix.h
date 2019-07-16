@@ -77,6 +77,7 @@ namespace corryvreckan {
 
         TH1F* hPixelsPerFrame;
         TH1F* hPixelsOverTime;
+        TH1F* hPixelsOverTime_long;
 
         // TS1 and TS2 specific histograms:
         TH1F* hPixelTS1;
