@@ -110,6 +110,7 @@ namespace corryvreckan {
         TH1D* hClipboardEventDuration;
 
         TH1F* hPixelTimeEventBeginResidual;
+        TH1F* hPixelTimeEventBeginResidual_wide;
         TH2F* hPixelTimeEventBeginResidualOverTime;
 
         std::map<size_t, TH1D*> hPixelTriggerTimeResidual;

@@ -82,6 +82,13 @@ void EventLoaderEUDAQ2::initialise() {
                                             2.1e5,
                                             -10,
                                             200);
+
+    hPixelTimeEventBeginResidual_wide =
+        new TH1F("hPixelTimeEventBeginResidual_wide",
+                 "hPixelTimeEventBeginResidual_wide;pixel_ts - clipboard event begin [us]; # entries",
+                 1e5,
+                 -5000,
+                 5000);
     hPixelTimeEventBeginResidualOverTime =
         new TH2F("hPixelTimeEventBeginResidualOverTime",
                  "hPixelTimeEventBeginResidualOverTime; pixel time [s];pixel_ts - clipboard event begin [us]",
@@ -353,6 +360,8 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     // Loop over pixels for plotting
     for(auto& pixel : (*pixels)) {
         hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
+        hPixelTimeEventBeginResidual_wide->Fill(
+            static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
         hPixelTimeEventBeginResidualOverTime->Fill(
             static_cast<double>(Units::convert(pixel->timestamp(), "s")),
             static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
