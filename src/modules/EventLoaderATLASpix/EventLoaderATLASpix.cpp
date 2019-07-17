@@ -261,8 +261,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         hPixelToA->Fill(px->timestamp());
 
         hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
-        hPixelTimeEventBeginResidual_wide->Fill(
-            static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
+        hPixelTimeEventBeginResidual_wide->Fill(static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
         hPixelTimeEventBeginResidualOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "s")),
                                                    static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
         size_t iTrigger = 0;
