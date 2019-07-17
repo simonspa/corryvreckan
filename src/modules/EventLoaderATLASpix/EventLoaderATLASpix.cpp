@@ -179,6 +179,12 @@ void EventLoaderATLASpix::initialise() {
                                             2.1e5,
                                             -10,
                                             200);
+    hPixelTimeEventBeginResidual_wide =
+        new TH1F("hPixelTimeEventBeginResidual_wide",
+                 "hPixelTimeEventBeginResidual_wide;pixel_ts - clipboard event begin [us]; # entries",
+                 1e5,
+                 -5000,
+                 5000);
     hPixelTimeEventBeginResidualOverTime =
         new TH2F("hPixelTimeEventBeginResidualOverTime",
                  "hPixelTimeEventBeginResidualOverTime; pixel time [s];pixel_ts - clipboard event begin [us]",
@@ -255,6 +261,8 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         hPixelToA->Fill(px->timestamp());
 
         hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
+        hPixelTimeEventBeginResidual_wide->Fill(
+            static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
         hPixelTimeEventBeginResidualOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "s")),
                                                    static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
         size_t iTrigger = 0;
