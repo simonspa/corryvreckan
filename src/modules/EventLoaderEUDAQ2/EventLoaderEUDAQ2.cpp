@@ -74,7 +74,7 @@ void EventLoaderEUDAQ2::initialise() {
     title = "Corryvreckan event end times (on clipboard); Corryvreckan event end time [ns];# entries";
     hClipboardEventEnd = new TH1D("clipboardEventEnd", title.c_str(), 3e6, 0, 3e9);
 
-    title = "Corryvreckan event end times (on clipboard); Corryvreckan event end time [ns];# entries";
+    title = "Corryvreckan event end times (on clipboard); Corryvreckan event duration [ns];# entries";
     hClipboardEventDuration = new TH1D("clipboardEventDuration", title.c_str(), 3e6, 0, 3e9);
 
     hPixelTimeEventBeginResidual = new TH1F("hPixelTimeEventBeginResidual",
