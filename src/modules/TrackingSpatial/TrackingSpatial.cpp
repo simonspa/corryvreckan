@@ -65,7 +65,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     Clusters* referenceClusters = nullptr;
 
     // Loop over all detectors and get clusters
-    double minZ = 1000.; // where does this one come from?
+    double minZ = 1000.;
     std::string seedPlane;
     for(auto& detector : get_detectors()) {
         string detectorID = detector->name();
