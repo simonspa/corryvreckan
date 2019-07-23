@@ -280,6 +280,10 @@ Pixels* EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> 
             auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
             auto ts = static_cast<double>(plane.GetTimestamp(i)) / 1000 + m_detector->timingOffset();
 
+            if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {
+                LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
+            }
+
             LOG(DEBUG) << "Read pixel (col, row) = (" << col << ", " << row << ") from EUDAQ2 event data (before masking).";
             if(m_detector->masked(col, row)) {
                 LOG(TRACE) << "Masked pixel (col, row) = (" << col << ", " << row << ")";
