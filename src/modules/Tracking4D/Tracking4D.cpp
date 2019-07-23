@@ -250,7 +250,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 avg_track_time -= static_cast<double>(Units::convert(trackCluster->global().z(), "mm") / (299.792458));
             }
             track->setTimestamp(avg_track_time / static_cast<double>(track->nClusters()));
-            LOG(DEBUG) << "Using average cluster timestamp of " << avg_track_time / static_cast<double>(track->nClusters())
+            LOG(DEBUG) << "Using average cluster timestamp of "
+                       << Units::display(avg_track_time / static_cast<double>(track->nClusters()), "us")
                        << " as track timestamp.";
         } else if(!detectorToSetTrackTimestamp.empty() && track->hasDetector(detectorToSetTrackTimestamp)) {
             // use timestamp of required detector:
