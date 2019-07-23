@@ -275,6 +275,10 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
                 }
             }
 
+            if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {
+                LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
+            }
+
             // when calibration is not available, set charge = tot
             Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, tot, timestamp);
 
