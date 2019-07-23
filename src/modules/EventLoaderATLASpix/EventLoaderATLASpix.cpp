@@ -148,8 +148,8 @@ void EventLoaderATLASpix::initialise() {
     hPixelCharge = new TH1F("pixelCharge", "pixelCharge; pixel charge [e]; # events", 100, 0, 100);
     hPixelToA = new TH1F("pixelToA", "pixelToA; pixel ToA [ns]; # events", 100, 0, 100);
     hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame; pixels per frame; # events", 200, 0, 200);
-    hPixelsOverTime = new TH1F("pixelsOverTime", "pixelsOverTime; time [ns]; # events", 3e6, 0, 3e9);
-    hPixelsOverTime_long = new TH1F("pixelsOverTime_long", "pixelsOverTime_long; time [s]; # events", 3e6, 0, 3e3);
+    hPixelTimes = new TH1F("hPixelTimes", "pixelTimes; hit timestamp [ms]; # events", 3e6, 0, 3e3);
+    hPixelTimes_long = new TH1F("hPixelTimes_long", "pixelTimes_long; hit timestamp [s]; # events", 3e6, 0, 3e3);
 
     hPixelTS1 = new TH1F("pixelTS1", "pixelTS1; pixel TS1 [lsb]; # events", 2050, 0, 2050);
     hPixelTS2 = new TH1F("pixelTS2", "pixelTS2; pixel TS2 [lsb]; # events", 130, 0, 130);
@@ -282,8 +282,8 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
             }
             iTrigger++;
         }
-        hPixelsOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "ns")));
-        hPixelsOverTime_long->Fill(static_cast<double>(Units::convert(px->timestamp(), "s")));
+        hPixelTimes->Fill(static_cast<double>(Units::convert(px->timestamp(), "ms")));
+        hPixelTimes_long->Fill(static_cast<double>(Units::convert(px->timestamp(), "s")));
     }
 
     hPixelsPerFrame->Fill(static_cast<double>(pixels->size()));

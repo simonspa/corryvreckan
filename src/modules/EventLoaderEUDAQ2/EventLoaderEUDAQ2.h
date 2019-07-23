@@ -98,8 +98,8 @@ namespace corryvreckan {
         TH2F* hitmap;
 
         // 1D histograms
-        TH1F* hHitTimes;
-        TH1F* hHitTimes_long;
+        TH1F* hPixelTimes;
+        TH1F* hPixelTimes_long;
         TH1F* hPixelRawValues;
         TH1F* hPixelsPerEvent;
         TH1D* hEudaqEventStart;

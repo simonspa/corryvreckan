@@ -47,11 +47,11 @@ void EventLoaderEUDAQ2::initialise() {
                       0,
                       m_detector->nPixels().Y());
 
-    title = ";hit timestamp [ns];# events";
-    hHitTimes = new TH1F("hitTimes", title.c_str(), 3e6, 0, 3e9);
+    title = ";hit time [ms];# events";
+    hPixelTimes = new TH1F("hPixelTimes", title.c_str(), 3e6, 0, 3e3);
 
     title = ";hit timestamp [s];# events";
-    hHitTimes_long = new TH1F("hitTimes_long", title.c_str(), 3e6, 0, 3e3);
+    hPixelTimes_long = new TH1F("hPixelTimes_long", title.c_str(), 3e6, 0, 3e3);
 
     title = ";pixel raw values;# events";
     hPixelRawValues = new TH1F("hPixelRawValues;", title.c_str(), 1024, 0, 1024);
@@ -294,8 +294,8 @@ Pixels* EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> 
             Pixel* pixel = new Pixel(m_detector->name(), col, row, raw, raw, ts);
 
             hitmap->Fill(col, row);
-            hHitTimes->Fill(ts);
-            hHitTimes_long->Fill(static_cast<double>(Units::convert(ts, "s")));
+            hPixelTimes->Fill(static_cast<double>(Units::convert(ts, "ms")));
+            hPixelTimes_long->Fill(static_cast<double>(Units::convert(ts, "s")));
             hPixelRawValues->Fill(raw);
 
             pixels->push_back(pixel);
