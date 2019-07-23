@@ -131,9 +131,10 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
                 LOG(TRACE) << "Skip 0th detector.";
                 continue;
             }
-            if(detectorID == seedPlane)
+            if(detectorID == seedPlane) {
                 LOG(TRACE) << "Skip seed plane.";
-            continue;
+                continue;
+            }
 
             // Check if the DUT should be excluded and obey:
             if(excludeDUT && detector->isDUT()) {
