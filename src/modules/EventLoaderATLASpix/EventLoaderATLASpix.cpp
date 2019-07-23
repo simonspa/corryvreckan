@@ -453,6 +453,10 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
                        << "\tTS_FULL: " << hit_ts << "\t" << Units::display(timestamp, {"s", "us", "ns"})
                        << "\tTOT: " << tot; // << "\t" << Units::display(tot_ns, {"s", "us", "ns"});
 
+            if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {
+                LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
+            }
+
             // when calibration is not available, set charge = tot
             Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, tot, timestamp);
 
