@@ -59,23 +59,23 @@ void EventLoaderEUDAQ2::initialise() {
     title = "Pixel multiplicity per Corry frame;# pixels per event;# entries";
     hPixelsPerEvent = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
 
-    title = ";EUDAQ event start time[ns];# entries";
-    hEudaqEventStart = new TH1D("eudaqEventStart", title.c_str(), 3e6, 0, 3e9);
+    title = ";EUDAQ event start time[ms];# entries";
+    hEudaqEventStart = new TH1D("eudaqEventStart", title.c_str(), 3e6, 0, 3e3);
 
     title = ";EUDAQ event start time[s];# entries";
     hEudaqEventStart_long = new TH1D("eudaqEventStart_long", title.c_str(), 3e6, 0, 3e3);
 
-    title = "Corryvreckan event start times (on clipboard); Corryvreckan event start time [ns];# entries";
-    hClipboardEventStart = new TH1D("clipboardEventStart", title.c_str(), 3e6, 0, 3e9);
+    title = "Corryvreckan event start times (on clipboard); Corryvreckan event start time [ms];# entries";
+    hClipboardEventStart = new TH1D("clipboardEventStart", title.c_str(), 3e6, 0, 3e3);
 
     title = "Corryvreckan event start times (on clipboard); Corryvreckan event start time [s];# entries";
     hClipboardEventStart_long = new TH1D("clipboardEventStart_long", title.c_str(), 3e6, 0, 3e3);
 
-    title = "Corryvreckan event end times (on clipboard); Corryvreckan event end time [ns];# entries";
-    hClipboardEventEnd = new TH1D("clipboardEventEnd", title.c_str(), 3e6, 0, 3e9);
+    title = "Corryvreckan event end times (on clipboard); Corryvreckan event end time [ms];# entries";
+    hClipboardEventEnd = new TH1D("clipboardEventEnd", title.c_str(), 3e6, 0, 3e3);
 
-    title = "Corryvreckan event end times (on clipboard); Corryvreckan event duration [ns];# entries";
-    hClipboardEventDuration = new TH1D("clipboardEventDuration", title.c_str(), 3e6, 0, 3e9);
+    title = "Corryvreckan event end times (on clipboard); Corryvreckan event duration [ms];# entries";
+    hClipboardEventDuration = new TH1D("clipboardEventDuration", title.c_str(), 3e6, 0, 3e3);
 
     hPixelTimeEventBeginResidual = new TH1F("hPixelTimeEventBeginResidual",
                                             "hPixelTimeEventBeginResidual;pixel_ts - clipboard event begin [us]; # entries",
@@ -340,14 +340,14 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Do not fill if current_position == EventPosition::AFTER to avoid double-counting!
         // Converting EUDAQ2 picoseconds into Corryvreckan nanoseconds:
-        hEudaqEventStart->Fill(static_cast<double>(event_->GetTimeBegin()) / 1000);
+        hEudaqEventStart->Fill(static_cast<double>(event_->GetTimeBegin()) / 1e9);       // here convert from ps to ms
         hEudaqEventStart_long->Fill(static_cast<double>(event_->GetTimeBegin()) / 1e12); // here convert from ps to seconds
         if(clipboard->event_defined()) {
-            hClipboardEventStart->Fill(static_cast<double>(Units::convert(clipboard->get_event()->start(), "ns")));
+            hClipboardEventStart->Fill(static_cast<double>(Units::convert(clipboard->get_event()->start(), "ms")));
             hClipboardEventStart_long->Fill(static_cast<double>(Units::convert(clipboard->get_event()->start(), "s")));
-            hClipboardEventEnd->Fill(static_cast<double>(Units::convert(clipboard->get_event()->end(), "ns")));
+            hClipboardEventEnd->Fill(static_cast<double>(Units::convert(clipboard->get_event()->end(), "ms")));
             hClipboardEventDuration->Fill(
-                static_cast<double>(Units::convert(clipboard->get_event()->end() - clipboard->get_event()->start(), "ns")));
+                static_cast<double>(Units::convert(clipboard->get_event()->end() - clipboard->get_event()->start(), "ms")));
         }
 
         // Reset this shared event pointer to get a new event from the stack:
