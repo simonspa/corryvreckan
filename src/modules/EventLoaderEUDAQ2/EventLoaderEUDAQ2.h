@@ -60,9 +60,13 @@ namespace corryvreckan {
 
     private:
         /**
+         * @brief Read and return the next eudaq event, time sorted if desired
+         */
+        eudaq::EventSPC get_next_eudaq_event();
+        /**
          * @brief Read and return the next event (smallest possible granularity) and return the decoded StandardEvent
          */
-        std::shared_ptr<eudaq::StandardEvent> get_next_event();
+        std::shared_ptr<eudaq::StandardEvent> get_next_std_event();
 
         /**
          * @brief Check whether the current EUDAQ StandardEvent is within the defined Corryvreckan event
@@ -83,6 +87,10 @@ namespace corryvreckan {
         std::string m_filename{};
         double m_skip_time{};
         Matrix<std::string> adjust_event_times;
+
+        // parameters for time sorting:
+        bool m_do_timesorting;
+        int m_buffer_depth;
 
         // EUDAQ file reader instance to retrieve data from
         eudaq::FileReaderUP reader_;
