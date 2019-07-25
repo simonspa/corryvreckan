@@ -45,6 +45,20 @@ namespace corryvreckan {
         Clusters associatedClusters() const { return m_associatedClusters; }
         bool isAssociated(Cluster* cluster) const;
 
+        /**
+         * @brief Check if this track has a cluster from a given detector
+         * @param  detectorID DetectorID of the detector to check
+         * @return True if detector has a cluster on this track, false if not.
+         */
+        bool hasDetector(std::string detectorID);
+
+        /**
+         * @brief Get a track cluster from a given detector
+         * @param  detectorID DetectorID of the desired detector
+         * @return Track cluster from the required detector, nullptr if not found
+         */
+        Cluster* getClusterFromDetector(std::string detectorID) const;
+
         size_t nClusters() const { return m_trackClusters.size(); }
 
         ROOT::Math::XYZPoint intercept(double z) const;
@@ -65,7 +79,7 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint m_state;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Track, 3)
+        ClassDef(Track, 4)
     };
 
     // Vector type declaration

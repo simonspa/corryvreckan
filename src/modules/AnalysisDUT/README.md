@@ -9,7 +9,6 @@ Generic analysis module for all prototypes. This module is still work in progres
 
 ### Parameters
 * `time_cut_frameedge`: Parameter to discard telescope tracks at the frame edges (start and end of the current CLICpix2 frame). Defaults to `20ns`.
-* `spatial_cut`: Spatial cut for associating a track with a DUT cluster, defaults to `50um`.
 * `chi2ndof_cut`: Acceptance criterion for telescope tracks, defaults to a value of `3`.
 
 ### Plots produced
