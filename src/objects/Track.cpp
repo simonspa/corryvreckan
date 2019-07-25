@@ -40,6 +40,19 @@ double Track::distance2(Cluster* cluster) const {
     return (dx * dx + dy * dy);
 }
 
+bool Track::hasClosestCluster(){
+  return closestClusterSet;
+}
+
+void Track::setClosestCluster(Cluster* cluster){
+    closestCluster = cluster;
+    closestClusterSet = true;
+}
+
+Cluster* Track::getClosestCluster(){
+    return closestCluster;
+}
+
 void Track::calculateChi2() {
 
     // Get the number of clusters

@@ -256,6 +256,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Loop over all tracks
     for(auto& track : (*tracks)) {
+        int noFoundClusters = 0;
+        int noTotalAssocClusters = 0;
         // Flags to select clusters and tracks
         bool has_associated_cluster = false;
         bool is_within_roi = true;
@@ -336,6 +338,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 hTrackCorrelationPosVsCorrelationTime->Fill(track->timestamp() - cluster->timestamp(), posDiff);
 
                 auto associated_clusters = track->associatedClusters();
+                noTotalAssocClusters = int(associated_clusters.size());
                 if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) == associated_clusters.end()) {
                     LOG(DEBUG) << "No associated cluster found";
                     hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
@@ -343,6 +346,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 }
 
                 LOG(DEBUG) << "Found associated cluster";
+                noFoundClusters++;
+
                 double xdistance = intercept.X() - cluster->global().x();
                 double ydistance = intercept.Y() - cluster->global().y();
                 double xabsdistance = fabs(xdistance);
@@ -447,6 +452,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         if(is_within_roi) {
             hPixelEfficiencyMap->Fill(xmod, ymod, has_associated_cluster);
         }
+        LOG(DEBUG) << "No of associated clusters found: " << noFoundClusters;
+        LOG(DEBUG) << "Total number of assoc. clusters: " << noTotalAssocClusters;
     }
     // Return value telling analysis to keep running
     return StatusCode::Success;
