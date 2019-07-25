@@ -47,32 +47,48 @@ void EventLoaderEUDAQ2::initialise() {
                       0,
                       m_detector->nPixels().Y());
 
-    title = ";hit timestamp [ns]; # events";
-    hHitTimes = new TH1F("hitTimes", title.c_str(), 3e6, 0, 3e9);
+    title = ";hit time [ms];# events";
+    hPixelTimes = new TH1F("hPixelTimes", title.c_str(), 3e6, 0, 3e3);
 
-    title = "pixel raw values";
-    hPixelRawValues = new TH1F("hPixelRawValues", title.c_str(), 1024, 0, 1024);
+    title = ";hit timestamp [s];# events";
+    hPixelTimes_long = new TH1F("hPixelTimes_long", title.c_str(), 3e6, 0, 3e3);
+
+    title = ";pixel raw values;# events";
+    hPixelRawValues = new TH1F("hPixelRawValues;", title.c_str(), 1024, 0, 1024);
 
     title = "Pixel multiplicity per Corry frame;# pixels per event;# entries";
     hPixelsPerEvent = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
 
-    title = ";EUDAQ event start time[ns];# entries";
-    hEudaqEventStart = new TH1D("eudaqEventStart", title.c_str(), 3e6, 0, 3e9);
+    title = ";EUDAQ event start time[ms];# entries";
+    hEudaqEventStart = new TH1D("eudaqEventStart", title.c_str(), 3e6, 0, 3e3);
 
-    title = "Corryvreckan event start times (on clipboard); Corryvreckan event start time [ns];# entries";
-    hClipboardEventStart = new TH1D("clipboardEventStart", title.c_str(), 3e6, 0, 3e9);
+    title = ";EUDAQ event start time[s];# entries";
+    hEudaqEventStart_long = new TH1D("eudaqEventStart_long", title.c_str(), 3e6, 0, 3e3);
 
-    title = "Corryvreckan event end times (on clipboard); Corryvreckan event end time [ns];# entries";
-    hClipboardEventEnd = new TH1D("clipboardEventEnd", title.c_str(), 3e6, 0, 3e9);
+    title = "Corryvreckan event start times (on clipboard); Corryvreckan event start time [ms];# entries";
+    hClipboardEventStart = new TH1D("clipboardEventStart", title.c_str(), 3e6, 0, 3e3);
 
-    title = "Corryvreckan event end times (on clipboard); Corryvreckan event end time [ns];# entries";
-    hClipboardEventDuration = new TH1D("clipboardEventDuration", title.c_str(), 3e6, 0, 3e9);
+    title = "Corryvreckan event start times (on clipboard); Corryvreckan event start time [s];# entries";
+    hClipboardEventStart_long = new TH1D("clipboardEventStart_long", title.c_str(), 3e6, 0, 3e3);
+
+    title = "Corryvreckan event end times (on clipboard); Corryvreckan event end time [ms];# entries";
+    hClipboardEventEnd = new TH1D("clipboardEventEnd", title.c_str(), 3e6, 0, 3e3);
+
+    title = "Corryvreckan event end times (on clipboard); Corryvreckan event duration [ms];# entries";
+    hClipboardEventDuration = new TH1D("clipboardEventDuration", title.c_str(), 3e6, 0, 3e3);
 
     hPixelTimeEventBeginResidual = new TH1F("hPixelTimeEventBeginResidual",
                                             "hPixelTimeEventBeginResidual;pixel_ts - clipboard event begin [us]; # entries",
                                             2.1e5,
                                             -10,
                                             200);
+
+    hPixelTimeEventBeginResidual_wide =
+        new TH1F("hPixelTimeEventBeginResidual_wide",
+                 "hPixelTimeEventBeginResidual_wide;pixel_ts - clipboard event begin [us]; # entries",
+                 1e5,
+                 -5000,
+                 5000);
     hPixelTimeEventBeginResidualOverTime =
         new TH2F("hPixelTimeEventBeginResidualOverTime",
                  "hPixelTimeEventBeginResidualOverTime; pixel time [s];pixel_ts - clipboard event begin [us]",
@@ -169,8 +185,8 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
     }
 
     // Read time from EUDAQ2 event and convert from picoseconds to nanoseconds:
-    double event_start = static_cast<double>(evt->GetTimeBegin()) / 1000;
-    double event_end = static_cast<double>(evt->GetTimeEnd()) / 1000;
+    double event_start = static_cast<double>(evt->GetTimeBegin()) / 1000 + m_detector->timingOffset();
+    double event_end = static_cast<double>(evt->GetTimeEnd()) / 1000 + m_detector->timingOffset();
     LOG(DEBUG) << "event_start = " << Units::display(event_start, "us")
                << ", event_end = " << Units::display(event_end, "us");
 
@@ -262,7 +278,11 @@ Pixels* EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> 
             auto col = static_cast<int>(plane.GetX(i));
             auto row = static_cast<int>(plane.GetY(i));
             auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
-            auto ts = static_cast<double>(plane.GetTimestamp(i)) / 1000;
+            auto ts = static_cast<double>(plane.GetTimestamp(i)) / 1000 + m_detector->timingOffset();
+
+            if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {
+                LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
+            }
 
             LOG(DEBUG) << "Read pixel (col, row) = (" << col << ", " << row << ") from EUDAQ2 event data (before masking).";
             if(m_detector->masked(col, row)) {
@@ -274,7 +294,8 @@ Pixels* EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> 
             Pixel* pixel = new Pixel(m_detector->name(), col, row, raw, raw, ts);
 
             hitmap->Fill(col, row);
-            hHitTimes->Fill(ts);
+            hPixelTimes->Fill(static_cast<double>(Units::convert(ts, "ms")));
+            hPixelTimes_long->Fill(static_cast<double>(Units::convert(ts, "s")));
             hPixelRawValues->Fill(raw);
 
             pixels->push_back(pixel);
@@ -319,12 +340,14 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Do not fill if current_position == EventPosition::AFTER to avoid double-counting!
         // Converting EUDAQ2 picoseconds into Corryvreckan nanoseconds:
-        hEudaqEventStart->Fill(static_cast<double>(event_->GetTimeBegin()) / 1000);
+        hEudaqEventStart->Fill(static_cast<double>(event_->GetTimeBegin()) / 1e9);       // here convert from ps to ms
+        hEudaqEventStart_long->Fill(static_cast<double>(event_->GetTimeBegin()) / 1e12); // here convert from ps to seconds
         if(clipboard->event_defined()) {
-            hClipboardEventStart->Fill(static_cast<double>(Units::convert(clipboard->get_event()->start(), "ns")));
-            hClipboardEventEnd->Fill(static_cast<double>(Units::convert(clipboard->get_event()->end(), "ns")));
+            hClipboardEventStart->Fill(static_cast<double>(Units::convert(clipboard->get_event()->start(), "ms")));
+            hClipboardEventStart_long->Fill(static_cast<double>(Units::convert(clipboard->get_event()->start(), "s")));
+            hClipboardEventEnd->Fill(static_cast<double>(Units::convert(clipboard->get_event()->end(), "ms")));
             hClipboardEventDuration->Fill(
-                static_cast<double>(Units::convert(clipboard->get_event()->end() - clipboard->get_event()->start(), "ns")));
+                static_cast<double>(Units::convert(clipboard->get_event()->end() - clipboard->get_event()->start(), "ms")));
         }
 
         // Reset this shared event pointer to get a new event from the stack:
@@ -341,6 +364,8 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     // Loop over pixels for plotting
     for(auto& pixel : (*pixels)) {
         hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
+        hPixelTimeEventBeginResidual_wide->Fill(
+            static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
         hPixelTimeEventBeginResidualOverTime->Fill(
             static_cast<double>(Units::convert(pixel->timestamp(), "s")),
             static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));

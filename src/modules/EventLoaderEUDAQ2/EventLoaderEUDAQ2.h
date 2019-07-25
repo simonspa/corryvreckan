@@ -98,15 +98,19 @@ namespace corryvreckan {
         TH2F* hitmap;
 
         // 1D histograms
-        TH1F* hHitTimes;
+        TH1F* hPixelTimes;
+        TH1F* hPixelTimes_long;
         TH1F* hPixelRawValues;
         TH1F* hPixelsPerEvent;
         TH1D* hEudaqEventStart;
+        TH1D* hEudaqEventStart_long;
         TH1D* hClipboardEventStart;
+        TH1D* hClipboardEventStart_long;
         TH1D* hClipboardEventEnd;
         TH1D* hClipboardEventDuration;
 
         TH1F* hPixelTimeEventBeginResidual;
+        TH1F* hPixelTimeEventBeginResidual_wide;
         TH2F* hPixelTimeEventBeginResidualOverTime;
 
         std::map<size_t, TH1D*> hPixelTriggerTimeResidual;

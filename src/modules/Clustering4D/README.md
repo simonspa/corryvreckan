@@ -22,6 +22,7 @@ For each detector the following plots are produced:
 * Cluster width (columns, in Y) histogram
 * Cluster charge histogram
 * 2D cluster positions in global coordinates
+* Cluster times
 
 ### Usage
 ```toml
