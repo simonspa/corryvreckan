@@ -19,6 +19,9 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     m_skip_time = m_config.get("skip_time", 0.);
     adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {});
 
+    m_do_timesorting = m_config.get<bool>("do_timesorting", false);
+    m_buffer_depth = m_config.get<int>("buffer_depth", 100);
+
     // Forward all settings to EUDAQ
     // WARNING: the EUDAQ Configuration class is not very flexible and e.g. booleans have to be passed as 1 and 0.
     eudaq::Configuration cfg;
@@ -125,15 +128,39 @@ void EventLoaderEUDAQ2::initialise() {
     }
 }
 
-std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
+// new function to be implemented:
+// void EventLoaderEUDAQ2::fill_event_into_buffer() {
+//     auto new_event = reader_->GetNextEvent();
+//     if(!new_event) {
+//         LOG(DEBUG) << "Reached EOF";
+//         throw EndOfFile();
+//     }
+//     // fill buffer
+// }
+
+eudaq::EventSPC EventLoaderEUDAQ2::get_next_eudaq_event() {
+    eudaq::EventSPC new_event;
+    if(m_do_timesorting) {
+        // fill buffer and get 1 event from buffer.
+        // ...
+        // ...
+    } else {
+        // simply read next event from file
+        new_event = reader_->GetNextEvent();
+    }
+    return new_event;
+}
+
+std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
+    // This function returns the next decoded EUDAQ2 StandardEvent
+
     auto stdevt = eudaq::StandardEvent::MakeShared();
     bool decoding_failed = true;
-
     do {
         // Check if we need a new full event or if we still have some in the cache:
         if(events_.empty()) {
             LOG(TRACE) << "Reading new EUDAQ event from file";
-            auto new_event = reader_->GetNextEvent();
+            auto new_event = get_next_eudaq_event();
             if(!new_event) {
                 LOG(DEBUG) << "Reached EOF";
                 throw EndOfFile();
@@ -316,7 +343,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         // Retrieve next event from file/buffer:
         if(!event_) {
             try {
-                event_ = get_next_event();
+                event_ = get_next_std_event();
             } catch(EndOfFile&) {
                 return StatusCode::EndRun;
             }
