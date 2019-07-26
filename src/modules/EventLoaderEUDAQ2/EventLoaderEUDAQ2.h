@@ -60,9 +60,9 @@ namespace corryvreckan {
 
     private:
         /**
-         * @brief Read and return the next eudaq event, time sorted if desired
+         * @brief Read and return the next decoded StandardEvent (smallest possible granularity) from timesorted buffer
          */
-        eudaq::EventSPC get_next_eudaq_event();
+        std::shared_ptr<eudaq::StandardEvent> get_next_sorted_std_event();
         /**
          * @brief Read and return the next event (smallest possible granularity) and return the decoded StandardEvent
          */
@@ -98,6 +98,9 @@ namespace corryvreckan {
         std::vector<eudaq::EventSPC> events_;
         // Currently processed decoded EUDAQ StandardEvent:
         std::shared_ptr<eudaq::StandardEvent> event_;
+
+        // Buffer of timesorted decoded EUDAQ StandardEvents:
+        std::vector<std::shared_ptr<eudaq::StandardEvent>> sorted_events_;
 
         // EUDAQ configuration to be passed to the decoder instance
         eudaq::ConfigurationSPC eudaq_config_;

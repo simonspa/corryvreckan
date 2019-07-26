@@ -128,39 +128,46 @@ void EventLoaderEUDAQ2::initialise() {
     }
 }
 
-// new function to be implemented:
-// void EventLoaderEUDAQ2::fill_event_into_buffer() {
-//     auto new_event = reader_->GetNextEvent();
-//     if(!new_event) {
-//         LOG(DEBUG) << "Reached EOF";
-//         throw EndOfFile();
-//     }
-//     // fill buffer
-// }
+std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_sorted_std_event() {
 
-eudaq::EventSPC EventLoaderEUDAQ2::get_next_eudaq_event() {
-    eudaq::EventSPC new_event;
-    if(m_do_timesorting) {
-        // fill buffer and get 1 event from buffer.
-        // ...
-        // ...
-    } else {
-        // simply read next event from file
-        new_event = reader_->GetNextEvent();
+    while(static_cast<int>(sorted_events_.size()) < m_buffer_depth) {
+        LOG(DEBUG) << "Filling buffer with new event.";
+        // fill buffer with new std event:
+        auto new_event = get_next_std_event();
+        sorted_events_.push_back(new_event);
     }
-    return new_event;
+
+    LOG(DEBUG) << "Timestamps in unsorted buffer:";
+    for(auto& ev : sorted_events_) {
+        LOG(DEBUG) << "\ttimestamp = " << Units::display(ev->GetTimeBegin() / 1000, {"us", "ns"}); // convert from ps to ns
+    }
+
+    // sort chronologically in time:
+    sort(sorted_events_.begin(),
+         sorted_events_.end(),
+         [](const std::shared_ptr<eudaq::StandardEvent> a, std::shared_ptr<eudaq::StandardEvent> b) -> bool {
+             return a->GetTimeBegin() < b->GetTimeBegin();
+         });
+
+    LOG(DEBUG) << "Timestamps in sorted buffer:";
+    for(auto& ev : sorted_events_) {
+        LOG(DEBUG) << "\ttimestamp = " << Units::display(ev->GetTimeBegin() / 1000, {"us", "ns"}); // convert from ps to ns
+    }
+
+    // get first element of vector and erase it
+    auto stdevt = sorted_events_.front();
+    sorted_events_.erase(sorted_events_.begin());
+    return stdevt;
 }
 
 std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
-    // This function returns the next decoded EUDAQ2 StandardEvent
-
     auto stdevt = eudaq::StandardEvent::MakeShared();
     bool decoding_failed = true;
     do {
         // Check if we need a new full event or if we still have some in the cache:
         if(events_.empty()) {
             LOG(TRACE) << "Reading new EUDAQ event from file";
-            auto new_event = get_next_eudaq_event();
+            auto new_event = reader_->GetNextEvent();
             if(!new_event) {
                 LOG(DEBUG) << "Reached EOF";
                 throw EndOfFile();
@@ -343,7 +350,13 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         // Retrieve next event from file/buffer:
         if(!event_) {
             try {
-                event_ = get_next_std_event();
+                if(!m_do_timesorting) {
+                    // simply get next decoded EUDAQ StandardEvent from buffer
+                    event_ = get_next_std_event();
+                } else {
+                    // get next decoded EUDAQ StandardEvent from timesorted buffer
+                    event_ = get_next_sorted_std_event();
+                }
             } catch(EndOfFile&) {
                 return StatusCode::EndRun;
             }
