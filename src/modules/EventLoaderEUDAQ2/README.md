@@ -55,6 +55,8 @@ Also, more complex constructs such as arrays or matrices read by the Corryvrecka
 * `file_name`: File name of the EUDAQ2 raw data file. This parameter is mandatory.
 * `skip_time`: Time that can be skipped at the start of a run. Default is `0ms`.
 * `adjust_event_times`: Matrix that allows the user to shift the event start/end of all different types of EUDAQ events. The first entry of each row specifies the data type, the second is the offset which is added to the event start and the third entry is the offset added to the event end. A usage example is shown below. Default is `0ms, 0ms`, `"other"` is just a placeholder.
+* `do_timesorting`: Boolean to enable timesorting of EUDAQ2 StandardEvents. This algorithm only works for StandardEvents with well-defined timestamps. Default is `false`.
+* `buffer_depth`: Depth of buffer in which StandardEvents are timesorted. Default depth is 10.
 
 ### Plots produced
 * 2D hitmap
