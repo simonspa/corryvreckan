@@ -16,9 +16,9 @@ void DUTAssociation::initialise() {
 
   // Nr of associated clusters per track
   std::string title = m_detector->name() + ": number of associated clusters;associated clusters;events";
-  hno_assoc_cls = new TH1F("no_assoc_cls", title.c_str(), 11, 0, 10);
+  hno_assoc_cls = new TH1F("no_assoc_cls", title.c_str(), 10, 0, 10);
   title = m_detector->name() + ": number of clusters discarded by cut;cut;events";
-  hcut_flow = new TH1F("cut_flow", title.c_str(), 3, 1, 3);
+  hcut_flow = new TH1F("cut_flow", title.c_str(), 3, 1, 4);
 }
 
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
@@ -40,7 +40,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
     // Loop over all tracks
     for(auto& track : (*tracks)) {
         assoc_cls_per_track = 0;
-        double min_distance = 9999;
+        double min_distance = 99999;
 
         // Loop over all DUT clusters
         for(auto& cluster : (*clusters)) {
@@ -71,12 +71,16 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             assoc_cluster_counter++;
 
             // check if cluster is closest to track
+            LOG(DEBUG) << "Distance: " << distance;
             if(distance < min_distance){
               min_distance = distance;
               track->setClosestCluster(cluster);
             }
         }
         hno_assoc_cls->Fill(assoc_cls_per_track);
+        if(assoc_cls_per_track > 0){
+          track_w_assoc_cls++;
+        }
 
         // Get the closest associated cluster: //DELETE
         Cluster* closestCluster = track->getClosestCluster();
@@ -93,5 +97,6 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
 void DUTAssociation::finalise() {
     LOG(INFO) << "In total, " << assoc_cluster_counter << " clusters are associated to tracks.";
+    LOG(INFO) << "Number of tracks with at least one associated cluster: " << track_w_assoc_cls;
     return;
 }

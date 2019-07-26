@@ -99,12 +99,16 @@ void AnalysisDUT::initialise() {
     clusterSizeAssocNorm = new TH1F(
         "clusterSizeAssociatedNormalized", "clusterSizeAssociatedNormalized;cluster size normalized;#entries", 30, 0, 30);
 
+    // cut flow histogram
+    std::string title = m_detector->name() + ": number of clusters discarded by cut;cut;events";
+    hCutFlow = new TH1F("cut_flow", title.c_str(), 4, 1, 5);
+
     // In-pixel studies:
     auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
     auto pitch_y = static_cast<double>(Units::convert(m_detector->pitch().Y(), "um"));
     auto mod_axes = "x_{track} mod " + std::to_string(pitch_x) + "#mum;y_{track} mod " + std::to_string(pitch_y) + "#mum;";
 
-    std::string title = "DUT x resolution;" + mod_axes + "MAD(#Deltax) [#mum]";
+    title = "DUT x resolution;" + mod_axes + "MAD(#Deltax) [#mum]";
     rmsxvsxmym = new TProfile2D(
         "rmsxvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
 
@@ -267,6 +271,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         // Cut on the chi2/ndof
         if(track->chi2ndof() > chi2ndofCut) {
             LOG(DEBUG) << " - track discarded due to Chi2/ndof";
+            hCutFlow->Fill(1.0);
             continue;
         }
 
@@ -276,6 +281,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
         if(!m_detector->hasIntercept(track, 0.5)) {
             LOG(DEBUG) << " - track outside DUT area";
+            if(track->hasClosestCluster())
+              hCutFlow->Fill(2.0);
             continue;
         }
 
@@ -287,6 +294,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         // Check that it doesn't go through/near a masked pixel
         if(m_detector->hitMasked(track, 1.)) {
             LOG(DEBUG) << " - track close to masked pixel";
+            if(track->hasClosestCluster())
+              hCutFlow->Fill(3.0);
             continue;
         }
 
@@ -299,12 +308,14 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << " - track close to end of readout frame: "
                        << Units::display(fabs(track->timestamp() - event->end()), {"us", "ns"}) << " at "
                        << Units::display(track->timestamp(), {"us"});
+            hCutFlow->Fill(4.0);
             continue;
         } else if(fabs(track->timestamp() - event->start()) < m_timeCutFrameEdge) {
             // Early edge - eventStart points to the beginning of the frame
             LOG(DEBUG) << " - track close to start of readout frame: "
                        << Units::display(fabs(track->timestamp() - event->start()), {"us", "ns"}) << " at "
                        << Units::display(track->timestamp(), {"us"});
+            hCutFlow->Fill(4.0);
             continue;
         }
 
@@ -339,14 +350,29 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
                 auto associated_clusters = track->associatedClusters();
                 noTotalAssocClusters = int(associated_clusters.size());
+                
+                if(track->hasClosestCluster()){
+                  if(track->getClosestCluster() != cluster){
+                    hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
+                    continue;
+                  }
+                }else{
+                  hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
+                  continue;
+                }
+
+                /*
                 if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) == associated_clusters.end()) {
                     LOG(DEBUG) << "No associated cluster found";
                     hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
                     continue;
                 }
+                */
+
 
                 LOG(DEBUG) << "Found associated cluster";
                 noFoundClusters++;
+                assoc_cluster_counter++;
 
                 double xdistance = intercept.X() - cluster->global().x();
                 double ydistance = intercept.Y() - cluster->global().y();
@@ -452,13 +478,14 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         if(is_within_roi) {
             hPixelEfficiencyMap->Fill(xmod, ymod, has_associated_cluster);
         }
-        LOG(DEBUG) << "No of associated clusters found: " << noFoundClusters;
-        LOG(DEBUG) << "Total number of assoc. clusters: " << noTotalAssocClusters;
+        LOG(DEBUG) << "No of associated clusters found for current track: " << noFoundClusters;
+        LOG(DEBUG) << "Total number of assoc. clusters: for current track: " << noTotalAssocClusters;
     }
     // Return value telling analysis to keep running
     return StatusCode::Success;
 }
 
 void AnalysisDUT::finalise() {
+    LOG(INFO) << "Total number of associated clusters: " << assoc_cluster_counter;
     clusterSizeAssocNorm->Scale(1 / clusterSizeAssoc->Integral());
 }
