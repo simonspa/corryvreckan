@@ -20,7 +20,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {});
 
     m_do_timesorting = m_config.get<bool>("do_timesorting", false);
-    m_buffer_depth = m_config.get<int>("buffer_depth", 100);
+    m_buffer_depth = m_config.get<int>("buffer_depth", 10);
 
     // Forward all settings to EUDAQ
     // WARNING: the EUDAQ Configuration class is not very flexible and e.g. booleans have to be passed as 1 and 0.
