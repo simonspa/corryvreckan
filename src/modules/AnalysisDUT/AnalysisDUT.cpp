@@ -102,6 +102,10 @@ void AnalysisDUT::initialise() {
     // cut flow histogram
     std::string title = m_detector->name() + ": number of clusters discarded by cut;cut;events";
     hCutFlow = new TH1F("cut_flow", title.c_str(), 4, 1, 5);
+    hCutFlow->GetXaxis()->SetBinLabel(1,"Chi2");
+    hCutFlow->GetXaxis()->SetBinLabel(2,"Outside DUT");
+    hCutFlow->GetXaxis()->SetBinLabel(3,"Close to masked pixel");
+    hCutFlow->GetXaxis()->SetBinLabel(4,"Close to frame begin/end");
 
     // In-pixel studies:
     auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
@@ -350,7 +354,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
                 auto associated_clusters = track->associatedClusters();
                 noTotalAssocClusters = int(associated_clusters.size());
-                
+
                 if(track->hasClosestCluster()){
                   if(track->getClosestCluster() != cluster){
                     hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());

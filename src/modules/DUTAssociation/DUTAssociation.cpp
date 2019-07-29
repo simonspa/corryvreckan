@@ -19,6 +19,9 @@ void DUTAssociation::initialise() {
   hno_assoc_cls = new TH1F("no_assoc_cls", title.c_str(), 10, 0, 10);
   title = m_detector->name() + ": number of clusters discarded by cut;cut;events";
   hcut_flow = new TH1F("cut_flow", title.c_str(), 3, 1, 4);
+  hcut_flow->GetXaxis()->SetBinLabel(1,"Spatial");
+  hcut_flow->GetXaxis()->SetBinLabel(2,"Timing");
+  hcut_flow->GetXaxis()->SetBinLabel(3,"ToT");
 }
 
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
