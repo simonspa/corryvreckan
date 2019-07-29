@@ -28,7 +28,8 @@ This module requires either another event loader of another detector type before
 * 1D pixels charge histogram (currently not calibrated -> equivalent to ToT)
 * 1D pixel ToA histogram
 * 1D pixels per frame histogram
-* 1D pixels over time histogram
+* 1D pixels over time histogram (3 second range)
+* 1D pixels over time histogram (3000 second range)
 * 1D pixel TS1 histogram
 * 1D pixel TS2 histogram
 * 1D pixel TS1 bits histogram
@@ -39,6 +40,7 @@ This module requires either another event loader of another detector type before
 * 1D pixel TS2 bits histogram for high ToT events (ToT>high_tot_cut)
 * 1D trigger per event histogram
 * 1D pixel time minus event begin residual histogram
+* 1D pixel time minus event begin residual histogram (larger interval, coarser binning)
 * 2D pixel time minus event begin residual over time histogram
 * map of all available 1D pixel time minus trigger time residual histograms
 * map of all available 2D pixel time minus trigger time residual over time histograms
