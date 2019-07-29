@@ -44,8 +44,6 @@ namespace corryvreckan {
         TH1F* clusterSizeAssoc;
         TH1F* clusterSizeAssocNorm;
 
-        TH1F* hCutFlow;
-
         TProfile2D *rmsxvsxmym, *rmsyvsxmym, *rmsxyvsxmym;
         TProfile2D *qvsxmym, *qMoyalvsxmym, *pxqvsxmym;
         TProfile2D* npxvsxmym;

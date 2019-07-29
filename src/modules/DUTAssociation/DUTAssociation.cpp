@@ -18,10 +18,6 @@ void DUTAssociation::initialise() {
   std::string title = m_detector->name() + ": number of associated clusters;associated clusters;events";
   hno_assoc_cls = new TH1F("no_assoc_cls", title.c_str(), 10, 0, 10);
   title = m_detector->name() + ": number of clusters discarded by cut;cut;events";
-  hcut_flow = new TH1F("cut_flow", title.c_str(), 3, 1, 4);
-  hcut_flow->GetXaxis()->SetBinLabel(1,"Spatial");
-  hcut_flow->GetXaxis()->SetBinLabel(2,"Timing");
-  hcut_flow->GetXaxis()->SetBinLabel(3,"ToT");
 }
 
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
@@ -55,7 +51,6 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             if(abs(xdistance) > spatialCut.x() || abs(ydistance) > spatialCut.y()) {
                 LOG(DEBUG) << "Discarding DUT cluster with distance (" << Units::display(abs(xdistance), {"um", "mm"}) << ","
                            << Units::display(abs(ydistance), {"um", "mm"}) << ")";
-                hcut_flow->Fill(1);
                 continue;
             }
 
@@ -63,7 +58,6 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             if(std::abs(cluster->timestamp() - track->timestamp()) > timingCut) {
                 LOG(DEBUG) << "Discarding DUT cluster with time difference "
                            << Units::display(std::abs(cluster->timestamp() - track->timestamp()), {"ms", "s"});
-                hcut_flow->Fill(2);
                 continue;
             }
 

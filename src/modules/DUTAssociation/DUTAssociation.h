@@ -31,7 +31,6 @@ namespace corryvreckan {
         ROOT::Math::XYVector spatialCut;
 
         TH1F* hno_assoc_cls;
-        TH1F* hcut_flow;
 
         int assoc_cls_per_track = 0;
         int assoc_cluster_counter = 0;

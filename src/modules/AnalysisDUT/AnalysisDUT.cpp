@@ -101,11 +101,6 @@ void AnalysisDUT::initialise() {
 
     // cut flow histogram
     std::string title = m_detector->name() + ": number of clusters discarded by cut;cut;events";
-    hCutFlow = new TH1F("cut_flow", title.c_str(), 4, 1, 5);
-    hCutFlow->GetXaxis()->SetBinLabel(1,"Chi2");
-    hCutFlow->GetXaxis()->SetBinLabel(2,"Outside DUT");
-    hCutFlow->GetXaxis()->SetBinLabel(3,"Close to masked pixel");
-    hCutFlow->GetXaxis()->SetBinLabel(4,"Close to frame begin/end");
 
     // In-pixel studies:
     auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
@@ -275,7 +270,6 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         // Cut on the chi2/ndof
         if(track->chi2ndof() > chi2ndofCut) {
             LOG(DEBUG) << " - track discarded due to Chi2/ndof";
-            hCutFlow->Fill(1.0);
             continue;
         }
 
@@ -286,7 +280,6 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         if(!m_detector->hasIntercept(track, 0.5)) {
             LOG(DEBUG) << " - track outside DUT area";
             if(track->hasClosestCluster())
-              hCutFlow->Fill(2.0);
             continue;
         }
 
@@ -299,7 +292,6 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         if(m_detector->hitMasked(track, 1.)) {
             LOG(DEBUG) << " - track close to masked pixel";
             if(track->hasClosestCluster())
-              hCutFlow->Fill(3.0);
             continue;
         }
 
@@ -312,14 +304,12 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << " - track close to end of readout frame: "
                        << Units::display(fabs(track->timestamp() - event->end()), {"us", "ns"}) << " at "
                        << Units::display(track->timestamp(), {"us"});
-            hCutFlow->Fill(4.0);
             continue;
         } else if(fabs(track->timestamp() - event->start()) < m_timeCutFrameEdge) {
             // Early edge - eventStart points to the beginning of the frame
             LOG(DEBUG) << " - track close to start of readout frame: "
                        << Units::display(fabs(track->timestamp() - event->start()), {"us", "ns"}) << " at "
                        << Units::display(track->timestamp(), {"us"});
-            hCutFlow->Fill(4.0);
             continue;
         }
 
