@@ -189,32 +189,38 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         for(auto& cluster : (*clusters)) {
-            // Loop over reference plane clusters to make correlation plots
-            for(auto& refCluster : (*referenceClusters)) {
 
-                double timeDifference = refCluster->timestamp() - cluster->timestamp();
-                // in 40 MHz:
-                long long int timeDifferenceInt = static_cast<long long int>(timeDifference / 25);
+            // Check that track is within region of interest using winding number algorithm
+            if(!m_detector->isWithinROI(cluster)) {
+               LOG(DEBUG) << " - cluster outside ROI";
+            }else{
+		    // Loop over reference plane clusters to make correlation plots
+		    for(auto& refCluster : (*referenceClusters)) {
 
-                // Correlation plots
-                if(abs(timeDifference) < timingCut || !do_timing_cut_) {
-                    correlationX->Fill(refCluster->global().x() - cluster->global().x());
-                    correlationX2D->Fill(cluster->global().x(), refCluster->global().x());
-                    correlationX2Dlocal->Fill(cluster->column(), refCluster->column());
+		        double timeDifference = refCluster->timestamp() - cluster->timestamp();
+		        // in 40 MHz:
+		        long long int timeDifferenceInt = static_cast<long long int>(timeDifference / 25);
 
-                    correlationY->Fill(refCluster->global().y() - cluster->global().y());
-                    correlationY2D->Fill(cluster->global().y(), refCluster->global().y());
-                    correlationY2Dlocal->Fill(cluster->row(), refCluster->row());
+		        // Correlation plots
+		        if(abs(timeDifference) < timingCut || !do_timing_cut_) {
+		            correlationX->Fill(refCluster->global().x() - cluster->global().x());
+		            correlationX2D->Fill(cluster->global().x(), refCluster->global().x());
+		            correlationX2Dlocal->Fill(cluster->column(), refCluster->column());
 
-                    correlationXY->Fill(refCluster->global().y() - cluster->global().x());
-                    correlationYX->Fill(refCluster->global().x() - cluster->global().y());
-                }
-                //                    correlationTime[m_detector->name()]->Fill(Units::convert(timeDifference, "s"));
-                correlationTime->Fill(timeDifference); // time difference in ns
-                correlationTimeOverTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
-                                              timeDifference); // time difference in ns
-                correlationTimeInt->Fill(static_cast<double>(timeDifferenceInt));
-            }
+		            correlationY->Fill(refCluster->global().y() - cluster->global().y());
+		            correlationY2D->Fill(cluster->global().y(), refCluster->global().y());
+		            correlationY2Dlocal->Fill(cluster->row(), refCluster->row());
+
+		            correlationXY->Fill(refCluster->global().y() - cluster->global().x());
+		            correlationYX->Fill(refCluster->global().x() - cluster->global().y());
+		        }
+		        //                    correlationTime[m_detector->name()]->Fill(Units::convert(timeDifference, "s"));
+		        correlationTime->Fill(timeDifference); // time difference in ns
+		        // correlationTimeOverTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+		                                      // timeDifference); // time difference in ns
+		        correlationTimeInt->Fill(static_cast<double>(timeDifferenceInt));
+		    }
+		}
         }
     }
 
