@@ -58,6 +58,12 @@ namespace corryvreckan {
         void setErrorY(double error) { m_error.SetY(error); }
         void setError(ROOT::Math::XYVector error) { m_error = error; }
 
+        /**
+             * @brief Print an ASCII representation of Cluster to the given stream
+             * @param out Stream to print to
+             */
+        void print(std::ostream& out) const override;
+
     private:
         // Member variables
         Pixels m_pixels;
