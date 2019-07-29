@@ -65,7 +65,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     Clusters* referenceClusters = nullptr;
 
     // Loop over all detectors and get clusters
-    double minZ = 1000.; // where does this one come from?
+    double minZ = 1000.;
     std::string seedPlane;
     for(auto& detector : get_detectors()) {
         string detectorID = detector->name();
@@ -131,9 +131,10 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
                 LOG(TRACE) << "Skip 0th detector.";
                 continue;
             }
-            if(detectorID == seedPlane)
+            if(detectorID == seedPlane) {
                 LOG(TRACE) << "Skip seed plane.";
-            continue;
+                continue;
+            }
 
             // Check if the DUT should be excluded and obey:
             if(excludeDUT && detector->isDUT()) {

@@ -250,7 +250,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 avg_track_time -= static_cast<double>(Units::convert(trackCluster->global().z(), "mm") / (299.792458));
             }
             track->setTimestamp(avg_track_time / static_cast<double>(track->nClusters()));
-            LOG(DEBUG) << "Using average cluster timestamp of " << avg_track_time / static_cast<double>(track->nClusters())
+            LOG(DEBUG) << "Using average cluster timestamp of "
+                       << Units::display(avg_track_time / static_cast<double>(track->nClusters()), "us")
                        << " as track timestamp.";
         } else if(!detectorToSetTrackTimestamp.empty() && track->hasDetector(detectorToSetTrackTimestamp)) {
             // use timestamp of required detector:
@@ -259,9 +260,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                        << Units::display(track_timestamp, "us") << " to track.";
             track->setTimestamp(track_timestamp);
         } else {
-            LOG(WARNING) << "Use average cluster timestamp for track or set detector to set track timestamp. Please update "
-                            "the configuration file.";
-            // do something here...
+            LOG(ERROR) << "Cannot asign timestamp to track. Use average cluster timestamp for track or set detector to "
+                          "set track timestamp. Please update the configuration file.";
+            return StatusCode::Failure;
         }
     }
 

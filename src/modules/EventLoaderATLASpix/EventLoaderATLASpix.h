@@ -69,6 +69,7 @@ namespace corryvreckan {
         TH1F* hPixelCharge;
         TH1F* hPixelToA;
         TH1F* hPixelTimeEventBeginResidual;
+        TH1F* hPixelTimeEventBeginResidual_wide;
         TH2F* hPixelTimeEventBeginResidualOverTime;
 
         std::map<size_t, TH1D*> hPixelTriggerTimeResidual;
@@ -76,7 +77,8 @@ namespace corryvreckan {
         TH1D* hTriggersPerEvent;
 
         TH1F* hPixelsPerFrame;
-        TH1F* hPixelsOverTime;
+        TH1F* hPixelTimes;
+        TH1F* hPixelTimes_long;
 
         // TS1 and TS2 specific histograms:
         TH1F* hPixelTS1;
