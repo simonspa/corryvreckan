@@ -14,6 +14,7 @@ This module clusters the input data of a detector without individual hit timesta
 For each detector the following plots are produced:
 
 * Cluster size histogram
+* Cluster seed charge histogram
 * Cluster width (rows, in X) histogram
 * Cluster width (columns, in Y) histogram
 * Cluster charge histogram
