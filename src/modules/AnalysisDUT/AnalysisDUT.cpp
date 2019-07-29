@@ -404,8 +404,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
                 clusterSizeAssoc->Fill(static_cast<double>(cluster->size()));
                 clusterSizeAssocNorm->Fill(static_cast<double>(cluster->size()));
-                clusterSizeRowAssoc->Fill(cluster->rowWidth());
-                clusterSizeColAssoc->Fill(cluster->columnWidth());
+                clusterWidthRowAssoc->Fill(cluster->rowWidth());
+                clusterWidthColAssoc->Fill(cluster->columnWidth());
 
                 // Fill in-pixel plots: (all as function of track position within pixel cell)
                 if(is_within_roi) {
