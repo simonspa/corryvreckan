@@ -13,7 +13,7 @@ The association allows for cuts in position and time.
 * `timing_cut`: Maximum time difference allowed between cluster and track for association for the DUT. Default value is `200ns`.
 
 ### Plots produced
-No histograms are produced.
+* Number of clusters discarded by a given cut (currently only spatial and timing cuts are implemented)
 
 ### Usage
 ```toml

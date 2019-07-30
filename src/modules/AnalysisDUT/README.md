@@ -20,6 +20,7 @@ Generic analysis module for all prototypes. This module is still work in progres
 * 2D Map of associated hits within the defined region-of-interest
 * Distribution of pixel raw value (ToT, ADC, ...) values from associated clusters
 * 2D Map of pixel raw value (ToT, ADC, ...) values from associated clusters
+* Number of tracks discarded by a given cut
 * Track residuals in X and Y
 * Track residuals for 1-pixel-clusters in X and Y
 * Track residuals for 2-pixel-clusters in X and Y
