@@ -10,6 +10,17 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
     spatialCut = m_config.get<XYVector>("spatial_cut", 2 * m_detector->pitch());
 }
 
+void DUTAssociation::initialise() {
+  LOG(DEBUG) << "Booking histograms for detector " << m_detector->name();
+
+  // Cut flow histogram
+  std::string title = m_detector->name() + ": number of clusters discarded by cuts;cut type;events";
+  hCutHisto = new TH1F("hCutHisto", title.c_str(), 3, 1, 4);
+  hCutHisto->GetXaxis()->SetBinLabel(1,"Spatial");
+  hCutHisto->GetXaxis()->SetBinLabel(2,"Timing");
+  hCutHisto->GetXaxis()->SetBinLabel(3,"ToT");
+}
+
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks from the clipboard
@@ -37,6 +48,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             if(abs(xdistance) > spatialCut.x() || abs(ydistance) > spatialCut.y()) {
                 LOG(DEBUG) << "Discarding DUT cluster with distance (" << Units::display(abs(xdistance), {"um", "mm"}) << ","
                            << Units::display(abs(ydistance), {"um", "mm"}) << ")";
+                hCutHisto->Fill(1);
                 continue;
             }
 
@@ -44,6 +56,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             if(std::abs(cluster->timestamp() - track->timestamp()) > timingCut) {
                 LOG(DEBUG) << "Discarding DUT cluster with time difference "
                            << Units::display(std::abs(cluster->timestamp() - track->timestamp()), {"ms", "s"});
+                hCutHisto->Fill(2);
                 continue;
             }
 

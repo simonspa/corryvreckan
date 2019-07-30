@@ -21,6 +21,7 @@ namespace corryvreckan {
         ~DUTAssociation() = default;
 
         // Functions
+        void initialise();
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
         void finalise();
 
@@ -28,6 +29,8 @@ namespace corryvreckan {
         std::shared_ptr<Detector> m_detector;
         double timingCut;
         ROOT::Math::XYVector spatialCut;
+
+        TH1F* hCutHisto;
 
         int assoc_cluster_counter = 0;
     };
