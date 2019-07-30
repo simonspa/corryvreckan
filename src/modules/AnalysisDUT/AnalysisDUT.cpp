@@ -107,8 +107,8 @@ void AnalysisDUT::initialise() {
     // cut flow histogram
     std::string title = m_detector->name() + ": number of tracks discarded by cut;cut type;events";
     hCutHisto = new TH1F("hCutHisto", title.c_str(), 4, 1, 5);
-    hCutHisto->GetXaxis()->SetBinLabel(1,"Chi2");
-    hCutHisto->GetXaxis()->SetBinLabel(2,"Outside DUT");
+    hCutHisto->GetXaxis()->SetBinLabel(1,"High Chi2");
+    hCutHisto->GetXaxis()->SetBinLabel(2,"Outside DUT area");
     hCutHisto->GetXaxis()->SetBinLabel(3,"Close to masked pixel");
     hCutHisto->GetXaxis()->SetBinLabel(4,"Close to frame begin/end");
 
