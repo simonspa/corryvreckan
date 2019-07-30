@@ -11,8 +11,6 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
 }
 
 void DUTAssociation::initialise() {
-  LOG(DEBUG) << "Booking histograms for detector " << m_detector->name();
-
   // Cut flow histogram
   std::string title = m_detector->name() + ": number of clusters discarded by cuts;cut type;events";
   hCutHisto = new TH1F("hCutHisto", title.c_str(), 2, 1, 3);
