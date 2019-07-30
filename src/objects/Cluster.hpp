@@ -59,9 +59,9 @@ namespace corryvreckan {
         void setError(ROOT::Math::XYVector error) { m_error = error; }
 
         /**
-             * @brief Print an ASCII representation of Cluster to the given stream
-             * @param out Stream to print to
-             */
+         * @brief Print an ASCII representation of Cluster to the given stream
+         * @param out Stream to print to
+         */
         void print(std::ostream& out) const override;
 
     private:

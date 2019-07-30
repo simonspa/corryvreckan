@@ -11,11 +11,11 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
 }
 
 void DUTAssociation::initialise() {
-  // Cut flow histogram
-  std::string title = m_detector->name() + ": number of tracks discarded by different cuts;cut type;events";
-  hCutHisto = new TH1F("hCutHisto", title.c_str(), 2, 1, 3);
-  hCutHisto->GetXaxis()->SetBinLabel(1,"Spatial");
-  hCutHisto->GetXaxis()->SetBinLabel(2,"Timing");
+    // Cut flow histogram
+    std::string title = m_detector->name() + ": number of tracks discarded by different cuts;cut type;events";
+    hCutHisto = new TH1F("hCutHisto", title.c_str(), 2, 1, 3);
+    hCutHisto->GetXaxis()->SetBinLabel(1, "Spatial");
+    hCutHisto->GetXaxis()->SetBinLabel(2, "Timing");
 }
 
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
