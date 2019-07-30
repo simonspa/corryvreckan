@@ -105,7 +105,7 @@ void AnalysisDUT::initialise() {
     auto mod_axes = "x_{track} mod " + std::to_string(pitch_x) + "#mum;y_{track} mod " + std::to_string(pitch_y) + "#mum;";
 
     // cut flow histogram
-    std::string title = m_detector->name() + ": number of tracks discarded by cut;cut type;events";
+    std::string title = m_detector->name() + ": number of tracks discarded by different cuts;cut type;events";
     hCutHisto = new TH1F("hCutHisto", title.c_str(), 4, 1, 5);
     hCutHisto->GetXaxis()->SetBinLabel(1,"High Chi2");
     hCutHisto->GetXaxis()->SetBinLabel(2,"Outside DUT area");
