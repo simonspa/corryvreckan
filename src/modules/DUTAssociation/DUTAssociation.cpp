@@ -34,8 +34,8 @@ void DUTAssociation::initialise() {
 
 
   // Nr of associated clusters per track
-  std::string title = m_detector->name() + ": number of associated clusters;associated clusters;events";
-  hno_assoc_cls = new TH1F("no_assoc_cls", title.c_str(), 10, 0, 10);
+  std::string title = m_detector->name() + ": number of associated clusters per track;associated clusters;events";
+  hNoAssocCls = new TH1F("no_assoc_cls", title.c_str(), 10, 0, 10);
   title = m_detector->name() + ": number of clusters discarded by cut;cut;events";
 }
 
@@ -133,7 +133,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
               track->setClosestCluster(cluster);
             }
         }
-        hno_assoc_cls->Fill(assoc_cls_per_track);
+        hNoAssocCls->Fill(assoc_cls_per_track);
         if(assoc_cls_per_track > 0){
           track_w_assoc_cls++;
         }
