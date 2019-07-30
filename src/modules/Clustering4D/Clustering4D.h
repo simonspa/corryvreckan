@@ -32,7 +32,7 @@ namespace corryvreckan {
 
         // Cluster histograms
         TH1F* clusterSize;
-        TH1F* clusterSeed;
+        TH1F* clusterSeedCharge;
         TH1F* clusterWidthRow;
         TH1F* clusterWidthColumn;
         TH1F* clusterCharge;

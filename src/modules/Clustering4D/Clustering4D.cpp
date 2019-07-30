@@ -16,8 +16,8 @@ void Clustering4D::initialise() {
     // Cluster plots
     std::string title = m_detector->name() + " Cluster size;cluster size;events";
     clusterSize = new TH1F("clusterSize", title.c_str(), 100, 0, 100);
-    title = m_detector->name() + " Cluster seed;cluster seed;events";
-    clusterSeed = new TH1F("clusterSeed", title.c_str(), 256, 0, 256);
+    title = m_detector->name() + " Cluster seed charge;cluster seed charge;events";
+    clusterSeedCharge = new TH1F("clusterSeedCharge", title.c_str(), 256, 0, 256);
     title = m_detector->name() + " Cluster Width - Rows;cluster width [rows];events";
     clusterWidthRow = new TH1F("clusterWidthRow", title.c_str(), 25, 0, 25);
     title = m_detector->name() + " Cluster Width - Columns;cluster width [columns];events";
@@ -109,7 +109,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Fill cluster histograms
         clusterSize->Fill(static_cast<double>(cluster->size()));
-        clusterSeed->Fill(seedPixel->charge());
+        clusterSeedCharge->Fill(seedPixel->charge());
         clusterWidthRow->Fill(cluster->rowWidth());
         clusterWidthColumn->Fill(cluster->columnWidth());
         clusterCharge->Fill(cluster->charge());
