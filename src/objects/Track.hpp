@@ -37,6 +37,9 @@ namespace corryvreckan {
         // Fit the track (linear regression)
         void fit();
 
+        // Print an ASCII representation of the Track to the given stream
+        void print(std::ostream& out) const override;
+
         // Retrieve track parameters
         double chi2() const { return m_chi2; }
         double chi2ndof() const { return m_chi2ndof; }

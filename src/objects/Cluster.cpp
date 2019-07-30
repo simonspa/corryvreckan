@@ -45,3 +45,9 @@ Pixel* Cluster::getSeedPixel() {
     }
     return seed;
 }
+
+void Cluster::print(std::ostream& out) const {
+    out << "Cluster " << this->m_local.x() << ", " << this->m_local.y() << ", " << this->m_global.x() << ", "
+        << this->m_global.y() << ", " << this->m_global.x() << ", " << this->m_charge << ", " << this->m_split << ", "
+        << this->m_pixels.size() << ", " << this->m_columnWidth << ", " << this->m_rowWidth << ", " << this->timestamp();
+}
