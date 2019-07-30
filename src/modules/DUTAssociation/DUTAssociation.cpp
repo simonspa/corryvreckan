@@ -27,16 +27,10 @@ void DUTAssociation::initialise() {
         new TH1D("hX1X2_3px", "hX1X2_3px; xdistance(cluster) - xdistance(closest pixel) [um]; # events", 2000, -1000, 1000);
     hY1Y2_3px =
         new TH1D("hY1Y2_3px", "hY1Y2_3px; ydistance(cluster) - ydistance(closest pixel) [um]; # events", 2000, -1000, 1000);
-}
 
-void DUTAssociation::initialise() {
-  LOG(DEBUG) << "Booking histograms for detector " << m_detector->name();
-
-
-  // Nr of associated clusters per track
-  std::string title = m_detector->name() + ": number of associated clusters per track;associated clusters;events";
-  hNoAssocCls = new TH1F("no_assoc_cls", title.c_str(), 10, 0, 10);
-  title = m_detector->name() + ": number of clusters discarded by cut;cut;events";
+    // Nr of associated clusters per track
+    std::string title = m_detector->name() + ": number of associated clusters per track;associated clusters;events";
+    hNoAssocCls = new TH1F("no_assoc_cls", title.c_str(), 10, 0, 10);
 }
 
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
@@ -58,7 +52,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
     // Loop over all tracks
     for(auto& track : (*tracks)) {
         assoc_cls_per_track = 0;
-        double min_distance = 99999;
+        double min_distance = 99999.0;
 
         // Loop over all DUT clusters
         for(auto& cluster : (*clusters)) {
@@ -107,6 +101,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             // Check if the cluster is close in space (either use cluster centre of closest pixel to track)
             auto xdistance = (useClusterCentre ? xdistance_centre : xdistance_nearest);
             auto ydistance = (useClusterCentre ? ydistance_centre : ydistance_nearest);
+            auto distance = sqrt(xdistance*xdistance + ydistance*ydistance);
             if(std::abs(xdistance) > spatialCut.x() || std::abs(ydistance) > spatialCut.y()) {
                 LOG(DEBUG) << "Discarding DUT cluster with distance (" << Units::display(std::abs(xdistance), {"um", "mm"})
                            << "," << Units::display(std::abs(ydistance), {"um", "mm"}) << ")";
@@ -127,7 +122,6 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             assoc_cluster_counter++;
 
             // check if cluster is closest to track
-            LOG(DEBUG) << "Distance: " << distance;
             if(distance < min_distance){
               min_distance = distance;
               track->setClosestCluster(cluster);

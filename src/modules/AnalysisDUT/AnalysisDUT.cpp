@@ -279,7 +279,6 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
         if(!m_detector->hasIntercept(track, 0.5)) {
             LOG(DEBUG) << " - track outside DUT area";
-            if(track->hasClosestCluster())
             continue;
         }
 
@@ -291,7 +290,6 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         // Check that it doesn't go through/near a masked pixel
         if(m_detector->hitMasked(track, 1.)) {
             LOG(DEBUG) << " - track close to masked pixel";
-            if(track->hasClosestCluster())
             continue;
         }
 
@@ -347,14 +345,12 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
                 if(track->hasClosestCluster()){
                   if(track->getClosestCluster() != cluster){
-                    hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
                     continue;
                   }
                 }else{
                   hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
-                  continue;
+                  break;
                 }
-
                 /*
                 if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) == associated_clusters.end()) {
                     LOG(DEBUG) << "No associated cluster found";
@@ -362,8 +358,6 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                     continue;
                 }
                 */
-
-
                 LOG(DEBUG) << "Found associated cluster";
                 noFoundClusters++;
                 assoc_cluster_counter++;
@@ -472,8 +466,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         if(is_within_roi) {
             hPixelEfficiencyMap->Fill(xmod, ymod, has_associated_cluster);
         }
-        LOG(DEBUG) << "No of associated clusters found for current track: " << noFoundClusters;
         LOG(DEBUG) << "Total number of assoc. clusters: for current track: " << noTotalAssocClusters;
+        LOG(DEBUG) << "No of associated clusters for current track with cuts applied: " << noFoundClusters;
     }
     // Return value telling analysis to keep running
     return StatusCode::Success;
