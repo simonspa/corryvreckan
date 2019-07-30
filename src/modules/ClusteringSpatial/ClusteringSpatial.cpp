@@ -145,15 +145,13 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         // Finalise the cluster and save it
         calculateClusterCentre(cluster);
 
-        // Get seed pixel
-        auto seedPixel = cluster->getSeedPixel();
-
         // Fill cluster histograms
         clusterSize->Fill(static_cast<double>(cluster->size()));
-        clusterSeedCharge->Fill(seedPixel->charge());
+
         clusterWidthRow->Fill(cluster->rowWidth());
         clusterWidthColumn->Fill(cluster->columnWidth());
         clusterCharge->Fill(cluster->charge() * 1e-3); //  1e-3 because unit is [ke]
+        clusterSeedCharge->Fill(cluster->getSeedPixel()->charge() * 1e-3);
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
         clusterPositionLocal->Fill(cluster->local().x(), cluster->local().y());
         clusterTimes->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "ns")));
