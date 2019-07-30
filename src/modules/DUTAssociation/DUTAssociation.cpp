@@ -15,10 +15,9 @@ void DUTAssociation::initialise() {
 
   // Cut flow histogram
   std::string title = m_detector->name() + ": number of clusters discarded by cuts;cut type;events";
-  hCutHisto = new TH1F("hCutHisto", title.c_str(), 3, 1, 4);
+  hCutHisto = new TH1F("hCutHisto", title.c_str(), 2, 1, 3);
   hCutHisto->GetXaxis()->SetBinLabel(1,"Spatial");
   hCutHisto->GetXaxis()->SetBinLabel(2,"Timing");
-  hCutHisto->GetXaxis()->SetBinLabel(3,"ToT");
 }
 
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
