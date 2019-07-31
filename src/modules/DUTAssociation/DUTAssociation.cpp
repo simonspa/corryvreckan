@@ -101,7 +101,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             // Check if the cluster is close in space (either use cluster centre of closest pixel to track)
             auto xdistance = (useClusterCentre ? xdistance_centre : xdistance_nearest);
             auto ydistance = (useClusterCentre ? ydistance_centre : ydistance_nearest);
-            auto distance = sqrt(xdistance*xdistance + ydistance*ydistance);
+            auto distance = sqrt(xdistance * xdistance + ydistance * ydistance);
             if(std::abs(xdistance) > spatialCut.x() || std::abs(ydistance) > spatialCut.y()) {
                 LOG(DEBUG) << "Discarding DUT cluster with distance (" << Units::display(std::abs(xdistance), {"um", "mm"})
                            << "," << Units::display(std::abs(ydistance), {"um", "mm"}) << ")";
@@ -122,22 +122,22 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             assoc_cluster_counter++;
 
             // check if cluster is closest to track
-            if(distance < min_distance){
-              min_distance = distance;
-              track->setClosestCluster(cluster);
+            if(distance < min_distance) {
+                min_distance = distance;
+                track->setClosestCluster(cluster);
             }
         }
         hNoAssocCls->Fill(assoc_cls_per_track);
-        if(assoc_cls_per_track > 0){
-          track_w_assoc_cls++;
+        if(assoc_cls_per_track > 0) {
+            track_w_assoc_cls++;
         }
 
         // Get the closest associated cluster: //DELETE
         Cluster* closestCluster = track->getClosestCluster();
-        if(!track->hasClosestCluster()){
-          LOG(DEBUG) << "Closest cluster is nullpntr";
-        }else{
-          LOG(DEBUG) << "X position of closest cluster: " << closestCluster->global().x();
+        if(!track->hasClosestCluster()) {
+            LOG(DEBUG) << "Closest cluster is nullpntr";
+        } else {
+            LOG(DEBUG) << "X position of closest cluster: " << closestCluster->global().x();
         }
     }
 
