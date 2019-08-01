@@ -34,6 +34,20 @@ export EUDAQ2PATH=/path/to/eudaq2
 ```
 when running CMake to find the library to link against and headers to include.
 
+It is recommended to only build the necessary libraries of EUDAQ2 to avoid linking against unnecessary third-party libraries such as Qt5.
+This can be achieved e.g. by using the following CMake configuration for EUDAQ2:
+
+```bash
+$ cmake -DEUDAQ_BUILD_EXECUTABLE=OFF -DEUDAQ_BUILD_GUI=OFF ..
+```
+
+It should be noted that individual EUDAQ2 modules should be enabled for the build, depending on the data to be processed with Corryvreckan.
+To e.g. allow decoding of Caribou data, the respective EUDAQ2 module has to be built using
+
+```bash
+$ cmake -DUSER_CARIBOU_BUILD=ON ..
+```
+
 ### Contract between EUDAQ Decoder and EventLoader
 
 The decoder promises to
