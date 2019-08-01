@@ -11,6 +11,7 @@ AnalysisDUT::AnalysisDUT(Configuration config, std::shared_ptr<Detector> detecto
 
     m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
     chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
+    useClosestCluster = m_config.get<bool>("use_closest_cluster", true);
 }
 
 void AnalysisDUT::initialise() {
@@ -319,13 +320,11 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         for(auto assoc_cluster : track->associatedClusters()) {
             LOG(DEBUG) << " - Looking at next associated DUT cluster";
 
-            if(track->hasClosestCluster()) {
+            // if closest cluster should be used continue if current associated cluster is not the closest one
+            if(useClosestCluster) {
                 if(track->getClosestCluster() != assoc_cluster) {
                     continue;
                 }
-            } else {
-                LOG(DEBUG) << "No closest cluster set.";
-                break;
             }
 
             // Check distance between track and cluster
