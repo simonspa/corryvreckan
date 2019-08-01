@@ -30,14 +30,23 @@ namespace corryvreckan {
         // Calculate the 2D distance^2 between the fitted track and a cluster
         double distance2(Cluster* cluster) const;
 
-        // Set associated cluster with smallest distance to track
+        /**
+         * @brief Set associated cluster with smallest distance to track
+         * @param Pointer to Cluster cluster which has smallest distance to track
+         */
         void setClosestCluster(Cluster* cluster);
 
-        // Get associated cluster with smallest distance to track
-        Cluster* getClosestCluster();
+        /**
+         * @brief Get associated cluster with smallest distance to track
+         * @return Pointer to closest cluster to the track if set, nullptr otherwise
+         */
+        Cluster* getClosestCluster() const;
 
-        // Check if closest cluster is already set
-        bool hasClosestCluster();
+        /**
+         * @brief Check if track has a closest cluster assigned to it
+         * @return True if a closest cluster is set
+         */
+        bool hasClosestCluster() const;
 
         // Minimisation operator used by Minuit. Minuit passes the current iteration of the parameters and checks if the chi2
         // is better or worse
@@ -84,8 +93,7 @@ namespace corryvreckan {
         // Member variables
         Clusters m_trackClusters;
         Clusters m_associatedClusters;
-        Cluster* closestCluster;
-        bool closestClusterSet = false;
+        Cluster* closestCluster{nullptr};
         double m_chi2;
         double m_ndof;
         double m_chi2ndof;

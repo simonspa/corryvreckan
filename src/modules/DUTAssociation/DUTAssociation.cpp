@@ -131,14 +131,6 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
         if(assoc_cls_per_track > 0) {
             track_w_assoc_cls++;
         }
-
-        // Get the closest associated cluster: //DELETE
-        Cluster* closestCluster = track->getClosestCluster();
-        if(!track->hasClosestCluster()) {
-            LOG(DEBUG) << "Closest cluster is nullpntr";
-        } else {
-            LOG(DEBUG) << "X position of closest cluster: " << closestCluster->global().x();
-        }
     }
 
     // Return value telling analysis to keep running

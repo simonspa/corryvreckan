@@ -355,7 +355,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             // Cluster charge normalized to path length in sensor:
             double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
             // FIXME: what does this mean? To my understanding we have the correct charge here already...
-            auto cluster_charge =  assoc_cluster->charge();
+            auto cluster_charge = assoc_cluster->charge();
             auto normalized_charge = cluster_charge * norm;
 
             // clusterChargeAssoc->Fill(normalized_charge);
@@ -395,14 +395,14 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             residualsTimeVsTime->Fill(tdistance, track->timestamp());
             residualsTimeVsSignal->Fill(tdistance, cluster_charge);
 
-                clusterSizeAssoc->Fill(static_cast<double>(assoc_cluster->size()));
-                clusterSizeAssocNorm->Fill(static_cast<double>(assoc_cluster->size()));
-                clusterWidthRowAssoc->Fill(assoc_cluster->rowWidth());
-                clusterWidthColAssoc->Fill(assoc_cluster->columnWidth());
+            clusterSizeAssoc->Fill(static_cast<double>(assoc_cluster->size()));
+            clusterSizeAssocNorm->Fill(static_cast<double>(assoc_cluster->size()));
+            clusterWidthRowAssoc->Fill(assoc_cluster->rowWidth());
+            clusterWidthColAssoc->Fill(assoc_cluster->columnWidth());
 
             // Fill in-pixel plots: (all as function of track position within pixel cell)
             if(is_within_roi) {
-                qvsxmym->Fill(xmod, ymod, cluster_charge);            // cluster charge profile
+                qvsxmym->Fill(xmod, ymod, cluster_charge);                     // cluster charge profile
                 qMoyalvsxmym->Fill(xmod, ymod, exp(-normalized_charge / 3.5)); // norm. cluster charge profile
 
                 // mean charge of cluster seed
@@ -426,8 +426,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             }
         }
 
-            hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
-            hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
+        hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
+        hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
 
         // For pixels, only look at the ROI:
         if(is_within_roi) {
