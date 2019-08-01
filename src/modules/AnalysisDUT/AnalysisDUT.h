@@ -71,7 +71,6 @@ namespace corryvreckan {
         double m_timeCutFrameEdge;
         double chi2ndofCut;
         bool useClosestCluster;
-        int assoc_cluster_counter = 0;
     };
 } // namespace corryvreckan
 
