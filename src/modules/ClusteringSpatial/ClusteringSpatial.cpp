@@ -21,8 +21,8 @@ void ClusteringSpatial::initialise() {
     clusterWidthRow = new TH1F("clusterWidthRow", title.c_str(), 25, 0, 25);
     title = m_detector->name() + " Cluster Width - Columns;cluster width [columns];events";
     clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, 0, 100);
-    title = m_detector->name() + " Cluster Charge;cluster charge [ke];events";
-    clusterCharge = new TH1F("clusterCharge", title.c_str(), , 5000, 0, 50000);
+    title = m_detector->name() + " Cluster Charge;cluster charge [e];events";
+    clusterCharge = new TH1F("clusterCharge", title.c_str(), 5000, 0, 50000);
     title = m_detector->name() + " Cluster Position (Global);x [mm];y [mm];events";
     clusterPositionGlobal = new TH2F("clusterPositionGlobal",
                                      title.c_str(),
