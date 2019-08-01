@@ -15,14 +15,14 @@ void ClusteringSpatial::initialise() {
     // Cluster plots
     std::string title = m_detector->name() + " Cluster size;cluster size;events";
     clusterSize = new TH1F("clusterSize", title.c_str(), 100, 0, 100);
-    title = m_detector->name() + " Cluster seed charge;cluster seed charge;events";
+    title = m_detector->name() + " Cluster seed charge;cluster seed charge [e];events";
     clusterSeedCharge = new TH1F("clusterSeedCharge", title.c_str(), 256, 0, 256);
     title = m_detector->name() + " Cluster Width - Rows;cluster width [rows];events";
     clusterWidthRow = new TH1F("clusterWidthRow", title.c_str(), 25, 0, 25);
     title = m_detector->name() + " Cluster Width - Columns;cluster width [columns];events";
     clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, 0, 100);
     title = m_detector->name() + " Cluster Charge;cluster charge [ke];events";
-    clusterCharge = new TH1F("clusterCharge", title.c_str(), 300, 0, 300);
+    clusterCharge = new TH1F("clusterCharge", title.c_str(), , 5000, 0, 50000);
     title = m_detector->name() + " Cluster Position (Global);x [mm];y [mm];events";
     clusterPositionGlobal = new TH2F("clusterPositionGlobal",
                                      title.c_str(),
@@ -150,8 +150,8 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
         clusterWidthRow->Fill(cluster->rowWidth());
         clusterWidthColumn->Fill(cluster->columnWidth());
-        clusterCharge->Fill(cluster->charge() * 1e-3); //  1e-3 because unit is [ke]
-        clusterSeedCharge->Fill(cluster->getSeedPixel()->charge() * 1e-3);
+        clusterCharge->Fill(cluster->charge());
+        clusterSeedCharge->Fill(cluster->getSeedPixel()->charge());
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
         clusterPositionLocal->Fill(cluster->local().x(), cluster->local().y());
         clusterTimes->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "ns")));
