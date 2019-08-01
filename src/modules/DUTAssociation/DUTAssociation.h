@@ -32,6 +32,7 @@ namespace corryvreckan {
 
         TH1F* hCutHisto;
 
+        int num_cluster = 0;
         int assoc_cluster_counter = 0;
     };
 } // namespace corryvreckan

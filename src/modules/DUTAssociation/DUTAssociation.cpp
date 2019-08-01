@@ -11,11 +11,11 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
 }
 
 void DUTAssociation::initialise() {
-  // Cut flow histogram
-  std::string title = m_detector->name() + ": number of tracks discarded by different cuts;cut type;events";
-  hCutHisto = new TH1F("hCutHisto", title.c_str(), 2, 1, 3);
-  hCutHisto->GetXaxis()->SetBinLabel(1,"Spatial");
-  hCutHisto->GetXaxis()->SetBinLabel(2,"Timing");
+    // Cut flow histogram
+    std::string title = m_detector->name() + ": number of tracks discarded by different cuts;cut type;clusters";
+    hCutHisto = new TH1F("hCutHisto", title.c_str(), 2, 1, 3);
+    hCutHisto->GetXaxis()->SetBinLabel(1, "Spatial");
+    hCutHisto->GetXaxis()->SetBinLabel(2, "Timing");
 }
 
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
@@ -46,6 +46,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
                 LOG(DEBUG) << "Discarding DUT cluster with distance (" << Units::display(abs(xdistance), {"um", "mm"}) << ","
                            << Units::display(abs(ydistance), {"um", "mm"}) << ")";
                 hCutHisto->Fill(1);
+                num_cluster++;
                 continue;
             }
 
@@ -54,6 +55,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
                 LOG(DEBUG) << "Discarding DUT cluster with time difference "
                            << Units::display(std::abs(cluster->timestamp() - track->timestamp()), {"ms", "s"});
                 hCutHisto->Fill(2);
+                num_cluster++;
                 continue;
             }
 
@@ -61,6 +63,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
                        << Units::display(abs(ydistance), {"um", "mm"}) << ")";
             track->addAssociatedCluster(cluster);
             assoc_cluster_counter++;
+            num_cluster++;
         }
     }
 
@@ -69,6 +72,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 }
 
 void DUTAssociation::finalise() {
+    hCutHisto->Scale(1 / double(num_cluster));
     LOG(INFO) << "In total, " << assoc_cluster_counter << " clusters are associated to tracks.";
     return;
 }

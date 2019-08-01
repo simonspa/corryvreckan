@@ -105,12 +105,12 @@ void AnalysisDUT::initialise() {
     auto mod_axes = "x_{track} mod " + std::to_string(pitch_x) + "#mum;y_{track} mod " + std::to_string(pitch_y) + "#mum;";
 
     // cut flow histogram
-    std::string title = m_detector->name() + ": number of tracks discarded by different cuts;cut type;events";
+    std::string title = m_detector->name() + ": number of tracks discarded by different cuts;cut type;tracks";
     hCutHisto = new TH1F("hCutHisto", title.c_str(), 4, 1, 5);
-    hCutHisto->GetXaxis()->SetBinLabel(1,"High Chi2");
-    hCutHisto->GetXaxis()->SetBinLabel(2,"Outside DUT area");
-    hCutHisto->GetXaxis()->SetBinLabel(3,"Close to masked pixel");
-    hCutHisto->GetXaxis()->SetBinLabel(4,"Close to frame begin/end");
+    hCutHisto->GetXaxis()->SetBinLabel(1, "High Chi2");
+    hCutHisto->GetXaxis()->SetBinLabel(2, "Outside DUT area");
+    hCutHisto->GetXaxis()->SetBinLabel(3, "Close to masked pixel");
+    hCutHisto->GetXaxis()->SetBinLabel(4, "Close to frame begin/end");
 
     title = "DUT x resolution;" + mod_axes + "MAD(#Deltax) [#mum]";
     rmsxvsxmym = new TProfile2D(
@@ -274,6 +274,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         if(track->chi2ndof() > chi2ndofCut) {
             LOG(DEBUG) << " - track discarded due to Chi2/ndof";
             hCutHisto->Fill(1);
+            num_tracks++;
             continue;
         }
 
@@ -284,6 +285,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         if(!m_detector->hasIntercept(track, 0.5)) {
             LOG(DEBUG) << " - track outside DUT area";
             hCutHisto->Fill(2);
+            num_tracks++;
             continue;
         }
 
@@ -296,6 +298,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         if(m_detector->hitMasked(track, 1.)) {
             LOG(DEBUG) << " - track close to masked pixel";
             hCutHisto->Fill(3);
+            num_tracks++;
             continue;
         }
 
@@ -309,6 +312,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                        << Units::display(fabs(track->timestamp() - event->end()), {"us", "ns"}) << " at "
                        << Units::display(track->timestamp(), {"us"});
             hCutHisto->Fill(4);
+            num_tracks++;
             continue;
         } else if(fabs(track->timestamp() - event->start()) < m_timeCutFrameEdge) {
             // Early edge - eventStart points to the beginning of the frame
@@ -316,6 +320,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                        << Units::display(fabs(track->timestamp() - event->start()), {"us", "ns"}) << " at "
                        << Units::display(track->timestamp(), {"us"});
             hCutHisto->Fill(4);
+            num_tracks++;
             continue;
         }
 
@@ -460,11 +465,13 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         if(is_within_roi) {
             hPixelEfficiencyMap->Fill(xmod, ymod, has_associated_cluster);
         }
+        num_tracks++;
     }
     // Return value telling analysis to keep running
     return StatusCode::Success;
 }
 
 void AnalysisDUT::finalise() {
+    hCutHisto->Scale(1 / double(num_tracks));
     clusterSizeAssocNorm->Scale(1 / clusterSizeAssoc->Integral());
 }

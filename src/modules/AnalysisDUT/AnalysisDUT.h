@@ -70,6 +70,7 @@ namespace corryvreckan {
         // Member variables
         double m_timeCutFrameEdge;
         double chi2ndofCut;
+        int num_tracks;
     };
 } // namespace corryvreckan
 
