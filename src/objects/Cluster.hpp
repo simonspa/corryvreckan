@@ -82,7 +82,7 @@ namespace corryvreckan {
         std::map<int, bool> m_columnHits;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Cluster, 10)
+        ClassDefOverride(Cluster, 10)
     };
 
     // Vector type declaration
