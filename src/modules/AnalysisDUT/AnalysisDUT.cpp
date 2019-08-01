@@ -98,16 +98,17 @@ void AnalysisDUT::initialise() {
     clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated;cluster size; # entries", 30, 0, 30);
     clusterSizeAssocNorm = new TH1F(
         "clusterSizeAssociatedNormalized", "clusterSizeAssociatedNormalized;cluster size normalized;#entries", 30, 0, 30);
-
-    // cut flow histogram
-    std::string title = m_detector->name() + ": number of clusters discarded by cut;cut;events";
+    clusterWidthRowAssoc =
+        new TH1F("clusterWidthRowAssociated", "clusterWidthRowAssociated;cluster size row; # entries", 30, 0, 30);
+    clusterWidthColAssoc =
+        new TH1F("clusterWidthColAssociated", "clusterWidthColAssociated;cluster size col; # entries", 30, 0, 30);
 
     // In-pixel studies:
     auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
     auto pitch_y = static_cast<double>(Units::convert(m_detector->pitch().Y(), "um"));
     auto mod_axes = "x_{track} mod " + std::to_string(pitch_x) + "#mum;y_{track} mod " + std::to_string(pitch_y) + "#mum;";
 
-    title = "DUT x resolution;" + mod_axes + "MAD(#Deltax) [#mum]";
+    std::string title = "DUT x resolution;" + mod_axes + "MAD(#Deltax) [#mum]";
     rmsxvsxmym = new TProfile2D(
         "rmsxvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
 
@@ -260,6 +261,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
     // Loop over all tracks
     for(auto& track : (*tracks)) {
         // Flags to select clusters and tracks
+        bool has_associated_cluster = false;
         bool is_within_roi = true;
 
         LOG(DEBUG) << "Looking at next track";
@@ -394,8 +396,10 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             residualsTimeVsTime->Fill(tdistance, track->timestamp());
             residualsTimeVsSignal->Fill(tdistance, cluster_charge);
 
-            clusterSizeAssoc->Fill(static_cast<double>(assoc_cluster->size()));
-            clusterSizeAssocNorm->Fill(static_cast<double>(assoc_cluster->size()));
+                clusterSizeAssoc->Fill(static_cast<double>(cluster->size()));
+                clusterSizeAssocNorm->Fill(static_cast<double>(cluster->size()));
+                clusterWidthRowAssoc->Fill(cluster->rowWidth());
+                clusterWidthColAssoc->Fill(cluster->columnWidth());
 
             // Fill in-pixel plots: (all as function of track position within pixel cell)
             if(is_within_roi) {
@@ -421,11 +425,15 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 rmsyvsxmym->Fill(xmod, ymod, yabsdistance);
                 rmsxyvsxmym->Fill(xmod, ymod, fabs(sqrt(xdistance * xdistance + ydistance * ydistance)));
             }
+        }
 
             track->addAssociatedCluster(assoc_cluster);
             hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
             hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
 
+        // For pixels, only look at the ROI:
+        if(is_within_roi) {
+            hPixelEfficiencyMap->Fill(xmod, ymod, has_associated_cluster);
         }
     }
     // Return value telling analysis to keep running
@@ -433,6 +441,5 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 }
 
 void AnalysisDUT::finalise() {
-    //  LOG(INFO) << "Total number of associated clusters: " << assoc_cluster_counter;
     clusterSizeAssocNorm->Scale(1 / clusterSizeAssoc->Integral());
 }
