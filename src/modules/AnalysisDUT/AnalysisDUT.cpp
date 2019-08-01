@@ -396,10 +396,10 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             residualsTimeVsTime->Fill(tdistance, track->timestamp());
             residualsTimeVsSignal->Fill(tdistance, cluster_charge);
 
-                clusterSizeAssoc->Fill(static_cast<double>(cluster->size()));
-                clusterSizeAssocNorm->Fill(static_cast<double>(cluster->size()));
-                clusterWidthRowAssoc->Fill(cluster->rowWidth());
-                clusterWidthColAssoc->Fill(cluster->columnWidth());
+                clusterSizeAssoc->Fill(static_cast<double>(assoc_cluster->size()));
+                clusterSizeAssocNorm->Fill(static_cast<double>(assoc_cluster->size()));
+                clusterWidthRowAssoc->Fill(assoc_cluster->rowWidth());
+                clusterWidthColAssoc->Fill(assoc_cluster->columnWidth());
 
             // Fill in-pixel plots: (all as function of track position within pixel cell)
             if(is_within_roi) {
@@ -427,7 +427,6 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             }
         }
 
-            track->addAssociatedCluster(assoc_cluster);
             hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
             hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
 
