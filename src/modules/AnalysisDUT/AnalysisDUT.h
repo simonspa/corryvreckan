@@ -43,6 +43,8 @@ namespace corryvreckan {
         TH1F* clusterChargeAssoc;
         TH1F* clusterSizeAssoc;
         TH1F* clusterSizeAssocNorm;
+        TH1F* clusterWidthRowAssoc;
+        TH1F* clusterWidthColAssoc;
 
         TH1F* hCutHisto;
 
