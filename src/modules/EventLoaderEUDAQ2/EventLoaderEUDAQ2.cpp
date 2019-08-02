@@ -145,7 +145,7 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_sorted_std_eve
     // sort chronologically in time:
     sort(sorted_events_.begin(),
          sorted_events_.end(),
-         [](const std::shared_ptr<eudaq::StandardEvent> a, std::shared_ptr<eudaq::StandardEvent> b) -> bool {
+         [](const std::shared_ptr<eudaq::StandardEvent> a, const std::shared_ptr<eudaq::StandardEvent> b) -> bool {
              return a->GetTimeBegin() < b->GetTimeBegin();
          });
 
