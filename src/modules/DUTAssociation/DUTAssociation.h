@@ -31,6 +31,9 @@ namespace corryvreckan {
         ROOT::Math::XYVector spatialCut;
         bool useClusterCentre;
 
+        TH1F* hCutHisto;
+
+        int num_cluster = 0;
         int assoc_cluster_counter = 0;
 
         TH1D* hX1X2;
