@@ -10,7 +10,6 @@ AnalysisDUT::AnalysisDUT(Configuration config, std::shared_ptr<Detector> detecto
     : Module(std::move(config), detector), m_detector(detector) {
 
     m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
-    spatialCut = m_config.get<double>("spatial_cut", Units::get<double>(50, "um"));
     chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
 }
 
@@ -62,9 +61,9 @@ void AnalysisDUT::initialise() {
                           m_detector->nPixels().Y(),
                           0,
                           m_detector->nPixels().Y());
-    hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc", "pixelRawValueAssoc", 32, 0, 31);
+    hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc", "pixelRawValueAssoc;pixel raw value;#entries", 1024, 0, 1024);
     hPixelRawValueMapAssoc = new TProfile2D("pixelRawValueMapAssoc",
-                                            "pixelRawValueMapAssoc",
+                                            "pixelRawValueMapAssoc;pixel raw values;# entries",
                                             m_detector->nPixels().X(),
                                             0,
                                             m_detector->nPixels().X(),
@@ -74,25 +73,50 @@ void AnalysisDUT::initialise() {
                                             0,
                                             255);
 
-    associatedTracksVersusTime = new TH1F("associatedTracksVersusTime", "associatedTracksVersusTime", 300000, 0, 300);
-    residualsX = new TH1F("residualsX", "residualsX", 800, -0.1, 0.1);
-    residualsY = new TH1F("residualsY", "residualsY", 800, -0.1, 0.1);
+    associatedTracksVersusTime =
+        new TH1F("associatedTracksVersusTime", "associatedTracksVersusTime;time [s];# associated tracks", 300000, 0, 300);
+    residualsX = new TH1F("residualsX", "residualsX;x_{track}-x_{hit}  [mm];# entries", 800, -0.1, 0.1);
+    residualsY = new TH1F("residualsY", "residualsY;y_{track}-y_{hit}  [mm];# entries", 800, -0.1, 0.1);
+    residualsPos = new TH1F("residualsPos", "residualsPos;|pos_{track}-pos_{hit}|  [mm];# entries", 800, -0.1, 0.1);
+    residualsPosVsresidualsTime =
+        new TH2F("residualsPosVsresidualsTime",
+                 "residualsPosVsresidualsTime;time_{track}-time_{hit} [ns];|pos_{track}-pos_{hit}| [mm];# entries",
+                 20000,
+                 -1000,
+                 +1000,
+                 800,
+                 0.,
+                 0.2);
 
-    residualsX1pix = new TH1F("residualsX1pix", "residualsX1pix", 400, -0.2, 0.2);
-    residualsY1pix = new TH1F("residualsY1pix", "residualsY1pix", 400, -0.2, 0.2);
-    residualsX2pix = new TH1F("residualsX2pix", "residualsX2pix", 400, -0.2, 0.2);
-    residualsY2pix = new TH1F("residualsY2pix", "residualsY2pix", 400, -0.2, 0.2);
+    residualsX1pix = new TH1F("residualsX1pix", "residualsX1pix;x_{track}-x_{hit} [mm];# entries", 400, -0.2, 0.2);
+    residualsY1pix = new TH1F("residualsY1pix", "residualsY1pix;y_{track}-y_{hit} [mm];# entries", 400, -0.2, 0.2);
+    residualsX2pix = new TH1F("residualsX2pix", "residualsX2pix;x_{track}-x_{hit} [mm];# entries", 400, -0.2, 0.2);
+    residualsY2pix = new TH1F("residualsY2pix", "residualsY2pix;y_{track}-y_{hit} [mm];# entries", 400, -0.2, 0.2);
 
-    clusterChargeAssoc = new TH1F("clusterChargeAssociated", "clusterChargeAssociated [e]", 10000, 0, 10000);
-    clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated", 30, 0, 30);
-    clusterSizeAssocNorm = new TH1F("clusterSizeAssociatedNormalized", "clusterSizeAssociatedNormalized", 30, 0, 30);
+    clusterChargeAssoc =
+        new TH1F("clusterChargeAssociated", "clusterChargeAssociated;cluster charge [e];# entries", 10000, 0, 10000);
+    clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated;cluster size; # entries", 30, 0, 30);
+    clusterSizeAssocNorm = new TH1F(
+        "clusterSizeAssociatedNormalized", "clusterSizeAssociatedNormalized;cluster size normalized;#entries", 30, 0, 30);
+    clusterWidthRowAssoc =
+        new TH1F("clusterWidthRowAssociated", "clusterWidthRowAssociated;cluster size row; # entries", 30, 0, 30);
+    clusterWidthColAssoc =
+        new TH1F("clusterWidthColAssociated", "clusterWidthColAssociated;cluster size col; # entries", 30, 0, 30);
 
     // In-pixel studies:
     auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
     auto pitch_y = static_cast<double>(Units::convert(m_detector->pitch().Y(), "um"));
     auto mod_axes = "x_{track} mod " + std::to_string(pitch_x) + "#mum;y_{track} mod " + std::to_string(pitch_y) + "#mum;";
 
-    std::string title = "DUT x resolution;" + mod_axes + "MAD(#Deltax) [#mum]";
+    // cut flow histogram
+    std::string title = m_detector->name() + ": number of tracks discarded by different cuts;cut type;tracks";
+    hCutHisto = new TH1F("hCutHisto", title.c_str(), 4, 1, 5);
+    hCutHisto->GetXaxis()->SetBinLabel(1, "High Chi2");
+    hCutHisto->GetXaxis()->SetBinLabel(2, "Outside DUT area");
+    hCutHisto->GetXaxis()->SetBinLabel(3, "Close to masked pixel");
+    hCutHisto->GetXaxis()->SetBinLabel(4, "Close to frame begin/end");
+
+    title = "DUT x resolution;" + mod_axes + "MAD(#Deltax) [#mum]";
     rmsxvsxmym = new TProfile2D(
         "rmsxvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
 
@@ -138,7 +162,7 @@ void AnalysisDUT::initialise() {
 
     // Efficiency maps
     hPixelEfficiencyMap = new TProfile2D("hPixelEfficiencyMap",
-                                         "hPixelEfficiencyMap",
+                                         "hPixelEfficiencyMap;column;row;efficiency",
                                          static_cast<int>(pitch_x),
                                          0,
                                          pitch_x,
@@ -148,7 +172,7 @@ void AnalysisDUT::initialise() {
                                          0,
                                          1);
     hChipEfficiencyMap = new TProfile2D("hChipEfficiencyMap",
-                                        "hChipEfficiencyMap",
+                                        "hChipEfficiencyMap;column;row;efficiency",
                                         m_detector->nPixels().X(),
                                         0,
                                         m_detector->nPixels().X(),
@@ -158,7 +182,7 @@ void AnalysisDUT::initialise() {
                                         0,
                                         1);
     hGlobalEfficiencyMap = new TProfile2D("hGlobalEfficiencyMap",
-                                          "hGlobalEfficiencyMap",
+                                          "hGlobalEfficiencyMap;column;row;efficiency",
                                           300,
                                           -1.5 * m_detector->size().X(),
                                           1.5 * m_detector->size().X(),
@@ -168,33 +192,69 @@ void AnalysisDUT::initialise() {
                                           0,
                                           1);
 
-    residualsTime = new TH1F("residualsTime", "residualsTime", 20000, -1000, +1000);
+    residualsTime = new TH1F("residualsTime", "residualsTime;time_{track}-time_{hit} [ns];#entries", 20000, -1000, +1000);
 
-    hTrackCorrelationX = new TH1F("hTrackCorrelationX", "hTrackCorrelationX", 4000, -10., 10.);
-    hTrackCorrelationY = new TH1F("hTrackCorrelationY", "hTrackCorrelationY", 4000, -10., 10.);
-    hTrackCorrelationTime = new TH1F("hTrackCorrelationTime", "hTrackCorrelationTime", 2000000, -5000, 5000);
+    hTrackCorrelationX =
+        new TH1F("hTrackCorrelationX", "hTrackCorrelationX;x_{track}-x_{hit} [mm];# entries", 4000, -10., 10.);
+    hTrackCorrelationY =
+        new TH1F("hTrackCorrelationY", "hTrackCorrelationY;y_{track}-y_{hit} [mm];# entries", 4000, -10., 10.);
+    hTrackCorrelationPos =
+        new TH1F("hTrackCorrelationPos", "hTrackCorrelationPos;|pos_{track}-pos_{hit}| [mm];# entries", 2100, -1., 10.);
+    hTrackCorrelationTime = new TH1F(
+        "hTrackCorrelationTime", "hTrackCorrelationTime;time_{track}-time_{hit} [ns];# entries", 20000, -5000, 5000);
+    hTrackCorrelationPosVsCorrelationTime =
+        new TH2F("hTrackCorrelationPosVsCorrelationTime",
+                 "hTrackCorrelationPosVsCorrelationTime;time_{track}-time_{hit} [ns];|pos_{track}-pos_{hit}| [mm];# entries",
+                 20000,
+                 -5000,
+                 5000,
+                 2100,
+                 -1.,
+                 10.);
 
-    residualsTimeVsTime = new TH2F("residualsTimeVsTime", "residualsTimeVsTime", 20000, 0, 200, 1000, -1000, +1000);
-    residualsTimeVsSignal = new TH2F("residualsTimeVsSignal", "residualsTimeVsSignal", 20000, 0, 100000, 1000, -1000, +1000);
+    residualsTimeVsTime = new TH2F("residualsTimeVsTime",
+                                   "residualsTimeVsTime;time [ns];time_{track}-time_{hit} [mm];# entries",
+                                   20000,
+                                   0,
+                                   200,
+                                   1000,
+                                   -1000,
+                                   +1000);
+    residualsTimeVsSignal = new TH2F("residualsTimeVsSignal",
+                                     "residualsTimeVsSignal;cluster charge [e];time_{track}-time_{hit} [mm];# entries",
+                                     20000,
+                                     0,
+                                     100000,
+                                     1000,
+                                     -1000,
+                                     +1000);
 
     hAssociatedTracksGlobalPosition =
-        new TH2F("hAssociatedTracksGlobalPosition", "hAssociatedTracksGlobalPosition", 200, -10, 10, 200, -10, 10);
+        new TH2F("hAssociatedTracksGlobalPosition",
+                 "hAssociatedTracksGlobalPosition;global intercept x [mm];global intercept y [mm]",
+                 200,
+                 -10,
+                 10,
+                 200,
+                 -10,
+                 10);
     hAssociatedTracksLocalPosition = new TH2F("hAssociatedTracksLocalPosition",
-                                              "hAssociatedTracksLocalPosition",
+                                              "hAssociatedTracksLocalPosition;local intercept x [mm];local intercept y [mm]",
                                               m_detector->nPixels().X(),
                                               0,
                                               m_detector->nPixels().X(),
                                               m_detector->nPixels().Y(),
                                               0,
                                               m_detector->nPixels().Y());
-    hUnassociatedTracksGlobalPosition = new TH2F("hUnassociatedTracksGlobalPosition",
-                                                 "hUnassociatedTracksGlobalPosition; x / mm; y / mm",
-                                                 200,
-                                                 -10,
-                                                 10,
-                                                 200,
-                                                 -10,
-                                                 10);
+    hUnassociatedTracksGlobalPosition =
+        new TH2F("hUnassociatedTracksGlobalPosition",
+                 "hUnassociatedTracksGlobalPosition; global intercept x [mm]; global intercept y [mm]",
+                 200,
+                 -10,
+                 10,
+                 200,
+                 -10,
+                 10);
 }
 
 StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
@@ -217,6 +277,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         // Cut on the chi2/ndof
         if(track->chi2ndof() > chi2ndofCut) {
             LOG(DEBUG) << " - track discarded due to Chi2/ndof";
+            hCutHisto->Fill(1);
+            num_tracks++;
             continue;
         }
 
@@ -226,6 +288,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
         if(!m_detector->hasIntercept(track, 0.5)) {
             LOG(DEBUG) << " - track outside DUT area";
+            hCutHisto->Fill(2);
+            num_tracks++;
             continue;
         }
 
@@ -237,6 +301,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         // Check that it doesn't go through/near a masked pixel
         if(m_detector->hitMasked(track, 1.)) {
             LOG(DEBUG) << " - track close to masked pixel";
+            hCutHisto->Fill(3);
+            num_tracks++;
             continue;
         }
 
@@ -249,12 +315,16 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << " - track close to end of readout frame: "
                        << Units::display(fabs(track->timestamp() - event->end()), {"us", "ns"}) << " at "
                        << Units::display(track->timestamp(), {"us"});
+            hCutHisto->Fill(4);
+            num_tracks++;
             continue;
         } else if(fabs(track->timestamp() - event->start()) < m_timeCutFrameEdge) {
             // Early edge - eventStart points to the beginning of the frame
             LOG(DEBUG) << " - track close to start of readout frame: "
                        << Units::display(fabs(track->timestamp() - event->start()), {"us", "ns"}) << " at "
                        << Units::display(track->timestamp(), {"us"});
+            hCutHisto->Fill(4);
+            num_tracks++;
             continue;
         }
 
@@ -280,6 +350,12 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 hTrackCorrelationX->Fill(intercept.X() - cluster->global().x());
                 hTrackCorrelationY->Fill(intercept.Y() - cluster->global().y());
                 hTrackCorrelationTime->Fill(track->timestamp() - cluster->timestamp());
+
+                double posDiff = sqrt((intercept.X() - cluster->global().x()) * (intercept.X() - cluster->global().x()) +
+                                      (intercept.Y() - cluster->global().y()) * (intercept.Y() - cluster->global().y()));
+
+                hTrackCorrelationPos->Fill(posDiff);
+                hTrackCorrelationPosVsCorrelationTime->Fill(track->timestamp() - cluster->timestamp(), posDiff);
 
                 auto associated_clusters = track->associatedClusters();
                 if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) == associated_clusters.end()) {
@@ -329,6 +405,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 // Residuals
                 residualsX->Fill(xdistance);
                 residualsY->Fill(ydistance);
+                residualsPos->Fill(sqrt(xdistance * xdistance + ydistance * ydistance));
+                residualsPosVsresidualsTime->Fill(tdistance, sqrt(xdistance * xdistance + ydistance * ydistance));
 
                 if(cluster->size() == 1) {
                     residualsX1pix->Fill(xdistance);
@@ -346,6 +424,8 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
                 clusterSizeAssoc->Fill(static_cast<double>(cluster->size()));
                 clusterSizeAssocNorm->Fill(static_cast<double>(cluster->size()));
+                clusterWidthRowAssoc->Fill(cluster->rowWidth());
+                clusterWidthColAssoc->Fill(cluster->columnWidth());
 
                 // Fill in-pixel plots: (all as function of track position within pixel cell)
                 if(is_within_roi) {
@@ -391,11 +471,13 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         if(is_within_roi) {
             hPixelEfficiencyMap->Fill(xmod, ymod, has_associated_cluster);
         }
+        num_tracks++;
     }
     // Return value telling analysis to keep running
     return StatusCode::Success;
 }
 
 void AnalysisDUT::finalise() {
+    hCutHisto->Scale(1 / double(num_tracks));
     clusterSizeAssocNorm->Scale(1 / clusterSizeAssoc->Integral());
 }

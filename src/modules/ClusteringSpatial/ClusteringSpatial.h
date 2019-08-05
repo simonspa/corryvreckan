@@ -29,11 +29,15 @@ namespace corryvreckan {
 
         // Cluster histograms
         TH1F* clusterSize;
+        TH1F* clusterSeedCharge;
         TH1F* clusterWidthRow;
         TH1F* clusterWidthColumn;
         TH1F* clusterCharge;
         TH2F* clusterPositionGlobal;
         TH2F* clusterPositionLocal;
+        TH1F* clusterTimes;
+
+        bool useTriggerTimestamp;
     };
 } // namespace corryvreckan
 #endif // ClusteringSpatial_H

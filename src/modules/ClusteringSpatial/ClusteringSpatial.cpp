@@ -5,29 +5,24 @@ using namespace corryvreckan;
 using namespace std;
 
 ClusteringSpatial::ClusteringSpatial(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {}
+    : Module(std::move(config), detector), m_detector(detector) {
 
-/*
-
- This algorithm clusters the input data, at the moment only if the detector type
- is defined as Timepix1. The clustering is based on touching neighbours, and
- uses
- no timing information whatsoever. It is based on filling a map and checking
- neighbours in the neighbouring row and column positions.
-
-*/
+    useTriggerTimestamp = m_config.get<bool>("use_trigger_timestamp", false);
+}
 
 void ClusteringSpatial::initialise() {
 
     // Cluster plots
     std::string title = m_detector->name() + " Cluster size;cluster size;events";
     clusterSize = new TH1F("clusterSize", title.c_str(), 100, 0, 100);
+    title = m_detector->name() + " Cluster seed charge;cluster seed charge [e];events";
+    clusterSeedCharge = new TH1F("clusterSeedCharge", title.c_str(), 256, 0, 256);
     title = m_detector->name() + " Cluster Width - Rows;cluster width [rows];events";
     clusterWidthRow = new TH1F("clusterWidthRow", title.c_str(), 25, 0, 25);
     title = m_detector->name() + " Cluster Width - Columns;cluster width [columns];events";
     clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, 0, 100);
-    title = m_detector->name() + " Cluster Charge;cluster charge [ke];events";
-    clusterCharge = new TH1F("clusterCharge", title.c_str(), 300, 0, 300);
+    title = m_detector->name() + " Cluster Charge;cluster charge [e];events";
+    clusterCharge = new TH1F("clusterCharge", title.c_str(), 5000, 0, 50000);
     title = m_detector->name() + " Cluster Position (Global);x [mm];y [mm];events";
     clusterPositionGlobal = new TH2F("clusterPositionGlobal",
                                      title.c_str(),
@@ -38,7 +33,6 @@ void ClusteringSpatial::initialise() {
                                      -m_detector->size().Y() / 1.5,
                                      m_detector->size().Y() / 1.5);
     title = m_detector->name() + " Cluster Position (Local);x [px];y [px];events";
-
     clusterPositionLocal = new TH2F("clusterPositionLocal",
                                     title.c_str(),
                                     m_detector->nPixels().X(),
@@ -47,6 +41,9 @@ void ClusteringSpatial::initialise() {
                                     m_detector->nPixels().Y(),
                                     -m_detector->nPixels().Y() / 2.,
                                     m_detector->nPixels().Y() / 2.);
+
+    title = ";cluster timestamp [ns]; # events";
+    clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
 }
 
 StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
@@ -81,7 +78,24 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         // New pixel => new cluster
         Cluster* cluster = new Cluster();
         cluster->addPixel(pixel);
-        cluster->setTimestamp(pixel->timestamp());
+
+        if(useTriggerTimestamp) {
+            if(!clipboard->get_event()->triggerList().empty()) {
+                double trigger_ts = clipboard->get_event()->triggerList().begin()->second;
+                LOG(DEBUG) << "Using trigger timestamp " << Units::display(trigger_ts, "us") << " as cluster timestamp.";
+                cluster->setTimestamp(trigger_ts);
+            } else {
+                LOG(WARNING) << "No trigger available. Use pixel timestamp " << Units::display(pixel->timestamp(), "us")
+                             << " as cluster timestamp.";
+                cluster->setTimestamp(pixel->timestamp());
+            }
+        } else {
+            // assign pixel timestamp
+            LOG(DEBUG) << "Pixel has timestamp " << Units::display(pixel->timestamp(), "us")
+                       << ", set as cluster timestamp. ";
+            cluster->setTimestamp(pixel->timestamp());
+        }
+
         used[pixel] = true;
         addedPixel = true;
         // Somewhere to store found neighbours
@@ -133,11 +147,14 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Fill cluster histograms
         clusterSize->Fill(static_cast<double>(cluster->size()));
+
         clusterWidthRow->Fill(cluster->rowWidth());
         clusterWidthColumn->Fill(cluster->columnWidth());
-        clusterCharge->Fill(cluster->charge() * 1e-3); //  1e-3 because unit is [ke]
+        clusterCharge->Fill(cluster->charge());
+        clusterSeedCharge->Fill(cluster->getSeedPixel()->charge());
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
         clusterPositionLocal->Fill(cluster->local().x(), cluster->local().y());
+        clusterTimes->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "ns")));
         LOG(DEBUG) << "cluster local: " << cluster->local();
         deviceClusters->push_back(cluster);
     }
@@ -180,7 +197,8 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
     column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
     row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
 
-    LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
+    LOG(DEBUG) << "- cluster col, row: " << column << "," << row << " at time "
+               << Units::display(cluster->timestamp(), "us");
 
     // Create object with local cluster position
     PositionVector3D<Cartesian3D<double>> positionLocal(m_detector->pitch().X() * (column - m_detector->nPixels().X() / 2.),
