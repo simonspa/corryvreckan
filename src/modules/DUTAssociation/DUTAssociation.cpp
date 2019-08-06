@@ -124,8 +124,8 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
                 continue;
             }
 
-            LOG(DEBUG) << "Found associated cluster with distance (" << std::abs(xdistance) << "," << std::abs(ydistance)
-                       << ")";
+            LOG(DEBUG) << "Found associated cluster with distance (" << Units::display(abs(xdistance), {"um", "mm"}) << ","
+                      << Units::display(abs(ydistance), {"um", "mm"}) << ")";
             track->addAssociatedCluster(cluster);
             assoc_cls_per_track++;
             assoc_cluster_counter++;
