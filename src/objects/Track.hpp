@@ -101,7 +101,7 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint m_state;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Track, 4)
+        ClassDefOverride(Track, 5)
     };
 
     // Vector type declaration
