@@ -12,6 +12,11 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
 }
 
 void DUTAssociation::initialise() {
+    // Cut flow histogram
+    std::string title = m_detector->name() + ": number of tracks discarded by different cuts;cut type;clusters";
+    hCutHisto = new TH1F("hCutHisto", title.c_str(), 2, 1, 3);
+    hCutHisto->GetXaxis()->SetBinLabel(1, "Spatial");
+    hCutHisto->GetXaxis()->SetBinLabel(2, "Timing");
 
     hX1X2 = new TH1D("hX1X2", "hX1X2; xdistance(cluster) - xdistance(closest pixel) [um]; # events", 2000, -1000, 1000);
     hY1Y2 = new TH1D("hY1Y2", "hY1Y2; ydistance(cluster) - ydistance(closest pixel) [um]; # events", 2000, -1000, 1000);
@@ -105,6 +110,8 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             if(std::abs(xdistance) > spatialCut.x() || std::abs(ydistance) > spatialCut.y()) {
                 LOG(DEBUG) << "Discarding DUT cluster with distance (" << Units::display(std::abs(xdistance), {"um", "mm"})
                            << "," << Units::display(std::abs(ydistance), {"um", "mm"}) << ")";
+                hCutHisto->Fill(1);
+                num_cluster++;
                 continue;
             }
 
@@ -112,6 +119,8 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             if(std::abs(cluster->timestamp() - track->timestamp()) > timingCut) {
                 LOG(DEBUG) << "Discarding DUT cluster with time difference "
                            << Units::display(std::abs(cluster->timestamp() - track->timestamp()), {"ms", "s"});
+                hCutHisto->Fill(2);
+                num_cluster++;
                 continue;
             }
 
@@ -120,6 +129,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             track->addAssociatedCluster(cluster);
             assoc_cls_per_track++;
             assoc_cluster_counter++;
+            num_cluster++;
 
             // check if cluster is closest to track
             if(distance < min_distance) {
@@ -138,6 +148,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 }
 
 void DUTAssociation::finalise() {
+    hCutHisto->Scale(1 / double(num_cluster));
     LOG(INFO) << "In total, " << assoc_cluster_counter << " clusters are associated to tracks.";
     LOG(INFO) << "Number of tracks with at least one associated cluster: " << track_w_assoc_cls;
     return;

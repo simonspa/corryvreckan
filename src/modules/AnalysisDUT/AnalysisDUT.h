@@ -46,6 +46,8 @@ namespace corryvreckan {
         TH1F* clusterWidthRowAssoc;
         TH1F* clusterWidthColAssoc;
 
+        TH1F* hCutHisto;
+
         TProfile2D *rmsxvsxmym, *rmsyvsxmym, *rmsxyvsxmym;
         TProfile2D *qvsxmym, *qMoyalvsxmym, *pxqvsxmym;
         TProfile2D* npxvsxmym;
@@ -71,6 +73,7 @@ namespace corryvreckan {
         double m_timeCutFrameEdge;
         double chi2ndofCut;
         bool useClosestCluster;
+	int num_tracks;
     };
 } // namespace corryvreckan
 
