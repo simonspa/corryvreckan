@@ -96,8 +96,17 @@ namespace corryvreckan {
         // Currently processed decoded EUDAQ StandardEvent:
         std::shared_ptr<eudaq::StandardEvent> event_;
 
-        // Buffer of timesorted decoded EUDAQ StandardEvents:
-        std::vector<std::shared_ptr<eudaq::StandardEvent>> sorted_events_;
+        // custom comparator for time-sorted priority_queue
+        struct CompareTimeGreater {
+            bool operator()(const std::shared_ptr<eudaq::StandardEvent> a, const std::shared_ptr<eudaq::StandardEvent> b) {
+                return a->GetTimeBegin() > b->GetTimeBegin();
+            }
+        };
+        // Buffer of timesorted decoded EUDAQ StandardEvents: (need to use greater here!)
+        std::priority_queue<std::shared_ptr<eudaq::StandardEvent>,
+                            std::vector<std::shared_ptr<eudaq::StandardEvent>>,
+                            CompareTimeGreater>
+            sorted_events_;
 
         // EUDAQ configuration to be passed to the decoder instance
         eudaq::ConfigurationSPC eudaq_config_;

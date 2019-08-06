@@ -132,29 +132,18 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_sorted_std_eve
         LOG(DEBUG) << "Filling buffer with new event.";
         // fill buffer with new std event:
         auto new_event = get_next_std_event();
-        sorted_events_.push_back(new_event);
+        sorted_events_.push(new_event);
     }
 
-    LOG(DEBUG) << "Timestamps in unsorted buffer:";
-    for(auto& ev : sorted_events_) {
-        LOG(DEBUG) << "\ttimestamp = " << Units::display(ev->GetTimeBegin() / 1000, {"us", "ns"}); // convert from ps to ns
-    }
+    // LOG(DEBUG) << "Timestamps in sorted buffer:";
+    // for(auto& ev : sorted_events_) {
+    //     LOG(DEBUG) << "\ttimestamp = " << Units::display(ev->GetTimeBegin() / 1000, {"us", "ns"}); // convert from ps to
+    //     ns
+    // }
 
-    // sort chronologically in time:
-    sort(sorted_events_.begin(),
-         sorted_events_.end(),
-         [](const std::shared_ptr<eudaq::StandardEvent> a, const std::shared_ptr<eudaq::StandardEvent> b) -> bool {
-             return a->GetTimeBegin() < b->GetTimeBegin();
-         });
-
-    LOG(DEBUG) << "Timestamps in sorted buffer:";
-    for(auto& ev : sorted_events_) {
-        LOG(DEBUG) << "\ttimestamp = " << Units::display(ev->GetTimeBegin() / 1000, {"us", "ns"}); // convert from ps to ns
-    }
-
-    // get first element of vector and erase it
-    auto stdevt = sorted_events_.front();
-    sorted_events_.erase(sorted_events_.begin());
+    // get first element of queue and erase it
+    auto stdevt = sorted_events_.top();
+    sorted_events_.pop();
     return stdevt;
 }
 
