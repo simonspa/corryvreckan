@@ -17,10 +17,8 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
 
     m_filename = m_config.getPath("file_name", true);
     m_skip_time = m_config.get("skip_time", 0.);
-    adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {});
-
-    m_do_timesorting = m_config.get<bool>("do_timesorting", false);
-    m_buffer_depth = m_config.get<int>("buffer_depth", 10);
+    m_adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {});
+    m_buffer_depth = m_config.get<int>("buffer_depth", 0);
 
     // Forward all settings to EUDAQ
     // WARNING: the EUDAQ Configuration class is not very flexible and e.g. booleans have to be passed as 1 and 0.
@@ -118,7 +116,7 @@ void EventLoaderEUDAQ2::initialise() {
     }
 
     // Check if all elements of adjust_event_times have a valid size of 3, if not throw error.
-    for(auto& shift_times : adjust_event_times) {
+    for(auto& shift_times : m_adjust_event_times) {
         if(shift_times.size() != 3) {
             throw InvalidValueError(
                 m_config,
@@ -225,8 +223,8 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
                << ", event_end = " << Units::display(event_end, "us");
 
     // If adjustment of event start/end is required:
-    const auto it = std::find_if(adjust_event_times.begin(),
-                                 adjust_event_times.end(),
+    const auto it = std::find_if(m_adjust_event_times.begin(),
+                                 m_adjust_event_times.end(),
                                  [evt](const std::vector<std::string>& x) { return x.front() == evt->GetDescription(); });
 
     // Skip if later start is requested:
@@ -243,7 +241,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
         LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " - "
                    << Units::display(event_end, {"us", "ns"}) << ", length "
                    << Units::display(event_end - event_start, {"us", "ns"});
-        if(it != adjust_event_times.end()) {
+        if(it != m_adjust_event_times.end()) {
             shift_start = corryvreckan::from_string<double>(it->at(1));
             shift_end = corryvreckan::from_string<double>(it->at(2));
             event_start += shift_start;
@@ -350,7 +348,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         // Retrieve next event from file/buffer:
         if(!event_) {
             try {
-                if(!m_do_timesorting) {
+                if(m_buffer_depth == 0) {
                     // simply get next decoded EUDAQ StandardEvent from buffer
                     event_ = get_next_std_event();
                 } else {

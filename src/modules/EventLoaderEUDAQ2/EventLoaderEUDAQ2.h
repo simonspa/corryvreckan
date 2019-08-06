@@ -86,10 +86,7 @@ namespace corryvreckan {
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
         double m_skip_time{};
-        Matrix<std::string> adjust_event_times;
-
-        // parameters for time sorting:
-        bool m_do_timesorting;
+        Matrix<std::string> m_adjust_event_times;
         int m_buffer_depth;
 
         // EUDAQ file reader instance to retrieve data from
