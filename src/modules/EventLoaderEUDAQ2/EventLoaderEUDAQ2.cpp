@@ -16,6 +16,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     : Module(std::move(config), detector), m_detector(detector) {
 
     m_filename = m_config.getPath("file_name", true);
+    get_time_residuals = m_config.get<bool>("get_time_residuals", false);
     m_skip_time = m_config.get("skip_time", 0.);
     m_adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {});
     m_buffer_depth = m_config.get<int>("buffer_depth", 0);
@@ -78,33 +79,35 @@ void EventLoaderEUDAQ2::initialise() {
     title = "Corryvreckan event end times (on clipboard); Corryvreckan event duration [ms];# entries";
     hClipboardEventDuration = new TH1D("clipboardEventDuration", title.c_str(), 3e6, 0, 3e3);
 
-    hPixelTimeEventBeginResidual = new TH1F("hPixelTimeEventBeginResidual",
-                                            "hPixelTimeEventBeginResidual;pixel_ts - clipboard event begin [us]; # entries",
-                                            2.1e5,
-                                            -10,
-                                            200);
-
-    hPixelTimeEventBeginResidual_wide =
-        new TH1F("hPixelTimeEventBeginResidual_wide",
-                 "hPixelTimeEventBeginResidual_wide;pixel_ts - clipboard event begin [us]; # entries",
-                 1e5,
-                 -5000,
-                 5000);
-    hPixelTimeEventBeginResidualOverTime =
-        new TH2F("hPixelTimeEventBeginResidualOverTime",
-                 "hPixelTimeEventBeginResidualOverTime; pixel time [s];pixel_ts - clipboard event begin [us]",
-                 3e3,
-                 0,
-                 3e3,
-                 2.1e4,
-                 -10,
-                 200);
-
     hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;entries", 20, 0, 20);
 
-    std::string histTitle = "hPixelTriggerTimeResidualOverTime_0;time [us];trigger_ts - pixel_ts [us];# entries";
-    hPixelTriggerTimeResidualOverTime =
-        new TH2D("hPixelTriggerTimeResidualOverTime_0", histTitle.c_str(), 3e3, 0, 3e3, 1e4, -50, 50);
+    if(get_time_residuals) {
+        hPixelTimeEventBeginResidual =
+            new TH1F("hPixelTimeEventBeginResidual",
+                     "hPixelTimeEventBeginResidual;pixel_ts - clipboard event begin [us]; # entries",
+                     2.1e5,
+                     -10,
+                     200);
+
+        hPixelTimeEventBeginResidual_wide =
+            new TH1F("hPixelTimeEventBeginResidual_wide",
+                     "hPixelTimeEventBeginResidual_wide;pixel_ts - clipboard event begin [us]; # entries",
+                     1e5,
+                     -5000,
+                     5000);
+        hPixelTimeEventBeginResidualOverTime =
+            new TH2F("hPixelTimeEventBeginResidualOverTime",
+                     "hPixelTimeEventBeginResidualOverTime; pixel time [s];pixel_ts - clipboard event begin [us]",
+                     3e3,
+                     0,
+                     3e3,
+                     2.1e4,
+                     -10,
+                     200);
+        std::string histTitle = "hPixelTriggerTimeResidualOverTime_0;time [us];trigger_ts - pixel_ts [us];# entries";
+        hPixelTriggerTimeResidualOverTime =
+            new TH2D("hPixelTriggerTimeResidualOverTime_0", histTitle.c_str(), 3e3, 0, 3e3, 1e4, -50, 50);
+    }
 
     // open the input file with the eudaq reader
     try {
@@ -145,6 +148,9 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
     auto stdevt = eudaq::StandardEvent::MakeShared();
     bool decoding_failed = true;
     do {
+        // Create new StandardEvent
+        stdevt = eudaq::StandardEvent::MakeShared();
+
         // Check if we need a new full event or if we still have some in the cache:
         if(events_.empty()) {
             LOG(TRACE) << "Reading new EUDAQ event from file";
@@ -383,31 +389,35 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Loop over pixels for plotting
-    for(auto& pixel : (*pixels)) {
-        hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
-        hPixelTimeEventBeginResidual_wide->Fill(
-            static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
-        hPixelTimeEventBeginResidualOverTime->Fill(
-            static_cast<double>(Units::convert(pixel->timestamp(), "s")),
-            static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
+    if(get_time_residuals) {
+        for(auto& pixel : (*pixels)) {
+            hPixelTimeEventBeginResidual->Fill(
+                static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
+            hPixelTimeEventBeginResidual_wide->Fill(
+                static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
+            hPixelTimeEventBeginResidualOverTime->Fill(
+                static_cast<double>(Units::convert(pixel->timestamp(), "s")),
+                static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
 
-        size_t iTrigger = 0;
-        for(auto& trigger : event->triggerList()) {
-            // check if histogram exists already, if not: create it
-            if(hPixelTriggerTimeResidual.find(iTrigger) == hPixelTriggerTimeResidual.end()) {
-                std::string histName = "hPixelTriggerTimeResidual_" + to_string(iTrigger);
-                std::string histTitle = histName + ";trigger_ts - pixel_ts [us];# entries";
-                hPixelTriggerTimeResidual[iTrigger] = new TH1D(histName.c_str(), histTitle.c_str(), 2e5, -100, 100);
-            }
-            // use iTrigger, not trigger ID (=trigger.first) (which is unique and continuously incrementing over the runtime)
-            hPixelTriggerTimeResidual[iTrigger]->Fill(
-                static_cast<double>(Units::convert(pixel->timestamp() - trigger.second, "us")));
-            if(iTrigger == 0) { // fill only for 0th trigger
-                hPixelTriggerTimeResidualOverTime->Fill(
-                    static_cast<double>(Units::convert(pixel->timestamp(), "s")),
+            size_t iTrigger = 0;
+            for(auto& trigger : event->triggerList()) {
+                // check if histogram exists already, if not: create it
+                if(hPixelTriggerTimeResidual.find(iTrigger) == hPixelTriggerTimeResidual.end()) {
+                    std::string histName = "hPixelTriggerTimeResidual_" + to_string(iTrigger);
+                    std::string histTitle = histName + ";trigger_ts - pixel_ts [us];# entries";
+                    hPixelTriggerTimeResidual[iTrigger] = new TH1D(histName.c_str(), histTitle.c_str(), 2e5, -100, 100);
+                }
+                // use iTrigger, not trigger ID (=trigger.first) (which is unique and continuously incrementing over the
+                // runtime)
+                hPixelTriggerTimeResidual[iTrigger]->Fill(
                     static_cast<double>(Units::convert(pixel->timestamp() - trigger.second, "us")));
+                if(iTrigger == 0) { // fill only for 0th trigger
+                    hPixelTriggerTimeResidualOverTime->Fill(
+                        static_cast<double>(Units::convert(pixel->timestamp(), "s")),
+                        static_cast<double>(Units::convert(pixel->timestamp() - trigger.second, "us")));
+                }
+                iTrigger++;
             }
-            iTrigger++;
         }
     }
 

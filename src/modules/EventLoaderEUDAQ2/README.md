@@ -34,6 +34,20 @@ export EUDAQ2PATH=/path/to/eudaq2
 ```
 when running CMake to find the library to link against and headers to include.
 
+It is recommended to only build the necessary libraries of EUDAQ2 to avoid linking against unnecessary third-party libraries such as Qt5.
+This can be achieved e.g. by using the following CMake configuration for EUDAQ2:
+
+```bash
+$ cmake -DEUDAQ_BUILD_EXECUTABLE=OFF -DEUDAQ_BUILD_GUI=OFF ..
+```
+
+It should be noted that individual EUDAQ2 modules should be enabled for the build, depending on the data to be processed with Corryvreckan.
+To e.g. allow decoding of Caribou data, the respective EUDAQ2 module has to be built using
+
+```bash
+$ cmake -DUSER_CARIBOU_BUILD=ON ..
+```
+
 ### Contract between EUDAQ Decoder and EventLoader
 
 The decoder promises to
@@ -54,6 +68,7 @@ Also, more complex constructs such as arrays or matrices read by the Corryvrecka
 ### Parameters
 * `file_name`: File name of the EUDAQ2 raw data file. This parameter is mandatory.
 * `skip_time`: Time that can be skipped at the start of a run. Default is `0ms`.
+* `get_time_residuals`: Boolean to change if time residual plots should be outputted. Default value is `false`.
 * `adjust_event_times`: Matrix that allows the user to shift the event start/end of all different types of EUDAQ events. The first entry of each row specifies the data type, the second is the offset which is added to the event start and the third entry is the offset added to the event end. A usage example is shown below. Default is `0ms, 0ms`, `"other"` is just a placeholder.
 * `do_timesorting`: Boolean to enable timesorting of EUDAQ2 StandardEvents. This algorithm only works for StandardEvents with well-defined timestamps. Default is `false`.
 * `buffer_depth`: Depth of buffer in which EUDAQ2 `StandardEvents` are timesorted. This algorithm only works for `StandardEvents` with well-defined timestamps. Setting it to `0` disables timesorting. Default is `0`.

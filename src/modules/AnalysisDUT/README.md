@@ -10,6 +10,7 @@ Generic analysis module for all prototypes. This module is still work in progres
 ### Parameters
 * `time_cut_frameedge`: Parameter to discard telescope tracks at the frame edges (start and end of the current CLICpix2 frame). Defaults to `20ns`.
 * `chi2ndof_cut`: Acceptance criterion for telescope tracks, defaults to a value of `3`.
+* `use_closest_cluster`: If a track has more than one associated cluster the cluster with the smallest distance to the track is used. Defaults to `true`
 
 ### Plots produced
 * 2D Map of associated cluster positions
@@ -20,12 +21,15 @@ Generic analysis module for all prototypes. This module is still work in progres
 * 2D Map of associated hits within the defined region-of-interest
 * Distribution of pixel raw value (ToT, ADC, ...) values from associated clusters
 * 2D Map of pixel raw value (ToT, ADC, ...) values from associated clusters
+* Number of tracks discarded by a given cut
 * Track residuals in X and Y
 * Track residuals for 1-pixel-clusters in X and Y
 * Track residuals for 2-pixel-clusters in X and Y
 * Distribution of cluster charge values from associated clusters
 * Distribution of sizes from associated clusters
 * Normalised distribution of sizes from associated clusters
+* Distribution of sizes from associated clusters in column
+* Distribution of sizes from associated clusters in rows
 * 2D Map of in-pixel efficiency
 * 2D Map of the chip efficiency in local coordinates
 * 2D Map of the chip efficiency on global coordinates
