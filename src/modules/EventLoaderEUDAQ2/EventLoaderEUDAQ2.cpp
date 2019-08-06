@@ -129,10 +129,13 @@ void EventLoaderEUDAQ2::initialise() {
 }
 
 std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
-    auto stdevt = eudaq::StandardEvent::MakeShared();
+    std::shared_ptr<eudaq::StandardEvent> stdevt;
     bool decoding_failed = true;
 
     do {
+        // Create new StandardEvent
+        stdevt = eudaq::StandardEvent::MakeShared();
+
         // Check if we need a new full event or if we still have some in the cache:
         if(events_.empty()) {
             LOG(TRACE) << "Reading new EUDAQ event from file";
