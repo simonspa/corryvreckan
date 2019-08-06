@@ -100,7 +100,7 @@ namespace corryvreckan {
         // FIXME get TLU events with trigger IDs before Ni - sort by name, reversed
         struct CompareDescription {
             bool operator()(const eudaq::EventSPC a, const eudaq::EventSPC b) {
-                return a->GetDescription() > b->GetDescription();
+                return a->GetDescription() < b->GetDescription();
             }
         };
 
