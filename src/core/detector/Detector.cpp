@@ -29,7 +29,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         std::transform(role.begin(), role.end(), role.begin(), ::tolower);
         if(role == "none") {
             m_role |= DetectorRole::NONE;
-        } else if(role == "reference") {
+        } else if(role == "reference" || role == "ref") {
             m_role |= DetectorRole::REFERENCE;
         } else if(role == "dut") {
             m_role |= DetectorRole::DUT;
