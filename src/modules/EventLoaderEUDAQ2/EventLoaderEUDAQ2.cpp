@@ -159,10 +159,15 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
                 LOG(DEBUG) << "Reached EOF";
                 throw EndOfFile();
             }
+            LOG(TRACE) << "Buffer gets filled with " << new_event->GetNumSubEvent() << " (sub-) events:";
+            for(uint32_t i = 0; i < new_event->GetNumSubEvent(); i++) {
+                LOG(TRACE) << "  (sub-) event " << i << " is a " << new_event->GetSubEvent(i)->GetDescription();
+            }
             // Build buffer from all sub-events:
             events_ = new_event->GetSubEvents();
             // The main event might also contain data, so add it to the buffer:
             if(events_.empty()) {
+                LOG(TRACE) << "  event is a " << new_event->GetDescription();
                 events_.push_back(new_event);
             }
 
@@ -170,10 +175,6 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
             sort(events_.begin(), events_.end(), [](const eudaq::EventSPC& a, const eudaq::EventSPC& b) -> bool {
                 return a->GetDescription() > b->GetDescription();
             });
-        }
-        LOG(TRACE) << "Buffer contains " << events_.size() << " (sub-) events:";
-        for(int i = 0; i < static_cast<int>(events_.size()); i++) {
-            LOG(TRACE) << "  (sub-) event " << i << " is a " << events_[static_cast<long unsigned int>(i)]->GetDescription();
         }
         auto event = events_.front();
         events_.erase(events_.begin());
