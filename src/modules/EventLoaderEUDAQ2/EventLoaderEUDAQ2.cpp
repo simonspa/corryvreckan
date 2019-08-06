@@ -162,22 +162,18 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
             LOG(TRACE) << "Buffer gets filled with " << new_event->GetNumSubEvent() << " (sub-) events:";
             for(uint32_t i = 0; i < new_event->GetNumSubEvent(); i++) {
                 LOG(TRACE) << "  (sub-) event " << i << " is a " << new_event->GetSubEvent(i)->GetDescription();
+                events_.push(new_event->GetSubEvent(i));
             }
-            // Build buffer from all sub-events:
-            events_ = new_event->GetSubEvents();
             // The main event might also contain data, so add it to the buffer:
             if(events_.empty()) {
                 LOG(TRACE) << "  event is a " << new_event->GetDescription();
-                events_.push_back(new_event);
+                events_.push(new_event);
             }
-
-            // FIXME get TLU events with trigger IDs before Ni - sort by name, reversed
-            sort(events_.begin(), events_.end(), [](const eudaq::EventSPC& a, const eudaq::EventSPC& b) -> bool {
-                return a->GetDescription() > b->GetDescription();
-            });
         }
-        auto event = events_.front();
-        events_.erase(events_.begin());
+        // get first element and erease it:
+        LOG(TRACE) << "Buffer still contains " << events_.size() << " events.";
+        auto event = events_.top();
+        events_.pop();
         decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, eudaq_config_);
         LOG(DEBUG) << event->GetDescription() << ": EventConverter returned " << (decoding_failed ? "false" : "true");
     } while(decoding_failed);
