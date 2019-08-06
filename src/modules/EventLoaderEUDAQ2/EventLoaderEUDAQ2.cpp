@@ -135,12 +135,6 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_sorted_std_eve
         sorted_events_.push(new_event);
     }
 
-    // LOG(DEBUG) << "Timestamps in sorted buffer:";
-    // for(auto& ev : sorted_events_) {
-    //     LOG(DEBUG) << "\ttimestamp = " << Units::display(ev->GetTimeBegin() / 1000, {"us", "ns"}); // convert from ps to
-    //     ns
-    // }
-
     // get first element of queue and erase it
     auto stdevt = sorted_events_.top();
     sorted_events_.pop();
