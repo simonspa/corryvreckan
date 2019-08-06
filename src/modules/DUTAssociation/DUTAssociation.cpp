@@ -18,20 +18,20 @@ void DUTAssociation::initialise() {
     hCutHisto->GetXaxis()->SetBinLabel(1, "Spatial");
     hCutHisto->GetXaxis()->SetBinLabel(2, "Timing");
 
-    hX1X2 = new TH1D("hX1X2", "hX1X2; xdistance(cluster) - xdistance(closest pixel) [um]; # events", 2000, -1000, 1000);
-    hY1Y2 = new TH1D("hY1Y2", "hY1Y2; ydistance(cluster) - ydistance(closest pixel) [um]; # events", 2000, -1000, 1000);
+    hX1X2 = new TH1D("hX1X2", "x distance of cluster centre minus closest pixel to track; xdistance(cluster) - xdistance(closest pixel) [um]; # events", 2000, -1000, 1000);
+    hY1Y2 = new TH1D("hY1Y2", "y distance of cluster centre minus closest pixel to track; ydistance(cluster) - ydistance(closest pixel) [um]; # events", 2000, -1000, 1000);
     hX1X2_1px =
-        new TH1D("hX1X2_1px", "hX1X2_1px; xdistance(cluster) - xdistance(closest pixel) [um]; # events", 2000, -1000, 1000);
+        new TH1D("hX1X2_1px", "x distance of cluster centre minus closest pixel to track - 1 pixel cluster; xdistance(cluster) - xdistance(closest pixel) [um]; # events", 2000, -1000, 1000);
     hY1Y2_1px =
-        new TH1D("hY1Y2_1px", "hY1Y2_1px; ydistance(cluster) - ydistance(closest pixel) [um]; # events", 2000, -1000, 1000);
+        new TH1D("hY1Y2_1px", "y distance of cluster centre minus closest pixel to track - 1 pixel cluster; ydistance(cluster) - ydistance(closest pixel) [um]; # events", 2000, -1000, 1000);
     hX1X2_2px =
-        new TH1D("hX1X2_2px", "hX1X2_2px; xdistance(cluster) - xdistance(closest pixel) [um]; # events", 2000, -1000, 1000);
+        new TH1D("hX1X2_2px", "x distance of cluster centre minus closest pixel to track - 2 pixel cluster; xdistance(cluster) - xdistance(closest pixel) [um]; # events", 2000, -1000, 1000);
     hY1Y2_2px =
-        new TH1D("hY1Y2_2px", "hY1Y2_2px; ydistance(cluster) - ydistance(closest pixel) [um]; # events", 2000, -1000, 1000);
+        new TH1D("hY1Y2_2px", "y distance of cluster centre minus closest pixel to track - 2 pixel cluster; ydistance(cluster) - ydistance(closest pixel) [um]; # events", 2000, -1000, 1000);
     hX1X2_3px =
-        new TH1D("hX1X2_3px", "hX1X2_3px; xdistance(cluster) - xdistance(closest pixel) [um]; # events", 2000, -1000, 1000);
+        new TH1D("hX1X2_3px", "x distance of cluster centre minus closest pixel to track - 3 pixel cluster; xdistance(cluster) - xdistance(closest pixel) [um]; # events", 2000, -1000, 1000);
     hY1Y2_3px =
-        new TH1D("hY1Y2_3px", "hY1Y2_3px; ydistance(cluster) - ydistance(closest pixel) [um]; # events", 2000, -1000, 1000);
+        new TH1D("hY1Y2_3px", "y distance of cluster centre minus closest pixel to track - 3 pixel cluster; ydistance(cluster) - ydistance(closest pixel) [um]; # events", 2000, -1000, 1000);
 
     // Nr of associated clusters per track
     title = m_detector->name() + ": number of associated clusters per track;associated clusters;events";
