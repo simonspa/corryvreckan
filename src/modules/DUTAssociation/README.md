@@ -26,6 +26,7 @@ This option can be chosen, e.g. for an efficiency analysis, when the cluster cen
 * distance in y of cluster centre to track minus closest pixel to track for pixels with row width = 2
 * distance in x of cluster centre to track minus closest pixel to track for pixels with column width = 3
 * distance in y of cluster centre to track minus closest pixel to track for pixels with row width = 3
+* distribution of number of associated clusters per track
 * Number of clusters discarded by a given cut (currently only spatial and timing cuts are implemented)
 
 ### Usage

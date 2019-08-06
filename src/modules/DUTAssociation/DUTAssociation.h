@@ -35,7 +35,9 @@ namespace corryvreckan {
 
         int num_cluster = 0;
         int assoc_cluster_counter = 0;
+        int track_w_assoc_cls = 0;
 
+        TH1F* hNoAssocCls;
         TH1D* hX1X2;
         TH1D* hY1Y2;
         TH1D* hX1X2_1px;

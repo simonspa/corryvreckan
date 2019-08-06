@@ -11,6 +11,7 @@ AnalysisDUT::AnalysisDUT(Configuration config, std::shared_ptr<Detector> detecto
 
     m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
     chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
+    useClosestCluster = m_config.get<bool>("use_closest_cluster", true);
 }
 
 void AnalysisDUT::initialise() {
@@ -333,139 +334,118 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         auto xmod = static_cast<double>(Units::convert(inpixel.X(), "um"));
         auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
 
-        // Get the DUT clusters from the clipboard
-        Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
-        if(clusters == nullptr) {
-            LOG(DEBUG) << " - no DUT clusters";
-        } else {
+        // Loop over all associated DUT clusters:
+        for(auto assoc_cluster : track->associatedClusters()) {
+            LOG(DEBUG) << " - Looking at next associated DUT cluster";
 
-            // Loop over all DUT clusters to find matches:
-            for(auto* cluster : (*clusters)) {
-                LOG(DEBUG) << " - Looking at next DUT cluster";
-
-                // Check distance between track and cluster
-                ROOT::Math::XYZPoint intercept = track->intercept(cluster->global().z());
-
-                // Correlation plots
-                hTrackCorrelationX->Fill(intercept.X() - cluster->global().x());
-                hTrackCorrelationY->Fill(intercept.Y() - cluster->global().y());
-                hTrackCorrelationTime->Fill(track->timestamp() - cluster->timestamp());
-
-                double posDiff = sqrt((intercept.X() - cluster->global().x()) * (intercept.X() - cluster->global().x()) +
-                                      (intercept.Y() - cluster->global().y()) * (intercept.Y() - cluster->global().y()));
-
-                hTrackCorrelationPos->Fill(posDiff);
-                hTrackCorrelationPosVsCorrelationTime->Fill(track->timestamp() - cluster->timestamp(), posDiff);
-
-                auto associated_clusters = track->associatedClusters();
-                if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) == associated_clusters.end()) {
-                    LOG(DEBUG) << "No associated cluster found";
-                    hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
+            // if closest cluster should be used continue if current associated cluster is not the closest one
+            if(useClosestCluster) {
+                if(track->getClosestCluster() != assoc_cluster) {
                     continue;
                 }
+            }
 
-                LOG(DEBUG) << "Found associated cluster";
-                double xdistance = intercept.X() - cluster->global().x();
-                double ydistance = intercept.Y() - cluster->global().y();
-                double xabsdistance = fabs(xdistance);
-                double yabsdistance = fabs(ydistance);
-                double tdistance = track->timestamp() - cluster->timestamp();
+            // Check distance between track and cluster
+            ROOT::Math::XYZPoint intercept = track->intercept(assoc_cluster->global().z());
+            double xdistance = intercept.X() - assoc_cluster->global().x();
+            double ydistance = intercept.Y() - assoc_cluster->global().y();
+            double xabsdistance = fabs(xdistance);
+            double yabsdistance = fabs(ydistance);
+            double tdistance = track->timestamp() - assoc_cluster->timestamp();
+            double posDiff =
+                sqrt((intercept.X() - assoc_cluster->global().x()) * (intercept.X() - assoc_cluster->global().x()) +
+                     (intercept.Y() - assoc_cluster->global().y()) * (intercept.Y() - assoc_cluster->global().y()));
 
-                // We now have an associated cluster
-                has_associated_cluster = true;
-                // FIXME need to understand local coord of clusters - why shifted? what's normal?
-                auto clusterLocal = m_detector->globalToLocal(cluster->global());
-                hClusterMapAssoc->Fill(m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal));
-                hClusterSizeMapAssoc->Fill(m_detector->getColumn(clusterLocal),
-                                           m_detector->getRow(clusterLocal),
-                                           static_cast<double>(cluster->size()));
+            // Correlation plots
+            hTrackCorrelationX->Fill(xdistance);
+            hTrackCorrelationY->Fill(ydistance);
+            hTrackCorrelationTime->Fill(tdistance);
+            hTrackCorrelationPos->Fill(posDiff);
+            hTrackCorrelationPosVsCorrelationTime->Fill(track->timestamp() - assoc_cluster->timestamp(), posDiff);
 
-                // Cluster charge normalized to path length in sensor:
-                double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
-                // FIXME: what does this mean? To my understanding we have the correct charge here already...
-                auto normalized_charge = cluster->charge() * norm;
+            // FIXME need to understand local coord of clusters - why shifted? what's normal?
+            auto clusterLocal = m_detector->globalToLocal(assoc_cluster->global());
+            hClusterMapAssoc->Fill(m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal));
+            hClusterSizeMapAssoc->Fill(m_detector->getColumn(clusterLocal),
+                                       m_detector->getRow(clusterLocal),
+                                       static_cast<double>(assoc_cluster->size()));
 
-                // clusterChargeAssoc->Fill(normalized_charge);
-                clusterChargeAssoc->Fill(cluster->charge());
-                hClusterChargeMapAssoc->Fill(
-                    m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), cluster->charge());
+            // Cluster charge normalized to path length in sensor:
+            double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
+            // FIXME: what does this mean? To my understanding we have the correct charge here already...
+            auto cluster_charge = assoc_cluster->charge();
+            auto normalized_charge = cluster_charge * norm;
 
-                // Fill per-pixel histograms
-                for(auto& pixel : (*cluster->pixels())) {
-                    hHitMapAssoc->Fill(pixel->column(), pixel->row());
-                    if(is_within_roi) {
-                        hHitMapROI->Fill(pixel->column(), pixel->row());
-                    }
-                    hPixelRawValueAssoc->Fill(pixel->raw());
-                    hPixelRawValueMapAssoc->Fill(pixel->column(), pixel->row(), pixel->raw());
-                }
+            // clusterChargeAssoc->Fill(normalized_charge);
+            clusterChargeAssoc->Fill(cluster_charge);
+            hClusterChargeMapAssoc->Fill(
+                m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), cluster_charge);
 
-                associatedTracksVersusTime->Fill(static_cast<double>(Units::convert(track->timestamp(), "s")));
-
-                // Residuals
-                residualsX->Fill(xdistance);
-                residualsY->Fill(ydistance);
-                residualsPos->Fill(sqrt(xdistance * xdistance + ydistance * ydistance));
-                residualsPosVsresidualsTime->Fill(tdistance, sqrt(xdistance * xdistance + ydistance * ydistance));
-
-                if(cluster->size() == 1) {
-                    residualsX1pix->Fill(xdistance);
-                    residualsY1pix->Fill(ydistance);
-                }
-                if(cluster->size() == 2) {
-                    residualsX2pix->Fill(xdistance);
-                    residualsY2pix->Fill(ydistance);
-                }
-
-                // Time residuals
-                residualsTime->Fill(tdistance);
-                residualsTimeVsTime->Fill(tdistance, track->timestamp());
-                residualsTimeVsSignal->Fill(tdistance, cluster->charge());
-
-                clusterSizeAssoc->Fill(static_cast<double>(cluster->size()));
-                clusterSizeAssocNorm->Fill(static_cast<double>(cluster->size()));
-                clusterWidthRowAssoc->Fill(cluster->rowWidth());
-                clusterWidthColAssoc->Fill(cluster->columnWidth());
-
-                // Fill in-pixel plots: (all as function of track position within pixel cell)
+            // Fill per-pixel histograms
+            for(auto& pixel : (*assoc_cluster->pixels())) {
+                hHitMapAssoc->Fill(pixel->column(), pixel->row());
                 if(is_within_roi) {
-                    qvsxmym->Fill(xmod, ymod, cluster->charge());                  // cluster charge profile
-                    qMoyalvsxmym->Fill(xmod, ymod, exp(-normalized_charge / 3.5)); // norm. cluster charge profile
-
-                    // mean charge of cluster seed
-                    pxqvsxmym->Fill(xmod, ymod, cluster->getSeedPixel()->charge());
-
-                    // mean cluster size
-                    npxvsxmym->Fill(xmod, ymod, static_cast<double>(cluster->size()));
-                    if(cluster->size() == 1)
-                        npx1vsxmym->Fill(xmod, ymod);
-                    if(cluster->size() == 2)
-                        npx2vsxmym->Fill(xmod, ymod);
-                    if(cluster->size() == 3)
-                        npx3vsxmym->Fill(xmod, ymod);
-                    if(cluster->size() == 4)
-                        npx4vsxmym->Fill(xmod, ymod);
-
-                    // residual MAD x, y, combined (sqrt(x*x + y*y))
-                    rmsxvsxmym->Fill(xmod, ymod, xabsdistance);
-                    rmsyvsxmym->Fill(xmod, ymod, yabsdistance);
-                    rmsxyvsxmym->Fill(xmod, ymod, fabs(sqrt(xdistance * xdistance + ydistance * ydistance)));
+                    hHitMapROI->Fill(pixel->column(), pixel->row());
                 }
+                hPixelRawValueAssoc->Fill(pixel->raw());
+                hPixelRawValueMapAssoc->Fill(pixel->column(), pixel->row(), pixel->raw());
+            }
 
-                track->addAssociatedCluster(cluster);
-                hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
-                hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept),
-                                                     m_detector->getRow(localIntercept));
+            associatedTracksVersusTime->Fill(static_cast<double>(Units::convert(track->timestamp(), "s")));
 
-                // Only allow one associated cluster per track
-                break;
+            // Residuals
+            residualsX->Fill(xdistance);
+            residualsY->Fill(ydistance);
+            residualsPos->Fill(posDiff);
+            residualsPosVsresidualsTime->Fill(tdistance, posDiff);
+
+            if(assoc_cluster->size() == 1) {
+                residualsX1pix->Fill(xdistance);
+                residualsY1pix->Fill(ydistance);
+            }
+            if(assoc_cluster->size() == 2) {
+                residualsX2pix->Fill(xdistance);
+                residualsY2pix->Fill(ydistance);
+            }
+
+            // Time residuals
+            residualsTime->Fill(tdistance);
+            residualsTimeVsTime->Fill(tdistance, track->timestamp());
+            residualsTimeVsSignal->Fill(tdistance, cluster_charge);
+
+            clusterSizeAssoc->Fill(static_cast<double>(assoc_cluster->size()));
+            clusterSizeAssocNorm->Fill(static_cast<double>(assoc_cluster->size()));
+            clusterWidthRowAssoc->Fill(assoc_cluster->rowWidth());
+            clusterWidthColAssoc->Fill(assoc_cluster->columnWidth());
+
+            // Fill in-pixel plots: (all as function of track position within pixel cell)
+            if(is_within_roi) {
+                qvsxmym->Fill(xmod, ymod, cluster_charge);                     // cluster charge profile
+                qMoyalvsxmym->Fill(xmod, ymod, exp(-normalized_charge / 3.5)); // norm. cluster charge profile
+
+                // mean charge of cluster seed
+                pxqvsxmym->Fill(xmod, ymod, assoc_cluster->getSeedPixel()->charge());
+
+                // mean cluster size
+                npxvsxmym->Fill(xmod, ymod, static_cast<double>(assoc_cluster->size()));
+                if(assoc_cluster->size() == 1)
+                    npx1vsxmym->Fill(xmod, ymod);
+                if(assoc_cluster->size() == 2)
+                    npx2vsxmym->Fill(xmod, ymod);
+                if(assoc_cluster->size() == 3)
+                    npx3vsxmym->Fill(xmod, ymod);
+                if(assoc_cluster->size() == 4)
+                    npx4vsxmym->Fill(xmod, ymod);
+
+                // residual MAD x, y, combined (sqrt(x*x + y*y))
+                rmsxvsxmym->Fill(xmod, ymod, xabsdistance);
+                rmsyvsxmym->Fill(xmod, ymod, yabsdistance);
+                rmsxyvsxmym->Fill(xmod, ymod, fabs(sqrt(xdistance * xdistance + ydistance * ydistance)));
             }
         }
 
-        // Efficiency plots:
-        hGlobalEfficiencyMap->Fill(globalIntercept.X(), globalIntercept.Y(), has_associated_cluster);
-        hChipEfficiencyMap->Fill(
-            m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept), has_associated_cluster);
+        hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
+        hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
 
         // For pixels, only look at the ROI:
         if(is_within_roi) {
