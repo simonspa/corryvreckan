@@ -34,7 +34,7 @@ void DUTAssociation::initialise() {
         new TH1D("hY1Y2_3px", "hY1Y2_3px; ydistance(cluster) - ydistance(closest pixel) [um]; # events", 2000, -1000, 1000);
 
     // Nr of associated clusters per track
-    std::string title = m_detector->name() + ": number of associated clusters per track;associated clusters;events";
+    title = m_detector->name() + ": number of associated clusters per track;associated clusters;events";
     hNoAssocCls = new TH1F("no_assoc_cls", title.c_str(), 10, 0, 10);
 }
 
@@ -57,7 +57,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
     // Loop over all tracks
     for(auto& track : (*tracks)) {
         assoc_cls_per_track = 0;
-        double min_distance = 99999.0;
+        auto min_distance = 99999.0;
 
         // Loop over all DUT clusters
         for(auto& cluster : (*clusters)) {
