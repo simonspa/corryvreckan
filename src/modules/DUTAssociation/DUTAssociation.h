@@ -33,7 +33,6 @@ namespace corryvreckan {
 
         TH1F* hCutHisto;
 
-        int assoc_cls_per_track = 0;
         int num_cluster = 0;
         int assoc_cluster_counter = 0;
         int track_w_assoc_cls = 0;
