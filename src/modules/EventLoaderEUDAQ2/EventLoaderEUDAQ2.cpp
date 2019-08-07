@@ -19,6 +19,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     m_get_time_residuals = m_config.get<bool>("get_time_residuals", false);
     m_skip_time = m_config.get("skip_time", 0.);
     m_adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {});
+    m_buffer_depth = m_config.get<int>("buffer_depth", 0);
 
     // Forward all settings to EUDAQ
     // WARNING: the EUDAQ Configuration class is not very flexible and e.g. booleans have to be passed as 1 and 0.
@@ -128,10 +129,24 @@ void EventLoaderEUDAQ2::initialise() {
     }
 }
 
-std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
-    std::shared_ptr<eudaq::StandardEvent> stdevt;
-    bool decoding_failed = true;
+std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_sorted_std_event() {
 
+    while(static_cast<int>(sorted_events_.size()) < m_buffer_depth) {
+        LOG(DEBUG) << "Filling buffer with new event.";
+        // fill buffer with new std event:
+        auto new_event = get_next_std_event();
+        sorted_events_.push(new_event);
+    }
+
+    // get first element of queue and erase it
+    auto stdevt = sorted_events_.top();
+    sorted_events_.pop();
+    return stdevt;
+}
+
+std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
+    auto stdevt = eudaq::StandardEvent::MakeShared();
+    bool decoding_failed = true;
     do {
         // Create new StandardEvent
         stdevt = eudaq::StandardEvent::MakeShared();
@@ -322,7 +337,13 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         // Retrieve next event from file/buffer:
         if(!event_) {
             try {
-                event_ = get_next_event();
+                if(m_buffer_depth == 0) {
+                    // simply get next decoded EUDAQ StandardEvent from buffer
+                    event_ = get_next_std_event();
+                } else {
+                    // get next decoded EUDAQ StandardEvent from timesorted buffer
+                    event_ = get_next_sorted_std_event();
+                }
             } catch(EndOfFile&) {
                 return StatusCode::EndRun;
             }
