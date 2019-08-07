@@ -16,7 +16,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     : Module(std::move(config), detector), m_detector(detector) {
 
     m_filename = m_config.getPath("file_name", true);
-    get_time_residuals = m_config.get<bool>("get_time_residuals", false);
+    m_get_time_residuals = m_config.get<bool>("get_time_residuals", false);
     m_skip_time = m_config.get("skip_time", 0.);
     m_adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {});
     m_buffer_depth = m_config.get<int>("buffer_depth", 0);
@@ -81,7 +81,7 @@ void EventLoaderEUDAQ2::initialise() {
 
     hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;entries", 20, 0, 20);
 
-    if(get_time_residuals) {
+    if(m_get_time_residuals) {
         hPixelTimeEventBeginResidual =
             new TH1F("hPixelTimeEventBeginResidual",
                      "hPixelTimeEventBeginResidual;pixel_ts - clipboard event begin [us]; # entries",
@@ -104,7 +104,7 @@ void EventLoaderEUDAQ2::initialise() {
                      2.1e4,
                      -10,
                      200);
-        std::string histTitle = "hPixelTriggerTimeResidualOverTime_0;time [us];trigger_ts - pixel_ts [us];# entries";
+        std::string histTitle = "hPixelTriggerTimeResidualOverTime_0;time [us];pixel_ts - trigger_ts [us];# entries";
         hPixelTriggerTimeResidualOverTime =
             new TH2D("hPixelTriggerTimeResidualOverTime_0", histTitle.c_str(), 3e3, 0, 3e3, 1e4, -50, 50);
     }
@@ -118,7 +118,7 @@ void EventLoaderEUDAQ2::initialise() {
         throw InvalidValueError(m_config, "file_path", "Parsing error!");
     }
 
-    // Check if all elements of adjust_event_times have a valid size of 3, if not throw error.
+    // Check if all elements of m_adjust_event_times have a valid size of 3, if not throw error.
     for(auto& shift_times : m_adjust_event_times) {
         if(shift_times.size() != 3) {
             throw InvalidValueError(
@@ -386,7 +386,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Loop over pixels for plotting
-    if(get_time_residuals) {
+    if(m_get_time_residuals) {
         for(auto& pixel : (*pixels)) {
             hPixelTimeEventBeginResidual->Fill(
                 static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
@@ -401,7 +401,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 // check if histogram exists already, if not: create it
                 if(hPixelTriggerTimeResidual.find(iTrigger) == hPixelTriggerTimeResidual.end()) {
                     std::string histName = "hPixelTriggerTimeResidual_" + to_string(iTrigger);
-                    std::string histTitle = histName + ";trigger_ts - pixel_ts [us];# entries";
+                    std::string histTitle = histName + ";pixel_ts - trigger_ts [us];# entries";
                     hPixelTriggerTimeResidual[iTrigger] = new TH1D(histName.c_str(), histTitle.c_str(), 2e5, -100, 100);
                 }
                 // use iTrigger, not trigger ID (=trigger.first) (which is unique and continuously incrementing over the

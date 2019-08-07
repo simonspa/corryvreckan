@@ -147,7 +147,7 @@ bool Track::isAssociated(Cluster* cluster) const {
     return false;
 }
 
-bool Track::hasDetector(std::string detectorID) {
+bool Track::hasDetector(std::string detectorID) const {
     auto it = find_if(m_trackClusters.begin(), m_trackClusters.end(), [&detectorID](Cluster* cluster) {
         return cluster->getDetectorID() == detectorID;
     });
