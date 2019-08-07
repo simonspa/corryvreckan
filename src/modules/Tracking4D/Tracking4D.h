@@ -46,9 +46,8 @@ namespace corryvreckan {
         double spatialCut;
         size_t minHitsOnTrack;
         bool excludeDUT;
-        std::string requireDetector;
-        bool useAvgClusterTimestamp;
-        std::string detectorToSetTrackTimestamp;
+        std::vector<std::string> requireDetectors;
+        std::string timestampFrom;
     };
 } // namespace corryvreckan
 #endif // TRACKING4D_H

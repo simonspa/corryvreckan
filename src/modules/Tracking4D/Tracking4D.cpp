@@ -14,9 +14,8 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     spatialCut = m_config.get<double>("spatial_cut", Units::get<double>(200, "um"));
     minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
     excludeDUT = m_config.get<bool>("exclude_dut", true);
-    requireDetector = m_config.get<std::string>("require_detector", "");
-    useAvgClusterTimestamp = m_config.get<bool>("use_avg_cluster_timestamp", true);
-    detectorToSetTrackTimestamp = m_config.get<std::string>("detector_to_set_track_timestamp", "Timepix3_0");
+    requireDetectors = m_config.getArray<std::string>("require_detectors", {""});
+    timestampFrom = m_config.get<std::string>("timestamp_from", {});
 }
 
 void Tracking4D::initialise() {
@@ -195,9 +194,17 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             track->addCluster(closestCluster);
         } //*/
 
-        // check if track has required detector:
-        if(!requireDetector.empty() && !track->hasDetector(requireDetector)) {
-            LOG(DEBUG) << "No cluster from required detector " << requireDetector << " on the track.";
+        // check if track has required detector(s):
+        auto foundRequiredDetector = [this](Track* t) {
+            for(auto& requireDet : requireDetectors) {
+                if(!requireDet.empty() && !t->hasDetector(requireDet)) {
+                    LOG(DEBUG) << "No cluster from required detector " << requireDet << " on the track.";
+                    return false;
+                }
+            }
+            return true;
+        };
+        if(!foundRequiredDetector(track)) {
             delete track;
             continue;
         }
@@ -242,7 +249,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 residualsYwidth3[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
         }
 
-        if(useAvgClusterTimestamp) {
+        if(timestampFrom.empty()) {
             // Improve the track timestamp by taking the average of all planes
             double avg_track_time = 0;
             for(auto& trackCluster : trackClusters) {
@@ -253,10 +260,10 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "Using average cluster timestamp of "
                        << Units::display(avg_track_time / static_cast<double>(track->nClusters()), "us")
                        << " as track timestamp.";
-        } else if(!detectorToSetTrackTimestamp.empty() && track->hasDetector(detectorToSetTrackTimestamp)) {
+        } else if(track->hasDetector(timestampFrom)) {
             // use timestamp of required detector:
-            double track_timestamp = track->getClusterFromDetector(detectorToSetTrackTimestamp)->timestamp();
-            LOG(DEBUG) << "Found cluster for detector " << detectorToSetTrackTimestamp << ", adding timestamp "
+            double track_timestamp = track->getClusterFromDetector(timestampFrom)->timestamp();
+            LOG(DEBUG) << "Found cluster for detector " << timestampFrom << ", adding timestamp "
                        << Units::display(track_timestamp, "us") << " to track.";
             track->setTimestamp(track_timestamp);
         } else {

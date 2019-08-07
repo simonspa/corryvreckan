@@ -195,7 +195,7 @@ void EventLoaderATLASpix::initialise() {
                  -10,
                  200);
 
-    std::string histTitle = "hPixelTriggerTimeResidualOverTime_0;time [us];trigger_ts - pixel_ts [us];# entries";
+    std::string histTitle = "hPixelTriggerTimeResidualOverTime_0;time [s];pixel_ts - trigger_ts [us];# entries";
     hPixelTriggerTimeResidualOverTime =
         new TH2D("hPixelTriggerTimeResidualOverTime_0", histTitle.c_str(), 3e3, 0, 3e3, 1e4, -50, 50);
 
@@ -269,7 +269,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
             // check if histogram exists already, if not: create it
             if(hPixelTriggerTimeResidual.find(iTrigger) == hPixelTriggerTimeResidual.end()) {
                 std::string histName = "hPixelTriggerTimeResidual_" + to_string(iTrigger);
-                std::string histTitle = histName + ";trigger_ts - pixel_ts [us];# entries";
+                std::string histTitle = histName + ";pixel_ts - trigger_ts [us];# entries";
                 hPixelTriggerTimeResidual[iTrigger] = new TH1D(histName.c_str(), histTitle.c_str(), 2e5, -100, 100);
             }
             // use iTrigger, not trigger ID (=trigger.first) (which is unique and continuously incrementing over the runtime)
