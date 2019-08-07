@@ -16,7 +16,6 @@ AlignmentMillepede::AlignmentMillepede(Configuration config, std::vector<std::sh
     : Module(std::move(config), std::move(detectors)) {
 
     m_excludeDUT = m_config.get<bool>("exclude_dut", false);
-    m_excludeTLU = m_config.get<bool>("exclude_tlu", true);
     m_numberOfTracksForAlignment = m_config.get<size_t>("number_of_tracks", 20000);
     m_dofs = m_config.getArray<bool>("dofs", {});
     m_nIterations = m_config.get<size_t>("iterations", 5);
@@ -104,8 +103,8 @@ void AlignmentMillepede::finalise() {
         if(det->isDUT() && m_excludeDUT) {
             nPlanes--;
         }
-        if(det->type() == "TLU" && m_excludeTLU) {
-            LOG(DEBUG) << "Excluding TLU.";
+        if(det->isAuxiliary()) {
+            LOG(INFO) << "Excluding auxiliary detector " << det->name();
             nPlanes--;
         }
     }

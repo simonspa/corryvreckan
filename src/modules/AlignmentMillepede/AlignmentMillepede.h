@@ -155,8 +155,6 @@ namespace corryvreckan {
         bool m_fix_all;
         /// It can be also reasonable to include the DUT in the alignemnt
         bool m_excludeDUT;
-        /// Flag to exclude the TLU from the alignment as it has not pixel hits anyway
-        bool m_excludeTLU;
     };
 } // namespace corryvreckan
 

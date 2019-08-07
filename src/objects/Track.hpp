@@ -71,7 +71,7 @@ namespace corryvreckan {
          * @param  detectorID DetectorID of the detector to check
          * @return True if detector has a cluster on this track, false if not.
          */
-        bool hasDetector(std::string detectorID);
+        bool hasDetector(std::string detectorID) const;
 
         /**
          * @brief Get a track cluster from a given detector

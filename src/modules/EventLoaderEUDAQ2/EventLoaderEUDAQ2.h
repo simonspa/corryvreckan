@@ -81,9 +81,9 @@ namespace corryvreckan {
 
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
-        bool get_time_residuals;
+        bool m_get_time_residuals;
         double m_skip_time{};
-        Matrix<std::string> adjust_event_times;
+        Matrix<std::string> m_adjust_event_times;
 
         // EUDAQ file reader instance to retrieve data from
         eudaq::FileReaderUP reader_;
