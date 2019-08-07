@@ -267,7 +267,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                        << Units::display(track_timestamp, "us") << " to track.";
             track->setTimestamp(track_timestamp);
         } else {
-            LOG(ERROR) << "Cannot asign timestamp to track. Use average cluster timestamp for track or set detector to "
+            LOG(ERROR) << "Cannot assign timestamp to track. Use average cluster timestamp for track or set detector to "
                           "set track timestamp. Please update the configuration file.";
             return StatusCode::Failure;
         }
