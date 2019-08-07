@@ -92,17 +92,10 @@ namespace corryvreckan {
 
         // EUDAQ file reader instance to retrieve data from
         eudaq::FileReaderUP reader_;
-
+        // Buffer of undecoded EUDAQ events
+        std::vector<eudaq::EventSPC> events_;
         // Currently processed decoded EUDAQ StandardEvent:
         std::shared_ptr<eudaq::StandardEvent> event_;
-
-        // custom comparator to sort priority_queue by event Description
-        // FIXME get TLU events with trigger IDs before Ni - sort by name, reversed
-        struct CompareDescription {
-            bool operator()(const eudaq::EventSPC a, const eudaq::EventSPC b) {
-                return a->GetDescription() > b->GetDescription();
-            }
-        };
 
         // custom comparator for time-sorted priority_queue
         struct CompareTimeGreater {
@@ -110,9 +103,6 @@ namespace corryvreckan {
                 return a->GetTimeBegin() > b->GetTimeBegin();
             }
         };
-        // Buffer of undecoded EUDAQ events
-        std::priority_queue<eudaq::EventSPC, std::vector<eudaq::EventSPC>, CompareDescription> events_;
-
         // Buffer of timesorted decoded EUDAQ StandardEvents: (need to use greater here!)
         std::priority_queue<std::shared_ptr<eudaq::StandardEvent>,
                             std::vector<std::shared_ptr<eudaq::StandardEvent>>,
