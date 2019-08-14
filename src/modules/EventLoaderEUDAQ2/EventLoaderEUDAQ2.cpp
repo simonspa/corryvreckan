@@ -182,8 +182,8 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
     return stdevt;
 }
 
-EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> clipboard,
-                                                                    std::shared_ptr<eudaq::StandardEvent> evt) {
+Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> clipboard,
+                                                   std::shared_ptr<eudaq::StandardEvent> evt) {
 
     // Check if this event has timestamps available:
     if(evt->GetTimeBegin() == 0) {
@@ -192,7 +192,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
         // If there is no event defined yet or the trigger number is unkown, there is little we can do:
         if(!clipboard->event_defined() || !clipboard->get_event()->hasTriggerID(evt->GetTriggerN())) {
             LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " not found in current event.";
-            return EventPosition::UNKNOWN;
+            return Event::Position::UNKNOWN;
         }
 
         // Store trigger timestamp in event:
@@ -219,7 +219,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
     if(event_start < m_skip_time) {
         LOG(DEBUG) << "Event start before requested skip time: " << Units::display(event_start, {"us", "ns"}) << " < "
                    << Units::display(m_skip_time, {"us", "ns"});
-        return EventPosition::BEFORE;
+        return Event::Position::BEFORE;
     }
 
     double shift_start = 0;
@@ -252,12 +252,12 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
     if(event_end < clipboard_start) {
         LOG(DEBUG) << "Event start before Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " < "
                    << Units::display(clipboard_start, {"us", "ns"});
-        return EventPosition::BEFORE;
+        return Event::Position::BEFORE;
         // } else if(clipboard_end < event_end) { // we still need to discuss about the logic here!
     } else if(clipboard_end < event_start) {
         LOG(DEBUG) << "Event end after Corryvreckan event: " << Units::display(event_end, {"us", "ns"}) << " > "
                    << Units::display(clipboard_end, {"us", "ns"});
-        return EventPosition::AFTER;
+        return Event::Position::AFTER;
     } else {
         // check if event has valid trigger ID (flag = 0x10):
         if(evt->IsFlagTrigger()) {
@@ -266,7 +266,7 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
             LOG(DEBUG) << "Stored trigger ID " << evt->GetTriggerN() << " at "
                        << Units::display(event_start - shift_start, {"us", "ns"});
         }
-        return EventPosition::DURING;
+        return Event::Position::DURING;
     }
 }
 
@@ -331,7 +331,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
     Pixels* pixels = new Pixels();
 
-    EventPosition current_position = EventPosition::UNKNOWN;
+    Event::Position current_position = Event::Position::UNKNOWN;
     while(1) {
         // Retrieve next event from file/buffer:
         if(!event_) {
@@ -351,7 +351,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         // Check if this event is within the currently defined Corryvreckan event:
         current_position = is_within_event(clipboard, event_);
 
-        if(current_position == EventPosition::DURING) {
+        if(current_position == Event::Position::DURING) {
             LOG(DEBUG) << "Is within current Corryvreckan event, storing data";
             // Store data on the clipboard
             auto new_pixels = get_pixel_data(event_);
@@ -360,11 +360,11 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // If this event was after the current event, stop reading:
-        if(current_position == EventPosition::AFTER) {
+        if(current_position == Event::Position::AFTER) {
             break;
         }
 
-        // Do not fill if current_position == EventPosition::AFTER to avoid double-counting!
+        // Do not fill if current_position == Event::Position::AFTER to avoid double-counting!
         // Converting EUDAQ2 picoseconds into Corryvreckan nanoseconds:
         hEudaqEventStart->Fill(static_cast<double>(event_->GetTimeBegin()) / 1e9);       // here convert from ps to ms
         hEudaqEventStart_long->Fill(static_cast<double>(event_->GetTimeBegin()) / 1e12); // here convert from ps to seconds

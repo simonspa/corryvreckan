@@ -8,6 +8,13 @@ namespace corryvreckan {
     class Event : public Object {
 
     public:
+        enum class Position {
+            UNKNOWN, // StandardEvent position unknown
+            BEFORE,  // StandardEvent is before current event
+            DURING,  // StandardEvent is during current event
+            AFTER,   // StandardEvent is after current event
+        };
+
         // Constructors and destructors
         Event(){};
         Event(double start, double end, std::map<uint32_t, double> trigger_list = std::map<uint32_t, double>())

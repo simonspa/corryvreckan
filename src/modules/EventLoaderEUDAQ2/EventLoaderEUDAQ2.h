@@ -34,13 +34,6 @@ namespace corryvreckan {
      */
     class EventLoaderEUDAQ2 : public Module {
 
-        enum class EventPosition {
-            UNKNOWN, // StandardEvent position unknown
-            BEFORE,  // StandardEvent is before current event
-            DURING,  // StandardEvent is during current event
-            AFTER,   // StandardEvent is after current event
-        };
-
         class EndOfFile : public Exception {};
 
     public:
@@ -77,7 +70,7 @@ namespace corryvreckan {
          * @param  evt        The EUDAQ StandardEvent to check
          * @return            Position of the StandardEvent with respect to the current Corryvreckan event
          */
-        EventPosition is_within_event(std::shared_ptr<Clipboard> clipboard, std::shared_ptr<eudaq::StandardEvent> evt);
+        Event::Position is_within_event(std::shared_ptr<Clipboard> clipboard, std::shared_ptr<eudaq::StandardEvent> evt);
 
         /**
          * @brief Store pixel data from relevant detectors on the clipboard
