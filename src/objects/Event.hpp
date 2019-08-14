@@ -55,30 +55,36 @@ namespace corryvreckan {
          * options of interpretation. The inclusive interpretation will return "during" as soon as there is some overlap
          * between the frame and the event, i.e. as soon as the end of the frame is later than the event start or as soon as
          * the frame start is before the event end. In the exclusive mode, the frame will be classified as "during" only if
-         * start and end are both within the defined event.
+         * start and end are both within the defined event. The function returns UNKNOWN if the end of the given time frame
+         * is before its start.
          * @param  frame_start Start timestamp of the frame
          * @param  frame_end   End timestamp of the frame
          * @param  inclusive   Boolean to select inclusive or exclusive mode
          * @return             Position of the given time frame with respect to the defined event.
          */
         Position getFramePosition(double frame_start, double frame_end, bool inclusive = true) {
+            // The frame is ill-defined, we have no idea what to do with this data:
+            if(frame_end < frame_start) {
+                return Position::UNKNOWN;
+            }
+
             if(inclusive) {
                 // Return DURING if there is any overlap
                 if(frame_end < start()) {
-                    return Event::Position::BEFORE;
+                    return Position::BEFORE;
                 } else if(end() < frame_start) {
-                    return Event::Position::AFTER;
+                    return Position::AFTER;
                 } else {
-                    return Event::Position::DURING;
+                    return Position::DURING;
                 }
             } else {
                 // Return DURING only if fully covered
                 if(frame_start < start()) {
-                    return Event::Position::BEFORE;
+                    return Position::BEFORE;
                 } else if(end() < frame_end) {
-                    return Event::Position::AFTER;
+                    return Position::AFTER;
                 } else {
-                    return Event::Position::DURING;
+                    return Position::DURING;
                 }
             }
         }
