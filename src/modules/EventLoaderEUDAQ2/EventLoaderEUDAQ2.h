@@ -11,10 +11,13 @@
  * Refer to the User's Manual for more details.
  */
 
+#include <iostream>
+#include <vector>
+
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <iostream>
+
 #include "core/module/Module.hpp"
 #include "eudaq/FileReader.hh"
 #include "eudaq/StandardEvent.hh"
@@ -92,8 +95,10 @@ namespace corryvreckan {
 
         // EUDAQ file reader instance to retrieve data from
         eudaq::FileReaderUP reader_;
+
         // Buffer of undecoded EUDAQ events
         std::vector<eudaq::EventSPC> events_;
+
         // Currently processed decoded EUDAQ StandardEvent:
         std::shared_ptr<eudaq::StandardEvent> event_;
 

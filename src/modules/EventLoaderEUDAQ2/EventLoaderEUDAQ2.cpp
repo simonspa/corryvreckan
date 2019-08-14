@@ -131,6 +131,7 @@ void EventLoaderEUDAQ2::initialise() {
 
 std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_sorted_std_event() {
 
+    // Refill the event buffer if necessary:
     while(static_cast<int>(sorted_events_.size()) < m_buffer_depth) {
         LOG(DEBUG) << "Filling buffer with new event.";
         // fill buffer with new std event:
@@ -172,11 +173,14 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
             });
         }
         LOG(TRACE) << "Buffer contains " << events_.size() << " (sub-) events:";
-        for(int i = 0; i < static_cast<int>(events_.size()); i++) {
-            LOG(TRACE) << "  (sub-) event " << i << " is a " << events_[static_cast<long unsigned int>(i)]->GetDescription();
+        for(auto& evt : events_) {
+            LOG(TRACE) << "  (sub-) event of type " << evt->GetDescription();
         }
+
+        // Retrieve first and remove from buffer:
         auto event = events_.front();
         events_.erase(events_.begin());
+
         decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, eudaq_config_);
         LOG(DEBUG) << event->GetDescription() << ": EventConverter returned " << (decoding_failed ? "false" : "true");
     } while(decoding_failed);
