@@ -49,6 +49,41 @@ namespace corryvreckan {
         double getTriggerTime(uint32_t trigger_id) const { return trigger_list_.find(trigger_id)->second; }
 
         /**
+         * @brief Returns position of a time frame defined by a start and end point relative to the current event
+         *
+         * This function allows ot assess whether a time frame lies before, during or after the defined event. There are two
+         * options of interpretation. The inclusive interpretation will return "during" as soon as there is some overlap
+         * between the frame and the event, i.e. as soon as the end of the frame is later than the event start or as soon as
+         * the frame start is before the event end. In the exclusive mode, the frame will be classified as "during" only if
+         * start and end are both within the defined event.
+         * @param  frame_start Start timestamp of the frame
+         * @param  frame_end   End timestamp of the frame
+         * @param  inclusive   Boolean to select inclusive or exclusive mode
+         * @return             Position of the given time frame with respect to the defined event.
+         */
+        Position getFramePosition(double frame_start, double frame_end, bool inclusive = true) {
+            if(inclusive) {
+                // Return DURING if there is any overlap
+                if(frame_end < start()) {
+                    return Event::Position::BEFORE;
+                } else if(end() < frame_start) {
+                    return Event::Position::AFTER;
+                } else {
+                    return Event::Position::DURING;
+                }
+            } else {
+                // Return DURING only if fully covered
+                if(frame_start < start()) {
+                    return Event::Position::BEFORE;
+                } else if(end() < frame_end) {
+                    return Event::Position::AFTER;
+                } else {
+                    return Event::Position::DURING;
+                }
+            }
+        }
+
+        /**
          * @brief Returns position of a given trigger ID with respect to the currently defined event.
          *
          * If the given trigger ID is smaller than the smallest trigger ID known to the event, BEFORE is returned. If the
