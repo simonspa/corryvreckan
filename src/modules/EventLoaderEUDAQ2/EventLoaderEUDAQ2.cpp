@@ -248,16 +248,14 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
     double clipboard_start = clipboard->get_event()->start();
     double clipboard_end = clipboard->get_event()->end();
 
-    // if(event_start < clipboard_start) { // we still need to discuss about the logic here!
-    if(event_end < clipboard_start) {
+    // Get position of this time frame with respect to the defined event:
+    auto position = clipboard->get_event()->getFramePosition(event_start, event_end);
+    if(position == Event::Position::BEFORE) {
         LOG(DEBUG) << "Event start before Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " < "
                    << Units::display(clipboard_start, {"us", "ns"});
-        return Event::Position::BEFORE;
-        // } else if(clipboard_end < event_end) { // we still need to discuss about the logic here!
-    } else if(clipboard_end < event_start) {
+    } else if(position == Event::Position::AFTER) {
         LOG(DEBUG) << "Event end after Corryvreckan event: " << Units::display(event_end, {"us", "ns"}) << " > "
                    << Units::display(clipboard_end, {"us", "ns"});
-        return Event::Position::AFTER;
     } else {
         // check if event has valid trigger ID (flag = 0x10):
         if(evt->IsFlagTrigger()) {
@@ -266,8 +264,9 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
             LOG(DEBUG) << "Stored trigger ID " << evt->GetTriggerN() << " at "
                        << Units::display(event_start - shift_start, {"us", "ns"});
         }
-        return Event::Position::DURING;
     }
+
+    return position;
 }
 
 Pixels* EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt) {
