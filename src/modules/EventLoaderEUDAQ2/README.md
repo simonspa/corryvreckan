@@ -14,6 +14,9 @@ It should be noted that the order of the detectors is crucial.
 The first detector that appears in the configuration defines the event window to which the hits of all other detectors are compared.
 In the example below this is the CLICpix2.
 
+If the data of multiple detectors is stored in the same file as sub-events, it must be ensured that the event defining the time frame is processed first.
+This is achieved by instantiating two event loaders in the desired order and providing them with the same input data file.
+
 For each event, the algorithm checks for an event on the clipboard.
 If none is available, the current event defines the event on the clipboard.
 Otherwise, it is checked whether or not the current event lies within the clipboard event.
