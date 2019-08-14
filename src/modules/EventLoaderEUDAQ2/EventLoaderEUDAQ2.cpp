@@ -166,11 +166,6 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
             if(events_.empty()) {
                 events_.push_back(new_event);
             }
-
-            // FIXME get TLU events with trigger IDs before Ni - sort by name, reversed
-            sort(events_.begin(), events_.end(), [](const eudaq::EventSPC& a, const eudaq::EventSPC& b) -> bool {
-                return a->GetDescription() > b->GetDescription();
-            });
         }
         LOG(TRACE) << "Buffer contains " << events_.size() << " (sub-) events:";
         for(auto& evt : events_) {
