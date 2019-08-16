@@ -18,7 +18,7 @@ After this both corrections can be applied on top of each other.
 ### Parameters
 * `timing_cut`: Timing cut for associating a track with an ATLASpix cluster. Defaults to `1us`.
 * `chi2ndof_cut`: Acceptance criterion for telescope tracks, defaults to a value of `3`.
-* `time_cut_frame_edge`: Parameter to discard telescope tracks at the frame edges (start and end of the current frame). Defaults to `20ns`.
+* `time_cut_frameedge`: Parameter to discard telescope tracks at the frame edges (start and end of the current frame). Defaults to `20ns`.
 * `cluster_charge_cut`: Parameter to discard clusters with a charge larger than the cut. Defaults to `100000e` (inifitely large).
 * `cluster_size_cut`: Parameter to discard clusters with a size too large, only for debugging purposes, default is 100 (inifitely large).
 * `high_tot_cut`: Cut dividing 'low' and 'high' ToT events (based on seed pixel ToT). Defaults to `40`.

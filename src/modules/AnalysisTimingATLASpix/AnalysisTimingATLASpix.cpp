@@ -24,8 +24,8 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
     using namespace ROOT::Math;
     m_detector = detector;
     m_timingCut = m_config.get<double>("timing_cut", static_cast<double>(Units::convert(1000, "ns")));
-    m_chi2ndofCut = m_config.get<double>("chi2_ndof_cut", 3.);
-    m_timeCutFrameEdge = m_config.get<double>("time_cut_frame_edge", static_cast<double>(Units::convert(20, "ns")));
+    m_chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
+    m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", static_cast<double>(Units::convert(20, "ns")));
     m_clusterChargeCut = m_config.get<double>("cluster_charge_cut", 100000.);
     m_clusterSizeCut = m_config.get<size_t>("cluster_size_cut", static_cast<size_t>(100));
     m_highTotCut = m_config.get<int>("high_tot_cut", 40);
