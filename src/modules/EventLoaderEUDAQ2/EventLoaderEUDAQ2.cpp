@@ -21,6 +21,8 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     m_adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {});
     m_buffer_depth = m_config.get<int>("buffer_depth", 0);
 
+    m_inclusive = m_config.get("inclusive", true);
+
     // Forward all settings to EUDAQ
     // WARNING: the EUDAQ Configuration class is not very flexible and e.g. booleans have to be passed as 1 and 0.
     eudaq::Configuration cfg;
@@ -246,7 +248,7 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
     }
 
     // Get position of this time frame with respect to the defined event:
-    auto position = clipboard->get_event()->getFramePosition(event_start, event_end);
+    auto position = clipboard->get_event()->getFramePosition(event_start, event_end, m_inclusive);
     if(position == Event::Position::BEFORE) {
         LOG(DEBUG) << "Event start before Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " < "
                    << Units::display(clipboard->get_event()->start(), {"us", "ns"});
