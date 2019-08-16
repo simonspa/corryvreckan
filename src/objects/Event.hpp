@@ -103,12 +103,12 @@ namespace corryvreckan {
             if(hasTriggerID(trigger_id)) {
                 return Position::DURING;
             } else if(trigger_list_.upper_bound(trigger_id) == trigger_list_.begin()) {
-                // Upper bound returns first element that is greater than given key - in this case, the first map element is
-                // greated than the provided trigger number - which consequently is before the event.
+                // Upper bound returns first element that is greater than the given key - in this case, the first map element
+                // is greater than the provided trigger number - which consequently is before the event.
                 return Position::BEFORE;
             } else if(trigger_list_.lower_bound(trigger_id) == trigger_list_.end()) {
-                // Lower bound returns the first element that is *not less* than given key - in this case, even the last map
-                // element is less than the trigger number - which consequently is after the event.
+                // Lower bound returns the first element that is *not less* than the given key - in this case, even the last
+                // map element is less than the trigger number - which consequently is after the event.
                 return Position::AFTER;
             } else {
                 // We have not enough information to provide position information.
