@@ -433,7 +433,7 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard, Pixels*
                 // Stop looking at data if the signal is after the current event window
                 // (and rewind the file
                 // reader so that we start with this signal next event)
-                if(timestamp > event->end()) {
+                if(event->getTimestampPosition(timestamp) == Event::Position::AFTER) {
                     (*m_file_iterator)->seekg(-1 * static_cast<int>(sizeof(pixdata)), std::ios_base::cur);
                     LOG(TRACE) << "Signal has a time beyond the current event: " << Units::display(timestamp, "ns");
                     break;
@@ -559,9 +559,10 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard, Pixels*
 
             // Convert final timestamp into ns and add the timing offset (in nano seconds) from the detectors file (if any)
             const double timestamp = static_cast<double>(time) / (4096. / 25.) + m_detector->timingOffset();
+            auto position = event->getTimestampPosition(timestamp);
 
             // Ignore pixel data if it is before the "eventStart" read from the clipboard storage:
-            if(timestamp < event->start()) {
+            if(position == Event::Position::BEFORE) {
                 LOG(TRACE) << "Skipping pixel, is before event window (" << Units::display(timestamp, {"s", "us", "ns"})
                            << " < " << Units::display(event->start(), {"s", "us", "ns"}) << ")";
                 continue;
@@ -569,7 +570,7 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard, Pixels*
 
             // Stop looking at data if the pixel is after the current event window
             // (and rewind the file reader so that we start with this pixel next event)
-            if(timestamp > event->end()) {
+            if(position == Event::Position::AFTER) {
                 LOG(DEBUG) << "Stopping processing event, pixel is after "
                               "event window ("
                            << Units::display(timestamp, {"s", "us", "ns"}) << " > "
