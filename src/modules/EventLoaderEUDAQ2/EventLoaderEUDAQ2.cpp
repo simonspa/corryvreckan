@@ -189,21 +189,26 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
 
     // Check if this event has timestamps available:
     if(evt->GetTimeBegin() == 0) {
-        LOG(DEBUG) << evt->GetDescription() << ": Event has no timestamp, comparing trigger number";
+        LOG(DEBUG) << evt->GetDescription() << ": Event has no timestamp, comparing trigger IDs";
 
-        // If there is no event defined yet or the trigger number is unkown, there is little we can do:
-        if(!clipboard->event_defined() || !clipboard->get_event()->hasTriggerID(evt->GetTriggerN())) {
-            LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " not found in current event.";
+        // If there is no event defined yet, there is little we can do:
+        if(!clipboard->event_defined()) {
+            LOG(DEBUG) << "No Corryvreckan event defined - cannot define without timetamps.";
             return Event::Position::UNKNOWN;
         }
 
-        // Store trigger timestamp in event:
-        auto trigger_time = clipboard->get_event()->getTriggerTime(evt->GetTriggerN());
-        LOG(DEBUG) << "Assigning trigger time " << Units::display(trigger_time, {"us", "ns"}) << " to event with trigger ID "
-                   << evt->GetTriggerN();
-        // Set EUDAQ StandardEvent timestamp in picoseconds:
-        evt->SetTimeBegin(static_cast<uint64_t>(trigger_time * 1000));
-        evt->SetTimeEnd(static_cast<uint64_t>(trigger_time * 1000));
+        // Get position of this time frame with respect to the defined event:
+        auto trigger_position = clipboard->get_event()->getTriggerPosition(evt->GetTriggerN());
+        if(trigger_position == Event::Position::BEFORE) {
+            LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " before triggers registered in Corryvreckan event";
+        } else if(trigger_position == Event::Position::AFTER) {
+            LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " after triggers registered in Corryvreckan event";
+        } else if(trigger_position == Event::Position::UNKNOWN) {
+            LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " within Corryvreckan event range but not registered";
+        } else {
+            LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " found in Corryvreckan event";
+        }
+        return trigger_position;
     }
 
     // Read time from EUDAQ2 event and convert from picoseconds to nanoseconds:
