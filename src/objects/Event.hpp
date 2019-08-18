@@ -49,6 +49,23 @@ namespace corryvreckan {
         double getTriggerTime(uint32_t trigger_id) const { return trigger_list_.find(trigger_id)->second; }
 
         /**
+         * @brief Returns position of a timestamp relative to the current event
+         *
+         * This function allows ot assess whether a timestamp lies before, during or after the defined event.
+         * @param  frame_start Timestamp to get position for
+         * @return             Position of the given timestamp with respect to the defined event.
+         */
+        Position getTimestampPosition(double timestamp) {
+            if(timestamp < start()) {
+                return Position::BEFORE;
+            } else if(end() < timestamp) {
+                return Position::AFTER;
+            } else {
+                return Position::DURING;
+            }
+        }
+
+        /**
          * @brief Returns position of a time frame defined by a start and end point relative to the current event
          *
          * This function allows ot assess whether a time frame lies before, during or after the defined event. There are two
@@ -123,7 +140,7 @@ namespace corryvreckan {
         std::map<uint32_t, double> trigger_list_{};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Event, 3)
+        ClassDef(Event, 4)
     };
 } // namespace corryvreckan
 
