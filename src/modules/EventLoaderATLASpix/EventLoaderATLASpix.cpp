@@ -233,12 +233,10 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         return StatusCode::Failure;
     }
 
-    double start_time = event->start();
-    double end_time = event->end();
     bool busy_at_start = m_detectorBusy;
 
     // Read pixel data
-    Pixels* pixels = (m_legacyFormat ? read_legacy_data(start_time, end_time) : read_caribou_data(start_time, end_time));
+    Pixels* pixels = (m_legacyFormat ? read_legacy_data(event) : read_caribou_data(event));
 
     if(busy_at_start || m_detectorBusy) {
         LOG(DEBUG) << "Returning <DeadTime> status, ATLASPix is BUSY.";
@@ -260,10 +258,11 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         hPixelCharge->Fill(px->charge());
         hPixelToA->Fill(px->timestamp());
 
-        hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
-        hPixelTimeEventBeginResidual_wide->Fill(static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
-        hPixelTimeEventBeginResidualOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "s")),
-                                                   static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
+        hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(px->timestamp() - event->start(), "us")));
+        hPixelTimeEventBeginResidual_wide->Fill(static_cast<double>(Units::convert(px->timestamp() - event->start(), "us")));
+        hPixelTimeEventBeginResidualOverTime->Fill(
+            static_cast<double>(Units::convert(px->timestamp(), "s")),
+            static_cast<double>(Units::convert(px->timestamp() - event->start(), "us")));
         size_t iTrigger = 0;
         for(auto& trigger : event->triggerList()) {
             // check if histogram exists already, if not: create it
@@ -302,9 +301,9 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_time) {
-    LOG(DEBUG) << "Searching for events in interval from " << Units::display(start_time, {"s", "us", "ns"}) << " to "
-               << Units::display(end_time, {"s", "us", "ns"}) << ", file read position " << m_file.tellg()
+Pixels* EventLoaderATLASpix::read_caribou_data(std::shared_ptr<Event> event) {
+    LOG(DEBUG) << "Searching for events in interval from " << Units::display(event->start(), {"s", "us", "ns"}) << " to "
+               << Units::display(event->end(), {"s", "us", "ns"}) << ", file read position " << m_file.tellg()
                << ", old_fpga_ts = " << old_fpga_ts << ".";
 
     // Pixel container
@@ -382,18 +381,19 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
             // Convert the timestamp to nanoseconds:
             double timestamp = m_clockCycle * static_cast<double>(hit_ts) + m_detector->timingOffset();
 
-            if(timestamp > end_time) {
+            // Figure out where this timestamp lies with respect to the current event:
+            auto position = event->getTimestampPosition(timestamp);
+
+            if(position == Event::Position::AFTER) {
                 keep_pointer_stored = true;
                 LOG(DEBUG) << "Skipping processing event, pixel is after event window ("
                            << Units::display(timestamp, {"s", "us", "ns"}) << " > "
-                           << Units::display(end_time, {"s", "us", "ns"}) << ")";
+                           << Units::display(event->end(), {"s", "us", "ns"}) << ")";
                 continue;
-            }
-
-            if(timestamp < start_time) {
+            } else if(position == Event::Position::BEFORE) {
                 LOG(DEBUG) << "Skipping pixel hit, pixel is before event window ("
                            << Units::display(timestamp, {"s", "us", "ns"}) << " < "
-                           << Units::display(start_time, {"s", "us", "ns"}) << ")";
+                           << Units::display(event->start(), {"s", "us", "ns"}) << ")";
                 continue;
             }
             // this window still contains data in the event window, do not stop processing
@@ -519,7 +519,7 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
                                << readout_ts;
                 }
                 // If the readout time is after the window, mark it as a candidate for last readout in the window
-                if((static_cast<double>(readout_ts) * m_clockCycle) > end_time) {
+                if(event->getTimestampPosition(static_cast<double>(readout_ts) * m_clockCycle) == Event::Position::AFTER) {
                     window_end = true;
                 }
                 break;
@@ -622,7 +622,7 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
     return pixels;
 }
 
-Pixels* EventLoaderATLASpix::read_legacy_data(double, double) {
+Pixels* EventLoaderATLASpix::read_legacy_data(std::shared_ptr<Event>) {
 
     // Pixel container
     Pixels* pixels = new Pixels();
