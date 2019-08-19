@@ -82,7 +82,7 @@ void AnalysisTimingATLASpix::initialise() {
     hTrackCorrelationTimeAssocVsTime = new TH2F(name.c_str(), name.c_str(), 3e3, 0, 3e3, 1e3, -5, 5);
     hTrackCorrelationTimeAssocVsTime->GetYaxis()->SetTitle("track time stamp - cluster time stamp [us]");
     hTrackCorrelationTimeAssocVsTime->GetXaxis()->SetTitle("time [s]");
-    hTrackCorrelationTimeAssocVsTime->GetYaxis()->SetTitle("# events");
+    hTrackCorrelationTimeAssocVsTime->GetZaxis()->SetTitle("# events");
 
     name = "hTrackCorrelationTime_rowCorr";
     std::string title = "hTrackCorrelationTime_rowCorr: row-by-row correction";
