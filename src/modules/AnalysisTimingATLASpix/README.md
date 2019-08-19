@@ -50,6 +50,7 @@ After this both corrections can be applied on top of each other.
   * Cluster size for main peak events in time correlation (track timestamp - cluster timestamp > left_tail_cut)
 
 * 2D histograms
+  * Track time correlation vs. time (track-associated clusters)
   * Track time correlation vs. column (only control plot)
   * Track time correlation vs. cluster row (for row correction)
   * Track time correlation vs. cluster row (only single pixel clusters)
