@@ -78,6 +78,12 @@ void AnalysisTimingATLASpix::initialise() {
     hTrackCorrelationTimeAssoc->GetXaxis()->SetTitle("track time stamp - cluster time stamp [ns]");
     hTrackCorrelationTimeAssoc->GetYaxis()->SetTitle("# events");
 
+    name = "hTrackCorrelationTimeAssocVsTime";
+    hTrackCorrelationTimeAssocVsTime = new TH2F(name.c_str(), name.c_str(), 3e3, 0, 3e3, 1e3, -5, 5);
+    hTrackCorrelationTimeAssocVsTime->GetYaxis()->SetTitle("track time stamp - cluster time stamp [us]");
+    hTrackCorrelationTimeAssocVsTime->GetXaxis()->SetTitle("time [s]");
+    hTrackCorrelationTimeAssocVsTime->GetYaxis()->SetTitle("# events");
+
     name = "hTrackCorrelationTime_rowCorr";
     std::string title = "hTrackCorrelationTime_rowCorr: row-by-row correction";
     hTrackCorrelationTime_rowCorr =
@@ -449,6 +455,8 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
                     double timeDiff = track->timestamp() - cluster->timestamp();
                     hTrackCorrelationTimeAssoc->Fill(timeDiff);
+                    hTrackCorrelationTimeAssocVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                                           static_cast<double>(Units::convert(timeDiff, "us")));
 
                     hTrackCorrelationTimeVsTot->Fill(timeDiff, cluster->getSeedPixel()->raw());
                     hTrackCorrelationTimeVsCol->Fill(timeDiff, cluster->getSeedPixel()->column());
