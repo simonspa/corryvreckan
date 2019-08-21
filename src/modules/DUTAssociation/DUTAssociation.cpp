@@ -8,7 +8,7 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
 
     timingCut = m_config.get<double>("timing_cut", Units::get<double>(200, "ns"));
     spatialCut = m_config.get<XYVector>("spatial_cut", 2 * m_detector->pitch());
-    useClusterCentre = m_config.get<bool>("use_cluster_centre", true);
+    useClusterCentre = m_config.get<bool>("use_cluster_centre", false);
 }
 
 void DUTAssociation::initialise() {
