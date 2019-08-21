@@ -15,7 +15,7 @@ This option can be chosen, e.g. for an efficiency analysis, when the cluster cen
 ### Parameters
 * `spatial_cut`: Maximum spatial distance in local coordinates in x- and y-direction allowed between cluster and track for association with the DUT. Expects two values for the two coordinates, defaults to twice the pixel pitch.
 * `timing_cut`: Maximum time difference allowed between cluster and track for association for the DUT. Default value is `200ns`.
-* `use_cluster_centre`: If set true, the cluster centre will be compared to the track position for the spatial cut. If false, the nearest pixel will be used. Defaults to `true`.
+* `use_cluster_centre`: If set true, the cluster centre will be compared to the track position for the spatial cut. If false, the nearest pixel in the cluster will be used. Defaults to `false`. When secondary particles are created in your detector, such as delta rays, the cluster centre position can be far away from the initial particle incidence point with the DUT. This impacts some measurements, for example measuring detector efficiencies as then DUT clusters from delta rays will not be associated to telescope tracks due to being outside the spatial cut, and the % efficiency measurement will decrease. A way to recover these delta rays and therefore the lost % efficiency is by comparing the closest pixel in the DUT cluster, rather than the cluster centre, to the track incidence position to determine association.
 
 ### Plots produced
 * distance in x of cluster centre to track minus closest pixel to track
