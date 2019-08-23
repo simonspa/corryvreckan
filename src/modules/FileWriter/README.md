@@ -1,10 +1,10 @@
 # FileWriter
-**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>), Koen Wolters (<koen.wolters@cern.ch>)  
+**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
 **Module Type**: *GLOBAL*  
 **Status**: Functional
 
 ### Description
-Reads all objects from the clipboard in vector ob base class object pointers. The first time a new type of object is received, a new tree is created bearing the class name of this object. For every detector, a new branch is created within this tree. A leaf is automatically created for every member of the object. The vector of objects is then written to the file for every event it is dispatched, saving an empty vector if an event does not include the specific object.
+Reads all objects from the clipboard into a vector of base class object pointers. The first time a new type of object is received, a new tree is created bearing the class name of this object. For every detector, a new branch is created within this tree. A leaf is automatically created for every member of the object. The vector of objects is then written to the file for every event it is dispatched, saving an empty vector if an event does not include the specific object.
 
 ### Parameters
 * `file_name` : Name of the data file to create, relative to the output directory of the framework. The file extension `.root` will be appended if not present.
