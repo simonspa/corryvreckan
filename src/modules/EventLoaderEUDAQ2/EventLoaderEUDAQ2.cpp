@@ -180,7 +180,7 @@ void EventLoaderEUDAQ2::retrieve_event_tags(const eudaq::EventSPC evt) {
             // Check if histogram exists already, if not: create it
             if(hTagValues.find(tag_pair.first) == hTagValues.end()) {
                 std::string histName = "hTagValues_" + tag_pair.first;
-                std::string histTitle = tag_pair.first + ";event / 1000;tag value";
+                std::string histTitle = "tag_" + tag_pair.first + ";event / 1000;tag value";
                 hTagValues[tag_pair.first] = new TProfile(histName.c_str(), histTitle.c_str(), 2e5, 0, 100);
             }
             hTagValues[tag_pair.first]->Fill(evt->GetEventN() / 1000, value, 1);
