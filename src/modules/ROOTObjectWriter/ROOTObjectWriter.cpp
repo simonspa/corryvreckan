@@ -58,7 +58,7 @@ void ROOTObjectWriter::initialise() {
 
 StatusCode ROOTObjectWriter::run(std::shared_ptr<Clipboard> clipboard) {
 
-    auto data = clipboard->getAll();
+    auto data = clipboard->get_all();
     LOG(DEBUG) << "Clipboard has " << data.size() << " different object types.";
 
     for(auto& block : data) {

@@ -364,7 +364,7 @@ std::shared_ptr<Pixels> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq:
 
 StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
-    std::shared_ptr<Pixels> pixels;
+    auto pixels = std::make_shared<Pixels>();
 
     EventPosition current_position = EventPosition::UNKNOWN;
     while(1) {

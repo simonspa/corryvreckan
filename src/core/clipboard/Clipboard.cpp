@@ -61,7 +61,7 @@ void Clipboard::clear() {
     m_event.reset();
 }
 
-std::vector<std::string> Clipboard::listCollections() const {
+std::vector<std::string> Clipboard::list_collections() const {
     std::vector<std::string> collections;
 
     for(const auto& block : m_data) {
@@ -77,6 +77,6 @@ std::vector<std::string> Clipboard::listCollections() const {
     return collections;
 }
 
-const ClipboardData& Clipboard::getAll() const {
+const ClipboardData& Clipboard::get_all() const {
     return m_data;
 }
