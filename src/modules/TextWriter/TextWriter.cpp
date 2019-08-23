@@ -49,50 +49,43 @@ StatusCode TextWriter::run(std::shared_ptr<Clipboard> clipboard) {
     // Print the current event:
     *output_file_ << "=== " << m_eventNumber << " ===" << std::endl;
 
-    for(auto& objName : clipboard->listCollections()) {
+    auto data = clipboard->get_all();
+    LOG(DEBUG) << "Clipboard has " << data.size() << " different object types.";
 
-        Objects* objects = clipboard->get(objName);
-        LOG(DEBUG) << "Got " << objects->size() << " entries for object " << objName;
+    for(auto& block : data) {
+        try {
+            auto type_idx = block.first;
+            auto class_name = corryvreckan::demangle(type_idx.name());
+            auto class_name_full = corryvreckan::demangle(type_idx.name(), true);
+            LOG(TRACE) << "Received objects of type \"" << class_name << "\"";
 
-        if(objects->size() == 0) {
-            LOG(DEBUG) << "Nothing to write for this object type";
-            continue;
-        }
+            // Check if these objects hsould be read
+            if((!include_.empty() && include_.find(class_name) == include_.end()) ||
+               (!exclude_.empty() && exclude_.find(class_name) != exclude_.end())) {
+                LOG(TRACE) << "Ignoring object " << corryvreckan::demangle(type_idx.name())
+                           << " because it has been excluded or not explicitly included";
+                continue;
+            }
 
-        const Object* first_object = *(objects)->begin();
-        auto* cls = TClass::GetClass(typeid(*(first_object)));
+            for(auto& detector_block : block.second) {
+                // Get the detector name
+                std::string detector_name;
+                if(!detector_block.first.empty()) {
+                    detector_name = detector_block.first;
+                } else {
+                    detector_name = "<global>";
+                }
 
-        std::string cls_name = cls->GetName();
-        std::string corry_namespace = "corryvreckan::";
-        size_t cls_iterator = cls_name.find(corry_namespace);
+                *output_file_ << "--- " << detector_name << " ---" << std::endl;
 
-        std::string objType = cls_name.replace(cls_iterator, corry_namespace.size(), "");
-
-        if((*(*objects).begin())->getDetectorID() != "") {
-
-            if((!include_.empty() && include_.find(objType) == include_.end()) ||
-               (!exclude_.empty() && exclude_.find(objType) != exclude_.end())) {
-                LOG(TRACE) << "Won't write objects of type " << objType << " due to explicit user request";
-            } else {
-                *output_file_ << "--- " << (*(*objects).begin())->getDetectorID() << " ---" << std::endl;
-                *output_file_ << "+++ " << objType << " +++" << std::endl;
-
-                for(auto& obj : (*objects)) {
-                    *output_file_ << *(obj) << std::endl;
+                auto objects = std::static_pointer_cast<Objects>(detector_block.second);
+                for(auto& object : *objects) {
+                    *output_file_ << *object << std::endl;
                 }
             }
-        } else {
-            if((!include_.empty() && include_.find(objType) == include_.end()) ||
-               (!exclude_.empty() && exclude_.find(objType) != exclude_.end())) {
-                LOG(TRACE) << "Won't write objects of type " << objName << " due to explicit user request";
-            } else {
-                *output_file_ << "--- <global> ---" << std::endl;
-                *output_file_ << "+++ " << objType << " +++" << std::endl;
-
-                for(auto& obj : (*objects)) {
-                    *output_file_ << *(obj) << std::endl;
-                }
-            }
+        } catch(...) {
+            LOG(WARNING) << "Cannot process object of type" << corryvreckan::demangle(block.first.name());
+            return StatusCode::NoData;
         }
     }
 
