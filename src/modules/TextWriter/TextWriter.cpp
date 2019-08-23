@@ -44,10 +44,14 @@ void TextWriter::initialise() {
 }
 
 StatusCode TextWriter::run(std::shared_ptr<Clipboard> clipboard) {
-    LOG(TRACE) << "Writing new objects to text file";
+
+    if(!clipboard->event_defined()) {
+        ModuleError("No Clipboard event defined, cannot continue");
+    }
 
     // Print the current event:
     *output_file_ << "=== " << m_eventNumber << " ===" << std::endl;
+    *output_file_ << *clipboard->get_event() << std::endl;
 
     auto data = clipboard->get_all();
     LOG(DEBUG) << "Clipboard has " << data.size() << " different object types.";
