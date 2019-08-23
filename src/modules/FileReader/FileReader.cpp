@@ -46,10 +46,10 @@ FileReader::~FileReader() {
  */
 template <typename T> static void add_creator(FileReader::ObjectCreatorMap& map) {
     map[typeid(T)] = [&](std::vector<Object*> objects) {
-        std::vector<T> data;
+        std::vector<T*> data;
         // Copy the objects to data vector
         for(auto& object : objects) {
-            data.emplace_back(*static_cast<T*>(object));
+            data.emplace_back(static_cast<T*>(object));
         }
 
         // Fix the object references (NOTE: we do this after insertion as otherwise the objects could have been relocated)
@@ -59,13 +59,13 @@ template <typename T> static void add_creator(FileReader::ObjectCreatorMap& map)
 
             // Only update the reference for objects that have been referenced before
             if(prev_obj.TestBit(kIsReferenced)) {
-                auto pid = TProcessID::GetProcessWithUID(&new_obj);
+                auto pid = TProcessID::GetProcessWithUID(new_obj);
                 if(pid->GetObjectWithID(prev_obj.GetUniqueID()) != &prev_obj) {
                     LOG(ERROR) << "Duplicate object IDs, cannot correctly resolve previous history!";
                 }
                 prev_obj.ResetBit(kIsReferenced);
-                new_obj.SetBit(kIsReferenced);
-                pid->PutObjectWithID(&new_obj);
+                new_obj->SetBit(kIsReferenced);
+                pid->PutObjectWithID(new_obj);
             }
         }
 
