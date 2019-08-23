@@ -92,6 +92,7 @@ namespace corryvreckan {
         std::string m_filename{};
         bool get_time_residuals{};
         bool get_tag_vectors{};
+        bool ignore_bore{};
         double m_skip_time{};
         Matrix<std::string> adjust_event_times;
 

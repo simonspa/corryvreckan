@@ -161,6 +161,12 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
         auto event = events_.front();
         events_.erase(events_.begin());
 
+        // If this is a Begin-of-Run event and we should ignore it, please do so:
+        if(event->IsBORE() && ignore_bore) {
+            LOG(DEBUG) << "Found EUDAQ2 BORE event, ignoring it";
+            continue;
+        }
+
         // Read and store tag information:
         if(get_tag_vectors) {
             retrieve_event_tags(event);
