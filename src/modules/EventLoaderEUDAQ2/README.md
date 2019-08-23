@@ -74,6 +74,7 @@ Also, more complex constructs such as arrays or matrices read by the Corryvrecka
 * `get_tag_vectors`: Boolean to enable creation of EUDAQ2 event tag histograms. Default value is `false`.
 * `ignore_bore`: Boolean to completely ignore the Begin-of-Run event from EUDAQ2. Default value is `true`.
 * `adjust_event_times`: Matrix that allows the user to shift the event start/end of all different types of EUDAQ events. The first entry of each row specifies the data type, the second is the offset which is added to the event start and the third entry is the offset added to the event end. A usage example is shown below. Default is `0ms, 0ms`, `"other"` is just a placeholder.
+* `buffer_depth`: Depth of buffer in which EUDAQ2 `StandardEvents` are timesorted. This algorithm only works for `StandardEvents` with well-defined timestamps. Setting it to `0` disables timesorting. Default is `0`.
 
 ### Plots produced
 * 2D hitmap
@@ -104,4 +105,5 @@ file_name = /path/to/data/examplerun_clicpix2.raw
 type = "MIMOSA26"
 file_name = /path/to/data/examplerun_telescope.raw
 adjust_event_times = ["TluRawDataEvent", -115us, +230us], ["other", 0ns, 0ns]
+buffer_depth = 1000
 ```

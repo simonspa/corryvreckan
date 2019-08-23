@@ -40,6 +40,18 @@ double Track::distance2(Cluster* cluster) const {
     return (dx * dx + dy * dy);
 }
 
+bool Track::hasClosestCluster() const {
+    return closestCluster != nullptr;
+}
+
+void Track::setClosestCluster(Cluster* cluster) {
+    closestCluster = cluster;
+}
+
+Cluster* Track::getClosestCluster() const {
+    return closestCluster;
+}
+
 void Track::calculateChi2() {
 
     // Get the number of clusters
@@ -135,7 +147,7 @@ bool Track::isAssociated(Cluster* cluster) const {
     return false;
 }
 
-bool Track::hasDetector(std::string detectorID) {
+bool Track::hasDetector(std::string detectorID) const {
     auto it = find_if(m_trackClusters.begin(), m_trackClusters.end(), [&detectorID](Cluster* cluster) {
         return cluster->getDetectorID() == detectorID;
     });

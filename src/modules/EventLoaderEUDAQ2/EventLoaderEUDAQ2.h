@@ -14,8 +14,6 @@
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TProfile.h>
-
 #include <iostream>
 
 #include "core/module/Module.hpp"
@@ -63,9 +61,13 @@ namespace corryvreckan {
 
     private:
         /**
+         * @brief Read and return the next decoded StandardEvent (smallest possible granularity) from timesorted buffer
+         */
+        std::shared_ptr<eudaq::StandardEvent> get_next_sorted_std_event();
+        /**
          * @brief Read and return the next event (smallest possible granularity) and return the decoded StandardEvent
          */
-        std::shared_ptr<eudaq::StandardEvent> get_next_event();
+        std::shared_ptr<eudaq::StandardEvent> get_next_std_event();
 
         /**
          * @brief Check whether the current EUDAQ StandardEvent is within the defined Corryvreckan event
@@ -90,11 +92,12 @@ namespace corryvreckan {
 
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
-        bool get_time_residuals{};
-        bool get_tag_vectors{};
-        bool ignore_bore{};
+        bool m_get_time_residuals{};
+        bool m_get_tag_vectors{};
+        bool m_ignore_bore{};
         double m_skip_time{};
-        Matrix<std::string> adjust_event_times;
+        Matrix<std::string> m_adjust_event_times;
+        int m_buffer_depth;
 
         // EUDAQ file reader instance to retrieve data from
         eudaq::FileReaderUP reader_;
@@ -102,6 +105,18 @@ namespace corryvreckan {
         std::vector<eudaq::EventSPC> events_;
         // Currently processed decoded EUDAQ StandardEvent:
         std::shared_ptr<eudaq::StandardEvent> event_;
+
+        // custom comparator for time-sorted priority_queue
+        struct CompareTimeGreater {
+            bool operator()(const std::shared_ptr<eudaq::StandardEvent> a, const std::shared_ptr<eudaq::StandardEvent> b) {
+                return a->GetTimeBegin() > b->GetTimeBegin();
+            }
+        };
+        // Buffer of timesorted decoded EUDAQ StandardEvents: (need to use greater here!)
+        std::priority_queue<std::shared_ptr<eudaq::StandardEvent>,
+                            std::vector<std::shared_ptr<eudaq::StandardEvent>>,
+                            CompareTimeGreater>
+            sorted_events_;
 
         // EUDAQ configuration to be passed to the decoder instance
         eudaq::ConfigurationSPC eudaq_config_;
@@ -128,8 +143,6 @@ namespace corryvreckan {
         std::map<size_t, TH1D*> hPixelTriggerTimeResidual;
         TH2D* hPixelTriggerTimeResidualOverTime;
         TH1D* hTriggersPerEvent;
-
-        std::map<std::string, TProfile*> hTagValues;
     };
 
 } // namespace corryvreckan

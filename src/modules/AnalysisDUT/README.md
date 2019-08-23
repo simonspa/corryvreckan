@@ -10,6 +10,7 @@ Generic analysis module for all prototypes. This module is still work in progres
 ### Parameters
 * `time_cut_frameedge`: Parameter to discard telescope tracks at the frame edges (start and end of the current CLICpix2 frame). Defaults to `20ns`.
 * `chi2ndof_cut`: Acceptance criterion for telescope tracks, defaults to a value of `3`.
+* `use_closest_cluster`: If a track has more than one associated cluster the cluster with the smallest distance to the track is used. Defaults to `true`
 
 ### Plots produced
 * 2D Map of associated cluster positions
