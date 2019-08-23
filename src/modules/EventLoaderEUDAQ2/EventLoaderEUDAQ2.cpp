@@ -17,6 +17,8 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
 
     m_filename = m_config.getPath("file_name", true);
     m_get_time_residuals = m_config.get<bool>("get_time_residuals", false);
+    m_get_tag_vectors = m_config.get<bool>("get_tag_vectors", false);
+    m_ignore_bore = m_config.get<bool>("ignore_bore", true);
     m_skip_time = m_config.get("skip_time", 0.);
     m_adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {});
     m_buffer_depth = m_config.get<int>("buffer_depth", 0);
@@ -177,10 +179,42 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
         }
         auto event = events_.front();
         events_.erase(events_.begin());
+
+        // If this is a Begin-of-Run event and we should ignore it, please do so:
+        if(event->IsBORE() && m_ignore_bore) {
+            LOG(DEBUG) << "Found EUDAQ2 BORE event, ignoring it";
+            continue;
+        }
+
+        // Read and store tag information:
+        if(m_get_tag_vectors) {
+            retrieve_event_tags(event);
+        }
+
         decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, eudaq_config_);
         LOG(DEBUG) << event->GetDescription() << ": EventConverter returned " << (decoding_failed ? "false" : "true");
     } while(decoding_failed);
     return stdevt;
+}
+
+void EventLoaderEUDAQ2::retrieve_event_tags(const eudaq::EventSPC evt) {
+    auto tags = evt->GetTags();
+
+    for(auto tag_pair : tags) {
+        // Trying to convert tag value to double:
+        try {
+            double value = std::stod(tag_pair.second);
+
+            // Check if histogram exists already, if not: create it
+            if(hTagValues.find(tag_pair.first) == hTagValues.end()) {
+                std::string histName = "hTagValues_" + tag_pair.first;
+                std::string histTitle = "tag_" + tag_pair.first + ";event / 1000;tag value";
+                hTagValues[tag_pair.first] = new TProfile(histName.c_str(), histTitle.c_str(), 2e5, 0, 100);
+            }
+            hTagValues[tag_pair.first]->Fill(evt->GetEventN() / 1000, value, 1);
+        } catch(std::exception& e) {
+        }
+    }
 }
 
 EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> clipboard,

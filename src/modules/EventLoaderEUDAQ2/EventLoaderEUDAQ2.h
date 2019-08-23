@@ -14,7 +14,10 @@
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TProfile.h>
+
 #include <iostream>
+
 #include "core/module/Module.hpp"
 #include "eudaq/FileReader.hh"
 #include "eudaq/StandardEvent.hh"
@@ -77,6 +80,12 @@ namespace corryvreckan {
         EventPosition is_within_event(std::shared_ptr<Clipboard> clipboard, std::shared_ptr<eudaq::StandardEvent> evt);
 
         /**
+         * @brief Helper function to retrieve event tags and creating plots from them
+         * @param evt Shared pointer to the current event
+         */
+        void retrieve_event_tags(const eudaq::EventSPC evt);
+
+        /**
          * @brief Store pixel data from relevant detectors on the clipboard
          * @param evt       StandardEvent to read the pixel data from
          * @return Vector of pointers to pixels read from this event
@@ -85,7 +94,9 @@ namespace corryvreckan {
 
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
-        bool m_get_time_residuals;
+        bool m_get_time_residuals{};
+        bool m_get_tag_vectors{};
+        bool m_ignore_bore{};
         double m_skip_time{};
         Matrix<std::string> m_adjust_event_times;
         int m_buffer_depth;
@@ -134,6 +145,8 @@ namespace corryvreckan {
         std::map<size_t, TH1D*> hPixelTriggerTimeResidual;
         TH2D* hPixelTriggerTimeResidualOverTime;
         TH1D* hTriggersPerEvent;
+
+        std::map<std::string, TProfile*> hTagValues;
     };
 
 } // namespace corryvreckan

@@ -27,6 +27,8 @@ If later, the pointer to this event is kept and it continues with the next detec
 
 If no detector is capable of defining events, the `[Metronome]` model needs to be used.
 
+Tags stores in the EUDAQ2 event header are read, a conversion to a double value is attempted and, if successful, a profile with the value over the number of events in the respective run is automatically allocated and filled. This feature can e.g. be used to log temperatures of the devices during data taking, simply storing the temperature as event tags.
+
 ### Requirements
 This module requires an installation of [EUDAQ2](https://eudaq.github.io/). The installation path needs to be set to
 ```bash
@@ -68,7 +70,9 @@ Also, more complex constructs such as arrays or matrices read by the Corryvrecka
 ### Parameters
 * `file_name`: File name of the EUDAQ2 raw data file. This parameter is mandatory.
 * `skip_time`: Time that can be skipped at the start of a run. Default is `0ms`.
-* `get_time_residuals`: Boolean to change if time residual plots should be outputted. Default value is `false`.
+* `get_time_residuals`: Boolean to change if time residual plots should be created. Default value is `false`.
+* `get_tag_vectors`: Boolean to enable creation of EUDAQ2 event tag histograms. Default value is `false`.
+* `ignore_bore`: Boolean to completely ignore the Begin-of-Run event from EUDAQ2. Default value is `true`.
 * `adjust_event_times`: Matrix that allows the user to shift the event start/end of all different types of EUDAQ events. The first entry of each row specifies the data type, the second is the offset which is added to the event start and the third entry is the offset added to the event end. A usage example is shown below. Default is `0ms, 0ms`, `"other"` is just a placeholder.
 * `buffer_depth`: Depth of buffer in which EUDAQ2 `StandardEvents` are timesorted. This algorithm only works for `StandardEvents` with well-defined timestamps. Setting it to `0` disables timesorting. Default is `0`.
 
