@@ -1,28 +1,25 @@
 # FileReader
-**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)   
-**Module Type**: *GLOBAL*  
-**Status**: Functional   
+**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Status**: Functional  
+**Output**: *all objects in input file*
 
 ### Description
-This module reads in an input file containing trees with data previously written out by the `FileWriter`. The read in objects are stored on the clipboard. It reads in `pixel`, `cluster`, `track`, and/or `MCParticle` objects.
+Converts all object data stored in the ROOT data file produced by the FileWriter module back into the clipboard (see the description of FileWriter for more information about the format). Reads all trees defined in the data file that contain Corryvreckan objects. Places all objects read from the tree onto the clipboard storage.
+
+If the requested number of events for the run is less than the number of events the data file contains, all additional events in the file are skipped. If more events than available are requested, a warning is displayed and the other events of the run are skipped.
+
+Currently it is not yet possible to exclude objects from being read. In case not all objects should be converted to messages, these objects need to be removed from the file before the simulation is started.
 
 ### Parameters
-* `only_dut`: Boolean to decide if data is read in from only the DUT. Default value is `false`.
-* `read_pixels`: Boolean to choose if pixel objects are to be read in. Default value is `true`.
-* `read_clusters`: Boolean to choose if cluster objects are to be read in. Default value is `false`.
-* `read_tracks`: Boolean to choose if track objects are to be read in. Default value is `false`.
-* `read_mcparticles`: Boolean to choose if Monte-Carlo particle objects are to be read in. Default value is `false`.
-* `file_name`: Name of the file from which data will be read.
-* `time_window`: Data with time lower than this value will be read in. Default value is `1s`.
+* `file_name` : Location of the ROOT file containing the trees with the object data.
+* `include` : Array of object names (without `corryvreckan::` prefix) to be read from the ROOT trees, all other object names are ignored (cannot be used simulateneously with the *exclude* parameter).
+* `exclude`: Array of object names (without `corryvreckan::` prefix) not to be read from the ROOT trees (cannot be used simultaneously with the *include* parameter).
 
 ### Usage
-```toml
+This module should be placed at the beginning of the main configuration. An example to read only Cluster and Pixel objects from the file *data.root* is:
+
+```ini
 [FileReader]
-only_dut = true
-read_pixels = true
-read_clusters = true
-read_tracks = false
-read_mcparticles = true
-file_name = "input_file.root"
-time_window = 1
+file_name = "data.root"
+include = "Cluster", "Pixel"
 ```

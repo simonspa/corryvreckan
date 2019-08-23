@@ -1,244 +1,250 @@
-#include "FileReader.h"
-
-using namespace corryvreckan;
-using namespace std;
-
-FileReader::FileReader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
-
-    m_readPixels = m_config.get<bool>("read_pixels", true);
-    m_readClusters = m_config.get<bool>("read_clusters", false);
-    m_readTracks = m_config.get<bool>("read_tracks", false);
-    m_fileName = m_config.getPath("file_name");
-    m_timeWindow = m_config.get<double>("time_window", Units::get<double>(1, "s"));
-    m_readMCParticles = m_config.get<bool>("read_mcparticles", false);
-    // checking if DUT parameter is in the configuration file, if so then check if should only output the DUT
-    m_onlyDUT = m_config.get<bool>("only_dut", false);
-    m_currentTime = 0.;
-}
-
-/*
-
- This algorithm reads an input file containing trees with data previously
- written out by the FileWriter.
-
- Any object which inherits from Object can in principle be read
- from file. In order to enable this for a new type, the Object::Factory
- function must know how to return an instantiation of that type (see
- Object.C file to see how to do this). The new type can then simply
- be added to the object list and will be read in correctly. This is the same
- as for the FileWriter, so if the data has been written then the reading will
- run without problems.
-
+/**
+ * @file
+ * @brief Implementation of ROOT data file reader module
+ * @copyright Copyright (c) 2017-2019 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-void FileReader::initialise() {
-    // Decide what objects will be read in
-    if(m_readPixels)
-        m_objectList.push_back("pixels");
-    if(m_readClusters)
-        m_objectList.push_back("clusters");
-    if(m_readTracks)
-        m_objectList.push_back("tracks");
-    if(m_readMCParticles)
-        m_objectList.push_back("mcparticles");
+#include "FileReader.h"
 
-    // Get input file
-    LOG(INFO) << "Opening file " << m_fileName;
-    m_inputFile = new TFile(m_fileName.c_str(), "READ");
-    if(!m_inputFile->IsOpen()) {
-        throw ModuleError("Cannot open input file \"" + m_fileName + "\".");
+#include <climits>
+#include <string>
+#include <utility>
+
+#include <TBranch.h>
+#include <TKey.h>
+#include <TObjArray.h>
+#include <TProcessID.h>
+#include <TTree.h>
+
+#include "core/utils/file.h"
+#include "core/utils/log.h"
+#include "core/utils/type.h"
+
+#include "objects/Object.hpp"
+#include "objects/objects.h"
+
+using namespace corryvreckan;
+
+FileReader::FileReader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+    : Module(std::move(config), std::move(detectors)) {}
+
+/**
+ * @note Objects cannot be stored in smart pointers due to internal ROOT logic
+ */
+FileReader::~FileReader() {
+    for(auto object_inf : object_info_array_) {
+        delete object_inf.objects;
     }
-    m_inputFile->cd();
+}
 
-    // Loop over all objects to be read from file, and get the trees
-    for(unsigned int itList = 0; itList < m_objectList.size(); itList++) {
+/**
+ * Adds lambda function map to convert a vector of generic objects to a templated vector of objects containing this
+ * particular type of object from its typeid.
+ */
+template <typename T> static void add_creator(FileReader::ObjectCreatorMap& map) {
+    map[typeid(T)] = [&](std::vector<Object*> objects) {
+        std::vector<T> data;
+        // Copy the objects to data vector
+        for(auto& object : objects) {
+            data.emplace_back(*static_cast<T*>(object));
+        }
 
-        // Check the type of object
-        string objectType = m_objectList[itList];
-        LOG(DEBUG) << "Looking for object type " << objectType;
+        // Fix the object references (NOTE: we do this after insertion as otherwise the objects could have been relocated)
+        for(size_t i = 0; i < objects.size(); ++i) {
+            auto& prev_obj = *objects[i];
+            auto& new_obj = data[i];
 
-        // Section to set up object reading per detector (such as pixels, clusters)
-        if(objectType == "pixels" || objectType == "clusters" || objectType == "mcparticles") {
-
-            // Loop over all detectors and search for data
-            for(auto& detector : get_detectors()) {
-
-                // Get the detector ID and type
-                string detectorID = detector->name();
-                string detectorType = detector->type();
-                LOG(DEBUG) << "Checking detector " << detectorID << ", type " << detectorType;
-
-                // If only reading information for the DUT
-                if(m_onlyDUT && !detector->isDUT()) {
-                    continue;
+            // Only update the reference for objects that have been referenced before
+            if(prev_obj.TestBit(kIsReferenced)) {
+                auto pid = TProcessID::GetProcessWithUID(&new_obj);
+                if(pid->GetObjectWithID(prev_obj.GetUniqueID()) != &prev_obj) {
+                    LOG(ERROR) << "Duplicate object IDs, cannot correctly resolve previous history!";
                 }
-
-                // Get the tree
-                string objectID = detectorID + "_" + objectType;
-                string treePath = objectType + "/" + detectorID + "_" + detectorType + "_" + objectType;
-                LOG(DEBUG) << "Looking for " << objectType << " for device " << detectorID << ", tree path " << treePath;
-
-                m_inputTrees[objectID] = static_cast<TTree*>(gDirectory->Get(treePath.c_str()));
-#pragma GCC diagnostic push
-#ifndef __clang__
-#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
-#endif
-                // Set the branch addresses
-                m_inputTrees[objectID]->SetBranchAddress("time", &m_time);
-
-                // Cast the Object as a specific type using a Factory
-                m_objects[objectID] = Object::Factory(detectorType, objectType);
-                m_inputTrees[objectID]->SetBranchAddress(objectType.c_str(), &m_objects[objectID]);
-#pragma GCC diagnostic pop
-                m_currentPosition[objectID] = 0;
+                prev_obj.ResetBit(kIsReferenced);
+                new_obj.SetBit(kIsReferenced);
+                pid->PutObjectWithID(&new_obj);
             }
         }
-        // If not an object to be written per pixel
-        else {
-            // Make the tree
-            string treePath = objectType + "/" + objectType;
-            m_inputTrees[objectType] = static_cast<TTree*>(gDirectory->Get(treePath.c_str()));
-// Branch the tree to the timestamp and object
-#pragma GCC diagnostic push
-#ifndef __clang__
-#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
-#endif
-            m_inputTrees[objectType]->SetBranchAddress("time", &m_time);
-            m_objects[objectType] = Object::Factory(objectType);
-            m_inputTrees[objectType]->SetBranchAddress(objectType.c_str(), &m_objects[objectType]);
-#pragma GCC diagnostic pop
+
+        return std::make_shared<std::vector<T>>(std::move(data));
+    };
+}
+
+/**
+ * Uses SFINAE trick to call the add_creator function for all template arguments of a container class. Used to add creators
+ * for every object in a tuple of objects.
+ */
+template <template <typename...> class T, typename... Args>
+static void gen_creator_map_from_tag(FileReader::ObjectCreatorMap& map, type_tag<T<Args...>>) {
+    std::initializer_list<int> value{(add_creator<Args>(map), 0)...};
+    (void)value;
+}
+
+/**
+ * Wrapper function to make the SFINAE trick in \ref gen_creator_map_from_tag work.
+ */
+template <typename T> static FileReader::ObjectCreatorMap gen_creator_map() {
+    FileReader::ObjectCreatorMap ret_map;
+    gen_creator_map_from_tag(ret_map, type_tag<T>());
+    return ret_map;
+}
+
+void FileReader::initialise() {
+    // Read include and exclude list
+    if(m_config.has("include") && m_config.has("exclude")) {
+        throw InvalidCombinationError(
+            m_config, {"exclude", "include"}, "include and exclude parameter are mutually exclusive");
+    } else if(m_config.has("include")) {
+        auto inc_arr = m_config.getArray<std::string>("include");
+        include_.insert(inc_arr.begin(), inc_arr.end());
+    } else if(m_config.has("exclude")) {
+        auto exc_arr = m_config.getArray<std::string>("exclude");
+        exclude_.insert(exc_arr.begin(), exc_arr.end());
+    }
+
+    // Initialize the call map from the tuple of available objects
+    object_creator_map_ = gen_creator_map<corryvreckan::OBJECTS>();
+
+    // Open the file with the objects
+    input_file_ = std::make_unique<TFile>(m_config.getPath("file_name", true).c_str());
+
+    // Read all the trees in the file
+    TList* keys = input_file_->GetListOfKeys();
+    std::set<std::string> tree_names;
+
+    for(auto&& object : *keys) {
+        auto& key = dynamic_cast<TKey&>(*object);
+        if(std::string(key.GetClassName()) == "TTree") {
+            auto tree = static_cast<TTree*>(key.ReadObjectAny(nullptr));
+
+            // Check if a version of this tree has already been read
+            if(tree_names.find(tree->GetName()) != tree_names.end()) {
+                LOG(TRACE) << "Skipping copy of tree with name " << tree->GetName()
+                           << " because one with identical name has already been processed";
+                continue;
+            }
+            tree_names.insert(tree->GetName());
+
+            // Check if this tree should be used
+            if((!include_.empty() && include_.find(tree->GetName()) == include_.end()) ||
+               (!exclude_.empty() && exclude_.find(tree->GetName()) != exclude_.end())) {
+                LOG(TRACE) << "Ignoring tree with " << tree->GetName()
+                           << " objects because it has been excluded or not explicitly included";
+                continue;
+            }
+
+            trees_.push_back(tree);
         }
     }
 
-    LOG(STATUS) << "Successfully opened data file \"" << m_fileName << "\"";
-    // Initialise member variables
-    m_eventNumber = 0;
+    if(trees_.empty()) {
+        LOG(ERROR) << "Provided ROOT file does not contain any trees, module will not read any data";
+    }
+
+    // Loop over all found trees
+    for(auto& tree : trees_) {
+        // Loop over the list of branches and create the set of receiver objects
+        TObjArray* branches = tree->GetListOfBranches();
+        for(int i = 0; i < branches->GetEntries(); i++) {
+            auto* branch = static_cast<TBranch*>(branches->At(i));
+
+            // Add a new vector of objects and bind it to the branch
+            object_info object_inf;
+            object_inf.objects = new std::vector<Object*>;
+            object_info_array_.emplace_back(object_inf);
+            branch->SetAddress(&(object_info_array_.back().objects));
+
+            // Check tree structure and if object type matches name
+            auto split_type = corryvreckan::split<std::string>(branch->GetClassName(), "<>");
+            if(split_type.size() != 2 || split_type[1].size() <= 2) {
+                throw ModuleError("Tree is malformed and cannot be used for creating objetcs");
+            }
+            std::string class_name = split_type[1].substr(0, split_type[1].size() - 1);
+            std::string corry_namespace = "corryvreckan::";
+            size_t corry_idx = class_name.find(corry_namespace);
+            if(corry_idx != std::string::npos) {
+                class_name.replace(corry_idx, corry_namespace.size(), "");
+            }
+            if(class_name != tree->GetName()) {
+                throw ModuleError("Tree contains objects of the wrong type");
+            }
+
+            std::string branch_name = branch->GetName();
+            if(branch_name != "global") {
+                // Check if detector is registered by fetching it:
+                auto detector = get_detector(branch_name);
+                object_info_array_.back().detector = branch_name;
+            }
+        }
+    }
 }
 
 StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
 
-    LOG_PROGRESS(INFO, "file_reader") << "Running over event " << m_eventNumber;
+    if(clipboard->event_defined()) {
+        ModuleError("Clipboard event already defined, cannot continue");
+    }
 
-    bool newEvent = true;
-    // Loop over all objects read from file, and place the objects on the
-    // Clipboard
-    bool dataLoaded = false;
-    for(unsigned int itList = 0; itList < m_objectList.size(); itList++) {
+    if(event_num_ >= event_tree_->GetEntries()) {
+        LOG(INFO) << "Requesting end of run because TTree only contains data for " << (event_num_ + 1) << " events";
+        return StatusCode::EndRun;
+    }
 
-        // Check the type of object
-        string objectType = m_objectList[itList];
+    for(auto& tree : trees_) {
+        tree->GetEntry(event_num_);
+    }
 
-        // If this is written per device, loop over all devices
-        if(objectType == "pixels" || objectType == "clusters" || objectType == "mcparticles") {
+    LOG(TRACE) << "Putting stored objects on the clipboard";
 
-            // Loop over all detectors
-            for(auto& detector : get_detectors()) {
+    // Loop through all branches
+    for(auto object_inf : object_info_array_) {
+        auto objects = object_inf.objects;
 
-                // Get the detector and object ID
-                string detectorID = detector->name();
-                string detectorType = detector->type();
-                string objectID = detectorID + "_" + objectType;
-
-                // If only writing information for the DUT
-                if(m_onlyDUT && !detector->isDUT()) {
-                    continue;
-                }
-
-                // If there is no data for this device, continue
-                if(!m_inputTrees[objectID]) {
-                    continue;
-                }
-
-                // Create the container that will go on the clipboard
-                Objects* objectContainer = new Objects();
-                LOG(DEBUG) << "Looking for " << objectType << " on detector " << detectorID;
-
-                // Continue looping over this device while there is still data
-                while(m_currentPosition[objectID] < m_inputTrees[objectID]->GetEntries()) {
-
-                    // Get the new event from the tree
-                    m_inputTrees[objectID]->GetEvent(m_currentPosition[objectID]);
-
-                    // If the event is outwith the current time window, stop loading data
-                    if((m_time - m_currentTime) > m_timeWindow) {
-                        if(newEvent) {
-                            m_currentTime = m_time;
-                            newEvent = false;
-                        } else {
-                            break;
-                        }
-                    }
-                    dataLoaded = true;
-                    m_currentPosition[objectID]++;
-
-                    // Make a copy of the object from the tree, and place it in the object
-                    // container
-                    Object* object = Object::Factory(detectorType, objectType, m_objects[objectID]);
-                    objectContainer->push_back(object);
-                }
-
-                // Put the data on the clipboard
-                clipboard->put(detectorID, objectType, objectContainer);
-                LOG(DEBUG) << "Picked up " << objectContainer->size() << " " << objectType << " from device " << detectorID;
-            }
-        } // If object is not written per device
-        else {
-
-            // If there is no data for this device, continue
-            if(!m_inputTrees[objectType])
-                continue;
-
-            // Create the container that will go on the clipboard
-            Objects* objectContainer = new Objects();
-            LOG(DEBUG) << "Looking for " << objectType;
-
-            // Continue looping over this device while there is still data
-            while(m_currentPosition[objectType] < m_inputTrees[objectType]->GetEntries()) {
-
-                // Get the new event from the tree
-                m_inputTrees[objectType]->GetEvent(m_currentPosition[objectType]);
-
-                // If the event is outwith the current time window, stop loading data
-                if((m_time - m_currentTime) > m_timeWindow) {
-                    if(newEvent) {
-                        m_currentTime = m_time;
-                        newEvent = false;
-                    } else {
-                        break;
-                    }
-                }
-                dataLoaded = true;
-                m_currentPosition[objectType]++;
-
-                // Make a copy of the object from the tree, and place it in the object
-                // container
-                Object* object = Object::Factory(objectType, m_objects[objectType]);
-                objectContainer->push_back(object);
-            }
-
-            // Put the data on the clipboard
-            clipboard->put(objectType, objectContainer);
-            LOG(DEBUG) << "Picked up " << objectContainer->size() << " " << objectType;
+        // Skip empty objects in current event
+        if(objects->empty()) {
+            continue;
         }
+
+        // Check if a pointer to a dispatcher method exist
+        auto first_object = (*objects)[0];
+        auto iter = object_creator_map_.find(typeid(*first_object));
+        if(iter == object_creator_map_.end()) {
+            LOG(INFO) << "Cannot dispatch message with object " << corryvreckan::demangle(typeid(*first_object).name())
+                      << " because it not registered for messaging";
+            continue;
+        }
+
+        // Create the object vector:
+        auto clip_objects = iter->second(*objects);
+
+        // Store the ojects on the clipboard:
+        if(object_inf.detector.empty()) {
+            clipboard->put(clip_objects);
+        } else {
+            clipboard->put(clip_objects, object_inf.detector);
+        }
+
+        // Update statistics
+        read_cnt_ += objects->size();
     }
 
-    // If no data was loaded then do nothing
-    if(!dataLoaded && m_eventNumber != 0) {
-        return StatusCode::Failure;
-    }
+    event_num_++;
 
-    // Increment event counter
-    m_eventNumber++;
-
-    // Return value telling analysis to keep running
     return StatusCode::Success;
 }
 
 void FileReader::finalise() {
+    int branch_count = 0;
+    for(auto& tree : trees_) {
+        branch_count += tree->GetListOfBranches()->GetEntries();
+    }
 
-    // Close the input file
-    m_inputFile->Close();
+    // Print statistics
+    LOG(INFO) << "Read " << read_cnt_ << " objects from " << branch_count << " branches";
 
-    LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
+    // Close the file
+    input_file_->Close();
 }

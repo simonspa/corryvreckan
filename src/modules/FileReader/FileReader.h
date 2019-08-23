@@ -1,52 +1,90 @@
-#ifndef FileReader_H
-#define FileReader_H 1
+/**
+ * @file
+ * @brief Definition of ROOT data file reader module
+ * @copyright Copyright (c) 2017-2019 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
+#include <functional>
+#include <map>
+#include <string>
 
 #include <TFile.h>
 #include <TTree.h>
-#include <iostream>
+
 #include "core/module/Module.hpp"
 
 namespace corryvreckan {
-    /** @ingroup Modules
+    /**
+     * @ingroup Modules
+     * @brief Module to read data stored in ROOT file back to the Corryvreckan clipboard
+     *
+     * Reads the tree of objects in the data format of the \ref FileWriter module. Copies all stored objects that are
+     * supported back to the clipboard.
      */
     class FileReader : public Module {
-
     public:
-        // Constructors and destructors
+        using ObjectCreatorMap =
+            std::map<std::type_index, std::function<std::shared_ptr<std::vector<Object*>>(std::vector<Object*>)>>;
+
+        /**
+         * @brief Constructor for this global module
+         * @param config Configuration object for this module as retrieved from the steering file
+         * @param detectors List of detectors to perform task on
+         */
         FileReader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
-        ~FileReader() {}
+        /**
+         * @brief Destructor deletes the internal objects read from ROOT Tree
+         */
+        ~FileReader() override;
 
-        // Functions
-        void initialise();
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        void finalise();
+        /**
+         * @brief Open the ROOT file containing the stored output data
+         */
+        void initialise() override;
 
-        // Member variables
-        int m_eventNumber;
-        std::string m_fileName;
-        TFile* m_inputFile;
+        /**
+         * @brief Move the objects stored for the current event to the clipboard
+         */
+        StatusCode run(std::shared_ptr<Clipboard> clipboard) override;
 
-        // Flags for which data types to write out
-        bool m_readClusters;
-        bool m_readPixels;
-        bool m_readTracks;
-        bool m_onlyDUT;
-        bool m_readMCParticles;
+        /**
+         * @brief Output summary and close the ROOT file
+         */
+        void finalise() override;
 
-        // Map of trees which holds the output objects
-        std::map<std::string, TTree*> m_inputTrees;
+    private:
+        /**
+         * @brief Internal object storing objects and information to construct a message from tree
+         */
+        struct object_info {
+            std::vector<Object*>* objects;
+            std::string detector;
+        };
 
-        // Objects which the trees will point to (when the branch address is set)
-        double m_time;
-        std::map<std::string, Object*> m_objects;
+        // Object names to include or exclude from reading
+        std::set<std::string> include_;
+        std::set<std::string> exclude_;
 
-        // List of objects to write out
-        std::vector<std::string> m_objectList;
+        // File containing the objects
+        std::unique_ptr<TFile> input_file_;
 
-        // Variables to keep track of time and file reading
-        double m_currentTime;
-        std::map<std::string, long long int> m_currentPosition;
-        double m_timeWindow;
+        // Object trees in the file
+        std::vector<TTree*> trees_;
+        TTree* event_tree_;
+
+        // List of objects and detector information converted from the trees
+        std::list<object_info> object_info_array_;
+
+        // Statistics for total amount of objects stored
+        unsigned long read_cnt_{};
+
+        // Counter for number of events read:
+        int event_num_{};
+
+        // Internal map to construct an object from it's type index
+        ObjectCreatorMap object_creator_map_;
     };
-} // namespace corryvreckan
-#endif // FileReader_H
+} // namespace allpix
