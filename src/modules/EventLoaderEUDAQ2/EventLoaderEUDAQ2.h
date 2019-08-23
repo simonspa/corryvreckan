@@ -14,6 +14,8 @@
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TProfile.h>
+
 #include <iostream>
 
 #include "core/module/Module.hpp"
@@ -143,6 +145,8 @@ namespace corryvreckan {
         std::map<size_t, TH1D*> hPixelTriggerTimeResidual;
         TH2D* hPixelTriggerTimeResidualOverTime;
         TH1D* hTriggersPerEvent;
+
+        std::map<std::string, TProfile*> hTagValues;
     };
 
 } // namespace corryvreckan
