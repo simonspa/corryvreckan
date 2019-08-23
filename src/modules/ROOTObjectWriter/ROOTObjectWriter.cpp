@@ -54,9 +54,20 @@ void ROOTObjectWriter::initialise() {
         auto exc_arr = m_config.getArray<std::string>("exclude");
         exclude_.insert(exc_arr.begin(), exc_arr.end());
     }
+
+    // Create event tree:
+    event_tree_ = std::make_unique<TTree>("Event", (std::string("Tree of Events").c_str()));
 }
 
 StatusCode ROOTObjectWriter::run(std::shared_ptr<Clipboard> clipboard) {
+
+    if(!clipboard->event_defined()) {
+        ModuleError("No Clipboard event defined, cannot continue");
+    }
+
+    auto event = clipboard->get_event();
+    event_tree_->Branch("global", event.get());
+    event_tree_->Fill();
 
     auto data = clipboard->get_all();
     LOG(DEBUG) << "Clipboard has " << data.size() << " different object types.";
