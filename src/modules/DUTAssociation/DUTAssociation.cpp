@@ -8,7 +8,7 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
 
     timingCut = m_config.get<double>("timing_cut", Units::get<double>(200, "ns"));
     spatialCut = m_config.get<XYVector>("spatial_cut", 2 * m_detector->pitch());
-    useClusterCentre = m_config.get<bool>("use_cluster_centre", true);
+    useClusterCentre = m_config.get<bool>("use_cluster_centre", false);
 }
 
 void DUTAssociation::initialise() {
@@ -83,15 +83,17 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the DUT clusters from the clipboard
     Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
-    if(clusters == nullptr) {
-        LOG(DEBUG) << "No DUT clusters on the clipboard";
-        return StatusCode::Success;
-    }
 
     // Loop over all tracks
     for(auto& track : (*tracks)) {
         int assoc_cls_per_track = 0;
         auto min_distance = std::numeric_limits<double>::max();
+
+        if(clusters == nullptr) {
+            hNoAssocCls->Fill(0);
+            LOG(DEBUG) << "No DUT clusters on the clipboard";
+            continue;
+        }
 
         // Loop over all DUT clusters
         for(auto& cluster : (*clusters)) {

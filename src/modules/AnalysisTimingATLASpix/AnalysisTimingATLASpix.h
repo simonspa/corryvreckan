@@ -53,6 +53,7 @@ namespace corryvreckan {
         TH1F* hClusterTimeMinusPixelTime;
 
         // 2D histograms:
+        TH2F* hTrackCorrelationTimeAssocVsTime;
         TH2F* hTrackCorrelationTimeVsCol; // control plot only
         TH2F* hTrackCorrelationTimeVsRow;
         TH2F* hTrackCorrelationTimeVsRow_1px;
