@@ -79,7 +79,7 @@ namespace corryvreckan {
          * @brief Helper function to retrieve event tags and creating plots from them
          * @param evt Shared pointer to the current event
          */
-        void retrieve_event_tags(const std::shared_ptr<eudaq::StandardEvent> evt);
+        void retrieve_event_tags(const eudaq::EventSPC evt);
 
         /**
          * @brief Store pixel data from relevant detectors on the clipboard

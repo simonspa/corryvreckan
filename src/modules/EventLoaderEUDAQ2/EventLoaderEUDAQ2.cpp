@@ -159,13 +159,17 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
         }
         auto event = events_.front();
         events_.erase(events_.begin());
+
+        // Read and store tag information:
+        retrieve_event_tags(event);
+
         decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, eudaq_config_);
         LOG(DEBUG) << event->GetDescription() << ": EventConverter returned " << (decoding_failed ? "false" : "true");
     } while(decoding_failed);
     return stdevt;
 }
 
-void EventLoaderEUDAQ2::retrieve_event_tags(const std::shared_ptr<eudaq::StandardEvent> evt) {
+void EventLoaderEUDAQ2::retrieve_event_tags(const eudaq::EventSPC evt) {
     auto tags = evt->GetTags();
 
     for(auto tag_pair : tags) {
@@ -344,9 +348,6 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
                 return StatusCode::EndRun;
             }
         }
-
-        // Read and store tag information:
-        retrieve_event_tags(event_);
 
         // Check if this event is within the currently defined Corryvreckan event:
         current_position = is_within_event(clipboard, event_);
