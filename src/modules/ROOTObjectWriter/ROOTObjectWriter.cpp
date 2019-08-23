@@ -77,12 +77,12 @@ StatusCode ROOTObjectWriter::run(std::shared_ptr<Clipboard> clipboard) {
             auto type_idx = block.first;
             auto class_name = corryvreckan::demangle(type_idx.name());
             auto class_name_full = corryvreckan::demangle(type_idx.name(), true);
-            LOG(TRACE) << "ROOT object writer received objects of type \"" << class_name << "\"";
+            LOG(TRACE) << "Received objects of type \"" << class_name << "\"";
 
-            // Check if this message should be kept
+            // Check if these objects should be stored
             if((!include_.empty() && include_.find(class_name) == include_.end()) ||
                (!exclude_.empty() && exclude_.find(class_name) != exclude_.end())) {
-                LOG(TRACE) << "ROOT object writer ignored object " << corryvreckan::demangle(type_idx.name())
+                LOG(TRACE) << "Ignoring object " << corryvreckan::demangle(type_idx.name())
                            << " because it has been excluded or not explicitly included";
                 continue;
             }
@@ -126,7 +126,7 @@ StatusCode ROOTObjectWriter::run(std::shared_ptr<Clipboard> clipboard) {
                 }
             }
         } catch(...) {
-            LOG(WARNING) << "ROOT object writer cannot process object of type" << corryvreckan::demangle(block.first.name());
+            LOG(WARNING) << "Cannot process object of type" << corryvreckan::demangle(block.first.name());
             return StatusCode::NoData;
         }
     }
