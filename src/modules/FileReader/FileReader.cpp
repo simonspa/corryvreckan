@@ -69,7 +69,7 @@ template <typename T> static void add_creator(FileReader::ObjectCreatorMap& map)
             }
         }
 
-        return std::make_shared<std::vector<T>>(std::move(data));
+        return std::make_shared<std::vector<T*>>(std::move(data));
     };
 }
 
