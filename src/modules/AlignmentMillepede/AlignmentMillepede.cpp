@@ -103,8 +103,12 @@ void AlignmentMillepede::finalise() {
         if(det->isDUT() && m_excludeDUT) {
             nPlanes--;
         }
+        if(det->isAuxiliary()) {
+            LOG(INFO) << "Excluding auxiliary detector " << det->name();
+            nPlanes--;
+        }
     }
-    LOG(INFO) << "Aligning " << nPlanes << "planes";
+    LOG(INFO) << "Aligning " << nPlanes << " planes";
     const size_t nParameters = 6 * nPlanes;
     for(unsigned int iteration = 0; iteration < m_nIterations; ++iteration) {
         // Define the constraint equations.

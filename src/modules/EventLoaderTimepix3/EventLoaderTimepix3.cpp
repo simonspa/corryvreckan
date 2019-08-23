@@ -610,6 +610,10 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
                 const double ftimestamp = timestamp - t_shift;
                 LOG(DEBUG) << "Time shift= " << Units::display(t_shift, {"s", "ns"});
                 LOG(DEBUG) << "Timestamp calibrated = " << Units::display(ftimestamp, {"s", "ns"});
+
+                if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {
+                    LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
+                }
                 // creating new pixel object with calibrated values of tot and toa
                 // when calibration is not available, set charge = tot
                 Pixel* pixel = new Pixel(detectorID, col, row, static_cast<int>(tot), tot, ftimestamp);

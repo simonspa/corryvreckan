@@ -20,7 +20,6 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration config, std::shared_ptr<Det
     m_detector = detector;
 
     m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
-    m_pixelTolerance = m_config.get<double>("pixel_tolerance", 1.);
     m_chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
     m_inpixelBinSize = m_config.get<double>("inpixel_bin_size", Units::get<double>(1.0, "um"));
 }
@@ -187,7 +186,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         auto globalIntercept = m_detector->getIntercept(track);
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
-        if(!m_detector->hasIntercept(track, m_pixelTolerance)) {
+        if(!m_detector->hasIntercept(track, 1)) {
             LOG(DEBUG) << " - track outside DUT area: " << localIntercept;
             continue;
         }
@@ -309,6 +308,9 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         return StatusCode::Success;
     }
     for(auto& pixel : (*pixels)) {
+        if(pixel->column() > m_detector->nPixels().X() || pixel->row() > m_detector->nPixels().Y()) {
+            continue;
+        }
         prev_hit_ts.at(static_cast<size_t>(pixel->column())).at(static_cast<size_t>(pixel->row())) = pixel->timestamp();
     }
 

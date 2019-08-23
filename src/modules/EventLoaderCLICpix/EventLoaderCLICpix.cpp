@@ -104,6 +104,10 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
         row = 63 - row;
         LOG(TRACE) << "New pixel: " << col << "," << row << " with tot " << tot;
 
+        if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {
+            LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
+        }
+
         // If this pixel is masked, do not save it
         if(m_detector->masked(col, row))
             continue;

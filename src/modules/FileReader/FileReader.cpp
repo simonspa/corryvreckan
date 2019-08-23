@@ -9,7 +9,7 @@ FileReader::FileReader(Configuration config, std::vector<std::shared_ptr<Detecto
     m_readPixels = m_config.get<bool>("read_pixels", true);
     m_readClusters = m_config.get<bool>("read_clusters", false);
     m_readTracks = m_config.get<bool>("read_tracks", false);
-    m_fileName = m_config.getPath("file_name", true);
+    m_fileName = m_config.getPath("file_name");
     m_timeWindow = m_config.get<double>("time_window", Units::get<double>(1, "s"));
     m_readMCParticles = m_config.get<bool>("read_mcparticles", false);
     // checking if DUT parameter is in the configuration file, if so then check if should only output the DUT
@@ -56,6 +56,7 @@ void FileReader::initialise() {
 
         // Check the type of object
         string objectType = m_objectList[itList];
+        LOG(DEBUG) << "Looking for object type " << objectType;
 
         // Section to set up object reading per detector (such as pixels, clusters)
         if(objectType == "pixels" || objectType == "clusters" || objectType == "mcparticles") {
@@ -66,6 +67,7 @@ void FileReader::initialise() {
                 // Get the detector ID and type
                 string detectorID = detector->name();
                 string detectorType = detector->type();
+                LOG(DEBUG) << "Checking detector " << detectorID << ", type " << detectorType;
 
                 // If only reading information for the DUT
                 if(m_onlyDUT && !detector->isDUT()) {

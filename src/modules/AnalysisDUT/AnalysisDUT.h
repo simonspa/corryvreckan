@@ -34,7 +34,8 @@ namespace corryvreckan {
         TProfile2D* hPixelRawValueMapAssoc;
 
         TH1F* associatedTracksVersusTime;
-        TH1F *residualsX, *residualsY;
+        TH1F *residualsX, *residualsY, *residualsPos;
+        TH2F* residualsPosVsresidualsTime;
 
         TH1F *residualsX1pix, *residualsY1pix;
         TH1F *residualsX2pix, *residualsY2pix;
@@ -42,6 +43,10 @@ namespace corryvreckan {
         TH1F* clusterChargeAssoc;
         TH1F* clusterSizeAssoc;
         TH1F* clusterSizeAssocNorm;
+        TH1F* clusterWidthRowAssoc;
+        TH1F* clusterWidthColAssoc;
+
+        TH1F* hCutHisto;
 
         TProfile2D *rmsxvsxmym, *rmsyvsxmym, *rmsxyvsxmym;
         TProfile2D *qvsxmym, *qMoyalvsxmym, *pxqvsxmym;
@@ -54,6 +59,8 @@ namespace corryvreckan {
 
         TH1F* hTrackCorrelationX;
         TH1F* hTrackCorrelationY;
+        TH1F* hTrackCorrelationPos;
+        TH2F* hTrackCorrelationPosVsCorrelationTime;
         TH1F* hTrackCorrelationTime;
         TH1F* residualsTime;
         TH2F* residualsTimeVsTime;
@@ -63,8 +70,10 @@ namespace corryvreckan {
         TH2F* hAssociatedTracksLocalPosition;
         TH2F* hUnassociatedTracksGlobalPosition;
         // Member variables
-        double spatialCut, m_timeCutFrameEdge;
+        double m_timeCutFrameEdge;
         double chi2ndofCut;
+        bool useClosestCluster;
+        int num_tracks;
     };
 } // namespace corryvreckan
 

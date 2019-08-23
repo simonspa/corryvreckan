@@ -35,6 +35,7 @@ namespace corryvreckan {
         double error() const;
         double errorX() const { return m_error.X(); }
         double errorY() const { return m_error.Y(); }
+
         bool isSplit() const { return m_split; }
         void setSplit(bool split);
 
@@ -59,6 +60,12 @@ namespace corryvreckan {
         void setErrorY(double error) { m_error.SetY(error); }
         void setError(ROOT::Math::XYVector error) { m_error = error; }
 
+        /**
+         * @brief Print an ASCII representation of Cluster to the given stream
+         * @param out Stream to print to
+         */
+        void print(std::ostream& out) const override;
+
     private:
         // Member variables
         std::vector<TRef> m_pixels;
@@ -77,7 +84,7 @@ namespace corryvreckan {
         std::map<int, bool> m_columnHits;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Cluster, 11)
+        ClassDefOverride(Cluster, 12)
     };
 
     // Vector type declaration
