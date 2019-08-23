@@ -90,7 +90,8 @@ namespace corryvreckan {
 
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
-        bool get_time_residuals;
+        bool get_time_residuals{};
+        bool get_tag_vectors{};
         double m_skip_time{};
         Matrix<std::string> adjust_event_times;
 

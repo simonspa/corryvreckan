@@ -17,6 +17,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
 
     m_filename = m_config.getPath("file_name", true);
     get_time_residuals = m_config.get<bool>("get_time_residuals", false);
+    get_tag_vectors = m_config.get<bool>("get_tag_vectors", false);
     m_skip_time = m_config.get("skip_time", 0.);
     adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {});
 
@@ -161,7 +162,9 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_event() {
         events_.erase(events_.begin());
 
         // Read and store tag information:
-        retrieve_event_tags(event);
+        if(get_tag_vectors) {
+            retrieve_event_tags(event);
+        }
 
         decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, eudaq_config_);
         LOG(DEBUG) << event->GetDescription() << ": EventConverter returned " << (decoding_failed ? "false" : "true");

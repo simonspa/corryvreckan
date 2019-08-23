@@ -70,7 +70,8 @@ Also, more complex constructs such as arrays or matrices read by the Corryvrecka
 ### Parameters
 * `file_name`: File name of the EUDAQ2 raw data file. This parameter is mandatory.
 * `skip_time`: Time that can be skipped at the start of a run. Default is `0ms`.
-* `get_time_residuals`: Boolean to change if time residual plots should be outputted. Default value is `false`.
+* `get_time_residuals`: Boolean to change if time residual plots should be created. Default value is `false`.
+* `get_tag_vectors`: Boolean to enable creation of EUDAQ2 event tag histograms. Default value is `false`.
 * `adjust_event_times`: Matrix that allows the user to shift the event start/end of all different types of EUDAQ events. The first entry of each row specifies the data type, the second is the offset which is added to the event start and the third entry is the offset added to the event end. A usage example is shown below. Default is `0ms, 0ms`, `"other"` is just a placeholder.
 
 ### Plots produced
