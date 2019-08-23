@@ -43,12 +43,18 @@ namespace corryvreckan {
 
         std::map<uint32_t, double> triggerList() const { return trigger_list_; }
 
+        /**
+         * @brief Print an ASCII representation of Pixel to the given stream
+         * @param out Stream to print to
+         */
+        void print(std::ostream& out) const override;
+
     protected:
         double end_;
         std::map<uint32_t, double> trigger_list_{};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Event, 3)
+        ClassDefOverride(Event, 4)
     };
 } // namespace corryvreckan
 
