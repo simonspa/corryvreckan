@@ -56,6 +56,7 @@ void FileWriter::initialise() {
 
     // Create event tree:
     event_tree_ = std::make_unique<TTree>("Event", (std::string("Tree of Events").c_str()));
+    event_tree_->Bronch("global", "corryvreckan::Event", &event_);
 }
 
 StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
@@ -64,8 +65,8 @@ StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
         ModuleError("No Clipboard event defined, cannot continue");
     }
 
-    auto event = clipboard->get_event();
-    event_tree_->Branch("global", event.get());
+    // Read event from clipboard and write to tree:
+    event_ = clipboard->get_event().get();
     event_tree_->Fill();
 
     auto data = clipboard->get_all();
