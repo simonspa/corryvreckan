@@ -146,7 +146,7 @@ void FileReader::initialise() {
     }
 
     if(trees_.empty()) {
-        LOG(ERROR) << "Provided ROOT file does not contain any trees, module will not read any data";
+        throw ModuleError("Provided ROOT file does not contain any trees, module cannot read any data");
     }
 
     // Loop over all found trees
