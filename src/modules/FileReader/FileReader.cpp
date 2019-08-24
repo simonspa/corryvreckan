@@ -167,14 +167,14 @@ void FileReader::initialise() {
     }
 
     auto* event_branch = static_cast<TBranch*>(event_branches->At(0));
-    new_event_ = new Event();
-    event_branch->SetAddress(new_event_);
+    event_ = new Event();
+    event_branch->SetAddress(&event_);
 
     // Loop over all found trees
     for(auto& tree : trees_) {
         // Loop over the list of branches and create the set of receiver objects
         TObjArray* branches = tree->GetListOfBranches();
-        LOG(TRACE) << "branches: " << branches->GetEntries();
+        LOG(TRACE) << "Tree \"" << tree->GetName() << "\" has " << branches->GetEntries() << " branches";
         for(int i = 0; i < branches->GetEntries(); i++) {
             auto* branch = static_cast<TBranch*>(branches->At(i));
 
@@ -222,9 +222,10 @@ StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Read event object from tree and store it on the clipboard:
     event_tree_->GetEntry(event_num_);
-    clipboard->put_event(std::shared_ptr<Event>(new_event_));
+    clipboard->put_event(std::shared_ptr<Event>(event_));
 
     for(auto& tree : trees_) {
+        LOG(TRACE) << "Reading tree \"" << tree->GetName() << "\"";
         tree->GetEntry(event_num_);
     }
 
