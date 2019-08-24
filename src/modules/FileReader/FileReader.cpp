@@ -45,7 +45,7 @@ FileReader::~FileReader() {
  * particular type of object from its typeid.
  */
 template <typename T> static void add_creator(FileReader::ObjectCreatorMap& map) {
-    map[typeid(T)] = [&](std::vector<Object*> objects) {
+    map[typeid(T)] = [&](std::vector<Object*> objects, std::string detector, std::shared_ptr<Clipboard> clipboard) {
         std::vector<T*> data;
         // Copy the objects to data vector
         for(auto& object : objects) {
@@ -69,7 +69,12 @@ template <typename T> static void add_creator(FileReader::ObjectCreatorMap& map)
             }
         }
 
-        return std::make_shared<std::vector<T*>>(std::move(data));
+        // Store the ojects on the clipboard:
+        if(detector.empty()) {
+            clipboard->put(std::make_shared<std::vector<T*>>(std::move(data)));
+        } else {
+            clipboard->put(std::make_shared<std::vector<T*>>(std::move(data)), detector);
+        }
     };
 }
 
@@ -217,15 +222,8 @@ StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
             continue;
         }
 
-        // Create the object vector:
-        auto clip_objects = iter->second(*objects);
-
-        // Store the ojects on the clipboard:
-        if(object_inf.detector.empty()) {
-            clipboard->put(clip_objects);
-        } else {
-            clipboard->put(clip_objects, object_inf.detector);
-        }
+        // Create the object vector and store it on the clipboard:
+        iter->second(*objects, object_inf.detector, clipboard);
 
         // Update statistics
         read_cnt_ += objects->size();

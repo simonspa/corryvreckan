@@ -27,7 +27,8 @@ namespace corryvreckan {
     class FileReader : public Module {
     public:
         using ObjectCreatorMap =
-            std::map<std::type_index, std::function<std::shared_ptr<std::vector<Object*>>(std::vector<Object*>)>>;
+            std::map<std::type_index,
+                     std::function<void(std::vector<Object*>, std::string detector, std::shared_ptr<Clipboard> clipboard)>>;
 
         /**
          * @brief Constructor for this global module
