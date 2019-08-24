@@ -125,6 +125,12 @@ void FileReader::initialise() {
         if(std::string(key.GetClassName()) == "TTree") {
             auto tree = static_cast<TTree*>(key.ReadObjectAny(nullptr));
 
+            if(tree->GetName() == std::string("Event")) {
+                LOG(DEBUG) << "Found Event object tree";
+                event_tree_ = tree;
+                continue;
+            }
+
             // Check if a version of this tree has already been read
             if(tree_names.find(tree->GetName()) != tree_names.end()) {
                 LOG(TRACE) << "Skipping copy of tree with name " << tree->GetName()
@@ -149,10 +155,26 @@ void FileReader::initialise() {
         throw ModuleError("Provided ROOT file does not contain any trees, module cannot read any data");
     }
 
+    // Prepare event branch:
+    if(event_tree_ == nullptr) {
+        throw ModuleError("Could not find \"Event\" tree to read event definitions from");
+    }
+
+    // Loop over the list of branches and create the set of receiver objects
+    TObjArray* event_branches = event_tree_->GetListOfBranches();
+    if(event_branches->GetEntries() != 1) {
+        throw ModuleError("\"Event\" tree invalid, cannot read event data from file");
+    }
+
+    auto* event_branch = static_cast<TBranch*>(event_branches->At(0));
+    new_event_ = new Event();
+    event_branch->SetAddress(new_event_);
+
     // Loop over all found trees
     for(auto& tree : trees_) {
         // Loop over the list of branches and create the set of receiver objects
         TObjArray* branches = tree->GetListOfBranches();
+        LOG(TRACE) << "branches: " << branches->GetEntries();
         for(int i = 0; i < branches->GetEntries(); i++) {
             auto* branch = static_cast<TBranch*>(branches->At(i));
 
@@ -198,6 +220,10 @@ StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
         return StatusCode::EndRun;
     }
 
+    // Read event object from tree and store it on the clipboard:
+    event_tree_->GetEntry(event_num_);
+    clipboard->put_event(std::shared_ptr<Event>(new_event_));
+
     for(auto& tree : trees_) {
         tree->GetEntry(event_num_);
     }
@@ -217,8 +243,8 @@ StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
         auto first_object = (*objects)[0];
         auto iter = object_creator_map_.find(typeid(*first_object));
         if(iter == object_creator_map_.end()) {
-            LOG(INFO) << "Cannot dispatch message with object " << corryvreckan::demangle(typeid(*first_object).name())
-                      << " because it not registered for messaging";
+            LOG(INFO) << "Cannot create object with type " << corryvreckan::demangle(typeid(*first_object).name())
+                      << " because it not registered for clipboard storage";
             continue;
         }
 

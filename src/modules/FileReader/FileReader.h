@@ -74,7 +74,8 @@ namespace corryvreckan {
 
         // Object trees in the file
         std::vector<TTree*> trees_;
-        TTree* event_tree_;
+        TTree* event_tree_{nullptr};
+        Event* new_event_;
 
         // List of objects and detector information converted from the trees
         std::list<object_info> object_info_array_;
