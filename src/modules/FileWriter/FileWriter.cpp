@@ -68,6 +68,7 @@ StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
     // Read event from clipboard and write to tree:
     event_ = clipboard->get_event().get();
     event_tree_->Fill();
+    write_cnt_++;
 
     auto data = clipboard->get_all();
     LOG(DEBUG) << "Clipboard has " << data.size() << " different object types.";
@@ -156,6 +157,7 @@ void FileWriter::finalise() {
         // Update statistics
         branch_count += tree.second->GetListOfBranches()->GetEntries();
     }
+    branch_count += event_tree_->GetListOfBranches()->GetEntries();
 
     // Finish writing to output file
     output_file_->Write();

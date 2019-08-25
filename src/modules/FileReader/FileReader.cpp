@@ -223,6 +223,7 @@ StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
     // Read event object from tree and store it on the clipboard:
     event_tree_->GetEntry(event_num_);
     clipboard->put_event(std::make_shared<Event>(*event_));
+    read_cnt_++;
 
     for(auto& tree : trees_) {
         LOG(TRACE) << "Reading tree \"" << tree->GetName() << "\"";
@@ -267,6 +268,7 @@ void FileReader::finalise() {
     for(auto& tree : trees_) {
         branch_count += tree->GetListOfBranches()->GetEntries();
     }
+    branch_count += event_tree_->GetListOfBranches()->GetEntries();
 
     // Print statistics
     LOG(INFO) << "Read " << read_cnt_ << " objects from " << branch_count << " branches";
