@@ -7,7 +7,7 @@ using namespace corryvreckan;
 using namespace std;
 
 // Global container declarations
-Tracks globalTracks;
+TrackVector globalTracks;
 std::shared_ptr<Detector> globalDetector;
 int detNum;
 

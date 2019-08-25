@@ -15,7 +15,7 @@
 using namespace corryvreckan;
 
 // Global container declarations
-Tracks globalTracks;
+TrackVector globalTracks;
 std::shared_ptr<Detector> globalDetector;
 
 AlignmentDUTResidual::AlignmentDUTResidual(Configuration config, std::shared_ptr<Detector> detector)

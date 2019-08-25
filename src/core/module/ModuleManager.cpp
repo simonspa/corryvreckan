@@ -574,7 +574,7 @@ void ModuleManager::run() {
         }
 
         // Print statistics:
-        auto tracks = m_clipboard->get<Tracks>();
+        auto tracks = m_clipboard->get<Track>();
         m_tracks += (tracks == nullptr ? 0 : static_cast<int>(tracks->size()));
 
         if(m_events % 100 == 0) {

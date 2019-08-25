@@ -107,7 +107,7 @@ namespace corryvreckan {
     };
 
     // Vector type declaration
-    typedef std::vector<Track*> Tracks;
+    using TrackVector = std::vector<Track*>;
 } // namespace corryvreckan
 
 #endif // TRACK_H

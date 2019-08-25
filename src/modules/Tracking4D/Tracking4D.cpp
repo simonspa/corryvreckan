@@ -118,7 +118,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Output track container
-    auto tracks = std::make_shared<Tracks>();
+    auto tracks = std::make_shared<TrackVector>();
 
     // Loop over all clusters
     for(auto& cluster : (*referenceClusters)) {

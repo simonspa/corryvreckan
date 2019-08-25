@@ -108,7 +108,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Output track container
     LOG(TRACE) << "Initialise tracks object";
-    auto tracks = std::make_shared<Tracks>();
+    auto tracks = std::make_shared<TrackVector>();
 
     LOG(DEBUG) << "referenceClusters->size() == " << referenceClusters->size();
     // Loop over all clusters

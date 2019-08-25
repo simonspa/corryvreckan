@@ -502,7 +502,7 @@ bool AnalysisCLICpix::checkMasked(double chipInterceptRow, double chipInterceptC
 
 // Check if there is another track close to the selected track.
 // "Close" is defined as the intercept at the clicpix
-bool AnalysisCLICpix::checkProximity(Track* track, std::shared_ptr<Tracks> tracks) {
+bool AnalysisCLICpix::checkProximity(Track* track, std::shared_ptr<TrackVector> tracks) {
 
     // Get the intercept of the interested track at the dut
     bool close = false;
@@ -510,7 +510,7 @@ bool AnalysisCLICpix::checkProximity(Track* track, std::shared_ptr<Tracks> track
 
     // Loop over all other tracks and check if they intercept close to the track
     // we are considering
-    Tracks::iterator itTrack;
+    TrackVector::iterator itTrack;
     for(itTrack = tracks->begin(); itTrack != tracks->end(); itTrack++) {
 
         // Get the track
