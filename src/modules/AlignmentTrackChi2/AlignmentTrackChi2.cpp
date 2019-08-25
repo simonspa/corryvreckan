@@ -59,7 +59,7 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
             }
         }
 
-        Track* alignmentTrack = new Track(track);
+        Track* alignmentTrack = new Track(*track);
         m_alignmenttracks.push_back(alignmentTrack);
     }
 

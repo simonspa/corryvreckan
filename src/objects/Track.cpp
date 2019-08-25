@@ -4,20 +4,20 @@
 using namespace corryvreckan;
 
 Track::Track() : m_direction(0, 0, 1.), m_state(0, 0, 0.) {}
-Track::Track(Track* track) {
-    auto trackClusters = track->clusters();
+Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp()) {
+    auto trackClusters = track.clusters();
     for(auto& track_cluster : trackClusters) {
         Cluster* cluster = new Cluster(*track_cluster);
         addCluster(cluster);
     }
 
-    auto associatedClusters = track->associatedClusters();
+    auto associatedClusters = track.associatedClusters();
     for(auto& assoc_cluster : associatedClusters) {
         Cluster* cluster = new Cluster(*assoc_cluster);
         addAssociatedCluster(cluster);
     }
-    m_state = track->m_state;
-    m_direction = track->m_direction;
+    m_state = track.m_state;
+    m_direction = track.m_direction;
 }
 
 void Track::addCluster(const Cluster* cluster) {

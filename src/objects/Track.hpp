@@ -22,7 +22,7 @@ namespace corryvreckan {
         Track();
 
         // Copy constructor (also copies clusters from the original track)
-        Track(Track* track);
+        Track(const Track& track);
 
         // Add a new cluster to the track
         void addCluster(const Cluster* cluster);
