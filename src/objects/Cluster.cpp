@@ -4,16 +4,6 @@
 using namespace corryvreckan;
 
 Cluster::Cluster() : m_columnWidth(0.), m_rowWidth(0.), m_split(false) {}
-Cluster::Cluster(const Cluster* cluster) {
-    m_global = cluster->global();
-    m_local = cluster->local();
-    m_error = ROOT::Math::XYVector(cluster->errorX(), cluster->errorY());
-    m_detectorID = cluster->detectorID();
-    m_timestamp = cluster->timestamp();
-    m_columnWidth = cluster->columnWidth();
-    m_rowWidth = cluster->rowWidth();
-    m_split = cluster->isSplit();
-}
 
 void Cluster::addPixel(const Pixel* pixel) {
     m_pixels.push_back(const_cast<Pixel*>(pixel)); // NOLINT

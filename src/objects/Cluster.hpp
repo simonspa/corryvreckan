@@ -21,9 +21,6 @@ namespace corryvreckan {
         // Constructors and destructors
         Cluster();
 
-        // Copy constructor
-        Cluster(const Cluster* cluster);
-
         // Functions
         // Add a new pixel to the cluster
         void addPixel(const Pixel* pixel);
