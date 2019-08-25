@@ -102,7 +102,7 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
         // Get the track
         Track* track = globalTracks[iTrack];
         // Get all clusters on the track
-        Clusters trackClusters = track->clusters();
+        auto trackClusters = track->clusters();
         // Find the cluster that needs to have its position recalculated
         for(size_t iTrackCluster = 0; iTrackCluster < trackClusters.size(); iTrackCluster++) {
             Cluster* trackCluster = trackClusters[iTrackCluster];

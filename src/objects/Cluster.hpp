@@ -88,7 +88,7 @@ namespace corryvreckan {
     };
 
     // Vector type declaration
-    typedef std::vector<Cluster*> Clusters;
+    using ClusterVector = std::vector<Cluster*>;
 } // namespace corryvreckan
 
 #endif // CLUSTER_H

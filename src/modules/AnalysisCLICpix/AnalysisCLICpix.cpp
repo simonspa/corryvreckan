@@ -264,7 +264,7 @@ StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
         // Plot the difference between track intercepts and all clicpix clusters
         // Also record which cluster is the closest
         bool matched = false;
-        Clusters trackclusters = track->clusters();
+        auto trackclusters = track->clusters();
         Cluster* bestCluster = nullptr;
         double xresidualBest = 10000.;
         double yresidualBest = 10000.;
@@ -403,7 +403,7 @@ StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
             /*      for (itCorrelate = clusters->begin(); itCorrelate != clusters->end(); ++itCorrelate) {
         if(pixelMatch) break;
         // Loop over pixels
-        Pixels::const_iterator itPixel;
+        PixelVector::const_iterator itPixel;
         for (itPixel = (*itCorrelate)->pixels().begin(); itPixel != (*itCorrelate)->pixels().end(); itPixel++) {
 
           // Get the pixel global position
@@ -528,11 +528,11 @@ bool AnalysisCLICpix::checkProximity(Track* track, std::shared_ptr<Tracks> track
 }
 
 // Small sub-routine to fill histograms that only need clusters
-void AnalysisCLICpix::fillClusterHistos(std::shared_ptr<Clusters> clusters) {
+void AnalysisCLICpix::fillClusterHistos(std::shared_ptr<ClusterVector> clusters) {
 
     // Pick up column to generate unique pixel id
     int nCols = m_detector->nPixels().X();
-    Clusters::iterator itc;
+    ClusterVector::iterator itc;
 
     // Check if this is a new clicpix frame (each frame may be in several events)
     // and

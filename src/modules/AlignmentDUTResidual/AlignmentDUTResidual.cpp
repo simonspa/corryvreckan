@@ -220,7 +220,7 @@ void AlignmentDUTResidual::finalise() {
     size_t n_associatedClusters = 0;
     // count associated clusters:
     for(auto& track : globalTracks) {
-        Clusters associatedClusters = track->associatedClusters();
+        ClusterVector associatedClusters = track->associatedClusters();
         for(auto& associatedCluster : associatedClusters) {
             std::string detectorID = associatedCluster->detectorID();
             if(detectorID != name) {

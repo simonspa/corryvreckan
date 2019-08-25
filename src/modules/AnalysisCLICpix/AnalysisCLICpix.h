@@ -26,7 +26,7 @@ namespace corryvreckan {
     private:
         std::shared_ptr<Detector> m_detector;
         bool checkMasked(double, double);
-        void fillClusterHistos(std::shared_ptr<Clusters>);
+        void fillClusterHistos(std::shared_ptr<ClusterVector>);
         bool checkProximity(Track*, std::shared_ptr<Tracks>);
         void fillResponseHistos(double, double, Cluster*);
 

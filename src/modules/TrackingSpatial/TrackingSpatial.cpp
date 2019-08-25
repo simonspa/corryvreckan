@@ -62,7 +62,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     // Container for all clusters, and detectors in tracking
     map<string, KDTree*> trees;
     vector<std::shared_ptr<Detector>> detectors;
-    std::shared_ptr<Clusters> referenceClusters = nullptr;
+    std::shared_ptr<ClusterVector> referenceClusters = nullptr;
 
     // Loop over all detectors and get clusters
     double minZ = 1000.;

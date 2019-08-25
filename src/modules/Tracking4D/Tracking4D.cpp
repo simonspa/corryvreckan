@@ -77,7 +77,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     // Container for all clusters, and detectors in tracking
     map<string, KDTree*> trees;
     vector<string> detectors;
-    std::shared_ptr<Clusters> referenceClusters = nullptr;
+    std::shared_ptr<ClusterVector> referenceClusters = nullptr;
 
     // Loop over all planes and get clusters
     bool firstDetector = true;
@@ -152,7 +152,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
             Cluster* closestCluster = nullptr;
             double closestClusterDistance = spatialCut;
-            Clusters neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut);
+            auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut);
 
             LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
 
@@ -229,7 +229,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         trackAngleY->Fill(atan(track->direction().Y()));
 
         // Make residuals
-        Clusters trackClusters = track->clusters();
+        auto trackClusters = track->clusters();
         for(auto& trackCluster : trackClusters) {
             string detectorID = trackCluster->detectorID();
             ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->global().z());

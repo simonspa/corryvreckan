@@ -83,7 +83,7 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
     // Iterate through tracks found
     for(auto& track : (*tracks)) {
         // CHeck if we have associated clusters:
-        Clusters associatedClusters = track->associatedClusters();
+        auto associatedClusters = track->associatedClusters();
         if(associatedClusters.empty()) {
             LOG(TRACE) << "No associated clusters, skipping track.";
             continue;
