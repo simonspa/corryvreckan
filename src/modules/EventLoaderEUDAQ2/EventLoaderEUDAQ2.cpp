@@ -305,9 +305,9 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
     }
 }
 
-std::shared_ptr<Pixels> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt) {
+std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt) {
 
-    auto pixels = std::make_shared<Pixels>();
+    auto pixels = std::make_shared<PixelVector>();
 
     // Loop over all planes, select the relevant detector:
     for(size_t i_plane = 0; i_plane < evt->NumPlanes(); i_plane++) {
@@ -364,7 +364,7 @@ std::shared_ptr<Pixels> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq:
 
 StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
-    auto pixels = std::make_shared<Pixels>();
+    auto pixels = std::make_shared<PixelVector>();
 
     EventPosition current_position = EventPosition::UNKNOWN;
     while(1) {

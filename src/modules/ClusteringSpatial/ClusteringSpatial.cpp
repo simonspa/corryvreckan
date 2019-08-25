@@ -99,7 +99,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         used[pixel] = true;
         addedPixel = true;
         // Somewhere to store found neighbours
-        Pixels neighbours;
+        PixelVector neighbours;
 
         // Now we check the neighbours and keep adding more hits while there are connected pixels
         while(addedPixel) {

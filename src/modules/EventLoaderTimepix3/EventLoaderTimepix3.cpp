@@ -228,7 +228,7 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Make a new container for the data
-    auto deviceData = std::make_shared<Pixels>();
+    auto deviceData = std::make_shared<PixelVector>();
     auto spidrData = std::make_shared<SpidrSignals>();
 
     // Load the next chunk of data
@@ -318,7 +318,7 @@ void EventLoaderTimepix3::loadCalibration(std::string path, char delim, std::vec
 
 // Function to load data for a given device, into the relevant container
 bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
-                                   std::shared_ptr<Pixels>& devicedata,
+                                   std::shared_ptr<PixelVector>& devicedata,
                                    std::shared_ptr<SpidrSignals>& spidrData) {
 
     std::string detectorID = m_detector->name();

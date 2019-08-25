@@ -65,7 +65,7 @@ StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
             auto detector = get_detector(detectorID);
 
             // Make a new container for the data
-            auto deviceData = std::make_shared<Pixels>();
+            auto deviceData = std::make_shared<PixelVector>();
             for(unsigned int ipix = 0; ipix < plane.HitPixels(); ++ipix) {
                 auto col = static_cast<int>(plane.GetX(ipix));
                 auto row = static_cast<int>(plane.GetY(ipix));

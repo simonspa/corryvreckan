@@ -238,7 +238,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     bool busy_at_start = m_detectorBusy;
 
     // Read pixel data
-    std::shared_ptr<Pixels> pixels =
+    std::shared_ptr<PixelVector> pixels =
         (m_legacyFormat ? read_legacy_data(start_time, end_time) : read_caribou_data(start_time, end_time));
 
     if(busy_at_start || m_detectorBusy) {
@@ -302,13 +302,13 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-std::shared_ptr<Pixels> EventLoaderATLASpix::read_caribou_data(double start_time, double end_time) {
+std::shared_ptr<PixelVector> EventLoaderATLASpix::read_caribou_data(double start_time, double end_time) {
     LOG(DEBUG) << "Searching for events in interval from " << Units::display(start_time, {"s", "us", "ns"}) << " to "
                << Units::display(end_time, {"s", "us", "ns"}) << ", file read position " << m_file.tellg()
                << ", old_fpga_ts = " << old_fpga_ts << ".";
 
     // Pixel container
-    auto pixels = std::make_shared<Pixels>();
+    auto pixels = std::make_shared<PixelVector>();
 
     // Read file and load data
     uint32_t datain;
@@ -623,10 +623,10 @@ std::shared_ptr<Pixels> EventLoaderATLASpix::read_caribou_data(double start_time
     return pixels;
 }
 
-std::shared_ptr<Pixels> EventLoaderATLASpix::read_legacy_data(double, double) {
+std::shared_ptr<PixelVector> EventLoaderATLASpix::read_legacy_data(double, double) {
 
     // Pixel container
-    auto pixels = std::make_shared<Pixels>();
+    auto pixels = std::make_shared<PixelVector>();
 
     // Read file and load data
     while(!m_file.eof()) {
