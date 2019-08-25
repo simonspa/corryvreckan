@@ -222,7 +222,7 @@ StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Read event object from tree and store it on the clipboard:
     event_tree_->GetEntry(event_num_);
-    clipboard->put_event(std::shared_ptr<Event>(event_));
+    clipboard->put_event(std::make_shared<Event>(*event_));
 
     for(auto& tree : trees_) {
         LOG(TRACE) << "Reading tree \"" << tree->GetName() << "\"";
