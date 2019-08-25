@@ -106,7 +106,8 @@ StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
                     write_list_[index_tuple] = new std::vector<Object*>();
                     auto addr = &write_list_[index_tuple];
 
-                    if(trees_.find(class_name) == trees_.end()) {
+                    auto new_tree = (trees_.find(class_name) == trees_.end());
+                    if(new_tree) {
                         // Create new tree
                         output_file_->cd();
                         trees_.emplace(
@@ -119,9 +120,18 @@ StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
                     trees_[class_name]->Bronch(
                         branch_name.c_str(), (std::string("std::vector<") + class_name_full + "*>").c_str(), addr);
 
-                    LOG(DEBUG) << "Pre-filling new tree of " << class_name << " with " << last_event_ << " empty events";
-                    for(unsigned int i = 0; i < last_event_; ++i) {
-                        trees_[class_name]->Fill();
+                    if(new_tree) {
+                        LOG(DEBUG) << "Pre-filling new tree of " << class_name << " with " << last_event_ << " empty events";
+                        for(unsigned int i = 0; i < last_event_; ++i) {
+                            trees_[class_name]->Fill();
+                        }
+                    } else {
+                        LOG(DEBUG) << "Pre-filling new branch " << branch_name << " of " << class_name << " with "
+                                   << last_event_ << " empty events";
+                        auto* branch = trees_[class_name]->GetBranch(branch_name.c_str());
+                        for(unsigned int i = 0; i < last_event_; ++i) {
+                            branch->Fill();
+                        }
                     }
                 }
 
