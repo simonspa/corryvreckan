@@ -49,7 +49,7 @@ template <typename T> static void add_creator(FileReader::ObjectCreatorMap& map)
         std::vector<T*> data;
         // Copy the objects to data vector
         for(auto& object : objects) {
-            data.emplace_back(static_cast<T*>(object));
+            data.push_back(new T(*static_cast<T*>(object)));
         }
 
         // Fix the object references (NOTE: we do this after insertion as otherwise the objects could have been relocated)
@@ -234,7 +234,6 @@ StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
     // Loop through all branches
     for(auto object_inf : object_info_array_) {
         auto objects = object_inf.objects;
-
         // Skip empty objects in current event
         if(objects->empty()) {
             continue;
@@ -249,6 +248,8 @@ StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
             continue;
         }
 
+        LOG(TRACE) << "- " << objects->size() << " " << corryvreckan::demangle(typeid(*first_object).name()) << ", detector "
+                   << object_inf.detector;
         // Create the object vector and store it on the clipboard:
         iter->second(*objects, object_inf.detector, clipboard);
 
