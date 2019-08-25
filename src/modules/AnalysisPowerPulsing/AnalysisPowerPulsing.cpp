@@ -57,7 +57,7 @@ StatusCode AnalysisPowerPulsing::run(std::shared_ptr<Clipboard> clipboard) {
 
     /*
         // Now update the power pulsing with any new signals
-        SpidrSignals* spidrData = (SpidrSignals*)clipboard->get(m_DUT, "SpidrSignals");
+        SpidrSignal* spidrData = (SpidrSignals*)clipboard->get(m_DUT, "SpidrSignals");
         // If there are new signals
         if(spidrData != NULL) {
             // Loop over all signals registered

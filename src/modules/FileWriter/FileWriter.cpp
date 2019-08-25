@@ -95,7 +95,7 @@ StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
                     detector_name = detector_block.first;
                 }
 
-                auto objects = std::static_pointer_cast<Objects>(detector_block.second);
+                auto objects = std::static_pointer_cast<ObjectVector>(detector_block.second);
                 LOG(TRACE) << " - " << detector_name << ": " << objects->size();
 
                 // Create a new branch of the correct type if this object has not been received before

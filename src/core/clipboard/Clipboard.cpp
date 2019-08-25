@@ -47,9 +47,9 @@ void Clipboard::clear() {
 
         // Loop over all stored collections of this type
         for(auto set = collections.cbegin(); set != collections.cend();) {
-            std::shared_ptr<Objects> collection = std::static_pointer_cast<Objects>(set->second);
+            std::shared_ptr<ObjectVector> collection = std::static_pointer_cast<ObjectVector>(set->second);
             // Loop over all objects and delete them
-            for(Objects::iterator it = collection->begin(); it != collection->end(); ++it) {
+            for(ObjectVector::iterator it = collection->begin(); it != collection->end(); ++it) {
                 delete(*it);
             }
             set = collections.erase(set);
@@ -68,7 +68,7 @@ std::vector<std::string> Clipboard::list_collections() const {
         std::string line(corryvreckan::demangle(block.first.name()));
         line += ": ";
         for(const auto& set : block.second) {
-            std::shared_ptr<Objects> collection = std::static_pointer_cast<Objects>(set.second);
+            std::shared_ptr<ObjectVector> collection = std::static_pointer_cast<ObjectVector>(set.second);
             line += set.first + " (" + collection->size() + ") ";
         }
         line += "\n";

@@ -82,7 +82,7 @@ StatusCode TextWriter::run(std::shared_ptr<Clipboard> clipboard) {
 
                 *output_file_ << "--- " << detector_name << " ---" << std::endl;
 
-                auto objects = std::static_pointer_cast<Objects>(detector_block.second);
+                auto objects = std::static_pointer_cast<ObjectVector>(detector_block.second);
                 for(auto& object : *objects) {
                     *output_file_ << *object << std::endl;
                 }
