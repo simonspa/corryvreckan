@@ -2,6 +2,16 @@
 
 using namespace corryvreckan;
 
+KDTree::KDTree(const KDTree& kd) : Object(kd.detectorID(), kd.timestamp()) {
+    *xpositions = *kd.xpositions;
+    *ypositions = *kd.ypositions;
+    *times = *kd.times;
+    positionKdtree = kd.positionKdtree;
+    timeKdtree = kd.timeKdtree;
+    clusters = kd.clusters;
+    iteratorNumber = kd.iteratorNumber;
+}
+
 void KDTree::buildTimeTree(ClusterVector inputClusters) {
     // Store the vector of cluster pointers
     clusters = inputClusters;

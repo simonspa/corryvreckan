@@ -26,6 +26,8 @@ namespace corryvreckan {
             delete positionKdtree;
         }
 
+        KDTree(const KDTree& kd);
+
         // Build a tree sorted by cluster times
         void buildTimeTree(ClusterVector inputClusters);
 
@@ -52,7 +54,7 @@ namespace corryvreckan {
         std::map<Cluster*, size_t> iteratorNumber;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(KDTree, 5)
+        ClassDef(KDTree, 6)
     };
 } // namespace corryvreckan
 
