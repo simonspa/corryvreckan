@@ -215,11 +215,6 @@ StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
         ModuleError("Clipboard event already defined, cannot continue");
     }
 
-    if(event_num_ >= event_tree_->GetEntries()) {
-        LOG(INFO) << "Requesting end of run because TTree only contains data for " << (event_num_ + 1) << " events";
-        return StatusCode::EndRun;
-    }
-
     // Read event object from tree and store it on the clipboard:
     event_tree_->GetEntry(event_num_);
     clipboard->put_event(std::make_shared<Event>(*event_));
@@ -260,7 +255,12 @@ StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
 
     event_num_++;
 
-    return StatusCode::Success;
+    if(event_num_ >= event_tree_->GetEntries()) {
+        LOG(INFO) << "Requesting end of run because TTree only contains data for " << (event_num_ + 1) << " events";
+        return StatusCode::EndRun;
+    } else {
+        return StatusCode::Success;
+    }
 }
 
 void FileReader::finalise() {
