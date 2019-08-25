@@ -78,7 +78,7 @@ StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
             auto type_idx = block.first;
             auto class_name = corryvreckan::demangle(type_idx.name());
             auto class_name_full = corryvreckan::demangle(type_idx.name(), true);
-            LOG(TRACE) << "Received objects of type \"" << class_name << "\"";
+            LOG(TRACE) << "Received objects of type \"" << class_name << "\" in " << block.second.size() << " blocks";
 
             // Check if these objects should be stored
             if((!include_.empty() && include_.find(class_name) == include_.end()) ||
@@ -118,6 +118,11 @@ StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
 
                     trees_[class_name]->Bronch(
                         branch_name.c_str(), (std::string("std::vector<") + class_name_full + "*>").c_str(), addr);
+
+                    LOG(DEBUG) << "Pre-filling new tree of " << class_name << " with " << last_event_ << " empty events";
+                    for(unsigned int i = 0; i < last_event_; ++i) {
+                        trees_[class_name]->Fill();
+                    }
                 }
 
                 // Fill the branch vector
@@ -134,6 +139,8 @@ StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG(TRACE) << "Writing new objects to tree";
     output_file_->cd();
+
+    last_event_++;
 
     // Fill the tree with the current received messages
     for(auto& tree : trees_) {

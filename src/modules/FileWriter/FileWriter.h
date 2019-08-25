@@ -67,6 +67,9 @@ namespace corryvreckan {
         std::unique_ptr<TTree> event_tree_;
         Event* event_{};
 
+        // Last event processed
+        unsigned int last_event_{0};
+
         // List of objects of a particular type, bound to a specific detector and having a particular name
         std::map<std::tuple<std::type_index, std::string>, std::vector<Object*>*> write_list_;
 
