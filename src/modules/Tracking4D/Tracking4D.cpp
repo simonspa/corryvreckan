@@ -10,7 +10,7 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     : Module(std::move(config), std::move(detectors)) {
 
     // Default values for cuts
-    timingCut = m_config.get<double>("timing_cut", Units::get<double>(200, "ns"));
+    timingCutFactor = m_config.get<double>("timing_cut_factor", 1.0);
     spatialCut = m_config.get<double>("spatial_cut", Units::get<double>(200, "um"));
     minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
     excludeDUT = m_config.get<bool>("exclude_dut", true);
@@ -96,6 +96,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 referenceClusters = tempClusters;
                 seedPlane = detector->name();
                 LOG(DEBUG) << "Seed plane is " << seedPlane;
+                timingCutReference = detector->timingResolution() * timingCutFactor;
+                LOG(TRACE) << "Reference detector timing cut = " << Units::display(timingCutReference, {"ns", "us", "s"});
                 firstDetector = false;
             }
 
@@ -152,6 +154,11 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
             Cluster* closestCluster = nullptr;
             double closestClusterDistance = spatialCut;
+            double timingCut = (timingCutReference > det->timingResolution() ? timingCutReference : det->timingResolution());
+            LOG(TRACE) << "Reference time resolution = " << Units::display(timingCutReference, {"ns", "us", "s"})
+                       << "; detector plane " << detectorID
+                       << " time resolution = " << Units::display(det->timingResolution(), {"ns", "us", "s"});
+            LOG(DEBUG) << "Using timing cut of " << Units::display(timingCut, {"ns", "us", "s"});
             Clusters neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut);
 
             LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
