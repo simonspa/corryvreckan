@@ -6,7 +6,7 @@ using namespace std;
 Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    timingCut = m_config.get<double>("timing_cut", Units::get<double>(100, "ns"));
+    m_timingCutFactor = m_config.get<double>("timing_cut_factor", 1.0); // note:check facotr default value
     neighbour_radius_row = m_config.get<int>("neighbour_radius_row", 1);
     neighbour_radius_col = m_config.get<int>("neighbour_radius_col", 1);
 }
@@ -28,6 +28,11 @@ void Clustering4D::initialise() {
     clusterPositionGlobal = new TH2F("clusterPositionGlobal", title.c_str(), 400, -10., 10., 400, -10., 10.);
     title = ";cluster timestamp [ns]; # events";
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
+
+    // Get timing resolution of detector and calculate timing cut to be applied
+    m_timingCut = m_timingCutFactor * m_detector->timingResolution();
+    LOG(INFO) << "Timing cut to be applied for " << m_detector->name() << " is "
+              << Units::display(m_timingCut, {"ns", "us", "ms"});
 }
 
 // Sort function for pixels from low to high times
@@ -81,7 +86,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
             for(size_t iNeighbour = (iP + 1); iNeighbour < totalPixels; iNeighbour++) {
                 Pixel* neighbour = (*pixels)[iNeighbour];
                 // Check if they are compatible in time with the cluster pixels
-                if((neighbour->timestamp() - clusterTime) > timingCut)
+                if((neighbour->timestamp() - clusterTime) > m_timingCut)
                     break;
                 //          if(!closeInTime(neighbour,cluster)) break;
                 // Check if they have been used
@@ -154,7 +159,7 @@ bool Clustering4D::closeInTime(Pixel* neighbour, Cluster* cluster) {
     for(size_t iPix = 0; iPix < pixels->size(); iPix++) {
 
         double timeDifference = abs(neighbour->timestamp() - (*pixels)[iPix]->timestamp());
-        if(timeDifference < timingCut)
+        if(timeDifference < m_timingCut)
             CloseInTime = true;
     }
     return CloseInTime;

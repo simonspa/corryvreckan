@@ -136,9 +136,15 @@ namespace corryvreckan {
 
         /**
          * @brief Get detector time offset from global clock, can be used to correct for constant shifts or time of flight
-         * @return Timing offset fo respective detector
+         * @return Timing offset of respective detector
          */
         double timingOffset() const { return m_timingOffset; }
+
+        /**
+         * @brief Get detector timing resolution, used for timing cuts during clustering, track formation, etc.
+         * @return Timing resolutiom of respective detector
+         */
+        double timingResolution() const { return m_timingResolution; }
 
         /**
          * @brief Update detector position in the world

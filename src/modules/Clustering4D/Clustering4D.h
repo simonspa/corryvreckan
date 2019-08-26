@@ -39,7 +39,8 @@ namespace corryvreckan {
         TH2F* clusterPositionGlobal;
         TH1F* clusterTimes;
 
-        double timingCut;
+        double m_timingCutFactor;
+        double m_timingCut;
         int neighbour_radius_row;
         int neighbour_radius_col;
     };
