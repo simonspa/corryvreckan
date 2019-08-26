@@ -333,7 +333,8 @@ Pixels* EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> 
             auto col = static_cast<int>(plane.GetX(i));
             auto row = static_cast<int>(plane.GetY(i));
             auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
-            auto ts = static_cast<double>(plane.GetTimestamp(i)) / 1000 + m_detector->timingOffset();
+            auto ts = static_cast<double>(evt->GetTriggerN() == 0 ? plane.GetTimestamp(i) : evt->GetTimeBegin()) / 1000 +
+                      m_detector->timingOffset();
 
             if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {
                 LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
