@@ -6,7 +6,7 @@ using namespace std;
 DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    timingCut = m_config.get<double>("timing_cut", Units::get<double>(200, "ns"));
+    timingCutFactor = m_config.get<double>("timing_cut_factor", 1);
     spatialCut = m_config.get<XYVector>("spatial_cut", 2 * m_detector->pitch());
     useClusterCentre = m_config.get<bool>("use_cluster_centre", false);
 }
@@ -70,6 +70,9 @@ void DUTAssociation::initialise() {
     // Nr of associated clusters per track
     title = m_detector->name() + ": number of associated clusters per track;associated clusters;events";
     hNoAssocCls = new TH1F("no_assoc_cls", title.c_str(), 10, 0, 10);
+
+    timingCut = timingCutFactor * m_detector->timingResolution();
+    LOG(DEBUG) << "DUT association timing cut = " << timingCut;
 }
 
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
