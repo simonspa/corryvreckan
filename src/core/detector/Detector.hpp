@@ -267,6 +267,7 @@ namespace corryvreckan {
         XYVector m_resolution;
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels;
         double m_timingOffset;
+        double m_timingResolution;
 
         std::vector<std::vector<int>> m_roi;
         static int winding_number(std::pair<int, int> probe, std::vector<std::vector<int>> polygon);
