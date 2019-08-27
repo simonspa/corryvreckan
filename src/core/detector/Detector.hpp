@@ -138,7 +138,7 @@ namespace corryvreckan {
          * @brief Get detector time offset from global clock, can be used to correct for constant shifts or time of flight
          * @return Timing offset of respective detector
          */
-        double timeOffset() const { return m_timeOffset; }
+        double timingOffset() const { return m_timingOffset; }
 
         /**
          * @brief Get detector timing resolution, used for timing cuts during clustering, track formation, etc.
@@ -272,7 +272,7 @@ namespace corryvreckan {
         XYVector m_pitch;
         XYVector m_resolution;
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels;
-        double m_timeOffset;
+        double m_timingOffset;
         double m_timingResolution;
 
         std::vector<std::vector<int>> m_roi;
