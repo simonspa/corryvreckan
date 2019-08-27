@@ -240,8 +240,8 @@ EventLoaderEUDAQ2::EventPosition EventLoaderEUDAQ2::is_within_event(std::shared_
     }
 
     // Read time from EUDAQ2 event and convert from picoseconds to nanoseconds:
-    double event_start = static_cast<double>(evt->GetTimeBegin()) / 1000 + m_detector->timingOffset();
-    double event_end = static_cast<double>(evt->GetTimeEnd()) / 1000 + m_detector->timingOffset();
+    double event_start = static_cast<double>(evt->GetTimeBegin()) / 1000 + m_detector->timeOffset();
+    double event_end = static_cast<double>(evt->GetTimeEnd()) / 1000 + m_detector->timeOffset();
     LOG(DEBUG) << "event_start = " << Units::display(event_start, "us")
                << ", event_end = " << Units::display(event_end, "us");
 
@@ -334,7 +334,7 @@ Pixels* EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> 
             auto row = static_cast<int>(plane.GetY(i));
             auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
             auto ts = static_cast<double>(evt->GetTriggerN() == 0 ? plane.GetTimestamp(i) : evt->GetTimeBegin()) / 1000 +
-                      m_detector->timingOffset();
+                      m_detector->timeOffset();
 
             if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {
                 LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
