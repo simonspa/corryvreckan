@@ -20,6 +20,7 @@ namespace corryvreckan {
     /**
      * @ingroup Modules
      * @brief Module to read data stored in ROOT file back to the Corryvreckan clipboard
+     * @remarks The implementation of this module is based on the ROOTObjectReader module of the Allpix Squared project
      *
      * Reads the tree of objects in the data format of the \ref FileWriter module. Copies all stored objects that are
      * supported back to the clipboard.

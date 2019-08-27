@@ -70,4 +70,6 @@ This software is distributed under the terms of the MIT license. A copy of this 
 
 The documentation is distributed under the terms of the CC-BY-4.0 license. This license can be found in [doc/COPYING.md](doc/COPYING.md).
 
+This project strongly profits from the developments done for the [Allpix Squared project](https://cern.ch/allpix-squared) which is released under the MIT license. Especially the configuration class, the module instantiation logic and the file reader and writer modules have profited heavily by their corresponding framework components in Allpix Squared.
+
 The LaTeX and Pandoc CMake modules used by Corryvreckan are licensed under the BSD 3-Clause License.

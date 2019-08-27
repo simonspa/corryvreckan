@@ -19,6 +19,7 @@ namespace corryvreckan {
     /**
      * @ingroup Modules
      * @brief Module to write object data to ROOT trees in file for persistent storage
+     * @remarks The implementation of this module is based on the ROOTObjectWriter module of the Allpix Squared project
      *
      * Reads the whole clipboard. Creates a tree as soon as a new type of object is encountered and
      * saves the data in those objects to tree for every event. The tree name is the class name of the object. A separate
