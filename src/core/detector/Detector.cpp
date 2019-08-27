@@ -70,7 +70,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     }
 
     m_detectorType = config.get<std::string>("type");
-    m_timingOffset = config.get<double>("time_offset", 0.0);
+    m_timeOffset = config.get<double>("time_offset", 0.0);
     m_timingResolution = config.get<double>("timing_resolution", 0.0); // note: change default value; require value set?
     m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
 
@@ -80,8 +80,8 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
                << Units::display(m_pitch, {"mm", "um"});
     LOG(TRACE) << "  Position:    " << Units::display(m_displacement, {"mm", "um"});
     LOG(TRACE) << "  Orientation: " << Units::display(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
-    if(m_timingOffset > 0.) {
-        LOG(TRACE) << "Timing offset: " << m_timingOffset;
+    if(m_timeOffset > 0.) {
+        LOG(TRACE) << "Time offset: " << m_timeOffset;
     }
     LOG(INFO) << "  Timing resolution: " << Units::display(m_timingResolution, {"ms", "us"});
 
@@ -241,8 +241,8 @@ Configuration Detector::getConfiguration() const {
     // Intrinsic resolution:
     config.set("resolution", m_resolution, {"um"});
 
-    if(m_timingOffset != 0.) {
-        config.set("time_offset", m_timingOffset, {"ns", "us", "ms", "s"});
+    if(m_timeOffset != 0.) {
+        config.set("time_offset", m_timeOffset, {"ns", "us", "ms", "s"});
     }
 
     config.set("timing_resolution", m_timingResolution, {"ns", "us", "ms", "s"});
