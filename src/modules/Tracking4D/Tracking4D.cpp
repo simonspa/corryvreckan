@@ -154,7 +154,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
             Cluster* closestCluster = nullptr;
             double closestClusterDistance = spatialCut;
-            double timingCut = (timingCutReference > det->timingResolution() ? timingCutReference : det->timingResolution());
+            double timingCut = std::max(timingCutReference, det->timingResolution());
             LOG(TRACE) << "Reference time resolution = " << Units::display(timingCutReference, {"ns", "us", "s"})
                        << "; detector plane " << detectorID
                        << " time resolution = " << Units::display(det->timingResolution(), {"ns", "us", "s"});
