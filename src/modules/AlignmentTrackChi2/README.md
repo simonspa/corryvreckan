@@ -6,7 +6,7 @@
 ### Description
 This module performs translational and rotational telescope plane alignment. The alignment is performed with respect to the reference plane set in the configuration file.
 
-This module uses tracks on the clipboard to align the telescope planes. If fewer than half of the tracks have associated clusters, a warning is produced on terminal.
+This module uses tracks on the clipboard to align the telescope planes.
 For each telescope detector except the reference plane, this method moves the detector, refits all of the tracks, and minimises the chi^2 of these new tracks. This method automatically iterates through all devices contributing to the track.
 
 ### Parameters
