@@ -223,6 +223,9 @@ Configuration Detector::getConfiguration() const {
     if(this->isReference()) {
         roles.push_back("reference");
     }
+    if(this->isAuxiliary()) {
+        roles.push_back("auxiliary");
+    }
 
     if(!roles.empty()) {
         config.setArray("role", roles);
