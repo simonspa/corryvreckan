@@ -6,11 +6,10 @@
 ### Description
 This module performs translational and rotational telescope plane alignment. The alignment is performed with respect to the reference plane set in the configuration file.
 
-This module uses the tracks produced by the `BasicTracking` module to align the telescope planes. If fewer than half of the tracks have associated clusters, a warning is produced on terminal.
-For each telescope detector except the reference plane, this method moves the detector, refits all of the tracks, and minimises the chi^2 of these new tracks. The parameters `detectorToAlign` and `DUT` are not used in this method as it automatically iterates through all telescope planes except the DUT (if a DUT is present).
+This module uses tracks on the clipboard to align the telescope planes.
+For each telescope detector except the reference plane, this method moves the detector, refits all of the tracks, and minimises the chi^2 of these new tracks. This method automatically iterates through all devices contributing to the track.
 
 ### Parameters
-* `number_of_tracks`: Number of tracks used in the alignment method chosen. Default value is `20000`.
 * `iterations`: Number of times the chosen alignment method is to be iterated. Default value is `3`.
 * `align_position`: Boolean to select whether to align the X and Y displacements of the detector or not. Note that the Z displacement is never aligned. The default value is `true`.
 * `align_orientation`: Boolean to select whether to align the three rotations of the detector under consideration or not. The default value is `true`.
@@ -30,7 +29,10 @@ For each detector the following plots are produced:
 
 ### Usage
 ```toml
+[Corryvreckan]
+# The global track limit can be used to restrict the alignment:
+number_of_tracks = 200000
+
 [AlignmentTrackChi2]
-number_of_tracks = 1000000
 log_level = INFO
 ```
