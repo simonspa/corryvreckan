@@ -29,13 +29,20 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         std::transform(role.begin(), role.end(), role.begin(), ::tolower);
         if(role == "none") {
             m_role |= DetectorRole::NONE;
-        } else if(role == "reference") {
+        } else if(role == "reference" || role == "ref") {
             m_role |= DetectorRole::REFERENCE;
         } else if(role == "dut") {
             m_role |= DetectorRole::DUT;
+        } else if(role == "auxiliary" || role == "aux") {
+            m_role |= DetectorRole::AUXILIARY;
         } else {
             throw InvalidValueError(config, "role", "Detector role does not exist.");
         }
+    }
+
+    // Auxiliary devices cannot hold other roles:
+    if(static_cast<bool>(m_role & DetectorRole::AUXILIARY) && m_role != DetectorRole::AUXILIARY) {
+        throw InvalidValueError(config, "role", "Auxiliary devices cannot hold any other detector role");
     }
 
     // Detector position and orientation
@@ -103,6 +110,10 @@ bool Detector::isReference() const {
 
 bool Detector::isDUT() const {
     return static_cast<bool>(m_role & DetectorRole::DUT);
+}
+
+bool Detector::isAuxiliary() const {
+    return static_cast<bool>(m_role & DetectorRole::AUXILIARY);
 }
 
 // Functions to set and check channel masking
@@ -211,6 +222,9 @@ Configuration Detector::getConfiguration() const {
     }
     if(this->isReference()) {
         roles.push_back("reference");
+    }
+    if(this->isAuxiliary()) {
+        roles.push_back("auxiliary");
     }
 
     if(!roles.empty()) {

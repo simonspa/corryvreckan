@@ -40,6 +40,18 @@ double Track::distance2(Cluster* cluster) const {
     return (dx * dx + dy * dy);
 }
 
+bool Track::hasClosestCluster() const {
+    return closestCluster != nullptr;
+}
+
+void Track::setClosestCluster(Cluster* cluster) {
+    closestCluster = cluster;
+}
+
+Cluster* Track::getClosestCluster() const {
+    return closestCluster;
+}
+
 void Track::calculateChi2() {
 
     // Get the number of clusters
@@ -135,6 +147,32 @@ bool Track::isAssociated(Cluster* cluster) const {
     return false;
 }
 
+bool Track::hasDetector(std::string detectorID) const {
+    auto it = find_if(m_trackClusters.begin(), m_trackClusters.end(), [&detectorID](Cluster* cluster) {
+        return cluster->getDetectorID() == detectorID;
+    });
+    if(it == m_trackClusters.end()) {
+        return false;
+    }
+    return true;
+}
+
+Cluster* Track::getClusterFromDetector(std::string detectorID) const {
+    auto it = find_if(m_trackClusters.begin(), m_trackClusters.end(), [&detectorID](Cluster* cluster) {
+        return cluster->getDetectorID() == detectorID;
+    });
+    if(it == m_trackClusters.end()) {
+        return nullptr;
+    }
+    return (*it);
+}
+
 ROOT::Math::XYZPoint Track::intercept(double z) const {
     return m_state + m_direction * z;
+}
+
+void Track::print(std::ostream& out) const {
+    out << "Track " << this->m_state.x() << ", " << this->m_state.y() << ", " << this->m_state.z() << ", "
+        << this->m_direction.x() << ", " << this->m_direction.y() << ", " << this->m_direction.z() << ", " << this->m_chi2
+        << ", " << this->m_ndof << ", " << this->m_chi2ndof << ", " << this->timestamp();
 }

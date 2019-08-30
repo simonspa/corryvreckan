@@ -316,6 +316,9 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         return StatusCode::Success;
     }
     for(auto& pixel : (*pixels)) {
+        if(pixel->column() > m_detector->nPixels().X() || pixel->row() > m_detector->nPixels().Y()) {
+            continue;
+        }
         prev_hit_ts.at(static_cast<size_t>(pixel->column())).at(static_cast<size_t>(pixel->row())) = pixel->timestamp();
     }
 

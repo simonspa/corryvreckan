@@ -30,12 +30,33 @@ namespace corryvreckan {
         // Calculate the 2D distance^2 between the fitted track and a cluster
         double distance2(Cluster* cluster) const;
 
+        /**
+         * @brief Set associated cluster with smallest distance to track
+         * @param Pointer to Cluster cluster which has smallest distance to track
+         */
+        void setClosestCluster(Cluster* cluster);
+
+        /**
+         * @brief Get associated cluster with smallest distance to track
+         * @return Pointer to closest cluster to the track if set, nullptr otherwise
+         */
+        Cluster* getClosestCluster() const;
+
+        /**
+         * @brief Check if track has a closest cluster assigned to it
+         * @return True if a closest cluster is set
+         */
+        bool hasClosestCluster() const;
+
         // Minimisation operator used by Minuit. Minuit passes the current iteration of the parameters and checks if the chi2
         // is better or worse
         double operator()(const double* parameters);
 
         // Fit the track (linear regression)
         void fit();
+
+        // Print an ASCII representation of the Track to the given stream
+        void print(std::ostream& out) const override;
 
         // Retrieve track parameters
         double chi2() const { return m_chi2; }
@@ -44,6 +65,20 @@ namespace corryvreckan {
         Clusters clusters() const { return m_trackClusters; }
         Clusters associatedClusters() const { return m_associatedClusters; }
         bool isAssociated(Cluster* cluster) const;
+
+        /**
+         * @brief Check if this track has a cluster from a given detector
+         * @param  detectorID DetectorID of the detector to check
+         * @return True if detector has a cluster on this track, false if not.
+         */
+        bool hasDetector(std::string detectorID) const;
+
+        /**
+         * @brief Get a track cluster from a given detector
+         * @param  detectorID DetectorID of the desired detector
+         * @return Track cluster from the required detector, nullptr if not found
+         */
+        Cluster* getClusterFromDetector(std::string detectorID) const;
 
         size_t nClusters() const { return m_trackClusters.size(); }
 
@@ -58,6 +93,7 @@ namespace corryvreckan {
         // Member variables
         Clusters m_trackClusters;
         Clusters m_associatedClusters;
+        Cluster* closestCluster{nullptr};
         double m_chi2;
         double m_ndof;
         double m_chi2ndof;
@@ -65,7 +101,7 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint m_state;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Track, 3)
+        ClassDefOverride(Track, 5)
     };
 
     // Vector type declaration

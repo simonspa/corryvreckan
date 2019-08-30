@@ -10,7 +10,6 @@ This module performs translational and rotational DUT alignment. The alignment i
 This module uses tracks for alignment. The module moves the detector is is instantiated for and minimises the unbiased residuals calculated from the track intercepts with the plane.
 
 ### Parameters
-* `number_of_tracks`: Number of tracks used in the alignment method chosen. Default value is `20000`.
 * `iterations`: Number of times the chosen alignment method is to be iterated. Default value is `3`.
 * `align_position`: Boolean to select whether to align the X and Y displacements of the detector or not. Note that the Z displacement is never aligned. The default value is `true`.
 * `align_orientation`: Boolean to select whether to align the three rotations of the detector under consideration or not. The default value is `true`.
@@ -31,7 +30,10 @@ For the detector under consideration, the following plots are produced:
 
 ### Usage
 ```toml
+[Corryvreckan]
+# The global track limit can be used to restrict the alignment:
+number_of_tracks = 200000
+
 [AlignmentDUTResidual]
-number_of_tracks = 1000000
 log_level = INFO
 ```
