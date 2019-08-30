@@ -214,6 +214,14 @@ namespace corryvreckan {
         XYVector inPixel(PositionVector3D<Cartesian3D<double>> localPosition) const;
 
         /**
+         * Transformation from local (sensor) coordinates to in-pixel coordinates
+         * @param  column Column address ranging from int_column-0.5*pitch to int_column+0.5*pitch
+         * @param  row Row address ranging from int_column-0.5*pitch to int_column+0.5*pitch
+         * @return               Position within a single pixel cell, given in units of length
+         */
+        XYVector inPixel(const double column, const double row) const;
+
+        /**
          * @brief Transform local coordinates of this detector into global coordinates
          * @param  local Local coordinates in the reference frame of this detector
          * @return       Global coordinates

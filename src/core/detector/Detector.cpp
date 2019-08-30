@@ -346,6 +346,11 @@ ROOT::Math::XYVector Detector::inPixel(const PositionVector3D<Cartesian3D<double
     return XYVector(m_pitch.X() * (column - floor(column) - 0.5), m_pitch.Y() * (row - floor(row) - 0.5));
 }
 
+ROOT::Math::XYVector Detector::inPixel(const double column, const double row) const {
+    PositionVector3D<Cartesian3D<double>> localPos(column, row, 0.);
+    auto inPixelPos = inPixel(localPos) return inPixelPos;
+}
+
 // Check if track position is within ROI:
 bool Detector::isWithinROI(const Track* track) const {
 
