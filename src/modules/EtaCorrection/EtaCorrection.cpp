@@ -55,17 +55,15 @@ void EtaCorrection::applyEta(Cluster* cluster) {
 
     if(cluster->columnWidth() == 2) {
         // Apply the eta correction
-        if(m_correctX) { // need to update this as well!
-            newX = floor(cluster->local().x() / m_detector->pitch().X()) * m_detector->pitch().X() +
-                   m_etaCorrectorX->Eval(inPixelPos.X());
+        if(m_correctX) {
+            newX = floor(cluster->column() + m_detector->pitch().X() / 2) + m_etaCorrectorX->Eval(inPixelPos.X());
         }
     }
 
     if(cluster->rowWidth() == 2) {
         // Apply the eta correction
-        if(m_correctY) { // need to update this as well!
-            newY = floor(cluster->local().y() / m_detector->pitch().Y()) * m_detector->pitch().Y() +
-                   m_etaCorrectorY->Eval(inPixelPos.Y());
+        if(m_correctY) {
+            newY = floor(cluster->row() + m_detector->pitch().Y() / 2) + m_etaCorrectorY->Eval(inPixelPos.Y());
         }
     }
 
