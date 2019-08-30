@@ -65,7 +65,7 @@ void EtaCorrection::applyEta(Cluster* cluster) {
         // Apply the eta correction
         if(m_correctY) { // need to update this as well!
             newY = floor(cluster->local().y() / m_detector->pitch().Y()) * m_detector->pitch().Y() +
-                   m_etaCorrectorY->Eval(inPixel.Y());
+                   m_etaCorrectorY->Eval(inPixelPos.Y());
         }
     }
 
