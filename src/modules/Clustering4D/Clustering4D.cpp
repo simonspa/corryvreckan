@@ -230,9 +230,21 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
 
     if(chargeWeighting) {
         // Charge-weighted cluster centre:
-        // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics)
-        column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
-        row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
+
+        if(charge < std::numeric_limits<double>::epsilon() && cluster->size() == 1) {
+            // If we have a single-pixel cluster with zero chargeWeighting
+            // the variables 'column' and 'row' will be zero due to
+            // --> column += (pixel->column() * pixel->charge());
+            // --> row += (pixel->row() * pixel->charge());
+            // Consequently we take the pixel address of the ONLY pixel of this cluster:
+            column = cluster->getSeedPixel()->column();
+            row = cluster->getSeedPixel()->row();
+        } else {
+            // Apply the regular charge-weighting:
+            // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics).
+            column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
+            row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
+        }
     } else {
         // Arightmetic cluster centre:
         column /= static_cast<double>(cluster->size());
