@@ -59,7 +59,6 @@ namespace corryvreckan {
         int m_discardedtracks{};
 
         size_t nIterations;
-        size_t m_numberOfTracksForAlignment;
         bool m_pruneTracks;
         bool m_alignPosition;
         bool m_alignOrientation;

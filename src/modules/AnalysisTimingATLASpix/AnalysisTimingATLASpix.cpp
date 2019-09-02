@@ -24,8 +24,8 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
     using namespace ROOT::Math;
     m_detector = detector;
     m_timingCut = m_config.get<double>("timing_cut", static_cast<double>(Units::convert(1000, "ns")));
-    m_chi2ndofCut = m_config.get<double>("chi2_ndof_cut", 3.);
-    m_timeCutFrameEdge = m_config.get<double>("time_cut_frame_edge", static_cast<double>(Units::convert(20, "ns")));
+    m_chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
+    m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", static_cast<double>(Units::convert(20, "ns")));
     m_clusterChargeCut = m_config.get<double>("cluster_charge_cut", 100000.);
     m_clusterSizeCut = m_config.get<size_t>("cluster_size_cut", static_cast<size_t>(100));
     m_highTotCut = m_config.get<int>("high_tot_cut", 40);
@@ -77,6 +77,12 @@ void AnalysisTimingATLASpix::initialise() {
         new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timingCut), -1 * m_timingCut, m_timingCut);
     hTrackCorrelationTimeAssoc->GetXaxis()->SetTitle("track time stamp - cluster time stamp [ns]");
     hTrackCorrelationTimeAssoc->GetYaxis()->SetTitle("# events");
+
+    name = "hTrackCorrelationTimeAssocVsTime";
+    hTrackCorrelationTimeAssocVsTime = new TH2F(name.c_str(), name.c_str(), 3e3, 0, 3e3, 1e3, -5, 5);
+    hTrackCorrelationTimeAssocVsTime->GetYaxis()->SetTitle("track time stamp - cluster time stamp [us]");
+    hTrackCorrelationTimeAssocVsTime->GetXaxis()->SetTitle("time [s]");
+    hTrackCorrelationTimeAssocVsTime->GetZaxis()->SetTitle("# events");
 
     name = "hTrackCorrelationTime_rowCorr";
     std::string title = "hTrackCorrelationTime_rowCorr: row-by-row correction";
@@ -222,22 +228,22 @@ void AnalysisTimingATLASpix::initialise() {
                                        0,
                                        m_detector->nPixels().Y());
     hHitMapAssoc_inPixel = new TH2F("hitMapAssoc_inPixel",
-                                    "hitMapAssoc_inPixel; x_{track} mod 130 #mum; y_{track} mod 130 #mum",
+                                    "hitMapAssoc_inPixel; in-pixel x_{track} [#mum]; in-pixel y_{track} [#mum]",
                                     static_cast<int>(pitch_x),
-                                    0,
-                                    pitch_x,
+                                    -pitch_x / 2.,
+                                    pitch_x / 2.,
                                     static_cast<int>(pitch_y),
-                                    0,
-                                    pitch_y);
+                                    -pitch_y / 2.,
+                                    pitch_y / 2.);
     hHitMapAssoc_inPixel_highCharge =
         new TH2F("hitMapAssoc_inPixel_highCharge",
-                 "hitMapAssoc_inPixel_highCharge;  x_{track} mod 130 #mum; y_{track} mod 130 #mum",
+                 "hitMapAssoc_inPixel_highCharge;  in-pixel x_{track} [#mum]; in-pixel y_{track} [#mum]",
                  static_cast<int>(pitch_x),
-                 0,
-                 pitch_x,
+                 -pitch_x / 2.,
+                 pitch_x / 2.,
                  static_cast<int>(pitch_y),
-                 0,
-                 pitch_y);
+                 -pitch_y / 2.,
+                 pitch_y / 2.);
     hClusterMapAssoc = new TH2F("hClusterMapAssoc",
                                 "hClusterMapAssoc; x_{cluster} [px]; x_{cluster} [px]; # entries",
                                 m_detector->nPixels().X(),
@@ -449,6 +455,8 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
                     double timeDiff = track->timestamp() - cluster->timestamp();
                     hTrackCorrelationTimeAssoc->Fill(timeDiff);
+                    hTrackCorrelationTimeAssocVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                                           static_cast<double>(Units::convert(timeDiff, "us")));
 
                     hTrackCorrelationTimeVsTot->Fill(timeDiff, cluster->getSeedPixel()->raw());
                     hTrackCorrelationTimeVsCol->Fill(timeDiff, cluster->getSeedPixel()->column());

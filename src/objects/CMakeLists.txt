@@ -2,7 +2,7 @@
 INCLUDE_DIRECTORIES(SYSTEM ${CORRYVRECKAN_DEPS_INCLUDE_DIRS})
 
 # Find the RootNewMacros.cmake file and include it
-GET_FILENAME_COMPONENT(ROOT_CMAKE_DIR ${ROOT_USE_FILE} DIRECTORY)
+GET_FILENAME_COMPONENT(ROOT_CMAKE_DIR "${ROOT_USE_FILE}" DIRECTORY)
 FIND_FILE(ROOT_MACROS_FILE
           NAMES RootNewMacros.cmake
           HINTS ${ROOT_CMAKE_DIR}/modules/ $ENV{ROOTSYS}/cmake/modules)
@@ -54,6 +54,7 @@ ADD_LIBRARY(CorryvreckanObjects SHARED
     Cluster.cpp
     Track.cpp
     KDTree.cpp
+    Event.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx.o
 )
 

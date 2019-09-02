@@ -16,7 +16,6 @@ AlignmentMillepede::AlignmentMillepede(Configuration config, std::vector<std::sh
     : Module(std::move(config), std::move(detectors)) {
 
     m_excludeDUT = m_config.get<bool>("exclude_dut", false);
-    m_numberOfTracksForAlignment = m_config.get<size_t>("number_of_tracks", 20000);
     m_dofs = m_config.getArray<bool>("dofs", {});
     m_nIterations = m_config.get<size_t>("iterations", 5);
 
@@ -80,14 +79,6 @@ StatusCode AlignmentMillepede::run(std::shared_ptr<Clipboard> clipboard) {
         Track* alignmentTrack = new Track(track);
         m_alignmenttracks.push_back(alignmentTrack);
     }
-
-    // If we have enough tracks for the alignment, tell the event loop to finish
-    if(m_alignmenttracks.size() >= m_numberOfTracksForAlignment) {
-        LOG(STATUS) << "Accumulated " << m_alignmenttracks.size() << " tracks, interrupting processing.";
-        return StatusCode::EndRun;
-    }
-
-    // Otherwise keep going
     return StatusCode::Success;
 }
 
@@ -103,8 +94,12 @@ void AlignmentMillepede::finalise() {
         if(det->isDUT() && m_excludeDUT) {
             nPlanes--;
         }
+        if(det->isAuxiliary()) {
+            LOG(INFO) << "Excluding auxiliary detector " << det->name();
+            nPlanes--;
+        }
     }
-    LOG(INFO) << "Aligning " << nPlanes << "planes";
+    LOG(INFO) << "Aligning " << nPlanes << " planes";
     const size_t nParameters = 6 * nPlanes;
     for(unsigned int iteration = 0; iteration < m_nIterations; ++iteration) {
         // Define the constraint equations.

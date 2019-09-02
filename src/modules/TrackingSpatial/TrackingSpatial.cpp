@@ -65,7 +65,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     Clusters* referenceClusters = nullptr;
 
     // Loop over all detectors and get clusters
-    double minZ = 1000.;
+    double minZ = std::numeric_limits<double>::max();
     std::string seedPlane;
     for(auto& detector : get_detectors()) {
         string detectorID = detector->name();
@@ -78,9 +78,12 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
                 referenceClusters = tempClusters;
                 seedPlane = detector->name();
                 minZ = detector->displacement().Z();
+                LOG(TRACE) << "minZ = " << minZ;
             }
-            if(tempClusters->size() == 0)
+            if(tempClusters->size() == 0) {
+                LOG(TRACE) << "tempClusters->size() == 0";
                 continue;
+            }
 
             // Make trees of the clusters on each plane
             KDTree* clusterTree = new KDTree();
@@ -99,15 +102,19 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
             tree = trees.erase(tree);
         }
 
+        LOG(DEBUG) << "There are no detectors, reference clusters are empty.";
         return StatusCode::NoData;
     }
 
     // Output track container
+    LOG(TRACE) << "Initialise tracks object";
     Tracks* tracks = new Tracks();
 
+    LOG(DEBUG) << "referenceClusters->size() == " << referenceClusters->size();
     // Loop over all clusters
     for(auto& cluster : (*referenceClusters)) {
 
+        LOG(DEBUG) << "Looping over clusters.";
         // Make a new track
         Track* track = new Track();
 
@@ -121,13 +128,17 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         for(auto& detector : detectors) {
             auto detectorID = detector->name();
             if(trees.count(detectorID) == 0) {
+                LOG(TRACE) << "Skip 0th detector.";
                 continue;
             }
-            if(detectorID == seedPlane)
+            if(detectorID == seedPlane) {
+                LOG(TRACE) << "Skip seed plane.";
                 continue;
+            }
 
             // Check if the DUT should be excluded and obey:
             if(excludeDUT && detector->isDUT()) {
+                LOG(TRACE) << "Exclude DUT.";
                 continue;
             }
 
@@ -158,6 +169,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Fit the track
+        LOG(TRACE) << "Fitting the track.";
         track->fit();
 
         // Save the track
@@ -172,6 +184,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Make residuals
         for(auto& trackCluster : track->clusters()) {
+            LOG(TRACE) << "Loop over track clusters.";
             string detectorID = trackCluster->detectorID();
             ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->global().z());
             residualsX[detectorID]->Fill(intercept.X() - trackCluster->global().x());

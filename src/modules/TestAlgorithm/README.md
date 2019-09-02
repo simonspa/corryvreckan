@@ -19,12 +19,20 @@ For each device the following plots are produced:
 * 2D hitmap
 * 2D event times histogram
 * Correlation in X
+* Correlation between X(reference) and Y
 * Correlation in Y
-* 2D correlation in X in global coordinates
-* 2D correlation in Y in global coordinates
+* Correlation between Y(reference) and X
 * 2D correlation in X in local coordinates
 * 2D correlation in Y in local coordinates
-* Correlation times (nanosecond binning) histogram, range covers 2 * event length
+* 2D correlation between columns
+* 2D correlation between columns(reference) and rows
+* 2D correlation between rows
+* 2D correlation between rows(reference) and columns
+* 2D correlation in X in global coordinates
+* 2D correlation in Y in global coordinates
+* Correlation times (nanosecond binning) histogram, range covers 2 * `timing_cut`
+* 2D correlation times over time histogram
+* Correlation times (on pixel level, all other histograms take clusters)
 * Correlation times (integer values) histogram
 
 ### Usage

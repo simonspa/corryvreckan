@@ -32,10 +32,12 @@ namespace corryvreckan {
 
         // Cluster histograms
         TH1F* clusterSize;
+        TH1F* clusterSeedCharge;
         TH1F* clusterWidthRow;
         TH1F* clusterWidthColumn;
         TH1F* clusterCharge;
         TH2F* clusterPositionGlobal;
+        TH1F* clusterTimes;
 
         // temp histogram for debuggin:
         TH1D* hDistXClusterPixel;
