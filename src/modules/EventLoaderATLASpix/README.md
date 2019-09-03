@@ -27,7 +27,7 @@ This module requires either another event loader of another detector type before
 * 1D pixel ToT histogram before timestamp overflow correction
 * 1D pixels charge histogram (currently not calibrated -> equivalent to ToT)
 * 1D pixel ToA histogram
-* 1D pixels per frame histogram
+* 1D pixels multiplicity per Corryvreckan event histogram
 * 1D pixels over time histogram (3 second range)
 * 1D pixels over time histogram (3000 second range)
 * 1D pixel TS1 histogram
