@@ -203,13 +203,13 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
     // Loop over all pixels
     for(auto& pixel : (*pixels)) {
         if(pixel->charge() < std::numeric_limits<double>::epsilon()) {
-            // apply arithmetic mean when a pixel has zero charge
+            // apply arithmetic mean if a pixel has zero charge
             found_charge_zero = true;
         }
         charge += pixel->charge();
 
         if(chargeWeighting) {
-            // charge-weighted cluster centre
+            // charge-weighted cluster centre:
             column += (pixel->column() * pixel->charge());
             row += (pixel->row() * pixel->charge());
         } else {
