@@ -8,6 +8,7 @@ ClusteringSpatial::ClusteringSpatial(Configuration config, std::shared_ptr<Detec
     : Module(std::move(config), detector), m_detector(detector) {
 
     useTriggerTimestamp = m_config.get<bool>("use_trigger_timestamp", false);
+    chargeWeighting = m_config.get<bool>("charge_weighting", true);
 }
 
 void ClusteringSpatial::initialise() {
