@@ -39,18 +39,6 @@ namespace corryvreckan {
         TH2F* clusterPositionGlobal;
         TH1F* clusterTimes;
 
-        // temp histogram for debuggin:
-        TH1D* hDistXClusterPixel;
-        TH1D* hDistYClusterPixel;
-        TH1D* hDistXClusterPixel_1px;
-        TH1D* hDistYClusterPixel_1px;
-        TH1D* hDistXClusterPixel_2px;
-        TH1D* hDistYClusterPixel_2px;
-        TH1D* hDistXClusterPixel_3px;
-        TH1D* hDistYClusterPixel_3px;
-        TH1D* hDistXClusterPixel_npx;
-        TH1D* hDistYClusterPixel_npx;
-
         double timingCut;
         int neighbourRadiusRow;
         int neighbourRadiusCol;
