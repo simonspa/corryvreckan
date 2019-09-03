@@ -192,7 +192,7 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
         }
         charge += pixel->charge();
 
-        if(chargeWeighting) {
+        if(chargeWeighting && !found_charge_zero) {
             // charge-weighted cluster centre:
             column += (pixel->column() * pixel->charge());
             row += (pixel->row() * pixel->charge());
