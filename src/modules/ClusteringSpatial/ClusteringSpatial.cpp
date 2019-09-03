@@ -176,6 +176,7 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
     LOG(DEBUG) << "== Making cluster centre";
     // Empty variables to calculate cluster position
     double column(0), row(0), charge(0);
+    bool found_charge_zero = false;
 
     // Get the pixels on this cluster
     Pixels* pixels = cluster->pixels();
@@ -184,18 +185,35 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
 
     // Loop over all pixels
     for(auto& pixel : (*pixels)) {
+        if(pixel->charge() < std::numeric_limits<double>::epsilon()) {
+            // apply arithmetic mean if a pixel has zero charge
+            found_charge_zero = true;
+        }
         charge += pixel->charge();
-        column += (pixel->column() * pixel->charge());
-        row += (pixel->row() * pixel->charge());
+
+        if(chargeWeighting) {
+            // charge-weighted cluster centre:
+            column += (pixel->column() * pixel->charge());
+            row += (pixel->row() * pixel->charge());
+        } else {
+            // arithmetic cluster centre:
+            column += pixel->column();
+            row += pixel->row();
+        }
 
         LOG(DEBUG) << "- pixel col, row: " << pixel->column() << "," << pixel->row();
     }
 
-    // Column and row positions are charge-weighted
-    // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics)
-    // calculate simple arithmetic mean
-    column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
-    row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
+    if(chargeWeighting && !found_charge_zero) {
+        // Charge-weighted cluster centre:
+        // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics).
+        column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
+        row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
+    } else {
+        // Arightmetic cluster centre:
+        column /= static_cast<double>(cluster->size());
+        row /= static_cast<double>(cluster->size());
+    }
 
     LOG(DEBUG) << "- cluster col, row: " << column << "," << row << " at time "
                << Units::display(cluster->timestamp(), "us");
