@@ -192,6 +192,7 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
     LOG(DEBUG) << "== Making cluster centre";
     // Empty variables to calculate cluster position
     double column(0), row(0), charge(0);
+    bool found_charge_zero = false;
 
     // Get the pixels on this cluster
     Pixels* pixels = cluster->pixels();
@@ -201,6 +202,10 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
 
     // Loop over all pixels
     for(auto& pixel : (*pixels)) {
+        if(pixel->charge() < std::numeric_limits<double>::epsilon()) {
+            // apply arithmetic mean when a pixel has zero charge
+            found_charge_zero = true;
+        }
         charge += pixel->charge();
 
         if(chargeWeighting) {
@@ -213,11 +218,6 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
             row += pixel->row();
         }
 
-        // better but still not ideal (if cluster->size==2, and 1 of the pixels has charge 0 for example, then WHAT?)
-        // column += (pixel->charge() > std::numeric_limits<double>::epsilon() ? pixel->column()*pixel->charge() :
-        // pixel->column()); row += (pixel->charge() > std::numeric_limits<double>::epsilon() ? pixel->row()*pixel->charge()
-        // : pixel->row());
-
         if(pixel->timestamp() < timestamp) {
             timestamp = pixel->timestamp();
         }
@@ -228,23 +228,11 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
                    << ", cluster size = " << cluster->size() << ", charge = " << charge;
     }
 
-    if(chargeWeighting) {
+    if(chargeWeighting && !found_charge_zero) {
         // Charge-weighted cluster centre:
-
-        if(charge < std::numeric_limits<double>::epsilon() && cluster->size() == 1) {
-            // If we have a single-pixel cluster with zero chargeWeighting
-            // the variables 'column' and 'row' will be zero due to
-            // --> column += (pixel->column() * pixel->charge());
-            // --> row += (pixel->row() * pixel->charge());
-            // Consequently we take the pixel address of the ONLY pixel of this cluster:
-            column = cluster->getSeedPixel()->column();
-            row = cluster->getSeedPixel()->row();
-        } else {
-            // Apply the regular charge-weighting:
-            // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics).
-            column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
-            row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
-        }
+        // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics).
+        column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
+        row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
     } else {
         // Arightmetic cluster centre:
         column /= static_cast<double>(cluster->size());
