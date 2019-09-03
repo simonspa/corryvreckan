@@ -148,7 +148,7 @@ void EventLoaderATLASpix::initialise() {
     hPixelCharge = new TH1F("pixelCharge", "pixelCharge; pixel charge [e]; # events", 100, 0, 100);
     hPixelToA = new TH1F("pixelToA", "pixelToA; pixel ToA [ns]; # events", 100, 0, 100);
     hPixelMultiplicity =
-        new TH1F("PixelMultiplicity", "Pixel Multiplicity per Corry Event; # pixels; # events", 200, 0, 200);
+        new TH1F("pixelMultiplicity", "Pixel Multiplicity per Corry Event; # pixels; # events", 200, 0, 200);
     hPixelTimes = new TH1F("hPixelTimes", "pixelTimes; hit timestamp [ms]; # events", 3e6, 0, 3e3);
     hPixelTimes_long = new TH1F("hPixelTimes_long", "pixelTimes_long; hit timestamp [s]; # events", 3e6, 0, 3e3);
 
