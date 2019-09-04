@@ -394,8 +394,8 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
             delete new_pixels;
         }
 
-        // If this event was after the current event, stop reading:
-        if(current_position == Event::Position::AFTER) {
+        // If this event was after the current event or if we have not enough information, stop reading:
+        if(current_position == Event::Position::AFTER || current_position == Event::Position::UNKNOWN) {
             break;
         }
 
