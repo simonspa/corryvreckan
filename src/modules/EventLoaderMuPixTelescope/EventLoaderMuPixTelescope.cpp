@@ -74,7 +74,7 @@ StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) 
         detectors.push_back(detectorName);
         LOG(DEBUG) << "Detector with name " << detectorName;
     }
-    map<string, PixelVector*> dataContainers;
+    map<string, std::shared_ptr<PixelVector>> dataContainers;
     TelescopeFrame tf;
     if(!m_blockFile->read_next(tf))
         return StatusCode::EndRun;
@@ -88,7 +88,7 @@ StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) 
             Pixel* p = new Pixel(detectors.at(h.tag() / 4), h.column(), h.row(), 0, 0, px_timestamp);
 
             if(!dataContainers.count(detectors.at(h.tag() / 4)))
-                dataContainers[detectors.at(h.tag() / 4)] = new PixelVector();
+                dataContainers[detectors.at(h.tag() / 4)] = std::make_shared<PixelVector>();
             dataContainers.at(detectors.at(h.tag() / 4))->push_back(p);
             hHitMap->Fill(h.column(), h.row());
             hTimeStamp->Fill(h.timestamp_raw());
