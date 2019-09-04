@@ -87,6 +87,13 @@ namespace corryvreckan {
          */
         Pixels* get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt) const;
 
+        /**
+         * @brief Filter the incoming EUDAQ2 events for the correct detector and detector type
+         * @param  evt The EUDAQ2 StdEvt to be scrutinized
+         * @return     Verdict whether this is the detector we are looking for or not
+         */
+        bool filter_detectors(std::shared_ptr<eudaq::StandardEvent> evt) const;
+
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
         bool m_get_time_residuals{};

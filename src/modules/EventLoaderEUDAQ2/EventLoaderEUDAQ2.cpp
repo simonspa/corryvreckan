@@ -362,6 +362,30 @@ Pixels* EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> 
     return pixels;
 }
 
+bool EventLoaderEUDAQ2::filter_detectors(std::shared_ptr<eudaq::StandardEvent> evt) const {
+    // Check if the detector type matches the currently processed detector type:
+    auto detector_type = evt->GetDetectorType();
+    std::transform(detector_type.begin(), detector_type.end(), detector_type.begin(), ::tolower);
+    // Fall back to parsing the description if not set:
+    if(detector_type.empty()) {
+        LOG(TRACE) << "Using fallback comparison with EUDAQ2 event description";
+        auto description = evt->GetDescription();
+        std::transform(description.begin(), description.end(), description.begin(), ::tolower);
+        if(description.find(m_detector->type()) == std::string::npos) {
+            LOG(DEBUG) << "Ignoring event because description doesn't match type " << m_detector->type() << ": "
+                       << description;
+            return false;
+        }
+    } else if(detector_type != m_detector->type()) {
+        LOG(DEBUG) << "Ignoring event because detector type doesn't match: " << detector_type;
+        return false;
+    }
+
+    // To the best of our knowledge, this is the detector we are looking for.
+    LOG(DEBUG) << "Found matching event for detector type " << m_detector->type();
+    return true;
+}
+
 StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
     Pixels* pixels = new Pixels();
@@ -381,6 +405,12 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
             } catch(EndOfFile&) {
                 return StatusCode::EndRun;
             }
+        }
+
+        // Filter out "wrong" detectors:
+        if(!filter_detectors(event_)) {
+            event_.reset();
+            continue;
         }
 
         // Check if this event is within the currently defined Corryvreckan event:

@@ -16,6 +16,7 @@ In the example below this is the CLICpix2.
 
 If the data of multiple detectors is stored in the same file as sub-events, it must be ensured that the event defining the time frame is processed first.
 This is achieved by instantiating two event loaders in the desired order and providing them with the same input data file.
+The individual (sub-) events are compared against the detector type.
 
 For each event, the algorithm checks for an event on the clipboard.
 If none is available, the current event defines the event on the clipboard.
@@ -56,6 +57,7 @@ The decoder promises to
 * not return any event before a possible T0 signal in the data.
 * return the smallest possible granularity of data in time either as even or as sub-events within one event.
 * always return valid event time stamps. If the device does not have timestamps, it should return zero for the beginning of the event and have a valid trigger number set.
+* provide the detector type via the `GetDetectorType()` function in the decoded StandardEvent.
 
 ### Configuring EUDAQ2 Event Converters
 
