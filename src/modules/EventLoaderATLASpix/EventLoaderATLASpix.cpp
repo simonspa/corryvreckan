@@ -243,8 +243,42 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     double end_time = event->end();
     bool busy_at_start = m_detectorBusy;
 
-    // Read pixel data
-    Pixels* pixels = (m_legacyFormat ? read_legacy_data(start_time, end_time) : read_caribou_data(start_time, end_time));
+    // prepare pixels vector
+    Pixels* pixels = new Pixels();
+    while(true) {
+        // read data from file and fill timesorted buffer
+        read_caribou_data();
+        // get next pixel from sorted queue
+        auto pixel = sorted_pixels_.top();
+
+        if(!pixel) {
+            LOG(TRACE) << "No pixel in buffer. Break.";
+            break;
+        }
+
+        if(pixel->timestamp() < start_time) {
+            LOG(STATUS) << "Skipping pixel hit, pixel is before event window ("
+                        << Units::display(pixel->timestamp(), {"s", "us", "ns"}) << " < "
+                        << Units::display(start_time, {"s", "us", "ns"}) << ")";
+            // remove pixel from sorted queue
+            sorted_pixels_.pop();
+            continue;
+        }
+
+        if(pixel->timestamp() > end_time) {
+            LOG(STATUS) << "Keep pixel for next event, pixel is after event window ("
+                        << Units::display(pixel->timestamp(), {"s", "us", "ns"}) << " > "
+                        << Units::display(end_time, {"s", "us", "ns"}) << ")";
+            break;
+        }
+
+        // add to vector of pixels
+        LOG(STATUS) << "Pixel is during event: (" << pixel->column() << ", " << pixel->row()
+                    << ") ts: " << Units::display(pixel->timestamp(), {"ns", "us", "ms"});
+        pixels->push_back(pixel);
+        // remove pixel from sorted queue
+        sorted_pixels_.pop();
+    }
 
     if(busy_at_start || m_detectorBusy) {
         LOG(DEBUG) << "Returning <DeadTime> status, ATLASPix is BUSY.";
@@ -308,13 +342,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_time) {
-    LOG(DEBUG) << "Searching for events in interval from " << Units::display(start_time, {"s", "us", "ns"}) << " to "
-               << Units::display(end_time, {"s", "us", "ns"}) << ", file read position " << m_file.tellg()
-               << ", old_fpga_ts = " << old_fpga_ts << ".";
-
-    // Pixel container
-    Pixels* pixels = new Pixels();
+void EventLoaderATLASpix::read_caribou_data() {
 
     // Read file and load data
     uint32_t datain;
@@ -342,7 +370,7 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
         // Read next 4-byte data from file
         m_file.read(reinterpret_cast<char*>(&datain), 4);
         if(m_file.eof()) {
-            LOG(DEBUG) << "EOF...";
+            LOG(STATUS) << "EOF...";
             break;
         }
 
@@ -388,22 +416,23 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
             // Convert the timestamp to nanoseconds:
             double timestamp = m_clockCycle * static_cast<double>(hit_ts) + m_detector->timingOffset();
 
-            if(timestamp > end_time) {
+            // if(timestamp > end_time) {
+            if(static_cast<int>(sorted_pixels_.size()) == m_buffer_depth) {
                 keep_pointer_stored = true;
-                LOG(DEBUG) << "Skipping processing event, pixel is after event window ("
-                           << Units::display(timestamp, {"s", "us", "ns"}) << " > "
-                           << Units::display(end_time, {"s", "us", "ns"}) << ")";
+                //     LOG(DEBUG) << "Skipping processing event, pixel is after event window ("
+                //                << Units::display(timestamp, {"s", "us", "ns"}) << " > "
+                //                << Units::display(end_time, {"s", "us", "ns"}) << ")";
                 continue;
             }
-
-            if(timestamp < start_time) {
-                LOG(DEBUG) << "Skipping pixel hit, pixel is before event window ("
-                           << Units::display(timestamp, {"s", "us", "ns"}) << " < "
-                           << Units::display(start_time, {"s", "us", "ns"}) << ")";
-                continue;
-            }
+            //
+            // if(timestamp < start_time) {
+            //     LOG(DEBUG) << "Skipping pixel hit, pixel is before event window ("
+            //                << Units::display(timestamp, {"s", "us", "ns"}) << " < "
+            //                << Units::display(start_time, {"s", "us", "ns"}) << ")";
+            //     continue;
+            // }
             // this window still contains data in the event window, do not stop processing
-            window_end = false;
+            // window_end = false;
             if(m_detectorBusy && (busy_readout_ts < readout_ts)) {
                 LOG(WARNING) << "ATLASPix went BUSY between "
                              << Units::display((m_clockCycle * static_cast<double>(busy_readout_ts)), {"s", "us", "ns"})
@@ -476,8 +505,9 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
             // pixel->setCharge(charge);
             // pixel->setCalibrated = true;
 
-            LOG(DEBUG) << "PIXEL:\t" << *pixel;
-            pixels->push_back(pixel);
+            LOG(DEBUG) << "Adding to buffer: " << *pixel;
+            // pixels->push_back(pixel);
+            sorted_pixels_.push(pixel);
 
         } else {
             // data is not hit information
@@ -493,8 +523,8 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
             case 0b01000000:
                 // the whole previous readout was behind the time window, we can stop processing and return
                 if(window_end) {
-                    LOG(TRACE) << "Rewinding to file pointer : " << oldpos;
-                    m_file.seekg(oldpos);
+                    // LOG(STATUS) << "Rewinding to file pointer : " << oldpos;
+                    // m_file.seekg(oldpos); //this gets me stuck in an internal loop!
                     // exit the while loop
                     keep_reading = false;
                     // exit case
@@ -526,7 +556,8 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
                                << readout_ts;
                 }
                 // If the readout time is after the window, mark it as a candidate for last readout in the window
-                if((static_cast<double>(readout_ts) * m_clockCycle) > end_time) {
+                // if((static_cast<double>(readout_ts) * m_clockCycle) > end_time) {
+                if(static_cast<int>(sorted_pixels_.size()) == m_buffer_depth) {
                     window_end = true;
                 }
                 break;
@@ -624,9 +655,10 @@ Pixels* EventLoaderATLASpix::read_caribou_data(double start_time, double end_tim
                 // End case
             }
         }
-    }
-    LOG(DEBUG) << "Returning " << pixels->size() << " pixels";
-    return pixels;
+    } // end while()
+    // LOG(DEBUG) << "Returning " << pixels->size() << " pixels";
+    // return pixels;
+    return;
 }
 
 Pixels* EventLoaderATLASpix::read_legacy_data(double, double) {
