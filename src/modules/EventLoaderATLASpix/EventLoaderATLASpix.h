@@ -8,6 +8,7 @@
 #include <dirent.h>
 #include <fstream>
 #include <iostream>
+#include <queue>
 #include <sstream>
 #include <stdio.h>
 #include <string.h>
@@ -45,7 +46,15 @@ namespace corryvreckan {
         /*
          * @brief Read data in the format written by the Caribou readout system
          */
-        Pixels* read_caribou_data(double start_time, double end_time);
+        // Pixels* read_caribou_data(double start_time, double end_time);
+        void read_caribou_data();
+
+        // custom comparator for time-sorted priority_queue
+        struct CompareTimeGreater {
+            bool operator()(const Pixel* a, const Pixel* b) { return a->timestamp() > b->timestamp(); }
+        };
+        // Buffer of timesorted pixel hits: (need to use greater here!)
+        std::priority_queue<Pixel*, std::vector<Pixel*>, CompareTimeGreater> sorted_pixels_;
 
         std::shared_ptr<Detector> m_detector;
         unsigned long long int m_oldtoa;
@@ -104,6 +113,7 @@ namespace corryvreckan {
         std::vector<double> m_calibrationFactors;
         // int m_clkdivendM;
         int m_clkdivend2M;
+        int m_buffer_depth;
 
         std::map<std::string, int> m_identifiers;
 

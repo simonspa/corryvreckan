@@ -22,6 +22,8 @@ EventLoaderATLASpix::EventLoaderATLASpix(Configuration config, std::shared_ptr<D
         m_calibrationFile = m_config.getPath("calibration_file");
     }
 
+    m_buffer_depth = m_config.get<int>("buffer_depth", 0);
+
     // ts1Range = 0x800 * m_clkdivendM;
     ts2Range = 0x40 * m_clkdivend2M;
 }
