@@ -217,7 +217,7 @@ void EventLoaderEUDAQ2::retrieve_event_tags(const eudaq::EventSPC evt) {
     }
 }
 Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> clipboard,
-                                                   std::shared_ptr<eudaq::StandardEvent> evt) {
+                                                   std::shared_ptr<eudaq::StandardEvent> evt) const {
 
     // Check if this event has timestamps available:
     if(evt->GetTimeBegin() == 0) {
@@ -305,7 +305,7 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
     return position;
 }
 
-Pixels* EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt) {
+Pixels* EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt) const {
 
     Pixels* pixels = new Pixels();
 

@@ -71,7 +71,8 @@ namespace corryvreckan {
          * @param  evt        The EUDAQ StandardEvent to check
          * @return            Position of the StandardEvent with respect to the current Corryvreckan event
          */
-        Event::Position is_within_event(std::shared_ptr<Clipboard> clipboard, std::shared_ptr<eudaq::StandardEvent> evt);
+        Event::Position is_within_event(std::shared_ptr<Clipboard> clipboard,
+                                        std::shared_ptr<eudaq::StandardEvent> evt) const;
 
         /**
          * @brief Helper function to retrieve event tags and creating plots from them
@@ -84,7 +85,7 @@ namespace corryvreckan {
          * @param evt       StandardEvent to read the pixel data from
          * @return Vector of pointers to pixels read from this event
          */
-        Pixels* get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt);
+        Pixels* get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt) const;
 
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
