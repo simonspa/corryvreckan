@@ -226,6 +226,10 @@ void EventLoaderATLASpix::initialise() {
 StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Check if event frame is defined:
+    if(!clipboard->event_defined()) {
+        LOG(WARNING) << "No event defined on clipboard. Make sure an event is defined before this eventloader.";
+        return StatusCode::Failure;
+    }
     auto event = clipboard->get_event();
 
     // If have reached the end of file, close it and exit program running
