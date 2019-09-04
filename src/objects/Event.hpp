@@ -117,6 +117,11 @@ namespace corryvreckan {
          * @return            Position of the given trigger ID with respect to the defined event.
          */
         Position getTriggerPosition(uint32_t trigger_id) const {
+            // If we have no triggers we cannot make a statement:
+            if(trigger_list_.empty()) {
+                return Position::UNKNOWN;
+            }
+
             if(hasTriggerID(trigger_id)) {
                 return Position::DURING;
             } else if(trigger_list_.upper_bound(trigger_id) == trigger_list_.begin()) {
