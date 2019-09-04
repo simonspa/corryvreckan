@@ -15,7 +15,7 @@ The module opens and reads one data file in the specified input directory with t
 ### Plots produced
 * 2D Hit map
 * 1D Pixel ToT histogram
-* 1D Pixels per frame histogram
+* 1D Pixel multiplicity histogram
 * 1D Shutter length histogram
 
 ### Usage

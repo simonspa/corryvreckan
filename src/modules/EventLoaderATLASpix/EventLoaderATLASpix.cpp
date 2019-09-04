@@ -147,7 +147,7 @@ void EventLoaderATLASpix::initialise() {
         "pixelToT_beforeCorrection", "pixelToT_beforeCorrection; pixel ToT in TS2 clock cycles; # events", 2 * 64, -64, 64);
     hPixelCharge = new TH1F("pixelCharge", "pixelCharge; pixel charge [e]; # events", 100, 0, 100);
     hPixelToA = new TH1F("pixelToA", "pixelToA; pixel ToA [ns]; # events", 100, 0, 100);
-    hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame; pixels per frame; # events", 200, 0, 200);
+    hPixelMultiplicity = new TH1F("pixelMultiplicity", "Pixel Multiplicity; # pixels; # events", 200, 0, 200);
     hPixelTimes = new TH1F("hPixelTimes", "pixelTimes; hit timestamp [ms]; # events", 3e6, 0, 3e3);
     hPixelTimes_long = new TH1F("hPixelTimes_long", "pixelTimes_long; hit timestamp [s]; # events", 3e6, 0, 3e3);
 
@@ -286,7 +286,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         hPixelTimes_long->Fill(static_cast<double>(Units::convert(px->timestamp(), "s")));
     }
 
-    hPixelsPerFrame->Fill(static_cast<double>(pixels->size()));
+    hPixelMultiplicity->Fill(static_cast<double>(pixels->size()));
 
     // Put the data on the clipboard
     if(!pixels->empty()) {

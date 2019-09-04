@@ -59,7 +59,7 @@ namespace corryvreckan {
         TH1F* hPixelToT;
         TH1F* hPixelToA;
         TH1F* hPixelCnt;
-        TH1F* hPixelsPerFrame;
+        TH1F* hPixelMultiplicity;
 
         bool discardZeroToT;
     };

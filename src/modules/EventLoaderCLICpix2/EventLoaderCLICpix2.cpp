@@ -139,8 +139,8 @@ void EventLoaderCLICpix2::initialise() {
     hPixelToA = new TH1F("pixelToA", title.c_str(), maxcounter, 0, maxcounter - 1);
     title = m_detector->name() + " CNT spectrum;CNT;pixels";
     hPixelCnt = new TH1F("pixelCnt", title.c_str(), maxcounter, 0, maxcounter - 1);
-    title = m_detector->name() + " Pixel multiplicity;pixels;frames";
-    hPixelsPerFrame = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
+    title = m_detector->name() + " Pixel Multiplicity; # pixels; # events";
+    hPixelMultiplicity = new TH1F("pixelMultiplicity", title.c_str(), 1000, 0, 1000);
 
     title = m_detector->name() + " Timewalk;TOA;TOT;pixels";
     hTimeWalk = new TH2F("timewalk", title.c_str(), maxcounter, 0, maxcounter - 1, 32, 0, 31);
@@ -309,7 +309,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Fill histograms
-    hPixelsPerFrame->Fill(npixels);
+    hPixelMultiplicity->Fill(npixels);
 
     // Return value telling analysis to keep running
     return StatusCode::Success;
