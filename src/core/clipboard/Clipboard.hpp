@@ -46,18 +46,15 @@ namespace corryvreckan {
         virtual ~Clipboard() {}
 
         /**
-         * @brief Add object to the clipboard
-         * @param name Name of the collection to be stored
-         * @param type Type of the object collection to be stored
-         * @param Objects vector of Objects to store
+         * @brief Method to add a vector of objects to the clipboard
+         * @param objects Shared pointer to vector of objects to be stored
+         * @param key     Identifying key for this set of objects. Defaults to empty key
          */
         template <typename T> void put(std::shared_ptr<std::vector<T*>> objects, const std::string& key = "");
 
         /**
-         * @brief Retrieve objects from the clipboard
-         * @param name Name of the object collection to fetch
-         * @param type Type of objects to be retrieved
-         * @return Vector of Object pointers
+         * @brief Method to retrieve objects from the clipboard
+         * @param key Identifying key of objects to be fetched. Defaults to empty key
          */
         template <typename T> std::shared_ptr<std::vector<T*>> get(const std::string& key = "") const;
 
