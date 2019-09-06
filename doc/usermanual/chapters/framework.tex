@@ -145,7 +145,11 @@ The following status codes are currently supported:
 
 Modules are executed in the order in which they appear in the configuration file, the sequence is repeated for every time frame or event.
 If one module in the chain raises e.g.\ a \command{DeadTime} status, subsequent modules are not executed anymore.
-This should be taken into account when choosing the order of modules in the configuration, since e.g.\ data from detectors catered by subsequent event loaders is not processed and hit maps are not updated if an earlier module requested to skip the rest of the module chain.
+
+The execution order is of special importance in the event building process, since the first detector will always define the event while subsequent event loader modules will have to adhere to the time frame defined by the first module.
+A more complete description of the event building process is provided in Chapter~\ref{ch:events}.
+
+This behavior should also be taken into account when choosing the order of modules in the configuration, since e.g.\ data from detectors catered by subsequent event loaders is not processed and hit maps are not updated if an earlier module requested to skip the rest of the module chain.
 
 \subsection{Module instantiation}
 \label{sec:module_instantiation}
