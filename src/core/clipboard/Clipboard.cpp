@@ -50,6 +50,11 @@ void Clipboard::clear() {
             std::shared_ptr<ObjectVector> collection = std::static_pointer_cast<ObjectVector>(set->second);
             // Loop over all objects and delete them
             for(ObjectVector::iterator it = collection->begin(); it != collection->end(); ++it) {
+                // All objects are destroyed together in this clear function at the end of the event. To avoid costly
+                // reverse-iterations through the TRef dependency hash lists, we just tell ROOT not to care about possible
+                // TRef-dependants and to just destroy the object directly by resetting the `kMustCleanup` bit.
+                (*it)->ResetBit(kMustCleanup);
+                // Delete the object itself:
                 delete(*it);
             }
             set = collections.erase(set);
