@@ -23,7 +23,7 @@ The data is decoded using the CLICpix2 data decoder shipped with the Peary DAQ f
 * 1D Pixel ToA histogram (if value is available)
 * 1D Pixel particle count histogram (if value is available)
 * 2D map of profiles for ToT values
-* 1D Pixels per frame histogram
+* 1D Pixel multiplicity histogram
 
 ### Usage
 ```toml

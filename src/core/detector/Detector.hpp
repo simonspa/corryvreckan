@@ -216,6 +216,14 @@ namespace corryvreckan {
 
         /**
          * Transformation from local (sensor) coordinates to in-pixel coordinates
+         * @param  column Column address ranging from int_column-0.5*pitch to int_column+0.5*pitch
+         * @param  row Row address ranging from int_column-0.5*pitch to int_column+0.5*pitch
+         * @return               Position within a single pixel cell, given in units of length
+         */
+        XYVector inPixel(const double column, const double row) const;
+
+        /**
+         * Transformation from local (sensor) coordinates to in-pixel coordinates
          * @param  localPosition Local position on the sensor
          * @return               Position within a single pixel cell, given in units of length
          */

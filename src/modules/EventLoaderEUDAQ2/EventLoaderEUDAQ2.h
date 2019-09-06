@@ -135,7 +135,7 @@ namespace corryvreckan {
         TH1F* hPixelTimes;
         TH1F* hPixelTimes_long;
         TH1F* hPixelRawValues;
-        TH1F* hPixelsPerEvent;
+        TH1F* hPixelMultiplicity;
         TH1D* hEudaqEventStart;
         TH1D* hEudaqEventStart_long;
         TH1D* hClipboardEventStart;
