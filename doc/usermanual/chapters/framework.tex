@@ -23,8 +23,8 @@ Options are specified as key/value pairs in the same syntax as used in the confi
 There are three types of keys that can be specified:
 \begin{itemize}
 \item Keys to set \textbf{framework parameters}. These have to be provided in exactly the same way as they would be in the main configuration file (a section does not need to be specified). An example to overwrite the standard output directory would be \texttt{corry -c <file> -o output\_directory="run123456"}.
-\item Keys for \textbf{module configurations}. These are specified by adding a dot (\texttt{.}) between the module and the actual key as it would be given in the configuration file (thus \textit{module}.\textit{key}). An example to overwrite the deposited particle to a positron would be \texttt{corry -c <file> -o Tracking4D.timingCut="100ns"}.
-\item Keys to specify values for a particular \textbf{module instantiation}. The identifier of the instantiation and the name of the actual key are split by a dot (\texttt{.}), in the same way as for keys for module configurations (thus \textit{identifier}.\textit{key}). The unique identifier for a module can contains one or more colons (\texttt{:}) to distinguish between various instantiations of the same module. The exact name of an identifier depends on the name of the detector and the optional input and output name. Those identifiers can be extracted from the logging section headers. An example to change the temperature of propagation for a particular instantiation for a detector named \textit{dut} could be \texttt{corry -c <file> -o Clustering4D:dut.timingCut="1us"}.
+\item Keys for \textbf{module configurations}. These are specified by adding a dot (\texttt{.}) between the module and the actual key as it would be given in the configuration file (thus \textit{module}.\textit{key}). An example to overwrite the number of hits required for accepting a track candidate would be \command{corry -c <file> -o Tracking4D.min_hits_on_track=5}.
+\item Keys to specify values for a particular \textbf{module instantiation}. The identifier of the instantiation and the name of the actual key are split by a dot (\texttt{.}), in the same way as for keys for module configurations (thus \textit{identifier}.\textit{key}). The unique identifier for a module can contains one or more colons (\texttt{:}) to distinguish between various instantiations of the same module. The exact name of an identifier depends on the name of the detector. An example to change the neighbor pixel search radius of the clustering algorithm for a particular instantiation of the detector named \textit{dut} could be \command{corry -c <file> -o Clustering4D:dut.neighbour_radius_row=2}.
 \end{itemize}
 Note that only the single argument directly following the \texttt{-o} is interpreted as the option. If there is whitespace in the key/value pair this should be properly enclosed in quotation marks to ensure the argument is parsed correctly.
 \item \texttt{-g <option>}: Passes extra detector options which are added and overwritten in the detector configuration file.
@@ -42,7 +42,7 @@ No interaction with the framework is possible during the reconstruction. Signals
 
 \section{The Clipboard}
 
-The clipboard is the framework's infrastructure for temporary storing information during the event processing.
+The clipboard is the framework infrastructure for temporary storing information during the event processing.
 Every module can access the clipboard and both read and write information.
 Collections or individual elements on the clipboard are accessed via their data type and an optional key to identify them with a certain detector by its name.
 
