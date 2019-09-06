@@ -122,6 +122,11 @@ There are three different kind of modules which can be defined:
 The type of module determines the constructor used, the internal unique name and the supported configuration parameters.
 For more details about the instantiation logic for the different types of modules, see Section~\ref{sec:module_instantiation}.
 
+Furthermore, detector modules can be restricted to certain types of detectors.
+This allows the framework to automatically determine for which of the given detectors the respective module should be instantiated.
+The \command{EventLoaderCLICpix2} module for example will be only instantiated for detectors with the correct type \parameter{CLICpix2} without additional configuration effort required by the user.
+This procedure is described in detail in Section~\ref{sec:module_files}.
+
 \subsection{Module Status Codes}
 
 The \command{run()} function of each module returns a status code to the module manager, indicating the status of the module.
