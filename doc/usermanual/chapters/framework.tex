@@ -44,14 +44,23 @@ No interaction with the framework is possible during the reconstruction. Signals
 
 The clipboard is the framework's infrastructure for temporary storing information during the event processing.
 Every module can access the clipboard and both read and write information.
-Collections or individual elements on the clipboard are accessed via their name, and is internally stored as map.
+Collections or individual elements on the clipboard are accessed via their data type and an optional key to identify them with a certain detector by its name.
 
-The clipboard consists of two parts, a temporary storage and a persistent storage space.
+The clipboard consists of three parts, the event, a temporary data storage and a persistent storage space.
+
+\subsection{The Event}
+
+The event is the central element storing meta-information about the data currently processed.
+This includes the time frame (or data slice) within which all data are located as well as trigger numbers associated with these data.
+New data to be added are always compared to the event on the clipboard to determine whether they should be discarded, included or buffered for later use.
+A detailed description of the event building process is provided in Chapter~\ref{ch:events}.
 
 \subsection{Temporary Data Storage}
-The temporary data storage is only available during the processing of a single event.
+The temporary data storage is only available during the processing of each individual event.
 It is automatically cleared at the end of the event processing and has to be populated with new data in the new event to be processed.
+
 The temporary storage acts as the main data structure to communicate information between different modules and can hold multiple collections of \corry objects such as pixel hits, clusters or tracks.
+In oder to be able to flexibly store different data types on the clipboard, the access methods for the temporary data storage are implemented as templates, and vectors of any data type deriving from \parameter{corry::Object} can be stored and retrieved.
 
 \subsection{Persistent Storage}
 The persistent storage is not cleared at the end of each event processing and can be used to store information used in multiple events.
