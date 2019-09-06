@@ -119,7 +119,7 @@ IF(LATEX_COMPILER)
             usermanual/chapters/installation.tex
             usermanual/chapters/framework.tex
             usermanual/chapters/configuration.tex
-            usermanual/chapters/correlation.tex
+            usermanual/chapters/eventbuilding.tex
             usermanual/chapters/onlinemonitoring.tex
             usermanual/chapters/howtoalign.tex
             usermanual/chapters/modules.tex
