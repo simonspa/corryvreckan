@@ -66,7 +66,7 @@ dut_plots = [["Clicpix2EventLoader/hitMap", "colz"],
              [Clicpix2EventLoader/pixelToT"],
              [Clicpix2EventLoader/pixelToA"],
              [Clicpix2EventLoader/pixelCnt", "log"],
-             [Clicpix2EventLoader/pixelsPerFrame", "log"],
+             [Clicpix2EventLoader/pixelMultiplicity", "log"],
              [DUTAnalysis/clusterTotAssociated"],
              [DUTAnalysis/associatedTracksVersusTime"]]
 ```

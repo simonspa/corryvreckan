@@ -43,7 +43,7 @@ void EventLoaderCLICpix::initialise() {
     hHitMap = new TH2F("hitMap", "hitMap", 64, 0, 64, 64, 0, 64);
     hPixelToT = new TH1F("pixelToT", "pixelToT", 20, 0, 20);
     hShutterLength = new TH1F("shutterLength", "shutterLength", 3000, 0, 0.3);
-    hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 4100, 0, 4100);
+    hPixelMultiplicity = new TH1F("pixelMultiplicity", "Pixel Multiplicity; # pixels; # events", 4100, 0, 4100);
 }
 
 StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
@@ -128,7 +128,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     clipboard->put(pixels, m_detector->name());
 
     // Fill histograms
-    hPixelsPerFrame->Fill(npixels);
+    hPixelMultiplicity->Fill(npixels);
     hShutterLength->Fill(shutterStopTime - shutterStartTime);
 
     // Return value telling analysis to keep running

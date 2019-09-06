@@ -13,7 +13,6 @@ int detNum;
 
 AlignmentTrackChi2::AlignmentTrackChi2(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
-    m_numberOfTracksForAlignment = m_config.get<size_t>("number_of_tracks", 20000);
     nIterations = m_config.get<size_t>("iterations", 3);
 
     m_pruneTracks = m_config.get<bool>("prune_tracks", false);
@@ -61,15 +60,6 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
 
         Track* alignmentTrack = new Track(*track);
         m_alignmenttracks.push_back(alignmentTrack);
-    }
-
-    // If we have enough tracks for the alignment, tell the event loop to finish
-    if(m_alignmenttracks.size() >= m_numberOfTracksForAlignment) {
-        LOG(STATUS) << "Accumulated " << m_alignmenttracks.size() << " tracks, interrupting processing.";
-        if(m_discardedtracks > 0) {
-            LOG(INFO) << "Discarded " << m_discardedtracks << " input tracks.";
-        }
-        return StatusCode::EndRun;
     }
 
     // Otherwise keep going
@@ -130,8 +120,9 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
 
 void AlignmentTrackChi2::finalise() {
 
-    // If not enough tracks were produced, do nothing
-    // if(m_alignmenttracks.size() < m_numberOfTracksForAlignment) return;
+    if(m_discardedtracks > 0) {
+        LOG(INFO) << "Discarded " << m_discardedtracks << " input tracks.";
+    }
 
     // Make the fitting object
     TVirtualFitter* residualFitter = TVirtualFitter::Fitter(nullptr, 50);

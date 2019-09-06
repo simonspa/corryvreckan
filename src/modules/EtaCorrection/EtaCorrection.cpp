@@ -25,7 +25,7 @@ void EtaCorrection::initialise() {
 
     if(!m_etaConstantsX.empty()) {
         m_correctX = true;
-        m_etaCorrectorX = new TF1("etaCorrectorX", m_etaFormulaX.c_str(), 0, pitchX);
+        m_etaCorrectorX = new TF1("etaCorrectorX", m_etaFormulaX.c_str(), -pitchX / 2., pitchX / 2.);
         for(size_t x = 0; x < m_etaConstantsX.size(); x++) {
             m_etaCorrectorX->SetParameter(static_cast<int>(x), m_etaConstantsX[x]);
         }
@@ -35,7 +35,7 @@ void EtaCorrection::initialise() {
 
     if(!m_etaConstantsY.empty()) {
         m_correctY = true;
-        m_etaCorrectorY = new TF1("etaCorrectorY", m_etaFormulaY.c_str(), 0, pitchY);
+        m_etaCorrectorY = new TF1("etaCorrectorY", m_etaFormulaY.c_str(), -pitchY / 2., pitchY / 2.);
         for(size_t y = 0; y < m_etaConstantsY.size(); y++)
             m_etaCorrectorY->SetParameter(static_cast<int>(y), m_etaConstantsY[y]);
     } else {
@@ -51,24 +51,19 @@ void EtaCorrection::applyEta(Cluster* cluster) {
 
     double newX = cluster->local().x();
     double newY = cluster->local().y();
+    auto inPixelPos = m_detector->inPixel(cluster->column(), cluster->row());
 
     if(cluster->columnWidth() == 2) {
-        double inPixelX = m_detector->pitch().X() * (cluster->column() - floor(cluster->column()));
-
         // Apply the eta correction
         if(m_correctX) {
-            newX = floor(cluster->local().x() / m_detector->pitch().X()) * m_detector->pitch().X() +
-                   m_etaCorrectorX->Eval(inPixelX);
+            newX = floor(cluster->column() + m_detector->pitch().X() / 2) + m_etaCorrectorX->Eval(inPixelPos.X());
         }
     }
 
     if(cluster->rowWidth() == 2) {
-        double inPixelY = m_detector->pitch().Y() * (cluster->row() - floor(cluster->row()));
-
         // Apply the eta correction
         if(m_correctY) {
-            newY = floor(cluster->local().y() / m_detector->pitch().Y()) * m_detector->pitch().Y() +
-                   m_etaCorrectorY->Eval(inPixelY);
+            newY = floor(cluster->row() + m_detector->pitch().Y() / 2) + m_etaCorrectorY->Eval(inPixelPos.Y());
         }
     }
 

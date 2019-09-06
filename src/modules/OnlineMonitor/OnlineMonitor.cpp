@@ -25,7 +25,7 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
                                                        {"EventLoaderCLICpix2/%DUT%/pixelToT"},
                                                        {"EventLoaderCLICpix2/%DUT%/pixelToA"},
                                                        {"EventLoaderCLICpix2/%DUT%/pixelCnt", "log"},
-                                                       {"EventLoaderCLICpix2/%DUT%/pixelsPerFrame", "log"},
+                                                       {"EventLoaderCLICpix2/%DUT%/pixelMultiplicity", "log"},
                                                        {"AnalysisDUT/clusterChargeAssociated"},
                                                        {"AnalysisDUT/associatedTracksVersusTime"}});
     canvas_tracking = m_config.getMatrix<std::string>("tracking",

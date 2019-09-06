@@ -28,6 +28,8 @@ void Clustering4D::initialise() {
     clusterPositionGlobal = new TH2F("clusterPositionGlobal", title.c_str(), 400, -10., 10., 400, -10., 10.);
     title = ";cluster timestamp [ns]; # events";
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
+    title = m_detector->name() + " Cluster multiplicity;clusters;events";
+    clusterMultiplicity = new TH1F("clusterMultiplicity", title.c_str(), 50, 0, 50);
 }
 
 // Sort function for pixels from low to high times
@@ -116,6 +118,8 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
         deviceClusters->push_back(cluster);
     }
 
+    clusterMultiplicity->Fill(static_cast<double>(deviceClusters->size()));
+
     // Put the clusters on the clipboard
     clipboard->put(deviceClusters, m_detector->name());
     LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << m_detector->name();
@@ -193,12 +197,11 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         return;
     }
 
-    // Create object with local cluster position
-    PositionVector3D<Cartesian3D<double>> positionLocal(m_detector->pitch().X() * (column - m_detector->nPixels().X() / 2),
-                                                        m_detector->pitch().Y() * (row - m_detector->nPixels().Y() / 2),
-                                                        0);
+    // Calculate local cluster position
+    auto positionLocal = m_detector->getLocalPosition(column, row);
+
     // Calculate global cluster position
-    PositionVector3D<Cartesian3D<double>> positionGlobal = m_detector->localToGlobal(positionLocal);
+    auto positionGlobal = m_detector->localToGlobal(positionLocal);
 
     // Set the cluster parameters
     cluster->setColumn(column);

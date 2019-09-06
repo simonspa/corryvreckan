@@ -107,7 +107,7 @@ void AnalysisDUT::initialise() {
     // In-pixel studies:
     auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
     auto pitch_y = static_cast<double>(Units::convert(m_detector->pitch().Y(), "um"));
-    auto mod_axes = "x_{track} mod " + std::to_string(pitch_x) + "#mum;y_{track} mod " + std::to_string(pitch_y) + "#mum;";
+    std::string mod_axes = "in-pixel x_{track} [#mum];in-pixel y_{track} [#mum];";
 
     // cut flow histogram
     std::string title = m_detector->name() + ": number of tracks discarded by different cuts;cut type;tracks";
@@ -118,60 +118,136 @@ void AnalysisDUT::initialise() {
     hCutHisto->GetXaxis()->SetBinLabel(4, "Close to frame begin/end");
 
     title = "DUT x resolution;" + mod_axes + "MAD(#Deltax) [#mum]";
-    rmsxvsxmym = new TProfile2D(
-        "rmsxvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
+    rmsxvsxmym = new TProfile2D("rmsxvsxmym",
+                                title.c_str(),
+                                static_cast<int>(pitch_x),
+                                -pitch_x / 2.,
+                                pitch_x / 2.,
+                                static_cast<int>(pitch_y),
+                                -pitch_y / 2.,
+                                pitch_y / 2.);
 
     title = "DUT y resolution;" + mod_axes + "MAD(#Deltay) [#mum]";
-    rmsyvsxmym = new TProfile2D(
-        "rmsyvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
+    rmsyvsxmym = new TProfile2D("rmsyvsxmym",
+                                title.c_str(),
+                                static_cast<int>(pitch_x),
+                                -pitch_x / 2.,
+                                pitch_x / 2.,
+                                static_cast<int>(pitch_y),
+                                -pitch_y / 2.,
+                                pitch_y / 2.);
 
     title = "DUT resolution;" + mod_axes + "MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
-    rmsxyvsxmym = new TProfile2D(
-        "rmsxyvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
+    rmsxyvsxmym = new TProfile2D("rmsxyvsxmym",
+                                 title.c_str(),
+                                 static_cast<int>(pitch_x),
+                                 -pitch_x / 2.,
+                                 pitch_x / 2.,
+                                 static_cast<int>(pitch_y),
+                                 -pitch_y / 2.,
+                                 pitch_y / 2.);
 
     title = "DUT cluster charge map;" + mod_axes + "<cluster charge> [ke]";
-    qvsxmym = new TProfile2D(
-        "qvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y, 0, 250);
+    qvsxmym = new TProfile2D("qvsxmym",
+                             title.c_str(),
+                             static_cast<int>(pitch_x),
+                             -pitch_x / 2.,
+                             pitch_x / 2.,
+                             static_cast<int>(pitch_y),
+                             -pitch_y / 2.,
+                             pitch_y / 2.,
+                             0,
+                             250);
 
     title = "DUT cluster charge map, Moyal approx;" + mod_axes + "cluster charge MPV [ke]";
-    qMoyalvsxmym = new TProfile2D(
-        "qMoyalvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y, 0, 250);
+    qMoyalvsxmym = new TProfile2D("qMoyalvsxmym",
+                                  title.c_str(),
+                                  static_cast<int>(pitch_x),
+                                  -pitch_x / 2.,
+                                  pitch_x / 2.,
+                                  static_cast<int>(pitch_y),
+                                  -pitch_y / 2.,
+                                  pitch_y / 2.,
+                                  0,
+                                  250);
 
     title = "DUT seed pixel charge map;" + mod_axes + "<seed pixel charge> [ke]";
-    pxqvsxmym = new TProfile2D(
-        "pxqvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y, 0, 250);
+    pxqvsxmym = new TProfile2D("pxqvsxmym",
+                               title.c_str(),
+                               static_cast<int>(pitch_x),
+                               -pitch_x / 2.,
+                               pitch_x / 2.,
+                               static_cast<int>(pitch_y),
+                               -pitch_y / 2.,
+                               pitch_y / 2.,
+                               0,
+                               250);
 
     title = "DUT cluster size map;" + mod_axes + "<pixels/cluster>";
-    npxvsxmym = new TProfile2D(
-        "npxvsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y, 0, 4.5);
+    npxvsxmym = new TProfile2D("npxvsxmym",
+                               title.c_str(),
+                               static_cast<int>(pitch_x),
+                               -pitch_x / 2.,
+                               pitch_x / 2.,
+                               static_cast<int>(pitch_y),
+                               -pitch_y / 2.,
+                               pitch_y / 2.,
+                               0,
+                               4.5);
 
     title = "DUT 1-pixel cluster map;" + mod_axes + "clusters";
-    npx1vsxmym =
-        new TH2F("npx1vsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
+    npx1vsxmym = new TH2F("npx1vsxmym",
+                          title.c_str(),
+                          static_cast<int>(pitch_x),
+                          -pitch_x / 2.,
+                          pitch_x / 2.,
+                          static_cast<int>(pitch_y),
+                          -pitch_y / 2.,
+                          pitch_y / 2.);
 
     title = "DUT 2-pixel cluster map;" + mod_axes + "clusters";
-    npx2vsxmym =
-        new TH2F("npx2vsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
+    npx2vsxmym = new TH2F("npx2vsxmym",
+                          title.c_str(),
+                          static_cast<int>(pitch_x),
+                          -pitch_x / 2.,
+                          pitch_x / 2.,
+                          static_cast<int>(pitch_y),
+                          -pitch_y / 2.,
+                          pitch_y / 2.);
 
     title = "DUT 3-pixel cluster map;" + mod_axes + "clusters";
-    npx3vsxmym =
-        new TH2F("npx3vsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
+    npx3vsxmym = new TH2F("npx3vsxmym",
+                          title.c_str(),
+                          static_cast<int>(pitch_x),
+                          -pitch_x / 2.,
+                          pitch_x / 2.,
+                          static_cast<int>(pitch_y),
+                          -pitch_y / 2.,
+                          pitch_y / 2.);
 
     title = "DUT 4-pixel cluster map;" + mod_axes + "clusters";
-    npx4vsxmym =
-        new TH2F("npx4vsxmym", title.c_str(), static_cast<int>(pitch_x), 0, pitch_x, static_cast<int>(pitch_y), 0, pitch_y);
+    npx4vsxmym = new TH2F("npx4vsxmym",
+                          title.c_str(),
+                          static_cast<int>(pitch_x),
+                          -pitch_x / 2.,
+                          pitch_x / 2.,
+                          static_cast<int>(pitch_y),
+                          -pitch_y / 2.,
+                          pitch_y / 2.);
 
     // Efficiency maps
+    title = "hPixelEfficiencyMap" + mod_axes + "efficiency";
     hPixelEfficiencyMap = new TProfile2D("hPixelEfficiencyMap",
                                          "hPixelEfficiencyMap;column;row;efficiency",
                                          static_cast<int>(pitch_x),
-                                         0,
-                                         pitch_x,
+                                         -pitch_x / 2.,
+                                         pitch_x / 2.,
                                          static_cast<int>(pitch_y),
-                                         0,
-                                         pitch_y,
+                                         -pitch_y / 2.,
+                                         pitch_y / 2.,
                                          0,
                                          1);
+    title = "hChipEfficiencyMap;column; row; efficiency";
     hChipEfficiencyMap = new TProfile2D("hChipEfficiencyMap",
                                         "hChipEfficiencyMap;column;row;efficiency",
                                         m_detector->nPixels().X(),
@@ -182,6 +258,7 @@ void AnalysisDUT::initialise() {
                                         m_detector->nPixels().Y(),
                                         0,
                                         1);
+    title = "hGlobalEfficiencyMap;efficiency";
     hGlobalEfficiencyMap = new TProfile2D("hGlobalEfficiencyMap",
                                           "hGlobalEfficiencyMap;column;row;efficiency",
                                           300,

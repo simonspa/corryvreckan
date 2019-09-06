@@ -21,7 +21,6 @@ std::shared_ptr<Detector> globalDetector;
 AlignmentDUTResidual::AlignmentDUTResidual(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    m_numberOfTracksForAlignment = m_config.get<size_t>("number_of_tracks", 20000);
     nIterations = m_config.get<size_t>("iterations", 3);
 
     m_pruneTracks = m_config.get<bool>("prune_tracks", false);
@@ -121,15 +120,6 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
         }
     }
 
-    // If we have enough tracks for the alignment, tell the event loop to finish
-    if(m_alignmenttracks.size() >= m_numberOfTracksForAlignment) {
-        LOG(STATUS) << "Accumulated " << m_alignmenttracks.size() << " tracks, interrupting processing.";
-        if(m_discardedtracks > 0) {
-            LOG(STATUS) << "Discarded " << m_discardedtracks << " input tracks.";
-        }
-        return StatusCode::EndRun;
-    }
-
     // Otherwise keep going
     return StatusCode::Success;
 }
@@ -197,6 +187,10 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
 }
 
 void AlignmentDUTResidual::finalise() {
+
+    if(m_discardedtracks > 0) {
+        LOG(STATUS) << "Discarded " << m_discardedtracks << " input tracks.";
+    }
 
     // Make the fitting object
     TVirtualFitter* residualFitter = TVirtualFitter::Fitter(nullptr, 50);
