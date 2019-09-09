@@ -193,13 +193,15 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         column_sum_chargeweighted += (pixel->column() * pixel->charge());
         row_sum_chargeweighted += (pixel->row() * pixel->charge());
 
+        LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
+
         if(pixel->timestamp() < timestamp) {
             timestamp = pixel->timestamp();
         }
     }
 
     if(chargeWeighting && !found_charge_zero) {
-        // Charge-weighted cluster centre:
+        // Charge-weighted centre-of-gravity for cluster centre:
         // (here it's safe to divide by the charge as it cannot be zero due to !found_charge_zero)
         column = column_sum_chargeweighted / charge;
         row = row_sum_chargeweighted / charge;
