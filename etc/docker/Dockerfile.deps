@@ -31,3 +31,23 @@ RUN source scl_source enable devtoolset-7 && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
     rm -rf ${ROOTSYS}/{src,build}
+
+
+ENV EUDAQ2_VERSION master
+
+# Add layer for EUDAQ2
+ENV EUDAQ2PATH="/opt/eudaq2"
+RUN source scl_source enable devtoolset-7 && \
+    mkdir -p ${EUDAQ2PATH}/{src,build} && \
+    curl -L -o ${EUDAQ2PATH}/eudaq2.${EUDAQ2_VERSION}.zip \
+            https://github.com/eudaq/eudaq/archive/${EUDAQ2_VERSION}.zip && \
+    unzip ${EUDAQ2PATH}/eudaq2.${EUDAQ2_VERSION}.zip -d ${EUDAQ2PATH}/src && \
+    rm -f ${EUDAQ2PATH}/eudaq2.${EUDAQ2_VERSION}.zip && \
+    cd ${EUDAQ2PATH}/build && \
+    cmake3 -DEUDAQ_BUILD_EXECUTABLE=OFF \
+           -DEUDAQ_BUILD_GUI=OFF \
+           -DEUDAQ_INSTALL_PREFIX=../ \
+           ../src/eudaq-${EUDAQ2_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${EUDAQ2PATH}/{src,build}
