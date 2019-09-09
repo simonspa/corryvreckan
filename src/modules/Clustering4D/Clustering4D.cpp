@@ -192,8 +192,8 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         // We need both column_sum and column_sum_chargeweighted
         // as we don't know a priori if there will be a pixel with
         // charge==0 such that we have to fall back to the arithmetic mean.
-        column_sum += (pixel->column() * pixel->charge());
-        row_sum += (pixel->row() * pixel->charge());
+        column_sum += pixel->column();
+        row_sum += pixel->row();
         column_sum_chargeweighted += (pixel->column() * pixel->charge());
         row_sum_chargeweighted += (pixel->row() * pixel->charge());
 
