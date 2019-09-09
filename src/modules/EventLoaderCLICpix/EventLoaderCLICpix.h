@@ -39,7 +39,7 @@ namespace corryvreckan {
         TH2F* hHitMap;
         TH1F* hPixelToT;
         TH1F* hShutterLength;
-        TH1F* hPixelsPerFrame;
+        TH1F* hPixelMultiplicity;
     };
 } // namespace corryvreckan
 #endif // EventLoaderCLICpix_H

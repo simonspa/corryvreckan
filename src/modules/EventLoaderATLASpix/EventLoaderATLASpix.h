@@ -85,7 +85,7 @@ namespace corryvreckan {
         TH2D* hPixelTriggerTimeResidualOverTime;
         TH1D* hTriggersPerEvent;
 
-        TH1F* hPixelsPerFrame;
+        TH1F* hPixelMultiplicity;
         TH1F* hPixelTimes;
         TH1F* hPixelTimes_long;
 

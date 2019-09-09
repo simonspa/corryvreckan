@@ -60,8 +60,8 @@ void EventLoaderEUDAQ2::initialise() {
     title = ";pixel raw values;# events";
     hPixelRawValues = new TH1F("hPixelRawValues;", title.c_str(), 1024, 0, 1024);
 
-    title = "Pixel multiplicity per Corry frame;# pixels per event;# entries";
-    hPixelsPerEvent = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
+    title = "Pixel Multiplicity per Corry Event;# pixels;# events";
+    hPixelMultiplicity = new TH1F("pixelMultiplicity", title.c_str(), 1000, 0, 1000);
 
     title = ";EUDAQ event start time[ms];# entries";
     hEudaqEventStart = new TH1D("eudaqEventStart", title.c_str(), 3e6, 0, 3e3);
@@ -355,7 +355,7 @@ Pixels* EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> 
 
             pixels->push_back(pixel);
         }
-        hPixelsPerEvent->Fill(static_cast<int>(pixels->size()));
+        hPixelMultiplicity->Fill(static_cast<int>(pixels->size()));
         LOG(DEBUG) << m_detector->name() << ": Plane contains " << pixels->size() << " pixels";
     }
 
