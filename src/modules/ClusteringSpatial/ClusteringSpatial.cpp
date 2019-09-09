@@ -177,6 +177,8 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
     LOG(DEBUG) << "== Making cluster centre";
     // Empty variables to calculate cluster position
     double column(0), row(0), charge(0);
+    double column_sum(0), column_sum_chargeweighted(0);
+    double row_sum(0), row_sum_chargeweighted(0);
     bool found_charge_zero = false;
 
     // Get the pixels on this cluster
@@ -186,34 +188,33 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
 
     // Loop over all pixels
     for(auto& pixel : (*pixels)) {
+        // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics):
         if(pixel->charge() < std::numeric_limits<double>::epsilon()) {
             // apply arithmetic mean if a pixel has zero charge
             found_charge_zero = true;
         }
         charge += pixel->charge();
 
-        if(chargeWeighting && !found_charge_zero) {
-            // charge-weighted cluster centre:
-            column += (pixel->column() * pixel->charge());
-            row += (pixel->row() * pixel->charge());
-        } else {
-            // arithmetic cluster centre:
-            column += pixel->column();
-            row += pixel->row();
-        }
+        // We need both column_sum and column_sum_chargeweighted
+        // as we don't know a priori if there will be a pixel with
+        // charge==0 such that we have to fall back to the arithmetic mean.
+        column_sum += (pixel->column() * pixel->charge());
+        row_sum += (pixel->row() * pixel->charge());
+        column_sum_chargeweighted += (pixel->column() * pixel->charge());
+        row_sum_chargeweighted += (pixel->row() * pixel->charge());
 
         LOG(DEBUG) << "- pixel col, row: " << pixel->column() << "," << pixel->row();
     }
 
     if(chargeWeighting && !found_charge_zero) {
-        // Charge-weighted cluster centre:
-        // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics).
-        column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
-        row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
+        // Charge-weighted centre-of-gravity for cluster centre:
+        // (here it's safe to divide by the charge as it cannot be zero due to !found_charge_zero)
+        column = column_sum_chargeweighted / charge;
+        row = row_sum_chargeweighted / charge;
     } else {
         // Arithmetic cluster centre:
-        column /= static_cast<double>(cluster->size());
-        row /= static_cast<double>(cluster->size());
+        column = column_sum / static_cast<double>(cluster->size());
+        row = row_sum / static_cast<double>(cluster->size());
     }
 
     LOG(DEBUG) << "- cluster col, row: " << column << "," << row << " at time "
