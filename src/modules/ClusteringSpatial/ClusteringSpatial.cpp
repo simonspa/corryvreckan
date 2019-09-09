@@ -211,7 +211,7 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
         column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
         row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
     } else {
-        // Arightmetic cluster centre:
+        // Arithmetic cluster centre:
         column /= static_cast<double>(cluster->size());
         row /= static_cast<double>(cluster->size());
     }
