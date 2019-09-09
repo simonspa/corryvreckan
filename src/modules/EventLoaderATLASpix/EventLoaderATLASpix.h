@@ -47,7 +47,7 @@ namespace corryvreckan {
          * @brief Read data in the format written by the Caribou readout system
          */
         // Pixels* read_caribou_data(double start_time, double end_time);
-        void read_caribou_data();
+        bool read_caribou_data();
 
         // custom comparator for time-sorted priority_queue
         struct CompareTimeGreater {
@@ -67,6 +67,16 @@ namespace corryvreckan {
         unsigned long long old_readout_ts;
         unsigned long long old_fpga_ts;
         unsigned long long busy_readout_ts;
+
+        unsigned long long readout_ts_ = 0;
+        unsigned long long fpga_ts_ = 0;
+        unsigned long long fpga_ts1_ = 0;
+        unsigned long long fpga_ts2_ = 0;
+        unsigned long long fpga_ts3_ = 0;
+        bool new_ts1_ = false;
+        bool new_ts2_ = false;
+        bool timestamps_cleared_ = false;
+
         // int ts1Range;
         int ts2Range;
 
