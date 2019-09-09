@@ -209,10 +209,6 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         row = row_sum / static_cast<double>(cluster->size());
     }
 
-    if(cluster->size() > 2 && m_detector->name() == "ap1b02w23s15") {
-        LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
-    }
-
     if(detectorID != m_detector->name()) {
         // Should never happen...
         return;
