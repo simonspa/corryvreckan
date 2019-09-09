@@ -5,10 +5,15 @@
 **Status**: Functioning
 
 ### Description
-This module clusters the input data of a detector without individual hit timestamps. The clustering method only uses positional information: charge-weighted centre of gravity calculation using touching neighbours method, and no timing information. If the pixel information is binary (i.e. no valid charge-equivalent information is available), the arithmetic mean is calculated for the position. These clusters are stored on the clipboard for each device.
+This module clusters the input data of a detector without individual hit timestamps.
+The clustering method only uses positional information: either charge-weighted centre-of-gravity or arithmetic mean calculation using touching neighbours method, and no timing information.
+If the pixel information is binary (i.e. no valid charge-equivalent information is available), the arithmetic mean is calculated for the position.
+Also, if one pixel of a cluster has charge zero, the arithmetic mean is calculated even if charge-weighting is selected because it is assumed that the zero-reading is false and does not to represent a low charge but an unknown value.
+These clusters are stored on the clipboard for each device.
 
 ### Parameters
 * `use_trigger_timestamp`: If true, set trigger timestamp of Corryvreckan event as cluster timestamp. If false, set pixel timestamp. Default value is `false`.
+* `charge_weighting`: If true, calculate a charge-weighted mean for the cluster centre. If false, calculate the simple arithmetic mean. Defaults to `true`.
 
 ### Plots produced
 For each detector the following plots are produced:
