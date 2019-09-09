@@ -269,8 +269,8 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         if(pixel->timestamp() > end_time) {
-            LOG(STATUS) << "Keep pixel for next event, pixel is after event window ("
-                        << Units::display(pixel->timestamp(), {"s", "us", "ns"}) << " > "
+            LOG(STATUS) << "Keep pixel for next event, pixel (" << pixel->column() << "," << pixel->row()
+                        << ") is after event window (" << Units::display(pixel->timestamp(), {"s", "us", "ns"}) << " > "
                         << Units::display(end_time, {"s", "us", "ns"}) << ")";
             break;
         }
