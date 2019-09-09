@@ -204,7 +204,7 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         column = column_sum_chargeweighted / charge;
         row = row_sum_chargeweighted / charge;
     } else {
-        // Arightmetic cluster centre:
+        // Arithmetic cluster centre:
         column = column_sum / static_cast<double>(cluster->size());
         row = row_sum / static_cast<double>(cluster->size());
     }
