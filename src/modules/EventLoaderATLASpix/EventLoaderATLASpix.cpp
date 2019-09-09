@@ -22,7 +22,7 @@ EventLoaderATLASpix::EventLoaderATLASpix(Configuration config, std::shared_ptr<D
         m_calibrationFile = m_config.getPath("calibration_file");
     }
 
-    m_buffer_depth = m_config.get<int>("buffer_depth", 0);
+    m_buffer_depth = m_config.get<int>("buffer_depth", 1000);
 
     // ts1Range = 0x800 * m_clkdivendM;
     ts2Range = 0x40 * m_clkdivend2M;
@@ -39,8 +39,11 @@ uint32_t EventLoaderATLASpix::gray_decode(uint32_t gray) {
 void EventLoaderATLASpix::initialise() {
 
     uint32_t datain;
-
     m_detectorBusy = false;
+
+    if(m_buffer_depth < 1) {
+        throw InvalidValueError(m_config, "buffer_depth", "Buffer depth must be larger than 0.");
+    }
 
     // File structure is RunX/data.bin
     // Assume that the ATLASpix is the DUT (if running this algorithm)
