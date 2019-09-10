@@ -359,8 +359,14 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
         // Convert the timestamp to nanoseconds:
         double timestamp = m_clockCycle * static_cast<double>(hit_ts);
 
+        // If this pixel is masked, do not save it
+        if(m_detector->masked(col, row)) {
+            return true;
+        }
+
         // calculate ToT only when pixel is good for storing (division is time consuming)
         int tot = static_cast<int>(ts2 - ((hit_ts % static_cast<long long>(64 * m_clkdivend2M)) / m_clkdivend2M));
+        hPixelToT_beforeCorrection->Fill(tot);
         if(tot < 0) {
             tot += 64;
         }
@@ -400,12 +406,6 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
 
         if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {
             LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
-            return true;
-        }
-
-        // If this pixel is masked, do not save it
-        if(m_detector->masked(col, row)) {
-            return true;
         }
 
         // when calibration is not available, set charge = tot
