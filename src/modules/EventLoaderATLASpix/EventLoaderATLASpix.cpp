@@ -203,7 +203,6 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     double start_time = event->start();
     double end_time = event->end();
-    bool busy_at_start = m_detectorBusy;
 
     // prepare pixels vector
     Pixels* pixels = new Pixels();
