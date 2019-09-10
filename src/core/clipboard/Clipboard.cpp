@@ -4,16 +4,20 @@
 
 using namespace corryvreckan;
 
-void Clipboard::put_persistent(std::string name, double value) {
+void Clipboard::putPersistentData(std::string name, double value) {
     m_persistent_data[name] = value;
 }
 
-double Clipboard::get_persistent(std::string name) const {
+double Clipboard::getPersistentData(std::string name) const {
     try {
         return m_persistent_data.at(name);
     } catch(std::out_of_range&) {
         throw MissingDataError(name);
     }
+}
+
+bool Clipboard::hasPersistentData(std::string name) const {
+    return m_persistent_data.find(name) != m_persistent_data.end();
 }
 
 bool Clipboard::event_defined() const {
@@ -34,10 +38,6 @@ std::shared_ptr<Event> Clipboard::get_event() const {
         throw InvalidDataError("Event not defined. Add Metronome module or Event reader defining the event");
     }
     return m_event;
-}
-
-bool Clipboard::has_persistent(std::string name) const {
-    return m_persistent_data.find(name) != m_persistent_data.end();
 }
 
 void Clipboard::clear() {

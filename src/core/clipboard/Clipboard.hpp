@@ -84,7 +84,7 @@ namespace corryvreckan {
          * @param name Name of the variable
          * @param value Value to be stored
          */
-        void put_persistent(std::string name, double value);
+        void putPersistentData(std::string name, double value);
 
         /**
          * @brief Retrieve variable from the persistent clipboard storage
@@ -92,14 +92,14 @@ namespace corryvreckan {
          * @return Stored value from the persistent clipboard storage
          * @throws MissingDataError in case the key is not found.
          */
-        double get_persistent(std::string name) const;
+        double getPersistentData(std::string name) const;
 
         /**
          * @brief Check if variable exists on the persistent clipboard storage
          * @param name Name of the variable
          * @return True if value exists, false if it does not exist.
          */
-        bool has_persistent(std::string name) const;
+        bool hasPersistentData(std::string name) const;
 
         /**
          * @brief Get a list of currently held collections on the clipboard event storage
