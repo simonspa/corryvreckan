@@ -34,6 +34,7 @@ namespace corryvreckan {
      * information which should outlast a single event. This is dubbed the "persistent storage"
      */
     class Clipboard {
+        friend class ModuleManager;
 
     public:
         /**
@@ -101,11 +102,6 @@ namespace corryvreckan {
         bool has_persistent(std::string name) const;
 
         /**
-         * @brief Clear the event storage of the clipboard
-         */
-        void clear();
-
-        /**
          * @brief Get a list of currently held collections on the clipboard event storage
          * @return Vector of collections names currently stored on the clipboard
          */
@@ -118,6 +114,11 @@ namespace corryvreckan {
         const ClipboardData& get_all() const;
 
     private:
+        /**
+         * @brief Clear the event storage of the clipboard
+         */
+        void clear();
+
         // Container for data, list of all data held
         ClipboardData m_data;
 
