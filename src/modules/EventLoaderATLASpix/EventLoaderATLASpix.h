@@ -76,6 +76,7 @@ namespace corryvreckan {
         bool new_ts1_ = false;
         bool new_ts2_ = false;
         bool timestamps_cleared_ = false;
+        bool eof_reached = false;
 
         // int ts1Range;
         int ts2Range;
