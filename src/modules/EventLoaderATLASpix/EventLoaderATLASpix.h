@@ -40,8 +40,8 @@ namespace corryvreckan {
 
         /*
          * @brief Read data in the format written by the Caribou readout system
+         * @return Bool which is false when reaching the end-of-file and true otherwise
          */
-        // Pixels* read_caribou_data(double start_time, double end_time);
         bool read_caribou_data();
 
         // custom comparator for time-sorted priority_queue
