@@ -71,7 +71,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         string detectorID = detector->name();
 
         // Get the clusters
-        auto tempClusters = clipboard->get<Cluster>(detectorID);
+        auto tempClusters = clipboard->getData<Cluster>(detectorID);
         if(tempClusters != nullptr) {
             // Store the clusters of the first plane in Z as the reference
             if(detector->displacement().Z() < minZ) {
@@ -195,7 +195,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     // Save the tracks on the clipboard
     tracksPerEvent->Fill(static_cast<double>(tracks->size()));
     if(tracks->size() > 0) {
-        clipboard->put(tracks);
+        clipboard->putData(tracks);
     }
 
     // Clean up tree objects

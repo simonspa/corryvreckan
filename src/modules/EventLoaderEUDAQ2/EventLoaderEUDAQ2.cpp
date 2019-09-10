@@ -455,7 +455,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Store the full event data on the clipboard:
-    clipboard->put(pixels, m_detector->name());
+    clipboard->putData(pixels, m_detector->name());
 
     LOG(DEBUG) << "Finished Corryvreckan event";
     return StatusCode::Success;

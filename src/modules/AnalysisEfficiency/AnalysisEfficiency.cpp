@@ -172,7 +172,7 @@ void AnalysisEfficiency::initialise() {
 StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the telescope tracks from the clipboard
-    auto tracks = clipboard->get<Track>();
+    auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
@@ -239,7 +239,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
 
         // Get the DUT clusters from the clipboard
-        auto clusters = clipboard->get<Cluster>(m_detector->name());
+        auto clusters = clipboard->getData<Cluster>(m_detector->name());
         if(clusters == nullptr) {
             LOG(DEBUG) << " - no DUT clusters";
         } else {
@@ -310,7 +310,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Before going to the next event, loop over all pixels (all hits incl. noise)
     // and fill matrix with timestamps of previous pixels.
-    auto pixels = clipboard->get<Pixel>(m_detector->name());
+    auto pixels = clipboard->getData<Pixel>(m_detector->name());
     if(pixels == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return StatusCode::Success;

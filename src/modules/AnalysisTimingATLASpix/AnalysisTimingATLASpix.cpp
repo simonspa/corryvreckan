@@ -361,7 +361,7 @@ void AnalysisTimingATLASpix::initialise() {
 StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the telescope tracks from the clipboard
-    auto tracks = clipboard->get<Track>();
+    auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
@@ -424,7 +424,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         total_tracks++;
 
         // Get the DUT clusters from the clipboard
-        auto clusters = clipboard->get<Cluster>(m_detector->name());
+        auto clusters = clipboard->getData<Cluster>(m_detector->name());
         if(clusters == nullptr) {
             LOG(DEBUG) << " - no DUT clusters";
         } else {

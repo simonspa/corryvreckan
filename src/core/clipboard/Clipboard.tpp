@@ -1,7 +1,7 @@
 
 namespace corryvreckan {
 
-    template <typename T> void Clipboard::put(std::shared_ptr<std::vector<T*>> objects, const std::string& key) {
+    template <typename T> void Clipboard::putData(std::shared_ptr<std::vector<T*>> objects, const std::string& key) {
         // Do not insert empty sets:
         if(objects->empty()) {
             return;
@@ -22,7 +22,7 @@ namespace corryvreckan {
         }
     }
 
-    template <typename T> std::shared_ptr<std::vector<T*>> Clipboard::get(const std::string& key) const {
+    template <typename T> std::shared_ptr<std::vector<T*>> Clipboard::getData(const std::string& key) const {
         if(m_data.count(typeid(T)) == 0 || m_data.at(typeid(T)).count(key) == 0) {
             return nullptr;
         }

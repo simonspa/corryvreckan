@@ -75,14 +75,14 @@ void DUTAssociation::initialise() {
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks from the clipboard
-    auto tracks = clipboard->get<Track>();
+    auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
     }
 
     // Get the DUT clusters from the clipboard
-    auto clusters = clipboard->get<Cluster>(m_detector->name());
+    auto clusters = clipboard->getData<Cluster>(m_detector->name());
 
     // Loop over all tracks
     for(auto& track : (*tracks)) {

@@ -338,7 +338,7 @@ void AnalysisDUT::initialise() {
 StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the telescope tracks from the clipboard
-    auto tracks = clipboard->get<Track>();
+    auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;

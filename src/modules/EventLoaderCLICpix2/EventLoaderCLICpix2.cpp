@@ -301,7 +301,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     clipboard->putEvent(std::make_shared<Event>(shutterStartTime, shutterStopTime));
 
     // Put the data on the clipboard
-    clipboard->put(pixels, m_detector->name());
+    clipboard->putData(pixels, m_detector->name());
 
     if(pixels->empty()) {
         return StatusCode::NoData;

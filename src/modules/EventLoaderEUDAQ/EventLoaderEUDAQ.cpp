@@ -90,7 +90,7 @@ StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Store on clipboard
-            clipboard->put(deviceData, detectorID);
+            clipboard->putData(deviceData, detectorID);
         }
     }
 

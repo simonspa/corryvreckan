@@ -41,7 +41,7 @@ bool Clustering4D::sortByTime(Pixel* pixel1, Pixel* pixel2) {
 StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
-    auto pixels = clipboard->get<Pixel>(m_detector->name());
+    auto pixels = clipboard->getData<Pixel>(m_detector->name());
     if(pixels == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
@@ -122,7 +122,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
     clusterMultiplicity->Fill(static_cast<double>(deviceClusters->size()));
 
     // Put the clusters on the clipboard
-    clipboard->put(deviceClusters, m_detector->name());
+    clipboard->putData(deviceClusters, m_detector->name());
     LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << m_detector->name();
 
     return StatusCode::Success;

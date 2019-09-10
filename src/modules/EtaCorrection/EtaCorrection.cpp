@@ -76,7 +76,7 @@ void EtaCorrection::applyEta(Cluster* cluster) {
 StatusCode EtaCorrection::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the clusters
-    auto clusters = clipboard->get<Cluster>(m_detector->name());
+    auto clusters = clipboard->getData<Cluster>(m_detector->name());
     if(clusters == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any clusters on the clipboard";
         return StatusCode::Success;

@@ -72,9 +72,9 @@ template <typename T> static void add_creator(FileReader::ObjectCreatorMap& map)
 
         // Store the ojects on the clipboard:
         if(detector.empty()) {
-            clipboard->put(std::make_shared<std::vector<T*>>(std::move(data)));
+            clipboard->putData(std::make_shared<std::vector<T*>>(std::move(data)));
         } else {
-            clipboard->put(std::make_shared<std::vector<T*>>(std::move(data)), detector);
+            clipboard->putData(std::make_shared<std::vector<T*>>(std::move(data)), detector);
         }
     };
 }

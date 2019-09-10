@@ -74,7 +74,7 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
     v_clusterNumPixels.clear();
 
     // Getting tracks from the clipboard
-    auto tracks = clipboard->get<Track>();
+    auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;

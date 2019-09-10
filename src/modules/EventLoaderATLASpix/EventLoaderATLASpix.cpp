@@ -290,7 +290,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     hPixelMultiplicity->Fill(static_cast<double>(pixels->size()));
 
     // Put the data on the clipboard
-    clipboard->put(pixels, m_detector->name());
+    clipboard->putData(pixels, m_detector->name());
 
     if(pixels->empty()) {
         LOG(DEBUG) << "Returning <NoData> status, no hits found.";

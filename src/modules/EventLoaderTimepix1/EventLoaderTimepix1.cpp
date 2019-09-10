@@ -177,7 +177,7 @@ StatusCode EventLoaderTimepix1::run(std::shared_ptr<Clipboard> clipboard) {
         // Check if this detector has been seen before
         try {
             // Put the pixels on the clipboard
-            clipboard->put(dataContainers[detID], detID);
+            clipboard->putData(dataContainers[detID], detID);
             LOG(DEBUG) << "Loaded " << dataContainers[detID]->size() << " pixels from device " << detID;
         } catch(ModuleError& e) {
             LOG(WARNING) << "Unknown detector \"" << detID << "\"";

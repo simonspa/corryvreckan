@@ -50,7 +50,7 @@ void ClusteringSpatial::initialise() {
 StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
-    auto pixels = clipboard->get<Pixel>(m_detector->name());
+    auto pixels = clipboard->getData<Pixel>(m_detector->name());
     if(pixels == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
@@ -160,7 +160,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         deviceClusters->push_back(cluster);
     }
 
-    clipboard->put(deviceClusters, m_detector->name());
+    clipboard->putData(deviceClusters, m_detector->name());
     LOG(DEBUG) << "Put " << deviceClusters->size() << " clusters on the clipboard for detector " << m_detector->name()
                << ". From " << pixels->size() << " pixels";
 
