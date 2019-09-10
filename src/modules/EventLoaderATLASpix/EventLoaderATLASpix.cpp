@@ -224,7 +224,7 @@ void EventLoaderATLASpix::initialise() {
 StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Check if event frame is defined:
-    auto event = clipboard->get_event();
+    auto event = clipboard->getEvent();
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {

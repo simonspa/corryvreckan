@@ -564,7 +564,7 @@ void ModuleManager::run() {
             break;
         }
 
-        if(m_clipboard->event_defined() && run_time > 0.0 && m_clipboard->get_event()->start() >= run_time) {
+        if(m_clipboard->isEventDefined() && run_time > 0.0 && m_clipboard->getEvent()->start() >= run_time) {
             break;
         }
 
@@ -590,8 +590,8 @@ void ModuleManager::run() {
             LOG_PROGRESS(STATUS, "event_loop")
                 << "Ev: " << kilo_or_mega(m_events) << " Tr: " << kilo_or_mega(m_tracks) << " (" << std::setprecision(3)
                 << (static_cast<double>(m_tracks) / m_events) << "/ev)"
-                << (m_clipboard->event_defined()
-                        ? " t = " + Units::display(m_clipboard->get_event()->start(), {"ns", "us", "ms", "s"})
+                << (m_clipboard->isEventDefined()
+                        ? " t = " + Units::display(m_clipboard->getEvent()->start(), {"ns", "us", "ms", "s"})
                         : "");
         }
 

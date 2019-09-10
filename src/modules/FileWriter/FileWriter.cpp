@@ -62,12 +62,12 @@ void FileWriter::initialise() {
 
 StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
 
-    if(!clipboard->event_defined()) {
+    if(!clipboard->isEventDefined()) {
         ModuleError("No Clipboard event defined, cannot continue");
     }
 
     // Read event from clipboard and write to tree:
-    event_ = clipboard->get_event().get();
+    event_ = clipboard->getEvent().get();
     event_tree_->Fill();
     write_cnt_++;
 

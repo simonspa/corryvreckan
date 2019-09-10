@@ -20,11 +20,11 @@ bool Clipboard::hasPersistentData(std::string name) const {
     return m_persistent_data.find(name) != m_persistent_data.end();
 }
 
-bool Clipboard::event_defined() const {
+bool Clipboard::isEventDefined() const {
     return (m_event != nullptr);
 }
 
-void Clipboard::put_event(std::shared_ptr<Event> event) {
+void Clipboard::putEvent(std::shared_ptr<Event> event) {
     // Already defined:
     if(m_event) {
         throw InvalidDataError("Event already defined. Only one module can place an event definition");
@@ -33,7 +33,7 @@ void Clipboard::put_event(std::shared_ptr<Event> event) {
     }
 }
 
-std::shared_ptr<Event> Clipboard::get_event() const {
+std::shared_ptr<Event> Clipboard::getEvent() const {
     if(!m_event) {
         throw InvalidDataError("Event not defined. Add Metronome module or Event reader defining the event");
     }

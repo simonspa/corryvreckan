@@ -63,21 +63,21 @@ namespace corryvreckan {
          * @brief Check whether an event has been defined
          * @return true if an event has been defined, false otherwise
          */
-        bool event_defined() const;
+        bool isEventDefined() const;
 
         /**
          * @brief Store the event object
          * @param event The event object to be stored
          * @thorws InvalidDataError in case an event exist already
          */
-        void put_event(std::shared_ptr<Event> event);
+        void putEvent(std::shared_ptr<Event> event);
 
         /**
          * @brief Retrieve the event object
          * @returnShared pointer to the event
          * @throws MissingDataError in case no event is available.
          */
-        std::shared_ptr<Event> get_event() const;
+        std::shared_ptr<Event> getEvent() const;
 
         /**
          * @brief Store or update variable on the persistent clipboard storage

@@ -212,13 +212,13 @@ void FileReader::initialise() {
 
 StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
 
-    if(clipboard->event_defined()) {
+    if(clipboard->isEventDefined()) {
         ModuleError("Clipboard event already defined, cannot continue");
     }
 
     // Read event object from tree and store it on the clipboard:
     event_tree_->GetEntry(event_num_);
-    clipboard->put_event(std::make_shared<Event>(*event_));
+    clipboard->putEvent(std::make_shared<Event>(*event_));
     read_cnt_++;
 
     for(auto& tree : trees_) {

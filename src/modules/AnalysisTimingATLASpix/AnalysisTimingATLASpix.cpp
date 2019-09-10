@@ -403,7 +403,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         tracks_afterMasking++;
 
         // Get the event:
-        auto event = clipboard->get_event();
+        auto event = clipboard->getEvent();
 
         // Discard tracks which are very close to the frame edges
         if(fabs(track->timestamp() - event->end()) < m_timeCutFrameEdge) {

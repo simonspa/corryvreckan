@@ -218,7 +218,7 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     // loading a fixed number of pixels (ie. 2000 at a time)
 
     // Check if event frame is defined:
-    auto event = clipboard->get_event();
+    auto event = clipboard->getEvent();
 
     LOG(TRACE) << "== New event";
 
@@ -322,7 +322,7 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
                                    std::shared_ptr<SpidrSignalVector>& spidrData) {
 
     std::string detectorID = m_detector->name();
-    auto event = clipboard->get_event();
+    auto event = clipboard->getEvent();
 
     bool extra = false; // temp
 
