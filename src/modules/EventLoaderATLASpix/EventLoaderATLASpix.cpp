@@ -522,13 +522,3 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
     }
     return true;
 }
-
-void EventLoaderATLASpix::finalise() {
-
-    LOG(INFO) << "Identifier distribution:";
-    for(auto id : m_identifiers) {
-        LOG(INFO) << "\t" << id.first << ": " << id.second;
-    }
-
-    LOG(INFO) << "Found " << data_pixel_ << " pixel data blocks and " << data_header_ << " header words";
-}

@@ -30,7 +30,6 @@ namespace corryvreckan {
         // Functions
         void initialise();
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        void finalise();
 
     private:
         /*
@@ -120,10 +119,6 @@ namespace corryvreckan {
         // int m_clkdivendM;
         int m_clkdivend2M;
         int m_buffer_depth;
-
-        std::map<std::string, int> m_identifiers;
-
-        unsigned int data_pixel_{}, data_header_{};
     };
 } // namespace corryvreckan
 #endif // EventLoaderATLASpix_H
