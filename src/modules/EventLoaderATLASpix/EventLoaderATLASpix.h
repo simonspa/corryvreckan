@@ -110,8 +110,6 @@ namespace corryvreckan {
 
         // Parameters:
         std::string m_inputDirectory;
-        bool m_detectorBusy;
-        bool m_legacyFormat;
         double m_clockCycle;
         int m_highToTCut;
         std::string m_calibrationFile;
