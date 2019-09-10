@@ -246,27 +246,22 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(STATUS) << "Pixel is during event: (" << pixel->column() << ", " << pixel->row()
                     << ") ts: " << Units::display(pixel->timestamp(), {"ns", "us", "ms"});
         pixels->push_back(pixel);
-    }
 
-    // Here fill some histograms for data quality monitoring:
-    auto nTriggers = event->triggerList().size();
-    LOG(DEBUG) << "nTriggers = " << nTriggers;
-    hTriggersPerEvent->Fill(static_cast<double>(nTriggers));
-
-    for(auto px : (*pixels)) {
-        hHitMap->Fill(px->column(), px->row());
-        if(px->raw() > m_highToTCut) {
-            hHitMap_highTot->Fill(px->column(), px->row());
+        // fill all per-pixel histograms:
+        hHitMap->Fill(pixel->column(), pixel->row());
+        if(pixel->raw() > m_highToTCut) {
+            hHitMap_highTot->Fill(pixel->column(), pixel->row());
         }
-        hHitMap_totWeighted->Fill(px->column(), px->row(), px->raw());
-        hPixelToT->Fill(px->raw());
-        hPixelCharge->Fill(px->charge());
-        hPixelToA->Fill(px->timestamp());
+        hHitMap_totWeighted->Fill(pixel->column(), pixel->row(), pixel->raw());
+        hPixelToT->Fill(pixel->raw());
+        hPixelCharge->Fill(pixel->charge());
+        hPixelToA->Fill(pixel->timestamp());
 
-        hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
-        hPixelTimeEventBeginResidual_wide->Fill(static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
-        hPixelTimeEventBeginResidualOverTime->Fill(static_cast<double>(Units::convert(px->timestamp(), "s")),
-                                                   static_cast<double>(Units::convert(px->timestamp() - start_time, "us")));
+        hPixelTimeEventBeginResidual->Fill(static_cast<double>(Units::convert(pixel->timestamp() - start_time, "us")));
+        hPixelTimeEventBeginResidual_wide->Fill(static_cast<double>(Units::convert(pixel->timestamp() - start_time, "us")));
+        hPixelTimeEventBeginResidualOverTime->Fill(
+            static_cast<double>(Units::convert(pixel->timestamp(), "s")),
+            static_cast<double>(Units::convert(pixel->timestamp() - start_time, "us")));
         size_t iTrigger = 0;
         for(auto& trigger : event->triggerList()) {
             // check if histogram exists already, if not: create it
@@ -277,17 +272,22 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
             }
             // use iTrigger, not trigger ID (=trigger.first) (which is unique and continuously incrementing over the runtime)
             hPixelTriggerTimeResidual[iTrigger]->Fill(
-                static_cast<double>(Units::convert(px->timestamp() - trigger.second, "us")));
+                static_cast<double>(Units::convert(pixel->timestamp() - trigger.second, "us")));
             if(iTrigger == 0) { // fill only for 0th trigger
                 hPixelTriggerTimeResidualOverTime->Fill(
-                    static_cast<double>(Units::convert(px->timestamp(), "s")),
-                    static_cast<double>(Units::convert(px->timestamp() - trigger.second, "us")));
+                    static_cast<double>(Units::convert(pixel->timestamp(), "s")),
+                    static_cast<double>(Units::convert(pixel->timestamp() - trigger.second, "us")));
             }
             iTrigger++;
         }
-        hPixelTimes->Fill(static_cast<double>(Units::convert(px->timestamp(), "ms")));
-        hPixelTimes_long->Fill(static_cast<double>(Units::convert(px->timestamp(), "s")));
+        hPixelTimes->Fill(static_cast<double>(Units::convert(pixel->timestamp(), "ms")));
+        hPixelTimes_long->Fill(static_cast<double>(Units::convert(pixel->timestamp(), "s")));
     }
+
+    // Here fill some histograms for data quality monitoring:
+    auto nTriggers = event->triggerList().size();
+    LOG(DEBUG) << "nTriggers = " << nTriggers;
+    hTriggersPerEvent->Fill(static_cast<double>(nTriggers));
 
     hPixelMultiplicity->Fill(static_cast<double>(pixels->size()));
 
