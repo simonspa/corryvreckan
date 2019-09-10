@@ -39,11 +39,6 @@ namespace corryvreckan {
         uint32_t gray_decode(uint32_t gray);
 
         /*
-         * @brief Read data in the format written by the Karlsruhe readout system
-         */
-        Pixels* read_legacy_data(double start_time, double end_time);
-
-        /*
          * @brief Read data in the format written by the Caribou readout system
          */
         // Pixels* read_caribou_data(double start_time, double end_time);
