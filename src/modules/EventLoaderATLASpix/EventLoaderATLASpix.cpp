@@ -209,24 +209,20 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     while(true) {
         // read data from file and fill timesorted buffer
         while(static_cast<int>(sorted_pixels_.size()) < m_buffer_depth) {
-            read_caribou_data();
+            // this returns false when EOF is reached and true otherwise
+            if(!read_caribou_data()) {
+                LOG(STATUS) << "read_caribou_data returns false: reached EOF.";
+                break;
+            };
         }
-        // get next pixel from sorted queue
-        auto pixel = sorted_pixels_.top();
 
-        if(!pixel) {
-            LOG(TRACE) << "No pixel in buffer. Break.";
+        if(sorted_pixels_.empty() && eof_reached) {
+            // break while loop but still go until the end of the run() function
             break;
         }
 
-        if(pixel->timestamp() < start_time) {
-            LOG(STATUS) << "Skipping pixel hit, pixel is before event window ("
-                        << Units::display(pixel->timestamp(), {"s", "us", "ns"}) << " < "
-                        << Units::display(start_time, {"s", "us", "ns"}) << ")";
-            // remove pixel from sorted queue
-            sorted_pixels_.pop();
-            continue;
-        }
+        // get next pixel from sorted queue
+        auto pixel = sorted_pixels_.top();
 
         if(pixel->timestamp() > end_time) {
             LOG(STATUS) << "Keep pixel for next event, pixel (" << pixel->column() << "," << pixel->row()
@@ -235,17 +231,24 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
             break;
         }
 
+        // if before or during:
+        if(!sorted_pixels_.empty()) {
+            LOG(STATUS) << sorted_pixels_.size() << " --> pop()";
+            // remove pixel from sorted queue
+            sorted_pixels_.pop();
+        }
+
+        if(pixel->timestamp() < start_time) {
+            LOG(DEBUG) << "Skipping pixel hit, pixel is before event window ("
+                       << Units::display(pixel->timestamp(), {"s", "us", "ns"}) << " < "
+                       << Units::display(start_time, {"s", "us", "ns"}) << ")";
+            continue;
+        }
+
         // add to vector of pixels
         LOG(STATUS) << "Pixel is during event: (" << pixel->column() << ", " << pixel->row()
                     << ") ts: " << Units::display(pixel->timestamp(), {"ns", "us", "ms"});
         pixels->push_back(pixel);
-        // remove pixel from sorted queue
-        sorted_pixels_.pop();
-    }
-
-    if(busy_at_start || m_detectorBusy) {
-        LOG(DEBUG) << "Returning <DeadTime> status, ATLASPix is BUSY.";
-        return StatusCode::DeadTime;
     }
 
     // Here fill some histograms for data quality monitoring:
@@ -300,12 +303,17 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         return StatusCode::NoData;
     }
 
+    if(sorted_pixels_.empty() && eof_reached) {
+        LOG(STATUS) << "Reached EOF";
+        return StatusCode::EndRun;
+    }
+
     // Return value telling analysis to keep running
     LOG(DEBUG) << "Returning <Success> status, hits found in this event window.";
     return StatusCode::Success;
 }
 
-bool EventLoaderATLASpix::read_caribou_data() {
+bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eof
 
     // Read file and load data
     uint32_t datain;
@@ -314,6 +322,7 @@ bool EventLoaderATLASpix::read_caribou_data() {
     m_file.read(reinterpret_cast<char*>(&datain), 4);
     if(m_file.eof()) {
         LOG(STATUS) << "EOF...";
+        eof_reached = true;
         return false;
     }
 
@@ -321,7 +330,7 @@ bool EventLoaderATLASpix::read_caribou_data() {
     if(datain & 0x80000000) {
         // Do not return and decode pixel data before T0 arrived
         if(!timestamps_cleared_) {
-            return false;
+            return true;
         }
         // Structure: {1'b1, column_addr[5:0], row_addr[8:0], rise_timestamp[9:0], fall_timestamp[5:0]}
         // Extract pixel data
@@ -394,7 +403,12 @@ bool EventLoaderATLASpix::read_caribou_data() {
 
         if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {
             LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
-            return false;
+            return true;
+        }
+
+        // If this pixel is masked, do not save it
+        if(m_detector->masked(col, row)) {
+            return true;
         }
 
         // when calibration is not available, set charge = tot
@@ -410,8 +424,8 @@ bool EventLoaderATLASpix::read_caribou_data() {
         // pixel->setCalibrated = true;
 
         LOG(DEBUG) << "Adding to buffer: " << *pixel;
-        // pixels->push_back(pixel);
         sorted_pixels_.push(pixel);
+        return true;
 
     } else {
         // data is not hit information
@@ -509,7 +523,7 @@ bool EventLoaderATLASpix::read_caribou_data() {
             }
         }
     }
-    return false;
+    return true;
 }
 
 Pixels* EventLoaderATLASpix::read_legacy_data(double, double) {
