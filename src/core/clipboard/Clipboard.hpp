@@ -105,13 +105,13 @@ namespace corryvreckan {
          * @brief Get a list of currently held collections on the clipboard event storage
          * @return Vector of collections names currently stored on the clipboard
          */
-        std::vector<std::string> list_collections() const;
+        std::vector<std::string> listCollections() const;
 
         /**
          * @brief Retrieve all currently stored clipboard data
          * @return All clipboard data
          */
-        const ClipboardData& get_all() const;
+        const ClipboardData& getAll() const;
 
     private:
         /**

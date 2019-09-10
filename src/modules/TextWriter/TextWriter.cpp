@@ -53,7 +53,7 @@ StatusCode TextWriter::run(std::shared_ptr<Clipboard> clipboard) {
     *output_file_ << "=== " << m_eventNumber << " ===" << std::endl;
     *output_file_ << *clipboard->getEvent() << std::endl;
 
-    auto data = clipboard->get_all();
+    auto data = clipboard->getAll();
     LOG(DEBUG) << "Clipboard has " << data.size() << " different object types.";
 
     for(auto& block : data) {

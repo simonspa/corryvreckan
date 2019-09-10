@@ -71,7 +71,7 @@ StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
     event_tree_->Fill();
     write_cnt_++;
 
-    auto data = clipboard->get_all();
+    auto data = clipboard->getAll();
     LOG(DEBUG) << "Clipboard has " << data.size() << " different object types.";
 
     for(auto& block : data) {
