@@ -76,47 +76,6 @@ void EventLoaderATLASpix::initialise() {
     m_file.open(m_filename.c_str(), ios::in | ios::binary);
     LOG(DEBUG) << "Opening file " << m_filename;
 
-    // fast forward file to T0 event
-    // old_fpga_ts = 0;
-    // while(1) {
-    //     m_file.read(reinterpret_cast<char*>(&datain), 4);
-    //     if(m_file.eof()) {
-    //         m_file.clear();
-    //         m_file.seekg(ios::beg);
-    //         LOG(WARNING) << "No T0 event was found in file " << m_filename
-    //                      << ". Rewinding the file to the beginning and loading all events.";
-    //         break;
-    //     } else if((datain & 0xFF000000) == 0x70000000) {
-    //         LOG(STATUS) << "Found T0 event at position " << m_file.tellg() << ". Skipping all data before this event.";
-    //         oldpos = m_file.tellg();
-    //         unsigned long ts3 = datain & 0x00FFFFFF;
-    //         old_fpga_ts = (static_cast<unsigned long long>(ts3));
-    //         int checkpos = static_cast<int>(oldpos) - 8;
-    //         while(checkpos >= 0) {
-    //             std::streampos tmppos = checkpos;
-    //             m_file.seekg(tmppos);
-    //             m_file.read(reinterpret_cast<char*>(&datain), 4);
-    //             unsigned int message_type = (datain >> 24);
-    //             // TS2
-    //             if(message_type == 0b00100000) {
-    //                 old_fpga_ts = ((static_cast<unsigned long long>(datain & 0x00FFFFFF)) << 24) | ts3;
-    //                 LOG(DEBUG) << "Set old_fpga_ts to " << old_fpga_ts;
-    //                 break;
-    //             }
-    //             // TS3
-    //             else if(message_type == 0b01100000) {
-    //                 if(ts3 != (datain & 0x00FFFFFF)) {
-    //                     LOG(WARNING) << "Last FPGA timestamp " << (datain & 0x00FFFFFF) << " does not match to T0 event "
-    //                                  << ts3 << ". Some timestamps at the begining might be corrupted.";
-    //                 }
-    //             }
-    //             checkpos = static_cast<int>(tmppos) - 4;
-    //         }
-    //         m_file.seekg(oldpos);
-    //         break;
-    //     }
-    // }
-
     // Make histograms for debugging
     hHitMap = new TH2F("hitMap",
                        "hitMap; pixel column; pixel row; # events",
