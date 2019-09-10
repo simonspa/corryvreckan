@@ -57,11 +57,6 @@ namespace corryvreckan {
         std::ifstream m_file;
 
         // Resuming in next event:
-        std::streampos oldpos;
-        unsigned long long old_readout_ts;
-        unsigned long long old_fpga_ts;
-        unsigned long long busy_readout_ts;
-
         unsigned long long readout_ts_ = 0;
         unsigned long long fpga_ts_ = 0;
         unsigned long long fpga_ts1_ = 0;
