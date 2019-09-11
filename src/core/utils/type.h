@@ -39,7 +39,7 @@ namespace corryvreckan {
             // Remove corryvreckan tag if necessary
             std::string str = res.get();
             if(!keep_corryvreckan && str.find("corryvreckan::") == 0) {
-                return str.substr(8);
+                return str.substr(14);
             }
             return str;
         }

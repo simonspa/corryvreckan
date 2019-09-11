@@ -1,222 +1,186 @@
-#include "FileWriter.h"
-#include "core/utils/file.h"
-
-using namespace corryvreckan;
-using namespace std;
-
-FileWriter::FileWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
-
-    m_onlyDUT = m_config.get<bool>("only_dut", true);
-    m_writePixels = m_config.get<bool>("write_pixels", true);
-    m_writeClusters = m_config.get<bool>("write_clusters", false);
-    m_writeTracks = m_config.get<bool>("write_tracks", true);
-    m_fileName = m_config.get<std::string>("file_name", "outputTuples.root");
-}
-
-/*
-
- This algorithm writes an output file and fills it with trees containing
- the requested data.
-
- Any object which inherits from Object can in principle be written
- to file. In order to enable this for a new type, the Object::Factory
- function must know how to return an instantiation of that type (see
- Object.C file to see how to do this). The new type can then simply
- be added to the object list and will be written out correctly.
-
+/**
+ * @file
+ * @brief Implementation of ROOT data file writer module
+ * @copyright Copyright (c) 2019 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ * @remarks The implementation of this module is based on the ROOTObjectWriter module of the Allpix Squared project
  */
 
+#include "FileWriter.h"
+
+#include <fstream>
+#include <string>
+#include <utility>
+
+#include <TBranchElement.h>
+#include <TClass.h>
+
+#include "core/utils/file.h"
+#include "core/utils/log.h"
+#include "core/utils/type.h"
+
+#include "objects/Object.hpp"
+
+using namespace corryvreckan;
+
+FileWriter::FileWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+    : Module(std::move(config), std::move(detectors)) {}
+/**
+ * @note Objects cannot be stored in smart pointers due to internal ROOT logic
+ */
+FileWriter::~FileWriter() {
+    // Delete all object pointers
+    for(auto& index_data : write_list_) {
+        delete index_data.second;
+    }
+}
+
 void FileWriter::initialise() {
+    // Create output file
+    output_file_name_ =
+        createOutputFile(corryvreckan::add_file_extension(m_config.get<std::string>("file_name", "data"), "root"), true);
+    output_file_ = std::make_unique<TFile>(output_file_name_.c_str(), "RECREATE");
+    output_file_->cd();
 
-    // Decide what objects will be written out
-    if(m_writePixels)
-        m_objectList.push_back("pixels");
-    if(m_writeClusters)
-        m_objectList.push_back("clusters");
-    if(m_writeTracks)
-        m_objectList.push_back("tracks");
-
-    // Create output file and directories
-    auto path = createOutputFile(add_file_extension(m_fileName, "root"), true);
-    m_outputFile = new TFile(path.c_str(), "RECREATE");
-    m_outputFile->cd();
-
-    // Loop over all objects to be written to file, and set up the trees
-    for(unsigned int itList = 0; itList < m_objectList.size(); itList++) {
-
-        // Check the type of object
-        string objectType = m_objectList[itList];
-
-        // Make a directory in the ouput folder
-        m_outputFile->mkdir(objectType.c_str());
-        m_outputFile->cd(objectType.c_str());
-
-        // Section to set up object writing per detector (such as pixels, clusters)
-        if(objectType == "pixels" || objectType == "clusters") {
-
-            // Loop over all detectors and make trees for data
-            for(auto& detector : get_detectors()) {
-
-                // Get the detector ID and type
-                string detectorID = detector->name();
-                string detectorType = detector->type();
-
-                // If only writing information for the DUT
-                if(m_onlyDUT && !detector->isDUT())
-                    continue;
-
-                // Create the tree
-                string objectID = detectorID + "_" + objectType;
-                string treeName = detectorID + "_" + detectorType + "_" + objectType;
-                m_outputTrees[objectID] = new TTree(treeName.c_str(), treeName.c_str());
-                m_outputTrees[objectID]->Branch("time", &m_time);
-
-                // Cast the Object as a specific type using a Factory
-                // This will return a Timepix1Pixel*, Timepix3Pixel* etc.
-                m_objects[objectID] = Object::Factory(detectorType, objectType);
-                m_outputTrees[objectID]->Branch(objectType.c_str(), &m_objects[objectID]);
-            }
-        }
-        // If not an object to be written per detector
-        else {
-            // Make the tree
-            string treeName = objectType;
-            m_outputTrees[objectType] = new TTree(treeName.c_str(), treeName.c_str());
-            // Branch the tree to the timestamp and object
-            m_outputTrees[objectType]->Branch("time", &m_time);
-            m_objects[objectType] = Object::Factory(objectType);
-            m_outputTrees[objectType]->Branch(objectType.c_str(), &m_objects[objectType]);
-        }
+    // Read include and exclude list
+    if(m_config.has("include") && m_config.has("exclude")) {
+        throw InvalidValueError(m_config, "exclude", "include and exclude parameter are mutually exclusive");
+    } else if(m_config.has("include")) {
+        auto inc_arr = m_config.getArray<std::string>("include");
+        include_.insert(inc_arr.begin(), inc_arr.end());
+    } else if(m_config.has("exclude")) {
+        auto exc_arr = m_config.getArray<std::string>("exclude");
+        exclude_.insert(exc_arr.begin(), exc_arr.end());
     }
 
-    // Initialise member variables
-    m_eventNumber = 0;
+    // Create event tree:
+    event_tree_ = std::make_unique<TTree>("Event", (std::string("Tree of Events").c_str()));
+    event_tree_->Bronch("global", "corryvreckan::Event", &event_);
 }
 
 StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
 
-    // Loop over all objects to be written to file, and get the objects currently
-    // held on the Clipboard
-    for(unsigned int itList = 0; itList < m_objectList.size(); itList++) {
+    if(!clipboard->isEventDefined()) {
+        ModuleError("No Clipboard event defined, cannot continue");
+    }
 
-        // Check the type of object
-        string objectType = m_objectList[itList];
+    // Read event from clipboard and write to tree:
+    event_ = clipboard->getEvent().get();
+    event_tree_->Fill();
+    write_cnt_++;
 
-        // If this is written per device, loop over all devices
-        if(objectType == "pixels" || objectType == "clusters") {
+    auto data = clipboard->getAll();
+    LOG(DEBUG) << "Clipboard has " << data.size() << " different object types.";
 
-            // Loop over all detectors
-            for(auto& detector : get_detectors()) {
+    for(auto& block : data) {
+        try {
+            auto type_idx = block.first;
+            auto class_name = corryvreckan::demangle(type_idx.name());
+            auto class_name_full = corryvreckan::demangle(type_idx.name(), true);
+            LOG(TRACE) << "Received objects of type \"" << class_name << "\" in " << block.second.size() << " blocks";
 
-                // Get the detector and object ID
-                string detectorID = detector->name();
-                string objectID = detectorID + "_" + objectType;
+            // Check if these objects should be stored
+            if((!include_.empty() && include_.find(class_name) == include_.end()) ||
+               (!exclude_.empty() && exclude_.find(class_name) != exclude_.end())) {
+                LOG(TRACE) << "Ignoring object " << corryvreckan::demangle(type_idx.name())
+                           << " because it has been excluded or not explicitly included";
+                continue;
+            }
 
-                // If only writing information for the DUT
-                if(m_onlyDUT && !detector->isDUT())
-                    continue;
+            for(auto& detector_block : block.second) {
+                // Get the detector name
+                std::string detector_name;
+                if(!detector_block.first.empty()) {
+                    detector_name = detector_block.first;
+                }
 
-                // Get the objects, if they don't exist then continue
-                LOG(DEBUG) << "Checking for " << objectType << " on device " << detectorID;
-                Objects* objects = clipboard->get(detectorID, objectType);
-                if(objects == nullptr)
-                    continue;
-                LOG(DEBUG) << "Picked up " << objects->size() << " " << objectType << " from device " << detectorID;
+                auto objects = std::static_pointer_cast<ObjectVector>(detector_block.second);
+                LOG(TRACE) << " - " << detector_name << ": " << objects->size();
 
-                // Check if the output tree exists
-                if(!m_outputTrees[objectID])
-                    continue;
+                // Create a new branch of the correct type if this object has not been received before
+                auto index_tuple = std::make_tuple(type_idx, detector_name);
+                if(write_list_.find(index_tuple) == write_list_.end()) {
 
-                // Fill the objects into the tree
-                for(auto& object : (*objects)) {
-                    m_objects[objectID] = object;
-                    m_time = m_objects[objectID]->timestamp();
-                    m_outputTrees[objectID]->Fill();
+                    // Add vector of objects to write to the write list
+                    write_list_[index_tuple] = new std::vector<Object*>();
+                    auto addr = &write_list_[index_tuple];
+
+                    auto new_tree = (trees_.find(class_name) == trees_.end());
+                    if(new_tree) {
+                        // Create new tree
+                        output_file_->cd();
+                        trees_.emplace(
+                            class_name,
+                            std::make_unique<TTree>(class_name.c_str(), (std::string("Tree of ") + class_name).c_str()));
+                    }
+
+                    std::string branch_name = detector_name.empty() ? "global" : detector_name;
+
+                    trees_[class_name]->Bronch(
+                        branch_name.c_str(), (std::string("std::vector<") + class_name_full + "*>").c_str(), addr);
+
+                    if(new_tree) {
+                        LOG(DEBUG) << "Pre-filling new tree of " << class_name << " with " << last_event_ << " empty events";
+                        for(unsigned int i = 0; i < last_event_; ++i) {
+                            trees_[class_name]->Fill();
+                        }
+                    } else {
+                        LOG(DEBUG) << "Pre-filling new branch " << branch_name << " of " << class_name << " with "
+                                   << last_event_ << " empty events";
+                        auto* branch = trees_[class_name]->GetBranch(branch_name.c_str());
+                        for(unsigned int i = 0; i < last_event_; ++i) {
+                            branch->Fill();
+                        }
+                    }
+                }
+
+                // Fill the branch vector
+                for(auto& object : *objects) {
+                    ++write_cnt_;
+                    write_list_[index_tuple]->push_back(object);
                 }
             }
-        } // If object is not written per device
-        else {
-
-            // Get the objects, if they don't exist then continue
-            LOG(DEBUG) << "Checking for " << objectType;
-            Objects* objects = clipboard->get(objectType);
-            if(objects == nullptr)
-                continue;
-            LOG(DEBUG) << "Picked up " << objects->size() << " " << objectType;
-
-            // Check if the output tree exists
-            if(!m_outputTrees[objectType])
-                continue;
-
-            // Fill the objects into the tree
-            for(auto& object : (*objects)) {
-                m_objects[objectType] = object;
-                m_time = m_objects[objectType]->timestamp();
-                m_outputTrees[objectType]->Fill();
-            }
-            LOG(DEBUG) << "Written " << objectType << " to file";
+        } catch(...) {
+            LOG(WARNING) << "Cannot process object of type" << corryvreckan::demangle(block.first.name());
+            return StatusCode::NoData;
         }
     }
 
-    // Increment event counter
-    m_eventNumber++;
+    LOG(TRACE) << "Writing new objects to tree";
+    output_file_->cd();
 
-    // Return value telling analysis to keep running
+    last_event_++;
+
+    // Fill the tree with the current received messages
+    for(auto& tree : trees_) {
+        tree.second->Fill();
+    }
+
+    // Clear the current message list
+    for(auto& index_data : write_list_) {
+        index_data.second->clear();
+    }
+
     return StatusCode::Success;
 }
 
 void FileWriter::finalise() {
+    LOG(TRACE) << "Writing objects to file";
+    output_file_->cd();
 
-    // Write the trees to file
-    // Loop over all objects to be written to file, and get the objects currently held on the Clipboard
-    for(unsigned int itList = 0; itList < m_objectList.size(); itList++) {
-
-        // Check the type of object
-        string objectType = m_objectList[itList];
-
-        // If this is written per device, loop over all devices
-        if(objectType == "pixels" || objectType == "clusters") {
-
-            // Loop over all detectors
-            for(auto& detector : get_detectors()) {
-
-                // Get the detector and object ID
-                string detectorID = detector->name();
-                string objectID = detectorID + "_" + objectType;
-
-                // If there is no output tree then do nothing
-                if(!m_outputTrees[objectID])
-                    continue;
-
-                // Move to the write output file
-                m_outputFile->cd();
-                m_outputFile->cd(objectType.c_str());
-                m_outputTrees[objectID]->Write();
-
-                // Clean up the tree and remove object pointer
-                delete m_outputTrees[objectID];
-                m_objects[objectID] = nullptr;
-            }
-        } // Write trees for devices which are not detector dependent
-        else {
-
-            // If there is no output tree then do nothing
-            if(!m_outputTrees[objectType])
-                continue;
-
-            // Move to the write output file
-            m_outputFile->cd();
-            m_outputFile->cd(objectType.c_str());
-            m_outputTrees[objectType]->Write();
-
-            // Clean up the tree and remove object pointer
-            delete m_outputTrees[objectType];
-            m_objects[objectType] = nullptr;
-        }
+    int branch_count = 0;
+    for(auto& tree : trees_) {
+        // Update statistics
+        branch_count += tree.second->GetListOfBranches()->GetEntries();
     }
+    branch_count += event_tree_->GetListOfBranches()->GetEntries();
 
-    // Close the output file
-    m_outputFile->Close();
-    LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
+    // Finish writing to output file
+    output_file_->Write();
+
+    // Print statistics
+    LOG(STATUS) << "Wrote " << write_cnt_ << " objects to " << branch_count << " branches in file:" << std::endl
+                << output_file_name_;
 }

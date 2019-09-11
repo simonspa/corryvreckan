@@ -26,7 +26,7 @@ namespace corryvreckan {
     };
 
     // Vector type declaration
-    using SpidrSignals = std::vector<SpidrSignal*>;
+    using SpidrSignalVector = std::vector<SpidrSignal*>;
 } // namespace corryvreckan
 
 #endif // SPIDRSIGNAL_H

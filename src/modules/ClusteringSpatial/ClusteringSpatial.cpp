@@ -8,6 +8,7 @@ ClusteringSpatial::ClusteringSpatial(Configuration config, std::shared_ptr<Detec
     : Module(std::move(config), detector), m_detector(detector) {
 
     useTriggerTimestamp = m_config.get<bool>("use_trigger_timestamp", false);
+    chargeWeighting = m_config.get<bool>("charge_weighting", true);
 }
 
 void ClusteringSpatial::initialise() {
@@ -49,14 +50,14 @@ void ClusteringSpatial::initialise() {
 StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
-    Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));
+    auto pixels = clipboard->getData<Pixel>(m_detector->name());
     if(pixels == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
     }
 
     // Make the cluster container and the maps for clustering
-    Objects* deviceClusters = new Objects();
+    auto deviceClusters = std::make_shared<ClusterVector>();
     map<Pixel*, bool> used;
     map<int, map<int, Pixel*>> hitmap;
     bool addedPixel;
@@ -80,8 +81,8 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         cluster->addPixel(pixel);
 
         if(useTriggerTimestamp) {
-            if(!clipboard->get_event()->triggerList().empty()) {
-                double trigger_ts = clipboard->get_event()->triggerList().begin()->second;
+            if(!clipboard->getEvent()->triggerList().empty()) {
+                double trigger_ts = clipboard->getEvent()->triggerList().begin()->second;
                 LOG(DEBUG) << "Using trigger timestamp " << Units::display(trigger_ts, "us") << " as cluster timestamp.";
                 cluster->setTimestamp(trigger_ts);
             } else {
@@ -99,7 +100,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         used[pixel] = true;
         addedPixel = true;
         // Somewhere to store found neighbours
-        Pixels neighbours;
+        PixelVector neighbours;
 
         // Now we check the neighbours and keep adding more hits while there are connected pixels
         while(addedPixel) {
@@ -159,7 +160,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         deviceClusters->push_back(cluster);
     }
 
-    clipboard->put(m_detector->name(), "clusters", deviceClusters);
+    clipboard->putData(deviceClusters, m_detector->name());
     LOG(DEBUG) << "Put " << deviceClusters->size() << " clusters on the clipboard for detector " << m_detector->name()
                << ". From " << pixels->size() << " pixels";
 
@@ -176,26 +177,45 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
     LOG(DEBUG) << "== Making cluster centre";
     // Empty variables to calculate cluster position
     double column(0), row(0), charge(0);
+    double column_sum(0), column_sum_chargeweighted(0);
+    double row_sum(0), row_sum_chargeweighted(0);
+    bool found_charge_zero = false;
 
     // Get the pixels on this cluster
-    Pixels* pixels = cluster->pixels();
-    string detectorID = (*pixels)[0]->detectorID();
-    LOG(DEBUG) << "- cluster has " << (*pixels).size() << " pixels";
+    auto pixels = cluster->pixels();
+    string detectorID = pixels.front()->detectorID();
+    LOG(DEBUG) << "- cluster has " << pixels.size() << " pixels";
 
     // Loop over all pixels
-    for(auto& pixel : (*pixels)) {
+    for(auto& pixel : pixels) {
+        // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics):
+        if(pixel->charge() < std::numeric_limits<double>::epsilon()) {
+            // apply arithmetic mean if a pixel has zero charge
+            found_charge_zero = true;
+        }
         charge += pixel->charge();
-        column += (pixel->column() * pixel->charge());
-        row += (pixel->row() * pixel->charge());
+
+        // We need both column_sum and column_sum_chargeweighted
+        // as we don't know a priori if there will be a pixel with
+        // charge==0 such that we have to fall back to the arithmetic mean.
+        column_sum += pixel->column();
+        row_sum += pixel->row();
+        column_sum_chargeweighted += (pixel->column() * pixel->charge());
+        row_sum_chargeweighted += (pixel->row() * pixel->charge());
 
         LOG(DEBUG) << "- pixel col, row: " << pixel->column() << "," << pixel->row();
     }
 
-    // Column and row positions are charge-weighted
-    // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics)
-    // calculate simple arithmetic mean
-    column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
-    row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
+    if(chargeWeighting && !found_charge_zero) {
+        // Charge-weighted centre-of-gravity for cluster centre:
+        // (here it's safe to divide by the charge as it cannot be zero due to !found_charge_zero)
+        column = column_sum_chargeweighted / charge;
+        row = row_sum_chargeweighted / charge;
+    } else {
+        // Arithmetic cluster centre:
+        column = column_sum / static_cast<double>(cluster->size());
+        row = row_sum / static_cast<double>(cluster->size());
+    }
 
     LOG(DEBUG) << "- cluster col, row: " << column << "," << row << " at time "
                << Units::display(cluster->timestamp(), "us");

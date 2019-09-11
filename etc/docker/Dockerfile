@@ -11,7 +11,8 @@ WORKDIR "/data"
 RUN source scl_source enable devtoolset-7 && \
     mkdir -p /opt/corryvreckan/build && \
     cd /opt/corryvreckan/build && \
-    cmake3 -DCMAKE_INSTALL_PREFIX=../ \
+    cmake3 -DBUILD_EventLoaderEUDAQ2=ON \
+           -DCMAKE_INSTALL_PREFIX=../ \
            -DCMAKE_MODULE_PATH="/usr/share/cmake3/Modules/;/usr/share/cmake/Modules/" \
           .. && \
     make -j`grep -c processor /proc/cpuinfo` && \

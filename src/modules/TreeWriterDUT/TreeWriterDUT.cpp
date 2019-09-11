@@ -74,7 +74,7 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
     v_clusterNumPixels.clear();
 
     // Getting tracks from the clipboard
-    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
@@ -83,7 +83,7 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
     // Iterate through tracks found
     for(auto& track : (*tracks)) {
         // CHeck if we have associated clusters:
-        Clusters associatedClusters = track->associatedClusters();
+        auto associatedClusters = track->associatedClusters();
         if(associatedClusters.empty()) {
             LOG(TRACE) << "No associated clusters, skipping track.";
             continue;
@@ -118,11 +118,11 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "Gets cluster eventID = " << eventID;
 
         // Get the pixels in the current cluster
-        Pixels* pixels = cluster->pixels();
+        auto pixels = cluster->pixels();
 
         // Iterate through all pixels in the cluster
         numPixels = 0;
-        for(auto& pixel : (*pixels)) {
+        for(auto& pixel : pixels) {
             // Increase counter for number of pixels in the cluster
             numPixels++;
 

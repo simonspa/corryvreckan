@@ -224,13 +224,13 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
         LOG(DEBUG) << evt->GetDescription() << ": Event has no timestamp, comparing trigger IDs";
 
         // If there is no event defined yet, there is little we can do:
-        if(!clipboard->event_defined()) {
+        if(!clipboard->isEventDefined()) {
             LOG(DEBUG) << "No Corryvreckan event defined - cannot define without timetamps.";
             return Event::Position::UNKNOWN;
         }
 
         // Get position of this time frame with respect to the defined event:
-        auto trigger_position = clipboard->get_event()->getTriggerPosition(evt->GetTriggerN());
+        auto trigger_position = clipboard->getEvent()->getTriggerPosition(evt->GetTriggerN());
         if(trigger_position == Event::Position::BEFORE) {
             LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " before triggers registered in Corryvreckan event";
         } else if(trigger_position == Event::Position::AFTER) {
@@ -264,7 +264,7 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
     double shift_start = 0;
     double shift_end = 0;
 
-    if(!clipboard->event_defined()) {
+    if(!clipboard->isEventDefined()) {
         LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " - "
                    << Units::display(event_end, {"us", "ns"}) << ", length "
                    << Units::display(event_end - event_start, {"us", "ns"});
@@ -279,24 +279,24 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
         LOG(DEBUG) << "Shifted Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " - "
                    << Units::display(event_end, {"us", "ns"}) << ", length "
                    << Units::display(event_end - event_start, {"us", "ns"});
-        clipboard->put_event(std::make_shared<Event>(event_start, event_end));
+        clipboard->putEvent(std::make_shared<Event>(event_start, event_end));
     } else {
         LOG(DEBUG) << "Corryvreckan event found on clipboard.";
     }
 
     // Get position of this time frame with respect to the defined event:
-    auto position = clipboard->get_event()->getFramePosition(event_start, event_end, m_inclusive);
+    auto position = clipboard->getEvent()->getFramePosition(event_start, event_end, m_inclusive);
     if(position == Event::Position::BEFORE) {
         LOG(DEBUG) << "Event start before Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " < "
-                   << Units::display(clipboard->get_event()->start(), {"us", "ns"});
+                   << Units::display(clipboard->getEvent()->start(), {"us", "ns"});
     } else if(position == Event::Position::AFTER) {
         LOG(DEBUG) << "Event end after Corryvreckan event: " << Units::display(event_end, {"us", "ns"}) << " > "
-                   << Units::display(clipboard->get_event()->end(), {"us", "ns"});
+                   << Units::display(clipboard->getEvent()->end(), {"us", "ns"});
     } else {
         // check if event has valid trigger ID (flag = 0x10):
         if(evt->IsFlagTrigger()) {
             // Store potential trigger numbers, assign to center of event:
-            clipboard->get_event()->addTrigger(evt->GetTriggerN(), event_start - shift_start);
+            clipboard->getEvent()->addTrigger(evt->GetTriggerN(), event_start - shift_start);
             LOG(DEBUG) << "Stored trigger ID " << evt->GetTriggerN() << " at "
                        << Units::display(event_start - shift_start, {"us", "ns"});
         }
@@ -305,9 +305,9 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
     return position;
 }
 
-Pixels* EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt) const {
+std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt) const {
 
-    Pixels* pixels = new Pixels();
+    auto pixels = std::make_shared<PixelVector>();
 
     // Loop over all planes, select the relevant detector:
     for(size_t i_plane = 0; i_plane < evt->NumPlanes(); i_plane++) {
@@ -388,7 +388,7 @@ bool EventLoaderEUDAQ2::filter_detectors(std::shared_ptr<eudaq::StandardEvent> e
 
 StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
-    Pixels* pixels = new Pixels();
+    auto pixels = std::make_shared<PixelVector>();
 
     Event::Position current_position = Event::Position::UNKNOWN;
     while(1) {
@@ -421,7 +421,6 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
             // Store data on the clipboard
             auto new_pixels = get_pixel_data(event_);
             pixels->insert(pixels->end(), new_pixels->begin(), new_pixels->end());
-            delete new_pixels;
         }
 
         // If this event was after the current event or if we have not enough information, stop reading:
@@ -433,19 +432,19 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         // Converting EUDAQ2 picoseconds into Corryvreckan nanoseconds:
         hEudaqEventStart->Fill(static_cast<double>(event_->GetTimeBegin()) / 1e9);       // here convert from ps to ms
         hEudaqEventStart_long->Fill(static_cast<double>(event_->GetTimeBegin()) / 1e12); // here convert from ps to seconds
-        if(clipboard->event_defined()) {
-            hClipboardEventStart->Fill(static_cast<double>(Units::convert(clipboard->get_event()->start(), "ms")));
-            hClipboardEventStart_long->Fill(static_cast<double>(Units::convert(clipboard->get_event()->start(), "s")));
-            hClipboardEventEnd->Fill(static_cast<double>(Units::convert(clipboard->get_event()->end(), "ms")));
+        if(clipboard->isEventDefined()) {
+            hClipboardEventStart->Fill(static_cast<double>(Units::convert(clipboard->getEvent()->start(), "ms")));
+            hClipboardEventStart_long->Fill(static_cast<double>(Units::convert(clipboard->getEvent()->start(), "s")));
+            hClipboardEventEnd->Fill(static_cast<double>(Units::convert(clipboard->getEvent()->end(), "ms")));
             hClipboardEventDuration->Fill(
-                static_cast<double>(Units::convert(clipboard->get_event()->end() - clipboard->get_event()->start(), "ms")));
+                static_cast<double>(Units::convert(clipboard->getEvent()->end() - clipboard->getEvent()->start(), "ms")));
         }
 
         // Reset this shared event pointer to get a new event from the stack:
         event_.reset();
     }
 
-    auto event = clipboard->get_event();
+    auto event = clipboard->getEvent();
     hTriggersPerEvent->Fill(static_cast<double>(event->triggerList().size()));
     LOG(DEBUG) << "Triggers on clipboard event: " << event->triggerList().size();
     for(auto& trigger : event->triggerList()) {
@@ -486,7 +485,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Store the full event data on the clipboard:
-    clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
+    clipboard->putData(pixels, m_detector->name());
 
     LOG(DEBUG) << "Finished Corryvreckan event";
     return StatusCode::Success;

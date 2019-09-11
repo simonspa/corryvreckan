@@ -85,7 +85,7 @@ namespace corryvreckan {
          * @param evt       StandardEvent to read the pixel data from
          * @return Vector of pointers to pixels read from this event
          */
-        Pixels* get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt) const;
+        std::shared_ptr<PixelVector> get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt) const;
 
         /**
          * @brief Filter the incoming EUDAQ2 events for the correct detector and detector type

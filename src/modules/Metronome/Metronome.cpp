@@ -22,7 +22,7 @@ StatusCode Metronome::run(std::shared_ptr<Clipboard> clipboard) {
     // Set up the current event:
     LOG(DEBUG) << "Defining event, time frame " << Units::display(m_eventStart, {"us", "ms", "s"}) << " to "
                << Units::display(m_eventEnd, {"us", "ms", "s"});
-    clipboard->put_event(std::make_shared<Event>(m_eventStart, m_eventEnd));
+    clipboard->putEvent(std::make_shared<Event>(m_eventStart, m_eventEnd));
 
     // Increment the current event's start and end times by the configured event length
     m_eventStart = m_eventEnd;

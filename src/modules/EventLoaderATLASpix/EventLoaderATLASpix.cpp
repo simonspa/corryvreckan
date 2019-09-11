@@ -224,7 +224,7 @@ void EventLoaderATLASpix::initialise() {
 StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Check if event frame is defined:
-    auto event = clipboard->get_event();
+    auto event = clipboard->getEvent();
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
@@ -236,7 +236,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     bool busy_at_start = m_detectorBusy;
 
     // Read pixel data
-    Pixels* pixels = (m_legacyFormat ? read_legacy_data(event) : read_caribou_data(event));
+    std::shared_ptr<PixelVector> pixels = (m_legacyFormat ? read_legacy_data(event) : read_caribou_data(event));
 
     if(busy_at_start || m_detectorBusy) {
         LOG(DEBUG) << "Returning <DeadTime> status, ATLASPix is BUSY.";
@@ -288,10 +288,9 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     hPixelMultiplicity->Fill(static_cast<double>(pixels->size()));
 
     // Put the data on the clipboard
-    if(!pixels->empty()) {
-        clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
-    } else {
-        delete pixels;
+    clipboard->putData(pixels, m_detector->name());
+
+    if(pixels->empty()) {
         LOG(DEBUG) << "Returning <NoData> status, no hits found.";
         return StatusCode::NoData;
     }
@@ -301,13 +300,13 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-Pixels* EventLoaderATLASpix::read_caribou_data(std::shared_ptr<Event> event) {
+std::shared_ptr<PixelVector> EventLoaderATLASpix::read_caribou_data(std::shared_ptr<Event> event) {
     LOG(DEBUG) << "Searching for events in interval from " << Units::display(event->start(), {"s", "us", "ns"}) << " to "
                << Units::display(event->end(), {"s", "us", "ns"}) << ", file read position " << m_file.tellg()
                << ", old_fpga_ts = " << old_fpga_ts << ".";
 
     // Pixel container
-    Pixels* pixels = new Pixels();
+    auto pixels = std::make_shared<PixelVector>();
 
     // Read file and load data
     uint32_t datain;
@@ -623,10 +622,10 @@ Pixels* EventLoaderATLASpix::read_caribou_data(std::shared_ptr<Event> event) {
     return pixels;
 }
 
-Pixels* EventLoaderATLASpix::read_legacy_data(std::shared_ptr<Event>) {
+std::shared_ptr<PixelVector> EventLoaderATLASpix::read_legacy_data(std::shared_ptr<Event>) {
 
     // Pixel container
-    Pixels* pixels = new Pixels();
+    auto pixels = std::make_shared<PixelVector>();
 
     // Read file and load data
     while(!m_file.eof()) {

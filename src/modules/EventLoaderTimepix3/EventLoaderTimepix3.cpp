@@ -218,7 +218,7 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     // loading a fixed number of pixels (ie. 2000 at a time)
 
     // Check if event frame is defined:
-    auto event = clipboard->get_event();
+    auto event = clipboard->getEvent();
 
     LOG(TRACE) << "== New event";
 
@@ -228,8 +228,8 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Make a new container for the data
-    Pixels* deviceData = new Pixels();
-    SpidrSignals* spidrData = new SpidrSignals();
+    auto deviceData = std::make_shared<PixelVector>();
+    auto spidrData = std::make_shared<SpidrSignalVector>();
 
     // Load the next chunk of data
     bool data = loadData(clipboard, deviceData, spidrData);
@@ -237,15 +237,11 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     // If data was loaded then put it on the clipboard
     if(data) {
         LOG(DEBUG) << "Loaded " << deviceData->size() << " pixels for device " << m_detector->name();
-        clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(deviceData));
-    } else {
-        delete deviceData;
+        clipboard->putData(deviceData, m_detector->name());
     }
 
     if(!spidrData->empty()) {
-        clipboard->put(m_detector->name(), "SpidrSignals", reinterpret_cast<Objects*>(spidrData));
-    } else {
-        delete spidrData;
+        clipboard->putData(spidrData, m_detector->name());
     }
 
     // Otherwise tell event loop to keep running
@@ -321,10 +317,12 @@ void EventLoaderTimepix3::loadCalibration(std::string path, char delim, std::vec
 }
 
 // Function to load data for a given device, into the relevant container
-bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard, Pixels* devicedata, SpidrSignals* spidrData) {
+bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
+                                   std::shared_ptr<PixelVector>& devicedata,
+                                   std::shared_ptr<SpidrSignalVector>& spidrData) {
 
     std::string detectorID = m_detector->name();
-    auto event = clipboard->get_event();
+    auto event = clipboard->getEvent();
 
     bool extra = false; // temp
 

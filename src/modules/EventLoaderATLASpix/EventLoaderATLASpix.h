@@ -40,12 +40,12 @@ namespace corryvreckan {
         /*
          * @brief Read data in the format written by the Karlsruhe readout system
          */
-        Pixels* read_legacy_data(std::shared_ptr<Event> event);
+        std::shared_ptr<PixelVector> read_legacy_data(std::shared_ptr<Event> event);
 
         /*
          * @brief Read data in the format written by the Caribou readout system
          */
-        Pixels* read_caribou_data(std::shared_ptr<Event> event);
+        std::shared_ptr<PixelVector> read_caribou_data(std::shared_ptr<Event> event);
 
         std::shared_ptr<Detector> m_detector;
         unsigned long long int m_oldtoa;
