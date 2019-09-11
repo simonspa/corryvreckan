@@ -226,6 +226,8 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(TRACE) << "buffer size = " << sorted_pixels_.size() << " --> pop()";
             // remove pixel from sorted queue
             sorted_pixels_.pop();
+        } else {
+            continue;
         }
 
         if(pixel->timestamp() < start_time) {
