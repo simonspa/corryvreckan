@@ -305,64 +305,61 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
     return position;
 }
 
-std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt) const {
+std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt,
+                                                               int plane_id) const {
 
     auto pixels = std::make_shared<PixelVector>();
 
-    // Loop over all planes, select the relevant detector:
-    for(size_t i_plane = 0; i_plane < evt->NumPlanes(); i_plane++) {
-        auto plane = evt->GetPlane(i_plane);
-
-        // Concatenate plane name according to naming convention: sensor_type + "_" + int
-        auto plane_name = plane.Sensor() + "_" + std::to_string(plane.ID());
-        auto detector_name = m_detector->name();
-        // Convert to lower case before string comparison to avoid errors by the user:
-        std::transform(plane_name.begin(), plane_name.end(), plane_name.begin(), ::tolower);
-        std::transform(detector_name.begin(), detector_name.end(), detector_name.begin(), ::tolower);
-        LOG(TRACE) << plane_name << " (" << i_plane << " out of " << evt->NumPlanes() << ") with  " << plane.HitPixels()
-                   << " hit pixels";
-
-        if(detector_name != plane_name) {
-            LOG(TRACE) << "Wrong plane: " << detector_name << "!=" << plane_name << ". Continue.";
-            continue;
-        }
-
-        LOG(DEBUG) << "Found correct plane.";
-        // Loop over all hits and add to pixels vector:
-        for(unsigned int i = 0; i < plane.HitPixels(); i++) {
-            auto col = static_cast<int>(plane.GetX(i));
-            auto row = static_cast<int>(plane.GetY(i));
-            auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
-            auto ts = static_cast<double>(plane.GetTimestamp(i)) / 1000 + m_detector->timingOffset();
-
-            if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {
-                LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
-            }
-
-            LOG(DEBUG) << "Read pixel (col, row) = (" << col << ", " << row << ") from EUDAQ2 event data (before masking).";
-            if(m_detector->masked(col, row)) {
-                LOG(TRACE) << "Masked pixel (col, row) = (" << col << ", " << row << ")";
-                continue;
-            }
-
-            // when calibration is not available, set charge = raw
-            Pixel* pixel = new Pixel(m_detector->name(), col, row, raw, raw, ts);
-
-            hitmap->Fill(col, row);
-            hPixelTimes->Fill(static_cast<double>(Units::convert(ts, "ms")));
-            hPixelTimes_long->Fill(static_cast<double>(Units::convert(ts, "s")));
-            hPixelRawValues->Fill(raw);
-
-            pixels->push_back(pixel);
-        }
-        hPixelMultiplicity->Fill(static_cast<int>(pixels->size()));
-        LOG(DEBUG) << m_detector->name() << ": Plane contains " << pixels->size() << " pixels";
+    // No plane found:
+    if(plane_id < 0) {
+        return pixels;
     }
+
+    auto plane = evt->GetPlane(static_cast<size_t>(plane_id));
+
+    // Concatenate plane name according to naming convention: sensor_type + "_" + int
+    auto plane_name = plane.Sensor() + "_" + std::to_string(plane.ID());
+    auto detector_name = m_detector->name();
+    // Convert to lower case before string comparison to avoid errors by the user:
+    std::transform(plane_name.begin(), plane_name.end(), plane_name.begin(), ::tolower);
+    std::transform(detector_name.begin(), detector_name.end(), detector_name.begin(), ::tolower);
+    LOG(TRACE) << plane_name << " (ID " << plane_id << ") with " << plane.HitPixels() << " pixel hits";
+
+    // Loop over all hits and add to pixels vector:
+    for(unsigned int i = 0; i < plane.HitPixels(); i++) {
+        auto col = static_cast<int>(plane.GetX(i));
+        auto row = static_cast<int>(plane.GetY(i));
+        auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
+        auto ts = static_cast<double>(plane.GetTimestamp(i)) / 1000 + m_detector->timingOffset();
+
+        if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {
+            LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
+        }
+
+        if(m_detector->masked(col, row)) {
+            LOG(TRACE) << "Masking pixel (col, row) = (" << col << ", " << row << ")";
+            continue;
+        } else {
+            LOG(TRACE) << "Storing (col, row) = (" << col << ", " << row << ") from EUDAQ2 event data";
+        }
+
+        // when calibration is not available, set charge = raw
+        Pixel* pixel = new Pixel(m_detector->name(), col, row, raw, raw, ts);
+
+        hitmap->Fill(col, row);
+        hPixelTimes->Fill(static_cast<double>(Units::convert(ts, "ms")));
+        hPixelTimes_long->Fill(static_cast<double>(Units::convert(ts, "s")));
+        hPixelRawValues->Fill(raw);
+
+        pixels->push_back(pixel);
+    }
+    hPixelMultiplicity->Fill(static_cast<int>(pixels->size()));
+    LOG(DEBUG) << m_detector->name() << ": Plane contains " << pixels->size() << " pixels";
 
     return pixels;
 }
 
-bool EventLoaderEUDAQ2::filter_detectors(std::shared_ptr<eudaq::StandardEvent> evt) const {
+bool EventLoaderEUDAQ2::filter_detectors(std::shared_ptr<eudaq::StandardEvent> evt, int& plane_id) const {
     // Check if the detector type matches the currently processed detector type:
     auto detector_type = evt->GetDetectorType();
     std::transform(detector_type.begin(), detector_type.end(), detector_type.begin(), ::tolower);
@@ -399,6 +396,7 @@ bool EventLoaderEUDAQ2::filter_detectors(std::shared_ptr<eudaq::StandardEvent> e
         std::transform(detector_name.begin(), detector_name.end(), detector_name.begin(), ::tolower);
 
         if(detector_name == plane_name) {
+            plane_id = static_cast<int>(i_plane);
             LOG(DEBUG) << "Found matching plane in event for detector " << m_detector->name();
             return true;
         }
@@ -430,8 +428,9 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
             }
         }
 
-        // Filter out "wrong" detectors:
-        if(!filter_detectors(event_)) {
+        // Filter out "wrong" detectors and store plane ID if found:
+        int plane_id = -1;
+        if(!filter_detectors(event_, plane_id)) {
             event_.reset();
             continue;
         }
@@ -442,7 +441,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         if(current_position == Event::Position::DURING) {
             LOG(DEBUG) << "Is within current Corryvreckan event, storing data";
             // Store data on the clipboard
-            auto new_pixels = get_pixel_data(event_);
+            auto new_pixels = get_pixel_data(event_, plane_id);
             pixels->insert(pixels->end(), new_pixels->begin(), new_pixels->end());
         }
 
