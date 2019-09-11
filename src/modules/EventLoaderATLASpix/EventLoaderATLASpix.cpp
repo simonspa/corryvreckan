@@ -189,13 +189,6 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     }
     auto event = clipboard->get_event();
 
-    // If have reached the end of file, close it and exit program running
-    if(m_file.eof()) {
-        m_file.close();
-        LOG(DEBUG) << "Returning <Failure> status, ATLASPix data file reached the end.";
-        return StatusCode::Failure;
-    }
-
     double start_time = event->start();
     double end_time = event->end();
 
