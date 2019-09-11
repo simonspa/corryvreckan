@@ -195,18 +195,20 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     // prepare pixels vector
     Pixels* pixels = new Pixels();
     while(true) {
+
+        if(sorted_pixels_.empty() && eof_reached) {
+            // break while loop but still go until the end of the run() function
+            LOG(STATUS) << "break while(true) --> end of file reached";
+            break;
+        }
+
         // read data from file and fill timesorted buffer
         while(static_cast<int>(sorted_pixels_.size()) < m_buffer_depth && !eof_reached) {
             // read_caribou_data returns false when EOF is reached and true otherwise
             if(!read_caribou_data()) {
                 LOG(TRACE) << "read_caribou_data returns false: reached EOF.";
                 break;
-            };
-        }
-
-        if(sorted_pixels_.empty() && eof_reached) {
-            // break while loop but still go until the end of the run() function
-            break;
+            }
         }
 
         // get next pixel from sorted queue
