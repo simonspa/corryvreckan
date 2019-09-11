@@ -26,17 +26,19 @@ namespace corryvreckan {
             delete positionKdtree;
         }
 
+        KDTree(const KDTree& kd);
+
         // Build a tree sorted by cluster times
-        void buildTimeTree(Clusters inputClusters);
+        void buildTimeTree(ClusterVector inputClusters);
 
         // Build a tree sorted by cluster xy positions
-        void buildSpatialTree(Clusters inputClusters);
+        void buildSpatialTree(ClusterVector inputClusters);
 
         // Function to get back all clusters within a given time period
-        Clusters getAllClustersInTimeWindow(Cluster* cluster, double timeWindow);
+        ClusterVector getAllClustersInTimeWindow(Cluster* cluster, double timeWindow);
 
         // Function to get back all clusters within a given spatial window
-        Clusters getAllClustersInWindow(Cluster* cluster, double window);
+        ClusterVector getAllClustersInWindow(Cluster* cluster, double window);
 
         // Function to get back the nearest cluster in space
         Cluster* getClosestNeighbour(Cluster* cluster);
@@ -48,11 +50,11 @@ namespace corryvreckan {
         double* times;      //!
         TKDTreeID* positionKdtree;
         TKDTreeID* timeKdtree;
-        Clusters clusters;
+        ClusterVector clusters;
         std::map<Cluster*, size_t> iteratorNumber;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(KDTree, 5)
+        ClassDef(KDTree, 6)
     };
 } // namespace corryvreckan
 

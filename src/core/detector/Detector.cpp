@@ -380,7 +380,7 @@ bool Detector::isWithinROI(Cluster* cluster) const {
     }
 
     // Loop over all pixels of the cluster
-    for(auto& pixel : (*cluster->pixels())) {
+    for(auto& pixel : cluster->pixels()) {
         if(winding_number(pixel->coordinates(), m_roi) == 0) {
             return false;
         }

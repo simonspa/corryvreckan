@@ -40,12 +40,12 @@ namespace corryvreckan {
         /*
          * @brief Read data in the format written by the Karlsruhe readout system
          */
-        Pixels* read_legacy_data(double start_time, double end_time);
+        std::shared_ptr<PixelVector> read_legacy_data(double start_time, double end_time);
 
         /*
          * @brief Read data in the format written by the Caribou readout system
          */
-        Pixels* read_caribou_data(double start_time, double end_time);
+        std::shared_ptr<PixelVector> read_caribou_data(double start_time, double end_time);
 
         std::shared_ptr<Detector> m_detector;
         unsigned long long int m_oldtoa;

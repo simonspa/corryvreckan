@@ -57,7 +57,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     // Otherwise load a new frame
 
     // Pixel container, shutter information
-    Pixels* pixels = new Pixels();
+    auto pixels = std::make_shared<PixelVector>();
     double shutterStartTime = 0, shutterStopTime = 0;
     string data;
 
@@ -121,12 +121,11 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Now set the event time so that the Timepix3 data is loaded correctly
-    clipboard->put_event(std::make_shared<Event>(shutterStartTime, shutterStopTime));
+    clipboard->putEvent(std::make_shared<Event>(shutterStartTime, shutterStopTime));
 
     LOG(TRACE) << "Loaded " << npixels << " pixels";
     // Put the data on the clipboard
-    if(pixels->size() > 0)
-        clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
+    clipboard->putData(pixels, m_detector->name());
 
     // Fill histograms
     hPixelMultiplicity->Fill(npixels);

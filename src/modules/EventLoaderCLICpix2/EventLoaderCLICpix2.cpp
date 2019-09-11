@@ -178,7 +178,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Pixel container, shutter information
-    Pixels* pixels = new Pixels();
+    auto pixels = std::make_shared<PixelVector>();
     long long int shutterStartTimeInt = 0, shutterStopTimeInt = 0;
     double shutterStartTime, shutterStopTime;
     string datastring;
@@ -298,13 +298,12 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     // Store current frame time and the length of the event:
     LOG(DEBUG) << "Event time: " << Units::display(shutterStartTime, {"ns", "us", "s"})
                << ", length: " << Units::display((shutterStopTime - shutterStartTime), {"ns", "us", "s"});
-    clipboard->put_event(std::make_shared<Event>(shutterStartTime, shutterStopTime));
+    clipboard->putEvent(std::make_shared<Event>(shutterStartTime, shutterStopTime));
 
     // Put the data on the clipboard
-    if(!pixels->empty()) {
-        clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
-    } else {
-        delete pixels;
+    clipboard->putData(pixels, m_detector->name());
+
+    if(pixels->empty()) {
         return StatusCode::NoData;
     }
 
