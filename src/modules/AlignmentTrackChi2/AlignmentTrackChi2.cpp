@@ -159,7 +159,7 @@ void AlignmentTrackChi2::finalise() {
             string detectorID = detector->name();
 
             // Do not align the reference plane
-            if(detector->isReference() || detector->isDUT()) {
+            if(detector->isReference() || detector->isDUT() || detector->isAuxiliary()) {
                 continue;
             }
 
@@ -253,7 +253,7 @@ void AlignmentTrackChi2::finalise() {
     // Now list the new alignment parameters
     for(auto& detector : get_detectors()) {
         // Do not align the reference plane
-        if(detector->isReference() || detector->isDUT()) {
+        if(detector->isReference() || detector->isDUT() || detector->isAuxiliary()) {
             continue;
         }
 
