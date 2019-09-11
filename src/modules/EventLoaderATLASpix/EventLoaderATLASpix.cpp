@@ -177,6 +177,7 @@ void EventLoaderATLASpix::initialise() {
 
     m_oldtoa = 0;
     m_overflowcounter = 0;
+    eof_reached = false;
 }
 
 StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
@@ -202,8 +203,8 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     Pixels* pixels = new Pixels();
     while(true) {
         // read data from file and fill timesorted buffer
-        while(static_cast<int>(sorted_pixels_.size()) < m_buffer_depth) {
-            // this returns false when EOF is reached and true otherwise
+        while(static_cast<int>(sorted_pixels_.size()) < m_buffer_depth && !eof_reached) {
+            // read_caribou_data returns false when EOF is reached and true otherwise
             if(!read_caribou_data()) {
                 LOG(TRACE) << "read_caribou_data returns false: reached EOF.";
                 break;
