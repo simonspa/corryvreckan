@@ -383,7 +383,30 @@ bool EventLoaderEUDAQ2::filter_detectors(std::shared_ptr<eudaq::StandardEvent> e
 
     // To the best of our knowledge, this is the detector we are looking for.
     LOG(DEBUG) << "Found matching event for detector type " << m_detector->type();
-    return true;
+    if(evt->NumPlanes() == 0) {
+        return true;
+    }
+
+    // Check if we can identify the detector itself among the planes:
+    for(size_t i_plane = 0; i_plane < evt->NumPlanes(); i_plane++) {
+        auto plane = evt->GetPlane(i_plane);
+
+        // Concatenate plane name according to naming convention: sensor_type + "_" + int
+        auto plane_name = plane.Sensor() + "_" + std::to_string(plane.ID());
+        auto detector_name = m_detector->name();
+        // Convert to lower case before string comparison to avoid errors by the user:
+        std::transform(plane_name.begin(), plane_name.end(), plane_name.begin(), ::tolower);
+        std::transform(detector_name.begin(), detector_name.end(), detector_name.begin(), ::tolower);
+
+        if(detector_name == plane_name) {
+            LOG(DEBUG) << "Found matching plane in event for detector " << m_detector->name();
+            return true;
+        }
+    }
+
+    // Detector not found among planes of this event
+    LOG(DEBUG) << "Ignoring event because no matching plane could be found for detector " << m_detector->name();
+    return false;
 }
 
 StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
