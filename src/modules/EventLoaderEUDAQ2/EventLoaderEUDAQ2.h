@@ -11,12 +11,13 @@
  * Refer to the User's Manual for more details.
  */
 
+#include <iostream>
+#include <vector>
+
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TProfile.h>
-
-#include <iostream>
 
 #include "core/module/Module.hpp"
 #include "eudaq/FileReader.hh"
@@ -33,13 +34,6 @@ namespace corryvreckan {
      * More detailed explanation of module
      */
     class EventLoaderEUDAQ2 : public Module {
-
-        enum class EventPosition {
-            UNKNOWN, // StandardEvent position unknown
-            BEFORE,  // StandardEvent is before current event
-            DURING,  // StandardEvent is during current event
-            AFTER,   // StandardEvent is after current event
-        };
 
         class EndOfFile : public Exception {};
 
@@ -77,7 +71,8 @@ namespace corryvreckan {
          * @param  evt        The EUDAQ StandardEvent to check
          * @return            Position of the StandardEvent with respect to the current Corryvreckan event
          */
-        EventPosition is_within_event(std::shared_ptr<Clipboard> clipboard, std::shared_ptr<eudaq::StandardEvent> evt);
+        Event::Position is_within_event(std::shared_ptr<Clipboard> clipboard,
+                                        std::shared_ptr<eudaq::StandardEvent> evt) const;
 
         /**
          * @brief Helper function to retrieve event tags and creating plots from them
@@ -88,23 +83,35 @@ namespace corryvreckan {
         /**
          * @brief Store pixel data from relevant detectors on the clipboard
          * @param evt       StandardEvent to read the pixel data from
+         * @param plane_id  ID of the EUDAQ2 StandardEvent plane to be read and stored
          * @return Vector of pointers to pixels read from this event
          */
-        std::shared_ptr<PixelVector> get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt);
+        std::shared_ptr<PixelVector> get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt, int plane_id) const;
+
+        /**
+         * @brief Filter the incoming EUDAQ2 events for the correct detector and detector type
+         * @param  evt The EUDAQ2 StdEvt to be scrutinized
+         * @param plane_id If found within the event, the plane ID if the detector is stored in the reference
+         * @return     Verdict whether this is the detector we are looking for or not
+         */
+        bool filter_detectors(std::shared_ptr<eudaq::StandardEvent> evt, int& plane_id) const;
 
         std::shared_ptr<Detector> m_detector;
         std::string m_filename{};
         bool m_get_time_residuals{};
         bool m_get_tag_vectors{};
         bool m_ignore_bore{};
+        bool m_inclusive;
         double m_skip_time{};
         Matrix<std::string> m_adjust_event_times;
         int m_buffer_depth;
 
         // EUDAQ file reader instance to retrieve data from
         eudaq::FileReaderUP reader_;
+
         // Buffer of undecoded EUDAQ events
         std::vector<eudaq::EventSPC> events_;
+
         // Currently processed decoded EUDAQ StandardEvent:
         std::shared_ptr<eudaq::StandardEvent> event_;
 
