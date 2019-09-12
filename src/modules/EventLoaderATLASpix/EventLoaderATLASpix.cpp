@@ -185,17 +185,17 @@ void EventLoaderATLASpix::initialise() {
 StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Check if event frame is defined:
-    if(!clipboard->event_defined()) {
+    if(!clipboard->isEventDefined()) {
         LOG(WARNING) << "No event defined on clipboard. Make sure an event is defined before this eventloader.";
         return StatusCode::Failure;
     }
-    auto event = clipboard->get_event();
+    auto event = clipboard->getEvent();
 
     double start_time = event->start();
     double end_time = event->end();
 
     // prepare pixels vector
-    Pixels* pixels = new Pixels();
+    std::shared_ptr<PixelVector> pixels = std::make_shared<PixelVector>();
     while(true) {
 
         if(sorted_pixels_.empty() && eof_reached) {
@@ -289,10 +289,9 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     hPixelMultiplicity->Fill(static_cast<double>(pixels->size()));
 
     // Put the data on the clipboard
-    if(!pixels->empty()) {
-        clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
-    } else {
-        delete pixels;
+    clipboard->putData(pixels, m_detector->name());
+
+    if(pixels->empty()) {
         LOG(DEBUG) << "Returning <NoData> status, no hits found.";
         return StatusCode::NoData;
     }

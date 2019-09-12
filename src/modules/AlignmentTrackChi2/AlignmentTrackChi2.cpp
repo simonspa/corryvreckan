@@ -7,7 +7,7 @@ using namespace corryvreckan;
 using namespace std;
 
 // Global container declarations
-Tracks globalTracks;
+TrackVector globalTracks;
 std::shared_ptr<Detector> globalDetector;
 int detNum;
 
@@ -33,7 +33,7 @@ AlignmentTrackChi2::AlignmentTrackChi2(Configuration config, std::vector<std::sh
 StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks
-    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
         return StatusCode::Success;
     }
@@ -58,7 +58,7 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
             }
         }
 
-        Track* alignmentTrack = new Track(track);
+        Track* alignmentTrack = new Track(*track);
         m_alignmenttracks.push_back(alignmentTrack);
     }
 
@@ -92,7 +92,7 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
         // Get the track
         Track* track = globalTracks[iTrack];
         // Get all clusters on the track
-        Clusters trackClusters = track->clusters();
+        auto trackClusters = track->clusters();
         // Find the cluster that needs to have its position recalculated
         for(size_t iTrackCluster = 0; iTrackCluster < trackClusters.size(); iTrackCluster++) {
             Cluster* trackCluster = trackClusters[iTrackCluster];
@@ -159,7 +159,7 @@ void AlignmentTrackChi2::finalise() {
             string detectorID = detector->name();
 
             // Do not align the reference plane
-            if(detector->isReference() || detector->isDUT()) {
+            if(detector->isReference() || detector->isDUT() || detector->isAuxiliary()) {
                 continue;
             }
 
@@ -253,7 +253,7 @@ void AlignmentTrackChi2::finalise() {
     // Now list the new alignment parameters
     for(auto& detector : get_detectors()) {
         // Do not align the reference plane
-        if(detector->isReference() || detector->isDUT()) {
+        if(detector->isReference() || detector->isDUT() || detector->isAuxiliary()) {
             continue;
         }
 

@@ -50,14 +50,14 @@ void ClusteringSpatial::initialise() {
 StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
-    Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));
+    auto pixels = clipboard->getData<Pixel>(m_detector->name());
     if(pixels == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
     }
 
     // Make the cluster container and the maps for clustering
-    Objects* deviceClusters = new Objects();
+    auto deviceClusters = std::make_shared<ClusterVector>();
     map<Pixel*, bool> used;
     map<int, map<int, Pixel*>> hitmap;
     bool addedPixel;
@@ -81,8 +81,8 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         cluster->addPixel(pixel);
 
         if(useTriggerTimestamp) {
-            if(!clipboard->get_event()->triggerList().empty()) {
-                double trigger_ts = clipboard->get_event()->triggerList().begin()->second;
+            if(!clipboard->getEvent()->triggerList().empty()) {
+                double trigger_ts = clipboard->getEvent()->triggerList().begin()->second;
                 LOG(DEBUG) << "Using trigger timestamp " << Units::display(trigger_ts, "us") << " as cluster timestamp.";
                 cluster->setTimestamp(trigger_ts);
             } else {
@@ -100,7 +100,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         used[pixel] = true;
         addedPixel = true;
         // Somewhere to store found neighbours
-        Pixels neighbours;
+        PixelVector neighbours;
 
         // Now we check the neighbours and keep adding more hits while there are connected pixels
         while(addedPixel) {
@@ -160,7 +160,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         deviceClusters->push_back(cluster);
     }
 
-    clipboard->put(m_detector->name(), "clusters", deviceClusters);
+    clipboard->putData(deviceClusters, m_detector->name());
     LOG(DEBUG) << "Put " << deviceClusters->size() << " clusters on the clipboard for detector " << m_detector->name()
                << ". From " << pixels->size() << " pixels";
 
@@ -182,12 +182,12 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
     bool found_charge_zero = false;
 
     // Get the pixels on this cluster
-    Pixels* pixels = cluster->pixels();
-    string detectorID = (*pixels)[0]->detectorID();
-    LOG(DEBUG) << "- cluster has " << (*pixels).size() << " pixels";
+    auto pixels = cluster->pixels();
+    string detectorID = pixels.front()->detectorID();
+    LOG(DEBUG) << "- cluster has " << pixels.size() << " pixels";
 
     // Loop over all pixels
-    for(auto& pixel : (*pixels)) {
+    for(auto& pixel : pixels) {
         // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics):
         if(pixel->charge() < std::numeric_limits<double>::epsilon()) {
             // apply arithmetic mean if a pixel has zero charge

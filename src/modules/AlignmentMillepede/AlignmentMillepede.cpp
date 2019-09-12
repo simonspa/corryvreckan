@@ -69,14 +69,14 @@ void AlignmentMillepede::initialise() {
 StatusCode AlignmentMillepede::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks
-    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
         return StatusCode::Success;
     }
 
     // Make a local copy and store it
     for(auto& track : (*tracks)) {
-        Track* alignmentTrack = new Track(track);
+        Track* alignmentTrack = new Track(*track);
         m_alignmenttracks.push_back(alignmentTrack);
     }
     return StatusCode::Success;

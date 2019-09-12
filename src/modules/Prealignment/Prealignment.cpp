@@ -51,7 +51,7 @@ void Prealignment::initialise() {
 StatusCode Prealignment::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the clusters
-    Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
+    auto clusters = clipboard->getData<Cluster>(m_detector->name());
     if(clusters == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any clusters on the clipboard";
         return StatusCode::Success;
@@ -59,7 +59,7 @@ StatusCode Prealignment::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get clusters from reference detector
     auto reference = get_reference();
-    Clusters* referenceClusters = reinterpret_cast<Clusters*>(clipboard->get(reference->name(), "clusters"));
+    auto referenceClusters = clipboard->getData<Cluster>(reference->name());
     if(referenceClusters == nullptr) {
         LOG(DEBUG) << "Reference detector " << reference->name() << " does not have any clusters on the clipboard";
         return StatusCode::Success;
