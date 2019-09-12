@@ -200,7 +200,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
         if(sorted_pixels_.empty() && eof_reached) {
             // break while loop but still go until the end of the run() function
-            LOG(STATUS) << "break while(true) --> end of file reached";
+            LOG(TRACE) << "break while(true) --> end of file reached";
             break;
         }
 
