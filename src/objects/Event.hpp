@@ -51,7 +51,7 @@ namespace corryvreckan {
         /**
          * @brief Returns position of a timestamp relative to the current event
          *
-         * This function allows ot assess whether a timestamp lies before, during or after the defined event.
+         * This function allows to assess whether a timestamp lies before, during or after the defined event.
          * @param  frame_start Timestamp to get position for
          * @return             Position of the given timestamp with respect to the defined event.
          */
@@ -68,7 +68,7 @@ namespace corryvreckan {
         /**
          * @brief Returns position of a time frame defined by a start and end point relative to the current event
          *
-         * This function allows ot assess whether a time frame lies before, during or after the defined event. There are two
+         * This function allows to assess whether a time frame lies before, during or after the defined event. There are two
          * options of interpretation. The inclusive interpretation will return "during" as soon as there is some overlap
          * between the frame and the event, i.e. as soon as the end of the frame is later than the event start or as soon as
          * the frame start is before the event end. In the exclusive mode, the frame will be classified as "during" only if
