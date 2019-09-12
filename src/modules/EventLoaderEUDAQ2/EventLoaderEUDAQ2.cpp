@@ -272,7 +272,7 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
         return Event::Position::BEFORE;
     }
 
-    // Check iff an event is defined or we we need to create it:
+    // Check if an event is defined or if we need to create it:
     if(!clipboard->isEventDefined()) {
         LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " - "
                    << Units::display(event_end, {"us", "ns"}) << ", length "
