@@ -246,6 +246,8 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
     // Read time from EUDAQ2 event and convert from picoseconds to nanoseconds:
     double event_start = static_cast<double>(evt->GetTimeBegin()) / 1000 + m_detector->timingOffset();
     double event_end = static_cast<double>(evt->GetTimeEnd()) / 1000 + m_detector->timingOffset();
+    // Store the original position of the event before adjusting its length:
+    double event_timestamp = event_start;
     LOG(DEBUG) << "event_start = " << Units::display(event_start, "us")
                << ", event_end = " << Units::display(event_end, "us");
 
@@ -294,8 +296,9 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
         // check if event has valid trigger ID (flag = 0x10):
         if(evt->IsFlagTrigger()) {
             // Store potential trigger numbers, assign to center of event:
-            clipboard->getEvent()->addTrigger(evt->GetTriggerN(), event_start);
-            LOG(DEBUG) << "Stored trigger ID " << evt->GetTriggerN() << " at " << Units::display(event_start, {"us", "ns"});
+            clipboard->getEvent()->addTrigger(evt->GetTriggerN(), event_timestamp);
+            LOG(DEBUG) << "Stored trigger ID " << evt->GetTriggerN() << " at "
+                       << Units::display(event_timestamp, {"us", "ns"});
         }
     }
 
