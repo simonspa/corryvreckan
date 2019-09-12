@@ -37,6 +37,8 @@ void EventLoaderATLASpix::initialise() {
 
     if(m_buffer_depth < 1) {
         throw InvalidValueError(m_config, "buffer_depth", "Buffer depth must be larger than 0.");
+    } else {
+        LOG(INFO) << "Using buffer_depth = " << m_buffer_depth;
     }
 
     // File structure is RunX/data.bin
