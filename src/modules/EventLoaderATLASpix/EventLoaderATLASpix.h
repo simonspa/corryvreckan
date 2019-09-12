@@ -38,7 +38,7 @@ namespace corryvreckan {
         uint32_t gray_decode(uint32_t gray);
 
         /*
-         * @brief Read data in the format written by the Caribou readout system
+         * @brief Read data in the format written by the Caribou readout system and fill time-sorted buffer
          * @return Bool which is false when reaching the end-of-file and true otherwise
          */
         bool read_caribou_data();
