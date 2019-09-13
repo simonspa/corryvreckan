@@ -340,7 +340,7 @@ double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosi
 PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double column, double row) const {
 
     return PositionVector3D<Cartesian3D<double>>(
-        m_pitch.X() * (column - (m_nPixels.X()) / 2), m_pitch.Y() * (row - (m_nPixels.Y()) / 2), 0.);
+        m_pitch.X() * (column - m_nPixels.X() / 2), m_pitch.Y() * (row - m_nPixels.Y() / 2), 0.);
 }
 
 // Function to get in-pixel position
