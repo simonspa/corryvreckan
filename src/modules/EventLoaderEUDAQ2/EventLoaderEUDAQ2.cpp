@@ -246,6 +246,8 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
     // Read time from EUDAQ2 event and convert from picoseconds to nanoseconds:
     double event_start = static_cast<double>(evt->GetTimeBegin()) / 1000 + m_detector->timingOffset();
     double event_end = static_cast<double>(evt->GetTimeEnd()) / 1000 + m_detector->timingOffset();
+    // Store the original position of the event before adjusting its length:
+    double event_timestamp = event_start;
     LOG(DEBUG) << "event_start = " << Units::display(event_start, "us")
                << ", event_end = " << Units::display(event_end, "us");
 
@@ -254,6 +256,17 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
                                  m_adjust_event_times.end(),
                                  [evt](const std::vector<std::string>& x) { return x.front() == evt->GetDescription(); });
 
+    if(it != m_adjust_event_times.end()) {
+        event_start += corryvreckan::from_string<double>(it->at(1));
+        event_end += corryvreckan::from_string<double>(it->at(2));
+        LOG(DEBUG) << "Adjusting " << it->at(0) << " event_start by "
+                   << Units::display(corryvreckan::from_string<double>(it->at(1)), {"us", "ns"}) << ", event_end by "
+                   << Units::display(corryvreckan::from_string<double>(it->at(2)), {"us", "ns"});
+        LOG(DEBUG) << "Adjusted event: " << Units::display(event_start, {"us", "ns"}) << " - "
+                   << Units::display(event_end, {"us", "ns"}) << ", length "
+                   << Units::display(event_end - event_start, {"us", "ns"});
+    }
+
     // Skip if later start is requested:
     if(event_start < m_skip_time) {
         LOG(DEBUG) << "Event start before requested skip time: " << Units::display(event_start, {"us", "ns"}) << " < "
@@ -261,22 +274,9 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
         return Event::Position::BEFORE;
     }
 
-    double shift_start = 0;
-    double shift_end = 0;
-
+    // Check if an event is defined or if we need to create it:
     if(!clipboard->isEventDefined()) {
         LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " - "
-                   << Units::display(event_end, {"us", "ns"}) << ", length "
-                   << Units::display(event_end - event_start, {"us", "ns"});
-        if(it != m_adjust_event_times.end()) {
-            shift_start = corryvreckan::from_string<double>(it->at(1));
-            shift_end = corryvreckan::from_string<double>(it->at(2));
-            event_start += shift_start;
-            event_end += shift_end;
-            LOG(DEBUG) << "Adjusting " << it->at(0) << ": event_start by " << Units::display(shift_start, {"us", "ns"})
-                       << ", event_end by " << Units::display(shift_end, {"us", "ns"});
-        }
-        LOG(DEBUG) << "Shifted Corryvreckan event: " << Units::display(event_start, {"us", "ns"}) << " - "
                    << Units::display(event_end, {"us", "ns"}) << ", length "
                    << Units::display(event_end - event_start, {"us", "ns"});
         clipboard->putEvent(std::make_shared<Event>(event_start, event_end));
@@ -296,9 +296,9 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
         // check if event has valid trigger ID (flag = 0x10):
         if(evt->IsFlagTrigger()) {
             // Store potential trigger numbers, assign to center of event:
-            clipboard->getEvent()->addTrigger(evt->GetTriggerN(), event_start - shift_start);
+            clipboard->getEvent()->addTrigger(evt->GetTriggerN(), event_timestamp);
             LOG(DEBUG) << "Stored trigger ID " << evt->GetTriggerN() << " at "
-                       << Units::display(event_start - shift_start, {"us", "ns"});
+                       << Units::display(event_timestamp, {"us", "ns"});
         }
     }
 
