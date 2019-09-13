@@ -8,6 +8,7 @@
 #include <dirent.h>
 #include <fstream>
 #include <iostream>
+#include <queue>
 #include <sstream>
 #include <stdio.h>
 #include <string.h>
@@ -29,7 +30,6 @@ namespace corryvreckan {
         // Functions
         void initialise();
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        void finalise();
 
     private:
         /*
@@ -38,14 +38,17 @@ namespace corryvreckan {
         uint32_t gray_decode(uint32_t gray);
 
         /*
-         * @brief Read data in the format written by the Karlsruhe readout system
+         * @brief Read data in the format written by the Caribou readout system and fill time-sorted buffer
+         * @return Bool which is false when reaching the end-of-file and true otherwise
          */
-        std::shared_ptr<PixelVector> read_legacy_data(std::shared_ptr<Event> event);
+        bool read_caribou_data();
 
-        /*
-         * @brief Read data in the format written by the Caribou readout system
-         */
-        std::shared_ptr<PixelVector> read_caribou_data(std::shared_ptr<Event> event);
+        // custom comparator for time-sorted priority_queue
+        struct CompareTimeGreater {
+            bool operator()(const Pixel* a, const Pixel* b) { return a->timestamp() > b->timestamp(); }
+        };
+        // Buffer of timesorted pixel hits: (need to use greater here!)
+        std::priority_queue<Pixel*, std::vector<Pixel*>, CompareTimeGreater> sorted_pixels_;
 
         std::shared_ptr<Detector> m_detector;
         unsigned long long int m_oldtoa;
@@ -54,10 +57,16 @@ namespace corryvreckan {
         std::ifstream m_file;
 
         // Resuming in next event:
-        std::streampos oldpos;
-        unsigned long long old_readout_ts;
-        unsigned long long old_fpga_ts;
-        unsigned long long busy_readout_ts;
+        unsigned long long readout_ts_ = 0;
+        unsigned long long fpga_ts_ = 0;
+        unsigned long long fpga_ts1_ = 0;
+        unsigned long long fpga_ts2_ = 0;
+        unsigned long long fpga_ts3_ = 0;
+        bool new_ts1_ = false;
+        bool new_ts2_ = false;
+        bool timestamps_cleared_ = false;
+        bool eof_reached = false;
+
         // int ts1Range;
         int ts2Range;
 
@@ -96,18 +105,13 @@ namespace corryvreckan {
 
         // Parameters:
         std::string m_inputDirectory;
-        bool m_detectorBusy;
-        bool m_legacyFormat;
         double m_clockCycle;
         int m_highToTCut;
         std::string m_calibrationFile;
         std::vector<double> m_calibrationFactors;
         // int m_clkdivendM;
         int m_clkdivend2M;
-
-        std::map<std::string, int> m_identifiers;
-
-        unsigned int data_pixel_{}, data_header_{};
+        int m_buffer_depth;
     };
 } // namespace corryvreckan
 #endif // EventLoaderATLASpix_H

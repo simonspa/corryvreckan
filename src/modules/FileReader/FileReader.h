@@ -90,4 +90,4 @@ namespace corryvreckan {
         // Internal map to construct an object from it's type index
         ObjectCreatorMap object_creator_map_;
     };
-} // namespace allpix
+} // namespace corryvreckan
