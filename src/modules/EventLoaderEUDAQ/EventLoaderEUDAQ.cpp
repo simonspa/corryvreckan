@@ -71,7 +71,7 @@ StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
                 auto row = static_cast<int>(plane.GetY(ipix));
 
                 if(col >= detector->nPixels().X() || row >= detector->nPixels().Y()) {
-                    LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix."
+                    LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
                 }
 
                 // Check if this pixel is masked
