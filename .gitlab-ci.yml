@@ -83,10 +83,9 @@ cmp:cc7-docker:
     image:
         name: gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-deps
         entrypoint: [""]
-    script:
-        - gcc --version
+    before_script:
         - source scl_source enable devtoolset-7 || echo " "
-        - gcc --version
+    script:
         - mkdir build
         - cd build
         - cmake3 -DBUILD_EventLoaderEUDAQ2=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS ..
@@ -151,6 +150,8 @@ cmp:mac1014-clang:
     image:
         name: gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-deps
         entrypoint: [""]
+    before_script:
+        - source scl_source enable devtoolset-7 || echo " "
 
 tst:telescope:
     extends: .test
