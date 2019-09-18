@@ -82,7 +82,6 @@ cmp:cc7-docker:
         - docker
     image:
         name: gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-deps
-        #entrypoint: ["/bin/bash", "-c"]
         entrypoint: [""]
     script:
         - gcc --version
@@ -149,9 +148,9 @@ cmp:mac1014-clang:
         - docker
     dependencies:
         - cmp:cc7-docker
-    image: gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-deps
-    before_script:
-        - source .gitlab-ci.d/init_x86_64.sh
+    image:
+        name: gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-deps
+        entrypoint: [""]
 
 tst:telescope:
     extends: .test
