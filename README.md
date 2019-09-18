@@ -44,6 +44,7 @@ The main page of the reference can then be found at `reference/html/index.html` 
 Corryvreckan has been developed and is maintained by
 
 * Morag Williams, University of Glasgow/CERN, @williamm
+* Jens Kroeger, University of Heidelberg/CERN, @jekroege
 * Daniel Hynds, CERN, @dhynds
 * Simon Spannagel, CERN, @simonspa
 
@@ -51,11 +52,12 @@ The following authors, in alphabetical order, have contributed to Corryvreckan:
 
 * Matthew Daniel Buckland, University of Liverpool, @mbucklan
 * Dominik Dannheim, CERN, @dannheim
+* Katharina Dort, University of Giessen/CERN, @kdort
 * Adrian Fiergolski, CERN, @afiergol
 * Lennart Huth, DESY, @lhuth
-* Jens Kroeger, University of Heidelberg/CERN, @jekroege
 * Andreas Matthias Nürnberg, CERN, @nurnberg
 * Florian Pitters, CERN, @fpipper
+* Paul Schütze, DESY, @pschutze
 * Tomas Vanat, CERN, @tvanat
 
 ## Contributing
@@ -67,5 +69,7 @@ Before adding changes it is very much recommended to carefully read through the 
 This software is distributed under the terms of the MIT license. A copy of this license can be found in [LICENSE.md](LICENSE.md).
 
 The documentation is distributed under the terms of the CC-BY-4.0 license. This license can be found in [doc/COPYING.md](doc/COPYING.md).
+
+This project strongly profits from the developments done for the [Allpix Squared project](https://cern.ch/allpix-squared) which is released under the MIT license. Especially the configuration class, the module instantiation logic and the file reader and writer modules have profited heavily by their corresponding framework components in Allpix Squared.
 
 The LaTeX and Pandoc CMake modules used by Corryvreckan are licensed under the BSD 3-Clause License.

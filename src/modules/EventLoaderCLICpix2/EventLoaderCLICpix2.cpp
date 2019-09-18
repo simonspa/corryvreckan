@@ -139,8 +139,8 @@ void EventLoaderCLICpix2::initialise() {
     hPixelToA = new TH1F("pixelToA", title.c_str(), maxcounter, 0, maxcounter - 1);
     title = m_detector->name() + " CNT spectrum;CNT;pixels";
     hPixelCnt = new TH1F("pixelCnt", title.c_str(), maxcounter, 0, maxcounter - 1);
-    title = m_detector->name() + " Pixel multiplicity;pixels;frames";
-    hPixelsPerFrame = new TH1F("pixelsPerFrame", title.c_str(), 1000, 0, 1000);
+    title = m_detector->name() + " Pixel Multiplicity; # pixels; # events";
+    hPixelMultiplicity = new TH1F("pixelMultiplicity", title.c_str(), 1000, 0, 1000);
 
     title = m_detector->name() + " Timewalk;TOA;TOT;pixels";
     hTimeWalk = new TH2F("timewalk", title.c_str(), maxcounter, 0, maxcounter - 1, 32, 0, 31);
@@ -178,7 +178,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Pixel container, shutter information
-    Pixels* pixels = new Pixels();
+    auto pixels = std::make_shared<PixelVector>();
     long long int shutterStartTimeInt = 0, shutterStopTimeInt = 0;
     double shutterStartTime, shutterStopTime;
     string datastring;
@@ -275,6 +275,10 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
                 }
             }
 
+            if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {
+                LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
+            }
+
             // when calibration is not available, set charge = tot
             Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, tot, timestamp);
 
@@ -294,18 +298,17 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     // Store current frame time and the length of the event:
     LOG(DEBUG) << "Event time: " << Units::display(shutterStartTime, {"ns", "us", "s"})
                << ", length: " << Units::display((shutterStopTime - shutterStartTime), {"ns", "us", "s"});
-    clipboard->put_event(std::make_shared<Event>(shutterStartTime, shutterStopTime));
+    clipboard->putEvent(std::make_shared<Event>(shutterStartTime, shutterStopTime));
 
     // Put the data on the clipboard
-    if(!pixels->empty()) {
-        clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
-    } else {
-        delete pixels;
+    clipboard->putData(pixels, m_detector->name());
+
+    if(pixels->empty()) {
         return StatusCode::NoData;
     }
 
     // Fill histograms
-    hPixelsPerFrame->Fill(npixels);
+    hPixelMultiplicity->Fill(npixels);
 
     // Return value telling analysis to keep running
     return StatusCode::Success;

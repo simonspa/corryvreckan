@@ -24,8 +24,8 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
     using namespace ROOT::Math;
     m_detector = detector;
     m_timingCut = m_config.get<double>("timing_cut", static_cast<double>(Units::convert(1000, "ns")));
-    m_chi2ndofCut = m_config.get<double>("chi2_ndof_cut", 3.);
-    m_timeCutFrameEdge = m_config.get<double>("time_cut_frame_edge", static_cast<double>(Units::convert(20, "ns")));
+    m_chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
+    m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", static_cast<double>(Units::convert(20, "ns")));
     m_clusterChargeCut = m_config.get<double>("cluster_charge_cut", 100000.);
     m_clusterSizeCut = m_config.get<size_t>("cluster_size_cut", static_cast<size_t>(100));
     m_highTotCut = m_config.get<int>("high_tot_cut", 40);
@@ -77,6 +77,12 @@ void AnalysisTimingATLASpix::initialise() {
         new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timingCut), -1 * m_timingCut, m_timingCut);
     hTrackCorrelationTimeAssoc->GetXaxis()->SetTitle("track time stamp - cluster time stamp [ns]");
     hTrackCorrelationTimeAssoc->GetYaxis()->SetTitle("# events");
+
+    name = "hTrackCorrelationTimeAssocVsTime";
+    hTrackCorrelationTimeAssocVsTime = new TH2F(name.c_str(), name.c_str(), 3e3, 0, 3e3, 1e3, -5, 5);
+    hTrackCorrelationTimeAssocVsTime->GetYaxis()->SetTitle("track time stamp - cluster time stamp [us]");
+    hTrackCorrelationTimeAssocVsTime->GetXaxis()->SetTitle("time [s]");
+    hTrackCorrelationTimeAssocVsTime->GetZaxis()->SetTitle("# events");
 
     name = "hTrackCorrelationTime_rowCorr";
     std::string title = "hTrackCorrelationTime_rowCorr: row-by-row correction";
@@ -222,22 +228,22 @@ void AnalysisTimingATLASpix::initialise() {
                                        0,
                                        m_detector->nPixels().Y());
     hHitMapAssoc_inPixel = new TH2F("hitMapAssoc_inPixel",
-                                    "hitMapAssoc_inPixel; x_{track} mod 130 #mum; y_{track} mod 130 #mum",
+                                    "hitMapAssoc_inPixel; in-pixel x_{track} [#mum]; in-pixel y_{track} [#mum]",
                                     static_cast<int>(pitch_x),
-                                    0,
-                                    pitch_x,
+                                    -pitch_x / 2.,
+                                    pitch_x / 2.,
                                     static_cast<int>(pitch_y),
-                                    0,
-                                    pitch_y);
+                                    -pitch_y / 2.,
+                                    pitch_y / 2.);
     hHitMapAssoc_inPixel_highCharge =
         new TH2F("hitMapAssoc_inPixel_highCharge",
-                 "hitMapAssoc_inPixel_highCharge;  x_{track} mod 130 #mum; y_{track} mod 130 #mum",
+                 "hitMapAssoc_inPixel_highCharge;  in-pixel x_{track} [#mum]; in-pixel y_{track} [#mum]",
                  static_cast<int>(pitch_x),
-                 0,
-                 pitch_x,
+                 -pitch_x / 2.,
+                 pitch_x / 2.,
                  static_cast<int>(pitch_y),
-                 0,
-                 pitch_y);
+                 -pitch_y / 2.,
+                 pitch_y / 2.);
     hClusterMapAssoc = new TH2F("hClusterMapAssoc",
                                 "hClusterMapAssoc; x_{cluster} [px]; x_{cluster} [px]; # entries",
                                 m_detector->nPixels().X(),
@@ -355,7 +361,7 @@ void AnalysisTimingATLASpix::initialise() {
 StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the telescope tracks from the clipboard
-    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
@@ -397,7 +403,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         tracks_afterMasking++;
 
         // Get the event:
-        auto event = clipboard->get_event();
+        auto event = clipboard->getEvent();
 
         // Discard tracks which are very close to the frame edges
         if(fabs(track->timestamp() - event->end()) < m_timeCutFrameEdge) {
@@ -418,7 +424,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         total_tracks++;
 
         // Get the DUT clusters from the clipboard
-        Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
+        auto clusters = clipboard->getData<Cluster>(m_detector->name());
         if(clusters == nullptr) {
             LOG(DEBUG) << " - no DUT clusters";
         } else {
@@ -449,6 +455,8 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
                     double timeDiff = track->timestamp() - cluster->timestamp();
                     hTrackCorrelationTimeAssoc->Fill(timeDiff);
+                    hTrackCorrelationTimeAssocVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                                           static_cast<double>(Units::convert(timeDiff, "us")));
 
                     hTrackCorrelationTimeVsTot->Fill(timeDiff, cluster->getSeedPixel()->raw());
                     hTrackCorrelationTimeVsCol->Fill(timeDiff, cluster->getSeedPixel()->column());
@@ -474,7 +482,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     }
 
                     // 2D histograms: --> fill for all pixels from cluster
-                    for(auto& pixel : (*cluster->pixels())) {
+                    for(auto& pixel : cluster->pixels()) {
 
                         // to check that cluster timestamp = earliest pixel timestamp
                         if(cluster->size() > 1) {
@@ -752,13 +760,14 @@ void AnalysisTimingATLASpix::correctClusterTimestamp(Cluster* cluster, int mode)
      */
 
     // Get the pixels on this cluster
-    Pixels* pixels = cluster->pixels();
+    auto pixels = cluster->pixels();
+    auto first_pixel = pixels.front();
     double correction = 0;
 
     if(mode == 0) {
-        correction = gRowCorr->Eval((*pixels)[0]->row());
+        correction = gRowCorr->Eval(first_pixel->row());
     } else if(mode == 1) {
-        correction = gTimeWalkCorr->Eval((*pixels)[0]->raw());
+        correction = gTimeWalkCorr->Eval(first_pixel->raw());
     } else {
         LOG(ERROR) << "Mode " << mode << " does not exist!\n"
                    << "Choose\n\t0 --> row correction \n\t1-->timewalk correction";
@@ -766,10 +775,12 @@ void AnalysisTimingATLASpix::correctClusterTimestamp(Cluster* cluster, int mode)
     }
 
     // Initial guess for cluster timestamp:
-    double timestamp = (*pixels)[0]->timestamp() + correction;
+    double timestamp = first_pixel->timestamp() + correction;
 
     // Loop over all pixels:
-    for(auto& pixel : (*pixels)) {
+    for(auto& pixel : pixels) {
+        // FIXME ugly hack
+        auto px = const_cast<Pixel*>(pixel);
 
         if(mode == 0) {
             correction = gRowCorr->Eval(pixel->row());
@@ -780,7 +791,7 @@ void AnalysisTimingATLASpix::correctClusterTimestamp(Cluster* cluster, int mode)
         }
 
         // Override pixel timestamps:
-        pixel->setTimestamp(pixel->timestamp() + correction);
+        px->setTimestamp(pixel->timestamp() + correction);
 
         // timestamp = earliest pixel:
         if(pixel->timestamp() < timestamp) {

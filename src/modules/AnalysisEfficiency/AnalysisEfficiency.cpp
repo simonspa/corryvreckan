@@ -20,7 +20,6 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration config, std::shared_ptr<Det
     m_detector = detector;
 
     m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
-    m_pixelTolerance = m_config.get<double>("pixel_tolerance", 1.);
     m_chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
     m_inpixelBinSize = m_config.get<double>("inpixel_bin_size", Units::get<double>(1.0, "um"));
 }
@@ -38,10 +37,18 @@ void AnalysisEfficiency::initialise() {
     if(nbins_x > 1e4 || nbins_y > 1e4) {
         throw InvalidValueError(m_config, "inpixel_bin_size", "Too many bins for in-pixel histograms.");
     }
-    std::string title = m_detector->name() + " Pixel efficiency map;x_{track} mod " + std::to_string(pitch_x) +
-                        "#mum;y_{track} mod " + std::to_string(pitch_y) + "#mum;efficiency";
-    hPixelEfficiencyMap_trackPos =
-        new TProfile2D("pixelEfficiencyMap_trackPos", title.c_str(), nbins_x, 0, pitch_x, nbins_y, 0, pitch_y, 0, 1);
+    std::string title =
+        m_detector->name() + " Pixel efficiency map;in-pixel x_{track} [#mum];in-pixel y_{track} #mum;efficiency";
+    hPixelEfficiencyMap_trackPos = new TProfile2D("pixelEfficiencyMap_trackPos",
+                                                  title.c_str(),
+                                                  nbins_x,
+                                                  -pitch_x / 2.,
+                                                  pitch_x / 2.,
+                                                  nbins_y,
+                                                  -pitch_y / 2.,
+                                                  pitch_y / 2.,
+                                                  0,
+                                                  1);
     title = m_detector->name() + " Chip efficiency map;x [px];y [px];efficiency";
     hChipEfficiencyMap_trackPos = new TProfile2D("chipEfficiencyMap_trackPos",
                                                  title.c_str(),
@@ -165,7 +172,7 @@ void AnalysisEfficiency::initialise() {
 StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the telescope tracks from the clipboard
-    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
@@ -187,7 +194,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         auto globalIntercept = m_detector->getIntercept(track);
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
-        if(!m_detector->hasIntercept(track, m_pixelTolerance)) {
+        if(!m_detector->hasIntercept(track, 1)) {
             LOG(DEBUG) << " - track outside DUT area: " << localIntercept;
             continue;
         }
@@ -206,7 +213,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Get the event:
-        auto event = clipboard->get_event();
+        auto event = clipboard->getEvent();
 
         // Discard tracks which are very close to the frame edges
         if(fabs(track->timestamp() - event->end()) < m_timeCutFrameEdge) {
@@ -232,7 +239,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
 
         // Get the DUT clusters from the clipboard
-        Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
+        auto clusters = clipboard->getData<Cluster>(m_detector->name());
         if(clusters == nullptr) {
             LOG(DEBUG) << " - no DUT clusters";
         } else {
@@ -303,12 +310,15 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Before going to the next event, loop over all pixels (all hits incl. noise)
     // and fill matrix with timestamps of previous pixels.
-    Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));
+    auto pixels = clipboard->getData<Pixel>(m_detector->name());
     if(pixels == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
     }
     for(auto& pixel : (*pixels)) {
+        if(pixel->column() > m_detector->nPixels().X() || pixel->row() > m_detector->nPixels().Y()) {
+            continue;
+        }
         prev_hit_ts.at(static_cast<size_t>(pixel->column())).at(static_cast<size_t>(pixel->row())) = pixel->timestamp();
     }
 

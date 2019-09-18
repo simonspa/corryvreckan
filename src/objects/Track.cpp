@@ -1,32 +1,59 @@
 #include "Track.hpp"
+#include "exceptions.h"
 
 using namespace corryvreckan;
 
 Track::Track() : m_direction(0, 0, 1.), m_state(0, 0, 0.) {}
-Track::Track(Track* track) {
-    Clusters trackClusters = track->clusters();
+Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp()) {
+    auto trackClusters = track.clusters();
     for(auto& track_cluster : trackClusters) {
-        Cluster* cluster = new Cluster(track_cluster);
-        m_trackClusters.push_back(cluster);
+        Cluster* cluster = new Cluster(*track_cluster);
+        addCluster(cluster);
     }
 
-    Clusters associatedClusters = track->associatedClusters();
+    auto associatedClusters = track.associatedClusters();
     for(auto& assoc_cluster : associatedClusters) {
-        Cluster* cluster = new Cluster(assoc_cluster);
-        m_associatedClusters.push_back(cluster);
+        Cluster* cluster = new Cluster(*assoc_cluster);
+        addAssociatedCluster(cluster);
     }
-    m_state = track->m_state;
-    m_direction = track->m_direction;
+    m_state = track.m_state;
+    m_direction = track.m_direction;
 }
 
-void Track::addCluster(Cluster* cluster) {
-    m_trackClusters.push_back(cluster);
+void Track::addCluster(const Cluster* cluster) {
+    m_trackClusters.push_back(const_cast<Cluster*>(cluster));
 }
-void Track::addAssociatedCluster(Cluster* cluster) {
-    m_associatedClusters.push_back(cluster);
+void Track::addAssociatedCluster(const Cluster* cluster) {
+    m_associatedClusters.push_back(const_cast<Cluster*>(cluster));
 }
 
-double Track::distance2(Cluster* cluster) const {
+std::vector<Cluster*> Track::clusters() const {
+    std::vector<Cluster*> clustervec;
+    for(auto& cluster : m_trackClusters) {
+        if(!cluster.IsValid() || cluster.GetObject() == nullptr) {
+            throw MissingReferenceException(typeid(*this), typeid(Cluster));
+        }
+        clustervec.emplace_back(dynamic_cast<Cluster*>(cluster.GetObject()));
+    }
+
+    // Return as a vector of pixels
+    return clustervec;
+}
+
+std::vector<Cluster*> Track::associatedClusters() const {
+    std::vector<Cluster*> clustervec;
+    for(auto& cluster : m_associatedClusters) {
+        if(!cluster.IsValid() || cluster.GetObject() == nullptr) {
+            throw MissingReferenceException(typeid(*this), typeid(Cluster));
+        }
+        clustervec.emplace_back(dynamic_cast<Cluster*>(cluster.GetObject()));
+    }
+
+    // Return as a vector of pixels
+    return clustervec;
+}
+
+double Track::distance2(const Cluster* cluster) const {
 
     // Get the track X and Y at the cluster z position
     double trackX = m_state.X() + m_direction.X() * cluster->global().z();
@@ -40,6 +67,18 @@ double Track::distance2(Cluster* cluster) const {
     return (dx * dx + dy * dy);
 }
 
+bool Track::hasClosestCluster() const {
+    return closestCluster != nullptr;
+}
+
+void Track::setClosestCluster(const Cluster* cluster) {
+    closestCluster = const_cast<Cluster*>(cluster);
+}
+
+Cluster* Track::getClosestCluster() const {
+    return dynamic_cast<Cluster*>(closestCluster.GetObject());
+}
+
 void Track::calculateChi2() {
 
     // Get the number of clusters
@@ -48,7 +87,12 @@ void Track::calculateChi2() {
     m_chi2ndof = 0.;
 
     // Loop over all clusters
-    for(auto& cluster : m_trackClusters) {
+    for(auto& cl : m_trackClusters) {
+        auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
+        if(cluster == nullptr) {
+            throw MissingReferenceException(typeid(*this), typeid(Cluster));
+        }
+
         // Get the distance^2 and the error^2
         double error2 = cluster->error() * cluster->error();
         m_chi2 += (this->distance2(cluster) / error2);
@@ -81,7 +125,12 @@ void Track::fit() {
     double maty[2][2] = {{0., 0.}, {0., 0.}};
 
     // Loop over all clusters and fill the matrices
-    for(auto& cluster : m_trackClusters) {
+    for(auto& cl : m_trackClusters) {
+        auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
+        if(cluster == nullptr) {
+            throw MissingReferenceException(typeid(*this), typeid(Cluster));
+        }
+
         // Get the global point details
         double x = cluster->global().x();
         double y = cluster->global().y();
@@ -129,12 +178,44 @@ void Track::fit() {
 }
 
 bool Track::isAssociated(Cluster* cluster) const {
-    if(std::find(m_associatedClusters.begin(), m_associatedClusters.end(), cluster) != m_associatedClusters.end()) {
-        return true;
+    auto it = find_if(m_associatedClusters.begin(), m_associatedClusters.end(), [&cluster](TRef cl) {
+        auto acl = dynamic_cast<Cluster*>(cl.GetObject());
+        return acl == cluster;
+    });
+    if(it == m_associatedClusters.end()) {
+        return false;
     }
-    return false;
+    return true;
+}
+
+bool Track::hasDetector(std::string detectorID) const {
+    auto it = find_if(m_trackClusters.begin(), m_trackClusters.end(), [&detectorID](TRef cl) {
+        auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
+        return cluster->getDetectorID() == detectorID;
+    });
+    if(it == m_trackClusters.end()) {
+        return false;
+    }
+    return true;
+}
+
+Cluster* Track::getClusterFromDetector(std::string detectorID) const {
+    auto it = find_if(m_trackClusters.begin(), m_trackClusters.end(), [&detectorID](TRef cl) {
+        auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
+        return cluster->getDetectorID() == detectorID;
+    });
+    if(it == m_trackClusters.end()) {
+        return nullptr;
+    }
+    return dynamic_cast<Cluster*>(it->GetObject());
 }
 
 ROOT::Math::XYZPoint Track::intercept(double z) const {
     return m_state + m_direction * z;
+}
+
+void Track::print(std::ostream& out) const {
+    out << "Track " << this->m_state.x() << ", " << this->m_state.y() << ", " << this->m_state.z() << ", "
+        << this->m_direction.x() << ", " << this->m_direction.y() << ", " << this->m_direction.z() << ", " << this->m_chi2
+        << ", " << this->m_ndof << ", " << this->m_chi2ndof << ", " << this->timestamp();
 }

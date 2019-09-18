@@ -15,13 +15,12 @@
 using namespace corryvreckan;
 
 // Global container declarations
-Tracks globalTracks;
+TrackVector globalTracks;
 std::shared_ptr<Detector> globalDetector;
 
 AlignmentDUTResidual::AlignmentDUTResidual(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    m_numberOfTracksForAlignment = m_config.get<size_t>("number_of_tracks", 20000);
     nIterations = m_config.get<size_t>("iterations", 3);
 
     m_pruneTracks = m_config.get<bool>("prune_tracks", false);
@@ -59,7 +58,7 @@ void AlignmentDUTResidual::initialise() {
 StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks
-    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
         return StatusCode::Success;
     }
@@ -84,7 +83,7 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
             }
         }
 
-        Track* alignmentTrack = new Track(track);
+        Track* alignmentTrack = new Track(*track);
         m_alignmenttracks.push_back(alignmentTrack);
 
         // Find the cluster that needs to have its position recalculated
@@ -119,15 +118,6 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
                                static_cast<double>(Units::convert(position.Y(), "um")),
                                1);
         }
-    }
-
-    // If we have enough tracks for the alignment, tell the event loop to finish
-    if(m_alignmenttracks.size() >= m_numberOfTracksForAlignment) {
-        LOG(STATUS) << "Accumulated " << m_alignmenttracks.size() << " tracks, interrupting processing.";
-        if(m_discardedtracks > 0) {
-            LOG(STATUS) << "Discarded " << m_discardedtracks << " input tracks.";
-        }
-        return StatusCode::EndRun;
     }
 
     // Otherwise keep going
@@ -198,6 +188,10 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
 
 void AlignmentDUTResidual::finalise() {
 
+    if(m_discardedtracks > 0) {
+        LOG(STATUS) << "Discarded " << m_discardedtracks << " input tracks.";
+    }
+
     // Make the fitting object
     TVirtualFitter* residualFitter = TVirtualFitter::Fitter(nullptr, 50);
     residualFitter->SetFCN(MinimiseResiduals);
@@ -220,7 +214,7 @@ void AlignmentDUTResidual::finalise() {
     size_t n_associatedClusters = 0;
     // count associated clusters:
     for(auto& track : globalTracks) {
-        Clusters associatedClusters = track->associatedClusters();
+        ClusterVector associatedClusters = track->associatedClusters();
         for(auto& associatedCluster : associatedClusters) {
             std::string detectorID = associatedCluster->detectorID();
             if(detectorID != name) {

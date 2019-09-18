@@ -12,7 +12,9 @@ Clusters from the first plane in Z (named the seed plane) are related to cluster
 * `timing_cut`: Maximum time difference allowed between clusters for association. Default value is `200ns`.
 * `spatial_cut`: Maximum spatial distance in the XY plane allowed between clusters for association for the telescope planes. Default value is `0.2mm`.
 * `min_hits_on_track`: Minium number of associated clusters needed to create a track, equivalent to the minimum number of planes required for each track. Default value is `6`.
-* `exclude_dut`: Boolean to chose if the DUT plane is included in the track finding. Default value is `true`.
+* `exclude_dut`: Boolean to choose if the DUT plane is included in the track finding. Default value is `true`.
+* `require_detectors`: Names of detectors which are required to have a cluster on the track. If a track does not have a cluster from all detectors listed here, it is rejected. If empty, no detector is required. Default is empty.
+* `timestamp_from`: Defines the detector which provides the track timestamp. This detector also needs to be set as `required_detector`. If empty, the average timestamp of all clusters on the track will be used. Empty by default.
 
 ### Plots produced
 * Track chi^2 histogram
@@ -40,4 +42,5 @@ min_hits_on_track = 4
 spatial_cut = 300um
 timing_cut = 200ns
 exclude_dut = true
+require_detectors = "ExampleDetector_0", "ExampleDetector_1"
 ```

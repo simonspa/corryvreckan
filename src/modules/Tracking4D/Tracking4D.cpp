@@ -14,6 +14,8 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     spatialCut = m_config.get<double>("spatial_cut", Units::get<double>(200, "um"));
     minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
     excludeDUT = m_config.get<bool>("exclude_dut", true);
+    requireDetectors = m_config.getArray<std::string>("require_detectors", {""});
+    timestampFrom = m_config.get<std::string>("timestamp_from", {});
 }
 
 void Tracking4D::initialise() {
@@ -75,7 +77,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     // Container for all clusters, and detectors in tracking
     map<string, KDTree*> trees;
     vector<string> detectors;
-    Clusters* referenceClusters = nullptr;
+    std::shared_ptr<ClusterVector> referenceClusters = nullptr;
 
     // Loop over all planes and get clusters
     bool firstDetector = true;
@@ -84,7 +86,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         string detectorID = detector->name();
 
         // Get the clusters
-        Clusters* tempClusters = reinterpret_cast<Clusters*>(clipboard->get(detectorID, "clusters"));
+        auto tempClusters = clipboard->getData<Cluster>(detectorID);
         if(tempClusters == nullptr || tempClusters->size() == 0) {
             LOG(DEBUG) << "Detector " << detectorID << " does not have any clusters on the clipboard";
         } else {
@@ -116,7 +118,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Output track container
-    Tracks* tracks = new Tracks();
+    auto tracks = std::make_shared<TrackVector>();
 
     // Loop over all clusters
     for(auto& cluster : (*referenceClusters)) {
@@ -150,7 +152,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
             Cluster* closestCluster = nullptr;
             double closestClusterDistance = spatialCut;
-            Clusters neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut);
+            auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut);
 
             LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
 
@@ -192,6 +194,21 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             track->addCluster(closestCluster);
         } //*/
 
+        // check if track has required detector(s):
+        auto foundRequiredDetector = [this](Track* t) {
+            for(auto& requireDet : requireDetectors) {
+                if(!requireDet.empty() && !t->hasDetector(requireDet)) {
+                    LOG(DEBUG) << "No cluster from required detector " << requireDet << " on the track.";
+                    return false;
+                }
+            }
+            return true;
+        };
+        if(!foundRequiredDetector(track)) {
+            delete track;
+            continue;
+        }
+
         // Now should have a track with one cluster from each plane
         if(track->nClusters() < minHitsOnTrack) {
             LOG(DEBUG) << "Not enough clusters on the track, found " << track->nClusters() << " but " << minHitsOnTrack
@@ -212,7 +229,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         trackAngleY->Fill(atan(track->direction().Y()));
 
         // Make residuals
-        Clusters trackClusters = track->clusters();
+        auto trackClusters = track->clusters();
         for(auto& trackCluster : trackClusters) {
             string detectorID = trackCluster->detectorID();
             ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->global().z());
@@ -232,22 +249,35 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 residualsYwidth3[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
         }
 
-        // Improve the track timestamp by taking the average of all planes
-        double avg_track_time = 0;
-        for(auto& trackCluster : trackClusters) {
-            avg_track_time += static_cast<double>(Units::convert(trackCluster->timestamp(), "ns"));
-            avg_track_time -= static_cast<double>(Units::convert(trackCluster->global().z(), "mm") / (299.792458));
+        if(timestampFrom.empty()) {
+            // Improve the track timestamp by taking the average of all planes
+            double avg_track_time = 0;
+            for(auto& trackCluster : trackClusters) {
+                avg_track_time += static_cast<double>(Units::convert(trackCluster->timestamp(), "ns"));
+                avg_track_time -= static_cast<double>(Units::convert(trackCluster->global().z(), "mm") / (299.792458));
+            }
+            track->setTimestamp(avg_track_time / static_cast<double>(track->nClusters()));
+            LOG(DEBUG) << "Using average cluster timestamp of "
+                       << Units::display(avg_track_time / static_cast<double>(track->nClusters()), "us")
+                       << " as track timestamp.";
+        } else if(track->hasDetector(timestampFrom)) {
+            // use timestamp of required detector:
+            double track_timestamp = track->getClusterFromDetector(timestampFrom)->timestamp();
+            LOG(DEBUG) << "Found cluster for detector " << timestampFrom << ", adding timestamp "
+                       << Units::display(track_timestamp, "us") << " to track.";
+            track->setTimestamp(track_timestamp);
+        } else {
+            LOG(ERROR) << "Cannot assign timestamp to track. Use average cluster timestamp for track or set detector to "
+                          "set track timestamp. Please update the configuration file.";
+            return StatusCode::Failure;
         }
-        track->setTimestamp(avg_track_time / static_cast<double>(track->nClusters()));
     }
 
     tracksPerEvent->Fill(static_cast<double>(tracks->size()));
 
     // Save the tracks on the clipboard
     if(tracks->size() > 0) {
-        clipboard->put("tracks", reinterpret_cast<Objects*>(tracks));
-    } else {
-        delete tracks;
+        clipboard->putData(tracks);
     }
 
     // Clean up tree objects

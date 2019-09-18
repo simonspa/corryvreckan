@@ -76,6 +76,28 @@ cmp:cc7-gcc:
             - lib
         expire_in: 3 hour
 
+cmp:cc7-docker:
+    stage: compilation
+    tags:
+        - docker
+    image:
+        name: gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-deps
+        entrypoint: [""]
+    before_script:
+        - source scl_source enable devtoolset-7 || echo " "
+    script:
+        - mkdir build
+        - cd build
+        - cmake3 -DBUILD_EventLoaderEUDAQ2=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS ..
+        - make
+        - make install
+    artifacts:
+        paths:
+            - build
+            - bin
+            - lib
+        expire_in: 3 hour
+
 cmp:cc7-llvm:
     stage: compilation
     tags:
@@ -96,7 +118,7 @@ cmp:cc7-llvm:
             - lib
         expire_in: 3 hour
 
-cmp:mac1013-clang:
+cmp:mac1014-clang:
     stage: compilation
     tags:
         - mac
@@ -124,10 +146,12 @@ cmp:mac1013-clang:
     tags:
         - docker
     dependencies:
-        - cmp:cc7-gcc
-    image: clicdp/cc7-base
+        - cmp:cc7-docker
+    image:
+        name: gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-deps
+        entrypoint: [""]
     before_script:
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source scl_source enable devtoolset-7 || echo " "
 
 tst:telescope:
     extends: .test

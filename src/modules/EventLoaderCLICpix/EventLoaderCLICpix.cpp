@@ -43,7 +43,7 @@ void EventLoaderCLICpix::initialise() {
     hHitMap = new TH2F("hitMap", "hitMap", 64, 0, 64, 64, 0, 64);
     hPixelToT = new TH1F("pixelToT", "pixelToT", 20, 0, 20);
     hShutterLength = new TH1F("shutterLength", "shutterLength", 3000, 0, 0.3);
-    hPixelsPerFrame = new TH1F("pixelsPerFrame", "pixelsPerFrame", 4100, 0, 4100);
+    hPixelMultiplicity = new TH1F("pixelMultiplicity", "Pixel Multiplicity; # pixels; # events", 4100, 0, 4100);
 }
 
 StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
@@ -57,7 +57,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     // Otherwise load a new frame
 
     // Pixel container, shutter information
-    Pixels* pixels = new Pixels();
+    auto pixels = std::make_shared<PixelVector>();
     double shutterStartTime = 0, shutterStopTime = 0;
     string data;
 
@@ -104,6 +104,10 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
         row = 63 - row;
         LOG(TRACE) << "New pixel: " << col << "," << row << " with tot " << tot;
 
+        if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {
+            LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
+        }
+
         // If this pixel is masked, do not save it
         if(m_detector->masked(col, row))
             continue;
@@ -117,15 +121,14 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Now set the event time so that the Timepix3 data is loaded correctly
-    clipboard->put_event(std::make_shared<Event>(shutterStartTime, shutterStopTime));
+    clipboard->putEvent(std::make_shared<Event>(shutterStartTime, shutterStopTime));
 
     LOG(TRACE) << "Loaded " << npixels << " pixels";
     // Put the data on the clipboard
-    if(pixels->size() > 0)
-        clipboard->put(m_detector->name(), "pixels", reinterpret_cast<Objects*>(pixels));
+    clipboard->putData(pixels, m_detector->name());
 
     // Fill histograms
-    hPixelsPerFrame->Fill(npixels);
+    hPixelMultiplicity->Fill(npixels);
     hShutterLength->Fill(shutterStopTime - shutterStartTime);
 
     // Return value telling analysis to keep running

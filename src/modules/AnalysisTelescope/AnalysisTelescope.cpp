@@ -54,7 +54,8 @@ void AnalysisTelescope::initialise() {
     }
 }
 
-ROOT::Math::XYZPoint AnalysisTelescope::closestApproach(ROOT::Math::XYZPoint position, MCParticles* particles) {
+ROOT::Math::XYZPoint AnalysisTelescope::closestApproach(ROOT::Math::XYZPoint position,
+                                                        std::shared_ptr<MCParticleVector> particles) {
     // Find the closest MC particle
     double smallestDistance(DBL_MAX);
     ROOT::Math::XYZPoint particlePosition;
@@ -74,7 +75,7 @@ ROOT::Math::XYZPoint AnalysisTelescope::closestApproach(ROOT::Math::XYZPoint pos
 StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks from the clipboard
-    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
@@ -103,7 +104,7 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
             telescopeResidualsY[name]->Fill(cluster->global().y() - intercept.Y());
 
             // Get the MC particles from the clipboard
-            MCParticles* mcParticles = reinterpret_cast<MCParticles*>(clipboard->get(name, "mcparticles"));
+            auto mcParticles = clipboard->getData<MCParticle>(name);
             if(mcParticles == nullptr) {
                 continue;
             }
@@ -122,7 +123,7 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Get the MC particles from the clipboard
-            MCParticles* mcParticles = reinterpret_cast<MCParticles*>(clipboard->get(detector->name(), "mcparticles"));
+            auto mcParticles = clipboard->getData<MCParticle>(detector->name());
             if(mcParticles == nullptr) {
                 continue;
             }

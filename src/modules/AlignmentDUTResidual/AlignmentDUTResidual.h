@@ -55,11 +55,10 @@ namespace corryvreckan {
         static void MinimiseResiduals(Int_t& npar, Double_t* grad, Double_t& result, Double_t* par, Int_t flag);
 
         std::shared_ptr<Detector> m_detector;
-        Tracks m_alignmenttracks;
+        TrackVector m_alignmenttracks;
         int m_discardedtracks{};
 
         size_t nIterations;
-        size_t m_numberOfTracksForAlignment;
         bool m_pruneTracks;
         bool m_alignPosition;
         bool m_alignOrientation;

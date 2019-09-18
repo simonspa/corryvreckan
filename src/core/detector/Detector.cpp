@@ -29,13 +29,20 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         std::transform(role.begin(), role.end(), role.begin(), ::tolower);
         if(role == "none") {
             m_role |= DetectorRole::NONE;
-        } else if(role == "reference") {
+        } else if(role == "reference" || role == "ref") {
             m_role |= DetectorRole::REFERENCE;
         } else if(role == "dut") {
             m_role |= DetectorRole::DUT;
+        } else if(role == "auxiliary" || role == "aux") {
+            m_role |= DetectorRole::AUXILIARY;
         } else {
             throw InvalidValueError(config, "role", "Detector role does not exist.");
         }
+    }
+
+    // Auxiliary devices cannot hold other roles:
+    if(static_cast<bool>(m_role & DetectorRole::AUXILIARY) && m_role != DetectorRole::AUXILIARY) {
+        throw InvalidValueError(config, "role", "Auxiliary devices cannot hold any other detector role");
     }
 
     // Detector position and orientation
@@ -63,6 +70,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     }
 
     m_detectorType = config.get<std::string>("type");
+    std::transform(m_detectorType.begin(), m_detectorType.end(), m_detectorType.begin(), ::tolower);
     m_timingOffset = config.get<double>("time_offset", 0.0);
     m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
 
@@ -103,6 +111,10 @@ bool Detector::isReference() const {
 
 bool Detector::isDUT() const {
     return static_cast<bool>(m_role & DetectorRole::DUT);
+}
+
+bool Detector::isAuxiliary() const {
+    return static_cast<bool>(m_role & DetectorRole::AUXILIARY);
 }
 
 // Functions to set and check channel masking
@@ -212,6 +224,9 @@ Configuration Detector::getConfiguration() const {
     if(this->isReference()) {
         roles.push_back("reference");
     }
+    if(this->isAuxiliary()) {
+        roles.push_back("auxiliary");
+    }
 
     if(!roles.empty()) {
         config.setArray("role", roles);
@@ -311,12 +326,10 @@ bool Detector::hitMasked(Track* track, int tolerance) const {
 
 // Functions to get row and column from local position
 double Detector::getRow(const PositionVector3D<Cartesian3D<double>> localPosition) const {
-    // (1-m_nPixelsY%2)/2. --> add 1/2 pixel pitch if even number of rows
     double row = localPosition.Y() / m_pitch.Y() + static_cast<double>(m_nPixels.Y()) / 2. + (1 - m_nPixels.Y() % 2) / 2.;
     return row;
 }
 double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosition) const {
-    // (1-m_nPixelsX%2)/2. --> add 1/2 pixel pitch if even number of columns
     double column = localPosition.X() / m_pitch.X() + static_cast<double>(m_nPixels.X()) / 2. + (1 - m_nPixels.X() % 2) / 2.;
     return column;
 }
@@ -325,14 +338,19 @@ double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosi
 PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double column, double row) const {
 
     return PositionVector3D<Cartesian3D<double>>(
-        m_pitch.X() * (column - m_nPixels.X() / 2.), m_pitch.Y() * (row - m_nPixels.Y() / 2.), 0.);
+        m_pitch.X() * (column - (m_nPixels.X()) / 2.), m_pitch.Y() * (row - (m_nPixels.Y()) / 2.), 0.);
 }
 
 // Function to get in-pixel position
+ROOT::Math::XYVector Detector::inPixel(const double column, const double row) const {
+    // a pixel ranges from (col-0.5) to (col+0.5)
+    return XYVector(m_pitch.X() * (column - floor(column) - 0.5), m_pitch.Y() * (row - floor(row) - 0.5));
+}
+
 ROOT::Math::XYVector Detector::inPixel(const PositionVector3D<Cartesian3D<double>> localPosition) const {
     double column = getColumn(localPosition);
     double row = getRow(localPosition);
-    return XYVector(m_pitch.X() * (column - floor(column)), m_pitch.Y() * (row - floor(row)));
+    return inPixel(column, row);
 }
 
 // Check if track position is within ROI:
@@ -363,7 +381,7 @@ bool Detector::isWithinROI(Cluster* cluster) const {
     }
 
     // Loop over all pixels of the cluster
-    for(auto& pixel : (*cluster->pixels())) {
+    for(auto& pixel : cluster->pixels()) {
         if(winding_number(pixel->coordinates(), m_roi) == 0) {
             return false;
         }

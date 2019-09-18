@@ -50,7 +50,7 @@ namespace corryvreckan {
 
         // Methods to get member variables
         std::string getDetectorID() const { return m_detectorID; }
-        std::string detectorID() { return getDetectorID(); }
+        std::string detectorID() const { return getDetectorID(); }
 
         double timestamp() const { return m_timestamp; }
         void timestamp(double time) { m_timestamp = time; }
@@ -59,14 +59,10 @@ namespace corryvreckan {
         // Methods to set member variables
         void setDetectorID(std::string detectorID) { m_detectorID = std::move(detectorID); }
 
-        // Function to get instantiation of inherited class (given a string, give back an object of type 'daughter')
-        static Object* Factory(std::string, Object* object = nullptr);
-        static Object* Factory(std::string, std::string, Object* object = nullptr);
-
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(Object, 4);
+        ClassDefOverride(Object, 5);
 
     protected:
         // Member variables
@@ -98,7 +94,7 @@ namespace corryvreckan {
     std::ostream& operator<<(std::ostream& out, const corryvreckan::Object& obj);
 
     // Vector type declaration
-    using Objects = std::vector<Object*>;
+    using ObjectVector = std::vector<Object*>;
 } // namespace corryvreckan
 
 #endif // CORRYVRECKAN_OBJECT_H
