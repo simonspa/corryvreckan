@@ -333,7 +333,8 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
         auto ts = static_cast<double>(plane.GetTimestamp(i)) / 1000 + m_detector->timingOffset();
 
         if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {
-            LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
+            LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix with size ( "
+                         << m_detector->nPixels().X() << ", " << m_detector->nPixels().Y() << ")";
         }
 
         if(m_detector->masked(col, row)) {
