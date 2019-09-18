@@ -80,7 +80,9 @@ cmp:cc7-docker:
     stage: compilation
     tags:
         - docker
-    image: gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-deps
+    image:
+        name: gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-deps
+        entrypoint: ["/bin/bash", "-c"]
     script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab-ci.d/init_x86_64.sh
