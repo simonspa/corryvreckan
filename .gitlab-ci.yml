@@ -76,6 +76,27 @@ cmp:cc7-gcc:
             - lib
         expire_in: 3 hour
 
+cmp:cc7-docker:
+    stage: compilation
+    tags:
+        - docker
+    image: corryvreckan/corryvreckan/corryvreckan-deps
+    script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - mkdir build
+        - cd build
+        - cmake -GNinja -DBUILD_EventLoaderEUDAQ2=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS ..
+        - ninja
+        - ninja install
+    artifacts:
+        paths:
+            - build
+            - bin
+            - lib
+        expire_in: 3 hour
+
 cmp:cc7-llvm:
     stage: compilation
     tags:
@@ -124,8 +145,8 @@ cmp:mac1014-clang:
     tags:
         - docker
     dependencies:
-        - cmp:cc7-gcc
-    image: clicdp/cc7-base
+        - cmp:cc7-docker
+    image: corryvreckan/corryvreckan/corryvreckan-deps
     before_script:
         - source .gitlab-ci.d/init_x86_64.sh
 
