@@ -516,6 +516,5 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
 void EventLoaderEUDAQ2::finalise() {
 
-    // Info message to check for in automated CI testing:
     LOG(INFO) << "Found " << m_hits << " hits in the data.";
 }
