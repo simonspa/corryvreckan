@@ -14,6 +14,14 @@ ELSE()
     INCLUDE(${ROOT_MACROS_FILE})
 ENDIF()
 
+# we need to import gbl
+FIND_PACKAGE(GBL QUIET)
+IF(NOT GBL_FOUND)
+MESSAGE(FATAL_ERROR "Could not find GBL, make sure to set the path to your installation using\n"
+"$ cmake -D GBL_DIR=/path/to/gbl ..")
+ENDIF()
+INCLUDE_DIRECTORIES(SYSTEM ${GBL_INCLUDE_DIR})
+
 # Generate the ROOT dictionary
 ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/Object.hpp
