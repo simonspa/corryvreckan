@@ -80,6 +80,3 @@ RUN source scl_source enable devtoolset-7 && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
     rm -rf ${EUDAQ2PATH}/{src,build}
-
-ENTRYPOINT ["scl", "enable", "devtoolset-7"]
-
