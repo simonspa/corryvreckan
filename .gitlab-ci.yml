@@ -158,8 +158,8 @@ tst:telescope:
     script:
         - cd build/
         - mkdir -p ../testing/data
-        - ctest --output-on-failure -j4
         - ctest -R test_timepix3tel --output-on-failure -j4
+        - ctest --output-on-failure -j4
 
 ############################
 # Format and Lint Checking #
