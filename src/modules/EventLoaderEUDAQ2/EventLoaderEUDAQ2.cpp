@@ -305,8 +305,7 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
     return position;
 }
 
-std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt,
-                                                               int plane_id) const {
+std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt, int plane_id) {
 
     auto pixels = std::make_shared<PixelVector>();
 
@@ -353,6 +352,7 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
         hPixelRawValues->Fill(raw);
 
         pixels->push_back(pixel);
+        m_hits++;
     }
     hPixelMultiplicity->Fill(static_cast<int>(pixels->size()));
     LOG(DEBUG) << m_detector->name() << ": Plane contains " << pixels->size() << " pixels";
