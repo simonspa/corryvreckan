@@ -82,13 +82,17 @@ cmp:cc7-docker:
         - docker
     image:
         name: gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-deps
-        entrypoint: ["/bin/bash", "-c"]
+        #entrypoint: ["/bin/bash", "-c"]
+        entrypoint: [""]
     script:
+        - gcc --version
+        - source scl_source enable devtoolset-7 || echo " "
+        - gcc --version
         - mkdir build
         - cd build
-        - cmake -GNinja -DBUILD_EventLoaderEUDAQ2=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS ..
-        - ninja
-        - ninja install
+        - cmake3 -DBUILD_EventLoaderEUDAQ2=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS ..
+        - make
+        - make install
     artifacts:
         paths:
             - build
