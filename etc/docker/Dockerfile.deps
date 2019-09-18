@@ -33,6 +33,30 @@ RUN source scl_source enable devtoolset-7 && \
     rm -rf ${ROOTSYS}/{src,build}
 
 
+ENV PEARY_VERSION v0.9.7
+
+# Add layer for Caribou Peary
+ENV PEARYPATH="/opt/peary"
+RUN source scl_source enable devtoolset-7 && \
+    yum install -y readline-devel && \
+    mkdir -p ${PEARYPATH}/{src,build} && \
+    curl -L -o ${PEARYPATH}/peary-${PEARY_VERSION}.zip \
+            https://gitlab.cern.ch/Caribou/peary/-/archive/${PEARY_VERSION}/peary-${PEARY_VERSION}.zip && \
+    unzip ${PEARYPATH}/peary-${PEARY_VERSION}.zip -d ${PEARYPATH}/src && \
+    rm -f ${PEARYPATH}/peary-${PEARY_VERSION}.zip && \
+    cd ${PEARYPATH}/build && \
+    cmake3 -DINTERFACE_I2C=OFF \
+           -DINTERFACE_SPI=OFF \
+           -DINTERFACE_SPI_CLICpix2=OFF \
+           -DINTERFACE_MEM=OFF \
+           -DINSTALL_HEADERS=ON \
+           -DINSTALL_PREFIX=../ \
+           ../src/peary-${PEARY_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${PEARYPATH}/{src,build}
+
+
 ENV EUDAQ2_VERSION 2.3.0
 
 # Add layer for EUDAQ2
@@ -46,6 +70,11 @@ RUN source scl_source enable devtoolset-7 && \
     cd ${EUDAQ2PATH}/build && \
     cmake3 -DEUDAQ_BUILD_EXECUTABLE=OFF \
            -DEUDAQ_BUILD_GUI=OFF \
+           -DUSER_CARIBOU_BUILD=ON \
+           -DPEARYLIBS=${PEARYPATH}/lib \
+           -DPEARYINCLUDE=${PEARYPATH}/include/peary \
+           -DUSER_EUDET_BUILD=ON \
+           -DUSER_TLU_BUILD=ON \
            -DEUDAQ_INSTALL_PREFIX=../ \
            ../src/eudaq-${EUDAQ2_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
