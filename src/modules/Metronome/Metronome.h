@@ -26,6 +26,7 @@ namespace corryvreckan {
 
     private:
         double m_eventStart, m_eventEnd, m_eventLength;
+        uint32_t m_triggersPerEvent, m_triggers;
     };
 } // namespace corryvreckan
 #endif // Metronome_H
