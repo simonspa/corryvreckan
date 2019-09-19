@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# download raw test data files or not (depending on the moon position)
+# Download raw test data files, check integrity and untar
 
 from __future__ import print_function, unicode_literals
 import hashlib
@@ -8,6 +8,7 @@ import io
 import os
 import os.path
 import urllib
+import shutil
 import sys
 import tarfile
 try:
@@ -37,6 +38,8 @@ def check(path, checksum):
     if not os.path.isfile(path):
         return False
     if not sha256(path) == checksum:
+        print('\'%s\' exists, wrong checksum, deleting' % path)
+        os.remove(path)
         return False
     print('\'%s\' checksum ok' % path)
     return True
@@ -64,5 +67,14 @@ if __name__ == '__main__':
     else:
         datasets = {_: DATASETS[_] for _ in sys.argv[1:]}
     for name, checksum in datasets.items():
+        # Download tarball if necessary
         download(name=name, checksum=checksum)
+
+        # Delete existing untarred files
+        target = os.path.join(BASE_TARGET, name)
+        if os.path.exists(target) and os.path.isdir(target):
+            print('\'%s\' deleting existing folder' % target)
+            shutil.rmtree(target)
+
+        # Untar anew from tarball
         untar(name)
