@@ -77,7 +77,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     // Container for all clusters, and detectors in tracking
     map<string, KDTree*> trees;
     vector<string> detectors;
-    Clusters* referenceClusters = nullptr;
+    std::shared_ptr<ClusterVector> referenceClusters = nullptr;
 
     // Loop over all planes and get clusters
     bool firstDetector = true;
@@ -86,7 +86,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         string detectorID = detector->name();
 
         // Get the clusters
-        Clusters* tempClusters = reinterpret_cast<Clusters*>(clipboard->get(detectorID, "clusters"));
+        auto tempClusters = clipboard->getData<Cluster>(detectorID);
         if(tempClusters == nullptr || tempClusters->size() == 0) {
             LOG(DEBUG) << "Detector " << detectorID << " does not have any clusters on the clipboard";
         } else {
@@ -118,7 +118,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Output track container
-    Tracks* tracks = new Tracks();
+    auto tracks = std::make_shared<TrackVector>();
 
     // Loop over all clusters
     for(auto& cluster : (*referenceClusters)) {
@@ -152,7 +152,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
             Cluster* closestCluster = nullptr;
             double closestClusterDistance = spatialCut;
-            Clusters neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut);
+            auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut);
 
             LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
 
@@ -229,7 +229,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         trackAngleY->Fill(atan(track->direction().Y()));
 
         // Make residuals
-        Clusters trackClusters = track->clusters();
+        auto trackClusters = track->clusters();
         for(auto& trackCluster : trackClusters) {
             string detectorID = trackCluster->detectorID();
             ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->global().z());
@@ -277,9 +277,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Save the tracks on the clipboard
     if(tracks->size() > 0) {
-        clipboard->put("tracks", reinterpret_cast<Objects*>(tracks));
-    } else {
-        delete tracks;
+        clipboard->putData(tracks);
     }
 
     // Clean up tree objects

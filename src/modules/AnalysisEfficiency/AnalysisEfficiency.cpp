@@ -172,7 +172,7 @@ void AnalysisEfficiency::initialise() {
 StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the telescope tracks from the clipboard
-    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
@@ -213,7 +213,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Get the event:
-        auto event = clipboard->get_event();
+        auto event = clipboard->getEvent();
 
         // Discard tracks which are very close to the frame edges
         if(fabs(track->timestamp() - event->end()) < m_timeCutFrameEdge) {
@@ -239,7 +239,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
 
         // Get the DUT clusters from the clipboard
-        Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
+        auto clusters = clipboard->getData<Cluster>(m_detector->name());
         if(clusters == nullptr) {
             LOG(DEBUG) << " - no DUT clusters";
         } else {
@@ -310,7 +310,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Before going to the next event, loop over all pixels (all hits incl. noise)
     // and fill matrix with timestamps of previous pixels.
-    Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));
+    auto pixels = clipboard->getData<Pixel>(m_detector->name());
     if(pixels == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return StatusCode::Success;

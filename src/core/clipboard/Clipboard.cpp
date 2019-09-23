@@ -1,30 +1,14 @@
 #include "Clipboard.hpp"
-#include "core/utils/log.h"
 #include "exceptions.h"
 #include "objects/Object.hpp"
 
 using namespace corryvreckan;
 
-void Clipboard::put(std::string name, Objects* objects) {
-    m_data.insert(ClipboardData::value_type(name, objects));
-}
-
-void Clipboard::put(std::string name, std::string type, Objects* objects) {
-    m_data.insert(ClipboardData::value_type(name + type, objects));
-}
-
-void Clipboard::put_persistent(std::string name, double value) {
+void Clipboard::putPersistentData(std::string name, double value) {
     m_persistent_data[name] = value;
 }
 
-Objects* Clipboard::get(std::string name, std::string type) {
-    if(m_data.count(name + type) == 0) {
-        return nullptr;
-    }
-    return m_data[name + type];
-}
-
-double Clipboard::get_persistent(std::string name) const {
+double Clipboard::getPersistentData(std::string name) const {
     try {
         return m_persistent_data.at(name);
     } catch(std::out_of_range&) {
@@ -32,11 +16,15 @@ double Clipboard::get_persistent(std::string name) const {
     }
 }
 
-bool Clipboard::event_defined() const {
+bool Clipboard::hasPersistentData(std::string name) const {
+    return m_persistent_data.find(name) != m_persistent_data.end();
+}
+
+bool Clipboard::isEventDefined() const {
     return (m_event != nullptr);
 }
 
-void Clipboard::put_event(std::shared_ptr<Event> event) {
+void Clipboard::putEvent(std::shared_ptr<Event> event) {
     // Already defined:
     if(m_event) {
         throw InvalidDataError("Event already defined. Only one module can place an event definition");
@@ -45,25 +33,33 @@ void Clipboard::put_event(std::shared_ptr<Event> event) {
     }
 }
 
-std::shared_ptr<Event> Clipboard::get_event() const {
+std::shared_ptr<Event> Clipboard::getEvent() const {
     if(!m_event) {
         throw InvalidDataError("Event not defined. Add Metronome module or Event reader defining the event");
     }
     return m_event;
 }
 
-bool Clipboard::has_persistent(std::string name) const {
-    return m_persistent_data.find(name) != m_persistent_data.end();
-}
-
 void Clipboard::clear() {
-    for(auto set = m_data.cbegin(); set != m_data.cend();) {
-        Objects* collection = set->second;
-        for(Objects::iterator it = collection->begin(); it != collection->end(); ++it) {
-            delete(*it);
+    // Loop over all data types
+    for(auto block = m_data.cbegin(); block != m_data.cend();) {
+        auto collections = block->second;
+
+        // Loop over all stored collections of this type
+        for(auto set = collections.cbegin(); set != collections.cend();) {
+            std::shared_ptr<ObjectVector> collection = std::static_pointer_cast<ObjectVector>(set->second);
+            // Loop over all objects and delete them
+            for(ObjectVector::iterator it = collection->begin(); it != collection->end(); ++it) {
+                // All objects are destroyed together in this clear function at the end of the event. To avoid costly
+                // reverse-iterations through the TRef dependency hash lists, we just tell ROOT not to care about possible
+                // TRef-dependants and to just destroy the object directly by resetting the `kMustCleanup` bit.
+                (*it)->ResetBit(kMustCleanup);
+                // Delete the object itself:
+                delete(*it);
+            }
+            set = collections.erase(set);
         }
-        delete collection;
-        set = m_data.erase(set);
+        block = m_data.erase(block);
     }
 
     // Resetting the event definition:
@@ -72,8 +68,20 @@ void Clipboard::clear() {
 
 std::vector<std::string> Clipboard::listCollections() const {
     std::vector<std::string> collections;
-    for(auto& dataset : m_data) {
-        collections.push_back(dataset.first);
+
+    for(const auto& block : m_data) {
+        std::string line(corryvreckan::demangle(block.first.name()));
+        line += ": ";
+        for(const auto& set : block.second) {
+            std::shared_ptr<ObjectVector> collection = std::static_pointer_cast<ObjectVector>(set.second);
+            line += set.first + " (" + collection->size() + ") ";
+        }
+        line += "\n";
+        collections.push_back(line);
     }
     return collections;
+}
+
+const ClipboardData& Clipboard::getAll() const {
+    return m_data;
 }

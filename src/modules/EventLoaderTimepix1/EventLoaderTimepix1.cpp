@@ -82,7 +82,7 @@ StatusCode EventLoaderTimepix1::run(std::shared_ptr<Clipboard> clipboard) {
     // Make the container object for pixels. Some devices may not have
     // any hits, so each event we have to check which detectors are present
     // and add their hits
-    map<string, Objects*> dataContainers;
+    map<string, std::shared_ptr<PixelVector>> dataContainers;
     vector<string> detectors;
 
     // If there are no files open and there are more files to look at, open a new
@@ -117,7 +117,7 @@ StatusCode EventLoaderTimepix1::run(std::shared_ptr<Clipboard> clipboard) {
         m_prevHeader = "";
         detectors.push_back(device);
         m_currentDevice = device;
-        dataContainers[device] = new Objects();
+        dataContainers[device] = std::make_shared<PixelVector>();
         LOG(DEBUG) << "Detector: " << device << ", time: " << time;
     }
 
@@ -149,7 +149,7 @@ StatusCode EventLoaderTimepix1::run(std::shared_ptr<Clipboard> clipboard) {
             // Record that this device has been made
             detectors.push_back(device);
             m_currentDevice = device;
-            dataContainers[device] = new Objects();
+            dataContainers[device] = std::make_shared<PixelVector>();
             LOG(DEBUG) << "Detector: " << device << ", time: " << time;
 
         } else {
@@ -177,7 +177,7 @@ StatusCode EventLoaderTimepix1::run(std::shared_ptr<Clipboard> clipboard) {
         // Check if this detector has been seen before
         try {
             // Put the pixels on the clipboard
-            clipboard->put(detID, "pixels", dataContainers[detID]);
+            clipboard->putData(dataContainers[detID], detID);
             LOG(DEBUG) << "Loaded " << dataContainers[detID]->size() << " pixels from device " << detID;
         } catch(ModuleError& e) {
             LOG(WARNING) << "Unknown detector \"" << detID << "\"";

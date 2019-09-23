@@ -1,10 +1,9 @@
-# Define module and return the generated name as MODULE_NAME
+# Define module
 CORRYVRECKAN_GLOBAL_MODULE(MODULE_NAME)
 
 # Add source files to library
 CORRYVRECKAN_MODULE_SOURCES(${MODULE_NAME}
     FileWriter.cpp
-    # ADD SOURCE FILES HERE...
 )
 
 # Provide standard install target

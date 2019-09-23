@@ -2,7 +2,17 @@
 
 using namespace corryvreckan;
 
-void KDTree::buildTimeTree(Clusters inputClusters) {
+KDTree::KDTree(const KDTree& kd) : Object(kd.detectorID(), kd.timestamp()) {
+    *xpositions = *kd.xpositions;
+    *ypositions = *kd.ypositions;
+    *times = *kd.times;
+    positionKdtree = kd.positionKdtree;
+    timeKdtree = kd.timeKdtree;
+    clusters = kd.clusters;
+    iteratorNumber = kd.iteratorNumber;
+}
+
+void KDTree::buildTimeTree(ClusterVector inputClusters) {
     // Store the vector of cluster pointers
     clusters = inputClusters;
 
@@ -23,7 +33,7 @@ void KDTree::buildTimeTree(Clusters inputClusters) {
     timeKdtree->SetOwner(kTRUE);
 }
 
-void KDTree::buildSpatialTree(Clusters inputClusters) {
+void KDTree::buildSpatialTree(ClusterVector inputClusters) {
 
     // Store the vector of cluster pointers
     clusters = inputClusters;
@@ -48,7 +58,7 @@ void KDTree::buildSpatialTree(Clusters inputClusters) {
     positionKdtree->SetOwner(kTRUE);
 }
 
-Clusters KDTree::getAllClustersInTimeWindow(Cluster* cluster, double timeWindow) {
+ClusterVector KDTree::getAllClustersInTimeWindow(Cluster* cluster, double timeWindow) {
 
     // Get iterators of all clusters within the time window
     std::vector<int> results;
@@ -57,7 +67,7 @@ Clusters KDTree::getAllClustersInTimeWindow(Cluster* cluster, double timeWindow)
     timeKdtree->FindInRange(&time, timeWindow, results);
 
     // Turn this into a vector of clusters
-    Clusters resultClusters;
+    ClusterVector resultClusters;
     //    delete time;
     for(size_t res = 0; res < results.size(); res++)
         resultClusters.push_back(clusters[static_cast<size_t>(results[res])]);
@@ -66,7 +76,7 @@ Clusters KDTree::getAllClustersInTimeWindow(Cluster* cluster, double timeWindow)
     return resultClusters;
 }
 
-Clusters KDTree::getAllClustersInWindow(Cluster* cluster, double window) {
+ClusterVector KDTree::getAllClustersInWindow(Cluster* cluster, double window) {
 
     // Get iterators of all clusters within the time window
     std::vector<int> results;
@@ -76,7 +86,7 @@ Clusters KDTree::getAllClustersInWindow(Cluster* cluster, double window) {
     positionKdtree->FindInRange(position, window, results);
 
     // Turn this into a vector of clusters
-    Clusters resultClusters;
+    ClusterVector resultClusters;
     for(size_t res = 0; res < results.size(); res++)
         resultClusters.push_back(clusters[static_cast<size_t>(results[res])]);
 

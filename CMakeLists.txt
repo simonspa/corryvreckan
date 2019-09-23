@@ -145,13 +145,14 @@ INCLUDE("cmake/clang-cpp-checks.cmake")
 # Always include sources from top directory
 INCLUDE_DIRECTORIES(src)
 
+# Build objects library
+ADD_SUBDIRECTORY(src/objects)
+SET(CORRYVRECKAN_LIBRARIES ${CORRYVRECKAN_LIBRARIES} CorryvreckanObjects)
+
 # Build core Corryvreckan library
 ADD_SUBDIRECTORY(src/core)
 SET(CORRYVRECKAN_LIBRARIES ${CORRYVRECKAN_LIBRARIES} CorryvreckanCore)
 
-# Build objects library
-ADD_SUBDIRECTORY(src/objects)
-SET(CORRYVRECKAN_LIBRARIES ${CORRYVRECKAN_LIBRARIES} CorryvreckanObjects)
 
 # Build required modules
 ADD_SUBDIRECTORY(src/modules)

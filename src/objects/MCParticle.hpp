@@ -37,7 +37,7 @@ namespace corryvreckan {
     };
 
     // Vector type declaration
-    using MCParticles = std::vector<MCParticle*>;
+    using MCParticleVector = std::vector<MCParticle*>;
 } // namespace corryvreckan
 
 #endif // MCPARTICLE_H

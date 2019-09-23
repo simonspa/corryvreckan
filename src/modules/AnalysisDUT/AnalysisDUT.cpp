@@ -338,7 +338,7 @@ void AnalysisDUT::initialise() {
 StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the telescope tracks from the clipboard
-    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
@@ -385,7 +385,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Get the event:
-        auto event = clipboard->get_event();
+        auto event = clipboard->getEvent();
 
         // Discard tracks which are very close to the frame edges
         if(fabs(track->timestamp() - event->end()) < m_timeCutFrameEdge) {
@@ -459,7 +459,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), cluster_charge);
 
             // Fill per-pixel histograms
-            for(auto& pixel : (*assoc_cluster->pixels())) {
+            for(auto& pixel : assoc_cluster->pixels()) {
                 hHitMapAssoc->Fill(pixel->column(), pixel->row());
                 if(is_within_roi) {
                     hHitMapROI->Fill(pixel->column(), pixel->row());

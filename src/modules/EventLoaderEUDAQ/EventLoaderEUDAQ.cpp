@@ -65,13 +65,14 @@ StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
             auto detector = get_detector(detectorID);
 
             // Make a new container for the data
-            Pixels* deviceData = new Pixels();
+            auto deviceData = std::make_shared<PixelVector>();
             for(unsigned int ipix = 0; ipix < plane.HitPixels(); ++ipix) {
                 auto col = static_cast<int>(plane.GetX(ipix));
                 auto row = static_cast<int>(plane.GetY(ipix));
 
                 if(col >= detector->nPixels().X() || row >= detector->nPixels().Y()) {
-                    LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix."
+                    LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix with size "
+                                 << detector->nPixels();
                 }
 
                 // Check if this pixel is masked
@@ -90,14 +91,14 @@ StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Store on clipboard
-            clipboard->put(detectorID, "pixels", reinterpret_cast<Objects*>(deviceData));
+            clipboard->putData(deviceData, detectorID);
         }
     }
 
     // Store event time on clipboard for subsequent modules
     // FIXME assumes trigger in center of two Mimosa26 frames:
     auto frame_length = Units::get(115.2, "us");
-    clipboard->put_event(std::make_shared<Event>(timestamp - frame_length, timestamp + frame_length));
+    clipboard->putEvent(std::make_shared<Event>(timestamp - frame_length, timestamp + frame_length));
 
     // Advance to next event if possible, otherwise end this run:
     if(!reader->NextEvent()) {

@@ -70,6 +70,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     }
 
     m_detectorType = config.get<std::string>("type");
+    std::transform(m_detectorType.begin(), m_detectorType.end(), m_detectorType.begin(), ::tolower);
     m_timingOffset = config.get<double>("time_offset", 0.0);
     m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
 
@@ -380,7 +381,7 @@ bool Detector::isWithinROI(Cluster* cluster) const {
     }
 
     // Loop over all pixels of the cluster
-    for(auto& pixel : (*cluster->pixels())) {
+    for(auto& pixel : cluster->pixels()) {
         if(winding_number(pixel->coordinates(), m_roi) == 0) {
             return false;
         }
