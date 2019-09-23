@@ -1,7 +1,124 @@
 \chapter{Event Building}
 \label{ch:events}
 
-\todo{describe how different devices can be correlated}
+\corry implements a very flexible algorithm for offline event building which allows to combine devices with completely different readout schemes.
+This is possible via the concept of detector modules which allows to process data from different detectors individually as described in Section~\ref{sec:module_manager}.
+
+The following sections provide an introduction to event building and detail the procedure using a few examples.
+
+\section{The Order is Key}
+
+When building events is is important to carefully choose the order of event loader modules.
+The first module to run has to define the event extent in time by creating a frame and adding it to the clipboard.
+Once this event is set, no changes to its start and end time are possible, and no new event definition can be set by a subsequent module.
+The following modules can only access the defined event and compare its extent to the currently processed data.
+An exception to this are triggered devices which do not provide reference timestamps as will be discussed in Section~\ref{sec:triggered_devices}.
+The event is cleared at the end of the processing chain.
+
+However, not all event loader modules are capable of defining an event.
+Detectors which run in a data-driven mode usually do just provide individual measurements together with a time stamp.
+In order to slice this continuous data stream into consumable frames, the \command{Metronome} module can be used as described in Section~\ref{sec:metronome}.
+
+\section{Before, During, or After?}
+
+After the event has been defined subsequent modules should compare their currently processed data to the defined event.
+For this, the event object can be retrieved from the clipboard storage, and the timestamps of the current detector can be tested against it via a set of member functions.
+These functions return one of the following four possible positions:
+\begin{description}
+        \item[\textbf{\parameter{BEFORE}:}] The data currently under consideration are dated \emph{before} the event. Therefore they should be discarded and more data should be processed.
+        \item[\textbf{\parameter{DURING}:}] The data currently under consideration are \emph{within} the defined event frame and should be taken into account. More data should be processed.
+        \item[\textbf{\parameter{AFTER}:}] The data are dated \emph{after} the current event has finished. The processing of data for this detector should therefore be stopped and the current data retained for consideration int the next event.
+        \item[\textbf{\parameter{UNKNOWN}:}] The event does not allow to determine where these data belongs to. The data should be skipped and the next data should be processed until one of the above conditions can be reached.
+\end{description}
+
+Depending on what information is available from the detector data, different member functions are available.
+
+\subsection{Data-Driven Detectors}
+If the data provides a single timestamp, such as the data from a data-driven detector, the \command{getTimestampPosition()} function can be used:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+// Timestamp of the data currently under scrutiny:
+double my_timestamp = 1234;
+// Fetching the event definition
+auto event = clipboard->getEvent();
+// Comparison of the timestamp to the event:
+auto position = event->getTimestampPosition(my_timestamp);
+\end{minted}
+
+Since an event \emph{always} has to define its beginning and end, this function cannot return an \parameter{UNKNOWN} position.
+
+\subsection{Frame-Based Detectors}
+If the data to be added are from a source which defines a time frame, such as frame-based or shutter-based detectors, there are two timestamps to consider.
+The appropriate function for position comparison is called \command{getFramePosition()} and takes two timestamps for begin and end of the data frame as well as an additional flag to select the interpretation mode.
+Several modules, such as the \command{EventLoaderEUDAQ2}, expose a configuration parameter to influence the matching behavior.
+
+\paragraph{Inclusive Selection:}
+The inclusive interpretation will return \parameter{DURING} as soon as there is some overlap between the frame and the event, i.e. as soon as the end of the frame is later than the event start or the frame start is before the event end.
+
+If the event has been defined by a reference detector, this mode can be used for the device under test to make sure the data extends well beyond the devices providing the reference tracks.
+This allows to correctly measure e.g.\ the efficiency without being biased by DUT data which lies outside the frame of the reference detector.
+
+\paragraph{Exclusive Selection:}
+In the exclusive mode, the frame will be classified as \parameter{DURING} only if start and end are both within the defined event.
+This mode could be used if the event is defined by the device under test itself.
+In this case the reference data which is added to the event afterwards should not extend beyond this boundary but should only be considered if fully contained within the DUT event to avoid the creation of artificial inefficiencies.
+
+The \command{getFramePosition()} takes start and end as well as the matching behavior flag:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+// Timestamp of the data currently under scrutiny:
+double my_frame_start = 1234, my_frame_stop = 1289;
+// Fetching the event definition
+auto event = clipboard->getEvent();
+// Comparison of the frame to the event, in this case inclusive:
+auto position = event->getFramePosition(my_frame_start, my_frame_stop, true);
+\end{minted}
+
+The function returns \parameter{UNKNOWN} if the end of the given time frame is before its start and therefore ill-defined.
+
+\subsection{Triggered Devices Without Timestamp}
+\label{sec:triggered_devices}
+
+Many devices return data on the basis of external trigger decisions.
+If the device also provides a timestamp, the data can be directly assigned to events based on the algorithms outlined above.
+
+The situation becomes more problematic if the respective data only have the trigger ID or number assigned but should be combined with un-triggered devices which define their events based on timestamps only.
+
+
+In order to process such data, a device which relates timestamps and trigger IDs such as a triller logic unit, is required.
+This device should be placed before the detector in question in order to assign trigger IDs to the event using the \command{addTrigger(...)} function.
+Then, the triggered device without timestamps can query the event for the position of its trigger ID with respect to the event:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+// Trigger ID of the current data
+uint32_t my_trigger_id = 1234;
+// Fetching the event definition
+auto event = clipboard->getEvent();
+// Comparison of the trigger ID to the event
+auto position = event->getTriggerPosition(my_trigger_id);
+\end{minted}
+
+If the given trigger ID is smaller than the smallest trigger ID known to the event, the function places the data as \parameter{BEFORE}.
+If the trigger ID is larger than the largest know ID, the function returns \parameter{AFTER}. returned. If the trigger ID is known to the event, the respective data is dated as being \parameter{DURING} the current event.
+In cases where either no trigger ID has been previously added to the event or where the given ID lies between the smallest and larges known ID but is not part of the event, \parameter{UNKNOWN} is returned.
+
+\section{The Metronome}
+\label{sec:metronome}
+
+In some cases, none of the available devices requires a strict event definition such as a trigger or a frame.
+This is sometimes the case when all or many of the involved devices have a data-driven readout.
+
+In this situation, the \command{Metronome} module can be used to slice the data stream into regular time frames with a defined length.
+
+In addition to splitting the data stream into frames, trigger numbers can be added to each of the frames.
+This can be used to process data exclusively recorded with triggered devices, where no timing information is available or necessary from any of the devices involved.
+The module should then be set up to always add one trigger to each of its events, and all subsequent detectors will simply compare to this trigger number and add their event data.
+
+If used, the \command{Metronome} module always has to be placed as first module in the data analysis chain because it will attempt to define the event and to add it to the clipboard. This operation fails if an event has already been defined by a previous module.
+
+
+\section{Example Configurations for Event Building}
+
 
 \section{Triggered Devices}
 
