@@ -10,7 +10,11 @@ The following sections provide an introduction to event building and detail the 
 
 When building events is is important to carefully choose the order of event loader modules.
 The first module to run has to define the event extent in time by creating a frame and adding it to the clipboard.
+
+\begin{warning}
 Once this event is set, no changes to its start and end time are possible, and no new event definition can be set by a subsequent module.
+\end{warning}
+
 The following modules can only access the defined event and compare its extent to the currently processed data.
 An exception to this are triggered devices which do not provide reference timestamps as will be discussed in Section~\ref{sec:triggered_devices}.
 The event is cleared at the end of the processing chain.
@@ -119,6 +123,52 @@ If used, the \command{Metronome} module always has to be placed as first module 
 
 \section{Example Configurations for Event Building}
 
+\subsection{Event Definition by Frame-Based DUT}
+
+This example demonstrates the setup for event building based on a frame-based device under test.
+The configuration contains four different devices:
+\begin{description}
+        \item[\parameter{CLICpix2}:] This prototype acts as device under test and is a detector designed for pperation at a linear collider, implementing a frame-based readout scheme. In this example, it will define the event.
+        \item[\parameter{TLU}:] The trigger logic unit records scintillator coincidence signals with their respective timestamps, generates trigger signals and provides the reference clock for all other devices.
+        \item[\parameter{Timepix3}:] This detector is operated in its data-driven mode, where the external clock from the TLU is used to timestamp each individual pixel hit. The hits are directly read out and sent to the data acquisition system in a continuous data stream.
+        \item[\parameter{MIMOSA26}:] These detectors are devices with a continuous rolling shutter readout, which do not record any timing information in the individual frames. The data are tagged with the incoming triggers by its DAQ system.
+\end{description}
+
+It is assumed that all data have been recorded using the \emph{EUDAQ2} framework, and the \command{EventLoaderEUDAQ2} is used for all devices to read and decode their data.
+However, this pattern is not limited to that and a very similar configuration could be used when the device data have been stored to the device-specific native data files.
+
+In order to build proper events from these devices, the following configuration is used:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[Corryvreckan]
+# ...
+
+[EventLoaderEUDAQ2]
+name = "CLICpix2_0"
+file_name = /data/run001_file_caribou.raw
+
+[EventLoaderEUDAQ2]
+name = "TLU_0"
+file_name = /data/run001_file_ni.raw
+
+[EventLoaderEUDAQ2]
+name = "Timepix3_0"
+file_name = /data/run001_file_spidr.raw
+
+[EventLoaderEUDAQ2]
+type = "MIMOSA26"
+file_name = /data/run001_file_ni.raw
+\end{minted}
+
+The first module will define the event using the frame start and end timestamps from the \parameter{CLICpix2} device.
+Then, the data from the \parameter{TLU} are added by comparing the trigger timestamps to the event.
+The matching trigger numbers are added to the event for later use.
+Subsequently the \parameter{Timepix3} device adds its data to the event by comparing the individual pixel timestamps to the existing event definition.
+Finally, the six \parameter{MIMOSA26} detectors are added one-by-one via the automatic \parameter{type}-instantiation of detector modules described in Section~\ref{sec:module_instantiation}.
+Here, the trigger number from the detector data are compared to the ones stored in the event as described in Section~\ref{sec:triggered_devices}.
+
+It should be noted that in this example, the data from the \parameter{TLU} and the six \parameter{MIMOSA26} planes are read from the same file.
+The event building algorithm is completely transparent to how the individual detector data are stored, and the very same building pattern could be used when storing the data in separate files.
 
 \section{Triggered Devices}
 
