@@ -51,6 +51,7 @@ namespace corryvreckan {
         // Member variables
         int eventNumber;
         int updateNumber;
+        bool ignoreAux;
 
         std::string canvasTitle;
 

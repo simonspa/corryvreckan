@@ -31,6 +31,7 @@ The "corryvreckan" namespace is not required to be added to the plot path.
 ### Parameters
 * `update`: Number of events after which to update, defaults to `500`.
 * `canvas_title`: Title of the GUI window to be shown, defaults to `Corryvreckan Testbeam Monitor`. This parameter can be used to e.g. display the current run number in the window title.
+* `ignore_aux`: With this boolean variable set, detectors with `auxiliary` roles are ignored and none of their histograms are added to the UI. Defaults to `true`.
 
 
 * `overview`: List of plots to be placed on the "Overview" canvas of the online monitor. The list of plots created in the default configuration is listed below.

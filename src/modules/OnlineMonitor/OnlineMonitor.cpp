@@ -10,6 +10,7 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
     : Module(std::move(config), std::move(detectors)) {
     canvasTitle = m_config.get<std::string>("canvas_title", "Corryvreckan Testbeam Monitor");
     updateNumber = m_config.get<int>("update", 200);
+    ignoreAux = m_config.get<bool>("ignore_aux", true);
 
     // Set up overview plots:
     canvas_overview = m_config.getMatrix<std::string>("overview",
@@ -218,6 +219,11 @@ void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas
             } else {
                 LOG(DEBUG) << "Adding plot " << name << " for all detectors.";
                 for(auto& detector : get_detectors()) {
+                    // Ignore AUX detectors
+                    if(ignoreAux && detector->isAuxiliary()) {
+                        continue;
+                    }
+
                     AddHisto(canvas_name,
                              std::regex_replace(name, std::regex("%DETECTOR%"), detector->name()),
                              plot.back(),
