@@ -60,7 +60,7 @@ void EventLoaderEUDAQ2::initialise() {
     hPixelTimes_long = new TH1F("hPixelTimes_long", title.c_str(), 3e6, 0, 3e3);
 
     title = ";pixel raw values;# events";
-    hPixelRawValues = new TH1F("hPixelRawValues;", title.c_str(), 1024, 0, 1024);
+    hPixelRawValues = new TH1F("hPixelRawValues", title.c_str(), 1024, 0, 1024);
 
     title = "Pixel Multiplicity per Corry Event;# pixels;# events";
     hPixelMultiplicity = new TH1F("pixelMultiplicity", title.c_str(), 1000, 0, 1000);
@@ -220,7 +220,7 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
                                                    std::shared_ptr<eudaq::StandardEvent> evt) const {
 
     // Check if this event has timestamps available:
-    if(evt->GetTimeBegin() == 0) {
+    if(evt->GetTimeBegin() == 0 && evt->GetTimeEnd() == 0) {
         LOG(DEBUG) << evt->GetDescription() << ": Event has no timestamp, comparing trigger IDs";
 
         // If there is no event defined yet, there is little we can do:
