@@ -20,14 +20,12 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
 
     // Set up individual plots for the DUT
     canvas_dutplots = m_config.getMatrix<std::string>("dut_plots",
-                                                      {{"EventLoaderCLICpix2/%DUT%/hitMap", "colz"},
-                                                       {"EventLoaderCLICpix2/%DUT%/hitMapDiscarded", "colz"},
-                                                       {"EventLoaderCLICpix2/%DUT%/pixelToT"},
-                                                       {"EventLoaderCLICpix2/%DUT%/pixelToA"},
-                                                       {"EventLoaderCLICpix2/%DUT%/pixelCnt", "log"},
-                                                       {"EventLoaderCLICpix2/%DUT%/pixelMultiplicity", "log"},
-                                                       {"AnalysisDUT/clusterChargeAssociated"},
-                                                       {"AnalysisDUT/associatedTracksVersusTime"}});
+                                                      {{"EventLoaderEUDAQ2/%DUT%/hitmap", "colz"},
+                                                       {"EventLoaderEUDAQ2/%DUT%/hPixelTimes"},
+                                                       {"EventLoaderEUDAQ2/%DUT%/hPixelRawValues"},
+                                                       {"EventLoaderEUDAQ2/%DUT%/pixelMultiplicity", "log"},
+                                                       {"AnalysisDUT/%DUT%/clusterChargeAssociated"},
+                                                       {"AnalysisDUT/%DUT%/associatedTracksVersusTime"}});
     canvas_tracking = m_config.getMatrix<std::string>("tracking",
                                                       {{"Tracking4D/trackChi2"},
                                                        {"Tracking4D/trackAngleX"},
