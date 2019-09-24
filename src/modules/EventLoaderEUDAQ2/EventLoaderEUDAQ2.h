@@ -91,7 +91,7 @@ namespace corryvreckan {
          * @param plane_id  ID of the EUDAQ2 StandardEvent plane to be read and stored
          * @return Vector of pointers to pixels read from this event
          */
-        std::shared_ptr<PixelVector> get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt, int plane_id);
+        std::shared_ptr<PixelVector> get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt, int plane_id) const;
 
         /**
          * @brief Filter the incoming EUDAQ2 events for the correct detector and detector type
@@ -111,7 +111,7 @@ namespace corryvreckan {
         Matrix<std::string> m_adjust_event_times;
         int m_buffer_depth;
 
-        int m_hits = 0;
+        size_t m_hits = 0;
 
         // EUDAQ file reader instance to retrieve data from
         eudaq::FileReaderUP reader_;
