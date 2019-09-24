@@ -60,7 +60,7 @@ void EventLoaderEUDAQ2::initialise() {
     hPixelTimes_long = new TH1F("hPixelTimes_long", title.c_str(), 3e6, 0, 3e3);
 
     title = ";pixel raw values;# events";
-    hPixelRawValues = new TH1F("hPixelRawValues;", title.c_str(), 1024, 0, 1024);
+    hPixelRawValues = new TH1F("hPixelRawValues", title.c_str(), 1024, 0, 1024);
 
     title = "Pixel Multiplicity per Corry Event;# pixels;# events";
     hPixelMultiplicity = new TH1F("pixelMultiplicity", title.c_str(), 1000, 0, 1000);
