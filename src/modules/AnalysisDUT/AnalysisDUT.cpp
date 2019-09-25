@@ -235,41 +235,6 @@ void AnalysisDUT::initialise() {
                           -pitch_y / 2.,
                           pitch_y / 2.);
 
-    // Efficiency maps
-    title = "hPixelEfficiencyMap" + mod_axes + "efficiency";
-    hPixelEfficiencyMap = new TProfile2D("hPixelEfficiencyMap",
-                                         "hPixelEfficiencyMap;column;row;efficiency",
-                                         static_cast<int>(pitch_x),
-                                         -pitch_x / 2.,
-                                         pitch_x / 2.,
-                                         static_cast<int>(pitch_y),
-                                         -pitch_y / 2.,
-                                         pitch_y / 2.,
-                                         0,
-                                         1);
-    title = "hChipEfficiencyMap;column; row; efficiency";
-    hChipEfficiencyMap = new TProfile2D("hChipEfficiencyMap",
-                                        "hChipEfficiencyMap;column;row;efficiency",
-                                        m_detector->nPixels().X(),
-                                        0,
-                                        m_detector->nPixels().X(),
-                                        m_detector->nPixels().Y(),
-                                        0,
-                                        m_detector->nPixels().Y(),
-                                        0,
-                                        1);
-    title = "hGlobalEfficiencyMap;efficiency";
-    hGlobalEfficiencyMap = new TProfile2D("hGlobalEfficiencyMap",
-                                          "hGlobalEfficiencyMap;column;row;efficiency",
-                                          300,
-                                          -1.5 * m_detector->size().X(),
-                                          1.5 * m_detector->size().X(),
-                                          300,
-                                          -1.5 * m_detector->size().Y(),
-                                          1.5 * m_detector->size().Y(),
-                                          0,
-                                          1);
-
     residualsTime = new TH1F("residualsTime", "residualsTime;time_{track}-time_{hit} [ns];#entries", 20000, -1000, +1000);
 
     hTrackCorrelationX =
@@ -421,6 +386,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                     continue;
                 }
             }
+            has_associated_cluster = true;
 
             // Check distance between track and cluster
             ROOT::Math::XYZPoint intercept = track->intercept(assoc_cluster->global().z());
@@ -519,14 +485,11 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 rmsyvsxmym->Fill(xmod, ymod, yabsdistance);
                 rmsxyvsxmym->Fill(xmod, ymod, fabs(sqrt(xdistance * xdistance + ydistance * ydistance)));
             }
+            hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
+            hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
         }
-
-        hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
-        hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
-
-        // For pixels, only look at the ROI:
-        if(is_within_roi) {
-            hPixelEfficiencyMap->Fill(xmod, ymod, has_associated_cluster);
+        if(!has_associated_cluster) {
+            hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
         }
         num_tracks++;
     }
