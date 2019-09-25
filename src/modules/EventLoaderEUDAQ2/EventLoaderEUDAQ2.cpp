@@ -443,6 +443,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "Is within current Corryvreckan event, storing data";
             // Store data on the clipboard
             auto new_pixels = get_pixel_data(event_, plane_id);
+            m_hits += new_pixels->size();
             pixels->insert(pixels->end(), new_pixels->begin(), new_pixels->end());
         }
 
@@ -512,4 +513,9 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG(DEBUG) << "Finished Corryvreckan event";
     return StatusCode::Success;
+}
+
+void EventLoaderEUDAQ2::finalise() {
+
+    LOG(INFO) << "Found " << m_hits << " hits in the data.";
 }
