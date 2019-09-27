@@ -105,7 +105,7 @@ namespace corryvreckan {
         double m_skip_time{};
         Matrix<std::string> m_adjust_event_times;
         int m_buffer_depth;
-	int m_shift_triggers;
+        int m_shift_triggers;
 
         // EUDAQ file reader instance to retrieve data from
         eudaq::FileReaderUP reader_;
