@@ -57,7 +57,8 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
     // Size of the pixels
     m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
-
+    // Detector thickness in radiationb length
+    m_thickness = config.get<double>("thickness", 0.02); // fixme: no default here pls
     // Intrinsic position resolution, defaults to 4um:
     m_resolution = config.get<ROOT::Math::XYVector>("resolution", ROOT::Math::XYVector(0.004, 0.004));
 
