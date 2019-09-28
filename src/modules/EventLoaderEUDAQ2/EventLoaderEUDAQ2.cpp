@@ -53,6 +53,18 @@ void EventLoaderEUDAQ2::initialise() {
                       0,
                       m_detector->nPixels().Y());
 
+    title = "rawValues; column; row; raw values";
+    hRawValuesMap = new TProfile2D("hRawValuesMap",
+                                            title.c_str(),
+					    m_detector->nPixels().X(),
+                                            0,
+                                            m_detector->nPixels().X(),
+                                            m_detector->nPixels().Y(),
+                                            0,
+                                            m_detector->nPixels().Y(),
+                                            0,
+                                            500);
+    
     title = ";hit time [ms];# events";
     hPixelTimes = new TH1F("hPixelTimes", title.c_str(), 3e6, 0, 3e3);
 
@@ -350,6 +362,7 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
         Pixel* pixel = new Pixel(m_detector->name(), col, row, raw, raw, ts);
 
         hitmap->Fill(col, row);
+	hRawValuesMap->Fill(col, row, raw);
         hPixelTimes->Fill(static_cast<double>(Units::convert(ts, "ms")));
         hPixelTimes_long->Fill(static_cast<double>(Units::convert(ts, "s")));
         hPixelRawValues->Fill(raw);
