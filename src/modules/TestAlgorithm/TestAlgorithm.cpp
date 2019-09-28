@@ -215,8 +215,9 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
                     }
                     //                    correlationTime[m_detector->name()]->Fill(Units::convert(timeDifference, "s"));
                     correlationTime->Fill(timeDifference); // time difference in ns
-                    // correlationTimeOverTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
-                    // timeDifference); // time difference in ns
+		    LOG(DEBUG) << "timeDifference: " << Units::display(timeDifference, {"ns", "us"}) << ", Time ref. cluster: " << Units::display(refCluster->timestamp(), {"ns", "us"}) <<", Time cluster: " <<  Units::display(cluster->timestamp(), {"ns", "us"});
+                    correlationTimeOverTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                    timeDifference); // time difference in ns
                     correlationTimeInt->Fill(static_cast<double>(timeDifferenceInt));
                 }
             }
