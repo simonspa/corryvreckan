@@ -309,9 +309,10 @@ StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Cut on the track intercept - this makes sure that it actually went
         // through the chip
-        if(chipInterceptCol < 0.5 || chipInterceptRow < 0.5 || chipInterceptCol > (m_detector->nPixels().X() - 0.5) ||
-           chipInterceptRow > (m_detector->nPixels().Y() - 0.5))
+        if(!m_detector->hasIntercept(track, 0.5)) {
+            LOG(DEBUG) << " - track outside DUT area";
             continue;
+        }
 
         // Check if the hit is near a masked pixel
         bool hitMasked = checkMasked(chipInterceptRow, chipInterceptCol);
