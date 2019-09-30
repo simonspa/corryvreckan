@@ -291,9 +291,10 @@ bool Detector::hasIntercept(const Track* track, double pixelTolerance) const {
     double column = this->getColumn(localIntercept);
 
     // Check if the row and column are outside of the chip
+    // Chip reaches from -0.5 to nPixels-0.5
     bool intercept = true;
-    if(row < pixelTolerance || row > (this->m_nPixels.Y() - pixelTolerance) || column < pixelTolerance ||
-       column > (this->m_nPixels.X() - pixelTolerance))
+    if(row < pixelTolerance - 0.5 || row > (this->m_nPixels.Y() - pixelTolerance - 0.5) || column < pixelTolerance - 0.5 ||
+       column > (this->m_nPixels.X() - pixelTolerance - 0.5))
         intercept = false;
 
     return intercept;
@@ -326,10 +327,12 @@ bool Detector::hitMasked(Track* track, int tolerance) const {
 
 // Functions to get row and column from local position
 double Detector::getRow(const PositionVector3D<Cartesian3D<double>> localPosition) const {
+    // (1-m_nPixelsX%2)/2. --> add 1/2 pixel pitch if even number of rows
     double row = localPosition.Y() / m_pitch.Y() + static_cast<double>(m_nPixels.Y()) / 2. + (1 - m_nPixels.Y() % 2) / 2.;
     return row;
 }
 double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosition) const {
+    // (1-m_nPixelsX%2)/2. --> add 1/2 pixel pitch if even number of columns
     double column = localPosition.X() / m_pitch.X() + static_cast<double>(m_nPixels.X()) / 2. + (1 - m_nPixels.X() % 2) / 2.;
     return column;
 }
@@ -338,7 +341,7 @@ double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosi
 PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double column, double row) const {
 
     return PositionVector3D<Cartesian3D<double>>(
-        m_pitch.X() * (column - (m_nPixels.X()) / 2.), m_pitch.Y() * (row - (m_nPixels.Y()) / 2.), 0.);
+        m_pitch.X() * (column - m_nPixels.X() / 2), m_pitch.Y() * (row - m_nPixels.Y() / 2), 0.);
 }
 
 // Function to get in-pixel position
