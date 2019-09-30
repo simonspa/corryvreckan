@@ -316,8 +316,10 @@ StatusCode AnalysisCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Check if the hit is near a masked pixel
         bool hitMasked = checkMasked(chipInterceptRow, chipInterceptCol);
-        if(hitMasked)
+        if(hitMasked) {
+            LOG(DEBUG) << " - hit is masked";
             continue;
+        }
 
         // Check there are no other tracks nearby
         bool proximityCut = checkProximity(track, tracks);
