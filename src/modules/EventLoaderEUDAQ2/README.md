@@ -76,6 +76,7 @@ Also, more complex constructs such as arrays or matrices read by the Corryvrecka
 * `ignore_bore`: Boolean to completely ignore the Begin-of-Run event from EUDAQ2. Default value is `true`.
 * `adjust_event_times`: Matrix that allows the user to shift the event start/end of all different types of EUDAQ events before comparison to any other Corryvreckan data. The first entry of each row specifies the data type, the second is the offset which is added to the event start and the third entry is the offset added to the event end. A usage example is shown below, double brackets are required if only one entry is provided.
 * `buffer_depth`: Depth of buffer in which EUDAQ2 `StandardEvents` are timesorted. This algorithm only works for `StandardEvents` with well-defined timestamps. Setting it to `0` disables timesorting. Default is `0`.
+* `shift_triggers`: Shift the trigger ID up or down when assigning it to the Corryvreckan event. This allows to correct trigger ID offsets between different devices such as the TLU and MIMOSA26.
 
 ### Plots produced
 * 2D hitmap
