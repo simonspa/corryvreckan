@@ -112,7 +112,14 @@ In cases where either no trigger ID has been previously added to the event or wh
 In some cases, none of the available devices requires a strict event definition such as a trigger or a frame.
 This is sometimes the case when all or many of the involved devices have a data-driven readout.
 
-In this situation, the \command{Metronome} module can be used to slice the data stream into regular time frames with a defined length.
+\begin{figure}[tbp]
+        \centering
+        \includegraphics[width=0.66\textwidth]{datadrivendevice.png}
+        \caption{Event building with fixed-length time frames from the Metronome for data-driven detectors}
+        \label{fig:datadriven}
+\end{figure}
+
+In this situation, the \command{Metronome} module can be used to slice the data stream into regular time frames with a defined length as indicated in Figure~\ref{fig:datadriven}.
 
 In addition to splitting the data stream into frames, trigger numbers can be added to each of the frames.
 This can be used to process data exclusively recorded with triggered devices, where no timing information is available or necessary from any of the devices involved.
@@ -125,7 +132,15 @@ If used, the \command{Metronome} module always has to be placed as first module 
 
 \subsection{Event Definition by Frame-Based DUT}
 
+\begin{figure}[tbp]
+        \centering
+        \includegraphics[width=0.66\textwidth]{datadrivenandframebased.png}
+        \caption{Event building strategy in a mixed-mode situation with devices adhering to different readout schemes. Here, the event is defined by the frame-based device and all other data are added within the event boundaries.}
+        \label{fig:datadrivenandframebased}
+\end{figure}
+
 This example demonstrates the setup for event building based on a frame-based device under test.
+The event building strategy for this situation is sketched in Figure~\ref{fig:datadrivenandframebased}.
 The configuration contains four different devices:
 \begin{description}
         \item[\parameter{CLICpix2}:] This prototype acts as device under test and is a detector designed for pperation at a linear collider, implementing a frame-based readout scheme. In this example, it will define the event.
@@ -170,39 +185,9 @@ Here, the trigger number from the detector data are compared to the ones stored 
 It should be noted that in this example, the data from the \parameter{TLU} and the six \parameter{MIMOSA26} planes are read from the same file.
 The event building algorithm is completely transparent to how the individual detector data are stored, and the very same building pattern could be used when storing the data in separate files.
 
-\section{Triggered Devices}
-
-\todo{if event has no time information, event definition is the trigger}
-
-\section{Triggerless Devices}
-
-\todo{event needs to be defined by the metronome}
-
-\section{Mixing Devices}
-
-\todo{set triggered device first, start/stop information from frame is taken as event (metronome information replacement) and subsequent untriggered devices use this time window to define the event}
-
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.66\textwidth]{framebaseddevice.png}
-	\caption{text here}
-	\label{fig:framebased}
-\end{figure}
-
-
-\begin{figure}[h]
-        \centering
-        \includegraphics[width=0.66\textwidth]{datadrivendevice.png}
-        \caption{text here}
-        \label{fig:datadriven}
-\end{figure}
-
-
-
-\begin{figure}[h]
-        \centering
-        \includegraphics[width=0.66\textwidth]{datadrivenandframebased.png}
-        \caption{text here}
-        \label{fig:datadrivenandframebased}
-\end{figure}
+% \begin{figure}[tbp]
+% 	\centering
+% 	\includegraphics[width=0.66\textwidth]{framebaseddevice.png}
+% 	\caption{text here}
+% 	\label{fig:framebased}
+% \end{figure}
