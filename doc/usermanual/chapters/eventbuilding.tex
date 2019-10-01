@@ -131,6 +131,9 @@ This operation fails if an event has already been defined by a previous module.
 
 \section{Example Configurations for Event Building}
 
+It is assumed that all data have been recorded using the \emph{EUDAQ2} framework, and the \command{EventLoaderEUDAQ2} is used for all devices to read and decode their data.
+However, this pattern is not limited to that and a very similar configuration could be used when the device data have been stored to the device-specific native data files.
+
 \subsection{Event Definition by Frame-Based DUT}
 \label{sec:reco_mixedmode}
 \begin{figure}[tbp]
@@ -149,9 +152,6 @@ The configuration contains four different devices:
         \item[\parameter{Timepix3}:] This detector is operated in its data-driven mode, where the external clock from the TLU is used to timestamp each individual pixel hit. The hits are directly read out and sent to the data acquisition system in a continuous data stream.
         \item[\parameter{MIMOSA26}:] These detectors are devices with a continuous rolling shutter readout, which do not record any timing information in the individual frames. The data are tagged with the incoming trigger IDs by its DAQ system.
 \end{description}
-
-It is assumed that all data have been recorded using the \emph{EUDAQ2} framework, and the \command{EventLoaderEUDAQ2} is used for all devices to read and decode their data.
-However, this pattern is not limited to that and a very similar configuration could be used when the device data have been stored to the device-specific native data files.
 
 In order to build proper events from these devices, the following configuration is used:
 
@@ -186,9 +186,47 @@ Here, the trigger numbers from the detector data are compared to the ones stored
 It should be noted that in this example, the data from the \parameter{TLU} and the six \parameter{MIMOSA26} planes are read from the same file.
 The event building algorithm is completely transparent to how the individual detector data are stored, and the very same building pattern could be used when storing the data in separate files.
 
+
 % \begin{figure}[tbp]
 % 	\centering
 % 	\includegraphics[width=0.66\textwidth]{framebaseddevice.png}
 % 	\caption{text here}
 % 	\label{fig:framebased}
 % \end{figure}
+
+\subsection{Event Definition by Trigger Logic Unit}
+This example demonstrates the setup for event building based on the trigger logic unit.
+The configuration contains the same devices as the example in Section~ref{sec:reco_mixedmode} but replacing the \parameter{CLICpix2} by the \parameter{ATLASpix}:
+\begin{description}
+        \item[\parameter{ATLASpix}:] This prototype acts as device under test and is a detector initially designed for the ATLAS ITk upgrade, implementing a triggerless column-drain readout scheme.\item [label]
+\end{description}
+
+In order to build proper events from these devices, the following configuration is used:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[Corryvreckan]
+# ...
+
+[EventLoaderEUDAQ2]
+name = "TLU_0"
+file_name = /data/run001_file_ni.raw
+adjust_event_times = [["TluRawDataEvent", -115us, +230us]]
+
+[EventLoaderEUDAQ2]
+type = "MIMOSA26"
+file_name = /data/run001_file_ni.raw
+
+[EventLoaderEUDAQ2]
+name = "Timepix3_0"
+file_name = /data/run001_file_spidr.raw
+
+[EventLoaderALTASpix]
+name = "ATLASpix_0"
+input_directory = /data/run001/
+\end{minted}
+
+The first module will define the event using the frame start and end timestamps from the \parameter{TLU} device.
+As in the previous example, the \parameter{MIMOSA26} data will be added based on the trigger number.
+The frame start provided by the TLU corresponds to the trigger timestamp and the frame end is one clockcycle later.
+However, due to the rolling shutter readout scheme, the hits that are read out from the \parameter{MIMOSA26} planes when receiving a trigger may have happened in a time period before or after the trigger signal.
+Consequently, the event times need to be corrected using the \parameter{adjust_event_times} parameter such that the data from the \parameter{ATLASpix} and \parameter{Timepix3} can be added to the event in the entire time window in which the \parameter{MIMOSA26} hits can have occurred.
