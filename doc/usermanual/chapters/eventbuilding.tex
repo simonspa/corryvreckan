@@ -121,11 +121,12 @@ This is sometimes the case when all or many of the involved devices have a data-
 
 In this situation, the \command{Metronome} module can be used to slice the data stream into regular time frames with a defined length as indicated in Figure~\ref{fig:datadriven}.
 
-In addition to splitting the data stream into frames, trigger numbers can be added to each of the frames.
+In addition to splitting the data stream into frames, trigger numbers can be added to each of the frames as described in the module documentation of the \command{Metronome} in Section~\ref{metronome}.
 This can be used to process data exclusively recorded with triggered devices, where no timing information is available or necessary from any of the devices involved.
 The module should then be set up to always add one trigger to each of its events, and all subsequent detectors will simply compare to this trigger number and add their event data.
 
-If used, the \command{Metronome} module always has to be placed as first module in the data analysis chain because it will attempt to define the event and to add it to the clipboard. This operation fails if an event has already been defined by a previous module.
+If used, the \command{Metronome} module always has to be placed as first module in the data analysis chain because it will attempt to define the event and to add it to the clipboard.
+This operation fails if an event has already been defined by a previous module.
 
 
 \section{Example Configurations for Event Building}
