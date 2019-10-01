@@ -111,9 +111,9 @@ IF(LATEX_COMPILER)
             usermanual/figures/correlationX_goodexample.pdf
             usermanual/figures/datadrivenandframebased.png
             usermanual/figures/datadrivendevice.png
-            usermanual/figures/framebaseddevice.png
             usermanual/figures/reconstruction-chain-simple.png
             usermanual/figures/reconstruction-chain-complicated.png
+            usermanual/figures/onlinemon.png
             INPUTS
             usermanual/chapters/introduction.tex
             usermanual/chapters/installation.tex
