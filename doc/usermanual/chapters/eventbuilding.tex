@@ -229,4 +229,4 @@ The first module will define the event using the frame start and end timestamps 
 As in the previous example, the \parameter{MIMOSA26} data will be added based on the trigger number.
 The frame start provided by the TLU corresponds to the trigger timestamp and the frame end is one clockcycle later.
 However, due to the rolling shutter readout scheme, the hits that are read out from the \parameter{MIMOSA26} planes when receiving a trigger may have happened in a time period before or after the trigger signal.
-Consequently, the event times need to be corrected using the \parameter{adjust_event_times} parameter such that the data from the \parameter{ATLASpix} and \parameter{Timepix3} can be added to the event in the entire time window in which the \parameter{MIMOSA26} hits can have occurred.
+Consequently, the event times need to be corrected using the \parameter{adjust_event_times} parameter such that the data from the \parameter{ATLASpix} and \parameter{Timepix3} can be added to the event in the entire time window in which the \parameter{MIMOSA26} hits may have occurred.
