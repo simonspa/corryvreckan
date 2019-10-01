@@ -60,7 +60,7 @@ The temporary data storage is only available during the processing of each indiv
 It is automatically cleared at the end of the event processing and has to be populated with new data in the new event to be processed.
 
 The temporary storage acts as the main data structure to communicate information between different modules and can hold multiple collections of \corry objects such as pixel hits, clusters or tracks.
-In oder to be able to flexibly store different data types on the clipboard, the access methods for the temporary data storage are implemented as templates, and vectors of any data type deriving from \parameter{corry::Object} can be stored and retrieved.
+In order to be able to flexibly store different data types on the clipboard, the access methods for the temporary data storage are implemented as templates, and vectors of any data type deriving from \parameter{corry::Object} can be stored and retrieved.
 
 \subsection{Persistent Storage}
 The persistent storage is not cleared at the end of each event processing and can be used to store information used in multiple events.
