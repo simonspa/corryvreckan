@@ -53,7 +53,7 @@ Since an event \emph{always} has to define its beginning and end, this function 
 
 \subsection{Frame-Based Detectors}
 If the data to be added are from a source which defines a time frame, such as frame-based or shutter-based detectors, there are two timestamps to consider.
-The appropriate function for position comparison is called \command{getFramePosition()} and takes two timestamps for begin and end of the data frame as well as an additional flag to select the interpretation mode.
+The appropriate function for position comparison is called \command{getFramePosition()} and takes two timestamps for begin and end of the data frame as well as an additional flag to choose between the interpretation modes \emph{inclusive} and \emph{exclusive} (see below).
 Several modules, such as the \command{EventLoaderEUDAQ2}, expose a configuration parameter to influence the matching behavior.
 
 \paragraph{Inclusive Selection:}
