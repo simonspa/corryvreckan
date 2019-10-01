@@ -13,8 +13,8 @@ The displayed plots and their source can be configured via the framework configu
 Here, each canvas is configured via a matrix containing the path of the plot and its plotting options in each row, e.g.
 
 ```toml
-DUTPlots =  [["Clicpix2EventLoader/hitMap", "colz"],
-             ["Clicpix2EventLoader/pixelCnt", "log"]]
+DUTPlots =  [["EventLoaderEUDAQ2/%DUT%/hitmap", "colz"],
+             ["EventLoaderEUDAQ2/%DUT%/hPixelRawValues", "log"]]
 ```
 
 The allowed plotting options comprise all drawing options offered by ROOT.
@@ -26,24 +26,25 @@ Several keywords can be used in the plot path, which are parsed and interpreted 
 * `%DUT%`: This keyword is replaced by the vale of the `DUT` configuration key of the framework.
 * `%REFERENCE%`: This keyword is replaced by the vale of the `reference` configuration key of the framework.
 
-The "corryvreckan" namespace i not required to be added to the plot path.
+The "corryvreckan" namespace is not required to be added to the plot path.
 
 ### Parameters
 * `update`: Number of events after which to update, defaults to `500`.
 * `canvas_title`: Title of the GUI window to be shown, defaults to `Corryvreckan Testbeam Monitor`. This parameter can be used to e.g. display the current run number in the window title.
+* `ignore_aux`: With this boolean variable set, detectors with `auxiliary` roles are ignored and none of their histograms are added to the UI. Defaults to `true`.
 
 
 * `overview`: List of plots to be placed on the "Overview" canvas of the online monitor. The list of plots created in the default configuration is listed below.
-* `dut_plots`: List of plots to be placed on the "DUTPlots" canvas of the online monitor. By default, this canvas is empty and should be customized for the respective DUT.
-* `hitmaps`: List of plots to be placed on the "HitMaps" canvas of the online monitor. By default, this canvas displays `TestAlgorithm/hitmap_%DETECTOR%` for all detectors.
+* `dut_plots`: List of plots to be placed on the "DUTPlots" canvas of the online monitor. By default, this canvas contains plots collected from the `EventLoaderEUDAQ2` as well as the `AnalysisDUT` modules for the each configured DUT. This canvas should be customized for the respective DUT.
+* `hitmaps`: List of plots to be placed on the "HitMaps" canvas of the online monitor. By default, this canvas displays `TestAlgorithm/%DETECTOR%/hitmap` for all detectors.
 * `tracking`: List of plots to be placed on the "Tracking" canvas of the online monitor. The list of plots created in the default configuration is listed below.
-* `residuals`: List of plots to be placed on the "Residuals" canvas of the online monitor. By default, this canvas displays `BasicTracking/residualsX_%DETECTOR%` for all detectors.
-* `correlation_x`: List of plots to be placed on the "CorrelationX" canvas of the online monitor.  By default, this canvas displays `TestAlgorithm/correlationX_%DETECTOR%` for all detectors.
-* `correlation_y`: List of plots to be placed on the "CorrelationY" canvas of the online monitor.  By default, this canvas displays `TestAlgorithm/correlationY_%DETECTOR%` for all detectors.
-* `correlation_x2d`: List of plots to be placed on the "CorrelationX2D" canvas of the online monitor. By default, this canvas displays `TestAlgorithm/correlationX_2Dlocal_%DETECTOR%` for all detectors.
-* `correlation_y2d`: List of plots to be placed on the "CorrelationY2D" canvas of the online monitor. By default, this canvas displays `TestAlgorithm/correlationY_2Dlocal_%DETECTOR%` for all detectors.
-* `charge_distributions`: List of plots to be placed on the "ChargeDistributions" canvas of the online monitor. By default, this canvas displays `Timepix3Clustering/clusterTot_%DETECTOR%` for all detectors.
-* `event_times`: List of plots to be placed on the "EventTimes" canvas of the online monitor. By default, this canvas displays `TestAlgorithm/eventTimes_%DETECTOR%` for all detectors.
+* `residuals`: List of plots to be placed on the "Residuals" canvas of the online monitor. By default, this canvas displays `Tracking4D/%DETECTOR%/residualsX` for all detectors.
+* `correlation_x`: List of plots to be placed on the "CorrelationX" canvas of the online monitor.  By default, this canvas displays `TestAlgorithm/%DETECTOR%/correlationX` for all detectors.
+* `correlation_y`: List of plots to be placed on the "CorrelationY" canvas of the online monitor.  By default, this canvas displays `TestAlgorithm/%DETECTOR%/correlationY` for all detectors.
+* `correlation_x2d`: List of plots to be placed on the "CorrelationX2D" canvas of the online monitor. By default, this canvas displays `TestAlgorithm/%DETECTOR%/correlationX_2Dlocal` for all detectors.
+* `correlation_y2d`: List of plots to be placed on the "CorrelationY2D" canvas of the online monitor. By default, this canvas displays `TestAlgorithm/%DETECTOR%/correlationY_2Dlocal` for all detectors.
+* `charge_distributions`: List of plots to be placed on the "ChargeDistributions" canvas of the online monitor. By default, this canvas displays `Clustering4D/%DETECTOR%/clusterCharge` for all detectors.
+* `event_times`: List of plots to be placed on the "EventTimes" canvas of the online monitor. By default, this canvas displays `TestAlgorithm/%DETECTOR%/eventTimes` for all detectors.
 
 ### Plots produced
 Overview canvas:
@@ -61,12 +62,10 @@ Tracking canvas:
 ```toml
 [OnlineMonitor]
 update = 200
-dut_plots = [["Clicpix2EventLoader/hitMap", "colz"],
-             [Clicpix2EventLoader/hitMapDiscarded", "colz"],
-             [Clicpix2EventLoader/pixelToT"],
-             [Clicpix2EventLoader/pixelToA"],
-             [Clicpix2EventLoader/pixelCnt", "log"],
-             [Clicpix2EventLoader/pixelMultiplicity", "log"],
-             [DUTAnalysis/clusterTotAssociated"],
-             [DUTAnalysis/associatedTracksVersusTime"]]
+dut_plots = [["EventLoaderEUDAQ2/%DUT%/hitmap", "colz"],
+             ["EventLoaderEUDAQ2/%DUT%/hPixelTimes"],
+             ["EventLoaderEUDAQ2/%DUT%/hPixelRawValues"],
+             ["EventLoaderEUDAQ2/%DUT%/pixelMultiplicity", "log"],
+             ["AnalysisDUT/clusterChargeAssociated"],
+             ["AnalysisDUT/associatedTracksVersusTime"]]
 ```
