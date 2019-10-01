@@ -22,7 +22,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     m_skip_time = m_config.get("skip_time", 0.);
     m_adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {});
     m_buffer_depth = m_config.get<int>("buffer_depth", 0);
-
+    m_shift_triggers = m_config.get<int>("shift_triggers", 0);
     m_inclusive = m_config.get("inclusive", true);
 
     // Forward all settings to EUDAQ
@@ -295,8 +295,10 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
     } else {
         // check if event has valid trigger ID (flag = 0x10):
         if(evt->IsFlagTrigger()) {
+            // Potentially shift the trigger IDs if requested
+            auto trigger_id = static_cast<uint32_t>(static_cast<int>(evt->GetTriggerN()) + m_shift_triggers);
             // Store potential trigger numbers, assign to center of event:
-            clipboard->getEvent()->addTrigger(evt->GetTriggerN(), event_timestamp);
+            clipboard->getEvent()->addTrigger(trigger_id, event_timestamp);
             LOG(DEBUG) << "Stored trigger ID " << evt->GetTriggerN() << " at "
                        << Units::display(event_timestamp, {"us", "ns"});
         }
