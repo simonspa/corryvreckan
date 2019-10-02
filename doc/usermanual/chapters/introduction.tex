@@ -1,4 +1,44 @@
 \chapter{Introduction}
 \label{ch:introduction}
 
-\corry is a 
+\corry is a flexible, fast and lightweight test beam data reconstruction framework based on a modular concept of the reconstruction chain.
+It is designed to fulfill the requirements for offline event building in complex environments combining detectors with very different readout architectures.
+\corry reduces external dependencies to a minimum by implementing its own flexible but simple data format to store intermediate reconstruction steps as well as final results.
+
+The modularity of the reconstruction chain allows users to add their own functionality (such as event loaders to support different data formats or analysis modules to investigate specific features of their detectors) without having to deal with centrally provided functionality such as coordinate transformations, input and output or parsing of user input and configuration of the analysis.
+In addition, tools for batch submission of runs to a cluster scheduler such as \command{HTCondor} are provided to ease the (re-)analysis of complete test beam campaigns within a few minutes.
+
+This project strongly profits from the developments undertaken for the \emph{Allpix Squared} project~\cite{apsq,apsq-website}, a \emph{Generic Pixel Detector Simulation Framework}.
+Both frameworks employ very similar philosophies for configuration and modularity, and users of one framework will find it very easy to get started with the other companion.
+Some parts of the code base are shared explicitly such as the configuration class or the module instantiation logic.
+Also the \textit{FileReader} and \textit{FileWriter} modules have profited heavily from their corresponding framework components in Allpix Squared.
+The relevant sections of the Allpix Squared manual~\cite{apsq-manual,clicdp-apsq-manual} have been adapted for this document.
+
+\section{Scope of this Manual}
+This document is meant to be the primary User Guide for \corry.
+It contains both an extensive description of the user interface and configuration possibilities, and a detailed introduction to the code base for potential developers.
+This manual is designed to:
+\begin{itemize}
+\item Guide new users through the installation;
+\item Introduce new users to the toolkit for the purpose of running their own test beam data reconstruction and analysis;
+\item Explain the structure of the core framework and the components it provides to the reconstruction modules;
+\item Provide detailed information about all modules and how to use and configure them;
+\item Describe the required steps for implementing new reconstruction modules and algorithms.
+\end{itemize}
+
+Within the scope of this document, only an overview of the framework can be provided and more detailed information on the code itself can be found in the Doxygen reference manual~\cite{corry-doxygen} available online.
+No programming experience is required from novice users, but knowledge of (modern) C++ will be useful in the later chapters and might contribute to the overall understanding of the mechanisms.
+
+\section{Support and Reporting Issues}
+As for most of the software used within the high-energy particle physics community, only limited support on best-effort basis for this software can be offered.
+The authors are, however, happy to receive feedback on potential improvements or problems arising.
+Reports on issues, questions concerning the software as well as the documentation and suggestions for improvements are very much appreciated.
+These should preferably be brought up on the issues tracker of the project which can be found in the repository~\cite{corry-issue-tracker}.
+
+
+\section{Contributing Code}
+\corry is a community project that benefits from active participation in the development and code contributions from users.
+Users and prospective developers are encouraged to discuss their needs via the issue tracker of the repository~\cite{corry-issue-tracker} to receive ideas and guidance on how to implement a specific feature.
+Getting in touch with other developers early in the development cycle avoids spending time on features which already exist or are currently under development by other users.
+
+The repository contains a few tools to facilitate contributions and to ensure code quality as detailed in Chapter~\ref{ch:testing}.
