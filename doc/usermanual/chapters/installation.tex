@@ -9,7 +9,7 @@ This chapter contains details on the standard installation process and informati
 \section{Supported Operating Systems}
 \label{sec:os}
 \corry is designed to run without issues on either a recent Linux distribution or Mac OS\,X.
-Furthermore, the continuous integration of the project ensures correct building and functioning of the software framework on CentOS\,7 (with GCC and LLVM), SLC\,6 (with GCC and LLVM) and Mac OS Sierra (OS X 10.12, with AppleClang).
+Furthermore, the continuous integration of the project ensures correct building and functioning of the software framework on CentOS\,7 (with GCC and LLVM), SLC\,6 (with GCC and LLVM) and Mac OS Mojave (OS X 10.14, with AppleClang).
 
 \section{CMVFS}
 \label{sec:cvmfs}
@@ -19,7 +19,7 @@ New versions are published to the folder \dir{/cvmfs/clicdp.cern.ch/software/cor
 
 The deployed version currently comprises all modules which are active by default and do not require additional dependencies.
 A \file{setup.sh} is placed in the root folder of the respective release, which allows to set up all runtime dependencies necessary for executing this version.
-Versions both for SLC\,6 and CentOS\,7 are provided.
+Versions for both SLC\,6 and CentOS\,7 are provided.
 
 \section{Docker}
 \label{sec:docker}
@@ -38,7 +38,7 @@ $ docker run --interactive --tty                               \
              bash
 \end{verbatim}
 
-Alternatively it is also possible to directly start the simulation instead of an interactive shell, e.g. using the following command:
+Alternatively it is also possible to directly start the reconstruction process instead of an interactive shell, e.g. using the following command:
 \begin{verbatim}
 $ docker run --tty --rm                                        \
              --volume "$(pwd)":/data                           \
@@ -50,12 +50,12 @@ where an analysis described in the configuration \file{my_analysis.conf} is dire
 This closely resembles the behavior of running \corry natively on the host system.
 Of course, any additional command line arguments known to the \command{corry} executable described in Section~\ref{sec:executable} can be appended.
 
-For tagged versions, the tag name should be appended to the image name, e.g.\ \parameter{gitlab-registry.cern.ch/corryvreckan/corryvreckan:v1.0}, and a full list of available Docker containers is provided via the project's container registry~\cite{corry-container-registry}.
+For tagged versions, the tag name should be appended to the image name, e.g.\ \parameter{gitlab-registry.cern.ch/corryvreckan/corryvreckan:v1.0}, and a full list of available Docker containers is provided via the project container registry~\cite{corry-container-registry}.
 
 \section{Binaries}
 
 Binary release tarballs are deployed to EOS to serve as downloads from the web to the directory \dir{/eos/project/c/corryvreckan/www/releases}.
-New tarballs are produced for every tag as well as for nightly builds of the \parameter{master} branch, which are deployed with the name \file{allpix-squared-latest-<system-tag>-opt.tar.gz}.
+New tarballs are produced for every tag as well as for nightly builds of the \parameter{master} branch, which are deployed with the name \file{corryvreckan-latest-<system-tag>-opt.tar.gz}.
 
 
 \section{Compilation from Source}

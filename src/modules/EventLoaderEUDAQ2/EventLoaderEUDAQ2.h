@@ -56,6 +56,11 @@ namespace corryvreckan {
          */
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
+        /**
+         * @brief [Finalise this module]
+         */
+        void finalise();
+
     private:
         /**
          * @brief Read and return the next decoded StandardEvent (smallest possible granularity) from timesorted buffer
@@ -106,7 +111,9 @@ namespace corryvreckan {
         double m_skip_time{};
         Matrix<std::string> m_adjust_event_times;
         int m_buffer_depth;
-	int m_shift_triggers;
+        int m_shift_triggers;
+
+        size_t m_hits = 0;
 
         // EUDAQ file reader instance to retrieve data from
         eudaq::FileReaderUP reader_;

@@ -309,10 +309,10 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
     } else {
         // check if event has valid trigger ID (flag = 0x10):
         if(evt->IsFlagTrigger()) {
-	    // Potentially shift the trigger IDs if requested
- 	    auto trigger_id = static_cast<uint32_t>(static_cast<int>(evt->GetTriggerN()) + m_shift_triggers);
+            // Potentially shift the trigger IDs if requested
+            auto trigger_id = static_cast<uint32_t>(static_cast<int>(evt->GetTriggerN()) + m_shift_triggers);
             // Store potential trigger numbers, assign to center of event:
-	    clipboard->getEvent()->addTrigger(trigger_id, event_timestamp);
+            clipboard->getEvent()->addTrigger(trigger_id, event_timestamp);
             LOG(DEBUG) << "Stored trigger ID " << evt->GetTriggerN() << " at "
                        << Units::display(event_timestamp, {"us", "ns"});
         }
@@ -466,6 +466,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "Is within current Corryvreckan event, storing data";
             // Store data on the clipboard
             auto new_pixels = get_pixel_data(event_, plane_id);
+            m_hits += new_pixels->size();
             pixels->insert(pixels->end(), new_pixels->begin(), new_pixels->end());
         }
 
@@ -535,4 +536,9 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG(DEBUG) << "Finished Corryvreckan event";
     return StatusCode::Success;
+}
+
+void EventLoaderEUDAQ2::finalise() {
+
+    LOG(INFO) << "Found " << m_hits << " hits in the data.";
 }
