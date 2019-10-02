@@ -53,6 +53,7 @@ namespace corryvreckan {
         bool makeCorrelations;
         double timingCut;
         bool do_timing_cut_;
+        bool m_time_vs_time;
     };
 } // namespace corryvreckan
 #endif // TESTALGORITHM_H

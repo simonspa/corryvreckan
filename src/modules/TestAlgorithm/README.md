@@ -12,6 +12,7 @@ This module collects `pixel` and `cluster` objects from the clipboard and create
 * `make_correlations`: Boolean to change if correlation plots should be outputted. Default value is `false`.
 * `do_timing_cut`: Boolean to switch on/off the cut on cluster times for correlations. Defaults to `false`.
 * `timing_cut`: maximum time difference between clusters to be taken into account. Only used if `do_timing_cut` is set to `true`, defaults to `100ns`.
+* `correlation_time_vs_time`: Enable plotting of time correlation as a function of time. This is disabled by default because it is slow due to the many bins (default `false`).
 
 ### Plots produced
 For each device the following plots are produced:
