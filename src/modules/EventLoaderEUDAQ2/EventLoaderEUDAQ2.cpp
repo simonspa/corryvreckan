@@ -55,16 +55,14 @@ void EventLoaderEUDAQ2::initialise() {
 
     title = "rawValues; column; row; raw values";
     hRawValuesMap = new TProfile2D("hRawValuesMap",
-                                            title.c_str(),
-					    m_detector->nPixels().X(),
-                                            0,
-                                            m_detector->nPixels().X(),
-                                            m_detector->nPixels().Y(),
-                                            0,
-                                            m_detector->nPixels().Y(),
-                                            0,
-                                            500);
-    
+                                   title.c_str(),
+                                   m_detector->nPixels().X(),
+                                   0,
+                                   m_detector->nPixels().X(),
+                                   m_detector->nPixels().Y(),
+                                   0,
+                                   m_detector->nPixels().Y());
+
     title = ";hit time [ms];# events";
     hPixelTimes = new TH1F("hPixelTimes", title.c_str(), 3e6, 0, 3e3);
 
@@ -347,13 +345,13 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
         auto row = static_cast<int>(plane.GetY(i));
         auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
 
-	double ts;
-	if(plane.GetTimestamp(i) == 0) {
-	  ts = static_cast<double>(evt->GetTimeBegin()) / 1000 + m_detector->timingOffset();
-	} else {
-	  ts = static_cast<double>(plane.GetTimestamp(i)) / 1000 + m_detector->timingOffset();
-	}
-	
+        double ts;
+        if(plane.GetTimestamp(i) == 0) {
+            ts = static_cast<double>(evt->GetTimeBegin()) / 1000 + m_detector->timingOffset();
+        } else {
+            ts = static_cast<double>(plane.GetTimestamp(i)) / 1000 + m_detector->timingOffset();
+        }
+
         if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {
             LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix with size "
                          << m_detector->nPixels();
@@ -370,10 +368,10 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
         Pixel* pixel = new Pixel(m_detector->name(), col, row, raw, raw, ts);
 
         hitmap->Fill(col, row);
-	hRawValuesMap->Fill(col, row, raw);
         hPixelTimes->Fill(static_cast<double>(Units::convert(ts, "ms")));
         hPixelTimes_long->Fill(static_cast<double>(Units::convert(ts, "s")));
         hPixelRawValues->Fill(raw);
+        hRawValuesMap->Fill(col, row, raw);
 
         pixels->push_back(pixel);
     }

@@ -82,7 +82,7 @@ Also, more complex constructs such as arrays or matrices read by the Corryvrecka
 * 2D hitmap
 * 1D pixel hit times (3 second range)
 * 1D pixel hit times (3000 second range)
-* 1D pixel raw value histogram (corresponds to chip-specific charge equivalent measurement, e.g. ToT)
+* 1D and 2D pixel raw value histograms (corresponding to chip-specific charge equivalent measurement, e.g. ToT)
 * 1D pixel multiplicity per Corryvreckan event histogram
 * 1D eudaq event start histogram (3 second range)
 * 1D eudaq event start histogram (3000 second range)

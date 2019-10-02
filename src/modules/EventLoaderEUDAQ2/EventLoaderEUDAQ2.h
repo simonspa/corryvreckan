@@ -142,8 +142,8 @@ namespace corryvreckan {
         // 2D histograms
         TH2F* hitmap;
 
-	// 2D profiles
-	TProfile2D *hRawValuesMap;
+        // 2D profiles
+        TProfile2D* hRawValuesMap;
 
         // 1D histograms
         TH1F* hPixelTimes;
