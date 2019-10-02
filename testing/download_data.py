@@ -75,7 +75,10 @@ if __name__ == '__main__':
         target = os.path.join(BASE_TARGET, name)
         if os.path.exists(target) and os.path.isdir(target):
             print('\'%s\' deleting existing folder' % target)
-            shutil.rmtree(target)
+            try:
+                shutil.rmtree(target)
+            except shutil.Error as err:
+                print('%s' % err)
 
         # Untar anew from tarball
         untar(name)
