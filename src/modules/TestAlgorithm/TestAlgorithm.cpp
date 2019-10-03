@@ -217,7 +217,7 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
                         correlationXY->Fill(refCluster->global().y() - cluster->global().x());
                         correlationYX->Fill(refCluster->global().x() - cluster->global().y());
                     }
-                    //                    correlationTime[m_detector->name()]->Fill(Units::convert(timeDifference, "s"));
+
                     correlationTime->Fill(timeDifference); // time difference in ns
                     LOG(DEBUG) << "Time difference: " << Units::display(timeDifference, {"ns", "us"})
                                << ", Time ref. cluster: " << Units::display(refCluster->timestamp(), {"ns", "us"})
