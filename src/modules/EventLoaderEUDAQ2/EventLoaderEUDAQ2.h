@@ -18,6 +18,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TProfile.h>
+#include <TProfile2D.h>
 
 #include "core/module/Module.hpp"
 #include "eudaq/FileReader.hh"
@@ -140,6 +141,9 @@ namespace corryvreckan {
 
         // 2D histograms
         TH2F* hitmap;
+
+        // 2D profiles
+        TProfile2D* hRawValuesMap;
 
         // 1D histograms
         TH1F* hPixelTimes;

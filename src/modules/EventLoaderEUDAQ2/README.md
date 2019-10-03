@@ -25,6 +25,9 @@ If yes, the corresponding pixels are added to the clipboard for this event.
 If earlier, the next event is read until a matching event is found.
 If later, the pointer to this event is kept and it continues with the next detector.
 
+Data from detectors with triggered readout and without timestamps are matched against trigger IDs stored in the currently defined Corryvreckan event.
+In case of a match, the timestamp of the respective trigger is assigned to all pixels of the device.
+
 If no detector is capable of defining events, the `[Metronome]` model needs to be used.
 
 Tags stores in the EUDAQ2 event header are read, a conversion to a double value is attempted and, if successful, a profile with the value over the number of events in the respective run is automatically allocated and filled. This feature can e.g. be used to log temperatures of the devices during data taking, simply storing the temperature as event tags.
@@ -82,7 +85,7 @@ Also, more complex constructs such as arrays or matrices read by the Corryvrecka
 * 2D hitmap
 * 1D pixel hit times (3 second range)
 * 1D pixel hit times (3000 second range)
-* 1D pixel raw value histogram (corresponds to chip-specific charge equivalent measurement, e.g. ToT)
+* 1D and 2D pixel raw value histograms (corresponding to chip-specific charge equivalent measurement, e.g. ToT)
 * 1D pixel multiplicity per Corryvreckan event histogram
 * 1D eudaq event start histogram (3 second range)
 * 1D eudaq event start histogram (3000 second range)
