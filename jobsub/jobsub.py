@@ -26,9 +26,9 @@ def parseIntegerString(inputstr=""):
 
     Modified such that it returns a list of strings
     if the conversion to integer fails, e.g.
-    10ns, 20ns
+    "10ns, 20ns"
     would return:
-    10ns, 20ns
+    "10ns", "20ns"
     """
     selection = list()
     # tokens are comma seperated values
