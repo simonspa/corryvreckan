@@ -24,6 +24,11 @@ def parseIntegerString(inputstr=""):
     as expected...
     (from http://thoughtsbyclayg.blogspot.de/2008/10/parsing-list-of-numbers-in-python.html)
 
+    Modified such that it returns a list of strings
+    if the conversion to integer fails, e.g.
+    10ns, 20ns
+    would return:
+    10ns, 20ns
     """
     selection = list()
     # tokens are comma seperated values
