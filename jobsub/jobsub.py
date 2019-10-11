@@ -588,6 +588,8 @@ def main(argv=None):
 
                             log.debug("Next parameter: %s", parameters_csv[line][field])
                             log.debug("parameters_csv[line][field][0] = %s", parameters_csv[line][field][0])
+                            # remove all whitespaces from beginning and end of string (not in the middle)
+                            parameters_csv[line][field] = parameters_csv[line][field].strip()
                             if parameters_csv[line][field][0] == '{':
                                 log.debug("Found open bracket, look for matching close bracket.")
                                 parameter_field = parameters_csv[line][field].replace("{", "")
