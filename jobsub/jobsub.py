@@ -128,6 +128,7 @@ def loadparamsfromcsv(csvfilename, runs):
             except StopIteration:
                 log.debug("End of csv file reached, sample limited to " + str(len(sample))+ " bytes")
             dialect = csv.Sniffer().sniff(sample) # test csv file format details
+            dialect.escapechar = "\\"
             log.debug("Determined the CSV dialect as follows: delimiter=%s, doublequote=%s, escapechar=%s, lineterminator=%s, quotechar=%s , quoting=%s, skipinitialspace=%s", dialect.delimiter, dialect.doublequote, dialect.escapechar, list(ord(c) for c in dialect.lineterminator), dialect.quotechar, dialect.quoting, dialect.skipinitialspace)
             filteredfile.rewind() # back to beginning of file
             reader = csv.DictReader(filteredfile, dialect=dialect) # now process CSV file contents here and load them into memory
