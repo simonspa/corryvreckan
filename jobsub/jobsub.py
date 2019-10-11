@@ -608,7 +608,8 @@ def main(argv=None):
                                         current_parameter.append(parameters_csv[line][field])
                                         log.debug("No delimiter found for '%s'", field)
                                 else:
-                                    log.error("No matching close bracket found.")
+                                    log.error("No matching close bracket found. Please update CSV file.")
+                                    exit(1)
 
                             else:
                                 log.debug("No bracket found, interpret as one string.")
