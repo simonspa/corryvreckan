@@ -647,7 +647,7 @@ def main(argv=None):
                     # Get "jobtask" as basename of the configuration file:
                     jobtask = os.path.splitext(os.path.basename(args.conf_file))[0]
                     # Write the steering file:
-                    basefilename = jobtask+"_"+runnr+appendix
+                    basefilename = jobtask+"_run"+runnr+appendix
                     log.info("basefilename = " + basefilename)
                     steeringFile = open(basefilename+".conf", "w")
 
