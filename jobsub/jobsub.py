@@ -548,6 +548,7 @@ def main(argv=None):
     # now loop over all runs
     for run in runs:
         n_repeat = 0 # counts how many times one run occurs in the config file with different configurations
+        i_repeat = 0 # repeat until i_repeat = n_repeat
         while True: # break when not repeating the same run again
             if keepRunning['Sigint'] == 'seen':
                 log.critical("Stopping to process remaining runs now")
@@ -580,40 +581,51 @@ def main(argv=None):
                         if parameters_csv[line]["runnumber"] != runnr:
                             continue
                         appendix = '' # empty string if one run is analysed only once
-                        current_parameter = []
                         for field in parameters_csv[line].keys():
 
-                            # If current_parameter is empty, get the next one from the csv line
-                            if n_repeat == 0:
-                                log.debug(parameters_csv[line][field])
-                                # Check if csv field contains "," or "-", i.e. a set or range of values
-                                # If not, no conversion is required (or even possible in case of file paths etc.)
-                                # If yes, call parseIntegerString() and create multiple configuration files.
-                                if any(delimiter in parameters_csv[line][field] for delimiter in [',','-']):
-                                    current_parameter = parseIntegerString(parameters_csv[line][field])
-                                    n_repeat = len(current_parameter)
-                                    log.debug("Found delimiter for '%s'", field)
-                                else:
-                                    n_repeat = 0
-                                    current_parameter = parameters_csv[line][field]
-                                    log.debug("No delimiter found for '%s'", field)
-                            else:
-                                log.debug("current_parameter = '%s'", current_parameter)
+                            # prepare empty list in case of a set or range of parameters like {10,12}
+                            current_parameter = list()
 
+                            log.debug("Next parameter: %s", parameters_csv[line][field])
+                            log.debug("parameters_csv[line][field][0] = %s", parameters_csv[line][field][0])
+                            if parameters_csv[line][field][0] == '{':
+                                log.debug("Found open bracket, look for matching close bracket.")
+                                parameter_field = parameters_csv[line][field].replace("{", "")
+                                if parameter_field[-1] == '}':
+                                    log.debug("Found matching close bracket, Interpret as range or set of parameters.")
+                                    parameter_field = parameter_field.replace("}", "")
+                                    # Check if csv field contains "," or "-", i.e. a set or range of values
+                                    # If not, no conversion is required (or even possible in case of file paths etc.)
+                                    # If yes, call parseIntegerString() and create multiple configuration files.
+                                    if any(delimiter in parameter_field for delimiter in [',','-']):
+                                        current_parameter = parseIntegerString(parameter_field)
+                                        n_repeat = len(current_parameter)
+                                        log.debug("Found delimiter for '%s'", field)
+                                    else:
+                                        # current_parameter needs to be a list to get len(list) = 1
+                                        current_parameter.append(parameters_csv[line][field])
+                                        log.debug("No delimiter found for '%s'", field)
+                                else:
+                                    log.error("No matching close bracket found.")
+
+                            else:
+                                log.debug("No bracket found, interpret as one string.")
+                                current_parameter.append(parameters_csv[line][field])
+
+                            log.debug("current_parameter has length %d", len(current_parameter))
                             # check if we actually find all parameters from the csv file in the steering file - warn if not
                             log.debug("Parsing steering file for csv field name '%s'", field)
                             try:
                                 # check that the field name is not empty and do not yet replace the runnumber
                                 if not field == "":
-                                    if n_repeat == 0:
+                                    if len(current_parameter) == 1:
                                         steeringString = ireplace("@" + field + "@", parameters_csv[line][field], steeringString)
-                                        current_parameter = []
                                     else:
-                                        steeringString = ireplace("@" + field + "@", str(current_parameter[n_repeat-1]), steeringString)
-                                        appendix = appendix + '_' +field + str(current_parameter[n_repeat-1])
-                                        n_repeat -= 1
+                                        log.debug("list index, n_repeat = '%d', i_repeat = '%d'", n_repeat, i_repeat)
+                                        steeringString = ireplace("@" + field + "@", str(current_parameter[i_repeat]), steeringString)
+                                        appendix = appendix + '_' +field + str(current_parameter[i_repeat])
+                                        i_repeat += 1
                                         log.debug("appendix is now '%s'", appendix)
-                                        log.debug("n_repeat decremented to '%d'", n_repeat)
                             except EOFError:
                                 log.warn("Parameter '" + field + "' from the csv file was not found in the template file (already overwritten by config file parameters?)")
                     except KeyError:
@@ -661,16 +673,14 @@ def main(argv=None):
                             log.error("Corryvreckan returned with error code "+str(rcode))
                         zipLogs(parameters["logpath"], basefilename)
 
-                    log.debug("n_repeat = '%d'", n_repeat)
-                    if n_repeat == 0: # break the while loop
-                        break
-                # end while true
-            # end for line in parameters_csv: # go through line by line
-        # end if parameters_csv
+                    # Return to old directory:
+                    if args.subdir:
+                        os.chdir(savedPath)
 
-        # Return to old directory:
-        if args.subdir:
-            os.chdir(savedPath)
+            if (i_repeat == n_repeat): # break the while loop
+                log.debug("Finished repeating run '%d'.", run)
+                break
+            # end while true
 
         # return to the previous signal handler
         signal.signal(signal.SIGINT, prevINTHandler)
