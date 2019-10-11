@@ -15,7 +15,7 @@ to see the list of command line options.
 import sys
 import logging
 
-def parseIntegerString(nputstr=""):
+def parseIntegerString(inputstr=""):
     """
     return a list of selected values when a string in the form:
     1-4,6
@@ -27,22 +27,26 @@ def parseIntegerString(nputstr=""):
     """
     selection = list()
     # tokens are comma seperated values
-    tokens = [substring.strip() for substring in nputstr.split(',')]
+    tokens = [substring.strip() for substring in inputstr.split(',')]
     for i in tokens:
         try:
             # typically tokens are plain old integers
             selection.append(int(i))
         except ValueError:
-            # if not, then it might be a range
-            token = [int(k.strip()) for k in i.split('-')]
-            if len(token) > 1:
-                token.sort()
-                # we have items seperated by a dash
-                # try to build a valid range
-                first = token[0]
-                last = token[len(token)-1]
-                for value in range(first, last+1):
-                    selection.append(value)
+            try:
+                # if not, then it might be a range
+                token = [int(k.strip()) for k in i.split('-')]
+                if len(token) > 1:
+                    token.sort()
+                    # we have items seperated by a dash
+                    # try to build a valid range
+                    first = token[0]
+                    last = token[len(token)-1]
+                    for value in range(first, last+1):
+                        selection.append(value)
+            except ValueError:
+                # if not treat as string, not integer
+                selection.append(i)
     return selection # end parseIntegerString
 
 def ireplace(old, new, text):
