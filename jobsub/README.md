@@ -128,11 +128,11 @@ If a set or a range is detected, the parameter plus its value are attached to th
 Ranges can only be used for integer values (without units).
 However, a set or range can oly be used for one parameter, i.e. multi-dimensional parameters scans are not supported and have to be separated into individual CSV files.
 
-* `"{10,12-14}"` translates to `10, 12, 13, 14` in consecutive jobs for the same run number
-* `"{10ns, 20ns}"` tranlates to `10ns, 20ns` in consecutive jobs for the same run number
+* `"{10,12-14}"` translates to `10`, `12`, `13`, `14` in consecutive jobs for the same run number
+* `"{10ns, 20ns}"` tranlates to `10ns`, `20ns` in consecutive jobs for the same run number
 * `"string,with,comma"` translates to `string,with,comma` in one job
-* `"{string,with,comma}"` which translates to `string, with, comma` in consecutive jobs for the same run number
-* `"\""string in quotes\""` translates to `"string in quotes"`
+* `"{string,with,comma}"` which translates to `string`, `with`, `comma` in consecutive jobs for the same run number
+* `"\string in quotes\""` translates to `"string in quotes"`
 
 If a range or set of parameters is detector, the naming scheme of the auto-generated configuration files is extended from `MyAnalysis_run@RunNUmber@.conf` to `MyAnalysis_run@RunNUmber@_OtherParameter@OtherParameter@.conf`
 
