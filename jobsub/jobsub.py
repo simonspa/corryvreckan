@@ -592,10 +592,10 @@ def main(argv=None):
                             parameters_csv[line][field] = parameters_csv[line][field].strip()
                             if parameters_csv[line][field][0] == '{':
                                 log.debug("Found open bracket, look for matching close bracket.")
-                                if parameter_field[-1] == '}':
+                                if parameters_csv[line][field][-1] == '}':
                                     log.debug("Found matching close bracket, Interpret as range or set of parameters.")
                                     # remove curly brackets:
-                                    parameter_field = parameter_field.strip("{}")
+                                    parameter_field = parameters_csv[line][field].strip("{}")
                                     # Check if csv field contains "," or "-", i.e. a set or range of values
                                     # If not, no conversion is required (or even possible in case of file paths etc.)
                                     # If yes, call parseIntegerString() and create multiple configuration files.
