@@ -681,7 +681,7 @@ def main(argv=None):
                         os.chdir(savedPath)
 
             if (i_repeat == n_repeat): # break the while loop
-                log.debug("Finished repeating run '%d'.", run)
+                log.debug("Finished scanning run %d'.", run)
                 break
             # end while true
 
