@@ -259,7 +259,7 @@ namespace corryvreckan {
 
         /**
          * @brief Return the thickness of the senosr assembly layer (sensor+support) in fractions of radiation length
-         * @return thickness in in radiation length
+         * @return thickness in fractions of radiation length
          */
         double materialBudget() const { return m_materialBudget; }
 
