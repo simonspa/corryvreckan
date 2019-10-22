@@ -85,8 +85,8 @@ namespace corryvreckan {
         size_t nClusters() const { return m_trackClusters.size(); }
 
         ROOT::Math::XYZPoint intercept(double z) const;
-        ROOT::Math::XYZPoint state() const { return m_state; }
-        ROOT::Math::XYZVector direction() const { return m_direction; }
+        ROOT::Math::XYZPoint state(std::string) const { return m_state; }
+        ROOT::Math::XYZVector direction(std::string) const { return m_direction; }
 
     protected:
         // Calculate the chi2 of the track
