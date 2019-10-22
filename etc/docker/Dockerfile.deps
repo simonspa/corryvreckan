@@ -52,7 +52,7 @@ RUN source scl_source enable devtoolset-7 && \
     rm -rf ${PEARYPATH}/{src,build}
 
 
-ENV EUDAQ2_VERSION 2.3.0
+ENV EUDAQ2_VERSION 2.4.1
 
 # Add layer for EUDAQ2
 ENV EUDAQ2PATH="/opt/eudaq2"
@@ -66,11 +66,10 @@ RUN source scl_source enable devtoolset-7 && \
     cmake3 -DEUDAQ_BUILD_EXECUTABLE=OFF \
            -DEUDAQ_BUILD_GUI=OFF \
            -DUSER_CARIBOU_BUILD=ON \
-           -DPEARYLIBS=${PEARYPATH}/lib \
-           -DPEARYINCLUDE=${PEARYPATH}/include/peary \
            -DUSER_EUDET_BUILD=ON \
            -DUSER_TLU_BUILD=ON \
            -DEUDAQ_INSTALL_PREFIX=../ \
+	   -DCMAKE_PREFIX_PATH=${PEARYPATH}/share/cmake/Modules/ \
            ../src/eudaq-${EUDAQ2_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
