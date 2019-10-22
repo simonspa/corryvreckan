@@ -58,7 +58,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     // Size of the pixels
     m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
     // Detector thickness in radiationb length
-    m_thickness = config.get<double>("thickness", 0.02); // fixme: no default here pls
+    m_materialBudget = config.get<double>("material_budget");
     // Intrinsic position resolution, defaults to 4um:
     m_resolution = config.get<ROOT::Math::XYVector>("resolution", ROOT::Math::XYVector(0.004, 0.004));
 
