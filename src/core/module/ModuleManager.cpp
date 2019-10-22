@@ -517,6 +517,7 @@ void ModuleManager::run() {
     LOG(STATUS) << "========================| Event loop |========================";
     m_events = 0;
     m_tracks = 0;
+    m_pixels = 0;
 
     while(1) {
         bool run = true;
@@ -574,8 +575,8 @@ void ModuleManager::run() {
         }
 
         // Print statistics:
-        auto tracks = m_clipboard->getData<Track>();
-        m_tracks += (tracks == nullptr ? 0 : static_cast<int>(tracks->size()));
+        m_tracks += static_cast<int>(m_clipboard->countObjects<Track>());
+        m_pixels += static_cast<int>(m_clipboard->countObjects<Pixel>());
 
         if(m_events % 100 == 0) {
 
@@ -588,7 +589,9 @@ void ModuleManager::run() {
             };
 
             LOG_PROGRESS(STATUS, "event_loop")
-                << "Ev: " << kilo_or_mega(m_events) << " Tr: " << kilo_or_mega(m_tracks) << " (" << std::setprecision(3)
+                << "Ev: " << kilo_or_mega(m_events) << " "
+                << "Px: " << kilo_or_mega(m_pixels) << " "
+                << "Tr: " << kilo_or_mega(m_tracks) << " (" << std::setprecision(3)
                 << (static_cast<double>(m_tracks) / m_events) << "/ev)"
                 << (m_clipboard->isEventDefined()
                         ? " t = " + Units::display(m_clipboard->getEvent()->start(), {"ns", "us", "ms", "s"})
