@@ -710,11 +710,19 @@ void ModuleManager::finaliseAll() {
 
     // Write out update detectors file:
     if(global_config.has("detectors_file_updated")) {
-        std::string file_name = global_config.getPath("detectors_file_updated");
+        std::string path = global_config.getPath("detectors_file_updated");
         // Check if the file exists
-        std::ofstream file(file_name);
+        if(corryvreckan::path_is_file(path)) {
+            if(global_config.get<bool>("deny_overwrite", false)) {
+                throw RuntimeError("Overwriting of existing detectors file " + path + " denied");
+            }
+            LOG(WARNING) << "Detectors file " << path << " exists and will be overwritten.";
+            corryvreckan::remove_file(path);
+        }
+
+        std::ofstream file(path);
         if(!file) {
-            throw ConfigFileUnavailableError(file_name);
+            throw RuntimeError("Cannot create detectors file " + path);
         }
 
         ConfigReader final_detectors;
@@ -723,7 +731,7 @@ void ModuleManager::finaliseAll() {
         }
 
         final_detectors.write(file);
-        LOG(STATUS) << "Wrote updated detector configuration to " << file_name;
+        LOG(STATUS) << "Wrote updated detector configuration to " << path;
     }
 
     // Check the timing for all events
