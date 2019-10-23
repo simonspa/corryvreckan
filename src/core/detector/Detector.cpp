@@ -256,7 +256,8 @@ Configuration Detector::getConfiguration() const {
 
     config.setMatrix("roi", m_roi);
     // material budget
-    config.set("material_budget", m_materialBudget);
+    if(m_materialBudget > 0.0)
+        config.set("material_budget", m_materialBudget);
     return config;
 }
 
