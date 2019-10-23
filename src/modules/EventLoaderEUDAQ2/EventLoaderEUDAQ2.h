@@ -26,7 +26,7 @@
 #include "eudaq/StdEventConverter.hh"
 #include "objects/Cluster.hpp"
 #include "objects/Pixel.hpp"
-#include "objects/Track.hpp"
+#include "objects/StraightLineTrack.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules

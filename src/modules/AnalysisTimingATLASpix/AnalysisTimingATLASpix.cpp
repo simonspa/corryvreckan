@@ -11,7 +11,7 @@
 
 #include "objects/Cluster.hpp"
 #include "objects/Pixel.hpp"
-#include "objects/Track.hpp"
+#include "objects/StraightLineTrack.hpp"
 
 #include "TF1.h"
 #include "TFile.h"

@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include "core/module/Module.hpp"
-#include "objects/Track.hpp"
+#include "objects/StraightLineTrack.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules

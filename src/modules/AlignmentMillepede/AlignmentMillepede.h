@@ -2,7 +2,7 @@
 #define AlignmentMillepede_H 1
 
 #include "core/module/Module.hpp"
-#include "objects/Track.hpp"
+#include "objects/StraightLineTrack.hpp"
 
 namespace corryvreckan {
 

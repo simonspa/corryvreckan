@@ -11,7 +11,7 @@
 
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
-#include "objects/Track.hpp"
+#include "objects/StraightLineTrack.hpp"
 
 namespace corryvreckan {
 
