@@ -1,85 +1,25 @@
-#include "Track.hpp"
+#include "StraightLineTrack.hpp"
 #include "exceptions.h"
 
 using namespace corryvreckan;
 
-Track::Track() : m_direction(0, 0, 1.), m_state(0, 0, 0.) {}
-Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp()) {
-    auto trackClusters = track.clusters();
-    for(auto& track_cluster : trackClusters) {
-        Cluster* cluster = new Cluster(*track_cluster);
-        addCluster(cluster);
-    }
+StraightLineTrack::StraightLineTrack() : Track(), m_direction(0, 0, 1.), m_state(0, 0, 0.) {}
 
-    auto associatedClusters = track.associatedClusters();
-    for(auto& assoc_cluster : associatedClusters) {
-        Cluster* cluster = new Cluster(*assoc_cluster);
-        addAssociatedCluster(cluster);
-    }
-    m_state = track.m_state;
-    m_direction = track.m_direction;
-}
+double StraightLineTrack::distance2(const Cluster* cluster) const {
 
-void Track::addCluster(const Cluster* cluster) {
-    m_trackClusters.push_back(const_cast<Cluster*>(cluster));
-}
-void Track::addAssociatedCluster(const Cluster* cluster) {
-    m_associatedClusters.push_back(const_cast<Cluster*>(cluster));
-}
-
-std::vector<Cluster*> Track::clusters() const {
-    std::vector<Cluster*> clustervec;
-    for(auto& cluster : m_trackClusters) {
-        if(!cluster.IsValid() || cluster.GetObject() == nullptr) {
-            throw MissingReferenceException(typeid(*this), typeid(Cluster));
-        }
-        clustervec.emplace_back(dynamic_cast<Cluster*>(cluster.GetObject()));
-    }
-
-    // Return as a vector of pixels
-    return clustervec;
-}
-
-std::vector<Cluster*> Track::associatedClusters() const {
-    std::vector<Cluster*> clustervec;
-    for(auto& cluster : m_associatedClusters) {
-        if(!cluster.IsValid() || cluster.GetObject() == nullptr) {
-            throw MissingReferenceException(typeid(*this), typeid(Cluster));
-        }
-        clustervec.emplace_back(dynamic_cast<Cluster*>(cluster.GetObject()));
-    }
-
-    // Return as a vector of pixels
-    return clustervec;
-}
-
-double Track::distance2(const Cluster* cluster) const {
-
-    // Get the track X and Y at the cluster z position
-    double trackX = m_state.X() + m_direction.X() * cluster->global().z();
-    double trackY = m_state.Y() + m_direction.Y() * cluster->global().z();
+    // Get the StraightLineTrack X and Y at the cluster z position
+    double StraightLineTrackX = m_state.X() + m_direction.X() * cluster->global().z();
+    double StraightLineTrackY = m_state.Y() + m_direction.Y() * cluster->global().z();
 
     // Calculate the 1D residuals
-    double dx = (trackX - cluster->global().x());
-    double dy = (trackY - cluster->global().y());
+    double dx = (StraightLineTrackX - cluster->global().x());
+    double dy = (StraightLineTrackY - cluster->global().y());
 
     // Return the distance^2
     return (dx * dx + dy * dy);
 }
 
-bool Track::hasClosestCluster() const {
-    return closestCluster != nullptr;
-}
-
-void Track::setClosestCluster(const Cluster* cluster) {
-    closestCluster = const_cast<Cluster*>(cluster);
-}
-
-Cluster* Track::getClosestCluster() const {
-    return dynamic_cast<Cluster*>(closestCluster.GetObject());
-}
-
-void Track::calculateChi2() {
+void StraightLineTrack::calculateChi2() {
 
     // Get the number of clusters
     m_ndof = static_cast<double>(m_trackClusters.size()) - 2.;
@@ -102,9 +42,9 @@ void Track::calculateChi2() {
     m_chi2ndof = m_chi2 / m_ndof;
 }
 
-double Track::operator()(const double* parameters) {
+double StraightLineTrack::operator()(const double* parameters) {
 
-    // Update the track gradient and intercept
+    // Update the StraightLineTrack gradient and intercept
     this->m_direction.SetX(parameters[0]);
     this->m_state.SetX(parameters[1]);
     this->m_direction.SetY(parameters[2]);
@@ -117,7 +57,7 @@ double Track::operator()(const double* parameters) {
     return m_chi2;
 }
 
-void Track::fit() {
+void StraightLineTrack::fit() {
 
     double vecx[2] = {0., 0.};
     double vecy[2] = {0., 0.};
@@ -157,14 +97,14 @@ void Track::fit() {
     if(detx == 0. || dety == 0.)
         return;
 
-    // Get the track parameters
+    // Get the StraightLineTrack parameters
     double slopex = (vecx[1] * matx[0][0] - vecx[0] * matx[1][0]) / detx;
     double slopey = (vecy[1] * maty[0][0] - vecy[0] * maty[1][0]) / dety;
 
     double interceptx = (vecx[0] * matx[1][1] - vecx[1] * matx[1][0]) / detx;
     double intercepty = (vecy[0] * maty[1][1] - vecy[1] * maty[1][0]) / dety;
 
-    // Set the track parameters
+    // Set the StraightLineTrack parameters
     m_state.SetX(interceptx);
     m_state.SetY(intercepty);
     m_state.SetZ(0.);
@@ -177,45 +117,12 @@ void Track::fit() {
     this->calculateChi2();
 }
 
-bool Track::isAssociated(Cluster* cluster) const {
-    auto it = find_if(m_associatedClusters.begin(), m_associatedClusters.end(), [&cluster](TRef cl) {
-        auto acl = dynamic_cast<Cluster*>(cl.GetObject());
-        return acl == cluster;
-    });
-    if(it == m_associatedClusters.end()) {
-        return false;
-    }
-    return true;
-}
-
-bool Track::hasDetector(std::string detectorID) const {
-    auto it = find_if(m_trackClusters.begin(), m_trackClusters.end(), [&detectorID](TRef cl) {
-        auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
-        return cluster->getDetectorID() == detectorID;
-    });
-    if(it == m_trackClusters.end()) {
-        return false;
-    }
-    return true;
-}
-
-Cluster* Track::getClusterFromDetector(std::string detectorID) const {
-    auto it = find_if(m_trackClusters.begin(), m_trackClusters.end(), [&detectorID](TRef cl) {
-        auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
-        return cluster->getDetectorID() == detectorID;
-    });
-    if(it == m_trackClusters.end()) {
-        return nullptr;
-    }
-    return dynamic_cast<Cluster*>(it->GetObject());
-}
-
-ROOT::Math::XYZPoint Track::intercept(double z) const {
+ROOT::Math::XYZPoint StraightLineTrack::intercept(double z) const {
     return m_state + m_direction * z;
 }
 
-void Track::print(std::ostream& out) const {
-    out << "Track " << this->m_state.x() << ", " << this->m_state.y() << ", " << this->m_state.z() << ", "
+void StraightLineTrack::print(std::ostream& out) const {
+    out << "StraightLineTrack " << this->m_state.x() << ", " << this->m_state.y() << ", " << this->m_state.z() << ", "
         << this->m_direction.x() << ", " << this->m_direction.y() << ", " << this->m_direction.z() << ", " << this->m_chi2
         << ", " << this->m_ndof << ", " << this->m_chi2ndof << ", " << this->timestamp();
 }
