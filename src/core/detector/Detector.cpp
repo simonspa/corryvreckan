@@ -58,7 +58,9 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     // Size of the pixels
     m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
     // Material budget of detector, including support material
-    m_materialBudget = config.get<double>("material_budget");
+    if(!config.has("material_budget"))
+        LOG(WARNING) << "No material budget given for " << m_detectorName << ", assuming zero";
+    m_materialBudget = config.get<double>("material_budget", 0.0);
     // Intrinsic position resolution, defaults to 4um:
     m_resolution = config.get<ROOT::Math::XYVector>("resolution", ROOT::Math::XYVector(0.004, 0.004));
 
@@ -253,7 +255,8 @@ Configuration Detector::getConfiguration() const {
     }
 
     config.setMatrix("roi", m_roi);
-
+    // material budget
+    config.set("material_budget", m_materialBudget);
     return config;
 }
 
