@@ -60,11 +60,12 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     // Material budget of detector, including support material
     if(!config.has("material_budget")) {
         LOG(WARNING) << "No material budget given for " << m_detectorName << ", assuming zero";
-    }
-    m_materialBudget = config.get<double>("material_budget", 0.0);
-    if(m_materialBudget < 0) {
+    } else if(config.get<double>("material_budget") < 0) {
         throw InvalidValueError(config, "material_budget", "Material budget is negative");
+    } else {
+        m_materialBudget = config.get<double>("material_budget");
     }
+
     // Intrinsic position resolution, defaults to 4um:
     m_resolution = config.get<ROOT::Math::XYVector>("resolution", ROOT::Math::XYVector(0.004, 0.004));
 
