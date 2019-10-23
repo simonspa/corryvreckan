@@ -60,6 +60,12 @@ namespace corryvreckan {
         template <typename T> std::shared_ptr<std::vector<T*>> getData(const std::string& key = "") const;
 
         /**
+         * @brief Method to count the number of objects of a given type on the clipboard
+         * @param key Identifying key of objects to be counted. An empty key will count all objects available.
+         */
+        template <typename T> size_t countObjects(const std::string& key = "") const;
+
+        /**
          * @brief Check whether an event has been defined
          * @return true if an event has been defined, false otherwise
          */
