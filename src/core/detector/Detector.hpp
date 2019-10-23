@@ -257,6 +257,12 @@ namespace corryvreckan {
          */
         bool isWithinROI(Cluster* cluster) const;
 
+        /**
+         * @brief Return the thickness of the senosr assembly layer (sensor+support) in fractions of radiation length
+         * @return thickness in fractions of radiation length
+         */
+        double materialBudget() const { return m_materialBudget; }
+
     private:
         // Roles of the detector
         DetectorRole m_role;
@@ -275,6 +281,7 @@ namespace corryvreckan {
         XYVector m_resolution;
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels;
         double m_timingOffset;
+        double m_materialBudget;
 
         std::vector<std::vector<int>> m_roi;
         static int winding_number(std::pair<int, int> probe, std::vector<std::vector<int>> polygon);

@@ -9,7 +9,7 @@ FIND_FILE(ROOT_MACROS_FILE
 
 IF(NOT ROOT_MACROS_FILE)
     MESSAGE(WARNING "Cannot find ROOT macros, including generic file as fallback.")
-    INCLUDE(${ROOT_USE_FILE})
+    INCLUDE("${ROOT_USE_FILE}")
 ELSE()
     INCLUDE(${ROOT_MACROS_FILE})
 ENDIF()

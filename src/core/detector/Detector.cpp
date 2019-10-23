@@ -57,6 +57,14 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
     // Size of the pixels
     m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
+    // Material budget of detector, including support material
+    if(!config.has("material_budget")) {
+        LOG(WARNING) << "No material budget given for " << m_detectorName << ", assuming zero";
+    } else if(config.get<double>("material_budget") < 0) {
+        throw InvalidValueError(config, "material_budget", "Material budget has to be positive");
+    } else {
+        m_materialBudget = config.get<double>("material_budget");
+    }
 
     // Intrinsic position resolution, defaults to 4um:
     m_resolution = config.get<ROOT::Math::XYVector>("resolution", ROOT::Math::XYVector(0.004, 0.004));
@@ -252,7 +260,10 @@ Configuration Detector::getConfiguration() const {
     }
 
     config.setMatrix("roi", m_roi);
-
+    // material budget
+    if(m_materialBudget > 0.0) {
+        config.set("material_budget", m_materialBudget);
+    }
     return config;
 }
 
@@ -260,16 +271,17 @@ Configuration Detector::getConfiguration() const {
 PositionVector3D<Cartesian3D<double>> Detector::getIntercept(const Track* track) const {
 
     // Get the distance from the plane to the track initial state
-    double distance = (m_origin.X() - track->state().X()) * m_normal.X();
-    distance += (m_origin.Y() - track->state().Y()) * m_normal.Y();
-    distance += (m_origin.Z() - track->state().Z()) * m_normal.Z();
-    distance /= (track->direction().X() * m_normal.X() + track->direction().Y() * m_normal.Y() +
-                 track->direction().Z() * m_normal.Z());
+    double distance = (m_origin.X() - track->state(m_detectorName).X()) * m_normal.X();
+    distance += (m_origin.Y() - track->state(m_detectorName).Y()) * m_normal.Y();
+    distance += (m_origin.Z() - track->state(m_detectorName).Z()) * m_normal.Z();
+    distance /= (track->direction(m_detectorName).X() * m_normal.X() + track->direction(m_detectorName).Y() * m_normal.Y() +
+                 track->direction(m_detectorName).Z() * m_normal.Z());
 
     // Propagate the track
-    PositionVector3D<Cartesian3D<double>> globalIntercept(track->state().X() + distance * track->direction().X(),
-                                                          track->state().Y() + distance * track->direction().Y(),
-                                                          track->state().Z() + distance * track->direction().Z());
+    PositionVector3D<Cartesian3D<double>> globalIntercept(
+        track->state(m_detectorName).X() + distance * track->direction(m_detectorName).X(),
+        track->state(m_detectorName).Y() + distance * track->direction(m_detectorName).Y(),
+        track->state(m_detectorName).Z() + distance * track->direction(m_detectorName).Z());
     return globalIntercept;
 }
 

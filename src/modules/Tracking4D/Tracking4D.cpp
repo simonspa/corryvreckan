@@ -225,8 +225,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         trackChi2->Fill(track->chi2());
         clustersPerTrack->Fill(static_cast<double>(track->nClusters()));
         trackChi2ndof->Fill(track->chi2ndof());
-        trackAngleX->Fill(atan(track->direction().X()));
-        trackAngleY->Fill(atan(track->direction().Y()));
+        trackAngleX->Fill(atan(track->direction(track->clusters().front()->detectorID()).X()));
+        trackAngleY->Fill(atan(track->direction(track->clusters().front()->detectorID()).Y()));
 
         // Make residuals
         auto trackClusters = track->clusters();
