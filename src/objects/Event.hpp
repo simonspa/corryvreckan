@@ -55,15 +55,7 @@ namespace corryvreckan {
          * @param  frame_start Timestamp to get position for
          * @return             Position of the given timestamp with respect to the defined event.
          */
-        Position getTimestampPosition(double timestamp) {
-            if(timestamp < start()) {
-                return Position::BEFORE;
-            } else if(end() < timestamp) {
-                return Position::AFTER;
-            } else {
-                return Position::DURING;
-            }
-        }
+        Position getTimestampPosition(double timestamp) const;
 
         /**
          * @brief Returns position of a time frame defined by a start and end point relative to the current event
@@ -79,32 +71,7 @@ namespace corryvreckan {
          * @param  inclusive   Boolean to select inclusive or exclusive mode
          * @return             Position of the given time frame with respect to the defined event.
          */
-        Position getFramePosition(double frame_start, double frame_end, bool inclusive = true) {
-            // The frame is ill-defined, we have no idea what to do with this data:
-            if(frame_end < frame_start) {
-                return Position::UNKNOWN;
-            }
-
-            if(inclusive) {
-                // Return DURING if there is any overlap
-                if(frame_end < start()) {
-                    return Position::BEFORE;
-                } else if(end() < frame_start) {
-                    return Position::AFTER;
-                } else {
-                    return Position::DURING;
-                }
-            } else {
-                // Return DURING only if fully covered
-                if(frame_start < start()) {
-                    return Position::BEFORE;
-                } else if(end() < frame_end) {
-                    return Position::AFTER;
-                } else {
-                    return Position::DURING;
-                }
-            }
-        }
+        Position getFramePosition(double frame_start, double frame_end, bool inclusive = true) const;
 
         /**
          * @brief Returns position of a given trigger ID with respect to the currently defined event.
@@ -116,27 +83,7 @@ namespace corryvreckan {
          * @param  trigger_id Given trigger ID to check
          * @return            Position of the given trigger ID with respect to the defined event.
          */
-        Position getTriggerPosition(uint32_t trigger_id) const {
-            // If we have no triggers we cannot make a statement:
-            if(trigger_list_.empty()) {
-                return Position::UNKNOWN;
-            }
-
-            if(hasTriggerID(trigger_id)) {
-                return Position::DURING;
-            } else if(trigger_list_.upper_bound(trigger_id) == trigger_list_.begin()) {
-                // Upper bound returns first element that is greater than the given key - in this case, the first map element
-                // is greater than the provided trigger number - which consequently is before the event.
-                return Position::BEFORE;
-            } else if(trigger_list_.lower_bound(trigger_id) == trigger_list_.end()) {
-                // Lower bound returns the first element that is *not less* than the given key - in this case, even the last
-                // map element is less than the trigger number - which consequently is after the event.
-                return Position::AFTER;
-            } else {
-                // We have not enough information to provide position information.
-                return Position::UNKNOWN;
-            }
-        }
+        Position getTriggerPosition(uint32_t trigger_id) const;
 
         std::map<uint32_t, double> triggerList() const { return trigger_list_; }
 
