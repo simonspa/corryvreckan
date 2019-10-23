@@ -88,7 +88,7 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint state(std::string) const { return m_state; }
         ROOT::Math::XYZVector direction(std::string) const { return m_direction; }
 
-    protected:
+    private:
         // Calculate the chi2 of the track
         void calculateChi2();
 
