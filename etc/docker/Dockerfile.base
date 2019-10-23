@@ -18,7 +18,8 @@ RUN yum -y install \
     libXft-devel libXext-devel \
     python \
     redhat-lsb-core \
-    git
+    git \
+    readline-devel
 
 ENTRYPOINT ["scl", "enable", "devtoolset-7"]
 CMD ["bash"]
