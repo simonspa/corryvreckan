@@ -61,7 +61,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     if(!config.has("material_budget")) {
         LOG(WARNING) << "No material budget given for " << m_detectorName << ", assuming zero";
     } else if(config.get<double>("material_budget") < 0) {
-        throw InvalidValueError(config, "material_budget", "Material budget is negative");
+        throw InvalidValueError(config, "material_budget", "Material budget has to be positive");
     } else {
         m_materialBudget = config.get<double>("material_budget");
     }
