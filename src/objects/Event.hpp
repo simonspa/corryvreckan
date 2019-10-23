@@ -15,14 +15,37 @@ namespace corryvreckan {
             AFTER,   // StandardEvent is after current event
         };
 
-        // Constructors and destructors
+        /**
+         * @brief Default constructor
+         */
         Event() = default;
+
+        /**
+         * @brief Constructor for event bojects
+         * @param start        Start timestamp of the event
+         * @param end          End timestamp of the event
+         * @param trigger_list Optional list of triggers assigned to this event, containing their ID and timestamps
+         */
         Event(double start, double end, std::map<uint32_t, double> trigger_list = std::map<uint32_t, double>())
             : Object(start), end_(end), trigger_list_(std::move(trigger_list)){};
 
-        double start() const { return timestamp(); };
-        double end() const { return end_; };
-        double duration() const { return (end_ - timestamp()); };
+        /**
+         * @brief Get the timestamp of the start of the event
+         * @return Start timestamp of the event
+         */
+        double start() const;
+
+        /**
+         * @brief Get the timestamp of the end of the event
+         * @return End timestamp of the event
+         */
+        double end() const;
+
+        /**
+         * @brief Get the duration of the event
+         * @return Duration of the event
+         */
+        double duration() const;
 
         /**
          * @brief Add a new trigger ID to this event
@@ -30,23 +53,23 @@ namespace corryvreckan {
          * @param trigger_ts Timestamp corresponding to the trigger
          *
          * Trigger IDs are only added if they do not exist yet. Adding the same trigger ID twice will not change the
-         *corresponding timestamp, the list remains unchanged.
+         * corresponding timestamp, the list remains unchanged.
          **/
-        void addTrigger(uint32_t trigger_id, double trigger_ts) { trigger_list_.emplace(trigger_id, trigger_ts); }
+        void addTrigger(uint32_t trigger_id, double trigger_ts);
 
         /**
          * @brief Check if trigger ID exists in current event
          * @param trigger_id ID of the trigger to be checked for
          * @return Bool whether trigger ID was found
          **/
-        bool hasTriggerID(uint32_t trigger_id) const { return (trigger_list_.find(trigger_id) != trigger_list_.end()); }
+        bool hasTriggerID(uint32_t trigger_id) const;
 
         /**
          * @brief Get trigger timestamp corresponding to a given trigger ID
          * @param trigger_id ID of the trigger for which the timestamp shall be returned
          * @return Timestamp corresponding to the trigger
          **/
-        double getTriggerTime(uint32_t trigger_id) const { return trigger_list_.find(trigger_id)->second; }
+        double getTriggerTime(uint32_t trigger_id) const;
 
         /**
          * @brief Returns position of a timestamp relative to the current event
@@ -85,7 +108,11 @@ namespace corryvreckan {
          */
         Position getTriggerPosition(uint32_t trigger_id) const;
 
-        std::map<uint32_t, double> triggerList() const { return trigger_list_; }
+        /**
+         * @brief Retrieve list with all triggers know to the event
+         * @return Map of tirgger IDs with their corresponding timestamps
+         */
+        std::map<uint32_t, double> triggerList() const;
 
         /**
          * @brief Print an ASCII representation of Pixel to the given stream
@@ -94,11 +121,14 @@ namespace corryvreckan {
         void print(std::ostream& out) const override;
 
     protected:
+        // Timestamp of the end of the event
         double end_;
+
+        // List with all triggers known to the event, containing the trigger ID and its timestamp
         std::map<uint32_t, double> trigger_list_{};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Event, 5)
+        ClassDefOverride(Event, 6)
     };
 } // namespace corryvreckan
 
