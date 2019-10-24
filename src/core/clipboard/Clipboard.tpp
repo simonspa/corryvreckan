@@ -29,4 +29,21 @@ namespace corryvreckan {
         return std::static_pointer_cast<std::vector<T*>>(m_data.at(typeid(T)).at(key));
     }
 
+    template <typename T> size_t Clipboard::countObjects(const std::string& key) const {
+        size_t number_of_objects = 0;
+
+        // Check if we have anything of this type:
+        if(m_data.count(typeid(T)) != 0) {
+            // Decide whether we should count all or just the ones identidied by a key:
+            if(key.empty()) {
+                for(const auto& block : m_data.at(typeid(T))) {
+                    number_of_objects += std::static_pointer_cast<std::vector<T*>>(block.second)->size();
+                }
+            } else if(m_data.at(typeid(T)).count(key) != 0) {
+                number_of_objects = std::static_pointer_cast<std::vector<T*>>(m_data.at(typeid(T)).at(key))->size();
+            }
+        }
+        return number_of_objects;
+    }
+
 } // namespace corryvreckan
