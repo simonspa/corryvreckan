@@ -116,7 +116,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
         LOG(DEBUG) << "Looping over clusters.";
         // Make a new track
-        Track* track = new Track();
+        auto track = new StraightLineTrack();
 
         // Add the cluster to the track
         track->addCluster(cluster);

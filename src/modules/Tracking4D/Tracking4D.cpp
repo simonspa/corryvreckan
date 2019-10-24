@@ -126,7 +126,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         // Make a new track
         LOG(DEBUG) << "Looking at next seed cluster";
 
-        Track* track = new Track();
+        auto track = new StraightLineTrack();
         // Add the cluster to the track
         track->addCluster(cluster);
         track->setTimestamp(cluster->timestamp());
