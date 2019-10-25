@@ -7,7 +7,7 @@
 #include <TRef.h>
 
 #include "Cluster.hpp"
-//#include "StraightLineTrack.hpp"
+
 namespace corryvreckan {
     /**
      * @ingroup Objects
@@ -21,7 +21,6 @@ namespace corryvreckan {
     public:
         // Constructors and destructors
         Track();
-
         // Copy constructor (also copies clusters from the original Track)
         Track(const Track& track);
 
@@ -105,4 +104,6 @@ namespace corryvreckan {
     using TrackVector = std::vector<Track*>;
 } // namespace corryvreckan
 
+// include all tracking methods here to have one header to be include everywhre
+#include "StraightLineTrack.hpp"
 #endif // TRACK_H

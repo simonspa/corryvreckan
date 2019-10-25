@@ -5,7 +5,7 @@
 #include <iostream>
 #include "core/module/Module.hpp"
 #include "objects/MCParticle.hpp"
-#include "objects/StraightLineTrack.hpp"
+#include "objects/Track.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules

@@ -10,7 +10,7 @@
 // Local includes
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
-#include "objects/StraightLineTrack.hpp"
+#include "objects/Track.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules

@@ -15,7 +15,7 @@
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
 #include "objects/Pixel.hpp"
-#include "objects/StraightLineTrack.hpp"
+#include "objects/Track.hpp"
 
 #include "CLICpix2/clicpix2_frameDecoder.hpp"
 #include "CLICpix2/clicpix2_pixels.hpp"

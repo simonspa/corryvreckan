@@ -1,4 +1,5 @@
 #include "StraightLineTrack.hpp"
+#include "Track.hpp"
 #include "exceptions.h"
 
 using namespace corryvreckan;

@@ -1,12 +1,7 @@
 #ifndef StraightLineTrack_H
 #define StraightLineTrack_H 1
 
-#include <Math/Point3D.h>
-#include <Math/Vector3D.h>
-#include <TRef.h>
-
 #include "Track.hpp"
-
 namespace corryvreckan {
     /**
      * @ingroup Objects
@@ -15,6 +10,7 @@ namespace corryvreckan {
      * This class is a simple track class which knows how to fit itself. It holds a collection of clusters, which may or may
      * not be included in the track fit.
      */
+
     class StraightLineTrack : public Track {
 
     public:
