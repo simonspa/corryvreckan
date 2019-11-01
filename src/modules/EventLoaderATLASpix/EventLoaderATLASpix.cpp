@@ -353,7 +353,7 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
         long long hit_ts = static_cast<long long>(readout_ts_) + ts_diff;
 
         // Convert the timestamp to nanoseconds:
-        double timestamp = m_clockCycle * static_cast<double>(hit_ts) + m_detector->timingOffset();
+        double timestamp = m_clockCycle * static_cast<double>(hit_ts) + m_detector->timeOffset();
 
         // If this pixel is masked, do not save it
         if(m_detector->masked(col, row)) {

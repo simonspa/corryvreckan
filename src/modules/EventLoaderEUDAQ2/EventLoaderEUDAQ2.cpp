@@ -256,8 +256,8 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
     }
 
     // Read time from EUDAQ2 event and convert from picoseconds to nanoseconds:
-    double event_start = static_cast<double>(evt->GetTimeBegin()) / 1000 + m_detector->timingOffset();
-    double event_end = static_cast<double>(evt->GetTimeEnd()) / 1000 + m_detector->timingOffset();
+    double event_start = static_cast<double>(evt->GetTimeBegin()) / 1000 + m_detector->timeOffset();
+    double event_end = static_cast<double>(evt->GetTimeEnd()) / 1000 + m_detector->timeOffset();
     // Store the original position of the event before adjusting its length:
     double event_timestamp = event_start;
     LOG(DEBUG) << "event_start = " << Units::display(event_start, "us")
@@ -347,9 +347,9 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
 
         double ts;
         if(plane.GetTimestamp(i) == 0) {
-            ts = static_cast<double>(evt->GetTimeBegin()) / 1000 + m_detector->timingOffset();
+            ts = static_cast<double>(evt->GetTimeBegin()) / 1000 + m_detector->timeOffset();
         } else {
-            ts = static_cast<double>(plane.GetTimestamp(i)) / 1000 + m_detector->timingOffset();
+            ts = static_cast<double>(plane.GetTimestamp(i)) / 1000 + m_detector->timeOffset();
         }
 
         if(col >= m_detector->nPixels().X() || row >= m_detector->nPixels().Y()) {

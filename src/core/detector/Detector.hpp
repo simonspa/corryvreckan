@@ -286,7 +286,7 @@ namespace corryvreckan {
         XYVector m_pitch;
         XYVector m_resolution;
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels;
-        double m_timingOffset;
+        double m_timeOffset;
         double m_timingResolution;
         double m_materialBudget;
 
