@@ -6,7 +6,7 @@ using namespace std;
 DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    timingCutFactor = m_config.get<double>("timing_cut_factor", 1);
+    timeCutFactor = m_config.get<double>("time_cut_factor", 1.0);
     spatialCut = m_config.get<XYVector>("spatial_cut", 2 * m_detector->pitch());
     useClusterCentre = m_config.get<bool>("use_cluster_centre", false);
 }
@@ -71,8 +71,8 @@ void DUTAssociation::initialise() {
     title = m_detector->name() + ": number of associated clusters per track;associated clusters;events";
     hNoAssocCls = new TH1F("no_assoc_cls", title.c_str(), 10, 0, 10);
 
-    timingCut = timingCutFactor * m_detector->timingResolution();
-    LOG(DEBUG) << "DUT association timing cut = " << timingCut;
+    timeCut = timeCutFactor * m_detector->timeResolution();
+    LOG(DEBUG) << "DUT association time cut = " << timeCut;
 }
 
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
@@ -155,7 +155,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Check if the cluster is close in time
-            if(std::abs(cluster->timestamp() - track->timestamp()) > timingCut) {
+            if(std::abs(cluster->timestamp() - track->timestamp()) > timeCut) {
                 LOG(DEBUG) << "Discarding DUT cluster with time difference "
                            << Units::display(std::abs(cluster->timestamp() - track->timestamp()), {"ms", "s"});
                 hCutHisto->Fill(2);

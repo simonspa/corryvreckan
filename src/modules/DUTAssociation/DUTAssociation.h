@@ -27,8 +27,8 @@ namespace corryvreckan {
 
     private:
         std::shared_ptr<Detector> m_detector;
-        double timingCutFactor;
-        double timingCut;
+        double timeCutFactor;
+        double timeCut;
         ROOT::Math::XYVector spatialCut;
         bool useClusterCentre;
 
