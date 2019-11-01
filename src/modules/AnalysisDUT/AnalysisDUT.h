@@ -53,10 +53,6 @@ namespace corryvreckan {
         TProfile2D* npxvsxmym;
         TH2F *npx1vsxmym, *npx2vsxmym, *npx3vsxmym, *npx4vsxmym;
 
-        TProfile2D* hPixelEfficiencyMap;
-        TProfile2D* hChipEfficiencyMap;
-        TProfile2D* hGlobalEfficiencyMap;
-
         TH1F* hTrackCorrelationX;
         TH1F* hTrackCorrelationY;
         TH1F* hTrackCorrelationPos;

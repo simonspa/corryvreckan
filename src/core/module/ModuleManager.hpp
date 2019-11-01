@@ -100,6 +100,7 @@ namespace corryvreckan {
         std::unique_ptr<TFile> m_histogramFile;
         int m_events;
         int m_tracks;
+        int m_pixels;
 
         /**
          * @brief Create unique modules

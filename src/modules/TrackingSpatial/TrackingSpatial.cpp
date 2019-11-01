@@ -62,7 +62,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     // Container for all clusters, and detectors in tracking
     map<string, KDTree*> trees;
     vector<std::shared_ptr<Detector>> detectors;
-    Clusters* referenceClusters = nullptr;
+    std::shared_ptr<ClusterVector> referenceClusters = nullptr;
 
     // Loop over all detectors and get clusters
     double minZ = std::numeric_limits<double>::max();
@@ -71,7 +71,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         string detectorID = detector->name();
 
         // Get the clusters
-        Clusters* tempClusters = reinterpret_cast<Clusters*>(clipboard->get(detectorID, "clusters"));
+        auto tempClusters = clipboard->getData<Cluster>(detectorID);
         if(tempClusters != nullptr) {
             // Store the clusters of the first plane in Z as the reference
             if(detector->displacement().Z() < minZ) {
@@ -108,7 +108,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Output track container
     LOG(TRACE) << "Initialise tracks object";
-    Tracks* tracks = new Tracks();
+    auto tracks = std::make_shared<TrackVector>();
 
     LOG(DEBUG) << "referenceClusters->size() == " << referenceClusters->size();
     // Loop over all clusters
@@ -179,8 +179,8 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         trackChi2->Fill(track->chi2());
         clustersPerTrack->Fill(static_cast<double>(track->nClusters()));
         trackChi2ndof->Fill(track->chi2ndof());
-        trackAngleX->Fill(atan(track->direction().X()));
-        trackAngleY->Fill(atan(track->direction().Y()));
+        trackAngleX->Fill(atan(track->direction(track->clusters().front()->detectorID()).X()));
+        trackAngleY->Fill(atan(track->direction(track->clusters().front()->detectorID()).Y()));
 
         // Make residuals
         for(auto& trackCluster : track->clusters()) {
@@ -195,7 +195,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     // Save the tracks on the clipboard
     tracksPerEvent->Fill(static_cast<double>(tracks->size()));
     if(tracks->size() > 0) {
-        clipboard->put("tracks", reinterpret_cast<Objects*>(tracks));
+        clipboard->putData(tracks);
     }
 
     // Clean up tree objects

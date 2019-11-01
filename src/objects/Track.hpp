@@ -1,9 +1,11 @@
 #ifndef TRACK_H
 #define TRACK_H 1
 
+#include <Math/Point3D.h>
+#include <Math/Vector3D.h>
+#include <TRef.h>
+
 #include "Cluster.hpp"
-#include "Math/Point3D.h"
-#include "Math/Vector3D.h"
 
 namespace corryvreckan {
     /**
@@ -20,21 +22,21 @@ namespace corryvreckan {
         Track();
 
         // Copy constructor (also copies clusters from the original track)
-        Track(Track* track);
+        Track(const Track& track);
 
         // Add a new cluster to the track
-        void addCluster(Cluster* cluster);
+        void addCluster(const Cluster* cluster);
         // Add a new cluster to the track (which will not be in the fit)
-        void addAssociatedCluster(Cluster* cluster);
+        void addAssociatedCluster(const Cluster* cluster);
 
         // Calculate the 2D distance^2 between the fitted track and a cluster
-        double distance2(Cluster* cluster) const;
+        double distance2(const Cluster* cluster) const;
 
         /**
          * @brief Set associated cluster with smallest distance to track
          * @param Pointer to Cluster cluster which has smallest distance to track
          */
-        void setClosestCluster(Cluster* cluster);
+        void setClosestCluster(const Cluster* cluster);
 
         /**
          * @brief Get associated cluster with smallest distance to track
@@ -62,8 +64,8 @@ namespace corryvreckan {
         double chi2() const { return m_chi2; }
         double chi2ndof() const { return m_chi2ndof; }
         double ndof() const { return m_ndof; }
-        Clusters clusters() const { return m_trackClusters; }
-        Clusters associatedClusters() const { return m_associatedClusters; }
+        std::vector<Cluster*> clusters() const;
+        std::vector<Cluster*> associatedClusters() const;
         bool isAssociated(Cluster* cluster) const;
 
         /**
@@ -83,17 +85,17 @@ namespace corryvreckan {
         size_t nClusters() const { return m_trackClusters.size(); }
 
         ROOT::Math::XYZPoint intercept(double z) const;
-        ROOT::Math::XYZPoint state() const { return m_state; }
-        ROOT::Math::XYZVector direction() const { return m_direction; }
+        ROOT::Math::XYZPoint state(std::string) const { return m_state; }
+        ROOT::Math::XYZVector direction(std::string) const { return m_direction; }
 
     private:
         // Calculate the chi2 of the track
         void calculateChi2();
 
         // Member variables
-        Clusters m_trackClusters;
-        Clusters m_associatedClusters;
-        Cluster* closestCluster{nullptr};
+        std::vector<TRef> m_trackClusters;
+        std::vector<TRef> m_associatedClusters;
+        TRef closestCluster{nullptr};
         double m_chi2;
         double m_ndof;
         double m_chi2ndof;
@@ -101,11 +103,11 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint m_state;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Track, 5)
+        ClassDefOverride(Track, 6)
     };
 
     // Vector type declaration
-    typedef std::vector<Track*> Tracks;
+    using TrackVector = std::vector<Track*>;
 } // namespace corryvreckan
 
 #endif // TRACK_H

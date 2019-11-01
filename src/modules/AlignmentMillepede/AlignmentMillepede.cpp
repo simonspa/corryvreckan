@@ -16,7 +16,6 @@ AlignmentMillepede::AlignmentMillepede(Configuration config, std::vector<std::sh
     : Module(std::move(config), std::move(detectors)) {
 
     m_excludeDUT = m_config.get<bool>("exclude_dut", false);
-    m_numberOfTracksForAlignment = m_config.get<size_t>("number_of_tracks", 20000);
     m_dofs = m_config.getArray<bool>("dofs", {});
     m_nIterations = m_config.get<size_t>("iterations", 5);
 
@@ -70,24 +69,16 @@ void AlignmentMillepede::initialise() {
 StatusCode AlignmentMillepede::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks
-    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
         return StatusCode::Success;
     }
 
     // Make a local copy and store it
     for(auto& track : (*tracks)) {
-        Track* alignmentTrack = new Track(track);
+        Track* alignmentTrack = new Track(*track);
         m_alignmenttracks.push_back(alignmentTrack);
     }
-
-    // If we have enough tracks for the alignment, tell the event loop to finish
-    if(m_alignmenttracks.size() >= m_numberOfTracksForAlignment) {
-        LOG(STATUS) << "Accumulated " << m_alignmenttracks.size() << " tracks, interrupting processing.";
-        return StatusCode::EndRun;
-    }
-
-    // Otherwise keep going
     return StatusCode::Success;
 }
 
@@ -278,8 +269,8 @@ bool AlignmentMillepede::putTrack(Track* track, const size_t nPlanes) {
 
     /// Refit the track for the reference states.
     track->fit();
-    const double tx = track->state().X();
-    const double ty = track->state().Y();
+    const double tx = track->state(track->clusters().front()->detectorID()).X();
+    const double ty = track->state(track->clusters().front()->detectorID()).Y();
 
     // Iterate over each cluster on the track.
     for(auto& cluster : track->clusters()) {

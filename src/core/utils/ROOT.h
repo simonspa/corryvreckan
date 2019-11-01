@@ -46,9 +46,9 @@ namespace corryvreckan {
     template <typename T> inline std::string to_string_impl(const ROOT::Math::DisplacementVector3D<T>& vec, empty_tag) {
         std::string res;
         res += std::to_string(vec.x());
-        res += ",";
+        res += ", ";
         res += std::to_string(vec.y());
-        res += ",";
+        res += ", ";
         res += std::to_string(vec.z());
         return res;
     }
@@ -73,7 +73,7 @@ namespace corryvreckan {
     template <typename T> inline std::string to_string_impl(const ROOT::Math::DisplacementVector2D<T>& vec, empty_tag) {
         std::string res;
         res += std::to_string(vec.x());
-        res += ",";
+        res += ", ";
         res += std::to_string(vec.y());
         return res;
     }
@@ -123,28 +123,28 @@ namespace corryvreckan {
      */
     template <typename T, typename U>
     inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::DisplacementVector3D<T, U>& vec) {
-        return os << "(" << vec.x() << "," << vec.y() << "," << vec.z() << ")";
+        return os << "(" << vec.x() << ", " << vec.y() << ", " << vec.z() << ")";
     }
     /**
      * @brief Overload output stream operator to display ROOT 2D displacement vector
      */
     template <typename T, typename U>
     inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::DisplacementVector2D<T, U>& vec) {
-        return os << "(" << vec.x() << "," << vec.y() << ")";
+        return os << "(" << vec.x() << ", " << vec.y() << ")";
     }
     /**
      * @brief Overload output stream operator to display ROOT 3D position vector
      */
     template <typename T, typename U>
     inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::PositionVector3D<T, U>& vec) {
-        return os << "(" << vec.x() << "," << vec.y() << "," << vec.z() << ")";
+        return os << "(" << vec.x() << ", " << vec.y() << ", " << vec.z() << ")";
     }
     /**
      * @brief Overload output stream operator to display ROOT 2D position vector
      */
     template <typename T, typename U>
     inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::PositionVector2D<T, U>& vec) {
-        return os << "(" << vec.x() << "," << vec.y() << ")";
+        return os << "(" << vec.x() << ", " << vec.y() << ")";
     }
 } // namespace corryvreckan
 

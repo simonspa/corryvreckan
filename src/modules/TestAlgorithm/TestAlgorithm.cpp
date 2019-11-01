@@ -9,6 +9,7 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::shared_ptr<Detector> det
     makeCorrelations = m_config.get<bool>("make_correlations", false);
     timingCut = m_config.get<double>("timing_cut", Units::get<double>(100, "ns"));
     do_timing_cut_ = m_config.get<bool>("do_timing_cut", false);
+    m_time_vs_time = m_config.get<bool>("correlation_time_vs_time", false);
 }
 
 void TestAlgorithm::initialise() {
@@ -52,16 +53,19 @@ void TestAlgorithm::initialise() {
         title = m_detector->name() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [ns];events";
         correlationTime =
             new TH1F("correlationTime", title.c_str(), static_cast<int>(2. * timingCut), -1 * timingCut, timingCut);
-        title =
-            m_detector->name() + "Reference cluster time stamp - cluster time stamp over time;t [s];t_{ref}-t [ns];events";
-        correlationTimeOverTime = new TH2F("correlationTimeOverTime",
-                                           title.c_str(),
-                                           3e3,
-                                           0,
-                                           3e3,
-                                           static_cast<int>(2. * timingCut),
-                                           -1 * timingCut,
-                                           timingCut);
+
+        if(m_time_vs_time) {
+            title = m_detector->name() +
+                    "Reference cluster time stamp - cluster time stamp over time;t [s];t_{ref}-t [ns];events";
+            correlationTimeOverTime = new TH2F("correlationTimeOverTime",
+                                               title.c_str(),
+                                               3e3,
+                                               0,
+                                               3e3,
+                                               static_cast<int>(2. * timingCut),
+                                               -1 * timingCut,
+                                               timingCut);
+        }
 
         title = m_detector->name() + "Reference pixel time stamp - pixel time stamp;t_{ref}-t [ns];events";
         correlationTime_px =
@@ -138,7 +142,7 @@ void TestAlgorithm::initialise() {
 StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
-    Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));
+    auto pixels = clipboard->getData<Pixel>(m_detector->name());
     if(pixels == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
@@ -153,7 +157,7 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Get the clusters
-    Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
+    auto clusters = clipboard->getData<Cluster>(m_detector->name());
     if(clusters == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any clusters on the clipboard";
         return StatusCode::Success;
@@ -164,9 +168,8 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get pixels/clusters from reference detector
     auto reference = get_reference();
-    // Get the pixels of reference detector
-    Pixels* referencePixels = reinterpret_cast<Pixels*>(clipboard->get(reference->name(), "pixels"));
-    Clusters* referenceClusters = reinterpret_cast<Clusters*>(clipboard->get(reference->name(), "clusters"));
+    auto referencePixels = clipboard->getData<Pixel>(reference->name());
+    auto referenceClusters = clipboard->getData<Cluster>(reference->name());
     if(referenceClusters == nullptr) {
         LOG(DEBUG) << "Reference detector " << reference->name() << " does not have any clusters on the clipboard";
         return StatusCode::Success;
@@ -214,10 +217,17 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
                         correlationXY->Fill(refCluster->global().y() - cluster->global().x());
                         correlationYX->Fill(refCluster->global().x() - cluster->global().y());
                     }
-                    //                    correlationTime[m_detector->name()]->Fill(Units::convert(timeDifference, "s"));
+
                     correlationTime->Fill(timeDifference); // time difference in ns
-                    // correlationTimeOverTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
-                    // timeDifference); // time difference in ns
+                    LOG(DEBUG) << "Time difference: " << Units::display(timeDifference, {"ns", "us"})
+                               << ", Time ref. cluster: " << Units::display(refCluster->timestamp(), {"ns", "us"})
+                               << ", Time cluster: " << Units::display(cluster->timestamp(), {"ns", "us"});
+
+                    if(m_time_vs_time) {
+                        // Time difference in ns
+                        correlationTimeOverTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                                      timeDifference);
+                    }
                     correlationTimeInt->Fill(static_cast<double>(timeDifferenceInt));
                 }
             }

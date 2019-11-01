@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# download raw test data files or not (depending on the moon position)
+# Download raw test data files, check integrity and untar
 
 from __future__ import print_function, unicode_literals
 import hashlib
@@ -8,6 +8,7 @@ import io
 import os
 import os.path
 import urllib
+import shutil
 import sys
 import tarfile
 try:
@@ -20,6 +21,8 @@ BASE_TARGET = 'data/'
 # dataset names and corresponding checksum
 DATASETS = {
     'timepix3tel_ebeam120': 'a196166ea38a14bbf00c2165a9aee37c291f1201ed39fd313cc6b3f25dfa225d',
+    'timepix3tel_dut150um_ebeam120_sim': 'e6de5f9fff6a2a284dc462a27073a76fdfd6a41436bdcec392e3f78276e9dbc6',
+    'mimosa26tel_desy_5400MeV': '74313bddcc4ce2d8c727414390a9daedd87384a0e1eb4ee98a03b35db3289c76',
 }
 
 def sha256(path):
@@ -36,6 +39,8 @@ def check(path, checksum):
     if not os.path.isfile(path):
         return False
     if not sha256(path) == checksum:
+        print('\'%s\' exists, wrong checksum, deleting' % path)
+        os.remove(path)
         return False
     print('\'%s\' checksum ok' % path)
     return True
@@ -63,5 +68,17 @@ if __name__ == '__main__':
     else:
         datasets = {_: DATASETS[_] for _ in sys.argv[1:]}
     for name, checksum in datasets.items():
+        # Download tarball if necessary
         download(name=name, checksum=checksum)
+
+        # Delete existing untarred files
+        target = os.path.join(BASE_TARGET, name)
+        if os.path.exists(target) and os.path.isdir(target):
+            print('\'%s\' deleting existing folder' % target)
+            try:
+                shutil.rmtree(target)
+            except shutil.Error as err:
+                print('%s' % err)
+
+        # Untar anew from tarball
         untar(name)

@@ -5,23 +5,23 @@ INCLUDE_DIRECTORIES(SYSTEM ${CORRYVRECKAN_DEPS_INCLUDE_DIRS})
 GET_FILENAME_COMPONENT(ROOT_CMAKE_DIR "${ROOT_USE_FILE}" DIRECTORY)
 FIND_FILE(ROOT_MACROS_FILE
           NAMES RootNewMacros.cmake
-          HINTS ${ROOT_CMAKE_DIR}/modules/ $ENV{ROOTSYS}/cmake/modules)
+          HINTS ${ROOT_CMAKE_DIR}/modules/ $ENV{ROOTSYS}/../cmake/modules $ENV{ROOTSYS}/cmake/modules)
 
 IF(NOT ROOT_MACROS_FILE)
     MESSAGE(WARNING "Cannot find ROOT macros, including generic file as fallback.")
-    INCLUDE(${ROOT_USE_FILE})
+    INCLUDE("${ROOT_USE_FILE}")
 ELSE()
     INCLUDE(${ROOT_MACROS_FILE})
 ENDIF()
 
 # Generate the ROOT dictionary
 ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
+    ${CMAKE_CURRENT_SOURCE_DIR}/Object.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Cluster.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GuiDisplay.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/KDTree.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SpidrSignal.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Object.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Track.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Event.hpp
@@ -54,6 +54,7 @@ ADD_LIBRARY(CorryvreckanObjects SHARED
     Cluster.cpp
     Track.cpp
     KDTree.cpp
+    Event.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx.o
 )
 

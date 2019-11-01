@@ -57,6 +57,14 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
     // Size of the pixels
     m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
+    // Material budget of detector, including support material
+    if(!config.has("material_budget")) {
+        LOG(WARNING) << "No material budget given for " << m_detectorName << ", assuming zero";
+    } else if(config.get<double>("material_budget") < 0) {
+        throw InvalidValueError(config, "material_budget", "Material budget has to be positive");
+    } else {
+        m_materialBudget = config.get<double>("material_budget");
+    }
 
     // Intrinsic position resolution, defaults to 4um:
     m_resolution = config.get<ROOT::Math::XYVector>("resolution", ROOT::Math::XYVector(0.004, 0.004));
@@ -70,7 +78,8 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     }
 
     m_detectorType = config.get<std::string>("type");
-    m_timeOffset = config.get<double>("time_offset", 0.0);
+    std::transform(m_detectorType.begin(), m_detectorType.end(), m_detectorType.begin(), ::tolower);
+    m_timingOffset = config.get<double>("time_offset", 0.0);
     m_timingResolution = config.get<double>("timing_resolution", 0.0); // note: change default value; require value set?
     m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
 
@@ -225,6 +234,9 @@ Configuration Detector::getConfiguration() const {
     if(this->isReference()) {
         roles.push_back("reference");
     }
+    if(this->isAuxiliary()) {
+        roles.push_back("auxiliary");
+    }
 
     if(!roles.empty()) {
         config.setArray("role", roles);
@@ -252,7 +264,10 @@ Configuration Detector::getConfiguration() const {
     }
 
     config.setMatrix("roi", m_roi);
-
+    // material budget
+    if(m_materialBudget > 0.0) {
+        config.set("material_budget", m_materialBudget);
+    }
     return config;
 }
 
@@ -260,16 +275,17 @@ Configuration Detector::getConfiguration() const {
 PositionVector3D<Cartesian3D<double>> Detector::getIntercept(const Track* track) const {
 
     // Get the distance from the plane to the track initial state
-    double distance = (m_origin.X() - track->state().X()) * m_normal.X();
-    distance += (m_origin.Y() - track->state().Y()) * m_normal.Y();
-    distance += (m_origin.Z() - track->state().Z()) * m_normal.Z();
-    distance /= (track->direction().X() * m_normal.X() + track->direction().Y() * m_normal.Y() +
-                 track->direction().Z() * m_normal.Z());
+    double distance = (m_origin.X() - track->state(m_detectorName).X()) * m_normal.X();
+    distance += (m_origin.Y() - track->state(m_detectorName).Y()) * m_normal.Y();
+    distance += (m_origin.Z() - track->state(m_detectorName).Z()) * m_normal.Z();
+    distance /= (track->direction(m_detectorName).X() * m_normal.X() + track->direction(m_detectorName).Y() * m_normal.Y() +
+                 track->direction(m_detectorName).Z() * m_normal.Z());
 
     // Propagate the track
-    PositionVector3D<Cartesian3D<double>> globalIntercept(track->state().X() + distance * track->direction().X(),
-                                                          track->state().Y() + distance * track->direction().Y(),
-                                                          track->state().Z() + distance * track->direction().Z());
+    PositionVector3D<Cartesian3D<double>> globalIntercept(
+        track->state(m_detectorName).X() + distance * track->direction(m_detectorName).X(),
+        track->state(m_detectorName).Y() + distance * track->direction(m_detectorName).Y(),
+        track->state(m_detectorName).Z() + distance * track->direction(m_detectorName).Z());
     return globalIntercept;
 }
 
@@ -291,9 +307,10 @@ bool Detector::hasIntercept(const Track* track, double pixelTolerance) const {
     double column = this->getColumn(localIntercept);
 
     // Check if the row and column are outside of the chip
+    // Chip reaches from -0.5 to nPixels-0.5
     bool intercept = true;
-    if(row < pixelTolerance || row > (this->m_nPixels.Y() - pixelTolerance) || column < pixelTolerance ||
-       column > (this->m_nPixels.X() - pixelTolerance))
+    if(row < pixelTolerance - 0.5 || row > (this->m_nPixels.Y() - pixelTolerance - 0.5) || column < pixelTolerance - 0.5 ||
+       column > (this->m_nPixels.X() - pixelTolerance - 0.5))
         intercept = false;
 
     return intercept;
@@ -326,7 +343,7 @@ bool Detector::hitMasked(Track* track, int tolerance) const {
 
 // Functions to get row and column from local position
 double Detector::getRow(const PositionVector3D<Cartesian3D<double>> localPosition) const {
-    // (1-m_nPixelsY%2)/2. --> add 1/2 pixel pitch if even number of rows
+    // (1-m_nPixelsX%2)/2. --> add 1/2 pixel pitch if even number of rows
     double row = localPosition.Y() / m_pitch.Y() + static_cast<double>(m_nPixels.Y()) / 2. + (1 - m_nPixels.Y() % 2) / 2.;
     return row;
 }
@@ -340,14 +357,19 @@ double Detector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosi
 PositionVector3D<Cartesian3D<double>> Detector::getLocalPosition(double column, double row) const {
 
     return PositionVector3D<Cartesian3D<double>>(
-        m_pitch.X() * (column - m_nPixels.X() / 2.), m_pitch.Y() * (row - m_nPixels.Y() / 2.), 0.);
+        m_pitch.X() * (column - m_nPixels.X() / 2), m_pitch.Y() * (row - m_nPixels.Y() / 2), 0.);
 }
 
 // Function to get in-pixel position
+ROOT::Math::XYVector Detector::inPixel(const double column, const double row) const {
+    // a pixel ranges from (col-0.5) to (col+0.5)
+    return XYVector(m_pitch.X() * (column - floor(column) - 0.5), m_pitch.Y() * (row - floor(row) - 0.5));
+}
+
 ROOT::Math::XYVector Detector::inPixel(const PositionVector3D<Cartesian3D<double>> localPosition) const {
     double column = getColumn(localPosition);
     double row = getRow(localPosition);
-    return XYVector(m_pitch.X() * (column - floor(column)), m_pitch.Y() * (row - floor(row)));
+    return inPixel(column, row);
 }
 
 // Check if track position is within ROI:
@@ -378,7 +400,7 @@ bool Detector::isWithinROI(Cluster* cluster) const {
     }
 
     // Loop over all pixels of the cluster
-    for(auto& pixel : (*cluster->pixels())) {
+    for(auto& pixel : cluster->pixels()) {
         if(winding_number(pixel->coordinates(), m_roi) == 0) {
             return false;
         }

@@ -18,6 +18,7 @@ This module requires either another event loader of another detector type before
 * `clkdivend2`: Value of clkdivend2 register in ATLASPix specifying the speed of TS2 counter. Default is `0`.
 * `high_tot_cut`: "high ToT" histograms are filled if pixel ToT is larger than this cut. Default is `40`.
 * `calibration_file` (optional): input file for pixel-wise calibration from ToT to charge in electrons. If not provided, the pixel charge is equivalent to pixel ToT.
+* `buffer_depth`: Depth of buffer in which pixel hits are timesorted before being added to an event. If set to `1`, effectively no timesorting is done. Default is `1000`.
 
 ### Plots produced
 * 2D hit map
@@ -27,7 +28,7 @@ This module requires either another event loader of another detector type before
 * 1D pixel ToT histogram before timestamp overflow correction
 * 1D pixels charge histogram (currently not calibrated -> equivalent to ToT)
 * 1D pixel ToA histogram
-* 1D pixels per frame histogram
+* 1D pixel multiplicity histogram
 * 1D pixels over time histogram (3 second range)
 * 1D pixels over time histogram (3000 second range)
 * 1D pixel TS1 histogram
@@ -49,4 +50,7 @@ This module requires either another event loader of another detector type before
 ```toml
 [ATLASpixEventLoader]
 input_directory = /user/data/directory
+clock_cycle = 8ns
+clkdivend2 = 7
+buffer_depth = 100
 ```

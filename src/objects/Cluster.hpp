@@ -3,6 +3,8 @@
 
 #include <Math/Point3D.h>
 #include <Math/Vector2D.h>
+#include <TRef.h>
+
 #include <iostream>
 
 #include "Pixel.hpp"
@@ -19,12 +21,9 @@ namespace corryvreckan {
         // Constructors and destructors
         Cluster();
 
-        // Copy constructor
-        Cluster(Cluster* cluster);
-
         // Functions
         // Add a new pixel to the cluster
-        void addPixel(Pixel* pixel);
+        void addPixel(const Pixel* pixel);
 
         // Retrieve cluster parameters
         double column() const { return m_column; }
@@ -43,10 +42,10 @@ namespace corryvreckan {
         size_t size() const { return m_pixels.size(); }
         double columnWidth() const { return m_columnWidth; }
         double rowWidth() const { return m_rowWidth; }
-        Pixels* pixels() { return (&m_pixels); }
+        std::vector<const Pixel*> pixels() const;
 
         // Retrieve the seed pixel of the cluster, defined as the one with the highest charge:
-        Pixel* getSeedPixel();
+        const Pixel* getSeedPixel() const;
 
         // Set cluster parameters
         void setColumn(double col) { m_column = col; }
@@ -66,7 +65,7 @@ namespace corryvreckan {
 
     private:
         // Member variables
-        Pixels m_pixels;
+        std::vector<TRef> m_pixels;
         double m_column;
         double m_row;
         double m_charge;
@@ -82,11 +81,11 @@ namespace corryvreckan {
         std::map<int, bool> m_columnHits;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Cluster, 10)
+        ClassDefOverride(Cluster, 12)
     };
 
     // Vector type declaration
-    typedef std::vector<Cluster*> Clusters;
+    using ClusterVector = std::vector<Cluster*>;
 } // namespace corryvreckan
 
 #endif // CLUSTER_H

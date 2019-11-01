@@ -58,8 +58,8 @@ optional arguments:
                         digits
 ```
 
-The environment variables need to be set using ```source etc/setup_lxplus.sh```.
-When using a submission file, `getenv = True` should be used (see example.sub).
+For usage on `lxplus`, the environment variables need to be set by running ```source etc/setup_lxplus.sh```.
+When using a submission file, `getenv = True` should be used (as in `example.sub`).
 
 ### Preparation of Configuration File Templates
 
@@ -91,11 +91,6 @@ log_level = WARNING
 
 There is only one predefined placeholder, `@RunNumber@`, which will be substituted with the current run number. Run numbers are not padded with leading zeros unless the `--zfill` option is provided.
 
-To avoid confusion with the text-field delimiter (see below), "paired" parameters such as `spatialCut = 100um, 150um` should be provided separately in the configuration template such as
-```toml
-spatialCut = @spatialCutX@, @spatialCutY@
-```
-
 ### Using Configuration Variables
 
 As described in the previous paragraph, variables in the configuration file template are replaced with values at run time.
@@ -111,32 +106,56 @@ jobsub.py --option beamenergy=5.3 -c alignment.conf 1234
 This switch can be specified several times for multiple options or can parse a comma-separated list of options. This switch overrides any config file options.
 
 #### Table (comma-separated text file)
-- format: e.g.
-   - export from Open/LibreOffice with default settings (UTF-8,comma-separated, text-field delimiter: ")
-   - emacs org-mode table (see http://orgmode.org/manual/Tables.html)
-   - use Atom's *tablr* extension
-- commented lines (starting with #) are ignored
-- first row (after comments) has to provide column headers which identify the variables in the steering template to replace (case-insensitive)
-- requires one column labeled "RunNumber"
-- only considers placeholders left in the steering template after processing command-line arguments and config file options
+Tables in the form of CSV files can be used to replace placeholders with the `-csv` option.
+For the correct format, the following tools can be used:
+- export from Open/LibreOffice with default settings (UTF-8,comma-separated, text-field delimiter: ")
+- emacs org-mode table (see http://orgmode.org/manual/Tables.html)
+- use Atom's *tablr* extension
+or the CSV file can be edited in a text editor of choice.
 
-It is also possible to specify multiple different settings for the same run number in different lines.
-If so, it should be ensured that the output file is not called `histograms_@RunNumber@` but rather `histograms_@RunNumber@_@OtherParameter@` to prevent overwriting the output file.
+The following rules apply:
+- Commented lines (starting with `#`) are ignored.
+- The first row (after comments) has to provide column headers which identify the variables in the steering template to replace (case-insensitive)
+- One column labeled "RunNumber" is required.
+- Only placeholders left in the steering template __after__ processing command-line arguments and config file options are filled with values from the CSV file.
+
+Strings can be passed by the user of double-quotes `" "` which also avoid the separation by commas.
+A double-quote can be used as part of a string when using the escape character backslash `\` in front of the double-quote.
+
+It is also possible to specify multiple different settings for the same run number by making use of the following syntax to specify a set or range of parameters.
+Curly brackets in double-quotes `"{ }"` can be used to indicate a set (indicated by a comma `,`) or range (indicated by a dash `-`) of parameters which will be split up and processed one after the other.
+If a set or a range is detected, the parameter plus its value are attached to the name of the configuration file.
+Ranges can only be used for integer values (without units).
+However, a set or range can oly be used for one parameter, i.e. multi-dimensional parameters scans are not supported and have to be separated into individual CSV files.
+
+* `"{10,12-14}"` translates to `10`, `12`, `13`, `14` in consecutive jobs for the same run number
+* `"{10ns, 20ns}"` tranlates to `10ns`, `20ns` in consecutive jobs for the same run number
+* `"string,with,comma"` translates to `string,with,comma` in one job
+* `"{string,with,comma}"` which translates to `string`, `with`, `comma` in consecutive jobs for the same run number
+* `"\"string in quotes\""` translates to `"string in quotes"`
+
+If a range or set of parameters is detector, the naming scheme of the auto-generated configuration files is extended from `MyAnalysis_run@RunNUmber@.conf` to `MyAnalysis_run@RunNUmber@_OtherParameter@OtherParameter@.conf`
+
+It must be insured by the user that the output ROOT file is not simply called `histograms_@RunNumber@.root` but rather `histograms_@RunNumber@_OtherParameter@OtherParameter@.root` to prevent overwriting the output file.
 
 ##### Example
 The CSV file could have the following form:
 
 ```csv
-RunNumber, BeamEnergy, telescopeGeometry
-      4115,          1, telescope_june2017_1.conf
-      4116,          2, telescope_june2017_1.conf
-      4117,          3, telescope_june2017_1.conf
-      4118,          4, telescope_june2017_1.conf
-      4119,          5, telescope_june2017_1.conf
+# AnalysisExample.csv
+# This is an example.
+RunNumber,  ExampleParameter,   AnotherParameter
+100,        "{3-5}",            10ns
+101,        3,                  "{10ns, 20ns}"
 ```
-
-Using this table, the variables `@BeamEnergy@` and `@telescopeGeometry@` in the templates would be replaced by the values corresponding to the current run number.
-
+Using this table, the placeholders `@RunNUmber@`, `@ExampleParameter@`, and `@AnotherParameter@` in the template file `AnalysisExample.conf` would be replaced by the values corresponding to the current run number and the following configuration files would be generated:
+```
+AnalysisExample_run100_exampleparameter3.conf
+AnalysisExample_run100_exampleparameter4.conf
+AnalysisExample_run100_exampleparameter5.conf
+AnalysisExample_run101_anotherparameter10ns.conf
+AnalysisExample_run101_anotherparameter20ns.conf
+```
 ### Example Usage with a Batch File:
 
 Example command line usage:

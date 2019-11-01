@@ -15,7 +15,7 @@ to see the list of command line options.
 import sys
 import logging
 
-def parseIntegerString(nputstr=""):
+def parseIntegerString(inputstr=""):
     """
     return a list of selected values when a string in the form:
     1-4,6
@@ -24,25 +24,34 @@ def parseIntegerString(nputstr=""):
     as expected...
     (from http://thoughtsbyclayg.blogspot.de/2008/10/parsing-list-of-numbers-in-python.html)
 
+    Modified such that it returns a list of strings
+    if the conversion to integer fails, e.g.
+    "10ns, 20ns"
+    would return:
+    "10ns", "20ns"
     """
     selection = list()
     # tokens are comma seperated values
-    tokens = [substring.strip() for substring in nputstr.split(',')]
+    tokens = [substring.strip() for substring in inputstr.split(',')]
     for i in tokens:
         try:
             # typically tokens are plain old integers
             selection.append(int(i))
         except ValueError:
-            # if not, then it might be a range
-            token = [int(k.strip()) for k in i.split('-')]
-            if len(token) > 1:
-                token.sort()
-                # we have items seperated by a dash
-                # try to build a valid range
-                first = token[0]
-                last = token[len(token)-1]
-                for value in range(first, last+1):
-                    selection.append(value)
+            try:
+                # if not, then it might be a range
+                token = [int(k.strip()) for k in i.split('-')]
+                if len(token) > 1:
+                    token.sort()
+                    # we have items seperated by a dash
+                    # try to build a valid range
+                    first = token[0]
+                    last = token[len(token)-1]
+                    for value in range(first, last+1):
+                        selection.append(value)
+            except ValueError:
+                # if not treat as string, not integer
+                selection.append(i)
     return selection # end parseIntegerString
 
 def ireplace(old, new, text):
@@ -119,6 +128,7 @@ def loadparamsfromcsv(csvfilename, runs):
             except StopIteration:
                 log.debug("End of csv file reached, sample limited to " + str(len(sample))+ " bytes")
             dialect = csv.Sniffer().sniff(sample) # test csv file format details
+            dialect.escapechar = "\\"
             log.debug("Determined the CSV dialect as follows: delimiter=%s, doublequote=%s, escapechar=%s, lineterminator=%s, quotechar=%s , quoting=%s, skipinitialspace=%s", dialect.delimiter, dialect.doublequote, dialect.escapechar, list(ord(c) for c in dialect.lineterminator), dialect.quotechar, dialect.quoting, dialect.skipinitialspace)
             filteredfile.rewind() # back to beginning of file
             reader = csv.DictReader(filteredfile, dialect=dialect) # now process CSV file contents here and load them into memory
@@ -155,7 +165,7 @@ def loadparamsfromcsv(csvfilename, runs):
                     log.warn("Could not interpret run number on line "+str(filteredfile.linecount)+" in file '"+csvfilename+"'.")
                     continue
             if len(missingRuns)==0:
-                log.debug("Found eat least one line for each run we were searching for.")
+                log.debug("Found at least one line for each run we were searching for.")
 
             log.debug("Searched over "+str(filteredfile.linecount)+" lines in file '"+csvfilename+"'.")
             if not len(missingRuns)==0:
@@ -537,96 +547,143 @@ def main(argv=None):
     log.info("Will now start processing the following runs: "+', '.join(map(str, runs)))
     # now loop over all runs
     for run in runs:
-        run_iterator = 0 # counts how many times one run occurs in the config file with different configurations
-        if keepRunning['Sigint'] == 'seen':
-            log.critical("Stopping to process remaining runs now")
-            break  # if we received ctrl-c (SIGINT) we stop processing here
+        n_repeat = 0 # counts how many times one run occurs in the config file with different configurations
+        i_repeat = 0 # repeat until i_repeat = n_repeat
+        while True: # break when not repeating the same run again
+            if keepRunning['Sigint'] == 'seen':
+                log.critical("Stopping to process remaining runs now")
+                break  # if we received ctrl-c (SIGINT) we stop processing here
 
-        if args.zfill:
-            runnr = str(run).zfill(args.zfill)
-        else:
-            runnr = str(run)
-        log.info ("Now generating configuration file for run number "+runnr+"..")
+            if args.zfill:
+                runnr = str(run).zfill(args.zfill)
+            else:
+                runnr = str(run)
+            log.info ("Now generating configuration file for run number "+runnr+"..")
 
-        # When  running in subdirectories for every job, create it:
-        if args.subdir:
-            basedirectory = "run_"+runnr
-            if not os.path.exists(basedirectory):
-                os.makedirs(basedirectory)
+            # When  running in subdirectories for every job, create it:
+            if args.subdir:
+                basedirectory = "run_"+runnr
+                if not os.path.exists(basedirectory):
+                    os.makedirs(basedirectory)
 
-            # Decend into subdirectory:
-            savedPath = os.getcwd()
-            os.chdir(basedirectory)
+                # Decend into subdirectory:
+                savedPath = os.getcwd()
+                os.chdir(basedirectory)
 
-        if parameters_csv:
-            for line in parameters_csv: # go through line by line
-                # make a copy of the preprocessed steering file content
-                steeringString = steeringStringBase
-                # if we have a csv file we can parse, we will check for the runnumber and replace any
-                # variables identified by the csv header by the run specific value
+            if parameters_csv:
+                for line in parameters_csv: # go through line by line
+                    # make a copy of the preprocessed steering file content
+                    steeringString = steeringStringBase
+                    # if we have a csv file we can parse, we will check for the runnumber and replace any
+                    # variables identified by the csv header by the run specific value
 
-                try:
-                    if parameters_csv[line]["runnumber"] != runnr:
+                    try:
+                        if parameters_csv[line]["runnumber"] != runnr:
+                            continue
+                        appendix = '' # empty string if one run is analysed only once
+                        for field in parameters_csv[line].keys():
+
+                            # prepare empty list in case of a set or range of parameters like {10,12}
+                            current_parameter = list()
+
+                            log.debug("Next parameter: %s", parameters_csv[line][field])
+                            log.debug("parameters_csv[line][field][0] = %s", parameters_csv[line][field][0])
+                            # remove all whitespaces from beginning and end of string (not in the middle)
+                            parameters_csv[line][field] = parameters_csv[line][field].strip()
+                            if parameters_csv[line][field][0] == '{':
+                                log.debug("Found open bracket, look for matching close bracket.")
+                                if parameters_csv[line][field][-1] == '}':
+                                    log.debug("Found matching close bracket, Interpret as range or set of parameters.")
+                                    # remove curly brackets:
+                                    parameter_field = parameters_csv[line][field].strip("{}")
+                                    # Check if csv field contains "," or "-", i.e. a set or range of values
+                                    # If not, no conversion is required (or even possible in case of file paths etc.)
+                                    # If yes, call parseIntegerString() and create multiple configuration files.
+                                    if any(delimiter in parameter_field for delimiter in [',','-']):
+                                        current_parameter = parseIntegerString(parameter_field)
+                                        n_repeat = len(current_parameter)
+                                        log.debug("Found delimiter for '%s'", field)
+                                    else:
+                                        # current_parameter needs to be a list to get len(list) = 1
+                                        current_parameter.append(parameters_csv[line][field])
+                                        log.debug("No delimiter found for '%s'", field)
+                                else:
+                                    log.error("No matching close bracket found. Please update CSV file.")
+                                    exit(1)
+
+                            else:
+                                log.debug("No bracket found, interpret as one string.")
+                                current_parameter.append(parameters_csv[line][field])
+
+                            log.debug("current_parameter has length %d", len(current_parameter))
+                            # check if we actually find all parameters from the csv file in the steering file - warn if not
+                            log.debug("Parsing steering file for csv field name '%s'", field)
+                            try:
+                                # check that the field name is not empty and do not yet replace the runnumber
+                                if not field == "":
+                                    if len(current_parameter) == 1:
+                                        steeringString = ireplace("@" + field + "@", parameters_csv[line][field], steeringString)
+                                    else:
+                                        log.debug("list index, n_repeat = '%d', i_repeat = '%d'", n_repeat, i_repeat)
+                                        steeringString = ireplace("@" + field + "@", str(current_parameter[i_repeat]), steeringString)
+                                        appendix = appendix + '_' +field + str(current_parameter[i_repeat])
+                                        i_repeat += 1
+                                        log.debug("appendix is now '%s'", appendix)
+                            except EOFError:
+                                log.warn("Parameter '" + field + "' from the csv file was not found in the template file (already overwritten by config file parameters?)")
+                    except KeyError:
+                        log.warning("Run #" + runnr + " was not found in the specified CSV file - will skip this run! ")
                         continue
-                    run_iterator += 1
-                    log.debug("Found run %i for the %ith time.", run, run_iterator-1) # start counting at 0
 
-                    for field in parameters_csv[line].keys():
-                        # check if we actually find all parameters from the csv file in the steering file - warn if not
-                        log.debug("Parsing steering file for csv field name '%s'", field)
-                        try:
-                            # check that the field name is not empty and do not yet replace the runnumber
-                            if not field == "":
-                                steeringString = ireplace("@" + field + "@", parameters_csv[line][field], steeringString)
-                        except EOFError:
-                            log.warn("Parameter '" + field + "' from the csv file was not found in the template file (already overwritten by config file parameters?)")
-                except KeyError:
-                    log.warning("Run #" + runnr + " was not found in the specified CSV file - will skip this run! ")
-                    continue
-
-                if not checkSteer(steeringString):
-                    return 1
-
-                if args.htcondor_file:
-                    args.htcondor_file = os.path.abspath(args.htcondor_file)
-                    if not os.path.isfile(args.htcondor_file):
-                        log.critical("HTCondor submission parameters file '"+args.htcondor_file+"' not found!")
+                    if not checkSteer(steeringString):
                         return 1
 
-                log.debug ("Writing steering file for run %i_%i", run, run_iterator-1) # start counting at 0
+                    if args.htcondor_file:
+                        args.htcondor_file = os.path.abspath(args.htcondor_file)
+                        if not os.path.isfile(args.htcondor_file):
+                            log.critical("HTCondor submission parameters file '"+args.htcondor_file+"' not found!")
+                            return 1
 
-                # Get "jobtask" as basename of the configuration file:
-                jobtask = os.path.splitext(os.path.basename(args.conf_file))[0]
-                # Write the steering file:
-                basefilename = jobtask+"_"+runnr+"_"+str(run_iterator-1) # start counting at 0
-                log.info("basefilename = " + basefilename)
-                steeringFile = open(basefilename+".conf", "w")
+                    # update this line too
+                    log.debug ("Writing steering file for run %i", run)
 
-                try:
-                    steeringFile.write(steeringString)
-                finally:
-                    steeringFile.close()
+                    # Get "jobtask" as basename of the configuration file:
+                    jobtask = os.path.splitext(os.path.basename(args.conf_file))[0]
+                    # Write the steering file:
+                    basefilename = jobtask+"_run"+runnr+appendix
+                    log.info("basefilename = " + basefilename)
+                    steeringFile = open(basefilename+".conf", "w")
 
-                # bail out if running a dry run
-                if args.dry_run:
-                    log.info("Dry run: skipping Corryvreckan execution. Steering file written to "+basefilename+'.conf')
-                elif args.htcondor_file:
-                    rcode = submitCondor(basefilename, args.htcondor_file, runnr+"_"+str(run_iterator-1)) # start HTCondor submission
-                    if rcode == 0:
-                        log.info("HTCondor job submitted")
+                    try:
+                        steeringFile.write(steeringString)
+                    finally:
+                        steeringFile.close()
+
+                    # bail out if running a dry run
+                    if args.dry_run:
+                        log.info("Dry run: skipping Corryvreckan execution. Steering file written to "+basefilename+'.conf')
+                    elif args.htcondor_file:
+                        rcode = submitCondor(basefilename, args.htcondor_file, basefilename) # start HTCondor submission
+                        if rcode == 0:
+                            log.info("HTCondor job submitted")
+                        else:
+                            log.error("HTCondor submission returned with error code "+str(rcode))
                     else:
-                        log.error("HTCondor submission returned with error code "+str(rcode))
-                else:
-                    rcode = runCorryvreckan(basefilename, runnr+"_"+str(run_iterator-1), args.silent) # start Corryvreckan execution
-                    if rcode == 0:
-                        log.info("Corryvreckan execution done")
-                    else:
-                        log.error("Corryvreckan returned with error code "+str(rcode))
-                    zipLogs(parameters["logpath"], basefilename)
+                        rcode = runCorryvreckan(basefilename, basefilename, args.silent) # start Corryvreckan execution
+                        if rcode == 0:
+                            log.info("Corryvreckan execution done")
+                        else:
+                            log.error("Corryvreckan returned with error code "+str(rcode))
+                        zipLogs(parameters["logpath"], basefilename)
 
-        # Return to old directory:
-        if args.subdir:
-            os.chdir(savedPath)
+                    # Return to old directory:
+                    if args.subdir:
+                        os.chdir(savedPath)
+
+            if (i_repeat == n_repeat): # break the while loop
+                log.debug("Finished scanning run %d'.", run)
+                break
+            # end while true
 
         # return to the previous signal handler
         signal.signal(signal.SIGINT, prevINTHandler)

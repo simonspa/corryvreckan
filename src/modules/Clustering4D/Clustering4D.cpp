@@ -6,9 +6,11 @@ using namespace std;
 Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
+    timingCut = m_config.get<double>("timing_cut", Units::get<double>(100, "ns"));
     timingCutFactor = m_config.get<double>("timing_cut_factor", 1.0); // note:check facotr default value
-    neighbour_radius_row = m_config.get<int>("neighbour_radius_row", 1);
-    neighbour_radius_col = m_config.get<int>("neighbour_radius_col", 1);
+    neighbourRadiusRow = m_config.get<int>("neighbour_radius_row", 1);
+    neighbourRadiusCol = m_config.get<int>("neighbour_radius_col", 1);
+    chargeWeighting = m_config.get<bool>("charge_weighting", true);
 }
 
 void Clustering4D::initialise() {
@@ -28,7 +30,8 @@ void Clustering4D::initialise() {
     clusterPositionGlobal = new TH2F("clusterPositionGlobal", title.c_str(), 400, -10., 10., 400, -10., 10.);
     title = ";cluster timestamp [ns]; # events";
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
-
+    title = m_detector->name() + " Cluster multiplicity;clusters;events";
+    clusterMultiplicity = new TH1F("clusterMultiplicity", title.c_str(), 50, 0, 50);
     // Get timing resolution of detector and calculate timing cut to be applied
     timingCut = timingCutFactor * m_detector->timingResolution();
     LOG(INFO) << "Timing cut to be applied for " << m_detector->name() << " is "
@@ -43,7 +46,7 @@ bool Clustering4D::sortByTime(Pixel* pixel1, Pixel* pixel2) {
 StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
-    Pixels* pixels = reinterpret_cast<Pixels*>(clipboard->get(m_detector->name(), "pixels"));
+    auto pixels = clipboard->getData<Pixel>(m_detector->name());
     if(pixels == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
@@ -55,7 +58,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
     size_t totalPixels = pixels->size();
 
     // Make the cluster storage
-    Clusters* deviceClusters = new Clusters();
+    auto deviceClusters = std::make_shared<ClusterVector>();
 
     // Keep track of which pixels are used
     map<Pixel*, bool> used;
@@ -121,10 +124,10 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
         deviceClusters->push_back(cluster);
     }
 
+    clusterMultiplicity->Fill(static_cast<double>(deviceClusters->size()));
+
     // Put the clusters on the clipboard
-    if(deviceClusters->size() > 0) {
-        clipboard->put(m_detector->name(), "clusters", reinterpret_cast<Objects*>(deviceClusters));
-    }
+    clipboard->putData(deviceClusters, m_detector->name());
     LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << m_detector->name();
 
     return StatusCode::Success;
@@ -135,11 +138,11 @@ bool Clustering4D::touching(Pixel* neighbour, Cluster* cluster) {
 
     bool Touching = false;
 
-    for(auto pixel : (*cluster->pixels())) {
+    for(auto pixel : cluster->pixels()) {
         int row_distance = abs(pixel->row() - neighbour->row());
         int col_distance = abs(pixel->column() - neighbour->column());
 
-        if(row_distance <= neighbour_radius_row && col_distance <= neighbour_radius_col) {
+        if(row_distance <= neighbourRadiusRow && col_distance <= neighbourRadiusCol) {
             if(row_distance > 1 || col_distance > 1) {
                 cluster->setSplit(true);
             }
@@ -155,10 +158,10 @@ bool Clustering4D::closeInTime(Pixel* neighbour, Cluster* cluster) {
 
     bool CloseInTime = false;
 
-    Pixels* pixels = cluster->pixels();
-    for(size_t iPix = 0; iPix < pixels->size(); iPix++) {
+    auto pixels = cluster->pixels();
+    for(auto& px : pixels) {
 
-        double timeDifference = abs(neighbour->timestamp() - (*pixels)[iPix]->timestamp());
+        double timeDifference = abs(neighbour->timestamp() - px->timestamp());
         if(timeDifference < timingCut)
             CloseInTime = true;
     }
@@ -170,42 +173,61 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
     LOG(DEBUG) << "== Making cluster centre";
     // Empty variables to calculate cluster position
     double column(0), row(0), charge(0);
+    double column_sum(0), column_sum_chargeweighted(0);
+    double row_sum(0), row_sum_chargeweighted(0);
+    bool found_charge_zero = false;
 
     // Get the pixels on this cluster
-    Pixels* pixels = cluster->pixels();
-    string detectorID = (*pixels)[0]->detectorID();
-    double timestamp = (*pixels)[0]->timestamp();
-    LOG(DEBUG) << "- cluster has " << (*pixels).size() << " pixels";
+    auto pixels = cluster->pixels();
+    string detectorID = pixels.front()->detectorID();
+    double timestamp = pixels.front()->timestamp();
+    LOG(DEBUG) << "- cluster has " << pixels.size() << " pixels";
 
     // Loop over all pixels
-    for(auto& pixel : (*pixels)) {
+    for(auto& pixel : pixels) {
+        // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics):
+        if(pixel->charge() < std::numeric_limits<double>::epsilon()) {
+            // apply arithmetic mean if a pixel has zero charge
+            found_charge_zero = true;
+        }
         charge += pixel->charge();
-        column += (pixel->column() * pixel->charge());
-        row += (pixel->row() * pixel->charge());
+
+        // We need both column_sum and column_sum_chargeweighted
+        // as we don't know a priori if there will be a pixel with
+        // charge==0 such that we have to fall back to the arithmetic mean.
+        column_sum += pixel->column();
+        row_sum += pixel->row();
+        column_sum_chargeweighted += (pixel->column() * pixel->charge());
+        row_sum_chargeweighted += (pixel->row() * pixel->charge());
+
+        LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
+
         if(pixel->timestamp() < timestamp) {
             timestamp = pixel->timestamp();
         }
     }
 
-    // Column and row positions are charge-weighted
-    // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics)
-    // calculate simple arithmetic mean
-    column /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
-    row /= (charge > std::numeric_limits<double>::epsilon() ? charge : 1);
-
-    LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
+    if(chargeWeighting && !found_charge_zero) {
+        // Charge-weighted centre-of-gravity for cluster centre:
+        // (here it's safe to divide by the charge as it cannot be zero due to !found_charge_zero)
+        column = column_sum_chargeweighted / charge;
+        row = row_sum_chargeweighted / charge;
+    } else {
+        // Arithmetic cluster centre:
+        column = column_sum / static_cast<double>(cluster->size());
+        row = row_sum / static_cast<double>(cluster->size());
+    }
 
     if(detectorID != m_detector->name()) {
         // Should never happen...
         return;
     }
 
-    // Create object with local cluster position
-    PositionVector3D<Cartesian3D<double>> positionLocal(m_detector->pitch().X() * (column - m_detector->nPixels().X() / 2),
-                                                        m_detector->pitch().Y() * (row - m_detector->nPixels().Y() / 2),
-                                                        0);
+    // Calculate local cluster position
+    auto positionLocal = m_detector->getLocalPosition(column, row);
+
     // Calculate global cluster position
-    PositionVector3D<Cartesian3D<double>> positionGlobal = m_detector->localToGlobal(positionLocal);
+    auto positionGlobal = m_detector->localToGlobal(positionLocal);
 
     // Set the cluster parameters
     cluster->setColumn(column);

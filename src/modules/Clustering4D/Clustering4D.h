@@ -38,11 +38,13 @@ namespace corryvreckan {
         TH1F* clusterCharge;
         TH2F* clusterPositionGlobal;
         TH1F* clusterTimes;
+        TH1F* clusterMultiplicity;
 
         double timingCutFactor;
         double timingCut;
-        int neighbour_radius_row;
-        int neighbour_radius_col;
+        int neighbourRadiusRow;
+        int neighbourRadiusCol;
+        bool chargeWeighting;
     };
 } // namespace corryvreckan
 #endif // CLUSTERING4D_H

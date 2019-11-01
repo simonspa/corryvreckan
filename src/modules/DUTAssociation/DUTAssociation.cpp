@@ -78,14 +78,14 @@ void DUTAssociation::initialise() {
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks from the clipboard
-    Tracks* tracks = reinterpret_cast<Tracks*>(clipboard->get("tracks"));
+    auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
     }
 
     // Get the DUT clusters from the clipboard
-    Clusters* clusters = reinterpret_cast<Clusters*>(clipboard->get(m_detector->name(), "clusters"));
+    auto clusters = clipboard->getData<Cluster>(m_detector->name());
 
     // Loop over all tracks
     for(auto& track : (*tracks)) {
@@ -112,7 +112,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             auto xdistance_nearest = std::numeric_limits<double>::max();
             auto ydistance_nearest = std::numeric_limits<double>::max();
 
-            for(auto& pixel : (*cluster->pixels())) {
+            for(auto& pixel : cluster->pixels()) {
                 // convert pixel address to local coordinates:
                 auto pixelPositionLocal =
                     m_detector->getLocalPosition(static_cast<double>(pixel->column()), static_cast<double>(pixel->row()));

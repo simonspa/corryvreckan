@@ -38,6 +38,7 @@ namespace corryvreckan {
         TH1F* clusterTimes;
 
         bool useTriggerTimestamp;
+        bool chargeWeighting;
     };
 } // namespace corryvreckan
 #endif // ClusteringSpatial_H

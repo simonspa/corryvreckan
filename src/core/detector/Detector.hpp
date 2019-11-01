@@ -222,6 +222,14 @@ namespace corryvreckan {
 
         /**
          * Transformation from local (sensor) coordinates to in-pixel coordinates
+         * @param  column Column address ranging from int_column-0.5*pitch to int_column+0.5*pitch
+         * @param  row Row address ranging from int_column-0.5*pitch to int_column+0.5*pitch
+         * @return               Position within a single pixel cell, given in units of length
+         */
+        XYVector inPixel(const double column, const double row) const;
+
+        /**
+         * Transformation from local (sensor) coordinates to in-pixel coordinates
          * @param  localPosition Local position on the sensor
          * @return               Position within a single pixel cell, given in units of length
          */
@@ -255,6 +263,12 @@ namespace corryvreckan {
          */
         bool isWithinROI(Cluster* cluster) const;
 
+        /**
+         * @brief Return the thickness of the senosr assembly layer (sensor+support) in fractions of radiation length
+         * @return thickness in fractions of radiation length
+         */
+        double materialBudget() const { return m_materialBudget; }
+
     private:
         // Roles of the detector
         DetectorRole m_role;
@@ -272,8 +286,9 @@ namespace corryvreckan {
         XYVector m_pitch;
         XYVector m_resolution;
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels;
-        double m_timeOffset;
+        double m_timingOffset;
         double m_timingResolution;
+        double m_materialBudget;
 
         std::vector<std::vector<int>> m_roi;
         static int winding_number(std::pair<int, int> probe, std::vector<std::vector<int>> polygon);

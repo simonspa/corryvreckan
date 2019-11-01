@@ -517,6 +517,7 @@ void ModuleManager::run() {
     LOG(STATUS) << "========================| Event loop |========================";
     m_events = 0;
     m_tracks = 0;
+    m_pixels = 0;
 
     while(1) {
         bool run = true;
@@ -564,7 +565,7 @@ void ModuleManager::run() {
             break;
         }
 
-        if(m_clipboard->event_defined() && run_time > 0.0 && m_clipboard->get_event()->start() >= run_time) {
+        if(m_clipboard->isEventDefined() && run_time > 0.0 && m_clipboard->getEvent()->start() >= run_time) {
             break;
         }
 
@@ -574,8 +575,8 @@ void ModuleManager::run() {
         }
 
         // Print statistics:
-        Tracks* tracks = reinterpret_cast<Tracks*>(m_clipboard->get("tracks"));
-        m_tracks += (tracks == nullptr ? 0 : static_cast<int>(tracks->size()));
+        m_tracks += static_cast<int>(m_clipboard->countObjects<Track>());
+        m_pixels += static_cast<int>(m_clipboard->countObjects<Pixel>());
 
         if(m_events % 100 == 0) {
 
@@ -588,10 +589,12 @@ void ModuleManager::run() {
             };
 
             LOG_PROGRESS(STATUS, "event_loop")
-                << "Ev: " << kilo_or_mega(m_events) << " Tr: " << kilo_or_mega(m_tracks) << " (" << std::setprecision(3)
+                << "Ev: " << kilo_or_mega(m_events) << " "
+                << "Px: " << kilo_or_mega(m_pixels) << " "
+                << "Tr: " << kilo_or_mega(m_tracks) << " (" << std::setprecision(3)
                 << (static_cast<double>(m_tracks) / m_events) << "/ev)"
-                << (m_clipboard->event_defined()
-                        ? " t = " + Units::display(m_clipboard->get_event()->start(), {"ns", "us", "ms", "s"})
+                << (m_clipboard->isEventDefined()
+                        ? " t = " + Units::display(m_clipboard->getEvent()->start(), {"ns", "us", "ms", "s"})
                         : "");
         }
 
@@ -710,11 +713,19 @@ void ModuleManager::finaliseAll() {
 
     // Write out update detectors file:
     if(global_config.has("detectors_file_updated")) {
-        std::string file_name = global_config.getPath("detectors_file_updated");
+        std::string path = global_config.getPath("detectors_file_updated");
         // Check if the file exists
-        std::ofstream file(file_name);
+        if(corryvreckan::path_is_file(path)) {
+            if(global_config.get<bool>("deny_overwrite", false)) {
+                throw RuntimeError("Overwriting of existing detectors file " + path + " denied");
+            }
+            LOG(WARNING) << "Detectors file " << path << " exists and will be overwritten.";
+            corryvreckan::remove_file(path);
+        }
+
+        std::ofstream file(path);
         if(!file) {
-            throw ConfigFileUnavailableError(file_name);
+            throw RuntimeError("Cannot create detectors file " + path);
         }
 
         ConfigReader final_detectors;
@@ -723,7 +734,7 @@ void ModuleManager::finaliseAll() {
         }
 
         final_detectors.write(file);
-        LOG(STATUS) << "Wrote updated detector configuration to " << file_name;
+        LOG(STATUS) << "Wrote updated detector configuration to " << path;
     }
 
     // Check the timing for all events
