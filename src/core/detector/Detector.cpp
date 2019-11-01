@@ -80,7 +80,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     m_detectorType = config.get<std::string>("type");
     std::transform(m_detectorType.begin(), m_detectorType.end(), m_detectorType.begin(), ::tolower);
     m_timeOffset = config.get<double>("time_offset", 0.0);
-    m_timingResolution = config.get<double>("timing_resolution", 0.0); // note: change default value; require value set?
+    m_timeResolution = config.get<double>("time_resolution");
     m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
 
     this->initialise();
@@ -92,7 +92,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     if(m_timeOffset > 0.) {
         LOG(TRACE) << "Time offset: " << m_timeOffset;
     }
-    LOG(INFO) << "  Timing resolution: " << Units::display(m_timingResolution, {"ms", "us"});
+    LOG(TRACE) << "  Time resolution: " << Units::display(m_timeResolution, {"ms", "us"});
 
     if(config.has("mask_file")) {
         m_maskfile_name = config.get<std::string>("mask_file");
@@ -257,7 +257,7 @@ Configuration Detector::getConfiguration() const {
         config.set("time_offset", m_timeOffset, {"ns", "us", "ms", "s"});
     }
 
-    config.set("timing_resolution", m_timingResolution, {"ns", "us", "ms", "s"});
+    config.set("time_resolution", m_timeResolution, {"ns", "us", "ms", "s"});
 
     if(!m_maskfile_name.empty()) {
         config.set("mask_file", m_maskfile_name);
