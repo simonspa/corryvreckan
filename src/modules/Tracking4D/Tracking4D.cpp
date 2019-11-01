@@ -10,7 +10,7 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     : Module(std::move(config), std::move(detectors)) {
 
     // Default values for cuts
-    timingCutFactor = m_config.get<double>("timing_cut_factor", 1.0);
+    timeCutFactor = m_config.get<double>("time_cut_factor", 1.0);
     spatialCut = m_config.get<double>("spatial_cut", Units::get<double>(200, "um"));
     minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
     excludeDUT = m_config.get<bool>("exclude_dut", true);
@@ -96,8 +96,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 referenceClusters = tempClusters;
                 seedPlane = detector->name();
                 LOG(DEBUG) << "Seed plane is " << seedPlane;
-                timingCutReference = detector->timingResolution() * timingCutFactor;
-                LOG(TRACE) << "Reference detector timing cut = " << Units::display(timingCutReference, {"ns", "us", "s"});
+                timeCutReference = detector->timeResolution() * timeCutFactor;
+                LOG(TRACE) << "Reference detector time cut = " << Units::display(timeCutReference, {"ns", "us", "s"});
                 firstDetector = false;
             }
 
@@ -154,12 +154,12 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
             Cluster* closestCluster = nullptr;
             double closestClusterDistance = spatialCut;
-            double timingCut = std::max(timingCutReference, det->timingResolution());
-            LOG(TRACE) << "Reference time resolution = " << Units::display(timingCutReference, {"ns", "us", "s"})
+            double timeCut = std::max(timeCutReference, det->timeResolution());
+            LOG(TRACE) << "Reference time resolution = " << Units::display(timeCutReference, {"ns", "us", "s"})
                        << "; detector plane " << detectorID
-                       << " time resolution = " << Units::display(det->timingResolution(), {"ns", "us", "s"});
-            LOG(DEBUG) << "Using timing cut of " << Units::display(timingCut, {"ns", "us", "s"});
-            auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut);
+                       << " time resolution = " << Units::display(det->timeResolution(), {"ns", "us", "s"});
+            LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
+            auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timeCut);
 
             LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
 
