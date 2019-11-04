@@ -8,7 +8,7 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::shared_ptr<Detector> det
 
     makeCorrelations = m_config.get<bool>("make_correlations", false);
     timeCutFactor = m_config.get<double>("time_cut_factor", 1.0);
-    do_timing_cut_ = m_config.get<bool>("do_timing_cut", false);
+    doTimeCut = m_config.get<bool>("do_time_cut", false);
     m_time_vs_time = m_config.get<bool>("correlation_time_vs_time", false);
 }
 
@@ -206,7 +206,7 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
                     long long int timeDifferenceInt = static_cast<long long int>(timeDifference / 25);
 
                     // Correlation plots
-                    if(abs(timeDifference) < timeCut || !do_timing_cut_) {
+                    if(abs(timeDifference) < timeCut || !doTimeCut) {
                         correlationX->Fill(refCluster->global().x() - cluster->global().x());
                         correlationX2D->Fill(cluster->global().x(), refCluster->global().x());
                         correlationX2Dlocal->Fill(cluster->column(), refCluster->column());

@@ -53,7 +53,7 @@ namespace corryvreckan {
         bool makeCorrelations;
         double timeCutFactor;
         double timeCut;
-        bool do_timing_cut_;
+        bool doTimeCut;
         bool m_time_vs_time;
     };
 } // namespace corryvreckan
