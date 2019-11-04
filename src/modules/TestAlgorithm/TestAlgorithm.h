@@ -51,7 +51,8 @@ namespace corryvreckan {
 
         // Parameters which can be set by user
         bool makeCorrelations;
-        double timingCut;
+        double timeCutFactor;
+        double timeCut;
         bool do_timing_cut_;
         bool m_time_vs_time;
     };

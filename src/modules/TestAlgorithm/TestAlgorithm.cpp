@@ -7,16 +7,18 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::shared_ptr<Detector> det
     : Module(std::move(config), detector), m_detector(detector) {
 
     makeCorrelations = m_config.get<bool>("make_correlations", false);
-    timingCut = m_config.get<double>("timing_cut", Units::get<double>(100, "ns"));
+    timeCutFactor = m_config.get<double>("time_cut_factor", 1.0);
     do_timing_cut_ = m_config.get<bool>("do_timing_cut", false);
     m_time_vs_time = m_config.get<bool>("correlation_time_vs_time", false);
 }
 
 void TestAlgorithm::initialise() {
+
     LOG(DEBUG) << "Booking histograms for detector " << m_detector->name();
 
     // get the reference detector:
     std::shared_ptr<Detector> reference = get_reference();
+    timeCut = timeCutFactor * reference->timeResolution();
 
     // Simple hit map
     std::string title = m_detector->name() + ": hitmap;x [px];y [px];events";
@@ -51,8 +53,7 @@ void TestAlgorithm::initialise() {
 
         // time correlation plot range should cover length of events. nanosecond binning.
         title = m_detector->name() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [ns];events";
-        correlationTime =
-            new TH1F("correlationTime", title.c_str(), static_cast<int>(2. * timingCut), -1 * timingCut, timingCut);
+        correlationTime = new TH1F("correlationTime", title.c_str(), static_cast<int>(2. * timeCut), -1 * timeCut, timeCut);
 
         if(m_time_vs_time) {
             title = m_detector->name() +
@@ -62,14 +63,14 @@ void TestAlgorithm::initialise() {
                                                3e3,
                                                0,
                                                3e3,
-                                               static_cast<int>(2. * timingCut),
-                                               -1 * timingCut,
-                                               timingCut);
+                                               static_cast<int>(2. * timeCut),
+                                               -1 * timeCut,
+                                               timeCut);
         }
 
         title = m_detector->name() + "Reference pixel time stamp - pixel time stamp;t_{ref}-t [ns];events";
         correlationTime_px =
-            new TH1F("correlationTime_px", title.c_str(), static_cast<int>(2. * timingCut), -1 * timingCut, timingCut);
+            new TH1F("correlationTime_px", title.c_str(), static_cast<int>(2. * timeCut), -1 * timeCut, timeCut);
         title = m_detector->name() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [1/40MHz];events";
         correlationTimeInt = new TH1F("correlationTimeInt", title.c_str(), 8000, -40000, 40000);
 
@@ -205,7 +206,7 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
                     long long int timeDifferenceInt = static_cast<long long int>(timeDifference / 25);
 
                     // Correlation plots
-                    if(abs(timeDifference) < timingCut || !do_timing_cut_) {
+                    if(abs(timeDifference) < timeCut || !do_timing_cut_) {
                         correlationX->Fill(refCluster->global().x() - cluster->global().x());
                         correlationX2D->Fill(cluster->global().x(), refCluster->global().x());
                         correlationX2Dlocal->Fill(cluster->column(), refCluster->column());
