@@ -10,8 +10,8 @@ This module collects `pixel` and `cluster` objects from the clipboard and create
 
 ### Parameters
 * `make_correlations`: Boolean to change if correlation plots should be outputted. Default value is `false`.
-* `do_timing_cut`: Boolean to switch on/off the cut on cluster times for correlations. Defaults to `false`.
-* `timing_cut`: maximum time difference between clusters to be taken into account. Only used if `do_timing_cut` is set to `true`, defaults to `100ns`.
+* `do_time_cut`: Boolean to switch on/off the cut on cluster times for correlations. Defaults to `false`.
+* `time_cut_factor`: Factor by which the `time_resolution` of the reference plane is multiplied. This value is then used as the maximum time difference between clusters to be taken into account. Only used if `do_time_cut` is set to `true`. Defaults to `1.0`.
 * `correlation_time_vs_time`: Enable plotting of time correlation as a function of time. Default value is `false` because of the time required to fill the histogram with many bins.
 
 ### Plots produced
