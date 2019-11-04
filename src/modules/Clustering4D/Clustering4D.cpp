@@ -199,8 +199,6 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         column_sum_chargeweighted += (pixel->column() * pixel->charge());
         row_sum_chargeweighted += (pixel->row() * pixel->charge());
 
-        LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
-
         if(pixel->timestamp() < timestamp) {
             timestamp = pixel->timestamp();
         }
@@ -228,6 +226,8 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
     // Calculate global cluster position
     auto positionGlobal = m_detector->localToGlobal(positionLocal);
 
+    LOG(DEBUG) << "- cluster col, row, time : " << column << "," << row << ","
+               << Units::display(timestamp, {"ns", "us", "ms"});
     // Set the cluster parameters
     cluster->setColumn(column);
     cluster->setRow(row);

@@ -72,7 +72,7 @@ void DUTAssociation::initialise() {
     hNoAssocCls = new TH1F("no_assoc_cls", title.c_str(), 10, 0, 10);
 
     timeCut = timeCutFactor * m_detector->timeResolution();
-    LOG(DEBUG) << "DUT association time cut = " << timeCut;
+    LOG(DEBUG) << "DUT association time cut = " << Units::display(timeCut, {"ms", "ns"});
 }
 
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
