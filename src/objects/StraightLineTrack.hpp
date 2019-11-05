@@ -7,8 +7,7 @@ namespace corryvreckan {
      * @ingroup Objects
      * @brief StraightLineTrack object
      *
-     * This class is a simple track class which knows how to fit itself. It holds a collection of clusters, which may or may
-     * not be included in the track fit.
+     * This class is a simple track class which knows how to fit itself. It is dervied from Track
      */
 
     class StraightLineTrack : public Track {
@@ -21,18 +20,45 @@ namespace corryvreckan {
         // is better or worse
         double operator()(const double* parameters);
 
-        // Print an ASCII representation of the StraightLineTrack to the given stream
         void print(std::ostream& out) const override;
 
-        // Fit the StraightLineTrack (linear regression)
+        /**
+         * @brief The fiting routine
+         */
         void fit() override;
+
+        /**
+         * @brief  Get the distance between cluster and track
+         * @param Cluster* Pointer to the cluster
+         * @return distance between cluster and track
+         */
         double distance2(const Cluster* cluster) const override;
+
+        /**
+         * @brief Get the track position for a certain z position
+         * @param z positon
+         * @return ROOT::Math::XYZPoint at z position
+         */
         ROOT::Math::XYZPoint intercept(double z) const override;
+
+        /**
+         * @brief Get the track state at a detector
+         * @param name of detector
+         * @return ROOT::Math::XYZPoint state at detetcor layer
+         */
         ROOT::Math::XYZPoint state(std::string) const override { return m_state; }
+
+        /**
+         * @brief Get the track direction at a detector
+         * @param name of detector
+         * @return ROOT::Math::XYZPoint direction at detetcor layer
+         */
         ROOT::Math::XYZVector direction(std::string) const override { return m_direction; }
 
     private:
-        // Calculate the chi2 of the StraightLineTrack
+        /**
+         * @brief calculate the chi2 of the linear regression
+         */
         void calculateChi2();
 
         // Member variables

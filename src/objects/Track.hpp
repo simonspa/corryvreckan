@@ -19,17 +19,33 @@ namespace corryvreckan {
     class Track : public Object {
 
     public:
+        /**
+         * @brief Factory dynamically create track objects
+         * @param The name of the track model which should be used
+         * @return By param trackModel assigned track model to be used
+         */
         static Track* Factory(std::string trackModel);
 
-        // Constructors and destructors
+        /**
+         * @brief Track object constructor
+         */
         Track();
-        // Copy constructor (also copies clusters from the original Track)
+        /**
+         * @brief Copy a track object, including used/associated clusters
+         * @param track to be copied from
+         */
         Track(const Track& track);
 
-        // Add a new cluster to the Track
+        /**
+         * @brief Add a cluster to the tack, which will be used in the fit
+         * @param cluster to be added
+         */
         void addCluster(const Cluster* cluster);
 
-        // Add a new cluster to the Track (which will not be in the fit)
+        /**
+         * @brief Associate a cluster to a track, will not be part of the fit
+         * @param cluster to be added
+         */
         void addAssociatedCluster(const Cluster* cluster);
 
         /**
@@ -50,18 +66,53 @@ namespace corryvreckan {
          */
         bool hasClosestCluster() const;
 
-        // Print an ASCII representation of the Track to the given stream
+        /**
+         * @brief Print an ASCII representation of the Track to the given stream
+         * @param ostream to print to
+         */
         void print(std::ostream& out) const override { out << "Base class - nothing to see here" << std::endl; }
 
-        // set particle momentum
+        /**
+         * @brief Set the momentum of the particle
+         * @param momentum
+         */
         void setParticleMomentum(double p) { m_momentum = p; }
 
-        // Retrieve Track parameters
+        /**
+         * @brief Get the chi2 of the track fit
+         * @return chi2
+         */
         double chi2() const { return m_chi2; }
+
+        /**
+         * @brief Get chi2/ndof of the track fit
+         * @return chi2/ndof
+         */
         double chi2ndof() const { return m_chi2ndof; }
+
+        /**
+         * @brief Get the ndof for the track fit
+         * @return ndof
+         */
         double ndof() const { return m_ndof; }
+
+        /**
+         * @brief Get the clusters contained in the track fit
+         * @return vector of cluster* of track
+         */
         std::vector<Cluster*> clusters() const;
+
+        /**
+         * @brief Get the clusters associated to the track
+         * @return vector of cluster* assosiated to the track
+         */
         std::vector<Cluster*> associatedClusters() const;
+
+        /**
+         * @brief Check if cluster is associated
+         * @param Pointer to the clusterto be checked
+         * @return True if the cluster is associated to the track, false if not.
+         */
         bool isAssociated(Cluster* cluster) const;
 
         /**
@@ -78,15 +129,45 @@ namespace corryvreckan {
          */
         Cluster* getClusterFromDetector(std::string detectorID) const;
 
+        /**
+         * @brief Get the number of clusters used for track fit
+         * @return Number of clusters in track
+         */
         size_t nClusters() const { return m_trackClusters.size(); }
 
         // virtual functions to be implemented by derived classes
-        // Fit the Track (linear regression)
+
+        /**
+         * @brief The fiting routine
+         */
         virtual void fit(){};
-        // Calculate the 2D distance^2 between the fitted Track and a cluster
+
+        /**
+         * @brief  Get the distance between cluster and track
+         * @param Cluster* Pointer to the cluster
+         * @return distance between cluster and track
+         */
         virtual double distance2(const Cluster*) const { return 0; }
+
+        /**
+         * @brief Get the track position for a certain z position
+         * @param z positon
+         * @return ROOT::Math::XYZPoint at z position
+         */
         virtual ROOT::Math::XYZPoint intercept(double) const { return ROOT::Math::XYZPoint(0.0, 0.0, 0.0); }
+
+        /**
+         * @brief Get the track state at a detector
+         * @param name of detector
+         * @return ROOT::Math::XYZPoint state at detetcor layer
+         */
         virtual ROOT::Math::XYZPoint state(std::string) const { return ROOT::Math::XYZPoint(0.0, 0.0, 0.0); }
+
+        /**
+         * @brief Get the track direction at a detector
+         * @param name of detector
+         * @return ROOT::Math::XYZPoint direction at detetcor layer
+         */
         virtual ROOT::Math::XYZVector direction(std::string) const { return ROOT::Math::XYZVector(0.0, 0.0, 0.0); }
 
     protected:
