@@ -19,6 +19,8 @@ namespace corryvreckan {
     class Track : public Object {
 
     public:
+        static Track* Factory(std::string trackModel);
+
         // Constructors and destructors
         Track();
         // Copy constructor (also copies clusters from the original Track)
@@ -104,6 +106,7 @@ namespace corryvreckan {
     using TrackVector = std::vector<Track*>;
 } // namespace corryvreckan
 
-// include all tracking methods here to have one header to be include everywhre
+// include all tracking methods here to have one header to be include everywhere
 #include "StraightLineTrack.hpp"
+
 #endif // TRACK_H

@@ -96,3 +96,11 @@ Cluster* Track::getClusterFromDetector(std::string detectorID) const {
     }
     return dynamic_cast<Cluster*>(it->GetObject());
 }
+
+Track* corryvreckan::Track::Factory(std::string trackModel) {
+    if(trackModel == "straightline") {
+        return reinterpret_cast<Track*>(new StraightLineTrack());
+    } else {
+        throw corryvreckan::Exception(("Track model " + trackModel + " unknown"));
+    }
+}
