@@ -10,6 +10,7 @@ TrackingSpatial::TrackingSpatial(Configuration config, std::vector<std::shared_p
     spatialCut = m_config.get<double>("spatial_cut", Units::get<double>(200, "um"));
     minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
     excludeDUT = m_config.get<bool>("exclude_dut", true);
+    trackModel = m_config.get<std::string>("track_model", "straightline");
 }
 
 /*
@@ -116,7 +117,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
         LOG(DEBUG) << "Looping over clusters.";
         // Make a new track
-        auto track = new StraightLineTrack();
+        auto track = Track::Factory(trackModel);
 
         // Add the cluster to the track
         track->addCluster(cluster);

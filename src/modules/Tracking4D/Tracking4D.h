@@ -48,6 +48,7 @@ namespace corryvreckan {
         bool excludeDUT;
         std::vector<std::string> requireDetectors;
         std::string timestampFrom;
+        std::string trackModel;
     };
 } // namespace corryvreckan
 #endif // TRACKING4D_H

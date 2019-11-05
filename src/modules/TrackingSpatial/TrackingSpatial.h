@@ -41,6 +41,7 @@ namespace corryvreckan {
         double spatialCut;
         size_t minHitsOnTrack;
         bool excludeDUT;
+        std::string trackModel;
     };
 } // namespace corryvreckan
 #endif // TrackingSpatial_H
