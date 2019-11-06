@@ -6,7 +6,14 @@ using namespace std;
 DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    timeCutFactor = m_config.get<double>("time_cut_factor", 1.0);
+    if(config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
+        throw InvalidCombinationError(
+            config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
+    } else if(config.has("time_cut_abs")) {
+        timeCut = m_config.get<double>("time_cut_abs");
+    } else {
+        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->timeResolution();
+    }
     spatialCut = m_config.get<XYVector>("spatial_cut", 2 * m_detector->pitch());
     useClusterCentre = m_config.get<bool>("use_cluster_centre", false);
 }
@@ -70,8 +77,6 @@ void DUTAssociation::initialise() {
     // Nr of associated clusters per track
     title = m_detector->name() + ": number of associated clusters per track;associated clusters;events";
     hNoAssocCls = new TH1F("no_assoc_cls", title.c_str(), 10, 0, 10);
-
-    timeCut = timeCutFactor * m_detector->timeResolution();
     LOG(DEBUG) << "DUT association time cut = " << Units::display(timeCut, {"ms", "ns"});
 }
 
