@@ -7,8 +7,16 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::shared_ptr<Detector> det
     : Module(std::move(config), detector), m_detector(detector) {
 
     makeCorrelations = m_config.get<bool>("make_correlations", false);
-    timeCutFactor = m_config.get<double>("time_cut_factor", 1.0);
     doTimeCut = m_config.get<bool>("do_time_cut", false);
+    if(config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
+        throw InvalidCombinationError(
+            config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
+    } else if(config.has("time_cut_abs")) {
+        timeCut = m_config.get<double>("time_cut_abs");
+    } else {
+        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->timeResolution();
+    }
+
     m_time_vs_time = m_config.get<bool>("correlation_time_vs_time", false);
 }
 
@@ -18,7 +26,6 @@ void TestAlgorithm::initialise() {
 
     // get the reference detector:
     std::shared_ptr<Detector> reference = get_reference();
-    timeCut = timeCutFactor * reference->timeResolution();
 
     // Simple hit map
     std::string title = m_detector->name() + ": hitmap;x [px];y [px];events";
