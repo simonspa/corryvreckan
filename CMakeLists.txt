@@ -127,6 +127,8 @@ SET(CORRYVRECKAN_DEPS_LIBRARIES ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
 # Add "thisroot.sh" as runtime dependency for setup.sh file:
 ADD_RUNTIME_DEP(thisroot.sh)
 
+ADD_SUBDIRECTORY(3rdparty/GeneralBrokenLines)
+
 ###################################
 # Load cpp format and check tools #
 ###################################

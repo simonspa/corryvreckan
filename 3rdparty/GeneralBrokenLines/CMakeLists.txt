@@ -42,9 +42,6 @@ INSTALL( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${ROOT_LIBS})
 
-# the examples, build with "make examples"
-ADD_SUBDIRECTORY( examples/ )
-
 # add a target to generate API documentation with Doxygen
 FIND_PACKAGE(Doxygen)
 
