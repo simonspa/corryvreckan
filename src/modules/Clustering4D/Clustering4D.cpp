@@ -6,7 +6,14 @@ using namespace std;
 Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    timeCutFactor = m_config.get<double>("time_cut_factor", 1.0);
+    if(config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
+        throw InvalidCombinationError(
+            config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
+    } else if(config.has("time_cut_abs")) {
+        timeCut = m_config.get<double>("time_cut_abs");
+    } else {
+        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->timeResolution();
+    }
     neighbourRadiusRow = m_config.get<int>("neighbour_radius_row", 1);
     neighbourRadiusCol = m_config.get<int>("neighbour_radius_col", 1);
     chargeWeighting = m_config.get<bool>("charge_weighting", true);
@@ -32,7 +39,6 @@ void Clustering4D::initialise() {
     title = m_detector->name() + " Cluster multiplicity;clusters;events";
     clusterMultiplicity = new TH1F("clusterMultiplicity", title.c_str(), 50, 0, 50);
     // Get resolution in time of detector and calculate time cut to be applied
-    timeCut = timeCutFactor * m_detector->timeResolution();
     LOG(DEBUG) << "Time cut to be applied for " << m_detector->name() << " is "
                << Units::display(timeCut, {"ns", "us", "ms"});
 }

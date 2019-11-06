@@ -40,7 +40,6 @@ namespace corryvreckan {
         TH1F* clusterTimes;
         TH1F* clusterMultiplicity;
 
-        double timeCutFactor;
         double timeCut;
         int neighbourRadiusRow;
         int neighbourRadiusCol;
