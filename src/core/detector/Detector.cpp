@@ -66,8 +66,8 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         m_materialBudget = config.get<double>("material_budget");
     }
 
-    // Intrinsic position resolution, defaults to 4um:
-    m_resolution = config.get<ROOT::Math::XYVector>("resolution", ROOT::Math::XYVector(0.004, 0.004));
+    // Intrinsic spatial resolution, defaults to 4um:
+    m_spatial_resolution = config.get<ROOT::Math::XYVector>("spatial_resolution", ROOT::Math::XYVector(0.004, 0.004));
 
     m_detectorName = config.getName();
 
@@ -248,8 +248,8 @@ Configuration Detector::getConfiguration() const {
     // Size of the pixels
     config.set("pixel_pitch", m_pitch, {"um"});
 
-    // Intrinsic resolution:
-    config.set("resolution", m_resolution, {"um"});
+    // Intrinsic spatial resolution:
+    config.set("spatial_resolution", m_spatial_resolution, {"um"});
 
     if(m_timingOffset != 0.) {
         config.set("time_offset", m_timingOffset, {"ns", "us", "ms", "s"});

@@ -59,7 +59,8 @@ namespace corryvreckan {
     /**
      * @brief Detector representation in the reconstruction chain
      *
-     * Contains the detector with all its properties such as type, name, position and orientation, pitch, resolution etc.
+     * Contains the detector with all its properties such as type, name, position and orientation, pitch, spatial resolution
+     * etc.
      */
     class Detector {
     public:
@@ -123,10 +124,10 @@ namespace corryvreckan {
         XYVector pitch() const { return m_pitch; }
 
         /**
-         * @brief Get intrinsic resolution of the detector
-         * @return Intrinsic resolution in X and Y
+         * @brief Get intrinsic spatial resolution of the detector
+         * @return Intrinsic spatial resolution in X and Y
          */
-        XYVector resolution() const { return m_resolution; }
+        XYVector spatial_resolution() const { return m_spatial_resolution; }
 
         /**
          * @brief Get number of pixels in x and y
@@ -278,7 +279,7 @@ namespace corryvreckan {
         std::string m_detectorType;
         std::string m_detectorName;
         XYVector m_pitch;
-        XYVector m_resolution;
+        XYVector m_spatial_resolution;
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels;
         double m_timingOffset;
         double m_materialBudget;
