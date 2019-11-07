@@ -7,7 +7,7 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::shared_ptr<Detector> det
     : Module(std::move(config), detector), m_detector(detector) {
 
     makeCorrelations = m_config.get<bool>("make_correlations", false);
-    doTimeCut = m_config.get<bool>("do_time_cut", false);
+    do_time_cut_ = m_config.get<bool>("do_time_cut", false);
     if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(
             m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
@@ -213,7 +213,7 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
                     long long int timeDifferenceInt = static_cast<long long int>(timeDifference / 25);
 
                     // Correlation plots
-                    if(abs(timeDifference) < timeCut || !doTimeCut) {
+                    if(abs(timeDifference) < timeCut || !do_time_cut_) {
                         correlationX->Fill(refCluster->global().x() - cluster->global().x());
                         correlationX2D->Fill(cluster->global().x(), refCluster->global().x());
                         correlationX2Dlocal->Fill(cluster->column(), refCluster->column());
