@@ -12,7 +12,7 @@ Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detec
     } else if(m_config.has("time_cut_abs")) {
         timeCut = m_config.get<double>("time_cut_abs");
     } else {
-        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->timeResolution();
+        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
     }
     neighbourRadiusRow = m_config.get<int>("neighbour_radius_row", 1);
     neighbourRadiusCol = m_config.get<int>("neighbour_radius_col", 1);

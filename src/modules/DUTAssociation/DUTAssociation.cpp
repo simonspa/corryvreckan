@@ -12,7 +12,7 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
     } else if(m_config.has("time_cut_abs")) {
         timeCut = m_config.get<double>("time_cut_abs");
     } else {
-        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->timeResolution();
+        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
     }
     spatialCut = m_config.get<XYVector>("spatial_cut", 2 * m_detector->pitch());
     useClusterCentre = m_config.get<bool>("use_cluster_centre", false);

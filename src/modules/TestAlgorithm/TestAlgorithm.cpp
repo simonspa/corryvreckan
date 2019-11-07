@@ -14,7 +14,7 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::shared_ptr<Detector> det
     } else if(m_config.has("time_cut_abs")) {
         timeCut = m_config.get<double>("time_cut_abs");
     } else {
-        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->timeResolution();
+        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
     }
 
     m_time_vs_time = m_config.get<bool>("correlation_time_vs_time", false);

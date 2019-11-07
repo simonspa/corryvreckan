@@ -144,7 +144,7 @@ namespace corryvreckan {
          * @brief Get detector time resolution, used for timing cuts during clustering, track formation, etc.
          * @return Time resolutiom of respective detector
          */
-        double timeResolution() const { return m_timeResolution; }
+        double getTimeResolution() const { return m_timeResolution; }
 
         /**
          * @brief Update detector position in the world

@@ -114,7 +114,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 // For using a relative time cut, this calculates the reference detector time cut using the time resolution
                 // value, where timeCutAbs = 0
                 // If an absolute cut in time is to be used, then timeCutRel = 0 and timeCutReference = timeCutAbs
-                timeCutReference = detector->timeResolution() * timeCutRel + timeCutAbs;
+                timeCutReference = detector->getTimeResolution() * timeCutRel + timeCutAbs;
                 LOG(TRACE) << "Reference detector time cut (rel or abs) = "
                            << Units::display(timeCutReference, {"ns", "us", "s"});
                 firstDetector = false;
@@ -176,10 +176,10 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             // For default configuration, comparing time resolution * timeCutRel for the current detector and the reference
             // detector, and taking the maximal value as the cut in time for track-cluster association
             // If an absolute cut is to be used, then timeCutRel = 0 and timeCutReference=timeCutAbs=timeCut
-            double timeCut = std::max(timeCutReference, det->timeResolution() * timeCutRel + timeCutAbs);
+            double timeCut = std::max(timeCutReference, det->getTimeResolution() * timeCutRel + timeCutAbs);
             LOG(TRACE) << "Reference time resolution = " << Units::display(timeCutReference, {"ns", "us", "s"})
                        << "; detector plane " << detectorID
-                       << " time resolution = " << Units::display(det->timeResolution(), {"ns", "us", "s"});
+                       << " time resolution = " << Units::display(det->getTimeResolution(), {"ns", "us", "s"});
             LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
             auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timeCut);
 
