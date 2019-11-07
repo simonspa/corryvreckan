@@ -55,7 +55,7 @@ namespace corryvreckan {
         bool makeCorrelations;
         double timingCut;
         bool do_timing_cut_;
-        bool m_time_vs_time;
+        bool m_corr_vs_time;
 
         int m_eventNumber;
     };
