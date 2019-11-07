@@ -25,8 +25,10 @@ If yes, the corresponding pixels are added to the clipboard for this event.
 If earlier, the next event is read until a matching event is found.
 If later, the pointer to this event is kept and it continues with the next detector.
 
-Data from detectors with triggered readout and without timestamps are matched against trigger IDs stored in the currently defined Corryvreckan event.
-In case of a match, the timestamp of the respective trigger is assigned to all pixels of the device. If there is no trigger match, the pixel timestamp is set as the centre of the EUDAQ2 event.
+Data from detectors with triggered readout are matched against trigger IDs stored in the currently defined Corryvreckan event.
+In case of a match, the timestamp of the respective trigger is assigned to all pixels of the device.
+
+If no timestamp is available for the individual pixels, the pixel timestamp is set as the centre of the EUDAQ2 event.
 
 If no detector is capable of defining events, the `[Metronome]` model needs to be used.
 
