@@ -52,6 +52,13 @@ void Tracking4D::initialise() {
             continue;
         }
 
+        // For using a relative time cut, this calculates the time cut for each detector using the time resolution
+        // value, where timeCutAbs = 0
+        // If an absolute cut in time is to be used, then timeCutRel = 0 and time_cuts_[i] = timeCutAbs for all i
+        time_cuts_[detector] = detector->getTimeResolution() * timeCutRel + timeCutAbs;
+        LOG(DEBUG) << "Calculated time cut for " << detectorID << " is "
+                   << Units::display(time_cuts_[detector], {"ns", "us", "s"});
+
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detectorID.c_str());
         if(local_directory == nullptr) {
@@ -78,6 +85,8 @@ void Tracking4D::initialise() {
 
         directory->cd();
     }
+    // For using a relative time cut, timeCutAbs = 0
+    // If an absolute cut in time is to be used, then timeCutRel = 0
     if(timeCutRel > timeCutAbs) {
         LOG(DEBUG) << "Using value relative to the detector time resolution for the time cut during track formation";
     } else {
@@ -109,14 +118,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters from " << detectorID;
             if(firstDetector && !detector->isDUT()) {
                 referenceClusters = tempClusters;
+                time_cut_reference_ = time_cuts_[detector];
                 seedPlane = detector->name();
                 LOG(DEBUG) << "Seed plane is " << seedPlane;
-                // For using a relative time cut, this calculates the reference detector time cut using the time resolution
-                // value, where timeCutAbs = 0
-                // If an absolute cut in time is to be used, then timeCutRel = 0 and timeCutReference = timeCutAbs
-                timeCutReference = detector->getTimeResolution() * timeCutRel + timeCutAbs;
-                LOG(TRACE) << "Reference detector time cut (rel or abs) = "
-                           << Units::display(timeCutReference, {"ns", "us", "s"});
                 firstDetector = false;
             }
 
@@ -173,13 +177,13 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
             Cluster* closestCluster = nullptr;
             double closestClusterDistance = spatialCut;
-            // For default configuration, comparing time resolution * timeCutRel for the current detector and the reference
+            // For default configuration, comparing time cut calculated for the current detector and the reference
             // detector, and taking the maximal value as the cut in time for track-cluster association
-            // If an absolute cut is to be used, then timeCutRel = 0 and timeCutReference=timeCutAbs=timeCut
-            double timeCut = std::max(timeCutReference, det->getTimeResolution() * timeCutRel + timeCutAbs);
-            LOG(TRACE) << "Reference time resolution = " << Units::display(timeCutReference, {"ns", "us", "s"})
+            // If an absolute cut is to be used, then time_cut_reference_=time_cuts_[det]=timeCutAbs
+            double timeCut = std::max(time_cut_reference_, time_cuts_[det]);
+            LOG(TRACE) << "Reference calcuated time cut = " << Units::display(time_cut_reference_, {"ns", "us", "s"})
                        << "; detector plane " << detectorID
-                       << " time resolution = " << Units::display(det->getTimeResolution(), {"ns", "us", "s"});
+                       << " calculated time cut = " << Units::display(time_cuts_[det], {"ns", "us", "s"});
             LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
             auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timeCut);
 
