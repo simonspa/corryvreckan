@@ -38,8 +38,13 @@ void Tracking4D::initialise() {
     for(auto& detector : get_detectors()) {
         auto detectorID = detector->name();
 
-        // Do not create plots for detector snot participating in the tracking:
+        // Do not create plots for detectors not participating in the tracking:
         if(excludeDUT && detector->isDUT()) {
+            continue;
+        }
+
+        // Do not created plots for auxiliary detectors:
+        if(detector->isAuxiliary()) {
             continue;
         }
 
