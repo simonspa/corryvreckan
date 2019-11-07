@@ -7,7 +7,15 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
     : Module(std::move(config), detector), m_detector(detector) {
 
     timingCut = m_config.get<double>("timing_cut", Units::get<double>(200, "ns"));
-    spatialCut = m_config.get<XYVector>("spatial_cut", 2 * m_detector->pitch());
+    if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
+        throw InvalidCombinationError(
+            m_config, {"spatial_cut_rel", "spatial_cut_abs"}, "Absolute and relative spatial cuts are mutually exclusive.");
+    } else if(m_config.has("spatial_cut_abs")) {
+        spatialCut = m_config.get<XYVector>("spatial_cut_abs");
+    } else {
+        spatialCut = m_config.get<double>("spatial_cut_rel", 3.0) * m_detector->getSpatialResolution();
+    }
+
     useClusterCentre = m_config.get<bool>("use_cluster_centre", false);
 }
 
