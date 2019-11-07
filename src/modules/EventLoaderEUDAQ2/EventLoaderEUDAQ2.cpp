@@ -362,8 +362,8 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
             LOG(TRACE) << "Masking pixel (col, row) = (" << col << ", " << row << ")";
             continue;
         } else {
-            LOG(TRACE) << "Storing (col, row, timestamp) = (" << col << ", " << row << ", " << Units::display(ts, "us")
-                       << ") from EUDAQ2 event data";
+            LOG(TRACE) << "Storing (col, row, timestamp) = (" << col << ", " << row << ", "
+                       << Units::display(ts, {"ns", "us", "ms"}) << ") from EUDAQ2 event data";
         }
 
         // when calibration is not available, set charge = raw
