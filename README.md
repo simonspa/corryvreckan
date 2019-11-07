@@ -73,3 +73,5 @@ The documentation is distributed under the terms of the CC-BY-4.0 license. This 
 This project strongly profits from the developments done for the [Allpix Squared project](https://cern.ch/allpix-squared) which is released under the MIT license. Especially the configuration class, the module instantiation logic and the file reader and writer modules have profited heavily by their corresponding framework components in Allpix Squared.
 
 The LaTeX and Pandoc CMake modules used by Corryvreckan are licensed under the BSD 3-Clause License.
+
+The General Broken Lines library for track fitting is distributed under the terms of the GNU General Public License verison 2. The license can be found [here](3rdparty/GeneralBrokenLines/COPYING.LIB), the original source code is available from [here](www.terascale.de/wiki/generalbrokenlines/).
