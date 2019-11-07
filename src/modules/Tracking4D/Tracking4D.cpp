@@ -14,11 +14,15 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
         throw InvalidCombinationError(
             m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
     } else if(m_config.has("time_cut_abs")) {
-        timeCutAbs = m_config.get<double>("time_cut_abs");
-        timeCutRel = 0;
+        double time_cut_abs_ = m_config.get<double>("time_cut_abs");
+        for(auto& detector : get_detectors()) {
+            time_cuts_[detector] = time_cut_abs_;
+        }
     } else {
-        timeCutAbs = 0;
-        timeCutRel = m_config.get<double>("time_cut_rel", 3.0);
+        double time_cut_rel_ = m_config.get<double>("time_cut_rel", 3.0);
+        for(auto& detector : get_detectors()) {
+            time_cuts_[detector] = detector->getTimeResolution() * time_cut_rel_;
+        }
     }
     spatialCut = m_config.get<double>("spatial_cut", Units::get<double>(200, "um"));
     minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
@@ -46,18 +50,10 @@ void Tracking4D::initialise() {
     // Loop over all planes
     for(auto& detector : get_detectors()) {
         auto detectorID = detector->name();
-
         // Do not create plots for detector snot participating in the tracking:
         if(excludeDUT && detector->isDUT()) {
             continue;
         }
-
-        // For using a relative time cut, this calculates the time cut for each detector using the time resolution
-        // value, where timeCutAbs = 0
-        // If an absolute cut in time is to be used, then timeCutRel = 0 and time_cuts_[i] = timeCutAbs for all i
-        time_cuts_[detector] = detector->getTimeResolution() * timeCutRel + timeCutAbs;
-        LOG(DEBUG) << "Calculated time cut for " << detectorID << " is "
-                   << Units::display(time_cuts_[detector], {"ns", "us", "s"});
 
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detectorID.c_str());
@@ -85,14 +81,6 @@ void Tracking4D::initialise() {
 
         directory->cd();
     }
-    // For using a relative time cut, timeCutAbs = 0
-    // If an absolute cut in time is to be used, then timeCutRel = 0
-    if(timeCutRel > timeCutAbs) {
-        LOG(DEBUG) << "Using value relative to the detector time resolution for the time cut during track formation";
-    } else {
-        LOG(DEBUG) << "Using absolute value for the time cut during track formation";
-    }
-    LOG(TRACE) << "Parameter timeCutAbs = " << timeCutAbs << "; parameter timeCutRel = " << timeCutRel;
 }
 
 StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
