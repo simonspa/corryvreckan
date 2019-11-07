@@ -31,6 +31,8 @@ For each device the following plots are produced:
 * 2D correlation between rows(reference) and columns
 * 2D correlation in X in global coordinates
 * 2D correlation in Y in global coordinates
+* Correlation in X in global coordinates versus time
+* Correlation in Y in global coordinates versus time
 * Correlation times (nanosecond binning) histogram, range covers 2 * `timing_cut`
 * 2D correlation times over time histogram
 * Correlation times (on pixel level, all other histograms take clusters)
