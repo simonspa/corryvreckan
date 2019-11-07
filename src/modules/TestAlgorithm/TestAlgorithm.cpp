@@ -10,6 +10,8 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::shared_ptr<Detector> det
     timingCut = m_config.get<double>("timing_cut", Units::get<double>(100, "ns"));
     do_timing_cut_ = m_config.get<bool>("do_timing_cut", false);
     m_time_vs_time = m_config.get<bool>("correlation_time_vs_time", false);
+
+    m_eventNumber = 0;
 }
 
 void TestAlgorithm::initialise() {
@@ -53,6 +55,14 @@ void TestAlgorithm::initialise() {
         title = m_detector->name() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [ns];events";
         correlationTime =
             new TH1F("correlationTime", title.c_str(), static_cast<int>(2. * timingCut), -1 * timingCut, timingCut);
+
+        title = m_detector->name() + " Correlation versus time;Event Nr.;x_{ref}-x [mm];events";
+        std::string name = "correlationXVsTime";
+        correlationXVsTime = new TH2F(name.c_str(), title.c_str(), 500, 0, 0.5e6, 200, -10., 10.);
+
+        title = m_detector->name() + " Correlation versus time;Event Nr.;y_{ref}-y [mm];events";
+        name = "correlationYVsTime";
+        correlationYVsTime = new TH2F(name.c_str(), title.c_str(), 500, 0, 0.5e6, 200, -10., 10.);
 
         if(m_time_vs_time) {
             title = m_detector->name() +
@@ -216,6 +226,9 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
 
                         correlationXY->Fill(refCluster->global().y() - cluster->global().x());
                         correlationYX->Fill(refCluster->global().x() - cluster->global().y());
+
+                        correlationXVsTime->Fill(m_eventNumber, refCluster->global().x() - cluster->global().x());
+                        correlationYVsTime->Fill(m_eventNumber, refCluster->global().y() - cluster->global().y());
                     }
 
                     correlationTime->Fill(timeDifference); // time difference in ns
@@ -233,6 +246,8 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
             }
         }
     }
+
+    m_eventNumber++;
 
     return StatusCode::Success;
 }
