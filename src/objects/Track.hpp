@@ -20,11 +20,18 @@ namespace corryvreckan {
 
     public:
         /**
-         * @brief Factory dynamically create track objects
+         * @brief Factory to dynamically create track objects
          * @param The name of the track model which should be used
          * @return By param trackModel assigned track model to be used
          */
         static Track* Factory(std::string trackModel);
+
+        /**
+         * @brief Factory to dynamically create track objects - auto detects track based on private member m_trackModel
+         * @param Track to copy from
+         * @return By param trackModel assigned track model to be used
+         */
+        static Track* Factory(const Track& track);
 
         /**
          * @brief Track object constructor
@@ -170,6 +177,8 @@ namespace corryvreckan {
          */
         virtual ROOT::Math::XYZVector direction(std::string) const { return ROOT::Math::XYZVector(0.0, 0.0, 0.0); }
 
+        std::string trackModel() const { return m_trackModel; }
+
     protected:
         std::vector<TRef> m_trackClusters;
         std::vector<TRef> m_associatedClusters;
@@ -178,6 +187,7 @@ namespace corryvreckan {
         double m_ndof;
         double m_chi2ndof;
         double m_momentum;
+        std::string m_trackModel;
 
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(Track, 7)

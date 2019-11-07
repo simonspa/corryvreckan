@@ -4,7 +4,15 @@
 
 using namespace corryvreckan;
 
-StraightLineTrack::StraightLineTrack() : Track(), m_direction(0, 0, 1.), m_state(0, 0, 0.) {}
+StraightLineTrack::StraightLineTrack() : Track(), m_direction(0, 0, 1.), m_state(0, 0, 0.) {
+    m_trackModel = "straightline";
+}
+
+StraightLineTrack::StraightLineTrack(const Track& track) : Track(track) {
+    if(m_trackModel != "straightline")
+        throw Exception("track model changed!");
+    fit();
+}
 
 double StraightLineTrack::distance2(const Cluster* cluster) const {
 
@@ -113,7 +121,6 @@ void StraightLineTrack::fit() {
     m_direction.SetX(slopex);
     m_direction.SetY(slopey);
     m_direction.SetZ(1.);
-
     // Calculate the chi2
     this->calculateChi2();
 }

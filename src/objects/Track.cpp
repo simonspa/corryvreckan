@@ -3,15 +3,15 @@
 
 using namespace corryvreckan;
 
-Track::Track() : m_momentum(-1) {}
+Track::Track() : m_momentum(-1), m_trackModel("baseClass") {}
 
 Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp()) {
+    m_trackModel = track.trackModel();
     auto trackClusters = track.clusters();
     for(auto& track_cluster : trackClusters) {
         Cluster* cluster = new Cluster(*track_cluster);
         addCluster(cluster);
     }
-
     auto associatedClusters = track.associatedClusters();
     for(auto& assoc_cluster : associatedClusters) {
         Cluster* cluster = new Cluster(*assoc_cluster);
@@ -101,6 +101,14 @@ Track* corryvreckan::Track::Factory(std::string trackModel) {
     if(trackModel == "straightline") {
         return reinterpret_cast<Track*>(new StraightLineTrack());
     } else {
-        throw corryvreckan::Exception(("Track model " + trackModel + " unknown"));
+        throw MissingReferenceException(typeid(Track), typeid(Track));
+    }
+}
+
+Track* Track::Factory(const Track& track) {
+    if(track.trackModel() == "straightline") {
+        return reinterpret_cast<Track*>(new StraightLineTrack(track));
+    } else {
+        throw MissingReferenceException(typeid(Track), typeid(track));
     }
 }
