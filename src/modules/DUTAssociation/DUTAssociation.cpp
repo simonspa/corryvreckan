@@ -17,6 +17,10 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
     }
 
     useClusterCentre = m_config.get<bool>("use_cluster_centre", false);
+
+    LOG(DEBUG) << "timing_cut = " << Units::display(timingCut, {"ms", "us", "ns"});
+    LOG(DEBUG) << "spatial_cut = " << Units::display(spatialCut, {"um", "mm"});
+    LOG(DEBUG) << "use_cluster_centre = " << useClusterCentre;
 }
 
 void DUTAssociation::initialise() {
