@@ -35,5 +35,5 @@ For each detector the following plots are produced:
 ### Usage
 ```toml
 [Clustering4D]
-time_cut_rel = 3.5
+time_cut_rel = 3.0
 ```

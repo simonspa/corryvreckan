@@ -41,7 +41,7 @@ For each detector the following plots are produced:
 [BasicTracking]
 min_hits_on_track = 4
 spatial_cut = 300um
-time_cut_rel = 3.5
+time_cut_rel = 3.0
 exclude_dut = true
 require_detectors = "ExampleDetector_0", "ExampleDetector_1"
 ```

@@ -36,7 +36,7 @@ The other option is to compare the distance between the cluster centre and the t
 ```toml
 [DUTAssociation]
 spatial_cut = 100um, 50um
-time_cut_rel = 3.5
+time_cut_rel = 3.0
 use_cluster_centre = false
 
 ```
