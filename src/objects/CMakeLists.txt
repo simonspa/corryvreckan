@@ -60,6 +60,7 @@ ADD_LIBRARY(CorryvreckanObjects SHARED
 
 # Link the standard dependencies
 TARGET_LINK_LIBRARIES(CorryvreckanObjects ${CORRYVRECKAN_DEPS_LIBRARIES})
+TARGET_COMPILE_OPTIONS(CorryvreckanObjects PRIVATE ${CORRYVREKCAN_CXX_FLAGS})
 
 # Specify install for the messages
 INSTALL(TARGETS CorryvreckanObjects

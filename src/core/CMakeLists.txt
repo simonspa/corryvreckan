@@ -22,8 +22,10 @@ ADD_LIBRARY(CorryvreckanCore SHARED
 TARGET_LINK_LIBRARIES(CorryvreckanCore ${CORRYVRECKAN_DEPS_LIBRARIES})
 TARGET_LINK_LIBRARIES(CorryvreckanCore ${CORRYVRECKAN_LIBRARIES})
 
-# Define compile-time library extension
+# Define compile-time library extension and add compiler flags
 TARGET_COMPILE_DEFINITIONS(CorryvreckanCore PRIVATE SHARED_LIBRARY_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}")
+TARGET_COMPILE_OPTIONS(CorryvreckanCore PRIVATE ${CORRYVREKCAN_CXX_FLAGS})
+
 # Link the DL libraries
 TARGET_LINK_LIBRARIES(CorryvreckanCore ${CMAKE_DL_LIBS})
 
