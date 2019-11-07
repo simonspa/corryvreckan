@@ -56,13 +56,13 @@ void TestAlgorithm::initialise() {
         correlationTime =
             new TH1F("correlationTime", title.c_str(), static_cast<int>(2. * timingCut), -1 * timingCut, timingCut);
 
-        title = m_detector->name() + " Correlation versus time;Event Nr.;x_{ref}-x [mm];events";
+        title = m_detector->name() + " Correlation versus time;t [s];x_{ref}-x [mm];events";
         std::string name = "correlationXVsTime";
-        correlationXVsTime = new TH2F(name.c_str(), title.c_str(), 500, 0, 0.5e6, 200, -10., 10.);
+        correlationXVsTime = new TH2F(name.c_str(), title.c_str(), 600, 0, 3e3, 200, -10., 10.);
 
-        title = m_detector->name() + " Correlation versus time;Event Nr.;y_{ref}-y [mm];events";
+        title = m_detector->name() + " Correlation versus time;t [s];y_{ref}-y [mm];events";
         name = "correlationYVsTime";
-        correlationYVsTime = new TH2F(name.c_str(), title.c_str(), 500, 0, 0.5e6, 200, -10., 10.);
+        correlationYVsTime = new TH2F(name.c_str(), title.c_str(), 600, 0, 3e3, 200, -10., 10.);
 
         if(m_time_vs_time) {
             title = m_detector->name() +
@@ -227,8 +227,10 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
                         correlationXY->Fill(refCluster->global().y() - cluster->global().x());
                         correlationYX->Fill(refCluster->global().x() - cluster->global().y());
 
-                        correlationXVsTime->Fill(m_eventNumber, refCluster->global().x() - cluster->global().x());
-                        correlationYVsTime->Fill(m_eventNumber, refCluster->global().y() - cluster->global().y());
+                        correlationXVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                                 refCluster->global().x() - cluster->global().x());
+                        correlationYVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                                 refCluster->global().y() - cluster->global().y());
                     }
 
                     correlationTime->Fill(timeDifference); // time difference in ns
