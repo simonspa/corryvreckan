@@ -347,7 +347,8 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
 
         double ts;
         if(plane.GetTimestamp(i) == 0) {
-            ts = static_cast<double>(evt->GetTimeBegin()) / 1000 + m_detector->timingOffset();
+            // If the plane timestamp is not defined, we place all pixels in the center of the EUDAQ2 event:
+            ts = static_cast<double>(evt->GetTimeBegin() + evt->GetTimeEnd()) / 2 / 1000 + m_detector->timingOffset();
         } else {
             ts = static_cast<double>(plane.GetTimestamp(i)) / 1000 + m_detector->timingOffset();
         }
@@ -361,7 +362,8 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
             LOG(TRACE) << "Masking pixel (col, row) = (" << col << ", " << row << ")";
             continue;
         } else {
-            LOG(TRACE) << "Storing (col, row) = (" << col << ", " << row << ") from EUDAQ2 event data";
+            LOG(TRACE) << "Storing (col, row, timestamp) = (" << col << ", " << row << ", "
+                       << Units::display(ts, {"ns", "us", "ms"}) << ") from EUDAQ2 event data";
         }
 
         // when calibration is not available, set charge = raw
