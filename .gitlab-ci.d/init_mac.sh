@@ -57,3 +57,10 @@ export DYLD_LIBRARY_PATH="$ROOTSYS/lib:$DYLD_LIBRARY_PATH"
 
 export Ninja_HOME=${CLICREPO}/software/Ninja/1.9.0/${BUILD_FLAVOUR}
 export PATH="$Ninja_HOME:$PATH"
+
+#--------------------------------------------------------------------------------
+#     Eigen
+#--------------------------------------------------------------------------------
+
+export Eigen_HOME=${CLICREPO}/software/Eigen/3.3.7/${BUILD_FLAVOUR}
+export Eigen3_DIR=${Eigen_HOME}/share/eigen3/cmake/
