@@ -78,10 +78,10 @@ void Tracking4D::initialise() {
 
         directory->cd();
     }
-    if(timeCutRel == 0 and timeCutAbs != 0) {
-        LOG(DEBUG) << "Using absolute value for the time cut during track formation";
-    } else if(timeCutRel != 0 and timeCutAbs == 0) {
+    if(timeCutRel > timeCutAbs) {
         LOG(DEBUG) << "Using value relative to the detector time resolution for the time cut during track formation";
+    } else {
+        LOG(DEBUG) << "Using absolute value for the time cut during track formation";
     }
     LOG(TRACE) << "Parameter timeCutAbs = " << timeCutAbs << "; parameter timeCutRel = " << timeCutRel;
 }
