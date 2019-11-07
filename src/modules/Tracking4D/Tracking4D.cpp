@@ -166,9 +166,10 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
             Cluster* closestCluster = nullptr;
             double closestClusterDistance = spatialCut;
-            // For default configuration, comparing time cut calculated for the current detector and the reference
-            // detector, and taking the maximal value as the cut in time for track-cluster association
-            // If an absolute cut is to be used, then time_cut_reference_=time_cuts_[det]=timeCutAbs
+            // For default configuration, comparing time cuts calculated from the time resolution of the current detector and
+            // the first plane in Z,
+            // and taking the maximal value as the cut in time for track-cluster association
+            // If an absolute cut is to be used, then time_cut_reference_=time_cuts_[det]= time_cut_abs parameter
             double timeCut = std::max(time_cut_reference_, time_cuts_[det]);
             LOG(TRACE) << "Reference calcuated time cut = " << Units::display(time_cut_reference_, {"ns", "us", "s"})
                        << "; detector plane " << detectorID
