@@ -10,10 +10,10 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     : Module(std::move(config), std::move(detectors)) {
 
     // Default values for cuts
-    if(config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
+    if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(
-            config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
-    } else if(config.has("time_cut_abs")) {
+            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
+    } else if(m_config.has("time_cut_abs")) {
         timeCutAbs = m_config.get<double>("time_cut_abs");
         timeCutRel = 0;
     } else {

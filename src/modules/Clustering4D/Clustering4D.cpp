@@ -8,8 +8,8 @@ Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detec
 
     if(config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(
-            config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
-    } else if(config.has("time_cut_abs")) {
+            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
+    } else if(m_config.has("time_cut_abs")) {
         timeCut = m_config.get<double>("time_cut_abs");
     } else {
         timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->timeResolution();
