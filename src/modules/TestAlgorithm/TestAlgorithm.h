@@ -56,8 +56,6 @@ namespace corryvreckan {
         double timingCut;
         bool do_timing_cut_;
         bool m_corr_vs_time;
-
-        int m_eventNumber;
     };
 } // namespace corryvreckan
 #endif // TESTALGORITHM_H

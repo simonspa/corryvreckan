@@ -10,8 +10,6 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::shared_ptr<Detector> det
     timingCut = m_config.get<double>("timing_cut", Units::get<double>(100, "ns"));
     do_timing_cut_ = m_config.get<bool>("do_timing_cut", false);
     m_corr_vs_time = m_config.get<bool>("correlation_vs_time", false);
-
-    m_eventNumber = 0;
 }
 
 void TestAlgorithm::initialise() {
@@ -249,8 +247,6 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
             }
         }
     }
-
-    m_eventNumber++;
 
     return StatusCode::Success;
 }
