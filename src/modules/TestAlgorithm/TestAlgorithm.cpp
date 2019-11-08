@@ -13,6 +13,11 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::shared_ptr<Detector> det
 }
 
 void TestAlgorithm::initialise() {
+
+    if(m_detector->isAuxiliary()) {
+        return;
+    }
+
     LOG(DEBUG) << "Booking histograms for detector " << m_detector->name();
 
     // get the reference detector:

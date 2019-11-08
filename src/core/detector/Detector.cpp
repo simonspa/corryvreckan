@@ -53,10 +53,8 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         throw InvalidValueError(config, "orientation_mode", "Invalid detector orientation mode");
     }
 
-    // Number of pixels
-    m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
-    // Size of the pixels
-    m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
+    m_detectorName = config.getName();
+
     // Material budget of detector, including support material
     if(!config.has("material_budget")) {
         LOG(WARNING) << "No material budget given for " << m_detectorName << ", assuming zero";
@@ -66,21 +64,27 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         m_materialBudget = config.get<double>("material_budget");
     }
 
-    // Intrinsic position resolution, defaults to 4um:
-    m_resolution = config.get<ROOT::Math::XYVector>("resolution", ROOT::Math::XYVector(0.004, 0.004));
+    // Auxiliary devices don't have: number_of_pixels, pixel_pitch, spatial_resolution, mask_file, region-of-interest
+    if(!isAuxiliary()) {
+        // Intrinsic spatial resolution, no default:
+        m_resolution = config.get<ROOT::Math::XYVector>("resolution");
+        // Number of pixels:
+        m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
+        // Size of the pixels:
+        m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
 
-    m_detectorName = config.getName();
-
-    if(Units::convert(m_pitch.X(), "mm") >= 1 or Units::convert(m_pitch.Y(), "mm") >= 1 or
-       Units::convert(m_pitch.X(), "um") <= 1 or Units::convert(m_pitch.Y(), "um") <= 1) {
-        LOG(WARNING) << "Pixel pitch unphysical for detector " << m_detectorName << ": " << std::endl
-                     << Units::display(m_pitch, {"nm", "um", "mm"});
+        if(Units::convert(m_pitch.X(), "mm") >= 1 or Units::convert(m_pitch.Y(), "mm") >= 1 or
+           Units::convert(m_pitch.X(), "um") <= 1 or Units::convert(m_pitch.Y(), "um") <= 1) {
+            LOG(WARNING) << "Pixel pitch unphysical for detector " << m_detectorName << ": " << std::endl
+                         << Units::display(m_pitch, {"nm", "um", "mm"});
+        }
+        // region of interest:
+        m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
     }
 
     m_detectorType = config.get<std::string>("type");
     std::transform(m_detectorType.begin(), m_detectorType.end(), m_detectorType.begin(), ::tolower);
     m_timingOffset = config.get<double>("time_offset", 0.0);
-    m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
 
     this->initialise();
 
@@ -92,12 +96,14 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         LOG(TRACE) << "Timing offset: " << m_timingOffset;
     }
 
-    if(config.has("mask_file")) {
-        m_maskfile_name = config.get<std::string>("mask_file");
-        std::string mask_file = config.getPath("mask_file");
-        LOG(DEBUG) << "Adding mask to detector \"" << config.getName() << "\", reading from " << mask_file;
-        setMaskFile(mask_file);
-        processMaskFile();
+    if(!isAuxiliary()) {
+        if(config.has("mask_file")) {
+            m_maskfile_name = config.get<std::string>("mask_file");
+            std::string mask_file = config.getPath("mask_file");
+            LOG(DEBUG) << "Adding mask to detector \"" << config.getName() << "\", reading from " << mask_file;
+            setMaskFile(mask_file);
+            processMaskFile();
+        }
     }
 }
 
@@ -243,27 +249,35 @@ Configuration Detector::getConfiguration() const {
     config.set("position", m_displacement, {"um", "mm"});
     config.set("orientation_mode", m_orientation_mode);
     config.set("orientation", m_orientation, {"deg"});
-    config.set("number_of_pixels", m_nPixels);
-
-    // Size of the pixels
-    config.set("pixel_pitch", m_pitch, {"um"});
-
-    // Intrinsic resolution:
-    config.set("resolution", m_resolution, {"um"});
 
     if(m_timingOffset != 0.) {
         config.set("time_offset", m_timingOffset, {"ns", "us", "ms", "s"});
     }
 
-    if(!m_maskfile_name.empty()) {
-        config.set("mask_file", m_maskfile_name);
-    }
-
-    config.setMatrix("roi", m_roi);
     // material budget
     if(m_materialBudget > 0.0) {
         config.set("material_budget", m_materialBudget);
     }
+
+    // only if detector is not auxiliary:
+    if(!this->isAuxiliary()) {
+        config.set("number_of_pixels", m_nPixels);
+
+        // Size of the pixels
+        config.set("pixel_pitch", m_pitch, {"um"});
+
+        // Intrinsic resolution:
+        config.set("resolution", m_resolution, {"um"});
+
+        // Pixel mask file:
+        if(!m_maskfile_name.empty()) {
+            config.set("mask_file", m_maskfile_name);
+        }
+
+        // Region-of-interest:
+        config.setMatrix("roi", m_roi);
+    }
+
     return config;
 }
 
