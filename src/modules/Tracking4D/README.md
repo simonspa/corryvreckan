@@ -38,7 +38,7 @@ For each detector the following plots are produced:
 
 ### Usage
 ```toml
-[BasicTracking]
+[Tracking4D]
 min_hits_on_track = 4
 spatial_cut = 300um
 time_cut_rel = 3.0
