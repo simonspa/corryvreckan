@@ -5,21 +5,38 @@
 using namespace corryvreckan;
 using namespace std;
 
-TrackingSpatial::TrackingSpatial(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
-    spatialCut = m_config.get<double>("spatial_cut", Units::get<double>(200, "um"));
-    minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
-    excludeDUT = m_config.get<bool>("exclude_dut", true);
-}
-
 /*
 
- This algorithm performs the track finding using only spatial information
- (no timing). It is based on a linear extrapolation along the z axis, followed
- by a nearest neighbour search, and should be well adapted to testbeam
- reconstruction with a mostly colinear beam.
+This algorithm performs the track finding using only spatial information
+(no timing). It is based on a linear extrapolation along the z axis, followed
+by a nearest neighbour search, and should be well adapted to testbeam
+reconstruction with a mostly colinear beam.
 
- */
+*/
+
+TrackingSpatial::TrackingSpatial(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+    : Module(std::move(config), std::move(detectors)) {
+
+    minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
+    excludeDUT = m_config.get<bool>("exclude_dut", true);
+
+    // spatial cut, relative (x * spatial_resolution) or absolute:
+    if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
+        throw InvalidCombinationError(
+            m_config, {"spatial_cut_rel", "spatial_cut_abs"}, "Absolute and relative spatial cuts are mutually exclusive.");
+    } else if(m_config.has("spatial_cut_abs")) {
+        auto spatial_cut_abs_ = m_config.get<XYVector>("spatial_cut_abs");
+        for(auto& detector : get_detectors()) {
+            spatial_cuts_[detector] = spatial_cut_abs_;
+        }
+    } else {
+        // default is 3.0 * spatial_resolution
+        auto spatial_cut_rel_ = m_config.get<double>("spatial_cut_rel", 3.0);
+        for(auto& detector : get_detectors()) {
+            spatial_cuts_[detector] = detector->getSpatialResolution() * spatial_cut_rel_;
+        }
+    }
+}
 
 void TrackingSpatial::initialise() {
 
