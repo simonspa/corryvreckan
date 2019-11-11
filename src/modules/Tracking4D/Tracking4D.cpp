@@ -171,7 +171,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "Searching for neighbouring cluster on " << detectorID;
             LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
             Cluster* closestCluster = nullptr;
-            double closestClusterDistance = spatialCut;
+            // Use spatial cut only as initial value (check if cluster is ellipse defined by cuts is done below):
+            double closestClusterDistance =
+                sqrt(spatial_cuts_[det].x() * spatial_cuts_[det].x() + spatial_cuts_[det].y() * spatial_cuts_[det].y());
             auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut);
 
             LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
@@ -194,8 +196,25 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 Cluster* newCluster = neighbours[ne];
 
                 // Calculate the distance to the previous plane's cluster/intercept
-                double distance = sqrt((interceptX - newCluster->global().x()) * (interceptX - newCluster->global().x()) +
-                                       (interceptY - newCluster->global().y()) * (interceptY - newCluster->global().y()));
+                double distanceX = interceptX - newCluster->global().x();
+                double distanceY = interceptY - newCluster->global().y();
+                double distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+
+                // Check if newCluster lies within ellipse defined by spatial cuts around intercept,
+                // following this example:
+                // https://www.geeksforgeeks.org/check-if-a-point-is-inside-outside-or-on-the-ellipse/
+                //
+                // ellipse defined by: x^2/a^2 + y^2/b^2 = 1: on ellipse,
+                //                                       > 1: outside,
+                //                                       < 1: inside
+                // Continue if on or outside of ellipse:
+
+                double norm = (distanceX * distanceX) / (spatial_cuts_[det].x() * spatial_cuts_[det].x()) +
+                              (distanceY * distanceY) / (spatial_cuts_[det].y() * spatial_cuts_[det].y());
+
+                if(norm >= 1) {
+                    continue;
+                }
 
                 // If this is the closest keep it
                 if(distance < closestClusterDistance) {
