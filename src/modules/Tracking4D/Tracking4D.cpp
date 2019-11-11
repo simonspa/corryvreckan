@@ -156,19 +156,24 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             // Get the detector
             auto det = get_detector(detectorID);
 
+            if(trees.count(detectorID) == 0) {
+                LOG(TRACE) << "Skip 0th detector.";
+                continue;
+            }
+
+            if(detectorID == seedPlane) {
+                LOG(TRACE) << "Skip seed plane.";
+                continue;
+            }
+
             // Check if the DUT should be excluded and obey:
             if(excludeDUT && det->isDUT()) {
                 LOG(DEBUG) << "Skipping DUT plane.";
                 continue;
             }
 
-            if(detectorID == seedPlane)
-                continue;
-            if(trees.count(detectorID) == 0)
-                continue;
-
             // Get all neighbours within the timing cut
-            LOG(DEBUG) << "Searching for neighbouring cluster on " << detectorID;
+            LOG(DEBUG) << "Searching for neighbouring cluster on device " << detectorID;
             LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
             Cluster* closestCluster = nullptr;
             // Use spatial cut only as initial value (check if cluster is ellipse defined by cuts is done below):
@@ -207,12 +212,12 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 // ellipse defined by: x^2/a^2 + y^2/b^2 = 1: on ellipse,
                 //                                       > 1: outside,
                 //                                       < 1: inside
-                // Continue if on or outside of ellipse:
+                // Continue if outside of ellipse:
 
                 double norm = (distanceX * distanceX) / (spatial_cuts_[det].x() * spatial_cuts_[det].x()) +
                               (distanceY * distanceY) / (spatial_cuts_[det].y() * spatial_cuts_[det].y());
 
-                if(norm >= 1) {
+                if(norm > 1) {
                     continue;
                 }
 
