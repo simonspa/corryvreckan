@@ -170,17 +170,28 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Get the closest neighbour
-            LOG(DEBUG) << "- looking for nearest cluster on device " << detectorID;
+            LOG(DEBUG) << "Searching for nearest cluster on device " << detectorID;
             Cluster* closestCluster = trees[detectorID]->getClosestNeighbour(cluster);
 
-            // Check if it is within the spatial window
-            double distance = sqrt((cluster->global().x() - closestCluster->global().x()) *
-                                       (cluster->global().x() - closestCluster->global().x()) +
-                                   (cluster->global().y() - closestCluster->global().y()) *
-                                       (cluster->global().y() - closestCluster->global().y()));
+            double distanceX = (cluster->global().x() - closestCluster->global().x());
+            double distanceY = (cluster->global().y() - closestCluster->global().y());
+            double distance = sqrt(distanceX * distanceX + distanceY * distanceY);
 
-            if(distance > spatialCut)
+            // Check if closestCluster lies within ellipse defined by spatial cuts,
+            // following this example:
+            // https://www.geeksforgeeks.org/check-if-a-point-is-inside-outside-or-on-the-ellipse/
+            //
+            // ellipse defined by: x^2/a^2 + y^2/b^2 = 1: on ellipse,
+            //                                       > 1: outside,
+            //                                       < 1: inside
+            // Continue if on or outside of ellipse:
+
+            double norm = (distanceX * distanceX) / (spatial_cuts_[detector].x() * spatial_cuts_[detector].x()) +
+                          (distanceY * distanceY) / (spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
+
+            if(norm > 1) {
                 continue;
+            }
 
             // Add the cluster to the track
             track->addCluster(closestCluster);
