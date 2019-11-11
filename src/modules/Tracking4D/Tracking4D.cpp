@@ -10,7 +10,20 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     : Module(std::move(config), std::move(detectors)) {
 
     // Default values for cuts
-    timingCut = m_config.get<double>("timing_cut", Units::get<double>(200, "ns"));
+    if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
+        throw InvalidCombinationError(
+            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
+    } else if(m_config.has("time_cut_abs")) {
+        double time_cut_abs_ = m_config.get<double>("time_cut_abs");
+        for(auto& detector : get_detectors()) {
+            time_cuts_[detector] = time_cut_abs_;
+        }
+    } else {
+        double time_cut_rel_ = m_config.get<double>("time_cut_rel", 3.0);
+        for(auto& detector : get_detectors()) {
+            time_cuts_[detector] = detector->getTimeResolution() * time_cut_rel_;
+        }
+    }
     spatialCut = m_config.get<double>("spatial_cut", Units::get<double>(200, "um"));
     minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
     excludeDUT = m_config.get<bool>("exclude_dut", true);
@@ -99,6 +112,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters from " << detectorID;
             if(firstDetector && !detector->isDUT()) {
                 referenceClusters = tempClusters;
+                time_cut_reference_ = time_cuts_[detector];
                 seedPlane = detector->name();
                 LOG(DEBUG) << "Seed plane is " << seedPlane;
                 firstDetector = false;
@@ -157,7 +171,16 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
             Cluster* closestCluster = nullptr;
             double closestClusterDistance = spatialCut;
-            auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timingCut);
+            // For default configuration, comparing time cuts calculated from the time resolution of the current detector and
+            // the first plane in Z,
+            // and taking the maximal value as the cut in time for track-cluster association
+            // If an absolute cut is to be used, then time_cut_reference_=time_cuts_[det]= time_cut_abs parameter
+            double timeCut = std::max(time_cut_reference_, time_cuts_[det]);
+            LOG(TRACE) << "Reference calcuated time cut = " << Units::display(time_cut_reference_, {"ns", "us", "s"})
+                       << "; detector plane " << detectorID
+                       << " calculated time cut = " << Units::display(time_cuts_[det], {"ns", "us", "s"});
+            LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
+            auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timeCut);
 
             LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
 

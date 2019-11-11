@@ -42,11 +42,12 @@ namespace corryvreckan {
         std::map<std::string, TH1F*> residualsYwidth3;
 
         // Cuts for tracking
-        double timingCut;
+        double time_cut_reference_;
         double spatialCut;
         size_t minHitsOnTrack;
         bool excludeDUT;
         std::vector<std::string> requireDetectors;
+        std::map<std::shared_ptr<Detector>, double> time_cuts_;
         std::string timestampFrom;
     };
 } // namespace corryvreckan

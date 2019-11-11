@@ -16,7 +16,8 @@ The other option is to compare the distance between the cluster centre and the t
 
 ### Parameters
 * `spatial_cut`: Maximum spatial distance in local coordinates in x- and y-direction allowed between cluster and track for association with the DUT. Expects two values for the two coordinates, defaults to twice the pixel pitch.
-* `timing_cut`: Maximum time difference allowed between cluster and track for association for the DUT. Default value is `200ns`.
+* `time_cut_rel`: Number of standard deviations the `time_resolution` of the detector plane will be multiplied by. This value is then used as the maximum time difference allowed between a DUT cluster and track for association. By default, a relative time cut is applied. Absolute and relative time cuts are mutually exclusive. Defaults to `3.0`.
+* `time_cut_abs`: Specifies an absolute value for the maximum time difference allowed between DUT cluster and track for association. Absolute and relative time cuts are mutually exclusive. No default value.
 * `use_cluster_centre`: If set true, the cluster centre will be compared to the track position for the spatial cut. If false, the nearest pixel in the cluster will be used. Defaults to `false`.
 
 ### Plots produced
@@ -35,7 +36,7 @@ The other option is to compare the distance between the cluster centre and the t
 ```toml
 [DUTAssociation]
 spatial_cut = 100um, 50um
-timing_cut = 200ns
+time_cut_rel = 3.0
 use_cluster_centre = false
 
 ```
