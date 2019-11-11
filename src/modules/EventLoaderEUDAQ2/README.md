@@ -61,7 +61,7 @@ The decoder promises to
 * return `true` only when there is a fully decoded event available and `false` in all other cases.
 * not return any event before a possible T0 signal in the data.
 * return the smallest possible granularity of data in time either as even or as sub-events within one event.
-* always return valid event time stamps. If the device does not have timestamps, it should return zero for the beginning of the event and have a valid trigger number set.
+* always return valid event timestamps. If the device does not have timestamps, it should return zero for the beginning of the event and have a valid trigger number set.
 * provide the detector type via the `GetDetectorType()` function in the decoded StandardEvent.
 
 ### Configuring EUDAQ2 Event Converters

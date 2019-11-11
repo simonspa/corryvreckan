@@ -6,7 +6,14 @@ using namespace std;
 Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    timingCut = m_config.get<double>("timing_cut", Units::get<double>(100, "ns"));
+    if(config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
+        throw InvalidCombinationError(
+            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
+    } else if(m_config.has("time_cut_abs")) {
+        timeCut = m_config.get<double>("time_cut_abs");
+    } else {
+        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
+    }
     neighbourRadiusRow = m_config.get<int>("neighbour_radius_row", 1);
     neighbourRadiusCol = m_config.get<int>("neighbour_radius_col", 1);
     chargeWeighting = m_config.get<bool>("charge_weighting", true);
@@ -31,6 +38,9 @@ void Clustering4D::initialise() {
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
     title = m_detector->name() + " Cluster multiplicity;clusters;events";
     clusterMultiplicity = new TH1F("clusterMultiplicity", title.c_str(), 50, 0, 50);
+    // Get resolution in time of detector and calculate time cut to be applied
+    LOG(DEBUG) << "Time cut to be applied for " << m_detector->name() << " is "
+               << Units::display(timeCut, {"ns", "us", "ms"});
 }
 
 // Sort function for pixels from low to high times
@@ -84,9 +94,9 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
             for(size_t iNeighbour = (iP + 1); iNeighbour < totalPixels; iNeighbour++) {
                 Pixel* neighbour = (*pixels)[iNeighbour];
                 // Check if they are compatible in time with the cluster pixels
-                if((neighbour->timestamp() - clusterTime) > timingCut)
+                if(abs(neighbour->timestamp() - clusterTime) > timeCut)
                     break;
-                //          if(!closeInTime(neighbour,cluster)) break;
+
                 // Check if they have been used
                 if(used[neighbour])
                     continue;
@@ -157,7 +167,7 @@ bool Clustering4D::closeInTime(Pixel* neighbour, Cluster* cluster) {
     for(auto& px : pixels) {
 
         double timeDifference = abs(neighbour->timestamp() - px->timestamp());
-        if(timeDifference < timingCut)
+        if(timeDifference < timeCut)
             CloseInTime = true;
     }
     return CloseInTime;
@@ -195,8 +205,6 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         column_sum_chargeweighted += (pixel->column() * pixel->charge());
         row_sum_chargeweighted += (pixel->row() * pixel->charge());
 
-        LOG(DEBUG) << "- cluster col, row: " << column << "," << row;
-
         if(pixel->timestamp() < timestamp) {
             timestamp = pixel->timestamp();
         }
@@ -224,6 +232,8 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
     // Calculate global cluster position
     auto positionGlobal = m_detector->localToGlobal(positionLocal);
 
+    LOG(DEBUG) << "- cluster col, row, time : " << column << "," << row << ","
+               << Units::display(timestamp, {"ns", "us", "ms"});
     // Set the cluster parameters
     cluster->setColumn(column);
     cluster->setRow(row);

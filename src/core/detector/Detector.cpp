@@ -84,7 +84,8 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
 
     m_detectorType = config.get<std::string>("type");
     std::transform(m_detectorType.begin(), m_detectorType.end(), m_detectorType.begin(), ::tolower);
-    m_timingOffset = config.get<double>("time_offset", 0.0);
+    m_timeOffset = config.get<double>("time_offset", 0.0);
+    m_timeResolution = config.get<double>("time_resolution");
 
     this->initialise();
 
@@ -92,9 +93,10 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
                << Units::display(m_pitch, {"mm", "um"});
     LOG(TRACE) << "  Position:    " << Units::display(m_displacement, {"mm", "um"});
     LOG(TRACE) << "  Orientation: " << Units::display(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
-    if(m_timingOffset > 0.) {
-        LOG(TRACE) << "Timing offset: " << m_timingOffset;
+    if(m_timeOffset > 0.) {
+        LOG(TRACE) << "Time offset: " << m_timeOffset;
     }
+    LOG(TRACE) << "  Time resolution: " << Units::display(m_timeResolution, {"ms", "us"});
 
     if(!isAuxiliary()) {
         if(config.has("mask_file")) {
@@ -250,9 +252,11 @@ Configuration Detector::getConfiguration() const {
     config.set("orientation_mode", m_orientation_mode);
     config.set("orientation", m_orientation, {"deg"});
 
-    if(m_timingOffset != 0.) {
-        config.set("time_offset", m_timingOffset, {"ns", "us", "ms", "s"});
+    if(m_timeOffset != 0.) {
+        config.set("time_offset", m_timeOffset, {"ns", "us", "ms", "s"});
     }
+
+    config.set("time_resolution", m_timeResolution, {"ns", "us", "ms", "s"});
 
     // material budget
     if(m_materialBudget > 0.0) {
