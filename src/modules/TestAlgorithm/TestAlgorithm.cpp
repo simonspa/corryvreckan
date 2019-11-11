@@ -244,7 +244,7 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
                                << ", Time cluster: " << Units::display(cluster->timestamp(), {"ns", "us"});
 
                     if(m_corr_vs_time) {
-                        if(abs(timeDifference) < timingCut || !do_timing_cut_) {
+                        if(abs(timeDifference) < timeCut || !do_time_cut_) {
                             correlationXVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
                                                      refCluster->global().x() - cluster->global().x());
                             correlationYVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
