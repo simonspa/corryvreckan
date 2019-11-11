@@ -43,39 +43,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
 void EventLoaderEUDAQ2::initialise() {
 
     // Declare histograms
-    std::string title = "hitmap;column;row;# events";
-    hitmap = new TH2F("hitmap",
-                      title.c_str(),
-                      m_detector->nPixels().X(),
-                      0,
-                      m_detector->nPixels().X(),
-                      m_detector->nPixels().Y(),
-                      0,
-                      m_detector->nPixels().Y());
-
-    title = "rawValues; column; row; raw values";
-    hRawValuesMap = new TProfile2D("hRawValuesMap",
-                                   title.c_str(),
-                                   m_detector->nPixels().X(),
-                                   0,
-                                   m_detector->nPixels().X(),
-                                   m_detector->nPixels().Y(),
-                                   0,
-                                   m_detector->nPixels().Y());
-
-    title = ";hit time [ms];# events";
-    hPixelTimes = new TH1F("hPixelTimes", title.c_str(), 3e6, 0, 3e3);
-
-    title = ";hit timestamp [s];# events";
-    hPixelTimes_long = new TH1F("hPixelTimes_long", title.c_str(), 3e6, 0, 3e3);
-
-    title = ";pixel raw values;# events";
-    hPixelRawValues = new TH1F("hPixelRawValues", title.c_str(), 1024, 0, 1024);
-
-    title = "Pixel Multiplicity per Corry Event;# pixels;# events";
-    hPixelMultiplicity = new TH1F("pixelMultiplicity", title.c_str(), 1000, 0, 1000);
-
-    title = ";EUDAQ event start time[ms];# entries";
+    std::string title = ";EUDAQ event start time[ms];# entries";
     hEudaqEventStart = new TH1D("eudaqEventStart", title.c_str(), 3e6, 0, 3e3);
 
     title = ";EUDAQ event start time[s];# entries";
@@ -95,32 +63,67 @@ void EventLoaderEUDAQ2::initialise() {
 
     hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;entries", 20, 0, 20);
 
-    if(m_get_time_residuals) {
-        hPixelTimeEventBeginResidual =
-            new TH1F("hPixelTimeEventBeginResidual",
-                     "hPixelTimeEventBeginResidual;pixel_ts - clipboard event begin [us]; # entries",
-                     2.1e5,
-                     -10,
-                     200);
+    // Create the following histograms only when detector is not auxiliary:
+    if(!m_detector->isAuxiliary()) {
+        title = "hitmap;column;row;# events";
+        hitmap = new TH2F("hitmap",
+                          title.c_str(),
+                          m_detector->nPixels().X(),
+                          0,
+                          m_detector->nPixels().X(),
+                          m_detector->nPixels().Y(),
+                          0,
+                          m_detector->nPixels().Y());
 
-        hPixelTimeEventBeginResidual_wide =
-            new TH1F("hPixelTimeEventBeginResidual_wide",
-                     "hPixelTimeEventBeginResidual_wide;pixel_ts - clipboard event begin [us]; # entries",
-                     1e5,
-                     -5000,
-                     5000);
-        hPixelTimeEventBeginResidualOverTime =
-            new TH2F("hPixelTimeEventBeginResidualOverTime",
-                     "hPixelTimeEventBeginResidualOverTime; pixel time [s];pixel_ts - clipboard event begin [us]",
-                     3e3,
-                     0,
-                     3e3,
-                     2.1e4,
-                     -10,
-                     200);
-        std::string histTitle = "hPixelTriggerTimeResidualOverTime_0;time [us];pixel_ts - trigger_ts [us];# entries";
-        hPixelTriggerTimeResidualOverTime =
-            new TH2D("hPixelTriggerTimeResidualOverTime_0", histTitle.c_str(), 3e3, 0, 3e3, 1e4, -50, 50);
+        title = "rawValues; column; row; raw values";
+        hRawValuesMap = new TProfile2D("hRawValuesMap",
+                                       title.c_str(),
+                                       m_detector->nPixels().X(),
+                                       0,
+                                       m_detector->nPixels().X(),
+                                       m_detector->nPixels().Y(),
+                                       0,
+                                       m_detector->nPixels().Y());
+
+        title = ";hit time [ms];# events";
+        hPixelTimes = new TH1F("hPixelTimes", title.c_str(), 3e6, 0, 3e3);
+
+        title = ";hit timestamp [s];# events";
+        hPixelTimes_long = new TH1F("hPixelTimes_long", title.c_str(), 3e6, 0, 3e3);
+
+        title = ";pixel raw values;# events";
+        hPixelRawValues = new TH1F("hPixelRawValues", title.c_str(), 1024, 0, 1024);
+
+        title = "Pixel Multiplicity per Corry Event;# pixels;# events";
+        hPixelMultiplicity = new TH1F("pixelMultiplicity", title.c_str(), 1000, 0, 1000);
+
+        if(m_get_time_residuals) {
+            hPixelTimeEventBeginResidual =
+                new TH1F("hPixelTimeEventBeginResidual",
+                         "hPixelTimeEventBeginResidual;pixel_ts - clipboard event begin [us]; # entries",
+                         2.1e5,
+                         -10,
+                         200);
+
+            hPixelTimeEventBeginResidual_wide =
+                new TH1F("hPixelTimeEventBeginResidual_wide",
+                         "hPixelTimeEventBeginResidual_wide;pixel_ts - clipboard event begin [us]; # entries",
+                         1e5,
+                         -5000,
+                         5000);
+            hPixelTimeEventBeginResidualOverTime =
+                new TH2F("hPixelTimeEventBeginResidualOverTime",
+                         "hPixelTimeEventBeginResidualOverTime; pixel time [s];pixel_ts - clipboard event begin [us]",
+                         3e3,
+                         0,
+                         3e3,
+                         2.1e4,
+                         -10,
+                         200);
+            std::string histTitle = "hPixelTriggerTimeResidualOverTime_0;time [us];pixel_ts - trigger_ts [us];# entries";
+            hPixelTriggerTimeResidualOverTime =
+                new TH2D("hPixelTriggerTimeResidualOverTime_0", histTitle.c_str(), 3e3, 0, 3e3, 1e4, -50, 50);
+        }
     }
 
     // open the input file with the eudaq reader
@@ -347,7 +350,8 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
 
         double ts;
         if(plane.GetTimestamp(i) == 0) {
-            ts = static_cast<double>(evt->GetTimeBegin()) / 1000 + m_detector->timingOffset();
+            // If the plane timestamp is not defined, we place all pixels in the center of the EUDAQ2 event:
+            ts = static_cast<double>(evt->GetTimeBegin() + evt->GetTimeEnd()) / 2 / 1000 + m_detector->timingOffset();
         } else {
             ts = static_cast<double>(plane.GetTimestamp(i)) / 1000 + m_detector->timingOffset();
         }
@@ -361,7 +365,8 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
             LOG(TRACE) << "Masking pixel (col, row) = (" << col << ", " << row << ")";
             continue;
         } else {
-            LOG(TRACE) << "Storing (col, row) = (" << col << ", " << row << ") from EUDAQ2 event data";
+            LOG(TRACE) << "Storing (col, row, timestamp) = (" << col << ", " << row << ", "
+                       << Units::display(ts, {"ns", "us", "ms"}) << ") from EUDAQ2 event data";
         }
 
         // when calibration is not available, set charge = raw

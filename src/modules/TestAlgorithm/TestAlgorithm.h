@@ -48,12 +48,14 @@ namespace corryvreckan {
         TH2F* correlationTimeOverTime;
         TH1F* correlationTime_px;
         TH1F* correlationTimeInt;
+        TH2F* correlationXVsTime;
+        TH2F* correlationYVsTime;
 
         // Parameters which can be set by user
         bool makeCorrelations;
         double timingCut;
         bool do_timing_cut_;
-        bool m_time_vs_time;
+        bool m_corr_vs_time;
     };
 } // namespace corryvreckan
 #endif // TESTALGORITHM_H

@@ -278,13 +278,13 @@ namespace corryvreckan {
         // Detector information
         std::string m_detectorType;
         std::string m_detectorName;
-        XYVector m_pitch;
-        XYVector m_spatial_resolution;
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels;
+        XYVector m_pitch{};
+        XYVector m_spatial_resolution{};
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels{};
         double m_timingOffset;
         double m_materialBudget;
 
-        std::vector<std::vector<int>> m_roi;
+        std::vector<std::vector<int>> m_roi{};
         static int winding_number(std::pair<int, int> probe, std::vector<std::vector<int>> polygon);
         inline static int isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2);
 
