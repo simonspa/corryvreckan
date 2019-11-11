@@ -9,8 +9,13 @@ using namespace std;
 Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
-    // Default values for cuts
     timingCut = m_config.get<double>("timing_cut", Units::get<double>(200, "ns"));
+    minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
+    excludeDUT = m_config.get<bool>("exclude_dut", true);
+    requireDetectors = m_config.getArray<std::string>("require_detectors", {""});
+    timestampFrom = m_config.get<std::string>("timestamp_from", {});
+
+    // spatial cut, relative (x * spatial_resolution) or absolute:
     if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
         throw InvalidCombinationError(
             m_config, {"spatial_cut_rel", "spatial_cut_abs"}, "Absolute and relative spatial cuts are mutually exclusive.");
@@ -26,11 +31,6 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
             spatial_cuts_[detector] = detector->getSpatialResolution() * spatial_cut_rel_;
         }
     }
-
-    minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
-    excludeDUT = m_config.get<bool>("exclude_dut", true);
-    requireDetectors = m_config.getArray<std::string>("require_detectors", {""});
-    timestampFrom = m_config.get<std::string>("timestamp_from", {});
 }
 
 void Tracking4D::initialise() {
@@ -306,8 +306,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                        << Units::display(track_timestamp, "us") << " to track.";
             track->setTimestamp(track_timestamp);
         } else {
-            LOG(ERROR) << "Cannot assign timestamp to track. Use average cluster timestamp for track or set detector to "
-                          "set track timestamp. Please update the configuration file.";
+            LOG(ERROR) << "Cannot assign timestamp to track. Use average cluster timestamp for track or set detector to set "
+                          "track timestamp. Please update the configuration file.";
             return StatusCode::Failure;
         }
     }
