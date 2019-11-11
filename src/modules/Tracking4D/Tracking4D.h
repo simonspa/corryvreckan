@@ -43,10 +43,10 @@ namespace corryvreckan {
 
         // Cuts for tracking
         double timingCut;
-        double spatialCut;
         size_t minHitsOnTrack;
         bool excludeDUT;
         std::vector<std::string> requireDetectors;
+        std::map<std::shared_ptr<Detector>, XYVector> spatial_cuts_;
         std::string timestampFrom;
     };
 } // namespace corryvreckan
