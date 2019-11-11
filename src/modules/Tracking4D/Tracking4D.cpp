@@ -56,6 +56,11 @@ void Tracking4D::initialise() {
             continue;
         }
 
+        // Do not created plots for auxiliary detectors:
+        if(detector->isAuxiliary()) {
+            continue;
+        }
+
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detectorID.c_str());
         if(local_directory == nullptr) {

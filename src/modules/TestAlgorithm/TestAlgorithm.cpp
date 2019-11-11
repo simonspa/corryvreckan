@@ -17,10 +17,14 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::shared_ptr<Detector> det
         timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
     }
 
-    m_time_vs_time = m_config.get<bool>("correlation_time_vs_time", false);
+    m_corr_vs_time = m_config.get<bool>("correlation_vs_time", false);
 }
 
 void TestAlgorithm::initialise() {
+
+    if(m_detector->isAuxiliary()) {
+        return;
+    }
 
     LOG(DEBUG) << "Booking histograms for detector " << m_detector->name();
 
@@ -62,7 +66,15 @@ void TestAlgorithm::initialise() {
         title = m_detector->name() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [ns];events";
         correlationTime = new TH1F("correlationTime", title.c_str(), static_cast<int>(2. * timeCut), -1 * timeCut, timeCut);
 
-        if(m_time_vs_time) {
+        if(m_corr_vs_time) {
+            title = m_detector->name() + " Correlation X versus time;t [s];x_{ref}-x [mm];events";
+            std::string name = "correlationXVsTime";
+            correlationXVsTime = new TH2F(name.c_str(), title.c_str(), 600, 0, 3e3, 200, -10., 10.);
+
+            title = m_detector->name() + " Correlation Y versus time;t [s];y_{ref}-y [mm];events";
+            name = "correlationYVsTime";
+            correlationYVsTime = new TH2F(name.c_str(), title.c_str(), 600, 0, 3e3, 200, -10., 10.);
+
             title = m_detector->name() +
                     "Reference cluster time stamp - cluster time stamp over time;t [s];t_{ref}-t [ns];events";
             correlationTimeOverTime = new TH2F("correlationTimeOverTime",
@@ -231,7 +243,13 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
                                << ", Time ref. cluster: " << Units::display(refCluster->timestamp(), {"ns", "us"})
                                << ", Time cluster: " << Units::display(cluster->timestamp(), {"ns", "us"});
 
-                    if(m_time_vs_time) {
+                    if(m_corr_vs_time) {
+                        if(abs(timeDifference) < timingCut || !do_timing_cut_) {
+                            correlationXVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                                     refCluster->global().x() - cluster->global().x());
+                            correlationYVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                                     refCluster->global().y() - cluster->global().y());
+                        }
                         // Time difference in ns
                         correlationTimeOverTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
                                                       timeDifference);

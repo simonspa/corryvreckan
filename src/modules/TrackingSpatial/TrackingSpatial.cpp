@@ -41,6 +41,16 @@ void TrackingSpatial::initialise() {
     for(auto& detector : get_detectors()) {
         auto detectorID = detector->name();
 
+        // Do not create plots for detectors not participating in the tracking:
+        if(excludeDUT && detector->isDUT()) {
+            continue;
+        }
+
+        // Do not created plots for auxiliary detectors:
+        if(detector->isAuxiliary()) {
+            continue;
+        }
+
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detectorID.c_str());
         if(local_directory == nullptr) {
