@@ -177,7 +177,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             if(detectorID == seedPlane) {
-                LOG(TRACE) << "Skip seed plane.";
+                LOG(TRACE) << "Skip seed plane " << det->name();
                 continue;
             }
 
