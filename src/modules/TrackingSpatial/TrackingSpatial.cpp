@@ -155,11 +155,11 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         for(auto& detector : detectors) {
             auto detectorID = detector->name();
             if(trees.count(detectorID) == 0) {
-                LOG(TRACE) << "Skip 0th detector.";
+                LOG(TRACE) << "Skipping detector " << det->name() << " as it has 0 clusters.";
                 continue;
             }
             if(detectorID == seedPlane) {
-                LOG(TRACE) << "Skip seed plane.";
+                LOG(TRACE) << "Skipping seed plane.";
                 continue;
             }
 
