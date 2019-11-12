@@ -172,12 +172,12 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             auto det = get_detector(detectorID);
 
             if(trees.count(detectorID) == 0) {
-                LOG(TRACE) << "Skip 0th detector.";
+                LOG(TRACE) << "Skipping detector " << det->name() << " as it has 0 clusters.";
                 continue;
             }
 
             if(detectorID == seedPlane) {
-                LOG(TRACE) << "Skip seed plane " << det->name();
+                LOG(TRACE) << "Skipping seed plane " << det->name();
                 continue;
             }
 
