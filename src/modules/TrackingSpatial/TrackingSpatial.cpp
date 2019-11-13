@@ -155,7 +155,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         for(auto& detector : detectors) {
             auto detectorID = detector->name();
             if(trees.count(detectorID) == 0) {
-                LOG(TRACE) << "Skipping detector " << det->name() << " as it has 0 clusters.";
+                LOG(TRACE) << "Skipping detector " << detector->name() << " as it has 0 clusters.";
                 continue;
             }
             if(detectorID == seedPlane) {
