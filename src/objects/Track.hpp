@@ -198,6 +198,7 @@ namespace corryvreckan {
 } // namespace corryvreckan
 
 // include all tracking methods here to have one header to be include everywhere
+#include "GblTrack.hpp"
 #include "StraightLineTrack.hpp"
 
 #endif // TRACK_H

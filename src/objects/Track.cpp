@@ -100,15 +100,19 @@ Cluster* Track::getClusterFromDetector(std::string detectorID) const {
 Track* corryvreckan::Track::Factory(std::string trackModel) {
     if(trackModel == "straightline") {
         return reinterpret_cast<Track*>(new StraightLineTrack());
+    } else if(trackModel == "gbl") {
+        return reinterpret_cast<Track*>(new GblTrack());
     } else {
-        throw MissingReferenceException(typeid(Track), typeid(Track));
+        throw MissingTrackModelException(typeid(Track), trackModel);
     }
 }
 
 Track* Track::Factory(const Track& track) {
     if(track.trackModel() == "straightline") {
         return reinterpret_cast<Track*>(new StraightLineTrack(track));
+    } else if(track.trackModel() == "gbl") {
+        return reinterpret_cast<Track*>(new GblTrack(track));
     } else {
-        throw MissingReferenceException(typeid(Track), typeid(track));
+        throw MissingTrackModelException(typeid(Track), track.trackModel());
     }
 }
