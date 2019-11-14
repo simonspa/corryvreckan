@@ -177,11 +177,34 @@ namespace corryvreckan {
          */
         virtual ROOT::Math::XYZVector direction(std::string) const { return ROOT::Math::XYZVector(0.0, 0.0, 0.0); }
 
+        /**
+         * @brief Get the used track model
+         * @return  std::string with the track model
+         */
         std::string trackModel() const { return m_trackModel; }
+
+        /**
+         * @brief Get the residual for a given detector layer
+         * @param detector
+         * @return  2D residual as ROOT::Math::XYPoint
+         */
+        ROOT::Math::XYPoint residual(std::string detector) const { return m_residual.at(detector); }
+
+        /**
+         * @brief Get the kink at a given detector layer. This is ill defined for last and first layer
+         * @param detector
+         * @return  2D kink as ROOT::Math::XYPoint
+         */ ROOT::Math::XYPoint
+        kink(std::string detector) const {
+            return m_kink.at(detector);
+        }
 
     protected:
         std::vector<TRef> m_trackClusters;
         std::vector<TRef> m_associatedClusters;
+        std::map<std::string, ROOT::Math::XYPoint> m_residual;
+        std::map<std::string, ROOT::Math::XYPoint> m_kink;
+
         TRef closestCluster{nullptr};
         double m_chi2;
         double m_ndof;
