@@ -97,6 +97,10 @@ Cluster* Track::getClusterFromDetector(std::string detectorID) const {
     return dynamic_cast<Cluster*>(it->GetObject());
 }
 
+void Track::addMaterial(std::string detetcorID, double x_x0) {
+    m_materialBudget[detetcorID] = x_x0;
+}
+
 Track* corryvreckan::Track::Factory(std::string trackModel) {
     if(trackModel == "straightline") {
         return reinterpret_cast<Track*>(new StraightLineTrack());

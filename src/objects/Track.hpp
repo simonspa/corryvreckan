@@ -185,24 +185,32 @@ namespace corryvreckan {
 
         /**
          * @brief Get the residual for a given detector layer
-         * @param detector
+         * @param detectorID
          * @return  2D residual as ROOT::Math::XYPoint
          */
-        ROOT::Math::XYPoint residual(std::string detector) const { return m_residual.at(detector); }
+        ROOT::Math::XYPoint residual(std::string detectorID) const { return m_residual.at(detectorID); }
 
         /**
          * @brief Get the kink at a given detector layer. This is ill defined for last and first layer
-         * @param detector
+         * @param detectorID
          * @return  2D kink as ROOT::Math::XYPoint
-         */ ROOT::Math::XYPoint
-        kink(std::string detector) const {
-            return m_kink.at(detector);
-        }
+         */
+        ROOT::Math::XYPoint kink(std::string detectorID) const { return m_kink.at(detectorID); }
+
+        /**
+         * @brief Get the materialBudget of a detector layer
+         * @param detectorID
+         * @return Material Budget for given layer
+         */
+        double materialBudget(std::string detectorID) const { return m_materialBudget.at(detectorID); }
+
+        void addMaterial(std::string detetcorID, double x_x0);
 
     protected:
         std::vector<TRef> m_trackClusters;
         std::vector<TRef> m_associatedClusters;
         std::map<std::string, ROOT::Math::XYPoint> m_residual;
+        std::map<std::string, double> m_materialBudget;
         std::map<std::string, ROOT::Math::XYPoint> m_kink;
 
         TRef closestCluster{nullptr};
