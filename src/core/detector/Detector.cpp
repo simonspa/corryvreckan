@@ -67,7 +67,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     // Auxiliary devices don't have: number_of_pixels, pixel_pitch, spatial_resolution, mask_file, region-of-interest
     if(!isAuxiliary()) {
         // Intrinsic spatial resolution, no default:
-        m_resolution = config.get<ROOT::Math::XYVector>("resolution");
+        m_spatial_resolution = config.get<ROOT::Math::XYVector>("spatial_resolution");
         // Number of pixels:
         m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
         // Size of the pixels:
@@ -142,7 +142,7 @@ void Detector::processMaskFile() {
     // Open the file with masked pixels
     std::ifstream inputMaskFile(m_maskfile, std::ios::in);
     if(!inputMaskFile.is_open()) {
-        LOG(ERROR) << "Could not open mask file " << m_maskfile;
+        LOG(WARNING) << "Could not open mask file " << m_maskfile;
     } else {
         int row = 0, col = 0;
         std::string id;
@@ -151,8 +151,8 @@ void Detector::processMaskFile() {
             if(id == "c") {
                 inputMaskFile >> col;
                 if(col > nPixels().X() - 1) {
-                    LOG(ERROR) << "Column " << col << " outside of pixel matrix, chip has only " << nPixels().X()
-                               << " columns!";
+                    LOG(WARNING) << "Column " << col << " outside of pixel matrix, chip has only " << nPixels().X()
+                                 << " columns!";
                 }
                 LOG(TRACE) << "Masking column " << col;
                 for(int r = 0; r < nPixels().Y(); r++) {
@@ -161,7 +161,7 @@ void Detector::processMaskFile() {
             } else if(id == "r") {
                 inputMaskFile >> row;
                 if(row > nPixels().Y() - 1) {
-                    LOG(ERROR) << "Row " << col << " outside of pixel matrix, chip has only " << nPixels().Y() << " rows!";
+                    LOG(WARNING) << "Row " << col << " outside of pixel matrix, chip has only " << nPixels().Y() << " rows!";
                 }
                 LOG(TRACE) << "Masking row " << row;
                 for(int c = 0; c < nPixels().X(); c++) {
@@ -170,13 +170,13 @@ void Detector::processMaskFile() {
             } else if(id == "p") {
                 inputMaskFile >> col >> row;
                 if(col > nPixels().X() - 1 || row > nPixels().Y() - 1) {
-                    LOG(ERROR) << "Pixel " << col << " " << row << " outside of pixel matrix, chip has only "
-                               << nPixels().X() << " x " << nPixels().Y() << " pixels!";
+                    LOG(WARNING) << "Pixel " << col << " " << row << " outside of pixel matrix, chip has only "
+                                 << nPixels().X() << " x " << nPixels().Y() << " pixels!";
                 }
                 LOG(TRACE) << "Masking pixel " << col << " " << row;
                 maskChannel(col, row); // Flag to mask a pixel
             } else {
-                LOG(ERROR) << "Could not parse mask entry (id \"" << id << "\")";
+                LOG(WARNING) << "Could not parse mask entry (id \"" << id << "\")";
             }
         }
         LOG(INFO) << m_masked.size() << " masked pixels";
@@ -271,7 +271,7 @@ Configuration Detector::getConfiguration() const {
         config.set("pixel_pitch", m_pitch, {"um"});
 
         // Intrinsic resolution:
-        config.set("resolution", m_resolution, {"um"});
+        config.set("spatial_resolution", m_spatial_resolution, {"um"});
 
         // Pixel mask file:
         if(!m_maskfile_name.empty()) {

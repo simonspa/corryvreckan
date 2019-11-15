@@ -9,7 +9,7 @@ using namespace std;
 Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
-    // Default values for cuts
+    // timing cut, relative (x * time_resolution) or absolute:
     if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(
             m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
@@ -24,11 +24,27 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
             time_cuts_[detector] = detector->getTimeResolution() * time_cut_rel_;
         }
     }
-    spatialCut = m_config.get<double>("spatial_cut", Units::get<double>(200, "um"));
     minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
     excludeDUT = m_config.get<bool>("exclude_dut", true);
     requireDetectors = m_config.getArray<std::string>("require_detectors", {""});
     timestampFrom = m_config.get<std::string>("timestamp_from", {});
+
+    // spatial cut, relative (x * spatial_resolution) or absolute:
+    if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
+        throw InvalidCombinationError(
+            m_config, {"spatial_cut_rel", "spatial_cut_abs"}, "Absolute and relative spatial cuts are mutually exclusive.");
+    } else if(m_config.has("spatial_cut_abs")) {
+        auto spatial_cut_abs_ = m_config.get<XYVector>("spatial_cut_abs");
+        for(auto& detector : get_detectors()) {
+            spatial_cuts_[detector] = spatial_cut_abs_;
+        }
+    } else {
+        // default is 3.0 * spatial_resolution
+        auto spatial_cut_rel_ = m_config.get<double>("spatial_cut_rel", 3.0);
+        for(auto& detector : get_detectors()) {
+            spatial_cuts_[detector] = detector->getSpatialResolution() * spatial_cut_rel_;
+        }
+    }
 }
 
 void Tracking4D::initialise() {
@@ -155,22 +171,30 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             // Get the detector
             auto det = get_detector(detectorID);
 
+            if(trees.count(detectorID) == 0) {
+                LOG(TRACE) << "Skipping detector " << det->name() << " as it has 0 clusters.";
+                continue;
+            }
+
+            if(detectorID == seedPlane) {
+                LOG(TRACE) << "Skipping seed plane " << det->name();
+                continue;
+            }
+
             // Check if the DUT should be excluded and obey:
             if(excludeDUT && det->isDUT()) {
                 LOG(DEBUG) << "Skipping DUT plane.";
                 continue;
             }
 
-            if(detectorID == seedPlane)
-                continue;
-            if(trees.count(detectorID) == 0)
-                continue;
-
             // Get all neighbours within the timing cut
-            LOG(DEBUG) << "Searching for neighbouring cluster on " << detectorID;
+            LOG(DEBUG) << "Searching for neighbouring cluster on device " << detectorID;
             LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
             Cluster* closestCluster = nullptr;
-            double closestClusterDistance = spatialCut;
+
+            // Use spatial cut only as initial value (check if cluster is ellipse defined by cuts is done below):
+            double closestClusterDistance =
+                sqrt(spatial_cuts_[det].x() * spatial_cuts_[det].x() + spatial_cuts_[det].y() * spatial_cuts_[det].y());
             // For default configuration, comparing time cuts calculated from the time resolution of the current detector and
             // the first plane in Z,
             // and taking the maximal value as the cut in time for track-cluster association
@@ -202,8 +226,25 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 Cluster* newCluster = neighbours[ne];
 
                 // Calculate the distance to the previous plane's cluster/intercept
-                double distance = sqrt((interceptX - newCluster->global().x()) * (interceptX - newCluster->global().x()) +
-                                       (interceptY - newCluster->global().y()) * (interceptY - newCluster->global().y()));
+                double distanceX = interceptX - newCluster->global().x();
+                double distanceY = interceptY - newCluster->global().y();
+                double distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+
+                // Check if newCluster lies within ellipse defined by spatial cuts around intercept,
+                // following this example:
+                // https://www.geeksforgeeks.org/check-if-a-point-is-inside-outside-or-on-the-ellipse/
+                //
+                // ellipse defined by: x^2/a^2 + y^2/b^2 = 1: on ellipse,
+                //                                       > 1: outside,
+                //                                       < 1: inside
+                // Continue if outside of ellipse:
+
+                double norm = (distanceX * distanceX) / (spatial_cuts_[det].x() * spatial_cuts_[det].x()) +
+                              (distanceY * distanceY) / (spatial_cuts_[det].y() * spatial_cuts_[det].y());
+
+                if(norm > 1) {
+                    continue;
+                }
 
                 // If this is the closest keep it
                 if(distance < closestClusterDistance) {
@@ -295,8 +336,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                        << Units::display(track_timestamp, "us") << " to track.";
             track->setTimestamp(track_timestamp);
         } else {
-            LOG(ERROR) << "Cannot assign timestamp to track. Use average cluster timestamp for track or set detector to "
-                          "set track timestamp. Please update the configuration file.";
+            LOG(ERROR) << "Cannot assign timestamp to track. Use average cluster timestamp for track or set detector to set "
+                          "track timestamp. Please update the configuration file.";
             return StatusCode::Failure;
         }
     }

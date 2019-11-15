@@ -6,6 +6,7 @@ using namespace std;
 DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
+    // timing cut, relative (x * time_resolution) or absolute:
     if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(
             m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
@@ -14,8 +15,21 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
     } else {
         timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
     }
-    spatialCut = m_config.get<XYVector>("spatial_cut", 2 * m_detector->pitch());
+
+    // spatial cut, relative (x * spatial_resolution) or absolute:
+    if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
+        throw InvalidCombinationError(
+            m_config, {"spatial_cut_rel", "spatial_cut_abs"}, "Absolute and relative spatial cuts are mutually exclusive.");
+    } else if(m_config.has("spatial_cut_abs")) {
+        spatialCut = m_config.get<XYVector>("spatial_cut_abs");
+    } else {
+        spatialCut = m_config.get<double>("spatial_cut_rel", 3.0) * m_detector->getSpatialResolution();
+    }
     useClusterCentre = m_config.get<bool>("use_cluster_centre", false);
+
+    LOG(DEBUG) << "time_cut = " << Units::display(timeCut, {"ms", "us", "ns"});
+    LOG(DEBUG) << "spatial_cut = " << Units::display(spatialCut, {"um", "mm"});
+    LOG(DEBUG) << "use_cluster_centre = " << useClusterCentre;
 }
 
 void DUTAssociation::initialise() {
