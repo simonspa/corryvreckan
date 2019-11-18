@@ -55,6 +55,7 @@ namespace corryvreckan {
         ROOT::Math::XYZVector direction(std::string) const override;
 
     private:
+        double scatteringTheta(double mbCurrent, double mbSum);
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(GblTrack, 0)
     };
