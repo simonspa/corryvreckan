@@ -31,7 +31,10 @@ namespace corryvreckan {
      */
     class GuiDisplay : public Object {
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
         RQ_OBJECT("GuiDisplay")
+#pragma GCC diagnostic pop
 
     public:
         // Constructors and destructors

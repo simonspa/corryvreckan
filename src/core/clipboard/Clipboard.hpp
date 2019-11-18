@@ -40,7 +40,7 @@ namespace corryvreckan {
         /**
          * @brief Construct the clipboard
          */
-        Clipboard() {}
+        Clipboard() noexcept {};
         /**
          * @brief Required virtual destructor
          */
