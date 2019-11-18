@@ -40,17 +40,23 @@ void Tracking4D::initialise() {
     for(auto& detector : get_detectors()) {
         auto detectorID = detector->name();
 
-        // Do not create plots for detector snot participating in the tracking:
-        if(excludeDUT && detector->isDUT()) {
-            continue;
-        }
-
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detectorID.c_str());
+
         if(local_directory == nullptr) {
             throw RuntimeError("Cannot create or access local ROOT directory for module " + this->getUniqueName());
         }
         local_directory->cd();
+
+        title = detectorID + " kink X;kink [rad];events";
+        kinkX[detectorID] = new TH1F("kinkX", title.c_str(), 500, -1, 1);
+        title = detectorID + " kinkY ;kink [rad];events";
+        kinkY[detectorID] = new TH1F("kinkY", title.c_str(), 500, -1, 1);
+        // Do not create plots for detector snot participating in the tracking:
+        if(excludeDUT && detector->isDUT()) {
+            directory->cd();
+            continue;
+        }
 
         title = detectorID + " Residual X;x_{track}-x [mm];events";
         residualsX[detectorID] = new TH1F("residualsX", title.c_str(), 500, -0.1, 0.1);
@@ -68,10 +74,6 @@ void Tracking4D::initialise() {
         residualsYwidth2[detectorID] = new TH1F("residualsYwidth2", title.c_str(), 500, -0.1, 0.1);
         title = detectorID + " Residual Y, size 3;y_{track}-y [mm];events";
         residualsYwidth3[detectorID] = new TH1F("residualsYwidth3", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " kink X;kink [rad];events";
-        kinkX[detectorID] = new TH1F("kinkX", title.c_str(), 500, -1, 1);
-        title = detectorID + " kinkY ;kink [rad];events";
-        kinkY[detectorID] = new TH1F("kinkY", title.c_str(), 500, -1, 1);
 
         directory->cd();
     }
@@ -174,7 +176,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             if(refTrack->nClusters() > 1) {
                 refTrack->fit(); // fixme: this is not really a nice way to get the details
 
-                PositionVector3D<Cartesian3D<double>> interceptPoint = det->getIntercept(track);
+                PositionVector3D<Cartesian3D<double>> interceptPoint = det->getIntercept(refTrack);
                 interceptX = interceptPoint.X();
                 interceptY = interceptPoint.Y();
             } else {
@@ -225,7 +227,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Now should have a track with one cluster from each plane
         if(track->nClusters() < minHitsOnTrack) {
-            LOG(DEBUG) << "Not enough clusters on the track, found  " << track->nClusters() << " but " << minHitsOnTrack
+            LOG(DEBUG) << "Not enough clusters on the track, found " << track->nClusters() << " but " << minHitsOnTrack
                        << " required.";
             delete track;
             continue;
@@ -261,6 +263,12 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 residualsYwidth2[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
             if(trackCluster->rowWidth() == 3)
                 residualsYwidth3[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
+        }
+
+        for(auto& det : detectors) {
+            XYPoint kink = track->kink(det);
+            kinkX.at(det)->Fill(kink.x());
+            kinkY.at(det)->Fill(kink.y());
         }
 
         if(timestampFrom.empty()) {

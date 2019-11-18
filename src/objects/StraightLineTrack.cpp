@@ -51,6 +51,13 @@ void StraightLineTrack::calculateChi2() {
     m_chi2ndof = m_chi2 / m_ndof;
 }
 
+void StraightLineTrack::setKinksZero() {
+    ROOT::Math::XYPoint p(0, 0);
+    for(auto layer : m_materialBudget) {
+        m_kink[layer.first] = p;
+    }
+}
+
 double StraightLineTrack::operator()(const double* parameters) {
 
     // Update the StraightLineTrack gradient and intercept
@@ -123,6 +130,7 @@ void StraightLineTrack::fit() {
     m_direction.SetZ(1.);
     // Calculate the chi2
     this->calculateChi2();
+    setKinksZero();
 }
 
 ROOT::Math::XYZPoint StraightLineTrack::intercept(double z) const {

@@ -64,6 +64,7 @@ namespace corryvreckan {
          */
         void calculateChi2();
 
+        void setKinksZero();
         // Member variables
         ROOT::Math::XYZVector m_direction;
         ROOT::Math::XYZPoint m_state;
