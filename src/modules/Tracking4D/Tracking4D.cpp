@@ -17,6 +17,7 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     requireDetectors = m_config.getArray<std::string>("require_detectors", {""});
     timestampFrom = m_config.get<std::string>("timestamp_from", {});
     trackModel = m_config.get<std::string>("track_model", "straightline");
+    momentum = m_config.get<double>("momentum", Units::get<double>(5, "GeV"));
 }
 
 void Tracking4D::initialise() {
@@ -67,6 +68,10 @@ void Tracking4D::initialise() {
         residualsYwidth2[detectorID] = new TH1F("residualsYwidth2", title.c_str(), 500, -0.1, 0.1);
         title = detectorID + " Residual Y, size 3;y_{track}-y [mm];events";
         residualsYwidth3[detectorID] = new TH1F("residualsYwidth3", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + " kink X;kink [rad];events";
+        kinkX[detectorID] = new TH1F("kinkX", title.c_str(), 500, -1, 1);
+        title = detectorID + " kinkY ;kink [rad];events";
+        kinkY[detectorID] = new TH1F("kinkY", title.c_str(), 500, -1, 1);
 
         directory->cd();
     }
@@ -128,15 +133,22 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "Looking at next seed cluster";
 
         auto track = Track::Factory(trackModel);
+        auto refTrack = new StraightLineTrack();
         // Add the cluster to the track
         track->addCluster(cluster);
         track->setTimestamp(cluster->timestamp());
 
+        refTrack->addCluster(cluster);
+        refTrack->setTimestamp(cluster->timestamp());
+
+        track->setParticleMomentum(momentum);
         // Loop over each subsequent plane and look for a cluster within the timing cuts
         for(auto& detectorID : detectors) {
             // Get the detector
             auto det = get_detector(detectorID);
 
+            // always add the material budget:
+            track->addMaterial(detectorID, det->materialBudget());
             // Check if the DUT should be excluded and obey:
             if(excludeDUT && det->isDUT()) {
                 LOG(DEBUG) << "Skipping DUT plane.";
@@ -159,8 +171,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
             // Now look for the spatially closest cluster on the next plane
             double interceptX, interceptY;
-            if(track->nClusters() > 1) {
-                track->fit();
+            if(refTrack->nClusters() > 1) {
+                refTrack->fit(); // fixme: this is not really a nice way to get the details
 
                 PositionVector3D<Cartesian3D<double>> interceptPoint = det->getIntercept(track);
                 interceptX = interceptPoint.X();
@@ -193,6 +205,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             // Add the cluster to the track
             LOG(DEBUG) << "- added cluster to track";
             track->addCluster(closestCluster);
+            refTrack->addCluster(closestCluster);
         } //*/
 
         // check if track has required detector(s):
@@ -212,12 +225,12 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Now should have a track with one cluster from each plane
         if(track->nClusters() < minHitsOnTrack) {
-            LOG(DEBUG) << "Not enough clusters on the track, found " << track->nClusters() << " but " << minHitsOnTrack
+            LOG(DEBUG) << "Not enough clusters on the track, found  " << track->nClusters() << " but " << minHitsOnTrack
                        << " required.";
             delete track;
             continue;
         }
-
+        delete refTrack;
         // Fit the track and save it
         track->fit();
         tracks->push_back(track);

@@ -41,9 +41,12 @@ namespace corryvreckan {
         std::map<std::string, TH1F*> residualsYwidth2;
         std::map<std::string, TH1F*> residualsYwidth3;
 
+        std::map<std::string, TH1F*> kinkX;
+        std::map<std::string, TH1F*> kinkY;
         // Cuts for tracking
         double timingCut;
         double spatialCut;
+        double momentum;
         size_t minHitsOnTrack;
         bool excludeDUT;
         std::vector<std::string> requireDetectors;
