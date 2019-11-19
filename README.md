@@ -45,7 +45,7 @@ Corryvreckan has been developed and is maintained by
 
 * Morag Williams, University of Glasgow/CERN, @williamm
 * Jens Kroeger, University of Heidelberg/CERN, @jekroege
-* Daniel Hynds, NIKEF, @dhynds
+* Daniel Hynds, NIKHEF, @dhynds
 * Simon Spannagel, CERN, @simonspa
 
 The following authors, in alphabetical order, have contributed to Corryvreckan:
