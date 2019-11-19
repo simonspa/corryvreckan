@@ -55,7 +55,14 @@ namespace corryvreckan {
         ROOT::Math::XYZVector direction(std::string) const override;
 
     private:
+        /**
+         * @brief Calculate the expected variance according to the higland formula
+         * @param mbCurrent is the material budget of current scatterer
+         * @param mbSum is the material budget of all previous scatterers
+         * @return expected scattering variance
+         */
         double scatteringTheta(double mbCurrent, double mbSum);
+
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(GblTrack, 0)
     };

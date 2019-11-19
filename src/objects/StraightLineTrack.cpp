@@ -58,6 +58,13 @@ void StraightLineTrack::setKinksZero() {
     }
 }
 
+void StraightLineTrack::calculateResiduals() {
+    //    for(auto c : m_trackClusters){
+    //        auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
+
+    //    }
+}
+
 double StraightLineTrack::operator()(const double* parameters) {
 
     // Update the StraightLineTrack gradient and intercept

@@ -17,7 +17,7 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     requireDetectors = m_config.getArray<std::string>("require_detectors", {""});
     timestampFrom = m_config.get<std::string>("timestamp_from", {});
     trackModel = m_config.get<std::string>("track_model", "straightline");
-    momentum = m_config.get<double>("momentum", Units::get<double>(5, "GeV"));
+    momentum = m_config.get<double>("momentum", Units::get<double>(5000, "MeV"));
 }
 
 void Tracking4D::initialise() {
@@ -49,9 +49,9 @@ void Tracking4D::initialise() {
         local_directory->cd();
 
         title = detectorID + " kink X;kink [rad];events";
-        kinkX[detectorID] = new TH1F("kinkX", title.c_str(), 500, -1, 1);
+        kinkX[detectorID] = new TH1F("kinkX", title.c_str(), 500, -0.01, -0.01);
         title = detectorID + " kinkY ;kink [rad];events";
-        kinkY[detectorID] = new TH1F("kinkY", title.c_str(), 500, -1, 1);
+        kinkY[detectorID] = new TH1F("kinkY", title.c_str(), 500, -0.01, -0.01);
         // Do not create plots for detector snot participating in the tracking:
         if(excludeDUT && detector->isDUT()) {
             directory->cd();
@@ -150,7 +150,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             auto det = get_detector(detectorID);
 
             // always add the material budget:
-            track->addMaterial(detectorID, det->materialBudget());
+            track->addMaterial(detectorID, det->materialBudget(), det->displacement().z());
             // Check if the DUT should be excluded and obey:
             if(excludeDUT && det->isDUT()) {
                 LOG(DEBUG) << "Skipping DUT plane.";
@@ -248,21 +248,20 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         auto trackClusters = track->clusters();
         for(auto& trackCluster : trackClusters) {
             string detectorID = trackCluster->detectorID();
-            ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->global().z());
-            residualsX[detectorID]->Fill(intercept.X() - trackCluster->global().x());
+            residualsX[detectorID]->Fill(track->residual(detectorID).X());
             if(trackCluster->columnWidth() == 1)
-                residualsXwidth1[detectorID]->Fill(intercept.X() - trackCluster->global().x());
+                residualsXwidth1[detectorID]->Fill(track->residual(detectorID).X());
             if(trackCluster->columnWidth() == 2)
-                residualsXwidth2[detectorID]->Fill(intercept.X() - trackCluster->global().x());
+                residualsXwidth2[detectorID]->Fill(track->residual(detectorID).X());
             if(trackCluster->columnWidth() == 3)
-                residualsXwidth3[detectorID]->Fill(intercept.X() - trackCluster->global().x());
-            residualsY[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
+                residualsXwidth3[detectorID]->Fill(track->residual(detectorID).X());
+            residualsY[detectorID]->Fill(track->residual(detectorID).Y());
             if(trackCluster->rowWidth() == 1)
-                residualsYwidth1[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
+                residualsYwidth1[detectorID]->Fill(track->residual(detectorID).Y());
             if(trackCluster->rowWidth() == 2)
-                residualsYwidth2[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
+                residualsYwidth2[detectorID]->Fill(track->residual(detectorID).Y());
             if(trackCluster->rowWidth() == 3)
-                residualsYwidth3[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
+                residualsYwidth3[detectorID]->Fill(track->residual(detectorID).Y());
         }
 
         for(auto& det : detectors) {

@@ -97,8 +97,8 @@ Cluster* Track::getClusterFromDetector(std::string detectorID) const {
     return dynamic_cast<Cluster*>(it->GetObject());
 }
 
-void Track::addMaterial(std::string detetcorID, double x_x0) {
-    m_materialBudget[detetcorID] = x_x0;
+void Track::addMaterial(std::string detetcorID, double x_x0, double z) {
+    m_materialBudget[detetcorID] = std::pair<double, double>(x_x0, z);
 }
 
 Track* corryvreckan::Track::Factory(std::string trackModel) {

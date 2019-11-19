@@ -25,46 +25,63 @@ double GblTrack::distance2(const Cluster* cluster) const {
 }
 
 void GblTrack::fit() {
+
     // create a list of gbl points:
-    auto seedcluster = dynamic_cast<Cluster*>(m_trackClusters.at(0).GetObject());
     vector<GblPoint> points;
-    Matrix5d Jac;
-    Jac = Jac.Identity();
+
+    auto seedcluster = dynamic_cast<Cluster*>(m_trackClusters.at(0).GetObject());
+
+    // we need to store the previous z position as well as the up to know material
     double total_material = 0, prev_z = 0;
-    std::vector<std::string> detectorNames;
+    // keep track of the detectors to ensure we know which gblpoint later is from which plane - also remember if there was a
+    // measurement
+    std::vector<std::pair<std::string, bool>> detectors;
+    // store the used clusters in a map for easy access:
+    std::map<std::string, Cluster*> clusters;
     for(auto& c : m_trackClusters) {
         auto cluster = dynamic_cast<Cluster*>(c.GetObject());
-        detectorNames.push_back(cluster->detectorID());
-        double mb = m_materialBudget.at(cluster->detectorID());
-        double delta_z = cluster->global().z() - prev_z;
-        if(points.size() != 0) {
-            Jac(3, 1) = delta_z;
-            Jac(4, 2) = delta_z;
-        }
-        Eigen::Vector2d budget;
-        budget(0) = scatteringTheta(mb, total_material);
-        budget(1) = budget(0);
-        total_material += mb;
-        prev_z = cluster->global().z();
-
-        // Create the point and add it
-        GblPoint point(Jac);
-        point.addScatterer(Eigen::Vector2d::Zero(), budget);
-        Eigen::Vector2d initialResidual;
-        // this assumes only z rotations
-        initialResidual(0) = cluster->global().x() - seedcluster->global().x();
-        initialResidual(1) = cluster->global().y() - seedcluster->global().y();
-
-        // uncertainty of single hit
-        Eigen::Matrix2d covv = Eigen::Matrix2d::Identity();
-        covv(0, 0) = 1. / cluster->errorX() / cluster->errorX();
-        covv(1, 1) = 1. / cluster->errorY() / cluster->errorY();
-        point.addMeasurement(initialResidual, covv);
-
-        points.push_back(point);
+        clusters[cluster->detectorID()] = cluster;
     }
 
+    for(auto layer : m_materialBudget) {
+        double mb = layer.second.first;
+        double current_z = layer.second.second;
+        if(clusters.count(layer.first) == 1) {
+            current_z = clusters.at(layer.first)->global().z();
+        }
+        Matrix5d Jac;
+        Jac = Matrix5d::Identity();
+        if(points.size() != 0) {
+            Jac(3, 1) = current_z - prev_z;
+            Jac(4, 2) = Jac(3, 1);
+        }
+        Eigen::Vector2d budget;
+        budget(0) = 1 / (scatteringTheta(mb, total_material) * scatteringTheta(mb, total_material));
+        budget(1) = budget(0);
+        total_material += mb;
+        auto point = GblPoint(Jac);
+        point.addScatterer(Eigen::Vector2d::Zero(), budget);
+        if(clusters.count(layer.first) == 1) {
+            auto cluster = clusters.at(layer.first);
+            Eigen::Vector2d initialResidual;
+            initialResidual(0) = cluster->global().x() - seedcluster->global().x();
+            initialResidual(1) = cluster->global().y() - seedcluster->global().y();
+            // uncertainty of single hit
+            Eigen::Matrix2d covv = Eigen::Matrix2d::Identity();
+            covv(0, 0) = 1. / cluster->errorX() / cluster->errorX();
+            covv(1, 1) = 1. / cluster->errorY() / cluster->errorY();
+            point.addMeasurement(initialResidual, covv);
+            detectors.push_back(std::pair<std::string, bool>(layer.first, true));
+        } else {
+            detectors.push_back(std::pair<std::string, bool>(layer.first, false));
+        }
+        prev_z = current_z;
+        points.push_back(point);
+    }
     // fit it
+    if(points.size() != m_materialBudget.size())
+        throw GblException(typeid(GblTrack), "wrong number of measuremtns");
+
     GblTrajectory traj(points, false); // false = no magnetic field
     double lostWeight = 0;
     int ndf = 0;
@@ -85,12 +102,15 @@ void GblTrack::fit() {
     Eigen::VectorXd gblErrorsResiduals(2);
     Eigen::VectorXd gblDownWeights(2);
     unsigned int numData = 2;
-    for(unsigned cID = 0; cID < traj.getNumPoints(); ++cID) {
-        traj.getScatResults(cID + 1, numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
-        m_kink[detectorNames.at(cID)] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
-        // only work if plane is in fit
-        traj.getMeasResults(cID + 1, numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
-        m_residual[detectorNames.at(cID)] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
+    unsigned gblcounter = 1;
+    for(auto plane : detectors) {
+        traj.getScatResults(gblcounter, numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
+        m_kink[plane.first] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
+        if(plane.second) {
+            traj.getMeasResults(
+                gblcounter, numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
+            m_residual[plane.first] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
+        }
     }
 }
 
@@ -112,5 +132,6 @@ double GblTrack::scatteringTheta(double mbCurrent, double mbSum) {
 }
 
 void GblTrack::print(std::ostream& out) const {
-    out << "GblTrack ";
+    out << "GblTrack with nhits = " << m_trackClusters.size() << " and nscatterers = " << m_materialBudget.size()
+        << ", chi2 = " << m_chi2 << ", ndf = " << m_ndof;
 }

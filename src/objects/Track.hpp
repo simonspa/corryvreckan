@@ -202,15 +202,15 @@ namespace corryvreckan {
          * @param detectorID
          * @return Material Budget for given layer
          */
-        double materialBudget(std::string detectorID) const { return m_materialBudget.at(detectorID); }
+        double materialBudget(std::string detectorID) const { return m_materialBudget.at(detectorID).first; }
 
-        void addMaterial(std::string detetcorID, double x_x0);
+        void addMaterial(std::string detetcorID, double x_x0, double z);
 
     protected:
         std::vector<TRef> m_trackClusters;
         std::vector<TRef> m_associatedClusters;
         std::map<std::string, ROOT::Math::XYPoint> m_residual;
-        std::map<std::string, double> m_materialBudget;
+        std::map<std::string, std::pair<double, double>> m_materialBudget;
         std::map<std::string, ROOT::Math::XYPoint> m_kink;
 
         TRef closestCluster{nullptr};
