@@ -29,7 +29,7 @@ As soon as there exists something in your branch, a merge request can be opened 
 
 1. Retrieve the latest changes from the upstream version as explained above.
 2. Optionally format the code if you did not add the git-hook from the beginning, this can be done manually by running `make format` from the build directory.
-3. Go to [merge request](https://gitlab.cern.ch/corryvreckan/corryvreckan/merge_requests) and click on 'New merge request'.
+3. Go to [Merge Requests](https://gitlab.cern.ch/corryvreckan/corryvreckan/merge_requests) and click on 'New merge request'.
 4. Follow the instructions. Do not forget to use the 'WIP:' prefix if your code is only partially ready. Then submit the merge request.
 5. Please wait for the maintainers to give you access to the continuous integration (CI) runners that will check your code if you do not already have it.
 6. Add all the specific runners on your local repository at https://gitlab.cern.ch/your-username/corryvreckan/settings/ci_cd.
