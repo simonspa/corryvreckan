@@ -25,8 +25,10 @@ If yes, the corresponding pixels are added to the clipboard for this event.
 If earlier, the next event is read until a matching event is found.
 If later, the pointer to this event is kept and it continues with the next detector.
 
-Data from detectors with triggered readout and without timestamps are matched against trigger IDs stored in the currently defined Corryvreckan event.
+Data from detectors with both triggered readout and without timestamps are matched against trigger IDs stored in the currently defined Corryvreckan event.
 In case of a match, the timestamp of the respective trigger is assigned to all pixels of the device.
+
+If no timestamp is available for the individual pixels, the pixel timestamp is set as the centre of the EUDAQ2 event.
 
 If no detector is capable of defining events, the `[Metronome]` model needs to be used.
 
@@ -59,7 +61,7 @@ The decoder promises to
 * return `true` only when there is a fully decoded event available and `false` in all other cases.
 * not return any event before a possible T0 signal in the data.
 * return the smallest possible granularity of data in time either as even or as sub-events within one event.
-* always return valid event time stamps. If the device does not have timestamps, it should return zero for the beginning of the event and have a valid trigger number set.
+* always return valid event timestamps. If the device does not have timestamps, it should return zero for the beginning of the event and have a valid trigger number set.
 * provide the detector type via the `GetDetectorType()` function in the decoded StandardEvent.
 
 ### Configuring EUDAQ2 Event Converters

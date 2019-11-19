@@ -102,7 +102,7 @@ Defaults to the source directory (where the folders \textit{bin/} and \textit{li
 \item \parameter{CMAKE_BUILD_TYPE}: Type of build to install, defaults to \parameter{RelWithDebInfo} (compiles with optimizations and debug symbols).
 Other possible options are \texttt{Debug} (for compiling with no optimizations, but with debug symbols and extended tracing using the Clang Address Sanitizer library) and \texttt{Release} (for compiling with full optimizations and no debug symbols).
 \item \textbf{\texttt{BUILD\_\textit{ModuleName}}}: If the specific module \parameter{ModuleName} should be installed or not.
-Defaults to \texttt{ON} for most modules, however some modules with additional dependencies such as EUDAQ~\cite{eudaq} are disabled by default.
+Defaults to \texttt{ON} for most modules, however some modules with additional dependencies such as EUDAQ or EUDAQ2~\cite{eudaq,eudaq2} are disabled by default.
 This set of parameters allows to configure the build for minimal requirements as detailed in Section~\ref{sec:prerequisites}.
 \item \parameter{BUILD_ALL_MODULES}: Build all included modules, defaulting to \parameter{OFF}.
 This overwrites any selection using the parameters described above.
