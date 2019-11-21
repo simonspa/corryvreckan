@@ -111,19 +111,62 @@ void GblTrack::fit() {
                 gblcounter, numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
             m_residual[plane.first] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
         }
+        gblcounter++;
     }
 }
 
 ROOT::Math::XYZPoint GblTrack::intercept(double z) const {
+
     return ROOT::Math::XYZPoint(0, 0, z);
 }
 
-ROOT::Math::XYZPoint GblTrack::state(std::string) const {
-    return ROOT::Math::XYZPoint(0, 0, 0);
+ROOT::Math::XYZPoint GblTrack::state(std::string detectorID) const {
+    for(auto& c : m_trackClusters) {
+        auto cluster = dynamic_cast<Cluster*>(c.GetObject());
+        if(cluster->detectorID() == detectorID) {
+            ROOT::Math::XYZPoint hit = cluster->global();
+            ROOT::Math::XYZPoint res(m_residual.at(cluster->detectorID()).x(), m_residual.at(cluster->detectorID()).y(), 0);
+            return ROOT::Math::XYZPoint(hit - res);
+        }
+    }
+    throw GblException(typeid(GblTrack),
+                       "no measurement given for plane " + detectorID + " available - cannot define the state");
 }
 
-ROOT::Math::XYZVector GblTrack::direction(std::string) const {
-    return ROOT::Math::XYZVector(0, 0, 1);
+ROOT::Math::XYZVector GblTrack::direction(std::string detectorID) const {
+
+    ROOT::Math::XYZPoint point = state(detectorID);
+    ROOT::Math::XYZPoint pointAfter, pointBefore;
+    // we need to check if the plane after has a hit - if so the ditection is simply the connection line,
+    // if before, we need to take the kink into account
+    bool found = false;
+    std::string before = "none", current = "none", after = "none";
+    for(auto& layer : m_materialBudget) {
+        if(found) {
+            after = layer.first;
+            break;
+        } else if(layer.first == detectorID) {
+            found = true;
+        } else {
+            before = layer.first;
+        }
+    }
+    // now check if we find clusters after:
+    if(m_residual.count(after) == 1) {
+        pointAfter = state(after);
+    }
+    // now check if we find clusters before:
+    if(m_residual.count(before) == 1) {
+        pointBefore = state(before);
+    }
+    ROOT::Math::XYZVector tmp = (point - pointBefore) / (point.z() - pointBefore.z());
+    tmp.SetX(tmp.x() + sin(m_kink.at(detectorID).x()));
+    tmp.SetY(tmp.y() + sin(m_kink.at(detectorID).y()));
+    // return scaled to zero
+    //    std::cout <<before<<", " <<detectorID <<", " << after <<", "<<pointBefore <<", " <<point<<", "<< pointAfter <<" "
+    //    <<std::endl<<tmp<<std::endl; std::cout << ((pointAfter-point)/(pointAfter.z()-point.z()))-
+    //    (point-pointBefore)/(point.z()-pointBefore.z())<<", "<< m_kink.at(detectorID) <<std::endl;
+    return ((pointAfter - point) / (pointAfter.z() - point.z()));
 }
 
 double GblTrack::scatteringTheta(double mbCurrent, double mbSum) {
