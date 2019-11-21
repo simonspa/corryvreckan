@@ -61,6 +61,8 @@ void Tracking4D::initialise() {
         title = detectorID + " Residual X;x_{track}-x [mm];events";
         residualsX[detectorID] = new TH1F("residualsX", title.c_str(), 500, -0.1, 0.1);
         title = detectorID + " Residual X, size 1;x_{track}-x [mm];events";
+        residualsXMM[detectorID] = new TH1F("residualsXMM", title.c_str(), 500, -250, 250);
+        title = detectorID + " Residual X, size 1;x_{track}-x [mm];events";
         residualsXwidth1[detectorID] = new TH1F("residualsXwidth1", title.c_str(), 500, -0.1, 0.1);
         title = detectorID + " Residual X, size 2;x_{track}-x [mm];events";
         residualsXwidth2[detectorID] = new TH1F("residualsXwidth2", title.c_str(), 500, -0.1, 0.1);
@@ -68,6 +70,7 @@ void Tracking4D::initialise() {
         residualsXwidth3[detectorID] = new TH1F("residualsXwidth3", title.c_str(), 500, -0.1, 0.1);
         title = detectorID + " Residual Y;y_{track}-y [mm];events";
         residualsY[detectorID] = new TH1F("residualsY", title.c_str(), 500, -0.1, 0.1);
+        residualsYMM[detectorID] = new TH1F("residualsYMM", title.c_str(), 500, -250, 250);
         title = detectorID + " Residual Y, size 1;y_{track}-y [mm];events";
         residualsYwidth1[detectorID] = new TH1F("residualsYwidth1", title.c_str(), 500, -0.1, 0.1);
         title = detectorID + " Residual Y, size 2;y_{track}-y [mm];events";
@@ -236,19 +239,22 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         // Fit the track and save it
         track->fit();
         tracks->push_back(track);
-
+        // LOG(WARNING)<< track->direction(detectors.at(2));
         // Fill histograms
         trackChi2->Fill(track->chi2());
         clustersPerTrack->Fill(static_cast<double>(track->nClusters()));
         trackChi2ndof->Fill(track->chi2ndof());
-        trackAngleX->Fill(atan(track->direction(track->clusters().front()->detectorID()).X()));
-        trackAngleY->Fill(atan(track->direction(track->clusters().front()->detectorID()).Y()));
-
+        if(!(trackModel == "gbl")) {
+            trackAngleX->Fill(atan(track->direction(track->clusters().front()->detectorID()).X()));
+            trackAngleY->Fill(atan(track->direction(track->clusters().front()->detectorID()).Y()));
+        }
         // Make residuals
         auto trackClusters = track->clusters();
         for(auto& trackCluster : trackClusters) {
             string detectorID = trackCluster->detectorID();
             residualsX[detectorID]->Fill(track->residual(detectorID).X());
+            residualsXMM[detectorID]->Fill(1000 * track->residual(detectorID).X());
+            residualsYMM[detectorID]->Fill(1000 * track->residual(detectorID).y());
             if(trackCluster->columnWidth() == 1)
                 residualsXwidth1[detectorID]->Fill(track->residual(detectorID).X());
             if(trackCluster->columnWidth() == 2)

@@ -40,6 +40,7 @@ namespace corryvreckan {
         std::map<std::string, TH1F*> residualsYwidth1;
         std::map<std::string, TH1F*> residualsYwidth2;
         std::map<std::string, TH1F*> residualsYwidth3;
+        std::map<std::string, TH1F*> residualsXMM, residualsYMM;
 
         std::map<std::string, TH1F*> kinkX;
         std::map<std::string, TH1F*> kinkY;
