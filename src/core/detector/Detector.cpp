@@ -66,8 +66,6 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
 
     // Auxiliary devices don't have: number_of_pixels, pixel_pitch, spatial_resolution, mask_file, region-of-interest
     if(!isAuxiliary()) {
-        // Intrinsic spatial resolution, no default:
-        m_spatial_resolution = config.get<ROOT::Math::XYVector>("spatial_resolution");
         // Number of pixels:
         m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
         // Size of the pixels:
@@ -78,6 +76,10 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
             LOG(WARNING) << "Pixel pitch unphysical for detector " << m_detectorName << ": " << std::endl
                          << Units::display(m_pitch, {"nm", "um", "mm"});
         }
+
+        // Intrinsic spatial resolution, defaults to pitch/sqrt(12):
+        m_spatial_resolution = config.get<ROOT::Math::XYVector>("spatial_resolution", m_pitch / std::sqrt(12));
+
         // region of interest:
         m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
     }
