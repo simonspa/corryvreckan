@@ -37,6 +37,7 @@ namespace corryvreckan {
         // Constructors and destructors
         GuiDisplay() : running_(true){};
         ~GuiDisplay() {}
+        static std::type_index getBaseType() { return typeid(GuiDisplay); }
 
         bool isPaused() { return !running_; }
 

@@ -20,6 +20,7 @@ namespace corryvreckan {
     public:
         // Constructors and destructors
         Cluster();
+        static std::type_index getBaseType() { return typeid(Cluster); }
 
         // Functions
         // Add a new pixel to the cluster

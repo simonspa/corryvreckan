@@ -16,6 +16,7 @@ namespace corryvreckan {
          * @brief Required default constructor
          */
         Pixel() = default;
+        static std::type_index getBaseType() { return typeid(Pixel); }
 
         /**
          * @brief Class constructor

@@ -29,6 +29,8 @@ namespace corryvreckan {
         Event(double start, double end, std::map<uint32_t, double> trigger_list = std::map<uint32_t, double>())
             : Object(start), end_(end), trigger_list_(std::move(trigger_list)){};
 
+        static std::type_index getBaseType() { return typeid(Event); }
+
         /**
          * @brief Get the timestamp of the start of the event
          * @return Start timestamp of the event

@@ -27,6 +27,7 @@ namespace corryvreckan {
         }
 
         KDTree(const KDTree& kd);
+        static std::type_index getBaseType() { return typeid(KDTree); }
 
         // Build a tree sorted by cluster times
         void buildTimeTree(ClusterVector inputClusters);

@@ -12,6 +12,7 @@ namespace corryvreckan {
         // Constructors and destructors
         SpidrSignal(){};
         SpidrSignal(std::string type, double timestamp) : Object(timestamp), m_type(type){};
+        static std::type_index getBaseType() { return typeid(SpidrSignal); }
 
         // Set properties
         void type(std::string type) { m_type = type; }

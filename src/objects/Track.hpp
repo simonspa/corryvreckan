@@ -23,6 +23,7 @@ namespace corryvreckan {
 
         // Copy constructor (also copies clusters from the original track)
         Track(const Track& track);
+        static std::type_index getBaseType() { return typeid(Track); }
 
         // Add a new cluster to the track
         void addCluster(const Cluster* cluster);

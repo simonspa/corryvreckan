@@ -22,6 +22,8 @@ namespace corryvreckan {
             : Object(detectorID, timestamp), m_particle_id(particle_id), m_local_start_point(local_start_point),
               m_local_end_point(local_end_point) {}
 
+        static std::type_index getBaseType() { return typeid(MCParticle); }
+
         // Member functions
         int getID() const { return m_particle_id; }
         ROOT::Math::XYZPoint getLocalStart() const { return m_local_start_point; }
