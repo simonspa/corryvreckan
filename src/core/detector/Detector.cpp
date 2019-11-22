@@ -17,6 +17,7 @@
 
 #include "Detector.hpp"
 #include "core/utils/log.h"
+#include "exceptions.h"
 
 using namespace ROOT::Math;
 using namespace corryvreckan;
@@ -87,8 +88,12 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     m_detectorType = config.get<std::string>("type");
     std::transform(m_detectorType.begin(), m_detectorType.end(), m_detectorType.begin(), ::tolower);
     m_timeOffset = config.get<double>("time_offset", 0.0);
-    m_timeResolution = config.get<double>("time_resolution");
 
+    // Time resolution - default ot negative number, i.e. unknown. This will trigger an exception
+    // when calling getTimeResolution
+    m_timeResolution = config.get<double>("time_resolution", -1.0);
+
+    // Initialize the detector, calculate transformations etc
     this->initialise();
 
     LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixels.X() << "x" << m_nPixels.Y() << " px, pitch of "
@@ -98,7 +103,10 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     if(m_timeOffset > 0.) {
         LOG(TRACE) << "Time offset: " << m_timeOffset;
     }
-    LOG(TRACE) << "  Time resolution: " << Units::display(m_timeResolution, {"ms", "us"});
+
+    if(m_timeResolution > 0) {
+        LOG(TRACE) << "  Time resolution: " << Units::display(m_timeResolution, {"ms", "us"});
+    }
 
     if(!isAuxiliary()) {
         if(config.has("mask_file")) {
@@ -108,6 +116,14 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
             setMaskFile(mask_file);
             processMaskFile();
         }
+    }
+}
+
+double Detector::getTimeResolution() const {
+    if(m_timeResolution > 0) {
+        return m_timeResolution;
+    } else {
+        throw InvalidSettingError(this, "time_resolution", "Time resolution not set but requested");
     }
 }
 
