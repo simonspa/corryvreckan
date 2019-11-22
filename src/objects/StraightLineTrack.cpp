@@ -59,10 +59,10 @@ void StraightLineTrack::setKinksZero() {
 }
 
 void StraightLineTrack::calculateResiduals() {
-    //    for(auto c : m_trackClusters){
-    //        auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
-
-    //    }
+    for(auto c : m_trackClusters) {
+        auto cluster = dynamic_cast<Cluster*>(c.GetObject());
+        m_residual[cluster->detectorID()] = cluster->global() - intercept(cluster->global().z());
+    }
 }
 
 double StraightLineTrack::operator()(const double* parameters) {
@@ -138,6 +138,7 @@ void StraightLineTrack::fit() {
     // Calculate the chi2
     this->calculateChi2();
     setKinksZero();
+    calculateResiduals();
 }
 
 ROOT::Math::XYZPoint StraightLineTrack::intercept(double z) const {
