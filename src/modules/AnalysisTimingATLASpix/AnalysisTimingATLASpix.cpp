@@ -29,7 +29,7 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
     m_clusterChargeCut = m_config.get<double>("cluster_charge_cut", -1.);
     m_clusterSizeCut = m_config.get<size_t>("cluster_size_cut", static_cast<size_t>(-1));
     m_highTotCut = m_config.get<int>("high_tot_cut", 40);
-    m_highChargeCut = m_config.get<double>("high_charge_cut", 40.);
+    m_highChargeCut = m_config.get<double>("high_charge_cut", static_cast<double>(m_highTotCut));
     m_leftTailCut = m_config.get<double>("left_tail_cut", static_cast<double>(Units::convert(-10, "ns")));
 
     if(m_config.has("correction_file_row")) {
