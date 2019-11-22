@@ -38,7 +38,7 @@ namespace corryvreckan {
         std::map<std::string, TH1F*> residualsY;
 
         // Member variables
-        double spatialCut;
+        std::map<std::shared_ptr<Detector>, XYVector> spatial_cuts_;
         size_t minHitsOnTrack;
         bool excludeDUT;
         std::string trackModel;

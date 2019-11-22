@@ -286,6 +286,7 @@ All supported rotations are extrinsic active rotations, i.e. the vector itself i
 \item The \parameter{number_of_pixels} parameter represents a two-dimensional vector with the number of pixels in the active matrix in the column and row direction, respectively.
 \item The \parameter{pixel_pitch} is a two-dimensional vector defining the size of a single pixel.
 \item The intrinsic resolution of the detector can be specified using the \parameter{resolution} parameter, a two-dimensional vector holding the position resolution for the column and row directions.
+\item The intrinsic time resolution of the detector should be specified using the \parameter{time_resolution} parameter with units of time. This can be used to apply detector specific time cuts in modules.
 \item The \parameter{time_offset} can be used to shift the individual detector time frames of reference to e.g.\ account for time of flight effects between different detector planes by adding a fixed offset.
 \item The \parameter{material_budget} defines the material budget of the
   sensor layer in factions of the radiation length, including support
@@ -304,6 +305,7 @@ orientation = 9deg, 9deg, 0deg
 orientation_mode = "xyz"
 pixel_pitch = 55um, 55um
 position = 0um, 0um, 10mm
+time_resolution = 20ns
 type = "Timepix3"
 
 [016_CP_PS]
@@ -313,6 +315,7 @@ orientation = -0.02deg, 0.0deg, -0.015deg
 orientation_mode = "xyz"
 pixel_pitch = 25um, 25um
 position = -0.9mm, 0.21mm, 106.0mm
+time_resolution = 1ms
 role = "dut"
 type = "CLICpix2"
 
@@ -322,6 +325,7 @@ orientation = -9deg, 9deg, 0deg
 orientation_mode = "xyz"
 pixel_pitch = 55um, 55um
 position = 0um, 0um, 204mm
+time_resolution = 20ns
 role = "reference"
 type = "Timepix3"
 \end{minted}

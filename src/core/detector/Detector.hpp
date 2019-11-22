@@ -59,7 +59,8 @@ namespace corryvreckan {
     /**
      * @brief Detector representation in the reconstruction chain
      *
-     * Contains the detector with all its properties such as type, name, position and orientation, pitch, resolution etc.
+     * Contains the detector with all its properties such as type, name, position and orientation, pitch, spatial resolution
+     * etc.
      */
     class Detector {
     public:
@@ -123,10 +124,10 @@ namespace corryvreckan {
         XYVector pitch() const { return m_pitch; }
 
         /**
-         * @brief Get intrinsic resolution of the detector
-         * @return Intrinsic resolution in X and Y
+         * @brief Get intrinsic spatial resolution of the detector
+         * @return Intrinsic spatial resolution in X and Y
          */
-        XYVector resolution() const { return m_resolution; }
+        XYVector getSpatialResolution() const { return m_spatial_resolution; }
 
         /**
          * @brief Get number of pixels in x and y
@@ -136,9 +137,15 @@ namespace corryvreckan {
 
         /**
          * @brief Get detector time offset from global clock, can be used to correct for constant shifts or time of flight
-         * @return Timing offset fo respective detector
+         * @return Time offset of respective detector
          */
-        double timingOffset() const { return m_timingOffset; }
+        double timeOffset() const { return m_timeOffset; }
+
+        /**
+         * @brief Get detector time resolution, used for timing cuts during clustering, track formation, etc.
+         * @return Time resolutiom of respective detector
+         */
+        double getTimeResolution() const { return m_timeResolution; }
 
         /**
          * @brief Update detector position in the world
@@ -277,13 +284,14 @@ namespace corryvreckan {
         // Detector information
         std::string m_detectorType;
         std::string m_detectorName;
-        XYVector m_pitch;
-        XYVector m_resolution;
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels;
-        double m_timingOffset;
+        XYVector m_pitch{};
+        XYVector m_spatial_resolution{};
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels{};
+        double m_timeOffset;
+        double m_timeResolution;
         double m_materialBudget;
 
-        std::vector<std::vector<int>> m_roi;
+        std::vector<std::vector<int>> m_roi{};
         static int winding_number(std::pair<int, int> probe, std::vector<std::vector<int>> polygon);
         inline static int isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2);
 

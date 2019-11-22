@@ -7,12 +7,25 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::shared_ptr<Detector> det
     : Module(std::move(config), detector), m_detector(detector) {
 
     makeCorrelations = m_config.get<bool>("make_correlations", false);
-    timingCut = m_config.get<double>("timing_cut", Units::get<double>(100, "ns"));
-    do_timing_cut_ = m_config.get<bool>("do_timing_cut", false);
-    m_time_vs_time = m_config.get<bool>("correlation_time_vs_time", false);
+    do_time_cut_ = m_config.get<bool>("do_time_cut", false);
+    if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
+        throw InvalidCombinationError(
+            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
+    } else if(m_config.has("time_cut_abs")) {
+        timeCut = m_config.get<double>("time_cut_abs");
+    } else {
+        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
+    }
+
+    m_corr_vs_time = m_config.get<bool>("correlation_vs_time", false);
 }
 
 void TestAlgorithm::initialise() {
+
+    if(m_detector->isAuxiliary()) {
+        return;
+    }
+
     LOG(DEBUG) << "Booking histograms for detector " << m_detector->name();
 
     // get the reference detector:
@@ -51,10 +64,17 @@ void TestAlgorithm::initialise() {
 
         // time correlation plot range should cover length of events. nanosecond binning.
         title = m_detector->name() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [ns];events";
-        correlationTime =
-            new TH1F("correlationTime", title.c_str(), static_cast<int>(2. * timingCut), -1 * timingCut, timingCut);
+        correlationTime = new TH1F("correlationTime", title.c_str(), static_cast<int>(2. * timeCut), -1 * timeCut, timeCut);
 
-        if(m_time_vs_time) {
+        if(m_corr_vs_time) {
+            title = m_detector->name() + " Correlation X versus time;t [s];x_{ref}-x [mm];events";
+            std::string name = "correlationXVsTime";
+            correlationXVsTime = new TH2F(name.c_str(), title.c_str(), 600, 0, 3e3, 200, -10., 10.);
+
+            title = m_detector->name() + " Correlation Y versus time;t [s];y_{ref}-y [mm];events";
+            name = "correlationYVsTime";
+            correlationYVsTime = new TH2F(name.c_str(), title.c_str(), 600, 0, 3e3, 200, -10., 10.);
+
             title = m_detector->name() +
                     "Reference cluster time stamp - cluster time stamp over time;t [s];t_{ref}-t [ns];events";
             correlationTimeOverTime = new TH2F("correlationTimeOverTime",
@@ -62,14 +82,14 @@ void TestAlgorithm::initialise() {
                                                3e3,
                                                0,
                                                3e3,
-                                               static_cast<int>(2. * timingCut),
-                                               -1 * timingCut,
-                                               timingCut);
+                                               static_cast<int>(2. * timeCut),
+                                               -1 * timeCut,
+                                               timeCut);
         }
 
         title = m_detector->name() + "Reference pixel time stamp - pixel time stamp;t_{ref}-t [ns];events";
         correlationTime_px =
-            new TH1F("correlationTime_px", title.c_str(), static_cast<int>(2. * timingCut), -1 * timingCut, timingCut);
+            new TH1F("correlationTime_px", title.c_str(), static_cast<int>(2. * timeCut), -1 * timeCut, timeCut);
         title = m_detector->name() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [1/40MHz];events";
         correlationTimeInt = new TH1F("correlationTimeInt", title.c_str(), 8000, -40000, 40000);
 
@@ -205,7 +225,7 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
                     long long int timeDifferenceInt = static_cast<long long int>(timeDifference / 25);
 
                     // Correlation plots
-                    if(abs(timeDifference) < timingCut || !do_timing_cut_) {
+                    if(abs(timeDifference) < timeCut || !do_time_cut_) {
                         correlationX->Fill(refCluster->global().x() - cluster->global().x());
                         correlationX2D->Fill(cluster->global().x(), refCluster->global().x());
                         correlationX2Dlocal->Fill(cluster->column(), refCluster->column());
@@ -223,7 +243,13 @@ StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
                                << ", Time ref. cluster: " << Units::display(refCluster->timestamp(), {"ns", "us"})
                                << ", Time cluster: " << Units::display(cluster->timestamp(), {"ns", "us"});
 
-                    if(m_time_vs_time) {
+                    if(m_corr_vs_time) {
+                        if(abs(timeDifference) < timeCut || !do_time_cut_) {
+                            correlationXVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                                     refCluster->global().x() - cluster->global().x());
+                            correlationYVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                                     refCluster->global().y() - cluster->global().y());
+                        }
                         // Time difference in ns
                         correlationTimeOverTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
                                                       timeDifference);
