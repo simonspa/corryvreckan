@@ -14,7 +14,7 @@ namespace corryvreckan {
          * returns iterator to the newly created element.
          *
          * We use getBaseType here to always store objects as their base class types to be able to fetch them easily. E.g.
-         * derived track classes will be stored as Track objects and can be fetches as such
+         * derived track classes will be stored as Track objects and can be fetched as such
          */
         type =
             m_data.insert(type, ClipboardData::value_type(T::getBaseType(), std::map<std::string, std::shared_ptr<void>>()));
