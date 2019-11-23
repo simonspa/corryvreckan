@@ -108,8 +108,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Loop over all tracks
     for(auto& track : (*tracks)) {
-        std::cout << track->chi2() << ", " << track->trackModel() << ","
-                  << track->direction(track->clusters().at(0)->detectorID()) << std::endl;
+        std::cout << track->chi2() << ", " << track->trackModel() << "," << track->direction("") << std::endl;
         int assoc_cls_per_track = 0;
         auto min_distance = std::numeric_limits<double>::max();
 

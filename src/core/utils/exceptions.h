@@ -97,6 +97,27 @@ namespace corryvreckan {
          */
         LogicError() = default;
     };
+    /**
+     * @ingroup Exceptions
+     * @brief Errors related to Object
+     *
+     * Problems that could also have been detected at compile time by specialized
+     * software
+     */
+    class ObjectError : public Exception {
+        /**
+         * @brief Creates exception with the given logical problem
+         * @param what_arg Text describing the problem
+         */
+        explicit ObjectError(std::string what_arg) : Exception(std::move(what_arg)) {}
+
+    protected:
+        /**
+         * @brief Internal constructor for exceptions setting the error message
+         * indirectly
+         */
+        ObjectError() = default;
+    };
 } // namespace corryvreckan
 
 #endif /* CORRYVRECKAN_EXCEPTIONS_H */

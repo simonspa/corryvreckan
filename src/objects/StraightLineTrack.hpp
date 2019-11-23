@@ -17,7 +17,7 @@ namespace corryvreckan {
         StraightLineTrack();
 
         // copy constructor
-        StraightLineTrack(const Track& track);
+        StraightLineTrack(const StraightLineTrack& track);
 
         // Minimisation operator used by Minuit. Minuit passes the current iteration of the parameters and checks if the chi2
         // is better or worse

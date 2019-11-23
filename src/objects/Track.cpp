@@ -113,7 +113,7 @@ Track* corryvreckan::Track::Factory(std::string trackModel) {
 
 Track* Track::Factory(const Track& track) {
     if(track.trackModel() == "straightline") {
-        return new StraightLineTrack(track);
+        return new StraightLineTrack(/*track*/);
     } else {
         throw MissingReferenceException(typeid(Track), typeid(track));
     }

@@ -35,6 +35,36 @@ namespace corryvreckan {
             error_message_ += corryvreckan::demangle(reference.name());
         }
     };
+
+    class TrackError : public ObjectError {
+    public:
+        /**
+         * @brief TrackError
+         * @param source
+         */
+
+        explicit TrackError(const std::type_info& source) {
+            error_message_ += " TRack Object ";
+            error_message_ += corryvreckan::demangle((source.name()));
+        }
+    };
+
+    class MissingTrackModelReference : public TrackError {
+    public:
+        explicit MissingTrackModelReference(const std::type_info& source, std::string model) : TrackError(source) {
+            error_message_ += " is requesting non exiting track model ";
+            error_message_ += model;
+        }
+    };
+
+    class TrackFitError : public TrackError {
+    public:
+        explicit TrackFitError(const std::type_info& source, std::string error) : TrackError(source) {
+            error_message_ += " fitting procedure fails with message: ";
+            error_message_ += error;
+        }
+    };
+
 } // namespace corryvreckan
 
 #endif /* CORRYVRECKAN_OBJECT_EXCEPTIONS_H */
