@@ -7,6 +7,12 @@ Track::Track() : m_momentum(-1), m_trackModel("baseClass") {}
 
 Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp()) {
     m_trackModel = track.trackModel();
+    m_isFitted = track.isFitted();
+    if(m_isFitted) {
+        m_chi2 = track.chi2();
+        m_ndof = track.ndof();
+        m_chi2ndof = track.chi2ndof();
+    }
     auto trackClusters = track.clusters();
     for(auto& track_cluster : trackClusters) {
         Cluster* cluster = new Cluster(*track_cluster);

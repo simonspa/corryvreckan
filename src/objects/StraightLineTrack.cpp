@@ -6,12 +6,14 @@ using namespace corryvreckan;
 
 StraightLineTrack::StraightLineTrack() : Track(), m_direction(0, 0, 1.), m_state(0, 0, 0.) {
     m_trackModel = "straightline";
+    std::cout << "Called" << std::endl;
 }
 
 StraightLineTrack::StraightLineTrack(const Track& track) : Track(track) {
     if(m_trackModel != "straightline")
         throw Exception("track model changed!");
-    fit();
+    m_direction = track.direction(track.clusters().at(0)->detectorID());
+    m_state = track.direction(track.clusters().at(0)->detectorID());
 }
 
 double StraightLineTrack::distance2(const Cluster* cluster) const {
@@ -123,6 +125,7 @@ void StraightLineTrack::fit() {
     m_direction.SetZ(1.);
     // Calculate the chi2
     this->calculateChi2();
+    m_isFitted = true;
 }
 
 ROOT::Math::XYZPoint StraightLineTrack::intercept(double z) const {

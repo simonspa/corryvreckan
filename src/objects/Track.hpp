@@ -102,7 +102,11 @@ namespace corryvreckan {
          * @brief Get the chi2 of the track fit
          * @return chi2
          */
-        double chi2() const { return m_chi2; }
+        double chi2() const {
+            if(!m_isFitted)
+                throw;
+            return m_chi2;
+        }
 
         /**
          * @brief Get chi2/ndof of the track fit
@@ -192,6 +196,8 @@ namespace corryvreckan {
 
         std::string trackModel() const { return m_trackModel; }
 
+        bool isFitted() const { return m_isFitted; }
+
     protected:
         std::vector<TRef> m_trackClusters;
         std::vector<TRef> m_associatedClusters;
@@ -200,6 +206,7 @@ namespace corryvreckan {
         double m_ndof;
         double m_chi2ndof;
         double m_momentum;
+        bool m_isFitted{};
         std::string m_trackModel;
 
         // ROOT I/O class definition - update version number when you change this class!
