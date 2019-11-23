@@ -6,6 +6,7 @@ using namespace corryvreckan;
 
 StraightLineTrack::StraightLineTrack() : Track(), m_direction(0, 0, 1.), m_state(0, 0, 0.) {
     m_trackModel = "straightline";
+    my_uselessNUmber = 27;
 }
 
 StraightLineTrack::StraightLineTrack(const StraightLineTrack& track) : Track(track) {
@@ -14,6 +15,7 @@ StraightLineTrack::StraightLineTrack(const StraightLineTrack& track) : Track(tra
     m_direction = track.m_direction;
     m_state = track.m_state;
     std::cout << "Calling copy: " << m_state << std::endl;
+    my_uselessNUmber = 27;
 }
 
 double StraightLineTrack::distance2(const Cluster* cluster) const {

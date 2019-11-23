@@ -153,7 +153,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Output track container
-    auto tracks = std::make_shared<StraightLineTrackVector>();
+    auto tracks = std::make_shared<TrackVector>();
 
     // Loop over all clusters
     for(auto& cluster : (*referenceClusters)) {
@@ -161,8 +161,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         // Make a new track
         LOG(DEBUG) << "Looking at next seed cluster";
 
-        auto track = new StraightLineTrack(); /*Track::Factory(trackModel)*/
-        ;
+        auto track = Track::Factory(trackModel);
         // Add the cluster to the track
         track->addCluster(cluster);
         track->setTimestamp(cluster->timestamp());
