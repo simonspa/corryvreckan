@@ -3,9 +3,13 @@
 
 using namespace corryvreckan;
 
-Track::Track() : m_momentum(-1), m_trackModel("baseClass") {}
+Track::Track() : m_momentum(-1), m_trackModel("baseClass") {
+    std::cout << "Call" << std::endl;
+}
 
 Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp()) {
+    std::cout << "Call2" << std::endl;
+
     m_trackModel = track.trackModel();
     m_isFitted = track.isFitted();
     if(m_isFitted) {
