@@ -18,7 +18,8 @@ namespace corryvreckan {
         // Insert data into data type element, silently fail if it exists already
         auto test = type->second.insert(std::make_pair(key, std::static_pointer_cast<void>(objects)));
         if(!test.second) {
-            LOG(WARNING) << "Not inserted for " << key;
+            LOG(WARNING) << "Dataset of type " << corryvreckan::demangle(typeid(T).name()) << " already exists for key \""
+                         << key << "\", ignoring new data";
         }
     }
 
