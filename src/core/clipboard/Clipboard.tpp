@@ -15,7 +15,7 @@ namespace corryvreckan {
          */
         type = m_data.insert(type, ClipboardData::value_type(typeid(T), std::map<std::string, std::shared_ptr<void>>()));
 
-        // Insert data into data type element, silently fail if it exists already
+        // Insert data into data type element and print a warning if it exists already
         auto test = type->second.insert(std::make_pair(key, std::static_pointer_cast<void>(objects)));
         if(!test.second) {
             LOG(WARNING) << "Dataset of type " << corryvreckan::demangle(typeid(T).name()) << " already exists for key \""
