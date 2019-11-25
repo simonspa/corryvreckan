@@ -81,11 +81,10 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         // Intrinsic spatial resolution, defaults to pitch/sqrt(12):
         m_spatial_resolution = config.get<ROOT::Math::XYVector>("spatial_resolution", m_pitch / std::sqrt(12));
         if(!config.has("spatial_resolution")) {
-            LOG(WARNING) << "Spatial resolution for detector '" << m_detectorName << "' not set."
-                         << std::endl
+            LOG(WARNING) << "Spatial resolution for detector '" << m_detectorName << "' not set." << std::endl
                          << "Using pitch/sqrt(12) as default";
         }
-        
+
         // region of interest:
         m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
     }
