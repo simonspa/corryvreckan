@@ -44,6 +44,8 @@ namespace corryvreckan {
 
         std::map<std::string, TH1F*> kinkX;
         std::map<std::string, TH1F*> kinkY;
+        std::map<std::string, TH1F*> pullX;
+        std::map<std::string, TH1F*> pullY;
         // Cuts for tracking
         double timingCut;
         double spatialCut;

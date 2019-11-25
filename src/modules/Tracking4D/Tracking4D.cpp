@@ -60,7 +60,7 @@ void Tracking4D::initialise() {
 
         title = detectorID + " Residual X;x_{track}-x [mm];events";
         residualsX[detectorID] = new TH1F("residualsX", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual X, size 1;x_{track}-x [mm];events";
+        title = detectorID + " Residual X, size 1;x_{track}-x [#mu m];events";
         residualsXMM[detectorID] = new TH1F("residualsXMM", title.c_str(), 500, -250, 250);
         title = detectorID + " Residual X, size 1;x_{track}-x [mm];events";
         residualsXwidth1[detectorID] = new TH1F("residualsXwidth1", title.c_str(), 500, -0.1, 0.1);
@@ -70,6 +70,7 @@ void Tracking4D::initialise() {
         residualsXwidth3[detectorID] = new TH1F("residualsXwidth3", title.c_str(), 500, -0.1, 0.1);
         title = detectorID + " Residual Y;y_{track}-y [mm];events";
         residualsY[detectorID] = new TH1F("residualsY", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + " Residual Y;y_{track}-y [#mum];events";
         residualsYMM[detectorID] = new TH1F("residualsYMM", title.c_str(), 500, -250, 250);
         title = detectorID + " Residual Y, size 1;y_{track}-y [mm];events";
         residualsYwidth1[detectorID] = new TH1F("residualsYwidth1", title.c_str(), 500, -0.1, 0.1);
@@ -77,6 +78,12 @@ void Tracking4D::initialise() {
         residualsYwidth2[detectorID] = new TH1F("residualsYwidth2", title.c_str(), 500, -0.1, 0.1);
         title = detectorID + " Residual Y, size 3;y_{track}-y [mm];events";
         residualsYwidth3[detectorID] = new TH1F("residualsYwidth3", title.c_str(), 500, -0.1, 0.1);
+
+        title = detectorID + " Pull X;x_{track}-x/resolution;events";
+        pullX[detectorID] = new TH1F("pullX", title.c_str(), 500, -5, 5);
+
+        title = detectorID + " Pull Y;y_{track}-y/resolution;events";
+        pullY[detectorID] = new TH1F("pully", title.c_str(), 500, -5, 5);
 
         directory->cd();
     }
@@ -253,6 +260,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         for(auto& trackCluster : trackClusters) {
             string detectorID = trackCluster->detectorID();
             residualsX[detectorID]->Fill(track->residual(detectorID).X());
+            pullX[detectorID]->Fill(track->residual(detectorID).X() / track->clusters().front()->errorX());
+            pullY[detectorID]->Fill(track->residual(detectorID).Y() / track->clusters().front()->errorY());
             residualsXMM[detectorID]->Fill(1000 * track->residual(detectorID).X());
             residualsYMM[detectorID]->Fill(1000 * track->residual(detectorID).y());
             if(trackCluster->columnWidth() == 1)
