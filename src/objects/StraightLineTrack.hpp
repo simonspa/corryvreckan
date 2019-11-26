@@ -70,7 +70,6 @@ namespace corryvreckan {
         ROOT::Math::XYZVector m_direction;
         ROOT::Math::XYZPoint m_state;
 
-        double my_uselessNUmber;
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(StraightLineTrack, 1)
     };
