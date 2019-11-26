@@ -27,13 +27,6 @@ namespace corryvreckan {
         static Track* Factory(std::string trackModel);
 
         /**
-         * @brief Factory to dynamically create track objects - auto detects track based on private member m_trackModel
-         * @param Track to copy from
-         * @return By param trackModel assigned track model to be used
-         */
-        static Track* Factory(const Track& track);
-
-        /**
          * @brief Track object constructor
          */
         Track();
@@ -165,6 +158,11 @@ namespace corryvreckan {
          * @brief The fiting routine
          */
         virtual void fit(){};
+        /**
+         * @brief Virtual function to copy a class
+         * @return pointer to copied object
+         */
+        virtual Track* copy() const { return new Track(); }
 
         /**
          * @brief  Get the distance between cluster and track

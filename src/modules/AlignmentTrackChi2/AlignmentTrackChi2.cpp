@@ -58,7 +58,7 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
             }
         }
 
-        auto alignmentTrack = Track::Factory(*track);
+        auto alignmentTrack = track->copy();
         m_alignmenttracks.push_back(alignmentTrack);
     }
 

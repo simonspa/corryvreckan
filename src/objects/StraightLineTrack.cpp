@@ -14,7 +14,6 @@ StraightLineTrack::StraightLineTrack(const StraightLineTrack& track) : Track(tra
         throw Exception("track model changed!");
     m_direction = track.m_direction;
     m_state = track.m_state;
-    std::cout << "Calling copy: " << m_state << std::endl;
     my_uselessNUmber = 27;
 }
 
@@ -135,7 +134,6 @@ ROOT::Math::XYZPoint StraightLineTrack::intercept(double z) const {
 }
 
 void StraightLineTrack::print(std::ostream& out) const {
-    out << "StraightLineTrack " << this->m_state.x() << ", " << this->m_state.y() << ", " << this->m_state.z() << ", "
-        << this->m_direction.x() << ", " << this->m_direction.y() << ", " << this->m_direction.z() << ", " << this->m_chi2
-        << ", " << this->m_ndof << ", " << this->m_chi2ndof << ", " << this->timestamp();
+    out << "StraightLineTrack " << this->m_state << ", " << this->m_direction << ", " << this->m_chi2 << ", " << this->m_ndof
+        << ", " << this->m_chi2ndof << ", " << this->timestamp();
 }
