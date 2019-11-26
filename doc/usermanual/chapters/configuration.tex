@@ -285,8 +285,8 @@ All supported rotations are extrinsic active rotations, i.e. the vector itself i
 
 \item The \parameter{number_of_pixels} parameter represents a two-dimensional vector with the number of pixels in the active matrix in the column and row direction, respectively.
 \item The \parameter{pixel_pitch} is a two-dimensional vector defining the size of a single pixel.
-\item The intrinsic resolution of the detector can be specified using the \parameter{resolution} parameter, a two-dimensional vector holding the position resolution for the column and row directions.
-\item The intrinsic time resolution of the detector should be specified using the \parameter{time_resolution} parameter with units of time. This can be used to apply detector specific time cuts in modules.
+\item The intrinsic resolution of the detector has to be specified using the \parameter{spatial_resolution} parameter, a two-dimensional vector holding the position resolution for the column and row directions. This value is used to assign the uncertainty of cluster positions. This parameter defaults to the pitch$/\sqrt{12}$ of the respective detector if not specified.
+\item The intrinsic time resolution of the detector should be specified using the \parameter{time_resolution} parameter with units of time. This can be used to apply detector specific time cuts in modules. This parameter is only required when using relative time cuts in the analysis.
 \item The \parameter{time_offset} can be used to shift the individual detector time frames of reference to e.g.\ account for time of flight effects between different detector planes by adding a fixed offset.
 \item Pixels to be masked in the offline analysis can be placed in a separate file specified by the \parameter{mask_file} parameter explained in detail in Section~\ref{sec:masking}.
 \item A region of interest in the given detector can be defined using the \parameter{roi} parameter. More details on this functionality can be found in Section~\ref{sec:roi}.
