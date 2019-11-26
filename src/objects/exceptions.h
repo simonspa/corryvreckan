@@ -17,11 +17,34 @@
 #include "core/utils/type.h"
 
 namespace corryvreckan {
+
+    /**
+     * @ingroup Exceptions
+     * @brief Errors related to Object
+     *
+     * Problems that could also have been detected at compile time by specialized
+     * software
+     */
+    class ObjectError : public Exception {
+        /**
+         * @brief Creates exception with the given logical problem
+         * @param what_arg Text describing the problem
+         */
+        explicit ObjectError(std::string what_arg) : Exception(std::move(what_arg)) {}
+
+    protected:
+        /**
+         * @brief Internal constructor for exceptions setting the error message
+         * indirectly
+         */
+        ObjectError() = default;
+    };
+
     /**
      * @ingroup Exceptions
      * @brief Indicates an object that does not contain a reference fetched
      */
-    class MissingReferenceException : public RuntimeError {
+    class MissingReferenceException : public ObjectError {
     public:
         /**
          * @brief Constructs an error for a object with missing reference
@@ -35,7 +58,6 @@ namespace corryvreckan {
             error_message_ += corryvreckan::demangle(reference.name());
         }
     };
-
     class TrackError : public ObjectError {
     public:
         /**
@@ -44,7 +66,7 @@ namespace corryvreckan {
          */
 
         explicit TrackError(const std::type_info& source) {
-            error_message_ += " TRack Object ";
+            error_message_ += " Track Object ";
             error_message_ += corryvreckan::demangle((source.name()));
         }
     };
@@ -62,6 +84,16 @@ namespace corryvreckan {
         explicit TrackFitError(const std::type_info& source, std::string error) : TrackError(source) {
             error_message_ += " fitting procedure fails with message: ";
             error_message_ += error;
+        }
+    };
+
+    class RequestParameterBeforeFitError : public TrackError {
+    public:
+        explicit RequestParameterBeforeFitError(const std::type_info& source, std::string requestedParameter)
+            : TrackError(source) {
+            error_message_ += "  request parameter \"";
+            error_message_ += requestedParameter;
+            error_message_ += "  \" before fitting";
         }
     };
 

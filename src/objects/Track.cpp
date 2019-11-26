@@ -62,6 +62,28 @@ bool Track::hasClosestCluster() const {
     return closestCluster != nullptr;
 }
 
+double Track::chi2() const {
+    if(!m_isFitted)
+        throw RequestParameterBeforeFitError(typeid(this), "chi2");
+    return m_chi2;
+}
+
+double Track::chi2ndof() const {
+    if(isFitted()) {
+        return m_chi2ndof;
+    } else {
+        throw RequestParameterBeforeFitError(typeid(this), "chi2ndof");
+    }
+}
+
+double Track::ndof() const {
+    if(isFitted()) {
+        return m_ndof;
+    } else {
+        throw RequestParameterBeforeFitError(typeid(this), "ndof");
+    }
+}
+
 void Track::setClosestCluster(const Cluster* cluster) {
     closestCluster = const_cast<Cluster*>(cluster);
 }
@@ -107,6 +129,6 @@ Track* corryvreckan::Track::Factory(std::string trackModel) {
     if(trackModel == "straightline") {
         return new StraightLineTrack();
     } else {
-        throw; // MissingReferenceException(typeid(Track), typeid(Track));
+        throw MissingReferenceException(typeid(Track), typeid(Track));
     }
 }

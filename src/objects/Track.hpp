@@ -95,23 +95,19 @@ namespace corryvreckan {
          * @brief Get the chi2 of the track fit
          * @return chi2
          */
-        double chi2() const {
-            if(!m_isFitted)
-                throw;
-            return m_chi2;
-        }
+        double chi2() const;
 
         /**
          * @brief Get chi2/ndof of the track fit
          * @return chi2/ndof
          */
-        double chi2ndof() const { return m_chi2ndof; }
+        double chi2ndof() const;
 
         /**
          * @brief Get the ndof for the track fit
          * @return ndof
          */
-        double ndof() const { return m_ndof; }
+        double ndof() const;
 
         /**
          * @brief Get the clusters contained in the track fit
