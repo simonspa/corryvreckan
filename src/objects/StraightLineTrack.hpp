@@ -19,7 +19,7 @@ namespace corryvreckan {
         // copy constructor
         StraightLineTrack(const StraightLineTrack& track);
 
-        virtual StraightLineTrack* copy() const override { return new StraightLineTrack(*this); }
+        virtual StraightLineTrack* clone() const override { return new StraightLineTrack(*this); }
 
         // Minimisation operator used by Minuit. Minuit passes the current iteration of the parameters and checks if the chi2
         // is better or worse

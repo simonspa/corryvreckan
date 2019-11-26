@@ -158,7 +158,7 @@ namespace corryvreckan {
          * @brief Virtual function to copy a class
          * @return pointer to copied object
          */
-        virtual Track* copy() const { return new Track(); }
+        virtual Track* clone() const { return new Track(); }
 
         /**
          * @brief  Get the distance between cluster and track

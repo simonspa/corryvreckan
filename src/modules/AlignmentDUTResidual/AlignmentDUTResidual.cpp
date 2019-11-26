@@ -83,7 +83,7 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
             }
         }
         LOG(TRACE) << track->trackModel();
-        auto alignmentTrack = track->copy();
+        auto alignmentTrack = track->clone();
 
         m_alignmenttracks.push_back(alignmentTrack);
 
