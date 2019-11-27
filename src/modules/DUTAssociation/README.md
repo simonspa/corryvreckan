@@ -21,14 +21,14 @@ The other option is to compare the distance between the cluster centre and the t
 * `use_cluster_centre`: If set true, the cluster centre will be compared to the track position for the spatial cut. If false, the nearest pixel in the cluster will be used. Defaults to `false`.
 
 ### Plots produced
-* distance in x of cluster centre to track minus closest pixel to track
-* distance in y of cluster centre to track minus closest pixel to track
-* distance in x of cluster centre to track minus closest pixel to track for pixels with column width = 1
-* distance in y of cluster centre to track minus closest pixel to track for pixels with row width = 1
-* distance in x of cluster centre to track minus closest pixel to track for pixels with column width = 2
-* distance in y of cluster centre to track minus closest pixel to track for pixels with row width = 2
-* distance in x of cluster centre to track minus closest pixel to track for pixels with column width = 3
-* distance in y of cluster centre to track minus closest pixel to track for pixels with row width = 3
+* distance in x from the cluster to the pixel closest to the track
+* distance in y from the cluster to the pixel closest to the track
+* distance in x from the cluster to the pixel closest to the track for pixels with column width = 1
+* distance in y from the cluster to the pixel closest to the track for pixels with row width = 1
+* distance in x from the cluster to the pixel closest to the track for pixels with column width = 2
+* distance in y from the cluster to the pixel closest to the track for pixels with row width = 2
+* distance in x from the cluster to the pixel closest to the track for pixels with column width = 3
+* distance in y from the cluster to the pixel closest to the track for pixels with row width = 3
 * distribution of number of associated clusters per track
 * Number of clusters discarded by a given cut (currently only spatial and timing cuts are implemented)
 
