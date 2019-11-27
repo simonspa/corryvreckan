@@ -26,10 +26,15 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
     m_timingCut = m_config.get<double>("timing_cut", static_cast<double>(Units::convert(1000, "ns")));
     m_chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
     m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", static_cast<double>(Units::convert(20, "ns")));
-    m_clusterChargeCut = m_config.get<double>("cluster_charge_cut", 100000.);
-    m_clusterSizeCut = m_config.get<size_t>("cluster_size_cut", static_cast<size_t>(100));
+
+    if(m_config.has("cluster_charge_cut")) {
+        m_clusterChargeCut = m_config.get<double>("cluster_charge_cut");
+    }
+    if(m_config.has("cluster_size_cut")) {
+        m_clusterSizeCut = m_config.get<size_t>("cluster_size_cut");
+    }
     m_highTotCut = m_config.get<int>("high_tot_cut", 40);
-    m_highChargeCut = m_config.get<double>("high_charge_cut", 40.);
+    m_highChargeCut = m_config.get<double>("high_charge_cut", static_cast<double>(m_highTotCut));
     m_leftTailCut = m_config.get<double>("left_tail_cut", static_cast<double>(Units::convert(-10, "ns")));
 
     if(m_config.has("correction_file_row")) {
@@ -441,13 +446,13 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     has_associated_cluster = true;
                     matched_tracks++;
 
-                    if(cluster->charge() > m_clusterChargeCut) {
+                    if(m_config.has("cluster_charge_cut") && cluster->charge() > m_clusterChargeCut) {
                         LOG(DEBUG) << " - track discarded due to clusterChargeCut";
                         continue;
                     }
                     tracks_afterClusterChargeCut++;
 
-                    if(cluster->size() > m_clusterSizeCut) {
+                    if(m_config.has("cluster_size_cut") && cluster->size() > m_clusterSizeCut) {
                         LOG(DEBUG) << " - track discarded due to clusterSizeCut";
                         continue;
                     }
