@@ -57,7 +57,7 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
                 continue;
             }
         }
-
+        LOG(TRACE) << "Cloning track with track model \"" << track->trackModel() << "\" for alignment";
         auto alignmentTrack = track->clone();
         m_alignmenttracks.push_back(alignmentTrack);
     }
