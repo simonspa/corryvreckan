@@ -8,8 +8,9 @@
 This module reads in data for the ATLASpix device from an input file created by the Caribou readout system. It supports binary output format.
 
 The module opens and reads one data file named `data.bin` in the specified input directory. For each hit it, stores the detectorID, row, column, and ToT.
+Since a calibration is not yet implemented, the pixel charge is set to the pixel ToT.
 
-This module requires either another event loader of another detector type before which defines the event start and end times (variables `eventStart` and `eventEnd` on the clipboard) or an instance of the Metronome module which provides this information.
+This module requires either another event loader of another detector type before which defines the event on the clipboard or an instance of the Metronome module which provides this information.
 
 ### Parameters
 * `input_directory`: Path to the directory containing the `data.bin` file. This path should lead to the directory above the ALTASpix directory, as this string is added to the input directory in the module.
@@ -17,7 +18,6 @@ This module requires either another event loader of another detector type before
 * `legacy_format`: Set `true` if using legacy data format of the Karlsruhe readout system. Default is `false`, corresponding the the format of the Caribou readout system.
 * `clkdivend2`: Value of clkdivend2 register in ATLASPix specifying the speed of TS2 counter. Default is `0`.
 * `high_tot_cut`: "high ToT" histograms are filled if pixel ToT is larger than this cut. Default is `40`.
-* `calibration_file` (optional): input file for pixel-wise calibration from ToT to charge in electrons. If not provided, the pixel charge is equivalent to pixel ToT.
 * `buffer_depth`: Depth of buffer in which pixel hits are timesorted before being added to an event. If set to `1`, effectively no timesorting is done. Default is `1000`.
 
 ### Plots produced

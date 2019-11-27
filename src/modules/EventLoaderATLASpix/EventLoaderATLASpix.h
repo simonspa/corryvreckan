@@ -107,8 +107,6 @@ namespace corryvreckan {
         std::string m_inputDirectory;
         double m_clockCycle;
         int m_highToTCut;
-        std::string m_calibrationFile;
-        std::vector<double> m_calibrationFactors;
         // int m_clkdivendM;
         int m_clkdivend2M;
         int m_buffer_depth;
