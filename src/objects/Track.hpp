@@ -29,7 +29,7 @@ namespace corryvreckan {
         /**
          * @brief Track object constructor
          */
-        Track(std::string model = "baseClass");
+        Track();
         /**
          * @brief Copy a track object, including used/associated clusters
          * @param track to be copied from
@@ -188,8 +188,6 @@ namespace corryvreckan {
          */
         virtual ROOT::Math::XYZVector direction(std::string) const { return ROOT::Math::XYZVector(0.0, 0.0, 0.0); }
 
-        std::string trackModel() const { return m_trackModel; }
-
         bool isFitted() const { return m_isFitted; }
 
     protected:
@@ -201,7 +199,6 @@ namespace corryvreckan {
         double m_chi2ndof;
         double m_momentum;
         bool m_isFitted{};
-        std::string m_trackModel;
 
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(Track, 7)

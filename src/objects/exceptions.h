@@ -100,8 +100,8 @@ namespace corryvreckan {
 
     class RequestParameterBeforeFitError : public TrackError {
     public:
-        explicit RequestParameterBeforeFitError(const std::type_info& source, std::string requestedParameter)
-            : TrackError(source) {
+        template <typename T>
+        RequestParameterBeforeFitError(T* source, std::string requestedParameter) : TrackError(typeid(source)) {
             error_message_ += "  request parameter \"";
             error_message_ += requestedParameter;
             error_message_ += "  \" before fitting";

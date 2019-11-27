@@ -3,10 +3,9 @@
 
 using namespace corryvreckan;
 
-Track::Track(std::string model) : m_momentum(-1), m_trackModel(model) {}
+Track::Track() : m_momentum(-1) {}
 
 Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp()) {
-    m_trackModel = track.trackModel();
     m_isFitted = track.isFitted();
     m_chi2 = track.chi2();
     m_ndof = track.ndof();
@@ -63,21 +62,21 @@ bool Track::hasClosestCluster() const {
 
 double Track::chi2() const {
     if(!m_isFitted) {
-        throw RequestParameterBeforeFitError(typeid(this), "chi2");
+        throw RequestParameterBeforeFitError(this, "chi2");
     }
     return m_chi2;
 }
 
 double Track::chi2ndof() const {
     if(!m_isFitted) {
-        throw RequestParameterBeforeFitError(typeid(this), "chi2ndof");
+        throw RequestParameterBeforeFitError(this, "chi2ndof");
     }
     return m_chi2ndof;
 }
 
 double Track::ndof() const {
     if(!m_isFitted) {
-        throw RequestParameterBeforeFitError(typeid(this), "ndof");
+        throw RequestParameterBeforeFitError(this, "ndof");
     }
     return m_ndof;
 }

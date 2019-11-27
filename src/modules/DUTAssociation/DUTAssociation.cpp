@@ -108,7 +108,8 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Loop over all tracks
     for(auto& track : (*tracks)) {
-        LOG(TRACE) << "Proccessing track with model " << track->trackModel() << ", chi2 of " << track->chi2();
+        LOG(TRACE) << "Proccessing track with model " << corryvreckan::demangle(typeid(*track).name()) << ", chi2 of "
+                   << track->chi2();
         int assoc_cls_per_track = 0;
         auto min_distance = std::numeric_limits<double>::max();
 
