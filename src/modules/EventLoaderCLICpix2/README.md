@@ -10,7 +10,9 @@ Thus, this module should not be used in conjunction with the Metronome but shoul
 
 The module opens and reads one data file in the specified input directory.
 The input directory is searched for a data file with the file extension `.raw` and a pixel matrix configuration file required for decoding with the file extension `.cfg` and a name starting with `matrix`.
-The data is decoded using the CLICpix2 data decoder shipped with the Peary DAQ framework. For each pixel hit, the detectorID, the pixel's column and row address as well as ToT and ToA values are stored, depending on their availability from data. The shutter rise and fall time information are used to set the current time and event length as described above.
+The data is decoded using the CLICpix2 data decoder shipped with the Peary DAQ framework. For each pixel hit, the detectorID, the pixel's column and row address as well as ToT and ToA values are stored, depending on their availability from data.
+If no ToA information is available, the pixel timestamp is set to the center of the frame. 
+The shutter rise and fall time information are used to set the current time and event length as described above.
 
 ### Parameters
 * `input_directory`: Path to the directory containing the `.csv` file. This path should lead to the directory above the CLICpix directory, as this string is added onto the input directory in the module.
