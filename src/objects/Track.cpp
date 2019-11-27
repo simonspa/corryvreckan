@@ -3,7 +3,7 @@
 
 using namespace corryvreckan;
 
-Track::Track() : m_momentum(-1), m_trackModel("baseClass") {}
+Track::Track(std::string model) : m_momentum(-1), m_trackModel(model) {}
 
 Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp()) {
     m_trackModel = track.trackModel();

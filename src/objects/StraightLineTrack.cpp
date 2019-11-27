@@ -4,9 +4,7 @@
 
 using namespace corryvreckan;
 
-StraightLineTrack::StraightLineTrack() : Track(), m_direction(0, 0, 1.), m_state(0, 0, 0.) {
-    m_trackModel = "straightline";
-}
+StraightLineTrack::StraightLineTrack() : Track("straightline"), m_direction(0, 0, 1.), m_state(0, 0, 0.) {}
 
 StraightLineTrack::StraightLineTrack(const StraightLineTrack& track) : Track(track) {
     if(m_trackModel != "straightline")

@@ -29,7 +29,7 @@ namespace corryvreckan {
         /**
          * @brief Track object constructor
          */
-        Track();
+        Track(std::string model = "baseClass");
         /**
          * @brief Copy a track object, including used/associated clusters
          * @param track to be copied from
