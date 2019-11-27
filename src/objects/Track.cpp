@@ -62,25 +62,24 @@ bool Track::hasClosestCluster() const {
 }
 
 double Track::chi2() const {
-    if(!m_isFitted)
+    if(!m_isFitted) {
         throw RequestParameterBeforeFitError(typeid(this), "chi2");
+    }
     return m_chi2;
 }
 
 double Track::chi2ndof() const {
-    if(isFitted()) {
-        return m_chi2ndof;
-    } else {
+    if(!m_isFitted) {
         throw RequestParameterBeforeFitError(typeid(this), "chi2ndof");
     }
+    return m_chi2ndof;
 }
 
 double Track::ndof() const {
-    if(isFitted()) {
-        return m_ndof;
-    } else {
+    if(!m_isFitted) {
         throw RequestParameterBeforeFitError(typeid(this), "ndof");
     }
+    return m_ndof;
 }
 
 void Track::setClosestCluster(const Cluster* cluster) {
