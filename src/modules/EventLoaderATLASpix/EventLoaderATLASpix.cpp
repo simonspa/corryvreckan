@@ -14,11 +14,6 @@ EventLoaderATLASpix::EventLoaderATLASpix(Configuration config, std::shared_ptr<D
     m_clkdivend2M = m_config.get<int>("clkdivend2", 0.) + 1;
 
     m_highToTCut = m_config.get<int>("high_tot_cut", 40);
-
-    if(m_config.has("calibration_file")) {
-        m_calibrationFile = m_config.getPath("calibration_file");
-    }
-
     m_buffer_depth = m_config.get<int>("buffer_depth", 1000);
 
     // ts1Range = 0x800 * m_clkdivendM;
@@ -158,22 +153,6 @@ void EventLoaderATLASpix::initialise() {
     std::string histTitle = "hPixelTriggerTimeResidualOverTime_0;time [s];pixel_ts - trigger_ts [us];# entries";
     hPixelTriggerTimeResidualOverTime =
         new TH2D("hPixelTriggerTimeResidualOverTime_0", histTitle.c_str(), 3e3, 0, 3e3, 1e4, -50, 50);
-
-    // Read calibration:
-    m_calibrationFactors.resize(static_cast<size_t>(m_detector->nPixels().X() * m_detector->nPixels().Y()), 1.0);
-    if(!m_calibrationFile.empty()) {
-        std::ifstream calibration(m_calibrationFile);
-        std::string line;
-        std::getline(calibration, line);
-
-        int col, row;
-        double calibfactor;
-        while(getline(calibration, line)) {
-            std::istringstream(line) >> col >> row >> calibfactor;
-            m_calibrationFactors.at(static_cast<size_t>(row * 25 + col)) = calibfactor;
-        }
-        calibration.close();
-    }
 
     LOG(INFO) << "Using clock cycle length of " << m_clockCycle << " ns." << std::endl;
 
@@ -405,7 +384,7 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
             return true;
         }
 
-        // when calibration is not available, set charge = tot
+        // since calibration is not implemented yet, set charge = tot
         Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, tot, timestamp);
 
         // FIXME: implement conversion from ToT to charge:
