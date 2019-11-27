@@ -23,7 +23,14 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
 
     using namespace ROOT::Math;
     m_detector = detector;
-    m_timingCut = m_config.get<double>("timing_cut", static_cast<double>(Units::convert(1000, "ns")));
+    if(config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
+        throw InvalidCombinationError(
+            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
+    } else if(m_config.has("time_cut_abs")) {
+        m_timeCut = m_config.get<double>("time_cut_abs");
+    } else {
+        m_timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
+    }
     m_chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
     m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", static_cast<double>(Units::convert(20, "ns")));
 
@@ -73,13 +80,13 @@ void AnalysisTimingATLASpix::initialise() {
 
     std::string name = "hTrackCorrelationTime";
     hTrackCorrelationTime =
-        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timingCut), -1 * m_timingCut, m_timingCut);
+        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timeCut), -1 * m_timeCut, m_timeCut);
     hTrackCorrelationTime->GetXaxis()->SetTitle("Track time stamp - cluster time stamp [ns]");
     hTrackCorrelationTime->GetYaxis()->SetTitle("# events");
 
     name = "hTrackCorrelationTimeAssoc";
     hTrackCorrelationTimeAssoc =
-        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timingCut), -1 * m_timingCut, m_timingCut);
+        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timeCut), -1 * m_timeCut, m_timeCut);
     hTrackCorrelationTimeAssoc->GetXaxis()->SetTitle("track time stamp - cluster time stamp [ns]");
     hTrackCorrelationTimeAssoc->GetYaxis()->SetTitle("# events");
 
@@ -92,33 +99,33 @@ void AnalysisTimingATLASpix::initialise() {
     name = "hTrackCorrelationTime_rowCorr";
     std::string title = "hTrackCorrelationTime_rowCorr: row-by-row correction";
     hTrackCorrelationTime_rowCorr =
-        new TH1F(name.c_str(), title.c_str(), static_cast<int>(2. * m_timingCut), -1 * m_timingCut, m_timingCut);
+        new TH1F(name.c_str(), title.c_str(), static_cast<int>(2. * m_timeCut), -1 * m_timeCut, m_timeCut);
     hTrackCorrelationTime_rowCorr->GetXaxis()->SetTitle("track time stamp - cluster time stamp [ns]");
     hTrackCorrelationTime_rowCorr->GetYaxis()->SetTitle("# events");
 
     name = "hTrackCorrelationTime_rowAndTimeWalkCorr";
     hTrackCorrelationTime_rowAndTimeWalkCorr =
-        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timingCut), -1 * m_timingCut, m_timingCut);
+        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timeCut), -1 * m_timeCut, m_timeCut);
     hTrackCorrelationTime_rowAndTimeWalkCorr->GetXaxis()->SetTitle("track time stamp - cluster time stamp [ns]");
     hTrackCorrelationTime_rowAndTimeWalkCorr->GetYaxis()->SetTitle("# events");
 
     name = "hTrackCorrelationTime_rowAndTimeWalkCorr_l25";
     hTrackCorrelationTime_rowAndTimeWalkCorr_l25 =
-        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timingCut), -1 * m_timingCut, m_timingCut);
+        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timeCut), -1 * m_timeCut, m_timeCut);
     hTrackCorrelationTime_rowAndTimeWalkCorr_l25->GetXaxis()->SetTitle(
         "track time stamp - cluster time stamp [ns] (if seed tot < 25lsb)");
     hTrackCorrelationTime_rowAndTimeWalkCorr_l25->GetYaxis()->SetTitle("# events");
 
     name = "hTrackCorrelationTime_rowAndTimeWalkCorr_l40";
     hTrackCorrelationTime_rowAndTimeWalkCorr_l40 =
-        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timingCut), -1 * m_timingCut, m_timingCut);
+        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timeCut), -1 * m_timeCut, m_timeCut);
     hTrackCorrelationTime_rowAndTimeWalkCorr_l40->GetXaxis()->SetTitle(
         "track time stamp - cluster time stamp [ns] (if seed tot < 40lsb)");
     hTrackCorrelationTime_rowAndTimeWalkCorr_l40->GetYaxis()->SetTitle("# events");
 
     name = "hTrackCorrelationTime_rowAndTimeWalkCorr_g40";
     hTrackCorrelationTime_rowAndTimeWalkCorr_g40 =
-        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timingCut), -1 * m_timingCut, m_timingCut);
+        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timeCut), -1 * m_timeCut, m_timeCut);
     hTrackCorrelationTime_rowAndTimeWalkCorr_g40->GetXaxis()->SetTitle(
         "track time stamp - cluster time stamp [ns] (if seed tot > 40lsb)");
     hTrackCorrelationTime_rowAndTimeWalkCorr_g40->GetYaxis()->SetTitle("# events");

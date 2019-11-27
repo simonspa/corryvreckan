@@ -100,7 +100,7 @@ namespace corryvreckan {
 
         // Member Variables:
         std::string m_DUT;
-        double m_timingCut;
+        double m_timeCut;
         double m_chi2ndofCut;
         double m_timeCutFrameEdge;
         double m_clusterChargeCut;
