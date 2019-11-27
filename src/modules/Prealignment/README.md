@@ -12,9 +12,10 @@ This initial alignment along the X and Y axes is designed to be performed before
 The required translational shifts in X and Y are calculated for each detector as the mean of the 1D correlation histogram along the axis.
 
 ### Parameters
-* `damping_factor`: A factor to change the percentage of the calcuated shift applied to each detector. Default value is `1`.
+* `damping_factor`: A factor to change the percentage of the calculated shift applied to each detector. Default value is `1`.
 * `max_correlation_rms`: The maximum RMS of the 1D correlation histograms allowed for the shifts to be applied. This factor should be tuned for each run, and is combat the effect of flat distributions. Default value is `6mm`.
-* `timing_cut`: maximum time difference between clusters to be taken into account. Defaults to `100ns`.
+* `time_cut_rel`: Number of standard deviations the `time_resolution` of the detector plane will be multiplied by. This value is then used as the maximum time difference between a cluster on the current detector and a cluster on the reference plane to be considered in the prealignment. Absolute and relative time cuts are mutually exclusive. Defaults to `3.0`.
+* `time_cut_abs`: Specifies an absolute value for the maximum time difference between a cluster on the current detector and a cluster on the reference plane to be considered in the prealignment. Absolute and relative time cuts are mutually exclusive. No default value.
 
 ### Plots Created
 For each detector the following plots are produced:

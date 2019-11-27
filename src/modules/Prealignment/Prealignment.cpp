@@ -8,7 +8,14 @@ Prealignment::Prealignment(Configuration config, std::shared_ptr<Detector> detec
 
     max_correlation_rms = m_config.get<double>("max_correlation_rms", Units::get<double>(6, "mm"));
     damping_factor = m_config.get<double>("damping_factor", 1.0);
-    timingCut = m_config.get<double>("timing_cut", Units::get<double>(100, "ns"));
+    if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
+        throw InvalidCombinationError(
+            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
+    } else if(m_config.has("time_cut_abs")) {
+        timeCut = m_config.get<double>("time_cut_abs");
+    } else {
+        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
+    }
     LOG(DEBUG) << "Setting max_correlation_rms to : " << max_correlation_rms;
     LOG(DEBUG) << "Setting damping_factor to : " << damping_factor;
 }
@@ -72,7 +79,7 @@ StatusCode Prealignment::run(std::shared_ptr<Clipboard> clipboard) {
             double timeDifference = refCluster->timestamp() - cluster->timestamp();
 
             // Correlation plots
-            if(abs(timeDifference) < timingCut) {
+            if(abs(timeDifference) < timeCut) {
                 correlationX->Fill(refCluster->global().x() - cluster->global().x());
                 correlationX2D->Fill(cluster->global().x(), refCluster->global().x());
                 correlationX2Dlocal->Fill(cluster->column(), refCluster->column());
