@@ -22,7 +22,6 @@ For each detector the following plots are produced:
 
 * Translational shift along X-axis vs. iteration number
 * Translational shift along Y-axis vs. iteration number
-* Translational shift along Z-axis vs. iteration number
 * Rotational shift around X-axis vs. iteration number
 * Rotational shift around Y-axis vs. iteration number
 * Rotational shift around Z-axis vs. iteration number
