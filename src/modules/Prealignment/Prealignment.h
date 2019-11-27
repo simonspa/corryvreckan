@@ -38,7 +38,7 @@ namespace corryvreckan {
         // Parameters which can be set by user
         double max_correlation_rms;
         double damping_factor;
-        double timingCut;
+        double timeCut;
     };
 } // namespace corryvreckan
 #endif // PREALIGNMENT_H
