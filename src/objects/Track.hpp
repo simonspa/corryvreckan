@@ -7,7 +7,7 @@
 #include <TRef.h>
 
 #include "Cluster.hpp"
-
+#include "core/utils/type.h"
 namespace corryvreckan {
     /**
      * @ingroup Objects
@@ -49,6 +49,12 @@ namespace corryvreckan {
          * @return Class type of the base object
          */
         static std::type_index getBaseType() { return typeid(Track); }
+
+        /**
+         * @brief get the track type used
+         * @return track type
+         */
+        std::string getType() const { return corryvreckan::demangle(typeid(*this).name()); }
 
         /**
          * * @brief Add a cluster to the tack, which will be used in the fit
