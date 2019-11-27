@@ -78,6 +78,17 @@ namespace corryvreckan {
             error_message_ += model;
         }
     };
+    class TrackModelChanged : public TrackError {
+    public:
+        explicit TrackModelChanged(const std::type_info& source, std::string modelSet, std::string model)
+            : TrackError(source) {
+            error_message_ += " is defined as ";
+            error_message_ += model;
+            error_message_ += " but a ";
+            error_message_ += modelSet;
+            error_message_ += " is passed ";
+        }
+    };
 
     class TrackFitError : public TrackError {
     public:

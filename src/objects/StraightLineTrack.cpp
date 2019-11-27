@@ -10,7 +10,7 @@ StraightLineTrack::StraightLineTrack() : Track(), m_direction(0, 0, 1.), m_state
 
 StraightLineTrack::StraightLineTrack(const StraightLineTrack& track) : Track(track) {
     if(m_trackModel != "straightline")
-        throw Exception("track model changed!");
+        throw TrackModelChanged(typeid(StraightLineTrack), track.m_trackModel, "straightline");
     m_direction = track.m_direction;
     m_state = track.m_state;
 }
