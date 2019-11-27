@@ -16,7 +16,8 @@ The calculation of the timewalk correction is based on a row-corrected histogram
 After this both corrections can be applied on top of each other.
 
 ### Parameters
-* `timing_cut`: Timing cut for associating a track with an ATLASpix cluster. Defaults to `1us`.
+* `time_cut_rel`: Number of standard deviations the `time_resolution` of the detector plane will be multiplied by. This value then defines the range of the track time correlation histograms and should be set according to the value chosen for the `[DUTAssociation]`. By default, a relative time cut is applied. Absolute and relative time cuts are mutually exclusive. Defaults to `3.0`.
+* `time_cut_abs`: Specifies an absolute value for the range of the track time correlation histograms and should be set according to the value chosen for the `[DUTAssociation]`. Absolute and relative time cuts are mutually exclusive. No default value.
 * `chi2ndof_cut`: Acceptance criterion for telescope tracks, defaults to a value of `3`.
 * `time_cut_frameedge`: Parameter to discard telescope tracks at the frame edges (start and end of the current frame). Defaults to `20ns`.
 * `cluster_charge_cut`: Parameter to discard clusters with a charge larger than the cut. No default, not used if not set.
