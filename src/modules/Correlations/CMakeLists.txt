@@ -3,8 +3,7 @@ CORRYVRECKAN_DETECTOR_MODULE(MODULE_NAME)
 
 # Add source files to library
 CORRYVRECKAN_MODULE_SOURCES(${MODULE_NAME}
-    TestAlgorithm.cpp
-    # ADD SOURCE FILES HERE...
+    Correlations.cpp
 )
 
 # Provide standard install target
