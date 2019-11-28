@@ -45,7 +45,18 @@ def check(path, checksum):
     print('\'%s\' checksum ok' % path)
     return True
 
+def cleanup(name):
+    """removes untar'ed folder of target if it exists"""
+    target = os.path.join(BASE_TARGET, name)
+    if os.path.exists(target) and os.path.isdir(target):
+        print('\'%s\' deleting existing folder' % target)
+        try:
+            shutil.rmtree(target)
+        except shutil.Error as err:
+            print('%s' % err)
+
 def download(name, checksum):
+    """download tarball if not found already with correct checksum"""
     # not sure if path.join works for urls
     source = BASE_SOURCE + name + '.tar.gz'
     target = os.path.join(BASE_TARGET, name + '.tar.gz')
@@ -68,17 +79,11 @@ if __name__ == '__main__':
     else:
         datasets = {_: DATASETS[_] for _ in sys.argv[1:]}
     for name, checksum in datasets.items():
+        # Delete existing untarred files
+        cleanup(name=name)
+
         # Download tarball if necessary
         download(name=name, checksum=checksum)
-
-        # Delete existing untarred files
-        target = os.path.join(BASE_TARGET, name)
-        if os.path.exists(target) and os.path.isdir(target):
-            print('\'%s\' deleting existing folder' % target)
-            try:
-                shutil.rmtree(target)
-            except shutil.Error as err:
-                print('%s' % err)
 
         # Untar anew from tarball
         untar(name)
