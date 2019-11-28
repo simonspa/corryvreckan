@@ -79,7 +79,7 @@ StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) 
     if(!m_blockFile->read_next(tf))
         return StatusCode::EndRun;
     else {
-        LOG(DEBUG) << "Found " << tf.num_hits() << " in event " << m_eventNumber;
+        LOG(DEBUG) << "Found " << tf.num_hits() << " in event";
         for(uint i = 0; i < tf.num_hits(); ++i) {
             RawHit h = tf.get_hit(i);
             if(h.tag() == 0x4)
@@ -104,14 +104,8 @@ StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) 
             LOG(ERROR) << "Unknown detector ";
         }
     }
-    // Increment event counter
-    m_eventNumber++;
+
     LOG(DEBUG) << "Frame with " << tf.num_hits();
     // Return value telling analysis to keep running
     return StatusCode::Success;
-}
-
-void EventLoaderMuPixTelescope::finalise() {
-
-    LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }
