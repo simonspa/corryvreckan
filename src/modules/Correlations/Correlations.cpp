@@ -1,9 +1,9 @@
-#include "TestAlgorithm.h"
+#include "Correlations.h"
 
 using namespace corryvreckan;
 using namespace std;
 
-TestAlgorithm::TestAlgorithm(Configuration config, std::shared_ptr<Detector> detector)
+Correlations::Correlations(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
     makeCorrelations = m_config.get<bool>("make_correlations", false);
@@ -20,7 +20,7 @@ TestAlgorithm::TestAlgorithm(Configuration config, std::shared_ptr<Detector> det
     m_corr_vs_time = m_config.get<bool>("correlation_vs_time", false);
 }
 
-void TestAlgorithm::initialise() {
+void Correlations::initialise() {
 
     if(m_detector->isAuxiliary()) {
         return;
@@ -159,7 +159,7 @@ void TestAlgorithm::initialise() {
     eventTimes = new TH1F("eventTimes", title.c_str(), 3000000, 0, 300);
 }
 
-StatusCode TestAlgorithm::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode Correlations::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
     auto pixels = clipboard->getData<Pixel>(m_detector->name());
