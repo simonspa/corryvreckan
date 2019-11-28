@@ -76,6 +76,9 @@ StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) 
     }
     map<string, std::shared_ptr<PixelVector>> dataContainers;
     TelescopeFrame tf;
+    double frame_start = std::numeric_limits<double>::max();
+    double frame_end = std::numeric_limits<double>::min();
+
     if(!m_blockFile->read_next(tf))
         return StatusCode::EndRun;
     else {
@@ -86,6 +89,10 @@ StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) 
                 h = tf.get_hit(i, 66);
             double px_timestamp = 8 * static_cast<double>(((tf.timestamp() >> 2) & 0xFFFFF700) + h.timestamp_raw());
             Pixel* p = new Pixel(detectors.at(h.tag() / 4), h.column(), h.row(), 0, 0, px_timestamp);
+
+            // Select earlies and latest pixel:
+            frame_start = (px_timestamp < frame_start ? px_timestamp : frame_start);
+            frame_end = (px_timestamp > frame_end ? px_timestamp : frame_end);
 
             if(!dataContainers.count(detectors.at(h.tag() / 4)))
                 dataContainers[detectors.at(h.tag() / 4)] = std::make_shared<PixelVector>();
@@ -105,7 +112,11 @@ StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) 
         }
     }
 
-    LOG(DEBUG) << "Frame with " << tf.num_hits();
+    // Store current frame time and the length of the event:
+    LOG(DEBUG) << "Frame with " tf.num_hits() << " hits, time: " << Units::display(frame_start, {"ns", "us", "s"})
+               << ", length: " << Units::display((frame_end - frame_start), {"ns", "us", "s"});
+    clipboard->putEvent(std::make_shared<Event>(frame_start, frame_end));
+
     // Return value telling analysis to keep running
     return StatusCode::Success;
 }
