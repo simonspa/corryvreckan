@@ -41,5 +41,4 @@ For each device the following plots are produced:
 ### Usage
 ```toml
 [Correlations]
-make_correlations = true
 ```
