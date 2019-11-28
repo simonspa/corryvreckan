@@ -7,7 +7,7 @@ Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detec
     : Module(std::move(config), detector), m_detector(detector) {
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
-    config.setAlias("time_cut_abs", "timing_cut", true);
+    m_config.setAlias("time_cut_abs", "timing_cut", true);
 
     if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(
