@@ -21,6 +21,7 @@ Correlations::Correlations(Configuration config, std::shared_ptr<Detector> detec
 
 void Correlations::initialise() {
 
+    // Do not produce correlations plots for auxiliary devices
     if(m_detector->isAuxiliary()) {
         return;
     }
@@ -153,11 +154,16 @@ void Correlations::initialise() {
 
 StatusCode Correlations::run(std::shared_ptr<Clipboard> clipboard) {
 
+    // Do not attempt plotting for aux devices
+    if(m_detector->isAuxiliary()) {
+        return StatusCode::Success;
+    }
+
     // Get the pixels
     auto pixels = clipboard->getData<Pixel>(m_detector->name());
     if(pixels == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
-        return StatusCode::Success;
+        return StatusCode::NoData;
     }
 
     // Loop over all pixels and make hitmaps
@@ -172,7 +178,7 @@ StatusCode Correlations::run(std::shared_ptr<Clipboard> clipboard) {
     auto clusters = clipboard->getData<Cluster>(m_detector->name());
     if(clusters == nullptr) {
         LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any clusters on the clipboard";
-        return StatusCode::Success;
+        return StatusCode::NoData;
     }
     for(auto& cluster : (*clusters)) {
         hitmap_clusters->Fill(cluster->column(), cluster->row());
@@ -184,7 +190,7 @@ StatusCode Correlations::run(std::shared_ptr<Clipboard> clipboard) {
     auto referenceClusters = clipboard->getData<Cluster>(reference->name());
     if(referenceClusters == nullptr) {
         LOG(DEBUG) << "Reference detector " << reference->name() << " does not have any clusters on the clipboard";
-        return StatusCode::Success;
+        return StatusCode::NoData;
     }
 
     // Loop over all clusters and fill histograms
