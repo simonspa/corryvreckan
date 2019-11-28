@@ -97,6 +97,7 @@ namespace corryvreckan {
          */
         LogicError() = default;
     };
+
 } // namespace corryvreckan
 
 #endif /* CORRYVRECKAN_EXCEPTIONS_H */
