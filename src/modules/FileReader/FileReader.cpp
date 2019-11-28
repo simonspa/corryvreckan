@@ -25,6 +25,7 @@
 #include "core/utils/type.h"
 
 #include "objects/Object.hpp"
+#include "objects/Track.hpp"
 #include "objects/objects.h"
 
 using namespace corryvreckan;

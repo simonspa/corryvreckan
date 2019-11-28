@@ -76,7 +76,7 @@ StatusCode AlignmentMillepede::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Make a local copy and store it
     for(auto& track : (*tracks)) {
-        Track* alignmentTrack = new Track(*track);
+        auto alignmentTrack = track->clone();
         m_alignmenttracks.push_back(alignmentTrack);
     }
     return StatusCode::Success;
