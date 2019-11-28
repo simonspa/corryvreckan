@@ -179,6 +179,8 @@ void AlignmentTrackChi2::finalise() {
                 residualFitter->SetParameter(
                     det * 6 + 1, (detectorID + "_displacementY").c_str(), detector->displacement().Y(), 0, -50, 50);
             }
+            residualFitter->SetParameter(
+                det * 6 + 2, (detectorID + "_displacementZ").c_str(), detector->displacement().Z(), 0, -10, 500);
 
             if(m_alignOrientation) {
                 residualFitter->SetParameter(
