@@ -57,8 +57,7 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
                 continue;
             }
         }
-        LOG(TRACE) << "Cloning track with track model \"" << corryvreckan::demangle(typeid(*track).name())
-                   << "\" for alignment";
+        LOG(TRACE) << "Cloning track with track model \"" << track->getType() << "\" for alignment";
         auto alignmentTrack = track->clone();
         m_alignmenttracks.push_back(alignmentTrack);
     }
