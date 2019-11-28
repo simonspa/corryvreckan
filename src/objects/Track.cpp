@@ -57,7 +57,7 @@ std::vector<Cluster*> Track::associatedClusters() const {
 }
 
 bool Track::hasClosestCluster() const {
-    return closestCluster != nullptr;
+    return closestCluster.GetObject() != nullptr;
 }
 
 double Track::chi2() const {
@@ -86,6 +86,9 @@ void Track::setClosestCluster(const Cluster* cluster) {
 }
 
 Cluster* Track::getClosestCluster() const {
+    if(!closestCluster.IsValid() || closestCluster.GetObject() == nullptr) {
+        throw MissingReferenceException(typeid(*this), typeid(Cluster));
+    }
     return dynamic_cast<Cluster*>(closestCluster.GetObject());
 }
 
