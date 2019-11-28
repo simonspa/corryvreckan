@@ -37,23 +37,26 @@ def sha256(path):
 def check(path, checksum):
     """returns true if the file exists and matches the checksum"""
     if not os.path.isfile(path):
+        print('...no file \'%s\' present' % path)
         return False
     if not sha256(path) == checksum:
-        print('\'%s\' exists, wrong checksum, deleting' % path)
+        print('...file \'%s\' exists with wrong checksum, deleting' % path)
         os.remove(path)
         return False
-    print('\'%s\' checksum ok' % path)
+    print('...checksum of file \'%s\' ok' % path)
     return True
 
 def cleanup(name):
     """removes untar'ed folder of target if it exists"""
     target = os.path.join(BASE_TARGET, name)
     if os.path.exists(target) and os.path.isdir(target):
-        print('\'%s\' deleting existing folder' % target)
+        print('...deleting existing folder \'%s\'' % target)
         try:
             shutil.rmtree(target)
         except shutil.Error as err:
             print('%s' % err)
+    else:
+        print('...no folder from previous run present')
 
 def download(name, checksum):
     """download tarball if not found already with correct checksum"""
@@ -61,24 +64,27 @@ def download(name, checksum):
     source = BASE_SOURCE + name + '.tar.gz'
     target = os.path.join(BASE_TARGET, name + '.tar.gz')
     if not check(target, checksum):
-        print('downloading \'%s\' to \'%s\'' % (source, target))
+        print('...downloading file \'%s\' to \'%s\'' % (source, target))
         urlretrieve(source, target)
         if not check(target, checksum):
-            sys.exit('\'%s\' checksum failed' % target)
+            sys.exit('...checksum validation of file \'%s\' failed' % target)
 
 def untar(name):
     source = os.path.join(BASE_TARGET, name + '.tar.gz')
     tar = tarfile.open(source)
     tar.extractall(BASE_TARGET)
     tar.close()
-    print('\'%s\' untar ok' % source)
+    print('...untar of file \'%s\' ok' % source)
 
 if __name__ == '__main__':
+    print('Starting dataset preparation...')
     if len(sys.argv) < 2:
         datasets = DATASETS
     else:
         datasets = {_: DATASETS[_] for _ in sys.argv[1:]}
     for name, checksum in datasets.items():
+        print('Dataset: \'%s\'' % name)
+
         # Delete existing untarred files
         cleanup(name=name)
 
