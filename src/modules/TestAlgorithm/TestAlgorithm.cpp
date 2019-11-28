@@ -6,6 +6,10 @@ using namespace std;
 TestAlgorithm::TestAlgorithm(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
+    // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
+    config.setAlias("time_cut_abs", "timing_cut", true);
+    config.setAlias("do_time_cut", "do_timing_cut", true);
+
     makeCorrelations = m_config.get<bool>("make_correlations", false);
     do_time_cut_ = m_config.get<bool>("do_time_cut", false);
     if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {

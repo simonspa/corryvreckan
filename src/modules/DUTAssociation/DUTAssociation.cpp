@@ -6,6 +6,9 @@ using namespace std;
 DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
+    // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
+    config.setAlias("time_cut_abs", "timing_cut", true);
+
     // timing cut, relative (x * time_resolution) or absolute:
     if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(
