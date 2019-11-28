@@ -2,14 +2,13 @@
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>), Daniel Hynds (<daniel.hynds@cern.ch>)  
 **Module Type**: *DETECTOR*  
 **Detector Type**: *all*  
-**Status**: Functional   
+**Status**: Functional
 
 ### Description
 This module collects `pixel` and `cluster` objects from the clipboard and creates correlation and timing plots with respect to the reference detector.
 
 
 ### Parameters
-* `make_correlations`: Boolean to change if correlation plots should be outputted. Default value is `false`.
 * `do_time_cut`: Boolean to switch on/off the cut on cluster times for correlations. Defaults to `false`.
 * `time_cut_rel`: Number of standard deviations the `time_resolution` of the detector plane will be multiplied by. This value is then used as the maximum time difference for cluster correlation if `do_time_cut = true`. A relative time cut is applied by default when `do_time_cut = true`. Absolute and relative time cuts are mutually exclusive. Defaults to `3.0`.
 * `time_cut_abs`: Specifies an absolute value for the maximum time difference allowed for cluster correlation if `do_time_cut = true`. Absolute and relative time cuts are mutually exclusive. No default value.

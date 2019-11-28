@@ -52,7 +52,6 @@ namespace corryvreckan {
         TH2F* correlationYVsTime;
 
         // Parameters which can be set by user
-        bool makeCorrelations;
         double timeCut;
         bool do_time_cut_;
         bool m_corr_vs_time;
