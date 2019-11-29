@@ -4,7 +4,7 @@
 **Status**: Work in progress  
 
 ### Description
-This implementation of the Millepede module has been taken from the [Kepler framework](https://gitlab.cern.ch/lhcb/Kepler) used for test beam data analysis within the LHCb collaboration. It has been written by Christoph Hombach and has seen contributions from Tim Evans and Heinrich Schindler. This version is only slightly adapted to the Corryvreckan framework.
+This implementation of the Millepede module has been taken from the [Kepler framework](https://gitlab.cern.ch/lhcb/Kepler) used for test beam data analysis within the LHCb collaboration. It has been written by Christoph Hombach and has seen contributions from Tim Evans and Heinrich Schindler. This version is adapted to the Corryvreckan framework.
 
 The Millepede algorithm allows a simultaneous fit of both the tracks and the alignment constants.
 
@@ -18,8 +18,8 @@ is `false`.
 * `residual_cut`: Residual cut to reject a track as an outlier. Default value is `0.05mm`;
 * `residual_cut_init`: Initial residual cut for outlier rejection in the first iteration. This value is applied for the first iteration and replaced by `residual_cut` thereafter. Default value is `0.6mm`.
 * `number_of_stddev`: Cut to reject track candidates based on their Chi2/ndof value. Default value is `0`, i.e. the feature is disabled.
-* `sigmas`: Uncertainties for each of the alignment parameters. Defaults to `0.05, 0.05, 0.5, 0.005, 0.005, 0.005`.
-* `convergence`: Convergence value at which the module stops iterating. Default value is `10e-5`.
+* `sigmas`: Uncertainties for each of the alignment parameters described above, in their respective units. Defaults to `50um, 50um, 50um, 0.005rad, 0.005rad, 0.005rad`.
+* `convergence`: Convergence value at which the module stops iterating. It is defined as the sum of all residuals divided by the number of free parameters. Default value is `10e-5`.
 
 ### Usage
 ```toml
