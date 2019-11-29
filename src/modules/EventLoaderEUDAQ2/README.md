@@ -1,7 +1,7 @@
 # EventLoaderEUDAQ2
 **Maintainer**: Jens Kroeger (<jens.kroeger@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
 **Module Type**: *DETECTOR*  
-**Status**: under development
+**Status**: Functional
 
 ### Description
 This module allows data recorded by EUDAQ2 and stored in a EUDAQ2 binary file as raw detector data to be read into Corryvreckan.
@@ -49,7 +49,7 @@ cmake -DEUDAQ_BUILD_EXECUTABLE=OFF -DEUDAQ_BUILD_GUI=OFF ..
 ```
 
 It should be noted that individual EUDAQ2 modules should be enabled for the build, depending on the data to be processed with Corryvreckan.
-To e.g. allow decoding of Caribou data, the respective EUDAQ2 module has to be built using
+For instance, to allow decoding of Caribou data, the respective EUDAQ2 module has to be built using
 
 ```bash
 cmake -DUSER_CARIBOU_BUILD=ON ..
@@ -57,9 +57,9 @@ cmake -DUSER_CARIBOU_BUILD=ON ..
 
 ### Contract between EUDAQ Decoder and EventLoader
 
-The decoder promises to
+The decoder guarantees to
 * return `true` only when there is a fully decoded event available and `false` in all other cases.
-* not return any event before a possible T0 signal in the data.
+* not return any event before a possible T0 signal in the data. This is a signal that indicates the clock reset at the beginning of the run. It can be a particular data word or the observation of the pixel timestamp jumping back to zero, depending on data format of each the detector.
 * return the smallest possible granularity of data in time either as even or as sub-events within one event.
 * always return valid event timestamps. If the device does not have timestamps, it should return zero for the beginning of the event and have a valid trigger number set.
 * provide the detector type via the `GetDetectorType()` function in the decoded StandardEvent.
@@ -69,38 +69,34 @@ The decoder promises to
 Some data formats depend on external configuration parameters for interpretation.
 The EventLoaderEUDAQ2 takes all key-value pairs available in the configuration and forwards them to the appropriate StandardEvent converter on the EUDAQ side.
 It should be kept in mind that the resulting configuration strings are parsed by EUDAQ2, not by Corryvreckan, and that therefore the functionality is reduced.
-For example, it does not interpret `true` or `false` alphabetic value of a Boolean variable but will return false in both cases. Thus. `key = 0` or `key = 1` have to be used in these cases.
+For example, it does not interpret `true` or `false` alphabetic value of a Boolean variable but will return false in both cases. Thus `key = 0` or `key = 1` have to be used in these cases.
 Also, more complex constructs such as arrays or matrices read by the Corryvreckan configuration are simply interpreted as strings.
 
 ### Parameters
 * `file_name`: File name of the EUDAQ2 raw data file. This parameter is mandatory.
-* `inclusive`: Boolean parameter to select whether new data should be compared to the existing Corryvreckan event in inclusive or exclusive mode. The inclusive interpretation will allow new data to be added to the event as soon as there is some overlap between the data time frame and the existing event, i.e. as soon as the end of the time frame is later than the event start or as soon as the time frame start is before the event end. In the exclusive mode, the frame will only be added to the existing event,if its start and end are both within the defined event.
-* `skip_time`: Time that can be skipped at the start of a run. Default is `0ms`.
+* `inclusive`: Boolean parameter to select whether new data should be compared to the existing Corryvreckan event in inclusive or exclusive mode. The inclusive interpretation will allow new data to be added to the event as soon as there is some overlap between the data time frame and the existing event, i.e. as soon as the end of the time frame is later than the event start or as soon as the time frame start is before the event end. In the exclusive mode, the frame will only be added to the existing event if its start and end are both within the defined event.
+* `skip_time`: Time that can be skipped at the start of a run. All hits with earlier timestamps are discarded. Default is `0ms`.
 * `get_time_residuals`: Boolean to change if time residual plots should be created. Default value is `false`.
 * `get_tag_vectors`: Boolean to enable creation of EUDAQ2 event tag histograms. Default value is `false`.
-* `ignore_bore`: Boolean to completely ignore the Begin-of-Run event from EUDAQ2. Default value is `true`.
+* `ignore_bore`: Boolean to completely ignore the Begin-of-Run event (BORE) from EUDAQ2. Default value is `true`.
 * `adjust_event_times`: Matrix that allows the user to shift the event start/end of all different types of EUDAQ events before comparison to any other Corryvreckan data. The first entry of each row specifies the data type, the second is the offset which is added to the event start and the third entry is the offset added to the event end. A usage example is shown below, double brackets are required if only one entry is provided.
 * `buffer_depth`: Depth of buffer in which EUDAQ2 `StandardEvents` are timesorted. This algorithm only works for `StandardEvents` with well-defined timestamps. Setting it to `0` disables timesorting. Default is `0`.
 * `shift_triggers`: Shift the trigger ID up or down when assigning it to the Corryvreckan event. This allows to correct trigger ID offsets between different devices such as the TLU and MIMOSA26.
 
 ### Plots produced
-* 2D hitmap
-* 1D pixel hit times (3 second range)
-* 1D pixel hit times (3000 second range)
-* 1D and 2D pixel raw value histograms (corresponding to chip-specific charge equivalent measurement, e.g. ToT)
-* 1D pixel multiplicity per Corryvreckan event histogram
-* 1D eudaq event start histogram (3 second range)
-* 1D eudaq event start histogram (3000 second range)
-* 1D clipboard event start histogram (3 second range)
-* 1D clipboard event start histogram (3000 second range)
-* 1D clipboard event end histogram
-* 1D clipboard event duration histogram
-* 1D pixel time minus event begin residual histogram
-* 1D pixel time minus event begin residual histogram (larger interval, coarser binning)
-* 2D pixel time minus event begin residual over time histogram
-* map of all available 1D pixel time minus trigger time residual histograms
-* 2D pixel time minus trigger time residual over time histogram for 0th trigger
-* 1D triggers per event histogram
+
+For all detectors, the following plots are produced:
+
+* 2D histograms:
+    * Hit map
+    * Map of the pixel time minus event begin residual over time
+    * Map of the difference of the event start and the pixel timestamp over time
+    * Map of the difference of the trigger time and the pixel timestamp over time
+    * Profiles of the event tag data
+* 1D histograms:
+    * Histograms of the pixel hit times, raw values, multiplicities, and pixels per event
+    * Histograms of the eudaq/clipboard event start/end, and durations
+    * Histogram of the pixel time minus event begin residual
 
 ### Usage
 ```toml

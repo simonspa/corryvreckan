@@ -2,42 +2,34 @@
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
 **Module Type**: *DUT*  
 **Detector Type**: *all*  
-**Status**: Work in progress
+**Status**: Functional
 
 ### Description
-Generic analysis module for all prototypes. This module is still work in progress, changes to functionality and behaviour are to be expected.
+Generic analysis module for all prototypes.
 
 ### Parameters
 * `time_cut_frameedge`: Parameter to discard telescope tracks at the frame edges (start and end of the current CLICpix2 frame). Defaults to `20ns`.
-* `chi2ndof_cut`: Acceptance criterion for telescope tracks, defaults to a value of `3`.
-* `use_closest_cluster`: If a track has more than one associated cluster the cluster with the smallest distance to the track is used. Defaults to `true`
+* `chi2ndof_cut`: Acceptance criterion for the maximum telescope tracks chi2/ndf, defaults to a value of `3`.
+* `use_closest_cluster`: If `true` the cluster with the smallest distance to the track is used if a track has more than one associated cluster. If `false`, loop over all associated clusters. Defaults to `true`.
 
 ### Plots produced
-* 2D Map of associated cluster positions
-* 2D Map of cluster sizes for associated clusters
-* 2D Map of cluster charge values from associated clusters
-* 2D Map of associated hits
-* 2D Map of tracks not associated to a cluster
-* 2D Map of associated hits within the defined region-of-interest
-* Distribution of pixel raw value (ToT, ADC, ...) values from associated clusters
-* 2D Map of pixel raw value (ToT, ADC, ...) values from associated clusters
-* Number of tracks discarded by a given cut
-* Track residuals in X and Y
-* Track residuals for 1-pixel-clusters in X and Y
-* Track residuals for 2-pixel-clusters in X and Y
-* Distribution of cluster charge values from associated clusters
-* Distribution of sizes from associated clusters
-* Normalised distribution of sizes from associated clusters
-* Distribution of sizes from associated clusters in column
-* Distribution of sizes from associated clusters in rows
-* 2D Map of in-pixel efficiency
-* 2D Map of the chip efficiency in local coordinates
-* 2D Map of the chip efficiency on global coordinates
-* 2D Map of track positions associated to a cluster
-* 2D Map of track positions not associated to a cluster
+
+For the DUT, the following plots are produced:
+
+* 2D histograms:
+    * Maps of the position, size, and charge/raw value of associated clusters
+    * Maps of all pixels of associated clusters and those within the region-of-interest
+    * Maps of the in-pixel efficiencies in local/global coordinates
+    * Maps of matched/non-matched track positions
+* 1D histograms:
+    * Histograms of the cluster size of associated clusters in X/Y
+    * Histogram of the charge/raw values of associated clusters
+    * Various histograms for track residuals for different cluster sizes
 
 ### Usage
 ```toml
-[CLICpix2Analysis]
-timeCutFrameEdge = 50ns
+[AnalysisDUT]
+time_cut_frameedge = 50ns
+chi2ndof_cut = 5.
+use_closest_cluster = false
 ```
