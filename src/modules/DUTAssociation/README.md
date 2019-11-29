@@ -1,5 +1,5 @@
 # DUTAssociation
-**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)  
+**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
 **Module Type**: *DUT*  
 **Detector Type**: *all*  
 **Status**: Functional
@@ -9,10 +9,10 @@ Module to establish an association between clusters on a DUT plane and a referen
 The association allows for cuts in position and time.
 For the spatial cut, two options are implemented which can be chosen using `use_cluster_centre`.
 
-By default, the distance of the closest pixel of a cluster to the track intercept is compared to the `spatial_cut` in local coordinates.
+By default, the distance of the closest pixel of a cluster to the track intercept is compared to the spatial cut in local coordinates.
 If larger than the cut, the cluster is not associated to the track.
-This option can be chosen, e.g. for an efficiency analysis, when the cluster centre might be pulled away from the track intercept by a delta electron in the silicon.
-The other option is to compare the distance between the cluster centre and the track intercept to the `spatial_cut`(also in local coordinates).
+This option can be chosen, e.g. for an efficiency analysis, when the cluster center might be pulled away from the track intercept by a delta electron in the silicon.
+The other option is to compare the distance between the cluster center and the track intercept to the spatial cut (also in local coordinates).
 
 ### Parameters
 * `spatial_cut_rel`: Factor by which the `spatial_resolution` in X and Y of each detector plane will be multiplied. These calculated value are defining an ellipse which is then used as the maximum distance in the XY plane allowed between clusters and a track for association to the track. By default, a relative spatial cut is applied. Absolute and relative spatial cuts are mutually exclusive. Defaults to `3.0`.
@@ -22,16 +22,12 @@ The other option is to compare the distance between the cluster centre and the t
 * `use_cluster_centre`: If set true, the cluster centre will be compared to the track position for the spatial cut. If false, the nearest pixel in the cluster will be used. Defaults to `false`.
 
 ### Plots produced
-* distance in x from the cluster to the pixel closest to the track
-* distance in y from the cluster to the pixel closest to the track
-* distance in x from the cluster to the pixel closest to the track for pixels with column width = 1
-* distance in y from the cluster to the pixel closest to the track for pixels with row width = 1
-* distance in x from the cluster to the pixel closest to the track for pixels with column width = 2
-* distance in y from the cluster to the pixel closest to the track for pixels with row width = 2
-* distance in x from the cluster to the pixel closest to the track for pixels with column width = 3
-* distance in y from the cluster to the pixel closest to the track for pixels with row width = 3
-* distribution of number of associated clusters per track
-* Number of clusters discarded by a given cut (currently only spatial and timing cuts are implemented)
+
+For the DUT, the following plots are produced:
+
+* Histograms of the distance in X/Y from the cluster to the pixel closest to the track for various cluster sizes
+* Histogram of the number of associated clusters per track
+* Histogram of the number of clusters discarded by a given cut
 
 ### Usage
 ```toml

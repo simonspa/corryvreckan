@@ -5,7 +5,7 @@
 
 ### Description
 This module opens a GUI to monitor the progress of the reconstruction.
-Since Linux allows concurrent (reading) file access, this can already e started while a run is recorded to disk and thus serves as online monitoring tool during data taking.
+Since Linux allows concurrent (reading) file access, this can already be started while a run is recorded to disk and thus serves as online monitoring tool during data taking.
 A set of canvases is available to display a variety of information ranging from hitmaps and basic correlation plots to more advances results such as tracking quality and track angles.
 The plots on each of the canvases contain real time data, automatically updated every `update` events.
 
@@ -47,16 +47,16 @@ The "corryvreckan" namespace is not required to be added to the plot path.
 * `event_times`: List of plots to be placed on the "EventTimes" canvas of the online monitor. By default, this canvas displays `Correlations/%DETECTOR%/eventTimes` for all detectors.
 
 ### Plots produced
-Overview canvas:
 
-* Cluster ToT of reference plane
-* 2D hitmap of reference plane
-* Residual in X of reference plane
+The following plots are displayed by default (can be configured):
 
-Tracking canvas:
-
-* Track chi^2
-* Track angle in X
+* Overview canvas:
+   * Histogram of the cluster ToT of reference plane
+   * 2D hit map of reference plane
+   * Histogram of the residual in X of reference plane
+* Tracking canvas:
+   * Histogram of the track $\chi^2$
+   * Histogram of the track angle in X
 
 ### Usage
 ```toml
