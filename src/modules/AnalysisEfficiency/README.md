@@ -5,7 +5,7 @@
 **Status**: Functional
 
 ### Description
-This module measures the efficiency of the device under test by comparing its cluster positions with the interpolated track position at the DUT.
+This module measures the efficiency of the DUT by comparing its cluster positions with the interpolated track position at the DUT.
 It also comprises a range of histograms to investigate where inefficiencies might come from.
 
 ### Parameters
@@ -14,27 +14,21 @@ It also comprises a range of histograms to investigate where inefficiencies migh
 * `inpixel_bin_size`: Parameter to set the bin size of the in-pixel 2D efficiency histogram. This should be given in units of distance and the same value is used in both axes. Defaults to `1.0um`.
 
 ### Plots produced
+
+For the DUT, the following plots are produced:
+
 * 2D histograms:
   * 2D Map of in-pixel efficiency
-  * 2D Map of the chip efficiency in local coordinates, filled at the position of the track intercept point
-  * 2D Map of the chip efficiency on global coordinates, filled at the position of the track intercept point
-  * 2D Map of the chip efficiency in local coordinates, filled at the position of the associated cluster centre
-  * 2D Map of the chip efficiency on global coordinates, filled at the position of the associated cluster centre
-  * 2D Map of the position difference of a track (with associated cluster) to the previous track
-  * 2D Map of the position difference of a track (without associated cluster) to the previous track
+  * 2D Maps of chip efficiency in local and global coordinates, filled at the position of the track intercept point or at the position of the associated cluster center
+  * 2D Maps of the position difference of a track with and without associated cluster to the previous track
 * 1D histograms:
   * Histogram of all single-pixel efficiencies
-  * Histogram of time difference of the matched track time (with associated cluster) to the previous track
-  * Histogram of time difference of the non-matched track time (without associated cluster) to the previous track
-  * Histogram of row difference of the matched track time (with associated cluster) to the previous track
-  * Histogram of row difference of the non-matched track time (without associated cluster) to the previous track
-  * Histogram of column difference of the matched track time (with associated cluster) to the previous track
-  * Histogram of column difference of the non-matched track time (without associated cluster) to the previous track
-  * Histogram of the time difference of a matched cluster (with associated cluster) to a previous hit (not matter if noise or track)
-  * Histogram of the time difference of a non-matched cluster (without associated cluster) to a previous hit (not matter if noise or track)
+  * Histograms of time difference of the matched and non-matched track time to the previous track
+  * Histograms of the row and column difference of the matched and non-matched track time to the previous track
+  * Histograms of the time difference of a matched (non-matched) cluster to a previous hit (not matter if noise or track)
 * Other:
   * Value of total efficiency as `TEfficiency` including (asymmetric) error bars
-  * Value of total efficency as `TName` so it can be read off easily by eye from the root file
+  * Value of total efficiency as `TName` so it can be read off easily by eye from the root file
 
 ### Usage
 ```toml

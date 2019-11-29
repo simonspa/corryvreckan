@@ -23,10 +23,7 @@ Split clusters can be recovered using a larger search radius for neighbouring pi
 ### Plots produced
 For each detector the following plots are produced:
 
-* Cluster size histogram
-* Cluster seed charge histogram
-* Cluster width (rows, in X) histogram
-* Cluster width (columns, in Y) histogram
+* Histograms for cluster size, seed charge, width (rows/X and columns/Y)
 * Cluster charge histogram
 * 2D cluster positions in global coordinates
 * Cluster times
