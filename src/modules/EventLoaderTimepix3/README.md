@@ -46,7 +46,7 @@ threshold = 1148
 number_of_pixelhits = 0
 ```
 
-[@timepix3]: https://doi.org/10.1088/1748-0221/9/05/c05013
-[@timepix-talk]: X. Llopart, The Timepix3 chip, EP-ESE seminar, https://indico.cern.ch/event/267425,
-[@Pitters_2019]: https://doi.org/10.1088%2F1748-0221%2F14%2F05%2Fp05022
-[@cds-timepix3-calibration]: https://cds.cern.ch/record/2649493
+[@timepix3]: https://doi.org/10.1088/1748-0221/9/05/c05013  
+[@timepix-talk]: X. Llopart, The Timepix3 chip, EP-ESE seminar, https://indico.cern.ch/event/267425  
+[@Pitters_2019]: https://doi.org/10.1088%2F1748-0221%2F14%2F05%2Fp05022  
+[@cds-timepix3-calibration]: https://cds.cern.ch/record/2649493  
