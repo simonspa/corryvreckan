@@ -1,7 +1,7 @@
 # ClusteringSpatial
-**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)
-**Module Type**: *DETECTOR*
-**Detector Type**: *all*
+**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>)  
+**Module Type**: *DETECTOR*  
+**Detector Type**: *all*  
 **Status**: Functioning
 
 ### Description

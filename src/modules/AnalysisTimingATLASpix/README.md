@@ -1,5 +1,5 @@
 # AnalysisTimingATLASpix
-**Maintainer**: Jens Kroeger (jens.kroeger@cern.ch)  
+**Maintainer**: Jens Kroeger (<jens.kroeger@cern.ch>)  
 **Module Type**: *DUT*  
 **Detector Type**: *ATLASpix*  
 **Status**: Functional

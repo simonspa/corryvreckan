@@ -1,5 +1,5 @@
 # AnalysisEfficiency
-**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch), Jens Kroeger (jens.kroeger@cern.ch)  
+**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>), Jens Kroeger (<jens.kroeger@cern.ch>)  
 **Module Type**: *DUT*  
 **Detector Type**: *all*  
 **Status**: Functional

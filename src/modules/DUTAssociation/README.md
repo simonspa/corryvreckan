@@ -1,5 +1,5 @@
 # DUTAssociation
-**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)  
+**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
 **Module Type**: *DUT*  
 **Detector Type**: *all*  
 **Status**: Functional

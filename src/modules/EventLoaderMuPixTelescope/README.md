@@ -1,5 +1,5 @@
 # EventLoaderMuPixTelescope
-**Maintainer**: Lennart Huth (lennart.huth@desy.de)  
+**Maintainer**: Lennart Huth (<lennart.huth@desy.de>)  
 **Module Type**: *GLOBAL*  
 **Status**: Work in progress
 

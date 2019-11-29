@@ -1,5 +1,5 @@
 # TextWriter
-**Maintainer**: Paul Schuetze (paul.schuetze@desy.de)  
+**Maintainer**: Paul Schuetze (<paul.schuetze@desy.de>)  
 **Module Type**: *GLOBAL*  
 **Status**: Functional
 
