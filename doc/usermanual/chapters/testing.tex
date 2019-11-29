@@ -3,9 +3,6 @@
 
 The following chapter will introduce a few tools included in the framework to ease development and help to maintain a high code quality. This comprises tools for the developer to be used while coding, as well as a continuous integration (CI) and automated test cases of various framework and module functionalities.
 
-The chapter is structured as follows.
-Section~\ref{sec:targets} describes the available \command{make} targets for code quality and formatting checks, Section~\ref{sec:ci} briefly introduces the CI, and Section~\ref{sec:tests} provides an overview of the currently implemented framework, module, and performance test scenarios.
-
 \section{Additional Targets}
 \label{sec:targets}
 
@@ -21,7 +18,7 @@ Currently, the following targets are provided:
   \end{minted}
   once.
   \item[\command{make check-format}] also invokes the \command{clang-format} tool but does not apply the required changes to the code. Instead, it returns an exit code 0 (pass) if no changes are necessary and exit code 1 (fail) if changes are to be applied. This is used by the CI.
-  \item[\command{make lint}] invokes the \command{clang-tidy} tool to provide additional linting of the source code. The tool tries to detect possible errors (and thus potential bugs), dangerous constructs (such as uninitialized variables) as well as stylistic errors. In addition, it ensures proper usage of modern C++ standards. The configuration used for the \command{clang-tidy} command can be found in the \file{.clang-tidy} file in the root directory of the repository.
+  \item[\command{make lint}] invokes the \command{clang-tidy} tool to provide additional linting of the source code. The tool tries to detect possible errors (and thus potential bugs), dangerous constructs (such as uninitialized variables) as well as stylistic errors. In addition, it ensures proper usage of modern \CPP standards. The configuration used for the \command{clang-tidy} command can be found in the \file{.clang-tidy} file in the root directory of the repository.
   \item[\command{make check-lint}] also invokes the \command{clang-tidy} tool but does not report the issues found while parsing the code. Instead, it returns an exit code 0 (pass) if no errors have been produced and exit code 1 (fail) if issues are present. This is used by the CI.
   \item[\command{make cppcheck}] runs the \command{cppcheck} command for additional static code analysis. The output is stored in the file \file{cppcheck_results.xml} in XML2.0 format. It should be noted that some of the issues reported by the tool are to be considered false positives.
   \item[\command{make cppcheck-html}] compiles a HTML report from the defects list gathered by \command{make cppcheck}. This target is only available if the \command{cppcheck-htmlreport} executable is found in the \dir{PATH}.
@@ -117,7 +114,7 @@ Tests are marked as failed if either of the CMake targets \command{make check-fo
 No code that fails to satisfy the coding conventions and formatting tests will be merged into the repository.
 
 The \textbf{documentation} stage prepares this user manual as well as the Doxygen source code documentation for publication.
-This also allows to identify e.g.\ failing compilation of the \LaTeX documents or additional files which accidentally have not been committed to the repository.
+This also allows to identify e.g.\ failing compilation of the \LaTeX~documents or additional files which accidentally have not been committed to the repository.
 
 The \textbf{packaging} stage wraps the compiled binaries up into distributable tarballs for several platforms.
 This includes adding all libraries and executables to the tarball as well as preparing the \file{setup.sh} script to prepare run-time dependencies using the information provided to the build system.
@@ -142,12 +139,12 @@ The software is automatically deployed to CERN's VM file system (CVMFS)~\cite{cv
 In addition, the \parameter{master} branch is built and deployed every night.
 New versions are published to the folder \dir{/cvmfs/clicdp.cern.ch/software/corryvreckan/} where a new folder is created for every new tag, while updates via the \parameter{master} branch are always stored in the \dir{latest} folder.
 
-The deployed version currently comprises all modules as well as the detector models shipped with the framework.
-An additional \file{setup.sh} is placed in the root folder of the respective release, which allows to set up all runtime dependencies necessary for executing this version.
-Versions both for SLC\,6 and CentOS\,7 are provided.
+The deployed version currently comprises of all modules as well as the detector models shipped with the framework.
+An additional \file{setup.sh} is placed in the root folder of the respective release, which allows all the runtime dependencies necessary for executing this version to be set up.
+Versions for both SLC\,6 and CentOS\,7 are provided.
 
 The deployment CI job runs on a dedicated computer with a GitLab SSH runner.
-Job artifacts from the packaging stage of the CI are downloaded via their ID using the script found in \dir{.gitlab-ci.d/download_artifacts.py}, and are made available to the \emph{cvclicdp} user which has access to the CVMFS interface.
+Job artifacts from the packaging stage of the CI are downloaded via their ID using the script found in \dir{.gitlab-ci.d/download_artifacts.py}, and are made available to the \emph{cvclicdp} user who has access to the CVMFS interface.
 The job checks for concurrent deployments to CVMFS and then unpacks the tarball releases and publishes them to the CLICdp experiment CVMFS space, the corresponding script for the deployment can be found in \dir{.gitlab-ci.d/gitlab_deployment.sh}.
 This job requires a private API token to be set as secret project variable through the GitLab interface, currently this token belongs to the service account user \emph{corry}.
 
@@ -188,7 +185,7 @@ $ docker login gitlab-registry.cern.ch
 # Compile the new image version:
 $ docker build --file etc/docker/Dockerfile.base          \
                --tag gitlab-registry.cern.ch/corryvreckan/\
-                     corryvreckan/corryvreckan-base     \
+                     corryvreckan/corryvreckan-base       \
                .
 # Upload the image to the registry:
 $ docker push gitlab-registry.cern.ch/corryvreckan/\
@@ -239,7 +236,7 @@ Adding a new test requires placing the configuration file in the directory, spec
 
 The output of any test is compared to a search string in order to determine whether it passed or failed.
 These expressions are simply placed in the configuration file of the corresponding tests, a tag at the beginning of the line indicates whether it should be used for passing or failing the test.
-Each test can only contain one passing and one failing expression.
+Each test can only contain \emph{one passing} and \emph{one failing} expression.
 If different functionality and thus outputs need to be tested, a second test should be added to cover the corresponding expression.
 
 \begin{description}
