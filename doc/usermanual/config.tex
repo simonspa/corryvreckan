@@ -1,7 +1,10 @@
-% Add command to display allpix squared
+% Add command to display corryvreckan/allpix squared
 \DeclareMathAlphabet\mathbfcal{OMS}{cmsy}{b}{n}
-\newcommand{\corry}{$\mathcal{C}$orryvreckan\xspace}
-\newcommand{\corrybold}{$\mathbfcal{C}$\textbf{orryvreckan}\xspace}
+\newcommand{\corry}{Corryvreckan\xspace}
+\newcommand{\corrybold}{\textbf{Corryvreckan}\xspace}
+
+\newcommand{\apsq}{Allpix\textsuperscript{2}\xspace}
+\newcommand{\apsqbold}{\textbf{Allpix\textsuperscript{2}}\xspace}
 
 % Temporary TODO commands
 % \newcommand{\comment}[1]{#1} % DRAFT
@@ -23,9 +26,15 @@
 \DeclareUrlCommand\parameter{\bfseries\urlstyle{tt}}
 \newcommand{\command}[1]{\parameter{#1}}
 
+\newcommand{\CPP}{C\nolinebreak[4]\hspace{-.05em}\raisebox{.2ex}{\relsize{-1}{\textbf{++}}}\xspace}
+
 % Typeset directory and file names
 \DeclareUrlCommand\dir{\urlstyle{tt}}
 \newcommand{\file}[1]{\dir{#1}}
+
+% Typeset module
+\DeclareUrlCommand\dir{\urlstyle{tt}}
+\newcommand{\module}[1]{\dir{[#1]}}
 
 % Define ini format used in the converted Markdown files
 \lstdefinelanguage{Ini}
