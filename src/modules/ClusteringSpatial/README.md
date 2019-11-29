@@ -18,7 +18,7 @@ These clusters are stored on the clipboard for each device.
 ### Plots produced
 For each detector the following plots are produced:
 
-* Histograms for cluster size, seed charge, width (rows/X and columns/Y)
+* Histograms for cluster size, seed charge, width (columns/X and rows/Y)
 * Cluster charge histogram
 * 2D cluster positions in global and local coordinates
 * Cluster times
