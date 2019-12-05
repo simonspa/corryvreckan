@@ -73,4 +73,5 @@ RUN source scl_source enable devtoolset-7 && \
            ../src/eudaq-${EUDAQ2_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
+    cp ${EUDAQ2PATH}/build/eudaqTarget* ${EUDAQ2PATH}/cmake/ && \
     rm -rf ${EUDAQ2PATH}/{src,build}
