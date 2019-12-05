@@ -2,6 +2,7 @@
 #define StraightLineTrack_H 1
 
 #include "Track.hpp"
+
 namespace corryvreckan {
     /**
      * @ingroup Objects
@@ -57,6 +58,8 @@ namespace corryvreckan {
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
         ROOT::Math::XYZVector direction(std::string) const override { return m_direction; }
+
+        ROOT::Math::XYPoint distance(const Cluster* cluster) const;
 
     private:
         /**
