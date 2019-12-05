@@ -33,7 +33,7 @@ RUN source scl_source enable devtoolset-7 && \
     rm -rf ${ROOTSYS}/{src,build}
 
 
-ENV PEARY_VERSION v0.9.11
+ENV PEARY_VERSION v0.9.12
 
 # Add layer for Caribou Peary
 ENV PEARYPATH="/opt/peary"
