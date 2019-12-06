@@ -2,10 +2,10 @@
 **Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
 **Module Type**: *DETECTOR*  
 **Detector Type**: *all*  
-**Status**: Under development  
+**Status**: Work in progress
 
 ### Description
-This module applies previously determined $`\eta`$-corrections to cluster positions of any detector. Corrections can be applied to any cluster read from the clipboard. The correction function as well as the parameters for each of the detectors can be given separately for X and Y via the configuration file.
+This module applies previously determined $`\eta`$-corrections to cluster positions of any detector in order to correct for non-linear charge sharing. Corrections can be applied to any cluster read from the clipboard. The correction function as well as the parameters for each of the detectors can be given separately for X and Y via the configuration file.
 
 This module does not calculate the $`\eta`$ distribution.
 

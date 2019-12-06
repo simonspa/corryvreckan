@@ -7,12 +7,15 @@
 ### Description
 This module reads in data for a CLICpix device from an input file.
 
-The module opens and reads one data file in the specified input directory with the ending `.dat`. For each hit it stores the detectorID, row, column, and ToT. The shutter rise and fall time information are used to set the current time and event length.
+The module opens and reads one data file in the specified input directory with the ending `.dat`. For each hit it stores the detectorID, row, column, and ToT. The shutter rise and fall time information are used to define the current event on the clipboard.
 
 ### Parameters
 * `input_directory`: Path to the directory containing the `.dat` file.
 
 ### Plots produced
+
+For each detector, the following plots are produced:
+
 * 2D Hit map
 * 1D Pixel ToT histogram
 * 1D Pixel multiplicity histogram
@@ -20,6 +23,6 @@ The module opens and reads one data file in the specified input directory with t
 
 ### Usage
 ```toml
-[CLICpixEventLoader]
+[EventLoaderCLICpix]
 input_directory = /user/data/directory/CLICpix/
 ```

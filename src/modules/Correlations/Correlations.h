@@ -1,5 +1,5 @@
-#ifndef TESTALGORITHM_H
-#define TESTALGORITHM_H 1
+#ifndef CORRELATIONS_H
+#define CORRELATIONS_H 1
 
 #include <TCanvas.h>
 #include <TH1F.h>
@@ -12,12 +12,12 @@
 namespace corryvreckan {
     /** @ingroup Modules
      */
-    class TestAlgorithm : public Module {
+    class Correlations : public Module {
 
     public:
         // Constructors and destructors
-        TestAlgorithm(Configuration config, std::shared_ptr<Detector> detector);
-        ~TestAlgorithm() {}
+        Correlations(Configuration config, std::shared_ptr<Detector> detector);
+        ~Correlations() {}
 
         // Functions
         void initialise();
@@ -52,10 +52,9 @@ namespace corryvreckan {
         TH2F* correlationYVsTime;
 
         // Parameters which can be set by user
-        bool makeCorrelations;
         double timeCut;
         bool do_time_cut_;
         bool m_corr_vs_time;
     };
 } // namespace corryvreckan
-#endif // TESTALGORITHM_H
+#endif // CORRELATIONS_H

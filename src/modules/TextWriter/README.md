@@ -1,7 +1,7 @@
 # TextWriter
-**Maintainer**: Paul Schuetze (paul.schuetze@desy.de)
+**Maintainer**: Paul Schuetze (<paul.schuetze@desy.de>)  
 **Module Type**: *GLOBAL*  
-**Status**: Testing
+**Status**: Functional
 
 ### Description
 This module writes objects to an ASCII text file. For this, the data content of the selected objects available on the clipboard are printed to the specified file.

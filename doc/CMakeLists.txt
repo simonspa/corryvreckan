@@ -109,8 +109,8 @@ IF(LATEX_COMPILER)
             usermanual/figures/trackChi2ndof_goodexample.pdf
             usermanual/figures/residualX_goodexample.pdf
             usermanual/figures/correlationX_goodexample.pdf
-            usermanual/figures/datadrivenandframebased.png
-            usermanual/figures/datadrivendevice.png
+            usermanual/figures/corrymanual_eventbuilding_datadriven.pdf
+            usermanual/figures/corrymanual_eventbuilding_framebased.pdf
             usermanual/figures/reconstruction-chain-simple.png
             usermanual/figures/reconstruction-chain-complicated.png
             usermanual/figures/onlinemon.png
