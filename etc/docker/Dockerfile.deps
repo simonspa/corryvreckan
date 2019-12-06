@@ -33,7 +33,7 @@ RUN source scl_source enable devtoolset-7 && \
     rm -rf ${ROOTSYS}/{src,build}
 
 
-ENV PEARY_VERSION v0.9.11
+ENV PEARY_VERSION v0.9.12
 
 # Add layer for Caribou Peary
 ENV PEARYPATH="/opt/peary"
@@ -52,7 +52,7 @@ RUN source scl_source enable devtoolset-7 && \
     rm -rf ${PEARYPATH}/{src,build}
 
 
-ENV EUDAQ2_VERSION 2.4.1
+ENV EUDAQ2_VERSION 2.4.2
 
 # Add layer for EUDAQ2
 ENV EUDAQ2PATH="/opt/eudaq2"
@@ -73,4 +73,5 @@ RUN source scl_source enable devtoolset-7 && \
            ../src/eudaq-${EUDAQ2_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
+    cp ${EUDAQ2PATH}/build/eudaqTarget* ${EUDAQ2PATH}/cmake/ && \
     rm -rf ${EUDAQ2PATH}/{src,build}
