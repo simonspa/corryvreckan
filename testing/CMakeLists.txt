@@ -53,10 +53,15 @@ FUNCTION(ADD_CORRYVRECKAN_TEST TEST)
         SET(CLIOPTIONS "${CLIOPTIONS} -g ${OPT}")
     ENDFOREACH()
 
+    # Some tests might depend on others:
+    FILE(STRINGS ${TEST} DEPENDENCY REGEX "#DEPENDS ")
+
     # Read the datasets from the configuration file:
     FILE(STRINGS ${TEST} OPTS REGEX "#DATASET ")
     LIST(LENGTH OPTS LISTCOUNT_DATA)
-    IF(LISTCOUNT_DATA LESS 1)
+
+    # Either we need a data set to operate on or another test output:
+    IF(LISTCOUNT_DATA LESS 1 AND NOT DEPENDENCY)
         MESSAGE(FATAL_ERROR "No dataset defined for test \"${TEST}\"")
     ENDIF()
     FOREACH(OPT ${OPTS})
@@ -78,8 +83,6 @@ FUNCTION(ADD_CORRYVRECKAN_TEST TEST)
         SET_TESTS_PROPERTIES(${TEST} PROPERTIES FAIL_REGULAR_EXPRESSION "${EXPRESSIONS_FAIL}")
     ENDIF()
 
-    # Some tests might depend on others:
-    FILE(STRINGS ${TEST} DEPENDENCY REGEX "#DEPENDS ")
     IF(DEPENDENCY)
         STRING(REPLACE "#DEPENDS " "" DEPENDENCY "${DEPENDENCY}")
         SET_TESTS_PROPERTIES(${TEST} PROPERTIES DEPENDS "${DEPENDENCY}")
