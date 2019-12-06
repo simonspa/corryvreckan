@@ -209,7 +209,8 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
 void DUTAssociation::finalise() {
     hCutHisto->Scale(1 / double(num_cluster));
-    LOG(INFO) << "In total, " << assoc_cluster_counter << " clusters are associated to tracks.";
+    LOG(STATUS) << "In total, " << assoc_cluster_counter << " clusters are associated to " << track_w_assoc_cls
+                << " tracks.";
     LOG(INFO) << "Number of tracks with at least one associated cluster: " << track_w_assoc_cls;
     return;
 }
