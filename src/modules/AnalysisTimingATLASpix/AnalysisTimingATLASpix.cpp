@@ -21,6 +21,9 @@ using namespace corryvreckan;
 AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector) {
 
+    // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
+    m_config.setAlias("time_cut_abs", "timing_cut", true);
+
     using namespace ROOT::Math;
     m_detector = detector;
     if(config.count({"time_cut_rel", "time_cut_abs"}) > 1) {

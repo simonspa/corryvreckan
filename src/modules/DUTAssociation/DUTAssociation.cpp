@@ -6,6 +6,10 @@ using namespace std;
 DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
+    // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs and spatial_cut for spatial_cut_abs
+    m_config.setAlias("time_cut_abs", "timing_cut", true);
+    m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
+
     // timing cut, relative (x * time_resolution) or absolute:
     if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(
@@ -207,7 +211,8 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
 void DUTAssociation::finalise() {
     hCutHisto->Scale(1 / double(num_cluster));
-    LOG(INFO) << "In total, " << assoc_cluster_counter << " clusters are associated to tracks.";
+    LOG(STATUS) << "In total, " << assoc_cluster_counter << " clusters are associated to " << track_w_assoc_cls
+                << " tracks.";
     LOG(INFO) << "Number of tracks with at least one associated cluster: " << track_w_assoc_cls;
     return;
 }
