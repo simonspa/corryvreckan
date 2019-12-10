@@ -143,7 +143,6 @@ void AlignmentTrackChi2::finalise() {
     // Store the alignment shifts per detector:
     std::map<std::string, std::vector<double>> shiftsX;
     std::map<std::string, std::vector<double>> shiftsY;
-    std::map<std::string, std::vector<double>> shiftsZ;
     std::map<std::string, std::vector<double>> rotX;
     std::map<std::string, std::vector<double>> rotY;
     std::map<std::string, std::vector<double>> rotZ;
@@ -217,8 +216,6 @@ void AlignmentTrackChi2::finalise() {
                 static_cast<double>(Units::convert(detector->displacement().X() - old_position.X(), "um")));
             shiftsY[detectorID].push_back(
                 static_cast<double>(Units::convert(detector->displacement().Y() - old_position.Y(), "um")));
-            shiftsZ[detectorID].push_back(
-                static_cast<double>(Units::convert(detector->displacement().Z() - old_position.Z(), "um")));
             rotX[detectorID].push_back(
                 static_cast<double>(Units::convert(detector->rotation().X() - old_orientation.X(), "deg")));
             rotY[detectorID].push_back(
@@ -278,13 +275,6 @@ void AlignmentTrackChi2::finalise() {
         align_correction_shiftY[detector->name()]->GetXaxis()->SetTitle("# iteration");
         align_correction_shiftY[detector->name()]->GetYaxis()->SetTitle("correction [#mum]");
         align_correction_shiftY[detector->name()]->Write(name.c_str());
-
-        name = "alignment_correction_displacementZ_" + detector->name();
-        align_correction_shiftZ[detector->name()] =
-            new TGraph(static_cast<int>(shiftsZ[detector->name()].size()), &iterations[0], &shiftsZ[detector->name()][0]);
-        align_correction_shiftZ[detector->name()]->GetXaxis()->SetTitle("# iteration");
-        align_correction_shiftZ[detector->name()]->GetYaxis()->SetTitle("correction [#mum]");
-        align_correction_shiftZ[detector->name()]->Write(name.c_str());
 
         name = "alignment_correction_rotationX_" + detector->name();
         align_correction_rotX[detector->name()] =

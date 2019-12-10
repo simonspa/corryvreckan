@@ -18,19 +18,15 @@ For each telescope detector except the reference plane, this method moves the de
 * `max_track_chi2ndof`: Maximum track chi^2 value allowed when `prune_tracks = true` for the track to be used in the alignment. Default value is `10.0`.
 
 ### Plots produced
-For each detector the following plots are produced:
+For each detector, the following plots are produced:
 
-* Translational shift along X-axis vs. iteration number
-* Translational shift along Y-axis vs. iteration number
-* Translational shift along Z-axis vs. iteration number
-* Rotational shift around X-axis vs. iteration number
-* Rotational shift around Y-axis vs. iteration number
-* Rotational shift around Z-axis vs. iteration number
+* Graphs of the translational shifts along the X/Y-axis vs. the iteration number
+* Graphs of the rotational shifts along the X/Y/Z-axis vs. the iteration number
 
 ### Usage
 ```toml
 [Corryvreckan]
-# The global track limit can be used to restrict the alignment:
+# The global track limit can be used to reduce the run time:
 number_of_tracks = 200000
 
 [AlignmentTrackChi2]

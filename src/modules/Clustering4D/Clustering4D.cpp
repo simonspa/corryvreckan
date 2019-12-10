@@ -6,7 +6,10 @@ using namespace std;
 Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    if(config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
+    // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
+    m_config.setAlias("time_cut_abs", "timing_cut", true);
+
+    if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(
             m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
     } else if(m_config.has("time_cut_abs")) {

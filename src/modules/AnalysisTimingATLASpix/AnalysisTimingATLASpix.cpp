@@ -21,15 +21,30 @@ using namespace corryvreckan;
 AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector) {
 
+    // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
+    m_config.setAlias("time_cut_abs", "timing_cut", true);
+
     using namespace ROOT::Math;
     m_detector = detector;
-    m_timingCut = m_config.get<double>("timing_cut", static_cast<double>(Units::convert(1000, "ns")));
+    if(config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
+        throw InvalidCombinationError(
+            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
+    } else if(m_config.has("time_cut_abs")) {
+        m_timeCut = m_config.get<double>("time_cut_abs");
+    } else {
+        m_timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
+    }
     m_chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
     m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", static_cast<double>(Units::convert(20, "ns")));
-    m_clusterChargeCut = m_config.get<double>("cluster_charge_cut", 100000.);
-    m_clusterSizeCut = m_config.get<size_t>("cluster_size_cut", static_cast<size_t>(100));
+
+    if(m_config.has("cluster_charge_cut")) {
+        m_clusterChargeCut = m_config.get<double>("cluster_charge_cut");
+    }
+    if(m_config.has("cluster_size_cut")) {
+        m_clusterSizeCut = m_config.get<size_t>("cluster_size_cut");
+    }
     m_highTotCut = m_config.get<int>("high_tot_cut", 40);
-    m_highChargeCut = m_config.get<double>("high_charge_cut", 40.);
+    m_highChargeCut = m_config.get<double>("high_charge_cut", static_cast<double>(m_highTotCut));
     m_leftTailCut = m_config.get<double>("left_tail_cut", static_cast<double>(Units::convert(-10, "ns")));
 
     if(m_config.has("correction_file_row")) {
@@ -68,13 +83,13 @@ void AnalysisTimingATLASpix::initialise() {
 
     std::string name = "hTrackCorrelationTime";
     hTrackCorrelationTime =
-        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timingCut), -1 * m_timingCut, m_timingCut);
+        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timeCut), -1 * m_timeCut, m_timeCut);
     hTrackCorrelationTime->GetXaxis()->SetTitle("Track time stamp - cluster time stamp [ns]");
     hTrackCorrelationTime->GetYaxis()->SetTitle("# events");
 
     name = "hTrackCorrelationTimeAssoc";
     hTrackCorrelationTimeAssoc =
-        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timingCut), -1 * m_timingCut, m_timingCut);
+        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timeCut), -1 * m_timeCut, m_timeCut);
     hTrackCorrelationTimeAssoc->GetXaxis()->SetTitle("track time stamp - cluster time stamp [ns]");
     hTrackCorrelationTimeAssoc->GetYaxis()->SetTitle("# events");
 
@@ -87,33 +102,33 @@ void AnalysisTimingATLASpix::initialise() {
     name = "hTrackCorrelationTime_rowCorr";
     std::string title = "hTrackCorrelationTime_rowCorr: row-by-row correction";
     hTrackCorrelationTime_rowCorr =
-        new TH1F(name.c_str(), title.c_str(), static_cast<int>(2. * m_timingCut), -1 * m_timingCut, m_timingCut);
+        new TH1F(name.c_str(), title.c_str(), static_cast<int>(2. * m_timeCut), -1 * m_timeCut, m_timeCut);
     hTrackCorrelationTime_rowCorr->GetXaxis()->SetTitle("track time stamp - cluster time stamp [ns]");
     hTrackCorrelationTime_rowCorr->GetYaxis()->SetTitle("# events");
 
     name = "hTrackCorrelationTime_rowAndTimeWalkCorr";
     hTrackCorrelationTime_rowAndTimeWalkCorr =
-        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timingCut), -1 * m_timingCut, m_timingCut);
+        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timeCut), -1 * m_timeCut, m_timeCut);
     hTrackCorrelationTime_rowAndTimeWalkCorr->GetXaxis()->SetTitle("track time stamp - cluster time stamp [ns]");
     hTrackCorrelationTime_rowAndTimeWalkCorr->GetYaxis()->SetTitle("# events");
 
     name = "hTrackCorrelationTime_rowAndTimeWalkCorr_l25";
     hTrackCorrelationTime_rowAndTimeWalkCorr_l25 =
-        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timingCut), -1 * m_timingCut, m_timingCut);
+        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timeCut), -1 * m_timeCut, m_timeCut);
     hTrackCorrelationTime_rowAndTimeWalkCorr_l25->GetXaxis()->SetTitle(
         "track time stamp - cluster time stamp [ns] (if seed tot < 25lsb)");
     hTrackCorrelationTime_rowAndTimeWalkCorr_l25->GetYaxis()->SetTitle("# events");
 
     name = "hTrackCorrelationTime_rowAndTimeWalkCorr_l40";
     hTrackCorrelationTime_rowAndTimeWalkCorr_l40 =
-        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timingCut), -1 * m_timingCut, m_timingCut);
+        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timeCut), -1 * m_timeCut, m_timeCut);
     hTrackCorrelationTime_rowAndTimeWalkCorr_l40->GetXaxis()->SetTitle(
         "track time stamp - cluster time stamp [ns] (if seed tot < 40lsb)");
     hTrackCorrelationTime_rowAndTimeWalkCorr_l40->GetYaxis()->SetTitle("# events");
 
     name = "hTrackCorrelationTime_rowAndTimeWalkCorr_g40";
     hTrackCorrelationTime_rowAndTimeWalkCorr_g40 =
-        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timingCut), -1 * m_timingCut, m_timingCut);
+        new TH1F(name.c_str(), name.c_str(), static_cast<int>(2. * m_timeCut), -1 * m_timeCut, m_timeCut);
     hTrackCorrelationTime_rowAndTimeWalkCorr_g40->GetXaxis()->SetTitle(
         "track time stamp - cluster time stamp [ns] (if seed tot > 40lsb)");
     hTrackCorrelationTime_rowAndTimeWalkCorr_g40->GetYaxis()->SetTitle("# events");
@@ -441,13 +456,13 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     has_associated_cluster = true;
                     matched_tracks++;
 
-                    if(cluster->charge() > m_clusterChargeCut) {
+                    if(m_config.has("cluster_charge_cut") && cluster->charge() > m_clusterChargeCut) {
                         LOG(DEBUG) << " - track discarded due to clusterChargeCut";
                         continue;
                     }
                     tracks_afterClusterChargeCut++;
 
-                    if(cluster->size() > m_clusterSizeCut) {
+                    if(m_config.has("cluster_size_cut") && cluster->size() > m_clusterSizeCut) {
                         LOG(DEBUG) << " - track discarded due to clusterSizeCut";
                         continue;
                     }

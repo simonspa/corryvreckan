@@ -10,23 +10,23 @@ The repository contains a few tools to facilitate contributions and to ensure co
 \section{Writing Additional Modules}
 
 Given the modular structure of the framework, its functionality can be easily extended by adding a new module.
-To facilitate the creation of new modules including their CMake files and initial documentation, the script \command{addModule.sh} is provided in the \dir{etc/} directory of the repository.
-It will ask for a name and type of the module and create all code necessary to compile a first (and empty) version of the files.
+To facilitate the creation of new modules including their CMake files and initial documentation, the script \file{addModule.sh} is provided in the \dir{etc/} directory of the repository.
+It will ask for a name and type of the module as described in Section~\ref{sec:module_manager} and create all code necessary to compile a first (and empty) version of the files.
 
 The content of each of the files is described in detail in the following paragraphs.
 
 \subsection{Files of a Module}
 \label{sec:module_files}
-Every module directory should at minimum contain the following documents (with \texttt{ModuleName} replaced by the name of the module):
+Every module directory should at minimum contain the following documents (with \texttt{<ModuleName>} replaced by the name of the module):
 \begin{itemize}
-\item \textbf{CMakeLists.txt}: The build script to load the dependencies and define the source files of the library.
-\item \textbf{README.md}: Full documentation of the module.
-\item \textbf{\textit{ModuleName}.h}: The header file of the module.
-\item \textbf{\textit{ModuleName}.cpp}: The implementation file of the module.
+\item \textbf{\file{CMakeLists.txt}}: The build script to load the dependencies and define the source files of the library.
+\item \textbf{\file{README.md}}: Full documentation of the module.
+\item \textbf{\file{<ModuleName>.h}}: The header file of the module.
+\item \textbf{\file{<ModuleName>.cpp}}: The implementation file of the module.
 \end{itemize}
 These files are discussed in more detail below.
-By default, all modules added to the \textit{src/modules/} directory will be built automatically by CMake.
-If a module depends on additional packages which not every user may have installed, one can consider adding the following line to the top of the module's \textit{CMakeLists.txt}:
+By default, all modules added to the \dir{src/modules/} directory will be built automatically by CMake.
+If a module depends on additional packages which not every user may have installed, one can consider adding the following line to the top of the module's \file{CMakeLists.txt}:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
 CORRYVRECKAN_ENABLE_DEFAULT(OFF)
 \end{minted}
@@ -50,7 +50,7 @@ Only ROOT is automatically included and linked to the module.
 \item A line containing \parameter{CORRYVRECKAN_MODULE_INSTALL(${MODULE_NAME})} to set up the required target for the module to be installed to.
 \end{enumerate}
 
-A simple CMakeLists.txt for a module named \parameter{Test} which should run only on DUT detectors of type \emph{Timepix3} is provided below as an example.
+A simple \file{CMakeLists.txt} for a module named \parameter{Test} which should run only on DUT detectors of type \emph{Timepix3} is provided below as an example.
 \vspace{5pt}
 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
@@ -69,7 +69,7 @@ CORRYVRECKAN_MODULE_INSTALL(${MODULE_NAME})
 
 \paragraph{README.md}
 The \file{README.md} serves as the documentation for the module and should be written in Markdown format~\cite{markdown}.
-It is automatically converted to \LaTeX using Pandoc~\cite{pandoc} and included in the user manual in Chapter~\ref{ch:modules}.
+It is automatically converted to \LaTeX~using Pandoc~\cite{pandoc} and included in the user manual in Chapter~\ref{ch:modules}.
 By documenting the module functionality in Markdown, the information is also viewable with a web browser in the repository within the module sub-folder.
 
 The \file{README.md} should follow the structure indicated in the \file{README.md} file of the \parameter{Dummy} module in \dir{src/modules/Dummy}, and should contain at least the following sections:
@@ -94,21 +94,21 @@ The parameters should be briefly explained in an itemised list with the name of 
 \item An H3-size section with the title \textbf{Usage} which should contain at least one simple example of a valid configuration for the module.
 \end{itemize}
 
-\paragraph{\texttt{ModuleName}.h and \texttt{ModuleName}.cpp}
+\paragraph{ModuleName.h and ModuleName.cpp}
 All modules should consist of both a header file and a source file.
 In the header file, the module is defined together with all of its methods.
-Brief Doxygen documentation should be added to explain what each method does.
-The source file should provide the implementation of every method and also its more detailed Doxygen documentation.
+Doxygen documentation should be added to explain what each method does.
+The source file should provide the implementation of every method.
 Methods should only be declared in the header and defined in the source file in order to keep the interface clean.
 
 \subsection{Module structure}
 \label{sec:module_structure}
-All modules must inherit from the \texttt{Module} base class, which can be found in \textit{src/core/module/Module.hpp}.
+All modules must inherit from the \parameter{Module} base class, which can be found in \dir{src/core/module/Module.hpp}.
 The module base class provides two base constructors, a few convenient methods and several methods which the user is required to override.
 Each module should provide a constructor using the fixed set of arguments defined by the framework; this particular constructor is always called during by the module instantiation logic.
 These arguments for the constructor differ for global and detector/DUT modules.
 
-For global modules, the constructor for a \texttt{TestModule} should be:
+For global modules, the constructor for a \module{TestModule} should be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors): Module(std::move(config), detectors) {}
 \end{minted}
@@ -124,9 +124,9 @@ In addition to the constructor, each module can override the following methods:
 \begin{itemize}
 \item \parameter{initialise()}: Called after loading and constructing all modules and before starting the analysis loop.
 This method can for example be used to initialize histograms.
-\item \parameter{run(std::shared_ptr<Clipboard> clipboard)}: Called for every time frame or triggered event to be analyzed in the simulation. The argument represents a pointer to the clipboard where the event data is stored.
+\item \parameter{run(std::shared_ptr<Clipboard> clipboard)}: Called for every time frame or triggered event to be analyzed. The argument represents a pointer to the clipboard where the event data is stored.
 A status code is returned to signal the framework whether to continue processing data or to end the run.
 \item \parameter{finalise()}: Called after processing all events in the run and before destructing the module.
-Typically used to save the output data (like histograms).
+Typically used to summarize statistics like the number of tracks used in the analysis or analysis results like the chip efficiency.
 Any exceptions should be thrown from here instead of the destructor.
 \end{itemize}

@@ -9,7 +9,7 @@ Replaces the existing reference timestamp (earliest hit on reference plane) by e
 ### Parameters
 * `improvement_method`: Determines which method to use. Trigger timestamp is 0, average track timestamp is 1. Default value is `1`.
 * `signal_source`: Determines which detector plane carries the trigger signals. Only relevant for method 0. Default value is `"W0013_G02"`.
-* `trigger_latency`: Adds a latency to the trigger timestamp and shifts time histogrammes back to zero. Default value is `0`.
+* `trigger_latency`: Adds a latency to the trigger timestamp to shift time histograms. Default value is `0`.
 
 ### Usage
 ```toml

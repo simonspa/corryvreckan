@@ -2,7 +2,9 @@
 
 ### Overview
 
-`jobsub` is a tool for the convenient run-specific modification of Corryvreckan configuration files and their execution through the `corry` executable. It is derived from the original `jobsub` written for EUTelescope by Hanno Perrey, Lund University.
+`jobsub` is a tool for the convenient run-specific modification of Corryvreckan configuration files and their execution through the `corry` executable. It can be used for automated processing of several data files and/or scans of reconstruction parameters. It is derived from the original `jobsub` written for EUTelescope [@eutel-website] by Hanno Perrey, Lund University.
+
+It should be noted that when using `jobsub` on a local machine, the jobs are processed one by one. When running in *batch* mode, all jobs are submitted to HTCondor and processed in parallel.
 
 ### Usage
 
@@ -14,19 +16,18 @@ usage: jobsub.py [-h] [--option NAME=VALUE] [-c FILE] [-csv FILE]
 		 [--batch FILE] [--subdir]
                  jobtask [runs [runs ...]]
 
-A tool for the convenient run-specific modification of Marlin steering files
-and their execution through the Marlin processor
+A tool for the convenient run-specific modification of Corryvreckan steering files and their execution through the Marlin processor
 
 positional arguments:
-  runs                  The runs to be analyzed; can be a list of single runs
-                        and/or a range, e.g. 1056-1060.
+  runs                  The runs to be analyzed; can be a list of
+                        single runs and/or a range, e.g. 1056-1060.
 
 optional arguments:
   -h, --help            show this help message and exit
   --version             show program's version number and exit
   -c FILE, --conf-file FILE, --config FILE
-                        Configuration file with all Corryvreckan algorithms
-                        defined
+                        Configuration file with all Corryvreckan
+                        algorithms defined
   --option NAME=VALUE, -o NAME=VALUE
                         Specify further options such as 'beamenergy=5.3'. This
                         switch be specified several times for multiple options
@@ -58,14 +59,14 @@ optional arguments:
                         digits
 ```
 
-For usage on `lxplus`, the environment variables need to be set by running ```source etc/setup_lxplus.sh```.
-When using a submission file, `getenv = True` should be used (as in `example.sub`).
+If running on `lxplus`, the environment variables need to be set by running ```source etc/setup_lxplus.sh```.
+When using a submission file, `getenv = True` should be used as shown in `example.sub`.
 
 ### Preparation of Configuration File Templates
 
 Configuration file templates are valid Corryvreckan configuration files in TOML format, where single values are replaced by variables in the form `@SomeVariable@`.
 A more detailed description of the configuration file format can be found elsewhere in the user manual.
-The section of a configuration file template with variable geometry file and DUT name could e.g. look like
+The section of a configuration file template with variable geometry file and DUT name could for instance look like
 
 ```toml
 [Corryvreckan]
@@ -169,3 +170,5 @@ Complicated and error-prone `transfer_output_files` commands can be avoided. It 
 output_directory = "/eos/user/y/yourname/whateveryouwant/run@RunNumber@"
 ```
 directly in the Corryvreckan config file.
+
+[@eutel-website]: http://eutelescope.web.cern.ch/
