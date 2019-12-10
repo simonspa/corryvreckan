@@ -426,6 +426,8 @@ bool EventLoaderEUDAQ2::filter_detectors(std::shared_ptr<eudaq::StandardEvent> e
             plane_id = static_cast<int>(i_plane);
             LOG(DEBUG) << "Found matching plane in event for detector " << m_detector->name();
             return true;
+        } else {
+            LOG(DEBUG) << "plane " << plane_name << "does not match " << detector_name;
         }
     }
 
