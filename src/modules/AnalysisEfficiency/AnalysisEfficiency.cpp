@@ -331,6 +331,14 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 }
 
 void AnalysisEfficiency::finalise() {
+    // Track selection flow:
+    LOG(STATUS) << "Track selection flow:       " << n_track << std::endl
+                << "* rejected by chi2          -" << n_chi2 << std::endl
+                << "* track outside ROI         -" << n_roi << std::endl
+                << "* track outside DUT         -" << n_dut << std::endl
+                << "* track close to masked px  -" << n_masked << std::endl
+                << "Accepted tracks:            " << total_tracks;
+
     double totalEff = 100 * static_cast<double>(matched_tracks) / (total_tracks > 0 ? total_tracks : 1);
     LOG(STATUS) << "Total efficiency of detector " << m_detector->name() << ": " << totalEff << "%, measured with "
                 << matched_tracks << "/" << total_tracks << " matched/total tracks";
@@ -348,6 +356,4 @@ void AnalysisEfficiency::finalise() {
             }
         }
     }
-    LOG(STATUS) << "Tracks: " << n_track << ", chi2-rejected: " << n_chi2 << ", roi-rejected " << n_roi
-                << ", outside-dut-rejected " << n_dut << ", close-to-masked-rejected " << n_masked;
 }
