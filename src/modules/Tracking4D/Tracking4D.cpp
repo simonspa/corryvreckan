@@ -9,6 +9,10 @@ using namespace std;
 Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
 
+    // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs and spatial_cut for spatial_cut_abs
+    m_config.setAlias("time_cut_abs", "timing_cut", true);
+    m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
+
     // timing cut, relative (x * time_resolution) or absolute:
     if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(

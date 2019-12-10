@@ -46,13 +46,7 @@ namespace corryvreckan {
          */
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
-        /**
-         * @brief [Finalise module]
-         */
-        void finalise();
-
     private:
-        int m_eventNumber;
         std::string m_inputDirectory;
         bool m_isSorted;
         bool m_ts2IsGray;

@@ -20,30 +20,23 @@ Clusters from the first plane in Z (named the seed plane) are related to cluster
 * `track_model`: Select the track model used for reconstruction. Defaults to the only supported fit  `straightline`.
 
 ### Plots produced
-* Track chi^2 histogram
-* Track chi^2 /degrees of freedom histogram
-* Clusters per track histogram
-* Tracks per event histogram
-* Track angle with respect to X-axis histogram
-* Track angle with respect to Y-axis histogram
 
-For each detector the following plots are produced:
+The following plots are produced only once:
 
-* Residual in X
-* Residual in Y
-* Residual in X for clusters with a width in X of 1
-* Residual in Y for clusters with a width in X of 1
-* Residual in X for clusters with a width in X of 2
-* Residual in Y for clusters with a width in X of 2
-* Residual in X for clusters with a width in X of 3
-* Residual in Y for clusters with a width in X of 3
+* Histograms of the track chi2 and track chi2/ndf
+* Histogram of the clusters per track, and tracks per event
+* Histograms of the track angle with respect to the X/Y-axis
+
+For each detector, the following plots are produced:
+
+* Histograms of the track residual in X/Y for various cluster sizes (1-3)
 
 ### Usage
 ```toml
 [Tracking4D]
 min_hits_on_track = 4
-spatial_cut = 300um
-time_cut_rel = 3.0
+spatial_cut_abs = 300um
+time_cut_abs = 200ns
 exclude_dut = true
 require_detectors = "ExampleDetector_0", "ExampleDetector_1"
 track_model = "straightline"

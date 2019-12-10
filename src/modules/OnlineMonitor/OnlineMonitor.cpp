@@ -16,7 +16,7 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
     canvas_overview = m_config.getMatrix<std::string>("overview",
                                                       {{"Tracking4D/trackChi2"},
                                                        {"Clustering4D/%REFERENCE%/clusterCharge"},
-                                                       {"TestAlgorithm/%REFERENCE%/hitmap", "colz"},
+                                                       {"Correlations/%REFERENCE%/hitmap", "colz"},
                                                        {"Tracking4D/%REFERENCE%/residualsX"}});
 
     // Set up individual plots for the DUT
@@ -34,19 +34,19 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
                                                        {"Tracking4D/trackChi2ndof"},
                                                        {"Tracking4D/tracksPerEvent"},
                                                        {"Tracking4D/clustersPerTrack"}});
-    canvas_hitmaps = m_config.getMatrix<std::string>("hitmaps", {{"TestAlgorithm/%DETECTOR%/hitmap", "colz"}});
+    canvas_hitmaps = m_config.getMatrix<std::string>("hitmaps", {{"Correlations/%DETECTOR%/hitmap", "colz"}});
     canvas_residuals = m_config.getMatrix<std::string>("residuals", {{"Tracking4D/%DETECTOR%/residualsX"}});
 
-    canvas_cx = m_config.getMatrix<std::string>("correlation_x", {{"TestAlgorithm/%DETECTOR%/correlationX"}});
+    canvas_cx = m_config.getMatrix<std::string>("correlation_x", {{"Correlations/%DETECTOR%/correlationX"}});
     canvas_cx2d =
-        m_config.getMatrix<std::string>("correlation_x2d", {{"TestAlgorithm/%DETECTOR%/correlationX_2Dlocal", "colz"}});
-    canvas_cy = m_config.getMatrix<std::string>("correlation_y", {{"TestAlgorithm/%DETECTOR%/correlationY"}});
+        m_config.getMatrix<std::string>("correlation_x2d", {{"Correlations/%DETECTOR%/correlationX_2Dlocal", "colz"}});
+    canvas_cy = m_config.getMatrix<std::string>("correlation_y", {{"Correlations/%DETECTOR%/correlationY"}});
     canvas_cy2d =
-        m_config.getMatrix<std::string>("correlation_y2d", {{"TestAlgorithm/%DETECTOR%/correlationY_2Dlocal", "colz"}});
+        m_config.getMatrix<std::string>("correlation_y2d", {{"Correlations/%DETECTOR%/correlationY_2Dlocal", "colz"}});
 
     canvas_charge = m_config.getMatrix<std::string>("charge_distributions", {{"Clustering4D/%DETECTOR%/clusterCharge"}});
 
-    canvas_time = m_config.getMatrix<std::string>("event_times", {{"TestAlgorithm/%DETECTOR%/eventTimes"}});
+    canvas_time = m_config.getMatrix<std::string>("event_times", {{"Correlations/%DETECTOR%/eventTimes"}});
 }
 
 void OnlineMonitor::initialise() {

@@ -8,7 +8,7 @@ Converts all object data stored in the ROOT data file produced by the FileWriter
 
 If the requested number of events for the run is less than the number of events the data file contains, all additional events in the file are skipped. If more events than available are requested, a warning is displayed and the other events of the run are skipped.
 
-Currently it is not yet possible to exclude objects from being read. In case not all objects should be converted to messages, these objects need to be removed from the file before the simulation is started.
+Currently it is not yet possible to exclude objects from being read. In case not all objects should be converted to clipboard objects, these objects need to be removed from the file before the reconstruction is started.
 
 ### Parameters
 * `file_name` : Location of the ROOT file containing the trees with the object data.

@@ -8,6 +8,10 @@ Prealignment::Prealignment(Configuration config, std::shared_ptr<Detector> detec
 
     max_correlation_rms = m_config.get<double>("max_correlation_rms", Units::get<double>(6, "mm"));
     damping_factor = m_config.get<double>("damping_factor", 1.0);
+
+    // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
+    m_config.setAlias("time_cut_abs", "timing_cut", true);
+
     if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(
             m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
