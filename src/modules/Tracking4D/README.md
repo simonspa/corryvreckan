@@ -34,7 +34,7 @@ For each detector, the following plots are produced:
 ```toml
 [Tracking4D]
 min_hits_on_track = 4
-spatial_cut_abs = 300um
+spatial_cut_abs = 300um, 300um
 time_cut_abs = 200ns
 exclude_dut = true
 require_detectors = "ExampleDetector_0", "ExampleDetector_1"
