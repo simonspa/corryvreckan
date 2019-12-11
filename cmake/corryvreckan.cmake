@@ -126,20 +126,20 @@ ENDMACRO()
 MACRO(CORRYVRECKAN_SETUP_ROOT_TARGETS)
 
     #ROOT CXX Flags are a string with quotes, not a list, so we need to convert to a list...
-    STRING(REPLACE " " ";" ALLXPIX_ROOT_CXX_FLAGS ${ROOT_CXX_FLAGS})
+    STRING(REPLACE " " ";" CORRYVRECKAN_ROOT_CXX_FLAGS ${ROOT_CXX_FLAGS})
 
     IF(NOT TARGET ROOT::Core)
         #in ROOT before 6.10 there is no ROOT namespace, so we create ROOT::Core ourselves
         ADD_LIBRARY(ROOT::Core INTERFACE IMPORTED GLOBAL)
         SET_TARGET_PROPERTIES(ROOT::Core
             PROPERTIES
-            INTERFACE_COMPILE_OPTIONS "${ALLXPIX_ROOT_CXX_FLAGS}"
+            INTERFACE_COMPILE_OPTIONS "${CORRYVRECKAN_ROOT_CXX_FLAGS}"
             INTERFACE_INCLUDE_DIRECTORIES ${ROOT_INCLUDE_DIRS}
         )
         # there is also no dependency between the targets
         TARGET_LINK_LIBRARIES(ROOT::Core INTERFACE Core)
         # we list here the targets we use, as later versions of root have the namespace, we do not have to to this for ever
-        FOREACH(LIB Geom GenVector Graf3d RIO MathCore Tree Hist)
+        FOREACH(LIB Minuit Minuit2 Gui GenVector Geom Graf3d RIO MathCore Tree Hist GuiBld)
             IF(TARGET ${LIB})
                 ADD_LIBRARY(ROOT::${LIB} INTERFACE IMPORTED GLOBAL)
                 TARGET_LINK_LIBRARIES(ROOT::${LIB} INTERFACE ${LIB} ROOT::Core)
@@ -149,7 +149,7 @@ MACRO(CORRYVRECKAN_SETUP_ROOT_TARGETS)
         # Root 6.12 exports ROOT::Core, but does not assign include directories to the target
         SET_TARGET_PROPERTIES(ROOT::Core
             PROPERTIES
-            INTERFACE_COMPILE_OPTIONS "${ALLXPIX_ROOT_CXX_FLAGS}"
+            INTERFACE_COMPILE_OPTIONS "${CORRYVRECKAN_ROOT_CXX_FLAGS}"
             INTERFACE_INCLUDE_DIRECTORIES ${ROOT_INCLUDE_DIRS}
         )
     ENDIF()

@@ -106,8 +106,6 @@ ENDIF()
 # Prerequisistes for Corryvreckan #
 ###################################
 
-INCLUDE("cmake/corryvreckan.cmake")
-
 # Define the libraries
 SET(CORRYVRECKAN_LIBRARIES "")
 
