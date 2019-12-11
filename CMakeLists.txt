@@ -76,6 +76,9 @@ IF("${IsSystemDir}" STREQUAL "-1")
    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF("${IsSystemDir}" STREQUAL "-1")
 
+# Include corry cmake functions
+INCLUDE("cmake/corryvreckan.cmake")
+
 #########################################
 # Define build flags for Corryvreckan   #
 #########################################
