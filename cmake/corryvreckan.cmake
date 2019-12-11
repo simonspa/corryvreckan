@@ -130,8 +130,6 @@ MACRO(CORRYVRECKAN_SETUP_EIGEN_TARGETS)
             PROPERTIES
             INTERFACE_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIRS}
         )
-        # there is also no dependency between the targets
-        TARGET_LINK_LIBRARIES(Eigen3::Eigen INTERFACE Eigen)
     ENDIF()
 
 ENDMACRO()
