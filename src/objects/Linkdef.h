@@ -20,6 +20,7 @@
 #pragma link C++ class corryvreckan::KDTree + ;
 #pragma link C++ class corryvreckan::SpidrSignal + ;
 #pragma link C++ class corryvreckan::Track + ;
+#pragma link C++ class corryvreckan::StraightLineTrack + ;
 #pragma link C++ class corryvreckan::MCParticle + ;
 #pragma link C++ class corryvreckan::Event + ;
 

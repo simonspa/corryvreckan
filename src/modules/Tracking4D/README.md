@@ -17,6 +17,7 @@ Clusters from the first plane in Z (named the seed plane) are related to cluster
 * `exclude_dut`: Boolean to choose if the DUT plane is included in the track finding. Default value is `true`.
 * `require_detectors`: Names of detectors which are required to have a cluster on the track. If a track does not have a cluster from all detectors listed here, it is rejected. If empty, no detector is required. Default is empty.
 * `timestamp_from`: Defines the detector which provides the track timestamp. This detector also needs to be set as `required_detector`. If empty, the average timestamp of all clusters on the track will be used. Empty by default.
+* `track_model`: Select the track model used for reconstruction. Defaults to the only supported fit  `straightline`.
 
 ### Plots produced
 
@@ -38,4 +39,5 @@ spatial_cut_abs = 300um, 300um
 time_cut_abs = 200ns
 exclude_dut = true
 require_detectors = "ExampleDetector_0", "ExampleDetector_1"
+track_model = "straightline"
 ```

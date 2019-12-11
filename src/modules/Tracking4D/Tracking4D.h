@@ -49,6 +49,7 @@ namespace corryvreckan {
         std::map<std::shared_ptr<Detector>, double> time_cuts_;
         std::map<std::shared_ptr<Detector>, XYVector> spatial_cuts_;
         std::string timestampFrom;
+        std::string trackModel;
     };
 } // namespace corryvreckan
 #endif // TRACKING4D_H
