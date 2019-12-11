@@ -112,7 +112,7 @@ INCLUDE("cmake/corryvreckan.cmake")
 SET(CORRYVRECKAN_LIBRARIES "")
 
 # ROOT is required for vector and persistency etc
-FIND_PACKAGE(ROOT REQUIRED COMPONENTS Minuit Minuit2 Gui GenVector)
+FIND_PACKAGE(ROOT REQUIRED COMPONENTS Minuit Minuit2 Gui GenVector Geom Core Hist RIO)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
@@ -123,14 +123,15 @@ IF (NOT ${ROOT_VERSION} VERSION_GREATER "6.0")
     MESSAGE(FATAL_ERROR "ROOT versions below 6.0 are not supported")
 ENDIF()
 
+# Prepare ROOT Targets if necessary:
+CORRYVRECKAN_SETUP_ROOT_TARGETS()
+
 # Eigen3
 FIND_PACKAGE(Eigen3 REQUIRED)
 
-
-
 # Set the dependencies
-SET(CORRYVRECKAN_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS}  ${EIGEN3_INCLUDE_DIR})
-SET(CORRYVRECKAN_DEPS_LIBRARIES ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES}  ${EIGEN3_LIBRARIES})
+SET(CORRYVRECKAN_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
+SET(CORRYVRECKAN_DEPS_LIBRARIES Eigen3::Eigen ROOT::Core ROOT::GenVector ROOT::Geom ROOT::RIO ROOT::Hist ROOT::Minuit ROOT::Minuit2)
 
 # Add "thisroot.sh" as runtime dependency for setup.sh file:
 ADD_RUNTIME_DEP(thisroot.sh)
