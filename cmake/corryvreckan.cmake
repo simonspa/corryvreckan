@@ -121,6 +121,21 @@ MACRO(corryvreckan_module_install name)
         ARCHIVE DESTINATION lib)
 ENDMACRO()
 
+# Macro to set up Eigen3:: targets
+MACRO(CORRYVRECKAN_SETUP_EIGEN_TARGETS)
+
+    IF(NOT TARGET Eigen3::Eigen)
+        ADD_LIBRARY(Eigen3::Eigen INTERFACE IMPORTED GLOBAL)
+        SET_TARGET_PROPERTIES(Eigen3::Eigen
+            PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIRS}
+        )
+        # there is also no dependency between the targets
+        TARGET_LINK_LIBRARIES(Eigen3::Eigen INTERFACE Eigen)
+    ENDIF()
+
+ENDMACRO()
+
 # Macro to set up ROOT:: targets so that we can use the same code for root 6.8 and for root 6.10 and beyond
 # Inpsired by CMake build system of DD4Hep
 MACRO(CORRYVRECKAN_SETUP_ROOT_TARGETS)
