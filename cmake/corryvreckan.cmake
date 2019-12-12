@@ -139,7 +139,7 @@ ENDMACRO()
 MACRO(CORRYVRECKAN_SETUP_ROOT_TARGETS)
 
     #ROOT CXX Flags are a string with quotes, not a list, so we need to convert to a list...
-    STRING(REPLACE " " ";" CORRYVRECKAN_ROOT_CXX_FLAGS ${ROOT_CXX_FLAGS})
+    STRING(REPLACE " " ";" CORRYVRECKAN_ROOT_CXX_FLAGS "${ROOT_CXX_FLAGS}")
 
     IF(NOT TARGET ROOT::Core)
         #in ROOT before 6.10 there is no ROOT namespace, so we create ROOT::Core ourselves
