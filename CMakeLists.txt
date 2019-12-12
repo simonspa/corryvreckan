@@ -110,7 +110,7 @@ ENDIF()
 SET(CORRYVRECKAN_LIBRARIES "")
 
 # ROOT is required for vector and persistency etc
-FIND_PACKAGE(ROOT REQUIRED COMPONENTS Minuit Minuit2 Gui GenVector Geom Core Hist RIO)
+FIND_PACKAGE(ROOT REQUIRED COMPONENTS Minuit Minuit2 Gui GenVector Geom Core Hist RIO NO_MODULE)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
@@ -122,7 +122,7 @@ IF (NOT ${ROOT_VERSION} VERSION_GREATER "6.0")
 ENDIF()
 
 # Eigen3
-FIND_PACKAGE(Eigen3 REQUIRED)
+FIND_PACKAGE(Eigen3 REQUIRED NO_MODULE)
 
 # Prepare ROOT and EIGEN3 Targets if necessary:
 CORRYVRECKAN_SETUP_ROOT_TARGETS()
