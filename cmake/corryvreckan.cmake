@@ -55,7 +55,7 @@ Create the header or provide the alternative class name as first argument")
     # Set the special header flags and add the special dynamic implementation file
     TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_NAME=${_corryvreckan_module_class})
     TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_HEADER="${_corryvreckan_module_class}.h")
-    TARGET_COMPILE_OPTIONS(${${name}} PRIVATE ${CORRYVREKCAN_CXX_FLAGS})
+    TARGET_COMPILE_OPTIONS(${${name}} PRIVATE ${CORRYVRECKAN_CXX_FLAGS})
 
     TARGET_SOURCES(${${name}} PRIVATE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp")
     SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_corryvreckan_module_class}.h")
