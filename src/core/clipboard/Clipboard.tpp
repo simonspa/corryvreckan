@@ -11,14 +11,19 @@ namespace corryvreckan {
         ClipboardData::iterator type = m_data.begin();
 
         /* If data type exists, returns iterator to offending key, if data type does not exist yet, creates new entry and
-         * returns iterator to the newly created element
+         * returns iterator to the newly created element.
+         *
+         * We use getBaseType here to always store objects as their base class types to be able to fetch them easily. E.g.
+         * derived track classes will be stored as Track objects and can be fetched as such
          */
-        type = m_data.insert(type, ClipboardData::value_type(typeid(T), std::map<std::string, std::shared_ptr<void>>()));
+        type =
+            m_data.insert(type, ClipboardData::value_type(T::getBaseType(), std::map<std::string, std::shared_ptr<void>>()));
 
-        // Insert data into data type element, silently fail if it exists already
+        // Insert data into data type element and print a warning if it exists already
         auto test = type->second.insert(std::make_pair(key, std::static_pointer_cast<void>(objects)));
         if(!test.second) {
-            LOG(WARNING) << "Not inserted for " << key;
+            LOG(WARNING) << "Dataset of type " << corryvreckan::demangle(typeid(T).name()) << " already exists for key \""
+                         << key << "\", ignoring new data";
         }
     }
 

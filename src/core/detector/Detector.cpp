@@ -17,6 +17,7 @@
 
 #include "Detector.hpp"
 #include "core/utils/log.h"
+#include "exceptions.h"
 
 using namespace ROOT::Math;
 using namespace corryvreckan;
@@ -53,10 +54,8 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         throw InvalidValueError(config, "orientation_mode", "Invalid detector orientation mode");
     }
 
-    // Number of pixels
-    m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
-    // Size of the pixels
-    m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
+    m_detectorName = config.getName();
+
     // Material budget of detector, including support material
     if(!config.has("material_budget")) {
         LOG(WARNING) << "No material budget given for " << m_detectorName << ", assuming zero";
@@ -66,38 +65,69 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         m_materialBudget = config.get<double>("material_budget");
     }
 
-    // Intrinsic position resolution, defaults to 4um:
-    m_resolution = config.get<ROOT::Math::XYVector>("resolution", ROOT::Math::XYVector(0.004, 0.004));
+    // Auxiliary devices don't have: number_of_pixels, pixel_pitch, spatial_resolution, mask_file, region-of-interest
+    if(!isAuxiliary()) {
+        // Number of pixels:
+        m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
+        // Size of the pixels:
+        m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
 
-    m_detectorName = config.getName();
+        if(Units::convert(m_pitch.X(), "mm") >= 1 or Units::convert(m_pitch.Y(), "mm") >= 1 or
+           Units::convert(m_pitch.X(), "um") <= 1 or Units::convert(m_pitch.Y(), "um") <= 1) {
+            LOG(WARNING) << "Pixel pitch unphysical for detector " << m_detectorName << ": " << std::endl
+                         << Units::display(m_pitch, {"nm", "um", "mm"});
+        }
 
-    if(Units::convert(m_pitch.X(), "mm") >= 1 or Units::convert(m_pitch.Y(), "mm") >= 1 or
-       Units::convert(m_pitch.X(), "um") <= 1 or Units::convert(m_pitch.Y(), "um") <= 1) {
-        LOG(WARNING) << "Pixel pitch unphysical for detector " << m_detectorName << ": " << std::endl
-                     << Units::display(m_pitch, {"nm", "um", "mm"});
+        // Intrinsic spatial resolution, defaults to pitch/sqrt(12):
+        m_spatial_resolution = config.get<ROOT::Math::XYVector>("spatial_resolution", m_pitch / std::sqrt(12));
+        if(!config.has("spatial_resolution")) {
+            LOG(WARNING) << "Spatial resolution for detector '" << m_detectorName << "' not set." << std::endl
+                         << "Using pitch/sqrt(12) as default";
+        }
+
+        // region of interest:
+        m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
     }
 
     m_detectorType = config.get<std::string>("type");
     std::transform(m_detectorType.begin(), m_detectorType.end(), m_detectorType.begin(), ::tolower);
-    m_timingOffset = config.get<double>("time_offset", 0.0);
-    m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
+    m_timeOffset = config.get<double>("time_offset", 0.0);
 
+    // Time resolution - default ot negative number, i.e. unknown. This will trigger an exception
+    // when calling getTimeResolution
+    m_timeResolution = config.get<double>("time_resolution", -1.0);
+
+    // Initialize the detector, calculate transformations etc
     this->initialise();
 
     LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixels.X() << "x" << m_nPixels.Y() << " px, pitch of "
                << Units::display(m_pitch, {"mm", "um"});
     LOG(TRACE) << "  Position:    " << Units::display(m_displacement, {"mm", "um"});
     LOG(TRACE) << "  Orientation: " << Units::display(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
-    if(m_timingOffset > 0.) {
-        LOG(TRACE) << "Timing offset: " << m_timingOffset;
+    if(m_timeOffset > 0.) {
+        LOG(TRACE) << "Time offset: " << m_timeOffset;
     }
 
-    if(config.has("mask_file")) {
-        m_maskfile_name = config.get<std::string>("mask_file");
-        std::string mask_file = config.getPath("mask_file");
-        LOG(DEBUG) << "Adding mask to detector \"" << config.getName() << "\", reading from " << mask_file;
-        setMaskFile(mask_file);
-        processMaskFile();
+    if(m_timeResolution > 0) {
+        LOG(TRACE) << "  Time resolution: " << Units::display(m_timeResolution, {"ms", "us"});
+    }
+
+    if(!isAuxiliary()) {
+        if(config.has("mask_file")) {
+            m_maskfile_name = config.get<std::string>("mask_file");
+            std::string mask_file = config.getPath("mask_file");
+            LOG(DEBUG) << "Adding mask to detector \"" << config.getName() << "\", reading from " << mask_file;
+            setMaskFile(mask_file);
+            processMaskFile();
+        }
+    }
+}
+
+double Detector::getTimeResolution() const {
+    if(m_timeResolution > 0) {
+        return m_timeResolution;
+    } else {
+        throw InvalidSettingError(this, "time_resolution", "Time resolution not set but requested");
     }
 }
 
@@ -134,7 +164,7 @@ void Detector::processMaskFile() {
     // Open the file with masked pixels
     std::ifstream inputMaskFile(m_maskfile, std::ios::in);
     if(!inputMaskFile.is_open()) {
-        LOG(ERROR) << "Could not open mask file " << m_maskfile;
+        LOG(WARNING) << "Could not open mask file " << m_maskfile;
     } else {
         int row = 0, col = 0;
         std::string id;
@@ -143,8 +173,8 @@ void Detector::processMaskFile() {
             if(id == "c") {
                 inputMaskFile >> col;
                 if(col > nPixels().X() - 1) {
-                    LOG(ERROR) << "Column " << col << " outside of pixel matrix, chip has only " << nPixels().X()
-                               << " columns!";
+                    LOG(WARNING) << "Column " << col << " outside of pixel matrix, chip has only " << nPixels().X()
+                                 << " columns!";
                 }
                 LOG(TRACE) << "Masking column " << col;
                 for(int r = 0; r < nPixels().Y(); r++) {
@@ -153,7 +183,7 @@ void Detector::processMaskFile() {
             } else if(id == "r") {
                 inputMaskFile >> row;
                 if(row > nPixels().Y() - 1) {
-                    LOG(ERROR) << "Row " << col << " outside of pixel matrix, chip has only " << nPixels().Y() << " rows!";
+                    LOG(WARNING) << "Row " << col << " outside of pixel matrix, chip has only " << nPixels().Y() << " rows!";
                 }
                 LOG(TRACE) << "Masking row " << row;
                 for(int c = 0; c < nPixels().X(); c++) {
@@ -162,13 +192,13 @@ void Detector::processMaskFile() {
             } else if(id == "p") {
                 inputMaskFile >> col >> row;
                 if(col > nPixels().X() - 1 || row > nPixels().Y() - 1) {
-                    LOG(ERROR) << "Pixel " << col << " " << row << " outside of pixel matrix, chip has only "
-                               << nPixels().X() << " x " << nPixels().Y() << " pixels!";
+                    LOG(WARNING) << "Pixel " << col << " " << row << " outside of pixel matrix, chip has only "
+                                 << nPixels().X() << " x " << nPixels().Y() << " pixels!";
                 }
                 LOG(TRACE) << "Masking pixel " << col << " " << row;
                 maskChannel(col, row); // Flag to mask a pixel
             } else {
-                LOG(ERROR) << "Could not parse mask entry (id \"" << id << "\")";
+                LOG(WARNING) << "Could not parse mask entry (id \"" << id << "\")";
             }
         }
         LOG(INFO) << m_masked.size() << " masked pixels";
@@ -243,27 +273,37 @@ Configuration Detector::getConfiguration() const {
     config.set("position", m_displacement, {"um", "mm"});
     config.set("orientation_mode", m_orientation_mode);
     config.set("orientation", m_orientation, {"deg"});
-    config.set("number_of_pixels", m_nPixels);
 
-    // Size of the pixels
-    config.set("pixel_pitch", m_pitch, {"um"});
-
-    // Intrinsic resolution:
-    config.set("resolution", m_resolution, {"um"});
-
-    if(m_timingOffset != 0.) {
-        config.set("time_offset", m_timingOffset, {"ns", "us", "ms", "s"});
+    if(m_timeOffset != 0.) {
+        config.set("time_offset", m_timeOffset, {"ns", "us", "ms", "s"});
     }
 
-    if(!m_maskfile_name.empty()) {
-        config.set("mask_file", m_maskfile_name);
-    }
+    config.set("time_resolution", m_timeResolution, {"ns", "us", "ms", "s"});
 
-    config.setMatrix("roi", m_roi);
     // material budget
     if(m_materialBudget > 0.0) {
         config.set("material_budget", m_materialBudget);
     }
+
+    // only if detector is not auxiliary:
+    if(!this->isAuxiliary()) {
+        config.set("number_of_pixels", m_nPixels);
+
+        // Size of the pixels
+        config.set("pixel_pitch", m_pitch, {"um"});
+
+        // Intrinsic resolution:
+        config.set("spatial_resolution", m_spatial_resolution, {"um"});
+
+        // Pixel mask file:
+        if(!m_maskfile_name.empty()) {
+            config.set("mask_file", m_maskfile_name);
+        }
+
+        // Region-of-interest:
+        config.setMatrix("roi", m_roi);
+    }
+
     return config;
 }
 

@@ -5,22 +5,42 @@
 using namespace corryvreckan;
 using namespace std;
 
+/*
+
+This algorithm performs the track finding using only spatial information
+(no timing). It is based on a linear extrapolation along the z axis, followed
+by a nearest neighbour search, and should be well adapted to testbeam
+reconstruction with a mostly colinear beam.
+
+*/
+
 TrackingSpatial::TrackingSpatial(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
-    spatialCut = m_config.get<double>("spatial_cut", Units::get<double>(200, "um"));
+
     minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
     excludeDUT = m_config.get<bool>("exclude_dut", true);
     trackModel = m_config.get<std::string>("track_model", "straightline");
+
+    // Backwards compatibilty: also allow spatial_cut to be used for spatial_cut_abs
+    m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
+
+    // spatial cut, relative (x * spatial_resolution) or absolute:
+    if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
+        throw InvalidCombinationError(
+            m_config, {"spatial_cut_rel", "spatial_cut_abs"}, "Absolute and relative spatial cuts are mutually exclusive.");
+    } else if(m_config.has("spatial_cut_abs")) {
+        auto spatial_cut_abs_ = m_config.get<XYVector>("spatial_cut_abs");
+        for(auto& detector : get_detectors()) {
+            spatial_cuts_[detector] = spatial_cut_abs_;
+        }
+    } else {
+        // default is 3.0 * spatial_resolution
+        auto spatial_cut_rel_ = m_config.get<double>("spatial_cut_rel", 3.0);
+        for(auto& detector : get_detectors()) {
+            spatial_cuts_[detector] = detector->getSpatialResolution() * spatial_cut_rel_;
+        }
+    }
 }
-
-/*
-
- This algorithm performs the track finding using only spatial information
- (no timing). It is based on a linear extrapolation along the z axis, followed
- by a nearest neighbour search, and should be well adapted to testbeam
- reconstruction with a mostly colinear beam.
-
- */
 
 void TrackingSpatial::initialise() {
 
@@ -41,6 +61,16 @@ void TrackingSpatial::initialise() {
     // Loop over all planes
     for(auto& detector : get_detectors()) {
         auto detectorID = detector->name();
+
+        // Do not create plots for detectors not participating in the tracking:
+        if(excludeDUT && detector->isDUT()) {
+            continue;
+        }
+
+        // Do not created plots for auxiliary detectors:
+        if(detector->isAuxiliary()) {
+            continue;
+        }
 
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detectorID.c_str());
@@ -129,11 +159,11 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         for(auto& detector : detectors) {
             auto detectorID = detector->name();
             if(trees.count(detectorID) == 0) {
-                LOG(TRACE) << "Skip 0th detector.";
+                LOG(TRACE) << "Skipping detector " << detector->name() << " as it has 0 clusters.";
                 continue;
             }
             if(detectorID == seedPlane) {
-                LOG(TRACE) << "Skip seed plane.";
+                LOG(TRACE) << "Skipping seed plane.";
                 continue;
             }
 
@@ -144,17 +174,28 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Get the closest neighbour
-            LOG(DEBUG) << "- looking for nearest cluster on device " << detectorID;
+            LOG(DEBUG) << "Searching for nearest cluster on device " << detectorID;
             Cluster* closestCluster = trees[detectorID]->getClosestNeighbour(cluster);
 
-            // Check if it is within the spatial window
-            double distance = sqrt((cluster->global().x() - closestCluster->global().x()) *
-                                       (cluster->global().x() - closestCluster->global().x()) +
-                                   (cluster->global().y() - closestCluster->global().y()) *
-                                       (cluster->global().y() - closestCluster->global().y()));
+            double distanceX = (cluster->global().x() - closestCluster->global().x());
+            double distanceY = (cluster->global().y() - closestCluster->global().y());
+            double distance = sqrt(distanceX * distanceX + distanceY * distanceY);
 
-            if(distance > spatialCut)
+            // Check if closestCluster lies within ellipse defined by spatial cuts,
+            // following this example:
+            // https://www.geeksforgeeks.org/check-if-a-point-is-inside-outside-or-on-the-ellipse/
+            //
+            // ellipse defined by: x^2/a^2 + y^2/b^2 = 1: on ellipse,
+            //                                       > 1: outside,
+            //                                       < 1: inside
+            // Continue if on or outside of ellipse:
+
+            double norm = (distanceX * distanceX) / (spatial_cuts_[detector].x() * spatial_cuts_[detector].x()) +
+                          (distanceY * distanceY) / (spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
+
+            if(norm > 1) {
                 continue;
+            }
 
             // Add the cluster to the track
             track->addCluster(closestCluster);

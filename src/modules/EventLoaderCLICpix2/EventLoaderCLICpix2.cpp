@@ -256,7 +256,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Time defaults ot rising shutter edge:
-            double timestamp = shutterStartTime;
+            double timestamp = (shutterStartTime - shutterStopTime) / 2;
 
             // Decide whether information is counter of ToA
             if(matrix_config[std::make_pair(row, col)].GetCountingMode()) {
@@ -268,7 +268,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
                 toa = cp2_pixel->GetTOA();
                 // Convert ToA form 100MHz clk into ns and sutract from shutterStopTime. Then add configured detector time
                 // offset
-                timestamp = shutterStopTime - static_cast<double>(toa) / 0.1 + m_detector->timingOffset();
+                timestamp = shutterStopTime - static_cast<double>(toa) / 0.1 + m_detector->timeOffset();
                 if(!discardZeroToT || tot > 0) {
                     hPixelToA->Fill(toa);
                     hTimeWalk->Fill(toa, tot);

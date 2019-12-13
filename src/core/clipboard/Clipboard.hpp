@@ -17,6 +17,7 @@
 #include <unordered_map>
 
 #include "core/utils/log.h"
+#include "core/utils/type.h"
 #include "objects/Event.hpp"
 #include "objects/Object.hpp"
 
@@ -40,7 +41,7 @@ namespace corryvreckan {
         /**
          * @brief Construct the clipboard
          */
-        Clipboard() {}
+        Clipboard() noexcept {};
         /**
          * @brief Required virtual destructor
          */

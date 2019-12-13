@@ -44,7 +44,6 @@ namespace corryvreckan {
 
         std::map<std::string, TGraph*> align_correction_shiftX;
         std::map<std::string, TGraph*> align_correction_shiftY;
-        std::map<std::string, TGraph*> align_correction_shiftZ;
         std::map<std::string, TGraph*> align_correction_rotX;
         std::map<std::string, TGraph*> align_correction_rotY;
         std::map<std::string, TGraph*> align_correction_rotZ;

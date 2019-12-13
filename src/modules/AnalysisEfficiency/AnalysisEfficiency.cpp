@@ -180,6 +180,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Loop over all tracks
     for(auto& track : (*tracks)) {
+        n_track++;
         bool has_associated_cluster = false;
         bool is_within_roi = true;
         LOG(DEBUG) << "Looking at next track";
@@ -187,6 +188,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         // Cut on the chi2/ndof
         if(track->chi2ndof() > m_chi2ndofCut) {
             LOG(DEBUG) << " - track discarded due to Chi2/ndof";
+            n_chi2++;
             continue;
         }
 
@@ -196,18 +198,21 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 
         if(!m_detector->hasIntercept(track, 1)) {
             LOG(DEBUG) << " - track outside DUT area: " << localIntercept;
+            n_dut++;
             continue;
         }
 
         // Check that track is within region of interest using winding number algorithm
         if(!m_detector->isWithinROI(track)) {
             LOG(DEBUG) << " - track outside ROI";
+            n_roi++;
             is_within_roi = false;
             // here we don't continue because only some particular histograms shall be effected
         }
 
         // Check that it doesn't go through/near a masked pixel
         if(m_detector->hitMasked(track, 1.)) {
+            n_masked++;
             LOG(DEBUG) << " - track close to masked pixel";
             continue;
         }
@@ -326,6 +331,14 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 }
 
 void AnalysisEfficiency::finalise() {
+    // Track selection flow:
+    LOG(STATUS) << "Track selection flow:       " << n_track << std::endl
+                << "* rejected by chi2          -" << n_chi2 << std::endl
+                << "* track outside ROI         -" << n_roi << std::endl
+                << "* track outside DUT         -" << n_dut << std::endl
+                << "* track close to masked px  -" << n_masked << std::endl
+                << "Accepted tracks:            " << total_tracks;
+
     double totalEff = 100 * static_cast<double>(matched_tracks) / (total_tracks > 0 ? total_tracks : 1);
     LOG(STATUS) << "Total efficiency of detector " << m_detector->name() << ": " << totalEff << "%, measured with "
                 << matched_tracks << "/" << total_tracks << " matched/total tracks";

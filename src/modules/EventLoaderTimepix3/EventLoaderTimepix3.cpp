@@ -556,7 +556,7 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
             }
 
             // Convert final timestamp into ns and add the timing offset (in nano seconds) from the detectors file (if any)
-            const double timestamp = static_cast<double>(time) / (4096. / 25.) + m_detector->timingOffset();
+            const double timestamp = static_cast<double>(time) / (4096. / 25.) + m_detector->timeOffset();
             auto position = event->getTimestampPosition(timestamp);
 
             // Ignore pixel data if it is before the "eventStart" read from the clipboard storage:

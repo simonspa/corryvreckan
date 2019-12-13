@@ -20,7 +20,7 @@ namespace caribou {
 
         public:
             WORD_TYPE(){};
-            WORD_TYPE(bool control, uint8_t w) : is_control(control), word(w){};
+            WORD_TYPE(bool control, uint8_t w) noexcept : is_control(control), word(w){};
 
             bool operator==(const WORD_TYPE& a) const { return a.is_control == is_control && a.word == word; };
 

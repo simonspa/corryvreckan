@@ -3,10 +3,14 @@
 
 using namespace corryvreckan;
 
-Track::Track() : m_momentum(-1), m_trackModel("baseClass") {}
+Track::Track() : m_momentum(-1) {}
 
 Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp()) {
-    m_trackModel = track.trackModel();
+    m_isFitted = track.isFitted();
+    m_chi2 = track.chi2();
+    m_ndof = track.ndof();
+    m_chi2ndof = track.chi2ndof();
+
     auto trackClusters = track.clusters();
     for(auto& track_cluster : trackClusters) {
         Cluster* cluster = new Cluster(*track_cluster);
@@ -53,7 +57,28 @@ std::vector<Cluster*> Track::associatedClusters() const {
 }
 
 bool Track::hasClosestCluster() const {
-    return closestCluster != nullptr;
+    return closestCluster.GetObject() != nullptr;
+}
+
+double Track::chi2() const {
+    if(!m_isFitted) {
+        throw RequestParameterBeforeFitError(this, "chi2");
+    }
+    return m_chi2;
+}
+
+double Track::chi2ndof() const {
+    if(!m_isFitted) {
+        throw RequestParameterBeforeFitError(this, "chi2ndof");
+    }
+    return m_chi2ndof;
+}
+
+double Track::ndof() const {
+    if(!m_isFitted) {
+        throw RequestParameterBeforeFitError(this, "ndof");
+    }
+    return m_ndof;
 }
 
 void Track::setClosestCluster(const Cluster* cluster) {
@@ -61,6 +86,9 @@ void Track::setClosestCluster(const Cluster* cluster) {
 }
 
 Cluster* Track::getClosestCluster() const {
+    if(!closestCluster.IsValid() || closestCluster.GetObject() == nullptr) {
+        throw MissingReferenceException(typeid(*this), typeid(Cluster));
+    }
     return dynamic_cast<Cluster*>(closestCluster.GetObject());
 }
 
@@ -103,20 +131,11 @@ void Track::addMaterial(std::string detetcorID, double x_x0, double z) {
 
 Track* corryvreckan::Track::Factory(std::string trackModel) {
     if(trackModel == "straightline") {
-        return reinterpret_cast<Track*>(new StraightLineTrack());
+
+        return new StraightLineTrack();
     } else if(trackModel == "gbl") {
-        return reinterpret_cast<Track*>(new GblTrack());
+        return new GblTrack();
     } else {
         throw MissingTrackModelException(typeid(Track), trackModel);
-    }
-}
-
-Track* Track::Factory(const Track& track) {
-    if(track.trackModel() == "straightline") {
-        return reinterpret_cast<Track*>(new StraightLineTrack(track));
-    } else if(track.trackModel() == "gbl") {
-        return reinterpret_cast<Track*>(new GblTrack(track));
-    } else {
-        throw MissingTrackModelException(typeid(Track), track.trackModel());
     }
 }

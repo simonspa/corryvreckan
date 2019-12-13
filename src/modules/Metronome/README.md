@@ -10,6 +10,7 @@ A new Event object is created and stored on the clipboard, with the begin and en
 The module also provides the option to add trigger IDs to the generated event by specifying the number of triggers to be set per event via the `trigger`.
 Trigger IDs are consecutive numbers, starting at zero.
 With a setting of `triggers = 2`, the first event would receive trigger IDs 0 and 1, the subsequent event 2 and 3 and so forth.
+A more detailed description is provided in the event building chapter of the user manual.
 
 ### Parameters
 * `event_length`: Length of the event to be defined in physical units (not clock cycles of a specific device). Default value is `10us`.

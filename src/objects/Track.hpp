@@ -7,7 +7,7 @@
 #include <TRef.h>
 
 #include "Cluster.hpp"
-
+#include "core/utils/type.h"
 namespace corryvreckan {
     /**
      * @ingroup Objects
@@ -27,13 +27,6 @@ namespace corryvreckan {
         static Track* Factory(std::string trackModel);
 
         /**
-         * @brief Factory to dynamically create track objects - auto detects track based on private member m_trackModel
-         * @param Track to copy from
-         * @return By param trackModel assigned track model to be used
-         */
-        static Track* Factory(const Track& track);
-
-        /**
          * @brief Track object constructor
          */
         Track();
@@ -47,6 +40,25 @@ namespace corryvreckan {
          * @brief Add a cluster to the tack, which will be used in the fit
          * @param cluster to be added
          */
+
+        /** @brief Static member function to obtain base class for storage on the clipboard.
+         * This method is used to store objects from derived classes under the typeid of their base classes
+         *
+         * @warning This function should not be implemented for derived object classes
+         *
+         * @return Class type of the base object
+         */
+        static std::type_index getBaseType() { return typeid(Track); }
+
+        /**
+         * @brief get the track type used
+         * @return track type
+         */
+        std::string getType() const { return corryvreckan::demangle(typeid(*this).name()); }
+
+        /**
+         * * @brief Add a cluster to the tack, which will be used in the fit
+         * * @param cluster to be added */
         void addCluster(const Cluster* cluster);
 
         /**
@@ -89,19 +101,19 @@ namespace corryvreckan {
          * @brief Get the chi2 of the track fit
          * @return chi2
          */
-        double chi2() const { return m_chi2; }
+        double chi2() const;
 
         /**
          * @brief Get chi2/ndof of the track fit
          * @return chi2/ndof
          */
-        double chi2ndof() const { return m_chi2ndof; }
+        double chi2ndof() const;
 
         /**
          * @brief Get the ndof for the track fit
          * @return ndof
          */
-        double ndof() const { return m_ndof; }
+        double ndof() const;
 
         /**
          * @brief Get the clusters contained in the track fit
@@ -148,6 +160,11 @@ namespace corryvreckan {
          * @brief The fiting routine
          */
         virtual void fit(){};
+        /**
+         * @brief Virtual function to copy a class
+         * @return pointer to copied object
+         */
+        virtual Track* clone() const { return new Track(); }
 
         /**
          * @brief  Get the distance between cluster and track
@@ -178,10 +195,10 @@ namespace corryvreckan {
         virtual ROOT::Math::XYZVector direction(std::string) const { return ROOT::Math::XYZVector(0.0, 0.0, 0.0); }
 
         /**
-         * @brief Get the used track model
-         * @return  std::string with the track model
+         * @brief check if the fitting routine already has been called. Chi2 etc are not set before
+         * @return true if fit has already been performed, false otherwise
          */
-        std::string trackModel() const { return m_trackModel; }
+        bool isFitted() const { return m_isFitted; }
 
         /**
          * @brief Get the residual for a given detector layer
@@ -218,7 +235,7 @@ namespace corryvreckan {
         double m_ndof;
         double m_chi2ndof;
         double m_momentum;
-        std::string m_trackModel;
+        bool m_isFitted{};
 
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(Track, 7)

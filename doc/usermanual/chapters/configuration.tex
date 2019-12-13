@@ -1,23 +1,21 @@
 \chapter{Configuration Files}
 \label{ch:configuration_files}
-The framework is configured with human-readable key/value based configuration files.
-The configuration format consists of section headers within $[$ and $]$ brackets, and a global section without header at the start.
-Each of these sections contains a set of key/value pairs separated by the \texttt{=} character.
+The framework is configured with human-readable key-value based configuration files.
+The configuration format consists of section headers within $[$ and $]$ brackets, and a global section without a header at the beginning.
+Each of these sections contains a set of key-value pairs separated by the \texttt{=} character.
 Comments are indicated using the hash symbol (\texttt{\#}).
 
 Since configuration files are highly user-specific and do not directly belong to the \corry framework, they should not be stored in the \corry repository.
 However, working examples can be found in the \dir{testing/} directory of the repository.
 
 \corry can handle any file extensions for geometry and configuration files.
-The examples, however, follow the convention of using the extension \texttt{*.conf} for both detector and configuration files.
+The examples, however, follow the convention of using the extension \texttt{*.conf} for both the detector and configuration files.
 
-The framework has the following two required layers of configuration files:
+The framework has two required layers of configuration files:
 \begin{itemize}
-\item The \textbf{main} configuration: The most important configuration file and the file that is passed directly to the binary.
-Contains both the global framework configuration and the list of modules to instantiate together with their configuration.
-
-\item The \textbf{detector} configuration passed to the framework to determine the geometry.
-Describes the detector setup, containing the position, orientation and type of all detectors along with additional properties crucial for the reconstruction.
+  \item The \textbf{main} configuration: It is passed directly to the binary and contains both the global framework configuration and the list of modules to instantiate, together with their configuration.
+  \item The \textbf{detector} configuration: Passed to the framework to determine the geometry.
+  Describes the detector setup and contains the position, orientation and type of all detectors along with additional properties crucial for the reconstruction.
 \end{itemize}
 
 In the following paragraphs, the available types and the unit system are explained and an introduction to the different configuration files is given.
@@ -26,11 +24,11 @@ In the following paragraphs, the available types and the unit system are explain
 \label{sec:config_values}
 The \corry framework supports the use of a variety of types for all configuration values.
 The module requesting the configuration key specifies how the value type should be interpreted.
-An error will be raised if either the key is not specified in the configuration file, the conversion to the desired type is not possible, or if the given value is outside the domain of possible options.
+An error will be raised if either a necessary key is not specified in the configuration file, the conversion to the desired type is not possible, or if the given value is outside the domain of possible options.
 Please refer to the module documentation in Chapter~\ref{ch:modules} for the list of module parameters and their types.
-Parsing the value roughly follows common-sense, but a few special rules do apply:
+The value is parsed in an intuitive manner, however a few special rules do apply:
 \begin{itemize}
-\item If the value is a \textbf{string}, it may be enclosed by a single pair of double quotation marks (\texttt{"}), which are stripped before passing the value to the modules.
+\item If the value is a \textbf{string}, it may be enclosed by a single pair of double quotation marks (\texttt{"}), which are stripped before passing the value to the module(s).
 If the string is not enclosed by quotation marks, all whitespace before and after the value is erased.
 If the value is an array of strings, the value is split at every whitespace or comma (\texttt{,}) that is not enclosed in quotation marks.
 \item If the value is a \textbf{boolean}, either numerical (\texttt{0}, \texttt{1}) or textual (\texttt{false}, \texttt{true}) representations are accepted.
@@ -39,14 +37,16 @@ If the value is an array of strings, the value is split at every whitespace or c
 The list of base units is shown in Table~\ref{tab:units}.
 \end{itemize}
 
+The internal base units of the framework are not chosen for user convenience, but for maximum precision of the calculations and to avoid the necessity of conversions in the code.
+Combinations of base units can be specified by using the multiplication sign \texttt{*} and the division sign \texttt{/} that are parsed in linear order (thus $\frac{V m}{s^2}$ should be specified as $V*m/s/s$).
+The framework assumes the default units (as given in Table~\ref{tab:units}) if the unit is not explicitly specified.
+
 \begin{warning}
   If no units are specified, values will always be interpreted in the base units of the framework.
   In some cases this can lead to unexpected results.
-  E.g. specifying a bias voltage as \texttt{bias\_voltage = 50} results in an applied voltage of \SI{50}{\mega\volt}.
-  Therefore it is strongly recommended to always specify units in the configuration files.
+  E.g. specifying a pixel pitch as \parameter{pixel_pitch = 55,55} results in a detector with a pixel size of \SI{55 x 55}{\milli \meter}.
+  Therefore, it is strongly recommended to always specify the units explicitly for all parameters that are not dimensionless in the configuration files.
 \end{warning}
-
-The internal base units of the framework are not chosen for user convenience but for maximum precision of the calculations and in order to avoid the necessity of conversions in the code.
 
 \begin{table}[tbp]
 \caption{List of units supported by \corry}
@@ -89,11 +89,7 @@ The internal base units of the framework are not chosen for user convenience but
 \end{tabular}
 \end{table}
 
-Combinations of base units can be specified by using the multiplication sign \texttt{*} and the division sign \texttt{/} that are parsed in linear order (thus $\frac{V m}{s^2}$ should be specified as $V*m/s/s$).
-The framework assumes the default units (as given in Table~\ref{tab:units}) if the unit is not explicitly specified.
-It is recommended to always specify the unit explicitly for all parameters that are not dimensionless as well as for angles.
-
-Examples of specifying key/values pairs of various types are given below:
+Examples of specifying key-values pairs of various types are given below:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 # All whitespace at the front and back is removed
 first_string =   string_without_quotation
@@ -101,7 +97,7 @@ first_string =   string_without_quotation
 second_string = "  string with quotation marks  "
 # Keys are split on whitespace and commas
 string_array = "first element" "second element","third element"
-# Integer and floats can be specified in standard formats
+# Integers and floats can be specified in standard formats
 int_value = 42
 float_value = 123.456e9
 # Units can be passed to arithmetic type
@@ -109,11 +105,12 @@ energy_value = 1.23MeV
 time_value = 42ns
 # Units are combined in linear order
 acceleration_value = 1.0m/s/s
-# Thus the quantity below is the same as 1.0deg*kV*K/m/s
-random_quantity = 1.0deg*kV/m/s*K
+# Thus the two quantities below have the same units
+random_quantity_a = 1.0deg*kV/m/s*K
+random_quantity_b = 1.0deg*kV*K/m/s
 # Relative paths are expanded to absolute
-# Path below will be /home/user/test if the config file is in /home/user
-output_path = "test"
+# Path below will be /home/user/test/ if the config file is in /home/user
+output_path = "test/"
 # Booleans can be represented in numerical or textual style
 my_switch = true
 my_other_switch = 0
@@ -125,21 +122,21 @@ Throughout the framework, a simplified version of TOML~\cite{tomlgit} is used as
 The format is defined as follows:
 \begin{enumerate}
 \item All whitespace at the beginning or end of a line are stripped by the parser.
-In the rest of this format specification the \textit{line} refers to the line with this whitespace stripped.
+In the rest of this format specification, \textit{line} refers to the line with this whitespace stripped.
 \item Empty lines are ignored.
 \item Every non-empty line should start with either \texttt{\#}, \texttt{[} or an alphanumeric character.
 Every other character should lead to an immediate parse error.
-\item If the line starts with a hash character (\texttt{\#}), it is interpreted as comment and all other content on the same line is ignored.
+\item If the line starts with a hash character (\texttt{\#}), it is interpreted as comment and all other content on that line is ignored.
 \item If the line starts with an open square bracket (\texttt{[}), it indicates a section header (also known as configuration header).
-The line should contain a string with alphanumeric characters and underscores, indicating the header name, followed by a closing square bracket (\texttt{]}), to end the header.
+The line should contain a string with alphanumeric characters and underscores indicating the header name, followed by a closing square bracket (\texttt{]}) to end the header.
 After any number of ignored whitespace characters there could be a \texttt{\#} character.
 If this is the case, the rest of the line is handled as specified in point~3.
-Otherwise there should not be any other character (except the whitespace) on the line.
+Otherwise, there should not be any other character on the line that is not whitespace.
 Any line that does not comply to these specifications should lead to an immediate parse error.
 Multiple section headers with the same name are allowed.
-All key-value pairs following this section header are part of this section until a new section header is started.
+All key-value pairs in the line following this section header are part of this section until a new section header is started.
 \item If the line starts with an alphanumeric character, the line should indicate a key-value pair.
-The beginning of the line should contain a string of alphabetic characters, numbers, dots (\texttt{.}), colons (\texttt{\:}) and underscores (\texttt{\_}), but it may only start with an alphanumeric character.
+The beginning of the line should contain a string of alphabetic characters, numbers, dots (\texttt{.}), colons (\texttt{:}), and/or underscores (\texttt{\_}), but it may only start with an alphanumeric character.
 This string indicates the 'key'.
 After an optional number of ignored whitespace, the key should be followed by an equality sign (\texttt{$=$}).
 Any text between the \texttt{$=$} and the first \texttt{\#} character not enclosed within a pair of single or double quotes (\texttt{'} or \texttt{"}) is known as the non-stripped string.
@@ -148,14 +145,14 @@ If the line does not contain any non-enclosed \texttt{\#} character, the value e
 The 'value' of the key-value pair is the non-stripped string with all whitespace in front and at the end stripped.
 The value may not be empty.
 Any line that does not comply to these specifications should lead to an immediate parse error.
-\item The value may consist of multiple nested dimensions which are grouped by pairs of square brackets (\texttt{[} and \texttt{]}).
+\item The value may consist of multiple nested dimensions that are grouped by pairs of square brackets (\texttt{[} and \texttt{]}).
 The number of square brackets should be properly balanced, otherwise an error is raised.
-Square brackets which should not be used for grouping should be enclosed in quotation marks.
+Square brackets that should not be used for grouping should be enclosed in quotation marks.
 Every dimension is split at every whitespace sequence and comma character (\texttt{,}) not enclosed in quotation marks.
-Implicit square brackets are added to the begin and end of the value, if these are not explicitly added.
-A few situations require explicit addition of outer brackets such as matrices with only one column element, i.e. with dimension 1xN.
-\item The sections of the value which are interpreted as separate entities are named elements.
-For a single value the element is on the zeroth dimension, for arrays on the first dimension and for matrices on the second dimension.
+Implicit square brackets are added to the beginning and end of the value, if these are not explicitly added.
+A few situations require the explicit addition of outer brackets such as matrices with only one column element, i.e. with dimension 1xN.
+\item The sections of the value that are interpreted as separate entities are named elements.
+For a single value the element is on the zeroth dimension, for arrays on the first dimension, and for matrices on the second dimension.
 Elements can be forced by using quotation marks, either single or double quotes (\texttt{'} or \texttt{"}).
 The number of both types of quotation marks should be properly balanced, otherwise an error is raised.
 The conversion to the elements to the actual type is performed when accessing the value.
@@ -165,7 +162,7 @@ The conversion to the elements to the actual type is performed when accessing th
 \subsection{Accessing parameters}
 \label{sec:accessing_parameters}
 Values are accessed via the configuration object.
-In the following example, the key is a string called \parameter{key}, the object is named \parameter{config} and the type \parameter{TYPE} is a valid C++ type the value should represent.
+In the following example, the key is a string called \parameter{key}, the object is named \parameter{config} and the type \parameter{TYPE} is a valid \CPP type that the value should represent.
 The values can be accessed via the following methods:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 // Returns true if the key exists and false otherwise
@@ -180,9 +177,9 @@ config.get<TYPE>("key", default_value)
 config.getArray<TYPE>("key")
 // Returns a matrix: an array of arrays of elements of the given type
 config.getMatrix<TYPE>("key")
-// Returns an absolute (canonical if it should exist) path to a file
+// Returns an absolute (canonical if it should exist) path to a file, where the second input value determines if the existence of the path is checked
 config.getPath("key", true /* check if path exists */)
-// Return an array of absolute paths
+// Return an array of absolute paths, where the second input value determines if the existence of the paths is checked
 config.getPathArray("key", false /* do not check if paths exists */)
 // Returns the value as literal text including possible quotation marks
 config.getText("key")
@@ -195,8 +192,8 @@ config.setAlias("new_key", "old_key")
 \end{minted}
 
 Conversions to the requested type are using the \parameter{from_string} and \parameter{to_string} methods provided by the framework string utility library.
-These conversions largely follow standard C++ parsing, with one important exception.
-If (and only if) the value is retrieved as a C/C++ string and the string is fully enclosed by a pair of \texttt{"} characters, these are stripped before returning the value.
+These conversions largely follow standard \CPP parsing, with one important exception.
+If (and only if) the value is retrieved as a C/\CPP string and the string is fully enclosed by a pair of \texttt{"} characters, these are stripped before returning the value.
 Strings can thus also be provided with or without quotation marks.
 
 \begin{warning}
@@ -206,15 +203,15 @@ Strings can thus also be provided with or without quotation marks.
 
 \section{Main configuration}
 \label{sec:main_config}
-The main configuration consists of a set of sections specifying the modules used.
+The main configuration file consists of a set of sections specifying the modules to be used.
 All modules are executed in the \emph{linear} order in which they are defined.
-There are a few section names which have a special meaning in the main configuration, namely the following:
+There are a few section names that have a special meaning in the main configuration, namely the following:
 \begin{itemize}
 \item The \textbf{global} (framework) header sections: These are all zero-length section headers (including the one at the beginning of the file) and all sections marked with the header \texttt{[Corryvreckan]} (case-insensitive).
-These are combined and accessed together as the global configuration, which contain all parameters of the framework itself (see Section~\ref{sec:framework_parameters} for details).
+These are combined and accessed together as the global configuration, which contains all parameters of the framework itself as described in Section~\ref{sec:framework_parameters}.
 All key-value pairs defined in this section are also inherited by all individual configurations as long the key is not defined in the module configuration itself. This is encouraged for module parameters used in multiple modules.
 \item The \textbf{ignore} header sections: All sections with name \texttt{[Ignore]} are ignored.
-Key-value pairs defined in the section as well as the section itself are discarded by the parser.
+Key-value pairs defined in the section, as well as the section itself, are discarded by the parser.
 These section headers are useful for quickly enabling and disabling individual modules by replacing their actual name by an ignore section header.
 \end{itemize}
 
@@ -225,7 +222,7 @@ Parameters defined under the header of a module are local to that module and are
 An example for a valid albeit illustrative \corry main configuration file is:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 # Key is part of the empty section and therefore the global configuration
-string_value = "example1"
++random_string = "example1"
 # The location of the detector configuration is a global parameter
 detectors_file = "testbeam_setup.conf"
 # The Corryvreckan section is also considered global and merged with the above
@@ -235,14 +232,15 @@ another_random_string = "example2"
 # Stop after one thousand events:
 number_of_events = 1000
 
-# First run "ModuleA"
+# First section runs "ModuleA"
 [ModuleA]
 # This module takes no parameters
 
-# Ignore this section:
+# Ignore this second section:
 [Ignore]
 my_key = "my_value"
 
+# Third section runs "ModuleC" with configured parameters:
 [ModuleC]
 int_value = 2
 vector_of_doubles = 23.0, 45.6, 78.9
@@ -250,11 +248,11 @@ vector_of_doubles = 23.0, 45.6, 78.9
 
 \section{Detector configuration}
 \label{sec:detector_config}
-The detector configuration consists of a set of sections describing the detectors in the setup.
+The detector configuration file consists of a set of sections that describe the detectors in the setup.
 Each section starts with a header describing the name used to identify the detector; all names are required to be unique.
 Every detector should contain all of the following parameters:
 \begin{itemize}
-\item The \parameter{role} parameter is an array of strings indicating the function(s) of the respective detector. This can be \parameter{dut}, \parameter{reference} (\parameter{ref}) or \parameter{auxiliary} (\parameter{aux}), the default is \parameter{none}. With the default, the respective detector participates in tracking but is neither used as reference plane for alignment and correlations, nor treated as DUT. As reference, the detector is used as anchor for relative alignments, and its position and orientation is used to produce correlation plots. As DUT, the detector is by default excluded from tracking, and all DUT-type modules are executed for this detector. As auxiliary device, the detector may provide additional information but does not partake in the reconstruction, this is useful to e.g. include trigger logic units (TLUs) providing timing information.
+\item The \parameter{role} parameter is an array of strings indicating the function(s) of the respective detector. This can be \parameter{dut}, \parameter{reference} (\parameter{ref}), \parameter{auxiliary} (\parameter{aux}), or \parameter{none}, where the latter is the default. With the default role, the respective detector participates in tracking but is neither used as reference plane for alignment and correlations, nor treated as DUT. In a reference role, the detector is used as anchor for relative alignments and its position and orientation is used for comparison when producing correlation and residual plots. As DUT, the detector is by default excluded from tracking, and all DUT-type modules are executed for this detector. As an auxiliary device, the detector may provide additional information but does not partake in the reconstruction. This is useful to e.g. include trigger logic units (TLUs) providing only timing information.
 \begin{warning}
 There always has to be exactly \emph{one} reference detector in the setup. For setups with a single detector only, the role should be configured as \parameter{dut, reference} for the detector to act as both. Auxiliary devices cannot have any other role simultaneously.
 \end{warning}
@@ -263,39 +261,37 @@ There always has to be exactly \emph{one} reference detector in the setup. For s
 \item The \parameter{position} in the world frame.
 This is the position of the geometric center of the sensor given in world coordinates as X, Y and Z as defined in Section~\ref{sec:coordinate_systems}.
 \item An \parameter{orientation_mode} that determines the way that the orientation is applied.
-This can be either \texttt{xyz}, \texttt{zyx} or \texttt{zxz}, where \textbf{\texttt{xyz} is used as default if the parameter is not specified}. Three angles are expected as input, which should always be provided in the order in which they are applied.
+This can be either \texttt{xyz}, \texttt{zyx}, or \texttt{zxz}, where \textbf{\texttt{xyz}} is used as default if the parameter is not specified. Three angles are expected as input, which should always be provided in the order in which they are applied.
 \begin{itemize}
-    \item The \texttt{xyz} option uses extrinsic Euler angles to apply a rotation around the global $X$ axis, followed by a rotation around the global $Y$ axis and finally a rotation around the global $Z$ axis.
-    \item The \texttt{zyx} option uses the \textbf{extrinsic Z-Y-X convention} for Euler angles, also known as Pitch-Roll-Yaw or 321 convention. The rotation is represented by three angles describing first a rotation of an angle $\phi$ (yaw) about the $Z$ axis, followed by a rotation of an angle $\theta$ (pitch) about the initial $Y$ axis, followed by a third rotation of an angle $\psi$ (roll) about the initial $X$ axis.
-    \item The \texttt{zxz} uses the \textbf{extrinsic Z-X-Z convention} for Euler angles instead. This option is also known as the 3-1-3 or the "x-convention" and the most widely used definition of Euler angles~\cite{eulerangles}.
+  \item The \texttt{xyz} option uses extrinsic Euler angles to apply a rotation around the global $X$ axis, followed by a rotation around the global $Y$ axis, and finally a rotation around the global $Z$ axis.
+  \item The \texttt{zyx} option uses the \textbf{extrinsic Z-Y-X} convention for Euler angles, also known as Pitch-Roll-Yaw or 321 convention. The rotation is represented by three angles describing an initial rotation of an angle $\phi$ (yaw) about the $Z$ axis, followed by a rotation of an angle $\theta$ (pitch) about the initial $Y$ axis, followed by a third rotation of an angle $\psi$ (roll) about the initial $X$ axis.
+  \item The \texttt{zxz} option uses the \textbf{extrinsic Z-X-Z} convention for Euler angles. This option is also known as the 3-1-3 or the "x-convention" and the most widely used definition of Euler angles~\cite{eulerangles}.
 \end{itemize}
 \begin{warning}
-It is highly recommended to always explicitly state the orientation mode instead of relying on the default configuration.
+It is highly recommended to always explicitly state the orientation mode, rather than relying on the default configuration, to avoid unwanted behavior.
 \end{warning}
 
-\item The \parameter{orientation} to specify the Euler angles in logical order (e.g. first $X$, then $Y$, then $Z$ for the \texttt{xyz} method), interpreted using the method above (or with the \texttt{xyz} method if the \parameter{orientation_mode} is not specified). An example for three Euler angles would be
+\item The \parameter{orientation} to specify the Euler angles in logical order (e.g. first $X$, then $Y$, then $Z$ for the \texttt{xyz} method), interpreted using the method above. An example for three Euler angles would be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 orientation_mode = "zyx"
 orientation = 45deg 10deg 12deg
 \end{minted}
-which describes the rotation of \SI{45}{\degree} around the $Z$ axis, followed by a \SI{10}{\degree} rotation around the initial $Y$ axis, and finally a rotation of \SI{12}{\degree} around the initial $X$ axis.
+which describes a rotation of \SI{45}{\degree} around the $Z$ axis, followed by a \SI{10}{\degree} rotation around the initial $Y$ axis, and finally a rotation of \SI{12}{\degree} around the initial $X$ axis.
 \begin{warning}
 All supported rotations are extrinsic active rotations, i.e. the vector itself is rotated, not the coordinate system. All angles in configuration files should be specified in the order they will be applied.
 \end{warning}
 
-\item The \parameter{number_of_pixels} parameter represents a two-dimensional vector with the number of pixels in the active matrix in the column and row direction, respectively.
-\item The \parameter{pixel_pitch} is a two-dimensional vector defining the size of a single pixel.
-\item The intrinsic resolution of the detector can be specified using the \parameter{resolution} parameter, a two-dimensional vector holding the position resolution for the column and row directions.
-\item The \parameter{time_offset} can be used to shift the individual detector time frames of reference to e.g.\ account for time of flight effects between different detector planes by adding a fixed offset.
-\item The \parameter{material_budget} defines the material budget of the
-  sensor layer in factions of the radiation length, including support
-  structures. If no value is defined a default of zero is assumed. A given
-  value has to be larger than zero. 
-\item Pixels to be masked in the offline analysis can be placed in a separate file specified by the \parameter{mask_file} parameter explained in detail in Section~\ref{sec:masking}.
+\item The \parameter{number_of_pixels} parameter represents a two-dimensional vector with the number of pixels in the active matrix in the column and row directions respectively.
+\item The \parameter{pixel_pitch} is a two-dimensional vector defining the size of a single pixel in the column and row directions respectively.
+\item The intrinsic resolution of the detector has to be specified using the \parameter{spatial_resolution} parameter, a two-dimensional vector holding the position resolution for the column and row directions. This value is used to assign the uncertainty of cluster positions. This parameter defaults to the pitch$/\sqrt{12}$ of the respective detector if not specified.
+\item The intrinsic time resolution of the detector should be specified using the \parameter{time_resolution} parameter with units of time. This can be used to apply detector specific time cuts in modules. This parameter is only required when using relative time cuts in the analysis.
+\item The \parameter{time_offset} can be used to shift the reference time frame of an individual detector to e.g.\ account for time of flight effects between different detector planes by adding a fixed offset.
+\item The \parameter{material_budget} defines the material budget of the sensor layer in fractions of the radiation length, including support. If no value is defined a default of zero is assumed. A given value has to be larger than zero.
+\item Pixels to be masked in the offline analysis can be placed in a separate file specified by the \parameter{mask_file} parameter, which is explained in detail in Section~\ref{sec:masking}.
 \item A region of interest in the given detector can be defined using the \parameter{roi} parameter. More details on this functionality can be found in Section~\ref{sec:roi}.
 \end{itemize}
 
-An example configuration file describing a setup with one CLICpix2 detector named \parameter{016_CP_PS} and two Timepix3~\cite{timepix} detectors (\parameter{W0013_D04} and \parameter{W0013_J05}) is the following:
+An example configuration file describing a setup with one CLICpix2~\cite{clicpix2,clicpix2-pisa} detector named \parameter{016_CP_PS} and two Timepix3~\cite{timepix3} detectors (\parameter{W0013_D04} and \parameter{W0013_J05}) is the following:
 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 [W0013_D04]
@@ -304,6 +300,8 @@ orientation = 9deg, 9deg, 0deg
 orientation_mode = "xyz"
 pixel_pitch = 55um, 55um
 position = 0um, 0um, 10mm
+spatial_resolution = 4um,4um
+time_resolution = 3ns
 type = "Timepix3"
 
 [016_CP_PS]
@@ -313,6 +311,8 @@ orientation = -0.02deg, 0.0deg, -0.015deg
 orientation_mode = "xyz"
 pixel_pitch = 25um, 25um
 position = -0.9mm, 0.21mm, 106.0mm
+spatial_resolution = 8um,8um
+time_resolution = 1ms
 role = "dut"
 type = "CLICpix2"
 
@@ -322,6 +322,8 @@ orientation = -9deg, 9deg, 0deg
 orientation_mode = "xyz"
 pixel_pitch = 55um, 55um
 position = 0um, 0um, 204mm
+spatial_resolution = 4um,4um
+time_resolution = 3ns
 role = "reference"
 type = "Timepix3"
 \end{minted}
@@ -329,8 +331,8 @@ type = "Timepix3"
 \subsection{Masking Pixels Offline}
 \label{sec:masking}
 
-Mask files can be provided to individual detectors, which allow the specification of pixels ot be masked in the reconstruction.
-The following syntax is within the mask file:
+Mask files can be provided for individual detectors, which allows the user to mask specific pixels in the reconstruction.
++The following syntax is used for each line within the mask file:
 \begin{itemize}
     \item \command{c COL}: masking all pixels in column \parameter{COL}
     \item \command{r ROW}: masking all pixels in row \parameter{ROW}
@@ -344,10 +346,10 @@ It should be noted that the individual event loader modules have to take care of
 \subsection{Defining a Region of Interest}
 \label{sec:roi}
 
-The region of interest (ROI) feature of each detector allows marking tracks or clusters to be within a certain region on the respective detector.
+The region of interest (ROI) feature of each detector allows tracks or clusters to be marked as within a certain region on the respective detector.
 This information can be used in analyses to restrict the selection of tracks or clusters to certain regions of the device, e.g.\ to exclude known bad regions from the calculation of efficiencies.
 
-The ROI is defined as a polynomial in local pixel coordinates of the device using the \parameter{roi} keyword. A rectangle could, for example, be defined by providing the four corners of the shape via
+The ROI is defined as a polynomial in local pixel coordinates of the device using the \parameter{roi} keyword. A rectangle could, for example, be defined by providing the four corners of the shape via the following:
 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 roi = [1, 1], [1, 120], [60, 120], [60, 1]
@@ -359,6 +361,6 @@ Two functions are provided by the detector API:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 // Returns "true" if the track is found to be within the ROI
 bool isWithinROI(const Track* track);
-// Returns "true" if the cluster as well as all its pixels are found to be within the ROI
+// Returns "true" if the cluster, as well as all its constituent pixels, are found to be within the ROI
 bool isWithinROI(const Cluster* cluster);
 \end{minted}

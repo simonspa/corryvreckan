@@ -5,14 +5,13 @@
 
 using namespace corryvreckan;
 
-StraightLineTrack::StraightLineTrack() : Track(), m_direction(0, 0, 1.), m_state(0, 0, 0.) {
-    m_trackModel = "straightline";
-}
+StraightLineTrack::StraightLineTrack() : Track(), m_direction(0, 0, 1.), m_state(0, 0, 0.) {}
 
-StraightLineTrack::StraightLineTrack(const Track& track) : Track(track) {
-    if(m_trackModel != "straightline")
-        throw Exception("track model changed!");
-    fit();
+StraightLineTrack::StraightLineTrack(const StraightLineTrack& track) : Track(track) {
+    if(track.getType() != this->getType())
+        throw TrackModelChanged(typeid(*this), track.getType(), this->getType());
+    m_direction = track.m_direction;
+    m_state = track.m_state;
 }
 
 double StraightLineTrack::distance2(const Cluster* cluster) const {
@@ -156,6 +155,7 @@ void StraightLineTrack::fit() {
     this->calculateChi2();
     this->setKinksZero();
     this->calculateResiduals();
+    m_isFitted = true;
 }
 
 ROOT::Math::XYZPoint StraightLineTrack::intercept(double z) const {
@@ -163,7 +163,6 @@ ROOT::Math::XYZPoint StraightLineTrack::intercept(double z) const {
 }
 
 void StraightLineTrack::print(std::ostream& out) const {
-    out << "StraightLineTrack " << this->m_state.x() << ", " << this->m_state.y() << ", " << this->m_state.z() << ", "
-        << this->m_direction.x() << ", " << this->m_direction.y() << ", " << this->m_direction.z() << ", " << this->m_chi2
-        << ", " << this->m_ndof << ", " << this->m_chi2ndof << ", " << this->timestamp();
+    out << "StraightLineTrack " << this->m_state << ", " << this->m_direction << ", " << this->m_chi2 << ", " << this->m_ndof
+        << ", " << this->m_chi2ndof << ", " << this->timestamp();
 }

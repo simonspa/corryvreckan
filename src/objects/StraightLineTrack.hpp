@@ -18,7 +18,9 @@ namespace corryvreckan {
         StraightLineTrack();
 
         // copy constructor
-        StraightLineTrack(const Track& track);
+        StraightLineTrack(const StraightLineTrack& track);
+
+        virtual StraightLineTrack* clone() const override { return new StraightLineTrack(*this); }
 
         // Minimisation operator used by Minuit. Minuit passes the current iteration of the parameters and checks if the chi2
         // is better or worse
@@ -75,7 +77,7 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint m_state;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(StraightLineTrack, 0)
+        ClassDefOverride(StraightLineTrack, 1)
     };
 
     // Vector type declaration

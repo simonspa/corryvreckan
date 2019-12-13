@@ -6,9 +6,34 @@ using namespace std;
 DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
 
-    timingCut = m_config.get<double>("timing_cut", Units::get<double>(200, "ns"));
-    spatialCut = m_config.get<XYVector>("spatial_cut", 2 * m_detector->pitch());
+    // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs and spatial_cut for spatial_cut_abs
+    m_config.setAlias("time_cut_abs", "timing_cut", true);
+    m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
+
+    // timing cut, relative (x * time_resolution) or absolute:
+    if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
+        throw InvalidCombinationError(
+            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
+    } else if(m_config.has("time_cut_abs")) {
+        timeCut = m_config.get<double>("time_cut_abs");
+    } else {
+        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
+    }
+
+    // spatial cut, relative (x * spatial_resolution) or absolute:
+    if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
+        throw InvalidCombinationError(
+            m_config, {"spatial_cut_rel", "spatial_cut_abs"}, "Absolute and relative spatial cuts are mutually exclusive.");
+    } else if(m_config.has("spatial_cut_abs")) {
+        spatialCut = m_config.get<XYVector>("spatial_cut_abs");
+    } else {
+        spatialCut = m_config.get<double>("spatial_cut_rel", 3.0) * m_detector->getSpatialResolution();
+    }
     useClusterCentre = m_config.get<bool>("use_cluster_centre", false);
+
+    LOG(DEBUG) << "time_cut = " << Units::display(timeCut, {"ms", "us", "ns"});
+    LOG(DEBUG) << "spatial_cut = " << Units::display(spatialCut, {"um", "mm"});
+    LOG(DEBUG) << "use_cluster_centre = " << useClusterCentre;
 }
 
 void DUTAssociation::initialise() {
@@ -18,58 +43,57 @@ void DUTAssociation::initialise() {
     hCutHisto->GetXaxis()->SetBinLabel(1, "Spatial");
     hCutHisto->GetXaxis()->SetBinLabel(2, "Timing");
 
-    hX1X2 = new TH1D("hX1X2",
-                     "x distance of cluster centre minus closest pixel to track; xdistance(cluster) - xdistance(closest "
-                     "pixel) [um]; # events",
-                     2000,
-                     -1000,
-                     1000);
-    hY1Y2 = new TH1D("hY1Y2",
-                     "y distance of cluster centre minus closest pixel to track; ydistance(cluster) - ydistance(closest "
-                     "pixel) [um]; # events",
-                     2000,
-                     -1000,
-                     1000);
-    hX1X2_1px = new TH1D("hX1X2_1px",
-                         "x distance of cluster centre minus closest pixel to track - 1 pixel cluster; xdistance(cluster) - "
-                         "xdistance(closest pixel) [um]; # events",
-                         2000,
-                         -1000,
-                         1000);
-    hY1Y2_1px = new TH1D("hY1Y2_1px",
-                         "y distance of cluster centre minus closest pixel to track - 1 pixel cluster; ydistance(cluster) - "
-                         "ydistance(closest pixel) [um]; # events",
-                         2000,
-                         -1000,
-                         1000);
-    hX1X2_2px = new TH1D("hX1X2_2px",
-                         "x distance of cluster centre minus closest pixel to track - 2 pixel cluster; xdistance(cluster) - "
-                         "xdistance(closest pixel) [um]; # events",
-                         2000,
-                         -1000,
-                         1000);
-    hY1Y2_2px = new TH1D("hY1Y2_2px",
-                         "y distance of cluster centre minus closest pixel to track - 2 pixel cluster; ydistance(cluster) - "
-                         "ydistance(closest pixel) [um]; # events",
-                         2000,
-                         -1000,
-                         1000);
-    hX1X2_3px = new TH1D("hX1X2_3px",
-                         "x distance of cluster centre minus closest pixel to track - 3 pixel cluster; xdistance(cluster) - "
-                         "xdistance(closest pixel) [um]; # events",
-                         2000,
-                         -1000,
-                         1000);
-    hY1Y2_3px = new TH1D("hY1Y2_3px",
-                         "y distance of cluster centre minus closest pixel to track - 3 pixel cluster; ydistance(cluster) - "
-                         "ydistance(closest pixel) [um]; # events",
-                         2000,
-                         -1000,
-                         1000);
+    hDistX = new TH1D("hDistXClusterClosestPx",
+                      "Distance cluster center to pixel closest to track; x_{cluster} - x_{closest pixel} [um]; # events",
+                      2000,
+                      -1000,
+                      1000);
+    hDistY = new TH1D("hDistYClusterClosestPx",
+                      "Distance cluster center to pixel closest to track; y_{cluster} - y_{closest pixel} [um]; # events",
+                      2000,
+                      -1000,
+                      1000);
+    hDistX_1px =
+        new TH1D("hDistXClusterClosestPx_1px",
+                 "Distance 1px-cluster center to pixel closest to track; x_{cluster} - x_{closest pixel} [um]; # events",
+                 2000,
+                 -1000,
+                 1000);
+    hDistY_1px =
+        new TH1D("hDistYClusterClosestPx_1px",
+                 "Distance 1px-cluster center to pixel closest to track; y_{cluster} - y_{closest pixel} [um]; # events",
+                 2000,
+                 -1000,
+                 1000);
+    hDistX_2px =
+        new TH1D("hDistXClusterClosestPx_2px",
+                 "Distance 2px-cluster center to pixel closest to track; x_{cluster} - x_{closest pixel} [um]; # events",
+                 2000,
+                 -1000,
+                 1000);
+    hDistY_2px =
+        new TH1D("hDistYClusterClosestPx_2px",
+                 "Distance 2px-cluster center to pixel closest to track; y_{cluster} - y_{closest pixel} [um]; # events",
+                 2000,
+                 -1000,
+                 1000);
+    hDistX_3px =
+        new TH1D("hDistXClusterClosestPx_3px",
+                 "Distance 3px-cluster center to pixel closest to track; x_{cluster} - x_{closest pixel} [um]; # events",
+                 2000,
+                 -1000,
+                 1000);
+    hDistY_3px =
+        new TH1D("hDistYClusterClosestPx_3px",
+                 "Distance 3px-cluster center to pixel closest to track; y_{cluster} - y_{closest pixel} [um]; # events",
+                 2000,
+                 -1000,
+                 1000);
 
     // Nr of associated clusters per track
     title = m_detector->name() + ": number of associated clusters per track;associated clusters;events";
     hNoAssocCls = new TH1F("no_assoc_cls", title.c_str(), 10, 0, 10);
+    LOG(DEBUG) << "DUT association time cut = " << Units::display(timeCut, {"ms", "ns"});
 }
 
 StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
@@ -86,7 +110,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Loop over all tracks
     for(auto& track : (*tracks)) {
-        // std::cout <<track->chi2() <<", " << track->state(m_detector->name())<<std::endl;
+        LOG(TRACE) << "Proccessing track with model " << track->getType() << ", chi2 of " << track->chi2();
         int assoc_cls_per_track = 0;
         auto min_distance = std::numeric_limits<double>::max();
 
@@ -119,25 +143,25 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
                 ydistance_nearest = std::min(ydistance_nearest, std::abs(interceptLocal.Y() - pixelPositionLocal.y()));
             }
 
-            hX1X2->Fill(xdistance_centre - xdistance_nearest);
-            hY1Y2->Fill(ydistance_centre - ydistance_nearest);
+            hDistX->Fill(xdistance_centre - xdistance_nearest);
+            hDistY->Fill(ydistance_centre - ydistance_nearest);
             if(cluster->columnWidth() == 1) {
-                hX1X2_1px->Fill(static_cast<double>(Units::convert(xdistance_centre - xdistance_nearest, "um")));
+                hDistX_1px->Fill(static_cast<double>(Units::convert(xdistance_centre - xdistance_nearest, "um")));
             }
             if(cluster->rowWidth() == 1) {
-                hY1Y2_1px->Fill(static_cast<double>(Units::convert(ydistance_centre - ydistance_nearest, "um")));
+                hDistY_1px->Fill(static_cast<double>(Units::convert(ydistance_centre - ydistance_nearest, "um")));
             }
             if(cluster->columnWidth() == 2) {
-                hX1X2_2px->Fill(static_cast<double>(Units::convert(xdistance_centre - xdistance_nearest, "um")));
+                hDistX_2px->Fill(static_cast<double>(Units::convert(xdistance_centre - xdistance_nearest, "um")));
             }
             if(cluster->rowWidth() == 2) {
-                hY1Y2_2px->Fill(static_cast<double>(Units::convert(ydistance_centre - ydistance_nearest, "um")));
+                hDistY_2px->Fill(static_cast<double>(Units::convert(ydistance_centre - ydistance_nearest, "um")));
             }
             if(cluster->columnWidth() == 3) {
-                hX1X2_3px->Fill(static_cast<double>(Units::convert(xdistance_centre - xdistance_nearest, "um")));
+                hDistX_3px->Fill(static_cast<double>(Units::convert(xdistance_centre - xdistance_nearest, "um")));
             }
             if(cluster->rowWidth() == 3) {
-                hY1Y2_3px->Fill(static_cast<double>(Units::convert(ydistance_centre - ydistance_nearest, "um")));
+                hDistY_3px->Fill(static_cast<double>(Units::convert(ydistance_centre - ydistance_nearest, "um")));
             }
 
             // Check if the cluster is close in space (either use cluster centre of closest pixel to track)
@@ -147,14 +171,14 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             if(std::abs(xdistance) > spatialCut.x() || std::abs(ydistance) > spatialCut.y()) {
                 LOG(DEBUG) << "Discarding DUT cluster with distance (" << Units::display(std::abs(xdistance), {"um", "mm"})
                            << "," << Units::display(std::abs(ydistance), {"um", "mm"}) << ")"
-                           << " with local track intersection at " << interceptLocal;
+                           << " with local track intersection at " << Units::display(interceptLocal, {"um", "mm"});
                 hCutHisto->Fill(1);
                 num_cluster++;
                 continue;
             }
 
             // Check if the cluster is close in time
-            if(std::abs(cluster->timestamp() - track->timestamp()) > timingCut) {
+            if(std::abs(cluster->timestamp() - track->timestamp()) > timeCut) {
                 LOG(DEBUG) << "Discarding DUT cluster with time difference "
                            << Units::display(std::abs(cluster->timestamp() - track->timestamp()), {"ms", "s"});
                 hCutHisto->Fill(2);
@@ -187,7 +211,8 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
 void DUTAssociation::finalise() {
     hCutHisto->Scale(1 / double(num_cluster));
-    LOG(INFO) << "In total, " << assoc_cluster_counter << " clusters are associated to tracks.";
+    LOG(STATUS) << "In total, " << assoc_cluster_counter << " clusters are associated to " << track_w_assoc_cls
+                << " tracks.";
     LOG(INFO) << "Number of tracks with at least one associated cluster: " << track_w_assoc_cls;
     return;
 }

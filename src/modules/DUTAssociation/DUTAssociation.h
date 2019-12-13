@@ -27,7 +27,7 @@ namespace corryvreckan {
 
     private:
         std::shared_ptr<Detector> m_detector;
-        double timingCut;
+        double timeCut;
         ROOT::Math::XYVector spatialCut;
         bool useClusterCentre;
 
@@ -38,14 +38,14 @@ namespace corryvreckan {
         int track_w_assoc_cls = 0;
 
         TH1F* hNoAssocCls;
-        TH1D* hX1X2;
-        TH1D* hY1Y2;
-        TH1D* hX1X2_1px;
-        TH1D* hY1Y2_1px;
-        TH1D* hX1X2_2px;
-        TH1D* hY1Y2_2px;
-        TH1D* hX1X2_3px;
-        TH1D* hY1Y2_3px;
+        TH1D* hDistX;
+        TH1D* hDistY;
+        TH1D* hDistX_1px;
+        TH1D* hDistY_1px;
+        TH1D* hDistX_2px;
+        TH1D* hDistY_2px;
+        TH1D* hDistX_3px;
+        TH1D* hDistY_3px;
     };
 } // namespace corryvreckan
 #endif // DUTAssociation_H
