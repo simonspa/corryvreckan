@@ -9,14 +9,11 @@ using namespace corryvreckan;
 using namespace gbl;
 using namespace std;
 
-GblTrack::GblTrack() : Track() {
-    m_trackModel = "gbl";
-}
+GblTrack::GblTrack() : Track() {}
 
 GblTrack::GblTrack(const Track& track) : Track(track) {
-    if(m_trackModel != "gbl")
-        throw Exception("track model changed!");
-    fit();
+    if(track.getType() != this->getType())
+        throw TrackModelChanged(typeid(*this), track.getType(), this->getType());
 }
 
 double GblTrack::distance2(const Cluster* cluster) const {
