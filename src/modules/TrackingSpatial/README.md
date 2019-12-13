@@ -12,6 +12,8 @@ This module performs track finding using only positional information (no timing 
 * `spatial_cut_abs`: Specifies a set of absolute value (x and y) which defines an ellipse for the maximum spatial distance in the XY plane between clusters and a track for association to the track. Absolute and relative spatial cuts are mutually exclusive. No default value.
 * `min_hits_on_track`: The minimum number of planes with clusters associated to a track for it to be stored. Default value is `6`.
 * `exclude_dut`: Boolean to set if the DUT should be included in the track fitting. Default value is `true`.
+* `track_model`: Select the track model used for reconstruction. Defaults to
+the only supported fit at the "straightline"
 
 ### Plots produced
 
@@ -31,4 +33,6 @@ For each detector, the following plots are produced:
 spatial_cut_rel = 5.0
 min_hits_on_track = 5
 exclude_dut = true
+track_model = "straightline"
+
 ```

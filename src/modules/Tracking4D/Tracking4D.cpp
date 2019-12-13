@@ -32,7 +32,7 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     excludeDUT = m_config.get<bool>("exclude_dut", true);
     requireDetectors = m_config.getArray<std::string>("require_detectors", {""});
     timestampFrom = m_config.get<std::string>("timestamp_from", {});
-
+    trackModel = m_config.get<std::string>("track_model", "straightline");
     // spatial cut, relative (x * spatial_resolution) or absolute:
     if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
         throw InvalidCombinationError(
@@ -165,7 +165,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         // Make a new track
         LOG(DEBUG) << "Looking at next seed cluster";
 
-        Track* track = new Track();
+        auto track = Track::Factory(trackModel);
         // Add the cluster to the track
         track->addCluster(cluster);
         track->setTimestamp(cluster->timestamp());
