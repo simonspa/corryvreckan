@@ -136,6 +136,6 @@ Track* corryvreckan::Track::Factory(std::string trackModel) {
     } else if(trackModel == "gbl") {
         return new GblTrack();
     } else {
-        throw MissingTrackModelException(typeid(Track), trackModel);
+        throw MissingTrackModelReference(typeid(Track), trackModel);
     }
 }

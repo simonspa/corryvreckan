@@ -109,6 +109,21 @@ namespace corryvreckan {
         }
     };
 
+    class GblException : public TrackError {
+    public:
+        /**
+         * @brief Constructs an error for a object with missing reference
+         * @param source Type of the object from which the reference was requested
+         * @param reference Type of the non-existing reference
+         */
+        explicit GblException(const std::type_info& source, const std::string reference) : TrackError(typeid(source)) {
+            error_message_ = "Object ";
+            error_message_ += corryvreckan::demangle(source.name());
+            error_message_ += "  is failing due to ";
+            error_message_ += reference;
+        }
+    };
+
 } // namespace corryvreckan
 
 #endif /* CORRYVRECKAN_OBJECT_EXCEPTIONS_H */
