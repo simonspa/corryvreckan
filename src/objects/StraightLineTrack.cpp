@@ -56,10 +56,12 @@ void StraightLineTrack::calculateChi2() {
         }
 
         // Get the distance and the error
-        ROOT::Math::XYPoint dist = this->distance(cluster);
-        double ex2 = cluster->errorX() * cluster->errorX();
-        double ey2 = cluster->errorY() * cluster->errorY();
-        m_chi2 += (dist.x() * dist.x() / ex2 + dist.y() * dist.y() / ey2);
+        //        ROOT::Math::XYPoint dist = this->distance(cluster);
+        //        double ex2 = cluster->errorX() * cluster->errorX();
+        //        double ey2 = cluster->errorY() * cluster->errorY();
+        //        m_chi2 += (dist.x() * dist.x() / ex2 + dist.y() * dist.y() / ey2);
+        double error2 = cluster->error() * cluster->error();
+        m_chi2 += (this->distance2(cluster) / error2);
     }
 
     // Store also the chi2/degrees of freedom
@@ -102,8 +104,10 @@ void StraightLineTrack::fit() {
         double y = cluster->global().y();
         double z = cluster->global().z();
         // cluster has an x/y error
-        double ex2 = cluster->errorX() * cluster->errorX();
-        double ey2 = cluster->errorY() * cluster->errorY();
+        double ex2 = cluster->error() * cluster->error();
+        double ey2 = cluster->error() * cluster->error();
+        // double ex2 = cluster->errorX() * cluster->errorX();
+        // double ey2 = cluster->errorY() * cluster->errorY();
         // Fill the matrices
         vecx(0) += x / ex2;
         vecx(1) += x * z / ex2;
