@@ -76,6 +76,9 @@ IF("${IsSystemDir}" STREQUAL "-1")
    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF("${IsSystemDir}" STREQUAL "-1")
 
+# Include corry cmake functions
+INCLUDE("cmake/corryvreckan.cmake")
+
 #########################################
 # Define build flags for Corryvreckan   #
 #########################################
@@ -103,13 +106,11 @@ ENDIF()
 # Prerequisistes for Corryvreckan #
 ###################################
 
-INCLUDE("cmake/corryvreckan.cmake")
-
 # Define the libraries
 SET(CORRYVRECKAN_LIBRARIES "")
 
 # ROOT is required for vector and persistency etc
-FIND_PACKAGE(ROOT REQUIRED COMPONENTS Minuit Minuit2 Gui GenVector)
+FIND_PACKAGE(ROOT REQUIRED COMPONENTS Minuit Minuit2 Gui GenVector Geom Core Hist RIO NO_MODULE)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
@@ -126,9 +127,16 @@ ENDIF()
 FIND_PACKAGE(Eigen3 REQUIRED)
 
 
+# Eigen3
+FIND_PACKAGE(Eigen3 REQUIRED NO_MODULE)
+
+# Prepare ROOT and EIGEN3 Targets if necessary:
+CORRYVRECKAN_SETUP_ROOT_TARGETS()
+CORRYVRECKAN_SETUP_EIGEN_TARGETS()
+
 # Set the dependencies
-SET(CORRYVRECKAN_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS}  ${EIGEN3_INCLUDE_DIR})
-SET(CORRYVRECKAN_DEPS_LIBRARIES ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES}${EIGEN3_LIBRARIES})
+SET(CORRYVRECKAN_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
+SET(CORRYVRECKAN_DEPS_LIBRARIES Eigen3::Eigen ROOT::Core ROOT::GenVector ROOT::Geom ROOT::RIO ROOT::Hist ROOT::Minuit ROOT::Minuit2)
 
 # Add "thisroot.sh" as runtime dependency for setup.sh file:
 ADD_RUNTIME_DEP(thisroot.sh)

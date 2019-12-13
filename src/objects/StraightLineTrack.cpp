@@ -136,7 +136,7 @@ void StraightLineTrack::fit() {
 
     // Check for singularities.
     if(matx.determinant() == 0. || maty.determinant() == 0.)
-        return;
+        throw TrackFitError(typeid(this), "Martix inversion in straight line fit failed");
 
     // Get the StraightLineTrack parameters
     Eigen::Vector2d resX = matx.inverse() * vecx;
