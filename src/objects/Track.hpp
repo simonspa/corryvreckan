@@ -201,6 +201,12 @@ namespace corryvreckan {
         bool isFitted() const { return m_isFitted; }
 
         /**
+         * @brief Get the track Model
+         * @return
+         */
+        std::string trackModel() const { return m_trackModel; }
+
+        /**
          * @brief Get the residual for a given detector layer
          * @param detectorID
          * @return  2D residual as ROOT::Math::XYPoint
