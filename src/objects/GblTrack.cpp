@@ -110,6 +110,7 @@ void GblTrack::fit() {
         }
         gblcounter++;
     }
+    m_isFitted = true;
 }
 
 ROOT::Math::XYZPoint GblTrack::intercept(double z) const {
