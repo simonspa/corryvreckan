@@ -421,14 +421,16 @@ bool DefaultLogger::is_terminal(std::ostream& stream) {
  * used instead. This means a return value of zero
  * corresponds to no exception and one to at least one exception.
  */
-int DefaultLogger::get_uncaught_exceptions(bool cons = false) {
 #if __cplusplus > 201402L
+int DefaultLogger::get_uncaught_exceptions(bool) {
     // we can only do this fully correctly in C++17
     return std::uncaught_exceptions();
+}
 #else
+int DefaultLogger::get_uncaught_exceptions(bool cons = false) {
     if(cons) {
         return 0;
     }
     return static_cast<int>(std::uncaught_exception());
-#endif
 }
+#endif

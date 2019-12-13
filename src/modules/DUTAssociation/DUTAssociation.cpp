@@ -110,6 +110,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Loop over all tracks
     for(auto& track : (*tracks)) {
+        LOG(TRACE) << "Proccessing track with model " << track->getType() << ", chi2 of " << track->chi2();
         int assoc_cls_per_track = 0;
         auto min_distance = std::numeric_limits<double>::max();
 
@@ -169,7 +170,8 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             auto distance = sqrt(xdistance * xdistance + ydistance * ydistance);
             if(std::abs(xdistance) > spatialCut.x() || std::abs(ydistance) > spatialCut.y()) {
                 LOG(DEBUG) << "Discarding DUT cluster with distance (" << Units::display(std::abs(xdistance), {"um", "mm"})
-                           << "," << Units::display(std::abs(ydistance), {"um", "mm"}) << ")";
+                           << "," << Units::display(std::abs(ydistance), {"um", "mm"}) << ")"
+                           << " with local track intersection at " << Units::display(interceptLocal, {"um", "mm"});
                 hCutHisto->Fill(1);
                 num_cluster++;
                 continue;
