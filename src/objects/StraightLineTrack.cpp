@@ -83,12 +83,8 @@ double StraightLineTrack::operator()(const double* parameters) {
 
 void StraightLineTrack::fit() {
 
-    Eigen::Vector2d vecx(0, 0);
-    Eigen::Vector2d vecy(0, 0);
-    Eigen::Matrix2d matx;
-    matx << 0, 0, 0, 0;
-    Eigen::Matrix2d maty;
-    maty << 0, 0, 0, 0;
+    Eigen::Matrix4d mat(Eigen::Matrix4d::Zero());
+    Eigen::Vector4d vec(Eigen::Vector4d::Zero());
 
     // Loop over all clusters and fill the matrices
     for(auto& cl : m_trackClusters) {
@@ -97,44 +93,36 @@ void StraightLineTrack::fit() {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
         }
 
-        // Get the global point details
+        // Get the measurement and its errors
         double x = cluster->global().x();
         double y = cluster->global().y();
         double z = cluster->global().z();
-        // cluster has an x/y error
         double ex2 = cluster->errorX() * cluster->errorX();
         double ey2 = cluster->errorY() * cluster->errorY();
-        // Fill the matrices
-        vecx(0) += x / ex2;
-        vecx(1) += x * z / ex2;
-        vecy(0) += y / ey2;
-        vecy(1) += y * z / ey2;
 
-        matx(0, 0) += 1. / ex2;
-        matx(1, 0) += z / ex2;
-        matx(0, 1) = matx(1, 0);
-        matx(1, 1) += z * z / ex2;
-        maty(0, 0) += 1. / ey2;
-        maty(1, 0) += z / ey2;
-        maty(0, 1) = maty(1, 0);
-        maty(1, 1) += z * z / ey2;
+        // Fill the matrices
+        vec += Eigen::Vector4d((x / ex2), (x * z / ex2), (y / ey2), (y * z / ey2));
+        Eigen::Vector4d pos(x, x, y, y);
+        Eigen::Matrix2d err;
+        err << 1, z, z, z * z;
+        mat.topLeftCorner(2, 2) += err / ex2;
+        mat.bottomRightCorner(2, 2) += err / ex2;
     }
 
     // Check for singularities.
-    if(matx.determinant() == 0. || maty.determinant() == 0.)
+    if(fabs(mat.determinant()) < std::numeric_limits<double>::epsilon()) {
         throw TrackFitError(typeid(this), "Martix inversion in straight line fit failed");
-
+    }
     // Get the StraightLineTrack parameters
-    Eigen::Vector2d resX = matx.inverse() * vecx;
-    Eigen::Vector2d resY = maty.inverse() * vecy;
+    Eigen::Vector4d res = mat.inverse() * vec;
 
     // Set the StraightLineTrack parameters
-    m_state.SetX(resX(0));
-    m_state.SetY(resY(0));
+    m_state.SetX(res(0));
+    m_state.SetY(res(2));
     m_state.SetZ(0.);
 
-    m_direction.SetX(resX(1));
-    m_direction.SetY(resY(1));
+    m_direction.SetX(res(1));
+    m_direction.SetY(res(3));
     m_direction.SetZ(1.);
 
     // Calculate the chi2
