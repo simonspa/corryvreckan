@@ -80,7 +80,8 @@ StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
             auto type_idx = std::type_index(typeid(block.second));
             auto class_name = corryvreckan::demangle(type_idx.name());
             auto class_name_full = corryvreckan::demangle(type_idx.name(), true);
-            LOG(WARNING) << "Received objects of type \"" << class_name << "\" in " << block.second.size() << " blocks";
+            LOG(WARNING) << "Received objects of type \"" << class_name << std::endl
+                         << class_name_full << "\" in " << block.second.size() << " blocks";
 
             // Check if these objects should be stored
             if((!include_.empty() && include_.find(class_name) == include_.end()) ||

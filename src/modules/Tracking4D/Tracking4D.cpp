@@ -95,7 +95,7 @@ void Tracking4D::initialise() {
         kinkX[detectorID] = new TH1F("kinkX", title.c_str(), 500, -0.01, -0.01);
         title = detectorID + " kinkY ;kink [rad];events";
         kinkY[detectorID] = new TH1F("kinkY", title.c_str(), 500, -0.01, -0.01);
-        // Do not create plots for detector snot participating in the tracking:
+        // Do not create plots for detectors not participating in the tracking:
         if(excludeDUT && detector->isDUT()) {
             directory->cd();
             continue;
