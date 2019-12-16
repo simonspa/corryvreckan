@@ -182,31 +182,36 @@ namespace gbl {
         void printData() const;
 
     private:
-        unsigned int numAllPoints;           ///< Number of all points on trajectory
-        std::vector<unsigned int> numPoints; ///< Number of points on (sub)trajectory
-        unsigned int numTrajectories;        ///< Number of trajectories (in composed trajectory)
-        unsigned int numOffsets;             ///< Number of (points with) offsets on trajectory
-        unsigned int numInnerTrans;          ///< Number of inner transformations to external parameters
-        unsigned int numCurvature;           ///< Number of curvature parameters (0 or 1) or external parameters
-        unsigned int numParameters;          ///< Number of fit parameters
-        unsigned int numLocals;              ///< Total number of (additional) local parameters
-        unsigned int numMeasurements;        ///< Total number of measurements
-        unsigned int externalPoint;          ///< Label of external point (or 0)
+        unsigned int numAllPoints;            ///< Number of all points on trajectory
+        std::vector<unsigned int> numPoints;  ///< Number of points on (sub)trajectory
+        unsigned int numTrajectories;         ///< Number of trajectories (in composed trajectory)
+        unsigned int numOffsets;              ///< Number of (points with) offsets on trajectory
+        unsigned int numInnerTransformations; ///< Number of inner transformations to external parameters
+        unsigned int numInnerTransOffsets; ///< Number of (points with) offsets affected by inner transformations to external
+                                           ///parameters
+        unsigned int numCurvature;         ///< Number of curvature parameters (0 or 1) or external parameters
+        unsigned int numParameters;        ///< Number of fit parameters
+        unsigned int numLocals;            ///< Total number of (additional) local parameters
+        unsigned int numMeasurements;      ///< Total number of measurements
+        unsigned int externalPoint;        ///< Label of external point (or 0)
         unsigned int skippedMeasLabel; ///< Label of point with measurements skipped in fit (for unbiased residuals) (or 0)
         unsigned int maxNumGlobals;    ///< Max. number of global labels/derivatives per point
         bool constructOK;              ///< Trajectory has been successfully constructed (ready for fit/output)
         bool fitOK;                    ///< Trajectory has been successfully fitted (results are valid)
-        std::vector<unsigned int> theDimension;            ///< List of active dimensions (0=u1, 1=u2) in fit
-        std::vector<std::vector<GblPoint>> thePoints;      ///< (list of) List of points on trajectory
-        std::vector<GblData> theData;                      ///< List of data blocks
-        std::vector<unsigned int> measDataIndex;           ///< mapping points to data blocks from measurements
-        std::vector<unsigned int> scatDataIndex;           ///< mapping points to data blocks from scatterers
-        Eigen::MatrixXd externalSeed;                      ///< Precision (inverse covariance matrix) of external seed
-        std::vector<Eigen::MatrixXd> innerTransformations; ///< Transformations at innermost points of
-        // composed trajectory (from common external parameters)
-        Eigen::MatrixXd externalDerivatives;  // Derivatives for external measurements of composed trajectory
-        Eigen::VectorXd externalMeasurements; // Residuals for external measurements of composed trajectory
-        Eigen::VectorXd externalPrecisions;   // Precisions for external measurements of composed trajectory
+        std::vector<unsigned int> theDimension;       ///< List of active dimensions (0=u1, 1=u2) in fit
+        std::vector<std::vector<GblPoint>> thePoints; ///< (list of) List of points on trajectory
+        std::vector<GblData> theData;                 ///< List of data blocks
+        std::vector<unsigned int> measDataIndex;      ///< mapping points to data blocks from measurements
+        std::vector<unsigned int> scatDataIndex;      ///< mapping points to data blocks from scatterers
+        Eigen::MatrixXd externalSeed;                 ///< Precision (inverse covariance matrix) of external seed
+        // composed trajectory
+        std::vector<Eigen::MatrixXd> innerTransformations; ///< Transformations at innermost points of composed trajectory
+                                                           ///(from common external parameters)
+        std::vector<Eigen::MatrixXd> innerTransDer;        ///< Derivatives at innermost points of composed trajectory
+        std::vector<std::array<unsigned int, 5>> innerTransLab; ///< Labels at innermost points of composed trajectory
+        Eigen::MatrixXd externalDerivatives;  ///< Derivatives for external measurements of composed trajectory
+        Eigen::VectorXd externalMeasurements; ///< Residuals for external measurements of composed trajectory
+        Eigen::VectorXd externalPrecisions;   ///< Precisions for external measurements of composed trajectory
         // linear equation system
         VVector theVector;            ///< Vector of linear equation system
         BorderedBandMatrix theMatrix; ///< (Bordered band) matrix of linear equation system
@@ -236,10 +241,10 @@ namespace gbl {
                                  bool flagCurv,
                                  bool flagU1dir,
                                  bool flagU2dir)
-        : numAllPoints(aPointList.size()), numPoints(), numOffsets(0), numInnerTrans(0), numCurvature(flagCurv ? 1 : 0),
-          numParameters(0), numLocals(0), numMeasurements(0), externalPoint(aLabel), skippedMeasLabel(0), maxNumGlobals(0),
-          theDimension(0), thePoints(), theData(), measDataIndex(), scatDataIndex(), externalSeed(aSeed),
-          innerTransformations(), externalDerivatives(), externalMeasurements(), externalPrecisions() {
+        : numAllPoints(aPointList.size()), numPoints(), numOffsets(0), numInnerTransformations(0), numInnerTransOffsets(0),
+          numCurvature(flagCurv ? 1 : 0), numParameters(0), numLocals(0), numMeasurements(0), externalPoint(aLabel),
+          skippedMeasLabel(0), maxNumGlobals(0), theDimension(0), thePoints(), theData(), measDataIndex(), scatDataIndex(),
+          externalSeed(aSeed), innerTransformations(), externalDerivatives(), externalMeasurements(), externalPrecisions() {
 
         if(flagU1dir)
             theDimension.push_back(0);
@@ -259,7 +264,7 @@ namespace gbl {
                                  const Eigen::MatrixBase<Derivatives>& extDerivatives,
                                  const Eigen::MatrixBase<Measurements>& extMeasurements,
                                  const Eigen::MatrixBase<Precision>& extPrecisions)
-        : numAllPoints(), numPoints(), numOffsets(0), numInnerTrans(aPointsAndTransList.size()), numParameters(0),
+        : numAllPoints(), numPoints(), numOffsets(0), numInnerTransformations(aPointsAndTransList.size()), numParameters(0),
           numLocals(0), numMeasurements(0), externalPoint(0), skippedMeasLabel(0), maxNumGlobals(0), theDimension(0),
           thePoints(), theData(), measDataIndex(), scatDataIndex(), externalSeed(), innerTransformations() {
 
@@ -290,7 +295,10 @@ namespace gbl {
         }
         theDimension.push_back(0);
         theDimension.push_back(1);
-        numCurvature = innerTransformations[0].cols();
+        // kinematic (2) or geometric (1) constraint
+        numInnerTransOffsets = innerTransformations[0].rows() == 5 ? 2 : 1;
+        numCurvature = innerTransformations[0].rows() == 5 ? innerTransformations[0].cols()
+                                                           : innerTransformations[0].cols() + numInnerTransformations;
         construct(); // construct (composed) trajectory
     }
 
@@ -302,7 +310,7 @@ namespace gbl {
                                  const Eigen::MatrixBase<Derivatives>& extDerivatives,
                                  const Eigen::MatrixBase<Measurements>& extMeasurements,
                                  const Eigen::MatrixBase<Precision>& extPrecisions)
-        : numAllPoints(), numPoints(), numOffsets(0), numInnerTrans(aPointsAndTransList.size()), numParameters(0),
+        : numAllPoints(), numPoints(), numOffsets(0), numInnerTransformations(aPointsAndTransList.size()), numParameters(0),
           numLocals(0), numMeasurements(0), externalPoint(0), skippedMeasLabel(0), maxNumGlobals(0), theDimension(0),
           thePoints(), theData(), measDataIndex(), scatDataIndex(), externalSeed(), innerTransformations() {
         static_assert(static_cast<int>(Measurements::ColsAtCompileTime) == 1,
@@ -324,7 +332,10 @@ namespace gbl {
         }
         theDimension.push_back(0);
         theDimension.push_back(1);
-        numCurvature = innerTransformations[0].cols();
+        // kinematic (2) or geometric (1) constraint
+        numInnerTransOffsets = innerTransformations[0].rows() == 5 ? 2 : 1;
+        numCurvature = innerTransformations[0].rows() == 5 ? innerTransformations[0].cols()
+                                                           : innerTransformations[0].cols() + numInnerTransformations;
         construct(); // construct (composed) trajectory
     }
 }
