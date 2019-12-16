@@ -173,6 +173,7 @@ ROOT::Math::XYZVector GblTrack::direction(std::string detectorID) const {
     std::cout << ((pointAfter - point) / (pointAfter.z() - point.z())) -
                      (point - pointBefore) / (point.z() - pointBefore.z())
               << ", " << m_kink.at(detectorID) << std::endl;
+
     return ((pointAfter - point) / (pointAfter.z() - point.z()));
 }
 
