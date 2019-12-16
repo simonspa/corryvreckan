@@ -73,11 +73,6 @@ void Tracking4D::initialise() {
     for(auto& detector : get_detectors()) {
         auto detectorID = detector->name();
 
-        // Do not create plots for detectors not participating in the tracking:
-        if(excludeDUT && detector->isDUT()) {
-            continue;
-        }
-
         // Do not created plots for auxiliary detectors:
         if(detector->isAuxiliary()) {
             continue;
@@ -359,6 +354,11 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         for(auto& det : detectors) {
+            if(!kinkX.count(det)) {
+                LOG(WARNING) << "Skipping writing kinks due to missing histogram for  " << det;
+                continue;
+            }
+
             XYPoint kink = track->kink(det);
             kinkX.at(det)->Fill(kink.x());
             kinkY.at(det)->Fill(kink.y());
