@@ -122,11 +122,6 @@ IF (NOT ${ROOT_VERSION} VERSION_GREATER "6.0")
 ENDIF()
 #
 
-#SET(GBLPATH ${PROJECT_SOURCE_DIR}/3rdparty/GeneralBrokenLines)
-#FIND_PACKAGE(GBL QUIET REQUIRED)
-FIND_PACKAGE(Eigen3 REQUIRED)
-
-
 # Eigen3
 FIND_PACKAGE(Eigen3 REQUIRED NO_MODULE)
 
@@ -161,7 +156,6 @@ INCLUDE("cmake/clang-cpp-checks.cmake")
 
 # Always include sources from top directory
 INCLUDE_DIRECTORIES(src)
-INCLUDE_DIRECTORIES(3rdparty)
 
 # Build objects library
 ADD_SUBDIRECTORY(src/objects)
