@@ -128,14 +128,15 @@ FIND_PACKAGE(Eigen3 REQUIRED NO_MODULE)
 CORRYVRECKAN_SETUP_ROOT_TARGETS()
 CORRYVRECKAN_SETUP_EIGEN_TARGETS()
 
+ADD_SUBDIRECTORY(3rdparty/GeneralBrokenLines)
+
 # Set the dependencies
-SET(CORRYVRECKAN_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
-SET(CORRYVRECKAN_DEPS_LIBRARIES Eigen3::Eigen ROOT::Core ROOT::GenVector ROOT::Geom ROOT::RIO ROOT::Hist ROOT::Minuit ROOT::Minuit2)
+SET(CORRYVRECKAN_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS} ${GBL_INCLUDE_DIRS})
+SET(CORRYVRECKAN_DEPS_LIBRARIES Eigen3::Eigen ROOT::Core ROOT::GenVector ROOT::Geom ROOT::RIO ROOT::Hist ROOT::Minuit ROOT::Minuit2 GBL)
 
 # Add "thisroot.sh" as runtime dependency for setup.sh file:
 ADD_RUNTIME_DEP(thisroot.sh)
 
-ADD_SUBDIRECTORY(3rdparty/GeneralBrokenLines)
 
 ###################################
 # Load cpp format and check tools #
