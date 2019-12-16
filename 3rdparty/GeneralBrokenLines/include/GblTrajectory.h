@@ -188,7 +188,7 @@ namespace gbl {
         unsigned int numOffsets;              ///< Number of (points with) offsets on trajectory
         unsigned int numInnerTransformations; ///< Number of inner transformations to external parameters
         unsigned int numInnerTransOffsets; ///< Number of (points with) offsets affected by inner transformations to external
-                                           /// parameters
+                                           ///parameters
         unsigned int numCurvature;         ///< Number of curvature parameters (0 or 1) or external parameters
         unsigned int numParameters;        ///< Number of fit parameters
         unsigned int numLocals;            ///< Total number of (additional) local parameters
@@ -338,5 +338,5 @@ namespace gbl {
                                                            : innerTransformations[0].cols() + numInnerTransformations;
         construct(); // construct (composed) trajectory
     }
-} // namespace gbl
+}
 #endif /* GBLTRAJECTORY_H_ */
