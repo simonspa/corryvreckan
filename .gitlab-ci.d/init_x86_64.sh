@@ -96,6 +96,14 @@ export Ninja_HOME=${CLICREPO}/software/Ninja/1.7.2/${BUILD_FLAVOUR}
 export PATH="$Ninja_HOME:$PATH"
 
 #--------------------------------------------------------------------------------
+#     Eigen
+#--------------------------------------------------------------------------------
+
+export Eigen_HOME=${CLICREPO}/software/Eigen/3.3.3/${BUILD_FLAVOUR}/
+export Eigen3_DIR=${Eigen_HOME}/share/eigen3/cmake/
+export CMAKE_PREFIX_PATH="$Eigen3_DIR:$CMAKE_PREFIX_PATH"
+
+#--------------------------------------------------------------------------------
 #     Doxygen
 #--------------------------------------------------------------------------------
 
@@ -108,4 +116,3 @@ export PATH="$Doxygen_HOME:$PATH"
 
 export Git_HOME=${CLICREPO}/software/git/2.13.2/${BUILD_FLAVOUR}
 export PATH=${Git_HOME}/bin:${PATH}
-

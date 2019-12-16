@@ -1,4 +1,5 @@
 #include "StraightLineTrack.hpp"
+#include "Eigen/Dense"
 #include "Track.hpp"
 #include "exceptions.h"
 
@@ -26,6 +27,19 @@ double StraightLineTrack::distance2(const Cluster* cluster) const {
     // Return the distance^2
     return (dx * dx + dy * dy);
 }
+ROOT::Math::XYPoint StraightLineTrack::distance(const Cluster* cluster) const {
+
+    // Get the StraightLineTrack X and Y at the cluster z position
+    double StraightLineTrackX = m_state.X() + m_direction.X() * cluster->global().z();
+    double StraightLineTrackY = m_state.Y() + m_direction.Y() * cluster->global().z();
+
+    // Calculate the 1D residuals
+    double dx = (StraightLineTrackX - cluster->global().x());
+    double dy = (StraightLineTrackY - cluster->global().y());
+
+    // Return the distance^2
+    return ROOT::Math::XYPoint(dx, dy);
+}
 
 void StraightLineTrack::calculateChi2() {
 
@@ -41,9 +55,11 @@ void StraightLineTrack::calculateChi2() {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
         }
 
-        // Get the distance^2 and the error^2
-        double error2 = cluster->error() * cluster->error();
-        m_chi2 += (this->distance2(cluster) / error2);
+        // Get the distance and the error
+        ROOT::Math::XYPoint dist = this->distance(cluster);
+        double ex2 = cluster->errorX() * cluster->errorX();
+        double ey2 = cluster->errorY() * cluster->errorY();
+        m_chi2 += (dist.x() * dist.x() / ex2 + dist.y() * dist.y() / ey2);
     }
 
     // Store also the chi2/degrees of freedom
@@ -67,10 +83,8 @@ double StraightLineTrack::operator()(const double* parameters) {
 
 void StraightLineTrack::fit() {
 
-    double vecx[2] = {0., 0.};
-    double vecy[2] = {0., 0.};
-    double matx[2][2] = {{0., 0.}, {0., 0.}};
-    double maty[2][2] = {{0., 0.}, {0., 0.}};
+    Eigen::Matrix4d mat(Eigen::Matrix4d::Zero());
+    Eigen::Vector4d vec(Eigen::Vector4d::Zero());
 
     // Loop over all clusters and fill the matrices
     for(auto& cl : m_trackClusters) {
@@ -79,47 +93,38 @@ void StraightLineTrack::fit() {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
         }
 
-        // Get the global point details
+        // Get the measurement and its errors
         double x = cluster->global().x();
         double y = cluster->global().y();
         double z = cluster->global().z();
-        double er2 = cluster->error() * cluster->error();
+        double ex2 = cluster->errorX() * cluster->errorX();
+        double ey2 = cluster->errorY() * cluster->errorY();
+
         // Fill the matrices
-        vecx[0] += x / er2;
-        vecx[1] += x * z / er2;
-        vecy[0] += y / er2;
-        vecy[1] += y * z / er2;
-        matx[0][0] += 1. / er2;
-        matx[1][0] += z / er2;
-        matx[1][1] += z * z / er2;
-        maty[0][0] += 1. / er2;
-        maty[1][0] += z / er2;
-        maty[1][1] += z * z / er2;
+        vec += Eigen::Vector4d((x / ex2), (x * z / ex2), (y / ey2), (y * z / ey2));
+        Eigen::Vector4d pos(x, x, y, y);
+        Eigen::Matrix2d err;
+        err << 1, z, z, z * z;
+        mat.topLeftCorner(2, 2) += err / ex2;
+        mat.bottomRightCorner(2, 2) += err / ex2;
     }
 
-    // Invert the matrices
-    double detx = matx[0][0] * matx[1][1] - matx[1][0] * matx[1][0];
-    double dety = maty[0][0] * maty[1][1] - maty[1][0] * maty[1][0];
-
     // Check for singularities.
-    if(detx == 0. || dety == 0.)
-        return;
-
+    if(fabs(mat.determinant()) < std::numeric_limits<double>::epsilon()) {
+        throw TrackFitError(typeid(this), "Martix inversion in straight line fit failed");
+    }
     // Get the StraightLineTrack parameters
-    double slopex = (vecx[1] * matx[0][0] - vecx[0] * matx[1][0]) / detx;
-    double slopey = (vecy[1] * maty[0][0] - vecy[0] * maty[1][0]) / dety;
-
-    double interceptx = (vecx[0] * matx[1][1] - vecx[1] * matx[1][0]) / detx;
-    double intercepty = (vecy[0] * maty[1][1] - vecy[1] * maty[1][0]) / dety;
+    Eigen::Vector4d res = mat.inverse() * vec;
 
     // Set the StraightLineTrack parameters
-    m_state.SetX(interceptx);
-    m_state.SetY(intercepty);
+    m_state.SetX(res(0));
+    m_state.SetY(res(2));
     m_state.SetZ(0.);
 
-    m_direction.SetX(slopex);
-    m_direction.SetY(slopey);
+    m_direction.SetX(res(1));
+    m_direction.SetY(res(3));
     m_direction.SetZ(1.);
+
     // Calculate the chi2
     this->calculateChi2();
     m_isFitted = true;
