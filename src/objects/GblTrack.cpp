@@ -28,8 +28,9 @@ void GblTrack::fit() {
 
     auto seedcluster = dynamic_cast<Cluster*>(m_trackClusters.at(0).GetObject());
 
-    // we need to store the previous z position as well as the up to know material
+    // we need to store the previous z position as well as the  material off all layers passed
     double total_material = 0, prev_z = 0;
+
     // keep track of the detectors to ensure we know which gblpoint later is from which plane - also remember if there was a
     // measurement
     std::vector<std::pair<std::string, bool>> detectors;
@@ -52,18 +53,20 @@ void GblTrack::fit() {
             Jac(3, 1) = current_z - prev_z;
             Jac(4, 2) = Jac(3, 1);
         }
+
         Eigen::Vector2d budget;
         budget(0) = 1 / (scatteringTheta(mb, total_material) * scatteringTheta(mb, total_material));
         budget(1) = budget(0);
         total_material += mb;
         auto point = GblPoint(Jac);
         point.addScatterer(Eigen::Vector2d::Zero(), budget);
+
         if(clusters.count(layer.first) == 1) {
             auto cluster = clusters.at(layer.first);
             Eigen::Vector2d initialResidual;
             initialResidual(0) = cluster->global().x() - seedcluster->global().x();
             initialResidual(1) = cluster->global().y() - seedcluster->global().y();
-            // uncertainty of single hit
+            // uncertainty of single hit - rotations ignored
             Eigen::Matrix2d covv = Eigen::Matrix2d::Identity();
             covv(0, 0) = 1. / cluster->errorX() / cluster->errorX();
             covv(1, 1) = 1. / cluster->errorY() / cluster->errorY();
@@ -75,21 +78,23 @@ void GblTrack::fit() {
         prev_z = current_z;
         points.push_back(point);
     }
-    // fit it
-    if(points.size() != m_materialBudget.size())
+
+    if(points.size() != m_materialBudget.size()) {
         throw GblException(typeid(GblTrack), "wrong number of measuremtns");
+    }
 
     GblTrajectory traj(points, false); // false = no magnetic field
     double lostWeight = 0;
     int ndf = 0;
+    // fit it
     unsigned success = traj.fit(m_chi2, ndf, lostWeight);
-    if(success != 0) {
+    if(success != 0) { // Is this a good ieda? shpuld we discard track candidates that fail?
         throw GblException(typeid(GblTrack), "fitting failed");
     }
-    m_ndof = double(ndf);
-    m_chi2ndof = (m_ndof < 0.0) ? -1 : (m_chi2 / m_ndof);
 
     // copy the results
+    m_ndof = double(ndf);
+    m_chi2ndof = (m_ndof < 0.0) ? -1 : (m_chi2 / m_ndof);
     Eigen::VectorXd localPar(5);
     Eigen::MatrixXd localCov(5, 5);
     Eigen::VectorXd gblCorrection(5);
@@ -135,7 +140,8 @@ ROOT::Math::XYZVector GblTrack::direction(std::string detectorID) const {
 
     ROOT::Math::XYZPoint point = state(detectorID);
     ROOT::Math::XYZPoint pointAfter, pointBefore;
-    // we need to check if the plane after has a hit - if so the ditection is simply the connection line,
+
+    // we need to check if the plane after has a hit - if so the direction is simply the connection line,
     // if before, we need to take the kink into account
     bool found = false;
     std::string before = "none", current = "none", after = "none";
@@ -161,9 +167,12 @@ ROOT::Math::XYZVector GblTrack::direction(std::string detectorID) const {
     tmp.SetX(tmp.x() + sin(m_kink.at(detectorID).x()));
     tmp.SetY(tmp.y() + sin(m_kink.at(detectorID).y()));
     // return scaled to zero
-    //    std::cout <<before<<", " <<detectorID <<", " << after <<", "<<pointBefore <<", " <<point<<", "<< pointAfter <<" "
-    //    <<std::endl<<tmp<<std::endl; std::cout << ((pointAfter-point)/(pointAfter.z()-point.z()))-
-    //    (point-pointBefore)/(point.z()-pointBefore.z())<<", "<< m_kink.at(detectorID) <<std::endl;
+    std::cout << before << ", " << detectorID << ", " << after << ", " << pointBefore << ", " << point << ", " << pointAfter
+              << " " << std::endl
+              << tmp << std::endl;
+    std::cout << ((pointAfter - point) / (pointAfter.z() - point.z())) -
+                     (point - pointBefore) / (point.z() - pointBefore.z())
+              << ", " << m_kink.at(detectorID) << std::endl;
     return ((pointAfter - point) / (pointAfter.z() - point.z()));
 }
 

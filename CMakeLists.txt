@@ -120,7 +120,6 @@ ENDIF()
 IF (NOT ${ROOT_VERSION} VERSION_GREATER "6.0")
     MESSAGE(FATAL_ERROR "ROOT versions below 6.0 are not supported")
 ENDIF()
-#
 
 # Eigen3
 FIND_PACKAGE(Eigen3 REQUIRED NO_MODULE)

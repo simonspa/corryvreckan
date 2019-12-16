@@ -319,6 +319,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         delete refTrack;
         // Fit the track and save it
         track->fit();
+        for(auto det : detectors)
+            LOG(TRACE) << track->direction(det);
         tracks->push_back(track);
         // LOG(WARNING)<< track->direction(detectors.at(2));
         // Fill histograms
@@ -355,7 +357,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
         for(auto& det : detectors) {
             if(!kinkX.count(det)) {
-                LOG(WARNING) << "Skipping writing kinks due to missing histogram for  " << det;
+                LOG(WARNING) << "Skipping writing kinks due to missing init of histograms for  " << det;
                 continue;
             }
 

@@ -2,6 +2,7 @@
 #define GblTrack_H 1
 
 #include "Track.hpp"
+
 namespace corryvreckan {
     /**
      * @ingroup Objects
