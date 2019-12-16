@@ -61,7 +61,7 @@ if [ ! -x "$CLANG_FORMAT" ] ; then
 fi
 
 # create one patch containing all changes to the files
-git diff-index --cached --diff-filter=ACMR --name-only $against --  src/* | while read file;
+git diff-index --cached --diff-filter=ACMR --name-only $against -- src/ | while read file;
 do
      printf "\n Reading"$file
     # ignore file if we do check for file extensions and the file
