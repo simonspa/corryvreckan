@@ -66,13 +66,6 @@ void StraightLineTrack::calculateChi2() {
     m_chi2ndof = m_chi2 / m_ndof;
 }
 
-void StraightLineTrack::setKinksZero() {
-    ROOT::Math::XYPoint p(0, 0);
-    for(auto layer : m_materialBudget) {
-        m_kink[layer.first] = p;
-    }
-}
-
 void StraightLineTrack::calculateResiduals() {
     for(auto c : m_trackClusters) {
         auto cluster = dynamic_cast<Cluster*>(c.GetObject());
@@ -141,7 +134,6 @@ void StraightLineTrack::fit() {
 
     // Calculate the chi2
     this->calculateChi2();
-    this->setKinksZero();
     this->calculateResiduals();
     m_isFitted = true;
 }
