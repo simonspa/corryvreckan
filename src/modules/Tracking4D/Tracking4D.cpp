@@ -92,7 +92,6 @@ void Tracking4D::initialise() {
         kinkY[detectorID] = new TH1F("kinkY", title.c_str(), 500, -0.01, -0.01);
         // Do not create plots for detectors not participating in the tracking:
         if(excludeDUT && detector->isDUT()) {
-            directory->cd();
             continue;
         }
 
