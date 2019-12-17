@@ -80,7 +80,7 @@ void GblTrack::fit() {
     }
 
     if(points.size() != m_materialBudget.size()) {
-        throw GblException(typeid(GblTrack), "wrong number of measuremtns");
+        throw TrackError(typeid(GblTrack), "wrong number of measuremtns");
     }
 
     GblTrajectory traj(points, false); // false = no magnetic field
@@ -89,7 +89,7 @@ void GblTrack::fit() {
     // fit it
     unsigned success = traj.fit(m_chi2, ndf, lostWeight);
     if(success != 0) { // Is this a good ieda? shpuld we discard track candidates that fail?
-        throw GblException(typeid(GblTrack), "fitting failed");
+        throw TrackFitError(typeid(GblTrack), "internal GBL Error " + to_string(success));
     }
 
     // copy the results
@@ -132,8 +132,8 @@ ROOT::Math::XYZPoint GblTrack::state(std::string detectorID) const {
             return ROOT::Math::XYZPoint(hit - res);
         }
     }
-    throw GblException(typeid(GblTrack),
-                       "no measurement given for plane " + detectorID + " available - cannot define the state");
+    throw TrackError(typeid(GblTrack),
+                     "no measurement given for plane " + detectorID + " available - cannot define the state");
 }
 
 ROOT::Math::XYZVector GblTrack::direction(std::string detectorID) const {
