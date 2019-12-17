@@ -90,6 +90,7 @@ void Tracking4D::initialise() {
         kinkX[detectorID] = new TH1F("kinkX", title.c_str(), 500, -0.01, -0.01);
         title = detectorID + " kinkY ;kink [rad];events";
         kinkY[detectorID] = new TH1F("kinkY", title.c_str(), 500, -0.01, -0.01);
+
         // Do not create plots for detectors not participating in the tracking:
         if(excludeDUT && detector->isDUT()) {
             continue;
@@ -121,8 +122,6 @@ void Tracking4D::initialise() {
 
         title = detectorID + " Pull Y;y_{track}-y/resolution;events";
         pullY[detectorID] = new TH1F("pully", title.c_str(), 500, -5, 5);
-
-        directory->cd();
     }
 }
 
