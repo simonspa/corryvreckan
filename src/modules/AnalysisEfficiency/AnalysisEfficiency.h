@@ -64,7 +64,7 @@ namespace corryvreckan {
 
         TH2D* hPosDiffPrevTrack_assocCluster;
         TH2D* hPosDiffPrevTrack_noAssocCluster;
-
+        TH2D* hDistanceCluster_track;
         double m_chi2ndofCut, m_timeCutFrameEdge, m_inpixelBinSize;
         int total_tracks = 0;
         int matched_tracks = 0;
