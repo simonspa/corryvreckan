@@ -96,12 +96,14 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             auto name = detector->name();
-            ROOT::Math::XYZPoint intercept = track->intercept(cluster->global().z());
-            auto interceptLocal = detector->globalToLocal(intercept);
-            telescopeResidualsLocalX[name]->Fill(cluster->local().x() - interceptLocal.X());
-            telescopeResidualsLocalY[name]->Fill(cluster->local().y() - interceptLocal.Y());
-            telescopeResidualsX[name]->Fill(cluster->global().x() - intercept.X());
-            telescopeResidualsY[name]->Fill(cluster->global().y() - intercept.Y());
+            ROOT::Math::XYPoint res = track->residual(name);
+
+            // ROOT::Math::XYZPoint intercept = track->intercept(cluster->global().z());
+            // auto interceptLocal = detector->globalToLocal(intercept);
+            // telescopeResidualsLocalX[name]->Fill(cluster->local().x() - interceptLocal.X());
+            // telescopeResidualsLocalY[name]->Fill(cluster->local().y() - interceptLocal.Y());
+            telescopeResidualsX[name]->Fill(res.x()); // cluster->global().x() - intercept.X());
+            telescopeResidualsY[name]->Fill(res.x()); // cluster->global().y() - intercept.Y());
 
             // Get the MC particles from the clipboard
             auto mcParticles = clipboard->getData<MCParticle>(name);
@@ -112,8 +114,9 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
             ROOT::Math::XYZPoint particlePosition = closestApproach(cluster->local(), mcParticles);
             telescopeMCresidualsLocalX[name]->Fill(cluster->local().x() + detector->size().X() / 2 - particlePosition.X());
             telescopeMCresidualsLocalY[name]->Fill(cluster->local().y() + detector->size().Y() / 2 - particlePosition.Y());
-            telescopeMCresidualsX[name]->Fill(interceptLocal.X() + detector->size().X() / 2 - particlePosition.X());
-            telescopeMCresidualsY[name]->Fill(interceptLocal.Y() + detector->size().Y() / 2 - particlePosition.Y());
+            //            telescopeMCresidualsX[name]->Fill(interceptLocal.X() + detector->size().X() / 2 -
+            //            particlePosition.X()); telescopeMCresidualsY[name]->Fill(interceptLocal.Y() + detector->size().Y()
+            //            / 2 - particlePosition.Y());
         }
 
         // Calculate telescope resolution at DUT
