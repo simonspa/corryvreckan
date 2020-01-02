@@ -18,7 +18,9 @@ namespace corryvreckan {
         GblTrack();
 
         // copy constructor
-        GblTrack(const Track& track);
+        GblTrack(const GblTrack& track);
+
+        virtual GblTrack* clone() const override { return new GblTrack(*this); }
 
         void print(std::ostream& out) const override;
 

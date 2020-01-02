@@ -7,11 +7,10 @@
 
 using namespace corryvreckan;
 using namespace gbl;
-using namespace std;
 
 GblTrack::GblTrack() : Track() {}
 
-GblTrack::GblTrack(const Track& track) : Track(track) {
+GblTrack::GblTrack(const GblTrack& track) : Track(track) {
     if(track.getType() != this->getType())
         throw TrackModelChanged(typeid(*this), track.getType(), this->getType());
 }
@@ -24,7 +23,7 @@ double GblTrack::distance2(const Cluster* cluster) const {
 void GblTrack::fit() {
 
     // create a list of gbl points:
-    vector<GblPoint> points;
+    std::vector<GblPoint> points;
 
     auto seedcluster = dynamic_cast<Cluster*>(m_trackClusters.at(0).GetObject());
 
@@ -41,6 +40,7 @@ void GblTrack::fit() {
         clusters[cluster->detectorID()] = cluster;
     }
 
+    // loop over all layers and add scatter/measurement
     for(auto layer : m_materialBudget) {
         double mb = layer.second.first;
         double current_z = layer.second.second;
@@ -83,13 +83,17 @@ void GblTrack::fit() {
         throw TrackError(typeid(GblTrack), "wrong number of measuremtns");
     }
 
+    if(points.size() != 6) {
+        throw TrackError(typeid(GblTrack), "Having " + std::to_string(points.size()) + " points, but expect 6");
+    }
+
     GblTrajectory traj(points, false); // false = no magnetic field
     double lostWeight = 0;
     int ndf = 0;
     // fit it
     unsigned success = traj.fit(m_chi2, ndf, lostWeight);
-    if(success != 0) { // Is this a good ieda? shpuld we discard track candidates that fail?
-        throw TrackFitError(typeid(GblTrack), "internal GBL Error " + to_string(success));
+    if(success != 0) { // Is this a good ieda? should we discard track candidates that fail?
+        throw TrackFitError(typeid(GblTrack), "internal GBL Error " + std::to_string(success));
     }
 
     // copy the results
@@ -108,6 +112,9 @@ void GblTrack::fit() {
     for(auto plane : detectors) {
         traj.getScatResults(gblcounter, numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
         m_kink[plane.first] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
+
+        traj.getResults(int(gblcounter), localPar, localCov);
+        m_corrections[plane.first] = ROOT::Math::XYZPoint(localPar(3), localPar(4), 0);
         if(plane.second) {
             traj.getMeasResults(
                 gblcounter, numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
@@ -119,61 +126,65 @@ void GblTrack::fit() {
 }
 
 ROOT::Math::XYZPoint GblTrack::intercept(double z) const {
-
-    return ROOT::Math::XYZPoint(0, 0, z);
+    // find the detector with largest z-positon <= z, assumes detectors sorted by z position
+    std::string layer = "";
+    bool found = false;
+    for(auto l : m_materialBudget) {
+        if(l.second.second >= z) {
+            found = true;
+            break;
+        }
+        layer = l.first;
+    }
+    if(!found) {
+        throw TrackError(typeid(GblTrack), "Z-Position of " + std::to_string(z) + " is outside the telescopes z-coverage");
+    }
+    return (state(layer) + direction(layer) * (z - state(layer).z()));
 }
 
 ROOT::Math::XYZPoint GblTrack::state(std::string detectorID) const {
-    for(auto& c : m_trackClusters) {
-        auto cluster = dynamic_cast<Cluster*>(c.GetObject());
-        if(cluster->detectorID() == detectorID) {
-            ROOT::Math::XYZPoint hit = cluster->global();
-            ROOT::Math::XYZPoint res(m_residual.at(cluster->detectorID()).x(), m_residual.at(cluster->detectorID()).y(), 0);
-            return ROOT::Math::XYZPoint(hit - res);
-        }
+    // The track state at any plane is the seed (always first cluster for now) plus the correction for the plane
+    // And as rotations are ignored, the z position is simply the detectors z postion
+    // Let's check first if the data is fitted and all components are there
+
+    if(!m_isFitted)
+        throw TrackError(typeid(GblTrack), " detector " + detectorID + " state is not defined before fitting");
+    if(m_materialBudget.count(detectorID) != 1) {
+        std::string list;
+        for(auto l : m_materialBudget)
+            list.append("\n " + l.first + " with <materialBudget, z position>(" + std::to_string(l.second.first) + ", " +
+                        std::to_string(l.second.second) + ")");
+        throw TrackError(typeid(GblTrack),
+                         " detector " + detectorID + " is not appearing in the material budget map" + list);
     }
-    throw TrackError(typeid(GblTrack),
-                     "no measurement given for plane " + detectorID + " available - cannot define the state");
+    if(m_corrections.count(detectorID) != 1)
+        throw TrackError(typeid(GblTrack), " detector " + detectorID + " is not appearing in the corrections map");
+
+    return ROOT::Math::XYZPoint(clusters().at(0)->global().x() + correction(detectorID).x(),
+                                clusters().at(0)->global().y() + correction(detectorID).y(),
+                                m_materialBudget.at(detectorID).second);
 }
 
 ROOT::Math::XYZVector GblTrack::direction(std::string detectorID) const {
 
+    // Defining the direction following the particle results in the direction
+    // beeing definded from the requested plane onwards to the next one
     ROOT::Math::XYZPoint point = state(detectorID);
-    ROOT::Math::XYZPoint pointAfter, pointBefore;
 
-    // we need to check if the plane after has a hit - if so the direction is simply the connection line,
-    // if before, we need to take the kink into account
+    // searching for the next detector layer
     bool found = false;
-    std::string before = "none", current = "none", after = "none";
+    std::string nextLayer = "";
     for(auto& layer : m_materialBudget) {
         if(found) {
-            after = layer.first;
+            nextLayer = layer.first;
             break;
         } else if(layer.first == detectorID) {
             found = true;
-        } else {
-            before = layer.first;
         }
     }
-    // now check if we find clusters after:
-    if(m_residual.count(after) == 1) {
-        pointAfter = state(after);
-    }
-    // now check if we find clusters before:
-    if(m_residual.count(before) == 1) {
-        pointBefore = state(before);
-    }
-    ROOT::Math::XYZVector tmp = (point - pointBefore) / (point.z() - pointBefore.z());
-    tmp.SetX(tmp.x() + sin(m_kink.at(detectorID).x()));
-    tmp.SetY(tmp.y() + sin(m_kink.at(detectorID).y()));
-    // return scaled to zero
-    std::cout << before << ", " << detectorID << ", " << after << ", " << pointBefore << ", " << point << ", " << pointAfter
-              << " " << std::endl
-              << tmp << std::endl;
-    std::cout << ((pointAfter - point) / (pointAfter.z() - point.z())) -
-                     (point - pointBefore) / (point.z() - pointBefore.z())
-              << ", " << m_kink.at(detectorID) << std::endl;
-
+    if(nextLayer == "")
+        throw TrackError(typeid(GblTrack), "Direction after the last telescope plane not defined");
+    ROOT::Math::XYZPoint pointAfter = state(nextLayer);
     return ((pointAfter - point) / (pointAfter.z() - point.z()));
 }
 
