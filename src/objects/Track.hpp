@@ -223,12 +223,17 @@ namespace corryvreckan {
 
         void addMaterial(std::string detetcorID, double x_x0, double z);
 
+        ROOT::Math::XYZPoint correction(std::string detectorID) const;
+
+        long unsigned int numScatterers() const { return m_materialBudget.size(); }
+
     protected:
         std::vector<TRef> m_trackClusters;
         std::vector<TRef> m_associatedClusters;
         std::map<std::string, ROOT::Math::XYPoint> m_residual;
         std::map<std::string, std::pair<double, double>> m_materialBudget;
         std::map<std::string, ROOT::Math::XYPoint> m_kink;
+        std::map<std::string, ROOT::Math::XYZPoint> m_corrections{};
 
         TRef closestCluster{nullptr};
         double m_chi2;
