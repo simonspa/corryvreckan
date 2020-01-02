@@ -21,6 +21,8 @@ For the DUT, the following plots are produced:
   * 2D Map of in-pixel efficiency
   * 2D Maps of chip efficiency in local and global coordinates, filled at the position of the track intercept point or at the position of the associated cluster center
   * 2D Maps of the position difference of a track with and without associated cluster to the previous track
+  * 2D Map of the distance between track intersection and associated cluster
+  
 * 1D histograms:
   * Histogram of all single-pixel efficiencies
   * Histograms of time difference of the matched and non-matched track time to the previous track
