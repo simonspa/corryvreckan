@@ -157,8 +157,10 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             KDTree* clusterTree = new KDTree();
             clusterTree->buildTimeTree(*tempClusters);
             trees[detectorID] = clusterTree;
-            detectors.push_back(detectorID);
         }
+        // the detector always needs to be listed as we would like to add the material budget information
+        if(!detector->isAuxiliary())
+            detectors.push_back(detectorID);
     }
 
     // If there are no detectors then stop trying to track
@@ -198,7 +200,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
             // always add the material budget:
             track->addMaterial(detectorID, det->materialBudget(), det->displacement().z());
-
+            LOG(TRACE) << "added MB for " << detectorID << " at z = " << det->displacement().z();
             if(trees.count(detectorID) == 0) {
                 LOG(TRACE) << "Skipping detector " << det->name() << " as it has 0 clusters.";
                 continue;
@@ -290,7 +292,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "- added cluster to track";
             track->addCluster(closestCluster);
             refTrack->addCluster(closestCluster);
-        } //*/
+        }
 
         // check if track has required detector(s):
         auto foundRequiredDetector = [this](Track* t) {
@@ -317,10 +319,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         delete refTrack;
         // Fit the track and save it
         track->fit();
-        for(auto det : detectors)
-            LOG(TRACE) << track->direction(det);
         tracks->push_back(track);
-        // LOG(WARNING)<< track->direction(detectors.at(2));
         // Fill histograms
         trackChi2->Fill(track->chi2());
         clustersPerTrack->Fill(static_cast<double>(track->nClusters()));
