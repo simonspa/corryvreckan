@@ -134,6 +134,8 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
 
             telescopeResolutionX[detector->name()]->Fill(interceptLocal.X() + detector->size().X() / 2 -
                                                          particlePosition.X());
+            telescopeResolutionY[detector->name()]->Fill(interceptLocal.Y() + detector->size().Y() / 2 -
+                                                         particlePosition.Y());
         }
     }
 
