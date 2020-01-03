@@ -82,11 +82,6 @@ void GblTrack::fit() {
     if(points.size() != m_materialBudget.size()) {
         throw TrackError(typeid(GblTrack), "wrong number of measuremtns");
     }
-
-    if(points.size() != 6) {
-        throw TrackError(typeid(GblTrack), "Having " + std::to_string(points.size()) + " points, but expect 6");
-    }
-
     GblTrajectory traj(points, false); // false = no magnetic field
     double lostWeight = 0;
     int ndf = 0;
