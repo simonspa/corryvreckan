@@ -155,6 +155,8 @@ ROOT::Math::XYZPoint GblTrack::state(std::string detectorID) const {
     if(m_corrections.count(detectorID) != 1)
         throw TrackError(typeid(GblTrack), " detector " + detectorID + " is not appearing in the corrections map");
 
+    // Using the global detector position here is of course not correct, it works for small/no rotations
+    // For larger rotations is it an issue
     return ROOT::Math::XYZPoint(clusters().at(0)->global().x() + correction(detectorID).x(),
                                 clusters().at(0)->global().y() + correction(detectorID).y(),
                                 m_materialBudget.at(detectorID).second);
