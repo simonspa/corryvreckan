@@ -49,7 +49,7 @@ void GblTrack::fit() {
     std::sort(sorted_budgets.begin(), sorted_budgets.end());
 
     for(auto layer : sorted_budgets) {
-        double mb = m_materialBudget.at(layer.second).second;
+        double mb = m_materialBudget.at(layer.second).first;
         double current_z = layer.first;
         if(clusters.count(layer.second) == 1) {
             current_z = clusters.at(layer.second)->global().z();
