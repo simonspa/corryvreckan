@@ -93,6 +93,14 @@ void AnalysisEfficiency::initialise() {
                                                    1.5 * m_detector->size().Y(),
                                                    0,
                                                    1);
+    hDistanceCluster_track = new TH2D("distanceTrack_Hit",
+                                      "distance between track and hit; track_x - dut_x [#mum]; track_y - dut_y [#mum] ",
+                                      150,
+                                      -1.5 * m_detector->pitch().x(),
+                                      1.5 * m_detector->pitch().x(),
+                                      150,
+                                      -1.5 * m_detector->pitch().y(),
+                                      1.5 * m_detector->pitch().y());
     eTotalEfficiency =
         new TEfficiency("eTotalEfficiency", "totalEfficiency; axis has no meaning; total chip efficiency", 1, 0, 1);
     totalEfficiency = new TNamed("totalEffiency", "totalEffiency");
@@ -196,6 +204,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         auto globalIntercept = m_detector->getIntercept(track);
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
+        LOG(TRACE) << " Checking if track is outisde DUT area";
         if(!m_detector->hasIntercept(track, 1)) {
             LOG(DEBUG) << " - track outside DUT area: " << localIntercept;
             n_dut++;
@@ -203,6 +212,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Check that track is within region of interest using winding number algorithm
+        LOG(TRACE) << " Checking if track is outisde ROI";
         if(!m_detector->isWithinROI(track)) {
             LOG(DEBUG) << " - track outside ROI";
             n_roi++;
@@ -211,6 +221,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Check that it doesn't go through/near a masked pixel
+        LOG(TRACE) << " Checking if track is close to masked pixel";
         if(m_detector->hitMasked(track, 1.)) {
             n_masked++;
             LOG(DEBUG) << " - track close to masked pixel";
@@ -259,6 +270,8 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
                     has_associated_cluster = true;
                     matched_tracks++;
                     auto clusterLocal = m_detector->globalToLocal(cluster->global());
+                    hDistanceCluster_track->Fill(globalIntercept.x() - cluster->global().x(),
+                                                 globalIntercept.y() - cluster->global().y());
                     hGlobalEfficiencyMap_clustPos->Fill(
                         cluster->global().x(), cluster->global().y(), has_associated_cluster);
                     hChipEfficiencyMap_clustPos->Fill(
