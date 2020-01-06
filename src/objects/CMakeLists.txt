@@ -1,5 +1,6 @@
 # Include the standard dependencies
 INCLUDE_DIRECTORIES(SYSTEM ${CORRYVRECKAN_DEPS_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(SYSTEM ${GBL_INCLUDE_DIRS})
 
 # Find the RootNewMacros.cmake file and include it
 GET_FILENAME_COMPONENT(ROOT_CMAKE_DIR "${ROOT_USE_FILE}" DIRECTORY)
@@ -61,7 +62,9 @@ ADD_LIBRARY(CorryvreckanObjects SHARED
 )
 
 # Link the standard dependencies
+TARGET_INCLUDE_DIRECTORIES(CorryvreckanObjects INTERFACE ${GBL_INCLUDE_DIRS})
 TARGET_LINK_LIBRARIES(CorryvreckanObjects ${CORRYVRECKAN_DEPS_LIBRARIES})
+TARGET_COMPILE_OPTIONS(CorryvreckanObjects PRIVATE ${CORRYVRECKAN_CXX_FLAGS})
 
 # Specify install for the messages
 INSTALL(TARGETS CorryvreckanObjects

@@ -86,12 +86,17 @@ INCLUDE("cmake/corryvreckan.cmake")
 # Set standard build flags
 SET(COMPILER_FLAGS -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion -Wuseless-cast -Wctor-dtor-privacy -Wzero-as-null-pointer-constant -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wswitch-default -Wundef -Werror -Wshadow -Wformat-security -Wdeprecated -fdiagnostics-color=auto -Wheader-hygiene)
 
-# Require a C++14 compiler but do allow extensions
-SET(CMAKE_CXX_STANDARD 14)
+INCLUDE("cmake/compiler-flag-checks.cmake")
+
+# Check for C++17 and require C++17 if available else fallback to C++14 (should currently be sufficient)
+CHECK_CXX_COMPILER_FLAG(-std=c++17 SUPPORT_STD_CXX17)
+IF(SUPPORT_STD_CXX17)
+    SET(CMAKE_CXX_STANDARD 17)
+ELSE()
+    SET(CMAKE_CXX_STANDARD 14)
+ENDIF()
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
-
-INCLUDE("cmake/compiler-flag-checks.cmake")
 
 # Set some debug flags
 # FIXME: not using the flag checker now because it wrongly rejects a sanitizer flag..
@@ -116,6 +121,19 @@ IF(NOT ROOT_FOUND)
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
 ENDIF()
 
+# Downgrade to C++14 if ROOT is not build with C++17 support
+IF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+17.*")
+    IF(NOT SUPPORT_STD_CXX17)
+        MESSAGE(FATAL_ERROR "ROOT was built with C++17 support but current compiler doesn't support it")
+    ENDIF()
+ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[14].*")
+    SET(CMAKE_CXX_STANDARD 14)
+ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+.*")
+    MESSAGE(FATAL_ERROR "ROOT was built with an unsupported C++ version: ${ROOT_CXX_FLAGS}")
+ELSE()
+    MESSAGE(FATAL_ERROR "Could not deduce ROOT's C++ version from build flags: ${ROOT_CXX_FLAGS}")
+ENDIF()
+
 # Check ROOT version
 IF (NOT ${ROOT_VERSION} VERSION_GREATER "6.0")
     MESSAGE(FATAL_ERROR "ROOT versions below 6.0 are not supported")
@@ -128,12 +146,15 @@ FIND_PACKAGE(Eigen3 REQUIRED NO_MODULE)
 CORRYVRECKAN_SETUP_ROOT_TARGETS()
 CORRYVRECKAN_SETUP_EIGEN_TARGETS()
 
+ADD_SUBDIRECTORY(3rdparty/GeneralBrokenLines)
+
 # Set the dependencies
 SET(CORRYVRECKAN_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
-SET(CORRYVRECKAN_DEPS_LIBRARIES Eigen3::Eigen ROOT::Core ROOT::GenVector ROOT::Geom ROOT::RIO ROOT::Hist ROOT::Minuit ROOT::Minuit2)
+SET(CORRYVRECKAN_DEPS_LIBRARIES Eigen3::Eigen ROOT::Core ROOT::GenVector ROOT::Geom ROOT::RIO ROOT::Hist ROOT::Minuit ROOT::Minuit2 GBL)
 
 # Add "thisroot.sh" as runtime dependency for setup.sh file:
 ADD_RUNTIME_DEP(thisroot.sh)
+
 
 ###################################
 # Load cpp format and check tools #
