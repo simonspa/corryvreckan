@@ -87,7 +87,7 @@ void GblTrack::fit() {
     }
 
     if(points.size() != m_materialBudget.size()) {
-        throw TrackError(typeid(GblTrack), "wrong number of measuremtns");
+        throw TrackError(typeid(GblTrack), "wrong number of measurements");
     }
     GblTrajectory traj(points, false); // false = no magnetic field
     double lostWeight = 0;
@@ -131,12 +131,18 @@ ROOT::Math::XYZPoint GblTrack::intercept(double z) const {
     // find the detector with largest z-positon <= z, assumes detectors sorted by z position
     std::string layer = "";
     bool found = false;
-    for(auto l : m_materialBudget) {
-        if(l.second.second >= z) {
+    std::vector<std::pair<double, std::string>> sorted_budgets;
+    for(auto la : m_materialBudget) {
+        sorted_budgets.push_back(std::pair<double, std::string>(la.second.second, la.first));
+    }
+    std::sort(sorted_budgets.begin(), sorted_budgets.end());
+
+    for(auto l : sorted_budgets) {
+        layer = l.second;
+        if(l.first >= z) {
             found = true;
             break;
         }
-        layer = l.first;
     }
     if(!found) {
         throw TrackError(typeid(GblTrack), "Z-Position of " + std::to_string(z) + " is outside the telescopes z-coverage");
