@@ -41,11 +41,18 @@ void GblTrack::fit() {
     }
 
     // loop over all layers and add scatter/measurement
+    // gbl needs the entries to be sorted by z
+    std::vector<std::pair<double, std::string>> sorted_budgets;
     for(auto layer : m_materialBudget) {
-        double mb = layer.second.first;
-        double current_z = layer.second.second;
-        if(clusters.count(layer.first) == 1) {
-            current_z = clusters.at(layer.first)->global().z();
+        sorted_budgets.push_back(std::pair<double, std::string>(layer.second.second, layer.first));
+    }
+    std::sort(sorted_budgets.begin(), sorted_budgets.end());
+
+    for(auto layer : sorted_budgets) {
+        double mb = m_materialBudget.at(layer.second).second;
+        double current_z = layer.first;
+        if(clusters.count(layer.second) == 1) {
+            current_z = clusters.at(layer.second)->global().z();
         }
         Matrix5d Jac;
         Jac = Matrix5d::Identity();
@@ -61,8 +68,8 @@ void GblTrack::fit() {
         auto point = GblPoint(Jac);
         point.addScatterer(Eigen::Vector2d::Zero(), budget);
 
-        if(clusters.count(layer.first) == 1) {
-            auto cluster = clusters.at(layer.first);
+        if(clusters.count(layer.second) == 1) {
+            auto cluster = clusters.at(layer.second);
             Eigen::Vector2d initialResidual;
             initialResidual(0) = cluster->global().x() - seedcluster->global().x();
             initialResidual(1) = cluster->global().y() - seedcluster->global().y();
@@ -71,9 +78,9 @@ void GblTrack::fit() {
             covv(0, 0) = 1. / cluster->errorX() / cluster->errorX();
             covv(1, 1) = 1. / cluster->errorY() / cluster->errorY();
             point.addMeasurement(initialResidual, covv);
-            detectors.push_back(std::pair<std::string, bool>(layer.first, true));
+            detectors.push_back(std::pair<std::string, bool>(layer.second, true));
         } else {
-            detectors.push_back(std::pair<std::string, bool>(layer.first, false));
+            detectors.push_back(std::pair<std::string, bool>(layer.second, false));
         }
         prev_z = current_z;
         points.push_back(point);
