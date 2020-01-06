@@ -288,7 +288,8 @@ namespace corryvreckan {
         if(corryvreckan::LogLevel::level <= corryvreckan::Log::getReportingLevel() &&                                       \
            !corryvreckan::Log::getStreams().empty())                                                                        \
     corryvreckan::Log().getStream(                                                                                          \
-        corryvreckan::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)
+        corryvreckan::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)            \
+        << (GET_LOG_VARIABLE(max_log_count) == 0 ? "[further messages will be suppressed] " : "")
 
     /**
      * @brief Suppress an stream from writing any output
