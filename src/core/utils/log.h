@@ -1,11 +1,9 @@
 /**
  * @file
  * @brief Provides a logger and macros for convenient access
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied
- * verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities
- * granted to it by virtue of its status as an
+ * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -32,30 +30,24 @@ namespace corryvreckan {
         STATUS,    ///< Only critical progress information
         ERROR,     ///< Critical problems that usually lead to fatal errors
         WARNING,   ///< Possible issue that could lead to unexpected results
-        INFO,      ///< General information about processes (should not be called in run
-                   /// function)
+        INFO,      ///< General information about processes (should not be called in run function)
         DEBUG,     ///< Detailed information about physics process
-        NONE,      ///< Indicates the log level has not been set (cannot be selected by the
-                   /// user)
-        TRACE,     ///< Software debugging information about what part is currently
-                   /// running
+        NONE,      ///< Indicates the log level has not been set (cannot be selected by the user)
+        TRACE,     ///< Software debugging information about what part is currently running
     };
     /**
      * @brief Format of the logger
      */
     enum class LogFormat {
-        SHORT = 0, ///< Only include a single character for the log level, the section
-                   /// header and the message
+        SHORT = 0, ///< Only include a single character for the log level, the section header and the message
         DEFAULT,   ///< Also include the time and a full logging level description
-        LONG       ///< All of the above and also information about the file and line where
-                   /// the message was defined
+        LONG       ///< All of the above and also information about the file and line where the message was defined
     };
 
     /**
      * @brief Logger of the framework to inform the user of process
      *
-     * Should almost never be instantiated directly. The \ref LOG macro should be
-     * used instead to pass all the information.
+     * Should almost never be instantiated directly. The \ref LOG macro should be used instead to pass all the information.
      * This leads to a cleaner interface for sending log messages.
      */
     // TODO [DOC] This just be renamed to Log?
@@ -100,10 +92,8 @@ namespace corryvreckan {
                                       uint32_t line = 0);
 
         /**
-         * @brief Gives a process stream which updates the same line as long as it is
-         * the same
-         * @param identifier Name to indicate the line, used to distinguish when to
-         * update or write new line
+         * @brief Gives a process stream which updates the same line as long as it is the same
+         * @param identifier Name to indicate the line, used to distinguish when to update or write new line
          * @param level Logging level
          * @param file The file name of the file containing the log message
          * @param function The function containing the log message
@@ -198,8 +188,7 @@ namespace corryvreckan {
     private:
         /**
          * @brief The number of exceptions that are uncaught
-         * @param cons If true: always return zero if amount of exceptions cannot be
-         * properly determined
+         * @param cons If true: always return zero if amount of exceptions cannot be properly determined
          * @return Number of uncaught exceptions
          */
         int get_uncaught_exceptions(bool cons);
@@ -210,8 +199,7 @@ namespace corryvreckan {
         std::string get_current_date();
 
         /**
-         * @brief Return if a stream is likely a terminal screen (supporting colors
-         * etc.)
+         * @brief Return if a stream is likely a terminal screen (supporting colors etc.)
          * @return True if the stream is terminal, false otherwise
          */
         static bool is_terminal(std::ostream& stream);
@@ -262,8 +250,7 @@ namespace corryvreckan {
         corryvreckan::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)
 
 /**
- * @brief Create a logging stream that overwrites the line if the previous
- * message has the same identifier
+ * @brief Create a logging stream that overwrites the line if the previous message has the same identifier
  * @param level The log level of the stream
  * @param identifier Identifier for this stream to determine overwrites
  */
