@@ -2,11 +2,9 @@
  * @file
  * @brief Implementation of logger
  *
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied
- * verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities
- * granted to it by virtue of its status as an
+ * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -34,17 +32,14 @@ std::string DefaultLogger::last_message_;
 std::mutex DefaultLogger::write_mutex_;
 
 /**
- * The logger will save the number of uncaught exceptions during construction to
- * compare that with the number of exceptions
+ * The logger will save the number of uncaught exceptions during construction to compare that with the number of exceptions
  * during destruction later.
  */
 DefaultLogger::DefaultLogger() : exception_count_(get_uncaught_exceptions(true)) {}
 
 /**
- * The output is written to the streams as soon as the logger gets out-of-scope
- * and desctructed. The destructor checks
- * specifically if an exception is thrown while output is written to the stream.
- * In that case the log stream will not be
+ * The output is written to the streams as soon as the logger gets out-of-scope and desctructed. The destructor checks
+ * specifically if an exception is thrown while output is written to the stream. In that case the log stream will not be
  * forwarded to the output streams and the message will be discarded.
  */
 DefaultLogger::~DefaultLogger() {
@@ -163,8 +158,7 @@ void DefaultLogger::finish() {
 }
 
 /**
- * This method is typically automatically called by the \ref LOG macro to return
- * a stream after constructing the logger. The
+ * This method is typically automatically called by the \ref LOG macro to return a stream after constructing the logger. The
  * header of the stream is added before returning the output stream.
  */
 std::ostringstream&
@@ -235,8 +229,7 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
 }
 
 /**
- * This method is typically automatically called by the \ref LOG_PROGRESS macro.
- * An empty identifier is the same as
+ * This method is typically automatically called by the \ref LOG_PROGRESS macro. An empty identifier is the same as
  * underscore.
  */
 std::ostringstream& DefaultLogger::getProcessStream(
@@ -244,8 +237,7 @@ std::ostringstream& DefaultLogger::getProcessStream(
     // Get the standard process stream
     std::ostringstream& stream = getStream(level, file, function, line);
 
-    // Replace empty identifier with underscore because empty is already used for
-    // check
+    // Replace empty identifier with underscore because empty is already used for check
     if(identifier.empty()) {
         identifier = "_";
     }
@@ -272,8 +264,7 @@ std::string DefaultLogger::getStringFromLevel(LogLevel level) {
     return type.at(static_cast<decltype(type)::size_type>(level));
 }
 /**
- * @throws std::invalid_argument If the string does not correspond with an
- * existing log level
+ * @throws std::invalid_argument If the string does not correspond with an existing log level
  */
 LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
     if(level == "TRACE") {
@@ -319,8 +310,7 @@ std::string DefaultLogger::getStringFromFormat(LogFormat format) {
     return type.at(static_cast<decltype(type)::size_type>(format));
 }
 /**
- * @throws std::invalid_argument If the string does not correspond with an
- * existing log format
+ * @throws std::invalid_argument If the string does not correspond with an existing log format
  */
 LogFormat DefaultLogger::getFormatFromString(const std::string& format) {
     if(format == "SHORT") {
@@ -350,13 +340,10 @@ void DefaultLogger::clearStreams() {
     get_streams().clear();
 }
 /**
- * The caller has to make sure that the added ostream exists for as long log
- * messages may be written. The std::cout stream is
- * added automatically to the list of streams and does not need to be added
- * itself.
+ * The caller has to make sure that the added ostream exists for as long log messages may be written. The std::cout stream is
+ * added automatically to the list of streams and does not need to be added itself.
  *
- * @note Streams cannot be individually removed at the moment and only all at
- * once using \ref clearStreams().
+ * @note Streams cannot be individually removed at the moment and only all at once using \ref clearStreams().
  */
 void DefaultLogger::addStream(std::ostream& stream) {
     // Disable cursor if stream supports it
@@ -399,8 +386,7 @@ std::string DefaultLogger::get_current_date() {
 }
 
 /*
- * It is impossible to know for sure a terminal has support for all extra
- * terminal features, but every modern terminal has
+ * It is impossible to know for sure a terminal has support for all extra terminal features, but every modern terminal has
  * this so we just assume it.
  */
 bool DefaultLogger::is_terminal(std::ostream& stream) {
@@ -415,10 +401,8 @@ bool DefaultLogger::is_terminal(std::ostream& stream) {
 }
 
 /**
- * The number of uncaught exceptions can only be properly determined in C++17.
- * In earlier versions it is only possible to
- * check if there is at least a single exception thrown and that function is
- * used instead. This means a return value of zero
+ * The number of uncaught exceptions can only be properly determined in C++17. In earlier versions it is only possible to
+ * check if there is at least a single exception thrown and that function is used instead. This means a return value of zero
  * corresponds to no exception and one to at least one exception.
  */
 #if __cplusplus > 201402L
