@@ -30,6 +30,7 @@ void Correlations::initialise() {
         return;
     }
 
+    LOG_ONCE(WARNING) << "Correlations module is enabled and will significantly increase the runtime";
     LOG(DEBUG) << "Booking histograms for detector " << m_detector->name();
 
     // get the reference detector:
