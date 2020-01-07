@@ -94,7 +94,7 @@ void AnalysisEfficiency::initialise() {
                                                    0,
                                                    1);
     hDistanceCluster_track = new TH2D("distanceTrack_Hit",
-                                      "distance between track and hit; track_x - dut_x [#mum]; track_y - dut_y [#mum] ",
+                                      "distance between track and hit; track_x - dut_x [mm]; track_y - dut_y [mm] ",
                                       150,
                                       -1.5 * m_detector->pitch().x(),
                                       1.5 * m_detector->pitch().x(),
@@ -270,8 +270,8 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
                     has_associated_cluster = true;
                     matched_tracks++;
                     auto clusterLocal = m_detector->globalToLocal(cluster->global());
-                    hDistanceCluster_track->Fill(globalIntercept.x() - cluster->global().x(),
-                                                 globalIntercept.y() - cluster->global().y());
+                    hDistanceCluster_track->Fill(localIntercept.x() - clusterLocal.x(),
+                                                 localIntercept.y() - clusterLocal.y());
                     hGlobalEfficiencyMap_clustPos->Fill(
                         cluster->global().x(), cluster->global().y(), has_associated_cluster);
                     hChipEfficiencyMap_clustPos->Fill(
