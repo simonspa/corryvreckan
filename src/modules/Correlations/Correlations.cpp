@@ -158,6 +158,8 @@ void Correlations::initialise() {
 
 StatusCode Correlations::run(std::shared_ptr<Clipboard> clipboard) {
 
+    LOG_ONCE(WARNING) << "Correlations module is enabled and will significantly increase the runtime";
+
     // Do not attempt plotting for aux devices
     if(m_detector->isAuxiliary()) {
         return StatusCode::Success;
