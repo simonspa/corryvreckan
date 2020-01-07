@@ -13,6 +13,7 @@ GblTrack::GblTrack() : Track() {}
 GblTrack::GblTrack(const GblTrack& track) : Track(track) {
     if(track.getType() != this->getType())
         throw TrackModelChanged(typeid(*this), track.getType(), this->getType());
+    m_sorted_budgets = track.m_sorted_budgets;
 }
 
 double GblTrack::distance2(const Cluster* cluster) const {
@@ -25,6 +26,7 @@ void GblTrack::fit() {
     // create a list of gbl points:
     std::vector<GblPoint> points;
 
+    // get the seedcluster for the fit - simply the first one in the list
     auto seedcluster = dynamic_cast<Cluster*>(m_trackClusters.at(0).GetObject());
 
     // we need to store the previous z position as well as the  material off all layers passed
@@ -42,13 +44,8 @@ void GblTrack::fit() {
 
     // loop over all layers and add scatter/measurement
     // gbl needs the entries to be sorted by z
-    std::vector<std::pair<double, std::string>> sorted_budgets;
-    for(auto layer : m_materialBudget) {
-        sorted_budgets.push_back(std::pair<double, std::string>(layer.second.second, layer.first));
-    }
-    std::sort(sorted_budgets.begin(), sorted_budgets.end());
 
-    for(auto layer : sorted_budgets) {
+    for(auto layer : m_sorted_budgets) {
         double mb = m_materialBudget.at(layer.second).first;
         double current_z = layer.first;
         if(clusters.count(layer.second) == 1) {
@@ -131,13 +128,11 @@ ROOT::Math::XYZPoint GblTrack::intercept(double z) const {
     // find the detector with largest z-positon <= z, assumes detectors sorted by z position
     std::string layer = "";
     bool found = false;
-    std::vector<std::pair<double, std::string>> sorted_budgets;
-    for(auto la : m_materialBudget) {
-        sorted_budgets.push_back(std::pair<double, std::string>(la.second.second, la.first));
-    }
-    std::sort(sorted_budgets.begin(), sorted_budgets.end());
 
-    for(auto l : sorted_budgets) {
+    if(!m_isFitted) {
+        throw TrackError(typeid(GblTrack), "An interception is requested befor the track is fitted");
+    }
+    for(auto l : m_sorted_budgets) {
         layer = l.second;
         if(l.first >= z) {
             found = true;
@@ -169,7 +164,7 @@ ROOT::Math::XYZPoint GblTrack::state(std::string detectorID) const {
         throw TrackError(typeid(GblTrack), " detector " + detectorID + " is not appearing in the corrections map");
 
     // Using the global detector position here is of course not correct, it works for small/no rotations
-    // For larger rotations is it an issue
+    // For larger rotations it is an issue
     return ROOT::Math::XYZPoint(clusters().at(0)->global().x() + correction(detectorID).x(),
                                 clusters().at(0)->global().y() + correction(detectorID).y(),
                                 m_materialBudget.at(detectorID).second);
@@ -201,6 +196,14 @@ ROOT::Math::XYZVector GblTrack::direction(std::string detectorID) const {
 double GblTrack::scatteringTheta(double mbCurrent, double mbSum) {
 
     return (13.6 / m_momentum * sqrt(mbCurrent) * (1 + 0.038 * log(mbSum + mbCurrent)));
+}
+
+void GblTrack::createSortedListOfSensors() {
+    m_sorted_budgets.clear();
+    for(auto layer : m_materialBudget) {
+        m_sorted_budgets.push_back(std::pair<double, std::string>(layer.second.second, layer.first));
+    }
+    std::sort(m_sorted_budgets.begin(), m_sorted_budgets.end());
 }
 
 void GblTrack::print(std::ostream& out) const {

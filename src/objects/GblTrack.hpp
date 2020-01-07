@@ -66,12 +66,19 @@ namespace corryvreckan {
          */
         double scatteringTheta(double mbCurrent, double mbSum);
 
+        /**
+         * @brief Sort all layers by their z-position and store them
+         */
+        void createSortedListOfSensors();
+
+        std::vector<std::pair<double, std::string>> m_sorted_budgets{};
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(GblTrack, 0)
     };
 
     // Vector type declaration
     using GblTrackVector = std::vector<GblTrack*>;
+
 } // namespace corryvreckan
 
 #endif // GblTrack_H
