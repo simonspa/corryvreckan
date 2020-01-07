@@ -98,7 +98,8 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
             auto name = detector->name();
             ROOT::Math::XYZPoint intercept = track->intercept(cluster->global().z());
             auto interceptLocal = detector->globalToLocal(intercept);
-
+            telescopeResidualsLocalX[name]->Fill(cluster->local().x() - interceptLocal.X());
+            telescopeResidualsLocalY[name]->Fill(cluster->local().y() - interceptLocal.Y());
             telescopeResidualsX[name]->Fill(cluster->global().x() - intercept.X());
             telescopeResidualsY[name]->Fill(cluster->global().y() - intercept.Y());
 

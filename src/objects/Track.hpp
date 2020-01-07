@@ -244,7 +244,6 @@ namespace corryvreckan {
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(Track, 7)
     };
-
     // Vector type declaration
     using TrackVector = std::vector<Track*>;
 } // namespace corryvreckan
@@ -252,5 +251,4 @@ namespace corryvreckan {
 // include all tracking methods here to have one header to be include everywhere
 #include "GblTrack.hpp"
 #include "StraightLineTrack.hpp"
-
 #endif // TRACK_H
