@@ -310,20 +310,25 @@ Configuration Detector::getConfiguration() const {
 // Function to get global intercept with a track
 PositionVector3D<Cartesian3D<double>> Detector::getIntercept(const Track* track) const {
 
-    return track->state(name());
-    /*// Get the distance from the plane to the track initial state
-    double distance = (m_origin.X() - track->state(m_detectorName).X()) * m_normal.X();
-    distance += (m_origin.Y() - track->state(m_detectorName).Y()) * m_normal.Y();
-    distance += (m_origin.Z() - track->state(m_detectorName).Z()) * m_normal.Z();
-    distance /= (track->direction(m_detectorName).X() * m_normal.X() + track->direction(m_detectorName).Y() * m_normal.Y() +
-                 track->direction(m_detectorName).Z() * m_normal.Z());
+    // FIXME: this is else statement can only be temporary
+    if(track->getType() == "gbl") {
+        return track->state(name());
+    } else {
+        // Get the distance from the plane to the track initial state
+        double distance = (m_origin.X() - track->state(m_detectorName).X()) * m_normal.X();
+        distance += (m_origin.Y() - track->state(m_detectorName).Y()) * m_normal.Y();
+        distance += (m_origin.Z() - track->state(m_detectorName).Z()) * m_normal.Z();
+        distance /=
+            (track->direction(m_detectorName).X() * m_normal.X() + track->direction(m_detectorName).Y() * m_normal.Y() +
+             track->direction(m_detectorName).Z() * m_normal.Z());
 
-    // Propagate the track
-    PositionVector3D<Cartesian3D<double>> globalIntercept(
-        track->state(m_detectorName).X() + distance * track->direction(m_detectorName).X(),
-        track->state(m_detectorName).Y() + distance * track->direction(m_detectorName).Y(),
-        track->state(m_detectorName).Z() + distance * track->direction(m_detectorName).Z());
-    return globalIntercept;*/
+        // Propagate the track
+        PositionVector3D<Cartesian3D<double>> globalIntercept(
+            track->state(m_detectorName).X() + distance * track->direction(m_detectorName).X(),
+            track->state(m_detectorName).Y() + distance * track->direction(m_detectorName).Y(),
+            track->state(m_detectorName).Z() + distance * track->direction(m_detectorName).Z());
+        return globalIntercept;
+    }
 }
 
 PositionVector3D<Cartesian3D<double>> Detector::getLocalIntercept(const Track* track) const {
