@@ -8,8 +8,6 @@ using namespace corryvreckan;
 StraightLineTrack::StraightLineTrack() : Track(), m_direction(0, 0, 1.), m_state(0, 0, 0.) {}
 
 StraightLineTrack::StraightLineTrack(const StraightLineTrack& track) : Track(track) {
-    if(track.getType() != this->getType())
-        throw TrackModelChanged(typeid(*this), track.getType(), this->getType());
     m_direction = track.m_direction;
     m_state = track.m_state;
 }

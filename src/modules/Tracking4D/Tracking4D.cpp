@@ -33,7 +33,7 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     requireDetectors = m_config.getArray<std::string>("require_detectors", {""});
     timestampFrom = m_config.get<std::string>("timestamp_from", {});
     trackModel = m_config.get<std::string>("track_model", "straightline");
-    momentum = m_config.get<double>("momentum", Units::get<double>(5000, "MeV"));
+    momentum = m_config.get<double>("momentum", Units::get<double>(5, "GeV"));
 
     // spatial cut, relative (x * spatial_resolution) or absolute:
     if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
@@ -98,23 +98,19 @@ void Tracking4D::initialise() {
 
         title = detectorID + " Residual X;x_{track}-x [mm];events";
         residualsX[detectorID] = new TH1F("residualsX", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual X, size 1;x_{track}-x [#mu m];events";
-        residualsXMM[detectorID] = new TH1F("residualsXMM", title.c_str(), 500, -250, 250);
-        title = detectorID + " Residual X, size 1;x_{track}-x [mm];events";
+        title = detectorID + " Residual X, cluster column width 1;x_{track}-x [mm];events";
         residualsXwidth1[detectorID] = new TH1F("residualsXwidth1", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual X, size 2;x_{track}-x [mm];events";
+        title = detectorID + " Residual X, cluster column width  2;x_{track}-x [mm];events";
         residualsXwidth2[detectorID] = new TH1F("residualsXwidth2", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual X, size 3;x_{track}-x [mm];events";
+        title = detectorID + " Residual X, cluster column width  3;x_{track}-x [mm];events";
         residualsXwidth3[detectorID] = new TH1F("residualsXwidth3", title.c_str(), 500, -0.1, 0.1);
         title = detectorID + " Residual Y;y_{track}-y [mm];events";
         residualsY[detectorID] = new TH1F("residualsY", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual Y;y_{track}-y [#mum];events";
-        residualsYMM[detectorID] = new TH1F("residualsYMM", title.c_str(), 500, -250, 250);
-        title = detectorID + " Residual Y, size 1;y_{track}-y [mm];events";
+        title = detectorID + " Residual Y, cluster row width 1;y_{track}-y [mm];events";
         residualsYwidth1[detectorID] = new TH1F("residualsYwidth1", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual Y, size 2;y_{track}-y [mm];events";
+        title = detectorID + " Residual Y, cluster row width 2;y_{track}-y [mm];events";
         residualsYwidth2[detectorID] = new TH1F("residualsYwidth2", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual Y, size 3;y_{track}-y [mm];events";
+        title = detectorID + " Residual Y, cluster row width 3;y_{track}-y [mm];events";
         residualsYwidth3[detectorID] = new TH1F("residualsYwidth3", title.c_str(), 500, -0.1, 0.1);
 
         title = detectorID + " Pull X;x_{track}-x/resolution;events";
@@ -159,8 +155,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             trees[detectorID] = clusterTree;
         }
         // the detector always needs to be listed as we would like to add the material budget information
-        if(!detector->isAuxiliary())
+        if(!detector->isAuxiliary()) {
             detectors.push_back(detectorID);
+        }
     }
 
     // If there are no detectors then stop trying to track
@@ -184,6 +181,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "Looking at next seed cluster";
 
         auto track = Track::Factory(trackModel);
+        // The track finding is based on a straight line. Therefore a refTrack to extrapolate to the next plane is used here
         auto refTrack = new StraightLineTrack();
         // Add the cluster to the track
         track->addCluster(cluster);
@@ -200,7 +198,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
             // always add the material budget:
             track->addMaterial(detectorID, det->materialBudget(), det->displacement().z());
-            LOG(TRACE) << "added MB for " << detectorID << " at z = " << det->displacement().z();
+            LOG(TRACE) << "added material budget for " << detectorID << " at z = " << det->displacement().z();
             if(trees.count(detectorID) == 0) {
                 LOG(TRACE) << "Skipping detector " << det->name() << " as it has 0 clusters.";
                 continue;
@@ -335,8 +333,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             residualsX[detectorID]->Fill(track->residual(detectorID).X());
             pullX[detectorID]->Fill(track->residual(detectorID).X() / track->clusters().front()->errorX());
             pullY[detectorID]->Fill(track->residual(detectorID).Y() / track->clusters().front()->errorY());
-            residualsXMM[detectorID]->Fill(1000 * track->residual(detectorID).X());
-            residualsYMM[detectorID]->Fill(1000 * track->residual(detectorID).y());
             if(trackCluster->columnWidth() == 1)
                 residualsXwidth1[detectorID]->Fill(track->residual(detectorID).X());
             if(trackCluster->columnWidth() == 2)
@@ -353,11 +349,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         for(auto& det : detectors) {
-            if(!kinkX.count(det)) {
-                LOG(WARNING) << "Skipping writing kinks due to missing init of histograms for  " << det;
-                continue;
-            }
-
             XYPoint kink = track->kink(det);
             kinkX.at(det)->Fill(kink.x());
             kinkY.at(det)->Fill(kink.y());

@@ -205,14 +205,14 @@ namespace corryvreckan {
          * @param detectorID
          * @return  2D residual as ROOT::Math::XYPoint
          */
-        ROOT::Math::XYPoint residual(std::string detectorID) { return m_residual[detectorID]; }
+        ROOT::Math::XYPoint residual(std::string detectorID) const { return m_residual.at(detectorID); }
 
         /**
          * @brief Get the kink at a given detector layer. This is ill defined for last and first layer
          * @param detectorID
          * @return  2D kink as ROOT::Math::XYPoint
          */
-        ROOT::Math::XYPoint kink(std::string detectorID) { return m_kink[detectorID]; }
+        ROOT::Math::XYPoint kink(std::string detectorID) const { return m_kink.at(detectorID); }
 
         /**
          * @brief Get the materialBudget of a detector layer
