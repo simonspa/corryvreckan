@@ -134,6 +134,14 @@ Cluster* Track::getClusterFromDetector(std::string detectorID) const {
     return dynamic_cast<Cluster*>(it->GetObject());
 }
 
+ROOT::Math::XYPoint Track::kink(std::string detectorID) const {
+    if(m_kink.count(detectorID) == 1) {
+        return m_kink.at(detectorID);
+    } else {
+        return ROOT::Math::XYPoint(0, 0);
+    }
+}
+
 void Track::addMaterial(std::string detetcorID, double x_x0, double z) {
     m_materialBudget[detetcorID] = std::pair<double, double>(x_x0, z);
 }

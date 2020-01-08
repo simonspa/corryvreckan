@@ -349,6 +349,11 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         for(auto& det : detectors) {
+            if(!kinkX.count(det)) {
+                LOG(WARNING) << "Skipping writing kinks due to missing init of histograms for  " << det;
+                continue;
+            }
+
             XYPoint kink = track->kink(det);
             kinkX.at(det)->Fill(kink.x());
             kinkY.at(det)->Fill(kink.y());

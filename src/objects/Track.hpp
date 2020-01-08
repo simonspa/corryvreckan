@@ -212,7 +212,7 @@ namespace corryvreckan {
          * @param detectorID
          * @return  2D kink as ROOT::Math::XYPoint
          */
-        ROOT::Math::XYPoint kink(std::string detectorID) const { return m_kink.at(detectorID); }
+        ROOT::Math::XYPoint kink(std::string detectorID) const;
 
         /**
          * @brief Get the materialBudget of a detector layer
