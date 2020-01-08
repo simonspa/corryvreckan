@@ -24,10 +24,13 @@ void GblTrack::fit() {
     // create a list of gbl points:
     std::vector<GblPoint> points;
 
+    if(m_trackClusters.size() < 2) {
+        throw TrackError(typeid(GblTrack), " attempting to fit a track with less than 2 clusters");
+    }
     // get the seedcluster for the fit - simply the first one in the list
     auto seedcluster = dynamic_cast<Cluster*>(m_trackClusters.at(0).GetObject());
 
-    // we need to store the previous z position as well as the  material off all layers passed
+    // we need to store the previous z position as well as the  material of all layers traversed
     double total_material = 0, prev_z = 0;
 
     // keep track of the detectors to ensure we know which gblpoint later is from which plane - also remember if there was a
