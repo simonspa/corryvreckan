@@ -11,6 +11,8 @@ using namespace gbl;
 GblTrack::GblTrack() : Track() {}
 
 GblTrack::GblTrack(const GblTrack& track) : Track(track) {
+    if(track.getType() != this->getType())
+        throw TrackModelChanged(typeid(*this), track.getType(), this->getType());
     m_sorted_budgets = track.m_sorted_budgets;
 }
 

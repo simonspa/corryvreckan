@@ -6,10 +6,6 @@ using namespace corryvreckan;
 Track::Track() : m_momentum(-1) {}
 
 Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp()) {
-
-    if(track.getType() != this->getType())
-        throw TrackModelChanged(typeid(*this), track.getType(), this->getType());
-
     m_isFitted = track.isFitted();
     m_chi2 = track.chi2();
     m_ndof = track.ndof();
