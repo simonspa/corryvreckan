@@ -44,7 +44,7 @@ void GblTrack::fit() {
 
     // loop over all layers and add scatter/measurement
     // gbl needs the entries to be sorted by z
-
+    createSortedListOfSensors();
     for(auto layer : m_sorted_budgets) {
         double mb = m_materialBudget.at(layer.second).first;
         double current_z = layer.first;
