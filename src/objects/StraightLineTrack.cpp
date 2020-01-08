@@ -14,19 +14,6 @@ StraightLineTrack::StraightLineTrack(const StraightLineTrack& track) : Track(tra
     m_state = track.m_state;
 }
 
-double StraightLineTrack::distance2(const Cluster* cluster) const {
-
-    // Get the StraightLineTrack X and Y at the cluster z position
-    double StraightLineTrackX = m_state.X() + m_direction.X() * cluster->global().z();
-    double StraightLineTrackY = m_state.Y() + m_direction.Y() * cluster->global().z();
-
-    // Calculate the 1D residuals
-    double dx = (StraightLineTrackX - cluster->global().x());
-    double dy = (StraightLineTrackY - cluster->global().y());
-
-    // Return the distance^2
-    return (dx * dx + dy * dy);
-}
 ROOT::Math::XYPoint StraightLineTrack::distance(const Cluster* cluster) const {
 
     // Get the StraightLineTrack X and Y at the cluster z position

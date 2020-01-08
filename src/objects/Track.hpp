@@ -167,13 +167,6 @@ namespace corryvreckan {
         virtual Track* clone() const { return new Track(); }
 
         /**
-         * @brief  Get the distance between cluster and track
-         * @param Cluster* Pointer to the cluster
-         * @return distance between cluster and track
-         */
-        virtual double distance2(const Cluster*) const { return 0; }
-
-        /**
          * @brief Get the track position for a certain z position
          * @param z positon
          * @return ROOT::Math::XYZPoint at z position

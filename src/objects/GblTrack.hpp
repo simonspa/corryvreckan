@@ -30,13 +30,6 @@ namespace corryvreckan {
         void fit() override;
 
         /**
-         * @brief  Get the distance between cluster and track
-         * @param Cluster* Pointer to the cluster
-         * @return distance between cluster and track
-         */
-        double distance2(const Cluster* cluster) const override;
-
-        /**
          * @brief Get the track position for a certain z position
          * @param z positon
          * @return ROOT::Math::XYZPoint at z position

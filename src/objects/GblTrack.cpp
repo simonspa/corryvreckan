@@ -16,11 +16,6 @@ GblTrack::GblTrack(const GblTrack& track) : Track(track) {
     m_sorted_budgets = track.m_sorted_budgets;
 }
 
-double GblTrack::distance2(const Cluster* cluster) const {
-
-    return cluster->global().x();
-}
-
 void GblTrack::fit() {
 
     // create a list of gbl points:
