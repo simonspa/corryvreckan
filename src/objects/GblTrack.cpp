@@ -73,7 +73,7 @@ void GblTrack::fit() {
             Eigen::Vector2d initialResidual;
             initialResidual(0) = cluster->global().x() - seedcluster->global().x();
             initialResidual(1) = cluster->global().y() - seedcluster->global().y();
-            // uncertainty of single hit - rotations ignored
+            // FIXME uncertainty of single hit - rotations ignored
             Eigen::Matrix2d covv = Eigen::Matrix2d::Identity();
             covv(0, 0) = 1. / cluster->errorX() / cluster->errorX();
             covv(1, 1) = 1. / cluster->errorY() / cluster->errorY();
@@ -87,7 +87,9 @@ void GblTrack::fit() {
     }
 
     if(points.size() != m_materialBudget.size()) {
-        throw TrackError(typeid(GblTrack), "wrong number of measurements");
+        throw TrackError(typeid(GblTrack),
+                         "Number of planes " + std::to_string(m_materialBudget.size()) +
+                             " doesn't match number of GBL points on trajectory " + std::to_string(points.size()));
     }
     GblTrajectory traj(points, false); // false = no magnetic field
     double lostWeight = 0;
