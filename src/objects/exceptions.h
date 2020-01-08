@@ -69,10 +69,7 @@ namespace corryvreckan {
         explicit TrackError(const std::type_info& source, const std::string msg = "") {
             error_message_ += " Track Object ";
             error_message_ += corryvreckan::demangle((source.name()));
-            if(msg != "") {
-                error_message_ += " shows error ";
-                error_message_ += msg;
-            }
+            error_message_ += msg;
         }
     };
 

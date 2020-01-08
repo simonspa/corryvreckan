@@ -40,9 +40,22 @@ void GblTrack::fit() {
         clusters[cluster->detectorID()] = cluster;
     }
 
+    // lambda to sort the planes by z
+    auto sortplanes = [this]() {
+        m_sorted_budgets.clear();
+        for(auto layer : m_materialBudget) {
+            m_sorted_budgets.push_back(std::pair<double, std::string>(layer.second.second, layer.first));
+        }
+        std::sort(m_sorted_budgets.begin(), m_sorted_budgets.end());
+    };
+
+    // lambda to calculate the scattering theta
+    auto scatteringTheta = [this](double mbCurrent, double mbSum) {
+        return (13.6 / m_momentum * sqrt(mbCurrent) * (1 + 0.038 * log(mbSum + mbCurrent)));
+    };
+
+    sortplanes();
     // loop over all layers and add scatter/measurement
-    // gbl needs the entries to be sorted by z
-    createSortedListOfSensors();
     for(auto layer : m_sorted_budgets) {
         double mb = m_materialBudget.at(layer.second).first;
         double current_z = layer.first;
@@ -90,9 +103,9 @@ void GblTrack::fit() {
     double lostWeight = 0;
     int ndf = 0;
     // fit it
-    unsigned success = traj.fit(m_chi2, ndf, lostWeight);
-    if(success != 0) { // Is this a good ieda? should we discard track candidates that fail?
-        throw TrackFitError(typeid(GblTrack), "internal GBL Error " + std::to_string(success));
+    auto fitReturnValue = traj.fit(m_chi2, ndf, lostWeight);
+    if(fitReturnValue != 0) { // Is this a good ieda? should we discard track candidates that fail?
+        throw TrackFitError(typeid(GblTrack), "internal GBL Error " + std::to_string(fitReturnValue));
     }
 
     // copy the results
@@ -191,19 +204,6 @@ ROOT::Math::XYZVector GblTrack::direction(std::string detectorID) const {
         throw TrackError(typeid(GblTrack), "Direction after the last telescope plane not defined");
     ROOT::Math::XYZPoint pointAfter = state(nextLayer);
     return ((pointAfter - point) / (pointAfter.z() - point.z()));
-}
-
-double GblTrack::scatteringTheta(double mbCurrent, double mbSum) {
-
-    return (13.6 / m_momentum * sqrt(mbCurrent) * (1 + 0.038 * log(mbSum + mbCurrent)));
-}
-
-void GblTrack::createSortedListOfSensors() {
-    m_sorted_budgets.clear();
-    for(auto layer : m_materialBudget) {
-        m_sorted_budgets.push_back(std::pair<double, std::string>(layer.second.second, layer.first));
-    }
-    std::sort(m_sorted_budgets.begin(), m_sorted_budgets.end());
 }
 
 void GblTrack::print(std::ostream& out) const {
