@@ -36,6 +36,13 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     momentum = m_config.get<double>("momentum", Units::get<double>(5, "GeV"));
     volumeScatteringLength = m_config.get<double>("volume_scattering_length", Units::get<double>(304.2, "m"));
     useVolumeScatterer = m_config.get<bool>("volume_scattering", false);
+
+    // print a warning if volumeScatterer are used as this causes fit failures
+    // that are still not understood
+    if(useVolumeScatterer) {
+        LOG_ONCE(WARNING) << "Taking volume scattering effects into account is still WIP and causes the GBL to fail - these "
+                             "tracks are rejected";
+    }
     // spatial cut, relative (x * spatial_resolution) or absolute:
     if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
         throw InvalidCombinationError(
