@@ -2,7 +2,6 @@
 #define GblTrack_H 1
 
 #include "Track.hpp"
-
 namespace corryvreckan {
     /**
      * @ingroup Objects
@@ -51,7 +50,6 @@ namespace corryvreckan {
         ROOT::Math::XYZVector direction(std::string detectorID) const override;
 
     private:
-        std::vector<std::pair<double, std::string>> m_sorted_budgets{};
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(GblTrack, 0)
     };

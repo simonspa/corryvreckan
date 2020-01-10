@@ -34,7 +34,8 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     timestampFrom = m_config.get<std::string>("timestamp_from", {});
     trackModel = m_config.get<std::string>("track_model", "straightline");
     momentum = m_config.get<double>("momentum", Units::get<double>(5, "GeV"));
-
+    volumeScatteringLength = m_config.get<double>("volume_scattering_length", Units::get<double>(304.2, "m"));
+    useVolumeScatterer = m_config.get<bool>("volume_scattering", false);
     // spatial cut, relative (x * spatial_resolution) or absolute:
     if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
         throw InvalidCombinationError(
@@ -186,7 +187,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         // Add the cluster to the track
         track->addCluster(cluster);
         track->setTimestamp(cluster->timestamp());
-
+        track->setVolumeScatter(volumeScatteringLength);
+        track->useVolumeScatterer(useVolumeScatterer);
         refTrack->addCluster(cluster);
         refTrack->setTimestamp(cluster->timestamp());
 
@@ -317,7 +319,13 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         delete refTrack;
         // Fit the track and save it
         track->fit();
-        tracks->push_back(track);
+        if(track->isFitted()) {
+            tracks->push_back(track);
+        } else {
+            LOG_N(WARNING, 100) << "Rejected a track due to failure in fitting";
+            delete track;
+            continue;
+        }
         // Fill histograms
         trackChi2->Fill(track->chi2());
         clustersPerTrack->Fill(static_cast<double>(track->nClusters()));

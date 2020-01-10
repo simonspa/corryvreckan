@@ -13,99 +13,135 @@ GblTrack::GblTrack() : Track() {}
 GblTrack::GblTrack(const GblTrack& track) : Track(track) {
     if(track.getType() != this->getType())
         throw TrackModelChanged(typeid(*this), track.getType(), this->getType());
-    m_sorted_budgets = track.m_sorted_budgets;
+    m_planes = track.m_planes;
 }
 
 void GblTrack::fit() {
 
-    // create a list of gbl points:
-    std::vector<GblPoint> points;
-
+    // Fitting with 2 clusters or less is pointless
     if(m_trackClusters.size() < 2) {
         throw TrackError(typeid(GblTrack), " attempting to fit a track with less than 2 clusters");
     }
-    // get the seedcluster for the fit - simply the first one in the list
-    auto seedcluster = dynamic_cast<Cluster*>(m_trackClusters.at(0).GetObject());
-
-    // we need to store the previous z position as well as the  material of all layers traversed
-    double total_material = 0, prev_z = 0;
-
-    // keep track of the detectors to ensure we know which gblpoint later is from which plane - also remember if there was a
-    // measurement
-    std::vector<std::pair<std::string, bool>> detectors;
     // store the used clusters in a map for easy access:
     std::map<std::string, Cluster*> clusters;
     for(auto& c : m_trackClusters) {
         auto cluster = dynamic_cast<Cluster*>(c.GetObject());
         clusters[cluster->detectorID()] = cluster;
     }
-
-    // lambda to sort the planes by z
-    auto sortplanes = [this]() {
-        m_sorted_budgets.clear();
-        for(auto layer : m_materialBudget) {
-            m_sorted_budgets.push_back(std::pair<double, std::string>(layer.second.second, layer.first));
+    // create a list of planes and sort it, also calculate the material budget:
+    m_planes.clear();
+    double total_material = 0;
+    for(auto l : m_materialBudget) {
+        total_material += l.second.first;
+        Plane current(l.second.second, l.second.first, l.first, clusters.count(l.first));
+        if(current.hasCluster()) {
+            current.setPosition(clusters.at(current.name())->global().z());
+            current.setCluster(clusters.at(current.name()));
         }
-        std::sort(m_sorted_budgets.begin(), m_sorted_budgets.end());
-    };
+        m_planes.push_back(current);
+    }
+    std::sort(m_planes.begin(), m_planes.end());
+    // add volume scattering length - we ignore for now the material thickness while considering air
+    total_material += (m_planes.end()->postion() - m_planes.front().postion()) / m_scattering_length_volume;
+
+    std::vector<GblPoint> points;
+    // get the seedcluster for the fit - simply the first one in the list
+    auto seedcluster = m_planes.front().cluster();
+    double prevPos = 0;
 
     // lambda to calculate the scattering theta
-    auto scatteringTheta = [this](double mbCurrent, double mbSum) {
-        return (13.6 / m_momentum * sqrt(mbCurrent) * (1 + 0.038 * log(mbSum + mbCurrent)));
+    auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
+        return (13.6 / m_momentum * sqrt(mbCurrent) * (1 + 0.038 * log(mbTotal)));
     };
+    // lambda to add measurement (if existing) and scattering from single plane
+    auto addScattertoGblPoint = [&total_material, &scatteringTheta](GblPoint& point, double material) {
+        Eigen::Vector2d scatterWidth;
+        scatterWidth(0) = 1 / (scatteringTheta(material, total_material) * scatteringTheta(material, total_material));
+        scatterWidth(1) = scatterWidth(0);
+        point.addScatterer(Eigen::Vector2d::Zero(), scatterWidth);
 
-    sortplanes();
-    // loop over all layers and add scatter/measurement
-    for(auto layer : m_sorted_budgets) {
-        double mb = m_materialBudget.at(layer.second).first;
-        double current_z = layer.first;
-        if(clusters.count(layer.second) == 1) {
-            current_z = clusters.at(layer.second)->global().z();
-        }
+    };
+    auto JacToNext = [](double val) {
         Matrix5d Jac;
         Jac = Matrix5d::Identity();
-        if(points.size() != 0) {
-            Jac(3, 1) = current_z - prev_z;
-            Jac(4, 2) = Jac(3, 1);
-        }
+        Jac(3, 1) = val;
+        Jac(4, 2) = Jac(3, 1);
+        return Jac;
+    };
+    auto addMeasurementtoGblPoint = [&seedcluster](GblPoint& point, std::vector<Plane>::iterator& p) {
+        auto cluster = p->cluster();
+        Eigen::Vector2d initialResidual;
+        initialResidual(0) = cluster->global().x() - seedcluster->global().x();
+        initialResidual(1) = cluster->global().y() - seedcluster->global().y();
+        // FIXME uncertainty of single hit - rotations ignored
+        Eigen::Matrix2d covv = Eigen::Matrix2d::Identity();
+        covv(0, 0) = 1. / cluster->errorX() / cluster->errorX();
+        covv(1, 1) = 1. / cluster->errorY() / cluster->errorY();
+        point.addMeasurement(initialResidual, covv);
+    };
+    // lambda to add plane (not the first one) and air scatterers //FIXME: Where to put them?
+    auto addPlane = [&JacToNext, &prevPos, &addMeasurementtoGblPoint, &addScattertoGblPoint, &points, this](
+                        std::vector<Plane>::iterator& plane) {
+        double dist = plane->postion() - prevPos;
+        double frac1 = 0.21, frac2 = 0.58;
+        // Current layout
+        // |        |        |       |
+        // |  frac1 | frac2  | frac1 |
+        // |        |        |       |
 
-        Eigen::Vector2d budget;
-        budget(0) = 1 / (scatteringTheta(mb, total_material) * scatteringTheta(mb, total_material));
-        budget(1) = budget(0);
-        total_material += mb;
-        auto point = GblPoint(Jac);
-        point.addScatterer(Eigen::Vector2d::Zero(), budget);
-
-        if(clusters.count(layer.second) == 1) {
-            auto cluster = clusters.at(layer.second);
-            Eigen::Vector2d initialResidual;
-            initialResidual(0) = cluster->global().x() - seedcluster->global().x();
-            initialResidual(1) = cluster->global().y() - seedcluster->global().y();
-            // FIXME uncertainty of single hit - rotations ignored
-            Eigen::Matrix2d covv = Eigen::Matrix2d::Identity();
-            covv(0, 0) = 1. / cluster->errorX() / cluster->errorX();
-            covv(1, 1) = 1. / cluster->errorY() / cluster->errorY();
-            point.addMeasurement(initialResidual, covv);
-            detectors.push_back(std::pair<std::string, bool>(layer.second, true));
+        // first air scatterer:
+        auto point = GblPoint(JacToNext(frac1 * dist));
+        addScattertoGblPoint(point, dist / 2. / m_scattering_length_volume);
+        if(m_use_volume_scatter) {
+            points.push_back(point);
+            point = GblPoint(JacToNext(frac2 * dist));
+            addScattertoGblPoint(point, dist / 2. / m_scattering_length_volume);
+            points.push_back(point);
         } else {
-            detectors.push_back(std::pair<std::string, bool>(layer.second, false));
+            frac1 = 1;
         }
-        prev_z = current_z;
+        point = GblPoint(JacToNext(frac1 * dist));
+        addScattertoGblPoint(point, plane->materialbudget());
+        if(plane->hasCluster()) {
+            addMeasurementtoGblPoint(point, plane);
+        }
+        prevPos = plane->postion();
         points.push_back(point);
+        plane->setGblPos(unsigned(points.size())); // gbl starts counting at 1
+    };
+
+    // First GblPoint
+    std::vector<Plane>::iterator pl = m_planes.begin();
+    auto point = GblPoint(Matrix5d::Identity());
+    addScattertoGblPoint(point, pl->materialbudget());
+    addMeasurementtoGblPoint(point, pl);
+    points.push_back(point);
+    pl->setGblPos(1);
+    pl++;
+    // add all other points
+    for(; pl != m_planes.end(); ++pl) {
+        addPlane(pl);
     }
 
-    if(points.size() != m_materialBudget.size()) {
+    // Make sure we missed nothing
+    if((points.size() != ((m_materialBudget.size() * 3) - 2) && m_use_volume_scatter) ||
+       (points.size() != m_materialBudget.size() && !m_use_volume_scatter)) {
         throw TrackError(typeid(GblTrack),
                          "Number of planes " + std::to_string(m_materialBudget.size()) +
                              " doesn't match number of GBL points on trajectory " + std::to_string(points.size()));
     }
+    // perform fit
     GblTrajectory traj(points, false); // false = no magnetic field
     double lostWeight = 0;
     int ndf = 0;
     // fit it
     auto fitReturnValue = traj.fit(m_chi2, ndf, lostWeight);
     if(fitReturnValue != 0) { // Is this a good ieda? should we discard track candidates that fail?
-        throw TrackFitError(typeid(GblTrack), "internal GBL Error " + std::to_string(fitReturnValue));
+        fitReturnValue = traj.fit(m_chi2, ndf, lostWeight);
+        if(fitReturnValue != 0) { // Is this a good ieda? should we discard track candidates that fail?
+            return;
+            //            throw TrackFitError(typeid(GblTrack), "internal GBL Error " + std::to_string(fitReturnValue));
+        }
     }
 
     // copy the results
@@ -120,19 +156,18 @@ void GblTrack::fit() {
     Eigen::VectorXd gblErrorsResiduals(2);
     Eigen::VectorXd gblDownWeights(2);
     unsigned int numData = 2;
-    unsigned gblcounter = 1;
-    for(auto plane : detectors) {
-        traj.getScatResults(gblcounter, numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
-        m_kink[plane.first] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
+    for(auto plane : m_planes) {
+        traj.getScatResults(
+            plane.gblPos(), numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
+        m_kink[plane.name()] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
 
-        traj.getResults(int(gblcounter), localPar, localCov);
-        m_corrections[plane.first] = ROOT::Math::XYZPoint(localPar(3), localPar(4), 0);
-        if(plane.second) {
+        traj.getResults(int(plane.gblPos()), localPar, localCov);
+        m_corrections[plane.name()] = ROOT::Math::XYZPoint(localPar(3), localPar(4), 0);
+        if(plane.hasCluster()) {
             traj.getMeasResults(
-                gblcounter, numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
-            m_residual[plane.first] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
+                plane.gblPos(), numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
+            m_residual[plane.name()] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
         }
-        gblcounter++;
     }
     m_isFitted = true;
 }
@@ -145,9 +180,9 @@ ROOT::Math::XYZPoint GblTrack::intercept(double z) const {
     if(!m_isFitted) {
         throw TrackError(typeid(GblTrack), "An interception is requested befor the track is fitted");
     }
-    for(auto l : m_sorted_budgets) {
-        layer = l.second;
-        if(l.first >= z) {
+    for(auto l : m_planes) {
+        layer = l.name();
+        if(l.postion() >= z) {
             found = true;
             break;
         }
