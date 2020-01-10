@@ -81,7 +81,7 @@ void GblTrack::fit() {
     };
     // lambda to add plane (not the first one) and air scatterers //FIXME: Where to put them?
     auto addPlane = [&JacToNext, &prevPos, &addMeasurementtoGblPoint, &addScattertoGblPoint, &points, this](
-                        std::vector<Plane>::iterator& plane) {
+        std::vector<Plane>::iterator& plane) {
         double dist = plane->postion() - prevPos;
         double frac1 = 0.21, frac2 = 0.58;
         // Current layout
