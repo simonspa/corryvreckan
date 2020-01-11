@@ -120,7 +120,7 @@ void EventLoaderEUDAQ2::initialise() {
                          2.1e4,
                          -10,
                          200);
-            std::string histTitle = "hPixelTriggerTimeResidualOverTime_0;time [us];pixel_ts - trigger_ts [us];# entries";
+            std::string histTitle = "hPixelTriggerTimeResidualOverTime_0;time [s];pixel_ts - trigger_ts [us];# entries";
             hPixelTriggerTimeResidualOverTime =
                 new TH2D("hPixelTriggerTimeResidualOverTime_0", histTitle.c_str(), 3e3, 0, 3e3, 1e4, -50, 50);
         }
