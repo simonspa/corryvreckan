@@ -270,6 +270,9 @@ namespace corryvreckan {
          */
         double materialBudget() const { return m_materialBudget; }
 
+        Transform3D toGlobal() const { return m_localToGlobal; }
+        Transform3D toLocal() const { return m_globalToLocal; }
+
     private:
         // Roles of the detector
         DetectorRole m_role;
