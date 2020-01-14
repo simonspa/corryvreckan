@@ -3,13 +3,14 @@
 
 #include <Math/Point2D.h>
 #include <Math/Point3D.h>
+#include <Math/Transform3D.h>
 #include <Math/Vector3D.h>
 #include <TRef.h>
 
 #include "Cluster.hpp"
 #include "core/utils/type.h"
 namespace corryvreckan {
-
+    using namespace ROOT::Math;
     class Plane {
     public:
         Plane(){};
@@ -32,6 +33,16 @@ namespace corryvreckan {
         void print(std::ostream& os) const {
             os << "Plane at " << m_z << " with rad. length " << m_x_x0 << " and cluster: " << (m_has_cluster) << std::endl;
         }
+        void setToLocal(Transform3D toLocal) {
+            m_toLocal = toLocal;
+            m_toGlobal = m_toLocal.Inverse();
+        }
+        void setToGlobal(Transform3D toGlobal) {
+            m_toGlobal = toGlobal;
+            m_toLocal = m_toGlobal.Inverse();
+        }
+        Transform3D toLocal() const { return m_toLocal; }
+        Transform3D toGlobal() const { return m_toGlobal; }
 
     private:
         double m_z, m_x_x0;
@@ -39,6 +50,7 @@ namespace corryvreckan {
         bool m_has_cluster;
         Cluster* m_cluster = nullptr;
         unsigned m_gbl_points_pos{};
+        Transform3D m_toLocal, m_toGlobal;
     };
 
     /**
@@ -247,6 +259,8 @@ namespace corryvreckan {
          * @return Material Budget for given layer
          */
         double materialBudget(std::string detectorID) const { return m_materialBudget.at(detectorID).first; }
+
+        void registerPlane(Plane p) { m_planes.push_back(p); }
 
         void addMaterial(std::string detetcorID, double x_x0, double z);
 

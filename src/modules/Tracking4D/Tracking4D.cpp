@@ -182,6 +182,13 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     // Output track container
     auto tracks = std::make_shared<TrackVector>();
 
+    // register the used detectors:
+    auto registerDetector = [](Track* track, std::shared_ptr<Detector> det) {
+        Plane p(0, det->materialBudget(), det->name(), false);
+        p.setToLocal(det->toLocal());
+        p.setToGlobal(det->toGlobal());
+        track->registerPlane(p);
+    };
     // Loop over all clusters
     for(auto& cluster : (*referenceClusters)) {
 
@@ -207,6 +214,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
             // always add the material budget:
             track->addMaterial(detectorID, det->materialBudget(), det->displacement().z());
+            registerDetector(track, det);
             LOG(TRACE) << "added material budget for " << detectorID << " at z = " << det->displacement().z();
             if(trees.count(detectorID) == 0) {
                 LOG(TRACE) << "Skipping detector " << det->name() << " as it has 0 clusters.";
