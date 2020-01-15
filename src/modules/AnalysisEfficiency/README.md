@@ -13,7 +13,7 @@ It is stored in a ROOT `TEfficiency` object (see below).
 Its uncertainty is calculated using the default ROOT `TEfficiency` method which is applying a Clopper-Pearson confidence interval of one sigma.
 Analogue to a Gaussian sigma, this corresponds to the central 68.3% of a binomial distribution for the given efficiency but taking into account a lower limit of 0 and an upper limit of 1.
 This method is recommended by the Particle Data Group.
-More information can be found in the ROOT `TEfficiency` class reference, section `ClopperPearson()`: https://root.cern.ch/doc/master/classTEfficiency.html#ae80c3189bac22b7ad15f57a1476ef75b
+More information can be found in the ROOT `TEfficiency` class reference, section `ClopperPearson()` @root-tefficiency-class-ref.
 
 ### Parameters
 * `time_cut_frameedge`: Parameter to discard telescope tracks at the frame edges (start and end of the current event window). Defaults to `20ns`.
@@ -44,3 +44,4 @@ For the DUT, the following plots are produced:
 [AnalysisEfficiency]
 chi2ndof_cut = 5
 ```
+[@root-tefficiency-class-ref]: https://root.cern.ch/doc/master/classTEfficiency.html#ae80c3189bac22b7ad15f57a1476ef75b
