@@ -11,7 +11,7 @@ It also comprises a range of histograms to investigate where inefficiencies migh
 The efficiency is calculated as the fraction of tracks with associated clusters on the DUT over the the total number of tracks intersecting the DUT (or region-of-interest, if defined).
 It is stored in a ROOT `TEfficiency` object (see below).
 Its uncertainty is calculated using the default ROOT `TEfficiency` method which is applying a Clopper-Pearson confidence interval of one sigma.
-Analog to a Gaussian sigma, this corresponds to the central 68.3% of a binomial distribution for the given efficiency but taking into account a lower limit of 0 and an upper limit of 1.
+Analogue to a Gaussian sigma, this corresponds to the central 68.3% of a binomial distribution for the given efficiency but taking into account a lower limit of 0 and an upper limit of 1.
 This method is recommended by the Particle Data Group.
 More information can be found in the ROOT `TEfficiency` class reference, section `ClopperPearson()`: https://root.cern.ch/doc/master/classTEfficiency.html#ae80c3189bac22b7ad15f57a1476ef75b
 
