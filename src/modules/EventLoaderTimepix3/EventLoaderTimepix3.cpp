@@ -486,7 +486,7 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
         if(header == 0x6) {
             const UChar_t header2 = ((pixdata & 0x0F00000000000000) >> 56) & 0xF;
             if(header2 == 0xF) {
-                unsigned long long int stamp = (pixdata & 0x1E0) >> 5;
+                unsigned int stamp = (pixdata & 0x1E0) >> 5;
                 long long int timestamp_raw = static_cast<long long int>(pixdata & 0xFFFFFFFFE00) >> 9;
                 long long int timestamp = 0;
                 // int triggerNumber = ((pixdata & 0xFFF00000000000) >> 44);
