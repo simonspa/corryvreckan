@@ -502,7 +502,7 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
                 timestamp = timestamp_raw + (static_cast<long long int>(m_TDCoverflowCounter) << 35);
 
                 double triggerTime =
-                    static_cast<double>(timestamp + static_cast<long long int>(stamp) / 12) / (8. * 0.04); // 320 MHz clock
+                    static_cast<double>(timestamp + static_cast<long long int>(stamp) / 12.) / (8. * 0.04); // 320 MHz clock
                 SpidrSignal* triggerSignal = new SpidrSignal("trigger", triggerTime);
                 spidrData->push_back(triggerSignal);
             }
