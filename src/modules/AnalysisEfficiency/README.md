@@ -8,6 +8,13 @@
 This module measures the efficiency of the DUT by comparing its cluster positions with the interpolated track position at the DUT.
 It also comprises a range of histograms to investigate where inefficiencies might come from.
 
+The efficiency is calculated as the fraction of tracks with associated clusters on the DUT over the the total number of tracks intersecting the DUT (or region-of-interest, if defined).
+It is stored in a ROOT `TEfficiency` object (see below).
+Its uncertainty is calculated using the default ROOT `TEfficiency` method which is applying a Clopper-Pearson confidence interval of one sigma.
+Analog to a Gaussian sigma, this corresponds to the central 68.3% of a binomial distribution for the given efficiency but taking into account a lower limit of 0 and an upper limit of 1.
+This method is recommended by the Particle Data Group.
+More information can be found in the ROOT `TEfficiency` class reference, section `ClopperPearson()`: https://root.cern.ch/doc/master/classTEfficiency.html#ae80c3189bac22b7ad15f57a1476ef75b
+
 ### Parameters
 * `time_cut_frameedge`: Parameter to discard telescope tracks at the frame edges (start and end of the current event window). Defaults to `20ns`.
 * `chi2ndof_cut`: Acceptance criterion for telescope tracks, defaults to a value of `3`.
@@ -22,7 +29,7 @@ For the DUT, the following plots are produced:
   * 2D Maps of chip efficiency in local and global coordinates, filled at the position of the track intercept point or at the position of the associated cluster center
   * 2D Maps of the position difference of a track with and without associated cluster to the previous track
   * 2D Map of the distance between track intersection and associated cluster
-  
+
 * 1D histograms:
   * Histogram of all single-pixel efficiencies
   * Histograms of time difference of the matched and non-matched track time to the previous track
