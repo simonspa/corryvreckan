@@ -28,19 +28,16 @@ namespace corryvreckan {
         // set elements that might be unknown at construction
         void setGblPos(unsigned pos) { m_gbl_points_pos = pos; }
         void setPosition(double z) { m_z = z; }
-        void setCluster(const Cluster* cluster) { m_cluster = const_cast<Cluster*>(cluster); }
+        void setCluster(const Cluster* cluster) {
+            m_cluster = const_cast<Cluster*>(cluster);
+            m_has_cluster = true;
+        }
         Cluster* cluster() const { return m_cluster; }
         void print(std::ostream& os) const {
             os << "Plane at " << m_z << " with rad. length " << m_x_x0 << " and cluster: " << (m_has_cluster) << std::endl;
         }
-        void setToLocal(Transform3D toLocal) {
-            m_toLocal = toLocal;
-            m_toGlobal = m_toLocal.Inverse();
-        }
-        void setToGlobal(Transform3D toGlobal) {
-            m_toGlobal = toGlobal;
-            m_toLocal = m_toGlobal.Inverse();
-        }
+        void setToLocal(Transform3D toLocal) { m_toLocal = toLocal; }
+        void setToGlobal(Transform3D toGlobal) { m_toGlobal = toGlobal; }
         Transform3D toLocal() const { return m_toLocal; }
         Transform3D toGlobal() const { return m_toGlobal; }
 

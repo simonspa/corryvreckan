@@ -184,7 +184,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
     // register the used detectors:
     auto registerDetector = [](Track* track, std::shared_ptr<Detector> det) {
-        Plane p(0, det->materialBudget(), det->name(), false);
+        Plane p(det->localToGlobal(ROOT::Math::XYZPoint(0, 0, 0)).z(), det->materialBudget(), det->name(), false);
         p.setToLocal(det->toLocal());
         p.setToGlobal(det->toGlobal());
         track->registerPlane(p);
@@ -337,7 +337,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         if(track->isFitted()) {
             tracks->push_back(track);
         } else {
-            LOG_N(WARNING, 100) << "Rejected a track due to failure in fitting";
+            LOG_N(WARNING, 250) << "Rejected a track with eventtimestamp of " << clipboard->getEvent()->timestamp()
+                                << " due to failure in fitting";
             delete track;
             continue;
         }

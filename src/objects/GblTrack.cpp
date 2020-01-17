@@ -29,25 +29,28 @@ void GblTrack::fit() {
         clusters[cluster->detectorID()] = cluster;
     }
     // create a list of planes and sort it, also calculate the material budget:
-    m_planes.clear();
+    // m_planes.clear();
     double total_material = 0;
-    for(auto l : m_materialBudget) {
-        total_material += l.second.first;
-        Plane current(l.second.second, l.second.first, l.first, clusters.count(l.first));
-        if(current.hasCluster()) {
-            current.setPosition(clusters.at(current.name())->global().z());
-            current.setCluster(clusters.at(current.name()));
-        }
-        m_planes.push_back(current);
-    }
     std::sort(m_planes.begin(), m_planes.end());
+    for(auto& l : m_planes) {
+        total_material += l.materialbudget();
+        if(clusters.count(l.name()) == 1) {
+            l.setPosition(clusters.at(l.name())->global().z());
+            l.setCluster(clusters.at(l.name()));
+        }
+        // else std::cout << l.name() <<std::endl;
+        //        m_planes.push_back(current);
+    }
     // add volume scattering length - we ignore for now the material thickness while considering air
-    total_material += (m_planes.end()->postion() - m_planes.front().postion()) / m_scattering_length_volume;
+    if(m_use_volume_scatter)
+        total_material += (m_planes.end()->postion() - m_planes.front().postion()) / m_scattering_length_volume;
 
     std::vector<GblPoint> points;
     // get the seedcluster for the fit - simply the first one in the list
     auto seedcluster = m_planes.front().cluster();
     double prevPos = 0;
+    auto prevToGlobal = m_planes.front().toGlobal();
+    auto seedlocal = seedcluster->global();
 
     // lambda to calculate the scattering theta
     auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
@@ -59,65 +62,108 @@ void GblTrack::fit() {
         scatterWidth(0) = 1 / (scatteringTheta(material, total_material) * scatteringTheta(material, total_material));
         scatterWidth(1) = scatterWidth(0);
         point.addScatterer(Eigen::Vector2d::Zero(), scatterWidth);
+        std::cout << "scatter\n " << scatterWidth << std::endl;
+    };
 
+    // lmbda to transform ROOT::Transform3D to an Eigen3 Matrix
+    auto fromTransform3DtoEigenMatrix = [](Transform3D in) {
+        Eigen::Matrix4d t = Eigen::Matrix4d::Zero();
+        std::vector<double> c;
+        c.resize(12, 0);
+        in.GetComponents(c.begin());
+        t << c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8], c[9], c[10], c[11];
+        return t;
     };
-    auto JacToNext = [](double val) {
-        Matrix5d Jac;
-        Jac = Matrix5d::Identity();
-        Jac(3, 1) = val;
-        Jac(4, 2) = Jac(3, 1);
-        return Jac;
+    // lambda Jacobian
+    auto jac = [&fromTransform3DtoEigenMatrix](Transform3D p1, Transform3D p2, double distance) {
+        auto transfer = fromTransform3DtoEigenMatrix(p1 * p2);
+        // current code assumes no beam divergens - simply direction, but larger corrections required
+        Eigen::Vector4d direction = Eigen::Vector4d{0, 0, 1, 0};
+        direction = fromTransform3DtoEigenMatrix(p1) * direction;
+
+        Eigen::Matrix<double, 4, 3> R;
+        R.col(0) = transfer.col(0);
+        R.col(1) = transfer.col(1);
+        R.col(2) = transfer.col(3);
+        Eigen::Vector4d S = transfer * direction * (1 / direction[2]);
+
+        Eigen::Matrix<double, 3, 4> F = Eigen::Matrix<double, 3, 4>::Zero();
+        F(0, 0) = 1;
+        F(1, 1) = 1;
+        F(2, 3) = 1;
+        F(0, 2) = -S[0] / S[2];
+        F(1, 2) = -S[1] / S[2];
+        F(2, 2) = -S[3] / S[2];
+        Eigen::Matrix<double, 6, 6> jaco;
+        jaco << F * R, (-distance / S[2]) * F * R, Eigen::Matrix3d::Zero(), (1 / S[2]) * F * R;
+        return jaco;
     };
+
     auto addMeasurementtoGblPoint = [&seedcluster](GblPoint& point, std::vector<Plane>::iterator& p) {
         auto cluster = p->cluster();
         Eigen::Vector2d initialResidual;
         initialResidual(0) = cluster->global().x() - seedcluster->global().x();
         initialResidual(1) = cluster->global().y() - seedcluster->global().y();
-        // FIXME uncertainty of single hit - rotations ignored
+        // Uncertainty of single hit in local coordinates
         Eigen::Matrix2d covv = Eigen::Matrix2d::Identity();
         covv(0, 0) = 1. / cluster->errorX() / cluster->errorX();
         covv(1, 1) = 1. / cluster->errorY() / cluster->errorY();
         point.addMeasurement(initialResidual, covv);
+        std::cout << "Res \n " << initialResidual << std::endl;
     };
-    // lambda to add plane (not the first one) and air scatterers //FIXME: Where to put them?
-    auto addPlane = [&JacToNext, &prevPos, &addMeasurementtoGblPoint, &addScattertoGblPoint, &points, this](
-        std::vector<Plane>::iterator& plane) {
-        double dist = plane->postion() - prevPos;
-        double frac1 = 0.21, frac2 = 0.58;
-        // Current layout
-        // |        |        |       |
-        // |  frac1 | frac2  | frac1 |
-        // |        |        |       |
+    Eigen::Matrix<double, 5, 6> toGbl = Eigen::Matrix<double, 5, 6>::Zero();
+    Eigen::Matrix<double, 6, 5> toProteus = Eigen::Matrix<double, 6, 5>::Zero();
+    toGbl(0, 5) = 1;
+    toGbl(1, 3) = 1;
+    toGbl(2, 4) = 1;
+    toGbl(3, 0) = 1;
+    toGbl(4, 1) = 1;
+    toProteus(0, 3) = 1;
+    toProteus(1, 4) = 1;
+    toProteus(3, 1) = 1;
+    toProteus(4, 2) = 1;
+    toProteus(5, 0) = 1;
 
-        // first air scatterer:
-        auto point = GblPoint(JacToNext(frac1 * dist));
-        addScattertoGblPoint(point, dist / 2. / m_scattering_length_volume);
-        if(m_use_volume_scatter) {
-            points.push_back(point);
-            point = GblPoint(JacToNext(frac2 * dist));
-            addScattertoGblPoint(point, dist / 2. / m_scattering_length_volume);
-            points.push_back(point);
-        } else {
-            frac1 = 1;
-        }
-        point = GblPoint(JacToNext(frac1 * dist));
+    // lambda to add plane (not the first one) and air scatterers //FIXME: Where to put them?
+    auto addPlane = [&seedlocal,
+                     &toGbl,
+                     &toProteus,
+                     &jac,
+                     &prevPos,
+                     &prevToGlobal,
+                     &addMeasurementtoGblPoint,
+                     &addScattertoGblPoint,
+                     &points](std::vector<Plane>::iterator& plane) {
+
+        seedlocal = plane->toLocal() * seedlocal;
+        double dist = plane->postion() - prevPos;
+        auto myjac = jac(plane->toLocal(), prevToGlobal, seedlocal.z());
+        auto transformedJac = toGbl * myjac * toProteus;
+        std::cout << plane->name() << ", " << dist << "********\n" << transformedJac << std::endl;
+        auto point = GblPoint(transformedJac);
         addScattertoGblPoint(point, plane->materialbudget());
         if(plane->hasCluster()) {
             addMeasurementtoGblPoint(point, plane);
         }
+        prevToGlobal = plane->toGlobal();
         prevPos = plane->postion();
         points.push_back(point);
         plane->setGblPos(unsigned(points.size())); // gbl starts counting at 1
+        seedlocal = plane->toGlobal() * seedlocal;
+
     };
 
     // First GblPoint
     std::vector<Plane>::iterator pl = m_planes.begin();
-    auto point = GblPoint(Matrix5d::Identity());
+    Eigen::Matrix<double, 6, 6> minit = Eigen::Matrix<double, 6, 6>::Identity();
+    minit(0, 0) = 0;
+    auto point = GblPoint(toGbl * minit * toProteus);
     addScattertoGblPoint(point, pl->materialbudget());
     addMeasurementtoGblPoint(point, pl);
     points.push_back(point);
     pl->setGblPos(1);
     pl++;
+
     // add all other points
     for(; pl != m_planes.end(); ++pl) {
         addPlane(pl);
@@ -143,6 +189,7 @@ void GblTrack::fit() {
             //            throw TrackFitError(typeid(GblTrack), "internal GBL Error " + std::to_string(fitReturnValue));
         }
     }
+    std::cout << m_chi2 << "\t" << points.size() << std::endl;
 
     // copy the results
     m_ndof = double(ndf);
