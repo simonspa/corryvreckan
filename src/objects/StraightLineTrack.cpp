@@ -14,19 +14,6 @@ StraightLineTrack::StraightLineTrack(const StraightLineTrack& track) : Track(tra
     m_state = track.m_state;
 }
 
-double StraightLineTrack::distance2(const Cluster* cluster) const {
-
-    // Get the StraightLineTrack X and Y at the cluster z position
-    double StraightLineTrackX = m_state.X() + m_direction.X() * cluster->global().z();
-    double StraightLineTrackY = m_state.Y() + m_direction.Y() * cluster->global().z();
-
-    // Calculate the 1D residuals
-    double dx = (StraightLineTrackX - cluster->global().x());
-    double dy = (StraightLineTrackY - cluster->global().y());
-
-    // Return the distance^2
-    return (dx * dx + dy * dy);
-}
 ROOT::Math::XYPoint StraightLineTrack::distance(const Cluster* cluster) const {
 
     // Get the StraightLineTrack X and Y at the cluster z position
@@ -64,6 +51,13 @@ void StraightLineTrack::calculateChi2() {
 
     // Store also the chi2/degrees of freedom
     m_chi2ndof = m_chi2 / m_ndof;
+}
+
+void StraightLineTrack::calculateResiduals() {
+    for(auto c : m_trackClusters) {
+        auto cluster = dynamic_cast<Cluster*>(c.GetObject());
+        m_residual[cluster->detectorID()] = cluster->global() - intercept(cluster->global().z());
+    }
 }
 
 double StraightLineTrack::operator()(const double* parameters) {
@@ -127,6 +121,7 @@ void StraightLineTrack::fit() {
 
     // Calculate the chi2
     this->calculateChi2();
+    this->calculateResiduals();
     m_isFitted = true;
 }
 

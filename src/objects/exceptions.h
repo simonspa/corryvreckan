@@ -58,6 +58,7 @@ namespace corryvreckan {
             error_message_ += corryvreckan::demangle(reference.name());
         }
     };
+
     class TrackError : public ObjectError {
     public:
         /**
@@ -65,15 +66,16 @@ namespace corryvreckan {
          * @param source
          */
 
-        explicit TrackError(const std::type_info& source) {
+        explicit TrackError(const std::type_info& source, const std::string msg = "") {
             error_message_ += " Track Object ";
             error_message_ += corryvreckan::demangle((source.name()));
+            error_message_ += msg;
         }
     };
 
-    class MissingTrackModelReference : public TrackError {
+    class UnknownTrackModel : public TrackError {
     public:
-        explicit MissingTrackModelReference(const std::type_info& source, std::string model) : TrackError(source) {
+        explicit UnknownTrackModel(const std::type_info& source, std::string model) : TrackError(source) {
             error_message_ += " is requesting non exiting track model ";
             error_message_ += model;
         }

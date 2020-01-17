@@ -9,6 +9,38 @@
 #include "Cluster.hpp"
 #include "core/utils/type.h"
 namespace corryvreckan {
+
+    class Plane {
+    public:
+        Plane(){};
+        Plane(double z, double x_x0, std::string name, bool has_cluster)
+            : m_z(z), m_x_x0(x_x0), m_name(name), m_has_cluster(has_cluster){};
+        // access elements
+        double postion() const { return m_z; }
+        double materialbudget() const { return m_x_x0; }
+        bool hasCluster() const { return m_has_cluster; }
+        std::string name() const { return m_name; }
+        unsigned gblPos() const { return m_gbl_points_pos; }
+
+        // sorting overload
+        bool operator<(const Plane& pl) const { return m_z < pl.m_z; }
+        // set elements that might be unknown at construction
+        void setGblPos(unsigned pos) { m_gbl_points_pos = pos; }
+        void setPosition(double z) { m_z = z; }
+        void setCluster(const Cluster* cluster) { m_cluster = const_cast<Cluster*>(cluster); }
+        Cluster* cluster() const { return m_cluster; }
+        void print(std::ostream& os) const {
+            os << "Plane at " << m_z << " with rad. length " << m_x_x0 << " and cluster: " << (m_has_cluster) << std::endl;
+        }
+
+    private:
+        double m_z, m_x_x0;
+        std::string m_name;
+        bool m_has_cluster;
+        Cluster* m_cluster = nullptr;
+        unsigned m_gbl_points_pos{};
+    };
+
     /**
      * @ingroup Objects
      * @brief Track object
@@ -16,6 +48,7 @@ namespace corryvreckan {
      * This class is a simple track class which knows how to fit itself. It holds a collection of clusters, which may or may
      * not be included in the track fit.
      */
+
     class Track : public Object {
 
     public:
@@ -154,6 +187,7 @@ namespace corryvreckan {
          */
         size_t nClusters() const { return m_trackClusters.size(); }
 
+        void useVolumeScatterer(bool use) { m_use_volume_scatter = use; }
         // virtual functions to be implemented by derived classes
 
         /**
@@ -165,13 +199,6 @@ namespace corryvreckan {
          * @return pointer to copied object
          */
         virtual Track* clone() const { return new Track(); }
-
-        /**
-         * @brief  Get the distance between cluster and track
-         * @param Cluster* Pointer to the cluster
-         * @return distance between cluster and track
-         */
-        virtual double distance2(const Cluster*) const { return 0; }
 
         /**
          * @brief Get the track position for a certain z position
@@ -194,27 +221,65 @@ namespace corryvreckan {
          */
         virtual ROOT::Math::XYZVector direction(std::string) const { return ROOT::Math::XYZVector(0.0, 0.0, 0.0); }
 
+        /**
+         * @brief check if the fitting routine already has been called. Chi2 etc are not set before
+         * @return true if fit has already been performed, false otherwise
+         */
         bool isFitted() const { return m_isFitted; }
+
+        /**
+         * @brief Get the residual for a given detector layer
+         * @param detectorID
+         * @return  2D residual as ROOT::Math::XYPoint
+         */
+        ROOT::Math::XYPoint residual(std::string detectorID) const { return m_residual.at(detectorID); }
+
+        /**
+         * @brief Get the kink at a given detector layer. This is ill defined for last and first layer
+         * @param detectorID
+         * @return  2D kink as ROOT::Math::XYPoint
+         */
+        ROOT::Math::XYPoint kink(std::string detectorID) const;
+
+        /**
+         * @brief Get the materialBudget of a detector layer
+         * @param detectorID
+         * @return Material Budget for given layer
+         */
+        double materialBudget(std::string detectorID) const { return m_materialBudget.at(detectorID).first; }
+
+        void addMaterial(std::string detetcorID, double x_x0, double z);
+
+        ROOT::Math::XYZPoint correction(std::string detectorID) const;
+
+        long unsigned int numScatterers() const { return m_materialBudget.size(); }
+        void setVolumeScatter(double length) { m_scattering_length_volume = length; }
 
     protected:
         std::vector<TRef> m_trackClusters;
         std::vector<TRef> m_associatedClusters;
+        std::map<std::string, ROOT::Math::XYPoint> m_residual;
+        std::map<std::string, std::pair<double, double>> m_materialBudget;
+        std::map<std::string, ROOT::Math::XYPoint> m_kink;
+        std::map<std::string, ROOT::Math::XYZPoint> m_corrections{};
+        std::vector<Plane> m_planes{};
+
         TRef closestCluster{nullptr};
         double m_chi2;
         double m_ndof;
         double m_chi2ndof;
         double m_momentum;
+        double m_scattering_length_volume;
         bool m_isFitted{};
-
+        bool m_use_volume_scatter{};
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(Track, 7)
     };
-
     // Vector type declaration
     using TrackVector = std::vector<Track*>;
 } // namespace corryvreckan
 
 // include all tracking methods here to have one header to be include everywhere
+#include "GblTrack.hpp"
 #include "StraightLineTrack.hpp"
-
 #endif // TRACK_H
