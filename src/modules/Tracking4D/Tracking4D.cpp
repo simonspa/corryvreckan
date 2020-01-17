@@ -34,7 +34,7 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     timestampFrom = m_config.get<std::string>("timestamp_from", {});
     trackModel = m_config.get<std::string>("track_model", "straightline");
     momentum = m_config.get<double>("momentum", Units::get<double>(5, "GeV"));
-    volumeScatteringLength = m_config.get<double>("volume_scattering_length", Units::get<double>(304.2, "m"));
+    volumeRadiationLength = m_config.get<double>("volume_radiation_length", Units::get<double>(304.2, "m"));
     useVolumeScatterer = m_config.get<bool>("volume_scattering", false);
 
     // print a warning if volumeScatterer are used as this causes fit failures
@@ -194,7 +194,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         // Add the cluster to the track
         track->addCluster(cluster);
         track->setTimestamp(cluster->timestamp());
-        track->setVolumeScatter(volumeScatteringLength);
+        track->setVolumeScatter(volumeRadiationLength);
         track->useVolumeScatterer(useVolumeScatterer);
         refTrack->addCluster(cluster);
         refTrack->setTimestamp(cluster->timestamp());

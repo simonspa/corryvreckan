@@ -47,7 +47,7 @@ namespace corryvreckan {
         std::map<std::string, TH1F*> pullY;
         // Cuts for tracking
         double momentum{};
-        double volumeScatteringLength{};
+        double volumeRadiationLength{};
         double time_cut_reference_;
         size_t minHitsOnTrack;
         bool excludeDUT;
