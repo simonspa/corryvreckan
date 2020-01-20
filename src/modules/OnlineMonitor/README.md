@@ -5,7 +5,7 @@
 
 ### Description
 This module opens a GUI to monitor the progress of the reconstruction.
-Since Linux allows concurrent (reading) file access, this can already be started while a run is recorded to disk and thus serves as online monitoring tool during data taking.
+Since Linux allows concurrent (reading) file access, this can already be started while a run is recorded to disk and thus serves as an online monitoring tool during data taking.
 A set of canvases is available to display a variety of information ranging from hitmaps and basic correlation plots to more advances results such as tracking quality and track angles.
 The plots on each of the canvases contain real time data, automatically updated every `update` events.
 
@@ -13,7 +13,7 @@ The displayed plots and their source can be configured via the framework configu
 Here, each canvas is configured via a matrix containing the path of the plot and its plotting options in each row, e.g.
 
 ```toml
-DUTPlots =  [["EventLoaderEUDAQ2/%DUT%/hitmap", "colz"],
+dut_plots =  [["EventLoaderEUDAQ2/%DUT%/hitmap", "colz"],
              ["EventLoaderEUDAQ2/%DUT%/hPixelRawValues", "log"]]
 ```
 
@@ -23,7 +23,7 @@ In addition, the `log` keyword is supported, which switches the Y axis of the re
 Several keywords can be used in the plot path, which are parsed and interpreted by the OnlineMonitor module:
 
 * `%DETECTOR%`: If this keyword is found, the plot is added for each of the available detectors by replacing the keyword with the respective detector name.
-* `%DUT%`: This keyword is replaced by the vale of the `DUT` configuration key of the framework.
+* `%DUT%`: This keyword is replaced by the value of the `DUT` configuration key of the framework.
 * `%REFERENCE%`: This keyword is replaced by the vale of the `reference` configuration key of the framework.
 
 The "corryvreckan" namespace is not required to be added to the plot path.
@@ -35,8 +35,8 @@ The "corryvreckan" namespace is not required to be added to the plot path.
 
 
 * `overview`: List of plots to be placed on the "Overview" canvas of the online monitor. The list of plots created in the default configuration is listed below.
-* `dut_plots`: List of plots to be placed on the "DUTPlots" canvas of the online monitor. By default, this canvas contains plots collected from the `EventLoaderEUDAQ2` as well as the `AnalysisDUT` modules for the each configured DUT. This canvas should be customized for the respective DUT.
-* `hitmaps`: List of plots to be placed on the "HitMaps" canvas of the online monitor. By default, this canvas displays `Correlations/%DETECTOR%/hitmap` for all detectors.
+* `dut_plots`: List of plots to be placed on the "DUTs" canvas of the online monitor. By default, this canvas contains plots collected from the `EventLoaderEUDAQ2` as well as the `AnalysisDUT` modules for the each configured DUT. This canvas should be customized for the respective DUT.
+* `hitmaps`: List of plots to be placed on the "Hitmaps" canvas of the online monitor. By default, this canvas displays `Correlations/%DETECTOR%/hitmap` for all detectors.
 * `tracking`: List of plots to be placed on the "Tracking" canvas of the online monitor. The list of plots created in the default configuration is listed below.
 * `residuals`: List of plots to be placed on the "Residuals" canvas of the online monitor. By default, this canvas displays `Tracking4D/%DETECTOR%/residualsX` for all detectors.
 * `correlation_x`: List of plots to be placed on the "CorrelationX" canvas of the online monitor.  By default, this canvas displays `Correlations/%DETECTOR%/correlationX` for all detectors.
