@@ -25,7 +25,6 @@ Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp())
     m_residual = track.m_residual;
     m_kink = track.m_kink;
     m_corrections = track.m_corrections;
-    std::cout << m_corrections.size() << std::endl;
 }
 
 void Track::addCluster(const Cluster* cluster) {
