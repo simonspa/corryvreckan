@@ -12,12 +12,11 @@
 #include "MCParticle.hpp"
 #include "Pixel.hpp"
 #include "SpidrSignal.hpp"
-#include "StraightLineTrack.hpp"
 #include "Track.hpp"
 
 namespace corryvreckan {
     /**
      * @brief Tuple containing all objects
      */
-    using OBJECTS = std::tuple<Cluster, KDTree, MCParticle, Pixel, SpidrSignal, Track, StraightLineTrack>;
+    using OBJECTS = std::tuple<Cluster, KDTree, MCParticle, Pixel, SpidrSignal, Track, StraightLineTrack, GblTrack>;
 } // namespace corryvreckan

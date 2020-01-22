@@ -33,6 +33,16 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     requireDetectors = m_config.getArray<std::string>("require_detectors", {""});
     timestampFrom = m_config.get<std::string>("timestamp_from", {});
     trackModel = m_config.get<std::string>("track_model", "straightline");
+    momentum = m_config.get<double>("momentum", Units::get<double>(5, "GeV"));
+    volumeRadiationLength = m_config.get<double>("volume_radiation_length", Units::get<double>(304.2, "m"));
+    useVolumeScatterer = m_config.get<bool>("volume_scattering", false);
+
+    // print a warning if volumeScatterer are used as this causes fit failures
+    // that are still not understood
+    if(useVolumeScatterer) {
+        LOG_ONCE(WARNING) << "Taking volume scattering effects into account is still WIP and causes the GBL to fail - these "
+                             "tracks are rejected";
+    }
     // spatial cut, relative (x * spatial_resolution) or absolute:
     if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
         throw InvalidCombinationError(
@@ -71,11 +81,6 @@ void Tracking4D::initialise() {
     for(auto& detector : get_detectors()) {
         auto detectorID = detector->name();
 
-        // Do not create plots for detectors not participating in the tracking:
-        if(excludeDUT && detector->isDUT()) {
-            continue;
-        }
-
         // Do not created plots for auxiliary detectors:
         if(detector->isAuxiliary()) {
             continue;
@@ -83,29 +88,44 @@ void Tracking4D::initialise() {
 
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detectorID.c_str());
+
         if(local_directory == nullptr) {
             throw RuntimeError("Cannot create or access local ROOT directory for module " + this->getUniqueName());
         }
         local_directory->cd();
 
+        title = detectorID + " kink X;kink [rad];events";
+        kinkX[detectorID] = new TH1F("kinkX", title.c_str(), 500, -0.01, -0.01);
+        title = detectorID + " kinkY ;kink [rad];events";
+        kinkY[detectorID] = new TH1F("kinkY", title.c_str(), 500, -0.01, -0.01);
+
+        // Do not create plots for detectors not participating in the tracking:
+        if(excludeDUT && detector->isDUT()) {
+            continue;
+        }
+
         title = detectorID + " Residual X;x_{track}-x [mm];events";
         residualsX[detectorID] = new TH1F("residualsX", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual X, size 1;x_{track}-x [mm];events";
+        title = detectorID + " Residual X, cluster column width 1;x_{track}-x [mm];events";
         residualsXwidth1[detectorID] = new TH1F("residualsXwidth1", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual X, size 2;x_{track}-x [mm];events";
+        title = detectorID + " Residual X, cluster column width  2;x_{track}-x [mm];events";
         residualsXwidth2[detectorID] = new TH1F("residualsXwidth2", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual X, size 3;x_{track}-x [mm];events";
+        title = detectorID + " Residual X, cluster column width  3;x_{track}-x [mm];events";
         residualsXwidth3[detectorID] = new TH1F("residualsXwidth3", title.c_str(), 500, -0.1, 0.1);
         title = detectorID + " Residual Y;y_{track}-y [mm];events";
         residualsY[detectorID] = new TH1F("residualsY", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual Y, size 1;y_{track}-y [mm];events";
+        title = detectorID + " Residual Y, cluster row width 1;y_{track}-y [mm];events";
         residualsYwidth1[detectorID] = new TH1F("residualsYwidth1", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual Y, size 2;y_{track}-y [mm];events";
+        title = detectorID + " Residual Y, cluster row width 2;y_{track}-y [mm];events";
         residualsYwidth2[detectorID] = new TH1F("residualsYwidth2", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual Y, size 3;y_{track}-y [mm];events";
+        title = detectorID + " Residual Y, cluster row width 3;y_{track}-y [mm];events";
         residualsYwidth3[detectorID] = new TH1F("residualsYwidth3", title.c_str(), 500, -0.1, 0.1);
 
-        directory->cd();
+        title = detectorID + " Pull X;x_{track}-x/resolution;events";
+        pullX[detectorID] = new TH1F("pullX", title.c_str(), 500, -5, 5);
+
+        title = detectorID + " Pull Y;y_{track}-y/resolution;events";
+        pullY[detectorID] = new TH1F("pully", title.c_str(), 500, -5, 5);
     }
 }
 
@@ -141,6 +161,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             KDTree* clusterTree = new KDTree();
             clusterTree->buildTimeTree(*tempClusters);
             trees[detectorID] = clusterTree;
+        }
+        // the detector always needs to be listed as we would like to add the material budget information
+        if(!detector->isAuxiliary()) {
             detectors.push_back(detectorID);
         }
     }
@@ -166,15 +189,25 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "Looking at next seed cluster";
 
         auto track = Track::Factory(trackModel);
+        // The track finding is based on a straight line. Therefore a refTrack to extrapolate to the next plane is used here
+        auto refTrack = new StraightLineTrack();
         // Add the cluster to the track
         track->addCluster(cluster);
         track->setTimestamp(cluster->timestamp());
+        track->setVolumeScatter(volumeRadiationLength);
+        track->useVolumeScatterer(useVolumeScatterer);
+        refTrack->addCluster(cluster);
+        refTrack->setTimestamp(cluster->timestamp());
 
+        track->setParticleMomentum(momentum);
         // Loop over each subsequent plane and look for a cluster within the timing cuts
         for(auto& detectorID : detectors) {
             // Get the detector
             auto det = get_detector(detectorID);
 
+            // always add the material budget:
+            track->addMaterial(detectorID, det->materialBudget(), det->displacement().z());
+            LOG(TRACE) << "added material budget for " << detectorID << " at z = " << det->displacement().z();
             if(trees.count(detectorID) == 0) {
                 LOG(TRACE) << "Skipping detector " << det->name() << " as it has 0 clusters.";
                 continue;
@@ -214,10 +247,10 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
             // Now look for the spatially closest cluster on the next plane
             double interceptX, interceptY;
-            if(track->nClusters() > 1) {
-                track->fit();
+            if(refTrack->nClusters() > 1) {
+                refTrack->fit(); // fixme: this is not really a nice way to get the details
 
-                PositionVector3D<Cartesian3D<double>> interceptPoint = det->getIntercept(track);
+                PositionVector3D<Cartesian3D<double>> interceptPoint = det->getIntercept(refTrack);
                 interceptX = interceptPoint.X();
                 interceptY = interceptPoint.Y();
             } else {
@@ -265,7 +298,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             // Add the cluster to the track
             LOG(DEBUG) << "- added cluster to track";
             track->addCluster(closestCluster);
-        } //*/
+            refTrack->addCluster(closestCluster);
+        }
 
         // check if track has required detector(s):
         auto foundRequiredDetector = [this](Track* t) {
@@ -289,37 +323,55 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             delete track;
             continue;
         }
-
+        delete refTrack;
         // Fit the track and save it
         track->fit();
-        tracks->push_back(track);
-
+        if(track->isFitted()) {
+            tracks->push_back(track);
+        } else {
+            LOG_N(WARNING, 100) << "Rejected a track due to failure in fitting";
+            delete track;
+            continue;
+        }
         // Fill histograms
         trackChi2->Fill(track->chi2());
         clustersPerTrack->Fill(static_cast<double>(track->nClusters()));
         trackChi2ndof->Fill(track->chi2ndof());
-        trackAngleX->Fill(atan(track->direction(track->clusters().front()->detectorID()).X()));
-        trackAngleY->Fill(atan(track->direction(track->clusters().front()->detectorID()).Y()));
-
+        if(!(trackModel == "gbl")) {
+            trackAngleX->Fill(atan(track->direction(track->clusters().front()->detectorID()).X()));
+            trackAngleY->Fill(atan(track->direction(track->clusters().front()->detectorID()).Y()));
+        }
         // Make residuals
         auto trackClusters = track->clusters();
         for(auto& trackCluster : trackClusters) {
             string detectorID = trackCluster->detectorID();
-            ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->global().z());
-            residualsX[detectorID]->Fill(intercept.X() - trackCluster->global().x());
+            residualsX[detectorID]->Fill(track->residual(detectorID).X());
+            pullX[detectorID]->Fill(track->residual(detectorID).X() / track->clusters().front()->errorX());
+            pullY[detectorID]->Fill(track->residual(detectorID).Y() / track->clusters().front()->errorY());
             if(trackCluster->columnWidth() == 1)
-                residualsXwidth1[detectorID]->Fill(intercept.X() - trackCluster->global().x());
+                residualsXwidth1[detectorID]->Fill(track->residual(detectorID).X());
             if(trackCluster->columnWidth() == 2)
-                residualsXwidth2[detectorID]->Fill(intercept.X() - trackCluster->global().x());
+                residualsXwidth2[detectorID]->Fill(track->residual(detectorID).X());
             if(trackCluster->columnWidth() == 3)
-                residualsXwidth3[detectorID]->Fill(intercept.X() - trackCluster->global().x());
-            residualsY[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
+                residualsXwidth3[detectorID]->Fill(track->residual(detectorID).X());
+            residualsY[detectorID]->Fill(track->residual(detectorID).Y());
             if(trackCluster->rowWidth() == 1)
-                residualsYwidth1[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
+                residualsYwidth1[detectorID]->Fill(track->residual(detectorID).Y());
             if(trackCluster->rowWidth() == 2)
-                residualsYwidth2[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
+                residualsYwidth2[detectorID]->Fill(track->residual(detectorID).Y());
             if(trackCluster->rowWidth() == 3)
-                residualsYwidth3[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
+                residualsYwidth3[detectorID]->Fill(track->residual(detectorID).Y());
+        }
+
+        for(auto& det : detectors) {
+            if(!kinkX.count(det)) {
+                LOG(WARNING) << "Skipping writing kinks due to missing init of histograms for  " << det;
+                continue;
+            }
+
+            XYPoint kink = track->kink(det);
+            kinkX.at(det)->Fill(kink.x());
+            kinkY.at(det)->Fill(kink.y());
         }
 
         if(timestampFrom.empty()) {

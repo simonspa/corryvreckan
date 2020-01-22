@@ -25,6 +25,7 @@ ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/SpidrSignal.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Track.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StraightLineTrack.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/GblTrack.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Event.hpp
     LINKDEF
@@ -56,6 +57,7 @@ ADD_LIBRARY(CorryvreckanObjects SHARED
     Cluster.cpp
     Track.cpp
     StraightLineTrack.cpp
+    GblTrack.cpp
     KDTree.cpp
     Event.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx.o

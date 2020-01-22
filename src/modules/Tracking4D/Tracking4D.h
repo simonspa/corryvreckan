@@ -41,10 +41,17 @@ namespace corryvreckan {
         std::map<std::string, TH1F*> residualsYwidth2;
         std::map<std::string, TH1F*> residualsYwidth3;
 
+        std::map<std::string, TH1F*> kinkX;
+        std::map<std::string, TH1F*> kinkY;
+        std::map<std::string, TH1F*> pullX;
+        std::map<std::string, TH1F*> pullY;
         // Cuts for tracking
+        double momentum{};
+        double volumeRadiationLength{};
         double time_cut_reference_;
         size_t minHitsOnTrack;
         bool excludeDUT;
+        bool useVolumeScatterer{};
         std::vector<std::string> requireDetectors;
         std::map<std::shared_ptr<Detector>, double> time_cuts_;
         std::map<std::shared_ptr<Detector>, XYVector> spatial_cuts_;
