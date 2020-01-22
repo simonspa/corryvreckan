@@ -3,5 +3,5 @@ Welcome to the Doxygen code reference of Corryvreckan. This is not an introducti
 </div>
 
 <div style="max-width: 1000px; margin-bottom: 10px">
-This documentation describes the all the classes and functions that are part of the framework. It is automatically generated from the source code and is kept up to date with the latest changes to the software. The corresponding version where this reference belongs to is shown in the page header.
+This documentation describes all the classes and functions that are part of the framework. It is automatically generated from the source code and is kept up to date with the latest changes to the software. The corresponding version where this reference belongs to is shown in the page header.
 </div>
