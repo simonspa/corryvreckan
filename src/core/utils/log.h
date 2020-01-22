@@ -231,7 +231,9 @@ namespace corryvreckan {
 /**
  *  @brief Base name of the file without the directory
  */
+#ifndef __FILE_NAME__
 #define __FILE_NAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif
 
 /**
  * @brief Execute a block only if the reporting level is high enough
