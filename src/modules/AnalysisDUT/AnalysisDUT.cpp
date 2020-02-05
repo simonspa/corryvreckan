@@ -19,11 +19,11 @@ void AnalysisDUT::initialise() {
     hClusterMapAssoc = new TH2F("clusterMapAssoc",
                                 "clusterMapAssoc; cluster col; cluster row",
                                 m_detector->nPixels().X(),
-                                0,
-                                m_detector->nPixels().X(),
+                                -0.5,
+                                m_detector->nPixels().X() - 0.5,
                                 m_detector->nPixels().Y(),
-                                0,
-                                m_detector->nPixels().Y());
+                                -0.5,
+                                m_detector->nPixels().Y() - 0.5);
     hClusterSizeMapAssoc = new TProfile2D("clusterSizeMapAssoc",
                                           "clusterSizeMapAssoc; cluster size; #entries",
                                           m_detector->nPixels().X(),
