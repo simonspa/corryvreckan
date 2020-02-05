@@ -204,7 +204,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         auto globalIntercept = m_detector->getIntercept(track);
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
-        LOG(TRACE) << " Checking if track is outisde DUT area";
+        LOG(TRACE) << " Checking if track is outside DUT area";
         if(!m_detector->hasIntercept(track, 1)) {
             LOG(DEBUG) << " - track outside DUT area: " << localIntercept;
             n_dut++;
@@ -212,7 +212,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Check that track is within region of interest using winding number algorithm
-        LOG(TRACE) << " Checking if track is outisde ROI";
+        LOG(TRACE) << " Checking if track is outside ROI";
         if(!m_detector->isWithinROI(track)) {
             LOG(DEBUG) << " - track outside ROI";
             n_roi++;
