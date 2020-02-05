@@ -71,11 +71,11 @@ void EventLoaderATLASpix::initialise() {
     hHitMap = new TH2F("hitMap",
                        "hitMap; pixel column; pixel row; # events",
                        m_detector->nPixels().X(),
-                       0,
-                       m_detector->nPixels().X(),
+                       -0.5,
+                       m_detector->nPixels().X() - 0.5,
                        m_detector->nPixels().Y(),
-                       0,
-                       m_detector->nPixels().Y());
+                       -0.5,
+                       m_detector->nPixels().Y() - 0.5);
 
     hHitMap_highTot = new TH2F("hitMap_highTot",
                                "hitMap_hithTot; pixel column; pixel row; # events",
