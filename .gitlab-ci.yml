@@ -18,34 +18,14 @@ cmp:slc6-gcc:
     stage: compilation
     tags:
         - docker
-    image: clicdp/slc6-base
+    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja
-        - ninja install
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 3 hour
-
-cmp:slc6-llvm:
-    stage: compilation
-    tags:
-        - docker
-    image: clicdp/slc6-base
-    script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - mkdir build
-        - cd build
-        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
     artifacts:
@@ -59,14 +39,14 @@ cmp:cc7-gcc:
     stage: compilation
     tags:
         - docker
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
     artifacts:
@@ -88,7 +68,7 @@ cmp:cc7-docker:
     script:
         - mkdir build
         - cd build
-        - cmake3 -DBUILD_EventLoaderEUDAQ2=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake3 -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_EventLoaderEUDAQ2=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - make
         - make install
     artifacts:
@@ -102,13 +82,13 @@ cmp:cc7-llvm:
     stage: compilation
     tags:
         - docker
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
     artifacts:
@@ -127,7 +107,7 @@ cmp:mac1014-clang:
         - source .gitlab-ci.d/load_deps.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DCMAKE_USE_RELATIVE_PATHS=TRUE -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DCMAKE_USE_RELATIVE_PATHS=TRUE -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
     artifacts:
@@ -164,43 +144,13 @@ tst:telescope:
 # Format and Lint Checking #
 ############################
 
-# SLC 6
-
-fmt:slc6-llvm-format:
-    stage: formatting
-    tags:
-        - docker
-    dependencies:
-        - cmp:slc6-llvm
-    image: clicdp/slc6-base
-    script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - cd build/
-        - ninja check-format
-
-fmt:slc6-llvm-lint:
-    stage: formatting
-    tags:
-        - docker
-    dependencies:
-        - cmp:slc6-llvm
-    image: clicdp/slc6-base
-    script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - cd build/
-        - ninja check-lint
-
-# CentOS 7
-
 fmt:centos7-llvm-format:
     stage: formatting
     tags:
         - docker
     dependencies:
         - cmp:cc7-llvm
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
@@ -213,7 +163,7 @@ fmt:cc7-llvm-lint:
         - docker
     dependencies:
         - cmp:cc7-llvm
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
@@ -230,7 +180,7 @@ cmp:doxygen:
     stage: documentation
     tags:
         - docker
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     dependencies: []
     script:
         - source .gitlab-ci.d/init_x86_64.sh
@@ -273,7 +223,7 @@ pkg:slc6-gcc:
     stage: packaging
     tags:
         - docker
-    image: clicdp/slc6-base
+    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     only:
         - tags
         - schedules
@@ -297,7 +247,7 @@ pkg:cc7-gcc:
     stage: packaging
     tags:
         - docker
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     only:
         - tags
         - schedules
