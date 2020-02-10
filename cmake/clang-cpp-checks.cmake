@@ -21,34 +21,47 @@ IF(NOT CHECK_CXX_SOURCE_FILES)
 ENDIF()
 
 # Adding clang-format check and formatter if found
-FIND_PROGRAM(CLANG_FORMAT NAMES "clang-format-6.0" "clang-format-5.0" "clang-format-4.0" "clang-format" "clang-format-7")
+FIND_PROGRAM(CLANG_FORMAT NAMES "clang-format-8" "clang-format")
 IF(CLANG_FORMAT)
-    MESSAGE(STATUS "Found ${CLANG_FORMAT}, adding formatting targets")
-    ADD_CUSTOM_TARGET(
-        format
-        COMMAND
-        ${CLANG_FORMAT}
-        -i
-        -style=file
-        ${CHECK_CXX_SOURCE_FILES}
-        COMMENT "Auto formatting of all source files"
-    )
+    EXEC_PROGRAM(${CLANG_FORMAT} ${CMAKE_CURRENT_SOURCE_DIR} ARGS --version OUTPUT_VARIABLE CLANG_VERSION)
+    STRING(REGEX REPLACE ".*([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" CLANG_MAJOR_VERSION ${CLANG_VERSION})
 
-    ADD_CUSTOM_TARGET(
-        check-format
-        COMMAND
-        ${CLANG_FORMAT}
-        -style=file
-        -output-replacements-xml
-        ${CHECK_CXX_SOURCE_FILES}
-        # print output
-        | tee ${CMAKE_BINARY_DIR}/check_format_file.txt | grep -c "replacement " |
-                tr -d "[:cntrl:]" && echo " replacements necessary"
-        # WARNING: fix to stop with error if there are problems
-        COMMAND ! grep -c "replacement "
-                  ${CMAKE_BINARY_DIR}/check_format_file.txt > /dev/null
-        COMMENT "Checking format compliance"
-    )
+    # We currently require version 8 - which is not available on OSX...
+    IF(${CLANG_MAJOR_VERSION} EQUAL ${CLANG_FORMAT_VERSION} OR DEFINED ${APPLE})
+        IF(DEFINED ${APPLE})
+            MESSAGE(WARNING "Found ${CLANG_FORMAT} version ${CLANG_MAJOR_VERSION}, this might lead to incompatible formatting")
+        ELSE()
+            MESSAGE(STATUS "Found ${CLANG_FORMAT} version ${CLANG_FORMAT_VERSION}, adding formatting targets")
+        ENDIF()
+
+        ADD_CUSTOM_TARGET(
+            format
+            COMMAND
+            ${CLANG_FORMAT}
+            -i
+            -style=file
+            ${CHECK_CXX_SOURCE_FILES}
+            COMMENT "Auto formatting of all source files"
+        )
+
+        ADD_CUSTOM_TARGET(
+            check-format
+            COMMAND
+            ${CLANG_FORMAT}
+            -style=file
+            -output-replacements-xml
+            ${CHECK_CXX_SOURCE_FILES}
+            # print output
+            | tee ${CMAKE_BINARY_DIR}/check_format_file.txt | grep -c "replacement " |
+            tr -d "[:cntrl:]" && echo " replacements necessary"
+            # WARNING: fix to stop with error if there are problems
+            COMMAND ! grep -c "replacement "
+            ${CMAKE_BINARY_DIR}/check_format_file.txt > /dev/null
+            COMMENT "Checking format compliance"
+        )
+    ELSE()
+        MESSAGE(STATUS "Could only find version ${CLANG_MAJOR_VERSION} of clang-format, but version ${CLANG_FORMAT_VERSION} is required.")
+    ENDIF()
 ELSE()
     MESSAGE(STATUS "Could NOT find clang-format")
 ENDIF()
@@ -59,7 +72,7 @@ IF(${CMAKE_CXX_STANDARD})
     SET(CXX_STD ${CMAKE_CXX_STANDARD})
 ENDIF()
 
-FIND_PROGRAM(CLANG_TIDY NAMES "clang-tidy-6.0" "clang-tidy-5.0" "clang-tidy-4.0" "clang-tidy")
+FIND_PROGRAM(CLANG_TIDY NAMES "clang-tidy-8" "clang-tidy")
 # Enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # If debug build enabled do automatic clang tidy

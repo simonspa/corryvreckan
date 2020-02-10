@@ -59,7 +59,6 @@ void GblTrack::fit() {
         scatterWidth(0) = 1 / (scatteringTheta(material, total_material) * scatteringTheta(material, total_material));
         scatterWidth(1) = scatterWidth(0);
         point.addScatterer(Eigen::Vector2d::Zero(), scatterWidth);
-
     };
     auto JacToNext = [](double val) {
         Matrix5d Jac;
@@ -81,7 +80,7 @@ void GblTrack::fit() {
     };
     // lambda to add plane (not the first one) and air scatterers //FIXME: Where to put them?
     auto addPlane = [&JacToNext, &prevPos, &addMeasurementtoGblPoint, &addScattertoGblPoint, &points, this](
-        std::vector<Plane>::iterator& plane) {
+                        std::vector<Plane>::iterator& plane) {
         double dist = plane->postion() - prevPos;
         double frac1 = 0.21, frac2 = 0.58;
         // Current layout
