@@ -256,7 +256,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Time defaults ot rising shutter edge:
-            double timestamp = (shutterStartTime - shutterStopTime) / 2;
+            double timestamp = shutterStartTime + (shutterStopTime - shutterStartTime) / 2;
 
             // Decide whether information is counter of ToA
             if(matrix_config[std::make_pair(row, col)].GetCountingMode()) {
@@ -288,6 +288,8 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
                 pixels->push_back(pixel);
                 npixels++;
                 hHitMap->Fill(col, row);
+                LOG(TRACE) << "Adding pixel (col, row, tot, timestamp): " << col << ", " << row << ", " << tot << ", "
+                           << Units::display(timestamp, {"ns", "us", "s"});
             }
         }
     } catch(caribou::DataException& e) {
