@@ -344,12 +344,13 @@ void AnalysisTimingATLASpix::initialise() {
                                     "ROOT file doesn't exist. If no row correction shall be applied, remove this parameter "
                                     "from the configuration file.");
         }
+
+        gRowCorr = static_cast<TGraphErrors*>(file.Get(m_correctionGraph_row.c_str()));
         // Check if graph exists in ROOT file:
-        if(!file.GetListOfKeys()->Contains(m_correctionGraph_row.c_str())) {
+        if(!gRowCorr) {
             throw InvalidValueError(
                 m_config, "correction_graph_row", "Graph doesn't exist in ROOT file. Use full/path/to/graph.");
         }
-        gRowCorr = static_cast<TGraphErrors*>(file.Get(m_correctionGraph_row.c_str()));
     } else {
         LOG(STATUS) << "----> NO POINTWISE ROW CORRECTION!!!";
     }
@@ -362,12 +363,13 @@ void AnalysisTimingATLASpix::initialise() {
                                     "ROOT file doesn't exist. If no row correction shall be applied, remove this parameter "
                                     "from the configuration file.");
         }
+
+        gTimeWalkCorr = static_cast<TGraphErrors*>(file.Get(m_correctionGraph_timewalk.c_str()));
         // Check if graph exists in ROOT file:
-        if(!file.GetListOfKeys()->Contains(m_correctionGraph_timewalk.c_str())) {
+        if(!gTimeWalkCorr) {
             throw InvalidValueError(
                 m_config, "correction_graph_timewalk", "Graph doesn't exist in ROOT file. Use full/path/to/graph.");
         }
-        gTimeWalkCorr = static_cast<TGraphErrors*>(file.Get(m_correctionGraph_timewalk.c_str()));
     } else {
         LOG(STATUS) << "----> NO POINTWISE TIMEWALK CORRECTION!!!";
     }
