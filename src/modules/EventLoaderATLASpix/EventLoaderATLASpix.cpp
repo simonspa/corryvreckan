@@ -16,6 +16,8 @@ EventLoaderATLASpix::EventLoaderATLASpix(Configuration config, std::shared_ptr<D
     m_highToTCut = m_config.get<int>("high_tot_cut", 40);
     m_buffer_depth = m_config.get<int>("buffer_depth", 1000);
 
+    m_time_offset = m_config.get<double>("time_offset", 0.);
+
     // ts1Range = 0x800 * m_clkdivendM;
     ts2Range = 0x40 * m_clkdivend2M;
 }
@@ -383,6 +385,9 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
             LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix.";
             return true;
         }
+
+        timestamp += m_time_offset;
+        LOG(DEBUG) << "Adding time_offset of " << m_time_offset << " to pixel timestamp. New pixel timestamp: " << timestamp;
 
         // since calibration is not implemented yet, set charge = tot
         Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, tot, timestamp);
