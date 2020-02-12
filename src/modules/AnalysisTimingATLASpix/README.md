@@ -72,5 +72,5 @@ calc_corrections = false
 correction_file_row = "correction_files/row_correction_file.root"
 correction_graph_row = "AnalysisTimingATLASpix/apx0/gRTimeCorrelationVsRow"
 correction_file_timewalk = "correction_files/timewalk_correction_file.root"
-correction_graph_timewalk = "AnalysisTimingATLASpix/apx0/gTimCorrelationVsTot"
+correction_graph_timewalk = "AnalysisTimingATLASpix/apx0/gTimeCorrelationVsTot"
 ```
