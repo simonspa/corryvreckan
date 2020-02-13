@@ -125,7 +125,6 @@ void GblTrack::fit() {
     toProteus(5, 0) = 1;
 
     // lambda to add plane (not the first one) and air scatterers //FIXME: Where to put them?
-<<<<<<< HEAD
     auto addPlane = [&seedlocal,
                      &toGbl,
                      &toProteus,
@@ -136,10 +135,6 @@ void GblTrack::fit() {
                      &addScattertoGblPoint,
                      &points](std::vector<Plane>::iterator& plane) {
         seedlocal = plane->toLocal() * seedlocal;
-=======
-    auto addPlane = [&JacToNext, &prevPos, &addMeasurementtoGblPoint, &addScattertoGblPoint, &points, this](
-                        std::vector<Plane>::iterator& plane) {
->>>>>>> master
         double dist = plane->postion() - prevPos;
         auto myjac = jac(plane->toLocal(), prevToGlobal, seedlocal.z());
         auto transformedJac = toGbl * myjac * toProteus;
