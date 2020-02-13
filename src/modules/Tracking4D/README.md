@@ -19,10 +19,8 @@ Clusters from the first plane in Z (named the seed plane) are related to cluster
 * `timestamp_from`: Defines the detector which provides the track timestamp. This detector also needs to be set as `required_detector`. If empty, the average timestamp of all clusters on the track will be used. Empty by default.
 * `track_model`: Select the track model used for reconstruction. A simple line fit ignoring scattering (`straightline`) and a General-Broken-Lines (`gbl`) are currently supported. Defaults to  `straightline`.
 * `momentum`: Set the beam momentum. Defaults to 5 GeV
-* `volume_scattering`: Select if volume scattering will be taken into account
-- defaults to false
-* `volume_scattering_length`: Define the scattering length of the volume
-around the telescope. Defaults to `304.2 m`
+* `volume_scattering`: Select if volume scattering will be taken into account - defaults to false
+* `volume_radiation_length`: Define the radiation length of the volume around the telescope. Defaults to dry air with a radiation length of`304.2 m`
 
 ### Plots produced
 

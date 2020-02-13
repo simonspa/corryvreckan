@@ -62,7 +62,6 @@ void GblTrack::fit() {
         scatterWidth(0) = 1 / (scatteringTheta(material, total_material) * scatteringTheta(material, total_material));
         scatterWidth(1) = scatterWidth(0);
         point.addScatterer(Eigen::Vector2d::Zero(), scatterWidth);
-        std::cout << "scatter\n " << scatterWidth << std::endl;
     };
 
     // lmbda to transform ROOT::Transform3D to an Eigen3 Matrix
@@ -74,6 +73,7 @@ void GblTrack::fit() {
         t << c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8], c[9], c[10], c[11];
         return t;
     };
+
     // lambda Jacobian
     auto jac = [&fromTransform3DtoEigenMatrix](Transform3D p1, Transform3D p2, double distance) {
         auto transfer = fromTransform3DtoEigenMatrix(p1 * p2);
@@ -125,6 +125,7 @@ void GblTrack::fit() {
     toProteus(5, 0) = 1;
 
     // lambda to add plane (not the first one) and air scatterers //FIXME: Where to put them?
+<<<<<<< HEAD
     auto addPlane = [&seedlocal,
                      &toGbl,
                      &toProteus,
@@ -134,8 +135,11 @@ void GblTrack::fit() {
                      &addMeasurementtoGblPoint,
                      &addScattertoGblPoint,
                      &points](std::vector<Plane>::iterator& plane) {
-
         seedlocal = plane->toLocal() * seedlocal;
+=======
+    auto addPlane = [&JacToNext, &prevPos, &addMeasurementtoGblPoint, &addScattertoGblPoint, &points, this](
+                        std::vector<Plane>::iterator& plane) {
+>>>>>>> master
         double dist = plane->postion() - prevPos;
         auto myjac = jac(plane->toLocal(), prevToGlobal, seedlocal.z());
         auto transformedJac = toGbl * myjac * toProteus;
@@ -150,7 +154,6 @@ void GblTrack::fit() {
         points.push_back(point);
         plane->setGblPos(unsigned(points.size())); // gbl starts counting at 1
         seedlocal = plane->toGlobal() * seedlocal;
-
     };
 
     // First GblPoint
