@@ -163,7 +163,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             trees[detectorID] = clusterTree;
         }
         // the detector always needs to be listed as we would like to add the material budget information
-        if(!detector->isAuxiliary()) {
+        if(!detector->isAuxiliary() && !(detector->materialBudget() > std::numeric_limits<double>::epsilon())) {
             detectors.push_back(detectorID);
         }
     }
