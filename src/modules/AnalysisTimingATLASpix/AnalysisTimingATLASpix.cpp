@@ -65,6 +65,8 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
     m_calcCorrections = m_config.get<bool>("calc_corrections", false);
     m_totBinExample = m_config.get<int>("tot_bin_example", 3);
 
+    m_inpixelBinSize = m_config.get<double>("inpixel_bin_size", Units::get<double>(1.0, "um"));
+
     total_tracks_uncut = 0;
     tracks_afterChi2Cut = 0;
     tracks_hasIntercept = 0;
@@ -220,6 +222,25 @@ void AnalysisTimingATLASpix::initialise() {
     hTrackCorrelationTimeVsTot_rowAndTimeWalkCorr = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 512, 0, 512);
     hTrackCorrelationTimeVsTot_rowAndTimeWalkCorr->GetYaxis()->SetTitle("pixel ToT [ns]");
     hTrackCorrelationTimeVsTot_rowAndTimeWalkCorr->GetXaxis()->SetTitle("track time stamp - seed pixel time stamp [ns]");
+
+    // in-pixel time resolution plots:
+    auto nbins_x = static_cast<int>(std::ceil(m_detector->pitch().X() / m_inpixelBinSize));
+    auto nbins_y = static_cast<int>(std::ceil(m_detector->pitch().Y() / m_inpixelBinSize));
+    if(nbins_x > 1e4 || nbins_y > 1e4) {
+        throw InvalidValueError(m_config, "inpixel_bin_size", "Too many bins for in-pixel histograms.");
+    }
+
+    title = "in-pixel time resolution map;x [px];y [px];track time stamp - seed pixel timestamp [ns]";
+    hPixelTrackCorrelationTimeMap = new TProfile2D("pixelTrackCorrelationTimeMap",
+                                                   title.c_str(),
+                                                   nbins_x,
+                                                   -pitch_x / 2.,
+                                                   pitch_x / 2.,
+                                                   nbins_y,
+                                                   -pitch_y / 2.,
+                                                   pitch_y / 2.,
+                                                   -1 * m_timeCut,
+                                                   m_timeCut);
 
     name = "hClusterSizeVsTot_Assoc";
     hClusterSizeVsTot_Assoc = new TH2F(name.c_str(), name.c_str(), 20, 0, 20, 512, 0, 512);
@@ -478,6 +499,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     hTrackCorrelationTimeVsTot->Fill(timeDiff, cluster->getSeedPixel()->raw());
                     hTrackCorrelationTimeVsCol->Fill(timeDiff, cluster->getSeedPixel()->column());
                     hTrackCorrelationTimeVsRow->Fill(timeDiff, cluster->getSeedPixel()->row());
+
                     // single-pixel and multi-pixel clusters:
                     if(cluster->size() == 1) {
                         hTrackCorrelationTimeVsTot_1px->Fill(timeDiff, cluster->getSeedPixel()->raw());
@@ -497,6 +519,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     if(cluster->charge() > m_highChargeCut && cluster->size() == 1) {
                         hHitMapAssoc_inPixel_highCharge->Fill(xmod, ymod);
                     }
+                    hPixelTrackCorrelationTimeMap->Fill(xmod, ymod, timeDiff);
 
                     // 2D histograms: --> fill for all pixels from cluster
                     for(auto& pixel : cluster->pixels()) {

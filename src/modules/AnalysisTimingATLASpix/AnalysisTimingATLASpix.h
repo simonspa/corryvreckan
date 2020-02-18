@@ -68,6 +68,8 @@ namespace corryvreckan {
         TH2F* hTrackCorrelationTimeVsRow_rowAndTimeWalkCorr;
         TH2F* hTrackCorrelationTimeVsTot_rowAndTimeWalkCorr;
 
+        TProfile2D* hPixelTrackCorrelationTimeMap;
+
         TH2F* hClusterSizeVsTot_Assoc;
 
         TH2F* hHitMapAssoc;
