@@ -273,7 +273,7 @@ void AnalysisTimingATLASpix::initialise() {
                                     pitch_y / 2.);
     hHitMapAssoc_inPixel_highCharge =
         new TH2F("hitMapAssoc_inPixel_highCharge",
-                 "hitMapAssoc_inPixel_highCharge;  in-pixel x_{track} [#mum]; in-pixel y_{track} [#mum]",
+                 "hitMapAssoc_inPixel_highCharge;in-pixel x_{track} [#mum];in-pixel y_{track} [#mum]",
                  static_cast<int>(pitch_x),
                  -pitch_x / 2.,
                  pitch_x / 2.,
@@ -297,6 +297,15 @@ void AnalysisTimingATLASpix::initialise() {
     hTotVsTime_high->GetYaxis()->SetTitle("time [s]");
 
     // control plots for "left tail" and "main peak" of time correlation
+    hInPixelMap_leftTail = new TH2F("hPixelMap_leftTail",
+                                    "in-pixel mean track time residual (before correction);in-pixel x_{track} "
+                                    "[#mum];in-pixel y_{track} [#mum];# entries",
+                                    nbins_x,
+                                    -pitch_x / 2.,
+                                    pitch_x / 2.,
+                                    nbins_y,
+                                    -pitch_y / 2.,
+                                    pitch_y / 2.);
     hClusterMap_leftTail = new TH2F("hClusterMap_leftTail",
                                     "hClusterMap_leftTail; x_{cluster} [px]; x_{cluster} [px]; # entries",
                                     m_detector->nPixels().X(),
@@ -539,6 +548,9 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                         }
                     }
                     hClusterMapAssoc->Fill(cluster->column(), cluster->row());
+                    if(track->timestamp() - cluster->timestamp() < m_leftTailCut) {
+                        hInPixelMap_leftTail->Fill(xmod, ymod);
+                    }
 
                     // !!! Have to do this in the end because it changes the cluster time and position!!!
                     // row-by-row correction using points from TGraphError directly instead of fit.

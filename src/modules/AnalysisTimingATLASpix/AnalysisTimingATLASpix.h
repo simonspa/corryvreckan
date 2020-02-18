@@ -82,6 +82,7 @@ namespace corryvreckan {
         TH2F* hTotVsTime_high;
 
         // Control Plots for "left tail" and "main peak" of time correlation
+        TH2F* hInPixelMap_leftTail;
         TH2F* hClusterMap_leftTail;
         TH2F* hClusterMap_mainPeak;
         TH1F* hTot_leftTail;
@@ -119,6 +120,7 @@ namespace corryvreckan {
         bool m_pointwise_correction_row;
         bool m_pointwise_correction_timewalk;
         int m_totBinExample;
+        double m_inpixelBinSize;
 
         int total_tracks_uncut;
         int tracks_afterChi2Cut;
