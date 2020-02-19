@@ -1,5 +1,5 @@
-#ifndef CLUSTER_H
-#define CLUSTER_H 1
+#ifndef CORRYVRECKAN_CLUSTER_H
+#define CORRYVRECKAN_CLUSTER_H 1
 
 #include <Math/Point3D.h>
 #include <Math/Vector2D.h>
@@ -98,4 +98,4 @@ namespace corryvreckan {
     using ClusterVector = std::vector<Cluster*>;
 } // namespace corryvreckan
 
-#endif // CLUSTER_H
+#endif // CORRYVRECKAN_CLUSTER_H

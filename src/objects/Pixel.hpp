@@ -1,5 +1,5 @@
-#ifndef PIXEL_H
-#define PIXEL_H 1
+#ifndef CORRYVRECKAN_PIXEL_H
+#define CORRYVRECKAN_PIXEL_H 1
 
 #include "Object.hpp"
 
@@ -110,4 +110,4 @@ namespace corryvreckan {
     using PixelVector = std::vector<Pixel*>;
 } // namespace corryvreckan
 
-#endif // PIXEL_H
+#endif // CORRYVRECKAN_PIXEL_H

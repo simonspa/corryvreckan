@@ -1,5 +1,5 @@
-#ifndef GUIDISPLAY_H
-#define GUIDISPLAY_H 1
+#ifndef CORRYVRECKAN_GUIDISPLAY_H
+#define CORRYVRECKAN_GUIDISPLAY_H 1
 
 // Local includes
 #include "Object.hpp"
@@ -134,4 +134,4 @@ namespace corryvreckan {
     };
 } // namespace corryvreckan
 
-#endif // GUIDISPLAY_H
+#endif // CORRYVRECKAN_GUIDISPLAY_H

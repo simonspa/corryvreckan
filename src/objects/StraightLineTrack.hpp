@@ -1,5 +1,5 @@
-#ifndef StraightLineTrack_H
-#define StraightLineTrack_H 1
+#ifndef CORRYVRECKAN_STRAIGHTLINETRACK_H
+#define CORRYVRECKAN_STRAIGHTLINETRACK_H 1
 
 #include "Track.hpp"
 
@@ -75,4 +75,4 @@ namespace corryvreckan {
     using StraightLineTrackVector = std::vector<StraightLineTrack*>;
 } // namespace corryvreckan
 
-#endif // StraightLineTrack_H
+#endif // CORRYVRECKAN_STRAIGHTLINETRACK_H

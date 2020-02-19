@@ -1,5 +1,5 @@
-#ifndef MCPARTICLE_H
-#define MCPARTICLE_H 1
+#ifndef CORRYVRECKAN_MCPARTICLE_H
+#define CORRYVRECKAN_MCPARTICLE_H 1
 
 #include <Math/Point3D.h>
 #include "Object.hpp"
@@ -50,4 +50,4 @@ namespace corryvreckan {
     using MCParticleVector = std::vector<MCParticle*>;
 } // namespace corryvreckan
 
-#endif // MCPARTICLE_H
+#endif // CORRYVRECKAN_MCPARTICLE_H

@@ -1,5 +1,5 @@
-#ifndef SPIDRSIGNAL_H
-#define SPIDRSIGNAL_H 1
+#ifndef CORRYVRECKAN_SPIDRSIGNAL_H
+#define CORRYVRECKAN_SPIDRSIGNAL_H 1
 
 namespace corryvreckan {
     /**
@@ -39,4 +39,4 @@ namespace corryvreckan {
     using SpidrSignalVector = std::vector<SpidrSignal*>;
 } // namespace corryvreckan
 
-#endif // SPIDRSIGNAL_H
+#endif // CORRYVRECKAN_SPIDRSIGNAL_H
