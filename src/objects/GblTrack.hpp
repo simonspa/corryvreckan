@@ -1,5 +1,5 @@
-#ifndef GblTrack_H
-#define GblTrack_H 1
+#ifndef CORRYVRECKAN_GBLTRACK_H
+#define CORRYVRECKAN_GBLTRACK_H 1
 
 #include "Track.hpp"
 namespace corryvreckan {
@@ -59,4 +59,4 @@ namespace corryvreckan {
 
 } // namespace corryvreckan
 
-#endif // GblTrack_H
+#endif // CORRYVRECKAN_GBLTRACK_H

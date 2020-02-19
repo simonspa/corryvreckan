@@ -1,5 +1,5 @@
-#ifndef TRACK_H
-#define TRACK_H 1
+#ifndef CORRYVRECKAN_TRACK_H
+#define CORRYVRECKAN_TRACK_H 1
 
 #include <Math/Point2D.h>
 #include <Math/Point3D.h>
@@ -282,4 +282,4 @@ namespace corryvreckan {
 // include all tracking methods here to have one header to be include everywhere
 #include "GblTrack.hpp"
 #include "StraightLineTrack.hpp"
-#endif // TRACK_H
+#endif // CORRYVRECKAN_TRACK_H
