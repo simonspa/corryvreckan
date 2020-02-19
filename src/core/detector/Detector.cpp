@@ -58,7 +58,8 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
 
     // Material budget of detector, including support material
     if(!config.has("material_budget")) {
-        LOG(WARNING) << "No material budget given for " << m_detectorName << ", assuming zero";
+        m_materialBudget = 0.0;
+        LOG(WARNING) << "No material budget given for " << m_detectorName << ", assuming " << m_materialBudget;
     } else if(config.get<double>("material_budget") < 0) {
         throw InvalidValueError(config, "material_budget", "Material budget has to be positive");
     } else {
@@ -281,10 +282,9 @@ Configuration Detector::getConfiguration() const {
     config.set("time_resolution", m_timeResolution, {"ns", "us", "ms", "s"});
 
     // material budget
-    if(m_materialBudget > 0.0) {
+    if(m_materialBudget > std::numeric_limits<double>::epsilon()) {
         config.set("material_budget", m_materialBudget);
     }
-
     // only if detector is not auxiliary:
     if(!this->isAuxiliary()) {
         config.set("number_of_pixels", m_nPixels);

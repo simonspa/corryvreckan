@@ -19,7 +19,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     m_get_time_residuals = m_config.get<bool>("get_time_residuals", false);
     m_get_tag_vectors = m_config.get<bool>("get_tag_vectors", false);
     m_ignore_bore = m_config.get<bool>("ignore_bore", true);
-    m_skip_time = m_config.get("skip_time", 0.);
+    m_skip_time = m_config.get<double>("skip_time", 0.);
     m_adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {});
     m_buffer_depth = m_config.get<int>("buffer_depth", 0);
     m_shift_triggers = m_config.get<int>("shift_triggers", 0);

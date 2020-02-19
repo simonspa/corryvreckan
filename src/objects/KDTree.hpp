@@ -8,8 +8,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef KDTREE__H
-#define KDTREE__H 1
+#ifndef CORRYVRECKAN_KDTREE__H
+#define CORRYVRECKAN_KDTREE__H 1
 
 #include <map>
 #include "Cluster.hpp"
@@ -78,4 +78,4 @@ namespace corryvreckan {
     };
 } // namespace corryvreckan
 
-#endif // KDTREE__H
+#endif // CORRYVRECKAN_KDTREE__H
