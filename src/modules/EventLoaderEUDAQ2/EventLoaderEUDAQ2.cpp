@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implementation of the EventLoaderEUDAQ2 module
+ * @brief Implementation of module EventLoaderEUDAQ2
  *
  * @copyright Copyright (c) 2019-2020 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".

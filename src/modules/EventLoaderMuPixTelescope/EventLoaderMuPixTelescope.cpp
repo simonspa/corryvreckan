@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implementation of EventLoaderMuPixTelescope module
+ * @brief Implementation of module EventLoaderMuPixTelescope
  *
  * @copyright Copyright (c) 2019-2020 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".

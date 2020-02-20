@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Definition of a module writing data to text
+ * @brief Definition of module TextWriter
  *
  * @copyright Copyright (c) 2019-2020 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
