@@ -1,14 +1,11 @@
 /**
  * @file
- * @brief Definition of [AnalysisAnalysisPowerPulsing] module
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @brief Definition of module AnalysisPowerPulsing
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
- *
- * Contains minimal dummy module to use as a start for the development of your own module
- *
- * Refer to the User's Manual for more details.
  */
 
 #ifndef AnalysisPowerPulsing_H
