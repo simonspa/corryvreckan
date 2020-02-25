@@ -46,7 +46,7 @@ void StraightLineTrack::calculateChi2() {
         ROOT::Math::XYPoint dist = this->distance(cluster);
         double ex2 = cluster->errorX() * cluster->errorX();
         double ey2 = cluster->errorY() * cluster->errorY();
-        m_chi2 += (dist.x() * dist.x() / ex2 + dist.y() * dist.y() / ey2);
+        m_chi2 += ((dist.x() * dist.x() / ex2) + (dist.y() * dist.y() / ey2));
     }
 
     // Store also the chi2/degrees of freedom
@@ -100,7 +100,7 @@ void StraightLineTrack::fit() {
         Eigen::Matrix2d err;
         err << 1, z, z, z * z;
         mat.topLeftCorner(2, 2) += err / ex2;
-        mat.bottomRightCorner(2, 2) += err / ex2;
+        mat.bottomRightCorner(2, 2) += err / ey2;
     }
 
     // Check for singularities.
