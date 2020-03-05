@@ -53,11 +53,11 @@ void AnalysisEfficiency::initialise() {
     hChipEfficiencyMap_trackPos = new TProfile2D("chipEfficiencyMap_trackPos",
                                                  title.c_str(),
                                                  m_detector->nPixels().X(),
-                                                 0,
-                                                 m_detector->nPixels().X(),
+                                                 -0.5,
+                                                 m_detector->nPixels().X() - 0.5,
                                                  m_detector->nPixels().Y(),
-                                                 0,
-                                                 m_detector->nPixels().Y(),
+                                                 -0.5,
+                                                 m_detector->nPixels().Y() - 0.5,
                                                  0,
                                                  1);
     title = m_detector->name() + " Global efficiency map;x [mm];y [mm];efficiency";
@@ -75,11 +75,11 @@ void AnalysisEfficiency::initialise() {
     hChipEfficiencyMap_clustPos = new TProfile2D("chipEfficiencyMap_clustPos",
                                                  title.c_str(),
                                                  m_detector->nPixels().X(),
-                                                 0,
-                                                 m_detector->nPixels().X(),
+                                                 -0.5,
+                                                 m_detector->nPixels().X() - 0.5,
                                                  m_detector->nPixels().Y(),
-                                                 0,
-                                                 m_detector->nPixels().Y(),
+                                                 -0.5,
+                                                 m_detector->nPixels().Y() - 0.5,
                                                  0,
                                                  1);
     title = m_detector->name() + " Global efficiency map;x [mm];y [mm];efficiency";
