@@ -27,21 +27,21 @@ void AnalysisDUT::initialise() {
     hClusterSizeMapAssoc = new TProfile2D("clusterSizeMapAssoc",
                                           "clusterSizeMapAssoc; cluster size; #entries",
                                           m_detector->nPixels().X(),
-                                          0,
-                                          m_detector->nPixels().X(),
+                                          -0.5,
+                                          m_detector->nPixels().X() - 0.5,
                                           m_detector->nPixels().Y(),
-                                          0,
-                                          m_detector->nPixels().Y(),
+                                          -0.5,
+                                          m_detector->nPixels().Y() - 0.5,
                                           0,
                                           100);
     hClusterChargeMapAssoc = new TProfile2D("clusterChargeMapAssoc",
                                             "clusterSizeChargeAssoc; cluster charge [e]; #entries",
                                             m_detector->nPixels().X(),
-                                            0,
-                                            m_detector->nPixels().X(),
+                                            -0.5,
+                                            m_detector->nPixels().X() - 0.5,
                                             m_detector->nPixels().Y(),
-                                            0,
-                                            m_detector->nPixels().Y(),
+                                            -0.5,
+                                            m_detector->nPixels().Y() - 0.5,
                                             0,
                                             500);
 
@@ -49,28 +49,28 @@ void AnalysisDUT::initialise() {
     hHitMapAssoc = new TH2F("hitMapAssoc",
                             "hitMapAssoc; hit column; hit row",
                             m_detector->nPixels().X(),
-                            0,
-                            m_detector->nPixels().X(),
+                            -0.5,
+                            m_detector->nPixels().X() - 0.5,
                             m_detector->nPixels().Y(),
-                            0,
-                            m_detector->nPixels().Y());
+                            -0.5,
+                            m_detector->nPixels().Y() - 0.5);
     hHitMapROI = new TH2F("hitMapROI",
                           "hitMapROI; hit column; hit row",
                           m_detector->nPixels().X(),
-                          0,
-                          m_detector->nPixels().X(),
+                          -0.5,
+                          m_detector->nPixels().X() - 0.5,
                           m_detector->nPixels().Y(),
-                          0,
-                          m_detector->nPixels().Y());
+                          -0.5,
+                          m_detector->nPixels().Y() - 0.5);
     hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc", "pixelRawValueAssoc;pixel raw value;#entries", 1024, 0, 1024);
     hPixelRawValueMapAssoc = new TProfile2D("pixelRawValueMapAssoc",
                                             "pixelRawValueMapAssoc;pixel raw values;# entries",
                                             m_detector->nPixels().X(),
-                                            0,
-                                            m_detector->nPixels().X(),
+                                            -0.5,
+                                            m_detector->nPixels().X() - 0.5,
                                             m_detector->nPixels().Y(),
-                                            0,
-                                            m_detector->nPixels().Y(),
+                                            -0.5,
+                                            m_detector->nPixels().Y() - 0.5,
                                             0,
                                             255);
 
@@ -282,13 +282,13 @@ void AnalysisDUT::initialise() {
                  -10,
                  10);
     hAssociatedTracksLocalPosition = new TH2F("hAssociatedTracksLocalPosition",
-                                              "hAssociatedTracksLocalPosition;local intercept x [mm];local intercept y [mm]",
+                                              "hAssociatedTracksLocalPosition;local intercept x [px];local intercept y [px]",
                                               m_detector->nPixels().X(),
-                                              0,
-                                              m_detector->nPixels().X(),
+                                              -0.5,
+                                              m_detector->nPixels().X() - 0.5,
                                               m_detector->nPixels().Y(),
-                                              0,
-                                              m_detector->nPixels().Y());
+                                              -0.5,
+                                              m_detector->nPixels().Y() - 0.5);
     hUnassociatedTracksGlobalPosition =
         new TH2F("hUnassociatedTracksGlobalPosition",
                  "hUnassociatedTracksGlobalPosition; global intercept x [mm]; global intercept y [mm]",
@@ -486,7 +486,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
                 rmsxyvsxmym->Fill(xmod, ymod, fabs(sqrt(xdistance * xdistance + ydistance * ydistance)));
             }
             hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
-            hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
+            hAssociatedTracksLocalPosition->Fill(localIntercept.X(), localIntercept.Y());
         }
         if(!has_associated_cluster) {
             hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
