@@ -108,31 +108,31 @@ void EventLoaderCLICpix2::initialise() {
     hHitMap = new TH2F("hitMap",
                        title.c_str(),
                        m_detector->nPixels().X(),
-                       0,
-                       m_detector->nPixels().X(),
+                       -0.5,
+                       m_detector->nPixels().X() - 0.5,
                        m_detector->nPixels().Y(),
-                       0,
-                       m_detector->nPixels().Y());
+                       -0.5,
+                       m_detector->nPixels().Y() - 0.5);
     title = m_detector->name() + " Map of discarded hits;x [px];y [px];pixels";
     hHitMapDiscarded = new TH2F("hitMapDiscarded",
                                 title.c_str(),
                                 m_detector->nPixels().X(),
-                                0,
-                                m_detector->nPixels().X(),
+                                -0.5,
+                                m_detector->nPixels().X() - 0.5,
                                 m_detector->nPixels().Y(),
-                                0,
-                                m_detector->nPixels().Y());
+                                -0.5,
+                                m_detector->nPixels().Y() - 0.5);
     title = m_detector->name() + " TOT spectrum;TOT;pixels";
     hPixelToT = new TH1F("pixelToT", title.c_str(), 32, 0, 31);
     title = m_detector->name() + " TOT map;x [px];y [px];TOT";
     hPixelToTMap = new TProfile2D("pixelToTMap",
                                   title.c_str(),
                                   m_detector->nPixels().X(),
-                                  0,
-                                  m_detector->nPixels().X(),
+                                  -0.5,
+                                  m_detector->nPixels().X() - 0.5,
                                   m_detector->nPixels().Y(),
-                                  0,
-                                  m_detector->nPixels().Y(),
+                                  -0.5,
+                                  m_detector->nPixels().Y() - 0.5,
                                   0,
                                   maxcounter - 1);
     title = m_detector->name() + " TOA spectrum;TOA;pixels";
@@ -149,11 +149,11 @@ void EventLoaderCLICpix2::initialise() {
     hMaskMap = new TH2F("maskMap",
                         title.c_str(),
                         m_detector->nPixels().X(),
-                        0,
-                        m_detector->nPixels().X(),
+                        -0.5,
+                        m_detector->nPixels().X() - 0.5,
                         m_detector->nPixels().Y(),
-                        0,
-                        m_detector->nPixels().Y());
+                        -0.5,
+                        m_detector->nPixels().Y() - 0.5);
     for(int column = 0; column < m_detector->nPixels().X(); column++) {
         for(int row = 0; row < m_detector->nPixels().Y(); row++) {
             if(m_detector->masked(column, row)) {
