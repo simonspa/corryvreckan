@@ -51,20 +51,20 @@ void Correlations::initialise() {
     hitmap = new TH2F("hitmap",
                       title.c_str(),
                       m_detector->nPixels().X(),
-                      0,
-                      m_detector->nPixels().X(),
+                      -0.5,
+                      m_detector->nPixels().X() - 0.5,
                       m_detector->nPixels().Y(),
-                      0,
-                      m_detector->nPixels().Y());
+                      -0.5,
+                      m_detector->nPixels().Y() - 0.5);
     title = m_detector->name() + ": hitmap of clusters;x [px];y [px];events";
     hitmap_clusters = new TH2F("hitmap_clusters",
                                title.c_str(),
                                m_detector->nPixels().X(),
-                               0,
-                               m_detector->nPixels().X(),
+                               -0.5,
+                               m_detector->nPixels().X() - 0.5,
                                m_detector->nPixels().Y(),
-                               0,
-                               m_detector->nPixels().Y());
+                               -0.5,
+                               m_detector->nPixels().Y() - 0.5);
 
     // Correlation plots
     title = m_detector->name() + ": correlation X;x_{ref}-x [mm];events";
@@ -106,56 +106,56 @@ void Correlations::initialise() {
     correlationX2Dlocal = new TH2F("correlationX_2Dlocal",
                                    title.c_str(),
                                    m_detector->nPixels().X(),
-                                   0,
-                                   m_detector->nPixels().X(),
+                                   -0.5,
+                                   m_detector->nPixels().X() - 0.5,
                                    reference->nPixels().X(),
-                                   0,
-                                   reference->nPixels().X());
+                                   -0.5,
+                                   reference->nPixels().X() - 0.5);
     title = m_detector->name() + ": 2D correlation Y (local);y [px];y_{ref} [px];events";
     correlationY2Dlocal = new TH2F("correlationY_2Dlocal",
                                    title.c_str(),
                                    m_detector->nPixels().Y(),
-                                   0,
-                                   m_detector->nPixels().Y(),
+                                   -0.5,
+                                   m_detector->nPixels().Y() - 0.5,
                                    reference->nPixels().Y(),
-                                   0,
-                                   reference->nPixels().Y());
+                                   -0.5,
+                                   reference->nPixels().Y() - 0.5);
     title = m_detector->name() + ": correlation col to col;col [px];col_{ref} [px];events";
     correlationColCol_px = new TH2F("correlationColCol_px",
                                     title.c_str(),
                                     m_detector->nPixels().X(),
-                                    0,
-                                    m_detector->nPixels().X(),
+                                    -0.5,
+                                    m_detector->nPixels().X() - 0.5,
                                     reference->nPixels().X(),
-                                    0,
-                                    reference->nPixels().X());
+                                    -0.5,
+                                    reference->nPixels().X() - 0.5);
     title = m_detector->name() + ": correlation col to row;col [px];row_{ref} [px];events";
     correlationColRow_px = new TH2F("correlationColRow_px",
                                     title.c_str(),
                                     m_detector->nPixels().X(),
-                                    0,
-                                    m_detector->nPixels().X(),
+                                    -0.5,
+                                    m_detector->nPixels().X() - 0.5,
                                     reference->nPixels().Y(),
-                                    0,
-                                    reference->nPixels().Y());
+                                    -0.5,
+                                    reference->nPixels().Y() - 0.5);
     title = m_detector->name() + ": correlation row to col;row [px];col_{ref} [px];events";
     correlationRowCol_px = new TH2F("correlationRowCol_px",
                                     title.c_str(),
                                     m_detector->nPixels().Y(),
-                                    0,
-                                    m_detector->nPixels().Y(),
+                                    -0.5,
+                                    m_detector->nPixels().Y() - 0.5,
                                     reference->nPixels().X(),
-                                    0,
-                                    reference->nPixels().X());
+                                    -0.5,
+                                    reference->nPixels().X() - 0.5);
     title = m_detector->name() + ": correlation row to row;row [px];row_{ref} [px];events";
     correlationRowRow_px = new TH2F("correlationRowRow_px",
                                     title.c_str(),
                                     m_detector->nPixels().Y(),
-                                    0,
-                                    m_detector->nPixels().Y(),
+                                    -0.5,
+                                    m_detector->nPixels().Y() - 0.5,
                                     reference->nPixels().Y(),
-                                    0,
-                                    reference->nPixels().Y());
+                                    -0.5,
+                                    reference->nPixels().Y() - 0.5);
 
     title = m_detector->name() + ": 2D correlation X (global);x [mm];x_{ref} [mm];events";
     correlationX2D = new TH2F("correlationX_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);

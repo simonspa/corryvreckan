@@ -214,11 +214,11 @@ void EventLoaderTimepix3::initialise() {
     hHitMap = new TH2F("hitMap",
                        title.c_str(),
                        m_detector->nPixels().X(),
-                       0,
-                       m_detector->nPixels().X(),
+                       -0.5,
+                       m_detector->nPixels().X() - 0.5,
                        m_detector->nPixels().Y(),
-                       0,
-                       m_detector->nPixels().Y());
+                       -0.5,
+                       m_detector->nPixels().Y() - 0.5);
 }
 
 StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {

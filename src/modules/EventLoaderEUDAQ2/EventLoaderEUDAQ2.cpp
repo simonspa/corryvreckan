@@ -70,21 +70,21 @@ void EventLoaderEUDAQ2::initialise() {
         hitmap = new TH2F("hitmap",
                           title.c_str(),
                           m_detector->nPixels().X(),
-                          0,
-                          m_detector->nPixels().X(),
+                          -0.5,
+                          m_detector->nPixels().X() - 0.5,
                           m_detector->nPixels().Y(),
-                          0,
-                          m_detector->nPixels().Y());
+                          -0.5,
+                          m_detector->nPixels().Y() - 0.5);
 
         title = "rawValues; column; row; raw values";
         hRawValuesMap = new TProfile2D("hRawValuesMap",
                                        title.c_str(),
                                        m_detector->nPixels().X(),
-                                       0,
-                                       m_detector->nPixels().X(),
+                                       -0.5,
+                                       m_detector->nPixels().X() - 0.5,
                                        m_detector->nPixels().Y(),
-                                       0,
-                                       m_detector->nPixels().Y());
+                                       -0.5,
+                                       m_detector->nPixels().Y() - 0.5);
 
         title = ";hit time [ms];# events";
         hPixelTimes = new TH1F("hPixelTimes", title.c_str(), 3e6, 0, 3e3);
