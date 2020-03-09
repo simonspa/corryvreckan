@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @brief Implementation of StraightLine track object
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 #include "StraightLineTrack.hpp"
 #include "Eigen/Dense"
 #include "Track.hpp"
@@ -46,7 +56,7 @@ void StraightLineTrack::calculateChi2() {
         ROOT::Math::XYPoint dist = this->distance(cluster);
         double ex2 = cluster->errorX() * cluster->errorX();
         double ey2 = cluster->errorY() * cluster->errorY();
-        m_chi2 += (dist.x() * dist.x() / ex2 + dist.y() * dist.y() / ey2);
+        m_chi2 += ((dist.x() * dist.x() / ex2) + (dist.y() * dist.y() / ey2));
     }
 
     // Store also the chi2/degrees of freedom
@@ -100,7 +110,7 @@ void StraightLineTrack::fit() {
         Eigen::Matrix2d err;
         err << 1, z, z, z * z;
         mat.topLeftCorner(2, 2) += err / ex2;
-        mat.bottomRightCorner(2, 2) += err / ex2;
+        mat.bottomRightCorner(2, 2) += err / ey2;
     }
 
     // Check for singularities.

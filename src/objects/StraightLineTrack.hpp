@@ -1,5 +1,15 @@
-#ifndef StraightLineTrack_H
-#define StraightLineTrack_H 1
+/**
+ * @file
+ * @brief Definition of StraightLine track object
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
+#ifndef CORRYVRECKAN_STRAIGHTLINETRACK_H
+#define CORRYVRECKAN_STRAIGHTLINETRACK_H 1
 
 #include "Track.hpp"
 
@@ -75,4 +85,4 @@ namespace corryvreckan {
     using StraightLineTrackVector = std::vector<StraightLineTrack*>;
 } // namespace corryvreckan
 
-#endif // StraightLineTrack_H
+#endif // CORRYVRECKAN_STRAIGHTLINETRACK_H

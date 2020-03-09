@@ -1,7 +1,8 @@
 /**
  * @file
- * @brief Implementation of [EventLoaderMuPixTelescope] module
- * Copyright (c) 2019 CERN and the Corryvreckan authors.
+ * @brief Implementation of module EventLoaderMuPixTelescope
+ *
+ * @copyright Copyright (c) 2019-2020 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -53,7 +54,7 @@ void EventLoaderMuPixTelescope::initialise() {
         LOG(INFO) << "File found" << endl;
     string file = (m_inputDirectory + "/" + entry->d_name);
     LOG(INFO) << "reading " << file;
-    m_blockFile = new BlockFile(file);
+    m_blockFile = new mudaq::BlockFile(file);
     if(!m_blockFile->open_read()) {
         LOG(ERROR) << "File cannot be read" << endl;
         return;
@@ -75,7 +76,7 @@ StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) 
         LOG(DEBUG) << "Detector with name " << detectorName;
     }
     map<string, std::shared_ptr<PixelVector>> dataContainers;
-    TelescopeFrame tf;
+    mudaq::TelescopeFrame tf;
     double frame_start = std::numeric_limits<double>::max();
     double frame_end = std::numeric_limits<double>::min();
 
@@ -84,7 +85,7 @@ StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) 
     else {
         LOG(DEBUG) << "Found " << tf.num_hits() << " in event";
         for(uint i = 0; i < tf.num_hits(); ++i) {
-            RawHit h = tf.get_hit(i);
+            mudaq::RawHit h = tf.get_hit(i);
             if(h.tag() == 0x4)
                 h = tf.get_hit(i, 66);
             double px_timestamp = 8 * static_cast<double>(((tf.timestamp() >> 2) & 0xFFFFF700) + h.timestamp_raw());
@@ -113,7 +114,7 @@ StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) 
     }
 
     // Store current frame time and the length of the event:
-    LOG(DEBUG) << "Frame with " tf.num_hits() << " hits, time: " << Units::display(frame_start, {"ns", "us", "s"})
+    LOG(DEBUG) << "Frame with " << tf.num_hits() << " hits, time: " << Units::display(frame_start, {"ns", "us", "s"})
                << ", length: " << Units::display((frame_end - frame_start), {"ns", "us", "s"});
     clipboard->putEvent(std::make_shared<Event>(frame_start, frame_end));
 

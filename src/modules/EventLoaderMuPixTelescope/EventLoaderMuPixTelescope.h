@@ -1,14 +1,11 @@
 /**
  * @file
- * @brief Definition of [EventLoaderMuPixTelescope] module
- * Copyright (c) 2019 CERN and the Corryvreckan authors.
+ * @brief Definition of module EventLoaderMuPixTelescope
+ *
+ * @copyright Copyright (c) 2019-2020 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
- *
- * Contains minimal dummy module to use as a start for the development of your own module
- *
- * Refer to the User's Manual for more details.
  */
 
 #include <TCanvas.h>
@@ -51,8 +48,8 @@ namespace corryvreckan {
         bool m_isSorted;
         bool m_ts2IsGray;
         int m_runNumber;
-        BlockFile* m_blockFile;
-        TelescopeFrame m_tf;
+        mudaq::BlockFile* m_blockFile;
+        mudaq::TelescopeFrame m_tf;
 
         // Histograms
         TH2F* hHitMap;

@@ -1,5 +1,15 @@
-#ifndef SPIDRSIGNAL_H
-#define SPIDRSIGNAL_H 1
+/**
+ * @file
+ * @brief Definition of SPIDR signal object
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
+#ifndef CORRYVRECKAN_SPIDRSIGNAL_H
+#define CORRYVRECKAN_SPIDRSIGNAL_H 1
 
 namespace corryvreckan {
     /**
@@ -39,4 +49,4 @@ namespace corryvreckan {
     using SpidrSignalVector = std::vector<SpidrSignal*>;
 } // namespace corryvreckan
 
-#endif // SPIDRSIGNAL_H
+#endif // CORRYVRECKAN_SPIDRSIGNAL_H
