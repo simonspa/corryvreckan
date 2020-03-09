@@ -416,12 +416,9 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             hTrackCorrelationPos->Fill(posDiff);
             hTrackCorrelationPosVsCorrelationTime->Fill(track->timestamp() - assoc_cluster->timestamp(), posDiff);
 
-            // FIXME need to understand local coord of clusters - why shifted? what's normal?
-            auto clusterLocal = m_detector->globalToLocal(assoc_cluster->global());
-            hClusterMapAssoc->Fill(m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal));
-            hClusterSizeMapAssoc->Fill(m_detector->getColumn(clusterLocal),
-                                       m_detector->getRow(clusterLocal),
-                                       static_cast<double>(assoc_cluster->size()));
+            hClusterMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row());
+            hClusterSizeMapAssoc->Fill(
+                assoc_cluster->column(), assoc_cluster->row(), static_cast<double>(assoc_cluster->size()));
 
             // Cluster charge normalized to path length in sensor:
             double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
@@ -431,8 +428,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
             // clusterChargeAssoc->Fill(normalized_charge);
             clusterChargeAssoc->Fill(cluster_charge);
-            hClusterChargeMapAssoc->Fill(
-                m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), cluster_charge);
+            hClusterChargeMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->column(), cluster_charge);
 
             // Fill per-pixel histograms
             for(auto& pixel : assoc_cluster->pixels()) {
