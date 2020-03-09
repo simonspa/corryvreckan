@@ -29,7 +29,6 @@ void GblTrack::fit() {
         clusters[cluster->detectorID()] = cluster;
     }
     // create a list of planes and sort it, also calculate the material budget:
-    // m_planes.clear();
     double total_material = 0;
     std::sort(m_planes.begin(), m_planes.end());
     for(auto& l : m_planes) {
@@ -38,10 +37,9 @@ void GblTrack::fit() {
             l.setPosition(clusters.at(l.name())->global().z());
             l.setCluster(clusters.at(l.name()));
         }
-        // else std::cout << l.name() <<std::endl;
-        //        m_planes.push_back(current);
     }
-    // add volume scattering length - we ignore for now the material thickness while considering air
+
+    // add volume scattering length - for now simply the distance between first and last plane
     if(m_use_volume_scatter)
         total_material += (m_planes.end()->postion() - m_planes.front().postion()) / m_scattering_length_volume;
 
