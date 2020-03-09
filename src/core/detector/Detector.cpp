@@ -66,7 +66,36 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         m_materialBudget = config.get<double>("material_budget");
     }
 
+
+    m_detectorType = config.get<std::string>("type");
+    std::transform(m_detectorType.begin(), m_detectorType.end(), m_detectorType.begin(), ::tolower);
+    m_timeOffset = config.get<double>("time_offset", 0.0);
+
+    // Time resolution - default ot negative number, i.e. unknown. This will trigger an exception
+    // when calling getTimeResolution
+    m_timeResolution = config.get<double>("time_resolution", -1.0);
+
+    // Initialize the detector, calculate transformations etc
+    this->initialise();
+
+    LOG(TRACE) << "  Position:    " << Units::display(m_displacement, {"mm", "um"});
+    LOG(TRACE) << "  Orientation: " << Units::display(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
+    if(m_timeOffset > 0.) {
+        LOG(TRACE) << "Time offset: " << m_timeOffset;
+    }
+
+    if(m_timeResolution > 0) {
+        LOG(TRACE) << "  Time resolution: " << Units::display(m_timeResolution, {"ms", "us"});
+    }
+	buildNotAuxiliaryAxis(config);
+
+    if(config.has("calibration_file")) {
+        m_calibrationfile = config.getPath("calibration_file");
+    }
+
+	/*
     // Auxiliary devices don't have: number_of_pixels, pixel_pitch, spatial_resolution, mask_file, region-of-interest
+>>>>>>> simply make Detector interface
     if(!isAuxiliary()) {
         // Number of pixels:
         m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
@@ -88,36 +117,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
 
         // region of interest:
         m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
-    }
-
-    m_detectorType = config.get<std::string>("type");
-    std::transform(m_detectorType.begin(), m_detectorType.end(), m_detectorType.begin(), ::tolower);
-    m_timeOffset = config.get<double>("time_offset", 0.0);
-
-    // Time resolution - default ot negative number, i.e. unknown. This will trigger an exception
-    // when calling getTimeResolution
-    m_timeResolution = config.get<double>("time_resolution", -1.0);
-
-    // Initialize the detector, calculate transformations etc
-    this->initialise();
-
-    LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixels.X() << "x" << m_nPixels.Y() << " px, pitch of "
-               << Units::display(m_pitch, {"mm", "um"});
-    LOG(TRACE) << "  Position:    " << Units::display(m_displacement, {"mm", "um"});
-    LOG(TRACE) << "  Orientation: " << Units::display(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
-    if(m_timeOffset > 0.) {
-        LOG(TRACE) << "Time offset: " << m_timeOffset;
-    }
-
-    if(m_timeResolution > 0) {
-        LOG(TRACE) << "  Time resolution: " << Units::display(m_timeResolution, {"ms", "us"});
-    }
-
-    if(config.has("calibration_file")) {
-        m_calibrationfile = config.getPath("calibration_file");
-    }
-
-    if(!isAuxiliary()) {
+		// set the mask
         if(config.has("mask_file")) {
             m_maskfile_name = config.get<std::string>("mask_file");
             std::string mask_file = config.getPath("mask_file");
@@ -126,6 +126,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
             processMaskFile();
         }
     }
+	*/
 }
 
 double Detector::getTimeResolution() const {
@@ -144,9 +145,6 @@ std::string Detector::type() const {
     return m_detectorType;
 }
 
-XYVector Detector::size() const {
-    return XYVector(m_pitch.X() * m_nPixels.X(), m_pitch.Y() * m_nPixels.Y());
-}
 
 bool Detector::isReference() const {
     return static_cast<bool>(m_role & DetectorRole::REFERENCE);
@@ -163,90 +161,6 @@ bool Detector::isAuxiliary() const {
 // Functions to set and check channel masking
 void Detector::setMaskFile(std::string file) {
     m_maskfile = file;
-}
-
-void Detector::processMaskFile() {
-    // Open the file with masked pixels
-    std::ifstream inputMaskFile(m_maskfile, std::ios::in);
-    if(!inputMaskFile.is_open()) {
-        LOG(WARNING) << "Could not open mask file " << m_maskfile;
-    } else {
-        int row = 0, col = 0;
-        std::string id;
-        // loop over all lines and apply masks
-        while(inputMaskFile >> id) {
-            if(id == "c") {
-                inputMaskFile >> col;
-                if(col > nPixels().X() - 1) {
-                    LOG(WARNING) << "Column " << col << " outside of pixel matrix, chip has only " << nPixels().X()
-                                 << " columns!";
-                }
-                LOG(TRACE) << "Masking column " << col;
-                for(int r = 0; r < nPixels().Y(); r++) {
-                    maskChannel(col, r);
-                }
-            } else if(id == "r") {
-                inputMaskFile >> row;
-                if(row > nPixels().Y() - 1) {
-                    LOG(WARNING) << "Row " << col << " outside of pixel matrix, chip has only " << nPixels().Y() << " rows!";
-                }
-                LOG(TRACE) << "Masking row " << row;
-                for(int c = 0; c < nPixels().X(); c++) {
-                    maskChannel(c, row);
-                }
-            } else if(id == "p") {
-                inputMaskFile >> col >> row;
-                if(col > nPixels().X() - 1 || row > nPixels().Y() - 1) {
-                    LOG(WARNING) << "Pixel " << col << " " << row << " outside of pixel matrix, chip has only "
-                                 << nPixels().X() << " x " << nPixels().Y() << " pixels!";
-                }
-                LOG(TRACE) << "Masking pixel " << col << " " << row;
-                maskChannel(col, row); // Flag to mask a pixel
-            } else {
-                LOG(WARNING) << "Could not parse mask entry (id \"" << id << "\")";
-            }
-        }
-        LOG(INFO) << m_masked.size() << " masked pixels";
-    }
-}
-
-void Detector::maskChannel(int chX, int chY) {
-    int channelID = chX + m_nPixels.X() * chY;
-    m_masked[channelID] = true;
-}
-
-bool Detector::masked(int chX, int chY) const {
-    int channelID = chX + m_nPixels.X() * chY;
-    if(m_masked.count(channelID) > 0)
-        return true;
-    return false;
-}
-
-// Function to initialise transforms
-void Detector::initialise() {
-
-    // Make the local to global transform, built from a displacement and
-    // rotation
-    Translation3D translations = Translation3D(m_displacement.X(), m_displacement.Y(), m_displacement.Z());
-
-    Rotation3D rotations;
-    if(m_orientation_mode == "xyz") {
-        rotations = RotationZ(m_orientation.Z()) * RotationY(m_orientation.Y()) * RotationX(m_orientation.X());
-    } else if(m_orientation_mode == "zyx") {
-        rotations = RotationZYX(m_orientation.x(), m_orientation.y(), m_orientation.x());
-    }
-
-    m_localToGlobal = Transform3D(rotations, translations);
-    m_globalToLocal = m_localToGlobal.Inverse();
-
-    // Find the normal to the detector surface. Build two points, the origin and a unit step in z,
-    // transform these points to the global co-ordinate frame and then make a vector pointing between them
-    m_origin = PositionVector3D<Cartesian3D<double>>(0., 0., 0.);
-    m_origin = m_localToGlobal * m_origin;
-    PositionVector3D<Cartesian3D<double>> localZ(0., 0., 1.);
-    localZ = m_localToGlobal * localZ;
-    m_normal = PositionVector3D<Cartesian3D<double>>(
-        localZ.X() - m_origin.X(), localZ.Y() - m_origin.Y(), localZ.Z() - m_origin.Z());
 }
 
 // Function to update transforms (such as during alignment)
@@ -289,6 +203,11 @@ Configuration Detector::getConfiguration() const {
     if(m_materialBudget > std::numeric_limits<double>::epsilon()) {
         config.set("material_budget", m_materialBudget);
     }
+
+	// only if detector is not auxiliary
+	configNotAuxiliary(config);
+
+	/*
     // only if detector is not auxiliary:
     if(!this->isAuxiliary()) {
         config.set("number_of_pixels", m_nPixels);
@@ -307,6 +226,7 @@ Configuration Detector::getConfiguration() const {
         // Region-of-interest:
         config.setMatrix("roi", m_roi);
     }
+	*/
 
     return config;
 }
@@ -467,51 +387,3 @@ int Detector::isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair
     return ((pt1.first - pt0.first) * (pt2.second - pt0.second) - (pt2.first - pt0.first) * (pt1.second - pt0.second));
 }
 
-/* Winding number test for a point in a polygon
- * via: http://geomalgorithms.com/a03-_inclusion.html
- *      Input:   x, y = a point,
- *               polygon = vector of vertex points of a polygon V[n+1] with V[n]=V[0]
- *      Return:  wn = the winding number (=0 only when P is outside)
- */
-int Detector::winding_number(std::pair<int, int> probe, std::vector<std::vector<int>> polygon) {
-    // Two points don't make an area
-    if(polygon.size() < 3) {
-        LOG(DEBUG) << "No ROI given.";
-        return 0;
-    }
-
-    int wn = 0; // the  winding number counter
-
-    // loop through all edges of the polygon
-
-    // edge from V[i] to  V[i+1]
-    for(size_t i = 0; i < polygon.size(); i++) {
-        auto point_this = std::make_pair(polygon.at(i).at(0), polygon.at(i).at(1));
-        auto point_next = (i + 1 < polygon.size() ? std::make_pair(polygon.at(i + 1).at(0), polygon.at(i + 1).at(1))
-                                                  : std::make_pair(polygon.at(0).at(0), polygon.at(0).at(1)));
-
-        // start y <= P.y
-        if(point_this.second <= probe.second) {
-            // an upward crossing
-            if(point_next.second > probe.second) {
-                // P left of  edge
-                if(isLeft(point_this, point_next, probe) > 0) {
-                    // have  a valid up intersect
-                    ++wn;
-                }
-            }
-        } else {
-            // start y > P.y (no test needed)
-
-            // a downward crossing
-            if(point_next.second <= probe.second) {
-                // P right of  edge
-                if(isLeft(point_this, point_next, probe) < 0) {
-                    // have  a valid down intersect
-                    --wn;
-                }
-            }
-        }
-    }
-    return wn;
-}

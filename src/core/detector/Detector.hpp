@@ -110,30 +110,7 @@ namespace corryvreckan {
          * @return Configuration object for this detector
          */
         Configuration getConfiguration() const;
-
-        /**
-         * @brief Get the total size of the active matrix, i.e. pitch * number of pixels in both dimensions
-         * @return 2D vector with the dimensions of the pixle matrix in X and Y
-         */
-        XYVector size() const;
-
-        /**
-         * @brief Get pitch of a single pixel
-         * @return Pitch of a pixel
-         */
-        XYVector pitch() const { return m_pitch; }
-
-        /**
-         * @brief Get intrinsic spatial resolution of the detector
-         * @return Intrinsic spatial resolution in X and Y
-         */
-        XYVector getSpatialResolution() const { return m_spatial_resolution; }
-
-        /**
-         * @brief Get number of pixels in x and y
-         * @return Number of two dimensional pixels
-         */
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const { return m_nPixels; }
+		void basicConfiguration() const;  //should be private
 
         /**
          * @brief Get detector time offset from global clock, can be used to correct for constant shifts or time of flight
@@ -193,57 +170,9 @@ namespace corryvreckan {
         std::string maskFile() const { return m_maskfile; }
 
         /**
-         * @brief Mark a detector channel as masked
-         * @param chX X coordinate of the pixel to be masked
-         * @param chY Y coordinate of the pixel to be masked
-         */
-        void maskChannel(int chX, int chY);
-
-        /**
-         * @brief Check if a detector channel is masked
-         * @param chX X coordinate of the pixel to check
-         * @param chY Y coordinate of the pixel to check
-         * @return    Mask status of the pixel in question
-         */
-        bool masked(int chX, int chY) const;
-
-        /**
          * @brief Update coordinate transformations based on currently configured position and orientation values
          */
         void update();
-
-        // Function to get global intercept with a track
-        PositionVector3D<Cartesian3D<double>> getIntercept(const Track* track) const;
-        // Function to get local intercept with a track
-        PositionVector3D<Cartesian3D<double>> getLocalIntercept(const Track* track) const;
-
-        // Function to check if a track intercepts with a plane
-        bool hasIntercept(const Track* track, double pixelTolerance = 0.) const;
-
-        // Function to check if a track goes through/near a masked pixel
-        bool hitMasked(Track* track, int tolerance = 0.) const;
-
-        // Functions to get row and column from local position
-        double getRow(PositionVector3D<Cartesian3D<double>> localPosition) const;
-        double getColumn(PositionVector3D<Cartesian3D<double>> localPosition) const;
-
-        // Function to get local position from column (x) and row (y) coordinates
-        PositionVector3D<Cartesian3D<double>> getLocalPosition(double column, double row) const;
-
-        /**
-         * Transformation from local (sensor) coordinates to in-pixel coordinates
-         * @param  column Column address ranging from int_column-0.5*pitch to int_column+0.5*pitch
-         * @param  row Row address ranging from int_column-0.5*pitch to int_column+0.5*pitch
-         * @return               Position within a single pixel cell, given in units of length
-         */
-        XYVector inPixel(const double column, const double row) const;
-
-        /**
-         * Transformation from local (sensor) coordinates to in-pixel coordinates
-         * @param  localPosition Local position on the sensor
-         * @return               Position within a single pixel cell, given in units of length
-         */
-        XYVector inPixel(PositionVector3D<Cartesian3D<double>> localPosition) const;
 
         /**
          * @brief Transform local coordinates of this detector into global coordinates
@@ -260,20 +189,6 @@ namespace corryvreckan {
         XYZPoint globalToLocal(XYZPoint global) const { return m_globalToLocal * global; };
 
         /**
-         * @brief Check whether given track is within the detector's region-of-interest
-         * @param  track The track to be checked
-         * @return       Boolean indicating cluster affiliation with region-of-interest
-         */
-        bool isWithinROI(const Track* track) const;
-
-        /**
-         * @brief Check whether given cluster is within the detector's region-of-interest
-         * @param  cluster The cluster to be checked
-         * @return         Boolean indicating cluster affiliation with region-of-interest
-         */
-        bool isWithinROI(Cluster* cluster) const;
-
-        /**
          * @brief Return the thickness of the senosr assembly layer (sensor+support) in fractions of radiation length
          * @return thickness in fractions of radiation length
          */
@@ -284,25 +199,27 @@ namespace corryvreckan {
         DetectorRole m_role;
 
         // Initialize coordinate transformations
-        void initialise();
+        virtual void initialise() = 0;
+
+		// Build axis, for devices which is not auxiliary
+		// Different in Planar/Disk Detector
+		// better name for not auxiliary?
+		virtual void buildNotAuxiliaryAxis(Configuration& config) = 0;
+
+		// config
+		// better name for not auxiliary?
+		virtual void configNotAuxiliary(Configuration& config) = 0;
 
         // Functions to set and check channel masking
         void setMaskFile(std::string file);
-        void processMaskFile();
+        virtual void processMaskFile() = 0;
 
         // Detector information
         std::string m_detectorType;
         std::string m_detectorName;
-        XYVector m_pitch{};
-        XYVector m_spatial_resolution{};
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels{};
         double m_timeOffset;
         double m_timeResolution;
         double m_materialBudget;
-
-        std::vector<std::vector<int>> m_roi{};
-        static int winding_number(std::pair<int, int> probe, std::vector<std::vector<int>> polygon);
-        inline static int isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2);
 
         // Displacement and rotation in x,y,z
         ROOT::Math::XYZPoint m_displacement;
@@ -324,6 +241,11 @@ namespace corryvreckan {
         std::map<int, bool> m_masked;
         std::string m_maskfile;
         std::string m_maskfile_name;
+
+		// Seems to be used in other coordinate
+        inline static int isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2);
+        std::vector<std::vector<int>> m_roi{};
+
     };
 } // namespace corryvreckan
 
