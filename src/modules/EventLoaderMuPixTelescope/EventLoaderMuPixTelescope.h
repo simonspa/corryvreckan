@@ -48,8 +48,8 @@ namespace corryvreckan {
         bool m_isSorted;
         bool m_ts2IsGray;
         int m_runNumber;
-        BlockFile* m_blockFile;
-        TelescopeFrame m_tf;
+        mudaq::BlockFile* m_blockFile;
+        mudaq::TelescopeFrame m_tf;
 
         // Histograms
         TH2F* hHitMap;
