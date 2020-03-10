@@ -72,9 +72,6 @@ void PlanarDetector::buildNotAuxiliaryAxis(const Configuration& config){
         }
 }
 
-XYVector PlanarDetector::size() const {
-    return XYVector(m_pitch.X() * m_nPixels.X(), m_pitch.Y() * m_nPixels.Y());
-}
 
 void PlanarDetector::processMaskFile() {
     // Open the file with masked pixels

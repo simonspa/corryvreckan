@@ -46,36 +46,13 @@ namespace corryvreckan {
          */
         PlanarDetector(const Configuration& config);
 
-        /**
-         * @brief Get the total size of the active matrix, i.e. pitch * number of pixels in both dimensions
-         * @return 2D vector with the dimensions of the pixle matrix in X and Y
-         */
-        XYVector size() const;
-
-        /**
-         * @brief Get pitch of a single pixel
-         * @return Pitch of a pixel
-         */
-        XYVector pitch() const { return m_pitch; }
-
-        /**
-         * @brief Get intrinsic spatial resolution of the detector
-         * @return Intrinsic spatial resolution in X and Y
-         */
-        XYVector getSpatialResolution() const { return m_spatial_resolution; }
-
-        /**
-         * @brief Get number of pixels in x and y
-         * @return Number of two dimensional pixels
-         */
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const { return m_nPixels; }
 
         /**
          * @brief Mark a detector channel as masked
          * @param chX X coordinate of the pixel to be masked
          * @param chY Y coordinate of the pixel to be masked
          */
-        void maskChannel(int chX, int chY);
+        void maskChannel(int chX, int chY) override;
 
         /**
          * @brief Check if a detector channel is masked
@@ -83,25 +60,26 @@ namespace corryvreckan {
          * @param chY Y coordinate of the pixel to check
          * @return    Mask status of the pixel in question
          */
-        bool masked(int chX, int chY) const;
+        bool masked(int chX, int chY) const override;
 
         // Function to get global intercept with a track
-        PositionVector3D<Cartesian3D<double>> getIntercept(const Track* track) const;
+        PositionVector3D<Cartesian3D<double>> getIntercept(const Track* track) const override;
         // Function to get local intercept with a track
-        PositionVector3D<Cartesian3D<double>> getLocalIntercept(const Track* track) const;
+        PositionVector3D<Cartesian3D<double>> getLocalIntercept(const Track* track) const override;
 
         // Function to check if a track intercepts with a plane
-        bool hasIntercept(const Track* track, double pixelTolerance = 0.) const;
+        bool hasIntercept(const Track* track, double pixelTolerance = 0.) const override;
 
         // Function to check if a track goes through/near a masked pixel
-        bool hitMasked(Track* track, int tolerance = 0.) const;
+        bool hitMasked(Track* track, int tolerance = 0.) const override;
 
         // Functions to get row and column from local position
-        double getRow(PositionVector3D<Cartesian3D<double>> localPosition) const;
-        double getColumn(PositionVector3D<Cartesian3D<double>> localPosition) const;
+        double getRow(PositionVector3D<Cartesian3D<double>> localPosition) const override;
+
+        double getColumn(PositionVector3D<Cartesian3D<double>> localPosition) const override;
 
         // Function to get local position from column (x) and row (y) coordinates
-        PositionVector3D<Cartesian3D<double>> getLocalPosition(double column, double row) const;
+        PositionVector3D<Cartesian3D<double>> getLocalPosition(double column, double row) const override;
 
         /**
          * Transformation from local (sensor) coordinates to in-pixel coordinates
@@ -109,28 +87,28 @@ namespace corryvreckan {
          * @param  row Row address ranging from int_column-0.5*pitch to int_column+0.5*pitch
          * @return               Position within a single pixel cell, given in units of length
          */
-        XYVector inPixel(const double column, const double row) const;
+        XYVector inPixel(const double column, const double row) const override;
 
         /**
          * Transformation from local (sensor) coordinates to in-pixel coordinates
          * @param  localPosition Local position on the sensor
          * @return               Position within a single pixel cell, given in units of length
          */
-        XYVector inPixel(PositionVector3D<Cartesian3D<double>> localPosition) const;
+        XYVector inPixel(PositionVector3D<Cartesian3D<double>> localPosition) const override;
 
         /**
          * @brief Check whether given track is within the detector's region-of-interest
          * @param  track The track to be checked
          * @return       Boolean indicating cluster affiliation with region-of-interest
          */
-        bool isWithinROI(const Track* track) const;
+        bool isWithinROI(const Track* track) const override;
 
         /**
          * @brief Check whether given cluster is within the detector's region-of-interest
          * @param  cluster The cluster to be checked
          * @return         Boolean indicating cluster affiliation with region-of-interest
          */
-        bool isWithinROI(Cluster* cluster) const;
+        bool isWithinROI(Cluster* cluster) const override;
 
     private:
         // Initialize coordinate transformations
@@ -147,11 +125,6 @@ namespace corryvreckan {
 
         // Functions to set and check channel masking
         void processMaskFile() override;
-
-		// PlanarDetector
-        XYVector m_pitch{};
-        XYVector m_spatial_resolution{};
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels{};
 
 		// Seems to be used in other coordinate
         inline static int isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2);
