@@ -61,7 +61,7 @@ void ModuleManager::load_detectors() {
         }
 
         LOG_PROGRESS(STATUS, "DET_LOAD_LOOP") << "Loading detector " << name;
-        auto detector = std::make_shared<Detector>(detector_section);
+        auto detector = std::make_shared<PlanarDetector>(detector_section);
 
         // Check if we already found a reference plane:
         if(m_reference != nullptr && detector->isReference()) {

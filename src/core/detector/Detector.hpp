@@ -110,7 +110,6 @@ namespace corryvreckan {
          * @return Configuration object for this detector
          */
         Configuration getConfiguration() const;
-		void basicConfiguration() const;  //should be private
 
         /**
          * @brief Get detector time offset from global clock, can be used to correct for constant shifts or time of flight
@@ -194,7 +193,7 @@ namespace corryvreckan {
          */
         double materialBudget() const { return m_materialBudget; }
 
-    private:
+	protected:
         // Roles of the detector
         DetectorRole m_role;
 
@@ -204,11 +203,11 @@ namespace corryvreckan {
 		// Build axis, for devices which is not auxiliary
 		// Different in Planar/Disk Detector
 		// better name for not auxiliary?
-		virtual void buildNotAuxiliaryAxis(Configuration& config) = 0;
+		virtual void buildNotAuxiliaryAxis(const Configuration& config) = 0;
 
 		// config
 		// better name for not auxiliary?
-		virtual void configNotAuxiliary(Configuration& config) = 0;
+		virtual void configNotAuxiliary(Configuration& config) const  = 0;
 
         // Functions to set and check channel masking
         void setMaskFile(std::string file);
@@ -217,6 +216,7 @@ namespace corryvreckan {
         // Detector information
         std::string m_detectorType;
         std::string m_detectorName;
+
         double m_timeOffset;
         double m_timeResolution;
         double m_materialBudget;
@@ -242,8 +242,6 @@ namespace corryvreckan {
         std::string m_maskfile;
         std::string m_maskfile_name;
 
-		// Seems to be used in other coordinate
-        inline static int isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2);
         std::vector<std::vector<int>> m_roi{};
 
     };

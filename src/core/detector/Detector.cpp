@@ -75,19 +75,9 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     // when calling getTimeResolution
     m_timeResolution = config.get<double>("time_resolution", -1.0);
 
-    // Initialize the detector, calculate transformations etc
-    this->initialise();
-
-    LOG(TRACE) << "  Position:    " << Units::display(m_displacement, {"mm", "um"});
-    LOG(TRACE) << "  Orientation: " << Units::display(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
-    if(m_timeOffset > 0.) {
-        LOG(TRACE) << "Time offset: " << m_timeOffset;
-    }
-
-    if(m_timeResolution > 0) {
-        LOG(TRACE) << "  Time resolution: " << Units::display(m_timeResolution, {"ms", "us"});
-    }
-	buildNotAuxiliaryAxis(config);
+    ///// Initialize the detector, calculate transformations etc
+    ///this->initialise();
+	/////buildNotAuxiliaryAxis(config);
 
     if(config.has("calibration_file")) {
         m_calibrationfile = config.getPath("calibration_file");
@@ -205,28 +195,9 @@ Configuration Detector::getConfiguration() const {
     }
 
 	// only if detector is not auxiliary
-	configNotAuxiliary(config);
-
-	/*
-    // only if detector is not auxiliary:
     if(!this->isAuxiliary()) {
-        config.set("number_of_pixels", m_nPixels);
-
-        // Size of the pixels
-        config.set("pixel_pitch", m_pitch, {"um"});
-
-        // Intrinsic resolution:
-        config.set("spatial_resolution", m_spatial_resolution, {"um"});
-
-        // Pixel mask file:
-        if(!m_maskfile_name.empty()) {
-            config.set("mask_file", m_maskfile_name);
-        }
-
-        // Region-of-interest:
-        config.setMatrix("roi", m_roi);
-    }
-	*/
+	this->configNotAuxiliary(config);
+	}
 
     return config;
 }
