@@ -23,7 +23,6 @@ GblTrack::GblTrack() : Track() {}
 GblTrack::GblTrack(const GblTrack& track) : Track(track) {
     if(track.getType() != this->getType())
         throw TrackModelChanged(typeid(*this), track.getType(), this->getType());
-    m_planes = track.m_planes;
     m_logging = 0;
 }
 

@@ -33,6 +33,8 @@ Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp())
     m_chi2 = track.chi2();
     m_ndof = track.ndof();
     m_chi2ndof = track.chi2ndof();
+    for(auto t : track.m_planes)
+        m_planes.push_back(t);
 
     auto trackClusters = track.clusters();
     for(auto& track_cluster : trackClusters) {
