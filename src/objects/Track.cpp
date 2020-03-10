@@ -13,18 +13,18 @@
 
 using namespace corryvreckan;
 
-Plane::Plane(const Plane& p) : Object() {
-    m_z = p.m_z;
-    m_x_x0 = p.m_x_x0;
-    m_name = p.m_name;
-    m_has_cluster = p.m_has_cluster;
-    if(p.m_cluster != nullptr)
-        m_cluster = new Cluster(*p.m_cluster);
+// Plane::Plane(const Plane& p) : Object() {
+//    m_z = p.m_z;
+//    m_x_x0 = p.m_x_x0;
+//    m_name = p.m_name;
+//    m_has_cluster = p.m_has_cluster;
+//    if(p.m_cluster != nullptr)
+//        m_cluster = new Cluster(*p.m_cluster);
 
-    m_gbl_points_pos = p.m_gbl_points_pos;
-    m_toLocal = p.m_toLocal;
-    m_toGlobal = p.m_toGlobal;
-}
+//    m_gbl_points_pos = p.m_gbl_points_pos;
+//    m_toLocal = p.m_toLocal;
+//    m_toGlobal = p.m_toGlobal;
+//}
 
 Track::Track() : m_momentum(-1) {}
 
@@ -33,9 +33,7 @@ Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp())
     m_chi2 = track.chi2();
     m_ndof = track.ndof();
     m_chi2ndof = track.chi2ndof();
-    for(auto t : track.m_planes)
-        m_planes.push_back(t);
-
+    m_planes = track.m_planes;
     auto trackClusters = track.clusters();
     for(auto& track_cluster : trackClusters) {
         Cluster* cluster = new Cluster(*track_cluster);
