@@ -21,11 +21,13 @@
 #include "core/utils/type.h"
 namespace corryvreckan {
     using namespace ROOT::Math;
-    class Plane {
+    class Plane : public Object {
     public:
         Plane(){};
         Plane(double z, double x_x0, std::string name, bool has_cluster)
             : m_z(z), m_x_x0(x_x0), m_name(name), m_has_cluster(has_cluster){};
+
+        Plane(const Plane& p);
         // access elements
         double postion() const { return m_z; }
         double materialbudget() const { return m_x_x0; }
@@ -43,7 +45,7 @@ namespace corryvreckan {
             m_has_cluster = true;
         }
         Cluster* cluster() const { return m_cluster; }
-        void print(std::ostream& os) const {
+        void print(std::ostream& os) const override {
             os << "Plane at " << m_z << " with rad. length " << m_x_x0 << " and cluster: " << (m_has_cluster) << std::endl;
         }
         void setToLocal(Transform3D toLocal) { m_toLocal = toLocal; }
@@ -51,13 +53,16 @@ namespace corryvreckan {
         Transform3D toLocal() const { return m_toLocal; }
         Transform3D toGlobal() const { return m_toGlobal; }
 
+        static std::type_index getBaseType() { return typeid(Plane); }
+
     private:
         double m_z, m_x_x0;
         std::string m_name;
-        bool m_has_cluster;
+        bool m_has_cluster = false;
         Cluster* m_cluster = nullptr;
         unsigned m_gbl_points_pos{};
         Transform3D m_toLocal, m_toGlobal;
+        ClassDefOverride(Plane, 1)
     };
 
     /**
