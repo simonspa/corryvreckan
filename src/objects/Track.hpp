@@ -23,9 +23,9 @@ namespace corryvreckan {
     using namespace ROOT::Math;
     class Plane : public Object {
     public:
-        Plane(){};
+        Plane() : Object(){};
         Plane(double z, double x_x0, std::string name, bool has_cluster)
-            : m_z(z), m_x_x0(x_x0), m_name(name), m_has_cluster(has_cluster){};
+            : : Object(), m_z(z), m_x_x0(x_x0), m_name(name), m_has_cluster(has_cluster){};
 
         Plane(const Plane& p);
         // access elements
