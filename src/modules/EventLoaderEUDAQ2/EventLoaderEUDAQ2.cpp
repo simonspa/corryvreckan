@@ -26,6 +26,9 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     m_shift_triggers = m_config.get<int>("shift_triggers", 0);
     m_inclusive = m_config.get("inclusive", true);
 
+    // Prepare EUDAQ2 config object
+    eudaq::Configuration cfg;
+
     // Provide the calibration file specified in the detector geometry:
     // NOTE: This should go first to allow overwriting the calibration_file key in the module config
     auto calibration_file = m_detector->calibrationFile();
@@ -36,7 +39,6 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
 
     // Forward all settings to EUDAQ
     // WARNING: the EUDAQ Configuration class is not very flexible and e.g. booleans have to be passed as 1 and 0.
-    eudaq::Configuration cfg;
     auto configs = m_config.getAll();
     for(const auto& key : configs) {
         LOG(DEBUG) << "Forwarding key \"" << key.first << " = " << key.second << "\" to EUDAQ converter";
