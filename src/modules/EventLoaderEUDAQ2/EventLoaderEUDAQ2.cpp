@@ -45,7 +45,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
         cfg.Set(key.first, key.second);
     }
 
-    // Converting the newly built configuration to a shared pointer of a cont configuration object
+    // Converting the newly built configuration to a shared pointer of a const configuration object
     // Unfortunbately EUDAQ does not provide appropriate member functions for their configuration class to avoid this dance
     const eudaq::Configuration eu_cfg = cfg;
     eudaq_config_ = std::make_shared<const eudaq::Configuration>(eu_cfg);
