@@ -26,16 +26,26 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     m_shift_triggers = m_config.get<int>("shift_triggers", 0);
     m_inclusive = m_config.get("inclusive", true);
 
+    // Prepare EUDAQ2 config object
+    eudaq::Configuration cfg;
+
+    // Provide the calibration file specified in the detector geometry:
+    // NOTE: This should go first to allow overwriting the calibration_file key in the module config
+    auto calibration_file = m_detector->calibrationFile();
+    if(!calibration_file.empty()) {
+        LOG(DEBUG) << "Forwarding detector calibration file: " << calibration_file;
+        cfg.Set("calibration_file", calibration_file);
+    }
+
     // Forward all settings to EUDAQ
     // WARNING: the EUDAQ Configuration class is not very flexible and e.g. booleans have to be passed as 1 and 0.
-    eudaq::Configuration cfg;
     auto configs = m_config.getAll();
     for(const auto& key : configs) {
         LOG(DEBUG) << "Forwarding key \"" << key.first << " = " << key.second << "\" to EUDAQ converter";
         cfg.Set(key.first, key.second);
     }
 
-    // Converting the newly built configuration to a shared pointer of a cont configuration object
+    // Converting the newly built configuration to a shared pointer of a const configuration object
     // Unfortunbately EUDAQ does not provide appropriate member functions for their configuration class to avoid this dance
     const eudaq::Configuration eu_cfg = cfg;
     eudaq_config_ = std::make_shared<const eudaq::Configuration>(eu_cfg);
