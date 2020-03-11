@@ -319,7 +319,7 @@ namespace corryvreckan {
 
         // Path of calibration file
         std::string m_calibrationfile;
-        
+
         // List of masked channels
         std::map<int, bool> m_masked;
         std::string m_maskfile;
