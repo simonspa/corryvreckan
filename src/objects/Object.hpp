@@ -48,7 +48,7 @@ namespace corryvreckan {
         /**
          * @brief Required virtual destructor
          */
-        ~Object() override = default;
+        //~Object() override = default;
 
         // Methods to get member variables
         std::string getDetectorID() const { return m_detectorID; }
