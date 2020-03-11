@@ -73,7 +73,7 @@ It should be kept in mind that the resulting configuration strings are parsed by
 For example, it does not interpret `true` or `false` alphabetic value of a Boolean variable but will return false in both cases. Thus `key = 0` or `key = 1` have to be used in these cases.
 Also, more complex constructs such as arrays or matrices read by the Corryvreckan configuration are simply interpreted as strings.
 
-In addition, the calibration file of the detector specified in the geometry configuration is passed to the EUDAQ2 event decoder using the key `calibration_file` and its canonical path as value.
+In addition, the calibration file of the detector specified in the geometry configuration is passed to the EUDAQ2 event decoder using the key `calibration_file` and its canonical path as value. Adding the same key to the module configuration will overwrite the file specified in the detector geometry.
 
 ### Parameters
 * `file_name`: File name of the EUDAQ2 raw data file. This parameter is mandatory.
