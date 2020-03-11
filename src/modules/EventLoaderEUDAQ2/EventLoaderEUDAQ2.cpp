@@ -35,6 +35,13 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
         cfg.Set(key.first, key.second);
     }
 
+    // In addition, also provide the calibration file specified in the detector geometry:
+    auto calibration_file = m_detector->calibrationFile();
+    if(!calibration_file.empty()) {
+        LOG(DEBUG) << "Forwarding detector calibration file: " << calibration_file;
+        cfg.Set("calibration_file", calibration_file);
+    }
+
     // Converting the newly built configuration to a shared pointer of a cont configuration object
     // Unfortunbately EUDAQ does not provide appropriate member functions for their configuration class to avoid this dance
     const eudaq::Configuration eu_cfg = cfg;

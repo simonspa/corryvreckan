@@ -58,6 +58,7 @@ cmake -DUSER_CARIBOU_BUILD=ON ..
 ### Contract between EUDAQ Decoder and EventLoader
 
 The decoder guarantees to
+
 * return `true` only when there is a fully decoded event available and `false` in all other cases.
 * not return any event before a possible T0 signal in the data. This is a signal that indicates the clock reset at the beginning of the run. It can be a particular data word or the observation of the pixel timestamp jumping back to zero, depending on data format of each the detector.
 * return the smallest possible granularity of data in time either as even or as sub-events within one event.
@@ -71,6 +72,8 @@ The EventLoaderEUDAQ2 takes all key-value pairs available in the configuration a
 It should be kept in mind that the resulting configuration strings are parsed by EUDAQ2, not by Corryvreckan, and that therefore the functionality is reduced.
 For example, it does not interpret `true` or `false` alphabetic value of a Boolean variable but will return false in both cases. Thus `key = 0` or `key = 1` have to be used in these cases.
 Also, more complex constructs such as arrays or matrices read by the Corryvreckan configuration are simply interpreted as strings.
+
+In addition, the calibration file of the detector specified in the geometry configuration is passed to the EUDAQ2 event decoder using the key `calibration_file` and its canonical path as value.
 
 ### Parameters
 * `file_name`: File name of the EUDAQ2 raw data file. This parameter is mandatory.
