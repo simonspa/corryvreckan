@@ -70,6 +70,11 @@ namespace corryvreckan {
         Detector() = delete;
 
         /**
+         * Default constructor
+         */
+        virtual ~Detector() = default;
+
+        /**
          * @brief Constructs a detector in the geometry
          * @param config Configuration object describing the detector
          */
@@ -206,7 +211,7 @@ namespace corryvreckan {
 
         // Functions to get row and column from local position
         virtual double getRow(PositionVector3D<Cartesian3D<double>> localPosition) const = 0;
-        virtual double getColumn(PositionVector3D<Cartesian3D<double>> localPosition) const =0;
+        virtual double getColumn(PositionVector3D<Cartesian3D<double>> localPosition) const = 0;
 
         // Function to get local position from column (x) and row (y) coordinates
         virtual PositionVector3D<Cartesian3D<double>> getLocalPosition(double column, double row) const = 0;
@@ -224,7 +229,7 @@ namespace corryvreckan {
          * @param  localPosition Local position on the sensor
          * @return               Position within a single pixel cell, given in units of length
          */
-        virtual XYVector inPixel(PositionVector3D<Cartesian3D<double>> localPosition) const =0;
+        virtual XYVector inPixel(PositionVector3D<Cartesian3D<double>> localPosition) const = 0;
 
         /**
          * @brief Check whether given track is within the detector's region-of-interest
@@ -244,7 +249,7 @@ namespace corryvreckan {
          * @brief Get number of pixels in x and y
          * @return Number of two dimensional pixels
          */
-		ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const { return m_nPixels; }
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const { return m_nPixels; }
 
         /**
          * @brief Get pitch of a single pixel
@@ -278,21 +283,21 @@ namespace corryvreckan {
          */
         virtual bool masked(int chX, int chY) const = 0;
 
-	protected:
+    protected:
         // Roles of the detector
         DetectorRole m_role;
 
         // Initialize coordinate transformations
         virtual void initialise() = 0;
 
-		// Build axis, for devices which is not auxiliary
-		// Different in Planar/Disk Detector
-		// better name for not auxiliary?
-		virtual void buildNotAuxiliaryAxis(const Configuration& config) = 0;
+        // Build axis, for devices which is not auxiliary
+        // Different in Planar/Disk Detector
+        // better name for not auxiliary?
+        virtual void buildNotAuxiliaryAxis(const Configuration& config) = 0;
 
-		// config
-		// better name for not auxiliary?
-		virtual void configNotAuxiliary(Configuration& config) const  = 0;
+        // config
+        // better name for not auxiliary?
+        virtual void configNotAuxiliary(Configuration& config) const = 0;
 
         // Functions to set and check channel masking
         void setMaskFile(std::string file);
@@ -332,9 +337,8 @@ namespace corryvreckan {
 
         std::vector<std::vector<int>> m_roi{};
 
-		// For Pixel
+        // For Pixel
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels{};
-
     };
 } // namespace corryvreckan
 

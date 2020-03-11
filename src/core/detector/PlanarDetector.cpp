@@ -24,7 +24,7 @@ using namespace corryvreckan;
 
 PlanarDetector::PlanarDetector(const Configuration& config) : Detector(config) {
 
-  this->initialise();
+    this->initialise();
 
     LOG(TRACE) << "  Position:    " << Units::display(m_displacement, {"mm", "um"});
     LOG(TRACE) << "  Orientation: " << Units::display(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
@@ -37,41 +37,40 @@ PlanarDetector::PlanarDetector(const Configuration& config) : Detector(config) {
     }
     // Auxiliary devices don't have: number_of_pixels, pixel_pitch, spatial_resolution, mask_file, region-of-interest
     if(!isAuxiliary()) {
-	  buildNotAuxiliaryAxis(config);
-	}
+        buildNotAuxiliaryAxis(config);
+    }
 }
 
-void PlanarDetector::buildNotAuxiliaryAxis(const Configuration& config){
+void PlanarDetector::buildNotAuxiliaryAxis(const Configuration& config) {
     // Auxiliary devices don't have: number_of_pixels, pixel_pitch, spatial_resolution, mask_file, region-of-interest
-	// Number of pixels:
-        m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
-        // Size of the pixels:
-        m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
+    // Number of pixels:
+    m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
+    // Size of the pixels:
+    m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
 
-        if(Units::convert(m_pitch.X(), "mm") >= 1 or Units::convert(m_pitch.Y(), "mm") >= 1 or
-           Units::convert(m_pitch.X(), "um") <= 1 or Units::convert(m_pitch.Y(), "um") <= 1) {
-            LOG(WARNING) << "Pixel pitch unphysical for detector " << m_detectorName << ": " << std::endl
-                         << Units::display(m_pitch, {"nm", "um", "mm"});
-        }
+    if(Units::convert(m_pitch.X(), "mm") >= 1 or Units::convert(m_pitch.Y(), "mm") >= 1 or
+       Units::convert(m_pitch.X(), "um") <= 1 or Units::convert(m_pitch.Y(), "um") <= 1) {
+        LOG(WARNING) << "Pixel pitch unphysical for detector " << m_detectorName << ": " << std::endl
+                     << Units::display(m_pitch, {"nm", "um", "mm"});
+    }
 
-        // Intrinsic spatial resolution, defaults to pitch/sqrt(12):
-        m_spatial_resolution = config.get<ROOT::Math::XYVector>("spatial_resolution", m_pitch / std::sqrt(12));
-        if(!config.has("spatial_resolution")) {
-            LOG(WARNING) << "Spatial resolution for detector '" << m_detectorName << "' not set." << std::endl
-                         << "Using pitch/sqrt(12) as default";
-        }
+    // Intrinsic spatial resolution, defaults to pitch/sqrt(12):
+    m_spatial_resolution = config.get<ROOT::Math::XYVector>("spatial_resolution", m_pitch / std::sqrt(12));
+    if(!config.has("spatial_resolution")) {
+        LOG(WARNING) << "Spatial resolution for detector '" << m_detectorName << "' not set." << std::endl
+                     << "Using pitch/sqrt(12) as default";
+    }
 
-        // region of interest:
-        m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
-        if(config.has("mask_file")) {
-            m_maskfile_name = config.get<std::string>("mask_file");
-            std::string mask_file = config.getPath("mask_file");
-            LOG(DEBUG) << "Adding mask to detector \"" << config.getName() << "\", reading from " << mask_file;
-            setMaskFile(mask_file);
-            processMaskFile();
-        }
+    // region of interest:
+    m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
+    if(config.has("mask_file")) {
+        m_maskfile_name = config.get<std::string>("mask_file");
+        std::string mask_file = config.getPath("mask_file");
+        LOG(DEBUG) << "Adding mask to detector \"" << config.getName() << "\", reading from " << mask_file;
+        setMaskFile(mask_file);
+        processMaskFile();
+    }
 }
-
 
 void PlanarDetector::processMaskFile() {
     // Open the file with masked pixels
@@ -157,28 +156,26 @@ void PlanarDetector::initialise() {
         localZ.X() - m_origin.X(), localZ.Y() - m_origin.Y(), localZ.Z() - m_origin.Z());
 }
 
-
 // Only if detector is not auxiliary
 void PlanarDetector::configNotAuxiliary(Configuration& config) const {
 
-  		// Number of pixels
-       config.set("number_of_pixels", m_nPixels);
+    // Number of pixels
+    config.set("number_of_pixels", m_nPixels);
 
-        // Size of the pixels
-        config.set("pixel_pitch", m_pitch, {"um"});
+    // Size of the pixels
+    config.set("pixel_pitch", m_pitch, {"um"});
 
-        // Intrinsic resolution:
-        config.set("spatial_resolution", m_spatial_resolution, {"um"});
+    // Intrinsic resolution:
+    config.set("spatial_resolution", m_spatial_resolution, {"um"});
 
-        // Pixel mask file:
-        if(!m_maskfile_name.empty()) {
-            config.set("mask_file", m_maskfile_name);
-        }
+    // Pixel mask file:
+    if(!m_maskfile_name.empty()) {
+        config.set("mask_file", m_maskfile_name);
+    }
 
-        // Region-of-interest:
-        config.setMatrix("roi", m_roi);
+    // Region-of-interest:
+    config.setMatrix("roi", m_roi);
 }
-
 
 // Function to get global intercept with a track
 PositionVector3D<Cartesian3D<double>> PlanarDetector::getIntercept(const Track* track) const {
@@ -382,4 +379,3 @@ int PlanarDetector::winding_number(std::pair<int, int> probe, std::vector<std::v
 int PlanarDetector::isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2) {
     return ((pt1.first - pt0.first) * (pt2.second - pt0.second) - (pt2.first - pt0.first) * (pt1.second - pt0.second));
 }
-

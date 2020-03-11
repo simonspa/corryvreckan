@@ -19,11 +19,11 @@
 #include "Math/Transform3D.h"
 #include "Math/Vector3D.h"
 
+#include "Detector.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/utils/ROOT.h"
 #include "core/utils/log.h"
 #include "objects/Track.hpp"
-#include "Detector.hpp"
 
 namespace corryvreckan {
 
@@ -41,11 +41,15 @@ namespace corryvreckan {
         PlanarDetector() = delete;
 
         /**
+         * Default destructor
+         */
+        ~PlanarDetector() = default;
+
+        /**
          * @brief Constructs a detector in the geometry
          * @param config Configuration object describing the detector
          */
         PlanarDetector(const Configuration& config);
-
 
         /**
          * @brief Mark a detector channel as masked
@@ -112,24 +116,23 @@ namespace corryvreckan {
 
     private:
         // Initialize coordinate transformations
-        void initialise() override; 
+        void initialise() override;
 
-		// Build axis, for devices which is not auxiliary
-		// Different in Planar/Disk Detector
-		// better name for not auxiliary?
-		void buildNotAuxiliaryAxis(const Configuration& config) override;
+        // Build axis, for devices which is not auxiliary
+        // Different in Planar/Disk Detector
+        // better name for not auxiliary?
+        void buildNotAuxiliaryAxis(const Configuration& config) override;
 
-		// config
-		// better name for not auxiliary?
-		void configNotAuxiliary(Configuration& config) const override;
+        // config
+        // better name for not auxiliary?
+        void configNotAuxiliary(Configuration& config) const override;
 
         // Functions to set and check channel masking
         void processMaskFile() override;
 
-		// Seems to be used in other coordinate
+        // Seems to be used in other coordinate
         inline static int isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2);
         static int winding_number(std::pair<int, int> probe, std::vector<std::vector<int>> polygon);
-
     };
 } // namespace corryvreckan
 

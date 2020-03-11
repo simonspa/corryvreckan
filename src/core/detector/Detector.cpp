@@ -66,7 +66,6 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         m_materialBudget = config.get<double>("material_budget");
     }
 
-
     m_detectorType = config.get<std::string>("type");
     std::transform(m_detectorType.begin(), m_detectorType.end(), m_detectorType.begin(), ::tolower);
     m_timeOffset = config.get<double>("time_offset", 0.0);
@@ -76,16 +75,14 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     m_timeResolution = config.get<double>("time_resolution", -1.0);
 
     ///// Initialize the detector, calculate transformations etc
-    ///this->initialise();
-	/////buildNotAuxiliaryAxis(config);
+    /// this->initialise();
+    /////buildNotAuxiliaryAxis(config);
 
     if(config.has("calibration_file")) {
         m_calibrationfile = config.getPath("calibration_file");
     }
 
-	/*
-    // Auxiliary devices don't have: number_of_pixels, pixel_pitch, spatial_resolution, mask_file, region-of-interest
->>>>>>> simply make Detector interface
+    /*
     if(!isAuxiliary()) {
         // Number of pixels:
         m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
@@ -107,7 +104,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
 
         // region of interest:
         m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
-		// set the mask
+        // set the mask
         if(config.has("mask_file")) {
             m_maskfile_name = config.get<std::string>("mask_file");
             std::string mask_file = config.getPath("mask_file");
@@ -116,7 +113,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
             processMaskFile();
         }
     }
-	*/
+    */
 }
 
 double Detector::getTimeResolution() const {
@@ -134,7 +131,6 @@ std::string Detector::name() const {
 std::string Detector::type() const {
     return m_detectorType;
 }
-
 
 bool Detector::isReference() const {
     return static_cast<bool>(m_role & DetectorRole::REFERENCE);
@@ -194,10 +190,10 @@ Configuration Detector::getConfiguration() const {
         config.set("material_budget", m_materialBudget);
     }
 
-	// only if detector is not auxiliary
+    // only if detector is not auxiliary
     if(!this->isAuxiliary()) {
-	this->configNotAuxiliary(config);
-	}
+        this->configNotAuxiliary(config);
+    }
 
     return config;
 }
@@ -357,4 +353,3 @@ bool Detector::isWithinROI(Cluster* cluster) const {
 int Detector::isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2) {
     return ((pt1.first - pt0.first) * (pt2.second - pt0.second) - (pt2.first - pt0.first) * (pt1.second - pt0.second));
 }
-
