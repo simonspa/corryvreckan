@@ -132,6 +132,10 @@ std::string Detector::type() const {
     return m_detectorType;
 }
 
+XYVector Detector::size() const {
+    return XYVector(m_pitch.X() * m_nPixels.X(), m_pitch.Y() * m_nPixels.Y());
+}
+
 bool Detector::isReference() const {
     return static_cast<bool>(m_role & DetectorRole::REFERENCE);
 }
@@ -189,8 +193,7 @@ Configuration Detector::getConfiguration() const {
     if(m_materialBudget > std::numeric_limits<double>::epsilon()) {
         config.set("material_budget", m_materialBudget);
     }
-
-    // only if detector is not auxiliary
+    // only if detector is not auxiliary:
     if(!this->isAuxiliary()) {
         this->configNotAuxiliary(config);
     }

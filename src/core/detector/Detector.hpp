@@ -117,6 +117,30 @@ namespace corryvreckan {
         Configuration getConfiguration() const;
 
         /**
+         * @brief Get the total size of the active matrix, i.e. pitch * number of pixels in both dimensions
+         * @return 2D vector with the dimensions of the pixle matrix in X and Y
+         */
+        XYVector size() const;
+
+        /**
+         * @brief Get pitch of a single pixel
+         * @return Pitch of a pixel
+         */
+        XYVector pitch() const { return m_pitch; }
+
+        /**
+         * @brief Get intrinsic spatial resolution of the detector
+         * @return Intrinsic spatial resolution in X and Y
+         */
+        XYVector getSpatialResolution() const { return m_spatial_resolution; }
+
+        /**
+         * @brief Get number of pixels in x and y
+         * @return Number of two dimensional pixels
+         */
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const { return m_nPixels; }
+
+        /**
          * @brief Get detector time offset from global clock, can be used to correct for constant shifts or time of flight
          * @return Time offset of respective detector
          */
@@ -174,29 +198,24 @@ namespace corryvreckan {
         std::string maskFile() const { return m_maskfile; }
 
         /**
+         * @brief Mark a detector channel as masked
+         * @param chX X coordinate of the pixel to be masked
+         * @param chY Y coordinate of the pixel to be masked
+         */
+        virtual void maskChannel(int chX, int chY) = 0;
+
+        /**
+         * @brief Check if a detector channel is masked
+         * @param chX X coordinate of the pixel to check
+         * @param chY Y coordinate of the pixel to check
+         * @return    Mask status of the pixel in question
+         */
+        virtual bool masked(int chX, int chY) const = 0;
+
+        /**
          * @brief Update coordinate transformations based on currently configured position and orientation values
          */
         void update();
-
-        /**
-         * @brief Transform local coordinates of this detector into global coordinates
-         * @param  local Local coordinates in the reference frame of this detector
-         * @return       Global coordinates
-         */
-        XYZPoint localToGlobal(XYZPoint local) const { return m_localToGlobal * local; };
-
-        /**
-         * @brief Transform global coordinates into detector-local coordinates
-         * @param  global Global coordinates
-         * @return        Local coordinates in the reference frame of this detector
-         */
-        XYZPoint globalToLocal(XYZPoint global) const { return m_globalToLocal * global; };
-
-        /**
-         * @brief Return the thickness of the senosr assembly layer (sensor+support) in fractions of radiation length
-         * @return thickness in fractions of radiation length
-         */
-        double materialBudget() const { return m_materialBudget; }
 
         // Function to get global intercept with a track
         virtual PositionVector3D<Cartesian3D<double>> getIntercept(const Track* track) const = 0;
@@ -232,6 +251,20 @@ namespace corryvreckan {
         virtual XYVector inPixel(PositionVector3D<Cartesian3D<double>> localPosition) const = 0;
 
         /**
+         * @brief Transform local coordinates of this detector into global coordinates
+         * @param  local Local coordinates in the reference frame of this detector
+         * @return       Global coordinates
+         */
+        XYZPoint localToGlobal(XYZPoint local) const { return m_localToGlobal * local; };
+
+        /**
+         * @brief Transform global coordinates into detector-local coordinates
+         * @param  global Global coordinates
+         * @return        Local coordinates in the reference frame of this detector
+         */
+        XYZPoint globalToLocal(XYZPoint global) const { return m_globalToLocal * global; };
+
+        /**
          * @brief Check whether given track is within the detector's region-of-interest
          * @param  track The track to be checked
          * @return       Boolean indicating cluster affiliation with region-of-interest
@@ -246,42 +279,10 @@ namespace corryvreckan {
         virtual bool isWithinROI(Cluster* cluster) const = 0;
 
         /**
-         * @brief Get number of pixels in x and y
-         * @return Number of two dimensional pixels
+         * @brief Return the thickness of the senosr assembly layer (sensor+support) in fractions of radiation length
+         * @return thickness in fractions of radiation length
          */
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const { return m_nPixels; }
-
-        /**
-         * @brief Get pitch of a single pixel
-         * @return Pitch of a pixel
-         */
-        XYVector pitch() const { return m_pitch; }
-
-        /**
-         * @brief Get the total size of the active matrix, i.e. pitch * number of pixels in both dimensions
-         * @return 2D vector with the dimensions of the pixle matrix in X and Y
-         */
-        XYVector size() const;
-
-        /**
-         * @brief Get intrinsic spatial resolution of the detector
-         * @return Intrinsic spatial resolution in X and Y
-         */
-        XYVector getSpatialResolution() const { return m_spatial_resolution; }
-        /**
-         * @brief Mark a detector channel as masked
-         * @param chX X coordinate of the pixel to be masked
-         * @param chY Y coordinate of the pixel to be masked
-         */
-        virtual void maskChannel(int chX, int chY) = 0;
-
-        /**
-         * @brief Check if a detector channel is masked
-         * @param chX X coordinate of the pixel to check
-         * @param chY Y coordinate of the pixel to check
-         * @return    Mask status of the pixel in question
-         */
-        virtual bool masked(int chX, int chY) const = 0;
+        double materialBudget() const { return m_materialBudget; }
 
     protected:
         // Roles of the detector
@@ -332,13 +333,11 @@ namespace corryvreckan {
         std::string m_maskfile;
         std::string m_maskfile_name;
 
+        // For Pixel
         XYVector m_pitch{};
         XYVector m_spatial_resolution{};
-
-        std::vector<std::vector<int>> m_roi{};
-
-        // For Pixel
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels{};
+        std::vector<std::vector<int>> m_roi{};
     };
 } // namespace corryvreckan
 
