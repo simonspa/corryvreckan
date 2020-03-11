@@ -13,18 +13,18 @@
 
 using namespace corryvreckan;
 
-Plane::Plane(const Plane& p) : Object() {
-    m_z = p.m_z;
-    m_x_x0 = p.m_x_x0;
-    m_name = p.m_name;
-    m_has_cluster = p.m_has_cluster;
-    if(p.m_cluster != nullptr)
-        m_cluster = new Cluster(*p.m_cluster);
+// Plane::Plane(const Plane& p) : Object() {
+//    m_z = p.m_z;
+//    m_x_x0 = p.m_x_x0;
+//    m_name = p.m_name;
+//    m_has_cluster = p.m_has_cluster;
+//    if(p.m_cluster != nullptr)
+//        m_cluster = new Cluster(*p.m_cluster);
 
-    m_gbl_points_pos = p.m_gbl_points_pos;
-    m_toLocal = p.m_toLocal;
-    m_toGlobal = p.m_toGlobal;
-}
+//    m_gbl_points_pos = p.m_gbl_points_pos;
+//    m_toLocal = p.m_toLocal;
+//    m_toGlobal = p.m_toGlobal;
+//}
 
 Track::Track() : m_momentum(-1) {}
 
