@@ -27,7 +27,7 @@ namespace corryvreckan {
         Plane(double z, double x_x0, std::string name, bool has_cluster)
             : Object(), m_z(z), m_x_x0(x_x0), m_name(name), m_has_cluster(has_cluster){};
 
-        //  Plane(const Plane& p);
+        Plane(const Plane& p);
         // access elements
         double postion() const { return m_z; }
         double materialbudget() const { return m_x_x0; }
@@ -281,6 +281,8 @@ namespace corryvreckan {
         long unsigned int numScatterers() const { return m_materialBudget.size(); }
         void setVolumeScatter(double length) { m_scattering_length_volume = length; }
 
+        void setLogging(bool on = false) { m_logging = on; }
+
     protected:
         std::vector<TRef> m_trackClusters;
         std::vector<TRef> m_associatedClusters;
@@ -289,6 +291,7 @@ namespace corryvreckan {
         std::map<std::string, ROOT::Math::XYPoint> m_kink;
         std::map<std::string, ROOT::Math::XYZPoint> m_corrections{};
         std::vector<Plane> m_planes{};
+        bool m_logging = false;
 
         TRef closestCluster{nullptr};
         double m_chi2;

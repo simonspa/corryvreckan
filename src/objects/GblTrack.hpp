@@ -60,7 +60,6 @@ namespace corryvreckan {
         ROOT::Math::XYZVector direction(std::string detectorID) const override;
 
     private:
-        unsigned m_logging{};
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(GblTrack, 0)
     };

@@ -23,12 +23,10 @@ GblTrack::GblTrack() : Track() {}
 GblTrack::GblTrack(const GblTrack& track) : Track(track) {
     if(track.getType() != this->getType())
         throw TrackModelChanged(typeid(*this), track.getType(), this->getType());
-    m_logging = 0;
 }
 
 void GblTrack::fit() {
 
-    m_logging = 0;
     // Fitting with 2 clusters or less is pointless
     if(m_trackClusters.size() < 2) {
         throw TrackError(typeid(GblTrack), " attempting to fit a track with less than 2 clusters");
@@ -111,7 +109,7 @@ void GblTrack::fit() {
         F(2, 2) = -S[3] / S[2];
         Eigen::Matrix<double, 6, 6> jaco;
 
-        if(m_logging > 0) {
+        if(m_logging) {
             std::cout << "Transform3D 1: \n"
                       << p1 << "\n Transform3D 2: \n " << p2 << "\n transfermatrix\n"
                       << transfer << "\ndirection\n"
@@ -137,7 +135,7 @@ void GblTrack::fit() {
         covv(0, 0) = 1. / cluster->errorX() / cluster->errorX();
         covv(1, 1) = 1. / cluster->errorY() / cluster->errorY();
         point.addMeasurement(initialResidual, covv);
-        if(m_logging > 0) {
+        if(m_logging) {
             std::cout << "Res \n " << initialResidual << std::endl;
         }
     };
@@ -170,7 +168,7 @@ void GblTrack::fit() {
         double dist = plane->postion() - prevPos;
         auto myjac = jac(plane->toLocal(), prevToGlobal, prevToLocal, dist);
         auto transformedJac = toGbl * myjac * toProteus;
-        if(m_logging > 0) {
+        if(m_logging) {
             std::cout << plane->name() << ", dist to prev:" << dist << "\n ******** Init Jac ******* \n"
                       << myjac << "\n -------- GBL Jac ---- \n"
                       << transformedJac << std::endl;
@@ -226,7 +224,7 @@ void GblTrack::fit() {
             //            throw TrackFitError(typeid(GblTrack), "internal GBL Error " + std::to_string(fitReturnValue));
         }
     }
-    if(m_logging > 0) {
+    if(m_logging) {
         std::cout << m_chi2 << "\t" << points.size() << "\t" << fitReturnValue << std::endl;
     }
 
@@ -253,7 +251,7 @@ void GblTrack::fit() {
                 plane.gblPos(), numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
             m_residual[plane.name()] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
         }
-        if(m_logging > 0) {
+        if(m_logging) {
             std::cout << m_residual[plane.name()] << "\t" << m_kink[plane.name()] << std::endl;
         }
     }
