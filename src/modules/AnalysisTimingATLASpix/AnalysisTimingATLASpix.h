@@ -81,15 +81,21 @@ namespace corryvreckan {
         TH2F* hTotVsTime;
         TH2F* hTotVsTime_high;
 
-        // Control Plots for "left tail" and "main peak" of time correlation
+        // Control Plots for "left/right tail" and "main peak" of time correlation
         TH2F* hInPixelMap_leftTail;
+        TH2F* hInPixelMap_rightTail;
+        TH2F* hInPixelMap_mainPeak;
         TH2F* hClusterMap_leftTail;
+        TH2F* hClusterMap_rightTail;
         TH2F* hClusterMap_mainPeak;
         TH1F* hTot_leftTail;
+        TH1F* hTot_rightTail;
         TH1F* hTot_mainPeak;
         TH1F* hPixelTimestamp_leftTail;
+        TH1F* hPixelTimestamp_rightTail;
         TH1F* hPixelTimestamp_mainPeak;
         TH1F* hClusterSize_leftTail;
+        TH1F* hClusterSize_rightTail;
         TH1F* hClusterSize_mainPeak;
 
         // TGraphErrors:
@@ -111,6 +117,7 @@ namespace corryvreckan {
         int m_highTotCut;       // for pixel->tot()
         double m_highChargeCut; // for cluster->charge()
         double m_leftTailCut;
+        double m_rightTailCut;
 
         std::string m_correctionFile_row;
         std::string m_correctionGraph_row;
