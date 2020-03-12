@@ -46,6 +46,7 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
     m_highTotCut = m_config.get<int>("high_tot_cut", 40);
     m_highChargeCut = m_config.get<double>("high_charge_cut", static_cast<double>(m_highTotCut));
     m_leftTailCut = m_config.get<double>("left_tail_cut", static_cast<double>(Units::convert(-10, "ns")));
+    m_rightTailCut = m_config.get<double>("right_tail_cut", static_cast<double>(Units::convert(10, "ns")));
 
     if(m_config.has("correction_file_row")) {
         m_correctionFile_row = m_config.get<std::string>("correction_file_row");
@@ -298,7 +299,7 @@ void AnalysisTimingATLASpix::initialise() {
 
     // control plots for "left tail" and "main peak" of time correlation
     hInPixelMap_leftTail = new TH2F("hPixelMap_leftTail",
-                                    "in-pixel mean track time residual (before correction);in-pixel x_{track} "
+                                    "in-pixel track position (left tail of time residual);in-pixel x_{track} "
                                     "[#mum];in-pixel y_{track} [#mum];# entries",
                                     nbins_x,
                                     -pitch_x / 2.,
@@ -306,30 +307,78 @@ void AnalysisTimingATLASpix::initialise() {
                                     nbins_y,
                                     -pitch_y / 2.,
                                     pitch_y / 2.);
-    hClusterMap_leftTail = new TH2F("hClusterMap_leftTail",
-                                    "hClusterMap_leftTail; x_{cluster} [px]; x_{cluster} [px]; # entries",
-                                    m_detector->nPixels().X(),
-                                    0,
-                                    m_detector->nPixels().X(),
-                                    m_detector->nPixels().Y(),
-                                    0,
-                                    m_detector->nPixels().Y());
-    hClusterMap_mainPeak = new TH2F("hClusterMap_mainPeak",
-                                    "hClusterMap_mainPeak; x_{cluster} [px]; x_{cluster} [px]; # entries",
-                                    m_detector->nPixels().X(),
-                                    0,
-                                    m_detector->nPixels().X(),
-                                    m_detector->nPixels().Y(),
-                                    0,
-                                    m_detector->nPixels().Y());
-    hClusterSize_leftTail = new TH1F("clusterSize_leftTail", "clusterSize_leftTail; cluster size; # entries", 100, 0, 100);
-    hClusterSize_mainPeak = new TH1F("clusterSize_mainPeak", "clusterSize_mainPeak; cluster size; # entries", 100, 0, 100);
-    hTot_leftTail = new TH1F("hTot_leftTail", "hTot_leftTail; pixel ToT [lsb]; # events", 2 * 64, -64, 64);
-    hTot_mainPeak = new TH1F("hTot_mainPeak", "hTot_mainPeak; pixel ToT [lsb]; # events", 2 * 64, -64, 64);
-    hPixelTimestamp_leftTail =
-        new TH1F("pixelTimestamp_leftTail", "pixelTimestamp_leftTail; pixel timestamp [ns]; # entries", 2050, 0, 2050);
-    hPixelTimestamp_mainPeak =
-        new TH1F("pixelTimestamp_mainPeak", "pixelTimestamp_mainPeak; pixel timestamp [ns]; # entries", 2050, 0, 2050);
+    hInPixelMap_rightTail = new TH2F("hPixelMap_rightTail",
+                                     "in-pixel track position (right tail of time residual);in-pixel x_{track} "
+                                     "[#mum];in-pixel y_{track} [#mum];# entries",
+                                     nbins_x,
+                                     -pitch_x / 2.,
+                                     pitch_x / 2.,
+                                     nbins_y,
+                                     -pitch_y / 2.,
+                                     pitch_y / 2.);
+    hInPixelMap_mainPeak = new TH2F("hPixelMap_mainPeak",
+                                    "in-pixel track position (main peak of time residual);in-pixel x_{track} "
+                                    "[#mum];in-pixel y_{track} [#mum];# entries",
+                                    nbins_x,
+                                    -pitch_x / 2.,
+                                    pitch_x / 2.,
+                                    nbins_y,
+                                    -pitch_y / 2.,
+                                    pitch_y / 2.);
+    hClusterMap_leftTail =
+        new TH2F("hClusterMap_leftTail",
+                 "hClusterMap (left tail of time residual); x_{cluster} [px]; x_{cluster} [px]; # entries",
+                 m_detector->nPixels().X(),
+                 0,
+                 m_detector->nPixels().X(),
+                 m_detector->nPixels().Y(),
+                 0,
+                 m_detector->nPixels().Y());
+    hClusterMap_rightTail =
+        new TH2F("hClusterMap_rightTail",
+                 "hClusterMap (right tail of time residual); x_{cluster} [px]; x_{cluster} [px]; # entries",
+                 m_detector->nPixels().X(),
+                 0,
+                 m_detector->nPixels().X(),
+                 m_detector->nPixels().Y(),
+                 0,
+                 m_detector->nPixels().Y());
+    hClusterMap_mainPeak =
+        new TH2F("hClusterMap_mainPeak",
+                 "hClusterMap (main peak of time residual); x_{cluster} [px]; x_{cluster} [px]; # entries",
+                 m_detector->nPixels().X(),
+                 0,
+                 m_detector->nPixels().X(),
+                 m_detector->nPixels().Y(),
+                 0,
+                 m_detector->nPixels().Y());
+    hClusterSize_leftTail =
+        new TH1F("clusterSize_leftTail", "clusterSize (left tail of time residual); cluster size; # entries", 100, 0, 100);
+    hClusterSize_rightTail =
+        new TH1F("clusterSize_rightTail", "clusterSize (right tail of time residual); cluster size; # entries", 100, 0, 100);
+    hClusterSize_mainPeak =
+        new TH1F("clusterSize_mainPeak", "clusterSize (main peak of time residual); cluster size; # entries", 100, 0, 100);
+    hTot_leftTail =
+        new TH1F("hTot_leftTail", "ToT (left tail of time residual); pixel ToT [lsb]; # events", 2 * 64, -64, 64);
+    hTot_rightTail =
+        new TH1F("hTot_rightTail", "ToT (left tail of time residual); pixel ToT [lsb]; # events", 2 * 64, -64, 64);
+    hTot_mainPeak =
+        new TH1F("hTot_mainPeak", "ToT (main peak of time residual); pixel ToT [lsb]; # events", 2 * 64, -64, 64);
+    hPixelTimestamp_leftTail = new TH1F("pixelTimestamp_leftTail",
+                                        "pixelTimestamp (left tail of time residual); pixel timestamp [ms]; # events",
+                                        3e6,
+                                        0,
+                                        3e3);
+    hPixelTimestamp_rightTail = new TH1F("pixelTimestamp_leftTail",
+                                         "pixelTimestamp (left tail of time residual); pixel timestamp [ms]; # events",
+                                         3e6,
+                                         0,
+                                         3e3);
+    hPixelTimestamp_mainPeak = new TH1F("pixelTimestamp_mainPeak",
+                                        "pixelTimestamp (left tail of time residual); pixel timestamp [ms]; # events",
+                                        3e6,
+                                        0,
+                                        3e3);
 
     // /////////////////////////////////////////// //
     // TGraphErrors for Timewalk & Row Correction: //
@@ -550,6 +599,10 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     hClusterMapAssoc->Fill(cluster->column(), cluster->row());
                     if(track->timestamp() - cluster->timestamp() < m_leftTailCut) {
                         hInPixelMap_leftTail->Fill(xmod, ymod);
+                    } else if(track->timestamp() - cluster->timestamp() > m_rightTailCut) {
+                        hInPixelMap_rightTail->Fill(xmod, ymod);
+                    } else {
+                        hInPixelMap_mainPeak->Fill(xmod, ymod);
                     }
 
                     // !!! Have to do this in the end because it changes the cluster time and position!!!
@@ -593,14 +646,18 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                         hTrackCorrelationTimeVsTot_rowAndTimeWalkCorr->Fill(
                             track->timestamp() - cluster->getSeedPixel()->timestamp(), cluster->getSeedPixel()->raw());
 
-                        // control plots to investigate "left tail" in time correlation:
+                        // control plots to investigate "left/right tail" in time correlation:
                         if(track->timestamp() - cluster->timestamp() < m_leftTailCut) {
                             hClusterMap_leftTail->Fill(cluster->column(), cluster->row());
                             hTot_leftTail->Fill(cluster->getSeedPixel()->raw());
                             hPixelTimestamp_leftTail->Fill(cluster->getSeedPixel()->timestamp());
                             hClusterSize_leftTail->Fill(static_cast<double>(cluster->size()));
-                        }
-                        if(track->timestamp() - cluster->timestamp() > m_leftTailCut) {
+                        } else if(track->timestamp() - cluster->timestamp() > m_rightTailCut) {
+                            hClusterMap_rightTail->Fill(cluster->column(), cluster->row());
+                            hTot_rightTail->Fill(cluster->getSeedPixel()->raw());
+                            hPixelTimestamp_rightTail->Fill(cluster->getSeedPixel()->timestamp());
+                            hClusterSize_rightTail->Fill(static_cast<double>(cluster->size()));
+                        } else {
                             hClusterMap_mainPeak->Fill(cluster->column(), cluster->row());
                             hTot_mainPeak->Fill(cluster->getSeedPixel()->raw());
                             hPixelTimestamp_mainPeak->Fill(cluster->getSeedPixel()->timestamp());
@@ -635,8 +692,8 @@ void AnalysisTimingATLASpix::finalise() {
         for(int iBin = 0; iBin < nRows; iBin++) {
             TH1D* hTemp = hTrackCorrelationTimeVsRow->ProjectionX("timeCorrelationInOneTotBin", iBin, iBin + 1);
 
-            if(hTemp->GetEntries() < 500) { // too few entries to fit
-                                            // if(hTemp->GetEntries() < 100) { // too few entries to fit
+            // if(hTemp->GetEntries() < 500) { // too few entries to fit
+            if(hTemp->GetEntries() < 250) { // too few entries to fit
                 delete hTemp;
                 timePeak = 0;
                 timePeakErr = 0;
