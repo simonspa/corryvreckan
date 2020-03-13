@@ -359,11 +359,11 @@ void AnalysisTimingATLASpix::initialise() {
     hClusterSize_mainPeak =
         new TH1F("clusterSize_mainPeak", "clusterSize (main peak of time residual); cluster size; # entries", 100, 0, 100);
     hTot_leftTail =
-        new TH1F("hTot_leftTail", "ToT (left tail of time residual); pixel ToT [lsb]; # events", 2 * 64, -64, 64);
+        new TH1F("hTot_leftTail", "ToT (left tail of time residual);seed pixel ToT [lsb]; # events", 2 * 64, -64, 64);
     hTot_rightTail =
-        new TH1F("hTot_rightTail", "ToT (left tail of time residual); pixel ToT [lsb]; # events", 2 * 64, -64, 64);
+        new TH1F("hTot_rightTail", "ToT (left tail of time residual);seed pixel ToT [lsb]; # events", 2 * 64, -64, 64);
     hTot_mainPeak =
-        new TH1F("hTot_mainPeak", "ToT (main peak of time residual); pixel ToT [lsb]; # events", 2 * 64, -64, 64);
+        new TH1F("hTot_mainPeak", "ToT (main peak of time residual);seed pixel ToT [lsb]; # events", 2 * 64, -64, 64);
     hPixelTimestamp_leftTail = new TH1F("pixelTimestamp_leftTail",
                                         "pixelTimestamp (left tail of time residual); pixel timestamp [ms]; # events",
                                         3e6,
