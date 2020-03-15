@@ -9,6 +9,10 @@ Prealignment::Prealignment(Configuration config, std::shared_ptr<Detector> detec
     max_correlation_rms = m_config.get<double>("max_correlation_rms", Units::get<double>(6, "mm"));
     damping_factor = m_config.get<double>("damping_factor", 1.0);
 
+    prealign_method = m_config.get<std::string>("prealign_method", "mean");
+    fit_high = m_config.get<double>("fit_high", Units::get<double>(2, "mm"));
+    fit_low = m_config.get<double>("fit_low", Units::get<double>(-2, "mm"));
+
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
     m_config.setAlias("time_cut_abs", "timing_cut", true);
 
@@ -109,14 +113,34 @@ void Prealignment::finalise() {
 
     // Move all but the reference:
     if(!m_detector->isReference()) {
-        double mean_X = correlationX->GetMean();
-        double mean_Y = correlationY->GetMean();
-        LOG(INFO) << "Detector " << m_detector->name() << ": x = " << Units::display(mean_X, {"mm", "um"})
-                  << " , y = " << Units::display(mean_Y, {"mm", "um"});
-        LOG(INFO) << "Move in x by = " << Units::display(mean_X * damping_factor, {"mm", "um"})
-                  << " , and in y by = " << Units::display(mean_Y * damping_factor, {"mm", "um"});
-        m_detector->displacement(XYZPoint(m_detector->displacement().X() + damping_factor * mean_X,
-                                          m_detector->displacement().Y() + damping_factor * mean_Y,
+
+        double shift_X = 0.;
+        double shift_Y = 0.;
+
+	LOG(INFO) << "Using prealignment method: " << prealign_method;
+        if(prealign_method == "gauss_fit"){
+            correlationX->Fit("gaus", "Q","", fit_low, fit_high);
+            correlationY->Fit("gaus", "Q","", fit_low, fit_high);
+            shift_X = correlationX->GetFunction("gaus")->GetParameter(1);
+            shift_Y = correlationY->GetFunction("gaus")->GetParameter(1);
+        }
+        else if(prealign_method == "mean"){
+            shift_X = correlationX->GetMean();
+            shift_Y = correlationY->GetMean();
+        }
+	else if(prealign_method == "maximum"){
+	    int binMaxX = correlationX->GetMaximumBin();
+	    shift_X = correlationX->GetXaxis()->GetBinCenter(binMaxX);
+	    int binMaxY = correlationY->GetMaximumBin();
+	    shift_Y = correlationY->GetXaxis()->GetBinCenter(binMaxY);
+	}
+
+        LOG(INFO) << "Detector " << m_detector->name() << ": x = " << Units::display(shift_X, {"mm", "um"})
+                  << " , y = " << Units::display(shift_Y, {"mm", "um"});
+        LOG(INFO) << "Move in x by = " << Units::display(shift_X * damping_factor, {"mm", "um"})
+                  << " , and in y by = " << Units::display(shift_Y * damping_factor, {"mm", "um"});
+        m_detector->displacement(XYZPoint(m_detector->displacement().X() + damping_factor * shift_X,
+                                          m_detector->displacement().Y() + damping_factor * shift_Y,
                                           m_detector->displacement().Z()));
     }
 }
