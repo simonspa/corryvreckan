@@ -1,5 +1,15 @@
-#ifndef GblTrack_H
-#define GblTrack_H 1
+/**
+ * @file
+ * @brief Definition of GBL track object
+ *
+ * @copyright Copyright (c) 2019-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
+#ifndef CORRYVRECKAN_GBLTRACK_H
+#define CORRYVRECKAN_GBLTRACK_H 1
 
 #include "Track.hpp"
 namespace corryvreckan {
@@ -59,4 +69,4 @@ namespace corryvreckan {
 
 } // namespace corryvreckan
 
-#endif // GblTrack_H
+#endif // CORRYVRECKAN_GBLTRACK_H

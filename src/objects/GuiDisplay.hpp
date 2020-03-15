@@ -1,5 +1,15 @@
-#ifndef GUIDISPLAY_H
-#define GUIDISPLAY_H 1
+/**
+ * @file
+ * @brief Implementation of GUI display object
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
+#ifndef CORRYVRECKAN_GUIDISPLAY_H
+#define CORRYVRECKAN_GUIDISPLAY_H 1
 
 // Local includes
 #include "Object.hpp"
@@ -134,4 +144,4 @@ namespace corryvreckan {
     };
 } // namespace corryvreckan
 
-#endif // GUIDISPLAY_H
+#endif // CORRYVRECKAN_GUIDISPLAY_H
