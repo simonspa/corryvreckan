@@ -80,6 +80,7 @@ namespace corryvreckan {
 
         TH2F* hTotVsTime;
         TH2F* hTotVsTime_high;
+        TH2F* hTotVsTime_low;
 
         // Control Plots for "left/right tail" and "main peak" of time correlation
         TH2F* hInPixelMap_leftTail;
@@ -91,6 +92,9 @@ namespace corryvreckan {
         TH1F* hTot_leftTail;
         TH1F* hTot_rightTail;
         TH1F* hTot_mainPeak;
+        TH1F* hTot_leftTail_1px;
+        TH1F* hTot_rightTail_1px;
+        TH1F* hTot_mainPeak_1px;
         TH1F* hPixelTimestamp_leftTail;
         TH1F* hPixelTimestamp_rightTail;
         TH1F* hPixelTimestamp_mainPeak;
@@ -115,6 +119,7 @@ namespace corryvreckan {
         double m_clusterChargeCut;
         size_t m_clusterSizeCut;
         int m_highTotCut;       // for pixel->tot()
+        int m_lowTotCut;        // for pixel->tot()
         double m_highChargeCut; // for cluster->charge()
         double m_leftTailCut;
         double m_rightTailCut;

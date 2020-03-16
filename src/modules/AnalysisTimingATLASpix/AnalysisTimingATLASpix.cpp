@@ -44,6 +44,7 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
         m_clusterSizeCut = m_config.get<size_t>("cluster_size_cut");
     }
     m_highTotCut = m_config.get<int>("high_tot_cut", 40);
+    m_lowTotCut = m_config.get<int>("low_tot_cut", 40);
     m_highChargeCut = m_config.get<double>("high_charge_cut", static_cast<double>(m_highTotCut));
     m_leftTailCut = m_config.get<double>("left_tail_cut", static_cast<double>(Units::convert(-10, "ns")));
     m_rightTailCut = m_config.get<double>("right_tail_cut", static_cast<double>(Units::convert(10, "ns")));
@@ -361,9 +362,24 @@ void AnalysisTimingATLASpix::initialise() {
     hTot_leftTail =
         new TH1F("hTot_leftTail", "ToT (left tail of time residual);seed pixel ToT [lsb]; # events", 2 * 64, -64, 64);
     hTot_rightTail =
-        new TH1F("hTot_rightTail", "ToT (left tail of time residual);seed pixel ToT [lsb]; # events", 2 * 64, -64, 64);
-    hTot_mainPeak =
-        new TH1F("hTot_mainPeak", "ToT (main peak of time residual);seed pixel ToT [lsb]; # events", 2 * 64, -64, 64);
+        new TH1F("hTot_rightTail", "ToT (right tail of time residual);seed pixel ToT [lsb]; # events", 2 * 64, -64, 64);
+    hTot_mainPeak = new TH1F(
+        "hTot_mainPeak", "ToT (main peak of time residual, 1px clusters);seed pixel ToT [lsb]; # events", 2 * 64, -64, 64);
+    hTot_leftTail_1px = new TH1F("hTot_leftTail_1px",
+                                 "ToT (left tail of time residual, 1px clusters);seed pixel ToT [lsb]; # events",
+                                 2 * 64,
+                                 -64,
+                                 64);
+    hTot_rightTail_1px = new TH1F("hTot_rightTail_1px",
+                                  "ToT (right tail of time residual, 1px clusters);seed pixel ToT [lsb]; # events",
+                                  2 * 64,
+                                  -64,
+                                  64);
+    hTot_mainPeak_1px = new TH1F("hTot_mainPeak_1px",
+                                 "ToT (main peak of time residual, 1px clusters);seed pixel ToT [lsb]; # events",
+                                 2 * 64,
+                                 -64,
+                                 64);
     hPixelTimestamp_leftTail = new TH1F("pixelTimestamp_leftTail",
                                         "pixelTimestamp (left tail of time residual); pixel timestamp [ms]; # events",
                                         3e6,
@@ -652,16 +668,25 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                             hTot_leftTail->Fill(cluster->getSeedPixel()->raw());
                             hPixelTimestamp_leftTail->Fill(cluster->getSeedPixel()->timestamp());
                             hClusterSize_leftTail->Fill(static_cast<double>(cluster->size()));
+                            if(cluster->size() == 1) {
+                                hTot_leftTail_1px->Fill(cluster->getSeedPixel()->raw());
+                            }
                         } else if(track->timestamp() - cluster->timestamp() > m_rightTailCut) {
                             hClusterMap_rightTail->Fill(cluster->column(), cluster->row());
                             hTot_rightTail->Fill(cluster->getSeedPixel()->raw());
                             hPixelTimestamp_rightTail->Fill(cluster->getSeedPixel()->timestamp());
                             hClusterSize_rightTail->Fill(static_cast<double>(cluster->size()));
+                            if(cluster->size() == 1) {
+                                hTot_rightTail_1px->Fill(cluster->getSeedPixel()->raw());
+                            }
                         } else {
                             hClusterMap_mainPeak->Fill(cluster->column(), cluster->row());
                             hTot_mainPeak->Fill(cluster->getSeedPixel()->raw());
                             hPixelTimestamp_mainPeak->Fill(cluster->getSeedPixel()->timestamp());
                             hClusterSize_mainPeak->Fill(static_cast<double>(cluster->size()));
+                            if(cluster->size() == 1) {
+                                hTot_mainPeak_1px->Fill(cluster->getSeedPixel()->raw());
+                            }
                         }
                     }
                 }
