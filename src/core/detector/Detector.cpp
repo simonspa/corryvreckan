@@ -195,7 +195,7 @@ Configuration Detector::getConfiguration() const {
     }
     // only if detector is not auxiliary:
     if(!this->isAuxiliary()) {
-        this->configNotAuxiliary(config);
+        this->configureDetector(config);
     }
 
     return config;

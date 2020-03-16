@@ -37,11 +37,11 @@ PlanarDetector::PlanarDetector(const Configuration& config) : Detector(config) {
     }
     // Auxiliary devices don't have: number_of_pixels, pixel_pitch, spatial_resolution, mask_file, region-of-interest
     if(!isAuxiliary()) {
-        buildNotAuxiliaryAxis(config);
+        buildAxes(config);
     }
 }
 
-void PlanarDetector::buildNotAuxiliaryAxis(const Configuration& config) {
+void PlanarDetector::buildAxes(const Configuration& config) {
     // Auxiliary devices don't have: number_of_pixels, pixel_pitch, spatial_resolution, mask_file, region-of-interest
     // Number of pixels:
     m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
@@ -157,7 +157,7 @@ void PlanarDetector::initialise() {
 }
 
 // Only if detector is not auxiliary
-void PlanarDetector::configNotAuxiliary(Configuration& config) const {
+void PlanarDetector::configureDetector(Configuration& config) const {
 
     // Number of pixels
     config.set("number_of_pixels", m_nPixels);

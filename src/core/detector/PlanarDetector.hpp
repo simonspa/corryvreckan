@@ -121,11 +121,11 @@ namespace corryvreckan {
         // Build axis, for devices which is not auxiliary
         // Different in Planar/Disk Detector
         // better name for not auxiliary?
-        void buildNotAuxiliaryAxis(const Configuration& config) override;
+        void buildAxes(const Configuration& config) override;
 
         // config
         // better name for not auxiliary?
-        void configNotAuxiliary(Configuration& config) const override;
+        void configureDetector(Configuration& config) const override;
 
         // Functions to set and check channel masking
         void processMaskFile() override;
