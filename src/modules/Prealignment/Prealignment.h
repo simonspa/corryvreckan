@@ -12,9 +12,9 @@
 #define PREALIGNMENT_H 1
 
 #include <TCanvas.h>
+#include <TF1.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TF1.h>
 #include <iostream>
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
@@ -50,9 +50,9 @@ namespace corryvreckan {
         double max_correlation_rms;
         double damping_factor;
         double timeCut;
-	std::string prealign_method;
-	double fit_high;
-	double fit_low;
+        std::string prealign_method;
+        double fit_high;
+        double fit_low;
     };
 } // namespace corryvreckan
 #endif // PREALIGNMENT_H

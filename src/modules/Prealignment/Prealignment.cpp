@@ -127,23 +127,21 @@ void Prealignment::finalise() {
         double shift_X = 0.;
         double shift_Y = 0.;
 
-	LOG(INFO) << "Using prealignment method: " << prealign_method;
-        if(prealign_method == "gauss_fit"){
-            correlationX->Fit("gaus", "Q","", fit_low, fit_high);
-            correlationY->Fit("gaus", "Q","", fit_low, fit_high);
+        LOG(INFO) << "Using prealignment method: " << prealign_method;
+        if(prealign_method == "gauss_fit") {
+            correlationX->Fit("gaus", "Q", "", fit_low, fit_high);
+            correlationY->Fit("gaus", "Q", "", fit_low, fit_high);
             shift_X = correlationX->GetFunction("gaus")->GetParameter(1);
             shift_Y = correlationY->GetFunction("gaus")->GetParameter(1);
-        }
-        else if(prealign_method == "mean"){
+        } else if(prealign_method == "mean") {
             shift_X = correlationX->GetMean();
             shift_Y = correlationY->GetMean();
+        } else if(prealign_method == "maximum") {
+            int binMaxX = correlationX->GetMaximumBin();
+            shift_X = correlationX->GetXaxis()->GetBinCenter(binMaxX);
+            int binMaxY = correlationY->GetMaximumBin();
+            shift_Y = correlationY->GetXaxis()->GetBinCenter(binMaxY);
         }
-	else if(prealign_method == "maximum"){
-	    int binMaxX = correlationX->GetMaximumBin();
-	    shift_X = correlationX->GetXaxis()->GetBinCenter(binMaxX);
-	    int binMaxY = correlationY->GetMaximumBin();
-	    shift_Y = correlationY->GetXaxis()->GetBinCenter(binMaxY);
-	}
 
         LOG(INFO) << "Detector " << m_detector->name() << ": x = " << Units::display(shift_X, {"mm", "um"})
                   << " , y = " << Units::display(shift_Y, {"mm", "um"});
