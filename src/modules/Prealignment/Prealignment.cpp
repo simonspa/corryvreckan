@@ -19,7 +19,7 @@ Prealignment::Prealignment(Configuration config, std::shared_ptr<Detector> detec
     max_correlation_rms = m_config.get<double>("max_correlation_rms", Units::get<double>(6, "mm"));
     damping_factor = m_config.get<double>("damping_factor", 1.0);
 
-    prealign_method = m_config.get<std::string>("prealign_method", "mean");
+    method = m_config.get<std::string>("method", "mean");
     fit_high = m_config.get<double>("fit_high", Units::get<double>(2, "mm"));
     fit_low = m_config.get<double>("fit_low", Units::get<double>(-2, "mm"));
 
@@ -128,15 +128,15 @@ void Prealignment::finalise() {
         double shift_Y = 0.;
 
         LOG(INFO) << "Using prealignment method: " << prealign_method;
-        if(prealign_method == "gauss_fit") {
+        if(method == "gauss_fit") {
             correlationX->Fit("gaus", "Q", "", fit_low, fit_high);
             correlationY->Fit("gaus", "Q", "", fit_low, fit_high);
             shift_X = correlationX->GetFunction("gaus")->GetParameter(1);
             shift_Y = correlationY->GetFunction("gaus")->GetParameter(1);
-        } else if(prealign_method == "mean") {
+        } else if(method == "mean") {
             shift_X = correlationX->GetMean();
             shift_Y = correlationY->GetMean();
-        } else if(prealign_method == "maximum") {
+        } else if(method == "maximum") {
             int binMaxX = correlationX->GetMaximumBin();
             shift_X = correlationX->GetXaxis()->GetBinCenter(binMaxX);
             int binMaxY = correlationY->GetMaximumBin();

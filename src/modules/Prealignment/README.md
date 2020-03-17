@@ -9,7 +9,8 @@ This module performs translational telescope plane alignment. The rotational ali
 
 This initial alignment along the X and Y axes is designed to be performed before the `Alignment` module, which carries out translational and rotational alignment of the planes. To not include the DUT in this transaltional alignment, it will need to be masked in the configuration file.
 
-The way in which the required translational shifts in X and Y are calculated is specified in the parameter `prealign_method`. Either the mean of the 1D correlation histogram, its maximum or the mean of a Gaussian fit can be used to determine the translational shifts. 
+The way in which the required translational shifts in X and Y are calculated is specified by the parameter `prealign_method`.
+Either the mean of the 1D correlation histogram, its maximum or the mean of a Gaussian fit can be used to determine the translational shifts. 
 As described in the alignment chapter of the user manual, the spatial correlations in X and Y should not be forced to be centered around zero for the final alignment as they correspond to the *physical displacement* of the detector plane in X and Y with respect to the reference plane.
 However, for the prealignment this is a an acceptable estimation which works without any tracking.
 
@@ -18,7 +19,7 @@ However, for the prealignment this is a an acceptable estimation which works wit
 * `max_correlation_rms`: The maximum RMS of the 1D correlation histograms allowed for the shifts to be applied. This factor should be tuned for each run, and is combat the effect of flat distributions. Default value is `6mm`.
 * `time_cut_rel`: Number of standard deviations the `time_resolution` of the detector plane will be multiplied by. This value is then used as the maximum time difference between a cluster on the current detector and a cluster on the reference plane to be considered in the prealignment. Absolute and relative time cuts are mutually exclusive. Defaults to `3.0`.
 * `time_cut_abs`: Specifies an absolute value for the maximum time difference between a cluster on the current detector and a cluster on the reference plane to be considered in the prealignment. Absolute and relative time cuts are mutually exclusive. No default value.
-* `prealign_method`: Specifies which method should be used to compute the translational shifts. With the option `mean` the mean of the 1D correlation histogram is used. The option `maximum` uses the maximum value of the histogram and with `gauss_fit` a Gaussian is fitted in the range `fit_low` to `fit_high` and its mean is used for the translational shift. Default is to `mean`. The default of the fitting range is `fit_low` = -2mm and `fit_high` = 2mm.
+* `method`: Specifies which method should be used to compute the translational shifts. With the option `mean` the mean of the 1D correlation histogram is used. The option `maximum` uses the maximum value of the histogram and with `gauss_fit` a Gaussian is fitted in the range `fit_low` to `fit_high` and its mean is used for the translational shift. Default is to `mean`. The default of the fitting range is `fit_low` = -2mm and `fit_high` = 2mm.
 
 ### Plots Created
 
