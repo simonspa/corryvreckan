@@ -50,9 +50,8 @@ namespace corryvreckan {
         double max_correlation_rms;
         double damping_factor;
         double timeCut;
-        std::string prealign_method;
-        double fit_high;
-        double fit_low;
+        std::string method;
+        int fit_range_rel;
     };
 } // namespace corryvreckan
 #endif // PREALIGNMENT_H

@@ -20,8 +20,7 @@ Prealignment::Prealignment(Configuration config, std::shared_ptr<Detector> detec
     damping_factor = m_config.get<double>("damping_factor", 1.0);
 
     method = m_config.get<std::string>("method", "mean");
-    fit_high = m_config.get<double>("fit_high", Units::get<double>(2, "mm"));
-    fit_low = m_config.get<double>("fit_low", Units::get<double>(-2, "mm"));
+    fit_range_rel = m_config.get<int>("fit_range_rel", 500);
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
     m_config.setAlias("time_cut_abs", "timing_cut", true);
@@ -127,10 +126,27 @@ void Prealignment::finalise() {
         double shift_X = 0.;
         double shift_Y = 0.;
 
-        LOG(INFO) << "Using prealignment method: " << prealign_method;
+        LOG(INFO) << "Using prealignment method: " << method;
         if(method == "gauss_fit") {
-            correlationX->Fit("gaus", "Q", "", fit_low, fit_high);
-            correlationY->Fit("gaus", "Q", "", fit_low, fit_high);
+            int binMaxX = correlationX->GetMaximumBin();
+            double fit_low_x =
+                correlationX->GetXaxis()->GetBinCenter(binMaxX) - m_detector->getSpatialResolution().x() * fit_range_rel;
+            double fit_high_x =
+                correlationX->GetXaxis()->GetBinCenter(binMaxX) + m_detector->getSpatialResolution().x() * fit_range_rel;
+
+            int binMaxY = correlationY->GetMaximumBin();
+            double fit_low_y =
+                correlationY->GetXaxis()->GetBinCenter(binMaxY) - m_detector->getSpatialResolution().y() * fit_range_rel;
+            double fit_high_y =
+                correlationY->GetXaxis()->GetBinCenter(binMaxY) + m_detector->getSpatialResolution().y() * fit_range_rel;
+
+            LOG(DEBUG) << "Fit range in x direction from: " << Units::display(fit_low_x, {"mm", "um"}) << " to "
+                       << Units::display(fit_high_x, {"mm", "um"});
+            LOG(DEBUG) << "Fit range in y direction from: " << Units::display(fit_low_y, {"mm", "um"}) << " to "
+                       << Units::display(fit_high_y, {"mm", "um"});
+
+            correlationX->Fit("gaus", "Q", "", fit_low_x, fit_high_x);
+            correlationY->Fit("gaus", "Q", "", fit_low_y, fit_high_y);
             shift_X = correlationX->GetFunction("gaus")->GetParameter(1);
             shift_Y = correlationY->GetFunction("gaus")->GetParameter(1);
         } else if(method == "mean") {
@@ -141,6 +157,8 @@ void Prealignment::finalise() {
             shift_X = correlationX->GetXaxis()->GetBinCenter(binMaxX);
             int binMaxY = correlationY->GetMaximumBin();
             shift_Y = correlationY->GetXaxis()->GetBinCenter(binMaxY);
+        } else {
+            throw InvalidValueError(m_config, "method", "Invalid prealignment method");
         }
 
         LOG(INFO) << "Detector " << m_detector->name() << ": x = " << Units::display(shift_X, {"mm", "um"})
