@@ -291,6 +291,15 @@ void AnalysisTimingATLASpix::initialise() {
                                 0,
                                 m_detector->nPixels().Y());
 
+    hTotVsRow = new TH2F("hTotVsRow",
+                         "hTotVsRow;seed-pixel row;seed-pixel ToT [lsb]",
+                         m_detector->nPixels().Y(),
+                         0,
+                         m_detector->nPixels().Y(),
+                         64,
+                         0,
+                         64);
+
     hTotVsTime = new TH2F("hTotVsTime", "hTotVsTime", 64, 0, 64, 1e6, 0, 100);
     hTotVsTime->GetXaxis()->SetTitle("pixel ToT [lsb]");
     hTotVsTime->GetYaxis()->SetTitle("time [s]");
@@ -573,6 +582,8 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     hTrackCorrelationTimeVsTot->Fill(timeDiff, cluster->getSeedPixel()->raw());
                     hTrackCorrelationTimeVsCol->Fill(timeDiff, cluster->getSeedPixel()->column());
                     hTrackCorrelationTimeVsRow->Fill(timeDiff, cluster->getSeedPixel()->row());
+
+                    hTotVsRow->Fill(cluster->getSeedPixel()->row(), cluster->getSeedPixel()->raw());
 
                     // single-pixel and multi-pixel clusters:
                     if(cluster->size() == 1) {

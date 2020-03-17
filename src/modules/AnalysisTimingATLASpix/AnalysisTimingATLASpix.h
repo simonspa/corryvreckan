@@ -78,6 +78,7 @@ namespace corryvreckan {
         TH2F* hHitMapAssoc_inPixel_highCharge;
         TH2F* hClusterMapAssoc;
 
+        TH2F* hTotVsRow;
         TH2F* hTotVsTime;
         TH2F* hTotVsTime_high;
         TH2F* hTotVsTime_low;
