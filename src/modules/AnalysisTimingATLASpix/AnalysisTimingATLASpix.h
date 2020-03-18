@@ -81,7 +81,6 @@ namespace corryvreckan {
         TH2F* hTotVsRow;
         TH2F* hTotVsTime;
         TH2F* hTotVsTime_high;
-        TH2F* hTotVsTime_low;
 
         // Control Plots for "left/right tail" and "main peak" of time correlation
         TH2F* hInPixelMap_leftTail;
