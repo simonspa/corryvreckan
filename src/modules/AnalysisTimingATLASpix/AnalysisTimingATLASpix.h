@@ -45,10 +45,10 @@ namespace corryvreckan {
         TH1F* hTrackCorrelationTime;
         TH1F* hTrackCorrelationTimeAssoc;
         TH1F* hTrackCorrelationTime_rowCorr;
-        TH1F* hTrackCorrelationTime_rowAndTimeWalkCorr;
-        TH1F* hTrackCorrelationTime_rowAndTimeWalkCorr_l25;
-        TH1F* hTrackCorrelationTime_rowAndTimeWalkCorr_l40;
-        TH1F* hTrackCorrelationTime_rowAndTimeWalkCorr_g40;
+        TH1F* hTrackCorrelationTime_rowAndTWCorr;
+        TH1F* hTrackCorrelationTime_rowAndTWCorr_l25;
+        TH1F* hTrackCorrelationTime_rowAndTWCorr_l40;
+        TH1F* hTrackCorrelationTime_rowAndTWCorr_g40;
         TH1D* hTrackCorrelationTime_example;
         TH1F* hClusterTimeMinusPixelTime;
 
@@ -65,17 +65,17 @@ namespace corryvreckan {
         TH2F* hTrackCorrelationTimeVsTot_rowCorr;
         TH2F* hTrackCorrelationTimeVsTot_rowCorr_1px;
         TH2F* hTrackCorrelationTimeVsTot_rowCorr_npx;
-        TH2F* hTrackCorrelationTimeVsRow_rowAndTimeWalkCorr;
-        TH2F* hTrackCorrelationTimeVsTot_rowAndTimeWalkCorr;
+        TH2F* hTrackCorrelationTimeVsRow_rowAndTWCorr;
+        TH2F* hTrackCorrelationTimeVsTot_rowAndTWCorr;
 
         TProfile2D* hPixelTrackCorrelationTimeMap;
 
         TH2F* hClusterSizeVsTot_Assoc;
 
         TH2F* hHitMapAssoc;
-        TH2F* hHitMapAssoc_highCharge;
+        TH2F* hHitMapAssoc_highToT;
         TH2F* hHitMapAssoc_inPixel;
-        TH2F* hHitMapAssoc_inPixel_highCharge;
+        TH2F* hHitMapAssoc_inPixel_highToT;
         TH2F* hClusterMapAssoc;
 
         TH2F* hTotVsRow;
@@ -119,11 +119,9 @@ namespace corryvreckan {
         double m_timeCutFrameEdge;
         double m_clusterChargeCut;
         size_t m_clusterSizeCut;
-        int m_highTotCut;       // for pixel->tot()
-        int m_lowTotCut;        // for pixel->tot()
-        double m_highChargeCut; // for cluster->charge()
-        double m_leftTailCut;
-        double m_rightTailCut;
+        int m_highTotCut; // for pixel->tot()
+        int m_lowTotCut;  // for pixel->tot()
+        double m_timingTailCut;
 
         std::string m_correctionFile_row;
         std::string m_correctionGraph_row;
@@ -133,7 +131,7 @@ namespace corryvreckan {
         bool m_pointwise_correction_row;
         bool m_pointwise_correction_timewalk;
         int m_totBinExample;
-        double m_inpixelBinSize;
+        XYVector m_inpixelBinSize;
 
         int total_tracks_uncut;
         int tracks_afterChi2Cut;
