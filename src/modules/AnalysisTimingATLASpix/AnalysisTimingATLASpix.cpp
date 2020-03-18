@@ -800,7 +800,7 @@ void AnalysisTimingATLASpix::finalise() {
             // if(hTemp->GetEntries() < 500) { // too few entries to fit
             if(hTemp->GetEntries() < 1000) { // too few entries to fit
                 timePeak = hTemp->GetMean();
-                timePeakErr = 0; // hTemp->GetStdDev();
+                timePeakErr = hTemp->GetStdDev();
                 delete hTemp;
             } else {
                 binMax = hTemp->GetMaximumBin();
