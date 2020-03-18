@@ -179,22 +179,22 @@ void AnalysisTimingATLASpix::initialise() {
 
     // control plot: time walk dependence, not row corrected
     name = "hTrackCorrelationTimeVsTot";
-    hTrackCorrelationTimeVsTot = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 512, 0, 512);
+    hTrackCorrelationTimeVsTot = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, 0, 64);
     hTrackCorrelationTimeVsTot->GetYaxis()->SetTitle("seed pixel tot [lsb]");
     hTrackCorrelationTimeVsTot->GetXaxis()->SetTitle("ts_{track} - ts_{cluster} [ns]");
 
     name = "hTrackCorrelationTimeVsTot_1px";
-    hTrackCorrelationTimeVsTot_1px = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 512, 0, 512);
+    hTrackCorrelationTimeVsTot_1px = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, 0, 64);
     hTrackCorrelationTimeVsTot_1px->GetYaxis()->SetTitle("seed pixel tot [lsb] (if clustersize = 1)");
     hTrackCorrelationTimeVsTot_1px->GetXaxis()->SetTitle("ts_{track} - ts_{cluster} [ns]");
 
     name = "hTrackCorrelationTimeVsTot_npx";
-    hTrackCorrelationTimeVsTot_npx = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 512, 0, 512);
+    hTrackCorrelationTimeVsTot_npx = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, 0, 64);
     hTrackCorrelationTimeVsTot_npx->GetYaxis()->SetTitle("seed pixel tot [lsb] (if clustersize > 1)");
     hTrackCorrelationTimeVsTot_npx->GetXaxis()->SetTitle("ts_{track} - ts_{cluster} [ns]");
 
     name = "hTrackCorrelationTimeVsTot_px";
-    hTrackCorrelationTimeVsTot_px = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 512, 0, 512);
+    hTrackCorrelationTimeVsTot_px = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, 0, 64);
     hTrackCorrelationTimeVsTot_px->GetYaxis()->SetTitle("pixel tot [lsb]");
     hTrackCorrelationTimeVsTot_px->GetXaxis()->SetTitle("ts_{track} - ts_{pixel} (all pixels from cluster) [ns]");
 
@@ -206,17 +206,17 @@ void AnalysisTimingATLASpix::initialise() {
     // timewalk after row correction
     if(m_pointwise_correction_row) {
         name = "hTrackCorrelationTimeVsTot_rowCorr";
-        hTrackCorrelationTimeVsTot_rowCorr = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 512, 0, 512);
+        hTrackCorrelationTimeVsTot_rowCorr = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, 0, 64);
         hTrackCorrelationTimeVsTot_rowCorr->GetYaxis()->SetTitle("seed pixel tot [lsb]");
         hTrackCorrelationTimeVsTot_rowCorr->GetXaxis()->SetTitle("ts_{track} - ts_{seed pixel} [ns]");
 
         name = "hTrackCorrelationTimeVsTot_rowCorr_1px";
-        hTrackCorrelationTimeVsTot_rowCorr_1px = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 512, 0, 512);
+        hTrackCorrelationTimeVsTot_rowCorr_1px = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, 0, 64);
         hTrackCorrelationTimeVsTot_rowCorr_1px->GetYaxis()->SetTitle("seed pixel tot [lsb] (single-pixel clusters)");
         hTrackCorrelationTimeVsTot_rowCorr_1px->GetXaxis()->SetTitle("ts_{track} - ts_{cluster} [ns]");
 
         name = "hTrackCorrelationTimeVsTot_rowCorr_npx";
-        hTrackCorrelationTimeVsTot_rowCorr_npx = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 512, 0, 512);
+        hTrackCorrelationTimeVsTot_rowCorr_npx = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, 0, 64);
         hTrackCorrelationTimeVsTot_rowCorr_npx->GetYaxis()->SetTitle("seed pixel tot [lsb] (multi-pixel clusters)");
         hTrackCorrelationTimeVsTot_rowCorr_npx->GetXaxis()->SetTitle("ts_{track} - ts_{cluster} [ns]");
     }
@@ -230,7 +230,7 @@ void AnalysisTimingATLASpix::initialise() {
         hTrackCorrelationTimeVsRow_rowAndTWCorr->GetXaxis()->SetTitle("ts_{track} - ts_{seed pixel} [ns]");
 
         name = "hTrackCorrelationTimeVsTot_rowAndTWCorr";
-        hTrackCorrelationTimeVsTot_rowAndTWCorr = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 512, 0, 512);
+        hTrackCorrelationTimeVsTot_rowAndTWCorr = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, 0, 64);
         hTrackCorrelationTimeVsTot_rowAndTWCorr->GetYaxis()->SetTitle("seed pixel tot [lsb]");
         hTrackCorrelationTimeVsTot_rowAndTWCorr->GetXaxis()->SetTitle("ts_{track} - ts_{cluster} [ns]");
     }
@@ -256,8 +256,8 @@ void AnalysisTimingATLASpix::initialise() {
                                                    m_timeCut);
 
     name = "hClusterSizeVsTot_Assoc";
-    hClusterSizeVsTot_Assoc = new TH2F(name.c_str(), name.c_str(), 20, 0, 20, 512, 0, 512);
-    hClusterSizeVsTot_Assoc->GetYaxis()->SetTitle("pixel ToT [ns] (all pixels from cluster)");
+    hClusterSizeVsTot_Assoc = new TH2F(name.c_str(), name.c_str(), 20, 0, 20, 64, 0, 64);
+    hClusterSizeVsTot_Assoc->GetYaxis()->SetTitle("pixel ToT [lsb] (all pixels from cluster)");
     hClusterSizeVsTot_Assoc->GetXaxis()->SetTitle("clusterSize");
 
     hHitMapAssoc = new TH2F("hitMapAssoc",
