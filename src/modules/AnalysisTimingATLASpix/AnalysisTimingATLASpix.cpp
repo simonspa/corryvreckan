@@ -440,21 +440,21 @@ void AnalysisTimingATLASpix::initialise() {
         gTimeCorrelationVsTot_rowCorr = new TGraphErrors(nBinsToT);
         gTimeCorrelationVsTot_rowCorr->SetName("gTimeCorrelationVsTot_rowCorr");
         gTimeCorrelationVsTot_rowCorr->SetTitle("gTimeCorrelationVsTot_rowCorr");
-        gTimeCorrelationVsTot_rowCorr->GetXaxis()->SetTitle("pixel ToT [ns]");
+        gTimeCorrelationVsTot_rowCorr->GetXaxis()->SetTitle("pixel ToT [lsb]");
         gTimeCorrelationVsTot_rowCorr->GetYaxis()->SetTitle("time correlation peak [ns]");
 
         nBinsToT = hTrackCorrelationTimeVsTot_rowCorr_1px->GetNbinsY();
         gTimeCorrelationVsTot_rowCorr_1px = new TGraphErrors(nBinsToT);
         gTimeCorrelationVsTot_rowCorr_1px->SetName("gTimeCorrelationVsTot_rowCorr_1px");
         gTimeCorrelationVsTot_rowCorr_1px->SetTitle("gTimeCorrelationVsTot_rowCorr_1px");
-        gTimeCorrelationVsTot_rowCorr_1px->GetXaxis()->SetTitle("pixel ToT [ns] (single-pixel clusters)");
+        gTimeCorrelationVsTot_rowCorr_1px->GetXaxis()->SetTitle("pixel ToT [lsb] (single-pixel clusters)");
         gTimeCorrelationVsTot_rowCorr_1px->GetYaxis()->SetTitle("time correlation peak [ns]");
 
         nBinsToT = hTrackCorrelationTimeVsTot_rowCorr_npx->GetNbinsY();
         gTimeCorrelationVsTot_rowCorr_npx = new TGraphErrors(nBinsToT);
         gTimeCorrelationVsTot_rowCorr_npx->SetName("gTimeCorrelationVsTot_rowCorr_npx");
         gTimeCorrelationVsTot_rowCorr_npx->SetTitle("gTimeCorrelationVsTot_rowCorr_npx");
-        gTimeCorrelationVsTot_rowCorr_npx->GetXaxis()->SetTitle("pixel ToT [ns] (multi-pixel clusters");
+        gTimeCorrelationVsTot_rowCorr_npx->GetXaxis()->SetTitle("pixel ToT [lsb] (multi-pixel clusters");
         gTimeCorrelationVsTot_rowCorr_npx->GetYaxis()->SetTitle("time correlation peak [ns]");
     }
 
