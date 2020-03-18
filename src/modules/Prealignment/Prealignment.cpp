@@ -166,6 +166,10 @@ void Prealignment::finalise() {
                    << " , y = " << Units::display(shift_Y, {"mm", "um"});
         LOG(INFO) << "Move in x by = " << Units::display(shift_X * damping_factor, {"mm", "um"})
                   << " , and in y by = " << Units::display(shift_Y * damping_factor, {"mm", "um"});
+        LOG(INFO) << "Detector position after shift in x = "
+                  << Units::display(m_detector->displacement().X() + damping_factor * shift_X, {"mm", "um"})
+                  << " , and in y = "
+                  << Units::display(m_detector->displacement().Y() + damping_factor * shift_Y, {"mm", "um"});
         m_detector->displacement(XYZPoint(m_detector->displacement().X() + damping_factor * shift_X,
                                           m_detector->displacement().Y() + damping_factor * shift_Y,
                                           m_detector->displacement().Z()));
