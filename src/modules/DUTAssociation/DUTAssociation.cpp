@@ -48,7 +48,7 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
 
 void DUTAssociation::initialise() {
     // Cut flow histogram
-    std::string title = m_detector->name() + ": number of tracks discarded by different cuts;cut type;clusters";
+    std::string title = m_detector->Name() + ": number of tracks discarded by different cuts;cut type;clusters";
     hCutHisto = new TH1F("hCutHisto", title.c_str(), 2, 1, 3);
     hCutHisto->GetXaxis()->SetBinLabel(1, "Spatial");
     hCutHisto->GetXaxis()->SetBinLabel(2, "Timing");
@@ -101,7 +101,7 @@ void DUTAssociation::initialise() {
                  1000);
 
     // Nr of associated clusters per track
-    title = m_detector->name() + ": number of associated clusters per track;associated clusters;events";
+    title = m_detector->Name() + ": number of associated clusters per track;associated clusters;events";
     hNoAssocCls = new TH1F("no_assoc_cls", title.c_str(), 10, 0, 10);
     LOG(DEBUG) << "DUT association time cut = " << Units::display(timeCut, {"ms", "ns"});
 }
@@ -116,7 +116,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Get the DUT clusters from the clipboard
-    auto clusters = clipboard->getData<Cluster>(m_detector->name());
+    auto clusters = clipboard->getData<Cluster>(m_detector->Name());
 
     // Loop over all tracks
     for(auto& track : (*tracks)) {

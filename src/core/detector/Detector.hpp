@@ -84,13 +84,13 @@ namespace corryvreckan {
          * @brief Get type of the detector
          * @return Type of the detector model
          */
-        std::string type() const;
+        std::string Type() const;
 
         /**
          * @brief Get name of the detector
          * @return Detector name
          */
-        std::string name() const;
+        std::string Name() const;
 
         /**
          * @brief Check whether detector is registered as reference

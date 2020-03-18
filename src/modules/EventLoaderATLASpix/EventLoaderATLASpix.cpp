@@ -278,7 +278,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     hPixelMultiplicity->Fill(static_cast<double>(pixels->size()));
 
     // Put the data on the clipboard
-    clipboard->putData(pixels, m_detector->name());
+    clipboard->putData(pixels, m_detector->Name());
 
     if(pixels->empty()) {
         LOG(DEBUG) << "Returning <NoData> status, no hits found.";
@@ -395,7 +395,7 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
         }
 
         // since calibration is not implemented yet, set charge = tot
-        Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, tot, timestamp);
+        Pixel* pixel = new Pixel(m_detector->Name(), col, row, tot, tot, timestamp);
 
         // FIXME: implement conversion from ToT to charge:
         // thres-->e: 1620e/0.15V, or 1080e/100mV

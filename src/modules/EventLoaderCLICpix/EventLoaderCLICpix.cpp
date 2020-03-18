@@ -123,7 +123,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
             continue;
 
         // when calibration is not available, set charge = tot
-        Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, tot, 0);
+        Pixel* pixel = new Pixel(m_detector->Name(), col, row, tot, tot, 0);
         pixels->push_back(pixel);
         npixels++;
         hHitMap->Fill(col, row);
@@ -135,7 +135,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG(TRACE) << "Loaded " << npixels << " pixels";
     // Put the data on the clipboard
-    clipboard->putData(pixels, m_detector->name());
+    clipboard->putData(pixels, m_detector->Name());
 
     // Fill histograms
     hPixelMultiplicity->Fill(npixels);

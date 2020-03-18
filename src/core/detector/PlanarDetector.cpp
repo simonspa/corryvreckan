@@ -182,7 +182,7 @@ PositionVector3D<Cartesian3D<double>> PlanarDetector::getIntercept(const Track* 
 
     // FIXME: this is else statement can only be temporary
     if(track->getType() == "gbl") {
-        return track->state(name());
+        return track->state(Name());
     } else {
         // Get the distance from the plane to the track initial state
         double distance = (m_origin.X() - track->state(m_detectorName).X()) * m_normal.X();

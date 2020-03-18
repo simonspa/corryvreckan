@@ -117,7 +117,7 @@ void Module::set_ROOT_directory(TDirectory* directory) {
 
 std::shared_ptr<Detector> Module::get_detector(std::string name) {
     auto it = find_if(
-        m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->name() == name; });
+        m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->Name() == name; });
     if(it == m_detectors.end()) {
         throw ModuleError("Device with detector ID " + name + " is not registered.");
     }
@@ -131,7 +131,7 @@ std::shared_ptr<Detector> Module::get_reference() {
 
 bool Module::has_detector(std::string name) {
     auto it = find_if(
-        m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->name() == name; });
+        m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->Name() == name; });
     if(it == m_detectors.end()) {
         return false;
     }

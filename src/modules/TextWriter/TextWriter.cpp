@@ -19,7 +19,7 @@ TextWriter::TextWriter(Configuration config, std::vector<std::shared_ptr<Detecto
 void TextWriter::initialise() {
 
     for(auto& detector : get_detectors()) {
-        LOG(DEBUG) << "Initialise for detector " + detector->name();
+        LOG(DEBUG) << "Initialise for detector " + detector->Name();
     }
 
     // Create output file

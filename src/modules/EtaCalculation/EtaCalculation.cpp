@@ -25,16 +25,16 @@ void EtaCalculation::initialise() {
     // Initialise histograms
     double pitchX = m_detector->pitch().X();
     double pitchY = m_detector->pitch().Y();
-    std::string title = m_detector->name() + " #eta distribution X";
+    std::string title = m_detector->Name() + " #eta distribution X";
     m_etaDistributionX =
         new TH2F("etaDistributionX", title.c_str(), 100., -pitchX / 2., pitchX / 2., 100., -pitchY / 2., pitchY / 2.);
-    title = m_detector->name() + " #eta distribution Y";
+    title = m_detector->Name() + " #eta distribution Y";
     m_etaDistributionY =
         new TH2F("etaDistributionY", title.c_str(), 100., -pitchX / 2., pitchX / 2., 100., -pitchY / 2., pitchY / 2.);
-    title = m_detector->name() + " #eta profile X";
+    title = m_detector->Name() + " #eta profile X";
     m_etaDistributionXprofile =
         new TProfile("etaDistributionXprofile", title.c_str(), 100., -pitchX / 2., pitchX / 2., -pitchY / 2., pitchY);
-    title = m_detector->name() + " #eta profile Y";
+    title = m_detector->Name() + " #eta profile Y";
     m_etaDistributionYprofile =
         new TProfile("etaDistributionYprofile", title.c_str(), 100., -pitchX / 2., pitchX / 2., -pitchY / 2., pitchY / 2.);
 
@@ -100,14 +100,14 @@ StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Look at the associated clusters and plot the eta function
         for(auto& dutCluster : track->associatedClusters()) {
-            if(dutCluster->detectorID() != m_detector->name()) {
+            if(dutCluster->detectorID() != m_detector->Name()) {
                 continue;
             }
             calculateEta(track, dutCluster);
         }
         // Do the same for all clusters of the track:
         for(auto& cluster : track->clusters()) {
-            if(cluster->detectorID() != m_detector->name()) {
+            if(cluster->detectorID() != m_detector->Name()) {
                 continue;
             }
             calculateEta(track, cluster);
@@ -135,9 +135,9 @@ void EtaCalculation::finalise() {
 
     std::stringstream config;
     config << std::endl
-           << "eta_constants_x_" << m_detector->name() << " =" << fit(m_etaFitX, "etaFormulaX", m_etaDistributionXprofile);
+           << "eta_constants_x_" << m_detector->Name() << " =" << fit(m_etaFitX, "etaFormulaX", m_etaDistributionXprofile);
     config << std::endl
-           << "eta_constants_y_" << m_detector->name() << " =" << fit(m_etaFitY, "etaFormulaY", m_etaDistributionYprofile);
+           << "eta_constants_y_" << m_detector->Name() << " =" << fit(m_etaFitY, "etaFormulaY", m_etaDistributionYprofile);
 
     LOG(INFO) << "\"EtaCorrection\":" << config.str();
 }
