@@ -317,9 +317,9 @@ void AnalysisTimingATLASpix::initialise() {
     hTotVsTime->GetXaxis()->SetTitle("pixel ToT [lsb]");
     hTotVsTime->GetYaxis()->SetTitle("time [s]");
     if(m_config.has("high_tot_cut")) {
-        hTotVsTime_high = new TH2F("hTotVsTime_high", "hTotVsTime_high", 64, 0, 64, 1e6, 0, 100);
-        hTotVsTime_high->GetXaxis()->SetTitle("pixel ToT [lsb] if > high_tot_cut");
-        hTotVsTime_high->GetYaxis()->SetTitle("time [s]");
+        hTotVsTime_highToT = new TH2F("hTotVsTime_highToT", "hTotVsTime_highToT", 64, 0, 64, 1e6, 0, 100);
+        hTotVsTime_highToT->GetXaxis()->SetTitle("pixel ToT [lsb] if > high_tot_cut");
+        hTotVsTime_highToT->GetYaxis()->SetTitle("time [s]");
     }
 
     // control plots for "left/right tail" and "main peak" of the track time correlation
@@ -642,8 +642,8 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                         hTotVsTime->Fill(pixel->raw(), static_cast<double>(Units::convert(pixel->timestamp(), "s")));
                         if(m_config.has("high_tot_cut") && pixel->raw() > m_highTotCut) {
                             hHitMapAssoc_highToT->Fill(pixel->column(), pixel->row());
-                            hTotVsTime_high->Fill(pixel->raw(),
-                                                  static_cast<double>(Units::convert(pixel->timestamp(), "s")));
+                            hTotVsTime_highToT->Fill(pixel->raw(),
+                                                     static_cast<double>(Units::convert(pixel->timestamp(), "s")));
                         }
                     }
                     hClusterMapAssoc->Fill(cluster->column(), cluster->row());
