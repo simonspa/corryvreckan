@@ -193,6 +193,11 @@ void AnalysisTimingATLASpix::initialise() {
     hTrackCorrelationTimeVsTot_npx->GetYaxis()->SetTitle("seed pixel tot [lsb]} (if clustersize > 1)");
     hTrackCorrelationTimeVsTot_npx->GetXaxis()->SetTitle("ts_{track} - ts_{cluster} [ns]");
 
+    name = "hTrackCorrelationTimeVsTot_px";
+    hTrackCorrelationTimeVsTot_px = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 512, 0, 512);
+    hTrackCorrelationTimeVsTot_px->GetYaxis()->SetTitle("pixel tot [lsb]");
+    hTrackCorrelationTimeVsTot_px->GetXaxis()->SetTitle("ts_{track} - ts_{pixel} (all pixels from cluster) [ns]");
+
     name = "hClusterTimeMinusPixelTime";
     hClusterTimeMinusPixelTime = new TH1F(name.c_str(), name.c_str(), 2000, -1000, 1000);
     hClusterTimeMinusPixelTime->GetXaxis()->SetTitle(
@@ -624,6 +629,8 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
                     // 2D histograms: --> fill for all pixels from cluster
                     for(auto& pixel : cluster->pixels()) {
+
+                        hTrackCorrelationTimeVsTot_px->Fill(track->timestamp() - pixel->timestamp(), pixel->raw());
 
                         // to check that cluster timestamp = earliest pixel timestamp
                         if(cluster->size() > 1) {
