@@ -428,7 +428,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
             // clusterChargeAssoc->Fill(normalized_charge);
             clusterChargeAssoc->Fill(cluster_charge);
-            hClusterChargeMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->column(), cluster_charge);
+            hClusterChargeMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row(), cluster_charge);
 
             // Fill per-pixel histograms
             for(auto& pixel : assoc_cluster->pixels()) {
