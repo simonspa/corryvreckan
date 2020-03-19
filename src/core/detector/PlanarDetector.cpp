@@ -320,6 +320,10 @@ bool PlanarDetector::isWithinROI(Cluster* cluster) const {
     return true;
 }
 
+XYVector PlanarDetector::size() const {
+    return XYVector(m_pitch.X() * m_nPixels.X(), m_pitch.Y() * m_nPixels.Y());
+}
+
 /* Winding number test for a point in a polygon
  * via: http://geomalgorithms.com/a03-_inclusion.html
  *      Input:   x, y = a point,

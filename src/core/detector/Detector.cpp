@@ -132,10 +132,6 @@ std::string Detector::Type() const {
     return m_detectorType;
 }
 
-XYVector Detector::size() const {
-    return XYVector(m_pitch.X() * m_nPixels.X(), m_pitch.Y() * m_nPixels.Y());
-}
-
 bool Detector::IsReference() const {
     return static_cast<bool>(m_role & DetectorRole::REFERENCE);
 }

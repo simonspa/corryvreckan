@@ -114,6 +114,30 @@ namespace corryvreckan {
          */
         bool isWithinROI(Cluster* cluster) const override;
 
+        /**
+         * @brief Get the total size of the active matrix, i.e. pitch * number of pixels in both dimensions
+         * @return 2D vector with the dimensions of the pixle matrix in X and Y
+         */
+        XYVector size() const override;
+
+        /**
+         * @brief Get pitch of a single pixel
+         * @return Pitch of a pixel
+         */
+        XYVector pitch() const override { return m_pitch; }
+
+        /**
+         * @brief Get intrinsic spatial resolution of the detector
+         * @return Intrinsic spatial resolution in X and Y
+         */
+        XYVector getSpatialResolution() const override { return m_spatial_resolution; }
+
+        /*
+         * @brief Get number of pixels in x and y
+         * @return Number of two dimensional pixels
+         */
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const override { return m_nPixels; }
+
     private:
         // Initialize coordinate transformations
         void initialise() override;
@@ -133,6 +157,12 @@ namespace corryvreckan {
         // Seems to be used in other coordinate
         inline static int isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2);
         static int winding_number(std::pair<int, int> probe, std::vector<std::vector<int>> polygon);
+
+        // For Pixel
+        XYVector m_pitch{};
+        XYVector m_spatial_resolution{};
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels{};
+        std::vector<std::vector<int>> m_roi{};
     };
 } // namespace corryvreckan
 

@@ -119,26 +119,30 @@ namespace corryvreckan {
         /**
          * @brief Get the total size of the active matrix, i.e. pitch * number of pixels in both dimensions
          * @return 2D vector with the dimensions of the pixle matrix in X and Y
+         * @to do: this is designed for PlanarDector, better to find a proper interface for other Detector type
          */
-        XYVector size() const;
+        virtual XYVector size() const = 0;
 
         /**
          * @brief Get pitch of a single pixel
          * @return Pitch of a pixel
+         * @to do: this is designed for PlanarDector, better to find a proper interface for other Detector type
          */
-        XYVector pitch() const { return m_pitch; }
+        virtual XYVector pitch() const = 0;
 
         /**
          * @brief Get intrinsic spatial resolution of the detector
          * @return Intrinsic spatial resolution in X and Y
+         * @to do: this is designed for PlanarDector, better to find a proper interface for other Detector type
          */
-        XYVector getSpatialResolution() const { return m_spatial_resolution; }
+        virtual XYVector getSpatialResolution() const = 0;
 
         /**
          * @brief Get number of pixels in x and y
          * @return Number of two dimensional pixels
+         * @to do: this is designed for PlanarDector, better to find a proper interface for other Detector type
          */
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const { return m_nPixels; }
+        virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const = 0;
 
         /**
          * @brief Get detector time offset from global clock, can be used to correct for constant shifts or time of flight
@@ -332,12 +336,6 @@ namespace corryvreckan {
         std::map<int, bool> m_masked;
         std::string m_maskfile;
         std::string m_maskfile_name;
-
-        // For Pixel
-        XYVector m_pitch{};
-        XYVector m_spatial_resolution{};
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels{};
-        std::vector<std::vector<int>> m_roi{};
     };
 } // namespace corryvreckan
 
