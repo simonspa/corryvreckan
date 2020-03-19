@@ -36,7 +36,7 @@ PlanarDetector::PlanarDetector(const Configuration& config) : Detector(config) {
         LOG(TRACE) << "  Time resolution: " << Units::display(m_timeResolution, {"ms", "us"});
     }
     // Auxiliary devices don't have: number_of_pixels, pixel_pitch, spatial_resolution, mask_file, region-of-interest
-    if(!isAuxiliary()) {
+    if(!IsAuxiliary()) {
         buildAxes(config);
     }
 }

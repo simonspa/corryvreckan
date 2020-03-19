@@ -64,12 +64,12 @@ void ModuleManager::load_detectors() {
         std::shared_ptr<Detector> detector = std::make_shared<PlanarDetector>(detector_section);
 
         // Check if we already found a reference plane:
-        if(m_reference != nullptr && detector->isReference()) {
+        if(m_reference != nullptr && detector->IsReference()) {
             throw InvalidValueError(global_config, "detectors_file", "Found more than one reference detector");
         }
 
         // Switch flag if we found the reference plane:
-        if(detector->isReference()) {
+        if(detector->IsReference()) {
             m_reference = detector;
         }
 
@@ -457,7 +457,7 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
         auto identifier = instance.second;
 
         // If this should only be instantiated for DUTs, skip otherwise:
-        if(dut_only && !detector->isDUT()) {
+        if(dut_only && !detector->IsDUT()) {
             LOG(TRACE) << "Skipping instantiation \"" << identifier.getUniqueName() << "\", detector is no DUT";
             continue;
         }

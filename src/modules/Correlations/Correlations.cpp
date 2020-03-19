@@ -36,7 +36,7 @@ Correlations::Correlations(Configuration config, std::shared_ptr<Detector> detec
 void Correlations::initialise() {
 
     // Do not produce correlations plots for auxiliary devices
-    if(m_detector->isAuxiliary()) {
+    if(m_detector->IsAuxiliary()) {
         return;
     }
 
@@ -170,7 +170,7 @@ void Correlations::initialise() {
 StatusCode Correlations::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Do not attempt plotting for aux devices
-    if(m_detector->isAuxiliary()) {
+    if(m_detector->IsAuxiliary()) {
         return StatusCode::Success;
     }
 

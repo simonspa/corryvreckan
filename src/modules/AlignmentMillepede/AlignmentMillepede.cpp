@@ -52,7 +52,7 @@ void AlignmentMillepede::initialise() {
     // Renumber the planes in Millepede, ignoring masked planes.
     unsigned int index = 0;
     for(const auto& det : get_detectors()) {
-        if(det->isDUT() && m_excludeDUT) {
+        if(det->IsDUT() && m_excludeDUT) {
             continue;
         }
         m_millePlanes[det->Name()] = index;
@@ -101,10 +101,10 @@ void AlignmentMillepede::finalise() {
 
     size_t nPlanes = num_detectors();
     for(const auto& det : get_detectors()) {
-        if(det->isDUT() && m_excludeDUT) {
+        if(det->IsDUT() && m_excludeDUT) {
             nPlanes--;
         }
-        if(det->isAuxiliary()) {
+        if(det->IsAuxiliary()) {
             LOG(INFO) << "Excluding auxiliary detector " << det->Name();
             nPlanes--;
         }
@@ -176,7 +176,7 @@ void AlignmentMillepede::setConstraints(const size_t nPlanes) {
     // Calculate the mean z-position.
     double avgz = 0.;
     for(const auto& det : get_detectors()) {
-        if(det->isDUT() && m_excludeDUT) {
+        if(det->IsDUT() && m_excludeDUT) {
             continue;
         }
         avgz += det->displacement().Z();
@@ -185,7 +185,7 @@ void AlignmentMillepede::setConstraints(const size_t nPlanes) {
     // Calculate the variance.
     double varz = 0.0;
     for(const auto& det : get_detectors()) {
-        if(det->isDUT() && m_excludeDUT) {
+        if(det->IsDUT() && m_excludeDUT) {
             continue;
         }
         const double dz = det->displacement().Z() - avgz;
@@ -207,7 +207,7 @@ void AlignmentMillepede::setConstraints(const size_t nPlanes) {
 
     m_constraints.clear();
     for(const auto& det : get_detectors()) {
-        if(det->isDUT() && m_excludeDUT) {
+        if(det->IsDUT() && m_excludeDUT) {
             continue;
         }
         const unsigned int i = m_millePlanes[det->Name()];
@@ -584,13 +584,13 @@ bool AlignmentMillepede::fitTrack(const std::vector<Equation>& equations,
 void AlignmentMillepede::updateGeometry() {
     auto nPlanes = num_detectors();
     for(const auto& det : get_detectors()) {
-        if(det->isDUT() && m_excludeDUT) {
+        if(det->IsDUT() && m_excludeDUT) {
             nPlanes--;
         }
     }
 
     for(const auto& det : get_detectors()) {
-        if(det->isDUT() && m_excludeDUT) {
+        if(det->IsDUT() && m_excludeDUT) {
             continue;
         }
         auto plane = m_millePlanes[det->Name()];

@@ -96,19 +96,19 @@ namespace corryvreckan {
          * @brief Check whether detector is registered as reference
          * @return Reference status
          */
-        bool isReference() const;
+        bool IsReference() const;
 
         /**
          * @brief Check whether detector is registered as DUT
          * @return DUT status
          */
-        bool isDUT() const;
+        bool IsDUT() const;
 
         /**
          * @brief Check whether detector is registered as auxiliary device and should not parttake in the reconstruction
          * @return Auxiliary status
          */
-        bool isAuxiliary() const;
+        bool IsAuxiliary() const;
 
         /**
          * @brief Retrieve configuration object from detector, containing all (potentially updated) parameters

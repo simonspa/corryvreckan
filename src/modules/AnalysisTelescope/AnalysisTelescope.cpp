@@ -35,7 +35,7 @@ void AnalysisTelescope::initialise() {
         }
         local_directory->cd();
 
-        if(detector->isDUT()) {
+        if(detector->IsDUT()) {
             std::string title = detector->Name() + " Telescope resolution X;x_{track}-x_{MC} [mm];events";
             telescopeResolutionX[detector->Name()] = new TH1F("telescopeResolutionX", title.c_str(), 600, -0.2, 0.2);
             title = detector->Name() + " Telescope resolution Y;y_{track}-y_{MC} [mm];events";
@@ -101,7 +101,7 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
         // Loop over clusters of the track:
         for(auto& cluster : track->clusters()) {
             auto detector = get_detector(cluster->detectorID());
-            if(detector == nullptr || detector->isDUT()) {
+            if(detector == nullptr || detector->IsDUT()) {
                 continue;
             }
 
@@ -128,7 +128,7 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Calculate telescope resolution at DUT
         for(auto& detector : get_detectors()) {
-            if(!detector->isDUT()) {
+            if(!detector->IsDUT()) {
                 continue;
             }
 

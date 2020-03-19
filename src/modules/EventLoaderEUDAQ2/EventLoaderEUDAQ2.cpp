@@ -75,7 +75,7 @@ void EventLoaderEUDAQ2::initialise() {
     hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;entries", 20, 0, 20);
 
     // Create the following histograms only when detector is not auxiliary:
-    if(!m_detector->isAuxiliary()) {
+    if(!m_detector->IsAuxiliary()) {
         title = "hitmap;column;row;# events";
         hitmap = new TH2F("hitmap",
                           title.c_str(),

@@ -158,7 +158,7 @@ void EventLoaderTimepix3::initialise() {
     // Calibration
     pixelToT_beforecalibration = new TH1F("pixelToT_beforecalibration", "pixelToT_beforecalibration", 100, 0, 200);
 
-    if(m_detector->isDUT() && m_config.has("calibration_path") && m_config.has("threshold")) {
+    if(m_detector->IsDUT() && m_config.has("calibration_path") && m_config.has("threshold")) {
         LOG(INFO) << "Applying calibration from " << calibrationPath;
         applyCalibration = true;
 
@@ -415,7 +415,7 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
             // These packets should only come from the DUT. Otherwise ignore and throw warning.
             // (We observed these packets a few times per run in various telescope planes in the
             // November 2018 test beam.)
-            if(!m_detector->isDUT()) {
+            if(!m_detector->IsDUT()) {
                 LOG(WARNING) << "Current time: " << Units::display(event->start(), {"s", "ms", "us", "ns"}) << " detector "
                              << detectorID << " "
                              << "header == 0x0! (indicates power pulsing.) Ignoring this.";
@@ -591,7 +591,7 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
             pixelToT_beforecalibration->Fill(static_cast<int>(tot));
 
             // Apply calibration if applyCalibration is true
-            if(applyCalibration && m_detector->isDUT()) {
+            if(applyCalibration && m_detector->IsDUT()) {
                 LOG(DEBUG) << "Applying calibration to DUT";
                 size_t scol = static_cast<size_t>(col);
                 size_t srow = static_cast<size_t>(row);

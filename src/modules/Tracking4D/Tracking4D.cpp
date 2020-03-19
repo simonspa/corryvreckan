@@ -92,7 +92,7 @@ void Tracking4D::initialise() {
         auto detectorID = detector->Name();
 
         // Do not created plots for auxiliary detectors:
-        if(detector->isAuxiliary()) {
+        if(detector->IsAuxiliary()) {
             continue;
         }
 
@@ -110,7 +110,7 @@ void Tracking4D::initialise() {
         kinkY[detectorID] = new TH1F("kinkY", title.c_str(), 500, -0.01, -0.01);
 
         // Do not create plots for detectors not participating in the tracking:
-        if(excludeDUT && detector->isDUT()) {
+        if(excludeDUT && detector->IsDUT()) {
             continue;
         }
 
@@ -160,7 +160,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         } else {
             // Store them
             LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters from " << detectorID;
-            if(firstDetector && !detector->isDUT()) {
+            if(firstDetector && !detector->IsDUT()) {
                 referenceClusters = tempClusters;
                 time_cut_reference_ = time_cuts_[detector];
                 seedPlane = detector->Name();
@@ -173,7 +173,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             trees[detectorID] = clusterTree;
         }
         // the detector always needs to be listed as we would like to add the material budget information
-        if(!detector->isAuxiliary()) {
+        if(!detector->IsAuxiliary()) {
             detectors.push_back(detectorID);
         }
     }
@@ -229,7 +229,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Check if the DUT should be excluded and obey:
-            if(excludeDUT && det->isDUT()) {
+            if(excludeDUT && det->IsDUT()) {
                 LOG(DEBUG) << "Skipping DUT plane.";
                 continue;
             }

@@ -96,7 +96,7 @@ void OnlineMonitor::initialise() {
 
     AddCanvasGroup("DUTs");
     for(auto& detector : get_detectors()) {
-        if(detector->isDUT()) {
+        if(detector->IsDUT()) {
             AddCanvas(detector->Name(), "DUTs", canvas_dutplots, detector->Name());
         }
     }
@@ -208,7 +208,7 @@ void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas
             } else {
                 LOG(DEBUG) << "Adding plot " << name << " for all DUTs.";
                 for(auto& detector : get_detectors()) {
-                    if(!detector->isDUT()) {
+                    if(!detector->IsDUT()) {
                         continue;
                     }
                     AddHisto(canvas_name,
@@ -230,7 +230,7 @@ void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas
                 LOG(DEBUG) << "Adding plot " << name << " for all detectors.";
                 for(auto& detector : get_detectors()) {
                     // Ignore AUX detectors
-                    if(ignoreAux && detector->isAuxiliary()) {
+                    if(ignoreAux && detector->IsAuxiliary()) {
                         continue;
                     }
 

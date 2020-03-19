@@ -73,12 +73,12 @@ void TrackingSpatial::initialise() {
         auto detectorID = detector->Name();
 
         // Do not create plots for detectors not participating in the tracking:
-        if(excludeDUT && detector->isDUT()) {
+        if(excludeDUT && detector->IsDUT()) {
             continue;
         }
 
         // Do not created plots for auxiliary detectors:
-        if(detector->isAuxiliary()) {
+        if(detector->IsAuxiliary()) {
             continue;
         }
 
@@ -178,7 +178,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Check if the DUT should be excluded and obey:
-            if(excludeDUT && detector->isDUT()) {
+            if(excludeDUT && detector->IsDUT()) {
                 LOG(TRACE) << "Exclude DUT.";
                 continue;
             }

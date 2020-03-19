@@ -136,15 +136,15 @@ XYVector Detector::size() const {
     return XYVector(m_pitch.X() * m_nPixels.X(), m_pitch.Y() * m_nPixels.Y());
 }
 
-bool Detector::isReference() const {
+bool Detector::IsReference() const {
     return static_cast<bool>(m_role & DetectorRole::REFERENCE);
 }
 
-bool Detector::isDUT() const {
+bool Detector::IsDUT() const {
     return static_cast<bool>(m_role & DetectorRole::DUT);
 }
 
-bool Detector::isAuxiliary() const {
+bool Detector::IsAuxiliary() const {
     return static_cast<bool>(m_role & DetectorRole::AUXILIARY);
 }
 
@@ -165,13 +165,13 @@ Configuration Detector::getConfiguration() const {
 
     // Store the role of the detector
     std::vector<std::string> roles;
-    if(this->isDUT()) {
+    if(this->IsDUT()) {
         roles.push_back("dut");
     }
-    if(this->isReference()) {
+    if(this->IsReference()) {
         roles.push_back("reference");
     }
-    if(this->isAuxiliary()) {
+    if(this->IsAuxiliary()) {
         roles.push_back("auxiliary");
     }
 
@@ -194,7 +194,7 @@ Configuration Detector::getConfiguration() const {
         config.set("material_budget", m_materialBudget);
     }
     // only if detector is not auxiliary:
-    if(!this->isAuxiliary()) {
+    if(!this->IsAuxiliary()) {
         this->configureDetector(config);
     }
 
