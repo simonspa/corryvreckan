@@ -114,7 +114,7 @@ namespace corryvreckan {
          * @brief Retrieve configuration object from detector, containing all (potentially updated) parameters
          * @return Configuration object for this detector
          */
-        Configuration getConfiguration() const;
+        Configuration GetConfiguration() const;
 
         /**
          * @brief Get the total size of the active matrix, i.e. pitch * number of pixels in both dimensions

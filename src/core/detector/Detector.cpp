@@ -158,7 +158,7 @@ void Detector::update() {
     this->initialise();
 }
 
-Configuration Detector::getConfiguration() const {
+Configuration Detector::GetConfiguration() const {
 
     Configuration config(Name());
     config.set("type", m_detectorType);

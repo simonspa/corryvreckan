@@ -730,7 +730,7 @@ void ModuleManager::finaliseAll() {
 
         ConfigReader final_detectors;
         for(auto& detector : m_detectors) {
-            final_detectors.addConfiguration(detector->getConfiguration());
+            final_detectors.addConfiguration(detector->GetConfiguration());
         }
 
         final_detectors.write(file);
