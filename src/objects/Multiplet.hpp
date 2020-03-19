@@ -25,20 +25,13 @@ namespace corryvreckan {
      * @ingroup Objects
      * @brief Multiplet object
      *
-     * This class is a simple Multiplet class which knows how to fit itself. It holds a collection of clusters, which may or
-     * may not be included in the Multiplet fit.
+     * This class is a simple Multiplet class which knows how to fit itself via two straight line and a kink. It holds a
+     * collection of clusters, which may or may not be included in the Multiplet fit.
      */
 
     class Multiplet : public Object {
 
     public:
-        /**
-         * @brief Factory to dynamically create Multiplet objects
-         * @param The name of the Multiplet model which should be used
-         * @return By param MultipletModel assigned Multiplet model to be used
-         */
-        static Multiplet* Factory(std::string MultipletModel);
-
         /**
          * @brief Multiplet object constructor
          */
