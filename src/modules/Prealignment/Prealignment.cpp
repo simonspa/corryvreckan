@@ -20,6 +20,7 @@ Prealignment::Prealignment(Configuration config, std::shared_ptr<Detector> detec
     damping_factor = m_config.get<double>("damping_factor", 1.0);
 
     method = m_config.get<std::string>("method", "mean");
+    std::transform(method.begin(), method.end(), method.begin(), ::tolower);
     fit_range_rel = m_config.get<int>("fit_range_rel", 500);
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
