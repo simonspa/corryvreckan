@@ -24,17 +24,11 @@ using namespace corryvreckan;
 
 PlanarDetector::PlanarDetector(const Configuration& config) : Detector(config) {
 
+    // Set detector position and direction
+    SetPostionAndOrientation(config);
+
     this->initialise();
 
-    LOG(TRACE) << "  Position:    " << Units::display(m_displacement, {"mm", "um"});
-    LOG(TRACE) << "  Orientation: " << Units::display(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
-    if(m_timeOffset > 0.) {
-        LOG(TRACE) << "Time offset: " << m_timeOffset;
-    }
-
-    if(m_timeResolution > 0) {
-        LOG(TRACE) << "  Time resolution: " << Units::display(m_timeResolution, {"ms", "us"});
-    }
     // Auxiliary devices don't have: number_of_pixels, pixel_pitch, spatial_resolution, mask_file, region-of-interest
     if(!IsAuxiliary()) {
         buildAxes(config);
@@ -69,6 +63,16 @@ void PlanarDetector::buildAxes(const Configuration& config) {
         LOG(DEBUG) << "Adding mask to detector \"" << config.getName() << "\", reading from " << mask_file;
         setMaskFile(mask_file);
         processMaskFile();
+    }
+}
+
+void PlanarDetector::SetPostionAndOrientation(const Configuration& config) {
+    // Detector position and orientation
+    m_displacement = config.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
+    m_orientation = config.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
+    m_orientation_mode = config.get<std::string>("orientation_mode", "xyz");
+    if(m_orientation_mode != "xyz" && m_orientation_mode != "zyx") {
+        throw InvalidValueError(config, "orientation_mode", "Invalid detector orientation mode");
     }
 }
 
@@ -154,6 +158,16 @@ void PlanarDetector::initialise() {
     localZ = m_localToGlobal * localZ;
     m_normal = PositionVector3D<Cartesian3D<double>>(
         localZ.X() - m_origin.X(), localZ.Y() - m_origin.Y(), localZ.Z() - m_origin.Z());
+
+    LOG(TRACE) << "  Position:    " << Units::display(m_displacement, {"mm", "um"});
+    LOG(TRACE) << "  Orientation: " << Units::display(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
+    if(m_timeOffset > 0.) {
+        LOG(TRACE) << "Time offset: " << m_timeOffset;
+    }
+
+    if(m_timeResolution > 0) {
+        LOG(TRACE) << "  Time resolution: " << Units::display(m_timeResolution, {"ms", "us"});
+    }
 }
 
 // Only if detector is not auxiliary
@@ -175,6 +189,12 @@ void PlanarDetector::configureDetector(Configuration& config) const {
 
     // Region-of-interest:
     config.setMatrix("roi", m_roi);
+}
+
+void PlanarDetector::setSpecificDetector(Configuration& config) const {
+    config.set("position", m_displacement, {"um", "mm"});
+    config.set("orientation_mode", m_orientation_mode);
+    config.set("orientation", m_orientation, {"deg"});
 }
 
 // Function to get global intercept with a track

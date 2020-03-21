@@ -46,14 +46,6 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         throw InvalidValueError(config, "role", "Auxiliary devices cannot hold any other detector role");
     }
 
-    // Detector position and orientation
-    m_displacement = config.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
-    m_orientation = config.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
-    m_orientation_mode = config.get<std::string>("orientation_mode", "xyz");
-    if(m_orientation_mode != "xyz" && m_orientation_mode != "zyx") {
-        throw InvalidValueError(config, "orientation_mode", "Invalid detector orientation mode");
-    }
-
     m_detectorName = config.getName();
 
     // Material budget of detector, including support material
@@ -175,10 +167,6 @@ Configuration Detector::GetConfiguration() const {
         config.setArray("role", roles);
     }
 
-    config.set("position", m_displacement, {"um", "mm"});
-    config.set("orientation_mode", m_orientation_mode);
-    config.set("orientation", m_orientation, {"deg"});
-
     if(m_timeOffset != 0.) {
         config.set("time_offset", m_timeOffset, {"ns", "us", "ms", "s"});
     }
@@ -189,6 +177,10 @@ Configuration Detector::GetConfiguration() const {
     if(m_materialBudget > std::numeric_limits<double>::epsilon()) {
         config.set("material_budget", m_materialBudget);
     }
+
+    // different for PlanarDetector and DiscDetector
+    this->setSpecificDetector(config);
+
     // only if detector is not auxiliary:
     if(!this->IsAuxiliary()) {
         this->configureDetector(config);

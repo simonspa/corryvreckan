@@ -160,25 +160,25 @@ namespace corryvreckan {
          * @brief Update detector position in the world
          * @param displacement Vector with three position coordinates
          */
-        void displacement(XYZPoint displacement) { m_displacement = displacement; }
+        virtual void displacement(XYZPoint displacement) = 0;
 
         /**
          * @brief Get position in the world
          * @return Global position in Cartesian coordinates
          */
-        XYZPoint displacement() const { return m_displacement; }
+        virtual XYZPoint displacement() const = 0;
 
         /**
          * @brief Get orientation in the world
          * @return Vector with three rotation angles
          */
-        XYZVector rotation() const { return m_orientation; }
+        virtual XYZVector rotation() const = 0;
 
         /**
          * @brief Update detector orientation in the world
          * @param rotation Vector with three rotation angles
          */
-        void rotation(XYZVector rotation) { m_orientation = rotation; }
+        virtual void rotation(XYZVector rotation) = 0;
 
         /**
          * @brief Get normal vector to sensor surface
@@ -295,13 +295,12 @@ namespace corryvreckan {
         // Initialize coordinate transformations
         virtual void initialise() = 0;
 
-        // Build axis, for devices which is not auxiliary
+        // Build axis, for devices which are not auxiliary
         // Different in Planar/Disk Detector
-        // better name for not auxiliary?
         virtual void buildAxes(const Configuration& config) = 0;
 
-        // config
-        // better name for not auxiliary?
+        // Config detector, for devices which are not auxiliary
+        // Different in Planar/Disk Detector
         virtual void configureDetector(Configuration& config) const = 0;
 
         // Functions to set and check channel masking
@@ -315,11 +314,6 @@ namespace corryvreckan {
         double m_timeOffset;
         double m_timeResolution;
         double m_materialBudget;
-
-        // Displacement and rotation in x,y,z
-        ROOT::Math::XYZPoint m_displacement;
-        ROOT::Math::XYZVector m_orientation;
-        std::string m_orientation_mode;
 
         // Transforms from local to global and back
         Transform3D m_localToGlobal;
@@ -336,6 +330,11 @@ namespace corryvreckan {
         std::map<int, bool> m_masked;
         std::string m_maskfile;
         std::string m_maskfile_name;
+
+    private:
+        // Set position, orientation, mode of detector
+        // Different in Planar/Disk Detector
+        virtual void setSpecificDetector(Configuration& config) const = 0;
     };
 } // namespace corryvreckan
 

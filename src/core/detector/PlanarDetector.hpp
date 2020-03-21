@@ -52,6 +52,35 @@ namespace corryvreckan {
         PlanarDetector(const Configuration& config);
 
         /**
+         * @brief Set position and orientation from configuration file
+         */
+        void SetPostionAndOrientation(const Configuration& config);
+
+        /**
+         * @brief Update detector position in the world
+         * @param displacement Vector with three position coordinates
+         */
+        void displacement(XYZPoint displacement) override { m_displacement = displacement; }
+
+        /**
+         * @brief Get position in the world
+         * @return Global position in Cartesian coordinates
+         */
+        XYZPoint displacement() const override { return m_displacement; }
+
+        /**
+         * @brief Get orientation in the world
+         * @return Vector with three rotation angles
+         */
+        XYZVector rotation() const override { return m_orientation; }
+
+        /**
+         * @brief Update detector orientation in the world
+         * @param rotation Vector with three rotation angles
+         */
+        void rotation(XYZVector rotation) override { m_orientation = rotation; }
+
+        /**
          * @brief Mark a detector channel as masked
          * @param chX X coordinate of the pixel to be masked
          * @param chY Y coordinate of the pixel to be masked
@@ -142,14 +171,17 @@ namespace corryvreckan {
         // Initialize coordinate transformations
         void initialise() override;
 
-        // Build axis, for devices which is not auxiliary
+        // Build axis, for devices which are not auxiliary
         // Different in Planar/Disk Detector
-        // better name for not auxiliary?
         void buildAxes(const Configuration& config) override;
 
-        // config
-        // better name for not auxiliary?
+        // Config detector, for devices which are not auxiliary
+        // Different in Planar/Disk Detector
         void configureDetector(Configuration& config) const override;
+
+        // Set position, orientation, mode of detector
+        // Different in Planar/Disk Detector
+        void setSpecificDetector(Configuration& config) const override;
 
         // Functions to set and check channel masking
         void processMaskFile() override;
@@ -163,6 +195,11 @@ namespace corryvreckan {
         XYVector m_spatial_resolution{};
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels{};
         std::vector<std::vector<int>> m_roi{};
+
+        // Displacement and rotation in x,y,z
+        ROOT::Math::XYZPoint m_displacement;
+        ROOT::Math::XYZVector m_orientation;
+        std::string m_orientation_mode;
     };
 } // namespace corryvreckan
 
