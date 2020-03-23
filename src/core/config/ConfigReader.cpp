@@ -15,7 +15,6 @@
 #include <string>
 #include <vector>
 
-#include <iostream>
 #include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "exceptions.h"

@@ -16,7 +16,6 @@
 #include <string>
 #include <vector>
 
-#include <iostream>
 #include "core/utils/text.h"
 #include "exceptions.h"
 

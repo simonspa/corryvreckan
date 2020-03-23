@@ -46,9 +46,6 @@ std::string Configuration::getName() const {
 std::string Configuration::getFilePath() const {
     return path_;
 }
-// std::string Configuration::getCoordinate() const {
-//    return coordinate_;
-//}
 
 std::string Configuration::getText(const std::string& key) const {
     try {
