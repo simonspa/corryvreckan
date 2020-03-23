@@ -23,8 +23,6 @@ using namespace corryvreckan;
 Configuration::Configuration(std::string name, std::string path) : name_(std::move(name)), path_(std::move(path)) {}
 
 bool Configuration::has(const std::string& key) const {
-  std::cout<<"Key "<<key<<std::endl;
-  if( config_.find(key) != config_.cend()) std::cout<<"val "<<config_.at(key)<<std::endl;
     return config_.find(key) != config_.cend();
 }
 
@@ -152,7 +150,6 @@ unsigned int Configuration::countSettings() const {
 void Configuration::merge(const Configuration& other) {
     for(auto config_pair : other.config_) {
         // Only merge values that do not yet exist
-	  std::cout<<"in merge "<<config_pair.first<<","<<config_pair.second<<std::endl;
         if(!has(config_pair.first)) {
             setText(config_pair.first, config_pair.second);
         }

@@ -231,7 +231,6 @@ std::vector<Configuration> ConfigReader::getConfigurations(std::string name) con
     }
 
     std::vector<Configuration> result;
-	std::cout<<"size of conf_map "<<conf_map_.size()<<std::endl;
     for(auto& iter : conf_map_.at(name)) {
         result.push_back(*iter);
     }
@@ -239,7 +238,6 @@ std::vector<Configuration> ConfigReader::getConfigurations(std::string name) con
 }
 
 std::vector<Configuration> ConfigReader::getConfigurations() const {
-	std::cout<<"size of conf_array "<<conf_array_.size()<<std::endl;
     return std::vector<Configuration>(conf_array_.begin(), conf_array_.end());
 }
 

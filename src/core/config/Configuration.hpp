@@ -221,12 +221,6 @@ namespace corryvreckan {
         std::string getName() const;
 
         /**
-         * @brief Get Coordinate of the configuration header
-         * @return Configuration coordinate  
-         */
-        std::string getCoordinate() const;
-
-        /**
          * @brief Get path to the file containing the configuration if it has one
          * @return Absolute path to configuration file or empty if not linked to a file
          * @warning Parameter should be used with care as not all configurations are required to have a file

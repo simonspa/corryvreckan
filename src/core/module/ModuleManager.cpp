@@ -52,7 +52,6 @@ void ModuleManager::load_detectors() {
 
         std::string name = detector_section.getName();
         std::string coordinate = detector_section.get<std::string>("coordinate");
-		std::cout<<"coordinate"<<detector_section.get<std::string>("coordinate")<<std::endl;
 
         // Check if we have a duplicate:
         if(std::find_if(m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) {
