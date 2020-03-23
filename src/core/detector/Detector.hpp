@@ -94,7 +94,7 @@ namespace corryvreckan {
 
         /**
          * @brief Get Coordinate of the detector
-         * @return Detector coordinate 
+         * @return Detector coordinate
          */
         std::string Coordinate() const;
 
@@ -217,7 +217,7 @@ namespace corryvreckan {
          * @brief Mark a detector channel as masked
          * @param chX X coordinate of the pixel to be masked
          * @param chY Y coordinate of the pixel to be masked
-		 * @to do: This is designed for PlanarDector, the parameters can be different with other type of Detector
+         * @to do: This is designed for PlanarDector, the parameters can be different with other type of Detector
          */
         virtual void maskChannel(int chX, int chY) = 0;
 
@@ -226,7 +226,7 @@ namespace corryvreckan {
          * @param chX X coordinate of the pixel to check
          * @param chY Y coordinate of the pixel to check
          * @return    Mask status of the pixel in question
-		 * @to do: This is designed for PlanarDector, the parameters can be different with other type of Detector
+         * @to do: This is designed for PlanarDector, the parameters can be different with other type of Detector
          */
         virtual bool masked(int chX, int chY) const = 0;
 
@@ -348,7 +348,6 @@ namespace corryvreckan {
         std::map<int, bool> m_masked;
         std::string m_maskfile;
         std::string m_maskfile_name;
-
     };
 } // namespace corryvreckan
 

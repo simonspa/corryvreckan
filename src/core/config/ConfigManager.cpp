@@ -15,11 +15,11 @@
 #include <string>
 #include <vector>
 
+#include <iostream>
 #include "Configuration.hpp"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "exceptions.h"
-#include <iostream>
 
 using namespace corryvreckan;
 

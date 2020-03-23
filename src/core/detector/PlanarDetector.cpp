@@ -41,9 +41,8 @@ void PlanarDetector::buildAxes(const Configuration& config) {
     // Size of the pixels:
     m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
 
-	LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixels.X() << "x" << m_nPixels.Y() << " px, pitch of "
-	                 << Units::display(m_pitch, {"mm", "um"});
-
+    LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixels.X() << "x" << m_nPixels.Y() << " px, pitch of "
+               << Units::display(m_pitch, {"mm", "um"});
 
     if(Units::convert(m_pitch.X(), "mm") >= 1 or Units::convert(m_pitch.Y(), "mm") >= 1 or
        Units::convert(m_pitch.X(), "um") <= 1 or Units::convert(m_pitch.Y(), "um") <= 1) {
@@ -139,7 +138,6 @@ bool PlanarDetector::masked(int chX, int chY) const {
 
 // Function to initialise transforms
 void PlanarDetector::initialise() {
-
 
     // Make the local to global transform, built from a displacement and
     // rotation

@@ -59,7 +59,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     }
 
     m_detectorType = config.get<std::string>("type");
-    m_detectorCoordinate= config.get<std::string>("coordinate");
+    m_detectorCoordinate = config.get<std::string>("coordinate");
     std::transform(m_detectorType.begin(), m_detectorType.end(), m_detectorType.begin(), ::tolower);
     m_timeOffset = config.get<double>("time_offset", 0.0);
 

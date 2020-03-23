@@ -216,7 +216,6 @@ namespace corryvreckan {
         // Normal to the detector surface and point on the surface
         PositionVector3D<Cartesian3D<double>> m_normal;
         PositionVector3D<Cartesian3D<double>> m_origin;
-
     };
 } // namespace corryvreckan
 
