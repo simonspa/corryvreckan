@@ -28,9 +28,9 @@
 namespace corryvreckan {
 
     /**
-     * @brief Detector representation in the reconstruction chain
+     * @brief PlanarDetector representation derived from Detector interface in the reconstruction chain
      *
-     * Contains the detector with all its properties such as type, name, position and orientation, pitch, spatial resolution
+     * Contains the PlanarDetector with all its properties such as position and orientation, pitch, spatial resolution
      * etc.
      */
     class PlanarDetector : public Detector {
@@ -79,18 +79,6 @@ namespace corryvreckan {
          * @param rotation Vector with three rotation angles
          */
         void rotation(XYZVector rotation) override { m_orientation = rotation; }
-
-        /**
-         * @brief Get normal vector to sensor surface
-         * @return Normal vector to sensor surface
-         */
-        PositionVector3D<Cartesian3D<double>> normal() const override { return m_normal; }
-
-        /**
-         * @brief Get origin vector to sensor surface
-         * @return Origin vector to sensor surface
-         */
-        PositionVector3D<Cartesian3D<double>> origin() const override { return m_origin; }
 
         /**
          * @brief Mark a detector channel as masked
@@ -191,7 +179,7 @@ namespace corryvreckan {
         // Different in Planar/Disk Detector
         void configureDetector(Configuration& config) const override;
 
-        // Set position, orientation, mode of detector
+        // Config position, orientation, mode of detector 
         // Different in Planar/Disk Detector
         void configurePosAndOrientation(Configuration& config) const override;
 
@@ -202,20 +190,15 @@ namespace corryvreckan {
         inline static int isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2);
         static int winding_number(std::pair<int, int> probe, std::vector<std::vector<int>> polygon);
 
-        // For Pixel
+        // For planar detector
         XYVector m_pitch{};
         XYVector m_spatial_resolution{};
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels{};
         std::vector<std::vector<int>> m_roi{};
-
         // Displacement and rotation in x,y,z
         ROOT::Math::XYZPoint m_displacement;
         ROOT::Math::XYZVector m_orientation;
         std::string m_orientation_mode;
-
-        // Normal to the detector surface and point on the surface
-        PositionVector3D<Cartesian3D<double>> m_normal;
-        PositionVector3D<Cartesian3D<double>> m_origin;
     };
 } // namespace corryvreckan
 

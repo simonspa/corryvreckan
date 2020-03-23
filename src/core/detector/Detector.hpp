@@ -57,9 +57,9 @@ namespace corryvreckan {
     }
 
     /**
-     * @brief Detector representation in the reconstruction chain
+     * @brief Detector interface in the reconstruction chain
      *
-     * Contains the detector with all its properties such as type, name, position and orientation, pitch, spatial resolution
+     * Contains the detector with common properties such as type, name, coordinate 
      * etc.
      */
     class Detector {
@@ -70,7 +70,7 @@ namespace corryvreckan {
         Detector() = delete;
 
         /**
-         * Default constructor
+         * Default destructor
          */
         virtual ~Detector() = default;
 
@@ -93,7 +93,7 @@ namespace corryvreckan {
         std::string Name() const;
 
         /**
-         * @brief Get Coordinate of the detector
+         * @brief Get coordinate of the detector
          * @return Detector coordinate
          */
         std::string Coordinate() const;
@@ -125,28 +125,28 @@ namespace corryvreckan {
         /**
          * @brief Get the total size of the active matrix, i.e. pitch * number of pixels in both dimensions
          * @return 2D vector with the dimensions of the pixle matrix in X and Y
-         * @to do: this is designed for PlanarDector, better to find a proper interface for other Detector type
+         * @to do: this is designed for PlanarDector, find a proper interface for other Detector type
          */
         virtual XYVector size() const = 0;
 
         /**
          * @brief Get pitch of a single pixel
          * @return Pitch of a pixel
-         * @to do: this is designed for PlanarDector, better to find a proper interface for other Detector type
+         * @to do: this is designed for PlanarDector, find a proper interface for other Detector type
          */
         virtual XYVector pitch() const = 0;
 
         /**
          * @brief Get intrinsic spatial resolution of the detector
          * @return Intrinsic spatial resolution in X and Y
-         * @to do: this is designed for PlanarDector, better to find a proper interface for other Detector type
+         * @to do: this is designed for PlanarDector, find a proper interface for other Detector type
          */
         virtual XYVector getSpatialResolution() const = 0;
 
         /**
          * @brief Get number of pixels in x and y
          * @return Number of two dimensional pixels
-         * @to do: this is designed for PlanarDector, better to find a proper interface for other Detector type
+         * @to do: this is designed for PlanarDector, find a proper interface for other Detector type
          */
         virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const = 0;
 
@@ -190,13 +190,13 @@ namespace corryvreckan {
          * @brief Get normal vector to sensor surface
          * @return Normal vector to sensor surface
          */
-        virtual PositionVector3D<Cartesian3D<double>> normal() const = 0;
+        PositionVector3D<Cartesian3D<double>> normal() const { return m_normal; }
 
         /**
-         * @brief Get origin vector sensor surface
+         * @brief Get origin vector to sensor surface
          * @return Origin vector to sensor surface
          */
-        virtual PositionVector3D<Cartesian3D<double>> origin() const = 0;
+        PositionVector3D<Cartesian3D<double>> origin() const { return m_origin; }
 
         /**
          * @brief Get path of the file with calibration information

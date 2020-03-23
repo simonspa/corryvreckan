@@ -24,9 +24,10 @@ using namespace corryvreckan;
 
 PlanarDetector::PlanarDetector(const Configuration& config) : Detector(config) {
 
-    // Set detector position and direction
+    // Set detector position and direction from configuration file
     SetPostionAndOrientation(config);
 
+	// intialize transform
     this->initialise();
 
     // Auxiliary devices don't have: number_of_pixels, pixel_pitch, spatial_resolution, mask_file, region-of-interest
@@ -77,6 +78,8 @@ void PlanarDetector::SetPostionAndOrientation(const Configuration& config) {
     if(m_orientation_mode != "xyz" && m_orientation_mode != "zyx") {
         throw InvalidValueError(config, "orientation_mode", "Invalid detector orientation mode");
     }
+    LOG(TRACE) << "  Position:    " << Units::display(m_displacement, {"mm", "um"});
+    LOG(TRACE) << "  Orientation: " << Units::display(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
 }
 
 void PlanarDetector::processMaskFile() {
@@ -161,16 +164,6 @@ void PlanarDetector::initialise() {
     localZ = m_localToGlobal * localZ;
     m_normal = PositionVector3D<Cartesian3D<double>>(
         localZ.X() - m_origin.X(), localZ.Y() - m_origin.Y(), localZ.Z() - m_origin.Z());
-
-    LOG(TRACE) << "  Position:    " << Units::display(m_displacement, {"mm", "um"});
-    LOG(TRACE) << "  Orientation: " << Units::display(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
-    if(m_timeOffset > 0.) {
-        LOG(TRACE) << "Time offset: " << m_timeOffset;
-    }
-
-    if(m_timeResolution > 0) {
-        LOG(TRACE) << "  Time resolution: " << Units::display(m_timeResolution, {"ms", "us"});
-    }
 }
 
 // Only if detector is not auxiliary

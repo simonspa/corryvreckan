@@ -62,51 +62,20 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     m_detectorCoordinate = config.get<std::string>("coordinate");
     std::transform(m_detectorType.begin(), m_detectorType.end(), m_detectorType.begin(), ::tolower);
     m_timeOffset = config.get<double>("time_offset", 0.0);
+    if(m_timeOffset > 0.) {
+        LOG(TRACE) << "Time offset: " << m_timeOffset;
+    }
 
     // Time resolution - default ot negative number, i.e. unknown. This will trigger an exception
     // when calling getTimeResolution
     m_timeResolution = config.get<double>("time_resolution", -1.0);
-
-    ///// Initialize the detector, calculate transformations etc
-    /// this->initialise();
-    /////buildNotAuxiliaryAxis(config);
+    if(m_timeResolution > 0) {
+        LOG(TRACE) << "  Time resolution: " << Units::display(m_timeResolution, {"ms", "us"});
+    }
 
     if(config.has("calibration_file")) {
         m_calibrationfile = config.getPath("calibration_file");
     }
-
-    /*
-    if(!isAuxiliary()) {
-        // Number of pixels:
-        m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
-        // Size of the pixels:
-        m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
-
-        if(Units::convert(m_pitch.X(), "mm") >= 1 or Units::convert(m_pitch.Y(), "mm") >= 1 or
-           Units::convert(m_pitch.X(), "um") <= 1 or Units::convert(m_pitch.Y(), "um") <= 1) {
-            LOG(WARNING) << "Pixel pitch unphysical for detector " << m_detectorName << ": " << std::endl
-                         << Units::display(m_pitch, {"nm", "um", "mm"});
-        }
-
-        // Intrinsic spatial resolution, defaults to pitch/sqrt(12):
-        m_spatial_resolution = config.get<ROOT::Math::XYVector>("spatial_resolution", m_pitch / std::sqrt(12));
-        if(!config.has("spatial_resolution")) {
-            LOG(WARNING) << "Spatial resolution for detector '" << m_detectorName << "' not set." << std::endl
-                         << "Using pitch/sqrt(12) as default";
-        }
-
-        // region of interest:
-        m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
-        // set the mask
-        if(config.has("mask_file")) {
-            m_maskfile_name = config.get<std::string>("mask_file");
-            std::string mask_file = config.getPath("mask_file");
-            LOG(DEBUG) << "Adding mask to detector \"" << config.getName() << "\", reading from " << mask_file;
-            setMaskFile(mask_file);
-            processMaskFile();
-        }
-    }
-    */
 }
 
 double Detector::getTimeResolution() const {
@@ -177,13 +146,13 @@ Configuration Detector::GetConfiguration() const {
 
     config.set("time_resolution", m_timeResolution, {"ns", "us", "ms", "s"});
 
+    // different for PlanarDetector and DiscDetector
+    this->configurePosAndOrientation(config);
+
     // material budget
     if(m_materialBudget > std::numeric_limits<double>::epsilon()) {
         config.set("material_budget", m_materialBudget);
     }
-
-    // different for PlanarDetector and DiscDetector
-    this->configurePosAndOrientation(config);
 
     // only if detector is not auxiliary:
     if(!this->IsAuxiliary()) {
