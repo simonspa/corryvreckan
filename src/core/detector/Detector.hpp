@@ -184,7 +184,13 @@ namespace corryvreckan {
          * @brief Get normal vector to sensor surface
          * @return Normal vector to sensor surface
          */
-        PositionVector3D<Cartesian3D<double>> normal() const { return m_normal; };
+        virtual PositionVector3D<Cartesian3D<double>> normal() const = 0;
+
+        /**
+         * @brief Get origin vector sensor surface
+         * @return Origin vector to sensor surface
+         */
+        virtual PositionVector3D<Cartesian3D<double>> origin() const = 0;
 
         /**
          * @brief Get path of the file with calibration information
@@ -205,6 +211,7 @@ namespace corryvreckan {
          * @brief Mark a detector channel as masked
          * @param chX X coordinate of the pixel to be masked
          * @param chY Y coordinate of the pixel to be masked
+		 * @to do: This is designed for PlanarDector, the parameters can be different with other type of Detector
          */
         virtual void maskChannel(int chX, int chY) = 0;
 
@@ -213,6 +220,7 @@ namespace corryvreckan {
          * @param chX X coordinate of the pixel to check
          * @param chY Y coordinate of the pixel to check
          * @return    Mask status of the pixel in question
+		 * @to do: This is designed for PlanarDector, the parameters can be different with other type of Detector
          */
         virtual bool masked(int chX, int chY) const = 0;
 
@@ -302,6 +310,9 @@ namespace corryvreckan {
         // Config detector, for devices which are not auxiliary
         // Different in Planar/Disk Detector
         virtual void configureDetector(Configuration& config) const = 0;
+        // Set position, orientation, mode of detector
+        // Different in Planar/Disk Detector
+        virtual void configurePosAndOrientation(Configuration& config) const = 0;
 
         // Functions to set and check channel masking
         void setMaskFile(std::string file);
@@ -331,10 +342,6 @@ namespace corryvreckan {
         std::string m_maskfile;
         std::string m_maskfile_name;
 
-    private:
-        // Set position, orientation, mode of detector
-        // Different in Planar/Disk Detector
-        virtual void setSpecificDetector(Configuration& config) const = 0;
     };
 } // namespace corryvreckan
 

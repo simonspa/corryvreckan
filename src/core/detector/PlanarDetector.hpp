@@ -81,6 +81,18 @@ namespace corryvreckan {
         void rotation(XYZVector rotation) override { m_orientation = rotation; }
 
         /**
+         * @brief Get normal vector to sensor surface
+         * @return Normal vector to sensor surface
+         */
+        PositionVector3D<Cartesian3D<double>> normal() const override { return m_normal; }
+
+        /**
+         * @brief Get origin vector to sensor surface
+         * @return Origin vector to sensor surface
+         */
+        PositionVector3D<Cartesian3D<double>> origin() const override { return m_origin; }
+
+        /**
          * @brief Mark a detector channel as masked
          * @param chX X coordinate of the pixel to be masked
          * @param chY Y coordinate of the pixel to be masked
@@ -181,7 +193,7 @@ namespace corryvreckan {
 
         // Set position, orientation, mode of detector
         // Different in Planar/Disk Detector
-        void setSpecificDetector(Configuration& config) const override;
+        void configurePosAndOrientation(Configuration& config) const override;
 
         // Functions to set and check channel masking
         void processMaskFile() override;
@@ -200,6 +212,11 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint m_displacement;
         ROOT::Math::XYZVector m_orientation;
         std::string m_orientation_mode;
+
+        // Normal to the detector surface and point on the surface
+        PositionVector3D<Cartesian3D<double>> m_normal;
+        PositionVector3D<Cartesian3D<double>> m_origin;
+
     };
 } // namespace corryvreckan
 

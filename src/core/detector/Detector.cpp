@@ -179,7 +179,7 @@ Configuration Detector::GetConfiguration() const {
     }
 
     // different for PlanarDetector and DiscDetector
-    this->setSpecificDetector(config);
+    this->configurePosAndOrientation(config);
 
     // only if detector is not auxiliary:
     if(!this->IsAuxiliary()) {

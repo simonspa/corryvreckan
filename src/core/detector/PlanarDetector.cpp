@@ -36,11 +36,14 @@ PlanarDetector::PlanarDetector(const Configuration& config) : Detector(config) {
 }
 
 void PlanarDetector::buildAxes(const Configuration& config) {
-    // Auxiliary devices don't have: number_of_pixels, pixel_pitch, spatial_resolution, mask_file, region-of-interest
-    // Number of pixels:
+
     m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
     // Size of the pixels:
     m_pitch = config.get<ROOT::Math::XYVector>("pixel_pitch");
+
+	LOG(TRACE) << "Initialized \"" << m_detectorType << "\": " << m_nPixels.X() << "x" << m_nPixels.Y() << " px, pitch of "
+	                 << Units::display(m_pitch, {"mm", "um"});
+
 
     if(Units::convert(m_pitch.X(), "mm") >= 1 or Units::convert(m_pitch.Y(), "mm") >= 1 or
        Units::convert(m_pitch.X(), "um") <= 1 or Units::convert(m_pitch.Y(), "um") <= 1) {
@@ -57,6 +60,7 @@ void PlanarDetector::buildAxes(const Configuration& config) {
 
     // region of interest:
     m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
+
     if(config.has("mask_file")) {
         m_maskfile_name = config.get<std::string>("mask_file");
         std::string mask_file = config.getPath("mask_file");
@@ -136,6 +140,7 @@ bool PlanarDetector::masked(int chX, int chY) const {
 // Function to initialise transforms
 void PlanarDetector::initialise() {
 
+
     // Make the local to global transform, built from a displacement and
     // rotation
     Translation3D translations = Translation3D(m_displacement.X(), m_displacement.Y(), m_displacement.Z());
@@ -191,7 +196,7 @@ void PlanarDetector::configureDetector(Configuration& config) const {
     config.setMatrix("roi", m_roi);
 }
 
-void PlanarDetector::setSpecificDetector(Configuration& config) const {
+void PlanarDetector::configurePosAndOrientation(Configuration& config) const {
     config.set("position", m_displacement, {"um", "mm"});
     config.set("orientation_mode", m_orientation_mode);
     config.set("orientation", m_orientation, {"deg"});
