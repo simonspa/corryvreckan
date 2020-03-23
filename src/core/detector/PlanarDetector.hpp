@@ -179,7 +179,7 @@ namespace corryvreckan {
         // Different in Planar/Disk Detector
         void configureDetector(Configuration& config) const override;
 
-        // Config position, orientation, mode of detector 
+        // Config position, orientation, mode of detector
         // Different in Planar/Disk Detector
         void configurePosAndOrientation(Configuration& config) const override;
 

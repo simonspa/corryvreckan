@@ -59,7 +59,7 @@ namespace corryvreckan {
     /**
      * @brief Detector interface in the reconstruction chain
      *
-     * Contains the detector with common properties such as type, name, coordinate 
+     * Contains the detector with common properties such as type, name, coordinate
      * etc.
      */
     class Detector {
