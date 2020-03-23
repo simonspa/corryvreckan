@@ -93,6 +93,12 @@ namespace corryvreckan {
         std::string Name() const;
 
         /**
+         * @brief Get Coordinate of the detector
+         * @return Detector coordinate 
+         */
+        std::string Coordinate() const;
+
+        /**
          * @brief Check whether detector is registered as reference
          * @return Reference status
          */
@@ -321,6 +327,7 @@ namespace corryvreckan {
         // Detector information
         std::string m_detectorType;
         std::string m_detectorName;
+        std::string m_detectorCoordinate;
 
         double m_timeOffset;
         double m_timeResolution;

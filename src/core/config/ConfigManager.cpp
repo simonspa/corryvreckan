@@ -19,6 +19,7 @@
 #include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "exceptions.h"
+#include <iostream>
 
 using namespace corryvreckan;
 
@@ -52,11 +53,13 @@ ConfigManager::ConfigManager(std::string file_name,
 
     // Initialize global base configuration
     global_config_ = reader.getHeaderConfiguration();
+	std::cout<<"global config  "<<global_config_.getName()<<std::endl;
 
     // Store all the configurations read
     for(auto& config : reader.getConfigurations()) {
         // Skip all ignored sections
         std::string config_name = config.getName();
+		std::cout<<"name of config "<<config_name<<std::endl;
         std::transform(config_name.begin(), config_name.end(), config_name.begin(), ::tolower);
         if(ignore_names_.find(config_name) != ignore_names_.end()) {
             continue;
@@ -139,6 +142,7 @@ bool ConfigManager::loadDetectorOptions(const std::vector<std::string>& options)
     // Apply detector options
     for(auto& config : detector_configs_) {
         optionsApplied = detector_option_parser.applyOptions(config.getName(), config) || optionsApplied;
+		std::cout<<"detector_configs_ : "<<config.getName()<<std::endl;
     }
 
     return optionsApplied;

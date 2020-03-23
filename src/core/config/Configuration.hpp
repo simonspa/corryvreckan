@@ -18,6 +18,7 @@
 
 #include "core/utils/text.h"
 #include "exceptions.h"
+#include <iostream>
 
 namespace corryvreckan {
 
@@ -218,6 +219,12 @@ namespace corryvreckan {
          * @return Configuration name
          */
         std::string getName() const;
+
+        /**
+         * @brief Get Coordinate of the configuration header
+         * @return Configuration coordinate  
+         */
+        std::string getCoordinate() const;
 
         /**
          * @brief Get path to the file containing the configuration if it has one

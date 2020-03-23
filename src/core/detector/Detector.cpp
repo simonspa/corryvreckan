@@ -59,6 +59,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     }
 
     m_detectorType = config.get<std::string>("type");
+    m_detectorCoordinate= config.get<std::string>("coordinate");
     std::transform(m_detectorType.begin(), m_detectorType.end(), m_detectorType.begin(), ::tolower);
     m_timeOffset = config.get<double>("time_offset", 0.0);
 
@@ -122,6 +123,9 @@ std::string Detector::Name() const {
 
 std::string Detector::Type() const {
     return m_detectorType;
+}
+std::string Detector::Coordinate() const {
+    return m_detectorCoordinate;
 }
 
 bool Detector::IsReference() const {
