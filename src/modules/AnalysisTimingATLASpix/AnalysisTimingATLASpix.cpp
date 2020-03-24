@@ -440,7 +440,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         total_tracks++;
 
         // Get the DUT clusters from the clipboard
-        auto clusters = clipboard->getData<Cluster>(m_detector->Name());
+        auto clusters = clipboard->getData<Cluster>(m_detector->name());
         if(clusters == nullptr) {
             LOG(DEBUG) << " - no DUT clusters";
         } else {
@@ -585,7 +585,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 }
 
 void AnalysisTimingATLASpix::finalise() {
-    LOG(STATUS) << "Timing analysis finished for detector " << m_detector->Name() << ": ";
+    LOG(STATUS) << "Timing analysis finished for detector " << m_detector->name() << ": ";
 
     if(m_calcCorrections) {
 

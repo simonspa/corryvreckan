@@ -35,24 +35,24 @@ Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detec
 void Clustering4D::initialise() {
 
     // Cluster plots
-    std::string title = m_detector->Name() + " Cluster size;cluster size;events";
+    std::string title = m_detector->name() + " Cluster size;cluster size;events";
     clusterSize = new TH1F("clusterSize", title.c_str(), 100, 0, 100);
-    title = m_detector->Name() + " Cluster seed charge;cluster seed charge [e];events";
+    title = m_detector->name() + " Cluster seed charge;cluster seed charge [e];events";
     clusterSeedCharge = new TH1F("clusterSeedCharge", title.c_str(), 256, 0, 256);
-    title = m_detector->Name() + " Cluster Width - Rows;cluster width [rows];events";
+    title = m_detector->name() + " Cluster Width - Rows;cluster width [rows];events";
     clusterWidthRow = new TH1F("clusterWidthRow", title.c_str(), 25, 0, 25);
-    title = m_detector->Name() + " Cluster Width - Columns;cluster width [columns];events";
+    title = m_detector->name() + " Cluster Width - Columns;cluster width [columns];events";
     clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, 0, 100);
-    title = m_detector->Name() + " Cluster Charge;cluster charge [e];events";
+    title = m_detector->name() + " Cluster Charge;cluster charge [e];events";
     clusterCharge = new TH1F("clusterCharge", title.c_str(), 5000, 0, 50000);
-    title = m_detector->Name() + " Cluster Position (Global);x [mm];y [mm];events";
+    title = m_detector->name() + " Cluster Position (Global);x [mm];y [mm];events";
     clusterPositionGlobal = new TH2F("clusterPositionGlobal", title.c_str(), 400, -10., 10., 400, -10., 10.);
     title = ";cluster timestamp [ns]; # events";
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
-    title = m_detector->Name() + " Cluster multiplicity;clusters;events";
+    title = m_detector->name() + " Cluster multiplicity;clusters;events";
     clusterMultiplicity = new TH1F("clusterMultiplicity", title.c_str(), 50, 0, 50);
     // Get resolution in time of detector and calculate time cut to be applied
-    LOG(DEBUG) << "Time cut to be applied for " << m_detector->Name() << " is "
+    LOG(DEBUG) << "Time cut to be applied for " << m_detector->name() << " is "
                << Units::display(timeCut, {"ns", "us", "ms"});
 }
 
@@ -64,12 +64,12 @@ bool Clustering4D::sortByTime(Pixel* pixel1, Pixel* pixel2) {
 StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
-    auto pixels = clipboard->getData<Pixel>(m_detector->Name());
+    auto pixels = clipboard->getData<Pixel>(m_detector->name());
     if(pixels == nullptr) {
-        LOG(DEBUG) << "Detector " << m_detector->Name() << " does not have any pixels on the clipboard";
+        LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
     }
-    LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << m_detector->Name();
+    LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << m_detector->name();
 
     // Sort the pixels from low to high timestamp
     std::sort(pixels->begin(), pixels->end(), sortByTime);
@@ -145,8 +145,8 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
     clusterMultiplicity->Fill(static_cast<double>(deviceClusters->size()));
 
     // Put the clusters on the clipboard
-    clipboard->putData(deviceClusters, m_detector->Name());
-    LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << m_detector->Name();
+    clipboard->putData(deviceClusters, m_detector->name());
+    LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << m_detector->name();
 
     return StatusCode::Success;
 }
@@ -234,7 +234,7 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         row = row_sum / static_cast<double>(cluster->size());
     }
 
-    if(detectorID != m_detector->Name()) {
+    if(detectorID != m_detector->name()) {
         // Should never happen...
         return;
     }

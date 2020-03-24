@@ -39,7 +39,7 @@ void AnalysisEfficiency::initialise() {
         throw InvalidValueError(m_config, "inpixel_bin_size", "Too many bins for in-pixel histograms.");
     }
     std::string title =
-        m_detector->Name() + " Pixel efficiency map;in-pixel x_{track} [#mum];in-pixel y_{track} #mum;efficiency";
+        m_detector->name() + " Pixel efficiency map;in-pixel x_{track} [#mum];in-pixel y_{track} #mum;efficiency";
     hPixelEfficiencyMap_trackPos = new TProfile2D("pixelEfficiencyMap_trackPos",
                                                   title.c_str(),
                                                   nbins_x,
@@ -50,7 +50,7 @@ void AnalysisEfficiency::initialise() {
                                                   pitch_y / 2.,
                                                   0,
                                                   1);
-    title = m_detector->Name() + " Chip efficiency map;x [px];y [px];efficiency";
+    title = m_detector->name() + " Chip efficiency map;x [px];y [px];efficiency";
     hChipEfficiencyMap_trackPos = new TProfile2D("chipEfficiencyMap_trackPos",
                                                  title.c_str(),
                                                  m_detector->nPixels().X(),
@@ -61,7 +61,7 @@ void AnalysisEfficiency::initialise() {
                                                  m_detector->nPixels().Y() - 0.5,
                                                  0,
                                                  1);
-    title = m_detector->Name() + " Global efficiency map;x [mm];y [mm];efficiency";
+    title = m_detector->name() + " Global efficiency map;x [mm];y [mm];efficiency";
     hGlobalEfficiencyMap_trackPos = new TProfile2D("globalEfficiencyMap_trackPos",
                                                    title.c_str(),
                                                    300,
@@ -72,7 +72,7 @@ void AnalysisEfficiency::initialise() {
                                                    1.5 * m_detector->size().Y(),
                                                    0,
                                                    1);
-    title = m_detector->Name() + " Chip efficiency map;x [px];y [px];efficiency";
+    title = m_detector->name() + " Chip efficiency map;x [px];y [px];efficiency";
     hChipEfficiencyMap_clustPos = new TProfile2D("chipEfficiencyMap_clustPos",
                                                  title.c_str(),
                                                  m_detector->nPixels().X(),
@@ -83,7 +83,7 @@ void AnalysisEfficiency::initialise() {
                                                  m_detector->nPixels().Y() - 0.5,
                                                  0,
                                                  1);
-    title = m_detector->Name() + " Global efficiency map;x [mm];y [mm];efficiency";
+    title = m_detector->name() + " Global efficiency map;x [mm];y [mm];efficiency";
     hGlobalEfficiencyMap_clustPos = new TProfile2D("globalEfficiencyMap_clustPos",
                                                    title.c_str(),
                                                    300,
@@ -111,11 +111,11 @@ void AnalysisEfficiency::initialise() {
     hTrackTimeToPrevHit_notmatched = new TH1D(
         "trackTimeToPrevHit_notmatched", "trackTimeToPrevHit_notmatched;time to prev hit [us];# events", 1e6, 0, 1e6);
 
-    title = m_detector->Name() + "time difference to previous track (if this has assoc cluster)";
+    title = m_detector->name() + "time difference to previous track (if this has assoc cluster)";
     hTimeDiffPrevTrack_assocCluster = new TH1D("timeDiffPrevTrack_assocCluster", title.c_str(), 11000, -1000, 10000);
     hTimeDiffPrevTrack_assocCluster->GetXaxis()->SetTitle("time diff [#mus]");
     hTimeDiffPrevTrack_assocCluster->GetYaxis()->SetTitle("events");
-    title = m_detector->Name() + "time difference to previous track (if this has no assoc cluster)";
+    title = m_detector->name() + "time difference to previous track (if this has no assoc cluster)";
     hTimeDiffPrevTrack_noAssocCluster = new TH1D("timeDiffPrevTrack_noAssocCluster", title.c_str(), 11000, -1000, 10000);
     hTimeDiffPrevTrack_noAssocCluster->GetXaxis()->SetTitle("time diff [#mus]");
     hTimeDiffPrevTrack_noAssocCluster->GetYaxis()->SetTitle("events");
@@ -256,7 +256,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
 
         // Get the DUT clusters from the clipboard
-        auto clusters = clipboard->getData<Cluster>(m_detector->Name());
+        auto clusters = clipboard->getData<Cluster>(m_detector->name());
         if(clusters == nullptr) {
             LOG(DEBUG) << " - no DUT clusters";
         } else {
@@ -329,9 +329,9 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Before going to the next event, loop over all pixels (all hits incl. noise)
     // and fill matrix with timestamps of previous pixels.
-    auto pixels = clipboard->getData<Pixel>(m_detector->Name());
+    auto pixels = clipboard->getData<Pixel>(m_detector->name());
     if(pixels == nullptr) {
-        LOG(DEBUG) << "Detector " << m_detector->Name() << " does not have any pixels on the clipboard";
+        LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
     }
     for(auto& pixel : (*pixels)) {
@@ -354,7 +354,7 @@ void AnalysisEfficiency::finalise() {
                 << "Accepted tracks:            " << total_tracks;
 
     double totalEff = 100 * static_cast<double>(matched_tracks) / (total_tracks > 0 ? total_tracks : 1);
-    LOG(STATUS) << "Total efficiency of detector " << m_detector->Name() << ": " << totalEff << "%, measured with "
+    LOG(STATUS) << "Total efficiency of detector " << m_detector->name() << ": " << totalEff << "%, measured with "
                 << matched_tracks << "/" << total_tracks << " matched/total tracks";
 
     totalEfficiency->SetName((to_string(totalEff) + " %").c_str());

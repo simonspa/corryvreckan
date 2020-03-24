@@ -55,7 +55,7 @@ void ModuleManager::load_detectors() {
 
         // Check if we have a duplicate:
         if(std::find_if(m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) {
-               return obj->Name() == name;
+               return obj->name() == name;
            }) != m_detectors.end()) {
             throw InvalidValueError(
                 global_config, "detectors_file", "Detector " + detector_section.getName() + " defined twice");
@@ -68,12 +68,12 @@ void ModuleManager::load_detectors() {
             detector = std::make_shared<PlanarDetector>(detector_section);
 
         // Check if we already found a reference plane:
-        if(m_reference != nullptr && detector->IsReference()) {
+        if(m_reference != nullptr && detector->isReference()) {
             throw InvalidValueError(global_config, "detectors_file", "Found more than one reference detector");
         }
 
         // Switch flag if we found the reference plane:
-        if(detector->IsReference()) {
+        if(detector->isReference()) {
             m_reference = detector;
         }
 
@@ -309,7 +309,7 @@ std::vector<std::string> ModuleManager::get_type_vector(char* type_tokens) {
 
 std::shared_ptr<Detector> ModuleManager::get_detector(std::string name) {
     auto it = find_if(
-        m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->Name() == name; });
+        m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->name() == name; });
     return (it != m_detectors.end() ? (*it) : nullptr);
 }
 
@@ -403,8 +403,8 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
                 continue;
             }
 
-            LOG(TRACE) << "Preparing \"name\" instance for " << det->Name();
-            instantiations.emplace_back(det, ModuleIdentifier(module_base_name, det->Name(), 0));
+            LOG(TRACE) << "Preparing \"name\" instance for " << det->name();
+            instantiations.emplace_back(det, ModuleIdentifier(module_base_name, det->name(), 0));
             // Save the name (to not instantiate it again later)
             module_names.insert(name);
         }
@@ -427,11 +427,11 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
         }
 
         for(auto& det : m_detectors) {
-            auto detectortype = det->Type();
+            auto detectortype = det->type();
             std::transform(detectortype.begin(), detectortype.end(), detectortype.begin(), ::tolower);
 
             // Skip all that were already added by name
-            if(module_names.find(det->Name()) != module_names.end()) {
+            if(module_names.find(det->name()) != module_names.end()) {
                 continue;
             }
             for(auto& type : ctypes) {
@@ -440,8 +440,8 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
                     continue;
                 }
 
-                LOG(TRACE) << "Preparing \"type\" instance for " << det->Name();
-                instantiations.emplace_back(det, ModuleIdentifier(module_base_name, det->Name(), 1));
+                LOG(TRACE) << "Preparing \"type\" instance for " << det->name();
+                instantiations.emplace_back(det, ModuleIdentifier(module_base_name, det->name(), 1));
             }
         }
         instances_created = !ctypes.empty();
@@ -450,8 +450,8 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
     // Create for all detectors if no name / type provided
     if(!instances_created) {
         for(auto& det : m_detectors) {
-            LOG(TRACE) << "Preparing \"other\" instance for " << det->Name();
-            instantiations.emplace_back(det, ModuleIdentifier(module_base_name, det->Name(), 2));
+            LOG(TRACE) << "Preparing \"other\" instance for " << det->name();
+            instantiations.emplace_back(det, ModuleIdentifier(module_base_name, det->name(), 2));
         }
     }
 
@@ -461,13 +461,13 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
         auto identifier = instance.second;
 
         // If this should only be instantiated for DUTs, skip otherwise:
-        if(dut_only && !detector->IsDUT()) {
+        if(dut_only && !detector->isDUT()) {
             LOG(TRACE) << "Skipping instantiation \"" << identifier.getUniqueName() << "\", detector is no DUT";
             continue;
         }
 
         // Do not instantiate module if detector type is not mentioned as supported:
-        auto detectortype = detector->Type();
+        auto detectortype = detector->type();
         std::transform(detectortype.begin(), detectortype.end(), detectortype.begin(), ::tolower);
         if(!types.empty() && std::find(types.begin(), types.end(), detectortype) == types.end()) {
             LOG(TRACE) << "Skipping instantiation \"" << identifier.getUniqueName() << "\", detector type mismatch";

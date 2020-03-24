@@ -96,8 +96,8 @@ void OnlineMonitor::initialise() {
 
     AddCanvasGroup("DUTs");
     for(auto& detector : get_detectors()) {
-        if(detector->IsDUT()) {
-            AddCanvas(detector->Name(), "DUTs", canvas_dutplots, detector->Name());
+        if(detector->isDUT()) {
+            AddCanvas(detector->name(), "DUTs", canvas_dutplots, detector->name());
         }
     }
 
@@ -194,7 +194,7 @@ void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas
         bool log_scale = (plot.back().find("log") != std::string::npos) ? true : false;
 
         // Replace reference placeholders and add histogram
-        std::string name = std::regex_replace(plot.front(), std::regex("%REFERENCE%"), get_reference()->Name());
+        std::string name = std::regex_replace(plot.front(), std::regex("%REFERENCE%"), get_reference()->name());
 
         // Parse other placeholders:
         if(name.find("%DUT%") != std::string::npos) {
@@ -203,16 +203,16 @@ void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas
                 LOG(DEBUG) << "Adding plot " << name << " for detector " << detector_name;
                 auto detector = get_detector(detector_name);
                 AddHisto(
-                    canvas_name, std::regex_replace(name, std::regex("%DUT%"), detector->Name()), plot.back(), log_scale);
+                    canvas_name, std::regex_replace(name, std::regex("%DUT%"), detector->name()), plot.back(), log_scale);
 
             } else {
                 LOG(DEBUG) << "Adding plot " << name << " for all DUTs.";
                 for(auto& detector : get_detectors()) {
-                    if(!detector->IsDUT()) {
+                    if(!detector->isDUT()) {
                         continue;
                     }
                     AddHisto(canvas_name,
-                             std::regex_replace(name, std::regex("%DUT%"), detector->Name()),
+                             std::regex_replace(name, std::regex("%DUT%"), detector->name()),
                              plot.back(),
                              log_scale);
                 }
@@ -223,19 +223,19 @@ void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas
                 LOG(DEBUG) << "Adding plot " << name << " for detector " << detector_name;
                 auto detector = get_detector(detector_name);
                 AddHisto(canvas_name,
-                         std::regex_replace(name, std::regex("%DETECTOR%"), detector->Name()),
+                         std::regex_replace(name, std::regex("%DETECTOR%"), detector->name()),
                          plot.back(),
                          log_scale);
             } else {
                 LOG(DEBUG) << "Adding plot " << name << " for all detectors.";
                 for(auto& detector : get_detectors()) {
                     // Ignore AUX detectors
-                    if(ignoreAux && detector->IsAuxiliary()) {
+                    if(ignoreAux && detector->isAuxiliary()) {
                         continue;
                     }
 
                     AddHisto(canvas_name,
-                             std::regex_replace(name, std::regex("%DETECTOR%"), detector->Name()),
+                             std::regex_replace(name, std::regex("%DETECTOR%"), detector->name()),
                              plot.back(),
                              log_scale);
                 }

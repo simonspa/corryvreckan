@@ -70,15 +70,15 @@ void TrackingSpatial::initialise() {
 
     // Loop over all planes
     for(auto& detector : get_detectors()) {
-        auto detectorID = detector->Name();
+        auto detectorID = detector->name();
 
         // Do not create plots for detectors not participating in the tracking:
-        if(excludeDUT && detector->IsDUT()) {
+        if(excludeDUT && detector->isDUT()) {
             continue;
         }
 
         // Do not created plots for auxiliary detectors:
-        if(detector->IsAuxiliary()) {
+        if(detector->isAuxiliary()) {
             continue;
         }
 
@@ -109,7 +109,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     double minZ = std::numeric_limits<double>::max();
     std::string seedPlane;
     for(auto& detector : get_detectors()) {
-        string detectorID = detector->Name();
+        string detectorID = detector->name();
 
         // Get the clusters
         auto tempClusters = clipboard->getData<Cluster>(detectorID);
@@ -117,7 +117,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
             // Store the clusters of the first plane in Z as the reference
             if(detector->displacement().Z() < minZ) {
                 referenceClusters = tempClusters;
-                seedPlane = detector->Name();
+                seedPlane = detector->name();
                 minZ = detector->displacement().Z();
                 LOG(TRACE) << "minZ = " << minZ;
             }
@@ -167,9 +167,9 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         // a neighbour on the new plane. We started on the most upstream
         // plane, so first detector is 1 (not 0)
         for(auto& detector : detectors) {
-            auto detectorID = detector->Name();
+            auto detectorID = detector->name();
             if(trees.count(detectorID) == 0) {
-                LOG(TRACE) << "Skipping detector " << detector->Name() << " as it has 0 clusters.";
+                LOG(TRACE) << "Skipping detector " << detector->name() << " as it has 0 clusters.";
                 continue;
             }
             if(detectorID == seedPlane) {
@@ -178,7 +178,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Check if the DUT should be excluded and obey:
-            if(excludeDUT && detector->IsDUT()) {
+            if(excludeDUT && detector->isDUT()) {
                 LOG(TRACE) << "Exclude DUT.";
                 continue;
             }

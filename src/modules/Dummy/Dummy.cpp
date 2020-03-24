@@ -18,7 +18,7 @@ Dummy::Dummy(Configuration config, std::vector<std::shared_ptr<Detector>> detect
 void Dummy::initialise() {
 
     for(auto& detector : get_detectors()) {
-        LOG(DEBUG) << "Initialise for detector " + detector->Name();
+        LOG(DEBUG) << "Initialise for detector " + detector->name();
     }
 
     // Initialise member variables
@@ -30,7 +30,7 @@ StatusCode Dummy::run(std::shared_ptr<Clipboard>) {
     // Loop over all detectors
     for(auto& detector : get_detectors()) {
         // Get the detector name
-        std::string detectorName = detector->Name();
+        std::string detectorName = detector->name();
         LOG(DEBUG) << "Detector with name " << detectorName;
     }
 

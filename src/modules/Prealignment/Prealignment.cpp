@@ -44,12 +44,12 @@ void Prealignment::initialise() {
     std::shared_ptr<Detector> reference = get_reference();
 
     // Correlation plots
-    std::string title = m_detector->Name() + ": correlation X;x_{ref}-x [mm];events";
+    std::string title = m_detector->name() + ": correlation X;x_{ref}-x [mm];events";
     correlationX = new TH1F("correlationX", title.c_str(), 1000, -10., 10.);
-    title = m_detector->Name() + ": correlation Y;y_{ref}-y [mm];events";
+    title = m_detector->name() + ": correlation Y;y_{ref}-y [mm];events";
     correlationY = new TH1F("correlationY", title.c_str(), 1000, -10., 10.);
     // 2D correlation plots (pixel-by-pixel, local coordinates):
-    title = m_detector->Name() + ": 2D correlation X (local);x [px];x_{ref} [px];events";
+    title = m_detector->name() + ": 2D correlation X (local);x [px];x_{ref} [px];events";
     correlationX2Dlocal = new TH2F("correlationX_2Dlocal",
                                    title.c_str(),
                                    m_detector->nPixels().X(),
@@ -58,7 +58,7 @@ void Prealignment::initialise() {
                                    reference->nPixels().X(),
                                    -0.5,
                                    reference->nPixels().X() - 0.5);
-    title = m_detector->Name() + ": 2D correlation Y (local);y [px];y_{ref} [px];events";
+    title = m_detector->name() + ": 2D correlation Y (local);y [px];y_{ref} [px];events";
     correlationY2Dlocal = new TH2F("correlationY_2Dlocal",
                                    title.c_str(),
                                    m_detector->nPixels().Y(),
@@ -67,26 +67,26 @@ void Prealignment::initialise() {
                                    reference->nPixels().Y(),
                                    -0.5,
                                    reference->nPixels().Y() - 0.5);
-    title = m_detector->Name() + ": 2D correlation X (global);x [mm];x_{ref} [mm];events";
+    title = m_detector->name() + ": 2D correlation X (global);x [mm];x_{ref} [mm];events";
     correlationX2D = new TH2F("correlationX_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);
-    title = m_detector->Name() + ": 2D correlation Y (global);y [mm];y_{ref} [mm];events";
+    title = m_detector->name() + ": 2D correlation Y (global);y [mm];y_{ref} [mm];events";
     correlationY2D = new TH2F("correlationY_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);
 }
 
 StatusCode Prealignment::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the clusters
-    auto clusters = clipboard->getData<Cluster>(m_detector->Name());
+    auto clusters = clipboard->getData<Cluster>(m_detector->name());
     if(clusters == nullptr) {
-        LOG(DEBUG) << "Detector " << m_detector->Name() << " does not have any clusters on the clipboard";
+        LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any clusters on the clipboard";
         return StatusCode::Success;
     }
 
     // Get clusters from reference detector
     auto reference = get_reference();
-    auto referenceClusters = clipboard->getData<Cluster>(reference->Name());
+    auto referenceClusters = clipboard->getData<Cluster>(reference->name());
     if(referenceClusters == nullptr) {
-        LOG(DEBUG) << "Reference detector " << reference->Name() << " does not have any clusters on the clipboard";
+        LOG(DEBUG) << "Reference detector " << reference->name() << " does not have any clusters on the clipboard";
         return StatusCode::Success;
     }
 
@@ -116,13 +116,13 @@ void Prealignment::finalise() {
     double rmsX = correlationX->GetRMS();
     double rmsY = correlationY->GetRMS();
     if(rmsX > max_correlation_rms or rmsY > max_correlation_rms) {
-        LOG(ERROR) << "Detector " << m_detector->Name() << ": RMS is too wide for prealignment shifts";
-        LOG(ERROR) << "Detector " << m_detector->Name() << ": RMS X = " << Units::display(rmsX, {"mm", "um"})
+        LOG(ERROR) << "Detector " << m_detector->name() << ": RMS is too wide for prealignment shifts";
+        LOG(ERROR) << "Detector " << m_detector->name() << ": RMS X = " << Units::display(rmsX, {"mm", "um"})
                    << " , RMS Y = " << Units::display(rmsY, {"mm", "um"});
     }
 
     // Move all but the reference:
-    if(!m_detector->IsReference()) {
+    if(!m_detector->isReference()) {
 
         double shift_X = 0.;
         double shift_Y = 0.;
@@ -162,7 +162,7 @@ void Prealignment::finalise() {
             throw InvalidValueError(m_config, "method", "Invalid prealignment method");
         }
 
-        LOG(DEBUG) << "Shift (without damping factor)" << m_detector->Name()
+        LOG(DEBUG) << "Shift (without damping factor)" << m_detector->name()
                    << ": x = " << Units::display(shift_X, {"mm", "um"})
                    << " , y = " << Units::display(shift_Y, {"mm", "um"});
         LOG(INFO) << "Move in x by = " << Units::display(shift_X * damping_factor, {"mm", "um"})

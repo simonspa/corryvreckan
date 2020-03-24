@@ -84,37 +84,37 @@ namespace corryvreckan {
          * @brief Get type of the detector
          * @return Type of the detector model
          */
-        std::string Type() const;
+        std::string type() const;
 
         /**
          * @brief Get name of the detector
          * @return Detector name
          */
-        std::string Name() const;
+        std::string name() const;
 
         /**
          * @brief Get coordinate of the detector
          * @return Detector coordinate
          */
-        std::string Coordinate() const;
+        std::string coordinate() const;
 
         /**
          * @brief Check whether detector is registered as reference
          * @return Reference status
          */
-        bool IsReference() const;
+        bool isReference() const;
 
         /**
          * @brief Check whether detector is registered as DUT
          * @return DUT status
          */
-        bool IsDUT() const;
+        bool isDUT() const;
 
         /**
          * @brief Check whether detector is registered as auxiliary device and should not parttake in the reconstruction
          * @return Auxiliary status
          */
-        bool IsAuxiliary() const;
+        bool isAuxiliary() const;
 
         /**
          * @brief Retrieve configuration object from detector, containing all (potentially updated) parameters

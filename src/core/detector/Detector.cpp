@@ -86,26 +86,26 @@ double Detector::getTimeResolution() const {
     }
 }
 
-std::string Detector::Name() const {
+std::string Detector::name() const {
     return m_detectorName;
 }
 
-std::string Detector::Type() const {
+std::string Detector::type() const {
     return m_detectorType;
 }
-std::string Detector::Coordinate() const {
+std::string Detector::coordinate() const {
     return m_detectorCoordinate;
 }
 
-bool Detector::IsReference() const {
+bool Detector::isReference() const {
     return static_cast<bool>(m_role & DetectorRole::REFERENCE);
 }
 
-bool Detector::IsDUT() const {
+bool Detector::isDUT() const {
     return static_cast<bool>(m_role & DetectorRole::DUT);
 }
 
-bool Detector::IsAuxiliary() const {
+bool Detector::isAuxiliary() const {
     return static_cast<bool>(m_role & DetectorRole::AUXILIARY);
 }
 
@@ -121,18 +121,18 @@ void Detector::update() {
 
 Configuration Detector::GetConfiguration() const {
 
-    Configuration config(Name());
+    Configuration config(name());
     config.set("type", m_detectorType);
 
     // Store the role of the detector
     std::vector<std::string> roles;
-    if(this->IsDUT()) {
+    if(this->isDUT()) {
         roles.push_back("dut");
     }
-    if(this->IsReference()) {
+    if(this->isReference()) {
         roles.push_back("reference");
     }
-    if(this->IsAuxiliary()) {
+    if(this->isAuxiliary()) {
         roles.push_back("auxiliary");
     }
 
@@ -155,7 +155,7 @@ Configuration Detector::GetConfiguration() const {
     }
 
     // only if detector is not auxiliary:
-    if(!this->IsAuxiliary()) {
+    if(!this->isAuxiliary()) {
         this->configureDetector(config);
     }
 

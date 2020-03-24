@@ -120,7 +120,7 @@ void AnalysisDUT::initialise() {
     std::string mod_axes = "in-pixel x_{track} [#mum];in-pixel y_{track} [#mum];";
 
     // cut flow histogram
-    std::string title = m_detector->Name() + ": number of tracks discarded by different cuts;cut type;tracks";
+    std::string title = m_detector->name() + ": number of tracks discarded by different cuts;cut type;tracks";
     hCutHisto = new TH1F("hCutHisto", title.c_str(), 4, 1, 5);
     hCutHisto->GetXaxis()->SetBinLabel(1, "High Chi2");
     hCutHisto->GetXaxis()->SetBinLabel(2, "Outside DUT area");

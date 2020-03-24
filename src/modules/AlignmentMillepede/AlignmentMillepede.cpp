@@ -52,10 +52,10 @@ void AlignmentMillepede::initialise() {
     // Renumber the planes in Millepede, ignoring masked planes.
     unsigned int index = 0;
     for(const auto& det : get_detectors()) {
-        if(det->IsDUT() && m_excludeDUT) {
+        if(det->isDUT() && m_excludeDUT) {
             continue;
         }
-        m_millePlanes[det->Name()] = index;
+        m_millePlanes[det->name()] = index;
         ++index;
     }
 
@@ -101,11 +101,11 @@ void AlignmentMillepede::finalise() {
 
     size_t nPlanes = num_detectors();
     for(const auto& det : get_detectors()) {
-        if(det->IsDUT() && m_excludeDUT) {
+        if(det->isDUT() && m_excludeDUT) {
             nPlanes--;
         }
-        if(det->IsAuxiliary()) {
-            LOG(INFO) << "Excluding auxiliary detector " << det->Name();
+        if(det->isAuxiliary()) {
+            LOG(INFO) << "Excluding auxiliary detector " << det->name();
             nPlanes--;
         }
     }
@@ -176,7 +176,7 @@ void AlignmentMillepede::setConstraints(const size_t nPlanes) {
     // Calculate the mean z-position.
     double avgz = 0.;
     for(const auto& det : get_detectors()) {
-        if(det->IsDUT() && m_excludeDUT) {
+        if(det->isDUT() && m_excludeDUT) {
             continue;
         }
         avgz += det->displacement().Z();
@@ -185,7 +185,7 @@ void AlignmentMillepede::setConstraints(const size_t nPlanes) {
     // Calculate the variance.
     double varz = 0.0;
     for(const auto& det : get_detectors()) {
-        if(det->IsDUT() && m_excludeDUT) {
+        if(det->isDUT() && m_excludeDUT) {
             continue;
         }
         const double dz = det->displacement().Z() - avgz;
@@ -207,10 +207,10 @@ void AlignmentMillepede::setConstraints(const size_t nPlanes) {
 
     m_constraints.clear();
     for(const auto& det : get_detectors()) {
-        if(det->IsDUT() && m_excludeDUT) {
+        if(det->isDUT() && m_excludeDUT) {
             continue;
         }
-        const unsigned int i = m_millePlanes[det->Name()];
+        const unsigned int i = m_millePlanes[det->name()];
         const double sz = (det->displacement().Z() - avgz) / varz;
         ftx[i] = 1.0;
         fty[i + nPlanes] = 1.0;
@@ -307,7 +307,7 @@ bool AlignmentMillepede::putTrack(Track* track, const size_t nPlanes) {
         const double errx = cluster->errorX();
         const double erry = cluster->errorY();
         // Get the internal plane index in Millepede.
-        const unsigned int plane = m_millePlanes[detector->Name()];
+        const unsigned int plane = m_millePlanes[detector->name()];
         // Set the local derivatives for the X equation.
         std::vector<double> derlc = {1., zg, 0., 0.};
         // Set the global derivatives (see LHCb-2005-101) for the X equation.
@@ -584,16 +584,16 @@ bool AlignmentMillepede::fitTrack(const std::vector<Equation>& equations,
 void AlignmentMillepede::updateGeometry() {
     auto nPlanes = num_detectors();
     for(const auto& det : get_detectors()) {
-        if(det->IsDUT() && m_excludeDUT) {
+        if(det->isDUT() && m_excludeDUT) {
             nPlanes--;
         }
     }
 
     for(const auto& det : get_detectors()) {
-        if(det->IsDUT() && m_excludeDUT) {
+        if(det->isDUT() && m_excludeDUT) {
             continue;
         }
-        auto plane = m_millePlanes[det->Name()];
+        auto plane = m_millePlanes[det->name()];
 
         det->displacement(XYZPoint(det->displacement().X() + m_dparm[plane + 0 * nPlanes],
                                    det->displacement().Y() + m_dparm[plane + 1 * nPlanes],

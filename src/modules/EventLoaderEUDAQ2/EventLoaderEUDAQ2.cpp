@@ -75,7 +75,7 @@ void EventLoaderEUDAQ2::initialise() {
     hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;entries", 20, 0, 20);
 
     // Create the following histograms only when detector is not auxiliary:
-    if(!m_detector->IsAuxiliary()) {
+    if(!m_detector->isAuxiliary()) {
         title = "hitmap;column;row;# events";
         hitmap = new TH2F("hitmap",
                           title.c_str(),
@@ -347,7 +347,7 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
 
     // Concatenate plane name according to naming convention: sensor_type + "_" + int
     auto plane_name = plane.Sensor() + "_" + std::to_string(plane.ID());
-    auto detector_name = m_detector->Name();
+    auto detector_name = m_detector->name();
     // Convert to lower case before string comparison to avoid errors by the user:
     std::transform(plane_name.begin(), plane_name.end(), plane_name.begin(), ::tolower);
     std::transform(detector_name.begin(), detector_name.end(), detector_name.begin(), ::tolower);
@@ -381,7 +381,7 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
         }
 
         // when calibration is not available, set charge = raw
-        Pixel* pixel = new Pixel(m_detector->Name(), col, row, raw, raw, ts);
+        Pixel* pixel = new Pixel(m_detector->name(), col, row, raw, raw, ts);
 
         hitmap->Fill(col, row);
         hPixelTimes->Fill(static_cast<double>(Units::convert(ts, "ms")));
@@ -392,7 +392,7 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
         pixels->push_back(pixel);
     }
     hPixelMultiplicity->Fill(static_cast<int>(pixels->size()));
-    LOG(DEBUG) << m_detector->Name() << ": Plane contains " << pixels->size() << " pixels";
+    LOG(DEBUG) << m_detector->name() << ": Plane contains " << pixels->size() << " pixels";
 
     return pixels;
 }
@@ -406,18 +406,18 @@ bool EventLoaderEUDAQ2::filter_detectors(std::shared_ptr<eudaq::StandardEvent> e
         LOG(TRACE) << "Using fallback comparison with EUDAQ2 event description";
         auto description = evt->GetDescription();
         std::transform(description.begin(), description.end(), description.begin(), ::tolower);
-        if(description.find(m_detector->Type()) == std::string::npos) {
-            LOG(DEBUG) << "Ignoring event because description doesn't match type " << m_detector->Type() << ": "
+        if(description.find(m_detector->type()) == std::string::npos) {
+            LOG(DEBUG) << "Ignoring event because description doesn't match type " << m_detector->type() << ": "
                        << description;
             return false;
         }
-    } else if(detector_type != m_detector->Type()) {
+    } else if(detector_type != m_detector->type()) {
         LOG(DEBUG) << "Ignoring event because detector type doesn't match: " << detector_type;
         return false;
     }
 
     // To the best of our knowledge, this is the detector we are looking for.
-    LOG(DEBUG) << "Found matching event for detector type " << m_detector->Type();
+    LOG(DEBUG) << "Found matching event for detector type " << m_detector->type();
     if(evt->NumPlanes() == 0) {
         return true;
     }
@@ -428,14 +428,14 @@ bool EventLoaderEUDAQ2::filter_detectors(std::shared_ptr<eudaq::StandardEvent> e
 
         // Concatenate plane name according to naming convention: sensor_type + "_" + int
         auto plane_name = plane.Sensor() + "_" + std::to_string(plane.ID());
-        auto detector_name = m_detector->Name();
+        auto detector_name = m_detector->name();
         // Convert to lower case before string comparison to avoid errors by the user:
         std::transform(plane_name.begin(), plane_name.end(), plane_name.begin(), ::tolower);
         std::transform(detector_name.begin(), detector_name.end(), detector_name.begin(), ::tolower);
 
         if(detector_name == plane_name) {
             plane_id = static_cast<int>(i_plane);
-            LOG(DEBUG) << "Found matching plane in event for detector " << m_detector->Name();
+            LOG(DEBUG) << "Found matching plane in event for detector " << m_detector->name();
             return true;
         } else {
             LOG(DEBUG) << "plane " << plane_name << "does not match " << detector_name;
@@ -443,7 +443,7 @@ bool EventLoaderEUDAQ2::filter_detectors(std::shared_ptr<eudaq::StandardEvent> e
     }
 
     // Detector not found among planes of this event
-    LOG(DEBUG) << "Ignoring event because no matching plane could be found for detector " << m_detector->Name();
+    LOG(DEBUG) << "Ignoring event because no matching plane could be found for detector " << m_detector->name();
     return false;
 }
 
@@ -548,7 +548,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Store the full event data on the clipboard:
-    clipboard->putData(pixels, m_detector->Name());
+    clipboard->putData(pixels, m_detector->name());
 
     LOG(DEBUG) << "Finished Corryvreckan event";
     return StatusCode::Success;

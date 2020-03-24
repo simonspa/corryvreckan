@@ -24,17 +24,17 @@ ClusteringSpatial::ClusteringSpatial(Configuration config, std::shared_ptr<Detec
 void ClusteringSpatial::initialise() {
 
     // Cluster plots
-    std::string title = m_detector->Name() + " Cluster size;cluster size;events";
+    std::string title = m_detector->name() + " Cluster size;cluster size;events";
     clusterSize = new TH1F("clusterSize", title.c_str(), 100, 0, 100);
-    title = m_detector->Name() + " Cluster seed charge;cluster seed charge [e];events";
+    title = m_detector->name() + " Cluster seed charge;cluster seed charge [e];events";
     clusterSeedCharge = new TH1F("clusterSeedCharge", title.c_str(), 256, 0, 256);
-    title = m_detector->Name() + " Cluster Width - Rows;cluster width [rows];events";
+    title = m_detector->name() + " Cluster Width - Rows;cluster width [rows];events";
     clusterWidthRow = new TH1F("clusterWidthRow", title.c_str(), 25, 0, 25);
-    title = m_detector->Name() + " Cluster Width - Columns;cluster width [columns];events";
+    title = m_detector->name() + " Cluster Width - Columns;cluster width [columns];events";
     clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, 0, 100);
-    title = m_detector->Name() + " Cluster Charge;cluster charge [e];events";
+    title = m_detector->name() + " Cluster Charge;cluster charge [e];events";
     clusterCharge = new TH1F("clusterCharge", title.c_str(), 5000, 0, 50000);
-    title = m_detector->Name() + " Cluster Position (Global);x [mm];y [mm];events";
+    title = m_detector->name() + " Cluster Position (Global);x [mm];y [mm];events";
     clusterPositionGlobal = new TH2F("clusterPositionGlobal",
                                      title.c_str(),
                                      400,
@@ -43,7 +43,7 @@ void ClusteringSpatial::initialise() {
                                      400,
                                      -m_detector->size().Y() / 1.5,
                                      m_detector->size().Y() / 1.5);
-    title = m_detector->Name() + " Cluster Position (Local);x [px];y [px];events";
+    title = m_detector->name() + " Cluster Position (Local);x [px];y [px];events";
     clusterPositionLocal = new TH2F("clusterPositionLocal",
                                     title.c_str(),
                                     m_detector->nPixels().X(),
@@ -60,9 +60,9 @@ void ClusteringSpatial::initialise() {
 StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
-    auto pixels = clipboard->getData<Pixel>(m_detector->Name());
+    auto pixels = clipboard->getData<Pixel>(m_detector->name());
     if(pixels == nullptr) {
-        LOG(DEBUG) << "Detector " << m_detector->Name() << " does not have any pixels on the clipboard";
+        LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
     }
 
@@ -170,8 +170,8 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         deviceClusters->push_back(cluster);
     }
 
-    clipboard->putData(deviceClusters, m_detector->Name());
-    LOG(DEBUG) << "Put " << deviceClusters->size() << " clusters on the clipboard for detector " << m_detector->Name()
+    clipboard->putData(deviceClusters, m_detector->name());
+    LOG(DEBUG) << "Put " << deviceClusters->size() << " clusters on the clipboard for detector " << m_detector->name()
                << ". From " << pixels->size() << " pixels";
 
     // Return value telling analysis to keep running

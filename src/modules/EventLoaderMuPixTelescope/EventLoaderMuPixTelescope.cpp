@@ -29,7 +29,7 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration config, std::
 void EventLoaderMuPixTelescope::initialise() {
 
     for(auto& detector : get_detectors()) {
-        LOG(DEBUG) << "Initialise for detector " + detector->Name();
+        LOG(DEBUG) << "Initialise for detector " + detector->name();
     }
 
     // Need to check if the files do exist
@@ -71,7 +71,7 @@ StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) 
     vector<string> detectors;
     for(auto& detector : get_detectors()) {
         // Get the detector name
-        std::string detectorName = detector->Name();
+        std::string detectorName = detector->name();
         detectors.push_back(detectorName);
         LOG(DEBUG) << "Detector with name " << detectorName;
     }

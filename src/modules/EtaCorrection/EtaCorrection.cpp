@@ -26,10 +26,10 @@ void EtaCorrection::initialise() {
     double pitchY = m_detector->pitch().Y();
 
     // Get info from configuration:
-    std::vector<double> m_etaConstantsX = m_config.getArray<double>("eta_constants_x_" + m_detector->Name(), {});
-    std::vector<double> m_etaConstantsY = m_config.getArray<double>("eta_constants_y_" + m_detector->Name(), {});
+    std::vector<double> m_etaConstantsX = m_config.getArray<double>("eta_constants_x_" + m_detector->name(), {});
+    std::vector<double> m_etaConstantsY = m_config.getArray<double>("eta_constants_y_" + m_detector->name(), {});
     if(!m_etaConstantsX.empty() || !m_etaConstantsY.empty()) {
-        LOG(INFO) << "Found Eta correction factors for detector \"" << m_detector->Name()
+        LOG(INFO) << "Found Eta correction factors for detector \"" << m_detector->name()
                   << "\": " << (m_etaConstantsX.empty() ? "" : "X ") << (m_etaConstantsY.empty() ? "" : "Y ");
     }
 
@@ -86,9 +86,9 @@ void EtaCorrection::applyEta(Cluster* cluster) {
 StatusCode EtaCorrection::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the clusters
-    auto clusters = clipboard->getData<Cluster>(m_detector->Name());
+    auto clusters = clipboard->getData<Cluster>(m_detector->name());
     if(clusters == nullptr) {
-        LOG(DEBUG) << "Detector " << m_detector->Name() << " does not have any clusters on the clipboard";
+        LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any clusters on the clipboard";
         return StatusCode::Success;
     }
 

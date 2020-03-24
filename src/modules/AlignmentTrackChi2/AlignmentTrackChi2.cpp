@@ -106,7 +106,7 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
         // Find the cluster that needs to have its position recalculated
         for(size_t iTrackCluster = 0; iTrackCluster < trackClusters.size(); iTrackCluster++) {
             Cluster* trackCluster = trackClusters[iTrackCluster];
-            if(globalDetector->Name() != trackCluster->detectorID()) {
+            if(globalDetector->name() != trackCluster->detectorID()) {
                 continue;
             }
 
@@ -165,10 +165,10 @@ void AlignmentTrackChi2::finalise() {
 
         int det = 0;
         for(auto& detector : get_detectors()) {
-            string detectorID = detector->Name();
+            string detectorID = detector->name();
 
             // Do not align the reference plane
-            if(detector->IsReference() || detector->IsDUT() || detector->IsAuxiliary()) {
+            if(detector->isReference() || detector->isDUT() || detector->isAuxiliary()) {
                 continue;
             }
 
@@ -233,7 +233,7 @@ void AlignmentTrackChi2::finalise() {
             rotZ[detectorID].push_back(
                 static_cast<double>(Units::convert(detector->rotation().Z() - old_orientation.Z(), "deg")));
 
-            LOG(INFO) << detector->Name() << "/" << iteration << " dT"
+            LOG(INFO) << detector->name() << "/" << iteration << " dT"
                       << Units::display(detector->displacement() - old_position, {"mm", "um"}) << " dR"
                       << Units::display(detector->rotation() - old_orientation, {"deg"});
 
@@ -260,11 +260,11 @@ void AlignmentTrackChi2::finalise() {
     // Now list the new alignment parameters
     for(auto& detector : get_detectors()) {
         // Do not align the reference plane
-        if(detector->IsReference() || detector->IsDUT() || detector->IsAuxiliary()) {
+        if(detector->isReference() || detector->isDUT() || detector->isAuxiliary()) {
             continue;
         }
 
-        LOG(STATUS) << detector->Name() << " new alignment: " << std::endl
+        LOG(STATUS) << detector->name() << " new alignment: " << std::endl
                     << "T" << Units::display(detector->displacement(), {"mm", "um"}) << " R"
                     << Units::display(detector->rotation(), {"deg"});
 
@@ -272,39 +272,39 @@ void AlignmentTrackChi2::finalise() {
         std::vector<double> iterations(nIterations);
         std::iota(std::begin(iterations), std::end(iterations), 0);
 
-        std::string name = "alignment_correction_displacementX_" + detector->Name();
-        align_correction_shiftX[detector->Name()] =
-            new TGraph(static_cast<int>(shiftsX[detector->Name()].size()), &iterations[0], &shiftsX[detector->Name()][0]);
-        align_correction_shiftX[detector->Name()]->GetXaxis()->SetTitle("# iteration");
-        align_correction_shiftX[detector->Name()]->GetYaxis()->SetTitle("correction [#mum]");
-        align_correction_shiftX[detector->Name()]->Write(name.c_str());
+        std::string name = "alignment_correction_displacementX_" + detector->name();
+        align_correction_shiftX[detector->name()] =
+            new TGraph(static_cast<int>(shiftsX[detector->name()].size()), &iterations[0], &shiftsX[detector->name()][0]);
+        align_correction_shiftX[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_shiftX[detector->name()]->GetYaxis()->SetTitle("correction [#mum]");
+        align_correction_shiftX[detector->name()]->Write(name.c_str());
 
-        name = "alignment_correction_displacementY_" + detector->Name();
-        align_correction_shiftY[detector->Name()] =
-            new TGraph(static_cast<int>(shiftsY[detector->Name()].size()), &iterations[0], &shiftsY[detector->Name()][0]);
-        align_correction_shiftY[detector->Name()]->GetXaxis()->SetTitle("# iteration");
-        align_correction_shiftY[detector->Name()]->GetYaxis()->SetTitle("correction [#mum]");
-        align_correction_shiftY[detector->Name()]->Write(name.c_str());
+        name = "alignment_correction_displacementY_" + detector->name();
+        align_correction_shiftY[detector->name()] =
+            new TGraph(static_cast<int>(shiftsY[detector->name()].size()), &iterations[0], &shiftsY[detector->name()][0]);
+        align_correction_shiftY[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_shiftY[detector->name()]->GetYaxis()->SetTitle("correction [#mum]");
+        align_correction_shiftY[detector->name()]->Write(name.c_str());
 
-        name = "alignment_correction_rotationX_" + detector->Name();
-        align_correction_rotX[detector->Name()] =
-            new TGraph(static_cast<int>(rotX[detector->Name()].size()), &iterations[0], &rotX[detector->Name()][0]);
-        align_correction_rotX[detector->Name()]->GetXaxis()->SetTitle("# iteration");
-        align_correction_rotX[detector->Name()]->GetYaxis()->SetTitle("correction [deg]");
-        align_correction_rotX[detector->Name()]->Write(name.c_str());
+        name = "alignment_correction_rotationX_" + detector->name();
+        align_correction_rotX[detector->name()] =
+            new TGraph(static_cast<int>(rotX[detector->name()].size()), &iterations[0], &rotX[detector->name()][0]);
+        align_correction_rotX[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_rotX[detector->name()]->GetYaxis()->SetTitle("correction [deg]");
+        align_correction_rotX[detector->name()]->Write(name.c_str());
 
-        name = "alignment_correction_rotationY_" + detector->Name();
-        align_correction_rotY[detector->Name()] =
-            new TGraph(static_cast<int>(rotY[detector->Name()].size()), &iterations[0], &rotY[detector->Name()][0]);
-        align_correction_rotY[detector->Name()]->GetXaxis()->SetTitle("# iteration");
-        align_correction_rotY[detector->Name()]->GetYaxis()->SetTitle("correction [deg]");
-        align_correction_rotY[detector->Name()]->Write(name.c_str());
+        name = "alignment_correction_rotationY_" + detector->name();
+        align_correction_rotY[detector->name()] =
+            new TGraph(static_cast<int>(rotY[detector->name()].size()), &iterations[0], &rotY[detector->name()][0]);
+        align_correction_rotY[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_rotY[detector->name()]->GetYaxis()->SetTitle("correction [deg]");
+        align_correction_rotY[detector->name()]->Write(name.c_str());
 
-        name = "alignment_correction_rotationZ_" + detector->Name();
-        align_correction_rotZ[detector->Name()] =
-            new TGraph(static_cast<int>(rotZ[detector->Name()].size()), &iterations[0], &rotZ[detector->Name()][0]);
-        align_correction_rotZ[detector->Name()]->GetXaxis()->SetTitle("# iteration");
-        align_correction_rotZ[detector->Name()]->GetYaxis()->SetTitle("correction [deg]");
-        align_correction_rotZ[detector->Name()]->Write(name.c_str());
+        name = "alignment_correction_rotationZ_" + detector->name();
+        align_correction_rotZ[detector->name()] =
+            new TGraph(static_cast<int>(rotZ[detector->name()].size()), &iterations[0], &rotZ[detector->name()][0]);
+        align_correction_rotZ[detector->name()]->GetXaxis()->SetTitle("# iteration");
+        align_correction_rotZ[detector->name()]->GetYaxis()->SetTitle("correction [deg]");
+        align_correction_rotZ[detector->name()]->Write(name.c_str());
     }
 }
