@@ -159,6 +159,11 @@ ADD_SUBDIRECTORY(3rdparty/GeneralBrokenLines)
 SET(CORRYVRECKAN_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
 SET(CORRYVRECKAN_DEPS_LIBRARIES Eigen3::Eigen ROOT::Core ROOT::GenVector ROOT::Geom ROOT::RIO ROOT::Hist ROOT::Minuit ROOT::Minuit2 GBL)
 
+# Add the LCG view as dependency if set:
+IF(DEFINED ENV{LCG_VIEW})
+    ADD_RUNTIME_DEP($ENV{LCG_VIEW})
+ENDIF()
+
 # Add "thisroot.sh" as runtime dependency for setup.sh file:
 ADD_RUNTIME_DEP(thisroot.sh)
 
