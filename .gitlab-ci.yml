@@ -98,12 +98,12 @@ cmp:cc7-llvm:
             - lib
         expire_in: 3 hour
 
-cmp:mac1014-clang:
+cmp:mac1015-clang:
     stage: compilation
     tags:
         - mac
     script:
-        - source .gitlab-ci.d/init_mac.sh
+        - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
         - mkdir build
         - cd build
