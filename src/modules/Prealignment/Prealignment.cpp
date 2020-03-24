@@ -122,7 +122,7 @@ void Prealignment::finalise() {
     }
 
     // Move all but the reference:
-    if(!m_detector->isReference()) {
+    if(!m_detector->IsReference()) {
 
         double shift_X = 0.;
         double shift_Y = 0.;
