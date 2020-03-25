@@ -27,7 +27,7 @@ GblTrack::GblTrack(const GblTrack& track) : Track(track) {
 
 void GblTrack::fit() {
 
-    // Fitting with 2 clusters or less is pointless
+    // Fitting with less than 2 clusters is pointless
     if(m_trackClusters.size() < 2) {
         throw TrackError(typeid(GblTrack), " attempting to fit a track with less than 2 clusters");
     }
@@ -55,7 +55,7 @@ void GblTrack::fit() {
 
     // add volume scattering length - for now simply the distance between first and last plane
     if(m_use_volume_scatter)
-        total_material += (m_planes.end()->postion() - m_planes.front().postion()) / m_scattering_length_volume;
+        total_material += (m_planes.back().position() - m_planes.front().position()) / m_scattering_length_volume;
 
     std::vector<GblPoint> points;
     // get the seedcluster for the fit - simply the first one in the list
@@ -166,7 +166,7 @@ void GblTrack::fit() {
                      &points,
                      this](std::vector<Plane>::iterator& plane) {
         seedlocal = plane->toLocal() * seedlocal;
-        double dist = plane->postion() - prevPos;
+        double dist = plane->position() - prevPos;
         auto myjac = jac(plane->toLocal(), prevToGlobal, prevToLocal, dist);
         auto transformedJac = toGbl * myjac * toProteus;
 
@@ -182,7 +182,7 @@ void GblTrack::fit() {
         }
         prevToGlobal = plane->toGlobal();
         prevToLocal = plane->toLocal();
-        prevPos = plane->postion();
+        prevPos = plane->position();
         points.push_back(point);
         plane->setGblPos(unsigned(points.size())); // gbl starts counting at 1
         seedlocal = plane->toGlobal() * seedlocal;
@@ -270,7 +270,7 @@ ROOT::Math::XYZPoint GblTrack::intercept(double z) const {
     }
     for(auto l : m_planes) {
         layer = l.name();
-        if(l.postion() >= z) {
+        if(l.position() >= z) {
             found = true;
             break;
         }
@@ -283,7 +283,7 @@ ROOT::Math::XYZPoint GblTrack::intercept(double z) const {
 
 ROOT::Math::XYZPoint GblTrack::state(std::string detectorID) const {
     // The track state at any plane is the seed (always first cluster for now) plus the correction for the plane
-    // And as rotations are ignored, the z position is simply the detectors z postion
+    // And as rotations are ignored, the z position is simply the detectors z position
     // Let's check first if the data is fitted and all components are there
     if(!m_isFitted)
         throw TrackError(typeid(GblTrack), " detector " + detectorID + " state is not defined before fitting");

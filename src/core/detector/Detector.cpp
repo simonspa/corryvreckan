@@ -113,6 +113,10 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         LOG(TRACE) << "  Time resolution: " << Units::display(m_timeResolution, {"ms", "us"});
     }
 
+    if(config.has("calibration_file")) {
+        m_calibrationfile = config.getPath("calibration_file");
+    }
+
     if(!isAuxiliary()) {
         if(config.has("mask_file")) {
             m_maskfile_name = config.get<std::string>("mask_file");

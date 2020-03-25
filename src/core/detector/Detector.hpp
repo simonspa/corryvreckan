@@ -178,6 +178,15 @@ namespace corryvreckan {
         PositionVector3D<Cartesian3D<double>> normal() const { return m_normal; };
 
         /**
+         * @brief Get path of the file with calibration information
+         * @return Path of the calibration file
+         *
+         * @note The data contained in the calibration file is detector-specific and is
+         * not parsed. This is left to the individual modules decoding the detector data.
+         */
+        std::string calibrationFile() const { return m_calibrationfile; }
+
+        /**
          * @brief Get path of the file with pixel mask information
          * @return Path of the pixel mask file
          */
@@ -310,6 +319,9 @@ namespace corryvreckan {
         // Normal to the detector surface and point on the surface
         PositionVector3D<Cartesian3D<double>> m_normal;
         PositionVector3D<Cartesian3D<double>> m_origin;
+
+        // Path of calibration file
+        std::string m_calibrationfile;
 
         // List of masked channels
         std::map<int, bool> m_masked;

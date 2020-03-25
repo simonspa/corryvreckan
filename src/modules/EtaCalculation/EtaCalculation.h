@@ -20,9 +20,9 @@
 
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
+#include "objects/MCParticle.hpp"
 #include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
-
 namespace corryvreckan {
     /** @ingroup Modules
      */
@@ -41,7 +41,8 @@ namespace corryvreckan {
     private:
         ROOT::Math::XYVector pixelIntercept(Track* tr);
         void calculateEta(Track* track, Cluster* cluster);
-        std::string fit(TF1* function, std::string fname, TProfile* profile);
+        void calculateEta(MCParticle* mcPartcile, Cluster* cluster) std::string
+            fit(TF1* function, std::string fname, TProfile* profile);
 
         std::shared_ptr<Detector> m_detector;
         double m_chi2ndofCut;

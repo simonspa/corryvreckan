@@ -54,11 +54,11 @@ void AnalysisEfficiency::initialise() {
     hChipEfficiencyMap_trackPos = new TProfile2D("chipEfficiencyMap_trackPos",
                                                  title.c_str(),
                                                  m_detector->nPixels().X(),
-                                                 0,
-                                                 m_detector->nPixels().X(),
+                                                 -0.5,
+                                                 m_detector->nPixels().X() - 0.5,
                                                  m_detector->nPixels().Y(),
-                                                 0,
-                                                 m_detector->nPixels().Y(),
+                                                 -0.5,
+                                                 m_detector->nPixels().Y() - 0.5,
                                                  0,
                                                  1);
     title = m_detector->name() + " Global efficiency map;x [mm];y [mm];efficiency";
@@ -76,11 +76,11 @@ void AnalysisEfficiency::initialise() {
     hChipEfficiencyMap_clustPos = new TProfile2D("chipEfficiencyMap_clustPos",
                                                  title.c_str(),
                                                  m_detector->nPixels().X(),
-                                                 0,
-                                                 m_detector->nPixels().X(),
+                                                 -0.5,
+                                                 m_detector->nPixels().X() - 0.5,
                                                  m_detector->nPixels().Y(),
-                                                 0,
-                                                 m_detector->nPixels().Y(),
+                                                 -0.5,
+                                                 m_detector->nPixels().Y() - 0.5,
                                                  0,
                                                  1);
     title = m_detector->name() + " Global efficiency map;x [mm];y [mm];efficiency";
@@ -205,7 +205,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         auto globalIntercept = m_detector->getIntercept(track);
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
-        LOG(TRACE) << " Checking if track is outisde DUT area";
+        LOG(TRACE) << " Checking if track is outside DUT area";
         if(!m_detector->hasIntercept(track, 1)) {
             LOG(DEBUG) << " - track outside DUT area: " << localIntercept;
             n_dut++;
@@ -213,7 +213,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Check that track is within region of interest using winding number algorithm
-        LOG(TRACE) << " Checking if track is outisde ROI";
+        LOG(TRACE) << " Checking if track is outside ROI";
         if(!m_detector->isWithinROI(track)) {
             LOG(DEBUG) << " - track outside ROI";
             n_roi++;

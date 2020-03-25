@@ -29,7 +29,7 @@ namespace corryvreckan {
 
         // Plane(const Plane& p);
         // access elements
-        double postion() const { return m_z; }
+        double position() const { return m_z; }
         double materialbudget() const { return m_x_x0; }
         bool hasCluster() const { return m_has_cluster; }
         std::string name() const { return m_name; }
