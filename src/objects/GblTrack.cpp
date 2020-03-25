@@ -128,6 +128,7 @@ void GblTrack::fit() {
         //        std::cout << "seed: "<<*seedcluster <<std::endl;
         //        std::cout << "current: "<< *cluster <<std::endl;
 
+        // FIXME: We need the correct initial seed and then do it all in local coordinates
         initialResidual(0) = cluster->global().x() - seedcluster->global().x();
         initialResidual(1) = cluster->global().y() - seedcluster->global().y();
         // Uncertainty of single hit in local coordinates
@@ -168,6 +169,7 @@ void GblTrack::fit() {
         double dist = plane->postion() - prevPos;
         auto myjac = jac(plane->toLocal(), prevToGlobal, prevToLocal, dist);
         auto transformedJac = toGbl * myjac * toProteus;
+
         if(m_logging) {
             std::cout << plane->name() << ", dist to prev:" << dist << "\n ******** Init Jac ******* \n"
                       << myjac << "\n -------- GBL Jac ---- \n"
