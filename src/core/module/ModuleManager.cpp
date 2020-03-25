@@ -51,7 +51,8 @@ void ModuleManager::load_detectors() {
     for(auto& detector_section : conf_manager_->getDetectorConfigurations()) {
 
         std::string name = detector_section.getName();
-        std::string coordinate = detector_section.get<std::string>("coordinate");
+        std::string coordinate = detector_section.get<std::string>("coordinates");
+        std::transform(coordinate.begin(), coordinate.end(), coordinate.begin(), ::tolower);
 
         // Check if we have a duplicate:
         if(std::find_if(m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) {
@@ -64,7 +65,7 @@ void ModuleManager::load_detectors() {
         LOG_PROGRESS(STATUS, "DET_LOAD_LOOP") << "Loading detector " << name;
         // @to do: other detector types, e.g., ATLAS endcap strip detector
         std::shared_ptr<Detector> detector;
-        if(coordinate == "Cartesian")
+        if(coordinate == "cartesian")
             detector = std::make_shared<PlanarDetector>(detector_section);
 
         // Check if we already found a reference plane:
