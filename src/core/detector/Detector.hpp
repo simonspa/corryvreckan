@@ -81,6 +81,13 @@ namespace corryvreckan {
         Detector(const Configuration& config);
 
         /**
+         * @brief Factory to dynamically create detectors
+         * @param The name of the coordinates which should be used
+         * @return By param coordinates assigned detector to be used
+         */
+        static std::shared_ptr<Detector> Factory(const Configuration& config);
+
+        /**
          * @brief Get type of the detector
          * @return Type of the detector model
          */
@@ -344,4 +351,5 @@ namespace corryvreckan {
     };
 } // namespace corryvreckan
 
+#include "PlanarDetector.hpp"
 #endif // CORRYVRECKAN_DETECTOR_H

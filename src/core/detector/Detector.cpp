@@ -77,6 +77,17 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     }
 }
 
+std::shared_ptr<Detector> corryvreckan::Detector::Factory(const Configuration& config) {
+    // default coordinate is cartesian coordinate
+    std::string coordinates = config.get<std::string>("coordinates", "cartesian");
+    std::transform(coordinates.begin(), coordinates.end(), coordinates.begin(), ::tolower);
+    if(coordinates == "cartesian") {
+        return std::make_shared<PlanarDetector>(config);
+    } else {
+        throw InvalidValueError(config, "coordinates", "Coordiantes can only set to be cartesian now");
+    }
+}
+
 double Detector::getTimeResolution() const {
     if(m_timeResolution > 0) {
         return m_timeResolution;

@@ -51,8 +51,8 @@ void ModuleManager::load_detectors() {
     for(auto& detector_section : conf_manager_->getDetectorConfigurations()) {
 
         std::string name = detector_section.getName();
-        std::string coordinate = detector_section.get<std::string>("coordinates", "cartesian");
-        std::transform(coordinate.begin(), coordinate.end(), coordinate.begin(), ::tolower);
+        // std::string coordinate = detector_section.get<std::string>("coordinates", "cartesian");
+        // std::transform(coordinate.begin(), coordinate.end(), coordinate.begin(), ::tolower);
 
         // Check if we have a duplicate:
         if(std::find_if(m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) {
@@ -63,11 +63,9 @@ void ModuleManager::load_detectors() {
         }
 
         LOG_PROGRESS(STATUS, "DET_LOAD_LOOP") << "Loading detector " << name;
+        // the default coordinates is cartesian, any other type is forbidden now
         // @to do: other detector types, e.g., ATLAS endcap strip detector
-        // default coordinate is cartesian coordinate
-        std::shared_ptr<Detector> detector;
-        if(coordinate == "cartesian")
-            detector = std::make_shared<PlanarDetector>(detector_section);
+        auto detector = Detector::Factory(detector_section);
 
         // Check if we already found a reference plane:
         if(m_reference != nullptr && detector->isReference()) {
