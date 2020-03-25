@@ -350,8 +350,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         if(track->isFitted()) {
             tracks->push_back(track);
         } else {
-            LOG_N(WARNING, 250) << "Rejected a track with eventtimestamp of " << clipboard->getEvent()->timestamp()
-                                << " due to failure in fitting";
+            LOG_N(WARNING, 250) << "Rejected a track with timestamp " << track->timestamp() << " due to failure in fitting";
             delete track;
             continue;
         }
