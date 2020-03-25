@@ -64,8 +64,9 @@ void ModuleManager::load_detectors() {
 
         LOG_PROGRESS(STATUS, "DET_LOAD_LOOP") << "Loading detector " << name;
         // @to do: other detector types, e.g., ATLAS endcap strip detector
+        // default coordinate is cartesian coordinate
         std::shared_ptr<Detector> detector;
-        if(coordinate == "cartesian")
+        if(coordinate == "cartesian" || coordinate == "")
             detector = std::make_shared<PlanarDetector>(detector_section);
 
         // Check if we already found a reference plane:
