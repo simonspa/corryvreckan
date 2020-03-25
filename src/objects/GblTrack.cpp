@@ -28,7 +28,7 @@ GblTrack::GblTrack(const GblTrack& track) : Track(track) {
 
 void GblTrack::fit() {
 
-    // Fitting with 2 clusters or less is pointless
+    // Fitting with less than 2 clusters is pointless
     if(m_trackClusters.size() < 2) {
         throw TrackError(typeid(GblTrack), " attempting to fit a track with less than 2 clusters");
     }
