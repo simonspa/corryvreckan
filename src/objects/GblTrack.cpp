@@ -52,12 +52,14 @@ void GblTrack::fit() {
     }
     std::sort(m_planes.begin(), m_planes.end());
     // add volume scattering length - we ignore for now the material thickness while considering air
-    total_material += (m_planes.end()->postion() - m_planes.front().postion()) / m_scattering_length_volume;
+    if(m_use_volume_scatter) {
+        total_material += (m_planes.end()->position() - m_planes.front().position()) / m_scattering_length_volume;
+    }
 
     std::vector<GblPoint> points;
     // get the seedcluster for the fit - simply the first one in the list
     auto seedcluster = m_planes.front().cluster();
-    double prevPos = 0;
+    double prevPos = m_planes.front().position();
 
     // lambda to calculate the scattering theta
     auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
@@ -91,7 +93,7 @@ void GblTrack::fit() {
     // lambda to add plane (not the first one) and air scatterers //FIXME: Where to put them?
     auto addPlane = [&JacToNext, &prevPos, &addMeasurementtoGblPoint, &addScattertoGblPoint, &points, this](
                         std::vector<Plane>::iterator& plane) {
-        double dist = plane->postion() - prevPos;
+        double dist = plane->position() - prevPos;
         double frac1 = 0.21, frac2 = 0.58;
         // Current layout
         // |        |        |       |
@@ -114,7 +116,7 @@ void GblTrack::fit() {
         if(plane->hasCluster()) {
             addMeasurementtoGblPoint(point, plane);
         }
-        prevPos = plane->postion();
+        prevPos = plane->position();
         points.push_back(point);
         plane->setGblPos(unsigned(points.size())); // gbl starts counting at 1
     };
@@ -191,7 +193,7 @@ ROOT::Math::XYZPoint GblTrack::intercept(double z) const {
     }
     for(auto l : m_planes) {
         layer = l.name();
-        if(l.postion() >= z) {
+        if(l.position() >= z) {
             found = true;
             break;
         }
@@ -204,7 +206,7 @@ ROOT::Math::XYZPoint GblTrack::intercept(double z) const {
 
 ROOT::Math::XYZPoint GblTrack::state(std::string detectorID) const {
     // The track state at any plane is the seed (always first cluster for now) plus the correction for the plane
-    // And as rotations are ignored, the z position is simply the detectors z postion
+    // And as rotations are ignored, the z position is simply the detectors z position
     // Let's check first if the data is fitted and all components are there
 
     if(!m_isFitted)
