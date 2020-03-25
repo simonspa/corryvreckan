@@ -53,7 +53,7 @@ void GblTrack::fit() {
     std::sort(m_planes.begin(), m_planes.end());
     // add volume scattering length - we ignore for now the material thickness while considering air
     if(m_use_volume_scatter) {
-        total_material += (m_planes.back()->position() - m_planes.front().position()) / m_scattering_length_volume;
+        total_material += (m_planes.back().position() - m_planes.front().position()) / m_scattering_length_volume;
     }
 
     std::vector<GblPoint> points;
