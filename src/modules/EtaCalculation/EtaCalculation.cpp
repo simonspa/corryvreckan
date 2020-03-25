@@ -80,33 +80,12 @@ void EtaCalculation::calculateEta(Track* track, Cluster* cluster) {
         m_etaDistributionYprofile->Fill(inPixel.Y(), pxIntercept.Y());
     }
 }
-void EtaCalculation::calculateEta(MCParticle* mcParticle, Cluster* cluster) {
-    // Ignore single pixel clusters
-    if(cluster->size() == 1) {
-        return;
-    }
-    auto detector = get_detector(cluster->detectorID());
-    auto pxIntercept = mcParticle->getLocalStart();
-    PositionVector3D<Cartesian3D<double>> localPosition(cluster->column(), cluster->row(), 0.);
-    auto inPixel = detector->inPixel(localPosition);
-
-    if(cluster->columnWidth() == 2) {
-        m_etaDistributionX->Fill(inPixel.X(), pxIntercept.X());
-        m_etaDistributionXprofile->Fill(inPixel.X(), pxIntercept.X());
-    }
-
-    if(cluster->rowWidth() == 2) {
-        m_etaDistributionY->Fill(inPixel.Y(), pxIntercept.Y());
-        m_etaDistributionYprofile->Fill(inPixel.Y(), pxIntercept.Y());
-    }
-}
 
 StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
-    auto MCParticles = clipboard->getData<MCParticle>();
-    if(tracks == nullptr && MCParticles == nullptr) {
+    if(tracks == nullptr) {
         LOG(DEBUG) << "Neither tracks nor MCParticles on the clipboard";
         return StatusCode::Success;
     }
@@ -135,14 +114,6 @@ StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
                 calculateEta(track, cluster);
             }
         }
-    if(!(MCParticles == nullptr)) {
-        auto clusters = clipboard->getData<Cluster>(m_detector->name());
-        for(auto& p : *MCParticles) {
-            for(auto& c : *clusters) {
-                calculateEta(*p, *c);
-            }
-        }
-    }
 
     // Return value telling analysis to keep running
     return StatusCode::Success;
