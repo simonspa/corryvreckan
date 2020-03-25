@@ -82,8 +82,8 @@ namespace corryvreckan {
 
         /**
          * @brief Factory to dynamically create detectors
-         * @param The name of the coordinates which should be used
-         * @return By param coordinates assigned detector to be used
+         * @param config Configuration object describing the detector
+         * @return shared_ptr that contains the real detector
          */
         static std::shared_ptr<Detector> Factory(const Configuration& config);
 
