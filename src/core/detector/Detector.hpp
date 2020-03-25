@@ -327,7 +327,6 @@ namespace corryvreckan {
         // Detector information
         std::string m_detectorType;
         std::string m_detectorName;
-        std::string m_detectorCoordinate;
 
         double m_timeOffset;
         double m_timeResolution;
