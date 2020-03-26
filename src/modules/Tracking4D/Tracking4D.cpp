@@ -435,3 +435,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     LOG(DEBUG) << "End of event";
     return StatusCode::Success;
 }
+
+void Tracking4D::finalise() {
+    std::cout << "Mean chi2 of tracks" << trackChi2->GetMean() << " with " << trackChi2->GetEntries() << " entries and "
+              << trackChi2->GetBinContent(trackChi2->GetNbinsX() + 1) << " overflows" << std::endl;
+    LOG(WARNING) << "Mean chi2 of tracks" << trackChi2->GetMean();
+}
