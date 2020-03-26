@@ -12,6 +12,7 @@
 #define PREALIGNMENT_H 1
 
 #include <TCanvas.h>
+#include <TF1.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <iostream>
@@ -49,6 +50,8 @@ namespace corryvreckan {
         double max_correlation_rms;
         double damping_factor;
         double timeCut;
+        std::string method;
+        int fit_range_rel;
     };
 } // namespace corryvreckan
 #endif // PREALIGNMENT_H
