@@ -12,9 +12,10 @@
 #include "Track.hpp"
 #include "exceptions.h"
 
+#include <Math/Point3D.h>
 #include "GblPoint.h"
 #include "GblTrajectory.h"
-
+#include "Math/Vector3D.h"
 using namespace corryvreckan;
 using namespace gbl;
 
@@ -119,8 +120,8 @@ void GblTrack::fit() {
         Eigen::Vector2d initialResidual;
 
         // FIXME: We need the correct initial seed and then do it all in local coordinates
-        //        initialResidual(0) = cluster->global().x() - m_planes.begin()->cluster()->global().x();
-        //        initialResidual(1) = cluster->global().y() - m_planes.begin()->cluster()->global().y();
+        //                initialResidual(0) = cluster->global().x() - m_planes.begin()->cluster()->global().x();
+        //                initialResidual(1) = cluster->global().y() - m_planes.begin()->cluster()->global().y();
         initialResidual(0) = cluster->local().x() - localPosTrack[0];
         initialResidual(1) = cluster->local().y() - localPosTrack[1];
         // Uncertainty of single hit in local coordinates
@@ -160,11 +161,10 @@ void GblTrack::fit() {
         auto tmp_local = plane->toLocal() * globalTrackPos;
         localPosTrack = Eigen::Vector4d{tmp_local.x(), tmp_local.y(), tmp_local.z(), 1};
         localTangent = fromTransform3DtoEigenMatrix(plane->toLocal()) * globalTangent;
-
-        double dist = localPosTrack.z();
+        double dist = localPosTrack[2];
         if(m_logging) {
             std::cout << fromTransform3DtoEigenMatrix(plane->toLocal()) << "\n local tan before normalization"
-                      << localTangent << std::endl;
+                      << localTangent << "\n distance: " << dist << std::endl;
         }
         localTangent /= localTangent.z();
         localPosTrack -= dist * localTangent;
@@ -180,10 +180,12 @@ void GblTrack::fit() {
         }
         auto transformedJac = toGbl * myjac * toProteus;
 
-        if(m_logging) {
-            std::cout << plane->name() << ", dist to prev:" << dist << "\n ******** Init Jac ******* \n"
-                      << myjac << "\n -------- GBL Jac ---- \n"
-                      << transformedJac << std::endl;
+        if(m_logging /*|| true*/) {
+            std::cout << "Plane " << plane->name() << " jac\n"
+                      << transformedJac << std::endl
+                      << "\n to local \n"
+                      << plane->toLocal() << "\n to global \n"
+                      << plane->toGlobal();
         }
         auto point = GblPoint(transformedJac);
         addScattertoGblPoint(point, plane->materialbudget());
@@ -193,25 +195,14 @@ void GblTrack::fit() {
         prevToGlobal = plane->toGlobal();
         prevToLocal = plane->toLocal();
         points.push_back(point);
-        plane->setGblPos(unsigned(points.size()));      // gbl starts counting at 1
-        globalTrackPos = plane->toGlobal() * tmp_local; // reference slope stays unchanged
+        plane->setGblPos(unsigned(points.size())); // gbl starts counting at 1
+        globalTrackPos =
+            plane->toGlobal() *
+            ROOT::Math::XYZPoint(localPosTrack(0), localPosTrack(1), localPosTrack(2)); // reference slope stays unchanged
     };
 
     // First GblPoint
     std::vector<Plane>::iterator pl = m_planes.begin();
-    //    Eigen::Matrix<double, 6, 6> minit = Eigen::Matrix<double, 6, 6>::Identity();
-
-    //    minit(0, 0) = 0; // this is the time component that we ignore currently
-
-    //    auto point = GblPoint(toGbl * minit * toProteus);
-    //    addScattertoGblPoint(point, pl->materialbudget());
-    //    if(pl->hasCluster()) {
-    //        addMeasurementtoGblPoint(point, pl);
-    //    }
-    //    points.push_back(point);
-    //    pl->setGblPos(1);
-    //    pl++;
-
     // add all other points
     for(; pl != m_planes.end(); ++pl) {
         addPlane(pl);
@@ -270,6 +261,8 @@ void GblTrack::fit() {
             std::cout << m_residual[plane.name()] << "\t" << m_kink[plane.name()] << std::endl;
         }
     }
+    //    throw TrackFitError(typeid(GblTrack), "internal GBL Error ");
+
     m_isFitted = true;
 }
 

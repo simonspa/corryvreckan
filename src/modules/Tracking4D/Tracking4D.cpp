@@ -75,9 +75,9 @@ void Tracking4D::initialise() {
 
     // Set up histograms
     std::string title = "Track #chi^{2};#chi^{2};events";
-    trackChi2 = new TH1F("trackChi2", title.c_str(), 150, 0, 150);
+    trackChi2 = new TH1F("trackChi2", title.c_str(), 750, 0, 750);
     title = "Track #chi^{2}/ndof;#chi^{2}/ndof;events";
-    trackChi2ndof = new TH1F("trackChi2ndof", title.c_str(), 100, 0, 50);
+    trackChi2ndof = new TH1F("trackChi2ndof", title.c_str(), 200, 0, 200);
     title = "Clusters per track;clusters;tracks";
     clustersPerTrack = new TH1F("clustersPerTrack", title.c_str(), 10, 0, 10);
     title = "Track multiplicity;tracks;events";
@@ -115,7 +115,7 @@ void Tracking4D::initialise() {
         }
 
         title = detectorID + " Residual X;x_{track}-x [mm];events";
-        residualsX[detectorID] = new TH1F("residualsX", title.c_str(), 500, -0.1, 0.1);
+        residualsX[detectorID] = new TH1F("residualsX", title.c_str(), 500, -.1, .1);
         title = detectorID + " Residual X, cluster column width 1;x_{track}-x [mm];events";
         residualsXwidth1[detectorID] = new TH1F("residualsXwidth1", title.c_str(), 500, -0.1, 0.1);
         title = detectorID + " Residual X, cluster column width  2;x_{track}-x [mm];events";
@@ -123,7 +123,7 @@ void Tracking4D::initialise() {
         title = detectorID + " Residual X, cluster column width  3;x_{track}-x [mm];events";
         residualsXwidth3[detectorID] = new TH1F("residualsXwidth3", title.c_str(), 500, -0.1, 0.1);
         title = detectorID + " Residual Y;y_{track}-y [mm];events";
-        residualsY[detectorID] = new TH1F("residualsY", title.c_str(), 500, -0.1, 0.1);
+        residualsY[detectorID] = new TH1F("residualsY", title.c_str(), 500, -.1, .1);
         title = detectorID + " Residual Y, cluster row width 1;y_{track}-y [mm];events";
         residualsYwidth1[detectorID] = new TH1F("residualsYwidth1", title.c_str(), 500, -0.1, 0.1);
         title = detectorID + " Residual Y, cluster row width 2;y_{track}-y [mm];events";
