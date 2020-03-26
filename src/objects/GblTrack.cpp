@@ -57,50 +57,47 @@ void GblTrack::fit() {
     if(m_use_volume_scatter) {
         total_material += (m_planes.back().position() - m_planes.front().position()) / m_scattering_length_volume;
     }
-
-    std::vector<GblPoint> points;
-    // get the seedcluster for the fit - simply the first one in the list
-    double prevPos = m_planes.front().position();
-    auto prevToGlobal = m_planes.front().toGlobal();
-    auto prevToLocal = m_planes.front().toLocal();
-    auto seedlocal = seedcluster->global();
-
+    // lambda to add measurement (if existing) and scattering from single plane
     // lambda to calculate the scattering theta
     auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
         return (13.6 / m_momentum * sqrt(mbCurrent) * (1 + 0.038 * log(mbTotal)));
     };
-
-    // lambda to add measurement (if existing) and scattering from single plane
     auto addScattertoGblPoint = [&total_material, &scatteringTheta](GblPoint& point, double material) {
         Eigen::Vector2d scatterWidth;
         scatterWidth(0) = 1 / (scatteringTheta(material, total_material) * scatteringTheta(material, total_material));
         scatterWidth(1) = scatterWidth(0);
         point.addScatterer(Eigen::Vector2d::Zero(), scatterWidth);
     };
+    std::vector<GblPoint> points;
+    // get the seed  for the fit - simply global x/y of the first cluster in the list and z = 0
+    auto prevToGlobal = m_planes.front().toGlobal();
+    auto prevToLocal = m_planes.front().toLocal();
+    auto globalTrackPos = seedcluster->global();
+    globalTrackPos.SetZ(0);
+    auto globalTangent = Eigen::Vector4d(0, 0, 1, 0);
+    Eigen::Vector4d localPosTrack;
+    Eigen::Vector4d localTangent;
+
+    auto fromTransform3DtoEigenMatrix = [](Transform3D in) {
+        Eigen::Matrix4d t = Eigen::Matrix4d::Zero();
+        std::vector<double> c;
+        c.resize(12, 0);
+        in.GetComponents(c.begin());
+        // t << c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8], c[9], c[10], c[11];
+        t << c[0], c[1], c[2], 0, c[4], c[5], c[6], 0, c[8], c[9], c[10], 1;
+        return t;
+    };
 
     // lambda Jacobian
-    auto jac = [this](Transform3D p1, Transform3D p2, Transform3D p3, double distance) {
+    auto jac = [](const Eigen::Vector4d& tangent, const Eigen::Matrix4d& toTarget, double distance) {
         // lmbda to transform ROOT::Transform3D to an Eigen3 Matrix - we only need the rotations to get the correct
-        // transformation between the two local systems
-        auto fromTransform3DtoEigenMatrix = [](Transform3D in) {
-            Eigen::Matrix4d t = Eigen::Matrix4d::Zero();
-            std::vector<double> c;
-            c.resize(12, 0);
-            in.GetComponents(c.begin());
-            // t << c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8], c[9], c[10], c[11];
-            t << c[0], c[1], c[2], 0, c[4], c[5], c[6], 0, c[8], c[9], c[10], 1;
-            return t;
-        };
+        // transformation between the two local systems. Shift is handeld by distance
 
-        auto transfer = fromTransform3DtoEigenMatrix(p1 * p2);
-        // current code assumes no beam divergens - simply direction, but larger corrections required
-        Eigen::Vector4d direction = Eigen::Vector4d{0, 0, 1, 0};
-        direction = fromTransform3DtoEigenMatrix(p3) * direction;
         Eigen::Matrix<double, 4, 3> R;
-        R.col(0) = transfer.col(0);
-        R.col(1) = transfer.col(1);
-        R.col(2) = transfer.col(3);
-        Eigen::Vector4d S = transfer * direction * (1 / direction[2]);
+        R.col(0) = toTarget.col(0);
+        R.col(1) = toTarget.col(1);
+        R.col(2) = toTarget.col(3);
+        Eigen::Vector4d S = toTarget * tangent * (1 / tangent[2]);
 
         Eigen::Matrix<double, 3, 4> F = Eigen::Matrix<double, 3, 4>::Zero();
         F(0, 0) = 1;
@@ -111,36 +108,40 @@ void GblTrack::fit() {
         F(2, 2) = -S[3] / S[2];
         Eigen::Matrix<double, 6, 6> jaco;
 
-        if(m_logging) {
-            std::cout << "Transform3D 1: \n"
-                      << p1 << "\n Transform3D 2: \n " << p2 << "\n transfermatrix\n"
-                      << transfer << "\ndirection\n"
-                      << direction << "\n scaled direction \n " << S << "\n distance \n"
-                      << distance << std::endl;
-        }
-
-        jaco << F * R, (distance / S[2]) * F * R, Eigen::Matrix3d::Zero(), (1 / S[2]) * F * R;
-        jaco(5, 5) = 1; // set a future time component to zero
+        jaco << F * R, (-distance / S[2]) * F * R, Eigen::Matrix3d::Zero(), (1 / S[2]) * F * R;
+        jaco(5, 5) = 1; // set a future time component to 1
         return jaco;
     };
 
-    auto addMeasurementtoGblPoint = [&seedcluster, this](GblPoint& point, std::vector<Plane>::iterator& p) {
+    auto addMeasurementtoGblPoint = [&localTangent, &localPosTrack, &globalTrackPos, this](GblPoint& point,
+                                                                                           std::vector<Plane>::iterator& p) {
         auto cluster = p->cluster();
         Eigen::Vector2d initialResidual;
 
         // FIXME: We need the correct initial seed and then do it all in local coordinates
-        initialResidual(0) = cluster->global().x() - seedcluster->global().x();
-        initialResidual(1) = cluster->global().y() - seedcluster->global().y();
+        //        initialResidual(0) = cluster->global().x() - m_planes.begin()->cluster()->global().x();
+        //        initialResidual(1) = cluster->global().y() - m_planes.begin()->cluster()->global().y();
+        initialResidual(0) = cluster->local().x() - localPosTrack[0];
+        initialResidual(1) = cluster->local().y() - localPosTrack[1];
         // Uncertainty of single hit in local coordinates
         Eigen::Matrix2d covv = Eigen::Matrix2d::Identity();
         covv(0, 0) = 1. / cluster->errorX() / cluster->errorX();
         covv(1, 1) = 1. / cluster->errorY() / cluster->errorY();
         point.addMeasurement(initialResidual, covv);
-        if(m_logging) {
-            std::cout << "Res \n " << initialResidual << std::endl;
+        if(m_logging /*|| true*/) {
+            std::cout << "*********** Plane:  " << p->name() << " \n Global Res to fit: \t("
+                      << (cluster->global().x() - m_planes.begin()->cluster()->global().x()) << ", "
+                      << (cluster->global().y() - m_planes.begin()->cluster()->global().y()) << ")\n Local Res to fit: \t("
+                      << (cluster->local().x() - localPosTrack[0]) << ", " << (cluster->local().y() - localPosTrack[1])
+                      << ")\n Local  track pos: \t(" << localPosTrack[0] << ", " << localPosTrack[1] << ", "
+                      << localPosTrack[2] << ", " << localPosTrack[3] << ")\n global track Pos:\t" << globalTrackPos
+                      << "\n local tangent:\t\t(" << localTangent[0] << ", " << localTangent[1] << ", " << localTangent[2]
+                      << ", " << localTangent[3] << ")\n cluster global:\t " << p->cluster()->global()
+                      << " \n cluster local:\t" << p->cluster()->local() << std::endl;
         }
     };
 
+    // Mapping of parameters in proteus - I would like to get rid of these converions once it works
     Eigen::Matrix<double, 5, 6> toGbl = Eigen::Matrix<double, 5, 6>::Zero();
     Eigen::Matrix<double, 6, 5> toProteus = Eigen::Matrix<double, 6, 5>::Zero();
     toGbl(0, 5) = 1;
@@ -156,9 +157,27 @@ void GblTrack::fit() {
 
     // lambda to add plane (not the first one) and air scatterers //FIXME: Where to put them?
     auto addPlane = [&](std::vector<Plane>::iterator& plane) {
-        seedlocal = plane->toLocal() * seedlocal;
-        double dist = plane->position() - prevPos;
-        auto myjac = jac(plane->toLocal(), prevToGlobal, prevToLocal, dist);
+        auto tmp_local = plane->toLocal() * globalTrackPos;
+        localPosTrack = Eigen::Vector4d{tmp_local.x(), tmp_local.y(), tmp_local.z(), 1};
+        localTangent = fromTransform3DtoEigenMatrix(plane->toLocal()) * globalTangent;
+
+        double dist = localPosTrack.z();
+        if(m_logging) {
+            std::cout << fromTransform3DtoEigenMatrix(plane->toLocal()) << "\n local tan before normalization"
+                      << localTangent << std::endl;
+        }
+        localTangent /= localTangent.z();
+        localPosTrack -= dist * localTangent;
+
+        Eigen::Vector4d prevTan = fromTransform3DtoEigenMatrix(prevToLocal) * globalTangent;
+        Eigen::Matrix4d toTarget =
+            fromTransform3DtoEigenMatrix(plane->toLocal()) * fromTransform3DtoEigenMatrix(prevToGlobal);
+        auto myjac = jac(prevTan, toTarget, dist);
+
+        if(points.size() == 0) {
+            myjac = Eigen::Matrix<double, 6, 6>::Identity();
+            myjac(0, 0) = 0;
+        }
         auto transformedJac = toGbl * myjac * toProteus;
 
         if(m_logging) {
@@ -173,26 +192,25 @@ void GblTrack::fit() {
         }
         prevToGlobal = plane->toGlobal();
         prevToLocal = plane->toLocal();
-        prevPos = plane->position();
         points.push_back(point);
-        plane->setGblPos(unsigned(points.size())); // gbl starts counting at 1
-        seedlocal = plane->toGlobal() * seedlocal;
+        plane->setGblPos(unsigned(points.size()));      // gbl starts counting at 1
+        globalTrackPos = plane->toGlobal() * tmp_local; // reference slope stays unchanged
     };
 
     // First GblPoint
     std::vector<Plane>::iterator pl = m_planes.begin();
-    Eigen::Matrix<double, 6, 6> minit = Eigen::Matrix<double, 6, 6>::Identity();
+    //    Eigen::Matrix<double, 6, 6> minit = Eigen::Matrix<double, 6, 6>::Identity();
 
-    minit(0, 0) = 0; // this is the time component that we ignore currently
+    //    minit(0, 0) = 0; // this is the time component that we ignore currently
 
-    auto point = GblPoint(toGbl * minit * toProteus);
-    addScattertoGblPoint(point, pl->materialbudget());
-    if(pl->hasCluster()) {
-        addMeasurementtoGblPoint(point, pl);
-    }
-    points.push_back(point);
-    pl->setGblPos(1);
-    pl++;
+    //    auto point = GblPoint(toGbl * minit * toProteus);
+    //    addScattertoGblPoint(point, pl->materialbudget());
+    //    if(pl->hasCluster()) {
+    //        addMeasurementtoGblPoint(point, pl);
+    //    }
+    //    points.push_back(point);
+    //    pl->setGblPos(1);
+    //    pl++;
 
     // add all other points
     for(; pl != m_planes.end(); ++pl) {
@@ -219,8 +237,10 @@ void GblTrack::fit() {
             //            throw TrackFitError(typeid(GblTrack), "internal GBL Error " + std::to_string(fitReturnValue));
         }
     }
-    if(m_logging) {
-        std::cout << m_chi2 << "\t" << points.size() << "\t" << fitReturnValue << std::endl;
+    if(m_logging /*|| true*/) {
+        std::cout << "Fit Results: chi2 = " << m_chi2 << "\t wth npoints: " << points.size() << "and fit return value "
+                  << fitReturnValue << std::endl
+                  << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << std::endl;
     }
 
     // copy the results
