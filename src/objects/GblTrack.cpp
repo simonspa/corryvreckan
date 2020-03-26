@@ -58,7 +58,8 @@ void GblTrack::fit() {
 
     std::vector<GblPoint> points;
     // get the seedcluster for the fit - simply the first one in the list
-    auto seedcluster = m_planes.front().cluster();
+    auto seedcluster =
+        std::find_if(m_planes.begin(), m_planes.end(), [](auto plane) { return plane.hasCluster(); })->cluster();
     double prevPos = m_planes.front().position();
 
     // lambda to calculate the scattering theta
@@ -125,7 +126,9 @@ void GblTrack::fit() {
     std::vector<Plane>::iterator pl = m_planes.begin();
     auto point = GblPoint(Matrix5d::Identity());
     addScattertoGblPoint(point, pl->materialbudget());
-    addMeasurementtoGblPoint(point, pl);
+    if(pl->hasCluster()) {
+        addMeasurementtoGblPoint(point, pl);
+    }
     points.push_back(point);
     pl->setGblPos(1);
     pl++;
