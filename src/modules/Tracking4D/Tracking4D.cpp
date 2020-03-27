@@ -289,14 +289,20 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 double norm = (distanceX * distanceX) / (spatial_cuts_[det].x() * spatial_cuts_[det].x()) +
                               (distanceY * distanceY) / (spatial_cuts_[det].y() * spatial_cuts_[det].y());
 
-                if(norm > 1) {
-                    continue;
-                }
-
-                // If this is the closest keep it
-                if(distance < closestClusterDistance) {
+                // If this is the second cluster of the track, keep it for now
+                if(refTrack->nClusters() == 1 && ne == 0) {
                     closestClusterDistance = distance;
                     closestCluster = newCluster;
+                } else {
+                    if(norm > 1) {
+                        continue;
+                    }
+
+                    // If this is the closest keep it
+                    if(distance < closestClusterDistance) {
+                        closestClusterDistance = distance;
+                        closestCluster = newCluster;
+                    }
                 }
             }
 
