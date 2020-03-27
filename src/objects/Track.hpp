@@ -273,6 +273,7 @@ namespace corryvreckan {
         double materialBudget(std::string detectorID) const { return m_materialBudget.at(detectorID).first; }
 
         void registerPlane(Plane p) { m_planes.push_back(p); }
+        void updatePlane(Plane p);
 
         void addMaterial(std::string detetcorID, double x_x0, double z);
 
