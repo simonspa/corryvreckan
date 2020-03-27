@@ -117,6 +117,10 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
         }
 
         // Refit the track
+        Plane pl(globalDetector->displacement().z(), globalDetector->materialBudget(), globalDetector->name(), false);
+        pl.setToLocal(globalDetector->toLocal());
+        pl.setToGlobal(globalDetector->toGlobal());
+        track->updatePlane(pl);
         track->fit();
 
         // Add the new chi2
