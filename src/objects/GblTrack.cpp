@@ -51,7 +51,8 @@ void GblTrack::fit() {
         clusters[cluster->detectorID()] = cluster;
     }
     // gbl needs a seed cluster - at this stage it might be a nullptr
-    auto seedcluster = m_planes.front().cluster();
+    auto seedcluster =
+        std::find_if(m_planes.begin(), m_planes.end(), [](auto plane) { return plane.hasCluster(); })->cluster();
     // create a list of planes and sort it, also calculate the material budget:
     double total_material = 0;
     std::sort(m_planes.begin(), m_planes.end());
@@ -73,6 +74,11 @@ void GblTrack::fit() {
         total_material += (m_planes.back().position() - m_planes.front().position()) / m_scattering_length_volume;
     }
 
+    std::vector<GblPoint> points;
+    // get the seedcluster for the fit - simply the first one in the list
+
+    double prevPos = m_planes.front().position();
+
     // lambda to calculate the scattering theta
     auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
         return (13.6 / m_momentum * sqrt(mbCurrent) * (1 + 0.038 * log(mbTotal)));
@@ -92,8 +98,6 @@ void GblTrack::fit() {
         return t;
     };
 
-    std::vector<GblPoint> points;
-    // get the seed  for the fit - simply global x/y of the first cluster in the list and z = 0
     auto prevToGlobal = m_planes.front().toGlobal();
     auto prevToLocal = m_planes.front().toLocal();
     auto globalTrackPos = seedcluster->global();
