@@ -11,14 +11,9 @@
 #ifndef CORRYVRECKAN_Multiplet_H
 #define CORRYVRECKAN_Multiplet_H 1
 
-#include <Math/Point2D.h>
-#include <Math/Point3D.h>
-#include <Math/Vector3D.h>
-#include <TRef.h>
-
-#include "Cluster.hpp"
+#include <Math/DisplacementVector3D.h>
 #include "StraightLineTrack.hpp"
-#include "core/utils/type.h"
+#include "Track.hpp"
 
 namespace corryvreckan {
     /**
@@ -29,7 +24,7 @@ namespace corryvreckan {
      * collection of clusters, which may or may not be included in the Multiplet fit.
      */
 
-    class Multiplet : public Object {
+    class Multiplet : public Track {
 
     public:
         /**
@@ -40,24 +35,56 @@ namespace corryvreckan {
          * @brief Copy a Multiplet object, including used/associated clusters
          * @param Multiplet to be copied from
          */
-        Multiplet(const Multiplet& Multiplet);
+        Multiplet(const Multiplet& multiplet);
+
+        Multiplet(Track* upstream, Track* downstream);
+
+        virtual Multiplet* clone() const override { return new Multiplet(*this); }
+
+        void print(std::ostream& out) const override;
 
         /**
-         * @brief Add a cluster to the tack, which will be used in the fit
-         * @param cluster to be added
+             * @brief The fiting routine
+             */
+        void fit() override;
+
+        /**
+         * @brief Get the track position for a certain z position
+         * @param z positon
+         * @return ROOT::Math::XYZPoint at z position
          */
-        void addCluster(const Cluster* cluster);
-        /** @brief Static member function to obtain base class for storage on the clipboard.
-         * This method is used to store objects from derived classes under the typeid of their base classes
-         *
-         * @warning This function should not be implemented for derived object classes
-         *
-         * @return Class type of the base object
+        ROOT::Math::XYZPoint intercept(double z) const override;
+
+        /**
+         * @brief Get the track state at a detector
+         * @param name of detector
+         * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        static std::type_index getBaseType() { return typeid(Multiplet); }
+        ROOT::Math::XYZPoint state(std::string detectorID) const override;
+
+        /**
+         * @brief Get the track direction at a detector
+         * @param name of detector
+         * @return ROOT::Math::XYZPoint direction at detetcor layer
+         */
+        ROOT::Math::XYZVector direction(std::string detectorID) const override;
+
+        ROOT::Math::XYVector getOffsetAtScatterer() { return m_offsetAtScatterer; };
+
+        void setScattererPosition(double scattererPosition) { m_scattererPosition = scattererPosition; };
+
+        ROOT::Math::XYVector getKinkAtScatterer() { return m_kinkAtScatterer; };
 
     private:
-        StraightLineTrack upstream, downstream;
+        Track* m_upstream;
+        Track* m_downstream;
+
+        void calculateChi2();
+
+        double m_scattererPosition;
+        ROOT::Math::XYVector m_offsetAtScatterer;
+        ROOT::Math::XYVector m_kinkAtScatterer;
+
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(Multiplet, 1)
     };
