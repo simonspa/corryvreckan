@@ -87,13 +87,14 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
 // it would do nothing!
 void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, Double_t* par, Int_t) {
 
+    LOG(DEBUG) << globalDetector->displacement() << "' " << globalDetector->rotation();
     // Pick up new alignment conditions
     globalDetector->displacement(XYZPoint(par[detNum * 6 + 0], par[detNum * 6 + 1], par[detNum * 6 + 2]));
     globalDetector->rotation(XYZVector(par[detNum * 6 + 3], par[detNum * 6 + 4], par[detNum * 6 + 5]));
 
     // Apply new alignment conditions
     globalDetector->update();
-
+    LOG(DEBUG) << "**************************\n" << globalDetector->displacement() << "' " << globalDetector->rotation();
     // The chi2 value to be returned
     result = 0.;
 
@@ -121,7 +122,10 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
         pl.setToLocal(globalDetector->toLocal());
         pl.setToGlobal(globalDetector->toGlobal());
         track->updatePlane(pl);
+        IFLOG(DEBUG) { track->setLogging(true); }
         track->fit();
+
+        LOG(DEBUG) << pl << pl.name() << pl.toGlobal() << std::flush;
 
         // Add the new chi2
         result += track->chi2();

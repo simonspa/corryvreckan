@@ -207,7 +207,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "Looking at next seed cluster";
 
         auto track = Track::Factory(trackModel);
-        // enable debug putput from the track objects
+        // enable debug output from the track objects
         IFLOG(DEBUG) { track->setLogging(true); }
         // The track finding is based on a straight line. Therefore a refTrack to extrapolate to the next plane is used here
         auto refTrack = new StraightLineTrack();
