@@ -24,10 +24,11 @@ namespace corryvreckan {
     class Plane : public Object {
     public:
         Plane() : Object(){};
+
         Plane(double z, double x_x0, std::string name, bool has_cluster)
             : Object(), m_z(z), m_x_x0(x_x0), m_name(name), m_has_cluster(has_cluster){};
 
-        // Plane(const Plane& p);
+        Plane(const Plane& p);
         // access elements
         double position() const { return m_z; }
         double materialbudget() const { return m_x_x0; }

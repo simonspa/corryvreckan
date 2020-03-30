@@ -34,6 +34,12 @@ GblTrack::GblTrack(const GblTrack& track) : Track(track) {
 
 void GblTrack::fit() {
 
+    m_isFitted = false;
+    m_residual.clear();
+    m_kink.clear();
+    m_corrections.clear();
+    m_localTrackPoints.clear();
+
     // Fitting with less than 2 clusters is pointless
     if(m_trackClusters.size() < 2) {
         throw TrackError(typeid(GblTrack), " attempting to fit a track with less than 2 clusters");
@@ -164,7 +170,7 @@ void GblTrack::fit() {
         // special treatment of first point on trajectory
         if(points.size() == 0) {
             myjac = Matrix<double, 6, 6>::Identity();
-            myjac(0, 0) = 0;
+            myjac(0, 0) = 1;
         }
         // Mapping of parameters in proteus - I would like to get rid of these converions once it works
         // For now they will stay here as changing this will cause the jacobian setup to be more messy right now

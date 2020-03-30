@@ -87,6 +87,7 @@ double StraightLineTrack::operator()(const double* parameters) {
 
 void StraightLineTrack::fit() {
 
+    m_isFitted = false;
     Eigen::Matrix4d mat(Eigen::Matrix4d::Zero());
     Eigen::Vector4d vec(Eigen::Vector4d::Zero());
 
