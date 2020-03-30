@@ -55,7 +55,8 @@ void GblTrack::fit() {
         std::find_if(m_planes.begin(), m_planes.end(), [](auto plane) { return plane.hasCluster(); })->cluster();
     // create a list of planes and sort it, also calculate the material budget:
     double total_material = 0;
-    std::sort(m_planes.begin(), m_planes.end());
+    std::sort(
+        m_planes.begin(), m_planes.end(), [](const Plane& p1, const Plane& p2) { return p1.position() > p2.position(); });
     for(auto& l : m_planes) {
         total_material += l.materialbudget();
         if(clusters.count(l.name()) == 1) {
