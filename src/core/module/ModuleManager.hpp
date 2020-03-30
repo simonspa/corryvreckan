@@ -21,7 +21,7 @@
 #include "core/clipboard/Clipboard.hpp"
 #include "core/config/ConfigManager.hpp"
 #include "core/detector/Detector.hpp"
-#include "core/detector/PlanarDetector.hpp"
+#include "core/detector/PixelDetector.hpp"
 
 namespace corryvreckan {
 

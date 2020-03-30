@@ -82,7 +82,7 @@ std::shared_ptr<Detector> corryvreckan::Detector::Factory(const Configuration& c
     std::string coordinates = config.get<std::string>("coordinates", "cartesian");
     std::transform(coordinates.begin(), coordinates.end(), coordinates.begin(), ::tolower);
     if(coordinates == "cartesian") {
-        return std::make_shared<PlanarDetector>(config);
+        return std::make_shared<PixelDetector>(config);
     } else {
         throw InvalidValueError(config, "coordinates", "Coordiantes can only set to be cartesian now");
     }
@@ -153,7 +153,7 @@ Configuration Detector::GetConfiguration() const {
 
     config.set("time_resolution", m_timeResolution, {"ns", "us", "ms", "s"});
 
-    // different for PlanarDetector and DiscDetector
+    // different for PixelDetector and StripDetector
     this->configurePosAndOrientation(config);
 
     // material budget
