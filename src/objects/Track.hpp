@@ -37,7 +37,7 @@ namespace corryvreckan {
         unsigned gblPos() const { return m_gbl_points_pos; }
 
         // sorting overload
-        // bool operator<(const Plane& pl) const { return m_z < pl.m_z; }
+        bool operator<(const Plane& pl) const { return m_z < pl.m_z; }
         // set elements that might be unknown at construction
         void setGblPos(unsigned pos) { m_gbl_points_pos = pos; }
         void setPosition(double z) { m_z = z; }
