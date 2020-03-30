@@ -75,9 +75,6 @@ void GblTrack::fit() {
     }
 
     std::vector<GblPoint> points;
-    // get the seedcluster for the fit - simply the first one in the list
-
-    double prevPos = m_planes.front().position();
 
     // lambda to calculate the scattering theta
     auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
