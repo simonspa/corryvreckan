@@ -14,6 +14,7 @@
 #include <iostream>
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
+#include "objects/KDTree.hpp"
 #include "objects/Multiplet.hpp"
 #include "objects/Pixel.hpp"
 #include "objects/Track.hpp"

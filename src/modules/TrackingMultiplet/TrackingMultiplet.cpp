@@ -148,7 +148,179 @@ void TrackingMultiplet::initialise() {
     LOG(DEBUG) << "Initialised all histograms.";
 }
 
-StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard>) {
+StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
+
+    LOG(DEBUG) << "Start of event";
+
+    std::string upstream_reference_first = "";
+    std::string upstream_reference_last = "";
+
+    std::shared_ptr<ClusterVector> upstream_reference_clusters_first = nullptr;
+    std::shared_ptr<ClusterVector> upstream_reference_clusters_last = nullptr;
+
+    for(auto& upstream_detector_ID : m_upstream_detectors) {
+        LOG(DEBUG) << "Upstream detector " << upstream_detector_ID;
+
+        auto clusters = clipboard->getData<Cluster>(upstream_detector_ID);
+        if(clusters == nullptr || clusters->size() == 0) {
+            continue;
+        }
+        LOG(DEBUG) << "Clusters: " << clusters->size();
+        if(upstream_reference_first == "") {
+            upstream_reference_first = upstream_detector_ID;
+            upstream_reference_clusters_first = clusters;
+        }
+        upstream_reference_last = upstream_detector_ID;
+        upstream_reference_clusters_last = clusters;
+
+        // Store them all in KDTrees
+        KDTree* clusterTree = new KDTree();
+        clusterTree->buildTimeTree(*clusters);
+        upstream_trees[upstream_detector_ID] = clusterTree;
+    }
+
+    if(upstream_reference_clusters_first == nullptr || upstream_reference_clusters_last == nullptr ||
+       upstream_reference_clusters_first == upstream_reference_clusters_last) {
+        LOG(DEBUG) << "No upstream tracks to be found in this event";
+        return StatusCode::Success;
+    }
+
+    LOG(DEBUG) << "Number of upstream reference clusters (first hit detector, in " << upstream_reference_first
+               << "): " << upstream_reference_clusters_first->size();
+    LOG(DEBUG) << "Number of upstream reference clusters (last hit detector, in " << upstream_reference_last
+               << "): " << upstream_reference_clusters_last->size();
+
+    // Start track finding
+
+    for(auto& clusterFirst : (*upstream_reference_clusters_first)) {
+        for(auto& clusterLast : (*upstream_reference_clusters_last)) {
+            auto trackCandidate = new StraightLineTrack();
+            trackCandidate->addCluster(clusterFirst);
+            trackCandidate->addCluster(clusterLast);
+            trackCandidate->setTimestamp((clusterFirst->timestamp() + clusterLast->timestamp()) / 2.);
+
+            for(auto& detectorID : m_upstream_detectors) {
+                if(detectorID == upstream_reference_first || detectorID == upstream_reference_last) {
+                    LOG(DEBUG) << "Don't have to count this detector, since it's a reference detector";
+                    continue;
+                }
+
+                if(upstream_trees.count(detectorID) == 0) {
+                    LOG(TRACE) << "Skipping detector " << detectorID << " as it has 0 clusters.";
+                    continue;
+                }
+
+                auto detector = get_detector(detectorID);
+
+                // Now let's see if there's a cluster matching in time and space.
+
+                Cluster* closestCluster = nullptr;
+
+                // Use spatial cut only as initial value (check if cluster is ellipse defined by cuts is done below):
+                double closestClusterDistance = sqrt(spatial_cuts_[detector].x() * spatial_cuts_[detector].x() +
+                                                     spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
+
+                LOG(DEBUG) << "Using timing cut of " << Units::display(time_cuts_[detector], {"ns", "us", "s"});
+                auto neighbours = upstream_trees[detectorID]->getAllClustersInTimeWindow(clusterFirst, time_cuts_[detector]);
+
+                LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
+
+                // Now look for the spatially closest cluster on the next plane
+                trackCandidate->fit();
+
+                double interceptX, interceptY;
+                PositionVector3D<Cartesian3D<double>> interceptPoint = detector->getIntercept(trackCandidate);
+                interceptX = interceptPoint.X();
+                interceptY = interceptPoint.Y();
+
+                for(size_t ne = 0; ne < neighbours.size(); ne++) {
+                    Cluster* newCluster = neighbours[ne];
+
+                    // Calculate the distance to the previous plane's cluster/intercept
+                    double distanceX = interceptX - newCluster->global().x();
+                    double distanceY = interceptY - newCluster->global().y();
+                    double distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+
+                    // Check if newCluster lies within ellipse defined by spatial cuts around intercept,
+                    // following this example:
+                    // https://www.geeksforgeeks.org/check-if-a-point-is-inside-outside-or-on-the-ellipse/
+                    //
+                    // ellipse defined by: x^2/a^2 + y^2/b^2 = 1: on ellipse,
+                    //                                       > 1: outside,
+                    //                                       < 1: inside
+                    // Continue if outside of ellipse:
+
+                    double norm = (distanceX * distanceX) / (spatial_cuts_[detector].x() * spatial_cuts_[detector].x()) +
+                                  (distanceY * distanceY) / (spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
+
+                    if(norm > 1) {
+                        LOG(DEBUG) << "Cluster outside the cuts. Normalized distance: " << norm;
+                        continue;
+                    }
+
+                    // If this is the closest keep it
+                    if(distance < closestClusterDistance) {
+                        closestClusterDistance = distance;
+                        closestCluster = newCluster;
+                    }
+                }
+
+                if(closestCluster == nullptr) {
+                    LOG(DEBUG) << "No cluster within spatial cut.";
+                    continue;
+                }
+
+                // Add the cluster to the track
+                trackCandidate->addCluster(closestCluster);
+                LOG(DEBUG) << "Added cluster to track candidate";
+            }
+
+            if(trackCandidate->nClusters() < min_hits_upstream_) {
+                LOG(DEBUG) << "Not enough clusters on the track, found " << trackCandidate->nClusters() << " but "
+                           << min_hits_upstream_ << " required.";
+                delete trackCandidate;
+                continue;
+            }
+
+            trackCandidate->fit();
+            m_upstreamTracks.push_back(trackCandidate);
+        }
+    }
+
+    // Fill some plots
+    upstreamMultiplicity->Fill(static_cast<double>(m_upstreamTracks.size()));
+
+    if(m_upstreamTracks.size() > 0) {
+        LOG(DEBUG) << "Filling plots for upstream tracks.";
+
+        for(auto& track : m_upstreamTracks) {
+            upstreamAngleX->Fill(
+                static_cast<double>(Units::convert(track->direction("").X() / track->direction("").Z(), "mrad")));
+            upstreamAngleY->Fill(
+                static_cast<double>(Units::convert(track->direction("").Y() / track->direction("").Z(), "mrad")));
+
+            upstreamPositionAtScattererX->Fill(track->intercept(scatterer_position_).X());
+            upstreamPositionAtScattererY->Fill(track->intercept(scatterer_position_).Y());
+
+            for(std::map<std::string, TH1F*>::iterator it = residualsX.begin(); it != residualsX.end(); ++it) {
+                LOG(DEBUG) << it->first;
+            }
+            auto trackClusters = track->clusters();
+            for(auto& trackCluster : trackClusters) {
+                std::string detectorID = trackCluster->detectorID();
+                residualsX[detectorID]->Fill(track->residual(detectorID).X());
+                residualsY[detectorID]->Fill(track->residual(detectorID).Y());
+            }
+        }
+    }
+
+    // Clean up tree objects
+    LOG(DEBUG) << "Cleaning up.";
+    for(auto tree = upstream_trees.cbegin(); tree != upstream_trees.cend();) {
+        delete tree->second;
+        tree = upstream_trees.erase(tree);
+    }
+    m_upstreamTracks.clear();
 
     // Return value telling analysis to keep running
     return StatusCode::Success;
