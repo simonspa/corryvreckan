@@ -61,7 +61,9 @@ void ModuleManager::load_detectors() {
         }
 
         LOG_PROGRESS(STATUS, "DET_LOAD_LOOP") << "Loading detector " << name;
-        auto detector = std::make_shared<Detector>(detector_section);
+        // the default coordinates is cartesian, any other type is forbidden now
+        // @to do: other detector types, e.g., ATLAS endcap strip detector
+        auto detector = Detector::Factory(detector_section);
 
         // Check if we already found a reference plane:
         if(m_reference != nullptr && detector->isReference()) {
@@ -730,7 +732,7 @@ void ModuleManager::finaliseAll() {
 
         ConfigReader final_detectors;
         for(auto& detector : m_detectors) {
-            final_detectors.addConfiguration(detector->getConfiguration());
+            final_detectors.addConfiguration(detector->GetConfiguration());
         }
 
         final_detectors.write(file);
