@@ -57,8 +57,14 @@ namespace corryvreckan {
         double scatterer_position_;
         double scatterer_matching_cut_;
 
-        std::vector<std::string> upstream_detectors_;
-        std::vector<std::string> downstream_detectors_;
+        std::vector<std::string> m_upstream_detectors;
+        std::vector<std::string> m_downstream_detectors;
+
+        size_t min_hits_upstream_;
+        size_t min_hits_downstream_;
+
+        std::map<std::string, KDTree*> upstream_trees;
+        std::map<std::string, KDTree*> downstream_trees;
 
         TrackVector m_upstreamTracks;
         TrackVector m_downstreamTracks;
