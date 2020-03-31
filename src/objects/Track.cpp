@@ -150,7 +150,8 @@ ROOT::Math::XYPoint Track::kink(std::string detectorID) const {
 }
 
 void Track::updatePlane(Plane p) {
-    std::replace_if(m_planes.begin(), m_planes.end(), [&p](auto plane) { return plane.name() == p.name(); }, p);
+    std::replace_if(
+        m_planes.begin(), m_planes.end(), [&p](auto plane) { return plane.name() == p.name(); }, p);
 }
 
 void Track::addMaterial(std::string detetcorID, double x_x0, double z) {
