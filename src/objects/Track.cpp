@@ -32,6 +32,7 @@ Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp())
         Cluster* cluster = new Cluster(*assoc_cluster);
         addAssociatedCluster(cluster);
     }
+    m_scattering_length_volume = track.m_scattering_length_volume;
     m_materialBudget = track.m_materialBudget;
     m_residual = track.m_residual;
     m_kink = track.m_kink;
