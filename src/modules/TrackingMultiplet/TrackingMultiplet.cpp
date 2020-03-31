@@ -99,28 +99,53 @@ void TrackingMultiplet::initialise() {
     downstreamAngleY = new TH1F("downstreamAngleY", title.c_str(), 250, -25., 25.);
 
     title = "Upstream track X at scatterer;position x [mm];upstream tracks";
-    upstreamPositionXAtScatterer = new TH1F("upstreamPositionAtScatterer", title.c_str(), 200, -10., 10.);
+    upstreamPositionAtScattererX = new TH1F("upstreamPositionAtScattererX", title.c_str(), 200, -10., 10.);
     title = "Upstream track Y at scatterer;position y [mm];upstream tracks";
-    upstreamPositionYAtScatterer = new TH1F("upstreamPositionAtScatterer", title.c_str(), 200, -10., 10.);
+    upstreamPositionAtScattererY = new TH1F("upstreamPositionAtScattererY", title.c_str(), 200, -10., 10.);
     title = "Downstream track X at scatterer;position x [mm];downstream tracks";
-    downstreamPositionXAtScatterer = new TH1F("downstreamPositionAtScatterer", title.c_str(), 200, -10., 10.);
+    downstreamPositionAtScattererX = new TH1F("downstreamPositionAtScattererX", title.c_str(), 200, -10., 10.);
     title = "Downstream track Y at scatterer;position y [mm];downstream tracks";
-    downstreamPositionYAtScatterer = new TH1F("downstreamPositionAtScatterer", title.c_str(), 200, -10., 10.);
+    downstreamPositionAtScattererY = new TH1F("downstreamPositionAtScattererY", title.c_str(), 200, -10., 10.);
 
     title = "Matching distance X at scatterer;distance x [mm];multiplet candidates";
-    matchingDistanceXAtScatterer = new TH1F("matchingDistanceXAtScatterer", title.c_str(), 200, -10., 10.);
+    matchingDistanceAtScattererX = new TH1F("matchingDistanceAtScattererX", title.c_str(), 200, -10., 10.);
     title = "Matching distance Y at scatterer;distance y [mm];multiplet candidates";
-    matchingDistanceYAtScatterer = new TH1F("matchingDistanceYAtScatterer", title.c_str(), 200, -10., 10.);
+    matchingDistanceAtScattererY = new TH1F("matchingDistanceAtScattererY", title.c_str(), 200, -10., 10.);
 
     title = "Multiplet offset X at scatterer;offset x [um];multiplets";
-    multipletOffsetXAtScatterer = new TH1F("multipletOffsetXAtScatterer", title.c_str(), 200, -300., 300.);
+    multipletOffsetAtScattererX = new TH1F("multipletOffsetAtScattererX", title.c_str(), 200, -300., 300.);
     title = "Multiplet offset Y at scatterer;offset y [um];multiplets";
-    multipletOffsetYAtScatterer = new TH1F("multipletOffsetYAtScatterer", title.c_str(), 200, -300., 300.);
+    multipletOffsetAtScattererY = new TH1F("multipletOffsetAtScattererY", title.c_str(), 200, -300., 300.);
 
     title = "Multiplet kink X at scatterer;kink x [mrad];multiplets";
-    multipletKinkXAtScatterer = new TH1F("multipletKinkXAtScatterer", title.c_str(), 200, -20., 20.);
+    multipletKinkAtScattererX = new TH1F("multipletKinkAtScattererX", title.c_str(), 200, -20., 20.);
     title = "Multiplet kink Y at scatterer;kink y [mrad];multiplets";
-    multipletKinkYAtScatterer = new TH1F("multipletKinkYAtScatterer", title.c_str(), 200, -20., 20.);
+    multipletKinkAtScattererY = new TH1F("multipletKinkAtScattererY", title.c_str(), 200, -20., 20.);
+
+    // Loop over all planes
+    for(auto& detector : get_detectors()) {
+        auto detectorID = detector->name();
+
+        // Do not created plots for auxiliary detectors:
+        if(detector->isAuxiliary()) {
+            continue;
+        }
+
+        TDirectory* directory = getROOTDirectory();
+        TDirectory* local_directory = directory->mkdir(detectorID.c_str());
+
+        if(local_directory == nullptr) {
+            throw RuntimeError("Cannot create or access local ROOT directory for module " + this->getUniqueName());
+        }
+        local_directory->cd();
+
+        title = detectorID + " Residual X;x_{track}-x [mm];events";
+        residualsX[detectorID] = new TH1F("residualsX", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + " Residual Y;y_{track}-y [mm];events";
+        residualsY[detectorID] = new TH1F("residualsY", title.c_str(), 500, -0.1, 0.1);
+    }
+
+    LOG(DEBUG) << "Initialised all histograms.";
 }
 
 StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard>) {

@@ -69,24 +69,27 @@ namespace corryvreckan {
         TH1F* downstreamMultiplicity;
         TH1F* multipletMultiplicity;
 
+        std::map<std::string, TH1F*> residualsX;
+        std::map<std::string, TH1F*> residualsY;
+
         TH1F* upstreamAngleX;
         TH1F* upstreamAngleY;
         TH1F* downstreamAngleX;
         TH1F* downstreamAngleY;
 
-        TH1F* upstreamPositionXAtScatterer;
-        TH1F* upstreamPositionYAtScatterer;
-        TH1F* downstreamPositionXAtScatterer;
-        TH1F* downstreamPositionYAtScatterer;
+        TH1F* upstreamPositionAtScattererX;
+        TH1F* upstreamPositionAtScattererY;
+        TH1F* downstreamPositionAtScattererX;
+        TH1F* downstreamPositionAtScattererY;
 
-        TH1F* matchingDistanceXAtScatterer;
-        TH1F* matchingDistanceYAtScatterer;
+        TH1F* matchingDistanceAtScattererX;
+        TH1F* matchingDistanceAtScattererY;
 
-        TH1F* multipletOffsetXAtScatterer;
-        TH1F* multipletOffsetYAtScatterer;
+        TH1F* multipletOffsetAtScattererX;
+        TH1F* multipletOffsetAtScattererY;
 
-        TH1F* multipletKinkXAtScatterer;
-        TH1F* multipletKinkYAtScatterer;
+        TH1F* multipletKinkAtScattererX;
+        TH1F* multipletKinkAtScattererY;
     };
 
 } // namespace corryvreckan
