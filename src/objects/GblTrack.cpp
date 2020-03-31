@@ -67,9 +67,7 @@ void GblTrack::fit() {
     }
 
     // add volume scattering length - for now simply the distance between first and last plane
-    // FIXME: also add material budgets again
     if(m_use_volume_scatter) {
-        throw TrackError(typeid(GblTrack), "Volume scatteres are not supported in the current GBL implementation");
         total_material += (m_planes.back().position() - m_planes.front().position()) / m_scattering_length_volume;
     }
 
@@ -151,6 +149,20 @@ void GblTrack::fit() {
 
     // lambda to add plane (not the first one) and air scatterers //FIXME: Where to put them?
     auto addPlane = [&](std::vector<Plane>::iterator& plane) {
+        // Mapping of parameters in proteus - I would like to get rid of these converions once it works
+        // For now they will stay here as changing this will cause the jacobian setup to be more messy right now
+        Matrix<double, 5, 6> toGbl = Matrix<double, 5, 6>::Zero();
+        Matrix<double, 6, 5> toProteus = Matrix<double, 6, 5>::Zero();
+        toGbl(0, 5) = 1;
+        toGbl(1, 3) = 1;
+        toGbl(2, 4) = 1;
+        toGbl(3, 0) = 1;
+        toGbl(4, 1) = 1;
+        toProteus(0, 3) = 1;
+        toProteus(1, 4) = 1;
+        toProteus(3, 1) = 1;
+        toProteus(4, 2) = 1;
+        toProteus(5, 0) = 1;
         auto tmp_local = plane->toLocal() * globalTrackPos;
         localPosTrack = Vector4d{tmp_local.x(), tmp_local.y(), tmp_local.z(), 1};
         localTangent = getRotation(plane->toLocal()) * globalTangent;
@@ -166,32 +178,33 @@ void GblTrack::fit() {
 
         Vector4d prevTan = getRotation(prevToLocal) * globalTangent;
         Matrix4d toTarget = getRotation(plane->toLocal()) * getRotation(prevToGlobal);
+
         auto myjac = jac(prevTan, toTarget, dist);
+        double frac1 = 0.21, frac2 = 0.58;
+        // Current layout
+        // |        |        |       |
+        // |  frac1 | frac2  | frac1 |
+        // |        |        |       |
 
         // special treatment of first point on trajectory
         if(points.size() == 0) {
             myjac = Matrix<double, 6, 6>::Identity();
             myjac(0, 0) = 1;
+            // Adding volume scattering if requested
+        } else if(m_use_volume_scatter) {
+            myjac = jac(prevTan, toTarget, frac1 * dist);
+            GblPoint pVolume(toGbl * myjac * toProteus);
+            addScattertoGblPoint(pVolume, fabs(dist) / 2. / m_scattering_length_volume);
+            points.push_back(pVolume);
+            // We have already rotated to the next local coordinate system
+            myjac = jac(prevTan, Matrix4d::Identity(), frac2 * dist);
+            GblPoint pVolume2(toGbl * myjac * toProteus);
+            addScattertoGblPoint(pVolume2, fabs(dist) / 2. / m_scattering_length_volume);
+            points.push_back(pVolume2);
+            myjac = jac(prevTan, Matrix4d::Identity(), frac1 * dist);
         }
-        // Mapping of parameters in proteus - I would like to get rid of these converions once it works
-        // For now they will stay here as changing this will cause the jacobian setup to be more messy right now
-        Matrix<double, 5, 6> toGbl = Matrix<double, 5, 6>::Zero();
-        Matrix<double, 6, 5> toProteus = Matrix<double, 6, 5>::Zero();
-        toGbl(0, 5) = 1;
-        toGbl(1, 3) = 1;
-        toGbl(2, 4) = 1;
-        toGbl(3, 0) = 1;
-        toGbl(4, 1) = 1;
-        toProteus(0, 3) = 1;
-        toProteus(1, 4) = 1;
-        toProteus(3, 1) = 1;
-        toProteus(4, 2) = 1;
-        toProteus(5, 0) = 1;
         auto transformedJac = toGbl * myjac * toProteus;
-        if(m_logging) {
-            std::cout << "Plane " << plane->name() << " jac\n" << transformedJac << std::endl;
-        }
-        auto point = GblPoint(transformedJac);
+        GblPoint point(transformedJac);
         addScattertoGblPoint(point, plane->materialbudget());
         if(plane->hasCluster()) {
             addMeasurementtoGblPoint(point, plane);
