@@ -43,7 +43,6 @@ namespace corryvreckan {
         explicit Object(std::string detectorID);
         explicit Object(double timestamp);
         Object(std::string detectorID, double timestamp);
-        Object(const Object&);
 
         /**
          * @brief Required virtual destructor
