@@ -44,8 +44,8 @@ namespace corryvreckan {
         void print(std::ostream& out) const override;
 
         /**
-             * @brief The fiting routine
-             */
+         * @brief The fiting routine
+         */
         void fit() override;
 
         /**
