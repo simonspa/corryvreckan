@@ -78,22 +78,17 @@ namespace corryvreckan {
 
         MultipletVector m_multiplets;
 
-        TH1F* upstreamMultiplicity;
-        TH1F* downstreamMultiplicity;
-        TH1F* multipletMultiplicity;
+        std::map<streams, TH1F*> streamMultiplicity;
+
+        std::map<streams, TH1F*> streamAngleX;
+        std::map<streams, TH1F*> streamAngleY;
+        std::map<streams, TH1F*> streamPositionAtScattererX;
+        std::map<streams, TH1F*> streamPositionAtScattererY;
 
         std::map<std::string, TH1F*> residualsX;
         std::map<std::string, TH1F*> residualsY;
 
-        TH1F* upstreamAngleX;
-        TH1F* upstreamAngleY;
-        TH1F* downstreamAngleX;
-        TH1F* downstreamAngleY;
-
-        TH1F* upstreamPositionAtScattererX;
-        TH1F* upstreamPositionAtScattererY;
-        TH1F* downstreamPositionAtScattererX;
-        TH1F* downstreamPositionAtScattererY;
+        TH1F* multipletMultiplicity;
 
         TH1F* matchingDistanceAtScattererX;
         TH1F* matchingDistanceAtScattererY;

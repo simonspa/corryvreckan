@@ -82,30 +82,8 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
 
 void TrackingMultiplet::initialise() {
 
-    std::string title = "Upstream track multiplicity;upstream tracks;events";
-    upstreamMultiplicity = new TH1F("upstreamMultiplicity", title.c_str(), 40, 0, 40);
-    title = "Downstream track multiplicity;downstream tracks;events";
-    downstreamMultiplicity = new TH1F("downstreamMultiplicity", title.c_str(), 40, 0, 40);
-    title = "Multiplet multiplicity;multiplets;events";
+    std::string title = "Multiplet multiplicity;multiplets;events";
     multipletMultiplicity = new TH1F("multipletMultiplicity", title.c_str(), 40, 0, 40);
-
-    title = "Upstream track angle X;angle x [mrad];upstream tracks";
-    upstreamAngleX = new TH1F("upstreamAngleX", title.c_str(), 250, -25., 25.);
-    title = "Upstream track angle Y;angle y [mrad];upstream tracks";
-    upstreamAngleY = new TH1F("upstreamAngleY", title.c_str(), 250, -25., 25.);
-    title = "Downstream track angle X;angle x [mrad];downstream tracks";
-    downstreamAngleX = new TH1F("downstreamAngleX", title.c_str(), 250, -25., 25.);
-    title = "Downstream track angle Y;angle y [mrad];downstream tracks";
-    downstreamAngleY = new TH1F("downstreamAngleY", title.c_str(), 250, -25., 25.);
-
-    title = "Upstream track X at scatterer;position x [mm];upstream tracks";
-    upstreamPositionAtScattererX = new TH1F("upstreamPositionAtScattererX", title.c_str(), 200, -10., 10.);
-    title = "Upstream track Y at scatterer;position y [mm];upstream tracks";
-    upstreamPositionAtScattererY = new TH1F("upstreamPositionAtScattererY", title.c_str(), 200, -10., 10.);
-    title = "Downstream track X at scatterer;position x [mm];downstream tracks";
-    downstreamPositionAtScattererX = new TH1F("downstreamPositionAtScattererX", title.c_str(), 200, -10., 10.);
-    title = "Downstream track Y at scatterer;position y [mm];downstream tracks";
-    downstreamPositionAtScattererY = new TH1F("downstreamPositionAtScattererY", title.c_str(), 200, -10., 10.);
 
     title = "Matching distance X at scatterer;distance x [mm];multiplet candidates";
     matchingDistanceAtScattererX = new TH1F("matchingDistanceAtScattererX", title.c_str(), 200, -10., 10.);
@@ -121,6 +99,43 @@ void TrackingMultiplet::initialise() {
     multipletKinkAtScattererX = new TH1F("multipletKinkAtScattererX", title.c_str(), 200, -20., 20.);
     title = "Multiplet kink Y at scatterer;kink y [mrad];multiplets";
     multipletKinkAtScattererY = new TH1F("multipletKinkAtScattererY", title.c_str(), 200, -20., 20.);
+
+    auto all_streams = {upstream, downstream};
+    for(auto stream : all_streams) {
+        std::string stream_name = stream == upstream ? "upstream" : "downstream";
+        std::string stream_name_caps = stream == upstream ? "Upstream" : "Downstream";
+
+        LOG(DEBUG) << "Initializing histograms for " << stream_name << " tracks";
+
+        TDirectory* directory = getROOTDirectory();
+        TDirectory* local_directory = directory->mkdir(stream_name.c_str());
+
+        if(local_directory == nullptr) {
+            throw RuntimeError("Cannot create or access local ROOT directory for module " + this->getUniqueName());
+        }
+        local_directory->cd();
+
+        title = "";
+        std::string hist_name = "";
+
+        title = stream_name_caps + " track multiplicity;" + stream_name + " tracks;events";
+        hist_name = stream_name + "Multiplicity";
+        streamMultiplicity[stream] = new TH1F(hist_name.c_str(), title.c_str(), 40, 0, 40);
+
+        title = stream_name_caps + " track angle X;angle x [mrad];" + stream_name + " tracks";
+        hist_name = stream_name + "AngleX";
+        streamAngleX[stream] = new TH1F(hist_name.c_str(), title.c_str(), 250, -25., 25.);
+        title = stream_name_caps + " track angle Y;angle y [mrad];" + stream_name + " tracks";
+        hist_name = stream_name + "AngleY";
+        streamAngleY[stream] = new TH1F(hist_name.c_str(), title.c_str(), 250, -25., 25.);
+
+        title = stream_name_caps + " track X at scatterer;position x [mm];" + stream_name + " tracks";
+        hist_name = stream_name + "PositionAtScattererX";
+        streamPositionAtScattererX[stream] = new TH1F(hist_name.c_str(), title.c_str(), 200, -10., 10.);
+        title = stream_name_caps + " track Y at scatterer;position y [mm];" + stream_name + " tracks";
+        hist_name = stream_name_caps + "PositionAtScattererY";
+        streamPositionAtScattererY[stream] = new TH1F(hist_name.c_str(), title.c_str(), 200, -10., 10.);
+    }
 
     // Loop over all planes
     for(auto& detector : get_detectors()) {
@@ -281,7 +296,33 @@ TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::st
     return tracks;
 }
 
-void TrackingMultiplet::fillMultipletArmHistograms(streams stream, TrackVector tracks) {}
+void TrackingMultiplet::fillMultipletArmHistograms(streams stream, TrackVector tracks) {
+
+    std::string stream_name = stream == upstream ? "upstream" : "downstream";
+
+    streamMultiplicity[stream]->Fill(static_cast<double>(tracks.size()));
+
+    if(tracks.size() > 0) {
+        LOG(DEBUG) << "Filling plots for " << stream_name << " tracks.";
+
+        for(auto& track : tracks) {
+            streamAngleX[stream]->Fill(
+                static_cast<double>(Units::convert(track->direction("").X() / track->direction("").Z(), "mrad")));
+            streamAngleY[stream]->Fill(
+                static_cast<double>(Units::convert(track->direction("").Y() / track->direction("").Z(), "mrad")));
+
+            streamPositionAtScattererX[stream]->Fill(track->intercept(scatterer_position_).X());
+            streamPositionAtScattererY[stream]->Fill(track->intercept(scatterer_position_).Y());
+
+            auto trackClusters = track->clusters();
+            for(auto& trackCluster : trackClusters) {
+                std::string detectorID = trackCluster->detectorID();
+                residualsX[detectorID]->Fill(track->residual(detectorID).X());
+                residualsY[detectorID]->Fill(track->residual(detectorID).Y());
+            }
+        }
+    }
+}
 
 StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
 
@@ -328,29 +369,9 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
     LOG(DEBUG) << "Found " << upstream_tracks.size() << " upstream tracks";
     LOG(DEBUG) << "Found " << downstream_tracks.size() << " downstream tracks";
 
-    // Fill some plots
-    upstreamMultiplicity->Fill(static_cast<double>(upstream_tracks.size()));
-
-    if(upstream_tracks.size() > 0) {
-        LOG(DEBUG) << "Filling plots for upstream tracks.";
-
-        for(auto& track : upstream_tracks) {
-            upstreamAngleX->Fill(
-                static_cast<double>(Units::convert(track->direction("").X() / track->direction("").Z(), "mrad")));
-            upstreamAngleY->Fill(
-                static_cast<double>(Units::convert(track->direction("").Y() / track->direction("").Z(), "mrad")));
-
-            upstreamPositionAtScattererX->Fill(track->intercept(scatterer_position_).X());
-            upstreamPositionAtScattererY->Fill(track->intercept(scatterer_position_).Y());
-
-            auto trackClusters = track->clusters();
-            for(auto& trackCluster : trackClusters) {
-                std::string detectorID = trackCluster->detectorID();
-                residualsX[detectorID]->Fill(track->residual(detectorID).X());
-                residualsY[detectorID]->Fill(track->residual(detectorID).Y());
-            }
-        }
-    }
+    // Fill histograms
+    fillMultipletArmHistograms(upstream, upstream_tracks);
+    fillMultipletArmHistograms(downstream, downstream_tracks);
 
     // Clean up tree objects
     LOG(DEBUG) << "Cleaning up.";
