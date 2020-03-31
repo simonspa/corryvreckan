@@ -65,7 +65,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
         LOG(TRACE) << "Time offset: " << m_timeOffset;
     }
 
-    // Time resolution - default or negative number, i.e. unknown. This will trigger an exception
+    // Time resolution - default to negative number, i.e. unknown. This will trigger an exception
     // when calling getTimeResolution
     m_timeResolution = config.get<double>("time_resolution", -1.0);
     if(m_timeResolution > 0) {
