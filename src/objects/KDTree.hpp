@@ -54,6 +54,9 @@ namespace corryvreckan {
         // Build a tree sorted by cluster xy positions
         void buildSpatialTree(ClusterVector inputClusters);
 
+        // Function to get back all clusters
+        ClusterVector getAllClusters() { return clusters; };
+
         // Function to get back all clusters within a given time period
         ClusterVector getAllClustersInTimeWindow(Cluster* cluster, double timeWindow);
 
