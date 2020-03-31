@@ -50,10 +50,9 @@ void GblTrack::fit() {
         auto cluster = dynamic_cast<Cluster*>(c.GetObject());
         clusters[cluster->detectorID()] = cluster;
     }
-    // gbl needs a seed cluster - at this stage it might be a nullptr
-    auto seedcluster =
-        std::find_if(m_planes.begin(), m_planes.end(), [](auto plane) { return plane.hasCluster(); })->cluster();
     // create a list of planes and sort it, also calculate the material budget:
+    // gbl needs a seed cluster - at this stage it might be a nullptr
+    auto seedcluster = m_planes.front().cluster();
     double total_material = 0;
     std::sort(m_planes.begin(), m_planes.end());
     for(auto& l : m_planes) {
@@ -251,10 +250,18 @@ void GblTrack::fit() {
         if(plane.hasCluster()) {
             traj.getMeasResults(
                 plane.gblPos(), numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
-            m_residual[plane.name()] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
+            // to be consistent with previous residuals:
+            ROOT::Math::XYZPoint corPos =
+                plane.toGlobal() *
+                (ROOT::Math::XYZPoint(m_localTrackPoints.at(plane.name()).x() + m_corrections.at(plane.name()).x(),
+                                      m_localTrackPoints.at(plane.name()).y() + m_corrections.at(plane.name()).y(),
+                                      0));
+            ROOT::Math::XYZPoint clusterPos = plane.cluster()->global();
+            m_residual[plane.name()] = ROOT::Math::XYPoint(corPos.x() - clusterPos.x(), corPos.y() - clusterPos.y());
         }
         if(m_logging) {
-            std::cout << m_residual[plane.name()] << "\t" << m_kink[plane.name()] << std::endl;
+            std::cout << "Plane: " << plane.name() << ": res" << m_residual[plane.name()]
+                      << "\t kink: " << m_kink[plane.name()] << std::endl;
         }
     }
     m_isFitted = true;
