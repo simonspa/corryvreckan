@@ -148,64 +148,56 @@ void TrackingMultiplet::initialise() {
     LOG(DEBUG) << "Initialised all histograms.";
 }
 
-StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
+TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::string, KDTree*>& cluster_tree) {
 
-    LOG(DEBUG) << "Start of event";
+    // Define upstream/downstream dependent variables
+    std::vector<std::string> stream_detectors = stream == upstream ? m_upstream_detectors : m_downstream_detectors;
+    size_t min_hits = stream == upstream ? min_hits_upstream_ : min_hits_downstream_;
+    std::string stream_name = stream == upstream ? "upstream" : "downstream";
 
-    std::string upstream_reference_first = "";
-    std::string upstream_reference_last = "";
+    std::string reference_first = "";
+    std::string reference_last = "";
 
-    std::shared_ptr<ClusterVector> upstream_reference_clusters_first = nullptr;
-    std::shared_ptr<ClusterVector> upstream_reference_clusters_last = nullptr;
+    LOG(DEBUG) << "Find " + stream_name + " tracks.";
+    for(auto& detector_ID : stream_detectors) {
+        LOG(DEBUG) << "Checking " + stream_name + " detector " << detector_ID;
 
-    for(auto& upstream_detector_ID : m_upstream_detectors) {
-        LOG(DEBUG) << "Upstream detector " << upstream_detector_ID;
-
-        auto clusters = clipboard->getData<Cluster>(upstream_detector_ID);
-        if(clusters == nullptr || clusters->size() == 0) {
+        if(cluster_tree.count(detector_ID) == 0) {
+            LOG(DEBUG) << "No clusters to be found here.";
             continue;
         }
-        LOG(DEBUG) << "Clusters: " << clusters->size();
-        if(upstream_reference_first == "") {
-            upstream_reference_first = upstream_detector_ID;
-            upstream_reference_clusters_first = clusters;
+
+        if(reference_first == "") {
+            reference_first = detector_ID;
         }
-        upstream_reference_last = upstream_detector_ID;
-        upstream_reference_clusters_last = clusters;
-
-        // Store them all in KDTrees
-        KDTree* clusterTree = new KDTree();
-        clusterTree->buildTimeTree(*clusters);
-        upstream_trees[upstream_detector_ID] = clusterTree;
+        reference_last = detector_ID;
     }
 
-    if(upstream_reference_clusters_first == nullptr || upstream_reference_clusters_last == nullptr ||
-       upstream_reference_clusters_first == upstream_reference_clusters_last) {
-        LOG(DEBUG) << "No upstream tracks to be found in this event";
-        return StatusCode::Success;
+    TrackVector tracks;
+
+    if(reference_first == "" || reference_last == "" || reference_first == reference_last) {
+        LOG(DEBUG) << "No " + stream_name + " tracks to be found in this event";
+        return tracks;
     }
 
-    LOG(DEBUG) << "Number of upstream reference clusters (first hit detector, in " << upstream_reference_first
-               << "): " << upstream_reference_clusters_first->size();
-    LOG(DEBUG) << "Number of upstream reference clusters (last hit detector, in " << upstream_reference_last
-               << "): " << upstream_reference_clusters_last->size();
+    LOG(DEBUG) << "Reference detector (first hit detector): " << reference_first;
+    LOG(DEBUG) << "Reference detector (last hit detector): " << reference_last;
 
     // Start track finding
-
-    for(auto& clusterFirst : (*upstream_reference_clusters_first)) {
-        for(auto& clusterLast : (*upstream_reference_clusters_last)) {
+    for(auto& clusterFirst : cluster_tree[reference_first]->getAllClusters()) {
+        for(auto& clusterLast : cluster_tree[reference_last]->getAllClusters()) {
             auto trackCandidate = new StraightLineTrack();
             trackCandidate->addCluster(clusterFirst);
             trackCandidate->addCluster(clusterLast);
             trackCandidate->setTimestamp((clusterFirst->timestamp() + clusterLast->timestamp()) / 2.);
 
-            for(auto& detectorID : m_upstream_detectors) {
-                if(detectorID == upstream_reference_first || detectorID == upstream_reference_last) {
+            for(auto& detectorID : stream_detectors) {
+                if(detectorID == reference_first || detectorID == reference_last) {
                     LOG(DEBUG) << "Don't have to count this detector, since it's a reference detector";
                     continue;
                 }
 
-                if(upstream_trees.count(detectorID) == 0) {
+                if(cluster_tree.count(detectorID) == 0) {
                     LOG(TRACE) << "Skipping detector " << detectorID << " as it has 0 clusters.";
                     continue;
                 }
@@ -221,7 +213,7 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
                                                      spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
 
                 LOG(DEBUG) << "Using timing cut of " << Units::display(time_cuts_[detector], {"ns", "us", "s"});
-                auto neighbours = upstream_trees[detectorID]->getAllClustersInTimeWindow(clusterFirst, time_cuts_[detector]);
+                auto neighbours = cluster_tree[detectorID]->getAllClustersInTimeWindow(clusterFirst, time_cuts_[detector]);
 
                 LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
 
@@ -272,28 +264,77 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
 
                 // Add the cluster to the track
                 trackCandidate->addCluster(closestCluster);
-                LOG(DEBUG) << "Added cluster to track candidate";
+                LOG(DEBUG) << "Added good cluster to track candidate";
             }
 
-            if(trackCandidate->nClusters() < min_hits_upstream_) {
+            if(trackCandidate->nClusters() < min_hits) {
                 LOG(DEBUG) << "Not enough clusters on the track, found " << trackCandidate->nClusters() << " but "
-                           << min_hits_upstream_ << " required.";
+                           << min_hits << " required.";
                 delete trackCandidate;
                 continue;
             }
 
             trackCandidate->fit();
-            m_upstreamTracks.push_back(trackCandidate);
+            tracks.push_back(trackCandidate);
         }
     }
+    return tracks;
+}
+
+void TrackingMultiplet::fillMultipletArmHistograms(streams stream, TrackVector tracks) {}
+
+StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
+
+    LOG(DEBUG) << "Start of event";
+
+    std::map<std::string, KDTree*> upstream_trees;
+    std::map<std::string, KDTree*> downstream_trees;
+
+    // Store upstream data in KDTrees
+    for(auto& upstream_detector_ID : m_upstream_detectors) {
+        LOG(DEBUG) << "Store data for upstream detector " << upstream_detector_ID;
+
+        auto clusters = clipboard->getData<Cluster>(upstream_detector_ID);
+        if(clusters == nullptr || clusters->size() == 0) {
+            continue;
+        }
+        LOG(DEBUG) << "Cluster count: " << clusters->size();
+
+        // Store all clusters in KDTrees
+        KDTree* clusterTree = new KDTree();
+        clusterTree->buildTimeTree(*clusters);
+        upstream_trees[upstream_detector_ID] = clusterTree;
+    }
+
+    // Store downstream data in KDTrees
+    for(auto& downstream_detector_ID : m_downstream_detectors) {
+        LOG(DEBUG) << "Store data for downstream detector " << downstream_detector_ID;
+
+        auto clusters = clipboard->getData<Cluster>(downstream_detector_ID);
+        if(clusters == nullptr || clusters->size() == 0) {
+            continue;
+        }
+        LOG(DEBUG) << "Nr. of clusters: " << clusters->size();
+
+        // Store all clusters in KDTrees
+        KDTree* clusterTree = new KDTree();
+        clusterTree->buildTimeTree(*clusters);
+        downstream_trees[downstream_detector_ID] = clusterTree;
+    }
+
+    TrackVector upstream_tracks = findMultipletArm(upstream, upstream_trees);
+    TrackVector downstream_tracks = findMultipletArm(downstream, downstream_trees);
+
+    LOG(DEBUG) << "Found " << upstream_tracks.size() << " upstream tracks";
+    LOG(DEBUG) << "Found " << downstream_tracks.size() << " downstream tracks";
 
     // Fill some plots
-    upstreamMultiplicity->Fill(static_cast<double>(m_upstreamTracks.size()));
+    upstreamMultiplicity->Fill(static_cast<double>(upstream_tracks.size()));
 
-    if(m_upstreamTracks.size() > 0) {
+    if(upstream_tracks.size() > 0) {
         LOG(DEBUG) << "Filling plots for upstream tracks.";
 
-        for(auto& track : m_upstreamTracks) {
+        for(auto& track : upstream_tracks) {
             upstreamAngleX->Fill(
                 static_cast<double>(Units::convert(track->direction("").X() / track->direction("").Z(), "mrad")));
             upstreamAngleY->Fill(
@@ -302,9 +343,6 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
             upstreamPositionAtScattererX->Fill(track->intercept(scatterer_position_).X());
             upstreamPositionAtScattererY->Fill(track->intercept(scatterer_position_).Y());
 
-            for(std::map<std::string, TH1F*>::iterator it = residualsX.begin(); it != residualsX.end(); ++it) {
-                LOG(DEBUG) << it->first;
-            }
             auto trackClusters = track->clusters();
             for(auto& trackCluster : trackClusters) {
                 std::string detectorID = trackCluster->detectorID();
@@ -320,7 +358,10 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         delete tree->second;
         tree = upstream_trees.erase(tree);
     }
-    m_upstreamTracks.clear();
+    for(auto tree = downstream_trees.cbegin(); tree != downstream_trees.cend();) {
+        delete tree->second;
+        tree = downstream_trees.erase(tree);
+    }
 
     // Return value telling analysis to keep running
     return StatusCode::Success;

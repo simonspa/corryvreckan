@@ -25,6 +25,9 @@ namespace corryvreckan {
      *
      * More detailed explanation of module
      */
+
+    enum streams { upstream, downstream };
+
     class TrackingMultiplet : public Module {
 
     public:
@@ -41,6 +44,16 @@ namespace corryvreckan {
         void initialise();
 
         /**
+         * @brief Find tracks for upstream or downstream arm
+         */
+        TrackVector findMultipletArm(streams stream, std::map<std::string, KDTree*>& cluster_tree);
+
+        /**
+         * @brief Fill histograms for upstream or downstream arm
+         */
+        void fillMultipletArmHistograms(streams stream, TrackVector);
+
+        /**
          * @brief [Run the function of this module]
          */
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
@@ -51,7 +64,6 @@ namespace corryvreckan {
         void finalise();
 
     private:
-        double time_cut_reference_;
         std::map<std::shared_ptr<Detector>, double> time_cuts_;
         std::map<std::shared_ptr<Detector>, XYVector> spatial_cuts_;
 
@@ -63,12 +75,6 @@ namespace corryvreckan {
 
         size_t min_hits_upstream_;
         size_t min_hits_downstream_;
-
-        std::map<std::string, KDTree*> upstream_trees;
-        std::map<std::string, KDTree*> downstream_trees;
-
-        TrackVector m_upstreamTracks;
-        TrackVector m_downstreamTracks;
 
         MultipletVector m_multiplets;
 
