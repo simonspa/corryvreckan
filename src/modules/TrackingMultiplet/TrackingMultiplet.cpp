@@ -52,10 +52,31 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
         }
     }
 
-    upstream_detectors_ = m_config.getArray<std::string>("upstream_detectors");
-    downstream_detectors_ = m_config.getArray<std::string>("downstream_detectors");
+    m_upstream_detectors = m_config.getArray<std::string>("upstream_detectors");
+    m_downstream_detectors = m_config.getArray<std::string>("downstream_detectors");
+    if(m_upstream_detectors.size() < 2) {
+        throw InvalidValueError(
+            m_config, "upstream_detectors", "You have to provide at least two upstream detectors for tracking.");
+    }
+    if(m_downstream_detectors.size() < 2) {
+        throw InvalidValueError(
+            m_config, "downstream_detectors", "You have to provide at least two downstream detectors for tracking.");
+    }
 
-    scatterer_position_ = m_config.get<double>("scatterer_position_");
+    min_hits_upstream_ = m_config.get<size_t>("min_hits_upstream", m_upstream_detectors.size());
+    min_hits_downstream_ = m_config.get<size_t>("min_hits_downstream", m_downstream_detectors.size());
+    if(min_hits_upstream_ > m_upstream_detectors.size()) {
+        throw InvalidValueError(m_config,
+                                "min_hits_upstream",
+                                "Number of required upstream hits is larger than the amount of upstream detectors.");
+    }
+    if(min_hits_downstream_ > m_downstream_detectors.size()) {
+        throw InvalidValueError(m_config,
+                                "min_hits_downstream",
+                                "Number of required downstream hits is larger than the amount of downstream detectors.");
+    }
+
+    scatterer_position_ = m_config.get<double>("scatterer_position");
     scatterer_matching_cut_ = m_config.get<double>("scatterer_matching_cut");
 }
 
