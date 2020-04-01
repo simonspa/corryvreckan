@@ -394,7 +394,7 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         if(clusters == nullptr || clusters->size() == 0) {
             continue;
         }
-        LOG(DEBUG) << "Nr. of clusters: " << clusters->size();
+        LOG(DEBUG) << "Cluster count: " << clusters->size();
 
         KDTree* clusterTree = new KDTree();
         clusterTree->buildTimeTree(*clusters);
