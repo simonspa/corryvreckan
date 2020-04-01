@@ -117,6 +117,7 @@ void TrackingMultiplet::initialise() {
         title = "";
         std::string hist_name = "";
 
+        // FIXME: Add cluster per track
         title = stream_name_caps + " track multiplicity;" + stream_name + " tracks;events";
         hist_name = stream_name + "Multiplicity";
         streamMultiplicity[stream] = new TH1F(hist_name.c_str(), title.c_str(), 40, 0, 40);
@@ -373,6 +374,7 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
     fillMultipletArmHistograms(downstream, downstream_tracks);
 
     // Multiplet merging
+    // FIXME: Check for matching criterion in time
 
     MultipletVector multiplets;
     for(auto& uptrack : upstream_tracks) {
