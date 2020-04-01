@@ -39,9 +39,9 @@ namespace corryvreckan {
         void finalise();
 
         /**
-         * @brief Find tracks for upstream or downstream arm
+         * @brief Find tracklets for upstream or downstream arm
          */
-        TrackVector findMultipletArm(streams stream, std::map<std::string, KDTree*>& cluster_tree);
+        TrackVector findMultipletTracklets(streams stream, std::map<std::string, KDTree*>& cluster_tree);
 
         /**
          * @brief Fill histograms for upstream or downstream arm
@@ -63,13 +63,13 @@ namespace corryvreckan {
         size_t min_hits_downstream_;
 
         // Member histograms
-        std::map<streams, TH1F*> streamMultiplicity;
-        std::map<streams, TH1F*> clustersPerStream;
+        std::map<streams, TH1F*> trackletMultiplicity;
+        std::map<streams, TH1F*> clustersPerTracklet;
 
-        std::map<streams, TH1F*> streamAngleX;
-        std::map<streams, TH1F*> streamAngleY;
-        std::map<streams, TH1F*> streamPositionAtScattererX;
-        std::map<streams, TH1F*> streamPositionAtScattererY;
+        std::map<streams, TH1F*> trackletAngleX;
+        std::map<streams, TH1F*> trackletAngleY;
+        std::map<streams, TH1F*> trackletPositionAtScattererX;
+        std::map<streams, TH1F*> trackletPositionAtScattererY;
 
         std::map<std::string, TH1F*> residualsX;
         std::map<std::string, TH1F*> residualsY;

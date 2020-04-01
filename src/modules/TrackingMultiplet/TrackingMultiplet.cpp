@@ -125,27 +125,27 @@ void TrackingMultiplet::initialise() {
         title = "";
         std::string hist_name = "";
 
-        title = stream_name_caps + " track multiplicity;" + stream_name + " tracks;events";
+        title = stream_name_caps + " tracklet multiplicity;" + stream_name + " tracklets;events";
         hist_name = stream_name + "Multiplicity";
-        streamMultiplicity[stream] = new TH1F(hist_name.c_str(), title.c_str(), 40, 0, 40);
+        trackletMultiplicity[stream] = new TH1F(hist_name.c_str(), title.c_str(), 40, 0, 40);
 
-        title = "Clusters per " + stream_name_caps + " track;clusters;" + stream_name + " tracks";
-        hist_name = stream_name + "ClustersPerTrack";
-        clustersPerStream[stream] = new TH1F(hist_name.c_str(), title.c_str(), 10, 0, 10);
+        title = "Clusters per " + stream_name_caps + " tracklet;clusters;" + stream_name + " tracklets";
+        hist_name = stream_name + "ClustersPerTracklet";
+        clustersPerTracklet[stream] = new TH1F(hist_name.c_str(), title.c_str(), 10, 0, 10);
 
-        title = stream_name_caps + " track angle X;angle x [mrad];" + stream_name + " tracks";
+        title = stream_name_caps + " tracklet angle X;angle x [mrad];" + stream_name + " tracklets";
         hist_name = stream_name + "AngleX";
-        streamAngleX[stream] = new TH1F(hist_name.c_str(), title.c_str(), 250, -25., 25.);
-        title = stream_name_caps + " track angle Y;angle y [mrad];" + stream_name + " tracks";
+        trackletAngleX[stream] = new TH1F(hist_name.c_str(), title.c_str(), 250, -25., 25.);
+        title = stream_name_caps + " tracklet angle Y;angle y [mrad];" + stream_name + " tracklets";
         hist_name = stream_name + "AngleY";
-        streamAngleY[stream] = new TH1F(hist_name.c_str(), title.c_str(), 250, -25., 25.);
+        trackletAngleY[stream] = new TH1F(hist_name.c_str(), title.c_str(), 250, -25., 25.);
 
-        title = stream_name_caps + " track X at scatterer;position x [mm];" + stream_name + " tracks";
+        title = stream_name_caps + " tracklet X at scatterer;position x [mm];" + stream_name + " tracklets";
         hist_name = stream_name + "PositionAtScattererX";
-        streamPositionAtScattererX[stream] = new TH1F(hist_name.c_str(), title.c_str(), 200, -10., 10.);
-        title = stream_name_caps + " track Y at scatterer;position y [mm];" + stream_name + " tracks";
+        trackletPositionAtScattererX[stream] = new TH1F(hist_name.c_str(), title.c_str(), 200, -10., 10.);
+        title = stream_name_caps + " tracklet Y at scatterer;position y [mm];" + stream_name + " tracklets";
         hist_name = stream_name_caps + "PositionAtScattererY";
-        streamPositionAtScattererY[stream] = new TH1F(hist_name.c_str(), title.c_str(), 200, -10., 10.);
+        trackletPositionAtScattererY[stream] = new TH1F(hist_name.c_str(), title.c_str(), 200, -10., 10.);
     }
 
     // Loop over all up- and downstream planes
@@ -169,8 +169,8 @@ void TrackingMultiplet::initialise() {
     }
 }
 
-// Method containing the straight line track finding for the arms of the multiplets
-TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::string, KDTree*>& cluster_tree) {
+// Method containing the straight line tracklet finding for the arms of the multiplets
+TrackVector TrackingMultiplet::findMultipletTracklets(streams stream, std::map<std::string, KDTree*>& cluster_tree) {
 
     // Define upstream/downstream dependent variables
     std::vector<std::string> stream_detectors = stream == upstream ? m_upstream_detectors : m_downstream_detectors;
@@ -181,7 +181,7 @@ TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::st
     std::string reference_last = "";
 
     // Choose reference detectors (first and last hit detector in the list)
-    LOG(DEBUG) << "Start finding " + stream_name + " tracks";
+    LOG(DEBUG) << "Start finding " + stream_name + " tracklets";
     for(auto& detector_ID : stream_detectors) {
         if(cluster_tree.count(detector_ID) == 0) {
             LOG(DEBUG) << "No clusters to be found in " << detector_ID;
@@ -194,22 +194,22 @@ TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::st
         reference_last = detector_ID;
     }
 
-    TrackVector tracks;
+    TrackVector tracklets;
 
     if(reference_first == "" || reference_last == "" || reference_first == reference_last) {
-        LOG(DEBUG) << "No " + stream_name + " tracks found in this event";
-        return tracks;
+        LOG(DEBUG) << "No " + stream_name + " tracklets found in this event";
+        return tracklets;
     }
 
-    LOG(DEBUG) << "Reference detectors for " << stream_name << " track: " << reference_first << " & " << reference_last;
+    LOG(DEBUG) << "Reference detectors for " << stream_name << " tracklet: " << reference_first << " & " << reference_last;
 
-    // Track finding
+    // Tracklet finding
     for(auto& clusterFirst : cluster_tree[reference_first]->getAllClusters()) {
         for(auto& clusterLast : cluster_tree[reference_last]->getAllClusters()) {
-            auto trackCandidate = new StraightLineTrack();
-            trackCandidate->addCluster(clusterFirst);
-            trackCandidate->addCluster(clusterLast);
-            trackCandidate->setTimestamp((clusterFirst->timestamp() + clusterLast->timestamp()) / 2.);
+            auto trackletCandidate = new StraightLineTrack();
+            trackletCandidate->addCluster(clusterFirst);
+            trackletCandidate->addCluster(clusterLast);
+            trackletCandidate->setTimestamp((clusterFirst->timestamp() + clusterLast->timestamp()) / 2.);
 
             for(auto& detectorID : stream_detectors) {
                 if(detectorID == reference_first || detectorID == reference_last) {
@@ -236,10 +236,10 @@ TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::st
                 LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
 
                 // Now look for the spatially closest cluster on the next plane
-                trackCandidate->fit();
+                trackletCandidate->fit();
 
                 double interceptX, interceptY;
-                PositionVector3D<Cartesian3D<double>> interceptPoint = detector->getIntercept(trackCandidate);
+                PositionVector3D<Cartesian3D<double>> interceptPoint = detector->getIntercept(trackletCandidate);
                 interceptX = interceptPoint.X();
                 interceptY = interceptPoint.Y();
 
@@ -280,52 +280,52 @@ TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::st
                     continue;
                 }
 
-                // Add the cluster to the track
-                trackCandidate->addCluster(closestCluster);
-                LOG(DEBUG) << "Added good cluster to track candidate";
+                // Add the cluster to the tracklet
+                trackletCandidate->addCluster(closestCluster);
+                LOG(DEBUG) << "Added good cluster to tracklet candidate";
             }
 
-            if(trackCandidate->nClusters() < min_hits) {
-                LOG(DEBUG) << "Not enough clusters on the track, found " << trackCandidate->nClusters() << " but "
+            if(trackletCandidate->nClusters() < min_hits) {
+                LOG(DEBUG) << "Not enough clusters on the tracklet, found " << trackletCandidate->nClusters() << " but "
                            << min_hits << " required";
-                delete trackCandidate;
+                delete trackletCandidate;
                 continue;
             }
 
-            LOG(DEBUG) << "Found good track. Keeping this one.";
-            trackCandidate->fit();
-            tracks.push_back(trackCandidate);
+            LOG(DEBUG) << "Found good tracklet. Keeping this one.";
+            trackletCandidate->fit();
+            tracklets.push_back(trackletCandidate);
         }
     }
-    return tracks;
+    return tracklets;
 }
 
-// Filling the histograms for up- & downstream tracks
-void TrackingMultiplet::fillMultipletArmHistograms(streams stream, TrackVector tracks) {
+// Filling the histograms for up- & downstream tracklets
+void TrackingMultiplet::fillMultipletArmHistograms(streams stream, TrackVector tracklets) {
 
     std::string stream_name = stream == upstream ? "upstream" : "downstream";
 
-    streamMultiplicity[stream]->Fill(static_cast<double>(tracks.size()));
+    trackletMultiplicity[stream]->Fill(static_cast<double>(tracklets.size()));
 
-    if(tracks.size() > 0) {
-        LOG(DEBUG) << "Filling plots for " << stream_name << " tracks";
+    if(tracklets.size() > 0) {
+        LOG(DEBUG) << "Filling plots for " << stream_name << " tracklets";
 
-        for(auto& track : tracks) {
-            clustersPerStream[stream]->Fill(static_cast<double>(track->nClusters()));
+        for(auto& tracklet : tracklets) {
+            clustersPerTracklet[stream]->Fill(static_cast<double>(tracklet->nClusters()));
 
-            streamAngleX[stream]->Fill(
-                static_cast<double>(Units::convert(track->direction("").X() / track->direction("").Z(), "mrad")));
-            streamAngleY[stream]->Fill(
-                static_cast<double>(Units::convert(track->direction("").Y() / track->direction("").Z(), "mrad")));
+            trackletAngleX[stream]->Fill(
+                static_cast<double>(Units::convert(tracklet->direction("").X() / tracklet->direction("").Z(), "mrad")));
+            trackletAngleY[stream]->Fill(
+                static_cast<double>(Units::convert(tracklet->direction("").Y() / tracklet->direction("").Z(), "mrad")));
 
-            streamPositionAtScattererX[stream]->Fill(track->intercept(scatterer_position_).X());
-            streamPositionAtScattererY[stream]->Fill(track->intercept(scatterer_position_).Y());
+            trackletPositionAtScattererX[stream]->Fill(tracklet->intercept(scatterer_position_).X());
+            trackletPositionAtScattererY[stream]->Fill(tracklet->intercept(scatterer_position_).Y());
 
-            auto trackClusters = track->clusters();
-            for(auto& trackCluster : trackClusters) {
-                std::string detectorID = trackCluster->detectorID();
-                residualsX[detectorID]->Fill(track->residual(detectorID).X());
-                residualsY[detectorID]->Fill(track->residual(detectorID).Y());
+            auto trackletClusters = tracklet->clusters();
+            for(auto& trackletCluster : trackletClusters) {
+                std::string detectorID = trackletCluster->detectorID();
+                residualsX[detectorID]->Fill(tracklet->residual(detectorID).X());
+                residualsY[detectorID]->Fill(tracklet->residual(detectorID).Y());
             }
         }
     }
@@ -368,27 +368,27 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         downstream_trees[downstream_detector_ID] = clusterTree;
     }
 
-    // Up- & downstream track finding
-    TrackVector upstream_tracks = findMultipletArm(upstream, upstream_trees);
-    TrackVector downstream_tracks = findMultipletArm(downstream, downstream_trees);
+    // Up- & downstream tracklet finding
+    TrackVector upstream_tracklets = findMultipletTracklets(upstream, upstream_trees);
+    TrackVector downstream_tracklets = findMultipletTracklets(downstream, downstream_trees);
 
-    LOG(DEBUG) << "Found " << upstream_tracks.size() << " upstream tracks";
-    LOG(DEBUG) << "Found " << downstream_tracks.size() << " downstream tracks";
+    LOG(DEBUG) << "Found " << upstream_tracklets.size() << " upstream tracklets";
+    LOG(DEBUG) << "Found " << downstream_tracklets.size() << " downstream tracklets";
 
-    // Fill histograms for up- and downstream tracks
-    fillMultipletArmHistograms(upstream, upstream_tracks);
-    fillMultipletArmHistograms(downstream, downstream_tracks);
+    // Fill histograms for up- and downstream tracklets
+    fillMultipletArmHistograms(upstream, upstream_tracklets);
+    fillMultipletArmHistograms(downstream, downstream_tracklets);
 
     // Multiplet merging
     // FIXME: Check for matching criterion in time
 
     MultipletVector multiplets;
-    for(auto& uptrack : upstream_tracks) {
+    for(auto& uptracklet : upstream_tracklets) {
         Multiplet* multiplet = nullptr;
         double closestMatchingDistance = scatterer_matching_cut_;
 
-        for(auto& downtrack : downstream_tracks) {
-            auto multipletCandidate = new Multiplet(uptrack, downtrack);
+        for(auto& downtracklet : downstream_tracklets) {
+            auto multipletCandidate = new Multiplet(uptracklet, downtracklet);
             multipletCandidate->setScattererPosition(scatterer_position_);
             multipletCandidate->fit();
 
@@ -418,7 +418,7 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         if(multiplet == nullptr) {
-            LOG(DEBUG) << "No matching downstream track found";
+            LOG(DEBUG) << "No matching downstream tracklet found";
             continue;
         }
 
