@@ -156,6 +156,7 @@ void TrackingMultiplet::initialise() {
     }
 }
 
+// Method containing the straight line track finding for the arms of the multiplets
 TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::string, KDTree*>& cluster_tree) {
 
     // Define upstream/downstream dependent variables
@@ -189,7 +190,7 @@ TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::st
 
     LOG(DEBUG) << "Reference detectors for " << stream_name << " track: " << reference_first << " & " << reference_last;
 
-    // Start track finding
+    // Track finding
     for(auto& clusterFirst : cluster_tree[reference_first]->getAllClusters()) {
         for(auto& clusterLast : cluster_tree[reference_last]->getAllClusters()) {
             auto trackCandidate = new StraightLineTrack();
@@ -210,7 +211,6 @@ TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::st
                 auto detector = get_detector(detectorID);
 
                 // Now let's see if there's a cluster matching in time and space.
-
                 Cluster* closestCluster = nullptr;
 
                 // Use spatial cut only as initial value (check if cluster is ellipse defined by cuts is done below):
@@ -255,7 +255,7 @@ TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::st
                         continue;
                     }
 
-                    // If this is the closest keep it
+                    // If this is the closest keep it for now
                     if(distance < closestClusterDistance) {
                         closestClusterDistance = distance;
                         closestCluster = newCluster;
@@ -286,6 +286,7 @@ TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::st
     return tracks;
 }
 
+// Filling the histograms for up- & downstream tracks
 void TrackingMultiplet::fillMultipletArmHistograms(streams stream, TrackVector tracks) {
 
     std::string stream_name = stream == upstream ? "upstream" : "downstream";
@@ -331,7 +332,6 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         }
         LOG(DEBUG) << "Cluster count: " << clusters->size();
 
-        // Store all clusters in KDTrees
         KDTree* clusterTree = new KDTree();
         clusterTree->buildTimeTree(*clusters);
         upstream_trees[upstream_detector_ID] = clusterTree;
@@ -347,12 +347,12 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         }
         LOG(DEBUG) << "Nr. of clusters: " << clusters->size();
 
-        // Store all clusters in KDTrees
         KDTree* clusterTree = new KDTree();
         clusterTree->buildTimeTree(*clusters);
         downstream_trees[downstream_detector_ID] = clusterTree;
     }
 
+    // Up- & downstream track finding
     TrackVector upstream_tracks = findMultipletArm(upstream, upstream_trees);
     TrackVector downstream_tracks = findMultipletArm(downstream, downstream_trees);
 
