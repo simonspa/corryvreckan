@@ -29,7 +29,7 @@ Data from detectors with both triggered readout and without timestamps are match
 
 If no timestamp is available for the individual pixels, the pixel timestamp is set as the centre of the EUDAQ2 event.
 
-If no detector is capable of defining events, the `[Metronome]` model needs to be used.
+If no detector is capable of defining events, the `[Metronome]` module needs to be used.
 
 Tags stores in the EUDAQ2 event header are read, a conversion to a double value is attempted and, if successful, a profile with the value over the number of events in the respective run is automatically allocated and filled. This feature can e.g. be used to log temperatures of the devices during data taking, simply storing the temperature as event tags.
 
