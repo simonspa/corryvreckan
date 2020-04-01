@@ -372,6 +372,66 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
     fillMultipletArmHistograms(upstream, upstream_tracks);
     fillMultipletArmHistograms(downstream, downstream_tracks);
 
+    // Multiplet merging
+
+    MultipletVector multiplets;
+    for(auto& uptrack : upstream_tracks) {
+        Multiplet* multiplet = nullptr;
+        double closestMatchingDistance = scatterer_matching_cut_;
+
+        for(auto& downtrack : downstream_tracks) {
+            auto multipletCandidate = new Multiplet(uptrack, downtrack);
+            multipletCandidate->setScattererPosition(scatterer_position_);
+            multipletCandidate->fit();
+
+            double distanceX = multipletCandidate->getOffsetAtScatterer().X();
+            double distanceY = multipletCandidate->getOffsetAtScatterer().Y();
+            double distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+
+            LOG(DEBUG) << "Multiplet candidate distance (x, y, abs): " << Units::display(distanceX, {"um"}) << "  "
+                       << Units::display(distanceY, {"um"}) << "  " << Units::display(distance, {"um"});
+
+            matchingDistanceAtScattererX->Fill(distanceX);
+            matchingDistanceAtScattererY->Fill(distanceY);
+
+            if(distance > scatterer_matching_cut_) {
+                LOG(DEBUG) << "Multiplet candidate discarded due to high distance at scatterer.";
+                continue;
+            }
+
+            if(distance > closestMatchingDistance) {
+                LOG(DEBUG) << "Multiplet candidate discarded - there's a closer match.";
+                continue;
+            }
+
+            LOG(DEBUG) << "Closest multiplet match so far. Proceed as candidate.";
+            closestMatchingDistance = distance;
+            multiplet = multipletCandidate;
+        }
+
+        if(multiplet == nullptr) {
+            LOG(DEBUG) << "No matching downstream track found.";
+            continue;
+        }
+
+        multiplets.push_back(multiplet);
+
+        double distanceX = multiplet->getOffsetAtScatterer().X();
+        double distanceY = multiplet->getOffsetAtScatterer().Y();
+
+        double kinkX = multiplet->getKinkAtScatterer().X();
+        double kinkY = multiplet->getKinkAtScatterer().Y();
+
+        multipletOffsetAtScattererX->Fill(static_cast<double>(Units::convert(distanceX, "um")));
+        multipletOffsetAtScattererY->Fill(static_cast<double>(Units::convert(distanceY, "um")));
+
+        multipletKinkAtScattererX->Fill(static_cast<double>(Units::convert(kinkX, "mrad")));
+        multipletKinkAtScattererY->Fill(static_cast<double>(Units::convert(kinkY, "mrad")));
+    }
+
+    LOG(DEBUG) << "Found " << multiplets.size() << " multiplets.";
+    multipletMultiplicity->Fill(static_cast<double>(multiplets.size()));
+
     // Clean up tree objects
     LOG(DEBUG) << "Cleaning up.";
     for(auto tree = upstream_trees.cbegin(); tree != upstream_trees.cend();) {

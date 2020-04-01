@@ -76,8 +76,6 @@ namespace corryvreckan {
         size_t min_hits_upstream_;
         size_t min_hits_downstream_;
 
-        MultipletVector m_multiplets;
-
         std::map<streams, TH1F*> streamMultiplicity;
 
         std::map<streams, TH1F*> streamAngleX;
