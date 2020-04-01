@@ -71,9 +71,9 @@ namespace corryvreckan {
 
         ROOT::Math::XYVector getOffsetAtScatterer() { return m_offsetAtScatterer; };
 
-        void setScattererPosition(double scattererPosition) { m_scattererPosition = scattererPosition; };
-
         ROOT::Math::XYVector getKinkAtScatterer() { return m_kinkAtScatterer; };
+
+        void setScattererPosition(double scattererPosition) { m_scattererPosition = scattererPosition; };
 
     private:
         Track* m_upstream;
