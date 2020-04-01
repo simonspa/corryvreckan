@@ -115,10 +115,13 @@ void TrackingMultiplet::initialise() {
         title = "";
         std::string hist_name = "";
 
-        // FIXME: Add cluster per track
         title = stream_name_caps + " track multiplicity;" + stream_name + " tracks;events";
         hist_name = stream_name + "Multiplicity";
         streamMultiplicity[stream] = new TH1F(hist_name.c_str(), title.c_str(), 40, 0, 40);
+
+        title = "Clusters per " + stream_name_caps + " track;clusters;" + stream_name + " tracks";
+        hist_name = stream_name + "ClustersPerTrack";
+        clustersPerStream[stream] = new TH1F(hist_name.c_str(), title.c_str(), 10, 0, 10);
 
         title = stream_name_caps + " track angle X;angle x [mrad];" + stream_name + " tracks";
         hist_name = stream_name + "AngleX";
@@ -298,6 +301,8 @@ void TrackingMultiplet::fillMultipletArmHistograms(streams stream, TrackVector t
         LOG(DEBUG) << "Filling plots for " << stream_name << " tracks";
 
         for(auto& track : tracks) {
+            clustersPerStream[stream]->Fill(static_cast<double>(track->nClusters()));
+
             streamAngleX[stream]->Fill(
                 static_cast<double>(Units::convert(track->direction("").X() / track->direction("").Z(), "mrad")));
             streamAngleY[stream]->Fill(

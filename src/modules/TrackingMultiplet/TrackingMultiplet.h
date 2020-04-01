@@ -64,6 +64,7 @@ namespace corryvreckan {
 
         // Member histograms
         std::map<streams, TH1F*> streamMultiplicity;
+        std::map<streams, TH1F*> clustersPerStream;
 
         std::map<streams, TH1F*> streamAngleX;
         std::map<streams, TH1F*> streamAngleY;

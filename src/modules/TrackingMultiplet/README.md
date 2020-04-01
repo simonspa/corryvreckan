@@ -33,6 +33,7 @@ For each upstream track, the downstream track with the lowest matching distance 
 For both upstream and downstream tracks, the following plots are produced:
 
 * Histogram of the tracks per event
+* Histogram of the number of clusters per track
 * Histograms of the track angle with respect to the X/Y-axis
 * Histograms of the position of the track in X/Y, extrapolated to the position of the scatterer
 
