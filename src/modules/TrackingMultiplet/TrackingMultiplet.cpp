@@ -104,8 +104,6 @@ void TrackingMultiplet::initialise() {
         std::string stream_name = stream == upstream ? "upstream" : "downstream";
         std::string stream_name_caps = stream == upstream ? "Upstream" : "Downstream";
 
-        LOG(DEBUG) << "Initializing histograms for " << stream_name << " tracks";
-
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(stream_name.c_str());
 
@@ -156,8 +154,6 @@ void TrackingMultiplet::initialise() {
         title = detectorID + " Residual Y;y_{track}-y [mm];events";
         residualsY[detectorID] = new TH1F("residualsY", title.c_str(), 500, -0.1, 0.1);
     }
-
-    LOG(DEBUG) << "Initialised all histograms.";
 }
 
 TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::string, KDTree*>& cluster_tree) {
@@ -170,12 +166,11 @@ TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::st
     std::string reference_first = "";
     std::string reference_last = "";
 
-    LOG(DEBUG) << "Find " + stream_name + " tracks.";
+    // Choose reference detectors (first and last hit detector in the list)
+    LOG(DEBUG) << "Start finding " + stream_name + " tracks";
     for(auto& detector_ID : stream_detectors) {
-        LOG(DEBUG) << "Checking " + stream_name + " detector " << detector_ID;
-
         if(cluster_tree.count(detector_ID) == 0) {
-            LOG(DEBUG) << "No clusters to be found here.";
+            LOG(DEBUG) << "No clusters to be found in " << detector_ID;
             continue;
         }
 
@@ -188,12 +183,11 @@ TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::st
     TrackVector tracks;
 
     if(reference_first == "" || reference_last == "" || reference_first == reference_last) {
-        LOG(DEBUG) << "No " + stream_name + " tracks to be found in this event";
+        LOG(DEBUG) << "No " + stream_name + " tracks found in this event";
         return tracks;
     }
 
-    LOG(DEBUG) << "Reference detector (first hit detector): " << reference_first;
-    LOG(DEBUG) << "Reference detector (last hit detector): " << reference_last;
+    LOG(DEBUG) << "Reference detectors for " << stream_name << " track: " << reference_first << " & " << reference_last;
 
     // Start track finding
     for(auto& clusterFirst : cluster_tree[reference_first]->getAllClusters()) {
@@ -205,7 +199,6 @@ TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::st
 
             for(auto& detectorID : stream_detectors) {
                 if(detectorID == reference_first || detectorID == reference_last) {
-                    LOG(DEBUG) << "Don't have to count this detector, since it's a reference detector";
                     continue;
                 }
 
@@ -270,7 +263,7 @@ TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::st
                 }
 
                 if(closestCluster == nullptr) {
-                    LOG(DEBUG) << "No cluster within spatial cut.";
+                    LOG(DEBUG) << "No cluster within spatial cut";
                     continue;
                 }
 
@@ -281,12 +274,12 @@ TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::st
 
             if(trackCandidate->nClusters() < min_hits) {
                 LOG(DEBUG) << "Not enough clusters on the track, found " << trackCandidate->nClusters() << " but "
-                           << min_hits << " required.";
+                           << min_hits << " required";
                 delete trackCandidate;
                 continue;
             }
 
-            trackCandidate->fit();
+            LOG(DEBUG) << "Found good track. Keeping this one." trackCandidate->fit();
             tracks.push_back(trackCandidate);
         }
     }
@@ -300,7 +293,7 @@ void TrackingMultiplet::fillMultipletArmHistograms(streams stream, TrackVector t
     streamMultiplicity[stream]->Fill(static_cast<double>(tracks.size()));
 
     if(tracks.size() > 0) {
-        LOG(DEBUG) << "Filling plots for " << stream_name << " tracks.";
+        LOG(DEBUG) << "Filling plots for " << stream_name << " tracks";
 
         for(auto& track : tracks) {
             streamAngleX[stream]->Fill(
@@ -394,12 +387,12 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
             matchingDistanceAtScattererY->Fill(distanceY);
 
             if(distance > scatterer_matching_cut_) {
-                LOG(DEBUG) << "Multiplet candidate discarded due to high distance at scatterer.";
+                LOG(DEBUG) << "Multiplet candidate discarded due to high distance at scatterer";
                 continue;
             }
 
             if(distance > closestMatchingDistance) {
-                LOG(DEBUG) << "Multiplet candidate discarded - there's a closer match.";
+                LOG(DEBUG) << "Multiplet candidate discarded - there's a closer match";
                 continue;
             }
 
@@ -409,10 +402,11 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         if(multiplet == nullptr) {
-            LOG(DEBUG) << "No matching downstream track found.";
+            LOG(DEBUG) << "No matching downstream track found";
             continue;
         }
 
+        LOG(DEBUG) << "Multiplet found";
         multiplets.push_back(multiplet);
 
         double distanceX = multiplet->getOffsetAtScatterer().X();
@@ -428,11 +422,11 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         multipletKinkAtScattererY->Fill(static_cast<double>(Units::convert(kinkY, "mrad")));
     }
 
-    LOG(DEBUG) << "Found " << multiplets.size() << " multiplets.";
+    LOG(DEBUG) << "Found " << multiplets.size() << " multiplets";
     multipletMultiplicity->Fill(static_cast<double>(multiplets.size()));
 
     // Clean up tree objects
-    LOG(DEBUG) << "Cleaning up.";
+    LOG(DEBUG) << "Cleaning up";
     for(auto tree = upstream_trees.cbegin(); tree != upstream_trees.cend();) {
         delete tree->second;
         tree = upstream_trees.erase(tree);
