@@ -279,7 +279,8 @@ TrackVector TrackingMultiplet::findMultipletArm(streams stream, std::map<std::st
                 continue;
             }
 
-            LOG(DEBUG) << "Found good track. Keeping this one." trackCandidate->fit();
+            LOG(DEBUG) << "Found good track. Keeping this one.";
+            trackCandidate->fit();
             tracks.push_back(trackCandidate);
         }
     }
