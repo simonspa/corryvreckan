@@ -55,6 +55,22 @@ For instance, to allow decoding of Caribou data, the respective EUDAQ2 module ha
 cmake -DUSER_CARIBOU_BUILD=ON ..
 ```
 
+In this case, EUDAQ2 itself depends on [Peary](https://gitlab.cern.ch/Caribou/peary), which is the data acquisition software accompanying the Caribou readout system.
+To switch off all interfaces that are not necessary when not operating devices, one can do:
+
+```bash
+cmake -DINTERFACE_EMULATION=ON ..
+```
+
+__Note:__ For an installatin on `lxplus` it is recommended to `source path/to/corryvreckan/etc/setup_lxplus.sh` not only before the installation of Corryvreckan but also before starting with the installation of EUDAQ2 to make sure the same compiler version is used for all libraries.
+If also Peary is installed, the following order is recommended:
+
+1. `source path/to/peary/.gitlab-ci.d/init_x86_64.sh`
+2. install Peary as described [here](https://peary-caribou.web.cern.ch/peary-caribou/#compilation-installation)
+3. `source path/to/corryvreckan/etc/setup_lxplus.sh`
+4. install EUDAQ2 as described [here](https://github.com/eudaq/eudaq/)
+5. install Corryvreckan
+
 ### Contract between EUDAQ Decoder and EventLoader
 
 The decoder guarantees to
