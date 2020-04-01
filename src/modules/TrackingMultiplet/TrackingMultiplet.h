@@ -48,29 +48,21 @@ namespace corryvreckan {
          */
         void fillMultipletArmHistograms(streams stream, TrackVector);
 
-        /**
-         * @brief [Run the function of this module]
-         */
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
-
-        /**
-         * @brief [Finalise module]
-         */
-        void finalise();
-
     private:
+        // Configuration members
         std::map<std::shared_ptr<Detector>, double> time_cuts_;
         std::map<std::shared_ptr<Detector>, XYVector> spatial_cuts_;
-
-        double scatterer_position_;
-        double scatterer_matching_cut_;
 
         std::vector<std::string> m_upstream_detectors;
         std::vector<std::string> m_downstream_detectors;
 
+        double scatterer_position_;
+        double scatterer_matching_cut_;
+
         size_t min_hits_upstream_;
         size_t min_hits_downstream_;
 
+        // Member histograms
         std::map<streams, TH1F*> streamMultiplicity;
 
         std::map<streams, TH1F*> streamAngleX;
