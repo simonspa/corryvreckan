@@ -36,7 +36,7 @@ namespace corryvreckan {
         // Init, run and finalise functions
         void initialise();
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        void finalise();
+        void finalise(){};
 
         /**
          * @brief Find tracklets for upstream or downstream arm

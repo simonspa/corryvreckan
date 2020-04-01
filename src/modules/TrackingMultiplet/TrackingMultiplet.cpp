@@ -492,5 +492,3 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
     // Return value telling analysis to keep running
     return StatusCode::Success;
 }
-
-void TrackingMultiplet::finalise() {}
