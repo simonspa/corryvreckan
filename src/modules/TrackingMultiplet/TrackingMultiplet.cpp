@@ -137,14 +137,11 @@ void TrackingMultiplet::initialise() {
         streamPositionAtScattererY[stream] = new TH1F(hist_name.c_str(), title.c_str(), 200, -10., 10.);
     }
 
-    // Loop over all planes
-    for(auto& detector : get_detectors()) {
-        auto detectorID = detector->name();
-
-        // Do not created plots for auxiliary detectors:
-        if(detector->isAuxiliary()) {
-            continue;
-        }
+    // Loop over all up- and downstream planes
+    std::vector<std::string> all_detectors;
+    all_detectors.insert(all_detectors.end(), m_upstream_detectors.begin(), m_upstream_detectors.end());
+    all_detectors.insert(all_detectors.end(), m_downstream_detectors.begin(), m_downstream_detectors.end());
+    for(auto& detectorID : all_detectors) {
 
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detectorID.c_str());
