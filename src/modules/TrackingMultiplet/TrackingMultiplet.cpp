@@ -485,6 +485,10 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         tree = downstream_trees.erase(tree);
     }
 
+    if(multiplets->size() > 0) {
+        clipboard->putData(multiplets);
+    }
+
     // Return value telling analysis to keep running
     return StatusCode::Success;
 }
