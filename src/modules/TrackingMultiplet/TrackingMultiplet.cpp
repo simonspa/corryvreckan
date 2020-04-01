@@ -415,7 +415,7 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
     // Multiplet merging
     // FIXME: Check for matching criterion in time
 
-    MultipletVector multiplets;
+    auto multiplets = std::make_shared<MultipletVector>();
     for(auto& uptracklet : upstream_tracklets) {
         Multiplet* multiplet = nullptr;
         double closestMatchingDistance = scatterer_matching_cut_;
@@ -456,7 +456,7 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         LOG(DEBUG) << "Multiplet found";
-        multiplets.push_back(multiplet);
+        multiplets->push_back(multiplet);
 
         double distanceX = multiplet->getOffsetAtScatterer().X();
         double distanceY = multiplet->getOffsetAtScatterer().Y();
@@ -471,8 +471,8 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         multipletKinkAtScattererY->Fill(static_cast<double>(Units::convert(kinkY, "mrad")));
     }
 
-    LOG(DEBUG) << "Found " << multiplets.size() << " multiplets";
-    multipletMultiplicity->Fill(static_cast<double>(multiplets.size()));
+    LOG(DEBUG) << "Found " << multiplets->size() << " multiplets";
+    multipletMultiplicity->Fill(static_cast<double>(multiplets->size()));
 
     // Clean up tree objects
     LOG(DEBUG) << "Cleaning up";
