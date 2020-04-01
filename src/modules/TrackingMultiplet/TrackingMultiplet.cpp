@@ -88,6 +88,7 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
 
     scatterer_position_ = m_config.get<double>("scatterer_position");
     scatterer_matching_cut_ = m_config.get<double>("scatterer_matching_cut");
+    isolation_cut_ = m_config.get<double>("isolation_cut", scatterer_matching_cut_ * 2.);
 }
 
 void TrackingMultiplet::initialise() {
@@ -297,6 +298,38 @@ TrackVector TrackingMultiplet::findMultipletTracklets(streams stream, std::map<s
             tracklets.push_back(trackletCandidate);
         }
     }
+
+    // Check for isolation of tracklets
+    std::vector<TrackVector::iterator> unisolatedTracklets;
+
+    if(tracklets.size() > 1 && isolation_cut_ != 0) {
+        for(TrackVector::iterator it0 = tracklets.begin(); it0 != tracklets.end(); ++it0) {
+            auto positionAtScatterer = (*it0)->intercept(scatterer_position_);
+            for(TrackVector::iterator it1 = it0 + 1; it1 != tracklets.end(); ++it1) {
+                auto otherPositionAtScatterer = (*it1)->intercept(scatterer_position_);
+
+                auto distance = otherPositionAtScatterer - positionAtScatterer;
+
+                if(sqrt(distance.Mag2()) < isolation_cut_) {
+                    LOG(DEBUG) << "Tracklet is not isolated. Distance (" << sqrt(distance.Mag2())
+                               << ") smaller than the isolation cut (" << isolation_cut_
+                               << "). Staging both tracklets for removal.";
+                    unisolatedTracklets.push_back(it0);
+                    unisolatedTracklets.push_back(it1);
+                }
+            }
+        }
+    }
+
+    // Remove unisolated tracklets
+    for(TrackVector::reverse_iterator rit = tracklets.rbegin(); rit != tracklets.rend(); ++rit) {
+        if(std::find(unisolatedTracklets.begin(), unisolatedTracklets.end(), --rit.base()) != unisolatedTracklets.end()) {
+            // Erase --rit.base(), since (reverse_iterator::base() = iterator + 1)
+            LOG(DEBUG) << "Removing unisolated tracklet";
+            tracklets.erase(--rit.base());
+        }
+    }
+
     return tracklets;
 }
 

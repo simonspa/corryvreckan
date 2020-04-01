@@ -58,6 +58,7 @@ namespace corryvreckan {
 
         double scatterer_position_;
         double scatterer_matching_cut_;
+        double isolation_cut_;
 
         size_t min_hits_upstream_;
         size_t min_hits_downstream_;
