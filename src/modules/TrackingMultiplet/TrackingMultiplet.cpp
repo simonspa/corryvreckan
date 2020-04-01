@@ -65,15 +65,25 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
 
     min_hits_upstream_ = m_config.get<size_t>("min_hits_upstream", m_upstream_detectors.size());
     min_hits_downstream_ = m_config.get<size_t>("min_hits_downstream", m_downstream_detectors.size());
-    if(min_hits_upstream_ > m_upstream_detectors.size()) {
+    if(min_hits_upstream_ > m_upstream_detectors.size() || min_hits_upstream_ < 2) {
         throw InvalidValueError(m_config,
                                 "min_hits_upstream",
-                                "Number of required upstream hits is larger than the amount of upstream detectors.");
+                                "Number of required upstream hits has to be larger than 1 and smalleror equal to the amount "
+                                "of upstream detectors.");
     }
-    if(min_hits_downstream_ > m_downstream_detectors.size()) {
+    if(min_hits_downstream_ > m_downstream_detectors.size() || min_hits_downstream_ < 2) {
         throw InvalidValueError(m_config,
                                 "min_hits_downstream",
-                                "Number of required downstream hits is larger than the amount of downstream detectors.");
+                                "Number of required downstream hits has to be larger than 1 and smalleror equal to the "
+                                "amount of downstream detectors.");
+    }
+    if(min_hits_upstream == 2) {
+        LOG(WARNING)
+            << "Number of required upstream hits equals 2. This is a very unstable condition. Please refer to the manual."
+    }
+    if(min_hits_downstream == 2) {
+        LOG(WARNING)
+            << "Number of required downstream hits equals 2. This is a very unstable condition. Please refer to the manual."
     }
 
     scatterer_position_ = m_config.get<double>("scatterer_position");
