@@ -100,8 +100,7 @@ void TrackingMultiplet::initialise() {
     title = "Multiplet kink Y at scatterer;kink y [mrad];multiplets";
     multipletKinkAtScattererY = new TH1F("multipletKinkAtScattererY", title.c_str(), 200, -20., 20.);
 
-    auto all_streams = {upstream, downstream};
-    for(auto stream : all_streams) {
+    for(auto stream : {upstream, downstream}) {
         std::string stream_name = stream == upstream ? "upstream" : "downstream";
         std::string stream_name_caps = stream == upstream ? "Upstream" : "Downstream";
 
