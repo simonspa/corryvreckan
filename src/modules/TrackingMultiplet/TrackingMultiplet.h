@@ -21,27 +21,22 @@
 
 namespace corryvreckan {
     /** @ingroup Modules
-     * @brief Module to do function
-     *
-     * More detailed explanation of module
      */
 
+    // enum to differentiate between up- and downstream arm in functions
     enum streams { upstream, downstream };
 
     class TrackingMultiplet : public Module {
 
     public:
-        /**
-         * @brief Constructor for this unique module
-         * @param config Configuration object for this module as retrieved from the steering file
-         * @param detectors Vector of pointers to the detectors
-         */
+        // Constructors and destructors
         TrackingMultiplet(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        ~TrackingMultiplet() {}
 
-        /**
-         * @brief [Initialise this module]
-         */
+        // Init, run and finalise functions
         void initialise();
+        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        void finalise();
 
         /**
          * @brief Find tracks for upstream or downstream arm
