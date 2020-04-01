@@ -4,8 +4,8 @@
 **Status**: Functional
 
 ### Description
-This module allows data recorded by EUDAQ2 and stored in a EUDAQ2 binary file as raw detector data to be read into Corryvreckan.
-For each detector type, the corresponding converter module in EUDAQ2 is used to transform the data into the `StandardPlane` event type before storing the individual `Pixel` objects on the Corryvreckan clipboard.
+This module allows data recorded by [EUDAQ2](https://github.com/eudaq/eudaq/) and stored in a EUDAQ2 binary file as raw detector data to be read into Corryvreckan.
+For each detector type, the corresponding converter module implemented in EUDAQ2 is used to transform the data into the `StandardPlane` event type before storing the individual `Pixel` objects on the Corryvreckan clipboard.
 
 The detectors need to be named according to the following scheme: `<detector_type>_<plane_number>` where `detector_type` is the type specified in the detectors file and `<plane_number>` is an iterative number over the planes of the same type.
 
