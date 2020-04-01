@@ -368,7 +368,7 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
     LOG(DEBUG) << "Found " << upstream_tracks.size() << " upstream tracks";
     LOG(DEBUG) << "Found " << downstream_tracks.size() << " downstream tracks";
 
-    // Fill histograms
+    // Fill histograms for up- and downstream tracks
     fillMultipletArmHistograms(upstream, upstream_tracks);
     fillMultipletArmHistograms(downstream, downstream_tracks);
 
