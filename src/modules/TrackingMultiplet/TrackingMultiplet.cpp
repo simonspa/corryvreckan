@@ -338,9 +338,9 @@ TrackVector TrackingMultiplet::findMultipletTracklets(streams stream, std::map<s
             avg_track_time += static_cast<double>(Units::convert(trackCluster->timestamp(), "ns"));
             avg_track_time -= static_cast<double>(Units::convert(trackCluster->global().z(), "mm") / (299.792458));
         }
-        tracklet->setTimestamp(avg_track_time / static_cast<double>(track->nClusters()));
+        tracklet->setTimestamp(avg_track_time / static_cast<double>(tracklet->nClusters()));
         LOG(DEBUG) << "Using average cluster timestamp of "
-                   << Units::display(avg_track_time / static_cast<double>(track->nClusters()), "us")
+                   << Units::display(avg_track_time / static_cast<double>(tracklet->nClusters()), "us")
                    << " as track timestamp.";
     }
 
