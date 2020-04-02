@@ -75,10 +75,22 @@ namespace corryvreckan {
          */
         ROOT::Math::XYZPoint getPositionAtScatterer() { return m_positionAtScatterer; };
 
+        /**
+         * @brief Get the offset between up- & downstream tracklet at the position of the scatterer
+         * @return ROOT::Math::XYVector offset at scatterer
+         */
         ROOT::Math::XYVector getOffsetAtScatterer() { return m_offsetAtScatterer; };
 
+        /**
+         * @brief Get the kink angle between up- & downstream tracklet at the position of the scatterer
+         * @return ROOT::Math::XYVector kink at scatterer
+         */
         ROOT::Math::XYVector getKinkAtScatterer() { return m_kinkAtScatterer; };
 
+        /**
+         * @brief Set the position of the scatterer along z
+         * @param position of the scatterer along z
+         */
         void setScattererPosition(double scattererPosition) { m_scattererPosition = scattererPosition; };
 
         Track* getUpstreamTracklet() { return m_upstream; };
