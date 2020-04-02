@@ -65,16 +65,12 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
     min_hits_upstream_ = m_config.get<size_t>("min_hits_upstream", m_upstream_detectors.size());
     min_hits_downstream_ = m_config.get<size_t>("min_hits_downstream", m_downstream_detectors.size());
     if(min_hits_upstream_ > m_upstream_detectors.size() || min_hits_upstream_ < 2) {
-        throw InvalidValueError(m_config,
-                                "min_hits_upstream",
-                                "Number of required upstream hits has to be larger than 1 and smalleror equal to the amount "
-                                "of upstream detectors.");
+        throw InvalidValueError(
+            m_config, "min_hits_upstream", "Number has to be 2 <= n <= " + to_string(m_upstream_detectors.size()));
     }
     if(min_hits_downstream_ > m_downstream_detectors.size() || min_hits_downstream_ < 2) {
-        throw InvalidValueError(m_config,
-                                "min_hits_downstream",
-                                "Number of required downstream hits has to be larger than 1 and smalleror equal to the "
-                                "amount of downstream detectors.");
+        throw InvalidValueError(
+            m_config, "min_hits_downstream", "Number has to be 2 <= n <= " + to_string(m_downstream_detectors.size()));
     }
     if(min_hits_upstream_ == 2) {
         LOG(WARNING)
