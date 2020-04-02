@@ -75,6 +75,10 @@ namespace corryvreckan {
 
         void setScattererPosition(double scattererPosition) { m_scattererPosition = scattererPosition; };
 
+        Track* getUpstreamTracklet() { return m_upstream; };
+
+        Track* getDownstreamTracklet() { return m_downstream; };
+
     private:
         Track* m_upstream;
         Track* m_downstream;
