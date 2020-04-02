@@ -206,13 +206,8 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
             trackletCandidate->addCluster(clusterLast);
             trackletCandidate->setTimestamp((clusterFirst->timestamp() + clusterLast->timestamp()) / 2.);
 
-            for(auto& detectorID : stream_detectors) {
+            for(const auto& [detectorID, tree] : cluster_tree) {
                 if(detectorID == reference_first || detectorID == reference_last) {
-                    continue;
-                }
-
-                if(cluster_tree.count(detectorID) == 0) {
-                    LOG(TRACE) << "Skipping detector " << detectorID << " as it has 0 clusters.";
                     continue;
                 }
 
@@ -226,7 +221,7 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
                                                      spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
 
                 LOG(DEBUG) << "Using timing cut of " << Units::display(time_cuts_[detector], {"ns", "us", "s"});
-                auto neighbours = cluster_tree[detectorID]->getAllClustersInTimeWindow(clusterFirst, time_cuts_[detector]);
+                auto neighbours = tree->getAllClustersInTimeWindow(clusterFirst, time_cuts_[detector]);
 
                 LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
 
