@@ -69,6 +69,12 @@ namespace corryvreckan {
          */
         ROOT::Math::XYZVector direction(std::string detectorID) const override;
 
+        /**
+         * @brief Get the track intercept at the position of the scatterer
+         * @return ROOT::Math::XYPoint Track position at scatterer
+         */
+        ROOT::Math::XYZPoint getPositionAtScatterer() { return m_positionAtScatterer; };
+
         ROOT::Math::XYVector getOffsetAtScatterer() { return m_offsetAtScatterer; };
 
         ROOT::Math::XYVector getKinkAtScatterer() { return m_kinkAtScatterer; };
@@ -86,7 +92,7 @@ namespace corryvreckan {
         void calculateChi2();
 
         double m_scattererPosition;
-        ROOT::Math::XYZVector m_positionAtScatterer;
+        ROOT::Math::XYZPoint m_positionAtScatterer;
         ROOT::Math::XYVector m_offsetAtScatterer;
         ROOT::Math::XYVector m_kinkAtScatterer;
 
