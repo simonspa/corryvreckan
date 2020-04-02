@@ -33,6 +33,9 @@ void Multiplet::fit() {
 
     // FIXME: Currently asking for direction of "". Should be the last detector plane -> Would enable using more generic
     // tracks
+    m_positionAtScatterer = ((m_downstream->intercept(m_scattererPosition) -
+                              (ROOT::Math::XYZPoint(0, 0, 0) - m_upstream->intercept(m_scattererPosition))) /
+                             2.);
     m_offsetAtScatterer = m_downstream->intercept(m_scattererPosition) - m_upstream->intercept(m_scattererPosition);
 
     // Calculate the angle
@@ -43,6 +46,7 @@ void Multiplet::fit() {
     m_kinkAtScatterer = ROOT::Math::XYVector(slopeXdown - slopeXup, slopeYdown - slopeYup);
 
     this->calculateChi2();
+    m_isFitted = true;
 }
 
 ROOT::Math::XYZPoint Multiplet::intercept(double z) const {

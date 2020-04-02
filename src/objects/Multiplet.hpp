@@ -82,6 +82,7 @@ namespace corryvreckan {
         void calculateChi2();
 
         double m_scattererPosition;
+        ROOT::Math::XYZVector m_positionAtScatterer;
         ROOT::Math::XYVector m_offsetAtScatterer;
         ROOT::Math::XYVector m_kinkAtScatterer;
 
