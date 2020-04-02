@@ -198,7 +198,7 @@ PositionVector3D<Cartesian3D<double>> PixelDetector::getIntercept(const Track* t
 
     // FIXME: this is else statement can only be temporary
     if(track->getType() == "gbl") {
-        return track->state(name());
+        return track->state(getName());
     } else {
         // Get the distance from the plane to the track initial state
         double distance = (m_origin.X() - track->state(m_detectorName).X()) * m_normal.X();
@@ -336,7 +336,7 @@ bool PixelDetector::isWithinROI(Cluster* cluster) const {
     return true;
 }
 
-XYVector PixelDetector::size() const {
+XYVector PixelDetector::getSize() const {
     return XYVector(m_pitch.X() * m_nPixels.X(), m_pitch.Y() * m_nPixels.Y());
 }
 

@@ -22,14 +22,14 @@ EtaCorrection::EtaCorrection(Configuration config, std::shared_ptr<Detector> det
 void EtaCorrection::initialise() {
 
     // Initialise histograms
-    double pitchX = m_detector->pitch().X();
-    double pitchY = m_detector->pitch().Y();
+    double pitchX = m_detector->getPitch().X();
+    double pitchY = m_detector->getPitch().Y();
 
     // Get info from configuration:
-    std::vector<double> m_etaConstantsX = m_config.getArray<double>("eta_constants_x_" + m_detector->name(), {});
-    std::vector<double> m_etaConstantsY = m_config.getArray<double>("eta_constants_y_" + m_detector->name(), {});
+    std::vector<double> m_etaConstantsX = m_config.getArray<double>("eta_constants_x_" + m_detector->getName(), {});
+    std::vector<double> m_etaConstantsY = m_config.getArray<double>("eta_constants_y_" + m_detector->getName(), {});
     if(!m_etaConstantsX.empty() || !m_etaConstantsY.empty()) {
-        LOG(INFO) << "Found Eta correction factors for detector \"" << m_detector->name()
+        LOG(INFO) << "Found Eta correction factors for detector \"" << m_detector->getName()
                   << "\": " << (m_etaConstantsX.empty() ? "" : "X ") << (m_etaConstantsY.empty() ? "" : "Y ");
     }
 
@@ -66,14 +66,14 @@ void EtaCorrection::applyEta(Cluster* cluster) {
     if(cluster->columnWidth() == 2) {
         // Apply the eta correction
         if(m_correctX) {
-            newX = floor(cluster->column() + m_detector->pitch().X() / 2) + m_etaCorrectorX->Eval(inPixelPos.X());
+            newX = floor(cluster->column() + m_detector->getPitch().X() / 2) + m_etaCorrectorX->Eval(inPixelPos.X());
         }
     }
 
     if(cluster->rowWidth() == 2) {
         // Apply the eta correction
         if(m_correctY) {
-            newY = floor(cluster->row() + m_detector->pitch().Y() / 2) + m_etaCorrectorY->Eval(inPixelPos.Y());
+            newY = floor(cluster->row() + m_detector->getPitch().Y() / 2) + m_etaCorrectorY->Eval(inPixelPos.Y());
         }
     }
 
@@ -86,9 +86,9 @@ void EtaCorrection::applyEta(Cluster* cluster) {
 StatusCode EtaCorrection::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the clusters
-    auto clusters = clipboard->getData<Cluster>(m_detector->name());
+    auto clusters = clipboard->getData<Cluster>(m_detector->getName());
     if(clusters == nullptr) {
-        LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any clusters on the clipboard";
+        LOG(DEBUG) << "Detector " << m_detector->getName() << " does not have any clusters on the clipboard";
         return StatusCode::Success;
     }
 

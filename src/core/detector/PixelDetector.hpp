@@ -147,13 +147,13 @@ namespace corryvreckan {
          * @brief Get the total size of the active matrix, i.e. pitch * number of pixels in both dimensions
          * @return 2D vector with the dimensions of the pixle matrix in X and Y
          */
-        XYVector size() const override;
+        XYVector getSize() const override;
 
         /**
          * @brief Get pitch of a single pixel
          * @return Pitch of a pixel
          */
-        XYVector pitch() const override { return m_pitch; }
+        XYVector getPitch() const override { return m_pitch; }
 
         /**
          * @brief Get intrinsic spatial resolution of the detector

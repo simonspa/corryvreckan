@@ -91,13 +91,13 @@ namespace corryvreckan {
          * @brief Get type of the detector
          * @return Type of the detector model
          */
-        std::string type() const;
+        std::string getType() const;
 
         /**
          * @brief Get name of the detector
          * @return Detector name
          */
-        std::string name() const;
+        std::string getName() const;
 
         /**
          * @brief Check whether detector is registered as reference
@@ -121,21 +121,21 @@ namespace corryvreckan {
          * @brief Retrieve configuration object from detector, containing all (potentially updated) parameters
          * @return Configuration object for this detector
          */
-        Configuration GetConfiguration() const;
+        Configuration getConfiguration() const;
 
         /**
          * @brief Get the total size of the active matrix, i.e. pitch * number of pixels in both dimensions
          * @return 2D vector with the dimensions of the pixle matrix in X and Y
          * @to do: this is designed for PixelDetector, find a proper interface for other Detector type
          */
-        virtual XYVector size() const = 0;
+        virtual XYVector getSize() const = 0;
 
         /**
          * @brief Get pitch of a single pixel
          * @return Pitch of a pixel
          * @to do: this is designed for PixelDetector, find a proper interface for other Detector type
          */
-        virtual XYVector pitch() const = 0;
+        virtual XYVector getPitch() const = 0;
 
         /**
          * @brief Get intrinsic spatial resolution of the detector

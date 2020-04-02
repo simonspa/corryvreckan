@@ -96,11 +96,11 @@ double Detector::getTimeResolution() const {
     }
 }
 
-std::string Detector::name() const {
+std::string Detector::getName() const {
     return m_detectorName;
 }
 
-std::string Detector::type() const {
+std::string Detector::getType() const {
     return m_detectorType;
 }
 
@@ -126,9 +126,9 @@ void Detector::update() {
     this->initialise();
 }
 
-Configuration Detector::GetConfiguration() const {
+Configuration Detector::getConfiguration() const {
 
-    Configuration config(name());
+    Configuration config(getName());
     config.set("type", m_detectorType);
 
     // Store the role of the detector

@@ -79,8 +79,8 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
 
 void AnalysisTimingATLASpix::initialise() {
 
-    auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
-    auto pitch_y = static_cast<double>(Units::convert(m_detector->pitch().Y(), "um"));
+    auto pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
+    auto pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));
 
     std::string name = "hTrackCorrelationTime";
     hTrackCorrelationTime =
@@ -440,7 +440,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         total_tracks++;
 
         // Get the DUT clusters from the clipboard
-        auto clusters = clipboard->getData<Cluster>(m_detector->name());
+        auto clusters = clipboard->getData<Cluster>(m_detector->getName());
         if(clusters == nullptr) {
             LOG(DEBUG) << " - no DUT clusters";
         } else {
@@ -585,7 +585,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 }
 
 void AnalysisTimingATLASpix::finalise() {
-    LOG(STATUS) << "Timing analysis finished for detector " << m_detector->name() << ": ";
+    LOG(STATUS) << "Timing analysis finished for detector " << m_detector->getName() << ": ";
 
     if(m_calcCorrections) {
 
