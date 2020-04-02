@@ -73,12 +73,10 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
             m_config, "min_hits_downstream", "Number has to be 2 <= n <= " + to_string(m_downstream_detectors.size()));
     }
     if(min_hits_upstream_ == 2) {
-        LOG(WARNING)
-            << "Number of required upstream hits equals 2. This is a very unstable condition. Please refer to the manual.";
+        LOG(WARNING) << "Number of required upstream hits equals 2. This leads to an underconstrained track fit.";
     }
     if(min_hits_downstream_ == 2) {
-        LOG(WARNING)
-            << "Number of required downstream hits equals 2. This is a very unstable condition. Please refer to the manual.";
+        LOG(WARNING) << "Number of required downstream hits equals 2. This leads to an underconstrained track fit.";
     }
 
     scatterer_position_ = m_config.get<double>("scatterer_position");
