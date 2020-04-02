@@ -56,12 +56,10 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
     m_upstream_detectors = m_config.getArray<std::string>("upstream_detectors");
     m_downstream_detectors = m_config.getArray<std::string>("downstream_detectors");
     if(m_upstream_detectors.size() < 2) {
-        throw InvalidValueError(
-            m_config, "upstream_detectors", "You have to provide at least two upstream detectors for tracking.");
+        throw InvalidValueError(m_config, "upstream_detectors", "At least two upstream detectors have to be provided.");
     }
     if(m_downstream_detectors.size() < 2) {
-        throw InvalidValueError(
-            m_config, "downstream_detectors", "You have to provide at least two downstream detectors for tracking.");
+        throw InvalidValueError(m_config, "downstream_detectors", "At least two downstream detectors have to be provided.");
     }
 
     min_hits_upstream_ = m_config.get<size_t>("min_hits_upstream", m_upstream_detectors.size());
