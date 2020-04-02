@@ -9,6 +9,7 @@
  */
 
 #include "TrackingMultiplet.h"
+#include <TDirectory.h>
 
 using namespace corryvreckan;
 
