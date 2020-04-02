@@ -470,6 +470,9 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         LOG(DEBUG) << "Multiplet found";
+        multiplet->setTimestamp(
+            (multiplet->getUpstreamTracklet()->timestamp() + multiplet->getDownstreamTracklet()->timestamp()) / 2.);
+
         multiplets->push_back(multiplet);
 
         double distanceX = multiplet->getOffsetAtScatterer().X();
