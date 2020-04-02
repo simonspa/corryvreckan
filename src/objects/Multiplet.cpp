@@ -64,6 +64,7 @@ ROOT::Math::XYZVector Multiplet::direction(std::string detectorID) const {
 }
 
 void Multiplet::print(std::ostream& out) const {
-    out << "Multiplet " << this->m_scattererPosition << ", " << this->m_offsetAtScatterer << ", " << this->m_kinkAtScatterer
-        << ", " << this->m_chi2 << ", " << this->timestamp();
+    out << "Multiplet " << this->m_scattererPosition << ", " << this->m_positionAtScatterer << ", "
+        << this->m_offsetAtScatterer << ", " << this->m_kinkAtScatterer << ", " << this->m_chi2 << ", " << this->timestamp();
+    // FIXME: Check what else to put here.
 }
