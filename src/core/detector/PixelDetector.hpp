@@ -147,13 +147,13 @@ namespace corryvreckan {
          * @brief Get the total size of the active matrix, i.e. pitch * number of pixels in both dimensions
          * @return 2D vector with the dimensions of the pixle matrix in X and Y
          */
-        XYVector size() const override;
+        XYVector getSize() const override;
 
         /**
          * @brief Get pitch of a single pixel
          * @return Pitch of a pixel
          */
-        XYVector pitch() const override { return m_pitch; }
+        XYVector getPitch() const override { return m_pitch; }
 
         /**
          * @brief Get intrinsic spatial resolution of the detector
@@ -173,18 +173,18 @@ namespace corryvreckan {
 
         // Build axis, for devices which are not auxiliary
         // Different in Pixel/Strip Detector
-        void buildAxes(const Configuration& config) override;
+        void build_axes(const Configuration& config) override;
 
         // Config detector, for devices which are not auxiliary
         // Different in Pixel/Strip Detector
-        void configureDetector(Configuration& config) const override;
+        void configure_detector(Configuration& config) const override;
 
         // Config position, orientation, mode of detector
         // Different in Pixel/Strip Detector
-        void configurePosAndOrientation(Configuration& config) const override;
+        void configure_pos_and_orientation(Configuration& config) const override;
 
         // Functions to set and check channel masking
-        void processMaskFile() override;
+        void process_mask_file() override;
 
         // Seems to be used in other coordinate
         inline static int isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2);

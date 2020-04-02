@@ -32,11 +32,11 @@ PixelDetector::PixelDetector(const Configuration& config) : Detector(config) {
 
     // Auxiliary devices don't have: number_of_pixels, pixel_pitch, spatial_resolution, mask_file, region-of-interest
     if(!isAuxiliary()) {
-        buildAxes(config);
+        build_axes(config);
     }
 }
 
-void PixelDetector::buildAxes(const Configuration& config) {
+void PixelDetector::build_axes(const Configuration& config) {
 
     m_nPixels = config.get<ROOT::Math::DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels");
     // Size of the pixels:
@@ -65,8 +65,8 @@ void PixelDetector::buildAxes(const Configuration& config) {
         m_maskfile_name = config.get<std::string>("mask_file");
         std::string mask_file = config.getPath("mask_file");
         LOG(DEBUG) << "Adding mask to detector \"" << config.getName() << "\", reading from " << mask_file;
-        setMaskFile(mask_file);
-        processMaskFile();
+        set_mask_file(mask_file);
+        process_mask_file();
     }
 }
 
@@ -82,7 +82,7 @@ void PixelDetector::SetPostionAndOrientation(const Configuration& config) {
     LOG(TRACE) << "  Orientation: " << Units::display(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
 }
 
-void PixelDetector::processMaskFile() {
+void PixelDetector::process_mask_file() {
     // Open the file with masked pixels
     std::ifstream inputMaskFile(m_maskfile, std::ios::in);
     if(!inputMaskFile.is_open()) {
@@ -167,7 +167,7 @@ void PixelDetector::initialise() {
 }
 
 // Only if detector is not auxiliary
-void PixelDetector::configureDetector(Configuration& config) const {
+void PixelDetector::configure_detector(Configuration& config) const {
 
     // Number of pixels
     config.set("number_of_pixels", m_nPixels);
@@ -187,7 +187,7 @@ void PixelDetector::configureDetector(Configuration& config) const {
     config.setMatrix("roi", m_roi);
 }
 
-void PixelDetector::configurePosAndOrientation(Configuration& config) const {
+void PixelDetector::configure_pos_and_orientation(Configuration& config) const {
     config.set("position", m_displacement, {"um", "mm"});
     config.set("orientation_mode", m_orientation_mode);
     config.set("orientation", m_orientation, {"deg"});
@@ -198,7 +198,7 @@ PositionVector3D<Cartesian3D<double>> PixelDetector::getIntercept(const Track* t
 
     // FIXME: this is else statement can only be temporary
     if(track->getType() == "gbl") {
-        return track->state(name());
+        return track->state(getName());
     } else {
         // Get the distance from the plane to the track initial state
         double distance = (m_origin.X() - track->state(m_detectorName).X()) * m_normal.X();
@@ -336,7 +336,7 @@ bool PixelDetector::isWithinROI(Cluster* cluster) const {
     return true;
 }
 
-XYVector PixelDetector::size() const {
+XYVector PixelDetector::getSize() const {
     return XYVector(m_pitch.X() * m_nPixels.X(), m_pitch.Y() * m_nPixels.Y());
 }
 

@@ -14,7 +14,7 @@
 using namespace corryvreckan;
 
 InvalidSettingError::InvalidSettingError(const Detector* detector, const std::string& key, const std::string& reason) {
-    error_message_ = "Setting '" + key + "' of detector '" + detector->name() + "' is not valid";
+    error_message_ = "Setting '" + key + "' of detector '" + detector->getName() + "' is not valid";
     if(!reason.empty()) {
         error_message_ += ": " + reason;
     }

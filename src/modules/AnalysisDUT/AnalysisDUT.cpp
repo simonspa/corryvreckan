@@ -115,12 +115,12 @@ void AnalysisDUT::initialise() {
         new TH1F("clusterWidthColAssociated", "clusterWidthColAssociated;cluster size col; # entries", 30, 0, 30);
 
     // In-pixel studies:
-    auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
-    auto pitch_y = static_cast<double>(Units::convert(m_detector->pitch().Y(), "um"));
+    auto pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
+    auto pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));
     std::string mod_axes = "in-pixel x_{track} [#mum];in-pixel y_{track} [#mum];";
 
     // cut flow histogram
-    std::string title = m_detector->name() + ": number of tracks discarded by different cuts;cut type;tracks";
+    std::string title = m_detector->getName() + ": number of tracks discarded by different cuts;cut type;tracks";
     hCutHisto = new TH1F("hCutHisto", title.c_str(), 4, 1, 5);
     hCutHisto->GetXaxis()->SetBinLabel(1, "High Chi2");
     hCutHisto->GetXaxis()->SetBinLabel(2, "Outside DUT area");

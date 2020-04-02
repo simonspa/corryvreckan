@@ -29,35 +29,35 @@ void AnalysisTelescope::initialise() {
     // position of the DUTs
     for(auto& detector : get_detectors()) {
         TDirectory* directory = getROOTDirectory();
-        TDirectory* local_directory = directory->mkdir(detector->name().c_str());
+        TDirectory* local_directory = directory->mkdir(detector->getName().c_str());
         if(local_directory == nullptr) {
             throw RuntimeError("Cannot create or access local ROOT directory for module " + this->getUniqueName());
         }
         local_directory->cd();
 
         if(detector->isDUT()) {
-            std::string title = detector->name() + " Telescope resolution X;x_{track}-x_{MC} [mm];events";
-            telescopeResolutionX[detector->name()] = new TH1F("telescopeResolutionX", title.c_str(), 600, -0.2, 0.2);
-            title = detector->name() + " Telescope resolution Y;y_{track}-y_{MC} [mm];events";
-            telescopeResolutionY[detector->name()] = new TH1F("telescopeResolutionY", title.c_str(), 600, -0.2, 0.2);
+            std::string title = detector->getName() + " Telescope resolution X;x_{track}-x_{MC} [mm];events";
+            telescopeResolutionX[detector->getName()] = new TH1F("telescopeResolutionX", title.c_str(), 600, -0.2, 0.2);
+            title = detector->getName() + " Telescope resolution Y;y_{track}-y_{MC} [mm];events";
+            telescopeResolutionY[detector->getName()] = new TH1F("telescopeResolutionY", title.c_str(), 600, -0.2, 0.2);
         } else {
-            std::string title = detector->name() + " Biased residual X (local);x_{track}-x_{cluster} [mm];events";
-            telescopeResidualsLocalX[detector->name()] = new TH1F("residualX_local", title.c_str(), 400, -0.2, 0.2);
-            title = detector->name() + " Biased residual Y (local);y_{track}-y_{cluster} [mm];events";
-            telescopeResidualsLocalY[detector->name()] = new TH1F("residualY_local", title.c_str(), 400, -0.2, 0.2);
-            title = detector->name() + " Biased residual X (global);x_{track}-x_{cluster} [mm];events";
-            telescopeResidualsX[detector->name()] = new TH1F("residualX_global", title.c_str(), 400, -0.2, 0.2);
-            title = detector->name() + " Biased residual Y (global);y_{track}-y_{cluster} [mm];events";
-            telescopeResidualsY[detector->name()] = new TH1F("residualY_global", title.c_str(), 400, -0.2, 0.2);
+            std::string title = detector->getName() + " Biased residual X (local);x_{track}-x_{cluster} [mm];events";
+            telescopeResidualsLocalX[detector->getName()] = new TH1F("residualX_local", title.c_str(), 400, -0.2, 0.2);
+            title = detector->getName() + " Biased residual Y (local);y_{track}-y_{cluster} [mm];events";
+            telescopeResidualsLocalY[detector->getName()] = new TH1F("residualY_local", title.c_str(), 400, -0.2, 0.2);
+            title = detector->getName() + " Biased residual X (global);x_{track}-x_{cluster} [mm];events";
+            telescopeResidualsX[detector->getName()] = new TH1F("residualX_global", title.c_str(), 400, -0.2, 0.2);
+            title = detector->getName() + " Biased residual Y (global);y_{track}-y_{cluster} [mm];events";
+            telescopeResidualsY[detector->getName()] = new TH1F("residualY_global", title.c_str(), 400, -0.2, 0.2);
 
-            title = detector->name() + " Biased MC residual X (local);x_{track}-x_{MC} [mm];events";
-            telescopeMCresidualsLocalX[detector->name()] = new TH1F("residualX_MC_local", title.c_str(), 400, -0.2, 0.2);
-            title = detector->name() + " Biased MC residual Y (local);y_{track}-y_{MC} [mm];events";
-            telescopeMCresidualsLocalY[detector->name()] = new TH1F("residualY_MC_local", title.c_str(), 400, -0.2, 0.2);
-            title = detector->name() + " Biased MC residual X (global);x_{track}-x_{MC} [mm];events";
-            telescopeMCresidualsX[detector->name()] = new TH1F("residualX_MC_global", title.c_str(), 400, -0.2, 0.2);
-            title = detector->name() + " Biased MC residual Y (global);y_{track}-y_{MC} [mm];events";
-            telescopeMCresidualsY[detector->name()] = new TH1F("residualY_MC_global", title.c_str(), 400, -0.2, 0.2);
+            title = detector->getName() + " Biased MC residual X (local);x_{track}-x_{MC} [mm];events";
+            telescopeMCresidualsLocalX[detector->getName()] = new TH1F("residualX_MC_local", title.c_str(), 400, -0.2, 0.2);
+            title = detector->getName() + " Biased MC residual Y (local);y_{track}-y_{MC} [mm];events";
+            telescopeMCresidualsLocalY[detector->getName()] = new TH1F("residualY_MC_local", title.c_str(), 400, -0.2, 0.2);
+            title = detector->getName() + " Biased MC residual X (global);x_{track}-x_{MC} [mm];events";
+            telescopeMCresidualsX[detector->getName()] = new TH1F("residualX_MC_global", title.c_str(), 400, -0.2, 0.2);
+            title = detector->getName() + " Biased MC residual Y (global);y_{track}-y_{MC} [mm];events";
+            telescopeMCresidualsY[detector->getName()] = new TH1F("residualY_MC_global", title.c_str(), 400, -0.2, 0.2);
         }
 
         directory->cd();
@@ -105,7 +105,7 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
                 continue;
             }
 
-            auto name = detector->name();
+            auto name = detector->getName();
             ROOT::Math::XYZPoint intercept = track->intercept(cluster->global().z());
             auto interceptLocal = detector->globalToLocal(intercept);
             telescopeResidualsLocalX[name]->Fill(cluster->local().x() - interceptLocal.X());
@@ -120,10 +120,12 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             ROOT::Math::XYZPoint particlePosition = closestApproach(cluster->local(), mcParticles);
-            telescopeMCresidualsLocalX[name]->Fill(cluster->local().x() + detector->size().X() / 2 - particlePosition.X());
-            telescopeMCresidualsLocalY[name]->Fill(cluster->local().y() + detector->size().Y() / 2 - particlePosition.Y());
-            telescopeMCresidualsX[name]->Fill(interceptLocal.X() + detector->size().X() / 2 - particlePosition.X());
-            telescopeMCresidualsY[name]->Fill(interceptLocal.Y() + detector->size().Y() / 2 - particlePosition.Y());
+            telescopeMCresidualsLocalX[name]->Fill(cluster->local().x() + detector->getSize().X() / 2 -
+                                                   particlePosition.X());
+            telescopeMCresidualsLocalY[name]->Fill(cluster->local().y() + detector->getSize().Y() / 2 -
+                                                   particlePosition.Y());
+            telescopeMCresidualsX[name]->Fill(interceptLocal.X() + detector->getSize().X() / 2 - particlePosition.X());
+            telescopeMCresidualsY[name]->Fill(interceptLocal.Y() + detector->getSize().Y() / 2 - particlePosition.Y());
         }
 
         // Calculate telescope resolution at DUT
@@ -133,7 +135,7 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Get the MC particles from the clipboard
-            auto mcParticles = clipboard->getData<MCParticle>(detector->name());
+            auto mcParticles = clipboard->getData<MCParticle>(detector->getName());
             if(mcParticles == nullptr) {
                 continue;
             }
@@ -142,10 +144,10 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
             auto interceptLocal = detector->globalToLocal(intercept);
             auto particlePosition = closestApproach(interceptLocal, mcParticles);
 
-            telescopeResolutionX[detector->name()]->Fill(interceptLocal.X() + detector->size().X() / 2 -
-                                                         particlePosition.X());
-            telescopeResolutionY[detector->name()]->Fill(interceptLocal.Y() + detector->size().Y() / 2 -
-                                                         particlePosition.Y());
+            telescopeResolutionX[detector->getName()]->Fill(interceptLocal.X() + detector->getSize().X() / 2 -
+                                                            particlePosition.X());
+            telescopeResolutionY[detector->getName()]->Fill(interceptLocal.Y() + detector->getSize().Y() / 2 -
+                                                            particlePosition.Y());
         }
     }
 
