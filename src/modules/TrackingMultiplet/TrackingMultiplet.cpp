@@ -182,7 +182,7 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(streams stream, std::map
             continue;
         }
 
-        if(reference_first == "") {
+        if(reference_first.empty()) {
             reference_first = detector_ID;
         }
         reference_last = detector_ID;
@@ -190,7 +190,7 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(streams stream, std::map
 
     TrackVector tracklets;
 
-    if(reference_first == "" || reference_last == "" || reference_first == reference_last) {
+    if(reference_first.empty() || reference_last.empty() || reference_first == reference_last) {
         LOG(DEBUG) << "No " + stream_name + " tracklets found in this event";
         return tracklets;
     }
