@@ -63,7 +63,7 @@ void ModuleManager::load_detectors() {
         LOG_PROGRESS(STATUS, "DET_LOAD_LOOP") << "Loading detector " << name;
         // the default coordinates is cartesian, any other type is forbidden now
         // @to do: other detector types, e.g., ATLAS endcap strip detector
-        auto detector = Detector::Factory(detector_section);
+        auto detector = Detector::factory(detector_section);
 
         // Check if we already found a reference plane:
         if(m_reference != nullptr && detector->isReference()) {

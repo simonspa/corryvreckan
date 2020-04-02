@@ -77,7 +77,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     }
 }
 
-std::shared_ptr<Detector> corryvreckan::Detector::Factory(const Configuration& config) {
+std::shared_ptr<Detector> corryvreckan::Detector::factory(const Configuration& config) {
     // default coordinate is cartesian coordinate
     std::string coordinates = config.get<std::string>("coordinates", "cartesian");
     std::transform(coordinates.begin(), coordinates.end(), coordinates.begin(), ::tolower);
@@ -117,7 +117,7 @@ bool Detector::isAuxiliary() const {
 }
 
 // Functions to set and check channel masking
-void Detector::setMaskFile(std::string file) {
+void Detector::set_mask_file(std::string file) {
     m_maskfile = file;
 }
 
@@ -154,7 +154,7 @@ Configuration Detector::getConfiguration() const {
     config.set("time_resolution", m_timeResolution, {"ns", "us", "ms", "s"});
 
     // different for PixelDetector and StripDetector
-    this->configurePosAndOrientation(config);
+    this->configure_pos_and_orientation(config);
 
     // material budget
     if(m_materialBudget > std::numeric_limits<double>::epsilon()) {
@@ -163,7 +163,7 @@ Configuration Detector::getConfiguration() const {
 
     // only if detector is not auxiliary:
     if(!this->isAuxiliary()) {
-        this->configureDetector(config);
+        this->configure_detector(config);
     }
 
     return config;

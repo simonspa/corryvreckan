@@ -85,7 +85,7 @@ namespace corryvreckan {
          * @param config Configuration object describing the detector
          * @return shared_ptr that contains the real detector
          */
-        static std::shared_ptr<Detector> Factory(const Configuration& config);
+        static std::shared_ptr<Detector> factory(const Configuration& config);
 
         /**
          * @brief Get type of the detector
@@ -312,18 +312,18 @@ namespace corryvreckan {
 
         // Build axis, for devices which are not auxiliary
         // Different in Pixel/Strip Detector
-        virtual void buildAxes(const Configuration& config) = 0;
+        virtual void build_axes(const Configuration& config) = 0;
 
         // Config detector, for devices which are not auxiliary
         // Different in Pixel/Strip Detector
-        virtual void configureDetector(Configuration& config) const = 0;
+        virtual void configure_detector(Configuration& config) const = 0;
         // Set position, orientation, mode of detector
         // Different in Pixel/Strip Detector
-        virtual void configurePosAndOrientation(Configuration& config) const = 0;
+        virtual void configure_pos_and_orientation(Configuration& config) const = 0;
 
         // Functions to set and check channel masking
-        void setMaskFile(std::string file);
-        virtual void processMaskFile() = 0;
+        void set_mask_file(std::string file);
+        virtual void process_mask_file() = 0;
 
         // Detector information
         std::string m_detectorType;
