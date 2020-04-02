@@ -50,7 +50,8 @@ void Multiplet::fit() {
 }
 
 ROOT::Math::XYZPoint Multiplet::intercept(double z) const {
-    return z <= m_scattererPosition ? m_upstream->intercept(z) : m_downstream->intercept(z);
+    return z == m_scattererPosition ? m_positionAtScatterer
+                                    : (z < m_scattererPosition ? m_upstream->intercept(z) : m_downstream->intercept(z));
 }
 
 ROOT::Math::XYZPoint Multiplet::state(std::string detectorID) const {
