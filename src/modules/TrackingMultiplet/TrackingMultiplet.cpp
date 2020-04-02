@@ -168,7 +168,6 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
                                                         std::map<std::string, KDTree*>& cluster_tree) {
 
     // Define upstream/downstream dependent variables
-    std::vector<std::string> stream_detectors = stream == upstream ? m_upstream_detectors : m_downstream_detectors;
     size_t min_hits = stream == upstream ? min_hits_upstream_ : min_hits_downstream_;
     std::string stream_name = stream == upstream ? "upstream" : "downstream";
 
@@ -177,17 +176,8 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
 
     // Choose reference detectors (first and last hit detector in the list)
     LOG(DEBUG) << "Start finding " + stream_name + " tracklets";
-    for(auto& detector_ID : stream_detectors) {
-        if(cluster_tree.count(detector_ID) == 0) {
-            LOG(DEBUG) << "No clusters to be found in " << detector_ID;
-            continue;
-        }
-
-        if(reference_first.empty()) {
-            reference_first = detector_ID;
-        }
-        reference_last = detector_ID;
-    }
+    reference_first = cluster_tree.begin()->first;
+    reference_last = cluster_tree.rbegin()->first;
 
     TrackVector tracklets;
 
@@ -404,8 +394,14 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Up- & downstream tracklet finding
-    TrackVector upstream_tracklets = find_multiplet_tracklets(upstream, upstream_trees);
-    TrackVector downstream_tracklets = find_multiplet_tracklets(downstream, downstream_trees);
+    TrackVector upstream_tracklets;
+    TrackVector downstream_tracklets;
+    if(upstream_trees.size() >= min_hits_upstream_) {
+        upstream_tracklets = find_multiplet_tracklets(upstream, upstream_trees);
+    }
+    if(downstream_trees.size() >= min_hits_downstream_) {
+        downstream_tracklets = find_multiplet_tracklets(downstream, downstream_trees);
+    }
 
     LOG(DEBUG) << "Found " << upstream_tracklets.size() << " upstream tracklets";
     LOG(DEBUG) << "Found " << downstream_tracklets.size() << " downstream tracklets";
