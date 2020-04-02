@@ -39,14 +39,14 @@ namespace corryvreckan {
         void finalise(){};
 
         /**
-         * @brief Find tracklets for upstream or downstream arm
+         * @brief Find tracklets for upstream or downstream tracklets
          */
-        TrackVector findMultipletTracklets(streams stream, std::map<std::string, KDTree*>& cluster_tree);
+        TrackVector find_multiplet_tracklets(streams stream, std::map<std::string, KDTree*>& cluster_tree);
 
         /**
-         * @brief Fill histograms for upstream or downstream arm
+         * @brief Fill histograms for upstream or downstream tracklets
          */
-        void fillMultipletArmHistograms(streams stream, TrackVector);
+        void fill_tracklet_histograms(streams stream, TrackVector);
 
     private:
         // Configuration members

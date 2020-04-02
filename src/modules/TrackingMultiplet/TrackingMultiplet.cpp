@@ -164,7 +164,7 @@ void TrackingMultiplet::initialise() {
 }
 
 // Method containing the straight line tracklet finding for the arms of the multiplets
-TrackVector TrackingMultiplet::findMultipletTracklets(streams stream, std::map<std::string, KDTree*>& cluster_tree) {
+TrackVector TrackingMultiplet::find_multiplet_tracklets(streams stream, std::map<std::string, KDTree*>& cluster_tree) {
 
     // Define upstream/downstream dependent variables
     std::vector<std::string> stream_detectors = stream == upstream ? m_upstream_detectors : m_downstream_detectors;
@@ -340,7 +340,7 @@ TrackVector TrackingMultiplet::findMultipletTracklets(streams stream, std::map<s
 }
 
 // Filling the histograms for up- & downstream tracklets
-void TrackingMultiplet::fillMultipletArmHistograms(streams stream, TrackVector tracklets) {
+void TrackingMultiplet::fill_tracklet_histograms(streams stream, TrackVector tracklets) {
 
     std::string stream_name = stream == upstream ? "upstream" : "downstream";
 
@@ -408,15 +408,15 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Up- & downstream tracklet finding
-    TrackVector upstream_tracklets = findMultipletTracklets(upstream, upstream_trees);
-    TrackVector downstream_tracklets = findMultipletTracklets(downstream, downstream_trees);
+    TrackVector upstream_tracklets = find_multiplet_tracklets(upstream, upstream_trees);
+    TrackVector downstream_tracklets = find_multiplet_tracklets(downstream, downstream_trees);
 
     LOG(DEBUG) << "Found " << upstream_tracklets.size() << " upstream tracklets";
     LOG(DEBUG) << "Found " << downstream_tracklets.size() << " downstream tracklets";
 
     // Fill histograms for up- and downstream tracklets
-    fillMultipletArmHistograms(upstream, upstream_tracklets);
-    fillMultipletArmHistograms(downstream, downstream_tracklets);
+    fill_tracklet_histograms(upstream, upstream_tracklets);
+    fill_tracklet_histograms(downstream, downstream_tracklets);
 
     // Multiplet merging
     // FIXME: Check for matching criterion in time
