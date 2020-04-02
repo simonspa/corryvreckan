@@ -164,7 +164,8 @@ void TrackingMultiplet::initialise() {
 }
 
 // Method containing the straight line tracklet finding for the arms of the multiplets
-TrackVector TrackingMultiplet::find_multiplet_tracklets(streams stream, std::map<std::string, KDTree*>& cluster_tree) {
+TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
+                                                        std::map<std::string, KDTree*>& cluster_tree) {
 
     // Define upstream/downstream dependent variables
     std::vector<std::string> stream_detectors = stream == upstream ? m_upstream_detectors : m_downstream_detectors;
@@ -340,7 +341,7 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(streams stream, std::map
 }
 
 // Filling the histograms for up- & downstream tracklets
-void TrackingMultiplet::fill_tracklet_histograms(streams stream, TrackVector tracklets) {
+void TrackingMultiplet::fill_tracklet_histograms(const streams& stream, TrackVector tracklets) {
 
     std::string stream_name = stream == upstream ? "upstream" : "downstream";
 
