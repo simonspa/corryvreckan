@@ -192,225 +192,234 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     // Output track container
     auto tracks = std::make_shared<TrackVector>();
 
-    // Loop over all clusters
-    for(auto& cluster : (*referenceClusters)) {
+    string reference_first = "";
+    string reference_last = "";
 
-        // Make a new track
-        LOG(DEBUG) << "Looking at next seed cluster";
+    // Make sure those are not DUT!
+    reference_first = trees.begin()->first;
+    reference_last = trees.rbegin()->first;
 
-        auto track = Track::Factory(trackModel);
-        // The track finding is based on a straight line. Therefore a refTrack to extrapolate to the next plane is used here
-        auto refTrack = new StraightLineTrack();
-        // Add the cluster to the track
-        track->addCluster(cluster);
-        track->setTimestamp(cluster->timestamp());
-        track->setVolumeScatter(volumeRadiationLength);
-        track->useVolumeScatterer(useVolumeScatterer);
-        refTrack->addCluster(cluster);
-        refTrack->setTimestamp(cluster->timestamp());
+    if(reference_first == reference_last) {
+        LOG(DEBUG) << "No tracks found in this event";
+        // Take action?
+    }
 
-        track->setParticleMomentum(momentum);
-        // Loop over each subsequent plane and look for a cluster within the timing cuts
-        for(auto& detectorID : detectors) {
-            // Get the detector
-            auto det = get_detector(detectorID);
+    for(auto& clusterFirst : trees[reference_first]->getAllClusters()) {
+        for(auto& clusterLast : trees[reference_last]->getAllClusters()) {
+            LOG(DEBUG) << "Looking at next reference cluster pair";
 
-            // always add the material budget:
-            track->addMaterial(detectorID, det->materialBudget(), det->displacement().z());
-            LOG(TRACE) << "added material budget for " << detectorID << " at z = " << det->displacement().z();
-            if(trees.count(detectorID) == 0) {
-                LOG(TRACE) << "Skipping detector " << det->name() << " as it has 0 clusters.";
+            // Make a new track
+            auto track = Track::Factory(trackModel);
+
+            // The track finding is based on a straight line. Therefore a refTrack to extrapolate to the next plane is used
+            // here
+            auto refTrack = new StraightLineTrack();
+
+            refTrack->addCluster(clusterFirst);
+            refTrack->addCluster(clusterLast);
+            if((clusterFirst->timestamp() - clusterLast->timestamp()) >
+               (time_cuts_[get_detector(reference_first)] + time_cuts_[get_detector(reference_last)])) {
+                LOG(DEBUG) << "Reference clusters not within time cuts.";
                 continue;
             }
+            double averageTimestamp = (clusterFirst->timestamp() + clusterLast->timestamp()) / 2.;
+            refTrack->setTimestamp(averageTimestamp);
 
-            if(detectorID == seedPlane) {
-                LOG(TRACE) << "Skipping seed plane " << det->name();
-                continue;
-            }
+            track->addCluster(clusterFirst);
+            track->addCluster(clusterLast);
+            track->setTimestamp(averageTimestamp);
+            track->setVolumeScatter(volumeRadiationLength);
+            track->useVolumeScatterer(useVolumeScatterer);
+            track->setParticleMomentum(momentum);
 
-            // Check if the DUT should be excluded and obey:
-            if(excludeDUT && det->isDUT()) {
-                LOG(DEBUG) << "Skipping DUT plane.";
-                continue;
-            }
+            // Loop over each subsequent plane and look for a cluster within the timing cuts
+            size_t detector_nr = 2;
+            for(auto& detectorID : detectors) {
+                auto detector = get_detector(detectorID);
 
-            // Get all neighbours within the timing cut
-            LOG(DEBUG) << "Searching for neighbouring cluster on device " << detectorID;
-            LOG(DEBUG) << "- cluster time is " << Units::display(cluster->timestamp(), {"ns", "us", "s"});
-            Cluster* closestCluster = nullptr;
+                // always add the material budget:
+                track->addMaterial(detectorID, detector->materialBudget(), detector->displacement().z());
+                LOG(TRACE) << "added material budget for " << detectorID << " at z = " << detector->displacement().z();
 
-            // Use spatial cut only as initial value (check if cluster is ellipse defined by cuts is done below):
-            double closestClusterDistance =
-                sqrt(spatial_cuts_[det].x() * spatial_cuts_[det].x() + spatial_cuts_[det].y() * spatial_cuts_[det].y());
-            // For default configuration, comparing time cuts calculated from the time resolution of the current detector and
-            // the first plane in Z,
-            // and taking the maximal value as the cut in time for track-cluster association
-            // If an absolute cut is to be used, then time_cut_reference_=time_cuts_[det]= time_cut_abs parameter
-            double timeCut = std::max(time_cut_reference_, time_cuts_[det]);
-            LOG(TRACE) << "Reference calcuated time cut = " << Units::display(time_cut_reference_, {"ns", "us", "s"})
-                       << "; detector plane " << detectorID
-                       << " calculated time cut = " << Units::display(time_cuts_[det], {"ns", "us", "s"});
-            LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
-            auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(cluster, timeCut);
+                if(detectorID == reference_first || detectorID == reference_last) {
+                    continue;
+                }
 
-            LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
+                if(trees.count(detectorID) == 0) {
+                    LOG(TRACE) << "Skipping detector " << detector->name() << " as it has 0 clusters.";
+                    continue;
+                }
 
-            // Now look for the spatially closest cluster on the next plane
-            double interceptX, interceptY;
-            if(refTrack->nClusters() > 1) {
-                refTrack->fit(); // fixme: this is not really a nice way to get the details
+                // Check if the DUT should be excluded and obey:
+                if(excludeDUT && detector->isDUT()) {
+                    LOG(DEBUG) << "Skipping DUT plane.";
+                    continue;
+                }
 
-                PositionVector3D<Cartesian3D<double>> interceptPoint = det->getIntercept(refTrack);
-                interceptX = interceptPoint.X();
-                interceptY = interceptPoint.Y();
-            } else {
-                interceptX = cluster->global().x();
-                interceptY = cluster->global().y();
-            }
+                // Get all neighbours within the timing cut
+                LOG(DEBUG) << "Searching for neighbouring cluster on device " << detectorID;
+                LOG(DEBUG) << "- reference time is " << Units::display(refTrack->timestamp(), {"ns", "us", "s"});
+                Cluster* closestCluster = nullptr;
 
-            // Loop over each neighbour in time
-            for(size_t ne = 0; ne < neighbours.size(); ne++) {
-                Cluster* newCluster = neighbours[ne];
+                // Use spatial cut only as initial value (check if cluster is ellipse defined by cuts is done below):
+                double closestClusterDistance = sqrt(spatial_cuts_[detector].x() * spatial_cuts_[detector].x() +
+                                                     spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
 
-                // Calculate the distance to the previous plane's cluster/intercept
-                double distanceX = interceptX - newCluster->global().x();
-                double distanceY = interceptY - newCluster->global().y();
-                double distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+                double timeCut = std::max({time_cuts_[get_detector(reference_first)],
+                                           time_cuts_[get_detector(reference_last)],
+                                           time_cuts_[detector]});
+                LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
 
-                // Check if newCluster lies within ellipse defined by spatial cuts around intercept,
-                // following this example:
-                // https://www.geeksforgeeks.org/check-if-a-point-is-inside-outside-or-on-the-ellipse/
-                //
-                // ellipse defined by: x^2/a^2 + y^2/b^2 = 1: on ellipse,
-                //                                       > 1: outside,
-                //                                       < 1: inside
-                // Continue if outside of ellipse:
+                auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(refTrack->timestamp(), timeCut);
 
-                double norm = (distanceX * distanceX) / (spatial_cuts_[det].x() * spatial_cuts_[det].x()) +
-                              (distanceY * distanceY) / (spatial_cuts_[det].y() * spatial_cuts_[det].y());
+                LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
 
-                // If this is the second cluster of the track, keep it for now
-                if(refTrack->nClusters() == 1 && ne == 0) {
-                    closestClusterDistance = distance;
-                    closestCluster = newCluster;
-                } else {
+                // Now look for the spatially closest cluster on the next plane
+                refTrack->fit();
+
+                PositionVector3D<Cartesian3D<double>> interceptPoint = detector->getIntercept(refTrack);
+                double interceptX = interceptPoint.X();
+                double interceptY = interceptPoint.Y();
+
+                for(size_t ne = 0; ne < neighbours.size(); ne++) {
+                    Cluster* newCluster = neighbours[ne];
+
+                    // Calculate the distance to the previous plane's cluster/intercept
+                    double distanceX = interceptX - newCluster->global().x();
+                    double distanceY = interceptY - newCluster->global().y();
+                    double distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+
+                    // Check if newCluster lies within ellipse defined by spatial cuts around intercept,
+                    // following this example:
+                    // https://www.geeksforgeeks.org/check-if-a-point-is-inside-outside-or-on-the-ellipse/
+                    //
+                    // ellipse defined by: x^2/a^2 + y^2/b^2 = 1: on ellipse,
+                    //                                       > 1: outside,
+                    //                                       < 1: inside
+                    // Continue if outside of ellipse:
+
+                    double norm = (distanceX * distanceX) / (spatial_cuts_[detector].x() * spatial_cuts_[detector].x()) +
+                                  (distanceY * distanceY) / (spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
+
                     if(norm > 1) {
+                        LOG(DEBUG) << "Cluster outside the cuts. Normalized distance: " << norm;
                         continue;
                     }
 
-                    // If this is the closest keep it
+                    // If this is the closest keep it for now
                     if(distance < closestClusterDistance) {
                         closestClusterDistance = distance;
                         closestCluster = newCluster;
                     }
                 }
-            }
 
-            if(closestCluster == nullptr) {
-                LOG(DEBUG) << "No cluster within spatial cut.";
-                continue;
-            }
-
-            // Add the cluster to the track
-            LOG(DEBUG) << "- added cluster to track";
-            track->addCluster(closestCluster);
-            refTrack->addCluster(closestCluster);
-        }
-
-        // check if track has required detector(s):
-        auto foundRequiredDetector = [this](Track* t) {
-            for(auto& requireDet : requireDetectors) {
-                if(!requireDet.empty() && !t->hasDetector(requireDet)) {
-                    LOG(DEBUG) << "No cluster from required detector " << requireDet << " on the track.";
-                    return false;
+                if(closestCluster == nullptr) {
+                    LOG(DEBUG) << "No cluster within spatial cut";
+                    continue;
                 }
+
+                // Add the cluster to the track
+                refTrack->addCluster(closestCluster);
+                track->addCluster(closestCluster);
+                LOG(DEBUG) << "- added cluster to track";
             }
-            return true;
-        };
-        if(!foundRequiredDetector(track)) {
-            delete track;
-            continue;
-        }
 
-        // Now should have a track with one cluster from each plane
-        if(track->nClusters() < minHitsOnTrack) {
-            LOG(DEBUG) << "Not enough clusters on the track, found " << track->nClusters() << " but " << minHitsOnTrack
-                       << " required.";
-            delete track;
-            continue;
-        }
-        delete refTrack;
-        // Fit the track and save it
-        track->fit();
-        if(track->isFitted()) {
-            tracks->push_back(track);
-        } else {
-            LOG_N(WARNING, 100) << "Rejected a track due to failure in fitting";
-            delete track;
-            continue;
-        }
-        // Fill histograms
-        trackChi2->Fill(track->chi2());
-        clustersPerTrack->Fill(static_cast<double>(track->nClusters()));
-        trackChi2ndof->Fill(track->chi2ndof());
-        if(!(trackModel == "gbl")) {
-            trackAngleX->Fill(atan(track->direction(track->clusters().front()->detectorID()).X()));
-            trackAngleY->Fill(atan(track->direction(track->clusters().front()->detectorID()).Y()));
-        }
-        // Make residuals
-        auto trackClusters = track->clusters();
-        for(auto& trackCluster : trackClusters) {
-            string detectorID = trackCluster->detectorID();
-            residualsX[detectorID]->Fill(track->residual(detectorID).X());
-            pullX[detectorID]->Fill(track->residual(detectorID).X() / track->clusters().front()->errorX());
-            pullY[detectorID]->Fill(track->residual(detectorID).Y() / track->clusters().front()->errorY());
-            if(trackCluster->columnWidth() == 1)
-                residualsXwidth1[detectorID]->Fill(track->residual(detectorID).X());
-            if(trackCluster->columnWidth() == 2)
-                residualsXwidth2[detectorID]->Fill(track->residual(detectorID).X());
-            if(trackCluster->columnWidth() == 3)
-                residualsXwidth3[detectorID]->Fill(track->residual(detectorID).X());
-            residualsY[detectorID]->Fill(track->residual(detectorID).Y());
-            if(trackCluster->rowWidth() == 1)
-                residualsYwidth1[detectorID]->Fill(track->residual(detectorID).Y());
-            if(trackCluster->rowWidth() == 2)
-                residualsYwidth2[detectorID]->Fill(track->residual(detectorID).Y());
-            if(trackCluster->rowWidth() == 3)
-                residualsYwidth3[detectorID]->Fill(track->residual(detectorID).Y());
-        }
-
-        for(auto& det : detectors) {
-            if(!kinkX.count(det)) {
-                LOG(WARNING) << "Skipping writing kinks due to missing init of histograms for  " << det;
+            // check if track has required detector(s):
+            auto foundRequiredDetector = [this](Track* t) {
+                for(auto& requireDet : requireDetectors) {
+                    if(!requireDet.empty() && !t->hasDetector(requireDet)) {
+                        LOG(DEBUG) << "No cluster from required detector " << requireDet << " on the track.";
+                        return false;
+                    }
+                }
+                return true;
+            };
+            if(!foundRequiredDetector(track)) {
+                delete track;
                 continue;
             }
 
-            XYPoint kink = track->kink(det);
-            kinkX.at(det)->Fill(kink.x());
-            kinkY.at(det)->Fill(kink.y());
-        }
-
-        if(timestampFrom.empty()) {
-            // Improve the track timestamp by taking the average of all planes
-            double avg_track_time = 0;
-            for(auto& trackCluster : trackClusters) {
-                avg_track_time += static_cast<double>(Units::convert(trackCluster->timestamp(), "ns"));
-                avg_track_time -= static_cast<double>(Units::convert(trackCluster->global().z(), "mm") / (299.792458));
+            // Now should have a track with one cluster from each plane
+            if(track->nClusters() < minHitsOnTrack) {
+                LOG(DEBUG) << "Not enough clusters on the track, found " << track->nClusters() << " but " << minHitsOnTrack
+                           << " required.";
+                delete track;
+                continue;
             }
-            track->setTimestamp(avg_track_time / static_cast<double>(track->nClusters()));
-            LOG(DEBUG) << "Using average cluster timestamp of "
-                       << Units::display(avg_track_time / static_cast<double>(track->nClusters()), "us")
-                       << " as track timestamp.";
-        } else if(track->hasDetector(timestampFrom)) {
-            // use timestamp of required detector:
-            double track_timestamp = track->getClusterFromDetector(timestampFrom)->timestamp();
-            LOG(DEBUG) << "Found cluster for detector " << timestampFrom << ", adding timestamp "
-                       << Units::display(track_timestamp, "us") << " to track.";
-            track->setTimestamp(track_timestamp);
-        } else {
-            LOG(ERROR) << "Cannot assign timestamp to track. Use average cluster timestamp for track or set detector to set "
-                          "track timestamp. Please update the configuration file.";
-            return StatusCode::Failure;
+            delete refTrack;
+            // Fit the track and save it
+            track->fit();
+            if(track->isFitted()) {
+                tracks->push_back(track);
+            } else {
+                LOG_N(WARNING, 100) << "Rejected a track due to failure in fitting";
+                delete track;
+                continue;
+            }
+            // Fill histograms
+            trackChi2->Fill(track->chi2());
+            clustersPerTrack->Fill(static_cast<double>(track->nClusters()));
+            trackChi2ndof->Fill(track->chi2ndof());
+            if(!(trackModel == "gbl")) {
+                trackAngleX->Fill(atan(track->direction(track->clusters().front()->detectorID()).X()));
+                trackAngleY->Fill(atan(track->direction(track->clusters().front()->detectorID()).Y()));
+            }
+            // Make residuals
+            auto trackClusters = track->clusters();
+            for(auto& trackCluster : trackClusters) {
+                string detectorID = trackCluster->detectorID();
+                residualsX[detectorID]->Fill(track->residual(detectorID).X());
+                pullX[detectorID]->Fill(track->residual(detectorID).X() / track->clusters().front()->errorX());
+                pullY[detectorID]->Fill(track->residual(detectorID).Y() / track->clusters().front()->errorY());
+                if(trackCluster->columnWidth() == 1)
+                    residualsXwidth1[detectorID]->Fill(track->residual(detectorID).X());
+                if(trackCluster->columnWidth() == 2)
+                    residualsXwidth2[detectorID]->Fill(track->residual(detectorID).X());
+                if(trackCluster->columnWidth() == 3)
+                    residualsXwidth3[detectorID]->Fill(track->residual(detectorID).X());
+                residualsY[detectorID]->Fill(track->residual(detectorID).Y());
+                if(trackCluster->rowWidth() == 1)
+                    residualsYwidth1[detectorID]->Fill(track->residual(detectorID).Y());
+                if(trackCluster->rowWidth() == 2)
+                    residualsYwidth2[detectorID]->Fill(track->residual(detectorID).Y());
+                if(trackCluster->rowWidth() == 3)
+                    residualsYwidth3[detectorID]->Fill(track->residual(detectorID).Y());
+            }
+
+            for(auto& det : detectors) {
+                if(!kinkX.count(det)) {
+                    LOG(WARNING) << "Skipping writing kinks due to missing init of histograms for  " << det;
+                    continue;
+                }
+
+                XYPoint kink = track->kink(det);
+                kinkX.at(det)->Fill(kink.x());
+                kinkY.at(det)->Fill(kink.y());
+            }
+
+            if(timestampFrom.empty()) {
+                // Improve the track timestamp by taking the average of all planes
+                double avg_track_time = 0;
+                for(auto& trackCluster : trackClusters) {
+                    avg_track_time += static_cast<double>(Units::convert(trackCluster->timestamp(), "ns"));
+                    avg_track_time -= static_cast<double>(Units::convert(trackCluster->global().z(), "mm") / (299.792458));
+                }
+                track->setTimestamp(avg_track_time / static_cast<double>(track->nClusters()));
+                LOG(DEBUG) << "Using average cluster timestamp of "
+                           << Units::display(avg_track_time / static_cast<double>(track->nClusters()), "us")
+                           << " as track timestamp.";
+            } else if(track->hasDetector(timestampFrom)) {
+                // use timestamp of required detector:
+                double track_timestamp = track->getClusterFromDetector(timestampFrom)->timestamp();
+                LOG(DEBUG) << "Found cluster for detector " << timestampFrom << ", adding timestamp "
+                           << Units::display(track_timestamp, "us") << " to track.";
+                track->setTimestamp(track_timestamp);
+            } else {
+                LOG(ERROR)
+                    << "Cannot assign timestamp to track. Use average cluster timestamp for track or set detector to set "
+                       "track timestamp. Please update the configuration file.";
+                return StatusCode::Failure;
+            }
         }
     }
 
