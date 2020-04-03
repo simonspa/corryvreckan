@@ -6,7 +6,10 @@
 ### Description
 This module performs a basic tracking method.
 
-Clusters from the first plane in Z (named the seed plane) are related to clusters close in time on the other detector planes using straight line tracks. The DUT plane can be excluded from the track finding.
+The track finding works as follows.
+All combinations of clusters in the first and the last hit detector plane are connected to form a straight line.
+Clusters in further detectors are consecutively added if they are within the spatial cuts and time cuts, updating the reference track at each stage.
+The DUT plane can be excluded from the track finding.
 
 ### Parameters
 * `time_cut_rel`: Factor by which the `time_resolution` of each detector plane will be multiplied, either the `time_resolution` of the first plane in Z or the current telescope plane, whichever is largest. This calculated value is then used as the maximum time difference allowed between clusters and a track for association to the track. This allows the time cuts between different planes to be detector appropriate. By default, a relative time cut is applied. Absolute and relative time cuts are mutually exclusive. Defaults to `3.0`.
