@@ -165,7 +165,7 @@ void TrackingMultiplet::initialise() {
 
 // Method containing the straight line tracklet finding for the arms of the multiplets
 TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
-                                                        std::map<std::string, KDTree*>& cluster_tree) {
+                                                        std::map<std::string, KDTree*>& cluster_trees) {
 
     // Define upstream/downstream dependent variables
     size_t min_hits = stream == upstream ? min_hits_upstream_ : min_hits_downstream_;
@@ -176,8 +176,8 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
 
     // Choose reference detectors (first and last hit detector in the list)
     LOG(DEBUG) << "Start finding " + stream_name + " tracklets";
-    reference_first = cluster_tree.begin()->first;
-    reference_last = cluster_tree.rbegin()->first;
+    reference_first = cluster_trees.begin()->first;
+    reference_last = cluster_trees.rbegin()->first;
 
     TrackVector tracklets;
 
@@ -189,14 +189,14 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
     LOG(DEBUG) << "Reference detectors for " << stream_name << " tracklet: " << reference_first << " & " << reference_last;
 
     // Tracklet finding
-    for(auto& clusterFirst : cluster_tree[reference_first]->getAllClusters()) {
-        for(auto& clusterLast : cluster_tree[reference_last]->getAllClusters()) {
+    for(auto& clusterFirst : cluster_trees[reference_first]->getAllClusters()) {
+        for(auto& clusterLast : cluster_trees[reference_last]->getAllClusters()) {
             auto trackletCandidate = new StraightLineTrack();
             trackletCandidate->addCluster(clusterFirst);
             trackletCandidate->addCluster(clusterLast);
             trackletCandidate->setTimestamp((clusterFirst->timestamp() + clusterLast->timestamp()) / 2.);
 
-            for(const auto& [detectorID, tree] : cluster_tree) {
+            for(const auto& [detectorID, tree] : cluster_trees) {
                 if(detectorID == reference_first || detectorID == reference_last) {
                     continue;
                 }
