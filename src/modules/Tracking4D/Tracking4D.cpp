@@ -167,8 +167,12 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         }
     }
 
+    // FIXME: Make sure these are not the DUT!
+    string reference_first = trees.begin()->first;
+    string reference_last = trees.rbegin()->first;
+
     // If there are no detectors then stop trying to track
-    if(detectors.empty()) {
+    if(detectors.empty() || reference_first == reference_last) {
         // Fill histogram
         tracksPerEvent->Fill(0);
 
@@ -178,21 +182,12 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             tree = trees.erase(tree);
         }
 
-        LOG(DEBUG) << "No hit found, end of event.";
+        LOG(DEBUG) << "Too few hit detectors for finding a track; end of event.";
         return StatusCode::Success;
     }
 
     // Output track container
     auto tracks = std::make_shared<TrackVector>();
-
-    // FIXME: Make sure these are not the DUT!
-    string reference_first = trees.begin()->first;
-    string reference_last = trees.rbegin()->first;
-
-    if(reference_first == reference_last) {
-        LOG(DEBUG) << "No tracks found in this event";
-        // Take action?
-    }
 
     for(auto& clusterFirst : trees[reference_first]->getAllClusters()) {
         for(auto& clusterLast : trees[reference_last]->getAllClusters()) {
