@@ -57,7 +57,10 @@ namespace corryvreckan {
         // Function to get back all clusters
         ClusterVector getAllClusters() { return clusters; };
 
-        // Function to get back all clusters within a given time period
+        // Function to get back all clusters within a given time period with respect to a timestamp
+        ClusterVector getAllClustersInTimeWindow(double timestamp, double timeWindow);
+
+        // Function to get back all clusters within a given time period with respect to a cluster
         ClusterVector getAllClustersInTimeWindow(Cluster* cluster, double timeWindow);
 
         // Function to get back all clusters within a given spatial window
