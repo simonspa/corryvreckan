@@ -170,12 +170,16 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     // FIXME: Remove this? This results in no entries in the histograms if no detector has a hit.
     // If there are no detectors then stop trying to track
     if(detectors.empty()) {
+        // Fill histogram
+        tracksPerEvent->Fill(0);
+
         // Clean up tree objects
         for(auto tree = trees.cbegin(); tree != trees.cend();) {
             delete tree->second;
             tree = trees.erase(tree);
         }
 
+        LOG(DEBUG) << "No hit found, end of event.";
         return StatusCode::Success;
     }
 
