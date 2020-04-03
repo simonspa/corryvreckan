@@ -144,8 +144,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     LOG(DEBUG) << "Start of event";
     // Container for all clusters, and detectors in tracking
     map<string, KDTree*> trees;
-    vector<string> hit_detectors;
 
+    std::string reference_first, reference_last;
     for(auto& detector : get_detectors()) {
         string detectorID = detector->getName();
 
@@ -166,9 +166,10 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             clusterTree->buildTimeTree(*tempClusters);
             trees[detectorID] = clusterTree;
 
-            if(!detector->isDUT()) {
-                hit_detectors.push_back(detectorID);
+            if(reference_first.empty()) {
+                reference_first = detectorID;
             }
+            reference_last = detectorID;
         }
     }
 
@@ -190,8 +191,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     // Output track container
     auto tracks = std::make_shared<TrackVector>();
 
-    for(auto& clusterFirst : trees[hit_detectors.front()]->getAllClusters()) {
-        for(auto& clusterLast : trees[hit_detectors.back()]->getAllClusters()) {
+    for(auto& clusterFirst : trees[reference_first]->getAllClusters()) {
+        for(auto& clusterLast : trees[reference_last]->getAllClusters()) {
             LOG(DEBUG) << "Looking at next reference cluster pair";
 
             // Make a new track
@@ -204,7 +205,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             refTrack->addCluster(clusterFirst);
             refTrack->addCluster(clusterLast);
             if((clusterFirst->timestamp() - clusterLast->timestamp()) >
-               (time_cuts_[get_detector(hit_detectors.front())] + time_cuts_[get_detector(hit_detectors.back())])) {
+               (time_cuts_[get_detector(reference_first)] + time_cuts_[get_detector(reference_last)])) {
                 LOG(DEBUG) << "Reference clusters not within time cuts.";
                 continue;
             }
@@ -230,7 +231,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 track->addMaterial(detectorID, detector->materialBudget(), detector->displacement().z());
                 LOG(TRACE) << "added material budget for " << detectorID << " at z = " << detector->displacement().z();
 
-                if(detectorID == hit_detectors.front() || detectorID == hit_detectors.back()) {
+                if(detectorID == reference_first || detectorID == reference_last) {
                     continue;
                 }
 
@@ -257,8 +258,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 double closestClusterDistance = sqrt(spatial_cuts_[detector].x() * spatial_cuts_[detector].x() +
                                                      spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
 
-                double timeCut = std::max({time_cuts_[get_detector(hit_detectors.front())],
-                                           time_cuts_[get_detector(hit_detectors.back())],
+                double timeCut = std::max({time_cuts_[get_detector(reference_first)],
+                                           time_cuts_[get_detector(reference_last)],
                                            time_cuts_[detector]});
                 LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
 
