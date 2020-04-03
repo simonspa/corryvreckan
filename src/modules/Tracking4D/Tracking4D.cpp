@@ -145,11 +145,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     // Container for all clusters, and detectors in tracking
     map<string, KDTree*> trees;
     vector<string> detectors;
-    std::shared_ptr<ClusterVector> referenceClusters = nullptr;
 
-    // Loop over all planes and get clusters
-    bool firstDetector = true;
-    std::string seedPlane;
     for(auto& detector : get_detectors()) {
         string detectorID = detector->name();
 
@@ -160,13 +156,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         } else {
             // Store them
             LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters from " << detectorID;
-            if(firstDetector && !detector->isDUT()) {
-                referenceClusters = tempClusters;
-                time_cut_reference_ = time_cuts_[detector];
-                seedPlane = detector->name();
-                LOG(DEBUG) << "Seed plane is " << seedPlane;
-                firstDetector = false;
-            }
 
             KDTree* clusterTree = new KDTree();
             clusterTree->buildTimeTree(*tempClusters);
@@ -178,8 +167,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         }
     }
 
+    // FIXME: Remove this? This results in no entries in the histograms if no detector has a hit.
     // If there are no detectors then stop trying to track
-    if(detectors.empty() || referenceClusters == nullptr) {
+    if(detectors.empty()) {
         // Clean up tree objects
         for(auto tree = trees.cbegin(); tree != trees.cend();) {
             delete tree->second;
