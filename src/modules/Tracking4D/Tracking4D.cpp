@@ -149,6 +149,11 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     for(auto& detector : get_detectors()) {
         string detectorID = detector->getName();
 
+        if(excludeDUT && detector->isDUT()) {
+            LOG(DEBUG) << "Skipping DUT plane.";
+            continue;
+        }
+
         // Get the clusters
         auto tempClusters = clipboard->getData<Cluster>(detectorID);
         if(tempClusters == nullptr || tempClusters->size() == 0) {
@@ -240,12 +245,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
                 if(trees.count(detectorID) == 0) {
                     LOG(TRACE) << "Skipping detector " << detectorID << " as it has 0 clusters.";
-                    continue;
-                }
-
-                // Check if the DUT should be excluded and obey:
-                if(excludeDUT && detector->isDUT()) {
-                    LOG(DEBUG) << "Skipping DUT plane.";
                     continue;
                 }
 
