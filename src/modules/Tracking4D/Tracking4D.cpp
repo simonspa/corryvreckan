@@ -144,7 +144,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     LOG(DEBUG) << "Start of event";
     // Container for all clusters, and detectors in tracking
     map<string, KDTree*> trees;
-    vector<string> detectors;
     vector<string> hit_detectors;
 
     for(auto& detector : get_detectors()) {
@@ -166,17 +165,13 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 hit_detectors.push_back(detectorID);
             }
         }
-        // the detector always needs to be listed as we would like to add the material budget information
-        if(!detector->isAuxiliary()) {
-            detectors.push_back(detectorID);
-        }
     }
 
     string reference_first = hit_detectors.front();
     string reference_last = hit_detectors.back();
 
     // If there are no detectors then stop trying to track
-    if(detectors.empty() || reference_first == reference_last) {
+    if(trees.size() < 2) {
         // Fill histogram
         tracksPerEvent->Fill(0);
 
@@ -223,8 +218,11 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
             // Loop over each subsequent plane and look for a cluster within the timing cuts
             size_t detector_nr = 2;
-            for(auto& detectorID : detectors) {
-                auto detector = get_detector(detectorID);
+            for(auto& detector : get_detectors()) {
+                if(detector->isAuxiliary()) {
+                    continue;
+                }
+                auto detectorID = detector->getName();
 
                 // always add the material budget:
                 track->addMaterial(detectorID, detector->materialBudget(), detector->displacement().z());
@@ -237,9 +235,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 // Determine whether a track can still be assembled given the number of current hits and the number of
                 // detectors to come. Reduces computing time.
                 detector_nr++;
-                if(refTrack->nClusters() + (detectors.size() - detector_nr + 1) < minHitsOnTrack) {
+                if(refTrack->nClusters() + (trees.size() - detector_nr + 1) < minHitsOnTrack) {
                     LOG(DEBUG) << "No chance to find a track - too few detectors left: " << refTrack->nClusters() << " + "
-                               << detectors.size() << " - " << detector_nr << " < " << minHitsOnTrack;
+                               << trees.size() << " - " << detector_nr << " < " << minHitsOnTrack;
                     continue;
                 }
 
@@ -384,7 +382,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                     residualsYwidth3[detectorID]->Fill(track->residual(detectorID).Y());
             }
 
-            for(auto& det : detectors) {
+            for(auto& detector : get_detectors()) {
+                auto det = detector->getName();
                 if(!kinkX.count(det)) {
                     LOG(WARNING) << "Skipping writing kinks due to missing init of histograms for  " << det;
                     continue;
