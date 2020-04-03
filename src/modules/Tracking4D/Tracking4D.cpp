@@ -242,7 +242,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 }
 
                 if(trees.count(detectorID) == 0) {
-                    LOG(TRACE) << "Skipping detector " << detector->name() << " as it has 0 clusters.";
+                    LOG(TRACE) << "Skipping detector " << detectorID << " as it has 0 clusters.";
                     continue;
                 }
 
