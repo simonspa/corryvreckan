@@ -167,7 +167,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         }
     }
 
-    // FIXME: Remove this? This results in no entries in the histograms if no detector has a hit.
     // If there are no detectors then stop trying to track
     if(detectors.empty()) {
         // Fill histogram
