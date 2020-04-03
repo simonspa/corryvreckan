@@ -58,7 +58,6 @@ namespace corryvreckan {
         // Cuts for tracking
         double momentum{};
         double volumeRadiationLength{};
-        double time_cut_reference_;
         size_t minHitsOnTrack;
         bool excludeDUT;
         bool useVolumeScatterer{};
