@@ -235,6 +235,15 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                     continue;
                 }
 
+                // Determine whether a track can still be assembled given the number of current hits and the number of
+                // detectors to come. Reduces computing time.
+                detector_nr++;
+                if(refTrack->nClusters() + (detectors.size() - detector_nr + 1) < minHitsOnTrack) {
+                    LOG(DEBUG) << "No chance to find a track - too few detectors left: " << refTrack->nClusters() << " + "
+                               << detectors.size() << " - " << detector_nr << " < " << minHitsOnTrack;
+                    continue;
+                }
+
                 if(trees.count(detectorID) == 0) {
                     LOG(TRACE) << "Skipping detector " << detector->name() << " as it has 0 clusters.";
                     continue;
