@@ -182,12 +182,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     // Output track container
     auto tracks = std::make_shared<TrackVector>();
 
-    string reference_first = "";
-    string reference_last = "";
-
-    // Make sure those are not DUT!
-    reference_first = trees.begin()->first;
-    reference_last = trees.rbegin()->first;
+    // FIXME: Make sure these are not the DUT!
+    string reference_first = trees.begin()->first;
+    string reference_last = trees.rbegin()->first;
 
     if(reference_first == reference_last) {
         LOG(DEBUG) << "No tracks found in this event";
