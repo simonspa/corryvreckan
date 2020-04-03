@@ -89,7 +89,7 @@ void Tracking4D::initialise() {
 
     // Loop over all planes
     for(auto& detector : get_detectors()) {
-        auto detectorID = detector->name();
+        auto detectorID = detector->getName();
 
         // Do not created plots for auxiliary detectors:
         if(detector->isAuxiliary()) {
@@ -147,7 +147,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     vector<string> detectors;
 
     for(auto& detector : get_detectors()) {
-        string detectorID = detector->name();
+        string detectorID = detector->getName();
 
         // Get the clusters
         auto tempClusters = clipboard->getData<Cluster>(detectorID);

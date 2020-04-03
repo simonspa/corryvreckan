@@ -57,9 +57,9 @@ namespace corryvreckan {
     }
 
     /**
-     * @brief Detector representation in the reconstruction chain
+     * @brief Detector interface in the reconstruction chain
      *
-     * Contains the detector with all its properties such as type, name, position and orientation, pitch, spatial resolution
+     * Contains the detector with common properties such as type, name, coordinate
      * etc.
      */
     class Detector {
@@ -70,22 +70,34 @@ namespace corryvreckan {
         Detector() = delete;
 
         /**
+         * Default destructor
+         */
+        virtual ~Detector() = default;
+
+        /**
          * @brief Constructs a detector in the geometry
          * @param config Configuration object describing the detector
          */
         Detector(const Configuration& config);
 
         /**
+         * @brief Factory to dynamically create detectors
+         * @param config Configuration object describing the detector
+         * @return shared_ptr that contains the real detector
+         */
+        static std::shared_ptr<Detector> factory(const Configuration& config);
+
+        /**
          * @brief Get type of the detector
          * @return Type of the detector model
          */
-        std::string type() const;
+        std::string getType() const;
 
         /**
          * @brief Get name of the detector
          * @return Detector name
          */
-        std::string name() const;
+        std::string getName() const;
 
         /**
          * @brief Check whether detector is registered as reference
@@ -114,26 +126,30 @@ namespace corryvreckan {
         /**
          * @brief Get the total size of the active matrix, i.e. pitch * number of pixels in both dimensions
          * @return 2D vector with the dimensions of the pixle matrix in X and Y
+         * @to do: this is designed for PixelDetector, find a proper interface for other Detector type
          */
-        XYVector size() const;
+        virtual XYVector getSize() const = 0;
 
         /**
          * @brief Get pitch of a single pixel
          * @return Pitch of a pixel
+         * @to do: this is designed for PixelDetector, find a proper interface for other Detector type
          */
-        XYVector pitch() const { return m_pitch; }
+        virtual XYVector getPitch() const = 0;
 
         /**
          * @brief Get intrinsic spatial resolution of the detector
          * @return Intrinsic spatial resolution in X and Y
+         * @to do: this is designed for PixelDetector, find a proper interface for other Detector type
          */
-        XYVector getSpatialResolution() const { return m_spatial_resolution; }
+        virtual XYVector getSpatialResolution() const = 0;
 
         /**
          * @brief Get number of pixels in x and y
          * @return Number of two dimensional pixels
+         * @to do: this is designed for PixelDetector, find a proper interface for other Detector type
          */
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const { return m_nPixels; }
+        virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const = 0;
 
         /**
          * @brief Get detector time offset from global clock, can be used to correct for constant shifts or time of flight
@@ -151,31 +167,37 @@ namespace corryvreckan {
          * @brief Update detector position in the world
          * @param displacement Vector with three position coordinates
          */
-        void displacement(XYZPoint displacement) { m_displacement = displacement; }
+        virtual void displacement(XYZPoint displacement) = 0;
 
         /**
          * @brief Get position in the world
          * @return Global position in Cartesian coordinates
          */
-        XYZPoint displacement() const { return m_displacement; }
+        virtual XYZPoint displacement() const = 0;
 
         /**
          * @brief Get orientation in the world
          * @return Vector with three rotation angles
          */
-        XYZVector rotation() const { return m_orientation; }
+        virtual XYZVector rotation() const = 0;
 
         /**
          * @brief Update detector orientation in the world
          * @param rotation Vector with three rotation angles
          */
-        void rotation(XYZVector rotation) { m_orientation = rotation; }
+        virtual void rotation(XYZVector rotation) = 0;
 
         /**
          * @brief Get normal vector to sensor surface
          * @return Normal vector to sensor surface
          */
-        PositionVector3D<Cartesian3D<double>> normal() const { return m_normal; };
+        PositionVector3D<Cartesian3D<double>> normal() const { return m_normal; }
+
+        /**
+         * @brief Get origin vector to sensor surface
+         * @return Origin vector to sensor surface
+         */
+        PositionVector3D<Cartesian3D<double>> origin() const { return m_origin; }
 
         /**
          * @brief Get path of the file with calibration information
@@ -196,16 +218,18 @@ namespace corryvreckan {
          * @brief Mark a detector channel as masked
          * @param chX X coordinate of the pixel to be masked
          * @param chY Y coordinate of the pixel to be masked
+         * @to do: This is designed for PixelDetector, the parameters can be different with other type of Detector
          */
-        void maskChannel(int chX, int chY);
+        virtual void maskChannel(int chX, int chY) = 0;
 
         /**
          * @brief Check if a detector channel is masked
          * @param chX X coordinate of the pixel to check
          * @param chY Y coordinate of the pixel to check
          * @return    Mask status of the pixel in question
+         * @to do: This is designed for PixelDetector, the parameters can be different with other type of Detector
          */
-        bool masked(int chX, int chY) const;
+        virtual bool masked(int chX, int chY) const = 0;
 
         /**
          * @brief Update coordinate transformations based on currently configured position and orientation values
@@ -213,22 +237,22 @@ namespace corryvreckan {
         void update();
 
         // Function to get global intercept with a track
-        PositionVector3D<Cartesian3D<double>> getIntercept(const Track* track) const;
+        virtual PositionVector3D<Cartesian3D<double>> getIntercept(const Track* track) const = 0;
         // Function to get local intercept with a track
-        PositionVector3D<Cartesian3D<double>> getLocalIntercept(const Track* track) const;
+        virtual PositionVector3D<Cartesian3D<double>> getLocalIntercept(const Track* track) const = 0;
 
         // Function to check if a track intercepts with a plane
-        bool hasIntercept(const Track* track, double pixelTolerance = 0.) const;
+        virtual bool hasIntercept(const Track* track, double pixelTolerance = 0.) const = 0;
 
         // Function to check if a track goes through/near a masked pixel
-        bool hitMasked(Track* track, int tolerance = 0.) const;
+        virtual bool hitMasked(Track* track, int tolerance = 0.) const = 0;
 
         // Functions to get row and column from local position
-        double getRow(PositionVector3D<Cartesian3D<double>> localPosition) const;
-        double getColumn(PositionVector3D<Cartesian3D<double>> localPosition) const;
+        virtual double getRow(PositionVector3D<Cartesian3D<double>> localPosition) const = 0;
+        virtual double getColumn(PositionVector3D<Cartesian3D<double>> localPosition) const = 0;
 
         // Function to get local position from column (x) and row (y) coordinates
-        PositionVector3D<Cartesian3D<double>> getLocalPosition(double column, double row) const;
+        virtual PositionVector3D<Cartesian3D<double>> getLocalPosition(double column, double row) const = 0;
 
         /**
          * Transformation from local (sensor) coordinates to in-pixel coordinates
@@ -236,14 +260,14 @@ namespace corryvreckan {
          * @param  row Row address ranging from int_column-0.5*pitch to int_column+0.5*pitch
          * @return               Position within a single pixel cell, given in units of length
          */
-        XYVector inPixel(const double column, const double row) const;
+        virtual XYVector inPixel(const double column, const double row) const = 0;
 
         /**
          * Transformation from local (sensor) coordinates to in-pixel coordinates
          * @param  localPosition Local position on the sensor
          * @return               Position within a single pixel cell, given in units of length
          */
-        XYVector inPixel(PositionVector3D<Cartesian3D<double>> localPosition) const;
+        virtual XYVector inPixel(PositionVector3D<Cartesian3D<double>> localPosition) const = 0;
 
         /**
          * @brief Transform local coordinates of this detector into global coordinates
@@ -264,14 +288,14 @@ namespace corryvreckan {
          * @param  track The track to be checked
          * @return       Boolean indicating cluster affiliation with region-of-interest
          */
-        bool isWithinROI(const Track* track) const;
+        virtual bool isWithinROI(const Track* track) const = 0;
 
         /**
          * @brief Check whether given cluster is within the detector's region-of-interest
          * @param  cluster The cluster to be checked
          * @return         Boolean indicating cluster affiliation with region-of-interest
          */
-        bool isWithinROI(Cluster* cluster) const;
+        virtual bool isWithinROI(Cluster* cluster) const = 0;
 
         /**
          * @brief Return the thickness of the senosr assembly layer (sensor+support) in fractions of radiation length
@@ -279,35 +303,35 @@ namespace corryvreckan {
          */
         double materialBudget() const { return m_materialBudget; }
 
-    private:
+    protected:
         // Roles of the detector
         DetectorRole m_role;
 
         // Initialize coordinate transformations
-        void initialise();
+        virtual void initialise() = 0;
+
+        // Build axis, for devices which are not auxiliary
+        // Different in Pixel/Strip Detector
+        virtual void build_axes(const Configuration& config) = 0;
+
+        // Config detector, for devices which are not auxiliary
+        // Different in Pixel/Strip Detector
+        virtual void configure_detector(Configuration& config) const = 0;
+        // Set position, orientation, mode of detector
+        // Different in Pixel/Strip Detector
+        virtual void configure_pos_and_orientation(Configuration& config) const = 0;
 
         // Functions to set and check channel masking
-        void setMaskFile(std::string file);
-        void processMaskFile();
+        void set_mask_file(std::string file);
+        virtual void process_mask_file() = 0;
 
         // Detector information
         std::string m_detectorType;
         std::string m_detectorName;
-        XYVector m_pitch{};
-        XYVector m_spatial_resolution{};
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels{};
+
         double m_timeOffset;
         double m_timeResolution;
         double m_materialBudget;
-
-        std::vector<std::vector<int>> m_roi{};
-        static int winding_number(std::pair<int, int> probe, std::vector<std::vector<int>> polygon);
-        inline static int isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2);
-
-        // Displacement and rotation in x,y,z
-        ROOT::Math::XYZPoint m_displacement;
-        ROOT::Math::XYZVector m_orientation;
-        std::string m_orientation_mode;
 
         // Transforms from local to global and back
         Transform3D m_localToGlobal;
@@ -327,4 +351,5 @@ namespace corryvreckan {
     };
 } // namespace corryvreckan
 
+#include "PixelDetector.hpp"
 #endif // CORRYVRECKAN_DETECTOR_H

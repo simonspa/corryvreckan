@@ -115,12 +115,12 @@ void AnalysisDUT::initialise() {
         new TH1F("clusterWidthColAssociated", "clusterWidthColAssociated;cluster size col; # entries", 30, 0, 30);
 
     // In-pixel studies:
-    auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
-    auto pitch_y = static_cast<double>(Units::convert(m_detector->pitch().Y(), "um"));
+    auto pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
+    auto pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));
     std::string mod_axes = "in-pixel x_{track} [#mum];in-pixel y_{track} [#mum];";
 
     // cut flow histogram
-    std::string title = m_detector->name() + ": number of tracks discarded by different cuts;cut type;tracks";
+    std::string title = m_detector->getName() + ": number of tracks discarded by different cuts;cut type;tracks";
     hCutHisto = new TH1F("hCutHisto", title.c_str(), 4, 1, 5);
     hCutHisto->GetXaxis()->SetBinLabel(1, "High Chi2");
     hCutHisto->GetXaxis()->SetBinLabel(2, "Outside DUT area");
@@ -416,12 +416,9 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             hTrackCorrelationPos->Fill(posDiff);
             hTrackCorrelationPosVsCorrelationTime->Fill(track->timestamp() - assoc_cluster->timestamp(), posDiff);
 
-            // FIXME need to understand local coord of clusters - why shifted? what's normal?
-            auto clusterLocal = m_detector->globalToLocal(assoc_cluster->global());
-            hClusterMapAssoc->Fill(m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal));
-            hClusterSizeMapAssoc->Fill(m_detector->getColumn(clusterLocal),
-                                       m_detector->getRow(clusterLocal),
-                                       static_cast<double>(assoc_cluster->size()));
+            hClusterMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row());
+            hClusterSizeMapAssoc->Fill(
+                assoc_cluster->column(), assoc_cluster->row(), static_cast<double>(assoc_cluster->size()));
 
             // Cluster charge normalized to path length in sensor:
             double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
@@ -431,8 +428,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
             // clusterChargeAssoc->Fill(normalized_charge);
             clusterChargeAssoc->Fill(cluster_charge);
-            hClusterChargeMapAssoc->Fill(
-                m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), cluster_charge);
+            hClusterChargeMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row(), cluster_charge);
 
             // Fill per-pixel histograms
             for(auto& pixel : assoc_cluster->pixels()) {
