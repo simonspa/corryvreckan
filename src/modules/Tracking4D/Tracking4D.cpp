@@ -167,9 +167,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         }
     }
 
-    string reference_first = hit_detectors.front();
-    string reference_last = hit_detectors.back();
-
     // If there are no detectors then stop trying to track
     if(trees.size() < 2) {
         // Fill histogram
@@ -188,8 +185,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     // Output track container
     auto tracks = std::make_shared<TrackVector>();
 
-    for(auto& clusterFirst : trees[reference_first]->getAllClusters()) {
-        for(auto& clusterLast : trees[reference_last]->getAllClusters()) {
+    for(auto& clusterFirst : trees[hit_detectors.front()]->getAllClusters()) {
+        for(auto& clusterLast : trees[hit_detectors.back()]->getAllClusters()) {
             LOG(DEBUG) << "Looking at next reference cluster pair";
 
             // Make a new track
@@ -202,7 +199,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             refTrack->addCluster(clusterFirst);
             refTrack->addCluster(clusterLast);
             if((clusterFirst->timestamp() - clusterLast->timestamp()) >
-               (time_cuts_[get_detector(reference_first)] + time_cuts_[get_detector(reference_last)])) {
+               (time_cuts_[get_detector(hit_detectors.front())] + time_cuts_[get_detector(hit_detectors.back())])) {
                 LOG(DEBUG) << "Reference clusters not within time cuts.";
                 continue;
             }
@@ -228,7 +225,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 track->addMaterial(detectorID, detector->materialBudget(), detector->displacement().z());
                 LOG(TRACE) << "added material budget for " << detectorID << " at z = " << detector->displacement().z();
 
-                if(detectorID == reference_first || detectorID == reference_last) {
+                if(detectorID == hit_detectors.front() || detectorID == hit_detectors.back()) {
                     continue;
                 }
 
@@ -261,8 +258,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 double closestClusterDistance = sqrt(spatial_cuts_[detector].x() * spatial_cuts_[detector].x() +
                                                      spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
 
-                double timeCut = std::max({time_cuts_[get_detector(reference_first)],
-                                           time_cuts_[get_detector(reference_last)],
+                double timeCut = std::max({time_cuts_[get_detector(hit_detectors.front())],
+                                           time_cuts_[get_detector(hit_detectors.back())],
                                            time_cuts_[detector]});
                 LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
 
