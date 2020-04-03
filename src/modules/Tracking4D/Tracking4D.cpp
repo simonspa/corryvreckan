@@ -145,6 +145,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     // Container for all clusters, and detectors in tracking
     map<string, KDTree*> trees;
     vector<string> detectors;
+    vector<string> hit_detectors;
 
     for(auto& detector : get_detectors()) {
         string detectorID = detector->getName();
@@ -160,6 +161,10 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             KDTree* clusterTree = new KDTree();
             clusterTree->buildTimeTree(*tempClusters);
             trees[detectorID] = clusterTree;
+
+            if(!detector->isDUT()) {
+                hit_detectors.push_back(detectorID);
+            }
         }
         // the detector always needs to be listed as we would like to add the material budget information
         if(!detector->isAuxiliary()) {
@@ -167,9 +172,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         }
     }
 
-    // FIXME: Make sure these are not the DUT!
-    string reference_first = trees.begin()->first;
-    string reference_last = trees.rbegin()->first;
+    string reference_first = hit_detectors.front();
+    string reference_last = hit_detectors.back();
 
     // If there are no detectors then stop trying to track
     if(detectors.empty() || reference_first == reference_last) {
