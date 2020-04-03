@@ -380,6 +380,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             for(auto& detector : get_detectors()) {
+                if(detector->isAuxiliary()) {
+                    continue;
+                }
                 auto det = detector->getName();
                 if(!kinkX.count(det)) {
                     LOG(WARNING) << "Skipping writing kinks due to missing init of histograms for  " << det;
