@@ -195,9 +195,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         for(auto& clusterLast : trees[reference_last]->getAllClusters()) {
             LOG(DEBUG) << "Looking at next reference cluster pair";
 
-            // Make a new track
-            auto track = Track::Factory(trackModel);
-
             // The track finding is based on a straight line. Therefore a refTrack to extrapolate to the next plane is used
             // here
             StraightLineTrack refTrack;
@@ -211,6 +208,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             }
             double averageTimestamp = (clusterFirst->timestamp() + clusterLast->timestamp()) / 2.;
             refTrack.setTimestamp(averageTimestamp);
+
+            // Make a new track
+            auto track = Track::Factory(trackModel);
 
             track->addCluster(clusterFirst);
             track->addCluster(clusterLast);
