@@ -57,9 +57,8 @@ void GblTrack::fit() {
     }
 
     std::vector<GblPoint> points;
-    // get the seedcluster for the fit - simply the first one in the list
-    auto seedcluster =
-        std::find_if(m_planes.begin(), m_planes.end(), [](auto plane) { return plane.hasCluster(); })->cluster();
+    // get the seedcluster for the fit - find the first plane with a cluster to use
+    setSeedCluster(std::find_if(m_planes.begin(), m_planes.end(), [](auto plane) { return plane.hasCluster(); })->cluster());
     double prevPos = m_planes.front().position();
 
     // lambda to calculate the scattering theta
@@ -80,11 +79,11 @@ void GblTrack::fit() {
         Jac(4, 2) = Jac(3, 1);
         return Jac;
     };
-    auto addMeasurementtoGblPoint = [&seedcluster](GblPoint& point, std::vector<Plane>::iterator& p) {
+    auto addMeasurementtoGblPoint = [this](GblPoint& point, std::vector<Plane>::iterator& p) {
         auto cluster = p->cluster();
         Eigen::Vector2d initialResidual;
-        initialResidual(0) = cluster->global().x() - seedcluster->global().x();
-        initialResidual(1) = cluster->global().y() - seedcluster->global().y();
+        initialResidual(0) = cluster->global().x() - getSeedCluster()->global().x();
+        initialResidual(1) = cluster->global().y() - getSeedCluster()->global().y();
         // FIXME uncertainty of single hit - rotations ignored
         Eigen::Matrix2d covv = Eigen::Matrix2d::Identity();
         covv(0, 0) = 1. / cluster->errorX() / cluster->errorX();
@@ -227,9 +226,20 @@ ROOT::Math::XYZPoint GblTrack::state(std::string detectorID) const {
 
     // Using the global detector position here is of course not correct, it works for small/no rotations
     // For larger rotations it is an issue
-    return ROOT::Math::XYZPoint(clusters().at(0)->global().x() + correction(detectorID).x(),
-                                clusters().at(0)->global().y() + correction(detectorID).y(),
+    return ROOT::Math::XYZPoint(getSeedCluster()->global().x() + correction(detectorID).x(),
+                                getSeedCluster()->global().y() + correction(detectorID).y(),
                                 m_materialBudget.at(detectorID).second);
+}
+
+void GblTrack::setSeedCluster(const Cluster* cluster) {
+    m_seedCluster = const_cast<Cluster*>(cluster);
+}
+
+Cluster* GblTrack::getSeedCluster() const {
+    if(!m_seedCluster.IsValid() || m_seedCluster.GetObject() == nullptr) {
+        throw MissingReferenceException(typeid(*this), typeid(Cluster));
+    }
+    return dynamic_cast<Cluster*>(m_seedCluster.GetObject());
 }
 
 ROOT::Math::XYZVector GblTrack::direction(std::string detectorID) const {

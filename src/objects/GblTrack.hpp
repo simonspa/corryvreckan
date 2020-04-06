@@ -39,6 +39,18 @@ namespace corryvreckan {
         void fit() override;
 
         /**
+         * @brief Set seedcluster used for track fitting
+         * @param Pointer to seedcluster of the GblTrack
+         */
+        void setSeedCluster(const Cluster* cluster);
+
+        /**
+         * @brief Get seedcluster used for track fitting
+         * @return Pointer to seedcluster of the GblTrack if set, nullptr otherwise
+         */
+        Cluster* getSeedCluster() const;
+
+        /**
          * @brief Get the track position for a certain z position
          * @param z positon
          * @return ROOT::Math::XYZPoint at z position
@@ -60,8 +72,10 @@ namespace corryvreckan {
         ROOT::Math::XYZVector direction(std::string detectorID) const override;
 
     private:
+        // Member variables
+        TRef m_seedCluster{nullptr};
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(GblTrack, 0)
+        ClassDefOverride(GblTrack, 2)
     };
 
     // Vector type declaration
