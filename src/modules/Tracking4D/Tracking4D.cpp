@@ -200,17 +200,17 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
             // The track finding is based on a straight line. Therefore a refTrack to extrapolate to the next plane is used
             // here
-            auto refTrack = new StraightLineTrack();
+            StraightLineTrack refTrack;
 
-            refTrack->addCluster(clusterFirst);
-            refTrack->addCluster(clusterLast);
+            refTrack.addCluster(clusterFirst);
+            refTrack.addCluster(clusterLast);
             if((clusterFirst->timestamp() - clusterLast->timestamp()) >
                (time_cuts_[get_detector(reference_first)] + time_cuts_[get_detector(reference_last)])) {
                 LOG(DEBUG) << "Reference clusters not within time cuts.";
                 continue;
             }
             double averageTimestamp = (clusterFirst->timestamp() + clusterLast->timestamp()) / 2.;
-            refTrack->setTimestamp(averageTimestamp);
+            refTrack.setTimestamp(averageTimestamp);
 
             track->addCluster(clusterFirst);
             track->addCluster(clusterLast);
@@ -243,8 +243,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 // Determine whether a track can still be assembled given the number of current hits and the number of
                 // detectors to come. Reduces computing time.
                 detector_nr++;
-                if(refTrack->nClusters() + (trees.size() - detector_nr + 1) < minHitsOnTrack) {
-                    LOG(DEBUG) << "No chance to find a track - too few detectors left: " << refTrack->nClusters() << " + "
+                if(refTrack.nClusters() + (trees.size() - detector_nr + 1) < minHitsOnTrack) {
+                    LOG(DEBUG) << "No chance to find a track - too few detectors left: " << refTrack.nClusters() << " + "
                                << trees.size() << " - " << detector_nr << " < " << minHitsOnTrack;
                     continue;
                 }
@@ -256,7 +256,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
                 // Get all neighbours within the timing cut
                 LOG(DEBUG) << "Searching for neighbouring cluster on device " << detectorID;
-                LOG(DEBUG) << "- reference time is " << Units::display(refTrack->timestamp(), {"ns", "us", "s"});
+                LOG(DEBUG) << "- reference time is " << Units::display(refTrack.timestamp(), {"ns", "us", "s"});
                 Cluster* closestCluster = nullptr;
 
                 // Use spatial cut only as initial value (check if cluster is ellipse defined by cuts is done below):
@@ -268,14 +268,14 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                                            time_cuts_[detector]});
                 LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
 
-                auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(refTrack->timestamp(), timeCut);
+                auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(refTrack.timestamp(), timeCut);
 
                 LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
 
                 // Now look for the spatially closest cluster on the next plane
-                refTrack->fit();
+                refTrack.fit();
 
-                PositionVector3D<Cartesian3D<double>> interceptPoint = detector->getIntercept(refTrack);
+                PositionVector3D<Cartesian3D<double>> interceptPoint = detector->getIntercept(&refTrack);
                 double interceptX = interceptPoint.X();
                 double interceptY = interceptPoint.Y();
 
@@ -317,7 +317,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 }
 
                 // Add the cluster to the track
-                refTrack->addCluster(closestCluster);
+                refTrack.addCluster(closestCluster);
                 track->addCluster(closestCluster);
                 LOG(DEBUG) << "- added cluster to track";
             }
@@ -344,7 +344,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 delete track;
                 continue;
             }
-            delete refTrack;
             // Fit the track and save it
             track->fit();
             if(track->isFitted()) {
