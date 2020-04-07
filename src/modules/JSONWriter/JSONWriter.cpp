@@ -97,4 +97,6 @@ void JSONWriter::finalise() {
 
     // finalize the JSON Array, add one empty Object to satisfy JSON Rules
     *output_file_ << "{" << std::endl << "}" << std::endl << "]";
+    // Print statistics
+    LOG(STATUS) << "Wrote " << m_eventNumber - 1 << " events to file:" << output_file_name_ << std::endl;
 }
