@@ -1,5 +1,5 @@
 # JSONWriter
-**Maintainer**: Paul Schuetze (<paul.schuetze@desy.de>)  
+**Maintainer**: Alexander Ferk (<alexander.ferk@cern.ch>)  
 **Module Type**: *GLOBAL*  
 **Status**: Functional
 
@@ -17,6 +17,6 @@ With `include` and `exclude` certain object types can be selected to be printed.
 ```toml
 [JSONWriter]
 file_name = "exampleFileName"
-include = "Cluster","'"Track"
+include = "Cluster","Track"
 
 ```
