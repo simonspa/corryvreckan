@@ -42,6 +42,12 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     excludeDUT = m_config.get<bool>("exclude_dut", true);
     requireDetectors = m_config.getArray<std::string>("require_detectors", {""});
     timestampFrom = m_config.get<std::string>("timestamp_from", {});
+    if(!timestampFrom.empty() &&
+       std::find(requireDetectors.begin(), requireDetectors.end(), timestampFrom) == requireDetectors.end()) {
+        LOG(WARNING) << "Adding detector " << timestampFrom << " to list of required detectors";
+        requireDetectors.push_back(timestampFrom);
+    }
+
     trackModel = m_config.get<std::string>("track_model", "straightline");
     momentum = m_config.get<double>("momentum", Units::get<double>(5, "GeV"));
     volumeRadiationLength = m_config.get<double>("volume_radiation_length", Units::get<double>(304.2, "m"));
