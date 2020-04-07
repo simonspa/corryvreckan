@@ -10,10 +10,8 @@
 #include <map>
 #include <string>
 
-#include <TBufferJSON.h>
 #include <TFile.h>
 #include <TTree.h>
-#include <iostream>
 
 #include "core/module/Module.hpp"
 
@@ -62,9 +60,7 @@ namespace corryvreckan {
         std::set<std::string> exclude_;
 
         // Output data file to write
-        std::string output_format_;
-        std::unique_ptr<TFile> output_TFile_;
-        std::unique_ptr<std::ofstream> output_file_;
+        std::unique_ptr<TFile> output_file_;
         std::string output_file_name_{};
 
         // List of trees that are stored in data file
@@ -73,7 +69,7 @@ namespace corryvreckan {
         Event* event_{};
 
         // Last event processed
-        unsigned int m_eventNumber{0};
+        unsigned int last_event_{0};
 
         // List of objects of a particular type, bound to a specific detector and having a particular name
         std::map<std::tuple<std::type_index, std::string>, std::vector<Object*>*> write_list_;

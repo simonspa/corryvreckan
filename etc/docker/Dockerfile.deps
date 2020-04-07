@@ -1,7 +1,7 @@
 FROM gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-base:latest
 MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 
-ENV ROOT6_VERSION 6.20.04
+ENV ROOT6_VERSION 6.10.08
 
 # Add layer for ROOT6
 ENV ROOTSYS="/opt/root6"
