@@ -224,7 +224,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 LOG(DEBUG) << "Reference clusters not within time cuts.";
                 continue;
             }
-            double averageTimestamp = (clusterFirst->timestamp() + clusterLast->timestamp()) / 2.;
+            auto averageTimestamp = calculateAverageTimestamp(&refTrack);
             refTrack.setTimestamp(averageTimestamp);
 
             // Make a new track
@@ -281,9 +281,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 double closestClusterDistance = sqrt(spatial_cuts_[detector].x() * spatial_cuts_[detector].x() +
                                                      spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
 
-                double timeCut = std::max({time_cuts_[get_detector(reference_first)],
-                                           time_cuts_[get_detector(reference_last)],
-                                           time_cuts_[detector]});
+                double timeCut =
+                    std::max(std::min(time_cuts_[get_detector(reference_first)], time_cuts_[get_detector(reference_last)]),
+                             time_cuts_[detector]);
                 LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
 
                 auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(refTrack.timestamp(), timeCut);
@@ -337,6 +337,10 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 // Add the cluster to the track
                 refTrack.addCluster(closestCluster);
                 track->addCluster(closestCluster);
+                averageTimestamp = calculateAverageTimestamp(&refTrack);
+                refTrack.setTimestamp(averageTimestamp);
+                track->setTimestamp(averageTimestamp);
+
                 LOG(DEBUG) << "- added cluster to track";
             }
 
@@ -418,14 +422,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
             if(timestampFrom.empty()) {
                 // Improve the track timestamp by taking the average of all planes
-                double avg_track_time = 0;
-                for(auto& trackCluster : trackClusters) {
-                    avg_track_time += static_cast<double>(Units::convert(trackCluster->timestamp(), "ns"));
-                    avg_track_time -= static_cast<double>(Units::convert(trackCluster->global().z(), "mm") / (299.792458));
-                }
-                track->setTimestamp(avg_track_time / static_cast<double>(track->nClusters()));
-                LOG(DEBUG) << "Using average cluster timestamp of "
-                           << Units::display(avg_track_time / static_cast<double>(track->nClusters()), "us")
+                auto timestamp = calculateAverageTimestamp(track);
+                track->setTimestamp(timestamp);
+                LOG(DEBUG) << "Using average cluster timestamp of " << Units::display(timestamp, "us")
                            << " as track timestamp.";
             } else {
                 // use timestamp of required detector:
