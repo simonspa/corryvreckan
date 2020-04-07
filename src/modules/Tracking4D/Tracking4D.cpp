@@ -145,7 +145,7 @@ void Tracking4D::initialise() {
     }
 }
 
-double Tracking4D::calculateAverageTimestamp(const Track* track) {
+double Tracking4D::calculate_average_timestamp(const Track* track) {
     double sum_weighted_time = 0;
     double sum_weights = 0;
     for(auto& cluster : track->clusters()) {
@@ -224,7 +224,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 LOG(DEBUG) << "Reference clusters not within time cuts.";
                 continue;
             }
-            auto averageTimestamp = calculateAverageTimestamp(&refTrack);
+            auto averageTimestamp = calculate_average_timestamp(&refTrack);
             refTrack.setTimestamp(averageTimestamp);
 
             // Make a new track
@@ -337,7 +337,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 // Add the cluster to the track
                 refTrack.addCluster(closestCluster);
                 track->addCluster(closestCluster);
-                averageTimestamp = calculateAverageTimestamp(&refTrack);
+                averageTimestamp = calculate_average_timestamp(&refTrack);
                 refTrack.setTimestamp(averageTimestamp);
                 track->setTimestamp(averageTimestamp);
 
@@ -422,7 +422,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
             if(timestampFrom.empty()) {
                 // Improve the track timestamp by taking the average of all planes
-                auto timestamp = calculateAverageTimestamp(track);
+                auto timestamp = calculate_average_timestamp(track);
                 track->setTimestamp(timestamp);
                 LOG(DEBUG) << "Using average cluster timestamp of " << Units::display(timestamp, "us")
                            << " as track timestamp.";
