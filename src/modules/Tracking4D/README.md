@@ -19,7 +19,7 @@ The DUT plane can be excluded from the track finding.
 * `min_hits_on_track`: Minium number of associated clusters needed to create a track, equivalent to the minimum number of planes required for each track. Default value is `6`.
 * `exclude_dut`: Boolean to choose if the DUT plane is included in the track finding. Default value is `true`.
 * `require_detectors`: Names of detectors which are required to have a cluster on the track. If a track does not have a cluster from all detectors listed here, it is rejected. If empty, no detector is required. Default is empty.
-* `timestamp_from`: Defines the detector which provides the track timestamp. This detector also needs to be set as `required_detector`. If empty, the average timestamp of all clusters on the track will be used. Empty by default.
+* `timestamp_from`: Defines the detector which provides the track timestamp. This detector is by default added to `required_detector`. If empty, the average timestamp of all clusters on the track will be used. Empty by default.
 * `track_model`: Select the track model used for reconstruction. A simple line fit ignoring scattering (`straightline`) and a General-Broken-Lines (`gbl`) are currently supported. Defaults to  `straightline`.
 * `momentum`: Set the beam momentum. Defaults to 5 GeV
 * `volume_scattering`: Select if volume scattering will be taken into account - defaults to false
