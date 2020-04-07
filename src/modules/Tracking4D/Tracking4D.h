@@ -34,6 +34,9 @@ namespace corryvreckan {
         void initialise();
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
+        // Function to calculate the weighted average timestamp from the clusters of a track
+        double calculateAverageTimestamp(const Track* track);
+
     private:
         // Histograms
         TH1F* trackChi2;
