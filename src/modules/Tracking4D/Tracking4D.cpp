@@ -415,17 +415,12 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 LOG(DEBUG) << "Using average cluster timestamp of "
                            << Units::display(avg_track_time / static_cast<double>(track->nClusters()), "us")
                            << " as track timestamp.";
-            } else if(track->hasDetector(timestampFrom)) {
+            } else {
                 // use timestamp of required detector:
                 double track_timestamp = track->getClusterFromDetector(timestampFrom)->timestamp();
                 LOG(DEBUG) << "Using timestamp of detector " << timestampFrom
                            << " as track timestamp: " << Units::display(track_timestamp, "us");
                 track->setTimestamp(track_timestamp);
-            } else {
-                LOG(ERROR)
-                    << "Cannot assign timestamp to track. Use average cluster timestamp for track or set detector to set "
-                       "track timestamp. Please update the configuration file.";
-                return StatusCode::Failure;
             }
         }
     }
