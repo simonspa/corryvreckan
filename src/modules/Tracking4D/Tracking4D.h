@@ -34,9 +34,6 @@ namespace corryvreckan {
         void initialise();
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
-        // Function to calculate the weighted average timestamp from the clusters of a track
-        double calculate_average_timestamp(const Track* track);
-
     private:
         // Histograms
         TH1F* trackChi2;
@@ -69,6 +66,9 @@ namespace corryvreckan {
         std::map<std::shared_ptr<Detector>, XYVector> spatial_cuts_;
         std::string timestampFrom;
         std::string trackModel;
+
+        // Function to calculate the weighted average timestamp from the clusters of a track
+        double calculate_average_timestamp(const Track* track);
     };
 } // namespace corryvreckan
 #endif // TRACKING4D_H
