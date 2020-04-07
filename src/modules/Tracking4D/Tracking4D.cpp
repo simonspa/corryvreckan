@@ -44,7 +44,7 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     timestampFrom = m_config.get<std::string>("timestamp_from", {});
     if(!timestampFrom.empty() &&
        std::find(requireDetectors.begin(), requireDetectors.end(), timestampFrom) == requireDetectors.end()) {
-        LOG(WARNING) << "Adding detector " << timestampFrom << " to list of required detectors";
+        LOG(WARNING) << "Adding detector " << timestampFrom << " to list of required detectors as it provides the timestamp";
         requireDetectors.push_back(timestampFrom);
     }
 
