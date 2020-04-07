@@ -270,7 +270,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
                 auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(refTrack.timestamp(), timeCut);
 
-                LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
+                LOG(DEBUG) << "- found " << neighbours.size() << " neighbours within the correct time window";
 
                 // Now look for the spatially closest cluster on the next plane
                 refTrack.fit();
@@ -412,8 +412,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             } else if(track->hasDetector(timestampFrom)) {
                 // use timestamp of required detector:
                 double track_timestamp = track->getClusterFromDetector(timestampFrom)->timestamp();
-                LOG(DEBUG) << "Found cluster for detector " << timestampFrom << ", adding timestamp "
-                           << Units::display(track_timestamp, "us") << " to track.";
+                LOG(DEBUG) << "Using timestamp of detector " << timestampFrom
+                           << " as track timestamp: " << Units::display(track_timestamp, "us");
                 track->setTimestamp(track_timestamp);
             } else {
                 LOG(ERROR)
