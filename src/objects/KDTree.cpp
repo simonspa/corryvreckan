@@ -68,22 +68,24 @@ void KDTree::buildSpatialTree(ClusterVector inputClusters) {
     positionKdtree->SetOwner(kTRUE);
 }
 
-ClusterVector KDTree::getAllClustersInTimeWindow(Cluster* cluster, double timeWindow) {
-
+ClusterVector KDTree::getAllClustersInTimeWindow(double timestamp, double timeWindow) {
     // Get iterators of all clusters within the time window
     std::vector<int> results;
 
-    double time = cluster->timestamp();
-    timeKdtree->FindInRange(&time, timeWindow, results);
+    timeKdtree->FindInRange(&timestamp, timeWindow, results);
 
     // Turn this into a vector of clusters
     ClusterVector resultClusters;
-    //    delete time;
     for(size_t res = 0; res < results.size(); res++)
         resultClusters.push_back(clusters[static_cast<size_t>(results[res])]);
 
     // Return the vector of clusters
     return resultClusters;
+}
+
+ClusterVector KDTree::getAllClustersInTimeWindow(Cluster* cluster, double timeWindow) {
+    // Use overloaded function
+    return getAllClustersInTimeWindow(cluster->timestamp(), timeWindow);
 }
 
 ClusterVector KDTree::getAllClustersInWindow(Cluster* cluster, double window) {
