@@ -426,7 +426,7 @@ void AnalysisTimingATLASpix::initialise() {
                                             3e6,
                                             0,
                                             3e3);
-        hPixelTimestamp_rightTail = new TH1F("pixelTimestamp_leftTail",
+        hPixelTimestamp_rightTail = new TH1F("pixelTimestamp_rightTail",
                                              "pixelTimestamp (left tail of time residual);pixel timestamp [ms];# events",
                                              3e6,
                                              0,
