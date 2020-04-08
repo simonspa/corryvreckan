@@ -426,7 +426,7 @@ void AnalysisTimingATLASpix::initialise() {
                                             3e6,
                                             0,
                                             3e3);
-        hPixelTimestamp_rightTail = new TH1F("pixelTimestamp_leftTail",
+        hPixelTimestamp_rightTail = new TH1F("pixelTimestamp_rightTail",
                                              "pixelTimestamp (left tail of time residual);pixel timestamp [ms];# events",
                                              3e6,
                                              0,
@@ -448,7 +448,9 @@ void AnalysisTimingATLASpix::initialise() {
         gTimeCorrelationVsRow->SetTitle("gTimeCorrelationVsRow");
         gTimeCorrelationVsRow->GetXaxis()->SetTitle("row");
         gTimeCorrelationVsRow->GetYaxis()->SetTitle("time correlation peak [ns]");
+    }
 
+    if(m_pointwise_correction_row) {
         int nBinsToT = hTrackCorrelationTimeVsTot_rowCorr->GetNbinsY();
         gTimeCorrelationVsTot_rowCorr = new TGraphErrors(nBinsToT);
         gTimeCorrelationVsTot_rowCorr->SetName("gTimeCorrelationVsTot_rowCorr");
@@ -800,129 +802,135 @@ void AnalysisTimingATLASpix::finalise() {
         } // for(iBin)
 
         /// TIME WALK CORRECTION on top of ROW CORRECTION: ///
-        fitOption = "q"; // set to "" if you want terminal output
-        binMax = 0;
-        timePeak = 0.;
-        timePeakErr = 0.;
-        int nBinsToT = hTrackCorrelationTimeVsTot_rowCorr->GetNbinsY();
-        LOG(DEBUG) << "nBinsToT = " << nBinsToT;
+        if(m_pointwise_correction_row) {
+            fitOption = "q"; // set to "" if you want terminal output
+            binMax = 0;
+            timePeak = 0.;
+            timePeakErr = 0.;
+            int nBinsToT = hTrackCorrelationTimeVsTot_rowCorr->GetNbinsY();
+            LOG(DEBUG) << "nBinsToT = " << nBinsToT;
 
-        for(int iBin = 0; iBin < nBinsToT; iBin++) {
-            TH1D* hTemp = hTrackCorrelationTimeVsTot_rowCorr->ProjectionX("timeCorrelationInOneTotBin", iBin, iBin + 1);
+            for(int iBin = 0; iBin < nBinsToT; iBin++) {
+                TH1D* hTemp = hTrackCorrelationTimeVsTot_rowCorr->ProjectionX("timeCorrelationInOneTotBin", iBin, iBin + 1);
 
-            // if(hTemp->GetEntries() < 500) { // too few entries to fit
-            if(hTemp->GetEntries() < 1000) { // too few entries to fit
-                timePeak = hTemp->GetMean();
-                timePeakErr = hTemp->GetStdDev();
-                delete hTemp;
-            } else {
-                binMax = hTemp->GetMaximumBin();
-                timePeak = hTemp->GetXaxis()->GetBinCenter(binMax);
+                // if(hTemp->GetEntries() < 500) { // too few entries to fit
+                if(hTemp->GetEntries() < 1000) { // too few entries to fit
+                    timePeak = hTemp->GetMean();
+                    timePeakErr = hTemp->GetStdDev();
+                    delete hTemp;
+                } else {
+                    binMax = hTemp->GetMaximumBin();
+                    timePeak = hTemp->GetXaxis()->GetBinCenter(binMax);
 
-                // fitting a Gaus for a good estimate of the peak positon:
-                // initial parameters are hardcoded at the moment!
-                TF1* fPeak = new TF1("fPeak", "gaus");
-                fPeak->SetParameters(1, 100, 45);
-                double timeInt = 50;
-                hTemp->Fit("fPeak", fitOption.c_str(), "", timePeak - timeInt, timePeak + timeInt);
-                fPeak = hTemp->GetFunction("fPeak");
-                timePeak = fPeak->GetParameter(1);
-                timePeakErr = fPeak->GetParError(1);
+                    // fitting a Gaus for a good estimate of the peak positon:
+                    // initial parameters are hardcoded at the moment!
+                    TF1* fPeak = new TF1("fPeak", "gaus");
+                    fPeak->SetParameters(1, 100, 45);
+                    double timeInt = 50;
+                    hTemp->Fit("fPeak", fitOption.c_str(), "", timePeak - timeInt, timePeak + timeInt);
+                    fPeak = hTemp->GetFunction("fPeak");
+                    timePeak = fPeak->GetParameter(1);
+                    timePeakErr = fPeak->GetParError(1);
 
-                delete fPeak;
-                delete hTemp;
-            }
-            gTimeCorrelationVsTot_rowCorr->SetPoint(iBin, iBin, timePeak);
-            gTimeCorrelationVsTot_rowCorr->SetPointError(iBin, 0, timePeakErr);
+                    delete fPeak;
+                    delete hTemp;
+                }
+                gTimeCorrelationVsTot_rowCorr->SetPoint(iBin, iBin, timePeak);
+                gTimeCorrelationVsTot_rowCorr->SetPointError(iBin, 0, timePeakErr);
 
-        } // for(iBin)
+            } // for(iBin)
 
-        // SAME FOR SINGLE-PIXEL CLUSTERS:
-        nBinsToT = hTrackCorrelationTimeVsTot_rowCorr_1px->GetNbinsY();
-        for(int iBin = 0; iBin < nBinsToT; iBin++) {
-            TH1D* hTemp = hTrackCorrelationTimeVsTot_rowCorr_1px->ProjectionX("timeCorrelationInOneTotBin", iBin, iBin + 1);
+            // SAME FOR SINGLE-PIXEL CLUSTERS:
+            nBinsToT = hTrackCorrelationTimeVsTot_rowCorr_1px->GetNbinsY();
+            for(int iBin = 0; iBin < nBinsToT; iBin++) {
+                TH1D* hTemp =
+                    hTrackCorrelationTimeVsTot_rowCorr_1px->ProjectionX("timeCorrelationInOneTotBin", iBin, iBin + 1);
 
-            // if(hTemp->GetEntries() < 500) { // too few entries to fit
-            if(hTemp->GetEntries() < 1000) { // too few entries to fit
-                delete hTemp;
-                timePeak = 0;
-                timePeakErr = 0;
-                continue;
-            } else {
-                binMax = hTemp->GetMaximumBin();
-                timePeak = hTemp->GetXaxis()->GetBinCenter(binMax);
+                // if(hTemp->GetEntries() < 500) { // too few entries to fit
+                if(hTemp->GetEntries() < 1000) { // too few entries to fit
+                    delete hTemp;
+                    timePeak = 0;
+                    timePeakErr = 0;
+                    continue;
+                } else {
+                    binMax = hTemp->GetMaximumBin();
+                    timePeak = hTemp->GetXaxis()->GetBinCenter(binMax);
 
-                // fitting a Gaus for a good estimate of the peak positon:
-                // initial parameters are hardcoded at the moment!
-                TF1* fPeak = new TF1("fPeak", "gaus");
-                fPeak->SetParameters(1, 100, 45);
-                double timeInt = 50;
-                hTemp->Fit("fPeak", fitOption.c_str(), "", timePeak - timeInt, timePeak + timeInt);
-                fPeak = hTemp->GetFunction("fPeak");
-                timePeak = fPeak->GetParameter(1);
-                timePeakErr = fPeak->GetParError(1);
+                    // fitting a Gaus for a good estimate of the peak positon:
+                    // initial parameters are hardcoded at the moment!
+                    TF1* fPeak = new TF1("fPeak", "gaus");
+                    fPeak->SetParameters(1, 100, 45);
+                    double timeInt = 50;
+                    hTemp->Fit("fPeak", fitOption.c_str(), "", timePeak - timeInt, timePeak + timeInt);
+                    fPeak = hTemp->GetFunction("fPeak");
+                    timePeak = fPeak->GetParameter(1);
+                    timePeakErr = fPeak->GetParError(1);
 
-                delete fPeak;
-                delete hTemp;
-            }
-            gTimeCorrelationVsTot_rowCorr_1px->SetPoint(iBin, iBin, timePeak);
-            gTimeCorrelationVsTot_rowCorr_1px->SetPointError(iBin, 0, timePeakErr);
-        } // for(iBin)
+                    delete fPeak;
+                    delete hTemp;
+                }
+                gTimeCorrelationVsTot_rowCorr_1px->SetPoint(iBin, iBin, timePeak);
+                gTimeCorrelationVsTot_rowCorr_1px->SetPointError(iBin, 0, timePeakErr);
+            } // for(iBin)
 
-        // SAME FOR MULTI-PIXEL CLUSTERS:
-        nBinsToT = hTrackCorrelationTimeVsTot_rowCorr_npx->GetNbinsY();
-        for(int iBin = 0; iBin < nBinsToT; iBin++) {
-            TH1D* hTemp = hTrackCorrelationTimeVsTot_rowCorr_npx->ProjectionX("timeCorrelationInOneTotBin", iBin, iBin + 1);
+            // SAME FOR MULTI-PIXEL CLUSTERS:
+            nBinsToT = hTrackCorrelationTimeVsTot_rowCorr_npx->GetNbinsY();
+            for(int iBin = 0; iBin < nBinsToT; iBin++) {
+                TH1D* hTemp =
+                    hTrackCorrelationTimeVsTot_rowCorr_npx->ProjectionX("timeCorrelationInOneTotBin", iBin, iBin + 1);
 
-            // if(hTemp->GetEntries() < 500) { // too few entries to fit
-            if(hTemp->GetEntries() < 1000) { // too few entries to fit
-                delete hTemp;
-                timePeak = 0;
-                timePeakErr = 0;
-                continue;
-            } else {
-                binMax = hTemp->GetMaximumBin();
-                timePeak = hTemp->GetXaxis()->GetBinCenter(binMax);
+                // if(hTemp->GetEntries() < 500) { // too few entries to fit
+                if(hTemp->GetEntries() < 1000) { // too few entries to fit
+                    delete hTemp;
+                    timePeak = 0;
+                    timePeakErr = 0;
+                    continue;
+                } else {
+                    binMax = hTemp->GetMaximumBin();
+                    timePeak = hTemp->GetXaxis()->GetBinCenter(binMax);
 
-                // fitting a Gaus for a good estimate of the peak positon:
-                // initial parameters are hardcoded at the moment!
-                TF1* fPeak = new TF1("fPeak", "gaus");
-                fPeak->SetParameters(1, 100, 45);
-                double timeInt = 50;
-                hTemp->Fit("fPeak", fitOption.c_str(), "", timePeak - timeInt, timePeak + timeInt);
-                fPeak = hTemp->GetFunction("fPeak");
-                timePeak = fPeak->GetParameter(1);
-                timePeakErr = fPeak->GetParError(1);
+                    // fitting a Gaus for a good estimate of the peak positon:
+                    // initial parameters are hardcoded at the moment!
+                    TF1* fPeak = new TF1("fPeak", "gaus");
+                    fPeak->SetParameters(1, 100, 45);
+                    double timeInt = 50;
+                    hTemp->Fit("fPeak", fitOption.c_str(), "", timePeak - timeInt, timePeak + timeInt);
+                    fPeak = hTemp->GetFunction("fPeak");
+                    timePeak = fPeak->GetParameter(1);
+                    timePeakErr = fPeak->GetParError(1);
 
-                delete fPeak;
-                delete hTemp;
-            }
-            gTimeCorrelationVsTot_rowCorr_npx->SetPoint(iBin, iBin, timePeak);
-            gTimeCorrelationVsTot_rowCorr_npx->SetPointError(iBin, 0, timePeakErr);
-        } // for(iBin)
+                    delete fPeak;
+                    delete hTemp;
+                }
+                gTimeCorrelationVsTot_rowCorr_npx->SetPoint(iBin, iBin, timePeak);
+                gTimeCorrelationVsTot_rowCorr_npx->SetPointError(iBin, 0, timePeakErr);
+            } // for(iBin)
 
-        /// END TIME WALK CORRECTION ///
+            /// END TIME WALK CORRECTION ///
 
-        // Example Slice to investigate quality of Gaussian fit:
-        hTrackCorrelationTime_example = hTrackCorrelationTimeVsTot_rowCorr->ProjectionX(
-            ("hTrackCorrelationTime_totBin_" + std::to_string(m_totBinExample)).c_str(),
-            m_totBinExample,
-            m_totBinExample + 1);
+            // Example Slice to investigate quality of Gaussian fit:
+            hTrackCorrelationTime_example = hTrackCorrelationTimeVsTot_rowCorr->ProjectionX(
+                ("hTrackCorrelationTime_totBin_" + std::to_string(m_totBinExample)).c_str(),
+                m_totBinExample,
+                m_totBinExample + 1);
 
-        binMax = hTrackCorrelationTime_example->GetMaximumBin();
-        timePeak = hTrackCorrelationTime_example->GetXaxis()->GetBinCenter(binMax);
+            binMax = hTrackCorrelationTime_example->GetMaximumBin();
+            timePeak = hTrackCorrelationTime_example->GetXaxis()->GetBinCenter(binMax);
 
-        TF1* fPeak = new TF1("fPeak", "gaus");
-        fPeak->SetParameters(1, 100, 45);
-        double timeInt = 50;
-        fitOption = "q"; // set to "q" = quiet for suppressed terminial output
-        hTrackCorrelationTime_example->Fit("fPeak", fitOption.c_str(), "", timePeak - timeInt, timePeak + timeInt);
-        delete fPeak;
+            TF1* fPeak = new TF1("fPeak", "gaus");
+            fPeak->SetParameters(1, 100, 45);
+            double timeInt = 50;
+            fitOption = "q"; // set to "q" = quiet for suppressed terminial output
+            hTrackCorrelationTime_example->Fit("fPeak", fitOption.c_str(), "", timePeak - timeInt, timePeak + timeInt);
+            delete fPeak;
+        }
 
         gTimeCorrelationVsRow->Write();
-        gTimeCorrelationVsTot_rowCorr->Write();
-        gTimeCorrelationVsTot_rowCorr_1px->Write();
-        gTimeCorrelationVsTot_rowCorr_npx->Write();
+        if(m_pointwise_correction_row) {
+            gTimeCorrelationVsTot_rowCorr->Write();
+            gTimeCorrelationVsTot_rowCorr_1px->Write();
+            gTimeCorrelationVsTot_rowCorr_npx->Write();
+        }
     } // if(m_calcCorrections)
 
     LOG(INFO) << "matched/total tracks: " << matched_tracks << "/" << total_tracks;
