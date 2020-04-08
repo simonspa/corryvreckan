@@ -46,10 +46,10 @@ namespace corryvreckan {
         TH1F* hTrackCorrelationTime;
         TH1F* hTrackCorrelationTimeAssoc;
         TH1F* hTrackCorrelationTime_rowCorr;
-        TH1F* hTrackCorrelationTime_rowAndTimeWalkCorr;
-        TH1F* hTrackCorrelationTime_rowAndTimeWalkCorr_l25;
-        TH1F* hTrackCorrelationTime_rowAndTimeWalkCorr_l40;
-        TH1F* hTrackCorrelationTime_rowAndTimeWalkCorr_g40;
+        TH1F* hTrackCorrelationTime_rowAndTWCorr;
+        TH1F* hTrackCorrelationTime_rowAndTWCorr_l25;
+        TH1F* hTrackCorrelationTime_rowAndTWCorr_l40;
+        TH1F* hTrackCorrelationTime_rowAndTWCorr_g40;
         TH1D* hTrackCorrelationTime_example;
         TH1F* hClusterTimeMinusPixelTime;
 
@@ -63,31 +63,45 @@ namespace corryvreckan {
         TH2F* hTrackCorrelationTimeVsTot;
         TH2F* hTrackCorrelationTimeVsTot_1px;
         TH2F* hTrackCorrelationTimeVsTot_npx;
+        TH2F* hTrackCorrelationTimeVsTot_px;
         TH2F* hTrackCorrelationTimeVsTot_rowCorr;
         TH2F* hTrackCorrelationTimeVsTot_rowCorr_1px;
         TH2F* hTrackCorrelationTimeVsTot_rowCorr_npx;
-        TH2F* hTrackCorrelationTimeVsRow_rowAndTimeWalkCorr;
-        TH2F* hTrackCorrelationTimeVsTot_rowAndTimeWalkCorr;
+        TH2F* hTrackCorrelationTimeVsRow_rowAndTWCorr;
+        TH2F* hTrackCorrelationTimeVsTot_rowAndTWCorr;
+
+        TProfile2D* hPixelTrackCorrelationTimeMap;
 
         TH2F* hClusterSizeVsTot_Assoc;
 
         TH2F* hHitMapAssoc;
-        TH2F* hHitMapAssoc_highCharge;
+        TH2F* hHitMapAssoc_highToT;
         TH2F* hHitMapAssoc_inPixel;
-        TH2F* hHitMapAssoc_inPixel_highCharge;
+        TH2F* hHitMapAssoc_inPixel_highToT;
         TH2F* hClusterMapAssoc;
 
+        TH2F* hTotVsRow;
         TH2F* hTotVsTime;
-        TH2F* hTotVsTime_high;
+        TH2F* hTotVsTime_highToT;
 
-        // Control Plots for "left tail" and "main peak" of time correlation
+        // Control Plots for "left/right tail" and "main peak" of time correlation
+        TH2F* hInPixelMap_leftTail;
+        TH2F* hInPixelMap_rightTail;
+        TH2F* hInPixelMap_mainPeak;
         TH2F* hClusterMap_leftTail;
+        TH2F* hClusterMap_rightTail;
         TH2F* hClusterMap_mainPeak;
         TH1F* hTot_leftTail;
+        TH1F* hTot_rightTail;
         TH1F* hTot_mainPeak;
+        TH1F* hTot_leftTail_1px;
+        TH1F* hTot_rightTail_1px;
+        TH1F* hTot_mainPeak_1px;
         TH1F* hPixelTimestamp_leftTail;
+        TH1F* hPixelTimestamp_rightTail;
         TH1F* hPixelTimestamp_mainPeak;
         TH1F* hClusterSize_leftTail;
+        TH1F* hClusterSize_rightTail;
         TH1F* hClusterSize_mainPeak;
 
         // TGraphErrors:
@@ -106,9 +120,9 @@ namespace corryvreckan {
         double m_timeCutFrameEdge;
         double m_clusterChargeCut;
         size_t m_clusterSizeCut;
-        int m_highTotCut;       // for pixel->tot()
-        double m_highChargeCut; // for cluster->charge()
-        double m_leftTailCut;
+        int m_highTotCut; // for pixel->tot()
+        int m_lowTotCut;  // for pixel->tot()
+        double m_timingTailCut;
 
         std::string m_correctionFile_row;
         std::string m_correctionGraph_row;
@@ -118,6 +132,7 @@ namespace corryvreckan {
         bool m_pointwise_correction_row;
         bool m_pointwise_correction_timewalk;
         int m_totBinExample;
+        XYVector m_inpixelBinSize;
 
         int total_tracks_uncut;
         int tracks_afterChi2Cut;
