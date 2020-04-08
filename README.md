@@ -53,6 +53,7 @@ The following authors, in alphabetical order, have contributed to Corryvreckan:
 * Matthew Daniel Buckland, University of Liverpool, @mbucklan
 * Dominik Dannheim, CERN, @dannheim
 * Katharina Dort, University of Giessen/CERN, @kdort
+* Alexander Ferk, CERN, @aferk
 * Adrian Fiergolski, CERN, @afiergol
 * Lennart Huth, DESY, @lhuth
 * Magnus Mager, CERN, @mmager

@@ -19,6 +19,7 @@ Since a calibration is not yet implemented, the pixel charge is set to the pixel
 * `clkdivend2`: Value of clkdivend2 register in ATLASPix specifying the speed of TS2 counter. Default is `0`.
 * `high_tot_cut`: "high ToT" histograms are filled if pixel ToT is larger than this cut. Default is `40`.
 * `buffer_depth`: Depth of buffer in which pixel hits are timesorted before being added to an event. If set to `1`, effectively no timesorting is done. Default is `1000`.
+* `time_offset`: Time offset to be added to each pixel timestamp. Defaults to `0ns`.
 
 ### Plots produced
 

@@ -20,12 +20,12 @@ MaskCreatorTimepix3::MaskCreatorTimepix3(Configuration config, std::shared_ptr<D
 StatusCode MaskCreatorTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
-    auto pixels = clipboard->getData<Pixel>(m_detector->name());
+    auto pixels = clipboard->getData<Pixel>(m_detector->getName());
     if(pixels == nullptr) {
-        LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
+        LOG(DEBUG) << "Detector " << m_detector->getName() << " does not have any pixels on the clipboard";
         return StatusCode::NoData;
     }
-    LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << m_detector->name();
+    LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << m_detector->getName();
 
     // Loop over all pixels
     for(auto& pixel : (*pixels)) {
@@ -79,7 +79,7 @@ void MaskCreatorTimepix3::finalise() {
                 newtrimdacs << t_col << "\t" << t_row << "\t" << t_trim << "\t"
                             << "1"
                             << "\t" << t_tpen << std::endl;
-                LOG(INFO) << "Masking pixel " << col << "," << row << " on detector " << m_detector->name();
+                LOG(INFO) << "Masking pixel " << col << "," << row << " on detector " << m_detector->getName();
                 LOG(INFO) << "Number of counts: " << pixelhits[channelID];
             } else {
                 // Just copy the existing line

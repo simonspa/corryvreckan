@@ -26,6 +26,8 @@ EventLoaderATLASpix::EventLoaderATLASpix(Configuration config, std::shared_ptr<D
     m_highToTCut = m_config.get<int>("high_tot_cut", 40);
     m_buffer_depth = m_config.get<int>("buffer_depth", 1000);
 
+    m_time_offset = m_config.get<double>("time_offset", 0.);
+
     // ts1Range = 0x800 * m_clkdivendM;
     ts2Range = 0x40 * m_clkdivend2M;
 }
@@ -278,7 +280,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     hPixelMultiplicity->Fill(static_cast<double>(pixels->size()));
 
     // Put the data on the clipboard
-    clipboard->putData(pixels, m_detector->name());
+    clipboard->putData(pixels, m_detector->getName());
 
     if(pixels->empty()) {
         LOG(DEBUG) << "Returning <NoData> status, no hits found.";
@@ -394,8 +396,11 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
             return true;
         }
 
+        timestamp += m_time_offset;
+        LOG(DEBUG) << "Adding time_offset of " << m_time_offset << " to pixel timestamp. New pixel timestamp: " << timestamp;
+
         // since calibration is not implemented yet, set charge = tot
-        Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, tot, timestamp);
+        Pixel* pixel = new Pixel(m_detector->getName(), col, row, tot, tot, timestamp);
 
         // FIXME: implement conversion from ToT to charge:
         // thres-->e: 1620e/0.15V, or 1080e/100mV

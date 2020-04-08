@@ -60,8 +60,22 @@ namespace corryvreckan {
         ROOT::Math::XYZVector direction(std::string detectorID) const override;
 
     private:
+        /**
+         * @brief Set seedcluster used for track fitting
+         * @param Pointer to seedcluster of the GblTrack
+         */
+        void setSeedCluster(const Cluster* cluster);
+
+        /**
+         * @brief Get seedcluster used for track fitting
+         * @return Pointer to seedcluster of the GblTrack if set, nullptr otherwise
+         */
+        Cluster* getSeedCluster() const;
+
+        // Member variables
+        TRef m_seedCluster{nullptr};
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(GblTrack, 0);
+        ClassDefOverride(GblTrack, 3);
         std::map<std::string, ROOT::Math::XYPoint> m_localTrackPoints{};
         std::map<std::string, ROOT::Math::XYPoint> m_inititalResidual{};
     };

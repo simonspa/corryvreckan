@@ -72,7 +72,8 @@ void GblTrack::fit() {
     }
 
     std::vector<GblPoint> points;
-    // get the seedcluster for the fit - simply the first one in the list
+    // get the seedcluster for the fit - find the first plane with a cluster to use
+    setSeedCluster(std::find_if(m_planes.begin(), m_planes.end(), [](auto plane) { return plane.hasCluster(); })->cluster());
 
     // lambda to calculate the scattering theta
     auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
@@ -122,7 +123,6 @@ void GblTrack::fit() {
         jaco(5, 5) = 1; // set a future time component to 1
         return jaco;
     };
-
     auto addMeasurementtoGblPoint = [&localTangent, &localPosTrack, &globalTrackPos, this](GblPoint& point,
                                                                                            std::vector<Plane>::iterator& p) {
         auto cluster = p->cluster();
@@ -322,6 +322,17 @@ ROOT::Math::XYZPoint GblTrack::state(std::string detectorID) const {
     return (p->toGlobal() * ROOT::Math::XYZPoint(m_localTrackPoints.at(detectorID).x() + correction(detectorID).x(),
                                                  m_localTrackPoints.at(detectorID).y() + correction(detectorID).y(),
                                                  0));
+}
+
+void GblTrack::setSeedCluster(const Cluster* cluster) {
+    m_seedCluster = const_cast<Cluster*>(cluster);
+}
+
+Cluster* GblTrack::getSeedCluster() const {
+    if(!m_seedCluster.IsValid() || m_seedCluster.GetObject() == nullptr) {
+        throw MissingReferenceException(typeid(*this), typeid(Cluster));
+    }
+    return dynamic_cast<Cluster*>(m_seedCluster.GetObject());
 }
 
 ROOT::Math::XYZVector GblTrack::direction(std::string detectorID) const {

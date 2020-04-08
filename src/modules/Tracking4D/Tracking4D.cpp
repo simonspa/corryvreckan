@@ -89,7 +89,7 @@ void Tracking4D::initialise() {
 
     // Loop over all planes
     for(auto& detector : get_detectors()) {
-        auto detectorID = detector->name();
+        auto detectorID = detector->getName();
 
         // Do not created plots for auxiliary detectors:
         if(detector->isAuxiliary()) {
@@ -151,7 +151,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     bool firstDetector = true;
     std::string seedPlane;
     for(auto& detector : get_detectors()) {
-        string detectorID = detector->name();
+        string detectorID = detector->getName();
 
         // Get the clusters
         auto tempClusters = clipboard->getData<Cluster>(detectorID);
@@ -163,7 +163,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             if(firstDetector && !detector->isDUT()) {
                 referenceClusters = tempClusters;
                 time_cut_reference_ = time_cuts_[detector];
-                seedPlane = detector->name();
+                seedPlane = detector->getName();
                 LOG(DEBUG) << "Seed plane is " << seedPlane;
                 firstDetector = false;
             }
@@ -174,7 +174,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         }
         // the detector always needs to be listed as we would like to add the material budget information
         if(!detector->isAuxiliary()) {
-            LOG(TRACE) << "added" << detector->name();
+            LOG(TRACE) << "added" << detector->getName();
             detectors.push_back(detectorID);
         }
     }
@@ -195,7 +195,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
     // register the used detectors:
     auto registerDetector = [](Track* track, std::shared_ptr<Detector> det) {
-        Plane p(det->localToGlobal(ROOT::Math::XYZPoint(0, 0, 0)).z(), det->materialBudget(), det->name(), false);
+        Plane p(det->localToGlobal(ROOT::Math::XYZPoint(0, 0, 0)).z(), det->materialBudget(), det->getName(), false);
         p.setToLocal(det->toLocal());
         p.setToGlobal(det->toGlobal());
         track->registerPlane(p);
@@ -230,12 +230,12 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             registerDetector(track, det);
             LOG(TRACE) << "added material budget for " << detectorID << " at z = " << det->displacement().z();
             if(trees.count(detectorID) == 0) {
-                LOG(TRACE) << "Skipping detector " << det->name() << " as it has 0 clusters.";
+                LOG(TRACE) << "Skipping detector " << det->getName() << " as it has 0 clusters.";
                 continue;
             }
 
             if(detectorID == seedPlane) {
-                LOG(TRACE) << "Skipping seed plane " << det->name();
+                LOG(TRACE) << "Skipping seed plane " << det->getName();
                 continue;
             }
 
