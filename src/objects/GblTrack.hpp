@@ -63,6 +63,7 @@ namespace corryvreckan {
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(GblTrack, 0);
         std::map<std::string, ROOT::Math::XYPoint> m_localTrackPoints{};
+        std::map<std::string, ROOT::Math::XYPoint> m_inititalResidual{};
     };
 
     // Vector type declaration

@@ -134,6 +134,7 @@ void GblTrack::fit() {
         covv(0, 0) = 1. / cluster->errorX() / cluster->errorX();
         covv(1, 1) = 1. / cluster->errorY() / cluster->errorY();
         point.addMeasurement(initialResidual, covv);
+        m_inititalResidual[p->name()] = ROOT::Math::XYPoint(initialResidual(0), initialResidual(1));
         if(m_logging) {
             std::cout << "*********** Plane:  " << p->name() << " \n Global Res to fit: \t("
                       << (cluster->global().x() - m_planes.begin()->cluster()->global().x()) << ", "
@@ -270,7 +271,14 @@ void GblTrack::fit() {
                                       m_localTrackPoints.at(plane.name()).y() + m_corrections.at(plane.name()).y(),
                                       0));
             ROOT::Math::XYZPoint clusterPos = plane.cluster()->global();
-            m_residual[plane.name()] = ROOT::Math::XYPoint(corPos.x() - clusterPos.x(), corPos.y() - clusterPos.y());
+            m_residual[plane.name()] = ROOT::Math::XYPoint(clusterPos.x() - corPos.x(), clusterPos.y() - corPos.y());
+            // m_residual[plane.name()] = ROOT::Math::XYPoint(gblResiduals(0),gblResiduals(1));
+            if(m_logging) {
+                std::cout << "********* " << plane.name() << "\n Fitted res local:\t" << m_residual.at(plane.name())
+                          << "\n seed res:\t" << m_inititalResidual.at(plane.name()) << " \n fitted res global:\t"
+                          << ROOT::Math::XYPoint(clusterPos.x() - corPos.x(), clusterPos.y() - corPos.y()) << std::endl
+                          << "*********\n";
+            }
         }
         if(m_logging) {
             std::cout << "Plane: " << plane.name() << ": res" << m_residual[plane.name()]
