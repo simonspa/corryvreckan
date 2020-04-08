@@ -33,7 +33,6 @@ namespace corryvreckan {
         // Functions
         void initialise();
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        void finalise();
 
     private:
         // Histograms
