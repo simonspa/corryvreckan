@@ -86,34 +86,33 @@ StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
     // Get the tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
     if(tracks == nullptr) {
-        LOG(DEBUG) << "Neither tracks nor MCParticles on the clipboard";
+        LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
     }
 
     // Loop over all tracks and look at the associated clusters to plot the eta distribution
-    if(!(tracks == nullptr))
-        for(auto& track : (*tracks)) {
+    for(auto& track : (*tracks)) {
 
-            // Cut on the chi2/ndof
-            if(track->chi2ndof() > m_chi2ndofCut) {
+        // Cut on the chi2/ndof
+        if(track->chi2ndof() > m_chi2ndofCut) {
+            continue;
+        }
+
+        // Look at the associated clusters and plot the eta function
+        for(auto& dutCluster : track->associatedClusters()) {
+            if(dutCluster->detectorID() != m_detector->name()) {
                 continue;
             }
-
-            // Look at the associated clusters and plot the eta function
-            for(auto& dutCluster : track->associatedClusters()) {
-                if(dutCluster->detectorID() != m_detector->name()) {
-                    continue;
-                }
-                calculateEta(track, dutCluster);
-            }
-            // Do the same for all clusters of the track:
-            for(auto& cluster : track->clusters()) {
-                if(cluster->detectorID() != m_detector->name()) {
-                    continue;
-                }
-                calculateEta(track, cluster);
-            }
+            calculateEta(track, dutCluster);
         }
+        // Do the same for all clusters of the track:
+        for(auto& cluster : track->clusters()) {
+            if(cluster->detectorID() != m_detector->name()) {
+                continue;
+            }
+            calculateEta(track, cluster);
+        }
+    }
 
     // Return value telling analysis to keep running
     return StatusCode::Success;
