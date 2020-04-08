@@ -64,13 +64,13 @@ namespace corryvreckan {
          * @brief Set seedcluster used for track fitting
          * @param Pointer to seedcluster of the GblTrack
          */
-        void setSeedCluster(const Cluster* cluster);
+        void set_seed_cluster(const Cluster* cluster);
 
         /**
          * @brief Get seedcluster used for track fitting
          * @return Pointer to seedcluster of the GblTrack if set, nullptr otherwise
          */
-        Cluster* getSeedCluster() const;
+        Cluster* get_seed_cluster() const;
 
         // Member variables
         TRef m_seedCluster{nullptr};

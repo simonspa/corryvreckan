@@ -51,16 +51,14 @@ void GblTrack::fit() {
         clusters[cluster->detectorID()] = cluster;
     }
     // create a list of planes and sort it, also calculate the material budget:
-    // gbl needs a seed cluster - at this stage it might be a nullptr
-    auto seedcluster = m_planes.front().cluster();
+    // get the seedcluster for the fit - find the first plane with a cluster to use
+    set_seed_cluster(
+        std::find_if(m_planes.begin(), m_planes.end(), [](auto plane) { return plane.hasCluster(); })->cluster());
     double total_material = 0;
     std::sort(m_planes.begin(), m_planes.end());
     for(auto& l : m_planes) {
         total_material += l.materialbudget();
         if(clusters.count(l.name()) == 1) {
-            if(seedcluster == nullptr) {
-                seedcluster = clusters.at(l.name());
-            }
             l.setPosition(clusters.at(l.name())->global().z());
             l.setCluster(clusters.at(l.name()));
         }
@@ -72,8 +70,6 @@ void GblTrack::fit() {
     }
 
     std::vector<GblPoint> points;
-    // get the seedcluster for the fit - find the first plane with a cluster to use
-    setSeedCluster(std::find_if(m_planes.begin(), m_planes.end(), [](auto plane) { return plane.hasCluster(); })->cluster());
 
     // lambda to calculate the scattering theta
     auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
@@ -96,7 +92,7 @@ void GblTrack::fit() {
 
     auto prevToGlobal = m_planes.front().toGlobal();
     auto prevToLocal = m_planes.front().toLocal();
-    auto globalTrackPos = seedcluster->global();
+    auto globalTrackPos = get_seed_cluster()->global();
     globalTrackPos.SetZ(0);
     auto globalTangent = Vector4d(0, 0, 1, 0);
     Vector4d localPosTrack;
@@ -324,11 +320,11 @@ ROOT::Math::XYZPoint GblTrack::state(std::string detectorID) const {
                                                  0));
 }
 
-void GblTrack::setSeedCluster(const Cluster* cluster) {
+void GblTrack::set_seed_cluster(const Cluster* cluster) {
     m_seedCluster = const_cast<Cluster*>(cluster);
 }
 
-Cluster* GblTrack::getSeedCluster() const {
+Cluster* GblTrack::get_seed_cluster() const {
     if(!m_seedCluster.IsValid() || m_seedCluster.GetObject() == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(Cluster));
     }
