@@ -28,9 +28,10 @@ After this both corrections can be applied consecutively.
 * `time_cut_frameedge`: Parameter to discard telescope tracks at the frame edges (start and end of the current frame). Defaults to `20ns`.
 * `cluster_charge_cut`: Parameter to discard clusters with a charge larger than the cut. No default, not used if not set.
 * `cluster_size_cut`: Parameter to discard clusters with a size too large, only for debugging purposes. No default, not used if not set.
-* `high_tot_cut`: Cut dividing 'low' and 'high' ToT events (based on seed pixel ToT). Defaults to `40`.
+* `high_tot_cut`: Cut for 'high' ToT events (based on seed pixel ToT). Defaults to `40`.
+* `low_tot_cut`: Cut 'low' ToT events (based on seed pixel ToT). Defaults to `10`.
 * `high_charge_cut`: Cut dividing 'low' and 'high' charge events (based on cluster charge in electrons). Defaults to `high_tot_cut` (modify when calibration is available).
-* `left_tail_cut`: Cut to divide into left tail and main peak of time correlation histogram. Only used to investigate characteristics of left tail. Defaults to `-10ns`.
+* `timing_tail_cut`: Cut to divide into left/right tail and main peak of time correlation histogram. Only used to investigate characteristics of left tail. Defaults to `-10ns`.
 * `calc_corrections`: If `true`, TGraphErrors for row and timewalk corrections are produced.
 * `correction_file_row`, `correction_file_timewalk`. Defaults to `false`.
 * `correction_file_row`: Path to file which contains TGraphErrors for row correction. If this parameter is set, also `correction_graph_row` needs to be set. No default.
@@ -55,10 +56,10 @@ For the DUT, the following plots are produced:
   * Track time correlation vs. cluster row (after row correction), (after row correction, only single pixel clusters), (after row correction, only multi-pixel clusters), (after row and timewalk correction), (after row and timewalk correction)
   * Cluster size vs. cluster ToT (only associated clusters)
   * Hit map of all pixels from associated clusters with/without high ToT
-  * In-pixel distribution of tracks for clysters with/without high ToT
+  * In-pixel distribution of tracks for clusters with/without high ToT
   * Map of associated clusters
   * Pixel ToT vs. time for all clusters and for high ToT clusters
-  * Cluster map for main peak and left tail events in time correlation (track timestamp - cluster timestamp < left_tail_cut), (track timestamp - cluster timestamp > left_tail_cut)
+  * Cluster map for main peak and left/right tail events in time correlation
 
 * TGraphErrors
   * Peak of time correlation vs. row
