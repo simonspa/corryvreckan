@@ -314,17 +314,9 @@ ROOT::Math::XYZPoint GblTrack::state(std::string detectorID) const {
     // Let's check first if the data is fitted and all components are there
     if(!m_isFitted)
         throw TrackError(typeid(GblTrack), " detector " + detectorID + " state is not defined before fitting");
-    if(m_materialBudget.count(detectorID) != 1) {
-        std::string list;
-        for(auto l : m_materialBudget)
-            list.append("\n " + l.first + " with <materialBudget, z position>(" + std::to_string(l.second.first) + ", " +
-                        std::to_string(l.second.second) + ")");
-        throw TrackError(typeid(GblTrack),
-                         " detector " + detectorID + " is not appearing in the material budget map" + list);
+    if(m_localTrackPoints.count(detectorID) != 1) {
+        throw TrackError(typeid(GblTrack), "Detector " + detectorID + " is not part of the GBL");
     }
-    if(m_corrections.count(detectorID) != 1)
-        throw TrackError(typeid(GblTrack), " detector " + detectorID + " is not appearing in the corrections map");
-
     auto p =
         std::find_if(m_planes.begin(), m_planes.end(), [detectorID](auto plane) { return (plane.name() == detectorID); });
     return (p->toGlobal() * ROOT::Math::XYZPoint(m_localTrackPoints.at(detectorID).x() + correction(detectorID).x(),
