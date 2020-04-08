@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @brief Implementation of module AlignmentMillepede
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
@@ -45,7 +55,7 @@ void AlignmentMillepede::initialise() {
         if(det->isDUT() && m_excludeDUT) {
             continue;
         }
-        m_millePlanes[det->name()] = index;
+        m_millePlanes[det->getName()] = index;
         ++index;
     }
 
@@ -95,7 +105,7 @@ void AlignmentMillepede::finalise() {
             nPlanes--;
         }
         if(det->isAuxiliary()) {
-            LOG(INFO) << "Excluding auxiliary detector " << det->name();
+            LOG(INFO) << "Excluding auxiliary detector " << det->getName();
             nPlanes--;
         }
     }
@@ -200,7 +210,7 @@ void AlignmentMillepede::setConstraints(const size_t nPlanes) {
         if(det->isDUT() && m_excludeDUT) {
             continue;
         }
-        const unsigned int i = m_millePlanes[det->name()];
+        const unsigned int i = m_millePlanes[det->getName()];
         const double sz = (det->displacement().Z() - avgz) / varz;
         ftx[i] = 1.0;
         fty[i + nPlanes] = 1.0;
@@ -297,7 +307,7 @@ bool AlignmentMillepede::putTrack(Track* track, const size_t nPlanes) {
         const double errx = cluster->errorX();
         const double erry = cluster->errorY();
         // Get the internal plane index in Millepede.
-        const unsigned int plane = m_millePlanes[detector->name()];
+        const unsigned int plane = m_millePlanes[detector->getName()];
         // Set the local derivatives for the X equation.
         std::vector<double> derlc = {1., zg, 0., 0.};
         // Set the global derivatives (see LHCb-2005-101) for the X equation.
@@ -583,7 +593,7 @@ void AlignmentMillepede::updateGeometry() {
         if(det->isDUT() && m_excludeDUT) {
             continue;
         }
-        auto plane = m_millePlanes[det->name()];
+        auto plane = m_millePlanes[det->getName()];
 
         det->displacement(XYZPoint(det->displacement().X() + m_dparm[plane + 0 * nPlanes],
                                    det->displacement().Y() + m_dparm[plane + 1 * nPlanes],

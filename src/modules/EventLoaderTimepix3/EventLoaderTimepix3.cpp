@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @brief Implementation of module EventLoaderTimepix3
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 #include "EventLoaderTimepix3.h"
 
 #include <bitset>
@@ -56,7 +66,7 @@ void EventLoaderTimepix3::initialise() {
         if(entry->d_type == DT_DIR || (entry->d_type == DT_UNKNOWN && std::string(entry->d_name).at(0) == 'W')) {
 
             // Only read files from correct directory:
-            if(entry->d_name != m_detector->name()) {
+            if(entry->d_name != m_detector->getName()) {
                 continue;
             }
             LOG(DEBUG) << "Found directory for detector " << entry->d_name;
@@ -86,7 +96,7 @@ void EventLoaderTimepix3::initialise() {
 
     // Check that we have files for this detector and sort them correctly:
     if(detector_files.empty()) {
-        LOG(ERROR) << "No data file found for detector " << m_detector->name() << " in input directory " << std::endl
+        LOG(ERROR) << "No data file found for detector " << m_detector->getName() << " in input directory " << std::endl
                    << m_inputDirectory;
         return;
     }
@@ -112,15 +122,15 @@ void EventLoaderTimepix3::initialise() {
 
         auto new_file = std::make_unique<std::ifstream>(filename);
         if(new_file->is_open()) {
-            LOG(DEBUG) << "Opened data file for " << m_detector->name() << ": " << filename;
+            LOG(DEBUG) << "Opened data file for " << m_detector->getName() << ": " << filename;
 
             // The header is repeated in every new data file, thus skip it for all.
             uint32_t headerID;
             if(!new_file->read(reinterpret_cast<char*>(&headerID), sizeof headerID)) {
-                throw ModuleError("Cannot read header ID for " + m_detector->name() + " in file " + filename);
+                throw ModuleError("Cannot read header ID for " + m_detector->getName() + " in file " + filename);
             }
             if(headerID != 1380208723) {
-                throw ModuleError("Incorrect header ID for " + m_detector->name() + " in file " + filename + ": " +
+                throw ModuleError("Incorrect header ID for " + m_detector->getName() + " in file " + filename + ": " +
                                   std::to_string(headerID));
             }
             LOG(TRACE) << "Header ID: \"" << headerID << "\"";
@@ -128,7 +138,7 @@ void EventLoaderTimepix3::initialise() {
             // Skip the rest of the file header
             uint32_t headerSize;
             if(!new_file->read(reinterpret_cast<char*>(&headerSize), sizeof headerSize)) {
-                throw ModuleError("Cannot read header size for " + m_detector->name() + " in file " + filename);
+                throw ModuleError("Cannot read header size for " + m_detector->getName() + " in file " + filename);
             }
 
             // Skip the full header:
@@ -153,7 +163,7 @@ void EventLoaderTimepix3::initialise() {
         applyCalibration = true;
 
         // get DUT plane name
-        std::string DUT = m_detector->name();
+        std::string DUT = m_detector->getName();
 
         // make paths to calibration files and read
         std::string tmp;
@@ -200,15 +210,15 @@ void EventLoaderTimepix3::initialise() {
         applyCalibration = false;
     }
     // Make debugging plots
-    std::string title = m_detector->name() + " Hit map;x [px];y [px];pixels";
+    std::string title = m_detector->getName() + " Hit map;x [px];y [px];pixels";
     hHitMap = new TH2F("hitMap",
                        title.c_str(),
                        m_detector->nPixels().X(),
-                       0,
-                       m_detector->nPixels().X(),
+                       -0.5,
+                       m_detector->nPixels().X() - 0.5,
                        m_detector->nPixels().Y(),
-                       0,
-                       m_detector->nPixels().Y());
+                       -0.5,
+                       m_detector->nPixels().Y() - 0.5);
 }
 
 StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
@@ -236,12 +246,12 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
 
     // If data was loaded then put it on the clipboard
     if(data) {
-        LOG(DEBUG) << "Loaded " << deviceData->size() << " pixels for device " << m_detector->name();
-        clipboard->putData(deviceData, m_detector->name());
+        LOG(DEBUG) << "Loaded " << deviceData->size() << " pixels for device " << m_detector->getName();
+        clipboard->putData(deviceData, m_detector->getName());
     }
 
     if(!spidrData->empty()) {
-        clipboard->putData(spidrData, m_detector->name());
+        clipboard->putData(spidrData, m_detector->getName());
     }
 
     // Otherwise tell event loop to keep running
@@ -321,7 +331,7 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
                                    std::shared_ptr<PixelVector>& devicedata,
                                    std::shared_ptr<SpidrSignalVector>& spidrData) {
 
-    std::string detectorID = m_detector->name();
+    std::string detectorID = m_detector->getName();
     auto event = clipboard->getEvent();
 
     bool extra = false; // temp

@@ -65,7 +65,9 @@ ENDIF()
 # Set up the RPATH so executables find the libraries even when installed in non-default location
 SET(CMAKE_MACOSX_RPATH TRUE)
 SET(CMAKE_SKIP_BUILD_RPATH FALSE)
+SET(CMAKE_SKIP_INSTALL_RPATH FALSE)
 SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+SET(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
 
 # Add the automatically determined parts of the RPATH which point to directories outside the build tree to the install RPATH
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -75,6 +77,11 @@ LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib"
 IF("${IsSystemDir}" STREQUAL "-1")
    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF("${IsSystemDir}" STREQUAL "-1")
+
+IF(APPLE)
+  SET(CMAKE_INSTALL_NAME_DIR "@rpath")
+  SET(CMAKE_INSTALL_RPATH "@loader_path/../lib") # self relative LIBDIR
+ENDIF()
 
 # Include corry cmake functions
 INCLUDE("cmake/corryvreckan.cmake")
@@ -122,11 +129,11 @@ IF(NOT ROOT_FOUND)
 ENDIF()
 
 # Downgrade to C++14 if ROOT is not build with C++17 support
-IF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+17.*")
+IF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[7z].*")
     IF(NOT SUPPORT_STD_CXX17)
         MESSAGE(FATAL_ERROR "ROOT was built with C++17 support but current compiler doesn't support it")
     ENDIF()
-ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[14].*")
+ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[14y].*")
     SET(CMAKE_CXX_STANDARD 14)
 ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+.*")
     MESSAGE(FATAL_ERROR "ROOT was built with an unsupported C++ version: ${ROOT_CXX_FLAGS}")
@@ -151,6 +158,11 @@ ADD_SUBDIRECTORY(3rdparty/GeneralBrokenLines)
 # Set the dependencies
 SET(CORRYVRECKAN_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
 SET(CORRYVRECKAN_DEPS_LIBRARIES Eigen3::Eigen ROOT::Core ROOT::GenVector ROOT::Geom ROOT::RIO ROOT::Hist ROOT::Minuit ROOT::Minuit2 GBL)
+
+# Add the LCG view as dependency if set:
+IF(DEFINED ENV{LCG_VIEW})
+    ADD_RUNTIME_DEP($ENV{LCG_VIEW})
+ENDIF()
 
 # Add "thisroot.sh" as runtime dependency for setup.sh file:
 ADD_RUNTIME_DEP(thisroot.sh)

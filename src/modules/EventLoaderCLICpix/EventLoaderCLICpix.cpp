@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @brief Implementation of module EventLoaderCLICpix
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 #include "EventLoaderCLICpix.h"
 
 using namespace corryvreckan;
@@ -113,7 +123,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
             continue;
 
         // when calibration is not available, set charge = tot
-        Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, tot, 0);
+        Pixel* pixel = new Pixel(m_detector->getName(), col, row, tot, tot, 0);
         pixels->push_back(pixel);
         npixels++;
         hHitMap->Fill(col, row);
@@ -125,7 +135,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG(TRACE) << "Loaded " << npixels << " pixels";
     // Put the data on the clipboard
-    clipboard->putData(pixels, m_detector->name());
+    clipboard->putData(pixels, m_detector->getName());
 
     // Fill histograms
     hPixelMultiplicity->Fill(npixels);

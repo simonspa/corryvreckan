@@ -4,10 +4,10 @@
 **Status**: Functional
 
 ### Description
-This module allows data recorded by EUDAQ2 and stored in a EUDAQ2 binary file as raw detector data to be read into Corryvreckan.
-For each detector type, the corresponding converter module in EUDAQ2 is used to transform the data into the `StandardPlane` event type before storing the individual `Pixel` objects on the Corryvreckan clipboard.
+This module allows data recorded by [EUDAQ2](https://github.com/eudaq/eudaq/) and stored in a EUDAQ2 binary file as raw detector data to be read into Corryvreckan.
+For each detector type, the corresponding converter module implemented in EUDAQ2 is used to transform the data into the `StandardPlane` event type before storing the individual `Pixel` objects on the Corryvreckan clipboard.
 
-The detectors need to be named according to the following scheme: `<detector_type>_<plane_number>` where `detector_type` is the type specified in the detectors file and `<plane_number>` is an iterative number over the planes of the same type.
+The detectors need to be named according to the following scheme: `<detector_type>_<plane_number>` where `<detector_type>` is the type specified in the detectors file and `<plane_number>` is an iterative number over the planes of the same type.
 
 If the data of different detectors is stored in separate files, the parameters `name` or `type` can be used as shown in the usage example below.
 It should be noted that the order of the detectors is crucial.
@@ -26,13 +26,13 @@ If earlier, the next event is read until a matching event is found.
 If later, the pointer to this event is kept and it continues with the next detector.
 
 Data from detectors with both triggered readout and without timestamps are matched against trigger IDs stored in the currently defined Corryvreckan event.
-In case of a match, the timestamp of the respective trigger is assigned to all pixels of the device.
 
 If no timestamp is available for the individual pixels, the pixel timestamp is set as the centre of the EUDAQ2 event.
 
-If no detector is capable of defining events, the `[Metronome]` model needs to be used.
+If no detector is capable of defining events, the `[Metronome]` module needs to be used.
 
-Tags stores in the EUDAQ2 event header are read, a conversion to a double value is attempted and, if successful, a profile with the value over the number of events in the respective run is automatically allocated and filled. This feature can e.g. be used to log temperatures of the devices during data taking, simply storing the temperature as event tags.
+Tags stored in the EUDAQ2 event header are read, a conversion to a double value is attempted and, if successful, a profile with the value over the number of events in the respective run is automatically allocated and filled.
+This feature can e.g. be used to log temperatures of the devices during data taking, simply storing the temperature as event tags.
 
 ### Requirements
 This module requires an installation of [EUDAQ2](https://eudaq.github.io/). The installation path needs to be set to
@@ -54,10 +54,14 @@ For instance, to allow decoding of Caribou data, the respective EUDAQ2 module ha
 ```bash
 cmake -DUSER_CARIBOU_BUILD=ON ..
 ```
+__Note:__
+It is important to make sure that the same compiler version is used for the installation of Corryvreckan and all its dependencies such as EUDAQ2 (if enabled).
+On `lxplus` this is achieved by running `source path/to/corryvreckan/etc/setup_lxplus.sh` before beginning the installation.
 
 ### Contract between EUDAQ Decoder and EventLoader
 
 The decoder guarantees to
+
 * return `true` only when there is a fully decoded event available and `false` in all other cases.
 * not return any event before a possible T0 signal in the data. This is a signal that indicates the clock reset at the beginning of the run. It can be a particular data word or the observation of the pixel timestamp jumping back to zero, depending on data format of each the detector.
 * return the smallest possible granularity of data in time either as even or as sub-events within one event.
@@ -71,6 +75,8 @@ The EventLoaderEUDAQ2 takes all key-value pairs available in the configuration a
 It should be kept in mind that the resulting configuration strings are parsed by EUDAQ2, not by Corryvreckan, and that therefore the functionality is reduced.
 For example, it does not interpret `true` or `false` alphabetic value of a Boolean variable but will return false in both cases. Thus `key = 0` or `key = 1` have to be used in these cases.
 Also, more complex constructs such as arrays or matrices read by the Corryvreckan configuration are simply interpreted as strings.
+
+In addition, the calibration file of the detector specified in the geometry configuration is passed to the EUDAQ2 event decoder using the key `calibration_file` and its canonical path as value. Adding the same key to the module configuration will overwrite the file specified in the detector geometry.
 
 ### Parameters
 * `file_name`: File name of the EUDAQ2 raw data file. This parameter is mandatory.

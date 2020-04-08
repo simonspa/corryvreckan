@@ -1,5 +1,15 @@
-#ifndef CLUSTER_H
-#define CLUSTER_H 1
+/**
+ * @file
+ * @brief Definition of cluster object
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
+#ifndef CORRYVRECKAN_CLUSTER_H
+#define CORRYVRECKAN_CLUSTER_H 1
 
 #include <Math/Point3D.h>
 #include <Math/Vector2D.h>
@@ -98,4 +108,4 @@ namespace corryvreckan {
     using ClusterVector = std::vector<Cluster*>;
 } // namespace corryvreckan
 
-#endif // CLUSTER_H
+#endif // CORRYVRECKAN_CLUSTER_H

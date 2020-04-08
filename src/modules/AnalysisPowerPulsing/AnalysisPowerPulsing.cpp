@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @brief Implementation of module AnalysisPowerPulsing
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 #include "AnalysisPowerPulsing.h"
 #include "objects/Cluster.hpp"
 #include "objects/SpidrSignal.hpp"
@@ -91,7 +101,7 @@ StatusCode AnalysisPowerPulsing::run(std::shared_ptr<Clipboard> clipboard) {
     */
 
     // Now update the power pulsing with any new signals
-    auto spidrData = clipboard->getData<SpidrSignal>(m_detector->name());
+    auto spidrData = clipboard->getData<SpidrSignal>(m_detector->getName());
 
     // If there are new signals
     if(spidrData != nullptr) {
@@ -135,7 +145,7 @@ StatusCode AnalysisPowerPulsing::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Get the DUT clusters from the clipboard
-    auto clusters = clipboard->getData<Cluster>(m_detector->name());
+    auto clusters = clipboard->getData<Cluster>(m_detector->getName());
     if(clusters == nullptr) {
         LOG(DEBUG) << "No DUT clusters on the clipboard!";
         return StatusCode::Success;

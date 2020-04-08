@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @brief Implementation of module ClusteringSpatial
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 #include "ClusteringSpatial.h"
 #include "objects/Pixel.hpp"
 
@@ -14,26 +24,26 @@ ClusteringSpatial::ClusteringSpatial(Configuration config, std::shared_ptr<Detec
 void ClusteringSpatial::initialise() {
 
     // Cluster plots
-    std::string title = m_detector->name() + " Cluster size;cluster size;events";
+    std::string title = m_detector->getName() + " Cluster size;cluster size;events";
     clusterSize = new TH1F("clusterSize", title.c_str(), 100, 0, 100);
-    title = m_detector->name() + " Cluster seed charge;cluster seed charge [e];events";
+    title = m_detector->getName() + " Cluster seed charge;cluster seed charge [e];events";
     clusterSeedCharge = new TH1F("clusterSeedCharge", title.c_str(), 256, 0, 256);
-    title = m_detector->name() + " Cluster Width - Rows;cluster width [rows];events";
+    title = m_detector->getName() + " Cluster Width - Rows;cluster width [rows];events";
     clusterWidthRow = new TH1F("clusterWidthRow", title.c_str(), 25, 0, 25);
-    title = m_detector->name() + " Cluster Width - Columns;cluster width [columns];events";
+    title = m_detector->getName() + " Cluster Width - Columns;cluster width [columns];events";
     clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, 0, 100);
-    title = m_detector->name() + " Cluster Charge;cluster charge [e];events";
+    title = m_detector->getName() + " Cluster Charge;cluster charge [e];events";
     clusterCharge = new TH1F("clusterCharge", title.c_str(), 5000, 0, 50000);
-    title = m_detector->name() + " Cluster Position (Global);x [mm];y [mm];events";
+    title = m_detector->getName() + " Cluster Position (Global);x [mm];y [mm];events";
     clusterPositionGlobal = new TH2F("clusterPositionGlobal",
                                      title.c_str(),
                                      400,
-                                     -m_detector->size().X() / 1.5,
-                                     m_detector->size().X() / 1.5,
+                                     -m_detector->getSize().X() / 1.5,
+                                     m_detector->getSize().X() / 1.5,
                                      400,
-                                     -m_detector->size().Y() / 1.5,
-                                     m_detector->size().Y() / 1.5);
-    title = m_detector->name() + " Cluster Position (Local);x [px];y [px];events";
+                                     -m_detector->getSize().Y() / 1.5,
+                                     m_detector->getSize().Y() / 1.5);
+    title = m_detector->getName() + " Cluster Position (Local);x [px];y [px];events";
     clusterPositionLocal = new TH2F("clusterPositionLocal",
                                     title.c_str(),
                                     m_detector->nPixels().X(),
@@ -50,9 +60,9 @@ void ClusteringSpatial::initialise() {
 StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
-    auto pixels = clipboard->getData<Pixel>(m_detector->name());
+    auto pixels = clipboard->getData<Pixel>(m_detector->getName());
     if(pixels == nullptr) {
-        LOG(DEBUG) << "Detector " << m_detector->name() << " does not have any pixels on the clipboard";
+        LOG(DEBUG) << "Detector " << m_detector->getName() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
     }
 
@@ -160,8 +170,8 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         deviceClusters->push_back(cluster);
     }
 
-    clipboard->putData(deviceClusters, m_detector->name());
-    LOG(DEBUG) << "Put " << deviceClusters->size() << " clusters on the clipboard for detector " << m_detector->name()
+    clipboard->putData(deviceClusters, m_detector->getName());
+    LOG(DEBUG) << "Put " << deviceClusters->size() << " clusters on the clipboard for detector " << m_detector->getName()
                << ". From " << pixels->size() << " pixels";
 
     // Return value telling analysis to keep running

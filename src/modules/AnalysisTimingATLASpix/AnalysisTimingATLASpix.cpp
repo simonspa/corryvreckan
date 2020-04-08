@@ -1,7 +1,8 @@
 /**
  * @file
  * @brief Implementation of [AnalysisEfficiency] module
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -44,7 +45,7 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
         m_clusterSizeCut = m_config.get<size_t>("cluster_size_cut");
     }
     m_highTotCut = m_config.get<int>("high_tot_cut", 40);
-    m_lowTotCut = m_config.get<int>("low_tot_cut", 40);
+    m_lowTotCut = m_config.get<int>("low_tot_cut", 10);
     m_timingTailCut = m_config.get<double>("timing_tail_cut", static_cast<double>(Units::convert(20, "ns")));
 
     if(m_config.has("correction_file_row")) {
@@ -82,8 +83,8 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
 
 void AnalysisTimingATLASpix::initialise() {
 
-    auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
-    auto pitch_y = static_cast<double>(Units::convert(m_detector->pitch().Y(), "um"));
+    auto pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
+    auto pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));
 
     std::string name = "hTrackCorrelationTime";
     hTrackCorrelationTime =
@@ -147,32 +148,38 @@ void AnalysisTimingATLASpix::initialise() {
     // 2D histograms:
     // column dependence
     name = "hTrackCorrelationTimeVsCol";
-    hTrackCorrelationTimeVsCol =
-        new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, m_detector->nPixels().X(), 0, m_detector->nPixels().X());
+    hTrackCorrelationTimeVsCol = new TH2F(
+        name.c_str(), name.c_str(), 20000, -5000, 5000, m_detector->nPixels().X(), -0.5, m_detector->nPixels().X() - 0.5);
     hTrackCorrelationTimeVsCol->GetYaxis()->SetTitle("pixel column");
     hTrackCorrelationTimeVsCol->GetXaxis()->SetTitle("ts_{track} - ts_{seed pixel} [ns]");
     // row dependence
     name = "hTrackCorrelationTimeVsRow";
-    hTrackCorrelationTimeVsRow =
-        new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, m_detector->nPixels().Y(), 0, m_detector->nPixels().Y());
+    hTrackCorrelationTimeVsRow = new TH2F(
+        name.c_str(), name.c_str(), 20000, -5000, 5000, m_detector->nPixels().Y(), -0.5, m_detector->nPixels().Y() - 0.5);
     hTrackCorrelationTimeVsRow->GetYaxis()->SetTitle("pixel row");
     hTrackCorrelationTimeVsRow->GetXaxis()->SetTitle("ts_{track} - ts_{seed pixel} [ns]");
     name = "hTrackCorrelationTimeVsRow_1px";
-    hTrackCorrelationTimeVsRow_1px =
-        new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, m_detector->nPixels().Y(), 0, m_detector->nPixels().Y());
+    hTrackCorrelationTimeVsRow_1px = new TH2F(
+        name.c_str(), name.c_str(), 20000, -5000, 5000, m_detector->nPixels().Y(), -0.5, m_detector->nPixels().Y() - 0.5);
     hTrackCorrelationTimeVsRow_1px->GetYaxis()->SetTitle("pixel row");
     hTrackCorrelationTimeVsRow_1px->GetXaxis()->SetTitle("ts_{track} - ts_{seed pixel} [ns] (single-pixel clusters)");
     name = "hTrackCorrelationTimeVsRow_npx";
-    hTrackCorrelationTimeVsRow_npx =
-        new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, m_detector->nPixels().Y(), 0, m_detector->nPixels().Y());
+    hTrackCorrelationTimeVsRow_npx = new TH2F(
+        name.c_str(), name.c_str(), 20000, -5000, 5000, m_detector->nPixels().Y(), -0.5, m_detector->nPixels().Y() - 0.5);
     hTrackCorrelationTimeVsRow_npx->GetYaxis()->SetTitle("pixel row");
     hTrackCorrelationTimeVsRow_npx->GetXaxis()->SetTitle("ts_{track} - ts_{seed pixel} [ns] (multi-pixel clusters)");
 
     // control plot: row dependence after row correction
     if(m_pointwise_correction_row) {
         name = "hTrackCorrelationTimeVsRow_rowCorr";
-        hTrackCorrelationTimeVsRow_rowCorr = new TH2F(
-            name.c_str(), name.c_str(), 20000, -5000, 5000, m_detector->nPixels().Y(), 0, m_detector->nPixels().Y());
+        hTrackCorrelationTimeVsRow_rowCorr = new TH2F(name.c_str(),
+                                                      name.c_str(),
+                                                      20000,
+                                                      -5000,
+                                                      5000,
+                                                      m_detector->nPixels().Y(),
+                                                      -0.5,
+                                                      m_detector->nPixels().Y() - 0.5);
         hTrackCorrelationTimeVsRow_rowCorr->GetYaxis()->SetTitle("pixel row");
         hTrackCorrelationTimeVsRow_rowCorr->GetXaxis()->SetTitle("ts_{track} - ts_{seed pixel} [ns]");
     }
@@ -224,8 +231,14 @@ void AnalysisTimingATLASpix::initialise() {
     // final plots with both row and timewalk correction:
     if(m_pointwise_correction_timewalk) {
         name = "hTrackCorrelationTimeVsRow_rowAndTWCorr";
-        hTrackCorrelationTimeVsRow_rowAndTWCorr = new TH2F(
-            name.c_str(), name.c_str(), 20000, -5000, 5000, m_detector->nPixels().Y(), 0, m_detector->nPixels().Y());
+        hTrackCorrelationTimeVsRow_rowAndTWCorr = new TH2F(name.c_str(),
+                                                           name.c_str(),
+                                                           20000,
+                                                           -5000,
+                                                           5000,
+                                                           m_detector->nPixels().Y(),
+                                                           -0.5,
+                                                           m_detector->nPixels().Y() - 0.5);
         hTrackCorrelationTimeVsRow_rowAndTWCorr->GetYaxis()->SetTitle("row");
         hTrackCorrelationTimeVsRow_rowAndTWCorr->GetXaxis()->SetTitle("ts_{track} - ts_{seed pixel} [ns]");
 
@@ -236,8 +249,8 @@ void AnalysisTimingATLASpix::initialise() {
     }
 
     // in-pixel time resolution plots:
-    auto nbins_x = static_cast<int>(std::ceil(m_detector->pitch().X() / m_inpixelBinSize.X()));
-    auto nbins_y = static_cast<int>(std::ceil(m_detector->pitch().Y() / m_inpixelBinSize.Y()));
+    auto nbins_x = static_cast<int>(std::ceil(m_detector->getPitch().X() / m_inpixelBinSize.X()));
+    auto nbins_y = static_cast<int>(std::ceil(m_detector->getPitch().Y() / m_inpixelBinSize.Y()));
     if(nbins_x > 1e4 || nbins_y > 1e4) {
         throw InvalidValueError(m_config, "inpixel_bin_size", "Too many bins for in-pixel histograms.");
     }
@@ -263,19 +276,19 @@ void AnalysisTimingATLASpix::initialise() {
     hHitMapAssoc = new TH2F("hitMapAssoc",
                             "hitMapAssoc; x_{track} [px]; y_{track} [px];# entries",
                             m_detector->nPixels().X(),
-                            0,
-                            m_detector->nPixels().X(),
+                            -0.5,
+                            m_detector->nPixels().X() - 0.5,
                             m_detector->nPixels().Y(),
                             0,
                             m_detector->nPixels().Y());
     hHitMapAssoc_highToT = new TH2F("hitMapAssoc_highToT",
                                     "hitMapAssoc_highToT; x_{track} [px]; y_{track} [px];# entries",
                                     m_detector->nPixels().X(),
-                                    0,
-                                    m_detector->nPixels().X(),
+                                    -0.5,
+                                    m_detector->nPixels().X() - 0.5,
                                     m_detector->nPixels().Y(),
-                                    0,
-                                    m_detector->nPixels().Y());
+                                    -0.5,
+                                    m_detector->nPixels().Y() - 0.5);
     hHitMapAssoc_inPixel = new TH2F("hitMapAssoc_inPixel",
                                     "hitMapAssoc_inPixel; in-pixel x_{track} [#mum]; in-pixel y_{track} [#mum]",
                                     static_cast<int>(pitch_x),
@@ -298,11 +311,11 @@ void AnalysisTimingATLASpix::initialise() {
     hClusterMapAssoc = new TH2F("hClusterMapAssoc",
                                 "hClusterMapAssoc; x_{cluster} [px]; y_{cluster} [px];# entries",
                                 m_detector->nPixels().X(),
-                                0,
-                                m_detector->nPixels().X(),
+                                -0.5,
+                                m_detector->nPixels().X() - 0.5,
                                 m_detector->nPixels().Y(),
-                                0,
-                                m_detector->nPixels().Y());
+                                -0.5,
+                                m_detector->nPixels().Y() - 0.5);
 
     hTotVsRow = new TH2F("hTotVsRow",
                          "hTotVsRow;seed-pixel row;seed-pixel ToT [lsb]",
@@ -355,29 +368,29 @@ void AnalysisTimingATLASpix::initialise() {
             new TH2F("hClusterMap_leftTail",
                      "hClusterMap (left tail of time residual); x_{cluster} [px]; x_{cluster} [px];# entries",
                      m_detector->nPixels().X(),
-                     0,
-                     m_detector->nPixels().X(),
+                     -0.5,
+                     m_detector->nPixels().X() - 0.5,
                      m_detector->nPixels().Y(),
-                     0,
-                     m_detector->nPixels().Y());
+                     -0.5,
+                     m_detector->nPixels().Y() - 0.5);
         hClusterMap_rightTail =
             new TH2F("hClusterMap_rightTail",
                      "hClusterMap (right tail of time residual); x_{cluster} [px]; x_{cluster} [px];# entries",
                      m_detector->nPixels().X(),
-                     0,
-                     m_detector->nPixels().X(),
+                     -0.5,
+                     m_detector->nPixels().X() - 0.5,
                      m_detector->nPixels().Y(),
-                     0,
-                     m_detector->nPixels().Y());
+                     -0.5,
+                     m_detector->nPixels().Y() - 0.5);
         hClusterMap_mainPeak =
             new TH2F("hClusterMap_mainPeak",
                      "hClusterMap (main peak of time residual); x_{cluster} [px]; x_{cluster} [px];# entries",
                      m_detector->nPixels().X(),
-                     0,
-                     m_detector->nPixels().X(),
+                     -0.5,
+                     m_detector->nPixels().X() - 0.5,
                      m_detector->nPixels().Y(),
-                     0,
-                     m_detector->nPixels().Y());
+                     -0.5,
+                     m_detector->nPixels().Y() - 0.5);
         hClusterSize_leftTail =
             new TH1F("clusterSize_leftTail", "clusterSize (left tail of time residual);cluster size;# entries", 100, 0, 100);
         hClusterSize_rightTail = new TH1F(
@@ -566,7 +579,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         total_tracks++;
 
         // Get the DUT clusters from the clipboard
-        auto clusters = clipboard->getData<Cluster>(m_detector->name());
+        auto clusters = clipboard->getData<Cluster>(m_detector->getName());
         if(clusters == nullptr) {
             LOG(DEBUG) << " - no DUT clusters";
         } else {
@@ -741,7 +754,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 }
 
 void AnalysisTimingATLASpix::finalise() {
-    LOG(STATUS) << "Timing analysis finished for detector " << m_detector->name() << ": ";
+    LOG(STATUS) << "Timing analysis finished for detector " << m_detector->getName() << ": ";
 
     if(m_calcCorrections) {
 

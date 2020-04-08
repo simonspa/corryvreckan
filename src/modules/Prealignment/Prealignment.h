@@ -1,7 +1,18 @@
+/**
+ * @file
+ * @brief Definition of module Prealignment
+ *
+ * @copyright Copyright (c) 2018-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 #ifndef PREALIGNMENT_H
 #define PREALIGNMENT_H 1
 
 #include <TCanvas.h>
+#include <TF1.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <iostream>
@@ -39,6 +50,8 @@ namespace corryvreckan {
         double max_correlation_rms;
         double damping_factor;
         double timeCut;
+        std::string method;
+        int fit_range_rel;
     };
 } // namespace corryvreckan
 #endif // PREALIGNMENT_H

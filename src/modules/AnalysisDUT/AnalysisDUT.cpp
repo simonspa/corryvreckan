@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @brief Implementation of module AnalysisDUT
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 #include "AnalysisDUT.h"
 
 #include "objects/Cluster.hpp"
@@ -19,29 +29,29 @@ void AnalysisDUT::initialise() {
     hClusterMapAssoc = new TH2F("clusterMapAssoc",
                                 "clusterMapAssoc; cluster col; cluster row",
                                 m_detector->nPixels().X(),
-                                0,
-                                m_detector->nPixels().X(),
+                                -0.5,
+                                m_detector->nPixels().X() - 0.5,
                                 m_detector->nPixels().Y(),
-                                0,
-                                m_detector->nPixels().Y());
+                                -0.5,
+                                m_detector->nPixels().Y() - 0.5);
     hClusterSizeMapAssoc = new TProfile2D("clusterSizeMapAssoc",
                                           "clusterSizeMapAssoc; cluster size; #entries",
                                           m_detector->nPixels().X(),
-                                          0,
-                                          m_detector->nPixels().X(),
+                                          -0.5,
+                                          m_detector->nPixels().X() - 0.5,
                                           m_detector->nPixels().Y(),
-                                          0,
-                                          m_detector->nPixels().Y(),
+                                          -0.5,
+                                          m_detector->nPixels().Y() - 0.5,
                                           0,
                                           100);
     hClusterChargeMapAssoc = new TProfile2D("clusterChargeMapAssoc",
                                             "clusterSizeChargeAssoc; cluster charge [e]; #entries",
                                             m_detector->nPixels().X(),
-                                            0,
-                                            m_detector->nPixels().X(),
+                                            -0.5,
+                                            m_detector->nPixels().X() - 0.5,
                                             m_detector->nPixels().Y(),
-                                            0,
-                                            m_detector->nPixels().Y(),
+                                            -0.5,
+                                            m_detector->nPixels().Y() - 0.5,
                                             0,
                                             500);
 
@@ -49,28 +59,28 @@ void AnalysisDUT::initialise() {
     hHitMapAssoc = new TH2F("hitMapAssoc",
                             "hitMapAssoc; hit column; hit row",
                             m_detector->nPixels().X(),
-                            0,
-                            m_detector->nPixels().X(),
+                            -0.5,
+                            m_detector->nPixels().X() - 0.5,
                             m_detector->nPixels().Y(),
-                            0,
-                            m_detector->nPixels().Y());
+                            -0.5,
+                            m_detector->nPixels().Y() - 0.5);
     hHitMapROI = new TH2F("hitMapROI",
                           "hitMapROI; hit column; hit row",
                           m_detector->nPixels().X(),
-                          0,
-                          m_detector->nPixels().X(),
+                          -0.5,
+                          m_detector->nPixels().X() - 0.5,
                           m_detector->nPixels().Y(),
-                          0,
-                          m_detector->nPixels().Y());
+                          -0.5,
+                          m_detector->nPixels().Y() - 0.5);
     hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc", "pixelRawValueAssoc;pixel raw value;#entries", 1024, 0, 1024);
     hPixelRawValueMapAssoc = new TProfile2D("pixelRawValueMapAssoc",
                                             "pixelRawValueMapAssoc;pixel raw values;# entries",
                                             m_detector->nPixels().X(),
-                                            0,
-                                            m_detector->nPixels().X(),
+                                            -0.5,
+                                            m_detector->nPixels().X() - 0.5,
                                             m_detector->nPixels().Y(),
-                                            0,
-                                            m_detector->nPixels().Y(),
+                                            -0.5,
+                                            m_detector->nPixels().Y() - 0.5,
                                             0,
                                             255);
 
@@ -105,12 +115,12 @@ void AnalysisDUT::initialise() {
         new TH1F("clusterWidthColAssociated", "clusterWidthColAssociated;cluster size col; # entries", 30, 0, 30);
 
     // In-pixel studies:
-    auto pitch_x = static_cast<double>(Units::convert(m_detector->pitch().X(), "um"));
-    auto pitch_y = static_cast<double>(Units::convert(m_detector->pitch().Y(), "um"));
+    auto pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
+    auto pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));
     std::string mod_axes = "in-pixel x_{track} [#mum];in-pixel y_{track} [#mum];";
 
     // cut flow histogram
-    std::string title = m_detector->name() + ": number of tracks discarded by different cuts;cut type;tracks";
+    std::string title = m_detector->getName() + ": number of tracks discarded by different cuts;cut type;tracks";
     hCutHisto = new TH1F("hCutHisto", title.c_str(), 4, 1, 5);
     hCutHisto->GetXaxis()->SetBinLabel(1, "High Chi2");
     hCutHisto->GetXaxis()->SetBinLabel(2, "Outside DUT area");
@@ -282,13 +292,13 @@ void AnalysisDUT::initialise() {
                  -10,
                  10);
     hAssociatedTracksLocalPosition = new TH2F("hAssociatedTracksLocalPosition",
-                                              "hAssociatedTracksLocalPosition;local intercept x [mm];local intercept y [mm]",
-                                              m_detector->nPixels().X(),
-                                              0,
-                                              m_detector->nPixels().X(),
-                                              m_detector->nPixels().Y(),
-                                              0,
-                                              m_detector->nPixels().Y());
+                                              "hAssociatedTracksLocalPosition;local intercept x [px];local intercept y [px]",
+                                              10 * m_detector->nPixels().X(),
+                                              -0.5,
+                                              m_detector->nPixels().X() - 0.5,
+                                              10 * m_detector->nPixels().Y(),
+                                              -0.5,
+                                              m_detector->nPixels().Y() - 0.5);
     hUnassociatedTracksGlobalPosition =
         new TH2F("hUnassociatedTracksGlobalPosition",
                  "hUnassociatedTracksGlobalPosition; global intercept x [mm]; global intercept y [mm]",
@@ -406,12 +416,9 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             hTrackCorrelationPos->Fill(posDiff);
             hTrackCorrelationPosVsCorrelationTime->Fill(track->timestamp() - assoc_cluster->timestamp(), posDiff);
 
-            // FIXME need to understand local coord of clusters - why shifted? what's normal?
-            auto clusterLocal = m_detector->globalToLocal(assoc_cluster->global());
-            hClusterMapAssoc->Fill(m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal));
-            hClusterSizeMapAssoc->Fill(m_detector->getColumn(clusterLocal),
-                                       m_detector->getRow(clusterLocal),
-                                       static_cast<double>(assoc_cluster->size()));
+            hClusterMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row());
+            hClusterSizeMapAssoc->Fill(
+                assoc_cluster->column(), assoc_cluster->row(), static_cast<double>(assoc_cluster->size()));
 
             // Cluster charge normalized to path length in sensor:
             double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
@@ -421,8 +428,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
             // clusterChargeAssoc->Fill(normalized_charge);
             clusterChargeAssoc->Fill(cluster_charge);
-            hClusterChargeMapAssoc->Fill(
-                m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), cluster_charge);
+            hClusterChargeMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row(), cluster_charge);
 
             // Fill per-pixel histograms
             for(auto& pixel : assoc_cluster->pixels()) {

@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @brief Implementation of GBL track object
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 #include "GblTrack.hpp"
 #include "Track.hpp"
 #include "exceptions.h"
@@ -18,7 +28,7 @@ GblTrack::GblTrack(const GblTrack& track) : Track(track) {
 
 void GblTrack::fit() {
 
-    // Fitting with 2 clusters or less is pointless
+    // Fitting with less than 2 clusters is pointless
     if(m_trackClusters.size() < 2) {
         throw TrackError(typeid(GblTrack), " attempting to fit a track with less than 2 clusters");
     }
@@ -42,12 +52,14 @@ void GblTrack::fit() {
     }
     std::sort(m_planes.begin(), m_planes.end());
     // add volume scattering length - we ignore for now the material thickness while considering air
-    total_material += (m_planes.end()->postion() - m_planes.front().postion()) / m_scattering_length_volume;
+    if(m_use_volume_scatter) {
+        total_material += (m_planes.back().position() - m_planes.front().position()) / m_scattering_length_volume;
+    }
 
     std::vector<GblPoint> points;
-    // get the seedcluster for the fit - simply the first one in the list
-    auto seedcluster = m_planes.front().cluster();
-    double prevPos = 0;
+    // get the seedcluster for the fit - find the first plane with a cluster to use
+    setSeedCluster(std::find_if(m_planes.begin(), m_planes.end(), [](auto plane) { return plane.hasCluster(); })->cluster());
+    double prevPos = m_planes.front().position();
 
     // lambda to calculate the scattering theta
     auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
@@ -67,11 +79,11 @@ void GblTrack::fit() {
         Jac(4, 2) = Jac(3, 1);
         return Jac;
     };
-    auto addMeasurementtoGblPoint = [&seedcluster](GblPoint& point, std::vector<Plane>::iterator& p) {
+    auto addMeasurementtoGblPoint = [this](GblPoint& point, std::vector<Plane>::iterator& p) {
         auto cluster = p->cluster();
         Eigen::Vector2d initialResidual;
-        initialResidual(0) = cluster->global().x() - seedcluster->global().x();
-        initialResidual(1) = cluster->global().y() - seedcluster->global().y();
+        initialResidual(0) = cluster->global().x() - getSeedCluster()->global().x();
+        initialResidual(1) = cluster->global().y() - getSeedCluster()->global().y();
         // FIXME uncertainty of single hit - rotations ignored
         Eigen::Matrix2d covv = Eigen::Matrix2d::Identity();
         covv(0, 0) = 1. / cluster->errorX() / cluster->errorX();
@@ -81,7 +93,7 @@ void GblTrack::fit() {
     // lambda to add plane (not the first one) and air scatterers //FIXME: Where to put them?
     auto addPlane = [&JacToNext, &prevPos, &addMeasurementtoGblPoint, &addScattertoGblPoint, &points, this](
                         std::vector<Plane>::iterator& plane) {
-        double dist = plane->postion() - prevPos;
+        double dist = plane->position() - prevPos;
         double frac1 = 0.21, frac2 = 0.58;
         // Current layout
         // |        |        |       |
@@ -104,7 +116,7 @@ void GblTrack::fit() {
         if(plane->hasCluster()) {
             addMeasurementtoGblPoint(point, plane);
         }
-        prevPos = plane->postion();
+        prevPos = plane->position();
         points.push_back(point);
         plane->setGblPos(unsigned(points.size())); // gbl starts counting at 1
     };
@@ -113,7 +125,9 @@ void GblTrack::fit() {
     std::vector<Plane>::iterator pl = m_planes.begin();
     auto point = GblPoint(Matrix5d::Identity());
     addScattertoGblPoint(point, pl->materialbudget());
-    addMeasurementtoGblPoint(point, pl);
+    if(pl->hasCluster()) {
+        addMeasurementtoGblPoint(point, pl);
+    }
     points.push_back(point);
     pl->setGblPos(1);
     pl++;
@@ -181,7 +195,7 @@ ROOT::Math::XYZPoint GblTrack::intercept(double z) const {
     }
     for(auto l : m_planes) {
         layer = l.name();
-        if(l.postion() >= z) {
+        if(l.position() >= z) {
             found = true;
             break;
         }
@@ -194,7 +208,7 @@ ROOT::Math::XYZPoint GblTrack::intercept(double z) const {
 
 ROOT::Math::XYZPoint GblTrack::state(std::string detectorID) const {
     // The track state at any plane is the seed (always first cluster for now) plus the correction for the plane
-    // And as rotations are ignored, the z position is simply the detectors z postion
+    // And as rotations are ignored, the z position is simply the detectors z position
     // Let's check first if the data is fitted and all components are there
 
     if(!m_isFitted)
@@ -212,9 +226,20 @@ ROOT::Math::XYZPoint GblTrack::state(std::string detectorID) const {
 
     // Using the global detector position here is of course not correct, it works for small/no rotations
     // For larger rotations it is an issue
-    return ROOT::Math::XYZPoint(clusters().at(0)->global().x() + correction(detectorID).x(),
-                                clusters().at(0)->global().y() + correction(detectorID).y(),
+    return ROOT::Math::XYZPoint(getSeedCluster()->global().x() + correction(detectorID).x(),
+                                getSeedCluster()->global().y() + correction(detectorID).y(),
                                 m_materialBudget.at(detectorID).second);
+}
+
+void GblTrack::setSeedCluster(const Cluster* cluster) {
+    m_seedCluster = const_cast<Cluster*>(cluster);
+}
+
+Cluster* GblTrack::getSeedCluster() const {
+    if(!m_seedCluster.IsValid() || m_seedCluster.GetObject() == nullptr) {
+        throw MissingReferenceException(typeid(*this), typeid(Cluster));
+    }
+    return dynamic_cast<Cluster*>(m_seedCluster.GetObject());
 }
 
 ROOT::Math::XYZVector GblTrack::direction(std::string detectorID) const {

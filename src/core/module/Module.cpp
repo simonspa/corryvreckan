@@ -1,6 +1,6 @@
 /** @file
  *  @brief Implementation of the base module class
- *  @copyright Copyright (c) 2017 CERN and the Corryvreckan authors.
+ *  @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -117,7 +117,7 @@ void Module::set_ROOT_directory(TDirectory* directory) {
 
 std::shared_ptr<Detector> Module::get_detector(std::string name) {
     auto it = find_if(
-        m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->name() == name; });
+        m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->getName() == name; });
     if(it == m_detectors.end()) {
         throw ModuleError("Device with detector ID " + name + " is not registered.");
     }
@@ -131,7 +131,7 @@ std::shared_ptr<Detector> Module::get_reference() {
 
 bool Module::has_detector(std::string name) {
     auto it = find_if(
-        m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->name() == name; });
+        m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->getName() == name; });
     if(it == m_detectors.end()) {
         return false;
     }

@@ -1,7 +1,8 @@
 /**
  * @file
- * @brief Implementation of [AlignmentDUTResidual] module
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @brief Implementation of module AlignmentDUTResidual
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -35,12 +36,12 @@ AlignmentDUTResidual::AlignmentDUTResidual(Configuration config, std::shared_ptr
     m_maxAssocClusters = m_config.get<size_t>("max_associated_clusters", 1);
     m_maxTrackChi2 = m_config.get<double>("max_track_chi2ndof", 10.);
 
-    LOG(INFO) << "Aligning detector \"" << m_detector->name() << "\"";
+    LOG(INFO) << "Aligning detector \"" << m_detector->getName() << "\"";
 }
 
 void AlignmentDUTResidual::initialise() {
 
-    auto detname = m_detector->name();
+    auto detname = m_detector->getName();
     std::string title = detname + " Residuals X;x_{track}-x [#mum];events";
     residualsXPlot = new TH1F("residualsX", title.c_str(), 1000, -500, 500);
     title = detname + " Residuals Y;y_{track}-y [#mum];events";
@@ -88,7 +89,7 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Find the cluster that needs to have its position recalculated
         for(auto& associatedCluster : track->associatedClusters()) {
-            if(associatedCluster->detectorID() != m_detector->name()) {
+            if(associatedCluster->detectorID() != m_detector->getName()) {
                 continue;
             }
             // Local position of the cluster
@@ -136,7 +137,7 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
 
     // Apply new alignment conditions
     globalDetector->update();
-    LOG(DEBUG) << "Updated parameters for " << globalDetector->name();
+    LOG(DEBUG) << "Updated parameters for " << globalDetector->getName();
 
     // The chi2 value to be returned
     result = 0.;
@@ -151,7 +152,7 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
 
         // Find the cluster that needs to have its position recalculated
         for(auto& associatedCluster : track->associatedClusters()) {
-            if(associatedCluster->detectorID() != globalDetector->name()) {
+            if(associatedCluster->detectorID() != globalDetector->getName()) {
                 continue;
             }
 
@@ -209,7 +210,7 @@ void AlignmentDUTResidual::finalise() {
     arglist[1] = 0.001; // tolerance
 
     globalDetector = m_detector;
-    auto name = m_detector->name();
+    auto name = m_detector->getName();
 
     size_t n_associatedClusters = 0;
     // count associated clusters:
@@ -272,12 +273,12 @@ void AlignmentDUTResidual::finalise() {
         m_detector->rotation(
             XYZVector(residualFitter->GetParameter(3), residualFitter->GetParameter(4), residualFitter->GetParameter(5)));
 
-        LOG(INFO) << m_detector->name() << "/" << iteration << " dT"
+        LOG(INFO) << m_detector->getName() << "/" << iteration << " dT"
                   << Units::display(m_detector->displacement() - old_position, {"mm", "um"}) << " dR"
                   << Units::display(m_detector->rotation() - old_orientation, {"deg"});
     }
 
-    LOG(STATUS) << m_detector->name() << " new alignment: " << std::endl
+    LOG(STATUS) << m_detector->getName() << " new alignment: " << std::endl
                 << "T" << Units::display(m_detector->displacement(), {"mm", "um"}) << " R"
                 << Units::display(m_detector->rotation(), {"deg"});
 }

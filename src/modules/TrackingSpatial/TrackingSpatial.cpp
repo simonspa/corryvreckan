@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @brief Implementation of module TrackingSpatial
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 #include "TrackingSpatial.h"
 #include <TDirectory.h>
 #include "objects/KDTree.hpp"
@@ -60,7 +70,7 @@ void TrackingSpatial::initialise() {
 
     // Loop over all planes
     for(auto& detector : get_detectors()) {
-        auto detectorID = detector->name();
+        auto detectorID = detector->getName();
 
         // Do not create plots for detectors not participating in the tracking:
         if(excludeDUT && detector->isDUT()) {
@@ -99,7 +109,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     double minZ = std::numeric_limits<double>::max();
     std::string seedPlane;
     for(auto& detector : get_detectors()) {
-        string detectorID = detector->name();
+        string detectorID = detector->getName();
 
         // Get the clusters
         auto tempClusters = clipboard->getData<Cluster>(detectorID);
@@ -107,7 +117,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
             // Store the clusters of the first plane in Z as the reference
             if(detector->displacement().Z() < minZ) {
                 referenceClusters = tempClusters;
-                seedPlane = detector->name();
+                seedPlane = detector->getName();
                 minZ = detector->displacement().Z();
                 LOG(TRACE) << "minZ = " << minZ;
             }
@@ -157,9 +167,9 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         // a neighbour on the new plane. We started on the most upstream
         // plane, so first detector is 1 (not 0)
         for(auto& detector : detectors) {
-            auto detectorID = detector->name();
+            auto detectorID = detector->getName();
             if(trees.count(detectorID) == 0) {
-                LOG(TRACE) << "Skipping detector " << detector->name() << " as it has 0 clusters.";
+                LOG(TRACE) << "Skipping detector " << detector->getName() << " as it has 0 clusters.";
                 continue;
             }
             if(detectorID == seedPlane) {

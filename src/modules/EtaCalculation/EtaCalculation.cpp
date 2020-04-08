@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @brief Implementation of module EtaCalculation
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 #include "EtaCalculation.h"
 
 using namespace corryvreckan;
@@ -13,18 +23,18 @@ EtaCalculation::EtaCalculation(Configuration config, std::shared_ptr<Detector> d
 void EtaCalculation::initialise() {
 
     // Initialise histograms
-    double pitchX = m_detector->pitch().X();
-    double pitchY = m_detector->pitch().Y();
-    std::string title = m_detector->name() + " #eta distribution X";
+    double pitchX = m_detector->getPitch().X();
+    double pitchY = m_detector->getPitch().Y();
+    std::string title = m_detector->getName() + " #eta distribution X";
     m_etaDistributionX =
         new TH2F("etaDistributionX", title.c_str(), 100., -pitchX / 2., pitchX / 2., 100., -pitchY / 2., pitchY / 2.);
-    title = m_detector->name() + " #eta distribution Y";
+    title = m_detector->getName() + " #eta distribution Y";
     m_etaDistributionY =
         new TH2F("etaDistributionY", title.c_str(), 100., -pitchX / 2., pitchX / 2., 100., -pitchY / 2., pitchY / 2.);
-    title = m_detector->name() + " #eta profile X";
+    title = m_detector->getName() + " #eta profile X";
     m_etaDistributionXprofile =
         new TProfile("etaDistributionXprofile", title.c_str(), 100., -pitchX / 2., pitchX / 2., -pitchY / 2., pitchY);
-    title = m_detector->name() + " #eta profile Y";
+    title = m_detector->getName() + " #eta profile Y";
     m_etaDistributionYprofile =
         new TProfile("etaDistributionYprofile", title.c_str(), 100., -pitchX / 2., pitchX / 2., -pitchY / 2., pitchY / 2.);
 
@@ -35,8 +45,8 @@ void EtaCalculation::initialise() {
 
 ROOT::Math::XYVector EtaCalculation::pixelIntercept(Track* tr) {
 
-    double pitchX = m_detector->pitch().X();
-    double pitchY = m_detector->pitch().Y();
+    double pitchX = m_detector->getPitch().X();
+    double pitchY = m_detector->getPitch().Y();
     // Get the in-pixel track intercept
     auto trackIntercept = m_detector->getIntercept(tr);
     auto trackInterceptLocal = m_detector->globalToLocal(trackIntercept);
@@ -90,14 +100,14 @@ StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Look at the associated clusters and plot the eta function
         for(auto& dutCluster : track->associatedClusters()) {
-            if(dutCluster->detectorID() != m_detector->name()) {
+            if(dutCluster->detectorID() != m_detector->getName()) {
                 continue;
             }
             calculateEta(track, dutCluster);
         }
         // Do the same for all clusters of the track:
         for(auto& cluster : track->clusters()) {
-            if(cluster->detectorID() != m_detector->name()) {
+            if(cluster->detectorID() != m_detector->getName()) {
                 continue;
             }
             calculateEta(track, cluster);
@@ -125,9 +135,11 @@ void EtaCalculation::finalise() {
 
     std::stringstream config;
     config << std::endl
-           << "eta_constants_x_" << m_detector->name() << " =" << fit(m_etaFitX, "etaFormulaX", m_etaDistributionXprofile);
+           << "eta_constants_x_" << m_detector->getName() << " ="
+           << fit(m_etaFitX, "etaFormulaX", m_etaDistributionXprofile);
     config << std::endl
-           << "eta_constants_y_" << m_detector->name() << " =" << fit(m_etaFitY, "etaFormulaY", m_etaDistributionYprofile);
+           << "eta_constants_y_" << m_detector->getName() << " ="
+           << fit(m_etaFitY, "etaFormulaY", m_etaDistributionYprofile);
 
     LOG(INFO) << "\"EtaCorrection\":" << config.str();
 }

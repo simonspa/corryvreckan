@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @brief Implementation of module EventLoaderATLASpix
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 #include "EventLoaderATLASpix.h"
 #include <regex>
 
@@ -73,29 +83,29 @@ void EventLoaderATLASpix::initialise() {
     hHitMap = new TH2F("hitMap",
                        "hitMap; pixel column; pixel row; # events",
                        m_detector->nPixels().X(),
-                       0,
-                       m_detector->nPixels().X(),
+                       -0.5,
+                       m_detector->nPixels().X() - 0.5,
                        m_detector->nPixels().Y(),
-                       0,
-                       m_detector->nPixels().Y());
+                       -0.5,
+                       m_detector->nPixels().Y() - 0.5);
 
     hHitMap_highTot = new TH2F("hitMap_highTot",
                                "hitMap_hithTot; pixel column; pixel row; # events",
                                m_detector->nPixels().X(),
-                               0,
-                               m_detector->nPixels().X(),
+                               -0.5,
+                               m_detector->nPixels().X() - 0.5,
                                m_detector->nPixels().Y(),
-                               0,
-                               m_detector->nPixels().Y());
+                               -0.5,
+                               m_detector->nPixels().Y() - 0.5);
 
     hHitMap_totWeighted = new TProfile2D("hHitMap_totWeighted",
                                          "hHitMap_totWeighted; pixel column; pixel row; # events",
                                          m_detector->nPixels().X(),
-                                         0,
-                                         m_detector->nPixels().X(),
+                                         -0.5,
+                                         m_detector->nPixels().X() - 0.5,
                                          m_detector->nPixels().Y(),
-                                         0,
-                                         m_detector->nPixels().Y(),
+                                         -0.5,
+                                         m_detector->nPixels().Y() - 0.5,
                                          0,
                                          100);
 
@@ -270,7 +280,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     hPixelMultiplicity->Fill(static_cast<double>(pixels->size()));
 
     // Put the data on the clipboard
-    clipboard->putData(pixels, m_detector->name());
+    clipboard->putData(pixels, m_detector->getName());
 
     if(pixels->empty()) {
         LOG(DEBUG) << "Returning <NoData> status, no hits found.";
@@ -390,7 +400,7 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
         LOG(DEBUG) << "Adding time_offset of " << m_time_offset << " to pixel timestamp. New pixel timestamp: " << timestamp;
 
         // since calibration is not implemented yet, set charge = tot
-        Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, tot, timestamp);
+        Pixel* pixel = new Pixel(m_detector->getName(), col, row, tot, tot, timestamp);
 
         // FIXME: implement conversion from ToT to charge:
         // thres-->e: 1620e/0.15V, or 1080e/100mV

@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @brief Implementation of module Tracking4D
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 #include "Tracking4D.h"
 #include <TCanvas.h>
 #include <TDirectory.h>
@@ -79,7 +89,7 @@ void Tracking4D::initialise() {
 
     // Loop over all planes
     for(auto& detector : get_detectors()) {
-        auto detectorID = detector->name();
+        auto detectorID = detector->getName();
 
         // Do not created plots for auxiliary detectors:
         if(detector->isAuxiliary()) {
@@ -141,7 +151,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     bool firstDetector = true;
     std::string seedPlane;
     for(auto& detector : get_detectors()) {
-        string detectorID = detector->name();
+        string detectorID = detector->getName();
 
         // Get the clusters
         auto tempClusters = clipboard->getData<Cluster>(detectorID);
@@ -153,7 +163,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             if(firstDetector && !detector->isDUT()) {
                 referenceClusters = tempClusters;
                 time_cut_reference_ = time_cuts_[detector];
-                seedPlane = detector->name();
+                seedPlane = detector->getName();
                 LOG(DEBUG) << "Seed plane is " << seedPlane;
                 firstDetector = false;
             }
@@ -209,12 +219,12 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             track->addMaterial(detectorID, det->materialBudget(), det->displacement().z());
             LOG(TRACE) << "added material budget for " << detectorID << " at z = " << det->displacement().z();
             if(trees.count(detectorID) == 0) {
-                LOG(TRACE) << "Skipping detector " << det->name() << " as it has 0 clusters.";
+                LOG(TRACE) << "Skipping detector " << det->getName() << " as it has 0 clusters.";
                 continue;
             }
 
             if(detectorID == seedPlane) {
-                LOG(TRACE) << "Skipping seed plane " << det->name();
+                LOG(TRACE) << "Skipping seed plane " << det->getName();
                 continue;
             }
 

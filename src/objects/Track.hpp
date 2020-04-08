@@ -1,5 +1,15 @@
-#ifndef TRACK_H
-#define TRACK_H 1
+/**
+ * @file
+ * @brief Definition of track base object
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
+#ifndef CORRYVRECKAN_TRACK_H
+#define CORRYVRECKAN_TRACK_H 1
 
 #include <Math/Point2D.h>
 #include <Math/Point3D.h>
@@ -16,7 +26,7 @@ namespace corryvreckan {
         Plane(double z, double x_x0, std::string name, bool has_cluster)
             : m_z(z), m_x_x0(x_x0), m_name(name), m_has_cluster(has_cluster){};
         // access elements
-        double postion() const { return m_z; }
+        double position() const { return m_z; }
         double materialbudget() const { return m_x_x0; }
         bool hasCluster() const { return m_has_cluster; }
         std::string name() const { return m_name; }
@@ -282,4 +292,4 @@ namespace corryvreckan {
 // include all tracking methods here to have one header to be include everywhere
 #include "GblTrack.hpp"
 #include "StraightLineTrack.hpp"
-#endif // TRACK_H
+#endif // CORRYVRECKAN_TRACK_H

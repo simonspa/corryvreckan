@@ -238,6 +238,6 @@ The global coordinate system is chosen as a right-handed Cartesian system, and t
 Here, the beam direction defines the positive z-axis at the origin of the x-y-plane.
 The origin along the z-axis is fixed by the placement of the detectors in the geometry of the setup.
 
-Local coordinate systems for the detectors are also right-handed Cartesian systems, with the x- and y-axes defining the sensor plane.
-The origin of this coordinate system is the center of the lower left pixel in the grid, i.e.\ the pixel with indices (0,0).
-This simplifies calculations in the local coordinate system as all positions can either be stated in absolute numbers or in fractions of the pixel pitch.
+There are several kinds of detectors with different local coordinate system, e.g., Cartesian coordinate for pixel detector and polar coordinate for some specific strip detectors. For this reason, the \textsl{Detector} class is designed as an interface, the detector with a specific coordinate system will be generated according to the parameter in the detector configuration file. In the current version, the Cartesian coordinate is the only available one. 
+
+For the local Cartesian coordinate system, it is right-handed with the x- and y-axes defining the sensor plane.  The origin of this coordinate system is the center of the lower left pixel in the grid, i.e.\ the pixel with indices (0,0).  This simplifies calculations in the local coordinate system as all positions can either be stated in absolute numbers or in fractions of the pixel pitch.

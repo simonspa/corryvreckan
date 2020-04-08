@@ -1,7 +1,8 @@
 /**
  * @file
- * @brief Implementation of a module writing data to text
- * Copyright (c) 2019 CERN and the Corryvreckan authors.
+ * @brief Implementation of module TextWriter
+ *
+ * @copyright Copyright (c) 2019-2020 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -18,7 +19,7 @@ TextWriter::TextWriter(Configuration config, std::vector<std::shared_ptr<Detecto
 void TextWriter::initialise() {
 
     for(auto& detector : get_detectors()) {
-        LOG(DEBUG) << "Initialise for detector " + detector->name();
+        LOG(DEBUG) << "Initialise for detector " + detector->getName();
     }
 
     // Create output file
