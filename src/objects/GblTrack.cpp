@@ -51,9 +51,6 @@ void GblTrack::fit() {
         clusters[cluster->detectorID()] = cluster;
     }
     // create a list of planes and sort it, also calculate the material budget:
-    // get the seedcluster for the fit - find the first plane with a cluster to use
-    set_seed_cluster(
-        std::find_if(m_planes.begin(), m_planes.end(), [](auto plane) { return plane.hasCluster(); })->cluster());
     double total_material = 0;
     std::sort(m_planes.begin(), m_planes.end());
     for(auto& l : m_planes) {
@@ -63,6 +60,9 @@ void GblTrack::fit() {
             l.setCluster(clusters.at(l.name()));
         }
     }
+    // get the seedcluster for the fit - find the first plane with a cluster to use
+    set_seed_cluster(
+        std::find_if(m_planes.begin(), m_planes.end(), [](auto plane) { return plane.hasCluster(); })->cluster());
 
     // add volume scattering length - for now simply the distance between first and last plane
     if(m_use_volume_scatter) {
