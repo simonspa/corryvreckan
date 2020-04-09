@@ -501,8 +501,6 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
     fill_tracklet_histograms(downstream, downstream_tracklets);
 
     // Multiplet merging
-    // FIXME: Check for matching criterion in time
-
     auto multiplets = std::make_shared<MultipletVector>();
     for(auto& uptracklet : upstream_tracklets) {
         Multiplet* multiplet = nullptr;
