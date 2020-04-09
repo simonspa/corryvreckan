@@ -18,7 +18,8 @@ Plane::Plane(const Plane& p) : Object(p.name(), p.timestamp()) {
     m_x_x0 = p.m_x_x0;
     m_name = p.m_name;
     m_has_cluster = p.m_has_cluster;
-    m_cluster = new Cluster(*p.cluster());
+    if(p.cluster() != nullptr)
+        m_cluster = new Cluster(*p.cluster());
     m_gbl_points_pos = p.m_gbl_points_pos;
     m_toLocal = p.m_toLocal;
     m_toGlobal = p.m_toGlobal;

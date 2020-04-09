@@ -83,7 +83,7 @@ void GblTrack::fit() {
         point.addScatterer(Vector2d::Zero(), scatterWidth);
     };
 
-    // extract the rotation from an ROOT::Math::Transfrom3D, sotred in 4x4 matrix to match proteus format
+    // extract the rotation from an ROOT::Math::Transfrom3D, store it  in 4x4 matrix to match proteus format
     auto getRotation = [](Transform3D in) {
         Matrix4d t = Matrix4d::Zero();
         in.Rotation().GetRotationMatrix(t);
