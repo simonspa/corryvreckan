@@ -593,7 +593,7 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
     LOG(DEBUG) << "Found " << multiplets->size() << " multiplets";
     multipletMultiplicity->Fill(static_cast<double>(multiplets->size()));
 
-    // Clean up tree objects
+    // Clean up tree and vector objects
     LOG(DEBUG) << "Cleaning up";
     for(auto tree = upstream_trees.cbegin(); tree != upstream_trees.cend();) {
         delete tree->second;
@@ -603,6 +603,9 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         delete tree->second;
         tree = downstream_trees.erase(tree);
     }
+
+    upstream_tracklets.clear();
+    downstream_tracklets.clear();
 
     if(multiplets->size() > 0) {
         clipboard->putData(multiplets);
