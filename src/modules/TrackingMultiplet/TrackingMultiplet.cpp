@@ -215,6 +215,18 @@ void TrackingMultiplet::initialise() {
     }
 }
 
+double TrackingMultiplet::calculate_average_timestamp(const Track* track) {
+    double sum_weighted_time = 0;
+    double sum_weights = 0;
+    for(auto& cluster : track->clusters()) {
+        double weight = 1 / (time_cuts_[get_detector(cluster->getDetectorID())]);
+        double time_of_flight = static_cast<double>(Units::convert(cluster->global().z(), "mm") / (299.792458));
+        sum_weights += weight;
+        sum_weighted_time += (static_cast<double>(Units::convert(cluster->timestamp(), "ns")) - time_of_flight) * weight;
+    }
+    return (sum_weighted_time / sum_weights);
+}
+
 // Method containing the straight line tracklet finding for the arms of the multiplets
 TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
                                                         std::map<std::string, KDTree*>& cluster_trees) {

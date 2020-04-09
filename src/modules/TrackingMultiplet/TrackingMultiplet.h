@@ -85,6 +85,9 @@ namespace corryvreckan {
 
         TH1F* multipletKinkAtScattererX;
         TH1F* multipletKinkAtScattererY;
+
+        // Function to calculate the weighted average timestamp from the clusters of a track
+        double calculate_average_timestamp(const Track* track);
     };
 
 } // namespace corryvreckan
