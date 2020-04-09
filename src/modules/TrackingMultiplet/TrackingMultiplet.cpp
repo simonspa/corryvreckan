@@ -388,15 +388,8 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
 
     // Get timestamp for tracklets
     for(auto& tracklet : tracklets) {
-        double avg_track_time = 0;
-        for(auto& trackCluster : tracklet->clusters()) {
-            avg_track_time += static_cast<double>(Units::convert(trackCluster->timestamp(), "ns"));
-            avg_track_time -= static_cast<double>(Units::convert(trackCluster->global().z(), "mm") / (299.792458));
-        }
-        tracklet->setTimestamp(avg_track_time / static_cast<double>(tracklet->nClusters()));
-        LOG(DEBUG) << "Using average cluster timestamp of "
-                   << Units::display(avg_track_time / static_cast<double>(tracklet->nClusters()), "us")
-                   << " as track timestamp.";
+        double tracklet_timestamp = calculate_average_timestamp(tracklet);
+        tracklet->setTimestamp(tracklet_timestamp);
     }
 
     return tracklets;
