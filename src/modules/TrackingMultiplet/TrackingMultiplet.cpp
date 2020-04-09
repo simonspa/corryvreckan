@@ -63,25 +63,24 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
     }
 
     for(auto detectorID : m_upstream_detectors) {
-        if(get_detector(detectorID)->isAuxiliary()) {
+        auto detector = get_detector(detectorID);
+        if(detector->isDUT()) {
+            LOG(WARNING) << "DUT listed as upstream detector. Update of configuration or geometry should be considered.";
+        }
+        if(detector->isAuxiliary()) {
             throw InvalidValueError(
                 m_config, "upstream_detectors", "Auxiliary device listed as upstream detector. This is not supported.");
         }
     }
-    for(auto detectorID : m_upstream_detectors) {
-        if(get_detector(detectorID)->isDUT()) {
-            LOG(WARNING) << "DUT listed as upstream detector. Update of configuration or geometry should be considered.";
-        }
-    }
+
     for(auto detectorID : m_downstream_detectors) {
-        if(get_detector(detectorID)->isAuxiliary()) {
+        auto detector = get_detector(detectorID);
+        if(detector->isDUT()) {
+            LOG(WARNING) << "DUT listed as downstream detector. Update of configuration or geometry should be considered.";
+        }
+        if(detector->isAuxiliary()) {
             throw InvalidValueError(
                 m_config, "downstream_detectors", "Auxiliary device listed as downstream detector. This is not supported.");
-        }
-    }
-    for(auto detectorID : m_downstream_detectors) {
-        if(get_detector(detectorID)->isDUT()) {
-            LOG(WARNING) << "DUT listed as downstream detector. Update of configuration or geometry should be considered.";
         }
     }
 
