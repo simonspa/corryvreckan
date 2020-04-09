@@ -258,7 +258,14 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
             auto trackletCandidate = new StraightLineTrack();
             trackletCandidate->addCluster(clusterFirst);
             trackletCandidate->addCluster(clusterLast);
-            trackletCandidate->setTimestamp((clusterFirst->timestamp() + clusterLast->timestamp()) / 2.);
+            if((clusterFirst->timestamp() - clusterLast->timestamp()) >
+               (time_cuts_[get_detector(reference_first)] + time_cuts_[get_detector(reference_last)])) {
+                LOG(DEBUG) << "Reference clusters not within time cuts.";
+                delete trackletCandidate;
+                continue;
+            }
+            auto averageTimestamp = calculate_average_timestamp(trackletCandidate);
+            trackletCandidate->setTimestamp(averageTimestamp);
 
             for(const auto& detector_tree : cluster_trees) {
                 auto detectorID = detector_tree.first;
