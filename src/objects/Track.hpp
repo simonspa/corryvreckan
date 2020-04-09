@@ -271,7 +271,7 @@ namespace corryvreckan {
          * @return Material Budget for given layer
          */
         double materialBudget(std::string detectorID) const {
-            return std::find_if(m_planes.begin(), m_planes.end(), [](auto plane) { return plane.name() == detectorID(); })
+            return std::find_if(m_planes.begin(), m_planes.end(), [](auto plane) { return plane.name() == detectorID; })
                 ->materialbudget();
         }
         void registerPlane(Plane p) { m_planes.push_back(p); }
