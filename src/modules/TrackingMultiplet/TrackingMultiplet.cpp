@@ -82,6 +82,11 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
             throw InvalidValueError(
                 m_config, "downstream_detectors", "Auxiliary device listed as downstream detector. This is not supported.");
         }
+        if(std::find(m_upstream_detectors.begin(), m_upstream_detectors.end(), detectorID) != m_upstream_detectors.end()) {
+            throw InvalidCombinationError(m_config,
+                                          {"upstream_detectors", "downstream_detectors"},
+                                          "Detector " + detectorID + " is listed both as upstream and downstream detector.");
+        }
     }
 
     min_hits_upstream_ = m_config.get<size_t>("min_hits_upstream", m_upstream_detectors.size());
