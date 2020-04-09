@@ -525,6 +525,8 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             auto multipletCandidate = new Multiplet(uptracklet, downtracklet);
+            LOG(DEBUG) << "Got new candidate.";
+
             multipletCandidate->setScattererPosition(scatterer_position_);
             multipletCandidate->fit();
 
