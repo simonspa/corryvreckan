@@ -89,6 +89,21 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
         }
     }
 
+    bool downstream_started = false;
+    for(auto& detector : get_detectors()) {
+        if(!downstream_started &&
+           std::find(m_downstream_detectors.begin(), m_downstream_detectors.end(), detector->getName()) !=
+               m_downstream_detectors.end()) {
+            downstream_started = true;
+        }
+        if(downstream_started && std::find(m_upstream_detectors.begin(), m_upstream_detectors.end(), detector->getName()) !=
+                                     m_upstream_detectors.end()) {
+            throw InvalidCombinationError(m_config,
+                                          {"upstream_detectors", "downstream_detectors"},
+                                          "Last upstream detector is located behind first downstream detector.");
+        }
+    }
+
     min_hits_upstream_ = m_config.get<size_t>("min_hits_upstream", m_upstream_detectors.size());
     min_hits_downstream_ = m_config.get<size_t>("min_hits_downstream", m_downstream_detectors.size());
     if(min_hits_upstream_ > m_upstream_detectors.size() || min_hits_upstream_ < 2) {
