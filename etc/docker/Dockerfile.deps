@@ -1,7 +1,7 @@
 FROM gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-base:latest
 MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 
-ENV ROOT6_VERSION 6.10.08
+ENV ROOT6_VERSION 6.20.04
 
 # Add layer for ROOT6
 ENV ROOTSYS="/opt/root6"
@@ -33,7 +33,7 @@ RUN source scl_source enable devtoolset-7 && \
     rm -rf ${ROOTSYS}/{src,build}
 
 
-ENV PEARY_VERSION v0.9.12
+ENV PEARY_VERSION v0.9.13
 
 # Add layer for Caribou Peary
 ENV PEARYPATH="/opt/peary"

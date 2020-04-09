@@ -114,7 +114,7 @@ void EventLoaderCLICpix2::initialise() {
     }
 
     // Make histograms for debugging
-    std::string title = m_detector->name() + " Hit map;x [px];y [px];pixels";
+    std::string title = m_detector->getName() + " Hit map;x [px];y [px];pixels";
     hHitMap = new TH2F("hitMap",
                        title.c_str(),
                        m_detector->nPixels().X(),
@@ -123,7 +123,7 @@ void EventLoaderCLICpix2::initialise() {
                        m_detector->nPixels().Y(),
                        -0.5,
                        m_detector->nPixels().Y() - 0.5);
-    title = m_detector->name() + " Map of discarded hits;x [px];y [px];pixels";
+    title = m_detector->getName() + " Map of discarded hits;x [px];y [px];pixels";
     hHitMapDiscarded = new TH2F("hitMapDiscarded",
                                 title.c_str(),
                                 m_detector->nPixels().X(),
@@ -132,9 +132,9 @@ void EventLoaderCLICpix2::initialise() {
                                 m_detector->nPixels().Y(),
                                 -0.5,
                                 m_detector->nPixels().Y() - 0.5);
-    title = m_detector->name() + " TOT spectrum;TOT;pixels";
+    title = m_detector->getName() + " TOT spectrum;TOT;pixels";
     hPixelToT = new TH1F("pixelToT", title.c_str(), 32, 0, 31);
-    title = m_detector->name() + " TOT map;x [px];y [px];TOT";
+    title = m_detector->getName() + " TOT map;x [px];y [px];TOT";
     hPixelToTMap = new TProfile2D("pixelToTMap",
                                   title.c_str(),
                                   m_detector->nPixels().X(),
@@ -145,17 +145,17 @@ void EventLoaderCLICpix2::initialise() {
                                   m_detector->nPixels().Y() - 0.5,
                                   0,
                                   maxcounter - 1);
-    title = m_detector->name() + " TOA spectrum;TOA;pixels";
+    title = m_detector->getName() + " TOA spectrum;TOA;pixels";
     hPixelToA = new TH1F("pixelToA", title.c_str(), maxcounter, 0, maxcounter - 1);
-    title = m_detector->name() + " CNT spectrum;CNT;pixels";
+    title = m_detector->getName() + " CNT spectrum;CNT;pixels";
     hPixelCnt = new TH1F("pixelCnt", title.c_str(), maxcounter, 0, maxcounter - 1);
-    title = m_detector->name() + " Pixel Multiplicity; # pixels; # events";
+    title = m_detector->getName() + " Pixel Multiplicity; # pixels; # events";
     hPixelMultiplicity = new TH1F("pixelMultiplicity", title.c_str(), 1000, 0, 1000);
 
-    title = m_detector->name() + " Timewalk;TOA;TOT;pixels";
+    title = m_detector->getName() + " Timewalk;TOA;TOT;pixels";
     hTimeWalk = new TH2F("timewalk", title.c_str(), maxcounter, 0, maxcounter - 1, 32, 0, 31);
 
-    title = m_detector->name() + " Map of masked pixels;x [px];y [px];mask code";
+    title = m_detector->getName() + " Map of masked pixels;x [px];y [px];mask code";
     hMaskMap = new TH2F("maskMap",
                         title.c_str(),
                         m_detector->nPixels().X(),
@@ -290,7 +290,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // when calibration is not available, set charge = tot
-            Pixel* pixel = new Pixel(m_detector->name(), col, row, tot, tot, timestamp);
+            Pixel* pixel = new Pixel(m_detector->getName(), col, row, tot, tot, timestamp);
 
             if(tot == 0 && discardZeroToT) {
                 hHitMapDiscarded->Fill(col, row);
@@ -313,7 +313,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     clipboard->putEvent(std::make_shared<Event>(shutterStartTime, shutterStopTime));
 
     // Put the data on the clipboard
-    clipboard->putData(pixels, m_detector->name());
+    clipboard->putData(pixels, m_detector->getName());
 
     if(pixels->empty()) {
         return StatusCode::NoData;

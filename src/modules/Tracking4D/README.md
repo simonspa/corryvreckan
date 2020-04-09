@@ -6,7 +6,10 @@
 ### Description
 This module performs a basic tracking method.
 
-Clusters from the first plane in Z (named the seed plane) are related to clusters close in time on the other detector planes using straight line tracks. The DUT plane can be excluded from the track finding.
+The track finding works as follows.
+All combinations of clusters in the first and the last hit detector plane are connected to form a straight line.
+Clusters in further detectors are consecutively added if they are within the spatial cuts and time cuts, updating the reference track at each stage.
+The DUT plane can be excluded from the track finding.
 
 ### Parameters
 * `time_cut_rel`: Factor by which the `time_resolution` of each detector plane will be multiplied, either the `time_resolution` of the first plane in Z or the current telescope plane, whichever is largest. This calculated value is then used as the maximum time difference allowed between clusters and a track for association to the track. This allows the time cuts between different planes to be detector appropriate. By default, a relative time cut is applied. Absolute and relative time cuts are mutually exclusive. Defaults to `3.0`.
@@ -16,7 +19,7 @@ Clusters from the first plane in Z (named the seed plane) are related to cluster
 * `min_hits_on_track`: Minium number of associated clusters needed to create a track, equivalent to the minimum number of planes required for each track. Default value is `6`.
 * `exclude_dut`: Boolean to choose if the DUT plane is included in the track finding. Default value is `true`.
 * `require_detectors`: Names of detectors which are required to have a cluster on the track. If a track does not have a cluster from all detectors listed here, it is rejected. If empty, no detector is required. Default is empty.
-* `timestamp_from`: Defines the detector which provides the track timestamp. This detector also needs to be set as `required_detector`. If empty, the average timestamp of all clusters on the track will be used. Empty by default.
+* `timestamp_from`: Defines the detector which provides the track timestamp. This detector is by default added to `required_detector`. If empty, the average timestamp of all clusters on the track will be used. Empty by default.
 * `track_model`: Select the track model used for reconstruction. A simple line fit ignoring scattering (`straightline`) and a General-Broken-Lines (`gbl`) are currently supported. Defaults to  `straightline`.
 * `momentum`: Set the beam momentum. Defaults to 5 GeV
 * `volume_scattering`: Select if volume scattering will be taken into account - defaults to false

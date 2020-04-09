@@ -8,15 +8,15 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include "TextWriter.h"
+#include "JSONWriter.h"
 #include "core/utils/file.h"
 
 using namespace corryvreckan;
 
-TextWriter::TextWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+JSONWriter::JSONWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {}
 
-void TextWriter::initialise() {
+void JSONWriter::initialise() {
 
     for(auto& detector : get_detectors()) {
         LOG(DEBUG) << "Initialise for detector " + detector->getName();
@@ -24,10 +24,10 @@ void TextWriter::initialise() {
 
     // Create output file
     output_file_name_ =
-        createOutputFile(corryvreckan::add_file_extension(m_config.get<std::string>("file_name", "data"), "txt"), true);
+        createOutputFile(corryvreckan::add_file_extension(m_config.get<std::string>("file_name", "data"), "json"), true);
     output_file_ = std::make_unique<std::ofstream>(output_file_name_);
 
-    *output_file_ << "# Corryvreckan ASCII data" << std::endl << std::endl;
+    *output_file_ << "[" << std::endl;
 
     // Read include and exclude list
     if(m_config.has("include") && m_config.has("exclude")) {
@@ -44,15 +44,11 @@ void TextWriter::initialise() {
     m_eventNumber = 0;
 }
 
-StatusCode TextWriter::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode JSONWriter::run(std::shared_ptr<Clipboard> clipboard) {
 
     if(!clipboard->isEventDefined()) {
         ModuleError("No Clipboard event defined, cannot continue");
     }
-
-    // Print the current event:
-    *output_file_ << "=== " << m_eventNumber << " ===" << std::endl;
-    *output_file_ << *clipboard->getEvent() << std::endl;
 
     auto data = clipboard->getAll();
     LOG(DEBUG) << "Clipboard has " << data.size() << " different object types.";
@@ -77,15 +73,11 @@ StatusCode TextWriter::run(std::shared_ptr<Clipboard> clipboard) {
                 std::string detector_name;
                 if(!detector_block.first.empty()) {
                     detector_name = detector_block.first;
-                } else {
-                    detector_name = "<global>";
                 }
-
-                *output_file_ << "--- " << detector_name << " ---" << std::endl;
 
                 auto objects = std::static_pointer_cast<ObjectVector>(detector_block.second);
                 for(auto& object : *objects) {
-                    *output_file_ << *object << std::endl;
+                    *output_file_ << TBufferJSON::ToJSON(object) << "," << std::endl;
                 }
             }
         } catch(...) {
@@ -101,7 +93,10 @@ StatusCode TextWriter::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void TextWriter::finalise() {
+void JSONWriter::finalise() {
 
-    LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
+    // finalize the JSON Array, add one empty Object to satisfy JSON Rules
+    *output_file_ << "{" << std::endl << "}" << std::endl << "]";
+    // Print statistics
+    LOG(STATUS) << "Wrote " << m_eventNumber - 1 << " events to file:" << output_file_name_ << std::endl;
 }

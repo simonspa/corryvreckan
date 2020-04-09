@@ -120,6 +120,7 @@ namespace corryvreckan {
         // int m_clkdivendM;
         int m_clkdivend2M;
         int m_buffer_depth;
+        double m_time_offset;
     };
 } // namespace corryvreckan
 #endif // EventLoaderATLASpix_H

@@ -63,6 +63,9 @@ def download(name, checksum):
     # not sure if path.join works for urls
     source = BASE_SOURCE + name + '.tar.gz'
     target = os.path.join(BASE_TARGET, name + '.tar.gz')
+    if not os.path.exists(BASE_TARGET):
+        os.makedirs(BASE_TARGET)
+
     if not check(target, checksum):
         print('...downloading file \'%s\' to \'%s\'' % (source, target))
         urlretrieve(source, target)
