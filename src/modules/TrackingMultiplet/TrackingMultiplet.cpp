@@ -62,6 +62,29 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
         throw InvalidValueError(m_config, "downstream_detectors", "At least two downstream detectors have to be provided.");
     }
 
+    for(auto detectorID : m_upstream_detectors) {
+        if(get_detector(detectorID)->isAuxiliary()) {
+            throw InvalidValueError(
+                m_config, "upstream_detectors", "Auxiliary device listed as upstream detector. This is not supported.");
+        }
+    }
+    for(auto detectorID : m_upstream_detectors) {
+        if(get_detector(detectorID)->isDUT()) {
+            LOG(WARNING) << "DUT listed as upstream detector. Update of configuration or geometry should be considered.";
+        }
+    }
+    for(auto detectorID : m_downstream_detectors) {
+        if(get_detector(detectorID)->isAuxiliary()) {
+            throw InvalidValueError(
+                m_config, "downstream_detectors", "Auxiliary device listed as downstream detector. This is not supported.");
+        }
+    }
+    for(auto detectorID : m_downstream_detectors) {
+        if(get_detector(detectorID)->isDUT()) {
+            LOG(WARNING) << "DUT listed as downstream detector. Update of configuration or geometry should be considered.";
+        }
+    }
+
     min_hits_upstream_ = m_config.get<size_t>("min_hits_upstream", m_upstream_detectors.size());
     min_hits_downstream_ = m_config.get<size_t>("min_hits_downstream", m_downstream_detectors.size());
     if(min_hits_upstream_ > m_upstream_detectors.size() || min_hits_upstream_ < 2) {
