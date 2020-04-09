@@ -41,7 +41,10 @@ namespace corryvreckan {
         /**
          * @brief Find tracklets for upstream or downstream tracklets
          */
-        TrackVector find_multiplet_tracklets(const streams& stream, std::map<std::string, KDTree*>& cluster_trees);
+        TrackVector find_multiplet_tracklets(const streams& stream,
+                                             std::map<std::string, KDTree*>& cluster_trees,
+                                             std::string reference_first,
+                                             std::string reference_last);
 
         /**
          * @brief Fill histograms for upstream or downstream tracklets

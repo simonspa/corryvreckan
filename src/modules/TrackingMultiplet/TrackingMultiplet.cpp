@@ -229,28 +229,18 @@ double TrackingMultiplet::calculate_average_timestamp(const Track* track) {
 
 // Method containing the straight line tracklet finding for the arms of the multiplets
 TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
-                                                        std::map<std::string, KDTree*>& cluster_trees) {
+                                                        std::map<std::string, KDTree*>& cluster_trees,
+                                                        std::string reference_first,
+                                                        std::string reference_last) {
 
     // Define upstream/downstream dependent variables
     size_t min_hits = stream == upstream ? min_hits_upstream_ : min_hits_downstream_;
     std::string stream_name = stream == upstream ? "upstream" : "downstream";
 
-    std::string reference_first = "";
-    std::string reference_last = "";
-
     // Choose reference detectors (first and last hit detector in the list)
     LOG(DEBUG) << "Start finding " + stream_name + " tracklets";
-    reference_first = cluster_trees.begin()->first;
-    reference_last = cluster_trees.rbegin()->first;
 
     TrackVector tracklets;
-
-    if(reference_first.empty() || reference_last.empty() || reference_first == reference_last) {
-        LOG(DEBUG) << "No " + stream_name + " tracklets found in this event";
-        return tracklets;
-    }
-
-    LOG(DEBUG) << "Reference detectors for " << stream_name << " tracklet: " << reference_first << " & " << reference_last;
 
     // Tracklet finding
     for(auto& clusterFirst : cluster_trees[reference_first]->getAllClusters()) {
@@ -433,7 +423,8 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
     std::map<std::string, KDTree*> upstream_trees;
     std::map<std::string, KDTree*> downstream_trees;
 
-    // Store upstream data in KDTrees
+    // Store upstream data in KDTrees and define reference detectors
+    std::string reference_up_first, reference_up_last;
     for(auto& upstream_detector_ID : m_upstream_detectors) {
         LOG(DEBUG) << "Store data for upstream detector " << upstream_detector_ID;
 
@@ -446,9 +437,17 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         KDTree* clusterTree = new KDTree();
         clusterTree->buildTimeTree(*clusters);
         upstream_trees[upstream_detector_ID] = clusterTree;
+
+        if(reference_up_first.empty()) {
+            reference_up_first = upstream_detector_ID;
+        }
+        reference_up_last = upstream_detector_ID;
     }
 
-    // Store downstream data in KDTrees
+    LOG(DEBUG) << "Reference detectors for upstream tracklet: " << reference_up_first << " & " << reference_up_last;
+
+    // Store downstream data in KDTrees and define reference detectors
+    std::string reference_down_first, reference_down_last;
     for(auto& downstream_detector_ID : m_downstream_detectors) {
         LOG(DEBUG) << "Store data for downstream detector " << downstream_detector_ID;
 
@@ -461,16 +460,28 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         KDTree* clusterTree = new KDTree();
         clusterTree->buildTimeTree(*clusters);
         downstream_trees[downstream_detector_ID] = clusterTree;
+
+        if(reference_down_first.empty()) {
+            reference_down_first = downstream_detector_ID;
+        }
+        reference_down_last = downstream_detector_ID;
     }
+
+    LOG(DEBUG) << "Reference detectors for downstream tracklet: " << reference_down_first << " & " << reference_down_last;
 
     // Up- & downstream tracklet finding
     TrackVector upstream_tracklets;
     TrackVector downstream_tracklets;
     if(upstream_trees.size() >= min_hits_upstream_) {
-        upstream_tracklets = find_multiplet_tracklets(upstream, upstream_trees);
+        upstream_tracklets = find_multiplet_tracklets(upstream, upstream_trees, reference_up_first, reference_up_last);
+    } else {
+        LOG(DEBUG) << "Too few hit detectors in upstream arm to find a tracklet";
     }
     if(downstream_trees.size() >= min_hits_downstream_) {
-        downstream_tracklets = find_multiplet_tracklets(downstream, downstream_trees);
+        downstream_tracklets =
+            find_multiplet_tracklets(downstream, downstream_trees, reference_down_first, reference_down_last);
+    } else {
+        LOG(DEBUG) << "Too few hit detectors in downstream arm to find a tracklet";
     }
 
     LOG(DEBUG) << "Found " << upstream_tracklets.size() << " upstream tracklets";
