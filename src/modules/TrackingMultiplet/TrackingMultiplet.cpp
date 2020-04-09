@@ -550,16 +550,19 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
 
             if(distance > scatterer_matching_cut_) {
                 LOG(DEBUG) << "Multiplet candidate discarded due to high distance at scatterer";
+                delete multipletCandidate;
                 continue;
             }
 
             if(distance > closestMatchingDistance) {
                 LOG(DEBUG) << "Multiplet candidate discarded - there's a closer match";
+                delete multipletCandidate;
                 continue;
             }
 
             LOG(DEBUG) << "Closest multiplet match so far. Proceed as candidate.";
             closestMatchingDistance = distance;
+            delete multiplet;
             multiplet = multipletCandidate;
         }
 
