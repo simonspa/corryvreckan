@@ -282,10 +282,13 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
                 double closestClusterDistance = sqrt(spatial_cuts_[detector].x() * spatial_cuts_[detector].x() +
                                                      spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
 
-                LOG(DEBUG) << "Using timing cut of " << Units::display(time_cuts_[detector], {"ns", "us", "s"});
-                auto neighbours = detector_tree.second->getAllClustersInTimeWindow(clusterFirst, time_cuts_[detector]);
+                double timeCut =
+                    std::max(std::min(time_cuts_[get_detector(reference_first)], time_cuts_[get_detector(reference_last)]),
+                             time_cuts_[detector]);
+                LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
+                auto neighbours = detector_tree.second->getAllClustersInTimeWindow(trackletCandidate->timestamp(), timeCut);
 
-                LOG(DEBUG) << "- found " << neighbours.size() << " neighbours";
+                LOG(DEBUG) << "- found " << neighbours.size() << " neighbours within the correct time window";
 
                 // Now look for the spatially closest cluster on the next plane
                 trackletCandidate->fit();
@@ -334,7 +337,9 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
 
                 // Add the cluster to the tracklet
                 trackletCandidate->addCluster(closestCluster);
-                LOG(DEBUG) << "Added good cluster to tracklet candidate";
+                averageTimestamp = calculate_average_timestamp(trackletCandidate);
+                trackletCandidate->setTimestamp(averageTimestamp);
+                LOG(DEBUG) << "Added cluster to tracklet candidate";
             }
 
             if(trackletCandidate->nClusters() < min_hits) {
