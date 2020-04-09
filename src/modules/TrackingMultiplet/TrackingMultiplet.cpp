@@ -257,9 +257,17 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
             auto averageTimestamp = calculate_average_timestamp(trackletCandidate);
             trackletCandidate->setTimestamp(averageTimestamp);
 
+            size_t detector_nr = 2;
             for(const auto& detector_tree : cluster_trees) {
                 auto detectorID = detector_tree.first;
                 if(detectorID == reference_first || detectorID == reference_last) {
+                    continue;
+                }
+
+                detector_nr++;
+                if(trackletCandidate->nClusters() + (cluster_trees.size() - detector_nr + 1) < min_hits) {
+                    LOG(DEBUG) << "No chance to find a track - too few detectors left: " << trackletCandidate->nClusters()
+                               << " + " << cluster_trees.size() << " - " << detector_nr << " < " << min_hits;
                     continue;
                 }
 
