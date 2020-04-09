@@ -62,6 +62,7 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
         throw InvalidValueError(m_config, "downstream_detectors", "At least two downstream detectors have to be provided.");
     }
 
+    double max_z_upstream = get_detector(*(m_upstream_detectors.begin()))->displacement().Z();
     for(auto detectorID : m_upstream_detectors) {
         auto detector = get_detector(detectorID);
         if(detector->isDUT()) {
@@ -71,8 +72,12 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
             throw InvalidValueError(
                 m_config, "upstream_detectors", "Auxiliary device listed as upstream detector. This is not supported.");
         }
+        if(detector->displacement().Z() > max_z_upstream) {
+            max_z_upstream = detector->displacement().Z();
+        }
     }
 
+    double min_z_downstream = get_detector(*(m_downstream_detectors.begin()))->displacement().Z();
     for(auto detectorID : m_downstream_detectors) {
         auto detector = get_detector(detectorID);
         if(detector->isDUT()) {
@@ -87,21 +92,15 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
                                           {"upstream_detectors", "downstream_detectors"},
                                           "Detector " + detectorID + " is listed both as upstream and downstream detector.");
         }
+        if(detector->displacement().Z() < min_z_downstream) {
+            min_z_downstream = detector->displacement().Z();
+        }
     }
 
-    bool downstream_started = false;
-    for(auto& detector : get_detectors()) {
-        if(!downstream_started &&
-           std::find(m_downstream_detectors.begin(), m_downstream_detectors.end(), detector->getName()) !=
-               m_downstream_detectors.end()) {
-            downstream_started = true;
-        }
-        if(downstream_started && std::find(m_upstream_detectors.begin(), m_upstream_detectors.end(), detector->getName()) !=
-                                     m_upstream_detectors.end()) {
-            throw InvalidCombinationError(m_config,
-                                          {"upstream_detectors", "downstream_detectors"},
-                                          "Last upstream detector is located behind first downstream detector.");
-        }
+    if(max_z_upstream > min_z_downstream) {
+        throw InvalidCombinationError(m_config,
+                                      {"upstream_detectors", "downstream_detectors"},
+                                      "Last upstream detector is located behind first downstream detector.");
     }
 
     min_hits_upstream_ = m_config.get<size_t>("min_hits_upstream", m_upstream_detectors.size());
