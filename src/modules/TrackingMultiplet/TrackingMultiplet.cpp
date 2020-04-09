@@ -380,6 +380,7 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
         if(std::find(unisolatedTracklets.begin(), unisolatedTracklets.end(), --rit.base()) != unisolatedTracklets.end()) {
             // Erase --rit.base(), since (reverse_iterator::base() = iterator + 1)
             LOG(DEBUG) << "Removing unisolated tracklet";
+            delete *(--rit.base());
             tracklets.erase(--rit.base());
         }
     }
