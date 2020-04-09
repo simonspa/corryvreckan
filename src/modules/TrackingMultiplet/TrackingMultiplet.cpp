@@ -121,6 +121,17 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
     }
 
     scatterer_position_ = m_config.get<double>("scatterer_position");
+    if(scatterer_position_ < max_z_upstream) {
+        throw InvalidCombinationError(m_config,
+                                      {"upstream_detectors", "scatterer_position"},
+                                      "Scatterer position is located in front of last upstream detector.");
+    }
+    if(scatterer_position_ > min_z_downstream) {
+        throw InvalidCombinationError(m_config,
+                                      {"downstream_detectors", "scatterer_position"},
+                                      "Scatterer position is located behind first downstream detector.");
+    }
+
     scatterer_matching_cut_ = m_config.get<double>("scatterer_matching_cut");
     isolation_cut_ = m_config.get<double>("isolation_cut", scatterer_matching_cut_ * 2.);
 }
