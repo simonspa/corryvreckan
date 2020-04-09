@@ -270,16 +270,17 @@ namespace corryvreckan {
          * @param detectorID
          * @return Material Budget for given layer
          */
-        double materialBudget(std::string detectorID) const { return m_materialBudget.at(detectorID).first; }
-
+        double materialBudget(std::string detectorID) const {
+            return std::find_if(m_planes.begin(), m_planes.end(), [](auto plane) { return plane.name == detectorID(); })
+                ->materialbudget();
+        }
         void registerPlane(Plane p) { m_planes.push_back(p); }
-        void updatePlane(Plane p);
 
-        void addMaterial(std::string detetcorID, double x_x0, double z);
+        void updatePlane(Plane p);
 
         ROOT::Math::XYZPoint correction(std::string detectorID) const;
 
-        long unsigned int numScatterers() const { return m_materialBudget.size(); }
+        long unsigned int numScatterers() const { return m_planes.size(); }
         void setVolumeScatter(double length) { m_scattering_length_volume = length; }
 
         void setLogging(bool on = false) { m_logging = on; }
@@ -288,7 +289,6 @@ namespace corryvreckan {
         std::vector<TRef> m_trackClusters;
         std::vector<TRef> m_associatedClusters;
         std::map<std::string, ROOT::Math::XYPoint> m_residual;
-        std::map<std::string, std::pair<double, double>> m_materialBudget;
         std::map<std::string, ROOT::Math::XYPoint> m_kink;
         std::map<std::string, ROOT::Math::XYZPoint> m_corrections{};
         std::vector<Plane> m_planes{};

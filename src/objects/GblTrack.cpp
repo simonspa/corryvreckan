@@ -223,8 +223,8 @@ void GblTrack::fit() {
     }
 
     // Make sure we missed nothing
-    if((points.size() != ((m_materialBudget.size() * 3) - 2) && m_use_volume_scatter) ||
-       (points.size() != m_materialBudget.size() && !m_use_volume_scatter)) {
+    if((points.size() != ((m_planes.size() * 3) - 2) && m_use_volume_scatter) ||
+       (points.size() != m_planes.size() && !m_use_volume_scatter)) {
         throw TrackError(typeid(GblTrack),
                          "Number of planes " + std::to_string(m_materialBudget.size()) +
                              " doesn't match number of GBL points on trajectory " + std::to_string(points.size()));
