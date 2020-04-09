@@ -43,11 +43,11 @@ namespace corryvreckan {
         explicit Object(std::string detectorID);
         explicit Object(double timestamp);
         Object(std::string detectorID, double timestamp);
-
+        Object(const Object&);
         /**
          * @brief Required virtual destructor
          */
-        //~Object() override = default;
+        ~Object() override = default;
 
         // Methods to get member variables
         std::string getDetectorID() const { return m_detectorID; }

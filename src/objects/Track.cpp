@@ -13,6 +13,17 @@
 
 using namespace corryvreckan;
 
+Plane::Plane(const Plane& p) : Object(p.name(), p.timestamp()) {
+    m_z = p.m_z;
+    m_x_x0 = p.m_x_x0;
+    m_name = p.m_name;
+    m_has_cluster = p.m_has_cluster;
+    m_cluster = new Cluster(*p.cluster());
+    m_gbl_points_pos = p.m_gbl_points_pos;
+    m_toLocal = p.m_toLocal;
+    m_toGlobal = p.m_toGlobal;
+}
+
 Track::Track() : m_momentum(-1) {}
 
 Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp()) {
@@ -20,7 +31,9 @@ Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp())
     m_chi2 = track.chi2();
     m_ndof = track.ndof();
     m_chi2ndof = track.chi2ndof();
-    m_planes = track.m_planes;
+    //    m_planes = track.m_planes;
+    for(auto& p : track.m_planes)
+        m_planes.push_back(Plane(p));
     m_use_volume_scatter = track.m_use_volume_scatter;
     auto trackClusters = track.clusters();
     for(auto& track_cluster : trackClusters) {

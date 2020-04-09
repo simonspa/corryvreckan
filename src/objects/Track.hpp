@@ -28,13 +28,17 @@ namespace corryvreckan {
         Plane(double z, double x_x0, std::string name, bool has_cluster)
             : Object(), m_z(z), m_x_x0(x_x0), m_name(name), m_has_cluster(has_cluster){};
 
+        Plane(const Plane& p);
         // access elements
         double position() const { return m_z; }
         double materialbudget() const { return m_x_x0; }
         bool hasCluster() const { return m_has_cluster; }
         std::string name() const { return m_name; }
         unsigned gblPos() const { return m_gbl_points_pos; }
-
+        Plane& operator=(const Plane& p) {
+            Plane* plane = new Plane(p);
+            return *plane;
+        }
         // sorting overload
         bool operator<(const Plane& pl) const { return m_z < pl.m_z; }
         // set elements that might be unknown at construction
