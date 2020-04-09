@@ -226,7 +226,7 @@ void GblTrack::fit() {
     if((points.size() != ((m_planes.size() * 3) - 2) && m_use_volume_scatter) ||
        (points.size() != m_planes.size() && !m_use_volume_scatter)) {
         throw TrackError(typeid(GblTrack),
-                         "Number of planes " + std::to_string(m_materialBudget.size()) +
+                         "Number of planes " + std::to_string(m_planes.size()) +
                              " doesn't match number of GBL points on trajectory " + std::to_string(points.size()));
     }
     // perform fit
@@ -340,11 +340,11 @@ ROOT::Math::XYZVector GblTrack::direction(std::string detectorID) const {
     // searching for the next detector layer
     bool found = false;
     std::string nextLayer = "";
-    for(auto& layer : m_materialBudget) {
+    for(auto& layer : m_planes) {
         if(found) {
-            nextLayer = layer.first;
+            nextLayer = layer.name();
             break;
-        } else if(layer.first == detectorID) {
+        } else if(layer.name() == detectorID) {
             found = true;
         }
     }
@@ -355,6 +355,6 @@ ROOT::Math::XYZVector GblTrack::direction(std::string detectorID) const {
 }
 
 void GblTrack::print(std::ostream& out) const {
-    out << "GblTrack with nhits = " << m_trackClusters.size() << " and nscatterers = " << m_materialBudget.size()
+    out << "GblTrack with nhits = " << m_trackClusters.size() << " and nscatterers = " << m_planes.size()
         << ", chi2 = " << m_chi2 << ", ndf = " << m_ndof;
 }
