@@ -171,6 +171,12 @@ namespace corryvreckan {
         std::shared_ptr<Detector> get_reference();
 
         /**
+         * @brief Get list of dut detectors this module acts on
+         * @return List of dut detectors for this module
+         */
+        std::vector<std::shared_ptr<Detector>> get_duts();
+
+        /**
          * @brief Check if this module should act on a given detector
          * @param  name Name of the detector to check
          * @return True if detector is known to this module, false if detector is unknown.
