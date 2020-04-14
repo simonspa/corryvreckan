@@ -48,7 +48,7 @@ namespace corryvreckan {
             m_cluster = const_cast<Cluster*>(cluster);
             m_has_cluster = true;
         }
-        Cluster* cluster() const { return m_cluster; }
+        Cluster* cluster() const;
         void print(std::ostream& os) const override {
             os << "Plane at " << m_z << " with rad. length " << m_x_x0 << " and cluster: " << (m_has_cluster) << std::endl;
         }
@@ -63,7 +63,7 @@ namespace corryvreckan {
         double m_z, m_x_x0;
         std::string m_name;
         bool m_has_cluster = false;
-        Cluster* m_cluster = nullptr;
+        TRef m_cluster = nullptr;
         unsigned m_gbl_points_pos{};
         Transform3D m_toLocal, m_toGlobal;
         ClassDefOverride(Plane, 1)

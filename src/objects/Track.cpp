@@ -18,11 +18,18 @@ Plane::Plane(const Plane& p) : Object(p.name(), p.timestamp()) {
     m_x_x0 = p.m_x_x0;
     m_name = p.m_name;
     m_has_cluster = p.m_has_cluster;
-    if(p.cluster() != nullptr)
-        m_cluster = new Cluster(*p.cluster());
+    if(m_has_cluster)
+        setCluster(p.cluster());
     m_gbl_points_pos = p.m_gbl_points_pos;
     m_toLocal = p.m_toLocal;
     m_toGlobal = p.m_toGlobal;
+}
+
+Cluster* Plane::cluster() const {
+    if(!m_cluster.IsValid() || m_cluster.GetObject() == nullptr) {
+        throw MissingReferenceException(typeid(*this), typeid(Cluster));
+    }
+    return dynamic_cast<Cluster*>(m_cluster.GetObject());
 }
 
 Track::Track() : m_momentum(-1) {}
