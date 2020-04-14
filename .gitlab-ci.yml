@@ -26,7 +26,7 @@ cmp:slc6-gcc:
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja
+        - ninja -k0
         - ninja install
     artifacts:
         paths:
@@ -47,7 +47,7 @@ cmp:cc7-gcc:
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja
+        - ninja -k0
         - ninja install
     artifacts:
         paths:
@@ -89,7 +89,7 @@ cmp:cc7-llvm:
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja
+        - ninja -k0
         - ninja install
     artifacts:
         paths:
@@ -108,7 +108,7 @@ cmp:mac1015-clang:
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DCMAKE_USE_RELATIVE_PATHS=TRUE -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja
+        - ninja -k0
         - ninja install
     artifacts:
         paths:
