@@ -53,8 +53,25 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
         }
     }
 
-    m_upstream_detectors = m_config.getArray<std::string>("upstream_detectors");
-    m_downstream_detectors = m_config.getArray<std::string>("downstream_detectors");
+    // Read the scatterer position and the up- and downstream detectors
+    // FIXME: Use DUT position
+    scatterer_position_ = m_config.get<double>("scatterer_position");
+
+    // Use detectors before and after scatterer as up- and downstream detectors
+    std::vector<std::string> default_upstream_detectors, default_downstream_detectors;
+    for(auto& detector : get_detectors()) {
+        if(detector->isDUT() || detector->isAuxiliary()) {
+            continue;
+        }
+        if(detector->displacement().Z() < scatterer_position_) {
+            default_upstream_detectors.push_back(detector->getName());
+        } else if(detector->displacement().Z() > scatterer_position_) {
+            default_downstream_detectors.push_back(detector->getName());
+        }
+    }
+
+    m_upstream_detectors = m_config.getArray<std::string>("upstream_detectors", default_upstream_detectors);
+    m_downstream_detectors = m_config.getArray<std::string>("downstream_detectors", default_downstream_detectors);
     if(m_upstream_detectors.size() < 2) {
         throw InvalidValueError(m_config, "upstream_detectors", "At least two upstream detectors have to be provided.");
     }
@@ -120,7 +137,6 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
         LOG(WARNING) << "Number of required downstream hits equals 2. This leads to an underconstrained track fit.";
     }
 
-    scatterer_position_ = m_config.get<double>("scatterer_position");
     if(scatterer_position_ < max_z_upstream) {
         throw InvalidCombinationError(m_config,
                                       {"upstream_detectors", "scatterer_position"},
