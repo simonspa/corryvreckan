@@ -523,7 +523,7 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
     for(auto& uptracklet : upstream_tracklets) {
         Multiplet* multiplet = nullptr;
 
-        double time_cut_upstream = time_cuts_[get_detector((*uptracklet->clusters().begin())->getDetectorID())];
+        double time_cut_upstream = std::numeric_limits<double>::max();
         for(auto& cluster : uptracklet->clusters()) {
             if(time_cuts_[get_detector(cluster->getDetectorID())] < time_cut_upstream) {
                 time_cut_upstream = time_cuts_[get_detector(cluster->getDetectorID())];
@@ -533,7 +533,7 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         double closestMatchingDistance = scatterer_matching_cut_;
 
         for(auto& downtracklet : downstream_tracklets) {
-            double time_cut_downstream = time_cuts_[get_detector((*downtracklet->clusters().begin())->getDetectorID())];
+            double time_cut_downstream = std::numeric_limits<double>::max();
             for(auto& cluster : downtracklet->clusters()) {
                 if(time_cuts_[get_detector(cluster->getDetectorID())] < time_cut_downstream) {
                     time_cut_downstream = time_cuts_[get_detector(cluster->getDetectorID())];
