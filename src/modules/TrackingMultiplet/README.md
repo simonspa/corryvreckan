@@ -16,11 +16,11 @@ For finding `Multiplet`s the upstream and downstream tracklets are matched as fo
 For each upstream tracklet, the downstream tracklet with the lowest matching distance is chosen, where the matching distance is determined via an extrapolation of both arms to the position of the scatterer.
 
 ### Parameters
-* `upstream_detectors`: Names of detectors associated to the upstream tracklet. No default value.
-* `downstream_detectors`: Names of detectors associated to the downstream tracklet. No default value.
+* `scatterer_position`: Position of the scatterer along `z`. Defaults to the position of the DUT, if exactly one DUT is present.
+* `upstream_detectors`: Names of detectors associated to the upstream tracklet. Defaults to all detectors in front of the scatterer, except for `DUT` and `Auxiliary` detectors.
+* `downstream_detectors`: Names of detectors associated to the downstream tracklet. Defaults to all detectors behind the scatterer, except for `DUT` and `Auxiliary` detectors.
 * `min_hits_upstream`: Minimum number of associated clusters required to create an upstream tracklet. Default value is the number of upstream detectors.
 * `min_hits_downstream`: Minimum number of associated clusters required to create an downstream tracklet. Default value is the number of downstream detectors.
-* `scatterer_position`: Position of the scatterer along `z`. No default value.
 * `scatterer_matching_cut`: Maximum allowed distance between the extrapolated positions of an up- and a downstream tracklet at the position of the scatterer. No default value.
 * `isolation_cut`: Minimum distance for two same-side tracklets at the position of the scatterer. If closer, the two tracklets are removed. With a value of 0, the tracklets social distancing is switched off. Defaults to $2*`scatterer_matching_cut`$.
 * `time_cut_rel`: Factor by which the `time_resolution` of each detector plane will be multiplied. This calculated value is then used as the maximum time difference allowed between clusters and an upstream or downstream tracklet for association to the tracklet. This allows the time cuts between different planes to be detector appropriate. By default, a relative time cut is applied. Absolute and relative time cuts are mutually exclusive. Defaults to `3.0`.
