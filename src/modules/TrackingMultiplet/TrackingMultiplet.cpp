@@ -169,6 +169,12 @@ void TrackingMultiplet::initialise() {
     std::string title = "Multiplet multiplicity;multiplets;events";
     multipletMultiplicity = new TH1F("multipletMultiplicity", title.c_str(), 40, 0, 40);
 
+    title = "Track #chi^{2};#chi^{2};events";
+    trackChi2 = new TH1F("trackChi2", title.c_str(), 150, 0, 150);
+
+    title = "Track #chi^{2}/ndof;#chi^{2}/ndof;events";
+    trackChi2ndof = new TH1F("trackChi2ndof", title.c_str(), 100, 0, 50);
+
     title = "Matching distance X at scatterer;distance x [mm];multiplet candidates";
     matchingDistanceAtScattererX = new TH1F("matchingDistanceAtScattererX", title.c_str(), 200, -10., 10.);
     title = "Matching distance Y at scatterer;distance y [mm];multiplet candidates";
@@ -605,6 +611,9 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
             (multiplet->getUpstreamTracklet()->timestamp() + multiplet->getDownstreamTracklet()->timestamp()) / 2.);
 
         multiplets->push_back(multiplet);
+
+        trackChi2->Fill(multiplet->chi2());
+        trackChi2ndof->Fill(multiplet->chi2ndof());
 
         double distanceX = multiplet->getOffsetAtScatterer().X();
         double distanceY = multiplet->getOffsetAtScatterer().Y();

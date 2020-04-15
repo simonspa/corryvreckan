@@ -102,6 +102,7 @@ namespace corryvreckan {
         Track* m_downstream;
 
         void calculateChi2();
+        void calculateResiduals();
 
         double m_scattererPosition;
         ROOT::Math::XYZPoint m_positionAtScatterer;

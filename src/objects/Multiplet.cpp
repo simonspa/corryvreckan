@@ -27,6 +27,15 @@ Multiplet::Multiplet(Track* upstream, Track* downstream) : Track() {
 void Multiplet::calculateChi2() {
 
     m_chi2 = m_upstream->chi2() + m_downstream->chi2() + sqrt(m_offsetAtScatterer.Dot(m_offsetAtScatterer));
+    m_ndof = static_cast<double>(m_trackClusters.size()) - 4.;
+    m_chi2ndof = m_chi2 / m_ndof;
+}
+
+void Multiplet::calculateResiduals() {
+    for(auto c : m_trackClusters) {
+        auto cluster = dynamic_cast<Cluster*>(c.GetObject());
+        m_residual[cluster->detectorID()] = cluster->global() - intercept(cluster->global().z());
+    }
 }
 
 void Multiplet::fit() {
@@ -46,6 +55,7 @@ void Multiplet::fit() {
     m_kinkAtScatterer = ROOT::Math::XYVector(slopeXdown - slopeXup, slopeYdown - slopeYup);
 
     this->calculateChi2();
+    this->calculateResiduals();
     m_isFitted = true;
 }
 

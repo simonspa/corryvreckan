@@ -79,6 +79,8 @@ namespace corryvreckan {
         std::map<std::string, TH1F*> residualsY;
 
         TH1F* multipletMultiplicity;
+        TH1F* trackChi2;
+        TH1F* trackChi2ndof;
 
         TH1F* matchingDistanceAtScattererX;
         TH1F* matchingDistanceAtScattererY;
