@@ -39,6 +39,8 @@ namespace corryvreckan {
 
         Multiplet(Track* upstream, Track* downstream);
 
+        virtual ~Multiplet();
+
         virtual Multiplet* clone() const override { return new Multiplet(*this); }
 
         void print(std::ostream& out) const override;

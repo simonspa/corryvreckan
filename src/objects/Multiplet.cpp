@@ -20,8 +20,20 @@ Multiplet::Multiplet() : Track() {}
 Multiplet::Multiplet(const Multiplet& multiplet) : Track(multiplet) {}
 
 Multiplet::Multiplet(Track* upstream, Track* downstream) : Track() {
-    m_upstream = upstream;
-    m_downstream = downstream;
+    m_upstream = upstream->clone();
+    m_downstream = downstream->clone();
+
+    for(auto& cluster : m_upstream->clusters()) {
+        this->addCluster(cluster);
+    }
+    for(auto& cluster : m_downstream->clusters()) {
+        this->addCluster(cluster);
+    }
+}
+
+Multiplet::~Multiplet() {
+    delete m_upstream;
+    delete m_downstream;
 }
 
 void Multiplet::calculateChi2() {
