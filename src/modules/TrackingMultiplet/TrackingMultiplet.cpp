@@ -72,8 +72,19 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
         }
     }
 
-    m_upstream_detectors = m_config.getArray<std::string>("upstream_detectors", default_upstream_detectors);
-    m_downstream_detectors = m_config.getArray<std::string>("downstream_detectors", default_downstream_detectors);
+    // Get the strings of detectors and translate it to shared_ptr<Detector>
+    std::vector<std::string> upstream_detectors_str =
+        m_config.getArray<std::string>("upstream_detectors", default_upstream_detectors);
+    std::vector<std::string> downstream_detectors_str =
+        m_config.getArray<std::string>("downstream_detectors", default_downstream_detectors);
+
+    for(auto detectorID : upstream_detectors_str) {
+        m_upstream_detectors.push_back(get_detector(detectorID));
+    }
+    for(auto detectorID : downstream_detectors_str) {
+        m_downstream_detectors.push_back(get_detector(detectorID));
+    }
+
     if(m_upstream_detectors.size() < 2) {
         throw InvalidValueError(m_config, "upstream_detectors", "At least two upstream detectors have to be provided.");
     }
@@ -81,9 +92,8 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
         throw InvalidValueError(m_config, "downstream_detectors", "At least two downstream detectors have to be provided.");
     }
 
-    double max_z_upstream = get_detector(*(m_upstream_detectors.begin()))->displacement().Z();
-    for(auto detectorID : m_upstream_detectors) {
-        auto detector = get_detector(detectorID);
+    double max_z_upstream = std::numeric_limits<double>::min();
+    for(auto detector : m_upstream_detectors) {
         if(detector->isDUT()) {
             LOG(WARNING) << "DUT listed as upstream detector. Update of configuration or geometry should be considered.";
         }
@@ -96,9 +106,8 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
         }
     }
 
-    double min_z_downstream = get_detector(*(m_downstream_detectors.begin()))->displacement().Z();
-    for(auto detectorID : m_downstream_detectors) {
-        auto detector = get_detector(detectorID);
+    double min_z_downstream = std::numeric_limits<double>::max();
+    for(auto detector : m_downstream_detectors) {
         if(detector->isDUT()) {
             LOG(WARNING) << "DUT listed as downstream detector. Update of configuration or geometry should be considered.";
         }
@@ -106,10 +115,11 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
             throw InvalidValueError(
                 m_config, "downstream_detectors", "Auxiliary device listed as downstream detector. This is not supported.");
         }
-        if(std::find(m_upstream_detectors.begin(), m_upstream_detectors.end(), detectorID) != m_upstream_detectors.end()) {
+        if(std::find(m_upstream_detectors.begin(), m_upstream_detectors.end(), detector) != m_upstream_detectors.end()) {
             throw InvalidCombinationError(m_config,
                                           {"upstream_detectors", "downstream_detectors"},
-                                          "Detector " + detectorID + " is listed both as upstream and downstream detector.");
+                                          "Detector " + detector->getName() +
+                                              " is listed both as upstream and downstream detector.");
         }
         if(detector->displacement().Z() < min_z_downstream) {
             min_z_downstream = detector->displacement().Z();
@@ -213,10 +223,11 @@ void TrackingMultiplet::initialise() {
     }
 
     // Loop over all up- and downstream planes
-    std::vector<std::string> all_detectors;
+    std::vector<std::shared_ptr<Detector>> all_detectors;
     all_detectors.insert(all_detectors.end(), m_upstream_detectors.begin(), m_upstream_detectors.end());
     all_detectors.insert(all_detectors.end(), m_downstream_detectors.begin(), m_downstream_detectors.end());
-    for(auto& detectorID : all_detectors) {
+    for(auto& detector : all_detectors) {
+        std::string detectorID = detector->getName();
 
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detectorID.c_str());
@@ -247,9 +258,9 @@ double TrackingMultiplet::calculate_average_timestamp(const Track* track) {
 
 // Method containing the straight line tracklet finding for the arms of the multiplets
 TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
-                                                        std::map<std::string, KDTree*>& cluster_trees,
-                                                        std::string reference_first,
-                                                        std::string reference_last) {
+                                                        std::map<std::shared_ptr<Detector>, KDTree*>& cluster_trees,
+                                                        std::shared_ptr<Detector> reference_first,
+                                                        std::shared_ptr<Detector> reference_last) {
 
     // Define upstream/downstream dependent variables
     size_t min_hits = stream == upstream ? min_hits_upstream_ : min_hits_downstream_;
@@ -267,7 +278,7 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
             trackletCandidate->addCluster(clusterFirst);
             trackletCandidate->addCluster(clusterLast);
             if((clusterFirst->timestamp() - clusterLast->timestamp()) >
-               (time_cuts_[get_detector(reference_first)] + time_cuts_[get_detector(reference_last)])) {
+               (time_cuts_[reference_first] + time_cuts_[reference_last])) {
                 LOG(DEBUG) << "Reference clusters not within time cuts.";
                 delete trackletCandidate;
                 continue;
@@ -277,8 +288,8 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
 
             size_t detector_nr = 2;
             for(const auto& detector_tree : cluster_trees) {
-                auto detectorID = detector_tree.first;
-                if(detectorID == reference_first || detectorID == reference_last) {
+                auto detector = detector_tree.first;
+                if(detector == reference_first || detector == reference_last) {
                     continue;
                 }
 
@@ -289,8 +300,6 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
                     continue;
                 }
 
-                auto detector = get_detector(detectorID);
-
                 // Now let's see if there's a cluster matching in time and space.
                 Cluster* closestCluster = nullptr;
 
@@ -299,8 +308,7 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
                                                      spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
 
                 double timeCut =
-                    std::max(std::min(time_cuts_[get_detector(reference_first)], time_cuts_[get_detector(reference_last)]),
-                             time_cuts_[detector]);
+                    std::max(std::min(time_cuts_[reference_first], time_cuts_[reference_last]), time_cuts_[detector]);
                 LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
                 auto neighbours = detector_tree.second->getAllClustersInTimeWindow(trackletCandidate->timestamp(), timeCut);
 
@@ -447,12 +455,14 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG(DEBUG) << "Start of event";
 
-    std::map<std::string, KDTree*> upstream_trees;
-    std::map<std::string, KDTree*> downstream_trees;
+    std::map<std::shared_ptr<Detector>, KDTree*> upstream_trees;
+    std::map<std::shared_ptr<Detector>, KDTree*> downstream_trees;
 
     // Store upstream data in KDTrees and define reference detectors
-    std::string reference_up_first, reference_up_last;
-    for(auto& upstream_detector_ID : m_upstream_detectors) {
+    std::shared_ptr<Detector> reference_up_first = nullptr;
+    std::shared_ptr<Detector> reference_up_last = nullptr;
+    for(auto& upstream_detector : m_upstream_detectors) {
+        auto upstream_detector_ID = upstream_detector->getName();
         LOG(DEBUG) << "Store data for upstream detector " << upstream_detector_ID;
 
         auto clusters = clipboard->getData<Cluster>(upstream_detector_ID);
@@ -463,19 +473,19 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
 
         KDTree* clusterTree = new KDTree();
         clusterTree->buildTimeTree(*clusters);
-        upstream_trees[upstream_detector_ID] = clusterTree;
+        upstream_trees[upstream_detector] = clusterTree;
 
-        if(reference_up_first.empty()) {
-            reference_up_first = upstream_detector_ID;
+        if(reference_up_first == nullptr) {
+            reference_up_first = upstream_detector;
         }
-        reference_up_last = upstream_detector_ID;
+        reference_up_last = upstream_detector;
     }
 
-    LOG(DEBUG) << "Reference detectors for upstream tracklet: " << reference_up_first << " & " << reference_up_last;
-
     // Store downstream data in KDTrees and define reference detectors
-    std::string reference_down_first, reference_down_last;
-    for(auto& downstream_detector_ID : m_downstream_detectors) {
+    std::shared_ptr<Detector> reference_down_first = nullptr;
+    std::shared_ptr<Detector> reference_down_last = nullptr;
+    for(auto& downstream_detector : m_downstream_detectors) {
+        auto downstream_detector_ID = downstream_detector->getName();
         LOG(DEBUG) << "Store data for downstream detector " << downstream_detector_ID;
 
         auto clusters = clipboard->getData<Cluster>(downstream_detector_ID);
@@ -486,25 +496,27 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
 
         KDTree* clusterTree = new KDTree();
         clusterTree->buildTimeTree(*clusters);
-        downstream_trees[downstream_detector_ID] = clusterTree;
+        downstream_trees[downstream_detector] = clusterTree;
 
-        if(reference_down_first.empty()) {
-            reference_down_first = downstream_detector_ID;
+        if(reference_down_first == nullptr) {
+            reference_down_first = downstream_detector;
         }
-        reference_down_last = downstream_detector_ID;
+        reference_down_last = downstream_detector;
     }
-
-    LOG(DEBUG) << "Reference detectors for downstream tracklet: " << reference_down_first << " & " << reference_down_last;
 
     // Up- & downstream tracklet finding
     TrackVector upstream_tracklets;
     TrackVector downstream_tracklets;
     if(upstream_trees.size() >= min_hits_upstream_) {
+        LOG(DEBUG) << "Reference detectors for upstream tracklet: " << reference_up_first->getName() << " & "
+                   << reference_up_last->getName();
         upstream_tracklets = find_multiplet_tracklets(upstream, upstream_trees, reference_up_first, reference_up_last);
     } else {
         LOG(DEBUG) << "Too few hit detectors in upstream arm to find a tracklet";
     }
     if(downstream_trees.size() >= min_hits_downstream_) {
+        LOG(DEBUG) << "Reference detectors for downstream tracklet: " << reference_down_first->getName() << " & "
+                   << reference_down_last->getName();
         downstream_tracklets =
             find_multiplet_tracklets(downstream, downstream_trees, reference_down_first, reference_down_last);
     } else {

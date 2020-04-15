@@ -42,9 +42,9 @@ namespace corryvreckan {
          * @brief Find tracklets for upstream or downstream tracklets
          */
         TrackVector find_multiplet_tracklets(const streams& stream,
-                                             std::map<std::string, KDTree*>& cluster_trees,
-                                             std::string reference_first,
-                                             std::string reference_last);
+                                             std::map<std::shared_ptr<Detector>, KDTree*>& cluster_trees,
+                                             std::shared_ptr<Detector> reference_first,
+                                             std::shared_ptr<Detector> reference_last);
 
         /**
          * @brief Fill histograms for upstream or downstream tracklets
@@ -56,8 +56,8 @@ namespace corryvreckan {
         std::map<std::shared_ptr<Detector>, double> time_cuts_;
         std::map<std::shared_ptr<Detector>, XYVector> spatial_cuts_;
 
-        std::vector<std::string> m_upstream_detectors;
-        std::vector<std::string> m_downstream_detectors;
+        std::vector<std::shared_ptr<Detector>> m_upstream_detectors;
+        std::vector<std::shared_ptr<Detector>> m_downstream_detectors;
 
         double scatterer_position_;
         double scatterer_matching_cut_;
