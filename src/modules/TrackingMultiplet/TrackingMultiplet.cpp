@@ -642,6 +642,12 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         tree = downstream_trees.erase(tree);
     }
 
+    for(auto& uptracklet : upstream_tracklets) {
+        delete uptracklet;
+    }
+    for(auto& downtracklet : downstream_tracklets) {
+        delete downtracklet;
+    }
     upstream_tracklets.clear();
     downstream_tracklets.clear();
 
