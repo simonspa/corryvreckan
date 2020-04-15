@@ -563,6 +563,7 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
 
             if(downtracklet->timestamp() - uptracklet->timestamp() > time_cut) {
                 LOG(DEBUG) << "Multiplet candidate discarded due to time cut";
+                delete multipletCandidate;
                 continue;
             }
 
