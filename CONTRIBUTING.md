@@ -21,8 +21,8 @@ Now you can start making changes and adding new functionality to the code.
 2. Create a new branch from master with a description of the change using `git checkout -b my-new-branch-name`.
 3. Read the relevant sections in the user manual before starting to make changes.
 4. Implement the new code and frequently commit using `git commit -m 'my commit message'`. Please use descriptive messages explaining what changed.
-5. Push the code to your local mirror using `git push --set-upstream origin`.
-6. Retrieve the latest changes to the upstream master every now and then. To do this add the upstream version to your remotes using `git remote add upstream https://gitlab.cern.ch/corryvreckan/corryvreckan.git` (or the SSH or KRB5 version if preferred). This only has to be done once, the first time after cloning the repository. Afterwards you fetch the changes using `git fetch upstream`. Then you can add the change preferably using rebase with `git rebase upstream master`. If that causes problems you can use merge with `git merge upstream master`.
+5. Push the code to your local mirror using `git push --set-upstream origin my-new-branch-name`.
+6. Retrieve the latest changes to the upstream master every now and then. To do this add the upstream version to your remotes using `git remote add upstream https://gitlab.cern.ch/corryvreckan/corryvreckan.git` (or the SSH or KRB5 version if preferred). This only has to be done once, the first time after cloning the repository. Afterwards you fetch the changes using `git fetch upstream`. Then you can add the change preferably using rebase with `git rebase upstream/master`. If that causes problems you can use merge with `git merge upstream/master`.
 
 ## Submitting a pull request
 As soon as there exists something in your branch, a merge request can be opened on the main repository. Do not forget that it is not a problem to open a merge request for incomplete implementations.
