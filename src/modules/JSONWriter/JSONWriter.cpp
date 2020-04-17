@@ -53,6 +53,12 @@ StatusCode JSONWriter::run(std::shared_ptr<Clipboard> clipboard) {
     auto data = clipboard->getAll();
     LOG(DEBUG) << "Clipboard has " << data.size() << " different object types.";
 
+    // open a new subarray for this event
+    if(m_eventNumber == 0)
+        *output_file_ << "[" << std::endl;
+    else
+        *output_file_ << "," << std::endl << "[" << std::endl;
+
     for(auto& block : data) {
         try {
             auto type_idx = block.first;
@@ -77,7 +83,12 @@ StatusCode JSONWriter::run(std::shared_ptr<Clipboard> clipboard) {
 
                 auto objects = std::static_pointer_cast<ObjectVector>(detector_block.second);
                 for(auto& object : *objects) {
-                    *output_file_ << TBufferJSON::ToJSON(object) << "," << std::endl;
+                    *output_file_ << TBufferJSON::ToJSON(object);
+                    // add delimiter for all but the last element
+                    if(object == objects->back() && detector_block == *(--block.second.end()) && block == *(--data.end())) {
+                        *output_file_ << std::endl;
+                    } else
+                        *output_file_ << "," << std::endl;
                 }
             }
         } catch(...) {
@@ -85,7 +96,8 @@ StatusCode JSONWriter::run(std::shared_ptr<Clipboard> clipboard) {
             return StatusCode::NoData;
         }
     }
-
+    // close event array
+    *output_file_ << "]";
     // Increment event counter
     m_eventNumber++;
 
@@ -96,7 +108,7 @@ StatusCode JSONWriter::run(std::shared_ptr<Clipboard> clipboard) {
 void JSONWriter::finalise() {
 
     // finalize the JSON Array, add one empty Object to satisfy JSON Rules
-    *output_file_ << "{" << std::endl << "}" << std::endl << "]";
+    *output_file_ << std::endl << "]";
     // Print statistics
-    LOG(STATUS) << "Wrote " << m_eventNumber - 1 << " events to file:" << output_file_name_ << std::endl;
+    LOG(STATUS) << "Wrote " << m_eventNumber << " events to file:" << output_file_name_ << std::endl;
 }
