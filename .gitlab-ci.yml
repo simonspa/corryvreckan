@@ -138,7 +138,7 @@ tst:telescope:
     script:
         - cd build/
         - mkdir -p ../testing/data
-        - ctest --output-on-failure -j4
+        - ctest --output-on-failure -j1
 
 ############################
 # Format and Lint Checking #
