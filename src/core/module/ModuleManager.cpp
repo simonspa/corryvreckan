@@ -587,7 +587,7 @@ void ModuleManager::run() {
         }
 
         // Check if we have reached the maximum number of events
-        if(number_of_events > -1 && m_events > number_of_events) {
+        if(number_of_events > -1 && m_events >= number_of_events - 1) {
             break;
         }
 
