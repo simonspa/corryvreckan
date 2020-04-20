@@ -203,11 +203,12 @@ namespace corryvreckan {
          * @brief The fiting routine
          */
         virtual void fit(){};
+
         /**
          * @brief Virtual function to copy a class
          * @return pointer to copied object
          */
-        virtual Track* clone() const { return new Track(); }
+        virtual Track* clone() const = 0;
 
         /**
          * @brief Get the track position for a certain z position
