@@ -233,8 +233,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             track->addCluster(clusterFirst);
             track->addCluster(clusterLast);
             track->setTimestamp(averageTimestamp);
-            track->setVolumeScatter(volumeRadiationLength);
-            track->useVolumeScatterer(useVolumeScatterer);
+            if(useVolumeScatterer) {
+                track->setVolumeScatter(volumeRadiationLength);
+            }
             track->setParticleMomentum(momentum);
 
             // Loop over each subsequent plane and look for a cluster within the timing cuts

@@ -197,7 +197,6 @@ namespace corryvreckan {
          */
         size_t nClusters() const { return m_trackClusters.size(); }
 
-        void useVolumeScatterer(bool use) { m_use_volume_scatter = use; }
         // virtual functions to be implemented by derived classes
 
         /**
@@ -263,7 +262,10 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint correction(std::string detectorID) const;
 
         long unsigned int numScatterers() const { return m_materialBudget.size(); }
-        void setVolumeScatter(double length) { m_scattering_length_volume = length; }
+        void setVolumeScatter(double length) {
+            m_scattering_length_volume = length;
+            m_use_volume_scatter = true;
+        }
 
     protected:
         std::vector<TRef> m_trackClusters;
