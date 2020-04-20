@@ -35,6 +35,11 @@ ROOT::Math::XYPoint GblTrack::getKinkAt(std::string detectorID) const {
     }
 }
 
+void GblTrack::setVolumeScatter(double length) {
+    m_scattering_length_volume = length;
+    m_use_volume_scatter = true;
+}
+
 void GblTrack::fit() {
 
     // Fitting with less than 2 clusters is pointless

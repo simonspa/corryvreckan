@@ -263,10 +263,8 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint correction(std::string detectorID) const;
 
         long unsigned int numScatterers() const { return m_materialBudget.size(); }
-        void setVolumeScatter(double length) {
-            m_scattering_length_volume = length;
-            m_use_volume_scatter = true;
-        }
+
+        virtual void setVolumeScatter(double length) = 0;
 
     protected:
         std::vector<TRef> m_trackClusters;
@@ -280,12 +278,11 @@ namespace corryvreckan {
         double m_chi2;
         double m_ndof;
         double m_chi2ndof;
-        double m_momentum;
-        double m_scattering_length_volume;
         bool m_isFitted{};
-        bool m_use_volume_scatter{};
+        double m_momentum;
+
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Track, 7)
+        ClassDefOverride(Track, 8)
     };
     // Vector type declaration
     using TrackVector = std::vector<Track*>;

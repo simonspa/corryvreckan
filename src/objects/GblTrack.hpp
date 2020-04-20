@@ -66,6 +66,8 @@ namespace corryvreckan {
          */
         ROOT::Math::XYPoint getKinkAt(std::string detectorID) const override;
 
+        void setVolumeScatter(double length) override;
+
     private:
         /**
          * @brief Set seedcluster used for track fitting
@@ -82,6 +84,8 @@ namespace corryvreckan {
         // Member variables
         TRef m_seedCluster{nullptr};
         std::map<std::string, ROOT::Math::XYPoint> m_kink;
+        double m_scattering_length_volume;
+        bool m_use_volume_scatter{};
 
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(GblTrack, 2)

@@ -73,6 +73,8 @@ namespace corryvreckan {
          */
         ROOT::Math::XYPoint getKinkAt(std::string detectorID) const override;
 
+        void setVolumeScatter(double) override{};
+
     private:
         /**
          * @brief calculate the chi2 of the linear regression
