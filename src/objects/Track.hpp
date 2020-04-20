@@ -200,9 +200,9 @@ namespace corryvreckan {
         // virtual functions to be implemented by derived classes
 
         /**
-         * @brief The fiting routine
+         * @brief Track fitting routine
          */
-        virtual void fit(){};
+        virtual void fit() = 0;
 
         /**
          * @brief Virtual function to copy a class
