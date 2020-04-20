@@ -562,20 +562,6 @@ void ModuleManager::run() {
             }
         }
 
-        // Check if we have reached the maximum number of events
-        if(number_of_events > -1 && m_events >= number_of_events) {
-            break;
-        }
-
-        if(m_clipboard->isEventDefined() && run_time > 0.0 && m_clipboard->getEvent()->start() >= run_time) {
-            break;
-        }
-
-        // Check if we have reached the maximum number of tracks
-        if(number_of_tracks > -1 && m_tracks >= number_of_tracks) {
-            break;
-        }
-
         // Print statistics:
         m_tracks += static_cast<int>(m_clipboard->countObjects<Track>());
         m_pixels += static_cast<int>(m_clipboard->countObjects<Pixel>());
@@ -600,21 +586,35 @@ void ModuleManager::run() {
                         : "");
         }
 
-        // Clear objects from this iteration from the clipboard
-        m_clipboard->clear();
+        // Check if we have reached the maximum number of events
+        if(number_of_events > -1 && m_events > number_of_events) {
+            break;
+        }
+
+        if(m_clipboard->isEventDefined() && run_time > 0.0 && m_clipboard->getEvent()->start() >= run_time) {
+            break;
+        }
+
+        // Check if we have reached the maximum number of tracks
+        if(number_of_tracks > -1 && m_tracks >= number_of_tracks) {
+            break;
+        }
 
         // Check if any of the modules return a value saying it should stop
         if(!run) {
             break;
         }
 
-        // Increment event number
-        m_events++;
-
         // Check for user termination and stop the event loop:
         if(m_terminate) {
             break;
         }
+
+        // Clear objects from this iteration from the clipboard
+        m_clipboard->clear();
+
+        // Increment event number
+        m_events++;
     }
 }
 
