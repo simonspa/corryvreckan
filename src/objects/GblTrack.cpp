@@ -24,6 +24,15 @@ GblTrack::GblTrack(const GblTrack& track) : Track(track) {
     if(track.getType() != this->getType())
         throw TrackModelChanged(typeid(*this), track.getType(), this->getType());
     m_planes = track.m_planes;
+    m_kink = track.m_kink;
+}
+
+ROOT::Math::XYPoint GblTrack::getKinkAt(std::string detectorID) const {
+    if(m_kink.count(detectorID) == 1) {
+        return m_kink.at(detectorID);
+    } else {
+        return ROOT::Math::XYPoint(0, 0);
+    }
 }
 
 void GblTrack::fit() {

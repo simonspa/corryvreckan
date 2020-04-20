@@ -59,6 +59,13 @@ namespace corryvreckan {
          */
         ROOT::Math::XYZVector direction(std::string detectorID) const override;
 
+        /**
+         * @brief Return kink of track at given detector
+         * @param  detectorID Detector ID at which the kink should be evaluated
+         * @return            Kink at given detector
+         */
+        ROOT::Math::XYPoint getKinkAt(std::string detectorID) const override;
+
     private:
         /**
          * @brief Set seedcluster used for track fitting
@@ -74,6 +81,8 @@ namespace corryvreckan {
 
         // Member variables
         TRef m_seedCluster{nullptr};
+        std::map<std::string, ROOT::Math::XYPoint> m_kink;
+
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(GblTrack, 2)
     };

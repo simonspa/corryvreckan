@@ -245,10 +245,10 @@ namespace corryvreckan {
 
         /**
          * @brief Get the kink at a given detector layer. This is ill defined for last and first layer
-         * @param detectorID
-         * @return  2D kink as ROOT::Math::XYPoint
+         * @param  detectorID Detector ID at which the kink should be evaluated
+         * @return  2D kink at given detector
          */
-        ROOT::Math::XYPoint kink(std::string detectorID) const;
+        virtual ROOT::Math::XYPoint getKinkAt(std::string detectorID) const = 0;
 
         /**
          * @brief Get the materialBudget of a detector layer
@@ -272,7 +272,6 @@ namespace corryvreckan {
         std::vector<TRef> m_associatedClusters;
         std::map<std::string, ROOT::Math::XYPoint> m_residual;
         std::map<std::string, std::pair<double, double>> m_materialBudget;
-        std::map<std::string, ROOT::Math::XYPoint> m_kink;
         std::map<std::string, ROOT::Math::XYZPoint> m_corrections{};
         std::vector<Plane> m_planes{};
 

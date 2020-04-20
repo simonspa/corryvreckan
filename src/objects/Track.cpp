@@ -33,7 +33,6 @@ Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp())
     }
     m_materialBudget = track.m_materialBudget;
     m_residual = track.m_residual;
-    m_kink = track.m_kink;
     m_corrections = track.m_corrections;
 }
 
@@ -137,14 +136,6 @@ Cluster* Track::getClusterFromDetector(std::string detectorID) const {
         return nullptr;
     }
     return dynamic_cast<Cluster*>(it->GetObject());
-}
-
-ROOT::Math::XYPoint Track::kink(std::string detectorID) const {
-    if(m_kink.count(detectorID) == 1) {
-        return m_kink.at(detectorID);
-    } else {
-        return ROOT::Math::XYPoint(0, 0);
-    }
 }
 
 void Track::addMaterial(std::string detetcorID, double x_x0, double z) {

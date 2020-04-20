@@ -416,7 +416,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                     continue;
                 }
 
-                XYPoint kink = track->kink(det);
+                XYPoint kink = track->getKinkAt(det);
                 kinkX.at(det)->Fill(kink.x());
                 kinkY.at(det)->Fill(kink.y());
             }
