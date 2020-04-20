@@ -88,7 +88,7 @@ namespace corryvreckan {
         bool m_use_volume_scatter{};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(GblTrack, 2)
+        ClassDefOverride(GblTrack, 3)
     };
 
     // Vector type declaration
