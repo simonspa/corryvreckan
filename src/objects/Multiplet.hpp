@@ -72,22 +72,10 @@ namespace corryvreckan {
         ROOT::Math::XYZVector direction(std::string detectorID) const override;
 
         /**
-         * @brief Get the track intercept at the position of the scatterer
-         * @return ROOT::Math::XYPoint Track position at scatterer
-         */
-        ROOT::Math::XYZPoint getPositionAtScatterer() { return m_positionAtScatterer; };
-
-        /**
          * @brief Get the offset between up- & downstream tracklet at the position of the scatterer
          * @return ROOT::Math::XYVector offset at scatterer
          */
         ROOT::Math::XYVector getOffsetAtScatterer() { return m_offsetAtScatterer; };
-
-        /**
-         * @brief Get the kink angle between up- & downstream tracklet at the position of the scatterer
-         * @return ROOT::Math::XYVector kink at scatterer
-         */
-        ROOT::Math::XYVector getKinkAtScatterer() { return m_kinkAtScatterer; };
 
         /**
          * @brief Set the position of the scatterer along z
@@ -107,9 +95,7 @@ namespace corryvreckan {
         void calculateResiduals();
 
         double m_scattererPosition;
-        ROOT::Math::XYZPoint m_positionAtScatterer;
         ROOT::Math::XYVector m_offsetAtScatterer;
-        ROOT::Math::XYVector m_kinkAtScatterer;
 
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(Multiplet, 1)
