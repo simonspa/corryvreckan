@@ -193,14 +193,18 @@ ROOT::Math::XYZPoint GblTrack::intercept(double z) const {
     if(!m_isFitted) {
         throw TrackError(typeid(GblTrack), "An interception is requested befor the track is fitted");
     }
+
     for(auto l : m_planes) {
-        layer = l.name();
         if(l.position() >= z) {
             found = true;
             break;
         }
+        layer = l.name();
     }
-    if(!found) {
+    // Two cases to not return an intercept and throw an error
+    // Most upstream plane has larger z (layer == "") -> asked for intercept in front of telescope
+    // We do not find a plane with larger z (found == false) -> ased for intercept behind telescope
+    if(!found || layer == "") {
         throw TrackError(typeid(GblTrack), "Z-Position of " + std::to_string(z) + " is outside the telescopes z-coverage");
     }
     return (state(layer) + direction(layer) * (z - state(layer).z()));
