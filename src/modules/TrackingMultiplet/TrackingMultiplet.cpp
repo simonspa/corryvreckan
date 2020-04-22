@@ -308,19 +308,24 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
                     continue;
                 }
 
+                double timeCut =
+                    std::max(std::min(time_cuts_[reference_first], time_cuts_[reference_last]), time_cuts_[detector]);
+                LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
+                auto neighbours = detector_tree.second->getAllClustersInTimeWindow(trackletCandidate->timestamp(), timeCut);
+
+                if(neighbours.empty()) {
+                    LOG(DEBUG) << "No neighbours found within the correct time window.";
+                    continue;
+                }
+
+                LOG(DEBUG) << "- found " << neighbours.size() << " neighbours within the correct time window";
+
                 // Now let's see if there's a cluster matching in time and space.
                 Cluster* closestCluster = nullptr;
 
                 // Use spatial cut only as initial value (check if cluster is ellipse defined by cuts is done below):
                 double closestClusterDistance = sqrt(spatial_cuts_[detector].x() * spatial_cuts_[detector].x() +
                                                      spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
-
-                double timeCut =
-                    std::max(std::min(time_cuts_[reference_first], time_cuts_[reference_last]), time_cuts_[detector]);
-                LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
-                auto neighbours = detector_tree.second->getAllClustersInTimeWindow(trackletCandidate->timestamp(), timeCut);
-
-                LOG(DEBUG) << "- found " << neighbours.size() << " neighbours within the correct time window";
 
                 // Now look for the spatially closest cluster on the next plane
                 trackletCandidate->fit();
