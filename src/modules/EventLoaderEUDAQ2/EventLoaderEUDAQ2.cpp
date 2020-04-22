@@ -105,8 +105,11 @@ void EventLoaderEUDAQ2::initialise() {
         title = ";pixel raw values;# events";
         hPixelRawValues = new TH1F("hPixelRawValues", title.c_str(), 1024, 0, 1024);
 
+        title = "Pixel Multiplicity per EUDAQ Event;# pixels;# events";
+        hPixelMultiplicityPerEudaqEvent = new TH1F("hPixelMultiplicityPerEudaqEvent", title.c_str(), 1000, 0, 1000);
+
         title = "Pixel Multiplicity per Corry Event;# pixels;# events";
-        hPixelMultiplicity = new TH1F("pixelMultiplicity", title.c_str(), 1000, 0, 1000);
+        hPixelMultiplicityPerCorryEvent = new TH1F("hPixelMultiplicityPerCorryEvent", title.c_str(), 1000, 0, 1000);
 
         if(m_get_time_residuals) {
             hPixelTimeEventBeginResidual =
@@ -391,7 +394,7 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
 
         pixels->push_back(pixel);
     }
-    hPixelMultiplicity->Fill(static_cast<int>(pixels->size()));
+    hPixelMultiplicityPerEudaqEvent->Fill(static_cast<int>(pixels->size()));
     LOG(DEBUG) << m_detector->getName() << ": Plane contains " << pixels->size() << " pixels";
 
     return pixels;
@@ -512,6 +515,11 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     LOG(DEBUG) << "Triggers on clipboard event: " << event->triggerList().size();
     for(auto& trigger : event->triggerList()) {
         LOG(DEBUG) << "\t ID: " << trigger.first << ", time: " << Units::display(trigger.second, "us");
+    }
+
+    // histogram only exists for non-auxiliary detectors:
+    if(!m_detector->isAuxiliary()) {
+        hPixelMultiplicityPerCorryEvent->Fill(static_cast<int>(pixels->size()));
     }
 
     // Loop over pixels for plotting
