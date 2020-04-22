@@ -209,21 +209,24 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     // Output track container
     auto tracks = std::make_shared<TrackVector>();
 
+    // Time cut for combinations of reference clusters and for reference track with additional detector
+    auto time_cut_ref = std::max(time_cuts_[get_detector(reference_first)], time_cuts_[get_detector(reference_last)]);
+    auto time_cut_ref_track = std::min(time_cuts_[get_detector(reference_first)], time_cuts_[get_detector(reference_last)]);
+
     for(auto& clusterFirst : trees[reference_first]->getAllClusters()) {
         for(auto& clusterLast : trees[reference_last]->getAllClusters()) {
             LOG(DEBUG) << "Looking at next reference cluster pair";
 
-            // The track finding is based on a straight line. Therefore a refTrack to extrapolate to the next plane is used
-            // here
-            StraightLineTrack refTrack;
-
-            refTrack.addCluster(clusterFirst);
-            refTrack.addCluster(clusterLast);
-            if((clusterFirst->timestamp() - clusterLast->timestamp()) >
-               (time_cuts_[get_detector(reference_first)] + time_cuts_[get_detector(reference_last)])) {
+            if(std::fabs(clusterFirst->timestamp() - clusterLast->timestamp()) > time_cut_ref) {
                 LOG(DEBUG) << "Reference clusters not within time cuts.";
                 continue;
             }
+
+            // The track finding is based on a straight line. Therefore a refTrack to extrapolate to the next plane is used
+            // here
+            StraightLineTrack refTrack;
+            refTrack.addCluster(clusterFirst);
+            refTrack.addCluster(clusterLast);
             auto averageTimestamp = calculate_average_timestamp(&refTrack);
             refTrack.setTimestamp(averageTimestamp);
 
@@ -281,9 +284,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 double closestClusterDistance = sqrt(spatial_cuts_[detector].x() * spatial_cuts_[detector].x() +
                                                      spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
 
-                double timeCut =
-                    std::max(std::min(time_cuts_[get_detector(reference_first)], time_cuts_[get_detector(reference_last)]),
-                             time_cuts_[detector]);
+                double timeCut = std::max(time_cut_ref_track,time_cuts_[detector]);
                 LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
 
                 auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(refTrack.timestamp(), timeCut);
