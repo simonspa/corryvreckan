@@ -1,5 +1,5 @@
 # Tracking4D
-**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>), Paul Schütze (<paul.schuetze@desy.de>)  
 **Module Type**: *GLOBAL*  
 **Status**: Functional
 
