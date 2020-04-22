@@ -133,12 +133,26 @@ cmp:mac1015-clang:
     before_script:
         - source scl_source enable devtoolset-7 || echo " "
 
-tst:telescope:
+tst:tracking:
     extends: .test
     script:
         - cd build/
         - mkdir -p ../testing/data
-        - ctest --output-on-failure -j1
+        - ctest -R test_tracking --output-on-failure -j1
+
+tst:io:
+    extends: .test
+    script:
+        - cd build/
+        - mkdir -p ../testing/data
+        - ctest -R test_io --output-on-failure -j1
+
+tst:sim:
+    extends: .test
+    script:
+        - cd build/
+        - mkdir -p ../testing/data
+        - ctest -R test_sim --output-on-failure -j1
 
 ############################
 # Format and Lint Checking #
