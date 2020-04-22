@@ -280,15 +280,17 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
     // Tracklet finding
     for(auto& clusterFirst : cluster_trees[reference_first]->getAllClusters()) {
         for(auto& clusterLast : cluster_trees[reference_last]->getAllClusters()) {
+
+            double time_cut = std::max(time_cuts_[reference_first], time_cuts_[reference_last]);
+            if(std::fabs(clusterFirst->timestamp() - clusterLast->timestamp()) > time_cut) {
+                LOG(DEBUG) << "Reference clusters not within time cuts.";
+                continue;
+            }
+
             auto trackletCandidate = new StraightLineTrack();
             trackletCandidate->addCluster(clusterFirst);
             trackletCandidate->addCluster(clusterLast);
-            if((clusterFirst->timestamp() - clusterLast->timestamp()) >
-               (time_cuts_[reference_first] + time_cuts_[reference_last])) {
-                LOG(DEBUG) << "Reference clusters not within time cuts.";
-                delete trackletCandidate;
-                continue;
-            }
+
             auto averageTimestamp = calculate_average_timestamp(trackletCandidate);
             trackletCandidate->setTimestamp(averageTimestamp);
 
@@ -567,7 +569,7 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
             // calculate time cut as the maximum of the minimal time cut of each tracklet.
             double time_cut = std::max(time_cut_upstream, time_cut_downstream);
 
-            if(downtracklet->timestamp() - uptracklet->timestamp() > time_cut) {
+            if(std::fabs(downtracklet->timestamp() - uptracklet->timestamp()) > time_cut) {
                 LOG(DEBUG) << "Multiplet candidate discarded due to time cut";
                 delete multipletCandidate;
                 continue;
