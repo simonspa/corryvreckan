@@ -161,33 +161,31 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG(DEBUG) << "Start of event";
     // Container for all clusters, and detectors in tracking
-    map<string, KDTree*> trees;
+    map<std::shared_ptr<Detector>, KDTree*> trees;
 
-    std::string reference_first, reference_last;
+    std::shared_ptr<Detector> reference_first, reference_last;
     for(auto& detector : get_detectors()) {
-        string detectorID = detector->getName();
-
         if(excludeDUT && detector->isDUT()) {
             LOG(DEBUG) << "Skipping DUT plane.";
             continue;
         }
 
         // Get the clusters
-        auto tempClusters = clipboard->getData<Cluster>(detectorID);
+        auto tempClusters = clipboard->getData<Cluster>(detector->getName());
         if(tempClusters == nullptr || tempClusters->size() == 0) {
-            LOG(DEBUG) << "Detector " << detectorID << " does not have any clusters on the clipboard";
+            LOG(DEBUG) << "Detector " << detector->getName() << " does not have any clusters on the clipboard";
         } else {
             // Store them
-            LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters from " << detectorID;
+            LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters from " << detector->getName();
 
             KDTree* clusterTree = new KDTree();
             clusterTree->buildTimeTree(*tempClusters);
-            trees[detectorID] = clusterTree;
+            trees[detector] = clusterTree;
 
-            if(reference_first.empty()) {
-                reference_first = detectorID;
+            if(!reference_first) {
+                reference_first = detector;
             }
-            reference_last = detectorID;
+            reference_last = detector;
         }
     }
 
@@ -210,8 +208,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     auto tracks = std::make_shared<TrackVector>();
 
     // Time cut for combinations of reference clusters and for reference track with additional detector
-    auto time_cut_ref = std::max(time_cuts_[get_detector(reference_first)], time_cuts_[get_detector(reference_last)]);
-    auto time_cut_ref_track = std::min(time_cuts_[get_detector(reference_first)], time_cuts_[get_detector(reference_last)]);
+    auto time_cut_ref = std::max(time_cuts_[reference_first], time_cuts_[reference_last]);
+    auto time_cut_ref_track = std::min(time_cuts_[reference_first], time_cuts_[reference_last]);
 
     for(auto& clusterFirst : trees[reference_first]->getAllClusters()) {
         for(auto& clusterLast : trees[reference_last]->getAllClusters()) {
@@ -246,13 +244,11 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 if(detector->isAuxiliary()) {
                     continue;
                 }
-                auto detectorID = detector->getName();
-
                 // always add the material budget:
-                track->addMaterial(detectorID, detector->materialBudget(), detector->displacement().z());
-                LOG(TRACE) << "added material budget for " << detectorID << " at z = " << detector->displacement().z();
+                track->addMaterial(detector->getName(), detector->materialBudget(), detector->displacement().z());
+                LOG(TRACE) << "added material budget for " << detector->getName() << " at z = " << detector->displacement().z();
 
-                if(detectorID == reference_first || detectorID == reference_last) {
+                if(detector == reference_first || detector == reference_last) {
                     continue;
                 }
 
@@ -270,13 +266,13 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                     continue;
                 }
 
-                if(trees.count(detectorID) == 0) {
-                    LOG(TRACE) << "Skipping detector " << detectorID << " as it has 0 clusters.";
+                if(trees.count(detector) == 0) {
+                    LOG(TRACE) << "Skipping detector " << detector->getName() << " as it has 0 clusters.";
                     continue;
                 }
 
                 // Get all neighbours within the timing cut
-                LOG(DEBUG) << "Searching for neighbouring cluster on device " << detectorID;
+                LOG(DEBUG) << "Searching for neighbouring cluster on device " << detector->getName();
                 LOG(DEBUG) << "- reference time is " << Units::display(refTrack.timestamp(), {"ns", "us", "s"});
                 Cluster* closestCluster = nullptr;
 
@@ -287,7 +283,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 double timeCut = std::max(time_cut_ref_track,time_cuts_[detector]);
                 LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
 
-                auto neighbours = trees[detectorID]->getAllClustersInTimeWindow(refTrack.timestamp(), timeCut);
+                auto neighbours = trees[detector]->getAllClustersInTimeWindow(refTrack.timestamp(), timeCut);
 
                 LOG(DEBUG) << "- found " << neighbours.size() << " neighbours within the correct time window";
 
