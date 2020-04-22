@@ -517,6 +517,11 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "\t ID: " << trigger.first << ", time: " << Units::display(trigger.second, "us");
     }
 
+    // histogram only exists for non-auxiliary detectors:
+    if(!m_detector->isAuxiliary()) {
+        hPixelMultiplicityPerCorryEvent->Fill(static_cast<int>(pixels->size()));
+    }
+
     // Loop over pixels for plotting
     if(m_get_time_residuals) {
         for(auto& pixel : (*pixels)) {
