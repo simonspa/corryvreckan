@@ -277,12 +277,14 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
 
     TrackVector tracklets;
 
+    double time_cut_refs = std::max(time_cuts_[reference_first], time_cuts_[reference_last]);
+    double time_cut_ref_track = std::min(time_cuts_[reference_first], time_cuts_[reference_last]);
+
     // Tracklet finding
     for(auto& clusterFirst : cluster_trees[reference_first]->getAllClusters()) {
         for(auto& clusterLast : cluster_trees[reference_last]->getAllClusters()) {
 
-            double time_cut = std::max(time_cuts_[reference_first], time_cuts_[reference_last]);
-            if(std::fabs(clusterFirst->timestamp() - clusterLast->timestamp()) > time_cut) {
+            if(std::fabs(clusterFirst->timestamp() - clusterLast->timestamp()) > time_cut_refs) {
                 LOG(DEBUG) << "Reference clusters not within time cuts.";
                 continue;
             }
@@ -308,8 +310,7 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
                     continue;
                 }
 
-                double timeCut =
-                    std::max(std::min(time_cuts_[reference_first], time_cuts_[reference_last]), time_cuts_[detector]);
+                double timeCut = std::max(time_cut_ref_track, time_cuts_[detector]);
                 LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
                 auto neighbours = detector_tree.second->getAllClustersInTimeWindow(trackletCandidate->timestamp(), timeCut);
 
