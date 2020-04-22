@@ -1,7 +1,7 @@
 # TrackingMultiplet
 **Maintainer**: Paul Schuetze (paul.schuetze@desy.de)
 **Module Type**: *GLOBAL*  
-**Status**: Work in progress
+**Status**: Functional
 
 ### Description
 This module performs particle tracking based on the _Multiplet_ track model.
