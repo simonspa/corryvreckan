@@ -182,6 +182,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             clusterTree->buildTimeTree(*tempClusters);
             trees[detector] = clusterTree;
 
+            // Get first and last detectors with clusters on them:
             if(!reference_first) {
                 reference_first = detector;
             }
@@ -221,7 +222,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // The track finding is based on a straight line. Therefore a refTrack to extrapolate to the next plane is used
-            // here
             StraightLineTrack refTrack;
             refTrack.addCluster(clusterFirst);
             refTrack.addCluster(clusterLast);
@@ -230,7 +230,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
             // Make a new track
             auto track = Track::Factory(trackModel);
-
             track->addCluster(clusterFirst);
             track->addCluster(clusterLast);
             track->setTimestamp(averageTimestamp);
