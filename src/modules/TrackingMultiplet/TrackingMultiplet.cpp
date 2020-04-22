@@ -556,29 +556,28 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         double closestMatchingDistance = scatterer_matching_cut_;
-
-        for(auto& downtracklet : downstream_tracklets) {
+        TrackVector::iterator used_downtracklet;
+        for(auto it = downstream_tracklets.begin(); it != downstream_tracklets.end(); ++it) {
             double time_cut_downstream = std::numeric_limits<double>::max();
-            for(auto& cluster : downtracklet->clusters()) {
+            for(auto& cluster : (*it)->clusters()) {
                 if(time_cuts_[get_detector(cluster->getDetectorID())] < time_cut_downstream) {
                     time_cut_downstream = time_cuts_[get_detector(cluster->getDetectorID())];
                 }
             }
 
-            auto multipletCandidate = new Multiplet(uptracklet, downtracklet);
+            // calculate time cut as the maximum of the minimal time cut of each tracklet.
+            double time_cut = std::max(time_cut_upstream, time_cut_downstream);
+
+            if(std::fabs((*it)->timestamp() - uptracklet->timestamp()) > time_cut) {
+                LOG(DEBUG) << "Multiplet candidate discarded due to time cut";
+                continue;
+            }
+
+            auto multipletCandidate = new Multiplet(uptracklet, (*it));
             LOG(DEBUG) << "Got new candidate.";
 
             multipletCandidate->setScattererPosition(scatterer_position_);
             multipletCandidate->fit();
-
-            // calculate time cut as the maximum of the minimal time cut of each tracklet.
-            double time_cut = std::max(time_cut_upstream, time_cut_downstream);
-
-            if(std::fabs(downtracklet->timestamp() - uptracklet->timestamp()) > time_cut) {
-                LOG(DEBUG) << "Multiplet candidate discarded due to time cut";
-                delete multipletCandidate;
-                continue;
-            }
 
             double distanceX = multipletCandidate->getOffsetAtScatterer().X();
             double distanceY = multipletCandidate->getOffsetAtScatterer().Y();
@@ -606,6 +605,7 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
             closestMatchingDistance = distance;
             delete multiplet;
             multiplet = multipletCandidate;
+            used_downtracklet = it;
         }
 
         if(multiplet == nullptr) {
@@ -616,6 +616,10 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "Multiplet found";
         multiplet->setTimestamp(
             (multiplet->getUpstreamTracklet()->timestamp() + multiplet->getDownstreamTracklet()->timestamp()) / 2.);
+
+        LOG(DEBUG) << "Deleting downstream tracklet";
+        delete *used_downtracklet;
+        downstream_tracklets.erase(used_downtracklet);
 
         multiplets->push_back(multiplet);
 
