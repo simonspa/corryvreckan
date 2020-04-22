@@ -245,7 +245,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 }
                 // always add the material budget:
                 track->addMaterial(detector->getName(), detector->materialBudget(), detector->displacement().z());
-                LOG(TRACE) << "added material budget for " << detector->getName() << " at z = " << detector->displacement().z();
+                LOG(TRACE) << "added material budget for " << detector->getName()
+                           << " at z = " << detector->displacement().z();
 
                 if(detector == reference_first || detector == reference_last) {
                     continue;
@@ -279,7 +280,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 double closestClusterDistance = sqrt(spatial_cuts_[detector].x() * spatial_cuts_[detector].x() +
                                                      spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
 
-                double timeCut = std::max(time_cut_ref_track,time_cuts_[detector]);
+                double timeCut = std::max(time_cut_ref_track, time_cuts_[detector]);
                 LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
 
                 auto neighbours = trees[detector]->getAllClustersInTimeWindow(refTrack.timestamp(), timeCut);
