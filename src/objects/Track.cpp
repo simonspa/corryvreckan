@@ -13,18 +13,6 @@
 
 using namespace corryvreckan;
 
-Plane::Plane(const Plane& p) : Object(p.name(), p.timestamp()) {
-    m_z = p.m_z;
-    m_x_x0 = p.m_x_x0;
-    m_name = p.m_name;
-    m_has_cluster = p.m_has_cluster;
-    if(m_has_cluster)
-        setCluster(p.cluster());
-    m_gbl_points_pos = p.m_gbl_points_pos;
-    m_toLocal = p.m_toLocal;
-    m_toGlobal = p.m_toGlobal;
-}
-
 Cluster* Plane::cluster() const {
     if(!m_cluster.IsValid() || m_cluster.GetObject() == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(Cluster));
@@ -171,11 +159,8 @@ ROOT::Math::XYPoint Track::kink(std::string detectorID) const {
 }
 
 void Track::updatePlane(Plane p) {
-    std::cout << "Plane replacement" << std::endl;
-    // std::replace_if(
-    //    m_planes.begin(), m_planes.end(), [p](auto plane) { return plane.name() == p.name(); }, p);
-
-    std::cout << std::endl << "Plane replaced" << std::flush;
+    std::replace_if(
+        m_planes.begin(), m_planes.end(), [p](auto plane) { return plane.name() == p.name(); }, p);
 }
 
 ROOT::Math::XYZPoint Track::correction(std::string detectorID) const {
