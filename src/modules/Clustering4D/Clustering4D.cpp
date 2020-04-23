@@ -36,21 +36,21 @@ void Clustering4D::initialise() {
 
     // Cluster plots
     std::string title = m_detector->getName() + " Cluster size;cluster size;events";
-    clusterSize = new TH1F("clusterSize", title.c_str(), 100, 0, 100);
+    clusterSize = new TH1F("clusterSize", title.c_str(), 100, -0.5, 99.5);
     title = m_detector->getName() + " Cluster seed charge;cluster seed charge [e];events";
-    clusterSeedCharge = new TH1F("clusterSeedCharge", title.c_str(), 256, 0, 256);
+    clusterSeedCharge = new TH1F("clusterSeedCharge", title.c_str(), 256, -0.5, 255.5);
     title = m_detector->getName() + " Cluster Width - Rows;cluster width [rows];events";
-    clusterWidthRow = new TH1F("clusterWidthRow", title.c_str(), 25, 0, 25);
+    clusterWidthRow = new TH1F("clusterWidthRow", title.c_str(), 25, -0.5, 24.5);
     title = m_detector->getName() + " Cluster Width - Columns;cluster width [columns];events";
-    clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, 0, 100);
+    clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, -0.5, 99.5);
     title = m_detector->getName() + " Cluster Charge;cluster charge [e];events";
-    clusterCharge = new TH1F("clusterCharge", title.c_str(), 5000, 0, 50000);
+    clusterCharge = new TH1F("clusterCharge", title.c_str(), 5000, -0.5, 49999.5);
     title = m_detector->getName() + " Cluster Position (Global);x [mm];y [mm];events";
     clusterPositionGlobal = new TH2F("clusterPositionGlobal", title.c_str(), 400, -10., 10., 400, -10., 10.);
     title = ";cluster timestamp [ns]; # events";
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
     title = m_detector->getName() + " Cluster multiplicity;clusters;events";
-    clusterMultiplicity = new TH1F("clusterMultiplicity", title.c_str(), 50, 0, 50);
+    clusterMultiplicity = new TH1F("clusterMultiplicity", title.c_str(), 50, -0.5, 49.5);
     // Get resolution in time of detector and calculate time cut to be applied
     LOG(DEBUG) << "Time cut to be applied for " << m_detector->getName() << " is "
                << Units::display(timeCut, {"ns", "us", "ms"});
