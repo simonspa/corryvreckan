@@ -6,6 +6,7 @@
 ### Description
 This module analyses the kink angle distributions at the position of a scatterer. This requires the prior use of `TrackingMultiplet`.
 A material budget image is computed, which represents the widths of the scattering distributions of individual image cells, taking into account all particles traversing this cell.
+The widths are calculated as average absolute deviation from `0` for the selected quantile.
 Further information on this technique can be found in [@material_budget_imaging]
 
 ### Parameters

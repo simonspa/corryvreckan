@@ -58,6 +58,7 @@ namespace corryvreckan {
         ROOT::Math::XYVector image_size_;
 
         double angle_cut_;
+        double quantile_cut_;
         int min_cell_content_;
         bool live_update_;
 

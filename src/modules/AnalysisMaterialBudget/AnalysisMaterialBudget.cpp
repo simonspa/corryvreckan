@@ -19,6 +19,8 @@ AnalysisMaterialBudget::AnalysisMaterialBudget(Configuration config, std::vector
     image_size_ = m_config.get<ROOT::Math::XYVector>("image_size", ROOT::Math::XYVector(10, 10));
 
     angle_cut_ = m_config.get<double>("angle_cut", Units::get<double>(100, "mrad"));
+    double quantiles = m_config.get<double>("quantile", 0.9);
+    quantile_cut_ = (1.0 - quantiles) / 2.0;
     min_cell_content_ = m_config.get<int>("min_cell_content", 20);
     live_update_ = m_config.get<bool>("live_update", true);
 }
@@ -98,8 +100,8 @@ double AnalysisMaterialBudget::getAAD(int cell_x, int cell_y) {
     std::vector<double> vec = m_all_kinks.at(std::make_pair(cell_x, cell_y));
     std::sort(vec.begin(), vec.end());
 
-    // Then chop off the outer 5% on both sides
-    int cut_off = int(round(double(vec.size()) * 0.05));
+    // Create quantile distribution by deleting a certain percentage of entries at both ends
+    int cut_off = int(round(double(vec.size()) * quantile_cut_));
     for(int i = 0; i < cut_off; ++i) {
         vec.erase(vec.begin());
         vec.pop_back();
