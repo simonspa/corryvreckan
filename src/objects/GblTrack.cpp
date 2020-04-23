@@ -33,7 +33,8 @@ GblTrack::GblTrack(const GblTrack& track) : Track(track) {
 }
 
 void GblTrack::fit() {
-
+    if(m_logging)
+        std::cout << "Starting fit" << std::endl;
     m_isFitted = false;
     m_residual.clear();
     m_kink.clear();

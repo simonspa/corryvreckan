@@ -35,8 +35,9 @@ namespace corryvreckan {
         bool hasCluster() const { return m_has_cluster; }
         std::string name() const { return m_name; }
         unsigned gblPos() const { return m_gbl_points_pos; }
-        Plane& operator=(const Plane& p) {
+        Plane& operator=(const Plane p) {
             Plane* plane = new Plane(p);
+            std::cout << "Creating Plane copy" << std::endl;
             return *plane;
         }
         // sorting overload
@@ -47,10 +48,15 @@ namespace corryvreckan {
         void setCluster(const Cluster* cluster) {
             m_cluster = const_cast<Cluster*>(cluster);
             m_has_cluster = true;
+            std::cout << "cluster copied";
         }
         Cluster* cluster() const;
         void print(std::ostream& os) const override {
-            os << "Plane at " << m_z << " with rad. length " << m_x_x0 << " and cluster: " << (m_has_cluster) << std::endl;
+            os << "Plane at " << m_z << " with rad. length " << m_x_x0 << ", name " << m_name << " and";
+            if(m_has_cluster)
+                os << "cluster with global pos: " << cluster()->global();
+            else
+                os << "no clsuter";
         }
         void setToLocal(Transform3D toLocal) { m_toLocal = toLocal; }
         void setToGlobal(Transform3D toGlobal) { m_toGlobal = toGlobal; }

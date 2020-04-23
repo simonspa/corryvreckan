@@ -94,7 +94,8 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
 
     // Apply new alignment conditions
     globalDetector->update();
-    LOG(DEBUG) << "**************************\n" << globalDetector->displacement() << "' " << globalDetector->rotation();
+    LOG(DEBUG) << "**************************\n"
+               << globalDetector->getName() << ", " << globalDetector->displacement() << "' " << globalDetector->rotation();
     // The chi2 value to be returned
     result = 0.;
 
@@ -115,13 +116,16 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
             auto positionLocal = trackCluster->local();
             auto positionGlobal = globalDetector->localToGlobal(positionLocal);
             trackCluster->setClusterCentre(positionGlobal);
+            LOG(DEBUG) << "updating cluster";
         }
 
         // Refit the track
         Plane pl(globalDetector->displacement().z(), globalDetector->materialBudget(), globalDetector->getName(), false);
         pl.setToLocal(globalDetector->toLocal());
         pl.setToGlobal(globalDetector->toGlobal());
+        LOG(DEBUG) << "Updating plane: " << pl;
         track->updatePlane(pl);
+        LOG(DEBUG) << "Updated plane";
         IFLOG(DEBUG) { track->setLogging(true); }
         track->fit();
 
@@ -177,6 +181,7 @@ void AlignmentTrackChi2::finalise() {
 
             // Do not align the reference plane
             if(detector->isReference() || detector->isDUT() || detector->isAuxiliary()) {
+                LOG(DEBUG) << "Skipping detector " << detector->getName();
                 continue;
             }
 
@@ -219,6 +224,7 @@ void AlignmentTrackChi2::finalise() {
             auto old_orientation = detector->rotation();
 
             // Fit this plane (minimising global track chi2)
+            LOG(DEBUG) << "fitting residuals";
             residualFitter->ExecuteCommand("MIGRAD", arglist, 2);
 
             // Retrieve fit results:
