@@ -110,9 +110,9 @@ void AnalysisDUT::initialise() {
     clusterSizeAssocNorm = new TH1F(
         "clusterSizeAssociatedNormalized", "clusterSizeAssociatedNormalized;cluster size normalized;#entries", 30, 0, 30);
     clusterWidthRowAssoc =
-        new TH1F("clusterWidthRowAssociated", "clusterWidthRowAssociated;cluster size row; # entries", 30, 0, 30);
+        new TH1F("clusterWidthRowAssociated", "clusterWidthRowAssociated;cluster size row; # entries", 30, -0.5, 29.5);
     clusterWidthColAssoc =
-        new TH1F("clusterWidthColAssociated", "clusterWidthColAssociated;cluster size col; # entries", 30, 0, 30);
+        new TH1F("clusterWidthColAssociated", "clusterWidthColAssociated;cluster size col; # entries", 30, -0.5, 29.5);
 
     // In-pixel studies:
     auto pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
