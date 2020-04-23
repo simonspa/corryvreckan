@@ -136,16 +136,19 @@ StatusCode AnalysisMaterialBudget::run(std::shared_ptr<Clipboard> clipboard) {
         double kink_x = static_cast<double>(Units::convert(track->getKinkAtScatterer().x(), "mrad"));
         double kink_y = static_cast<double>(Units::convert(track->getKinkAtScatterer().y(), "mrad"));
 
+        double kink_x_sq = kink_x * kink_x;
+        double kink_y_sq = kink_y * kink_y;
+
         trackKinkX->Fill(kink_x);
         trackKinkY->Fill(kink_y);
 
-        kinkVsX->Fill(pos_x, kink_x * kink_x);
-        kinkVsX->Fill(pos_x, kink_y * kink_y);
-        kinkVsY->Fill(pos_y, kink_x * kink_x);
-        kinkVsY->Fill(pos_y, kink_y * kink_y);
+        kinkVsX->Fill(pos_x, kink_x_sq);
+        kinkVsX->Fill(pos_x, kink_y_sq);
+        kinkVsY->Fill(pos_y, kink_x_sq);
+        kinkVsY->Fill(pos_y, kink_y_sq);
 
-        MBIpreview->Fill(pos_x, pos_y, kink_x * kink_x);
-        MBIpreview->Fill(pos_x, pos_y, kink_y * kink_y);
+        MBIpreview->Fill(pos_x, pos_y, kink_x_sq);
+        MBIpreview->Fill(pos_x, pos_y, kink_y_sq);
 
         int cell_x = int((pos_x + image_size_.x() / 2) / cell_size_.x());
         int cell_y = int((pos_y + image_size_.y() / 2) / cell_size_.y());
