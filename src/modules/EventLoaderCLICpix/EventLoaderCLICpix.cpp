@@ -50,10 +50,10 @@ void EventLoaderCLICpix::initialise() {
     m_file.open(m_filename.c_str());
 
     // Make histograms for debugging
-    hHitMap = new TH2F("hitMap", "hitMap", 64, 0, 64, 64, 0, 64);
-    hPixelToT = new TH1F("pixelToT", "pixelToT", 20, 0, 20);
+    hHitMap = new TH2F("hitMap", "hitMap", 64, -0.5, 63.5, 64, -0.5, 63.5);
+    hPixelToT = new TH1F("pixelToT", "pixelToT", 20, -0.5, 19.5);
     hShutterLength = new TH1F("shutterLength", "shutterLength", 3000, 0, 0.3);
-    hPixelMultiplicity = new TH1F("pixelMultiplicity", "Pixel Multiplicity; # pixels; # events", 4100, 0, 4100);
+    hPixelMultiplicity = new TH1F("pixelMultiplicity", "Pixel Multiplicity; # pixels; # events", 4100, -0.5, 4099.5);
 }
 
 StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
