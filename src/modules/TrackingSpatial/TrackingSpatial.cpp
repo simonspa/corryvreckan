@@ -56,9 +56,9 @@ void TrackingSpatial::initialise() {
 
     // Set up histograms
     std::string title = "Track #chi^{2};#chi^{2};events";
-    trackChi2 = new TH1F("trackChi2", title.c_str(), 150, 0, 150);
+    trackChi2 = new TH1F("trackChi2", title.c_str(), 300, 0, 150);
     title = "Track #chi^{2}/ndof;#chi^{2}/ndof;events";
-    trackChi2ndof = new TH1F("trackChi2ndof", title.c_str(), 100, 0, 50);
+    trackChi2ndof = new TH1F("trackChi2ndof", title.c_str(), 500, 0, 50);
     title = "Clusters per track;clusters;tracks";
     clustersPerTrack = new TH1F("clustersPerTrack", title.c_str(), 10, 0, 10);
     title = "Track multiplicity;tracks;events";
