@@ -12,6 +12,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <TProfile.h>
 #include <TProfile2D.h>
 #include <iostream>
 #include "core/module/Module.hpp"
@@ -53,28 +54,28 @@ namespace corryvreckan {
     private:
         int m_eventNumber;
 
-        ROOT::Math::XYVector cell_size;
-        ROOT::Math::XYVector image_size;
+        ROOT::Math::XYVector cell_size_;
+        ROOT::Math::XYVector image_size_;
 
-        double angle_cut;
-        int min_cell_content;
-
-        bool write_3D;
+        double angle_cut_;
+        int min_cell_content_;
+        bool live_update_;
 
         int n_cells_x, n_cells_y;
 
         TH1F* entriesPerCell;
 
-        TH1F* sixletKinkX;
-        TH1F* sixletKinkY;
+        TH1F* trackKinkX;
+        TH1F* trackKinkY;
+        TProfile* kinkVsX;
+        TProfile* kinkVsY;
         TProfile2D* MBIpreview;
         TH2F* MBI;
         TH2F* meanAngles;
-        TH3F* MBI3D;
 
-        std::map<std::pair<uint8_t, uint8_t>, std::vector<double>> m_all_kinks;
-        std::map<std::pair<uint8_t, uint8_t>, double> m_all_sum;
-        std::map<std::pair<uint8_t, uint8_t>, int> m_all_entries;
+        std::map<std::pair<int, int>, std::vector<double>> m_all_kinks;
+        std::map<std::pair<int, int>, double> m_all_sum;
+        std::map<std::pair<int, int>, int> m_all_entries;
 
         /**
          * @brief Method re-calculating the AAD of a given image cell
