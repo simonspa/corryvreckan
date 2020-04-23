@@ -60,9 +60,9 @@ void EventLoaderMuPixTelescope::initialise() {
         return;
     } else
         LOG(STATUS) << "Loaded Reader";
-    hHitMap = new TH2F("hitMap", "hitMap; column; row", 50, -.5, 49.5, 202, -.5, 201.5);
-    hPixelToT = new TH1F("pixelToT", "pixelToT; ToT in TS2 clock cycles.; ", 64, 0, 64);
-    hTimeStamp = new TH1F("pixelTS", "pixelTS; TS in clock cycles; ", 1024, -.5, 1023.5);
+    hHitMap = new TH2F("hitMap", "hitMap; column; row", 50, -0.5, 49.5, 202, -0.5, 201.5);
+    hPixelToT = new TH1F("pixelToT", "pixelToT; ToT in TS2 clock cycles.; ", 64, -0.5, 63.5);
+    hTimeStamp = new TH1F("pixelTS", "pixelTS; TS in clock cycles; ", 1024, -0.5, 1023.5);
 }
 
 StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) {
