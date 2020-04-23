@@ -72,7 +72,7 @@ void AnalysisDUT::initialise() {
                           m_detector->nPixels().Y(),
                           -0.5,
                           m_detector->nPixels().Y() - 0.5);
-    hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc", "pixelRawValueAssoc;pixel raw value;#entries", 1024, 0, 1024);
+    hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc", "pixelRawValueAssoc;pixel raw value;#entries", 1024, -0.5, 1023.5);
     hPixelRawValueMapAssoc = new TProfile2D("pixelRawValueMapAssoc",
                                             "pixelRawValueMapAssoc;pixel raw values;# entries",
                                             m_detector->nPixels().X(),
@@ -106,7 +106,7 @@ void AnalysisDUT::initialise() {
 
     clusterChargeAssoc =
         new TH1F("clusterChargeAssociated", "clusterChargeAssociated;cluster charge [e];# entries", 10000, 0, 10000);
-    clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated;cluster size; # entries", 30, 0, 30);
+    clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated;cluster size; # entries", 30, -0.5, 29.5);
     clusterSizeAssocNorm = new TH1F(
         "clusterSizeAssociatedNormalized", "clusterSizeAssociatedNormalized;cluster size normalized;#entries", 30, 0, 30);
     clusterWidthRowAssoc =
