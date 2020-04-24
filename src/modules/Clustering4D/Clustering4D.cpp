@@ -46,7 +46,15 @@ void Clustering4D::initialise() {
     title = m_detector->getName() + " Cluster Charge;cluster charge [e];events";
     clusterCharge = new TH1F("clusterCharge", title.c_str(), 5000, 0, 50000);
     title = m_detector->getName() + " Cluster Position (Global);x [mm];y [mm];events";
-    clusterPositionGlobal = new TH2F("clusterPositionGlobal", title.c_str(), 400, -10., 10., 400, -10., 10.);
+    clusterPositionGlobal = new TH2F("clusterPositionGlobal",
+                                     title.c_str(),
+                                     400,
+                                     -m_detector->getSize().X() / 1.5,
+                                     m_detector->getSize().X() / 1.5,
+                                     400,
+                                     -m_detector->getSize().Y() / 1.5,
+                                     m_detector->getSize().Y() / 1.5);
+
     title = ";cluster timestamp [ns]; # events";
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
     title = m_detector->getName() + " Cluster multiplicity;clusters;events";
