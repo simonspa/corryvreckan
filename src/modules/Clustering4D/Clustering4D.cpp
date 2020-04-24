@@ -45,12 +45,22 @@ void Clustering4D::initialise() {
     clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, -0.5, 99.5);
     title = m_detector->getName() + " Cluster Charge;cluster charge [e];events";
     clusterCharge = new TH1F("clusterCharge", title.c_str(), 5000, -0.5, 49999.5);
+    title = m_detector->getName() + " Cluster Charge (1px clusters);cluster charge [e];events";
+    clusterCharge_1px = new TH1F("clusterCharge_1px", title.c_str(), 256, -0.5, 255.5);
+    title = m_detector->getName() + " Cluster Charge (2px clusters);cluster charge [e];events";
+    clusterCharge_2px = new TH1F("clusterCharge_2px", title.c_str(), 256, -0.5, 255.5);
+    title = m_detector->getName() + " Cluster Charge (3px clusters);cluster charge [e];events";
+    clusterCharge_3px = new TH1F("clusterCharge_3px", title.c_str(), 256, -0.5, 255.5);
     title = m_detector->getName() + " Cluster Position (Global);x [mm];y [mm];events";
     clusterPositionGlobal = new TH2F("clusterPositionGlobal", title.c_str(), 400, -10., 10., 400, -10., 10.);
     title = ";cluster timestamp [ns]; # events";
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
     title = m_detector->getName() + " Cluster multiplicity;clusters;events";
     clusterMultiplicity = new TH1F("clusterMultiplicity", title.c_str(), 50, -0.5, 49.5);
+    title = m_detector->getName() +
+            " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels from cluster (if clusterSize>1));events";
+    pixelTimeMinusClusterTime = new TH1F("pixelTimeMinusClusterTime", title.c_str(), 1000, -0.5, 999.5);
+
     // Get resolution in time of detector and calculate time cut to be applied
     LOG(DEBUG) << "Time cut to be applied for " << m_detector->getName() << " is "
                << Units::display(timeCut, {"ns", "us", "ms"});
@@ -135,9 +145,24 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
         clusterWidthRow->Fill(cluster->rowWidth());
         clusterWidthColumn->Fill(cluster->columnWidth());
         clusterCharge->Fill(cluster->charge());
+        if(cluster->size() == 1) {
+            clusterCharge_1px->Fill(cluster->charge());
+        } else if(cluster->size() == 2) {
+            clusterCharge_2px->Fill(cluster->charge());
+        } else if(cluster->size() == 3) {
+            clusterCharge_3px->Fill(cluster->charge());
+        }
         clusterSeedCharge->Fill(cluster->getSeedPixel()->charge());
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
         clusterTimes->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "ns")));
+
+        // to check that cluster timestamp = earliest pixel timestamp
+        if(cluster->size() > 1) {
+            for(auto& px : cluster->pixels()) {
+                pixelTimeMinusClusterTime->Fill(
+                    static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")));
+            }
+        }
 
         deviceClusters->push_back(cluster);
     }
