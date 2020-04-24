@@ -36,7 +36,7 @@ void Clustering4D::initialise() {
 
     // Cluster plots
     std::string title = m_detector->getName() + " Cluster size;cluster size;events";
-    clusterSize = new TH1F("clusterSize", title.c_str(), 100, 0, 100);
+    clusterSize = new TH1F("clusterSize", title.c_str(), 100, -0.5, 99.5);
     title = m_detector->getName() + " Cluster seed charge;cluster seed charge [e];events";
     clusterSeedCharge = new TH1F("clusterSeedCharge", title.c_str(), 256, -0.5, 255.5);
     title = m_detector->getName() + " Cluster Width - Rows;cluster width [rows];events";
@@ -44,7 +44,7 @@ void Clustering4D::initialise() {
     title = m_detector->getName() + " Cluster Width - Columns;cluster width [columns];events";
     clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, -0.5, 99.5);
     title = m_detector->getName() + " Cluster Charge;cluster charge [e];events";
-    clusterCharge = new TH1F("clusterCharge", title.c_str(), 256, -0.5, 255.5);
+    clusterCharge = new TH1F("clusterCharge", title.c_str(), 5000, -0.5, 49999.5);
     title = m_detector->getName() + " Cluster Charge (1px clusters);cluster charge [e];events";
     clusterCharge_1px = new TH1F("clusterCharge_1px", title.c_str(), 256, -0.5, 255.5);
     title = m_detector->getName() + " Cluster Charge (2px clusters);cluster charge [e];events";
@@ -56,7 +56,7 @@ void Clustering4D::initialise() {
     title = ";cluster timestamp [ns]; # events";
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
     title = m_detector->getName() + " Cluster multiplicity;clusters;events";
-    clusterMultiplicity = new TH1F("clusterMultiplicity", title.c_str(), 50, 0, 50);
+    clusterMultiplicity = new TH1F("clusterMultiplicity", title.c_str(), 50, -0.5, 49.5);
     title = m_detector->getName() +
             " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels from cluster (if clusterSize>1));events";
     pixelTimeMinusClusterTime = new TH1F("pixelTimeMinusClusterTime", title.c_str(), 1000, -0.5, 999.5);
