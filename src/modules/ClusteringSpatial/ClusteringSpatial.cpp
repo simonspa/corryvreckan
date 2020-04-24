@@ -47,11 +47,11 @@ void ClusteringSpatial::initialise() {
     clusterPositionLocal = new TH2F("clusterPositionLocal",
                                     title.c_str(),
                                     m_detector->nPixels().X(),
-                                    -m_detector->nPixels().X() / 2.,
-                                    m_detector->nPixels().X() / 2.,
+                                    -0.5,
+                                    m_detector->nPixels().X() - 0.5,
                                     m_detector->nPixels().Y(),
-                                    -m_detector->nPixels().Y() / 2.,
-                                    m_detector->nPixels().Y() / 2.);
+                                    -0.5,
+                                    m_detector->nPixels().Y() - 0.5);
 
     title = ";cluster timestamp [ns]; # events";
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
