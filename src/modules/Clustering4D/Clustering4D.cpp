@@ -38,11 +38,11 @@ void Clustering4D::initialise() {
     std::string title = m_detector->getName() + " Cluster size;cluster size;events";
     clusterSize = new TH1F("clusterSize", title.c_str(), 100, 0, 100);
     title = m_detector->getName() + " Cluster seed charge;cluster seed charge [e];events";
-    clusterSeedCharge = new TH1F("clusterSeedCharge", title.c_str(), 256, 0, 256);
+    clusterSeedCharge = new TH1F("clusterSeedCharge", title.c_str(), 256, -0.5, 255.5);
     title = m_detector->getName() + " Cluster Width - Rows;cluster width [rows];events";
-    clusterWidthRow = new TH1F("clusterWidthRow", title.c_str(), 25, 0, 25);
+    clusterWidthRow = new TH1F("clusterWidthRow", title.c_str(), 25, -0.5, 24.5);
     title = m_detector->getName() + " Cluster Width - Columns;cluster width [columns];events";
-    clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, 0, 100);
+    clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, -0.5, 99.5);
     title = m_detector->getName() + " Cluster Charge;cluster charge [e];events";
     clusterCharge = new TH1F("clusterCharge", title.c_str(), 5000, 0, 50000);
     title = m_detector->getName() + " Cluster Position (Global);x [mm];y [mm];events";
