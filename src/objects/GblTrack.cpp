@@ -76,13 +76,6 @@ void GblTrack::fit() {
     auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
         return (13.6 / m_momentum * sqrt(mbCurrent) * (1 + 0.038 * log(mbTotal)));
     };
-    // lambda to add a scatterer to a GBLPoint
-    auto addScattertoGblPoint = [&total_material, &scatteringTheta](GblPoint& point, double material) {
-        Vector2d scatterWidth;
-        scatterWidth(0) = 1 / (scatteringTheta(material, total_material) * scatteringTheta(material, total_material));
-        scatterWidth(1) = scatterWidth(0);
-        point.addScatterer(Vector2d::Zero(), scatterWidth);
-    };
 
     // extract the rotation from an ROOT::Math::Transfrom3D, store it  in 4x4 matrix to match proteus format
     auto getRotation = [](Transform3D in) {
@@ -99,6 +92,17 @@ void GblTrack::fit() {
     Vector4d localPosTrack;
     Vector4d localTangent;
 
+    // lambda to add a scatterer to a GBLPoint
+    auto addScattertoGblPoint = [&total_material, &scatteringTheta, &localTangent](GblPoint& point, double material) {
+        Matrix<double, 2, 2> scatter;
+        Vector2d localSlope(localTangent(0) / localTangent(2), localTangent(1) / localTangent(2));
+        auto scale = 1 / scatteringTheta(material, total_material) / (1 + localSlope.squaredNorm());
+        scatter(0, 0) = 1 + localSlope(1) * localSlope(1);
+        scatter(1, 1) = 1 + localSlope(0) * localSlope(0);
+        scatter(0, 1) = scatter(1, 0) = -(localSlope(0) * localSlope(1));
+        scatter *= scale * scale;
+        point.addScatterer(Vector2d::Zero(), scatter);
+    };
     // lambda Jacobian
     auto jac = [](const Vector4d& tangent, const Matrix4d& toTarget, double distance) {
         Matrix<double, 4, 3> R;
