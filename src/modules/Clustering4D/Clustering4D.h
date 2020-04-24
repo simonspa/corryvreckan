@@ -52,6 +52,7 @@ namespace corryvreckan {
         TH2F* clusterPositionGlobal;
         TH1F* clusterTimes;
         TH1F* clusterMultiplicity;
+        TH1F* pixelTimeMinusClusterTime;
 
         double timeCut;
         int neighbourRadiusRow;

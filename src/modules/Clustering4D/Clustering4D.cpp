@@ -57,6 +57,10 @@ void Clustering4D::initialise() {
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
     title = m_detector->getName() + " Cluster multiplicity;clusters;events";
     clusterMultiplicity = new TH1F("clusterMultiplicity", title.c_str(), 50, 0, 50);
+    title = m_detector->getName() +
+            " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels from cluster (if clusterSize>1));events";
+    pixelTimeMinusClusterTime = new TH1F("pixelTimeMinusClusterTime", title.c_str(), 1000, -0.5, 999.5);
+
     // Get resolution in time of detector and calculate time cut to be applied
     LOG(DEBUG) << "Time cut to be applied for " << m_detector->getName() << " is "
                << Units::display(timeCut, {"ns", "us", "ms"});
@@ -151,6 +155,14 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
         clusterSeedCharge->Fill(cluster->getSeedPixel()->charge());
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
         clusterTimes->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "ns")));
+
+        // to check that cluster timestamp = earliest pixel timestamp
+        if(cluster->size() > 1) {
+            for(auto& px : cluster->pixels()) {
+                pixelTimeMinusClusterTime->Fill(
+                    static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")));
+            }
+        }
 
         deviceClusters->push_back(cluster);
     }
