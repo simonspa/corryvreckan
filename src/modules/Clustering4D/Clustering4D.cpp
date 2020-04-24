@@ -52,7 +52,24 @@ void Clustering4D::initialise() {
     title = m_detector->getName() + " Cluster Charge (3px clusters);cluster charge [e];events";
     clusterCharge_3px = new TH1F("clusterCharge_3px", title.c_str(), 256, -0.5, 255.5);
     title = m_detector->getName() + " Cluster Position (Global);x [mm];y [mm];events";
-    clusterPositionGlobal = new TH2F("clusterPositionGlobal", title.c_str(), 400, -10., 10., 400, -10., 10.);
+    clusterPositionGlobal = new TH2F("clusterPositionGlobal",
+                                     title.c_str(),
+                                     400,
+                                     -m_detector->getSize().X() / 1.5,
+                                     m_detector->getSize().X() / 1.5,
+                                     400,
+                                     -m_detector->getSize().Y() / 1.5,
+                                     m_detector->getSize().Y() / 1.5);
+    title = m_detector->getName() + " Cluster Position (Local);x [px];y [px];events";
+    clusterPositionLocal = new TH2F("clusterPositionLocal",
+                                    title.c_str(),
+                                    m_detector->nPixels().X(),
+                                    -0.5,
+                                    m_detector->nPixels().X() - 0.5,
+                                    m_detector->nPixels().Y(),
+                                    -0.5,
+                                    m_detector->nPixels().Y() - 0.5);
+
     title = ";cluster timestamp [ns]; # events";
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
     title = m_detector->getName() + " Cluster multiplicity;clusters;events";
@@ -154,6 +171,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
         }
         clusterSeedCharge->Fill(cluster->getSeedPixel()->charge());
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
+        clusterPositionLocal->Fill(cluster->column(), cluster->row());
         clusterTimes->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "ns")));
 
         // to check that cluster timestamp = earliest pixel timestamp

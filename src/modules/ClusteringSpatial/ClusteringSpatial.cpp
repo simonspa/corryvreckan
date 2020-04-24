@@ -47,11 +47,11 @@ void ClusteringSpatial::initialise() {
     clusterPositionLocal = new TH2F("clusterPositionLocal",
                                     title.c_str(),
                                     m_detector->nPixels().X(),
-                                    -m_detector->nPixels().X() / 2.,
-                                    m_detector->nPixels().X() / 2.,
+                                    -0.5,
+                                    m_detector->nPixels().X() - 0.5,
                                     m_detector->nPixels().Y(),
-                                    -m_detector->nPixels().Y() / 2.,
-                                    m_detector->nPixels().Y() / 2.);
+                                    -0.5,
+                                    m_detector->nPixels().Y() - 0.5);
 
     title = ";cluster timestamp [ns]; # events";
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
@@ -164,7 +164,7 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         clusterCharge->Fill(cluster->charge());
         clusterSeedCharge->Fill(cluster->getSeedPixel()->charge());
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
-        clusterPositionLocal->Fill(cluster->local().x(), cluster->local().y());
+        clusterPositionLocal->Fill(cluster->column(), cluster->row());
         clusterTimes->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "ns")));
         LOG(DEBUG) << "cluster local: " << cluster->local();
         deviceClusters->push_back(cluster);

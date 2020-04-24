@@ -50,6 +50,7 @@ namespace corryvreckan {
         TH1F* clusterCharge_2px;
         TH1F* clusterCharge_3px;
         TH2F* clusterPositionGlobal;
+        TH2F* clusterPositionLocal;
         TH1F* clusterTimes;
         TH1F* clusterMultiplicity;
         TH1F* pixelTimeMinusClusterTime;
