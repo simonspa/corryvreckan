@@ -54,6 +54,15 @@ void Clustering4D::initialise() {
                                      400,
                                      -m_detector->getSize().Y() / 1.5,
                                      m_detector->getSize().Y() / 1.5);
+    title = m_detector->getName() + " Cluster Position (Local);x [px];y [px];events";
+    clusterPositionLocal = new TH2F("clusterPositionLocal",
+                                    title.c_str(),
+                                    m_detector->nPixels().X(),
+                                    -0.5,
+                                    m_detector->nPixels().X() - 0.5,
+                                    m_detector->nPixels().Y(),
+                                    -0.5,
+                                    m_detector->nPixels().Y() - 0.5);
 
     title = ";cluster timestamp [ns]; # events";
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
@@ -145,6 +154,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
         clusterCharge->Fill(cluster->charge());
         clusterSeedCharge->Fill(cluster->getSeedPixel()->charge());
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
+        clusterPositionLocal->Fill(cluster->column(), cluster->row());
         clusterTimes->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "ns")));
 
         deviceClusters->push_back(cluster);
