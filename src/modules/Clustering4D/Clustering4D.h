@@ -46,6 +46,9 @@ namespace corryvreckan {
         TH1F* clusterWidthRow;
         TH1F* clusterWidthColumn;
         TH1F* clusterCharge;
+        TH1F* clusterCharge_1px;
+        TH1F* clusterCharge_2px;
+        TH1F* clusterCharge_3px;
         TH2F* clusterPositionGlobal;
         TH1F* clusterTimes;
         TH1F* clusterMultiplicity;

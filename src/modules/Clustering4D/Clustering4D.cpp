@@ -44,7 +44,13 @@ void Clustering4D::initialise() {
     title = m_detector->getName() + " Cluster Width - Columns;cluster width [columns];events";
     clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, -0.5, 99.5);
     title = m_detector->getName() + " Cluster Charge;cluster charge [e];events";
-    clusterCharge = new TH1F("clusterCharge", title.c_str(), 5000, 0, 50000);
+    clusterCharge = new TH1F("clusterCharge", title.c_str(), 256, -0.5, 255.5);
+    title = m_detector->getName() + " Cluster Charge (1px clusters);cluster charge [e];events";
+    clusterCharge_1px = new TH1F("clusterCharge_1px", title.c_str(), 256, -0.5, 255.5);
+    title = m_detector->getName() + " Cluster Charge (2px clusters);cluster charge [e];events";
+    clusterCharge_2px = new TH1F("clusterCharge_2px", title.c_str(), 256, -0.5, 255.5);
+    title = m_detector->getName() + " Cluster Charge (3px clusters);cluster charge [e];events";
+    clusterCharge_3px = new TH1F("clusterCharge_3px", title.c_str(), 256, -0.5, 255.5);
     title = m_detector->getName() + " Cluster Position (Global);x [mm];y [mm];events";
     clusterPositionGlobal = new TH2F("clusterPositionGlobal", title.c_str(), 400, -10., 10., 400, -10., 10.);
     title = ";cluster timestamp [ns]; # events";
@@ -135,6 +141,13 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
         clusterWidthRow->Fill(cluster->rowWidth());
         clusterWidthColumn->Fill(cluster->columnWidth());
         clusterCharge->Fill(cluster->charge());
+        if(cluster->size() == 1) {
+            clusterCharge_1px->Fill(cluster->charge());
+        } else if(cluster->size() == 2) {
+            clusterCharge_2px->Fill(cluster->charge());
+        } else if(cluster->size() == 3) {
+            clusterCharge_3px->Fill(cluster->charge());
+        }
         clusterSeedCharge->Fill(cluster->getSeedPixel()->charge());
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
         clusterTimes->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "ns")));
