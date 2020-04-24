@@ -133,7 +133,7 @@ void EventLoaderCLICpix2::initialise() {
                                 -0.5,
                                 m_detector->nPixels().Y() - 0.5);
     title = m_detector->getName() + " TOT spectrum;TOT;pixels";
-    hPixelToT = new TH1F("pixelToT", title.c_str(), 32, 0, 31);
+    hPixelToT = new TH1F("pixelToT", title.c_str(), 32, -0.5, 31.5);
     title = m_detector->getName() + " TOT map;x [px];y [px];TOT";
     hPixelToTMap = new TProfile2D("pixelToTMap",
                                   title.c_str(),
@@ -146,14 +146,14 @@ void EventLoaderCLICpix2::initialise() {
                                   0,
                                   maxcounter - 1);
     title = m_detector->getName() + " TOA spectrum;TOA;pixels";
-    hPixelToA = new TH1F("pixelToA", title.c_str(), maxcounter, 0, maxcounter - 1);
+    hPixelToA = new TH1F("pixelToA", title.c_str(), maxcounter, -0.5, maxcounter - 0.5);
     title = m_detector->getName() + " CNT spectrum;CNT;pixels";
-    hPixelCnt = new TH1F("pixelCnt", title.c_str(), maxcounter, 0, maxcounter - 1);
+    hPixelCnt = new TH1F("pixelCnt", title.c_str(), maxcounter, -0.5, maxcounter - 0.5);
     title = m_detector->getName() + " Pixel Multiplicity; # pixels; # events";
-    hPixelMultiplicity = new TH1F("pixelMultiplicity", title.c_str(), 1000, 0, 1000);
+    hPixelMultiplicity = new TH1F("pixelMultiplicity", title.c_str(), 1000, -0.5, 999.5);
 
     title = m_detector->getName() + " Timewalk;TOA;TOT;pixels";
-    hTimeWalk = new TH2F("timewalk", title.c_str(), maxcounter, 0, maxcounter - 1, 32, 0, 31);
+    hTimeWalk = new TH2F("timewalk", title.c_str(), maxcounter, -0.5, maxcounter - 0.5, 32, -0.5, 31.5);
 
     title = m_detector->getName() + " Map of masked pixels;x [px];y [px];mask code";
     hMaskMap = new TH2F("maskMap",

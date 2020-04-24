@@ -24,10 +24,11 @@ Split clusters can be recovered using a larger search radius for neighbouring pi
 For each detector the following plots are produced:
 
 * Histograms for cluster size, seed charge, width (columns/X and rows/Y)
-* Cluster charge histogram
+* Cluster charge histogram for all clusters as well as 1-px, 2-px, 3-px clusters
 * 2D cluster positions in global coordinates
 * Cluster times
 * Cluster multiplicity
+* Histogram with time difference of pixel time and cluster time for all pixels in a cluster
 
 ### Usage
 ```toml

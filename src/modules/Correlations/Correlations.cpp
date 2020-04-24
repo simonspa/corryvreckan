@@ -99,7 +99,7 @@ void Correlations::initialise() {
     correlationTime_px =
         new TH1F("correlationTime_px", title.c_str(), static_cast<int>(2. * timeCut), -1 * timeCut, timeCut);
     title = m_detector->getName() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [1/40MHz];events";
-    correlationTimeInt = new TH1F("correlationTimeInt", title.c_str(), 8000, -40000, 40000);
+    correlationTimeInt = new TH1F("correlationTimeInt", title.c_str(), 8000, -40000.5, 39999.5);
 
     // 2D correlation plots (pixel-by-pixel, local coordinates):
     title = m_detector->getName() + ": 2D correlation X (local);x [px];x_{ref} [px];events";
