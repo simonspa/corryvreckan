@@ -5,7 +5,7 @@ As decribed in Section~\ref{sec:detector_config}, an analysis with \corry requir
 This file also contains the position and rotation of each detector plane.
 The Z-positions of all planes can \textbf{and must} be measured by hand in the existing test beam setup and entered in this configuration file for the analysis.
 The X- and Y-positions as well as the rotations cannot be measured precisely by hand.
-+However, these have a strong influence on the tracking since a misalignment of a fraction of a millimeter might already correspond to a shift by multiple pixel pitches.
+However, these have a strong influence on the tracking since a misalignment of a fraction of a millimeter might already correspond to a shift by multiple pixel pitches.
 
 Consequently, an alignment procedure is needed in which the detector planes are shifted and rotated iteratively relative to the detector with \parameter{role = reference} to increase the tracking quality.
 More technically, the track residuals on all planes,~i.e. the distribution of the spatial distance between the interpolated track intercept and the associated cluster on the plane need to be centered around zero and 'as narrow as possible' -- the width of the distribution depends on the tracking resolution of the telescope and is influenced by many factors such as the beam energy, the material budget of the detector planes, the distance between the detector planes, etc.
