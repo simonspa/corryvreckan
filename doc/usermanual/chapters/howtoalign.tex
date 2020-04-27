@@ -9,7 +9,7 @@ However, these have a strong influence on the tracking since a misalignment of a
 
 Consequently, an alignment procedure is needed in which the detector planes are shifted and rotated iteratively relative to the detector with \parameter{role = reference} to increase the tracking quality.
 More technically, the track residuals on all planes,~i.e. the distribution of the spatial distance between the interpolated track intercept and the associated cluster on the plane need to be centered around zero and 'as narrow as possible' -- the width of the distribution depends on the tracking resolution of the telescope and is influenced by many factors such as the beam energy, the material budget of the detector planes, the distance between the detector planes, etc.
-+It is important to correctly set the \parameter{spatial_resolution} specified in the detector configuration file described in Section~\ref{sec:detector_config} because is defining the uncertainty on the cluster positions and therefore influences the track $\chi^2$.
+It is important to correctly set the \parameter{spatial_resolution} specified in the detector configuration file described in Section~\ref{sec:detector_config} because is defining the uncertainty on the cluster positions and therefore influences the track $\chi^2$.
 
 This chapter provides a description of how to use the alignment features of \corry.
 It also includes step-by-step instructions on how to align the detector planes for new set of test beam data.
