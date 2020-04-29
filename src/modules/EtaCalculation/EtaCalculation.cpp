@@ -99,12 +99,10 @@ StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Look at the associated clusters and plot the eta function
-        for(auto& dutCluster : track->associatedClusters()) {
-            if(dutCluster->detectorID() != m_detector->getName()) {
-                continue;
-            }
+        for(auto& dutCluster : track->associatedClusters(m_detector->getName())) {
             calculateEta(track, dutCluster);
         }
+
         // Do the same for all clusters of the track:
         for(auto& cluster : track->clusters()) {
             if(cluster->detectorID() != m_detector->getName()) {
