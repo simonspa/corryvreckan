@@ -170,7 +170,7 @@ namespace corryvreckan {
          * @brief Get the clusters associated to the track
          * @return vector of cluster* assosiated to the track
          */
-        std::vector<Cluster*> associatedClusters() const;
+        std::vector<Cluster*> associatedClusters(const std::string& detectorID) const;
 
         /**
          * @brief Check if cluster is associated

@@ -26,9 +26,9 @@ Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp())
         Cluster* cluster = new Cluster(*track_cluster);
         addCluster(cluster);
     }
-    auto associatedClusters = track.associatedClusters();
+    auto associatedClusters = track.m_associatedClusters;
     for(auto& assoc_cluster : associatedClusters) {
-        Cluster* cluster = new Cluster(*assoc_cluster);
+        Cluster* cluster = new Cluster(*dynamic_cast<Cluster*>(assoc_cluster.GetObject()));
         addAssociatedCluster(cluster);
     }
     m_materialBudget = track.m_materialBudget;
@@ -56,13 +56,19 @@ std::vector<Cluster*> Track::clusters() const {
     return clustervec;
 }
 
-std::vector<Cluster*> Track::associatedClusters() const {
+std::vector<Cluster*> Track::associatedClusters(const std::string& detectorID) const {
     std::vector<Cluster*> clustervec;
     for(auto& cluster : m_associatedClusters) {
+        // Check if reference is valid:
         if(!cluster.IsValid() || cluster.GetObject() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
         }
-        clustervec.emplace_back(dynamic_cast<Cluster*>(cluster.GetObject()));
+
+        auto cluster_ref = dynamic_cast<Cluster*>(cluster.GetObject());
+        if(cluster_ref->getDetectorID() != detectorID) {
+            continue;
+        }
+        clustervec.emplace_back(cluster_ref);
     }
 
     // Return as a vector of pixels
