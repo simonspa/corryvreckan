@@ -592,7 +592,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
                 hTrackCorrelationTime->Fill(track->timestamp() - cluster->timestamp());
 
-                auto associated_clusters = track->associatedClusters();
+                auto associated_clusters = track->associatedClusters(m_detector->getName());
                 if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) != associated_clusters.end()) {
                     LOG(DEBUG) << "Found associated cluster " << (*cluster);
                     has_associated_cluster = true;
