@@ -51,22 +51,13 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
     // Make a local copy and store it
     for(auto& track : (*tracks)) {
 
-        // Apply selection to tracks for alignment
-        if(m_pruneTracks) {
-            // Only allow one associated cluster:
-            if(track->associatedClusters().size() > m_maxAssocClusters) {
-                LOG(DEBUG) << "Discarded track with " << track->associatedClusters().size() << " associated clusters";
-                m_discardedtracks++;
-                continue;
-            }
-
-            // Only allow tracks with certain Chi2/NDoF:
-            if(track->chi2ndof() > m_maxTrackChi2) {
-                LOG(DEBUG) << "Discarded track with Chi2/NDoF - " << track->chi2ndof();
-                m_discardedtracks++;
-                continue;
-            }
+        // Apply selection to tracks for alignment - only allow tracks with certain Chi2/NDoF:
+        if(m_pruneTracks && track->chi2ndof() > m_maxTrackChi2) {
+            LOG(DEBUG) << "Discarded track with Chi2/NDoF - " << track->chi2ndof();
+            m_discardedtracks++;
+            continue;
         }
+
         LOG(TRACE) << "Cloning track with track model \"" << track->getType() << "\" for alignment";
         auto alignmentTrack = track->clone();
         m_alignmenttracks.push_back(alignmentTrack);
