@@ -69,8 +69,8 @@ std::vector<Cluster*> Track::associatedClusters() const {
     return clustervec;
 }
 
-bool Track::hasClosestCluster() const {
-    return closestCluster.GetObject() != nullptr;
+bool Track::hasClosestCluster(const std::string& detectorID) const {
+    return (closestCluster.find(detectorID) != closestCluster.end());
 }
 
 double Track::chi2() const {
@@ -95,14 +95,24 @@ double Track::ndof() const {
 }
 
 void Track::setClosestCluster(const Cluster* cluster) {
-    closestCluster = const_cast<Cluster*>(cluster);
+    auto id = cluster->getDetectorID();
+
+    // Check if this detector has a closes cluster and overwrite it:
+    auto cl = closestCluster.find(id);
+    if(cl != closestCluster.end()) {
+        cl->second = const_cast<Cluster*>(cluster);
+    } else {
+        closestCluster.emplace(id, const_cast<Cluster*>(cluster));
+    }
 }
 
-Cluster* Track::getClosestCluster() const {
-    if(!closestCluster.IsValid() || closestCluster.GetObject() == nullptr) {
-        throw MissingReferenceException(typeid(*this), typeid(Cluster));
+Cluster* Track::getClosestCluster(const std::string& id) const {
+    auto cluster_it = closestCluster.find(id);
+    auto cluster = cluster_it->second;
+    if(cluster_it != closestCluster.end() && cluster.IsValid() && cluster.GetObject() != nullptr) {
+        return dynamic_cast<Cluster*>(cluster.GetObject());
     }
-    return dynamic_cast<Cluster*>(closestCluster.GetObject());
+    throw MissingReferenceException(typeid(*this), typeid(Cluster));
 }
 
 bool Track::isAssociated(Cluster* cluster) const {

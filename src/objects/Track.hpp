@@ -118,15 +118,17 @@ namespace corryvreckan {
 
         /**
          * @brief Get associated cluster with smallest distance to Track
+         * @param detectorID Name of the detector
          * @return Pointer to closest cluster to the Track if set, nullptr otherwise
          */
-        Cluster* getClosestCluster() const;
+        Cluster* getClosestCluster(const std::string& detectorID) const;
 
         /**
          * @brief Check if Track has a closest cluster assigned to it
-         * @return True if a closest cluster is set
+         * @param detectorID Name of the detector
+         * @return True if a closest cluster is set for this detector
          */
-        bool hasClosestCluster() const;
+        bool hasClosestCluster(const std::string& detectorID) const;
 
         /**
          * @brief Print an ASCII representation of the Track to the given stream
@@ -274,7 +276,7 @@ namespace corryvreckan {
         std::map<std::string, ROOT::Math::XYZPoint> m_corrections{};
         std::vector<Plane> m_planes{};
 
-        TRef closestCluster{nullptr};
+        std::map<std::string, TRef> closestCluster;
         double m_chi2;
         double m_ndof;
         double m_chi2ndof;
