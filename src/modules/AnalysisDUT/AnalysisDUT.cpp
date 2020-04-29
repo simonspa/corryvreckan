@@ -323,8 +323,6 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
     for(auto& track : (*tracks)) {
         // Flags to select clusters and tracks
         bool has_associated_cluster = false;
-        bool is_within_roi = true;
-
         LOG(DEBUG) << "Looking at next track";
 
         // Cut on the chi2/ndof
@@ -348,7 +346,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Check that track is within region of interest using winding number algorithm
         if(!m_detector->isWithinROI(track)) {
-            is_within_roi = false;
+            continue;
         }
 
         // Check that it doesn't go through/near a masked pixel
@@ -433,9 +431,6 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             // Fill per-pixel histograms
             for(auto& pixel : assoc_cluster->pixels()) {
                 hHitMapAssoc->Fill(pixel->column(), pixel->row());
-                if(is_within_roi) {
-                    hHitMapROI->Fill(pixel->column(), pixel->row());
-                }
                 hPixelRawValueAssoc->Fill(pixel->raw());
                 hPixelRawValueMapAssoc->Fill(pixel->column(), pixel->row(), pixel->raw());
             }
@@ -468,29 +463,28 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             clusterWidthColAssoc->Fill(assoc_cluster->columnWidth());
 
             // Fill in-pixel plots: (all as function of track position within pixel cell)
-            if(is_within_roi) {
-                qvsxmym->Fill(xmod, ymod, cluster_charge);                     // cluster charge profile
-                qMoyalvsxmym->Fill(xmod, ymod, exp(-normalized_charge / 3.5)); // norm. cluster charge profile
+            qvsxmym->Fill(xmod, ymod, cluster_charge);                     // cluster charge profile
+            qMoyalvsxmym->Fill(xmod, ymod, exp(-normalized_charge / 3.5)); // norm. cluster charge profile
 
-                // mean charge of cluster seed
-                pxqvsxmym->Fill(xmod, ymod, assoc_cluster->getSeedPixel()->charge());
+            // mean charge of cluster seed
+            pxqvsxmym->Fill(xmod, ymod, assoc_cluster->getSeedPixel()->charge());
 
-                // mean cluster size
-                npxvsxmym->Fill(xmod, ymod, static_cast<double>(assoc_cluster->size()));
-                if(assoc_cluster->size() == 1)
-                    npx1vsxmym->Fill(xmod, ymod);
-                if(assoc_cluster->size() == 2)
-                    npx2vsxmym->Fill(xmod, ymod);
-                if(assoc_cluster->size() == 3)
-                    npx3vsxmym->Fill(xmod, ymod);
-                if(assoc_cluster->size() == 4)
-                    npx4vsxmym->Fill(xmod, ymod);
+            // mean cluster size
+            npxvsxmym->Fill(xmod, ymod, static_cast<double>(assoc_cluster->size()));
+            if(assoc_cluster->size() == 1)
+                npx1vsxmym->Fill(xmod, ymod);
+            if(assoc_cluster->size() == 2)
+                npx2vsxmym->Fill(xmod, ymod);
+            if(assoc_cluster->size() == 3)
+                npx3vsxmym->Fill(xmod, ymod);
+            if(assoc_cluster->size() == 4)
+                npx4vsxmym->Fill(xmod, ymod);
 
-                // residual MAD x, y, combined (sqrt(x*x + y*y))
-                rmsxvsxmym->Fill(xmod, ymod, xabsdistance);
-                rmsyvsxmym->Fill(xmod, ymod, yabsdistance);
-                rmsxyvsxmym->Fill(xmod, ymod, fabs(sqrt(xdistance * xdistance + ydistance * ydistance)));
-            }
+            // residual MAD x, y, combined (sqrt(x*x + y*y))
+            rmsxvsxmym->Fill(xmod, ymod, xabsdistance);
+            rmsyvsxmym->Fill(xmod, ymod, yabsdistance);
+            rmsxyvsxmym->Fill(xmod, ymod, fabs(sqrt(xdistance * xdistance + ydistance * ydistance)));
+
             hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
             hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
         }
