@@ -387,14 +387,12 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
 
         // Loop over all associated DUT clusters:
-        for(auto assoc_cluster : track->associatedClusters()) {
+        for(auto assoc_cluster : track->associatedClusters(m_detector->getName())) {
             LOG(DEBUG) << " - Looking at next associated DUT cluster";
 
             // if closest cluster should be used continue if current associated cluster is not the closest one
-            if(useClosestCluster) {
-                if(track->getClosestCluster() != assoc_cluster) {
-                    continue;
-                }
+            if(useClosestCluster && track->getClosestCluster(m_detector->getName()) != assoc_cluster) {
+                continue;
             }
             has_associated_cluster = true;
 
