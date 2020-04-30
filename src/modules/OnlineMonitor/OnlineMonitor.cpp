@@ -22,12 +22,15 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
     updateNumber = m_config.get<int>("update", 200);
     ignoreAux = m_config.get<bool>("ignore_aux", true);
 
+    clusteringModule = m_config.get<std::string>("clustering_module", "Clustering4D");
+    trackingModule = m_config.get<std::string>("tracking_module", "Tracking4D");
+
     // Set up overview plots:
     canvas_overview = m_config.getMatrix<std::string>("overview",
-                                                      {{"Tracking4D/trackChi2"},
-                                                       {"Clustering4D/%REFERENCE%/clusterCharge"},
+                                                      {{trackingModule + "/trackChi2"},
+                                                       {clusteringModule + "/%REFERENCE%/clusterCharge"},
                                                        {"Correlations/%REFERENCE%/hitmap", "colz"},
-                                                       {"Tracking4D/%REFERENCE%/residualsX"}});
+                                                       {trackingModule + "/%REFERENCE%/residualsX"}});
 
     // Set up individual plots for the DUT
     canvas_dutplots = m_config.getMatrix<std::string>("dut_plots",
@@ -38,14 +41,14 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
                                                        {"AnalysisDUT/%DUT%/clusterChargeAssociated"},
                                                        {"AnalysisDUT/%DUT%/associatedTracksVersusTime"}});
     canvas_tracking = m_config.getMatrix<std::string>("tracking",
-                                                      {{"Tracking4D/trackChi2"},
-                                                       {"Tracking4D/trackAngleX"},
-                                                       {"Tracking4D/trackAngleY"},
-                                                       {"Tracking4D/trackChi2ndof"},
-                                                       {"Tracking4D/tracksPerEvent"},
-                                                       {"Tracking4D/clustersPerTrack"}});
+                                                      {{trackingModule + "/trackChi2"},
+                                                       {trackingModule + "/trackAngleX"},
+                                                       {trackingModule + "/trackAngleY"},
+                                                       {trackingModule + "/trackChi2ndof"},
+                                                       {trackingModule + "/tracksPerEvent"},
+                                                       {trackingModule + "/clustersPerTrack"}});
     canvas_hitmaps = m_config.getMatrix<std::string>("hitmaps", {{"Correlations/%DETECTOR%/hitmap", "colz"}});
-    canvas_residuals = m_config.getMatrix<std::string>("residuals", {{"Tracking4D/%DETECTOR%/residualsX"}});
+    canvas_residuals = m_config.getMatrix<std::string>("residuals", {{trackingModule + "/%DETECTOR%/residualsX"}});
 
     canvas_cx = m_config.getMatrix<std::string>("correlation_x", {{"Correlations/%DETECTOR%/correlationX"}});
     canvas_cx2d =
@@ -54,7 +57,8 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
     canvas_cy2d =
         m_config.getMatrix<std::string>("correlation_y2d", {{"Correlations/%DETECTOR%/correlationY_2Dlocal", "colz"}});
 
-    canvas_charge = m_config.getMatrix<std::string>("charge_distributions", {{"Clustering4D/%DETECTOR%/clusterCharge"}});
+    canvas_charge =
+        m_config.getMatrix<std::string>("charge_distributions", {{clusteringModule + "/%DETECTOR%/clusterCharge"}});
 
     canvas_time = m_config.getMatrix<std::string>("event_times", {{"Correlations/%DETECTOR%/eventTimes"}});
 }

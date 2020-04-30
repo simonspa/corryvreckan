@@ -10,12 +10,14 @@ A set of canvases is available to display a variety of information ranging from 
 The plots on each of the canvases contain real time data, automatically updated every `update` events.
 
 The displayed plots and their source can be configured via the framework configuration file.
-Here, each canvas is configured via a matrix containing the path of the plot and its plotting options in each row, e.g.
+For plots from clustering and tracking modules, the module name can be specified to display standard plots of the corresponding module.
+In addition, overruling the standard plot configuration, each canvas can be configured via a matrix containing the path of the plot and its plotting options in each row, e.g.
 
 ```toml
 dut_plots =  [["EventLoaderEUDAQ2/%DUT%/hitmap", "colz"],
              ["EventLoaderEUDAQ2/%DUT%/hPixelRawValues", "log"]]
 ```
+
 
 The allowed plotting options comprise all drawing options offered by ROOT.
 In addition, the `log` keyword is supported, which switches the Y axis of the respective plot to a logarithmic scale.
@@ -32,6 +34,8 @@ The "corryvreckan" namespace is not required to be added to the plot path.
 * `update`: Number of events after which to update, defaults to `500`.
 * `canvas_title`: Title of the GUI window to be shown, defaults to `Corryvreckan Testbeam Monitor`. This parameter can be used to e.g. display the current run number in the window title.
 * `ignore_aux`: With this boolean variable set, detectors with `auxiliary` roles are ignored and none of their histograms are added to the UI. Defaults to `true`.
+* `clustering_module`: Module for which the standard clustering plots are selected. Defaults to `Clustering4D`.
+* `tracking_module`: Module for which the standard tracking plots are selected. Defaults to `Tracking4D`.
 
 
 * `overview`: List of plots to be placed on the "Overview" canvas of the online monitor. The list of plots created in the default configuration is listed below.
@@ -62,6 +66,7 @@ The following plots are displayed by default (can be configured):
 ```toml
 [OnlineMonitor]
 update = 200
+clustering_module = "ClusteringSpatial"
 dut_plots = [["EventLoaderEUDAQ2/%DUT%/hitmap", "colz"],
              ["EventLoaderEUDAQ2/%DUT%/hPixelTimes"],
              ["EventLoaderEUDAQ2/%DUT%/hPixelRawValues"],
