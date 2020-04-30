@@ -103,7 +103,7 @@ double Track::ndof() const {
 void Track::setClosestCluster(const Cluster* cluster) {
     auto id = cluster->getDetectorID();
 
-    // Check if this detector has a closes cluster and overwrite it:
+    // Check if this detector has a closest cluster and overwrite it:
     auto cl = closestCluster.find(id);
     if(cl != closestCluster.end()) {
         cl->second = const_cast<Cluster*>(cluster);

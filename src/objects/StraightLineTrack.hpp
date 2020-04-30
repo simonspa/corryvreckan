@@ -67,7 +67,7 @@ namespace corryvreckan {
         ROOT::Math::XYPoint distance(const Cluster* cluster) const;
 
         /**
-         * @brief this track model does not support kinks, it therefore is always zero
+         * @brief This track model does not support kinks, it therefore is always zero
          * @param  detectorID Detector ID at which the kink should be evaluated
          * @return            Kink at given detector
          */

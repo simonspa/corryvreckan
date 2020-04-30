@@ -124,7 +124,7 @@ namespace corryvreckan {
         Cluster* getClosestCluster(const std::string& detectorID) const;
 
         /**
-         * @brief Check if Track has a closest cluster assigned to it
+         * @brief Check if this track has a closest cluster assigned to it for a given detector
          * @param detectorID Name of the detector
          * @return True if a closest cluster is set for this detector
          */
