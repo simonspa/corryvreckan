@@ -22,6 +22,9 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
     updateNumber = m_config.get<int>("update", 200);
     ignoreAux = m_config.get<bool>("ignore_aux", true);
 
+    clusteringModule = m_config.get<std::string>("clustering_module", "Clustering4D");
+    trackingModule = m_config.get<std::string>("tracking_module", "Tracking4D");
+
     // Set up overview plots:
     canvas_overview = m_config.getMatrix<std::string>("overview",
                                                       {{"Tracking4D/trackChi2"},
