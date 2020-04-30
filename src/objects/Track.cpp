@@ -26,14 +26,13 @@ Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp())
         Cluster* cluster = new Cluster(*track_cluster);
         addCluster(cluster);
     }
-    auto associatedClusters = track.associatedClusters();
+    auto associatedClusters = track.m_associatedClusters;
     for(auto& assoc_cluster : associatedClusters) {
-        Cluster* cluster = new Cluster(*assoc_cluster);
+        Cluster* cluster = new Cluster(*dynamic_cast<Cluster*>(assoc_cluster.GetObject()));
         addAssociatedCluster(cluster);
     }
     m_materialBudget = track.m_materialBudget;
     m_residual = track.m_residual;
-    m_kink = track.m_kink;
     m_corrections = track.m_corrections;
 }
 
@@ -57,21 +56,27 @@ std::vector<Cluster*> Track::clusters() const {
     return clustervec;
 }
 
-std::vector<Cluster*> Track::associatedClusters() const {
+std::vector<Cluster*> Track::associatedClusters(const std::string& detectorID) const {
     std::vector<Cluster*> clustervec;
     for(auto& cluster : m_associatedClusters) {
+        // Check if reference is valid:
         if(!cluster.IsValid() || cluster.GetObject() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
         }
-        clustervec.emplace_back(dynamic_cast<Cluster*>(cluster.GetObject()));
+
+        auto cluster_ref = dynamic_cast<Cluster*>(cluster.GetObject());
+        if(cluster_ref->getDetectorID() != detectorID) {
+            continue;
+        }
+        clustervec.emplace_back(cluster_ref);
     }
 
     // Return as a vector of pixels
     return clustervec;
 }
 
-bool Track::hasClosestCluster() const {
-    return closestCluster.GetObject() != nullptr;
+bool Track::hasClosestCluster(const std::string& detectorID) const {
+    return (closestCluster.find(detectorID) != closestCluster.end());
 }
 
 double Track::chi2() const {
@@ -96,14 +101,24 @@ double Track::ndof() const {
 }
 
 void Track::setClosestCluster(const Cluster* cluster) {
-    closestCluster = const_cast<Cluster*>(cluster);
+    auto id = cluster->getDetectorID();
+
+    // Check if this detector has a closest cluster and overwrite it:
+    auto cl = closestCluster.find(id);
+    if(cl != closestCluster.end()) {
+        cl->second = const_cast<Cluster*>(cluster);
+    } else {
+        closestCluster.emplace(id, const_cast<Cluster*>(cluster));
+    }
 }
 
-Cluster* Track::getClosestCluster() const {
-    if(!closestCluster.IsValid() || closestCluster.GetObject() == nullptr) {
-        throw MissingReferenceException(typeid(*this), typeid(Cluster));
+Cluster* Track::getClosestCluster(const std::string& id) const {
+    auto cluster_it = closestCluster.find(id);
+    auto cluster = cluster_it->second;
+    if(cluster_it != closestCluster.end() && cluster.IsValid() && cluster.GetObject() != nullptr) {
+        return dynamic_cast<Cluster*>(cluster.GetObject());
     }
-    return dynamic_cast<Cluster*>(closestCluster.GetObject());
+    throw MissingReferenceException(typeid(*this), typeid(Cluster));
 }
 
 bool Track::isAssociated(Cluster* cluster) const {
@@ -137,14 +152,6 @@ Cluster* Track::getClusterFromDetector(std::string detectorID) const {
         return nullptr;
     }
     return dynamic_cast<Cluster*>(it->GetObject());
-}
-
-ROOT::Math::XYPoint Track::kink(std::string detectorID) const {
-    if(m_kink.count(detectorID) == 1) {
-        return m_kink.at(detectorID);
-    } else {
-        return ROOT::Math::XYPoint(0, 0);
-    }
 }
 
 void Track::addMaterial(std::string detetcorID, double x_x0, double z) {

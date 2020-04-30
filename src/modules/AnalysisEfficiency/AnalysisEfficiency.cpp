@@ -263,7 +263,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
             for(auto* cluster : (*clusters)) {
                 LOG(DEBUG) << " - Looking at next DUT cluster";
 
-                auto associated_clusters = track->associatedClusters();
+                auto associated_clusters = track->associatedClusters(m_detector->getName());
                 if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) != associated_clusters.end()) {
                     LOG(DEBUG) << "Found associated cluster " << (*cluster);
                     has_associated_cluster = true;
