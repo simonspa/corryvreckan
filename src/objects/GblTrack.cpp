@@ -72,9 +72,9 @@ void GblTrack::fit() {
 
     std::vector<GblPoint> points;
 
-    // lambda to calculate the scattering theta
+    // lambda to calculate the scattering theta, beta2 assumed to be one and the momentum in MeV
     auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
-        return (13.6 / m_momentum * sqrt(mbCurrent) * (1 + 0.038 * log(mbTotal)));
+        return sqrt(13.6 / m_momentum * sqrt(mbCurrent) * (1 + 0.038 * log(mbTotal)));
     };
 
     // extract the rotation from an ROOT::Math::Transfrom3D, store it  in 4x4 matrix to match proteus format
@@ -95,15 +95,19 @@ void GblTrack::fit() {
     // lambda to add a scatterer to a GBLPoint
     auto addScattertoGblPoint = [&total_material, &scatteringTheta, &localTangent](GblPoint& point, double material) {
         Matrix<double, 2, 2> scatter;
-        Vector2d localSlope(localTangent(0) / localTangent(2), localTangent(1) / localTangent(2));
-        auto scale = 1 / scatteringTheta(material, total_material) / (1 + localSlope.squaredNorm());
+        if(localTangent(2) != 1)
+            throw TrackError(typeid(GblTrack),
+                             "wrong normalization of local slope, should be 1 but is " + std::to_string(localTangent(2)));
+        Vector2d localSlope(localTangent(0), localTangent(1));
+        auto scale =
+            1 / scatteringTheta(material * (1 + localSlope.squaredNorm()), total_material) / (1 + localSlope.squaredNorm());
         scatter(0, 0) = 1 + localSlope(1) * localSlope(1);
         scatter(1, 1) = 1 + localSlope(0) * localSlope(0);
         scatter(0, 1) = scatter(1, 0) = -(localSlope(0) * localSlope(1));
-        scatter *= scale * scale;
+        scatter *= (scale * scale);
         point.addScatterer(Vector2d::Zero(), scatter);
     };
-    // lambda Jacobian
+    // lambda Jacobian from one scatter to the next
     auto jac = [](const Vector4d& tangent, const Matrix4d& toTarget, double distance) {
         Matrix<double, 4, 3> R;
         R.col(0) = toTarget.col(0);
@@ -121,7 +125,7 @@ void GblTrack::fit() {
         Matrix<double, 6, 6> jaco;
 
         jaco << F * R, (-distance / S[2]) * F * R, Matrix3d::Zero(), (1 / S[2]) * F * R;
-        jaco(5, 5) = 1; // set a future time component to 1
+        jaco(5, 5) = 1; // a future time component
         return jaco;
     };
     auto addMeasurementtoGblPoint = [&localTangent, &localPosTrack, &globalTrackPos, this](GblPoint& point,
@@ -149,7 +153,7 @@ void GblTrack::fit() {
         }
     };
 
-    // lambda to add plane (not the first one) and air scatterers //FIXME: Where to put them?
+    // lambda to add plane (not the first one) and air scatterers
     auto addPlane = [&](std::vector<Plane>::iterator& plane) {
         // Mapping of parameters in proteus - I would like to get rid of these converions once it works
         // For now they will stay here as changing this will cause the jacobian setup to be more messy right now
@@ -182,12 +186,13 @@ void GblTrack::fit() {
         Matrix4d toTarget = getRotation(plane->toLocal()) * getRotation(prevToGlobal);
 
         auto myjac = jac(prevTan, toTarget, dist);
-        double frac1 = 0.21, frac2 = 0.58;
-        // Current layout
+
+        // Layout if volume scattering active
         // |        |        |       |
         // |  frac1 | frac2  | frac1 |
         // |        |        |       |
 
+        double frac1 = 0.21, frac2 = 0.58;
         // special treatment of first point on trajectory
         if(points.size() == 0) {
             myjac = Matrix<double, 6, 6>::Identity();
@@ -234,13 +239,16 @@ void GblTrack::fit() {
                          "Number of planes " + std::to_string(m_planes.size()) +
                              " doesn't match number of GBL points on trajectory " + std::to_string(points.size()));
     }
+
     // perform fit
     GblTrajectory traj(points, false); // false = no magnetic field
     double lostWeight = 0;
     int ndf = 0;
-    // fit it
     auto fitReturnValue = traj.fit(m_chi2, ndf, lostWeight);
     if(fitReturnValue != 0) { // Is this a good ieda? should we discard track candidates that fail?
+        if(m_logging) {
+            std::cout << "GBL failed with return value " << fitReturnValue << std::endl;
+        }
         return;
     }
 
@@ -256,16 +264,18 @@ void GblTrack::fit() {
     VectorXd gblErrorsResiduals(2);
     VectorXd gblDownWeights(2);
     unsigned int numData = 2;
+
     for(auto plane : m_planes) {
         traj.getScatResults(
             plane.gblPos(), numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
+        // this is of course the kink in local coordinates and not to meaningful for further usage
         m_kink[plane.name()] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
         traj.getResults(int(plane.gblPos()), localPar, localCov);
         m_corrections[plane.name()] = ROOT::Math::XYZPoint(localPar(3), localPar(4), 0);
         if(plane.hasCluster()) {
             traj.getMeasResults(
                 plane.gblPos(), numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
-            // to be consistent with previous residuals:
+            // to be consistent with previous residuals global ones here:
             ROOT::Math::XYZPoint corPos =
                 plane.toGlobal() *
                 (ROOT::Math::XYZPoint(m_localTrackPoints.at(plane.name()).x() + m_corrections.at(plane.name()).x(),
@@ -322,6 +332,7 @@ ROOT::Math::XYZPoint GblTrack::state(std::string detectorID) const {
     if(m_localTrackPoints.count(detectorID) != 1) {
         throw TrackError(typeid(GblTrack), "Detector " + detectorID + " is not part of the GBL");
     }
+    // The local track position can simply be transformed to global coordinates
     auto p =
         std::find_if(m_planes.begin(), m_planes.end(), [detectorID](auto plane) { return (plane.name() == detectorID); });
     return (p->toGlobal() * ROOT::Math::XYZPoint(m_localTrackPoints.at(detectorID).x() + correction(detectorID).x(),
@@ -346,7 +357,7 @@ ROOT::Math::XYZVector GblTrack::direction(std::string detectorID) const {
     // beeing definded from the requested plane onwards to the next one
     ROOT::Math::XYZPoint point = state(detectorID);
 
-    // searching for the next detector layer
+    // searching for the next detector layer - fixme: can this be done nicer?
     bool found = false;
     std::string nextLayer = "";
     for(auto& layer : m_planes) {
