@@ -31,7 +31,7 @@ namespace corryvreckan {
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
     private:
-        ROOT::Math::XYZPoint closestApproach(ROOT::Math::XYZPoint position, std::shared_ptr<MCParticleVector> particles);
+        ROOT::Math::XYZPoint closestApproach(ROOT::Math::XYZPoint position, const MCParticleVector& particles);
 
         // Histograms for each of the devices
         std::map<std::string, TH1F*> telescopeMCresidualsLocalX;
