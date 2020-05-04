@@ -24,7 +24,7 @@ namespace corryvreckan {
      * @param  d Shared pointer to the detector object
      * @return   Relevant resolution for the given detector
      */
-    template <typename T> inline T get_resolution(const std::string& n, const std::shared_ptr<Detector>& d) {
+    template <typename T> inline T get_resolution(const std::string&, const std::shared_ptr<Detector>&) {
         throw ConfigurationError();
     }
     template <> inline double get_resolution<double>(const std::string& n, const std::shared_ptr<Detector>& d) {
