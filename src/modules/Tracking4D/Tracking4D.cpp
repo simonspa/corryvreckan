@@ -26,7 +26,7 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
 
     // timing cut, relative (x * time_resolution) or absolute:
-    time_cuts_ = calculate_cut<double>("time_cut", 3.0, m_config, get_detectors());
+    time_cuts_ = corryvreckan::calculate_cut<double>("time_cut", 3.0, m_config, get_detectors());
 
     minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
     excludeDUT = m_config.get<bool>("exclude_dut", true);
@@ -50,7 +50,7 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
                              "tracks are rejected";
     }
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    spatial_cuts_ = calculate_cut<XYVector>("spatial_cut", 3.0, m_config, get_detectors());
+    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, m_config, get_detectors());
 }
 
 void Tracking4D::initialise() {

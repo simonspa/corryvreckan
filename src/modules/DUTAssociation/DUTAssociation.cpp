@@ -9,6 +9,7 @@
  */
 
 #include "DUTAssociation.h"
+#include "tools/cuts.h"
 
 using namespace corryvreckan;
 using namespace std;
@@ -21,24 +22,10 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
     m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
 
     // timing cut, relative (x * time_resolution) or absolute:
-    if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
-    } else if(m_config.has("time_cut_abs")) {
-        timeCut = m_config.get<double>("time_cut_abs");
-    } else {
-        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
-    }
+    timeCut = corryvreckan::calculate_cut<double>("time_cut", 3.0, m_config, m_detector);
 
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            m_config, {"spatial_cut_rel", "spatial_cut_abs"}, "Absolute and relative spatial cuts are mutually exclusive.");
-    } else if(m_config.has("spatial_cut_abs")) {
-        spatialCut = m_config.get<XYVector>("spatial_cut_abs");
-    } else {
-        spatialCut = m_config.get<double>("spatial_cut_rel", 3.0) * m_detector->getSpatialResolution();
-    }
+    spatialCut = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, m_config, m_detector);
     useClusterCentre = m_config.get<bool>("use_cluster_centre", false);
 
     LOG(DEBUG) << "time_cut = " << Units::display(timeCut, {"ms", "us", "ns"});
