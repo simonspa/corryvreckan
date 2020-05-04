@@ -59,6 +59,7 @@ namespace corryvreckan {
         int neighbourRadiusRow;
         int neighbourRadiusCol;
         bool chargeWeighting;
+        bool useEarliestPixel;
     };
 } // namespace corryvreckan
 #endif // CLUSTERING4D_H

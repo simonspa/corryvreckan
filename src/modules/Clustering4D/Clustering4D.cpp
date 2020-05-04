@@ -30,6 +30,7 @@ Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detec
     neighbourRadiusRow = m_config.get<int>("neighbour_radius_row", 1);
     neighbourRadiusCol = m_config.get<int>("neighbour_radius_col", 1);
     chargeWeighting = m_config.get<bool>("charge_weighting", true);
+    useEarliestPixel = m_config.get<bool>("use_earliest_pixel", false);
 }
 
 void Clustering4D::initialise() {
@@ -233,7 +234,7 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
 
     LOG(DEBUG) << "== Making cluster centre";
     // Empty variables to calculate cluster position
-    double column(0), row(0), charge(0);
+    double column(0), row(0), charge(0), maxcharge(0);
     double column_sum(0), column_sum_chargeweighted(0);
     double row_sum(0), row_sum_chargeweighted(0);
     bool found_charge_zero = false;
@@ -261,8 +262,16 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         column_sum_chargeweighted += (pixel->column() * pixel->charge());
         row_sum_chargeweighted += (pixel->row() * pixel->charge());
 
-        if(pixel->timestamp() < timestamp) {
-            timestamp = pixel->timestamp();
+        // If charge is available: cluster timestamp = pixel with largestcharge:
+        if(!found_charge_zero && useEarliestPixel) {
+            if(pixel->charge() > maxcharge) {
+                timestamp = pixel->timestamp();
+                maxcharge = pixel->charge();
+            }
+        } else { // use earliest pixel
+            if(pixel->timestamp() < timestamp) {
+                timestamp = pixel->timestamp();
+            }
         }
     }
 
