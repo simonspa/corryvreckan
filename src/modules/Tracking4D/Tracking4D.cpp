@@ -11,7 +11,9 @@
 #include "Tracking4D.h"
 #include <TCanvas.h>
 #include <TDirectory.h>
+
 #include "objects/KDTree.hpp"
+#include "tools/cuts.h"
 
 using namespace corryvreckan;
 using namespace std;
@@ -24,20 +26,8 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
 
     // timing cut, relative (x * time_resolution) or absolute:
-    if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
-    } else if(m_config.has("time_cut_abs")) {
-        double time_cut_abs_ = m_config.get<double>("time_cut_abs");
-        for(auto& detector : get_detectors()) {
-            time_cuts_[detector] = time_cut_abs_;
-        }
-    } else {
-        double time_cut_rel_ = m_config.get<double>("time_cut_rel", 3.0);
-        for(auto& detector : get_detectors()) {
-            time_cuts_[detector] = detector->getTimeResolution() * time_cut_rel_;
-        }
-    }
+    time_cuts_ = calculate_cut<double>("time_cut", 3.0, m_config, get_detectors());
+
     minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
     excludeDUT = m_config.get<bool>("exclude_dut", true);
     requireDetectors = m_config.getArray<std::string>("require_detectors", {""});
@@ -60,21 +50,7 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
                              "tracks are rejected";
     }
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            m_config, {"spatial_cut_rel", "spatial_cut_abs"}, "Absolute and relative spatial cuts are mutually exclusive.");
-    } else if(m_config.has("spatial_cut_abs")) {
-        auto spatial_cut_abs_ = m_config.get<XYVector>("spatial_cut_abs");
-        for(auto& detector : get_detectors()) {
-            spatial_cuts_[detector] = spatial_cut_abs_;
-        }
-    } else {
-        // default is 3.0 * spatial_resolution
-        auto spatial_cut_rel_ = m_config.get<double>("spatial_cut_rel", 3.0);
-        for(auto& detector : get_detectors()) {
-            spatial_cuts_[detector] = detector->getSpatialResolution() * spatial_cut_rel_;
-        }
-    }
+    spatial_cuts_ = calculate_cut<XYVector>("spatial_cut", 3.0, m_config, get_detectors());
 }
 
 void Tracking4D::initialise() {
