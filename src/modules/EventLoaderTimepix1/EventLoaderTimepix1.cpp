@@ -92,7 +92,7 @@ StatusCode EventLoaderTimepix1::run(std::shared_ptr<Clipboard> clipboard) {
     // Make the container object for pixels. Some devices may not have
     // any hits, so each event we have to check which detectors are present
     // and add their hits
-    map<string, std::shared_ptr<PixelVector>> dataContainers;
+    map<string, PixelVector> dataContainers;
     vector<string> detectors;
 
     // If there are no files open and there are more files to look at, open a new
@@ -127,7 +127,6 @@ StatusCode EventLoaderTimepix1::run(std::shared_ptr<Clipboard> clipboard) {
         m_prevHeader = "";
         detectors.push_back(device);
         m_currentDevice = device;
-        dataContainers[device] = std::make_shared<PixelVector>();
         LOG(DEBUG) << "Detector: " << device << ", time: " << time;
     }
 
@@ -159,7 +158,6 @@ StatusCode EventLoaderTimepix1::run(std::shared_ptr<Clipboard> clipboard) {
             // Record that this device has been made
             detectors.push_back(device);
             m_currentDevice = device;
-            dataContainers[device] = std::make_shared<PixelVector>();
             LOG(DEBUG) << "Detector: " << device << ", time: " << time;
 
         } else {
@@ -168,10 +166,10 @@ StatusCode EventLoaderTimepix1::run(std::shared_ptr<Clipboard> clipboard) {
             istringstream detectorData(data);
             detectorData >> col >> row >> tot;
             // when calibration is not available -> set charge = tot, timestamp not available -> set to 0.
-            Pixel* pixel = new Pixel(m_currentDevice, col, row, tot, tot, 0.);
+            auto pixel = std::make_shared<Pixel>(m_currentDevice, col, row, tot, tot, 0.);
             // FIXME to work properly, m_eventTime needs to be converted to nanoseconds!
             pixel->timestamp(static_cast<double>(m_eventTime));
-            dataContainers[m_currentDevice]->push_back(pixel);
+            dataContainers[m_currentDevice].push_back(pixel);
         }
     }
 
@@ -188,7 +186,7 @@ StatusCode EventLoaderTimepix1::run(std::shared_ptr<Clipboard> clipboard) {
         try {
             // Put the pixels on the clipboard
             clipboard->putData(dataContainers[detID], detID);
-            LOG(DEBUG) << "Loaded " << dataContainers[detID]->size() << " pixels from device " << detID;
+            LOG(DEBUG) << "Loaded " << dataContainers[detID].size() << " pixels from device " << detID;
         } catch(ModuleError& e) {
             LOG(WARNING) << "Unknown detector \"" << detID << "\"";
         }

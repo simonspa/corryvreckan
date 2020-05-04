@@ -49,8 +49,7 @@ namespace corryvreckan {
         TH2F* pixelTOAParameterT;
         TH1F* timeshiftPlot;
 
-        bool
-        loadData(std::shared_ptr<Clipboard> clipboard, std::shared_ptr<PixelVector>&, std::shared_ptr<SpidrSignalVector>&);
+        bool loadData(std::shared_ptr<Clipboard> clipboard, PixelVector&, SpidrSignalVector&);
         void loadCalibration(std::string path, char delim, std::vector<std::vector<float>>& dat);
         void maskPixels(std::string);
 
