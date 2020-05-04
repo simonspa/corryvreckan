@@ -103,7 +103,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     // Container for all clusters, and detectors in tracking
     map<string, KDTree*> trees;
     vector<std::shared_ptr<Detector>> detectors;
-    std::shared_ptr<ClusterVector> referenceClusters = nullptr;
+    ClusterVector referenceClusters;
 
     // Loop over all detectors and get clusters
     double minZ = std::numeric_limits<double>::max();
@@ -113,7 +113,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Get the clusters
         auto tempClusters = clipboard->getData<Cluster>(detectorID);
-        if(tempClusters != nullptr) {
+        if(!tempClusters.empty()) {
             // Store the clusters of the first plane in Z as the reference
             if(detector->displacement().Z() < minZ) {
                 referenceClusters = tempClusters;
@@ -121,22 +121,22 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
                 minZ = detector->displacement().Z();
                 LOG(TRACE) << "minZ = " << minZ;
             }
-            if(tempClusters->size() == 0) {
+            if(tempClusters.size() == 0) {
                 LOG(TRACE) << "tempClusters->size() == 0";
                 continue;
             }
 
             // Make trees of the clusters on each plane
             KDTree* clusterTree = new KDTree();
-            clusterTree->buildSpatialTree(*tempClusters);
+            clusterTree->buildSpatialTree(tempClusters);
             trees[detectorID] = clusterTree;
             detectors.push_back(detector);
-            LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters on device " << detectorID;
+            LOG(DEBUG) << "Picked up " << tempClusters.size() << " clusters on device " << detectorID;
         }
     }
 
     // If there are no detectors then stop trying to track
-    if(detectors.empty() || referenceClusters == nullptr) {
+    if(detectors.empty() || referenceClusters.empty()) {
         // Clean up tree objects
         for(auto tree = trees.cbegin(); tree != trees.cend();) {
             delete tree->second;
@@ -149,18 +149,18 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Output track container
     LOG(TRACE) << "Initialise tracks object";
-    auto tracks = std::make_shared<TrackVector>();
+    TrackVector tracks;
 
-    LOG(DEBUG) << "referenceClusters->size() == " << referenceClusters->size();
+    LOG(DEBUG) << "referenceClusters: " << referenceClusters.size();
     // Loop over all clusters
-    for(auto& cluster : (*referenceClusters)) {
+    for(auto& cluster : referenceClusters) {
 
         LOG(DEBUG) << "Looping over clusters.";
         // Make a new track
         auto track = Track::Factory(trackModel);
 
         // Add the cluster to the track
-        track->addCluster(cluster);
+        track->addCluster(cluster.get());
 
         // Loop over each subsequent planes. For each plane, if extrapolate
         // the hit from the previous plane along the z axis, and look for
@@ -185,7 +185,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
             // Get the closest neighbour
             LOG(DEBUG) << "Searching for nearest cluster on device " << detectorID;
-            Cluster* closestCluster = trees[detectorID]->getClosestNeighbour(cluster);
+            Cluster* closestCluster = trees[detectorID]->getClosestNeighbour(cluster.get());
 
             double distanceX = (cluster->global().x() - closestCluster->global().x());
             double distanceY = (cluster->global().y() - closestCluster->global().y());
@@ -216,7 +216,6 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         if(track->nClusters() < minHitsOnTrack) {
             LOG(DEBUG) << "Not enough clusters on the track, found " << track->nClusters() << " but " << minHitsOnTrack
                        << " required.";
-            delete track;
             continue;
         }
 
@@ -225,7 +224,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         track->fit();
 
         // Save the track
-        tracks->push_back(track);
+        tracks.push_back(track);
 
         // Fill histograms
         trackChi2->Fill(track->chi2());
@@ -245,8 +244,8 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Save the tracks on the clipboard
-    tracksPerEvent->Fill(static_cast<double>(tracks->size()));
-    if(tracks->size() > 0) {
+    tracksPerEvent->Fill(static_cast<double>(tracks.size()));
+    if(tracks.size() > 0) {
         clipboard->putData(tracks);
     }
 
