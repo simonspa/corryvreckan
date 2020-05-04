@@ -165,12 +165,12 @@ ROOT::Math::XYZPoint Track::correction(std::string detectorID) const {
         throw TrackError(typeid(Track), " calles correction on non existing detector " + detectorID);
 }
 
-Track* corryvreckan::Track::Factory(std::string trackModel) {
+std::shared_ptr<Track> corryvreckan::Track::Factory(std::string trackModel) {
     if(trackModel == "straightline") {
 
-        return new StraightLineTrack();
+        return std::make_shared<StraightLineTrack>();
     } else if(trackModel == "gbl") {
-        return new GblTrack();
+        return std::make_shared<GblTrack>();
     } else {
         throw UnknownTrackModel(typeid(Track), trackModel);
     }

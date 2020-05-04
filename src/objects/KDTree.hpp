@@ -77,7 +77,7 @@ namespace corryvreckan {
         TKDTreeID* positionKdtree;
         TKDTreeID* timeKdtree;
         ClusterVector clusters;
-        std::map<Cluster*, size_t> iteratorNumber;
+        std::map<std::shared_ptr<Cluster>, size_t> iteratorNumber;
 
         // ROOT I/O class definition - update version number when you change this class!
         ClassDef(KDTree, 6)

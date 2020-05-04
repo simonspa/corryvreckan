@@ -117,5 +117,5 @@ Cluster* KDTree::getClosestNeighbour(Cluster* cluster) {
     positionKdtree->FindNearestNeighbors(position, 1, &result, &distance);
 
     // Return the cluster
-    return clusters[static_cast<size_t>(result)];
+    return clusters[static_cast<size_t>(result)].get();
 }
