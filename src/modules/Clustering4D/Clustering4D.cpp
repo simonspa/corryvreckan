@@ -84,7 +84,7 @@ void Clustering4D::initialise() {
 }
 
 // Sort function for pixels from low to high times
-bool Clustering4D::sortByTime(std::shared_ptr<Pixel> pixel1, std::shared_ptr<Pixel> pixel2) {
+bool Clustering4D::sortByTime(const std::shared_ptr<Pixel>& pixel1, const std::shared_ptr<Pixel>& pixel2) {
     return (pixel1->timestamp() < pixel2->timestamp());
 }
 
