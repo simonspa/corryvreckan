@@ -51,18 +51,36 @@ std::vector<const Pixel*> Cluster::pixels() const {
 
 const Pixel* Cluster::getSeedPixel() const {
     Pixel* seed = nullptr;
-    double maxcharge = -1;
-    for(auto& px : m_pixels) {
-        auto pxl = dynamic_cast<Pixel*>(px.GetObject());
-        if(pxl == nullptr) {
-            throw MissingReferenceException(typeid(*this), typeid(Pixel));
-        }
 
-        if(pxl->charge() > maxcharge) {
-            maxcharge = pxl->charge();
-            seed = pxl;
+    // if cluster has non-zero charge, return pixel with largest charge:
+    double maxcharge = -1;
+    if(m_charge > std::numeric_limits<double>::epsilon()) {
+        for(auto& px : m_pixels) {
+            auto pxl = dynamic_cast<Pixel*>(px.GetObject());
+            if(pxl == nullptr) {
+                throw MissingReferenceException(typeid(*this), typeid(Pixel));
+            }
+
+            if(pxl->charge() > maxcharge) {
+                maxcharge = pxl->charge();
+                seed = pxl;
+            }
+        }
+    } else { // return the earliest pixel:
+        double earliestTimestamp = std::numeric_limits<double>::max();
+        for(auto& px : m_pixels) {
+            auto pxl = dynamic_cast<Pixel*>(px.GetObject());
+            if(pxl == nullptr) {
+                throw MissingReferenceException(typeid(*this), typeid(Pixel));
+            }
+
+            if(pxl->timestamp() < earliestTimestamp) {
+                earliestTimestamp = pxl->timestamp();
+                seed = pxl;
+            }
         }
     }
+
     return seed;
 }
 
