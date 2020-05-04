@@ -10,6 +10,12 @@
 #ifndef CORRYVRECKAN_CUTS_H
 #define CORRYVRECKAN_CUTS_H
 
+#include <map>
+#include <string>
+
+#include "core/config/Configuration.hpp"
+#include "core/detector/Detector.hpp"
+
 namespace corryvreckan {
 
     template <typename T> inline T get_resolution(const std::string& n, const std::shared_ptr<Detector>& d) {
