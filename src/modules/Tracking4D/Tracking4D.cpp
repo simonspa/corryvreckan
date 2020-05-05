@@ -42,7 +42,7 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     momentum = m_config.get<double>("momentum", Units::get<double>(5, "GeV"));
     volumeRadiationLength = m_config.get<double>("volume_radiation_length", Units::get<double>(304.2, "m"));
     useVolumeScatterer = m_config.get<bool>("volume_scattering", false);
-
+    rejectByROI = m_config.get<bool>("reject_by_roi", false);
     // print a warning if volumeScatterer are used as this causes fit failures
     // that are still not understood
     if(useVolumeScatterer) {
@@ -333,8 +333,22 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 delete track;
                 continue;
             }
-            // Fit the track and save it
+
+            // Fit the track
             track->fit();
+
+            if(rejectByROI && track->isFitted()) {
+                // check if the track is within ROI for all detectors
+                bool reject = false;
+                for(auto& detector : get_detectors()) {
+                    reject = (detector->isWithinROI(track) ? reject : true);
+                }
+                if(reject) {
+                    delete track;
+                    continue;
+                }
+            }
+            // save the track
             if(track->isFitted()) {
                 tracks->push_back(track);
             } else {
