@@ -11,16 +11,16 @@
 #ifndef CORRYVRECKAN_KDTREE__H
 #define CORRYVRECKAN_KDTREE__H 1
 
-#include <map>
 #include <memory>
+#include <vector>
 
 #include <TKDTree.h>
 
-#include "core/utils/log.h"
+#include "core/utils/exceptions.h"
 
 namespace corryvreckan {
     /**
-     * @brief This class is effectively just a wrapper for the root TKDTree class that handles data format conversions
+     * @brief This class is effectively just a wrapper for the root TKDTreeID class that handles data format conversions
      */
     template <typename T> class KDTree {
 
@@ -82,6 +82,10 @@ namespace corryvreckan {
          * @param timeWindow Time range for neighbor search
          */
         std::vector<T*> getAllElementsInTimeWindow(double timestamp, double timeWindow) {
+            if(!kdtree_time_) {
+                throw RuntimeError("time tree not initialized");
+            }
+
             // Get iterators of all elements within the time window
             std::vector<int> results;
             kdtree_time_->FindInRange(&timestamp, timeWindow, results);
@@ -105,6 +109,9 @@ namespace corryvreckan {
          * @param window  Radius for neighbor selection
          */
         std::vector<T*> getAllElementsInSpaceWindow(T* element, double window) {
+            if(!kdtree_space_) {
+                throw RuntimeError("space tree not initialized");
+            }
 
             // Get iterators of all clusters within the time window
             std::vector<int> results;
@@ -125,6 +132,10 @@ namespace corryvreckan {
          * @return         Closest neighbor to element
          */
         T* getClosestSpaceNeighbor(T* element) {
+            if(!kdtree_space_) {
+                throw RuntimeError("space tree not initialized");
+            }
+
             // Get the closest cluster to this one
             int result;
             double distance;
@@ -139,6 +150,10 @@ namespace corryvreckan {
          * @return         Closest neighbor to element
          */
         T* getClosestTimeNeighbor(T* element) {
+            if(!kdtree_time_) {
+                throw RuntimeError("time tree not initialized");
+            }
+
             // Get the closest cluster to this one
             int result;
             double distance;
