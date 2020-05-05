@@ -92,7 +92,7 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     for(auto& track : (*tracks)) {
-
+        IFLOG(DEBUG) { track->setLogging(true); }
         // Cut on the chi2/ndof
         if(track->chi2ndof() > chi2ndofCut) {
             continue;
@@ -106,7 +106,11 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             auto name = detector->getName();
-            ROOT::Math::XYZPoint intercept = track->intercept(cluster->global().z());
+            GblTrack t;
+            auto intercept = detector->getIntercept(track);
+            if(track->getType() != t.getType()) {
+                intercept = track->intercept(cluster->global().z());
+            }
             auto interceptLocal = detector->globalToLocal(intercept);
             telescopeResidualsLocalX[name]->Fill(cluster->local().x() - interceptLocal.X());
             telescopeResidualsLocalY[name]->Fill(cluster->local().y() - interceptLocal.Y());
