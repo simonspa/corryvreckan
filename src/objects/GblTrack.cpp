@@ -74,7 +74,7 @@ void GblTrack::fit() {
 
     // lambda to calculate the scattering theta, beta2 assumed to be one and the momentum in MeV
     auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
-        return sqrt(13.6 / m_momentum * sqrt(mbCurrent) * (1 + 0.038 * log(mbTotal)));
+        return (13.6 / m_momentum * sqrt(mbCurrent) * (1 + 0.038 * log(mbTotal)));
     };
 
     // extract the rotation from an ROOT::Math::Transfrom3D, store it  in 4x4 matrix to match proteus format
@@ -302,6 +302,8 @@ void GblTrack::fit() {
 ROOT::Math::XYZPoint GblTrack::intercept(double z) const {
     // find the detector with largest z-positon <= z, assumes detectors sorted by z position
     std::string layer = "";
+    if(m_logging)
+        std::cout << "Requesting intercept at: " << z << std::endl;
     bool found = false;
 
     if(!m_isFitted) {
@@ -327,6 +329,8 @@ ROOT::Math::XYZPoint GblTrack::intercept(double z) const {
 ROOT::Math::XYZPoint GblTrack::state(std::string detectorID) const {
     // The track state is given in global coordinates and represents intersect of track and detetcor plane.
     // Let's check first if the data is fitted and all components are there
+    if(m_logging)
+        std::cout << "Requesting state at: " << detectorID << std::endl;
     if(!m_isFitted)
         throw TrackError(typeid(GblTrack), " detector " + detectorID + " state is not defined before fitting");
     if(m_localTrackPoints.count(detectorID) != 1) {
@@ -335,6 +339,7 @@ ROOT::Math::XYZPoint GblTrack::state(std::string detectorID) const {
     // The local track position can simply be transformed to global coordinates
     auto p =
         std::find_if(m_planes.begin(), m_planes.end(), [detectorID](auto plane) { return (plane.name() == detectorID); });
+
     return (p->toGlobal() * ROOT::Math::XYZPoint(m_localTrackPoints.at(detectorID).x() + correction(detectorID).x(),
                                                  m_localTrackPoints.at(detectorID).y() + correction(detectorID).y(),
                                                  0));
@@ -356,6 +361,8 @@ ROOT::Math::XYZVector GblTrack::direction(std::string detectorID) const {
     // Defining the direction following the particle results in the direction
     // beeing definded from the requested plane onwards to the next one
     ROOT::Math::XYZPoint point = state(detectorID);
+    if(m_logging)
+        std::cout << "Requesting direction at: " << detectorID << std::endl;
 
     // searching for the next detector layer - fixme: can this be done nicer?
     bool found = false;
@@ -369,7 +376,7 @@ ROOT::Math::XYZVector GblTrack::direction(std::string detectorID) const {
         }
     }
     if(nextLayer == "")
-        throw TrackError(typeid(GblTrack), "Direction after the last telescope plane not defined");
+        throw TrackError(typeid(GblTrack), ": Direction after the last telescope plane not defined");
     ROOT::Math::XYZPoint pointAfter = state(nextLayer);
     return ((pointAfter - point) / (pointAfter.z() - point.z()));
 }
