@@ -23,7 +23,9 @@ namespace corryvreckan {
     template <typename T> class KDTree {
 
     public:
-        // Constructors and destructors
+        /**
+         * KDTree Constructor
+         */
         KDTree() {
             kdtree_time_ = nullptr;
             kdtree_space_ = nullptr;
@@ -35,7 +37,10 @@ namespace corryvreckan {
 
         KDTree(const KDTree& kd);
 
-        // Build trees, one sorted by time and one sorted by space
+        /**
+         * @brief Build trees in space and time from input data
+         * @param input Vector of elements to construct trees for
+         */
         void buildTrees(std::vector<T*> input) {
             // Store the vector of element pointers
             elements_ = input;
@@ -67,10 +72,16 @@ namespace corryvreckan {
             kdtree_space_->SetOwner(kTRUE);
         }
 
-        // Function to get back all elements
+        /**
+         * @brief Return all registered elements
+         */
         std::vector<T*> getAllElements() { return elements_; };
 
-        // Function to get back all elements within a given time period with respect to a timestamp
+        /**
+         * @brief Get all neighboring elements within time range
+         * @param timestamp  Reference time to return neighbors for
+         * @param timeWindow Time range for neighbor search
+         */
         std::vector<T*> getAllElementsInTimeWindow(double timestamp, double timeWindow) {
             // Get iterators of all elements within the time window
             std::vector<int> results;
@@ -89,14 +100,16 @@ namespace corryvreckan {
             return getAllElementsInTimeWindow(element->timestamp(), timeWindow);
         }
 
-        // Function to get back all elements within a given spatial window
-        std::vector<T*> getAllElementsInWindow(T* element, double window) {
+        /**
+         * @brief Get all neighboring elements within sphere in space
+         * @param element Element to return neighbors for
+         * @param window  Radius for neighbor selection
+         */
+        std::vector<T*> getAllElementsInSpaceWindow(T* element, double window) {
 
             // Get iterators of all clusters within the time window
             std::vector<int> results;
-            double position[2];
-            position[0] = element->global().x();
-            position[1] = element->global().y();
+            double position[2] = {element->global().x(), element->global().y()};
             kdtree_space_->FindInRange(position, window, results);
 
             // Turn this into a vector of clusters
@@ -107,20 +120,26 @@ namespace corryvreckan {
             return result_elements;
         }
 
-        // Function to get back the nearest cluster in space
-        T* getClosestSpaceNeighbour(T* element) {
+        /**
+         * @brief Return the closest neighbor in space
+         * @param  element Object to search neighbor for
+         * @return         Closest neighbor to element
+         */
+        T* getClosestSpaceNeighbor(T* element) {
             // Get the closest cluster to this one
             int result;
             double distance;
-            double position[2];
-            position[0] = element->global().x();
-            position[1] = element->global().y();
+            double position[2] = {element->global().x(), element->global().y()};
             kdtree_space_->FindNearestNeighbors(position, 1, &result, &distance);
             return elements_[static_cast<size_t>(result)];
         };
 
-        // Function to get back the nearest cluster in time
-        T* getClosestTimeNeighbour(T* element) {
+        /**
+         * @brief Return the closest neighbor in time
+         * @param  element Object to search neighbor for
+         * @return         Closest neighbor to element
+         */
+        T* getClosestTimeNeighbor(T* element) {
             // Get the closest cluster to this one
             int result;
             double distance;
