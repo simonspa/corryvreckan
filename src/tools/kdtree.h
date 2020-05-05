@@ -56,13 +56,15 @@ namespace corryvreckan {
             }
 
             // Place the data into the tree and build the structure
-            kdtree_time_ = new TKDTreeID(static_cast<int>(npoints), 1, 1);
+            kdtree_time_ = std::make_unique<TKDTreeID>(static_cast<int>(npoints), 1, 1);
+            // WARNING the TKDTreeID assumes ownership of the data!
             kdtree_time_->SetData(0, times_);
             kdtree_time_->Build();
             kdtree_time_->SetOwner(kTRUE);
 
             // Place the data into the tree and build the structure
-            kdtree_space_ = new TKDTreeID(static_cast<int>(npoints), 2, 1);
+            kdtree_space_ = std::make_unique<TKDTreeID>(static_cast<int>(npoints), 2, 1);
+            // WARNING the TKDTreeID assumes ownership of the data!
             kdtree_space_->SetData(0, xpositions_);
             kdtree_space_->SetData(1, ypositions_);
             kdtree_space_->Build();
@@ -145,7 +147,8 @@ namespace corryvreckan {
         };
 
     private:
-        // Member variables
+        // Input data for TKDTreeID classes
+        // Sorry for the data format, that's how ROOT consumes them. It also assumes ownership.
         double* xpositions_;
         double* ypositions_;
         double* times_;
