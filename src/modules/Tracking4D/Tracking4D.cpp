@@ -11,7 +11,8 @@
 #include "Tracking4D.h"
 #include <TCanvas.h>
 #include <TDirectory.h>
-#include "objects/KDTree.hpp"
+
+#include "tools/kdtree.h"
 
 using namespace corryvreckan;
 using namespace std;
@@ -161,7 +162,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG(DEBUG) << "Start of event";
     // Container for all clusters, and detectors in tracking
-    map<std::shared_ptr<Detector>, KDTree*> trees;
+    map<std::shared_ptr<Detector>, KDTree<Cluster>*> trees;
 
     std::shared_ptr<Detector> reference_first, reference_last;
     for(auto& detector : get_detectors()) {
@@ -178,8 +179,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             // Store them
             LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters from " << detector->getName();
 
-            KDTree* clusterTree = new KDTree();
-            clusterTree->buildTimeTree(*tempClusters);
+            auto clusterTree = new KDTree<Cluster>();
+            clusterTree->buildTrees(*tempClusters);
             trees[detector] = clusterTree;
 
             // Get first and last detectors with clusters on them:
@@ -212,8 +213,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     auto time_cut_ref = std::max(time_cuts_[reference_first], time_cuts_[reference_last]);
     auto time_cut_ref_track = std::min(time_cuts_[reference_first], time_cuts_[reference_last]);
 
-    for(auto& clusterFirst : trees[reference_first]->getAllClusters()) {
-        for(auto& clusterLast : trees[reference_last]->getAllClusters()) {
+    for(auto& clusterFirst : trees[reference_first]->getAllElements()) {
+        for(auto& clusterLast : trees[reference_last]->getAllElements()) {
             LOG(DEBUG) << "Looking at next reference cluster pair";
 
             if(std::fabs(clusterFirst->timestamp() - clusterLast->timestamp()) > time_cut_ref) {
@@ -284,7 +285,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 double timeCut = std::max(time_cut_ref_track, time_cuts_[detector]);
                 LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
 
-                auto neighbours = trees[detector]->getAllClustersInTimeWindow(refTrack.timestamp(), timeCut);
+                auto neighbours = trees[detector]->getAllElementsInTimeWindow(refTrack.timestamp(), timeCut);
 
                 LOG(DEBUG) << "- found " << neighbours.size() << " neighbours within the correct time window";
 

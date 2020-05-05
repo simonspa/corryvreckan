@@ -10,7 +10,8 @@
 
 #include "TrackingSpatial.h"
 #include <TDirectory.h>
-#include "objects/KDTree.hpp"
+
+#include "tools/kdtree.h"
 
 using namespace corryvreckan;
 using namespace std;
@@ -101,7 +102,7 @@ void TrackingSpatial::initialise() {
 StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Container for all clusters, and detectors in tracking
-    map<string, KDTree*> trees;
+    map<string, KDTree<Cluster>*> trees;
     vector<std::shared_ptr<Detector>> detectors;
     std::shared_ptr<ClusterVector> referenceClusters = nullptr;
 
@@ -127,8 +128,8 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Make trees of the clusters on each plane
-            KDTree* clusterTree = new KDTree();
-            clusterTree->buildSpatialTree(*tempClusters);
+            auto clusterTree = new KDTree<Cluster>();
+            clusterTree->buildTrees(*tempClusters);
             trees[detectorID] = clusterTree;
             detectors.push_back(detector);
             LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters on device " << detectorID;
@@ -185,7 +186,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
             // Get the closest neighbour
             LOG(DEBUG) << "Searching for nearest cluster on device " << detectorID;
-            Cluster* closestCluster = trees[detectorID]->getClosestNeighbour(cluster);
+            Cluster* closestCluster = trees[detectorID]->getClosestSpaceNeighbour(cluster);
 
             double distanceX = (cluster->global().x() - closestCluster->global().x());
             double distanceY = (cluster->global().y() - closestCluster->global().y());
