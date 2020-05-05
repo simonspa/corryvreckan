@@ -197,7 +197,7 @@ void PixelDetector::configure_pos_and_orientation(Configuration& config) const {
 PositionVector3D<Cartesian3D<double>> PixelDetector::getIntercept(const Track* track) const {
 
     // FIXME: this is else statement can only be temporary
-    if(track->getType() == "gbl") {
+    if(track->getType() == "GblTrack") {
         return track->state(getName());
     } else {
         // Get the distance from the plane to the track initial state
