@@ -102,7 +102,7 @@ void TrackingSpatial::initialise() {
 StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Container for all clusters, and detectors in tracking
-    map<string, KDTree<Cluster>*> trees;
+    map<string, KDTree<Cluster>> trees;
     vector<std::shared_ptr<Detector>> detectors;
     std::shared_ptr<ClusterVector> referenceClusters = nullptr;
 
@@ -128,9 +128,9 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Make trees of the clusters on each plane
-            auto clusterTree = new KDTree<Cluster>();
-            clusterTree->buildTrees(*tempClusters);
-            trees[detectorID] = clusterTree;
+            trees.emplace(std::piecewise_construct, std::make_tuple(detectorID), std::make_tuple());
+            trees[detectorID].buildTrees(*tempClusters);
+
             detectors.push_back(detector);
             LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters on device " << detectorID;
         }
@@ -138,12 +138,6 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // If there are no detectors then stop trying to track
     if(detectors.empty() || referenceClusters == nullptr) {
-        // Clean up tree objects
-        for(auto tree = trees.cbegin(); tree != trees.cend();) {
-            delete tree->second;
-            tree = trees.erase(tree);
-        }
-
         LOG(DEBUG) << "There are no detectors, reference clusters are empty.";
         return StatusCode::NoData;
     }
@@ -186,7 +180,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
             // Get the closest neighbor
             LOG(DEBUG) << "Searching for nearest cluster on device " << detectorID;
-            Cluster* closestCluster = trees[detectorID]->getClosestSpaceNeighbor(cluster);
+            Cluster* closestCluster = trees[detectorID].getClosestSpaceNeighbor(cluster);
 
             double distanceX = (cluster->global().x() - closestCluster->global().x());
             double distanceY = (cluster->global().y() - closestCluster->global().y());
@@ -249,12 +243,6 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     tracksPerEvent->Fill(static_cast<double>(tracks->size()));
     if(tracks->size() > 0) {
         clipboard->putData(tracks);
-    }
-
-    // Clean up tree objects
-    for(auto tree = trees.cbegin(); tree != trees.cend();) {
-        delete tree->second;
-        tree = trees.erase(tree);
     }
 
     LOG(DEBUG) << "End of event";
