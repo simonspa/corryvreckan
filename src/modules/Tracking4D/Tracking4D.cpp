@@ -273,8 +273,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                     continue;
                 }
 
-                // Get all neighbours within the timing cut
-                LOG(DEBUG) << "Searching for neighbouring cluster on device " << detector->getName();
+                // Get all neighbors within the timing cut
+                LOG(DEBUG) << "Searching for neighboring cluster on device " << detector->getName();
                 LOG(DEBUG) << "- reference time is " << Units::display(refTrack.timestamp(), {"ns", "us", "s"});
                 Cluster* closestCluster = nullptr;
 
@@ -285,9 +285,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 double timeCut = std::max(time_cut_ref_track, time_cuts_[detector]);
                 LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
 
-                auto neighbours = trees[detector]->getAllElementsInTimeWindow(refTrack.timestamp(), timeCut);
+                auto neighbors = trees[detector]->getAllElementsInTimeWindow(refTrack.timestamp(), timeCut);
 
-                LOG(DEBUG) << "- found " << neighbours.size() << " neighbours within the correct time window";
+                LOG(DEBUG) << "- found " << neighbors.size() << " neighbors within the correct time window";
 
                 // Now look for the spatially closest cluster on the next plane
                 refTrack.fit();
@@ -296,8 +296,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 double interceptX = interceptPoint.X();
                 double interceptY = interceptPoint.Y();
 
-                for(size_t ne = 0; ne < neighbours.size(); ne++) {
-                    Cluster* newCluster = neighbours[ne];
+                for(size_t ne = 0; ne < neighbors.size(); ne++) {
+                    Cluster* newCluster = neighbors[ne];
 
                     // Calculate the distance to the previous plane's cluster/intercept
                     double distanceX = interceptX - newCluster->global().x();

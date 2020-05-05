@@ -20,7 +20,7 @@ using namespace std;
 
 This algorithm performs the track finding using only spatial information
 (no timing). It is based on a linear extrapolation along the z axis, followed
-by a nearest neighbour search, and should be well adapted to testbeam
+by a nearest neighbor search, and should be well adapted to testbeam
 reconstruction with a mostly colinear beam.
 
 */
@@ -165,7 +165,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Loop over each subsequent planes. For each plane, if extrapolate
         // the hit from the previous plane along the z axis, and look for
-        // a neighbour on the new plane. We started on the most upstream
+        // a neighbor on the new plane. We started on the most upstream
         // plane, so first detector is 1 (not 0)
         for(auto& detector : detectors) {
             auto detectorID = detector->getName();
@@ -184,9 +184,9 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
                 continue;
             }
 
-            // Get the closest neighbour
+            // Get the closest neighbor
             LOG(DEBUG) << "Searching for nearest cluster on device " << detectorID;
-            Cluster* closestCluster = trees[detectorID]->getClosestSpaceNeighbour(cluster);
+            Cluster* closestCluster = trees[detectorID]->getClosestSpaceNeighbor(cluster);
 
             double distanceX = (cluster->global().x() - closestCluster->global().x());
             double distanceY = (cluster->global().y() - closestCluster->global().y());
