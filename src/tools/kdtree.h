@@ -11,76 +11,131 @@
 #ifndef CORRYVRECKAN_KDTREE__H
 #define CORRYVRECKAN_KDTREE__H 1
 
+#include <TKDTree.h>
 #include <map>
-#include "Cluster.hpp"
-#include "Object.hpp"
-#include "TKDTree.h"
+
 #include "core/utils/log.h"
 
 namespace corryvreckan {
     /**
-     * @ingroup Objects
-     * @brief This class is effectively just a wrapper for the root TKDTree class that handles  clusters and converts them
-     * into the format needed by ROOT.
+     * @brief This class is effectively just a wrapper for the root TKDTree class that handles data format conversions
      */
-    class KDTree : public Object {
+    template <typename T> class KDTree {
 
     public:
         // Constructors and destructors
         KDTree() {
-            timeKdtree = nullptr;
-            positionKdtree = nullptr;
+            kdtree_time_ = nullptr;
+            kdtree_space_ = nullptr;
         }
         ~KDTree() {
-            delete timeKdtree;
-            delete positionKdtree;
+            delete kdtree_time_;
+            delete kdtree_space_;
         }
 
         KDTree(const KDTree& kd);
 
-        /**
-         * @brief Static member function to obtain base class for storage on the clipboard.
-         * This method is used to store objects from derived classes under the typeid of their base classes
-         *
-         * @warning This function should not be implemented for derived object classes
-         *
-         * @return Class type of the base object
-         */
-        static std::type_index getBaseType() { return typeid(KDTree); }
+        // Build trees, one sorted by time and one sorted by space
+        void buildTrees(std::vector<T*> input) {
+            // Store the vector of element pointers
+            elements_ = input;
 
-        // Build a tree sorted by cluster times
-        void buildTimeTree(ClusterVector inputClusters);
+            // Create the data for the ROOT KDTree
+            size_t npoints = elements_.size();
+            times_ = new double[npoints];
+            xpositions_ = new double[npoints];
+            ypositions_ = new double[npoints];
 
-        // Build a tree sorted by cluster xy positions
-        void buildSpatialTree(ClusterVector inputClusters);
+            // Fill the timing and position data from the elements
+            for(size_t element = 0; element < npoints; element++) {
+                times_[element] = elements_.at(element)->timestamp();
+                xpositions_[element] = elements_.at(element)->global().x();
+                ypositions_[element] = elements_.at(element)->global().y();
+            }
 
-        // Function to get back all clusters
-        ClusterVector getAllClusters() { return clusters; };
+            // Place the data into the tree and build the structure
+            kdtree_time_ = new TKDTreeID(static_cast<int>(npoints), 1, 1);
+            kdtree_time_->SetData(0, times_);
+            kdtree_time_->Build();
+            kdtree_time_->SetOwner(kTRUE);
 
-        // Function to get back all clusters within a given time period with respect to a timestamp
-        ClusterVector getAllClustersInTimeWindow(double timestamp, double timeWindow);
+            // Place the data into the tree and build the structure
+            kdtree_space_ = new TKDTreeID(static_cast<int>(npoints), 2, 1);
+            kdtree_space_->SetData(0, xpositions_);
+            kdtree_space_->SetData(1, ypositions_);
+            kdtree_space_->Build();
+            kdtree_space_->SetOwner(kTRUE);
+        }
 
-        // Function to get back all clusters within a given time period with respect to a cluster
-        ClusterVector getAllClustersInTimeWindow(Cluster* cluster, double timeWindow);
+        // Function to get back all elements
+        std::vector<T*> getAllElements() { return elements_; };
 
-        // Function to get back all clusters within a given spatial window
-        ClusterVector getAllClustersInWindow(Cluster* cluster, double window);
+        // Function to get back all elements within a given time period with respect to a timestamp
+        std::vector<T*> getAllElementsInTimeWindow(double timestamp, double timeWindow) {
+            // Get iterators of all elements within the time window
+            std::vector<int> results;
+            kdtree_time_->FindInRange(&timestamp, timeWindow, results);
+
+            // Turn this into a vector of elements
+            std::vector<T*> result_elements;
+            for(size_t res = 0; res < results.size(); res++) {
+                result_elements.push_back(elements_[static_cast<size_t>(results[res])]);
+            }
+            return result_elements;
+        }
+
+        // Function to get back all elements within a given time period with respect to a element
+        std::vector<T*> getAllElementsInTimeWindow(T* element, double timeWindow) {
+            return getAllElementsInTimeWindow(element->timestamp(), timeWindow);
+        }
+
+        // Function to get back all elements within a given spatial window
+        std::vector<T*> getAllElementsInWindow(T* element, double window) {
+
+            // Get iterators of all clusters within the time window
+            std::vector<int> results;
+            double position[2];
+            position[0] = element->global().x();
+            position[1] = element->global().y();
+            kdtree_space_->FindInRange(position, window, results);
+
+            // Turn this into a vector of clusters
+            std::vector<T*> result_elements;
+            for(size_t res = 0; res < results.size(); res++) {
+                result_elements.push_back(elements_[static_cast<size_t>(results[res])]);
+            }
+            return result_elements;
+        }
 
         // Function to get back the nearest cluster in space
-        Cluster* getClosestNeighbour(Cluster* cluster);
+        T* getClosestSpaceNeighbour(T* element) {
+            // Get the closest cluster to this one
+            int result;
+            double distance;
+            double position[2];
+            position[0] = element->global().x();
+            position[1] = element->global().y();
+            kdtree_space_->FindNearestNeighbors(position, 1, &result, &distance);
+            return elements_[static_cast<size_t>(result)];
+        };
+
+        // Function to get back the nearest cluster in time
+        T* getClosestTimeNeighbour(T* element) {
+            // Get the closest cluster to this one
+            int result;
+            double distance;
+            kdtree_time_->FindNearestNeighbors(element->timestamp(), 1, &result, &distance);
+            return elements_[static_cast<size_t>(result)];
+        };
 
     private:
         // Member variables
-        double* xpositions; //!
-        double* ypositions; //!
-        double* times;      //!
-        TKDTreeID* positionKdtree;
-        TKDTreeID* timeKdtree;
-        ClusterVector clusters;
-        std::map<Cluster*, size_t> iteratorNumber;
-
-        // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(KDTree, 6)
+        double* xpositions_;
+        double* ypositions_;
+        double* times_;
+        TKDTreeID* kdtree_space_;
+        TKDTreeID* kdtree_time_;
+        std::vector<T*> elements_;
     };
 } // namespace corryvreckan
 
