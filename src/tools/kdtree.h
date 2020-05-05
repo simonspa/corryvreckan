@@ -51,8 +51,8 @@ namespace corryvreckan {
             // Fill the timing and position data from the elements
             for(size_t element = 0; element < npoints; element++) {
                 times_[element] = elements_.at(element)->timestamp();
-                xpositions_[element] = elements_.at(element)->global().x();
-                ypositions_[element] = elements_.at(element)->global().y();
+                xpositions_[element] = get_position(elements_.at(element)).x();
+                ypositions_[element] = get_position(elements_.at(element)).y();
             }
 
             // Place the data into the tree and build the structure
@@ -115,7 +115,7 @@ namespace corryvreckan {
 
             // Get iterators of all clusters within the time window
             std::vector<int> results;
-            double position[2] = {element->global().x(), element->global().y()};
+            double position[2] = {get_position(element).x(), get_position(element).y()};
             kdtree_space_->FindInRange(position, window, results);
 
             // Turn this into a vector of clusters
@@ -139,7 +139,7 @@ namespace corryvreckan {
             // Get the closest cluster to this one
             int result;
             double distance;
-            double position[2] = {element->global().x(), element->global().y()};
+            double position[2] = {get_position(element).x(), get_position(element).y()};
             kdtree_space_->FindNearestNeighbors(position, 1, &result, &distance);
             return elements_[static_cast<size_t>(result)];
         };
@@ -168,6 +168,13 @@ namespace corryvreckan {
         double* ypositions_;
         double* times_;
 
+        /**
+         * @brief Helper function to obtain position from template specialization to different objects
+         * @param  element The object to get the position from
+         * @return         Position of the element
+         */
+        XYZPoint get_position(T* element);
+
         // Trees for lookup in space and time
         std::unique_ptr<TKDTreeID> kdtree_space_;
         std::unique_ptr<TKDTreeID> kdtree_time_;
@@ -175,6 +182,14 @@ namespace corryvreckan {
         // Storage for input data
         std::vector<T*> elements_;
     };
+
+    // Template specialization for Cluster
+    template <> XYZPoint KDTree<Cluster>::get_position(Cluster* element) { return element->global(); }
+
+    // Template specialization for Pixel
+    template <> XYZPoint KDTree<Pixel>::get_position(Pixel* element) {
+        return XYZPoint(element->column(), element->row(), 0);
+    }
 } // namespace corryvreckan
 
 #endif // CORRYVRECKAN_KDTREE__H
