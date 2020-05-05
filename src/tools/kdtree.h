@@ -11,8 +11,10 @@
 #ifndef CORRYVRECKAN_KDTREE__H
 #define CORRYVRECKAN_KDTREE__H 1
 
-#include <TKDTree.h>
 #include <map>
+#include <memory>
+
+#include <TKDTree.h>
 
 #include "core/utils/log.h"
 
@@ -24,18 +26,13 @@ namespace corryvreckan {
 
     public:
         /**
-         * KDTree Constructor
+         * @brief Required default constructor
          */
-        KDTree() {
-            kdtree_time_ = nullptr;
-            kdtree_space_ = nullptr;
-        }
-        ~KDTree() {
-            delete kdtree_time_;
-            delete kdtree_space_;
-        }
-
-        KDTree(const KDTree& kd);
+        KDTree() = default;
+        /**
+         * @brief Required virtual destructor
+         */
+        ~KDTree() = default;
 
         /**
          * @brief Build trees in space and time from input data
@@ -152,8 +149,12 @@ namespace corryvreckan {
         double* xpositions_;
         double* ypositions_;
         double* times_;
-        TKDTreeID* kdtree_space_;
-        TKDTreeID* kdtree_time_;
+
+        // Trees for lookup in space and time
+        std::unique_ptr<TKDTreeID> kdtree_space_;
+        std::unique_ptr<TKDTreeID> kdtree_time_;
+
+        // Storage for input data
         std::vector<T*> elements_;
     };
 } // namespace corryvreckan
