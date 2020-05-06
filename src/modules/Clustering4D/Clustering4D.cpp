@@ -27,8 +27,11 @@ Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detec
     } else {
         timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
     }
-    neighbourRadiusRow = m_config.get<int>("neighbour_radius_row", 1);
-    neighbourRadiusCol = m_config.get<int>("neighbour_radius_col", 1);
+
+    m_config.setAlias("neighbor_radius_row", "neighbour_radius_row", true);
+    m_config.setAlias("neighbor_radius_col", "neighbour_radius_col", true);
+    neighborRadiusRow = m_config.get<int>("neighbor_radius_row", 1);
+    neighborRadiusCol = m_config.get<int>("neighbor_radius_col", 1);
     chargeWeighting = m_config.get<bool>("charge_weighting", true);
 }
 
@@ -132,25 +135,25 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
             nPixels = cluster->size();
             // Loop over all pixels
             for(size_t iNeighbour = (iP + 1); iNeighbour < totalPixels; iNeighbour++) {
-                Pixel* neighbour = (*pixels)[iNeighbour];
+                Pixel* neighbor = (*pixels)[iNeighbour];
                 // Check if they are compatible in time with the cluster pixels
-                if(abs(neighbour->timestamp() - clusterTime) > timeCut)
+                if(abs(neighbor->timestamp() - clusterTime) > timeCut)
                     break;
 
                 // Check if they have been used
-                if(used[neighbour])
+                if(used[neighbor])
                     continue;
 
                 // Check if they are touching cluster pixels
-                if(!touching(neighbour, cluster))
+                if(!touching(neighbor, cluster))
                     continue;
 
                 // Add to cluster
-                cluster->addPixel(neighbour);
-                clusterTime = neighbour->timestamp();
-                used[neighbour] = true;
-                LOG(DEBUG) << "Adding pixel: " << neighbour->column() << "," << neighbour->row() << " time "
-                           << Units::display(neighbour->timestamp(), {"ns", "us", "s"});
+                cluster->addPixel(neighbor);
+                clusterTime = neighbor->timestamp();
+                used[neighbor] = true;
+                LOG(DEBUG) << "Adding pixel: " << neighbor->column() << "," << neighbor->row() << " time "
+                           << Units::display(neighbor->timestamp(), {"ns", "us", "s"});
             }
         }
 
@@ -195,15 +198,15 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
 }
 
 // Check if a pixel touches any of the pixels in a cluster
-bool Clustering4D::touching(Pixel* neighbour, Cluster* cluster) {
+bool Clustering4D::touching(Pixel* neighbor, Cluster* cluster) {
 
     bool Touching = false;
 
     for(auto pixel : cluster->pixels()) {
-        int row_distance = abs(pixel->row() - neighbour->row());
-        int col_distance = abs(pixel->column() - neighbour->column());
+        int row_distance = abs(pixel->row() - neighbor->row());
+        int col_distance = abs(pixel->column() - neighbor->column());
 
-        if(row_distance <= neighbourRadiusRow && col_distance <= neighbourRadiusCol) {
+        if(row_distance <= neighborRadiusRow && col_distance <= neighborRadiusCol) {
             if(row_distance > 1 || col_distance > 1) {
                 cluster->setSplit(true);
             }
@@ -215,14 +218,14 @@ bool Clustering4D::touching(Pixel* neighbour, Cluster* cluster) {
 }
 
 // Check if a pixel is close in time to the pixels of a cluster
-bool Clustering4D::closeInTime(Pixel* neighbour, Cluster* cluster) {
+bool Clustering4D::closeInTime(Pixel* neighbor, Cluster* cluster) {
 
     bool CloseInTime = false;
 
     auto pixels = cluster->pixels();
     for(auto& px : pixels) {
 
-        double timeDifference = abs(neighbour->timestamp() - px->timestamp());
+        double timeDifference = abs(neighbor->timestamp() - px->timestamp());
         if(timeDifference < timeCut)
             CloseInTime = true;
     }
