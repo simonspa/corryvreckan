@@ -19,6 +19,7 @@ ClusteringSpatial::ClusteringSpatial(Configuration config, std::shared_ptr<Detec
 
     useTriggerTimestamp = m_config.get<bool>("use_trigger_timestamp", false);
     chargeWeighting = m_config.get<bool>("charge_weighting", true);
+    rejectByROI = m_config.get<bool>("reject_by_roi", false);
 }
 
 void ClusteringSpatial::initialise() {
@@ -167,6 +168,13 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         clusterPositionLocal->Fill(cluster->column(), cluster->row());
         clusterTimes->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "ns")));
         LOG(DEBUG) << "cluster local: " << cluster->local();
+        
+        //check if the cluster is within ROI
+        if(rejectByROI && !m_detector->isWithinROI(cluster)) {
+            delete cluster;
+            continue;
+        }
+        
         deviceClusters->push_back(cluster);
     }
 

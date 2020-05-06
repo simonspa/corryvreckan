@@ -59,6 +59,7 @@ namespace corryvreckan {
         int neighborRadiusRow;
         int neighborRadiusCol;
         bool chargeWeighting;
+        bool rejectByROI=false;
     };
 } // namespace corryvreckan
 #endif // CLUSTERING4D_H

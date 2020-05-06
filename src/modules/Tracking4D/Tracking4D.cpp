@@ -338,12 +338,11 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             track->fit();
 
             if(rejectByROI && track->isFitted()) {
-                // check if the track is within ROI for all detectors
-                bool reject = false;
-                for(auto& detector : get_detectors()) {
-                    reject = (detector->isWithinROI(track) ? reject : true);
-                }
-                if(reject) {
+                //check if the track is within ROI for all detectors
+                auto ds = get_detectors();
+                auto out_of_roi = std::find_if(ds.begin(),ds.end(),[track](const auto& d) {
+                    return !d->isWithinROI(track);});
+                if(out_of_roi != ds.end()) {
                     delete track;
                     continue;
                 }

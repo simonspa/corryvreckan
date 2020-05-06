@@ -61,7 +61,7 @@ namespace corryvreckan {
         size_t minHitsOnTrack;
         bool excludeDUT;
         bool useVolumeScatterer{};
-        bool rejectByROI{};
+        bool rejectByROI=false;
         std::vector<std::string> requireDetectors;
         std::map<std::shared_ptr<Detector>, double> time_cuts_;
         std::map<std::shared_ptr<Detector>, XYVector> spatial_cuts_;

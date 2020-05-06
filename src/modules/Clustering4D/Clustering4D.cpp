@@ -33,6 +33,7 @@ Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detec
     neighborRadiusRow = m_config.get<int>("neighbor_radius_row", 1);
     neighborRadiusCol = m_config.get<int>("neighbor_radius_col", 1);
     chargeWeighting = m_config.get<bool>("charge_weighting", true);
+    rejectByROI = m_config.get<bool>("reject_by_roi", false);
 }
 
 void Clustering4D::initialise() {
@@ -183,6 +184,11 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
                 pixelTimeMinusClusterTime->Fill(
                     static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")));
             }
+        }
+        //check if the cluster is within ROI
+        if(rejectByROI && !m_detector->isWithinROI(cluster)) {
+            delete cluster;
+            continue;
         }
 
         deviceClusters->push_back(cluster);
