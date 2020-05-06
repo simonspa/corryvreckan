@@ -13,8 +13,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-EventLoaderCLICpix::EventLoaderCLICpix(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector) {
+EventLoaderCLICpix::EventLoaderCLICpix(Configuration config, std::shared_ptr<Detector> detector) : Module(config, detector) {
     m_detector = detector;
     m_filename = "";
 }
@@ -23,7 +22,7 @@ void EventLoaderCLICpix::initialise() {
     // File structure is RunX/CLICpix/RunX.dat
 
     // Take input directory from global parameters
-    string inputDirectory = m_config.getPath("input_directory");
+    string inputDirectory = config_.getPath("input_directory");
 
     // Open the root directory
     DIR* directory = opendir(inputDirectory.c_str());

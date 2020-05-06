@@ -15,18 +15,18 @@ using namespace corryvreckan;
 using namespace std;
 
 EventLoaderATLASpix::EventLoaderATLASpix(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {
+    : Module(config, detector), m_detector(detector) {
 
-    m_inputDirectory = m_config.getPath("input_directory");
-    m_clockCycle = m_config.get<double>("clock_cycle", Units::get<double>(6.25, "ns"));
+    m_inputDirectory = config_.getPath("input_directory");
+    m_clockCycle = config_.get<double>("clock_cycle", Units::get<double>(6.25, "ns"));
 
-    // m_clkdivendM = m_config.get<int>("clkdivend", 0.) + 1;
-    m_clkdivend2M = m_config.get<int>("clkdivend2", 0.) + 1;
+    // m_clkdivendM = config_.get<int>("clkdivend", 0.) + 1;
+    m_clkdivend2M = config_.get<int>("clkdivend2", 0.) + 1;
 
-    m_highToTCut = m_config.get<int>("high_tot_cut", 40);
-    m_buffer_depth = m_config.get<int>("buffer_depth", 1000);
+    m_highToTCut = config_.get<int>("high_tot_cut", 40);
+    m_buffer_depth = config_.get<int>("buffer_depth", 1000);
 
-    m_time_offset = m_config.get<double>("time_offset", 0.);
+    m_time_offset = config_.get<double>("time_offset", 0.);
 
     // ts1Range = 0x800 * m_clkdivendM;
     ts2Range = 0x40 * m_clkdivend2M;
@@ -43,7 +43,7 @@ uint32_t EventLoaderATLASpix::gray_decode(uint32_t gray) {
 void EventLoaderATLASpix::initialise() {
 
     if(m_buffer_depth < 1) {
-        throw InvalidValueError(m_config, "buffer_depth", "Buffer depth must be larger than 0.");
+        throw InvalidValueError(config_, "buffer_depth", "Buffer depth must be larger than 0.");
     } else {
         LOG(INFO) << "Using buffer_depth = " << m_buffer_depth;
     }

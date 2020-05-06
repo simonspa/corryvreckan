@@ -17,10 +17,10 @@ using namespace corryvreckan;
 using namespace std;
 
 EventLoaderEUDAQ::EventLoaderEUDAQ(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)), m_longID(true) {
+    : Module(config, std::move(detectors)), m_longID(true) {
 
-    m_filename = m_config.getPath("file_name", true);
-    m_longID = m_config.get<bool>("long_detector_id", true);
+    m_filename = config_.getPath("file_name", true);
+    m_longID = config_.get<bool>("long_detector_id", true);
 }
 
 void EventLoaderEUDAQ::initialise() {

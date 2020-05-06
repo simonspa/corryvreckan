@@ -14,25 +14,25 @@ using namespace corryvreckan;
 using namespace std;
 
 Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {
+    : Module(config, detector), m_detector(detector) {
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
-    m_config.setAlias("time_cut_abs", "timing_cut", true);
+    config_.setAlias("time_cut_abs", "timing_cut", true);
 
-    if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
+    if(config_.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(
-            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
-    } else if(m_config.has("time_cut_abs")) {
-        timeCut = m_config.get<double>("time_cut_abs");
+            config_, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
+    } else if(config_.has("time_cut_abs")) {
+        timeCut = config_.get<double>("time_cut_abs");
     } else {
-        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
+        timeCut = config_.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
     }
 
-    m_config.setAlias("neighbor_radius_row", "neighbour_radius_row", true);
-    m_config.setAlias("neighbor_radius_col", "neighbour_radius_col", true);
-    neighborRadiusRow = m_config.get<int>("neighbor_radius_row", 1);
-    neighborRadiusCol = m_config.get<int>("neighbor_radius_col", 1);
-    chargeWeighting = m_config.get<bool>("charge_weighting", true);
+    config_.setAlias("neighbor_radius_row", "neighbour_radius_row", true);
+    config_.setAlias("neighbor_radius_col", "neighbour_radius_col", true);
+    neighborRadiusRow = config_.get<int>("neighbor_radius_row", 1);
+    neighborRadiusCol = config_.get<int>("neighbor_radius_col", 1);
+    chargeWeighting = config_.get<bool>("charge_weighting", true);
 }
 
 void Clustering4D::initialise() {

@@ -16,7 +16,7 @@ using namespace corryvreckan;
 using namespace std;
 
 EventLoaderTimepix1::EventLoaderTimepix1(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {}
+    : Module(config, std::move(detectors)) {}
 
 /*
  This algorithm loads data from Timepix1-like devices and places it on the
@@ -44,7 +44,7 @@ bool EventLoaderTimepix1::sortByTime(string filename1, string filename2) {
 void EventLoaderTimepix1::initialise() {
 
     // Take input directory from global parameters
-    m_inputDirectory = m_config.getPath("input_directory");
+    m_inputDirectory = config_.getPath("input_directory");
 
     // Each input directory contains a series of .txt files. Each of these
     // contains several events (frames) with different times

@@ -23,20 +23,20 @@ using namespace std;
 // Standard constructor, initializes variables
 //=============================================================================
 AlignmentMillepede::AlignmentMillepede(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
+    : Module(config, std::move(detectors)) {
 
-    m_excludeDUT = m_config.get<bool>("exclude_dut", false);
-    m_dofs = m_config.getArray<bool>("dofs", {});
-    m_nIterations = m_config.get<size_t>("iterations", 5);
+    m_excludeDUT = config_.get<bool>("exclude_dut", false);
+    m_dofs = config_.getArray<bool>("dofs", {});
+    m_nIterations = config_.get<size_t>("iterations", 5);
 
-    m_rescut = m_config.get<double>("residual_cut", 0.05);
-    m_rescut_init = m_config.get<double>("residual_cut_init", 0.6);
-    m_nstdev = m_config.get<int>("number_of_stddev", 0);
+    m_rescut = config_.get<double>("residual_cut", 0.05);
+    m_rescut_init = config_.get<double>("residual_cut_init", 0.6);
+    m_nstdev = config_.get<int>("number_of_stddev", 0);
 
-    m_convergence = m_config.get<double>("convergence", 0.00001);
+    m_convergence = config_.get<double>("convergence", 0.00001);
 
     // Use default values for the sigmas, unless specified explicitly.
-    m_sigmas = m_config.getArray<double>("sigmas", {0.05, 0.05, 0.5, 0.005, 0.005, 0.005});
+    m_sigmas = config_.getArray<double>("sigmas", {0.05, 0.05, 0.5, 0.005, 0.005, 0.005});
 }
 
 //=============================================================================

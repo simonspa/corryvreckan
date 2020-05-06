@@ -20,21 +20,21 @@ TrackVector globalTracks;
 std::shared_ptr<Detector> globalDetector;
 
 AlignmentDUTResidual::AlignmentDUTResidual(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {
+    : Module(config, detector), m_detector(detector) {
 
-    nIterations = m_config.get<size_t>("iterations", 3);
+    nIterations = config_.get<size_t>("iterations", 3);
 
-    m_pruneTracks = m_config.get<bool>("prune_tracks", false);
-    m_alignPosition = m_config.get<bool>("align_position", true);
+    m_pruneTracks = config_.get<bool>("prune_tracks", false);
+    m_alignPosition = config_.get<bool>("align_position", true);
     if(m_alignPosition) {
         LOG(INFO) << "Aligning positions";
     }
-    m_alignOrientation = m_config.get<bool>("align_orientation", true);
+    m_alignOrientation = config_.get<bool>("align_orientation", true);
     if(m_alignOrientation) {
         LOG(INFO) << "Aligning orientations";
     }
-    m_maxAssocClusters = m_config.get<size_t>("max_associated_clusters", 1);
-    m_maxTrackChi2 = m_config.get<double>("max_track_chi2ndof", 10.);
+    m_maxAssocClusters = config_.get<size_t>("max_associated_clusters", 1);
+    m_maxTrackChi2 = config_.get<double>("max_track_chi2ndof", 10.);
 
     LOG(INFO) << "Aligning detector \"" << m_detector->getName() << "\"";
 }

@@ -24,15 +24,15 @@ using namespace corryvreckan;
 using namespace std;
 
 EventLoaderTimepix3::EventLoaderTimepix3(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector), m_currentEvent(0), m_prevTime(0), m_shutterOpen(false) {
+    : Module(config, detector), m_detector(detector), m_currentEvent(0), m_prevTime(0), m_shutterOpen(false) {
 
     // Take input directory from global parameters
-    m_inputDirectory = m_config.getPath("input_directory");
+    m_inputDirectory = config_.getPath("input_directory");
 
     // Calibration parameters
-    if(m_config.has("calibration_path")) {
-        calibrationPath = m_config.getPath("calibration_path");
-        threshold = m_config.get<std::string>("threshold", "");
+    if(config_.has("calibration_path")) {
+        calibrationPath = config_.getPath("calibration_path");
+        threshold = config_.get<std::string>("threshold", "");
     }
 }
 
@@ -158,7 +158,7 @@ void EventLoaderTimepix3::initialise() {
     // Calibration
     pixelToT_beforecalibration = new TH1F("pixelToT_beforecalibration", "pixelToT_beforecalibration", 100, -0.5, 199.5);
 
-    if(m_detector->isDUT() && m_config.has("calibration_path") && m_config.has("threshold")) {
+    if(m_detector->isDUT() && config_.has("calibration_path") && config_.has("threshold")) {
         LOG(INFO) << "Applying calibration from " << calibrationPath;
         applyCalibration = true;
 
@@ -294,7 +294,7 @@ void EventLoaderTimepix3::loadCalibration(std::string path, char delim, std::vec
     // check if file is open
     if(!f.is_open()) {
         LOG(ERROR) << "Cannot open input file:\n\t" << path;
-        throw InvalidValueError(m_config, "calibration_path", "Parsing error in calibration file.");
+        throw InvalidValueError(config_, "calibration_path", "Parsing error in calibration file.");
     }
 
     // read file line by line
@@ -320,7 +320,7 @@ void EventLoaderTimepix3::loadCalibration(std::string path, char delim, std::vec
     // warn if too few entries
     if(dat.size() != 256 * 256) {
         LOG(ERROR) << "Something went wrong. Found only " << i << " entries. Not enough for TPX3.\n\t";
-        throw InvalidValueError(m_config, "calibration_path", "Parsing error in calibration file.");
+        throw InvalidValueError(config_, "calibration_path", "Parsing error in calibration file.");
     }
 
     f.close();

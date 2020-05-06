@@ -16,13 +16,12 @@
 
 using namespace corryvreckan;
 
-AnalysisEfficiency::AnalysisEfficiency(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector) {
+AnalysisEfficiency::AnalysisEfficiency(Configuration config, std::shared_ptr<Detector> detector) : Module(config, detector) {
     m_detector = detector;
 
-    m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
-    m_chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
-    m_inpixelBinSize = m_config.get<double>("inpixel_bin_size", Units::get<double>(1.0, "um"));
+    m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
+    m_chi2ndofCut = config_.get<double>("chi2ndof_cut", 3.);
+    m_inpixelBinSize = config_.get<double>("inpixel_bin_size", Units::get<double>(1.0, "um"));
 }
 
 void AnalysisEfficiency::initialise() {
@@ -36,7 +35,7 @@ void AnalysisEfficiency::initialise() {
     auto nbins_x = static_cast<int>(std::ceil(m_detector->getPitch().X() / m_inpixelBinSize));
     auto nbins_y = static_cast<int>(std::ceil(m_detector->getPitch().Y() / m_inpixelBinSize));
     if(nbins_x > 1e4 || nbins_y > 1e4) {
-        throw InvalidValueError(m_config, "inpixel_bin_size", "Too many bins for in-pixel histograms.");
+        throw InvalidValueError(config_, "inpixel_bin_size", "Too many bins for in-pixel histograms.");
     }
     std::string title =
         m_detector->getName() + " Pixel efficiency map;in-pixel x_{track} [#mum];in-pixel y_{track} #mum;efficiency";

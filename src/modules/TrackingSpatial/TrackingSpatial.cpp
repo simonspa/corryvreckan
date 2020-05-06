@@ -27,17 +27,17 @@ reconstruction with a mostly colinear beam.
 */
 
 TrackingSpatial::TrackingSpatial(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
+    : Module(config, std::move(detectors)) {
 
-    minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
-    excludeDUT = m_config.get<bool>("exclude_dut", true);
-    trackModel = m_config.get<std::string>("track_model", "straightline");
+    minHitsOnTrack = config_.get<size_t>("min_hits_on_track", 6);
+    excludeDUT = config_.get<bool>("exclude_dut", true);
+    trackModel = config_.get<std::string>("track_model", "straightline");
 
     // Backwards compatibilty: also allow spatial_cut to be used for spatial_cut_abs
-    m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
+    config_.setAlias("spatial_cut_abs", "spatial_cut", true);
 
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, m_config, get_detectors());
+    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, config_, get_detectors());
 }
 
 void TrackingSpatial::initialise() {

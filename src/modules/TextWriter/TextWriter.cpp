@@ -14,7 +14,7 @@
 using namespace corryvreckan;
 
 TextWriter::TextWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {}
+    : Module(config, std::move(detectors)) {}
 
 void TextWriter::initialise() {
 
@@ -24,19 +24,19 @@ void TextWriter::initialise() {
 
     // Create output file
     output_file_name_ =
-        createOutputFile(corryvreckan::add_file_extension(m_config.get<std::string>("file_name", "data"), "txt"), true);
+        createOutputFile(corryvreckan::add_file_extension(config_.get<std::string>("file_name", "data"), "txt"), true);
     output_file_ = std::make_unique<std::ofstream>(output_file_name_);
 
     *output_file_ << "# Corryvreckan ASCII data" << std::endl << std::endl;
 
     // Read include and exclude list
-    if(m_config.has("include") && m_config.has("exclude")) {
-        throw InvalidValueError(m_config, "exclude", "include and exclude parameter are mutually exclusive");
-    } else if(m_config.has("include")) {
-        auto inc_arr = m_config.getArray<std::string>("include");
+    if(config_.has("include") && config_.has("exclude")) {
+        throw InvalidValueError(config_, "exclude", "include and exclude parameter are mutually exclusive");
+    } else if(config_.has("include")) {
+        auto inc_arr = config_.getArray<std::string>("include");
         include_.insert(inc_arr.begin(), inc_arr.end());
-    } else if(m_config.has("exclude")) {
-        auto exc_arr = m_config.getArray<std::string>("exclude");
+    } else if(config_.has("exclude")) {
+        auto exc_arr = config_.getArray<std::string>("exclude");
         exclude_.insert(exc_arr.begin(), exc_arr.end());
     }
 

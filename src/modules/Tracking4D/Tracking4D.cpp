@@ -19,29 +19,29 @@ using namespace corryvreckan;
 using namespace std;
 
 Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
+    : Module(config, std::move(detectors)) {
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs and spatial_cut for spatial_cut_abs
-    m_config.setAlias("time_cut_abs", "timing_cut", true);
-    m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
+    config_.setAlias("time_cut_abs", "timing_cut", true);
+    config_.setAlias("spatial_cut_abs", "spatial_cut", true);
 
     // timing cut, relative (x * time_resolution) or absolute:
-    time_cuts_ = corryvreckan::calculate_cut<double>("time_cut", 3.0, m_config, get_detectors());
+    time_cuts_ = corryvreckan::calculate_cut<double>("time_cut", 3.0, config_, get_detectors());
 
-    minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
-    excludeDUT = m_config.get<bool>("exclude_dut", true);
-    requireDetectors = m_config.getArray<std::string>("require_detectors", {""});
-    timestampFrom = m_config.get<std::string>("timestamp_from", {});
+    minHitsOnTrack = config_.get<size_t>("min_hits_on_track", 6);
+    excludeDUT = config_.get<bool>("exclude_dut", true);
+    requireDetectors = config_.getArray<std::string>("require_detectors", {""});
+    timestampFrom = config_.get<std::string>("timestamp_from", {});
     if(!timestampFrom.empty() &&
        std::find(requireDetectors.begin(), requireDetectors.end(), timestampFrom) == requireDetectors.end()) {
         LOG(WARNING) << "Adding detector " << timestampFrom << " to list of required detectors as it provides the timestamp";
         requireDetectors.push_back(timestampFrom);
     }
 
-    trackModel = m_config.get<std::string>("track_model", "straightline");
-    momentum = m_config.get<double>("momentum", Units::get<double>(5, "GeV"));
-    volumeRadiationLength = m_config.get<double>("volume_radiation_length", Units::get<double>(304.2, "m"));
-    useVolumeScatterer = m_config.get<bool>("volume_scattering", false);
+    trackModel = config_.get<std::string>("track_model", "straightline");
+    momentum = config_.get<double>("momentum", Units::get<double>(5, "GeV"));
+    volumeRadiationLength = config_.get<double>("volume_radiation_length", Units::get<double>(304.2, "m"));
+    useVolumeScatterer = config_.get<bool>("volume_scattering", false);
 
     // print a warning if volumeScatterer are used as this causes fit failures
     // that are still not understood
@@ -50,7 +50,7 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
                              "tracks are rejected";
     }
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, m_config, get_detectors());
+    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, config_, get_detectors());
 }
 
 void Tracking4D::initialise() {

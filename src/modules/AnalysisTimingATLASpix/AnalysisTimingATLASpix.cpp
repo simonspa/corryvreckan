@@ -20,53 +20,53 @@
 using namespace corryvreckan;
 
 AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector) {
+    : Module(config, detector) {
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
-    m_config.setAlias("time_cut_abs", "timing_cut", true);
+    config_.setAlias("time_cut_abs", "timing_cut", true);
 
     using namespace ROOT::Math;
     m_detector = detector;
     if(config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(
-            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
-    } else if(m_config.has("time_cut_abs")) {
-        m_timeCut = m_config.get<double>("time_cut_abs");
+            config_, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
+    } else if(config_.has("time_cut_abs")) {
+        m_timeCut = config_.get<double>("time_cut_abs");
     } else {
-        m_timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
+        m_timeCut = config_.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
     }
-    m_chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
-    m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", static_cast<double>(Units::convert(20, "ns")));
+    m_chi2ndofCut = config_.get<double>("chi2ndof_cut", 3.);
+    m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge", static_cast<double>(Units::convert(20, "ns")));
 
-    if(m_config.has("cluster_charge_cut")) {
-        m_clusterChargeCut = m_config.get<double>("cluster_charge_cut");
+    if(config_.has("cluster_charge_cut")) {
+        m_clusterChargeCut = config_.get<double>("cluster_charge_cut");
     }
-    if(m_config.has("cluster_size_cut")) {
-        m_clusterSizeCut = m_config.get<size_t>("cluster_size_cut");
+    if(config_.has("cluster_size_cut")) {
+        m_clusterSizeCut = config_.get<size_t>("cluster_size_cut");
     }
-    m_highTotCut = m_config.get<int>("high_tot_cut", 40);
-    m_lowTotCut = m_config.get<int>("low_tot_cut", 10);
-    m_timingTailCut = m_config.get<double>("timing_tail_cut", static_cast<double>(Units::convert(20, "ns")));
+    m_highTotCut = config_.get<int>("high_tot_cut", 40);
+    m_lowTotCut = config_.get<int>("low_tot_cut", 10);
+    m_timingTailCut = config_.get<double>("timing_tail_cut", static_cast<double>(Units::convert(20, "ns")));
 
-    if(m_config.has("correction_file_row")) {
-        m_correctionFile_row = m_config.get<std::string>("correction_file_row");
-        m_correctionGraph_row = m_config.get<std::string>("correction_graph_row");
+    if(config_.has("correction_file_row")) {
+        m_correctionFile_row = config_.get<std::string>("correction_file_row");
+        m_correctionGraph_row = config_.get<std::string>("correction_graph_row");
         m_pointwise_correction_row = true;
     } else {
         m_pointwise_correction_row = false;
     }
-    if(m_config.has("correction_file_timewalk")) {
-        m_correctionFile_timewalk = m_config.get<std::string>("correction_file_timewalk");
-        m_correctionGraph_timewalk = m_config.get<std::string>("correction_graph_timewalk");
+    if(config_.has("correction_file_timewalk")) {
+        m_correctionFile_timewalk = config_.get<std::string>("correction_file_timewalk");
+        m_correctionGraph_timewalk = config_.get<std::string>("correction_graph_timewalk");
         m_pointwise_correction_timewalk = true;
     } else {
         m_pointwise_correction_timewalk = false;
     }
 
-    m_calcCorrections = m_config.get<bool>("calc_corrections", false);
-    m_totBinExample = m_config.get<int>("tot_bin_example", 3);
+    m_calcCorrections = config_.get<bool>("calc_corrections", false);
+    m_totBinExample = config_.get<int>("tot_bin_example", 3);
 
-    m_inpixelBinSize = m_config.get<XYVector>(
+    m_inpixelBinSize = config_.get<XYVector>(
         "inpixel_bin_size",
         {static_cast<double>(Units::convert(1.0, "um")), static_cast<double>(Units::convert(1.0, "um"))});
 
@@ -252,7 +252,7 @@ void AnalysisTimingATLASpix::initialise() {
     auto nbins_x = static_cast<int>(std::ceil(m_detector->getPitch().X() / m_inpixelBinSize.X()));
     auto nbins_y = static_cast<int>(std::ceil(m_detector->getPitch().Y() / m_inpixelBinSize.Y()));
     if(nbins_x > 1e4 || nbins_y > 1e4) {
-        throw InvalidValueError(m_config, "inpixel_bin_size", "Too many bins for in-pixel histograms.");
+        throw InvalidValueError(config_, "inpixel_bin_size", "Too many bins for in-pixel histograms.");
     }
 
     std::string title =
@@ -297,7 +297,7 @@ void AnalysisTimingATLASpix::initialise() {
                                     static_cast<int>(pitch_y),
                                     -pitch_y / 2.,
                                     pitch_y / 2.);
-    if(m_config.has("high_tot_cut")) {
+    if(config_.has("high_tot_cut")) {
         hHitMapAssoc_inPixel_highToT =
             new TH2F("hitMapAssoc_inPixel_highToT",
                      "hitMapAssoc_inPixel_highToT;in-pixel x_{track} [#mum];in-pixel y_{track} [#mum]",
@@ -329,14 +329,14 @@ void AnalysisTimingATLASpix::initialise() {
     hTotVsTime = new TH2F("hTotVsTime", "hTotVsTime", 64, -0.5, 63.5, 1e6, 0, 100);
     hTotVsTime->GetXaxis()->SetTitle("pixel ToT [lsb]");
     hTotVsTime->GetYaxis()->SetTitle("time [s]");
-    if(m_config.has("high_tot_cut")) {
+    if(config_.has("high_tot_cut")) {
         hTotVsTime_highToT = new TH2F("hTotVsTime_highToT", "hTotVsTime_highToT", 64, -0.5, 63.5, 1e6, 0, 100);
         hTotVsTime_highToT->GetXaxis()->SetTitle("pixel ToT [lsb] if > high_tot_cut");
         hTotVsTime_highToT->GetYaxis()->SetTitle("time [s]");
     }
 
     // control plots for "left/right tail" and "main peak" of the track time correlation
-    if(m_config.has("timing_tail_cut") && m_pointwise_correction_timewalk) {
+    if(config_.has("timing_tail_cut") && m_pointwise_correction_timewalk) {
         hInPixelMap_leftTail = new TH2F("hPixelMap_leftTail",
                                         "in-pixel track position (left tail of time residual);in-pixel x_{track} "
                                         "[#mum];in-pixel y_{track} [#mum];# entries",
@@ -479,7 +479,7 @@ void AnalysisTimingATLASpix::initialise() {
         // Import TGraphErrors for row corection:
         TFile file(m_correctionFile_row.c_str());
         if(!file.IsOpen()) {
-            throw InvalidValueError(m_config,
+            throw InvalidValueError(config_,
                                     "correction_file_row",
                                     "ROOT file doesn't exist. If no row correction shall be applied, remove this parameter "
                                     "from the configuration file.");
@@ -489,7 +489,7 @@ void AnalysisTimingATLASpix::initialise() {
         // Check if graph exists in ROOT file:
         if(!gRowCorr) {
             throw InvalidValueError(
-                m_config, "correction_graph_row", "Graph doesn't exist in ROOT file. Use full/path/to/graph.");
+                config_, "correction_graph_row", "Graph doesn't exist in ROOT file. Use full/path/to/graph.");
         }
     } else {
         LOG(STATUS) << "----> NO POINTWISE ROW CORRECTION!!!";
@@ -498,7 +498,7 @@ void AnalysisTimingATLASpix::initialise() {
         // Import TGraphErrors for timewalk corection:
         TFile file(m_correctionFile_timewalk.c_str());
         if(!file.IsOpen()) {
-            throw InvalidValueError(m_config,
+            throw InvalidValueError(config_,
                                     "correction_file_timewalk",
                                     "ROOT file doesn't exist. If no row correction shall be applied, remove this parameter "
                                     "from the configuration file.");
@@ -508,7 +508,7 @@ void AnalysisTimingATLASpix::initialise() {
         // Check if graph exists in ROOT file:
         if(!gTimeWalkCorr) {
             throw InvalidValueError(
-                m_config, "correction_graph_timewalk", "Graph doesn't exist in ROOT file. Use full/path/to/graph.");
+                config_, "correction_graph_timewalk", "Graph doesn't exist in ROOT file. Use full/path/to/graph.");
         }
     } else {
         LOG(STATUS) << "----> NO POINTWISE TIMEWALK CORRECTION!!!";
@@ -598,13 +598,13 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     has_associated_cluster = true;
                     matched_tracks++;
 
-                    if(m_config.has("cluster_charge_cut") && cluster->charge() > m_clusterChargeCut) {
+                    if(config_.has("cluster_charge_cut") && cluster->charge() > m_clusterChargeCut) {
                         LOG(DEBUG) << " - track discarded due to clusterChargeCut";
                         continue;
                     }
                     tracks_afterClusterChargeCut++;
 
-                    if(m_config.has("cluster_size_cut") && cluster->size() > m_clusterSizeCut) {
+                    if(config_.has("cluster_size_cut") && cluster->size() > m_clusterSizeCut) {
                         LOG(DEBUG) << " - track discarded due to clusterSizeCut";
                         continue;
                     }
@@ -637,7 +637,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                     auto xmod = static_cast<double>(Units::convert(inpixel.X(), "um"));
                     auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
                     hHitMapAssoc_inPixel->Fill(xmod, ymod);
-                    if(m_config.has("high_tot_cut") && cluster->charge() > m_highTotCut && cluster->size() == 1) {
+                    if(config_.has("high_tot_cut") && cluster->charge() > m_highTotCut && cluster->size() == 1) {
                         hHitMapAssoc_inPixel_highToT->Fill(xmod, ymod);
                     }
                     hPixelTrackCorrelationTimeMap->Fill(xmod, ymod, timeDiff);
@@ -655,14 +655,14 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                         hClusterSizeVsTot_Assoc->Fill(static_cast<double>(cluster->size()), pixel->raw());
                         hHitMapAssoc->Fill(pixel->column(), pixel->row());
                         hTotVsTime->Fill(pixel->raw(), static_cast<double>(Units::convert(pixel->timestamp(), "s")));
-                        if(m_config.has("high_tot_cut") && pixel->raw() > m_highTotCut) {
+                        if(config_.has("high_tot_cut") && pixel->raw() > m_highTotCut) {
                             hHitMapAssoc_highToT->Fill(pixel->column(), pixel->row());
                             hTotVsTime_highToT->Fill(pixel->raw(),
                                                      static_cast<double>(Units::convert(pixel->timestamp(), "s")));
                         }
                     }
                     hClusterMapAssoc->Fill(cluster->column(), cluster->row());
-                    if(m_config.has("timing_tail_cut") && m_pointwise_correction_timewalk) {
+                    if(config_.has("timing_tail_cut") && m_pointwise_correction_timewalk) {
                         if(track->timestamp() - cluster->timestamp() < -m_timingTailCut) {
                             hInPixelMap_leftTail->Fill(xmod, ymod);
                         } else if(track->timestamp() - cluster->timestamp() > m_timingTailCut) {
@@ -714,7 +714,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
                             track->timestamp() - cluster->getSeedPixel()->timestamp(), cluster->getSeedPixel()->raw());
 
                         // control plots to investigate "left/right tail" in time correlation:
-                        if(m_config.has("timing_tail_cut")) {
+                        if(config_.has("timing_tail_cut")) {
                             if(track->timestamp() - cluster->timestamp() < -m_timingTailCut) {
                                 hClusterMap_leftTail->Fill(cluster->column(), cluster->row());
                                 hTot_leftTail->Fill(cluster->getSeedPixel()->raw());

@@ -26,7 +26,7 @@
 using namespace corryvreckan;
 
 FileWriter::FileWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {}
+    : Module(config, std::move(detectors)) {}
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
  */
@@ -40,18 +40,18 @@ FileWriter::~FileWriter() {
 void FileWriter::initialise() {
     // Create output file
     output_file_name_ =
-        createOutputFile(corryvreckan::add_file_extension(m_config.get<std::string>("file_name", "data"), "root"), true);
+        createOutputFile(corryvreckan::add_file_extension(config_.get<std::string>("file_name", "data"), "root"), true);
     output_file_ = std::make_unique<TFile>(output_file_name_.c_str(), "RECREATE");
     output_file_->cd();
 
     // Read include and exclude list
-    if(m_config.has("include") && m_config.has("exclude")) {
-        throw InvalidValueError(m_config, "exclude", "include and exclude parameter are mutually exclusive");
-    } else if(m_config.has("include")) {
-        auto inc_arr = m_config.getArray<std::string>("include");
+    if(config_.has("include") && config_.has("exclude")) {
+        throw InvalidValueError(config_, "exclude", "include and exclude parameter are mutually exclusive");
+    } else if(config_.has("include")) {
+        auto inc_arr = config_.getArray<std::string>("include");
         include_.insert(inc_arr.begin(), inc_arr.end());
-    } else if(m_config.has("exclude")) {
-        auto exc_arr = m_config.getArray<std::string>("exclude");
+    } else if(config_.has("exclude")) {
+        auto exc_arr = config_.getArray<std::string>("exclude");
         exclude_.insert(exc_arr.begin(), exc_arr.end());
     }
 

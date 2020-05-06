@@ -15,18 +15,18 @@ using namespace corryvreckan;
 using namespace std;
 
 DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {
+    : Module(config, detector), m_detector(detector) {
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs and spatial_cut for spatial_cut_abs
-    m_config.setAlias("time_cut_abs", "timing_cut", true);
-    m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
+    config_.setAlias("time_cut_abs", "timing_cut", true);
+    config_.setAlias("spatial_cut_abs", "spatial_cut", true);
 
     // timing cut, relative (x * time_resolution) or absolute:
-    timeCut = corryvreckan::calculate_cut<double>("time_cut", 3.0, m_config, m_detector);
+    timeCut = corryvreckan::calculate_cut<double>("time_cut", 3.0, config_, m_detector);
 
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    spatialCut = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, m_config, m_detector);
-    useClusterCentre = m_config.get<bool>("use_cluster_centre", false);
+    spatialCut = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, config_, m_detector);
+    useClusterCentre = config_.get<bool>("use_cluster_centre", false);
 
     LOG(DEBUG) << "time_cut = " << Units::display(timeCut, {"ms", "us", "ns"});
     LOG(DEBUG) << "spatial_cut = " << Units::display(spatialCut, {"um", "mm"});

@@ -14,23 +14,23 @@ using namespace corryvreckan;
 using namespace std;
 
 Correlations::Correlations(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {
+    : Module(config, detector), m_detector(detector) {
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
-    m_config.setAlias("time_cut_abs", "timing_cut", true);
-    m_config.setAlias("do_time_cut", "do_timing_cut", true);
+    config_.setAlias("time_cut_abs", "timing_cut", true);
+    config_.setAlias("do_time_cut", "do_timing_cut", true);
 
-    do_time_cut_ = m_config.get<bool>("do_time_cut", false);
-    if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
+    do_time_cut_ = config_.get<bool>("do_time_cut", false);
+    if(config_.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(
-            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
-    } else if(m_config.has("time_cut_abs")) {
-        timeCut = m_config.get<double>("time_cut_abs");
+            config_, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
+    } else if(config_.has("time_cut_abs")) {
+        timeCut = config_.get<double>("time_cut_abs");
     } else {
-        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
+        timeCut = config_.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
     }
 
-    m_corr_vs_time = m_config.get<bool>("correlation_vs_time", false);
+    m_corr_vs_time = config_.get<bool>("correlation_vs_time", false);
 }
 
 void Correlations::initialise() {
