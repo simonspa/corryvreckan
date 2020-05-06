@@ -33,26 +33,18 @@ StatusCode ImproveReferenceTimestamp::run(std::shared_ptr<Clipboard> clipboard) 
 
     // Get trigger signals
     auto spidrData = clipboard->getData<SpidrSignal>(m_source);
-    if(spidrData != nullptr) {
-        // Loop over all signals registered
-        for(auto& signal : (*spidrData)) {
-            if(signal->type() == "trigger") {
-                trigger_times.push_back(signal->timestamp() - m_triggerLatency);
-            }
+    // Loop over all signals registered
+    for(auto& signal : spidrData) {
+        if(signal->type() == "trigger") {
+            trigger_times.push_back(signal->timestamp() - m_triggerLatency);
         }
-        LOG(DEBUG) << "Number of triggers found: " << trigger_times.size();
     }
+    LOG(DEBUG) << "Number of triggers found: " << trigger_times.size();
 
     // Get the tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
-        LOG(DEBUG) << "No tracks on the clipboard";
-        return StatusCode::Success;
-    }
-    LOG(DEBUG) << "Number of tracks found: " << tracks->size();
-
-    // Loop over all tracks
-    for(auto& track : (*tracks)) {
+    LOG(DEBUG) << "Number of tracks found: " << tracks.size();
+    for(auto& track : tracks) {
 
         double improved_time = track->timestamp();
 

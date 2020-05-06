@@ -314,13 +314,9 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
-        LOG(DEBUG) << "No tracks on the clipboard";
-        return StatusCode::Success;
-    }
 
     // Loop over all tracks
-    for(auto& track : (*tracks)) {
+    for(auto& track : tracks) {
         // Flags to select clusters and tracks
         bool has_associated_cluster = false;
         LOG(DEBUG) << "Looking at next track";
@@ -334,10 +330,10 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Check if it intercepts the DUT
-        auto globalIntercept = m_detector->getIntercept(track);
+        auto globalIntercept = m_detector->getIntercept(track.get());
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
-        if(!m_detector->hasIntercept(track, 0.5)) {
+        if(!m_detector->hasIntercept(track.get(), 0.5)) {
             LOG(DEBUG) << " - track outside DUT area";
             hCutHisto->Fill(2);
             num_tracks++;
@@ -345,12 +341,12 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Check that track is within region of interest using winding number algorithm
-        if(!m_detector->isWithinROI(track)) {
+        if(!m_detector->isWithinROI(track.get())) {
             continue;
         }
 
         // Check that it doesn't go through/near a masked pixel
-        if(m_detector->hitMasked(track, 1.)) {
+        if(m_detector->hitMasked(track.get(), 1.)) {
             LOG(DEBUG) << " - track close to masked pixel";
             hCutHisto->Fill(3);
             num_tracks++;

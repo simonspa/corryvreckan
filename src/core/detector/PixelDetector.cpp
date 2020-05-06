@@ -245,7 +245,7 @@ bool PixelDetector::hasIntercept(const Track* track, double pixelTolerance) cons
 }
 
 // Function to check if a track goes through/near a masked pixel
-bool PixelDetector::hitMasked(Track* track, int tolerance) const {
+bool PixelDetector::hitMasked(const Track* track, int tolerance) const {
 
     // First, get the track intercept in global co-ordinates with the plane
     PositionVector3D<Cartesian3D<double>> globalIntercept = this->getIntercept(track);

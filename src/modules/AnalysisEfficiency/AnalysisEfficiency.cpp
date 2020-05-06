@@ -179,13 +179,9 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
-        LOG(DEBUG) << "No tracks on the clipboard";
-        return StatusCode::Success;
-    }
 
     // Loop over all tracks
-    for(auto& track : (*tracks)) {
+    for(auto& track : tracks) {
         n_track++;
         bool has_associated_cluster = false;
         bool is_within_roi = true;
@@ -199,11 +195,11 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Check if it intercepts the DUT
-        auto globalIntercept = m_detector->getIntercept(track);
+        auto globalIntercept = m_detector->getIntercept(track.get());
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
         LOG(TRACE) << " Checking if track is outside DUT area";
-        if(!m_detector->hasIntercept(track, 1)) {
+        if(!m_detector->hasIntercept(track.get(), 1)) {
             LOG(DEBUG) << " - track outside DUT area: " << localIntercept;
             n_dut++;
             continue;
@@ -211,7 +207,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Check that track is within region of interest using winding number algorithm
         LOG(TRACE) << " Checking if track is outside ROI";
-        if(!m_detector->isWithinROI(track)) {
+        if(!m_detector->isWithinROI(track.get())) {
             LOG(DEBUG) << " - track outside ROI";
             n_roi++;
             is_within_roi = false;
@@ -220,7 +216,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Check that it doesn't go through/near a masked pixel
         LOG(TRACE) << " Checking if track is close to masked pixel";
-        if(m_detector->hitMasked(track, 1.)) {
+        if(m_detector->hitMasked(track.get(), 1.)) {
             n_masked++;
             LOG(DEBUG) << " - track close to masked pixel";
             continue;
@@ -254,30 +250,25 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Get the DUT clusters from the clipboard
         auto clusters = clipboard->getData<Cluster>(m_detector->getName());
-        if(clusters == nullptr) {
-            LOG(DEBUG) << " - no DUT clusters";
-        } else {
+        // Loop over all DUT clusters to find matches:
+        for(auto& cluster : clusters) {
+            LOG(DEBUG) << " - Looking at next DUT cluster";
 
-            // Loop over all DUT clusters to find matches:
-            for(auto* cluster : (*clusters)) {
-                LOG(DEBUG) << " - Looking at next DUT cluster";
-
-                auto associated_clusters = track->associatedClusters(m_detector->getName());
-                if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) != associated_clusters.end()) {
-                    LOG(DEBUG) << "Found associated cluster " << (*cluster);
-                    has_associated_cluster = true;
-                    matched_tracks++;
-                    auto clusterLocal = m_detector->globalToLocal(cluster->global());
-                    hDistanceCluster_track->Fill(localIntercept.x() - clusterLocal.x(),
-                                                 localIntercept.y() - clusterLocal.y());
-                    hGlobalEfficiencyMap_clustPos->Fill(
-                        cluster->global().x(), cluster->global().y(), has_associated_cluster);
-                    hChipEfficiencyMap_clustPos->Fill(
-                        m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), has_associated_cluster);
-                    break;
-                }
+            auto associated_clusters = track->associatedClusters(m_detector->getName());
+            if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster.get()) !=
+               associated_clusters.end()) {
+                LOG(DEBUG) << "Found associated cluster " << (*cluster);
+                has_associated_cluster = true;
+                matched_tracks++;
+                auto clusterLocal = m_detector->globalToLocal(cluster->global());
+                hDistanceCluster_track->Fill(localIntercept.x() - clusterLocal.x(), localIntercept.y() - clusterLocal.y());
+                hGlobalEfficiencyMap_clustPos->Fill(cluster->global().x(), cluster->global().y(), has_associated_cluster);
+                hChipEfficiencyMap_clustPos->Fill(
+                    m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), has_associated_cluster);
+                break;
             }
         }
+
         hGlobalEfficiencyMap_trackPos->Fill(globalIntercept.X(), globalIntercept.Y(), has_associated_cluster);
         hChipEfficiencyMap_trackPos->Fill(
             m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept), has_associated_cluster);
@@ -327,11 +318,11 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
     // Before going to the next event, loop over all pixels (all hits incl. noise)
     // and fill matrix with timestamps of previous pixels.
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());
-    if(pixels == nullptr) {
+    if(pixels.empty()) {
         LOG(DEBUG) << "Detector " << m_detector->getName() << " does not have any pixels on the clipboard";
-        return StatusCode::Success;
     }
-    for(auto& pixel : (*pixels)) {
+
+    for(auto& pixel : pixels) {
         if(pixel->column() > m_detector->nPixels().X() || pixel->row() > m_detector->nPixels().Y()) {
             continue;
         }

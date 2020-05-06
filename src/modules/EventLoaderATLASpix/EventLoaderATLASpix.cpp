@@ -189,7 +189,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     double end_time = event->end();
 
     // prepare pixels vector
-    std::shared_ptr<PixelVector> pixels = std::make_shared<PixelVector>();
+    PixelVector pixels;
     while(true) {
 
         if(sorted_pixels_.empty() && eof_reached) {
@@ -236,7 +236,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         // add to vector of pixels
         LOG(DEBUG) << "Pixel is during event: (" << pixel->column() << ", " << pixel->row()
                    << ") ts: " << Units::display(pixel->timestamp(), {"ns", "us", "ms"});
-        pixels->push_back(pixel);
+        pixels.push_back(pixel);
 
         // fill all per-pixel histograms:
         hHitMap->Fill(pixel->column(), pixel->row());
@@ -280,12 +280,12 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     LOG(DEBUG) << "nTriggers = " << nTriggers;
     hTriggersPerEvent->Fill(static_cast<double>(nTriggers));
 
-    hPixelMultiplicity->Fill(static_cast<double>(pixels->size()));
+    hPixelMultiplicity->Fill(static_cast<double>(pixels.size()));
 
     // Put the data on the clipboard
     clipboard->putData(pixels, m_detector->getName());
 
-    if(pixels->empty()) {
+    if(pixels.empty()) {
         LOG(DEBUG) << "Returning <NoData> status, no hits found.";
         return StatusCode::NoData;
     }
@@ -403,7 +403,7 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
         LOG(DEBUG) << "Adding time_offset of " << m_time_offset << " to pixel timestamp. New pixel timestamp: " << timestamp;
 
         // since calibration is not implemented yet, set charge = tot
-        Pixel* pixel = new Pixel(m_detector->getName(), col, row, tot, tot, timestamp);
+        auto pixel = std::make_shared<Pixel>(m_detector->getName(), col, row, tot, tot, timestamp);
 
         // FIXME: implement conversion from ToT to charge:
         // thres-->e: 1620e/0.15V, or 1080e/100mV

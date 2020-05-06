@@ -83,15 +83,9 @@ void EtaCalculation::calculateEta(Track* track, Cluster* cluster) {
 
 StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
 
-    // Get the tracks from the clipboard
-    auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
-        LOG(DEBUG) << "No tracks on the clipboard";
-        return StatusCode::Success;
-    }
-
     // Loop over all tracks and look at the associated clusters to plot the eta distribution
-    for(auto& track : (*tracks)) {
+    auto tracks = clipboard->getData<Track>();
+    for(auto& track : tracks) {
 
         // Cut on the chi2/ndof
         if(track->chi2ndof() > m_chi2ndofCut) {
@@ -100,7 +94,7 @@ StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Look at the associated clusters and plot the eta function
         for(auto& dutCluster : track->associatedClusters(m_detector->getName())) {
-            calculateEta(track, dutCluster);
+            calculateEta(track.get(), dutCluster);
         }
 
         // Do the same for all clusters of the track:
@@ -108,7 +102,7 @@ StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
             if(cluster->detectorID() != m_detector->getName()) {
                 continue;
             }
-            calculateEta(track, cluster);
+            calculateEta(track.get(), cluster);
         }
     }
 

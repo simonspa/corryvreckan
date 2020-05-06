@@ -66,7 +66,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     // Otherwise load a new frame
 
     // Pixel container, shutter information
-    auto pixels = std::make_shared<PixelVector>();
+    PixelVector pixels;
     double shutterStartTime = 0, shutterStopTime = 0;
     string data;
 
@@ -122,8 +122,8 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
             continue;
 
         // when calibration is not available, set charge = tot
-        Pixel* pixel = new Pixel(m_detector->getName(), col, row, tot, tot, 0);
-        pixels->push_back(pixel);
+        auto pixel = std::make_shared<Pixel>(m_detector->getName(), col, row, tot, tot, 0);
+        pixels.push_back(pixel);
         npixels++;
         hHitMap->Fill(col, row);
         hPixelToT->Fill(tot);

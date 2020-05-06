@@ -80,13 +80,10 @@ StatusCode AlignmentMillepede::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks
     auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
-        return StatusCode::Success;
-    }
 
     // Make a local copy and store it
-    for(auto& track : (*tracks)) {
-        auto alignmentTrack = track->clone();
+    for(auto& track : tracks) {
+        auto alignmentTrack = std::shared_ptr<Track>(track->clone());
         m_alignmenttracks.push_back(alignmentTrack);
     }
     return StatusCode::Success;
@@ -126,7 +123,7 @@ void AlignmentMillepede::finalise() {
                 ++nSkipped;
                 continue;
             }
-            if(!putTrack(track, nPlanes)) {
+            if(!putTrack(track.get(), nPlanes)) {
                 ++nOutliers;
             }
         }

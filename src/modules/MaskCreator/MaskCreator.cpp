@@ -101,14 +101,14 @@ StatusCode MaskCreator::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());
-    if(pixels == nullptr) {
+    if(pixels.empty()) {
         LOG(TRACE) << "Detector " << m_detector->getName() << " does not have any pixels on the clipboard";
         return StatusCode::NoData;
     }
-    LOG(TRACE) << "Picked up " << pixels->size() << " pixels for device " << m_detector->getName();
+    LOG(TRACE) << "Picked up " << pixels.size() << " pixels for device " << m_detector->getName();
 
     // Loop over all pixels
-    for(auto& pixel : (*pixels)) {
+    for(auto& pixel : pixels) {
         // Enter another pixel hit for this channel
         m_occupancy->Fill(pixel->column(), pixel->row());
     }

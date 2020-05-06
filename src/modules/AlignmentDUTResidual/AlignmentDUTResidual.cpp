@@ -60,12 +60,9 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks
     auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
-        return StatusCode::Success;
-    }
 
     // Make a local copy and store it
-    for(auto& track : (*tracks)) {
+    for(auto& track : tracks) {
 
         // Apply selection to tracks for alignment
         if(m_pruneTracks) {
@@ -85,7 +82,7 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
             }
         }
         LOG(TRACE) << "Cloning track with track model \"" << track->getType() << "\" for alignment";
-        auto alignmentTrack = track->clone();
+        auto alignmentTrack = std::shared_ptr<Track>(track->clone());
         m_alignmenttracks.push_back(alignmentTrack);
 
         // Find the cluster that needs to have its position recalculated
@@ -97,7 +94,7 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
             auto position = associatedCluster->local();
 
             // Get the track intercept with the detector
-            auto trackIntercept = m_detector->getIntercept(track);
+            auto trackIntercept = m_detector->getIntercept(track.get());
             auto intercept = m_detector->globalToLocal(trackIntercept);
 
             // Calculate the local residuals
@@ -159,7 +156,7 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
 
             // Get the track intercept with the detector
             auto position = associatedCluster->local();
-            auto trackIntercept = globalDetector->getIntercept(track);
+            auto trackIntercept = globalDetector->getIntercept(track.get());
             auto intercept = globalDetector->globalToLocal(trackIntercept);
 
             /*
@@ -216,7 +213,7 @@ void AlignmentDUTResidual::finalise() {
     size_t n_associatedClusters = 0;
     // count associated clusters:
     for(auto& track : globalTracks) {
-        ClusterVector associatedClusters = track->associatedClusters(name);
+        auto associatedClusters = track->associatedClusters(name);
         for(auto& associatedCluster : associatedClusters) {
             std::string detectorID = associatedCluster->detectorID();
             if(detectorID != name) {

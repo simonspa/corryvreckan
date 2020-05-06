@@ -105,7 +105,7 @@ namespace corryvreckan {
     };
 
     // Vector type declaration
-    using ClusterVector = std::vector<Cluster*>;
+    using ClusterVector = std::vector<std::shared_ptr<Cluster>>;
 } // namespace corryvreckan
 
 #endif // CORRYVRECKAN_CLUSTER_H
