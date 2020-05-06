@@ -143,9 +143,6 @@ StatusCode AnalysisPowerPulsing::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the DUT clusters from the clipboard
     auto clusters = clipboard->getData<Cluster>(m_detector->getName());
-    if(clusters.empty()) {
-        LOG(DEBUG) << "No DUT clusters on the clipboard!";
-    }
 
     double minTimePerEvent = 99999.;
     double minCluster = 99999.;
