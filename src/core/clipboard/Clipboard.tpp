@@ -49,7 +49,7 @@ namespace corryvreckan {
 
         // Check if we have anything of this type:
         if(m_data.count(typeid(T)) != 0) {
-            // Decide whether we should count all or just the ones identidied by a key:
+            // Decide whether we should count all or just the ones identified by a key:
             if(key.empty()) {
                 for(const auto& block : m_data.at(typeid(T))) {
                     number_of_objects += std::static_pointer_cast<std::vector<std::shared_ptr<T>>>(block.second)->size();
