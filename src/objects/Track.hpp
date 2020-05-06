@@ -70,16 +70,6 @@ namespace corryvreckan {
         static std::shared_ptr<Track> Factory(std::string trackModel);
 
         /**
-         * @brief Track object constructor
-         */
-        Track();
-        /**
-         * @brief Copy a track object, including used/associated clusters
-         * @param track to be copied from
-         */
-        Track(const Track& track);
-
-        /**
          * @brief Add a cluster to the tack, which will be used in the fit
          * @param cluster to be added
          */
@@ -207,12 +197,6 @@ namespace corryvreckan {
         virtual void fit() = 0;
 
         /**
-         * @brief Virtual function to copy a class
-         * @return pointer to copied object
-         */
-        virtual Track* clone() const = 0;
-
-        /**
          * @brief Get the track position for a certain z position
          * @param z positon
          * @return ROOT::Math::XYZPoint at z position
@@ -281,7 +265,7 @@ namespace corryvreckan {
         double m_ndof;
         double m_chi2ndof;
         bool m_isFitted{};
-        double m_momentum;
+        double m_momentum{-1};
 
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(Track, 8)

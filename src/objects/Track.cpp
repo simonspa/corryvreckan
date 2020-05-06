@@ -13,29 +13,6 @@
 
 using namespace corryvreckan;
 
-Track::Track() : m_momentum(-1) {}
-
-Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp()) {
-    m_isFitted = track.isFitted();
-    m_chi2 = track.chi2();
-    m_ndof = track.ndof();
-    m_chi2ndof = track.chi2ndof();
-
-    auto trackClusters = track.clusters();
-    for(auto& track_cluster : trackClusters) {
-        Cluster* cluster = new Cluster(*track_cluster);
-        addCluster(cluster);
-    }
-    auto associatedClusters = track.m_associatedClusters;
-    for(auto& assoc_cluster : associatedClusters) {
-        Cluster* cluster = new Cluster(*dynamic_cast<Cluster*>(assoc_cluster.GetObject()));
-        addAssociatedCluster(cluster);
-    }
-    m_materialBudget = track.m_materialBudget;
-    m_residual = track.m_residual;
-    m_corrections = track.m_corrections;
-}
-
 void Track::addCluster(const Cluster* cluster) {
     m_trackClusters.push_back(const_cast<Cluster*>(cluster));
 }
