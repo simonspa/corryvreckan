@@ -117,6 +117,8 @@ namespace corryvreckan {
             canvas->GetCanvas()->Paint();
             canvas->GetCanvas()->Update();
         }
+
+        ClassDef(GuiDisplay, 0);
     };
 } // namespace corryvreckan
 
