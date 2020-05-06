@@ -39,16 +39,32 @@ namespace corryvreckan {
         /**
          * @brief Required default constructor
          */
-        Object();
-        explicit Object(std::string detectorID);
-        explicit Object(double timestamp);
-        Object(std::string detectorID, double timestamp);
-        Object(const Object&);
+        Object() = default;
 
         /**
          * @brief Required virtual destructor
          */
-        ~Object() override;
+        ~Object() override = default;
+
+        /// @{
+        /**
+         * @brief Use default copy behaviour
+         */
+        Object(const Object&) = default;
+        Object& operator=(const Object&) = default;
+        /// @}
+
+        /// @{
+        /**
+         * @brief Use default move behaviour
+         */
+        Object(Object&&) = default;
+        Object& operator=(Object&&) = default;
+        /// @}
+
+        explicit Object(std::string detectorID);
+        explicit Object(double timestamp);
+        Object(std::string detectorID, double timestamp);
 
         // Methods to get member variables
         std::string getDetectorID() const { return m_detectorID; }
