@@ -48,16 +48,17 @@ FileReader::~FileReader() {
  */
 template <typename T> static void add_creator(FileReader::ObjectCreatorMap& map) {
     map[typeid(T)] = [&](std::vector<Object*> objects, std::string detector, std::shared_ptr<Clipboard> clipboard) {
-        std::vector<T*> data;
+        std::vector<std::shared_ptr<T>> data;
         // Copy the objects to data vector
         for(auto& object : objects) {
-            data.push_back(new T(*static_cast<T*>(object)));
+            data.push_back(std::make_shared<T>(*static_cast<T*>(object)));
         }
 
         // Fix the object references (NOTE: we do this after insertion as otherwise the objects could have been relocated)
         for(size_t i = 0; i < objects.size(); ++i) {
             auto& prev_obj = *objects[i];
-            auto& new_obj = data[i];
+            auto addr = data[i].get();
+            auto& new_obj = addr;
 
             // Only update the reference for objects that have been referenced before
             if(prev_obj.TestBit(kIsReferenced)) {
@@ -73,9 +74,9 @@ template <typename T> static void add_creator(FileReader::ObjectCreatorMap& map)
 
         // Store the ojects on the clipboard:
         if(detector.empty()) {
-            clipboard->putData(std::make_shared<std::vector<T*>>(std::move(data)));
+            clipboard->putData(std::move(data));
         } else {
-            clipboard->putData(std::make_shared<std::vector<T*>>(std::move(data)), detector);
+            clipboard->putData(std::move(data), detector);
         }
     };
 }

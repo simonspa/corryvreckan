@@ -188,7 +188,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Pixel container, shutter information
-    auto pixels = std::make_shared<PixelVector>();
+    PixelVector pixels;
     long long int shutterStartTimeInt = 0, shutterStopTimeInt = 0;
     double shutterStartTime, shutterStopTime;
     string datastring;
@@ -290,12 +290,12 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // when calibration is not available, set charge = tot
-            Pixel* pixel = new Pixel(m_detector->getName(), col, row, tot, tot, timestamp);
+            auto pixel = std::make_shared<Pixel>(m_detector->getName(), col, row, tot, tot, timestamp);
 
             if(tot == 0 && discardZeroToT) {
                 hHitMapDiscarded->Fill(col, row);
             } else {
-                pixels->push_back(pixel);
+                pixels.push_back(pixel);
                 npixels++;
                 hHitMap->Fill(col, row);
                 LOG(TRACE) << "Adding pixel (col, row, tot, timestamp): " << col << ", " << row << ", " << tot << ", "
@@ -305,7 +305,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     } catch(caribou::DataException& e) {
         LOG(ERROR) << "Caugth DataException: " << e.what() << ", clearing event data.";
     }
-    LOG(DEBUG) << "Finished decoding, storing " << pixels->size() << " pixels";
+    LOG(DEBUG) << "Finished decoding, storing " << pixels.size() << " pixels";
 
     // Store current frame time and the length of the event:
     LOG(DEBUG) << "Event time: " << Units::display(shutterStartTime, {"ns", "us", "s"})
@@ -315,7 +315,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     // Put the data on the clipboard
     clipboard->putData(pixels, m_detector->getName());
 
-    if(pixels->empty()) {
+    if(pixels.empty()) {
         return StatusCode::NoData;
     }
 

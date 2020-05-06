@@ -77,23 +77,23 @@ StatusCode Prealignment::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the clusters
     auto clusters = clipboard->getData<Cluster>(m_detector->getName());
-    if(clusters == nullptr) {
+    if(clusters.empty()) {
         LOG(DEBUG) << "Detector " << m_detector->getName() << " does not have any clusters on the clipboard";
-        return StatusCode::Success;
+        return StatusCode::NoData;
     }
 
     // Get clusters from reference detector
     auto reference = get_reference();
     auto referenceClusters = clipboard->getData<Cluster>(reference->getName());
-    if(referenceClusters == nullptr) {
+    if(referenceClusters.empty()) {
         LOG(DEBUG) << "Reference detector " << reference->getName() << " does not have any clusters on the clipboard";
-        return StatusCode::Success;
+        return StatusCode::NoData;
     }
 
     // Loop over all clusters and fill histograms
-    for(auto& cluster : (*clusters)) {
+    for(auto& cluster : clusters) {
         // Loop over reference plane pixels to make correlation plots
-        for(auto& refCluster : (*referenceClusters)) {
+        for(auto& refCluster : referenceClusters) {
             double timeDifference = refCluster->timestamp() - cluster->timestamp();
 
             // Correlation plots
