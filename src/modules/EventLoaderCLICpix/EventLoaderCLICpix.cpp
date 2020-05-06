@@ -13,7 +13,8 @@
 using namespace corryvreckan;
 using namespace std;
 
-EventLoaderCLICpix::EventLoaderCLICpix(Configuration config, std::shared_ptr<Detector> detector) : Module(config, detector) {
+EventLoaderCLICpix::EventLoaderCLICpix(Configuration& config, std::shared_ptr<Detector> detector)
+    : Module(config, detector) {
     m_detector = detector;
     m_filename = "";
 }

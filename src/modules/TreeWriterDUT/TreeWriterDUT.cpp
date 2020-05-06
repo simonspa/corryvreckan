@@ -16,7 +16,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-TreeWriterDUT::TreeWriterDUT(Configuration config, std::shared_ptr<Detector> detector)
+TreeWriterDUT::TreeWriterDUT(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
     m_fileName = config_.get<std::string>("file_name", "outputTuples.root");

@@ -19,7 +19,7 @@ using namespace corryvreckan;
 TrackVector globalTracks;
 std::shared_ptr<Detector> globalDetector;
 
-AlignmentDUTResidual::AlignmentDUTResidual(Configuration config, std::shared_ptr<Detector> detector)
+AlignmentDUTResidual::AlignmentDUTResidual(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
     nIterations = config_.get<size_t>("iterations", 3);

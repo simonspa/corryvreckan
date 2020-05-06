@@ -17,7 +17,7 @@
 using namespace corryvreckan;
 // using namespace std;
 
-EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)), m_blockFile(nullptr) {
     m_inputDirectory = config_.getPath("input_directory");
     m_runNumber = config_.get<int>("Run", -1); // meaningless default runnumber

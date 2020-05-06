@@ -30,7 +30,7 @@
 
 using namespace corryvreckan;
 
-FileReader::FileReader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+FileReader::FileReader(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {}
 
 /**

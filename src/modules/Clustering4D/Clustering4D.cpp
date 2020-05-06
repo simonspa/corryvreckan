@@ -13,7 +13,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detector)
+Clustering4D::Clustering4D(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs

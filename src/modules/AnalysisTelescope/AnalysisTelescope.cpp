@@ -17,7 +17,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-AnalysisTelescope::AnalysisTelescope(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+AnalysisTelescope::AnalysisTelescope(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
 
     chi2ndofCut = config_.get<double>("chi2ndof_cut", 3.);

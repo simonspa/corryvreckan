@@ -13,7 +13,7 @@
 
 using namespace corryvreckan;
 
-JSONWriter::JSONWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+JSONWriter::JSONWriter(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {}
 
 void JSONWriter::initialise() {

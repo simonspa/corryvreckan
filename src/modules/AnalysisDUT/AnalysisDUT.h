@@ -25,7 +25,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        AnalysisDUT(Configuration config, std::shared_ptr<Detector> detector);
+        AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detector);
         ~AnalysisDUT() {}
 
         // Functions

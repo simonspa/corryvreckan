@@ -24,7 +24,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        MaskCreator(Configuration config, std::shared_ptr<Detector> detector);
+        MaskCreator(Configuration& config, std::shared_ptr<Detector> detector);
         ~MaskCreator() {}
 
         // Functions

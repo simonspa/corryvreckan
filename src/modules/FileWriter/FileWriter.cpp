@@ -25,7 +25,7 @@
 
 using namespace corryvreckan;
 
-FileWriter::FileWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+FileWriter::FileWriter(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {}
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic

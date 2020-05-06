@@ -15,7 +15,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-EventLoaderTimepix1::EventLoaderTimepix1(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+EventLoaderTimepix1::EventLoaderTimepix1(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {}
 
 /*

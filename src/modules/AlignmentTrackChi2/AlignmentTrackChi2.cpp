@@ -21,7 +21,7 @@ TrackVector globalTracks;
 std::shared_ptr<Detector> globalDetector;
 int detNum;
 
-AlignmentTrackChi2::AlignmentTrackChi2(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+AlignmentTrackChi2::AlignmentTrackChi2(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
     nIterations = config_.get<size_t>("iterations", 3);
 

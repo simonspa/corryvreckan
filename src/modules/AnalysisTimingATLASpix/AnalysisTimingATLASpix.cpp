@@ -19,7 +19,7 @@
 
 using namespace corryvreckan;
 
-AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared_ptr<Detector> detector)
+AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector) {
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs

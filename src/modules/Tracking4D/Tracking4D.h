@@ -27,7 +27,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Tracking4D(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
         ~Tracking4D() {}
 
         // Functions

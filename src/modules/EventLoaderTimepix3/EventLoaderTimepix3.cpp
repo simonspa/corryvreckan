@@ -23,7 +23,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-EventLoaderTimepix3::EventLoaderTimepix3(Configuration config, std::shared_ptr<Detector> detector)
+EventLoaderTimepix3::EventLoaderTimepix3(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector), m_currentEvent(0), m_prevTime(0), m_shutterOpen(false) {
 
     // Take input directory from global parameters

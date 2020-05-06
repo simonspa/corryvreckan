@@ -13,7 +13,7 @@
 
 using namespace corryvreckan;
 
-EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detector> detector)
+EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
     m_filename = config_.getPath("file_name", true);

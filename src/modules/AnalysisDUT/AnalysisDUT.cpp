@@ -16,7 +16,7 @@
 
 using namespace corryvreckan;
 
-AnalysisDUT::AnalysisDUT(Configuration config, std::shared_ptr<Detector> detector)
+AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
     m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge", Units::get<double>(20, "ns"));

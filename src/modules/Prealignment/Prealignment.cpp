@@ -13,7 +13,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-Prealignment::Prealignment(Configuration config, std::shared_ptr<Detector> detector)
+Prealignment::Prealignment(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
     max_correlation_rms = config_.get<double>("max_correlation_rms", Units::get<double>(6, "mm"));

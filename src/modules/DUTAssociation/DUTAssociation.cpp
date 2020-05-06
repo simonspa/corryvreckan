@@ -14,7 +14,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> detector)
+DUTAssociation::DUTAssociation(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs and spatial_cut for spatial_cut_abs

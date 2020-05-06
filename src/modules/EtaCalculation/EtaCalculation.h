@@ -30,7 +30,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        EtaCalculation(Configuration config, std::shared_ptr<Detector> detector);
+        EtaCalculation(Configuration& config, std::shared_ptr<Detector> detector);
         ~EtaCalculation() {}
 
         // Functions

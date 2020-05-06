@@ -18,7 +18,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs and spatial_cut for spatial_cut_abs

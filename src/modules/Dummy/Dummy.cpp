@@ -12,7 +12,7 @@
 
 using namespace corryvreckan;
 
-Dummy::Dummy(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+Dummy::Dummy(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {}
 
 void Dummy::initialise() {

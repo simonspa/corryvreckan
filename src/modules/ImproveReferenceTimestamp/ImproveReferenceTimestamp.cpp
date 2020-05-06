@@ -14,7 +14,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
     m_method = config_.get<int>("improvement_method", 1);
     m_source = config_.get<std::string>("signal_source", "W0013_G02");

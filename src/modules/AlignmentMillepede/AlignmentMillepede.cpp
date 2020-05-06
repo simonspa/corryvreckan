@@ -22,7 +22,7 @@ using namespace std;
 //=============================================================================
 // Standard constructor, initializes variables
 //=============================================================================
-AlignmentMillepede::AlignmentMillepede(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+AlignmentMillepede::AlignmentMillepede(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
 
     m_excludeDUT = config_.get<bool>("exclude_dut", false);

@@ -14,7 +14,7 @@
 
 using namespace corryvreckan;
 
-MaskCreator::MaskCreator(Configuration config, std::shared_ptr<Detector> detector)
+MaskCreator::MaskCreator(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector), m_numEvents(0) {
 
     m_method = config_.get<std::string>("method", "frequency");

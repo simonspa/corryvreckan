@@ -26,7 +26,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Correlations(Configuration config, std::shared_ptr<Detector> detector);
+        Correlations(Configuration& config, std::shared_ptr<Detector> detector);
         ~Correlations() {}
 
         // Functions

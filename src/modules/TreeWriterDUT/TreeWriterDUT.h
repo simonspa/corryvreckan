@@ -27,7 +27,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        TreeWriterDUT(Configuration config, std::shared_ptr<Detector> detector);
+        TreeWriterDUT(Configuration& config, std::shared_ptr<Detector> detector);
         ~TreeWriterDUT() {}
 
         // Functions

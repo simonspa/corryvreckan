@@ -16,7 +16,8 @@
 
 using namespace corryvreckan;
 
-AnalysisEfficiency::AnalysisEfficiency(Configuration config, std::shared_ptr<Detector> detector) : Module(config, detector) {
+AnalysisEfficiency::AnalysisEfficiency(Configuration& config, std::shared_ptr<Detector> detector)
+    : Module(config, detector) {
     m_detector = detector;
 
     m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge", Units::get<double>(20, "ns"));

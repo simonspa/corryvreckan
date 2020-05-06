@@ -13,7 +13,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-Correlations::Correlations(Configuration config, std::shared_ptr<Detector> detector)
+Correlations::Correlations(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs

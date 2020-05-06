@@ -13,7 +13,7 @@
 
 using namespace corryvreckan;
 
-TextWriter::TextWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+TextWriter::TextWriter(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {}
 
 void TextWriter::initialise() {

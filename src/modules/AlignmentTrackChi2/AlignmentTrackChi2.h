@@ -31,7 +31,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        AlignmentTrackChi2(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        AlignmentTrackChi2(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
         ~AlignmentTrackChi2() {}
 
         // Functions

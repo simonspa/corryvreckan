@@ -14,7 +14,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-EventLoaderATLASpix::EventLoaderATLASpix(Configuration config, std::shared_ptr<Detector> detector)
+EventLoaderATLASpix::EventLoaderATLASpix(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
     m_inputDirectory = config_.getPath("input_directory");

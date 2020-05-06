@@ -14,7 +14,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-ClusteringSpatial::ClusteringSpatial(Configuration config, std::shared_ptr<Detector> detector)
+ClusteringSpatial::ClusteringSpatial(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
     useTriggerTimestamp = config_.get<bool>("use_trigger_timestamp", false);

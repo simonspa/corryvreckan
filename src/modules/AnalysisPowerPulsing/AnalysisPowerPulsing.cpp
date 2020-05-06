@@ -15,7 +15,7 @@
 using namespace corryvreckan;
 using namespace std;
 
-AnalysisPowerPulsing::AnalysisPowerPulsing(Configuration config, std::shared_ptr<Detector> detector)
+AnalysisPowerPulsing::AnalysisPowerPulsing(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {}
 
 void AnalysisPowerPulsing::initialise() {

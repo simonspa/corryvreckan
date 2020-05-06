@@ -26,7 +26,7 @@ reconstruction with a mostly colinear beam.
 
 */
 
-TrackingSpatial::TrackingSpatial(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+TrackingSpatial::TrackingSpatial(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
 
     minHitsOnTrack = config_.get<size_t>("min_hits_on_track", 6);
