@@ -40,7 +40,7 @@ namespace corryvreckan {
     class GuiDisplay : public TGMainFrame {
     public:
         // Constructors and destructors
-        GuiDisplay(const TGWindow* p = 0, UInt_t w = 1, UInt_t h = 1) : TGMainFrame(p, w, h) {}
+        GuiDisplay(const TGWindow* p = nullptr, UInt_t w = 1, UInt_t h = 1) : TGMainFrame(p, w, h) {}
         ~GuiDisplay() = default;
 
         bool isPaused() { return !running_; }
