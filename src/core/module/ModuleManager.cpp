@@ -311,7 +311,7 @@ std::shared_ptr<Detector> ModuleManager::get_detector(std::string name) {
     return (it != m_detectors.end() ? (*it) : nullptr);
 }
 
-std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* library, Configuration config) {
+std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* library, Configuration& config) {
     // Create the identifier
     ModuleIdentifier identifier(config.getName(), "", 0);
 
@@ -347,7 +347,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* l
 
     // Convert to correct generator function
     auto module_generator =
-        reinterpret_cast<Module* (*)(Configuration, std::vector<std::shared_ptr<Detector>>)>(generator); // NOLINT
+        reinterpret_cast<Module* (*)(Configuration&, std::vector<std::shared_ptr<Detector>>)>(generator); // NOLINT
 
     // Set the log section header
     std::string old_section_name = Log::getSection();
@@ -370,7 +370,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* l
 }
 
 std::vector<std::pair<ModuleIdentifier, Module*>>
-ModuleManager::create_detector_modules(void* library, Configuration config, bool dut_only, std::vector<std::string> types) {
+ModuleManager::create_detector_modules(void* library, Configuration& config, bool dut_only, std::vector<std::string> types) {
     LOG(TRACE) << "Creating instantiations for module " << config.getName() << ", using generator \""
                << CORRYVRECKAN_GENERATOR_FUNCTION << "\"";
 
@@ -384,7 +384,7 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
     }
 
     // Convert to correct generator function
-    auto module_generator = reinterpret_cast<Module* (*)(Configuration, std::shared_ptr<Detector>)>(generator); // NOLINT
+    auto module_generator = reinterpret_cast<Module* (*)(Configuration&, std::shared_ptr<Detector>)>(generator); // NOLINT
     auto module_base_name = config.getName();
 
     // Figure out which detectors should run on this module:
