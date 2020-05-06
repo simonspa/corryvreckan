@@ -72,7 +72,7 @@ void EventLoaderEUDAQ2::initialise() {
     title = "Corryvreckan event end times (on clipboard); Corryvreckan event duration [ms];# entries";
     hClipboardEventDuration = new TH1D("clipboardEventDuration", title.c_str(), 3e6, 0, 3e3);
 
-    hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;entries", 20, 0, 20);
+    hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;entries", 20, -0.5, 19.5);
 
     // Create the following histograms only when detector is not auxiliary:
     if(!m_detector->isAuxiliary()) {
@@ -103,10 +103,13 @@ void EventLoaderEUDAQ2::initialise() {
         hPixelTimes_long = new TH1F("hPixelTimes_long", title.c_str(), 3e6, 0, 3e3);
 
         title = ";pixel raw values;# events";
-        hPixelRawValues = new TH1F("hPixelRawValues", title.c_str(), 1024, 0, 1024);
+        hPixelRawValues = new TH1F("hPixelRawValues", title.c_str(), 1024, -0.5, 1023.5);
+
+        title = "Pixel Multiplicity per EUDAQ Event;# pixels;# events";
+        hPixelMultiplicityPerEudaqEvent = new TH1F("hPixelMultiplicityPerEudaqEvent", title.c_str(), 1000, -0.5, 999.5);
 
         title = "Pixel Multiplicity per Corry Event;# pixels;# events";
-        hPixelMultiplicity = new TH1F("pixelMultiplicity", title.c_str(), 1000, 0, 1000);
+        hPixelMultiplicityPerCorryEvent = new TH1F("hPixelMultiplicityPerCorryEvent", title.c_str(), 1000, -0.5, 999.5);
 
         if(m_get_time_residuals) {
             hPixelTimeEventBeginResidual =
@@ -391,7 +394,7 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
 
         pixels->push_back(pixel);
     }
-    hPixelMultiplicity->Fill(static_cast<int>(pixels->size()));
+    hPixelMultiplicityPerEudaqEvent->Fill(static_cast<int>(pixels->size()));
     LOG(DEBUG) << m_detector->getName() << ": Plane contains " << pixels->size() << " pixels";
 
     return pixels;
@@ -512,6 +515,11 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     LOG(DEBUG) << "Triggers on clipboard event: " << event->triggerList().size();
     for(auto& trigger : event->triggerList()) {
         LOG(DEBUG) << "\t ID: " << trigger.first << ", time: " << Units::display(trigger.second, "us");
+    }
+
+    // histogram only exists for non-auxiliary detectors:
+    if(!m_detector->isAuxiliary()) {
+        hPixelMultiplicityPerCorryEvent->Fill(static_cast<int>(pixels->size()));
     }
 
     // Loop over pixels for plotting

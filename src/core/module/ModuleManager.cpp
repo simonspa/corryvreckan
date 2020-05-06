@@ -562,6 +562,9 @@ void ModuleManager::run() {
             }
         }
 
+        // Increment event number
+        m_events++;
+
         // Print statistics:
         m_tracks += static_cast<int>(m_clipboard->countObjects<Track>());
         m_pixels += static_cast<int>(m_clipboard->countObjects<Pixel>());
@@ -587,7 +590,7 @@ void ModuleManager::run() {
         }
 
         // Check if we have reached the maximum number of events
-        if(number_of_events > -1 && m_events >= number_of_events - 1) {
+        if(number_of_events > -1 && m_events >= number_of_events) {
             break;
         }
 
@@ -612,9 +615,6 @@ void ModuleManager::run() {
 
         // Clear objects from this iteration from the clipboard
         m_clipboard->clear();
-
-        // Increment event number
-        m_events++;
     }
 }
 

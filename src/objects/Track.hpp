@@ -135,15 +135,17 @@ namespace corryvreckan {
 
         /**
          * @brief Get associated cluster with smallest distance to Track
+         * @param detectorID Name of the detector
          * @return Pointer to closest cluster to the Track if set, nullptr otherwise
          */
-        Cluster* getClosestCluster() const;
+        Cluster* getClosestCluster(const std::string& detectorID) const;
 
         /**
-         * @brief Check if Track has a closest cluster assigned to it
-         * @return True if a closest cluster is set
+         * @brief Check if this track has a closest cluster assigned to it for a given detector
+         * @param detectorID Name of the detector
+         * @return True if a closest cluster is set for this detector
          */
-        bool hasClosestCluster() const;
+        bool hasClosestCluster(const std::string& detectorID) const;
 
         /**
          * @brief Print an ASCII representation of the Track to the given stream
@@ -185,7 +187,7 @@ namespace corryvreckan {
          * @brief Get the clusters associated to the track
          * @return vector of cluster* assosiated to the track
          */
-        std::vector<Cluster*> associatedClusters() const;
+        std::vector<Cluster*> associatedClusters(const std::string& detectorID) const;
 
         /**
          * @brief Check if cluster is associated
@@ -214,18 +216,18 @@ namespace corryvreckan {
          */
         size_t nClusters() const { return m_trackClusters.size(); }
 
-        void useVolumeScatterer(bool use) { m_use_volume_scatter = use; }
         // virtual functions to be implemented by derived classes
 
         /**
-         * @brief The fiting routine
+         * @brief Track fitting routine
          */
-        virtual void fit(){};
+        virtual void fit() = 0;
+
         /**
          * @brief Virtual function to copy a class
          * @return pointer to copied object
          */
-        virtual Track* clone() const { return new Track(); }
+        virtual Track* clone() const = 0;
 
         /**
          * @brief Get the track position for a certain z position
@@ -262,13 +264,6 @@ namespace corryvreckan {
         ROOT::Math::XYPoint residual(std::string detectorID) const { return m_residual.at(detectorID); }
 
         /**
-         * @brief Get the kink at a given detector layer. This is ill defined for last and first layer
-         * @param detectorID
-         * @return  2D kink as ROOT::Math::XYPoint
-         */
-        ROOT::Math::XYPoint kink(std::string detectorID) const;
-
-        /**
          * @brief Get the materialBudget of a detector layer
          * @param detectorID
          * @return Material Budget for given layer
@@ -289,6 +284,8 @@ namespace corryvreckan {
 
         void setLogging(bool on = false) { m_logging = on; }
 
+        ROOT::Math::XYPoint kink(std::string detectorID) const;
+
     protected:
         std::vector<TRef> m_trackClusters;
         std::vector<TRef> m_associatedClusters;
@@ -298,16 +295,16 @@ namespace corryvreckan {
         std::vector<Plane> m_planes{};
         bool m_logging = false;
 
-        TRef closestCluster{nullptr};
+        std::map<std::string, TRef> closestCluster;
         double m_chi2;
         double m_ndof;
         double m_chi2ndof;
-        double m_momentum;
-        double m_scattering_length_volume;
         bool m_isFitted{};
         bool m_use_volume_scatter{};
+        double m_momentum;
+        double m_scattering_length_volume;
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Track, 7)
+        ClassDefOverride(Track, 8)
     };
     // Vector type declaration
     using TrackVector = std::vector<Track*>;

@@ -4,6 +4,7 @@ bin/
 lib/
 obj/
 testing/data
+testing/output
 
 # root and data files do not belong into the repository
 *.root

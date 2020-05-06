@@ -74,6 +74,9 @@ namespace corryvreckan {
 
         // Member variables
         TRef m_seedCluster{nullptr};
+        double m_scattering_length_volume;
+        bool m_use_volume_scatter{};
+
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(GblTrack, 3);
         std::map<std::string, ROOT::Math::XYPoint> m_localTrackPoints{};

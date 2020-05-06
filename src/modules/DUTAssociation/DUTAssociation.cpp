@@ -102,7 +102,7 @@ void DUTAssociation::initialise() {
 
     // Nr of associated clusters per track
     title = m_detector->getName() + ": number of associated clusters per track;associated clusters;events";
-    hNoAssocCls = new TH1F("no_assoc_cls", title.c_str(), 10, 0, 10);
+    hNoAssocCls = new TH1F("no_assoc_cls", title.c_str(), 10, -0.5, 9.5);
     LOG(DEBUG) << "DUT association time cut = " << Units::display(timeCut, {"ms", "ns"});
 }
 

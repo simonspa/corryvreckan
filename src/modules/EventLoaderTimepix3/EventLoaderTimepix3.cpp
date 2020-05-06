@@ -156,7 +156,7 @@ void EventLoaderTimepix3::initialise() {
     m_file_iterator = m_files.begin();
 
     // Calibration
-    pixelToT_beforecalibration = new TH1F("pixelToT_beforecalibration", "pixelToT_beforecalibration", 100, 0, 200);
+    pixelToT_beforecalibration = new TH1F("pixelToT_beforecalibration", "pixelToT_beforecalibration", 100, -0.5, 199.5);
 
     if(m_detector->isDUT() && m_config.has("calibration_path") && m_config.has("threshold")) {
         LOG(INFO) << "Applying calibration from " << calibrationPath;
@@ -174,15 +174,15 @@ void EventLoaderTimepix3::initialise() {
 
         // make graphs of calibration parameters
         LOG(DEBUG) << "Creating calibration graphs";
-        pixelTOTParameterA = new TH2F("hist_par_a_tot", "hist_par_a_tot", 256, 0, 256, 256, 0, 256);
-        pixelTOTParameterB = new TH2F("hist_par_b_tot", "hist_par_b_tot", 256, 0, 256, 256, 0, 256);
-        pixelTOTParameterC = new TH2F("hist_par_c_tot", "hist_par_c_tot", 256, 0, 256, 256, 0, 256);
-        pixelTOTParameterT = new TH2F("hist_par_t_tot", "hist_par_t_tot", 256, 0, 256, 256, 0, 256);
-        pixelTOAParameterC = new TH2F("hist_par_c_toa", "hist_par_c_toa", 256, 0, 256, 256, 0, 256);
-        pixelTOAParameterD = new TH2F("hist_par_d_toa", "hist_par_d_toa", 256, 0, 256, 256, 0, 256);
-        pixelTOAParameterT = new TH2F("hist_par_t_toa", "hist_par_t_toa", 256, 0, 256, 256, 0, 256);
+        pixelTOTParameterA = new TH2F("hist_par_a_tot", "hist_par_a_tot", 256, -0.5, 255.5, 256, -0.5, 255.5);
+        pixelTOTParameterB = new TH2F("hist_par_b_tot", "hist_par_b_tot", 256, -0.5, 255.5, 256, -0.5, 255.5);
+        pixelTOTParameterC = new TH2F("hist_par_c_tot", "hist_par_c_tot", 256, -0.5, 255.5, 256, -0.5, 255.5);
+        pixelTOTParameterT = new TH2F("hist_par_t_tot", "hist_par_t_tot", 256, -0.5, 255.5, 256, -0.5, 255.5);
+        pixelTOAParameterC = new TH2F("hist_par_c_toa", "hist_par_c_toa", 256, -0.5, 255.5, 256, -0.5, 255.5);
+        pixelTOAParameterD = new TH2F("hist_par_d_toa", "hist_par_d_toa", 256, -0.5, 255.5, 256, -0.5, 255.5);
+        pixelTOAParameterT = new TH2F("hist_par_t_toa", "hist_par_t_toa", 256, -0.5, 255.5, 256, -0.5, 255.5);
         timeshiftPlot = new TH1F("timeshift", "timeshift (/ns)", 1000, -10, 80);
-        pixelToT_aftercalibration = new TH1F("pixelToT_aftercalibration", "pixelToT_aftercalibration", 2000, 0, 20000);
+        pixelToT_aftercalibration = new TH1F("pixelToT_aftercalibration", "pixelToT_aftercalibration", 2000, -0.5, 19999.5);
 
         for(size_t row = 0; row < 256; row++) {
             for(size_t col = 0; col < 256; col++) {
