@@ -70,6 +70,13 @@ namespace corryvreckan {
         static std::shared_ptr<Track> Factory(std::string trackModel);
 
         /**
+         * @brief Factory to dynamically copy track objects
+         * @param Input track to be copied
+         * @return Copied track of same type
+         */
+        static std::shared_ptr<Track> Factory(const std::shared_ptr<Track>& track);
+
+        /**
          * @brief Add a cluster to the tack, which will be used in the fit
          * @param cluster to be added
          */

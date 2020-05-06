@@ -144,11 +144,20 @@ ROOT::Math::XYZPoint Track::correction(std::string detectorID) const {
 
 std::shared_ptr<Track> corryvreckan::Track::Factory(std::string trackModel) {
     if(trackModel == "straightline") {
-
         return std::make_shared<StraightLineTrack>();
     } else if(trackModel == "gbl") {
         return std::make_shared<GblTrack>();
     } else {
         throw UnknownTrackModel(typeid(Track), trackModel);
+    }
+}
+
+std::shared_ptr<Track> corryvreckan::Track::Factory(const std::shared_ptr<Track>& track) {
+    if(track->getType() == "straightline") {
+        return std::make_shared<StraightLineTrack>(*std::static_pointer_cast<StraightLineTrack>(track));
+    } else if(track->getType() == "gbl") {
+        return std::make_shared<GblTrack>(*std::static_pointer_cast<GblTrack>(track));
+    } else {
+        throw UnknownTrackModel(typeid(Track), track->getType());
     }
 }
