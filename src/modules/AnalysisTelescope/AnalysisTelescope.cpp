@@ -85,7 +85,7 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
+    if(tracks.empty()) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
     }
@@ -105,7 +105,7 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
 
             auto name = detector->getName();
             GblTrack t;
-            auto intercept = detector->getIntercept(track);
+            auto intercept = detector->getIntercept(track.get());
             if(track->getType() != t.getType()) {
                 intercept = track->intercept(cluster->global().z());
             }

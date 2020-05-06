@@ -177,7 +177,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     TrackVector tracks;
 
     // register the used detectors:
-    auto registerDetector = [](Track* track, std::shared_ptr<Detector> det) {
+    auto registerDetector = [](shared_ptr<Track> track, std::shared_ptr<Detector> det) {
         Plane p(det->localToGlobal(ROOT::Math::XYZPoint(0, 0, 0)).z(), det->materialBudget(), det->getName(), false);
         p.setToLocal(det->toLocal());
         p.setToGlobal(det->toGlobal());
