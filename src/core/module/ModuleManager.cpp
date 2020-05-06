@@ -535,7 +535,7 @@ void ModuleManager::run() {
             section_name += module->getUniqueName();
             Log::setSection(section_name);
             // Set module specific settings
-            auto old_settings = set_module_before(module->getUniqueName(), module->getConfig());
+            auto old_settings = set_module_before(module->getUniqueName(), module->get_configuration());
             // Change to the output file directory
             module->getROOTDirectory()->cd();
 
@@ -632,7 +632,7 @@ void ModuleManager::initialiseAll() {
 
         // Create main ROOT directory for this module class if it does not exists yet
         LOG(TRACE) << "Creating and accessing ROOT directory";
-        std::string module_name = module->getConfig().getName();
+        std::string module_name = module->get_configuration().getName();
         auto directory = m_histogramFile->GetDirectory(module_name.c_str());
         if(directory == nullptr) {
             directory = m_histogramFile->mkdir(module_name.c_str());
@@ -663,7 +663,7 @@ void ModuleManager::initialiseAll() {
         section_name += module->getUniqueName();
         Log::setSection(section_name);
         // Set module specific settings
-        auto old_settings = set_module_before(module->getUniqueName(), module->getConfig());
+        auto old_settings = set_module_before(module->getUniqueName(), module->get_configuration());
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
 
@@ -690,7 +690,7 @@ void ModuleManager::finaliseAll() {
         section_name += module->getUniqueName();
         Log::setSection(section_name);
         // Set module specific settings
-        auto old_settings = set_module_before(module->getUniqueName(), module->getConfig());
+        auto old_settings = set_module_before(module->getUniqueName(), module->get_configuration());
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
 
@@ -748,7 +748,7 @@ void ModuleManager::timing() {
     LOG(STATUS) << "===============| Wall-clock timing (seconds) |================";
     for(auto& module : m_modules) {
         auto identifier = module->get_identifier().getIdentifier();
-        LOG(STATUS) << std::setw(20) << module->getConfig().getName() << (identifier.empty() ? "   " : " : ")
+        LOG(STATUS) << std::setw(20) << module->get_configuration().getName() << (identifier.empty() ? "   " : " : ")
                     << std::setw(10) << identifier << "  --  " << std::fixed << std::setprecision(5)
                     << module_execution_time_[module.get()] << "s = " << std::setprecision(6)
                     << 1000 * module_execution_time_[module.get()] / m_events << "ms/evt";

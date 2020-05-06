@@ -59,14 +59,14 @@ namespace corryvreckan {
          * @param config Configuration for this module
          * @param detector Pointer to the detector this module is bound to
          */
-        Module(Configuration config, std::shared_ptr<Detector> detector);
+        explicit Module(Configuration& config, std::shared_ptr<Detector> detector);
 
         /**
          * @brief Base constructor for unique modules
          * @param config Configuration for this module
          * @param detectors List of detectors this module should be aware of
          */
-        Module(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        explicit Module(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
 
         /**
          * @brief Essential virtual destructor.
@@ -85,12 +85,6 @@ namespace corryvreckan {
          * @note Can be used to interact with ROOT objects that require an unique name
          */
         std::string getUniqueName() const;
-
-        /**
-         * @brief Get the configuration for this module
-         * @return Reference to the configuration of this module
-         */
-        Configuration& getConfig() { return m_config; }
 
         /**
          * @brief Create and return an absolute path to be used for output from a relative path
@@ -142,7 +136,7 @@ namespace corryvreckan {
          * @return Configuration of the module
          */
         Configuration& get_configuration();
-        Configuration m_config;
+        Configuration& config_;
 
         /**
          * @brief Get list of all detectors this module acts on
