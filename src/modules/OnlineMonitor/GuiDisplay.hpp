@@ -12,7 +12,6 @@
 #define CORRYVRECKAN_GUIDISPLAY_H 1
 
 // Local includes
-#include "Object.hpp"
 #include "core/utils/log.h"
 
 // Global includes
@@ -39,7 +38,7 @@ namespace corryvreckan {
      * @ingroup Objects
      * @brief Display class for ROOT GUIs
      */
-    class GuiDisplay : public Object {
+    class GuiDisplay {
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
@@ -51,17 +50,7 @@ namespace corryvreckan {
     public:
         // Constructors and destructors
         GuiDisplay() : running_(true){};
-        ~GuiDisplay() {}
-
-        /**
-         * @brief Static member function to obtain base class for storage on the clipboard.
-         * This method is used to store objects from derived classes under the typeid of their base classes
-         *
-         * @warning This function should not be implemented for derived object classes
-         *
-         * @return Class type of the base object
-         */
-        static std::type_index getBaseType() { return typeid(GuiDisplay); }
+        ~GuiDisplay() = default;
 
         bool isPaused() { return !running_; }
 
@@ -138,9 +127,6 @@ namespace corryvreckan {
             canvas->GetCanvas()->Paint();
             canvas->GetCanvas()->Update();
         }
-
-        // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(GuiDisplay, 3)
     };
 } // namespace corryvreckan
 
