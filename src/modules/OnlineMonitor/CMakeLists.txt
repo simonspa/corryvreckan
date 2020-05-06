@@ -35,6 +35,7 @@ CORRYVRECKAN_MODULE_SOURCES(${MODULE_NAME}
     ${CMAKE_CURRENT_BINARY_DIR}/GuiDisplayDictionary.cxx
 )
 
+SET_TARGET_PROPERTIES(${MODULE_NAME} PROPERTIES COMPILE_FLAGS "-Wno-error=zero-as-null-pointer-constant")
 TARGET_LINK_LIBRARIES(${MODULE_NAME} ROOT::GuiBld)
 
 # Provide standard install target
