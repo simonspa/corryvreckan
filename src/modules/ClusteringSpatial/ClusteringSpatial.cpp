@@ -109,10 +109,10 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
         used[pixel] = true;
         addedPixel = true;
-        // Somewhere to store found neighbours
-        PixelVector neighbours;
+        // Somewhere to store found neighbors
+        PixelVector neighbors;
 
-        // Now we check the neighbours and keep adding more hits while there are connected pixels
+        // Now we check the neighbors and keep adding more hits while there are connected pixels
         while(addedPixel) {
 
             addedPixel = false;
@@ -137,19 +137,19 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
                     }
 
                     // Otherwise add the pixel to the cluster and store it as a found
-                    // neighbour
+                    // neighbor
                     cluster->addPixel(&*hitmap[col][row]);
                     used[hitmap[col][row]] = true;
-                    neighbours.push_back(hitmap[col][row]);
+                    neighbors.push_back(hitmap[col][row]);
                 }
             }
 
-            // If we have neighbours that have not yet been checked, continue
+            // If we have neighbors that have not yet been checked, continue
             // looking for more pixels
-            if(neighbours.size() > 0) {
+            if(neighbors.size() > 0) {
                 addedPixel = true;
-                pixel = neighbours.back();
-                neighbours.pop_back();
+                pixel = neighbors.back();
+                neighbors.pop_back();
             }
         }
 

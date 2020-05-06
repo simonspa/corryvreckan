@@ -10,7 +10,9 @@
 
 #include "TrackingSpatial.h"
 #include <TDirectory.h>
-#include "objects/KDTree.hpp"
+
+#include "tools/cuts.h"
+#include "tools/kdtree.h"
 
 using namespace corryvreckan;
 using namespace std;
@@ -19,7 +21,7 @@ using namespace std;
 
 This algorithm performs the track finding using only spatial information
 (no timing). It is based on a linear extrapolation along the z axis, followed
-by a nearest neighbour search, and should be well adapted to testbeam
+by a nearest neighbor search, and should be well adapted to testbeam
 reconstruction with a mostly colinear beam.
 
 */
@@ -35,21 +37,7 @@ TrackingSpatial::TrackingSpatial(Configuration config, std::vector<std::shared_p
     m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
 
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            m_config, {"spatial_cut_rel", "spatial_cut_abs"}, "Absolute and relative spatial cuts are mutually exclusive.");
-    } else if(m_config.has("spatial_cut_abs")) {
-        auto spatial_cut_abs_ = m_config.get<XYVector>("spatial_cut_abs");
-        for(auto& detector : get_detectors()) {
-            spatial_cuts_[detector] = spatial_cut_abs_;
-        }
-    } else {
-        // default is 3.0 * spatial_resolution
-        auto spatial_cut_rel_ = m_config.get<double>("spatial_cut_rel", 3.0);
-        for(auto& detector : get_detectors()) {
-            spatial_cuts_[detector] = detector->getSpatialResolution() * spatial_cut_rel_;
-        }
-    }
+    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, m_config, get_detectors());
 }
 
 void TrackingSpatial::initialise() {
@@ -101,7 +89,7 @@ void TrackingSpatial::initialise() {
 StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Container for all clusters, and detectors in tracking
-    map<string, KDTree*> trees;
+    map<string, KDTree<Cluster>> trees;
     vector<std::shared_ptr<Detector>> detectors;
     ClusterVector referenceClusters;
 
@@ -127,9 +115,9 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Make trees of the clusters on each plane
-            KDTree* clusterTree = new KDTree();
-            clusterTree->buildSpatialTree(tempClusters);
-            trees[detectorID] = clusterTree;
+            trees.emplace(std::piecewise_construct, std::make_tuple(detectorID), std::make_tuple());
+            trees[detectorID].buildTrees(tempClusters);
+
             detectors.push_back(detector);
             LOG(DEBUG) << "Picked up " << tempClusters.size() << " clusters on device " << detectorID;
         }
@@ -137,12 +125,6 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // If there are no detectors then stop trying to track
     if(detectors.empty() || referenceClusters.empty()) {
-        // Clean up tree objects
-        for(auto tree = trees.cbegin(); tree != trees.cend();) {
-            delete tree->second;
-            tree = trees.erase(tree);
-        }
-
         LOG(DEBUG) << "There are no detectors, reference clusters are empty.";
         return StatusCode::NoData;
     }
@@ -164,7 +146,7 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Loop over each subsequent planes. For each plane, if extrapolate
         // the hit from the previous plane along the z axis, and look for
-        // a neighbour on the new plane. We started on the most upstream
+        // a neighbor on the new plane. We started on the most upstream
         // plane, so first detector is 1 (not 0)
         for(auto& detector : detectors) {
             auto detectorID = detector->getName();
@@ -183,9 +165,9 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
                 continue;
             }
 
-            // Get the closest neighbour
+            // Get the closest neighbor
             LOG(DEBUG) << "Searching for nearest cluster on device " << detectorID;
-            Cluster* closestCluster = trees[detectorID]->getClosestNeighbour(cluster.get());
+            Cluster* closestCluster = trees[detectorID].getClosestSpaceNeighbor(cluster).get();
 
             double distanceX = (cluster->global().x() - closestCluster->global().x());
             double distanceY = (cluster->global().y() - closestCluster->global().y());
@@ -247,12 +229,6 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     tracksPerEvent->Fill(static_cast<double>(tracks.size()));
     if(tracks.size() > 0) {
         clipboard->putData(tracks);
-    }
-
-    // Clean up tree objects
-    for(auto tree = trees.cbegin(); tree != trees.cend();) {
-        delete tree->second;
-        tree = trees.erase(tree);
     }
 
     LOG(DEBUG) << "End of event";

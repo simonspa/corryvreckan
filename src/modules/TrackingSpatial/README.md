@@ -4,7 +4,7 @@
 **Status**: Functional
 
 ### Description
-This module performs track finding using only positional information (no timing information). It is based on a linear extrapolation along the Z-axis, followed by a nearest neighbour search.
+This module performs track finding using only positional information (no timing information). It is based on a linear extrapolation along the Z-axis, followed by a nearest neighbor search.
 
 
 ### Parameters

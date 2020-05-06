@@ -11,7 +11,9 @@
 #include "Tracking4D.h"
 #include <TCanvas.h>
 #include <TDirectory.h>
-#include "objects/KDTree.hpp"
+
+#include "tools/cuts.h"
+#include "tools/kdtree.h"
 
 using namespace corryvreckan;
 using namespace std;
@@ -24,20 +26,8 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
 
     // timing cut, relative (x * time_resolution) or absolute:
-    if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
-    } else if(m_config.has("time_cut_abs")) {
-        double time_cut_abs_ = m_config.get<double>("time_cut_abs");
-        for(auto& detector : get_detectors()) {
-            time_cuts_[detector] = time_cut_abs_;
-        }
-    } else {
-        double time_cut_rel_ = m_config.get<double>("time_cut_rel", 3.0);
-        for(auto& detector : get_detectors()) {
-            time_cuts_[detector] = detector->getTimeResolution() * time_cut_rel_;
-        }
-    }
+    time_cuts_ = corryvreckan::calculate_cut<double>("time_cut", 3.0, m_config, get_detectors());
+
     minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
     excludeDUT = m_config.get<bool>("exclude_dut", true);
     requireDetectors = m_config.getArray<std::string>("require_detectors", {""});
@@ -60,21 +50,7 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
                              "tracks are rejected";
     }
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            m_config, {"spatial_cut_rel", "spatial_cut_abs"}, "Absolute and relative spatial cuts are mutually exclusive.");
-    } else if(m_config.has("spatial_cut_abs")) {
-        auto spatial_cut_abs_ = m_config.get<XYVector>("spatial_cut_abs");
-        for(auto& detector : get_detectors()) {
-            spatial_cuts_[detector] = spatial_cut_abs_;
-        }
-    } else {
-        // default is 3.0 * spatial_resolution
-        auto spatial_cut_rel_ = m_config.get<double>("spatial_cut_rel", 3.0);
-        for(auto& detector : get_detectors()) {
-            spatial_cuts_[detector] = detector->getSpatialResolution() * spatial_cut_rel_;
-        }
-    }
+    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, m_config, get_detectors());
 }
 
 void Tracking4D::initialise() {
@@ -161,7 +137,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
     LOG(DEBUG) << "Start of event";
     // Container for all clusters, and detectors in tracking
-    map<std::shared_ptr<Detector>, KDTree*> trees;
+    map<std::shared_ptr<Detector>, KDTree<Cluster>> trees;
 
     std::shared_ptr<Detector> reference_first, reference_last;
     for(auto& detector : get_detectors()) {
@@ -178,9 +154,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             // Store them
             LOG(DEBUG) << "Picked up " << tempClusters.size() << " clusters from " << detector->getName();
 
-            KDTree* clusterTree = new KDTree();
-            clusterTree->buildTimeTree(tempClusters);
-            trees[detector] = clusterTree;
+            trees.emplace(std::piecewise_construct, std::make_tuple(detector), std::make_tuple());
+            trees[detector].buildTrees(tempClusters);
 
             // Get first and last detectors with clusters on them:
             if(!reference_first) {
@@ -195,12 +170,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         // Fill histogram
         tracksPerEvent->Fill(0);
 
-        // Clean up tree objects
-        for(auto tree = trees.cbegin(); tree != trees.cend();) {
-            delete tree->second;
-            tree = trees.erase(tree);
-        }
-
         LOG(DEBUG) << "Too few hit detectors for finding a track; end of event.";
         return StatusCode::Success;
     }
@@ -212,8 +181,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     auto time_cut_ref = std::max(time_cuts_[reference_first], time_cuts_[reference_last]);
     auto time_cut_ref_track = std::min(time_cuts_[reference_first], time_cuts_[reference_last]);
 
-    for(auto& clusterFirst : trees[reference_first]->getAllClusters()) {
-        for(auto& clusterLast : trees[reference_last]->getAllClusters()) {
+    for(auto& clusterFirst : trees[reference_first].getAllElements()) {
+        for(auto& clusterLast : trees[reference_last].getAllElements()) {
             LOG(DEBUG) << "Looking at next reference cluster pair";
 
             if(std::fabs(clusterFirst->timestamp() - clusterLast->timestamp()) > time_cut_ref) {
@@ -272,8 +241,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                     continue;
                 }
 
-                // Get all neighbours within the timing cut
-                LOG(DEBUG) << "Searching for neighbouring cluster on device " << detector->getName();
+                // Get all neighbors within the timing cut
+                LOG(DEBUG) << "Searching for neighboring cluster on device " << detector->getName();
                 LOG(DEBUG) << "- reference time is " << Units::display(refTrack.timestamp(), {"ns", "us", "s"});
                 Cluster* closestCluster = nullptr;
 
@@ -284,9 +253,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 double timeCut = std::max(time_cut_ref_track, time_cuts_[detector]);
                 LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
 
-                auto neighbours = trees[detector]->getAllClustersInTimeWindow(refTrack.timestamp(), timeCut);
+                auto neighbors = trees[detector].getAllElementsInTimeWindow(refTrack.timestamp(), timeCut);
 
-                LOG(DEBUG) << "- found " << neighbours.size() << " neighbours within the correct time window";
+                LOG(DEBUG) << "- found " << neighbors.size() << " neighbors within the correct time window";
 
                 // Now look for the spatially closest cluster on the next plane
                 refTrack.fit();
@@ -295,8 +264,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 double interceptX = interceptPoint.X();
                 double interceptY = interceptPoint.Y();
 
-                for(size_t ne = 0; ne < neighbours.size(); ne++) {
-                    auto newCluster = neighbours[ne].get();
+                for(size_t ne = 0; ne < neighbors.size(); ne++) {
+                    auto newCluster = neighbors[ne].get();
 
                     // Calculate the distance to the previous plane's cluster/intercept
                     double distanceX = interceptX - newCluster->global().x();
@@ -436,12 +405,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     // Save the tracks on the clipboard
     if(tracks.size() > 0) {
         clipboard->putData(tracks);
-    }
-
-    // Clean up tree objects
-    for(auto tree = trees.cbegin(); tree != trees.cend();) {
-        delete tree->second;
-        tree = trees.erase(tree);
     }
 
     LOG(DEBUG) << "End of event";

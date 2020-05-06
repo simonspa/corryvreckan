@@ -56,8 +56,8 @@ namespace corryvreckan {
         TH1F* pixelTimeMinusClusterTime;
 
         double timeCut;
-        int neighbourRadiusRow;
-        int neighbourRadiusCol;
+        int neighborRadiusRow;
+        int neighborRadiusCol;
         bool chargeWeighting;
     };
 } // namespace corryvreckan
