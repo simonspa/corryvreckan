@@ -82,7 +82,9 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
             }
         }
         LOG(TRACE) << "Cloning track with track model \"" << track->getType() << "\" for alignment";
-        auto alignmentTrack = std::shared_ptr<Track>(track->clone());
+
+        // Copy the track for alingment:
+        auto alignmentTrack = Track::Factory(track);
         m_alignmenttracks.push_back(alignmentTrack);
 
         // Find the cluster that needs to have its position recalculated
