@@ -262,8 +262,8 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         column_sum_chargeweighted += (pixel->column() * pixel->charge());
         row_sum_chargeweighted += (pixel->row() * pixel->charge());
 
-        // If charge is available: cluster timestamp = pixel with largestcharge:
-        if(!found_charge_zero && useEarliestPixel) {
+        // If charge is available: cluster timestamp = pixel with largest charge:
+        if(!found_charge_zero && !useEarliestPixel) {
             if(pixel->charge() > maxcharge) {
                 timestamp = pixel->timestamp();
                 maxcharge = pixel->charge();
