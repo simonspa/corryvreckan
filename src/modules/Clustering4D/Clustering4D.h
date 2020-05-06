@@ -35,7 +35,7 @@ namespace corryvreckan {
 
     private:
         std::shared_ptr<Detector> m_detector;
-        static bool sortByTime(Pixel* pixel1, Pixel* pixel2);
+        static bool sortByTime(const std::shared_ptr<Pixel>& pixel1, const std::shared_ptr<Pixel>& pixel2);
         void calculateClusterCentre(Cluster*);
         bool touching(Pixel*, Cluster*);
         bool closeInTime(Pixel*, Cluster*);
@@ -56,8 +56,8 @@ namespace corryvreckan {
         TH1F* pixelTimeMinusClusterTime;
 
         double timeCut;
-        int neighbourRadiusRow;
-        int neighbourRadiusCol;
+        int neighborRadiusRow;
+        int neighborRadiusCol;
         bool chargeWeighting;
     };
 } // namespace corryvreckan

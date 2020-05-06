@@ -85,13 +85,13 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Getting tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
+    if(tracks.empty()) {
         LOG(DEBUG) << "No tracks on the clipboard";
-        return StatusCode::Success;
+        return StatusCode::NoData;
     }
 
     // Iterate through tracks found
-    for(auto& track : (*tracks)) {
+    for(auto& track : tracks) {
         // CHeck if we have associated clusters:
         auto associatedClusters = track->associatedClusters(m_detector->getName());
         if(associatedClusters.empty()) {
@@ -107,7 +107,7 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "Found track with associated cluster";
 
         // Get track intercept with DUT in global coordinates
-        trackIntercept = m_detector->getIntercept(track);
+        trackIntercept = m_detector->getIntercept(track.get());
 
         // Calculate the intercept in local coordinates
         trackInterceptLocal = m_detector->globalToLocal(trackIntercept);

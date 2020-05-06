@@ -52,25 +52,20 @@ std::shared_ptr<Event> Clipboard::getEvent() const {
 
 void Clipboard::clear() {
     // Loop over all data types
-    for(auto block = m_data.cbegin(); block != m_data.cend();) {
-        auto collections = block->second;
-
+    for(auto& block : m_data) {
         // Loop over all stored collections of this type
-        for(auto set = collections.cbegin(); set != collections.cend();) {
-            std::shared_ptr<ObjectVector> collection = std::static_pointer_cast<ObjectVector>(set->second);
-            // Loop over all objects and delete them
-            for(ObjectVector::iterator it = collection->begin(); it != collection->end(); ++it) {
+        for(auto& set : block.second) {
+            for(auto& obj : (*std::static_pointer_cast<ObjectVector>(set.second))) {
                 // All objects are destroyed together in this clear function at the end of the event. To avoid costly
                 // reverse-iterations through the TRef dependency hash lists, we just tell ROOT not to care about possible
                 // TRef-dependants and to just destroy the object directly by resetting the `kMustCleanup` bit.
-                (*it)->ResetBit(kMustCleanup);
-                // Delete the object itself:
-                delete(*it);
+                obj->ResetBit(kMustCleanup);
             }
-            set = collections.erase(set);
         }
-        block = m_data.erase(block);
     }
+
+    // Clear the data
+    m_data.clear();
 
     // Resetting the event definition:
     m_event.reset();

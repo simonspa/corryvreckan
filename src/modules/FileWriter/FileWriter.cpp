@@ -139,7 +139,7 @@ StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
                 // Fill the branch vector
                 for(auto& object : *objects) {
                     ++write_cnt_;
-                    write_list_[index_tuple]->push_back(object);
+                    write_list_[index_tuple]->push_back(object.get());
                 }
             }
         } catch(...) {

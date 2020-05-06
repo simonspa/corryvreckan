@@ -64,12 +64,11 @@ void AnalysisTelescope::initialise() {
     }
 }
 
-ROOT::Math::XYZPoint AnalysisTelescope::closestApproach(ROOT::Math::XYZPoint position,
-                                                        std::shared_ptr<MCParticleVector> particles) {
+ROOT::Math::XYZPoint AnalysisTelescope::closestApproach(ROOT::Math::XYZPoint position, const MCParticleVector& particles) {
     // Find the closest MC particle
     double smallestDistance(DBL_MAX);
     ROOT::Math::XYZPoint particlePosition;
-    for(auto& particle : (*particles)) {
+    for(auto& particle : particles) {
         ROOT::Math::XYZPoint entry = particle->getLocalStart();
         ROOT::Math::XYZPoint exit = particle->getLocalEnd();
         ROOT::Math::XYZPoint centre((entry.X() + exit.X()) / 2., (entry.Y() + exit.Y()) / 2., (entry.Z() + exit.Z()) / 2.);
@@ -90,8 +89,7 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
     }
-
-    for(auto& track : (*tracks)) {
+    for(auto& track : tracks) {
         IFLOG(DEBUG) { track->setLogging(true); }
         // Cut on the chi2/ndof
         if(track->chi2ndof() > chi2ndofCut) {
@@ -119,7 +117,7 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
 
             // Get the MC particles from the clipboard
             auto mcParticles = clipboard->getData<MCParticle>(name);
-            if(mcParticles == nullptr) {
+            if(mcParticles.empty()) {
                 continue;
             }
 
@@ -140,11 +138,11 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
 
             // Get the MC particles from the clipboard
             auto mcParticles = clipboard->getData<MCParticle>(detector->getName());
-            if(mcParticles == nullptr) {
+            if(mcParticles.empty()) {
                 continue;
             }
 
-            auto intercept = detector->getIntercept(track);
+            auto intercept = detector->getIntercept(track.get());
             auto interceptLocal = detector->globalToLocal(intercept);
             auto particlePosition = closestApproach(interceptLocal, mcParticles);
 

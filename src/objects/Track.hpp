@@ -84,7 +84,7 @@ namespace corryvreckan {
          * @param The name of the track model which should be used
          * @return By param trackModel assigned track model to be used
          */
-        static Track* Factory(std::string trackModel);
+        static std::shared_ptr<Track> Factory(std::string trackModel);
 
         /**
          * @brief Track object constructor
@@ -307,7 +307,7 @@ namespace corryvreckan {
         ClassDefOverride(Track, 8)
     };
     // Vector type declaration
-    using TrackVector = std::vector<Track*>;
+    using TrackVector = std::vector<std::shared_ptr<Track>>;
 } // namespace corryvreckan
 
 // include all tracking methods here to have one header to be include everywhere

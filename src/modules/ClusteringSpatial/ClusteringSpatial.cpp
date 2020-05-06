@@ -61,15 +61,15 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());
-    if(pixels == nullptr) {
+    if(pixels.empty()) {
         LOG(DEBUG) << "Detector " << m_detector->getName() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
     }
 
     // Make the cluster container and the maps for clustering
-    auto deviceClusters = std::make_shared<ClusterVector>();
-    map<Pixel*, bool> used;
-    map<int, map<int, Pixel*>> hitmap;
+    ClusterVector deviceClusters;
+    map<std::shared_ptr<Pixel>, bool> used;
+    map<int, map<int, std::shared_ptr<Pixel>>> hitmap;
     bool addedPixel;
 
     // Get the device dimensions
@@ -77,18 +77,18 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     int nCols = m_detector->nPixels().X();
 
     // Pre-fill the hitmap with pixels
-    for(auto pixel : (*pixels)) {
+    for(auto pixel : pixels) {
         hitmap[pixel->column()][pixel->row()] = pixel;
     }
 
-    for(auto pixel : (*pixels)) {
+    for(auto pixel : pixels) {
         if(used[pixel]) {
             continue;
         }
 
         // New pixel => new cluster
-        Cluster* cluster = new Cluster();
-        cluster->addPixel(pixel);
+        auto cluster = std::make_shared<Cluster>();
+        cluster->addPixel(&*pixel);
 
         if(useTriggerTimestamp) {
             if(!clipboard->getEvent()->triggerList().empty()) {
@@ -109,10 +109,10 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
         used[pixel] = true;
         addedPixel = true;
-        // Somewhere to store found neighbours
-        PixelVector neighbours;
+        // Somewhere to store found neighbors
+        PixelVector neighbors;
 
-        // Now we check the neighbours and keep adding more hits while there are connected pixels
+        // Now we check the neighbors and keep adding more hits while there are connected pixels
         while(addedPixel) {
 
             addedPixel = false;
@@ -137,24 +137,24 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
                     }
 
                     // Otherwise add the pixel to the cluster and store it as a found
-                    // neighbour
-                    cluster->addPixel(hitmap[col][row]);
+                    // neighbor
+                    cluster->addPixel(&*hitmap[col][row]);
                     used[hitmap[col][row]] = true;
-                    neighbours.push_back(hitmap[col][row]);
+                    neighbors.push_back(hitmap[col][row]);
                 }
             }
 
-            // If we have neighbours that have not yet been checked, continue
+            // If we have neighbors that have not yet been checked, continue
             // looking for more pixels
-            if(neighbours.size() > 0) {
+            if(neighbors.size() > 0) {
                 addedPixel = true;
-                pixel = neighbours.back();
-                neighbours.pop_back();
+                pixel = neighbors.back();
+                neighbors.pop_back();
             }
         }
 
         // Finalise the cluster and save it
-        calculateClusterCentre(cluster);
+        calculateClusterCentre(cluster.get());
 
         // Fill cluster histograms
         clusterSize->Fill(static_cast<double>(cluster->size()));
@@ -167,12 +167,12 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         clusterPositionLocal->Fill(cluster->column(), cluster->row());
         clusterTimes->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "ns")));
         LOG(DEBUG) << "cluster local: " << cluster->local();
-        deviceClusters->push_back(cluster);
+        deviceClusters.push_back(cluster);
     }
 
     clipboard->putData(deviceClusters, m_detector->getName());
-    LOG(DEBUG) << "Put " << deviceClusters->size() << " clusters on the clipboard for detector " << m_detector->getName()
-               << ". From " << pixels->size() << " pixels";
+    LOG(DEBUG) << "Put " << deviceClusters.size() << " clusters on the clipboard for detector " << m_detector->getName()
+               << ". From " << pixels.size() << " pixels";
 
     // Return value telling analysis to keep running
     return StatusCode::Success;

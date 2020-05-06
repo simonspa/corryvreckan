@@ -82,10 +82,6 @@ namespace corryvreckan {
         std::map<std::string, ROOT::Math::XYPoint> m_localTrackPoints{};
         std::map<std::string, ROOT::Math::XYPoint> m_inititalResidual{};
     };
-
-    // Vector type declaration
-    using GblTrackVector = std::vector<GblTrack*>;
-
 } // namespace corryvreckan
 
 #endif // CORRYVRECKAN_GBLTRACK_H

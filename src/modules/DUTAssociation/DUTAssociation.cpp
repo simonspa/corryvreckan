@@ -9,6 +9,7 @@
  */
 
 #include "DUTAssociation.h"
+#include "tools/cuts.h"
 
 using namespace corryvreckan;
 using namespace std;
@@ -21,24 +22,10 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
     m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
 
     // timing cut, relative (x * time_resolution) or absolute:
-    if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
-    } else if(m_config.has("time_cut_abs")) {
-        timeCut = m_config.get<double>("time_cut_abs");
-    } else {
-        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
-    }
+    timeCut = corryvreckan::calculate_cut<double>("time_cut", 3.0, m_config, m_detector);
 
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            m_config, {"spatial_cut_rel", "spatial_cut_abs"}, "Absolute and relative spatial cuts are mutually exclusive.");
-    } else if(m_config.has("spatial_cut_abs")) {
-        spatialCut = m_config.get<XYVector>("spatial_cut_abs");
-    } else {
-        spatialCut = m_config.get<double>("spatial_cut_rel", 3.0) * m_detector->getSpatialResolution();
-    }
+    spatialCut = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, m_config, m_detector);
     useClusterCentre = m_config.get<bool>("use_cluster_centre", false);
 
     LOG(DEBUG) << "time_cut = " << Units::display(timeCut, {"ms", "us", "ns"});
@@ -110,28 +97,23 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
-        LOG(DEBUG) << "No tracks on the clipboard";
-        return StatusCode::Success;
-    }
-
     // Get the DUT clusters from the clipboard
     auto clusters = clipboard->getData<Cluster>(m_detector->getName());
 
     // Loop over all tracks
-    for(auto& track : (*tracks)) {
+    for(auto& track : tracks) {
         LOG(TRACE) << "Proccessing track with model " << track->getType() << ", chi2 of " << track->chi2();
         int assoc_cls_per_track = 0;
         auto min_distance = std::numeric_limits<double>::max();
 
-        if(clusters == nullptr) {
+        if(clusters.empty()) {
             hNoAssocCls->Fill(0);
             LOG(DEBUG) << "No DUT clusters on the clipboard";
             continue;
         }
 
         // Loop over all DUT clusters
-        for(auto& cluster : (*clusters)) {
+        for(auto& cluster : clusters) {
             // Check distance between track and cluster
             ROOT::Math::XYZPoint intercept = track->intercept(cluster->global().z());
             auto interceptLocal = m_detector->globalToLocal(intercept);
@@ -198,7 +180,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
             LOG(DEBUG) << "Found associated cluster with distance (" << Units::display(abs(xdistance), {"um", "mm"}) << ","
                        << Units::display(abs(ydistance), {"um", "mm"}) << ")";
-            track->addAssociatedCluster(cluster);
+            track->addAssociatedCluster(cluster.get());
             assoc_cls_per_track++;
             assoc_cluster_counter++;
             num_cluster++;
@@ -206,7 +188,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
             // check if cluster is closest to track
             if(distance < min_distance) {
                 min_distance = distance;
-                track->setClosestCluster(cluster);
+                track->setClosestCluster(cluster.get());
             }
         }
         hNoAssocCls->Fill(assoc_cls_per_track);

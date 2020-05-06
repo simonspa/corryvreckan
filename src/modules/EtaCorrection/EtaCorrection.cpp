@@ -87,13 +87,8 @@ StatusCode EtaCorrection::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the clusters
     auto clusters = clipboard->getData<Cluster>(m_detector->getName());
-    if(clusters == nullptr) {
-        LOG(DEBUG) << "Detector " << m_detector->getName() << " does not have any clusters on the clipboard";
-        return StatusCode::Success;
-    }
-
-    for(auto& cluster : (*clusters)) {
-        applyEta(cluster);
+    for(auto& cluster : clusters) {
+        applyEta(cluster.get());
     }
 
     // Return value telling analysis to keep running

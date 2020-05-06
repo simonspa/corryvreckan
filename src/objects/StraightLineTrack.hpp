@@ -80,9 +80,6 @@ namespace corryvreckan {
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(StraightLineTrack, 1)
     };
-
-    // Vector type declaration
-    using StraightLineTrackVector = std::vector<StraightLineTrack*>;
 } // namespace corryvreckan
 
 #endif // CORRYVRECKAN_STRAIGHTLINETRACK_H

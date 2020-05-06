@@ -44,12 +44,9 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks
     auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
-        return StatusCode::Success;
-    }
 
     // Make a local copy and store it
-    for(auto& track : (*tracks)) {
+    for(auto& track : tracks) {
 
         // Apply selection to tracks for alignment - only allow tracks with certain Chi2/NDoF:
         if(m_pruneTracks && track->chi2ndof() > m_maxTrackChi2) {
@@ -59,7 +56,7 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         LOG(TRACE) << "Cloning track with track model \"" << track->getType() << "\" for alignment";
-        auto alignmentTrack = track->clone();
+        auto alignmentTrack = std::shared_ptr<Track>(track->clone());
         m_alignmenttracks.push_back(alignmentTrack);
     }
 
@@ -93,7 +90,7 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
     // Loop over all tracks
     for(size_t iTrack = 0; iTrack < globalTracks.size(); iTrack++) {
         // Get the track
-        Track* track = globalTracks[iTrack];
+        auto track = globalTracks[iTrack];
         // Get all clusters on the track
         auto trackClusters = track->clusters();
         // Find the cluster that needs to have its position recalculated
