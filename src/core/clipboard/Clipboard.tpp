@@ -8,6 +8,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#include "exceptions.h"
+
 namespace corryvreckan {
 
     template <typename T> void Clipboard::putData(std::vector<std::shared_ptr<T>> objects, const std::string& key) {
@@ -33,6 +35,25 @@ namespace corryvreckan {
 
     template <typename T> size_t Clipboard::countPersistentObjects(const std::string& key) const {
         return count_objects<T>(persistent_data_, key);
+    }
+
+    // Translate raw pointers to their shared pointers on storage. Fail if not found.
+    template <typename T> void Clipboard::copyToPersistentData(std::vector<T*> references, const std::string& key) {
+        auto from_volatile = get_data<T>(data_, key);
+        std::vector<std::shared_ptr<T>> to_persistent;
+
+        for(auto& ref : references) {
+            auto it = std::find_if(
+                from_volatile.begin(), from_volatile.end(), [=](const std::shared_ptr<T>& x) { return x.get() == ref; });
+            if(it == from_volatile.end()) {
+                throw MissingDataError(key);
+            } else {
+                to_persistent.push_back(*it);
+            }
+        }
+
+        // Ship off to persistent storage
+        put_data(persistent_data_, std::move(to_persistent));
     }
 
     template <typename T>

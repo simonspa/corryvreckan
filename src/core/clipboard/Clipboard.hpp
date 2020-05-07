@@ -95,6 +95,14 @@ namespace corryvreckan {
         template <typename T> void putPersistentData(std::vector<std::shared_ptr<T>> objects, const std::string& key = "");
 
         /**
+         * @brief Method to find objects in the event storage and copy the to the persistent storage of the clipboard
+         * @param objects Vector of raw pointers of data elements already stored on the event storage element
+         * @param key     Identifying key for this set of objects. Defaults to empty key
+         * @throws MissingDataError if the related object could not be found on the storage
+         */
+        template <typename T> void copyToPersistentData(std::vector<T*> objects, const std::string& key = "");
+
+        /**
          * @brief Method to retrieve objects from the clipboard
          * @param key Identifying key of objects to be fetched. Defaults to empty key
          */
