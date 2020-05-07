@@ -239,9 +239,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 // Determine whether a track can still be assembled given the number of current hits and the number of
                 // detectors to come. Reduces computing time.
                 detector_nr++;
-                if(refTrack.getNClusters() + (trees.size() - detector_nr + 1) < minHitsOnTrack) {
+                if(refTrack.getNClusters() + (trees.size() - detector_nr + 1) < min_hits_on_track_) {
                     LOG(DEBUG) << "No chance to find a track - too few detectors left: " << refTrack.getNClusters() << " + "
-                               << trees.size() << " - " << detector_nr << " < " << minHitsOnTrack;
+                               << trees.size() << " - " << detector_nr << " < " << min_hits_on_track_;
                     continue;
                 }
 
@@ -336,7 +336,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
             // Now should have a track with one cluster from each plane
             if(track->getNClusters() < min_hits_on_track_) {
-                LOG(DEBUG) << "Not enough clusters on the track, found " << track->nClusters() << " but "
+                LOG(DEBUG) << "Not enough clusters on the track, found " << track->getNClusters() << " but "
                            << min_hits_on_track_ << " required.";
                 continue;
             }
@@ -365,7 +365,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             trackChi2->Fill(track->getChi2());
             clustersPerTrack->Fill(static_cast<double>(track->getNClusters()));
             trackChi2ndof->Fill(track->getChi2ndof());
-            if(!(trackModel == "gbl")) {
+            if(!(track_model_ == "gbl")) {
                 trackAngleX->Fill(atan(track->getDirection(track->getClusters().front()->detectorID()).X()));
                 trackAngleY->Fill(atan(track->getDirection(track->getClusters().front()->detectorID()).Y()));
             }
