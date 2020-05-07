@@ -42,6 +42,10 @@ namespace corryvreckan {
         auto from_volatile = get_data<T>(data_, key);
         std::vector<std::shared_ptr<T>> to_persistent;
 
+        // Clear vector of duplicates:
+        std::sort(references.begin(), references.end());
+        references.erase(std::unique(references.begin(), references.end()), references.end());
+
         for(auto& ref : references) {
             auto it = std::find_if(
                 from_volatile.begin(), from_volatile.end(), [=](const std::shared_ptr<T>& x) { return x.get() == ref; });

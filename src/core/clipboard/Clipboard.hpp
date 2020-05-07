@@ -95,7 +95,14 @@ namespace corryvreckan {
         template <typename T> void putPersistentData(std::vector<std::shared_ptr<T>> objects, const std::string& key = "");
 
         /**
-         * @brief Method to find objects in the event storage and copy the to the persistent storage of the clipboard
+         * @brief Method to find objects in the event storage and copy the to the persistent storage of the clipboard.
+         *
+         * This method is useful to copy objects to persistent storage from which only the references, i.e. raw pointers are
+         * available. This method looks up the relevant volatile storage element and compares the stored objects with the
+         * pointers provided. It then stores the matched objects on permanent storage for later reference.
+         *
+         * The vector delivered at the input is cleared of duplicates.
+         *
          * @param objects Vector of raw pointers of data elements already stored on the event storage element
          * @param key     Identifying key for this set of objects. Defaults to empty key
          * @throws MissingDataError if the related object could not be found on the storage
