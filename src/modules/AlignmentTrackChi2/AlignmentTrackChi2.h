@@ -42,7 +42,6 @@ namespace corryvreckan {
         static void MinimiseTrackChi2(Int_t& npar, Double_t* grad, Double_t& result, Double_t* par, Int_t flag);
 
         // Member variables
-        TrackVector m_alignmenttracks;
         int m_discardedtracks{};
 
         size_t nIterations;

@@ -44,6 +44,8 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks
     auto tracks = clipboard->getData<Track>();
+    TrackVector alignmenttracks;
+    std::vector<Cluster*> alignmentclusters;
 
     // Make a local copy and store it
     for(auto& track : tracks) {
@@ -55,10 +57,16 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
             continue;
         }
 
-        LOG(TRACE) << "Cloning track with track model \"" << track->getType() << "\" for alignment";
-        auto alignmentTrack = Track::Factory(track);
-        m_alignmenttracks.push_back(alignmentTrack);
+        LOG(TRACE) << "Storing track with track model \"" << track->getType() << "\" for alignment";
+        alignmenttracks.push_back(track);
+        auto clusters = track->clusters();
+        alignmentclusters.insert(alignmentclusters.end(), clusters.begin(), clusters.end());
     }
+
+    // Store all tracks we want for alignment on the permanent storage:
+    clipboard->putPersistentData(alignmenttracks);
+    // Copy the objects of all track clusters on the clipboard to persistent storage:
+    clipboard->copyToPersistentData(alignmentclusters);
 
     // Otherwise keep going
     return StatusCode::Success;
@@ -115,7 +123,7 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
 //  The finalise function - effectively the brains of the alignment!
 // ==================================================================
 
-void AlignmentTrackChi2::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
+void AlignmentTrackChi2::finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) {
 
     if(m_discardedtracks > 0) {
         LOG(INFO) << "Discarded " << m_discardedtracks << " input tracks.";
@@ -126,7 +134,7 @@ void AlignmentTrackChi2::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     residualFitter->SetFCN(MinimiseTrackChi2);
 
     // Set the global parameters
-    globalTracks = m_alignmenttracks;
+    globalTracks = clipboard->getPersistentData<Track>();
 
     // Set the printout arguments of the fitter
     Double_t arglist[10];
