@@ -125,7 +125,7 @@ void Tracking4D::initialise() {
 double Tracking4D::calculate_average_timestamp(const Track* track) {
     double sum_weighted_time = 0;
     double sum_weights = 0;
-    for(auto& cluster : track->clusters()) {
+    for(auto& cluster : track->getClusters()) {
         double weight = 1 / (time_cuts_[get_detector(cluster->getDetectorID())]);
         double time_of_flight = static_cast<double>(Units::convert(cluster->global().z(), "mm") / (299.792458));
         sum_weights += weight;
@@ -231,8 +231,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 // Determine whether a track can still be assembled given the number of current hits and the number of
                 // detectors to come. Reduces computing time.
                 detector_nr++;
-                if(refTrack.nClusters() + (trees.size() - detector_nr + 1) < min_hits_on_track_) {
-                    LOG(DEBUG) << "No chance to find a track - too few detectors left: " << refTrack.nClusters() << " + "
+                if(refTrack.getNClusters() + (trees.size() - detector_nr + 1) < min_hits_on_track_) {
+                    LOG(DEBUG) << "No chance to find a track - too few detectors left: " << refTrack.getNClusters() << " + "
                                << trees.size() << " - " << detector_nr << " < " << min_hits_on_track_;
                     continue;
                 }
@@ -327,8 +327,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Now should have a track with one cluster from each plane
-            if(track->nClusters() < min_hits_on_track_) {
-                LOG(DEBUG) << "Not enough clusters on the track, found " << track->nClusters() << " but "
+            if(track->getNClusters() < min_hits_on_track_) {
+                LOG(DEBUG) << "Not enough clusters on the track, found " << track->getNClusters() << " but "
                            << min_hits_on_track_ << " required.";
                 continue;
             }
@@ -354,33 +354,33 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 continue;
             }
             // Fill histograms
-            trackChi2->Fill(track->chi2());
-            clustersPerTrack->Fill(static_cast<double>(track->nClusters()));
-            trackChi2ndof->Fill(track->chi2ndof());
+            trackChi2->Fill(track->getChi2());
+            clustersPerTrack->Fill(static_cast<double>(track->getNClusters()));
+            trackChi2ndof->Fill(track->getChi2ndof());
             if(!(track_model_ == "gbl")) {
-                trackAngleX->Fill(atan(track->direction(track->clusters().front()->detectorID()).X()));
-                trackAngleY->Fill(atan(track->direction(track->clusters().front()->detectorID()).Y()));
+                trackAngleX->Fill(atan(track->getDirection(track->getClusters().front()->detectorID()).X()));
+                trackAngleY->Fill(atan(track->getDirection(track->getClusters().front()->detectorID()).Y()));
             }
             // Make residuals
-            auto trackClusters = track->clusters();
+            auto trackClusters = track->getClusters();
             for(auto& trackCluster : trackClusters) {
                 string detectorID = trackCluster->detectorID();
-                residualsX[detectorID]->Fill(track->residual(detectorID).X());
-                pullX[detectorID]->Fill(track->residual(detectorID).X() / track->clusters().front()->errorX());
-                pullY[detectorID]->Fill(track->residual(detectorID).Y() / track->clusters().front()->errorY());
+                residualsX[detectorID]->Fill(track->getResidual(detectorID).X());
+                pullX[detectorID]->Fill(track->getResidual(detectorID).X() / track->getClusters().front()->errorX());
+                pullY[detectorID]->Fill(track->getResidual(detectorID).Y() / track->getClusters().front()->errorY());
                 if(trackCluster->columnWidth() == 1)
-                    residualsXwidth1[detectorID]->Fill(track->residual(detectorID).X());
+                    residualsXwidth1[detectorID]->Fill(track->getResidual(detectorID).X());
                 if(trackCluster->columnWidth() == 2)
-                    residualsXwidth2[detectorID]->Fill(track->residual(detectorID).X());
+                    residualsXwidth2[detectorID]->Fill(track->getResidual(detectorID).X());
                 if(trackCluster->columnWidth() == 3)
-                    residualsXwidth3[detectorID]->Fill(track->residual(detectorID).X());
-                residualsY[detectorID]->Fill(track->residual(detectorID).Y());
+                    residualsXwidth3[detectorID]->Fill(track->getResidual(detectorID).X());
+                residualsY[detectorID]->Fill(track->getResidual(detectorID).Y());
                 if(trackCluster->rowWidth() == 1)
-                    residualsYwidth1[detectorID]->Fill(track->residual(detectorID).Y());
+                    residualsYwidth1[detectorID]->Fill(track->getResidual(detectorID).Y());
                 if(trackCluster->rowWidth() == 2)
-                    residualsYwidth2[detectorID]->Fill(track->residual(detectorID).Y());
+                    residualsYwidth2[detectorID]->Fill(track->getResidual(detectorID).Y());
                 if(trackCluster->rowWidth() == 3)
-                    residualsYwidth3[detectorID]->Fill(track->residual(detectorID).Y());
+                    residualsYwidth3[detectorID]->Fill(track->getResidual(detectorID).Y());
             }
 
             for(auto& detector : get_detectors()) {

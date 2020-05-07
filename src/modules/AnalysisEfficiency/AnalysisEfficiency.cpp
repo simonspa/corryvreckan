@@ -189,7 +189,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "Looking at next track";
 
         // Cut on the chi2/ndof
-        if(track->chi2ndof() > m_chi2ndofCut) {
+        if(track->getChi2ndof() > m_chi2ndofCut) {
             LOG(DEBUG) << " - track discarded due to Chi2/ndof";
             n_chi2++;
             continue;
@@ -255,7 +255,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
         for(auto& cluster : clusters) {
             LOG(DEBUG) << " - Looking at next DUT cluster";
 
-            auto associated_clusters = track->associatedClusters(m_detector->getName());
+            auto associated_clusters = track->getAssociatedClusters(m_detector->getName());
             if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster.get()) !=
                associated_clusters.end()) {
                 LOG(DEBUG) << "Found associated cluster " << (*cluster);

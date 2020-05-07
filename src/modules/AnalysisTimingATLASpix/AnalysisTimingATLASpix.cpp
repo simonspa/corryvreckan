@@ -526,7 +526,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         total_tracks_uncut++;
 
         // Cut on the chi2/ndof
-        if(track->chi2ndof() > m_chi2ndofCut) {
+        if(track->getChi2ndof() > m_chi2ndofCut) {
             LOG(DEBUG) << " - track discarded due to Chi2/ndof";
             continue;
         }
@@ -582,7 +582,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
             hTrackCorrelationTime->Fill(track->timestamp() - cluster->timestamp());
 
-            auto associated_clusters = track->associatedClusters(m_detector->getName());
+            auto associated_clusters = track->getAssociatedClusters(m_detector->getName());
             if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster.get()) !=
                associated_clusters.end()) {
                 LOG(DEBUG) << "Found associated cluster " << (*cluster);
