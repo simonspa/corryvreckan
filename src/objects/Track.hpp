@@ -26,45 +26,45 @@ namespace corryvreckan {
         Plane() : Object(){};
 
         Plane(double z, double x_x0, std::string name, bool has_cluster)
-            : Object(), m_z(z), m_x_x0(x_x0), m_name(name), m_has_cluster(has_cluster){};
+            : Object(), z_(z), x_x0_(x_x0), name_(name), has_cluster_(has_cluster){};
 
+        static std::type_index getBaseType() { return typeid(Plane); }
         // access elements
-        double position() const { return m_z; }
-        double materialbudget() const { return m_x_x0; }
-        bool hasCluster() const { return m_has_cluster; }
-        std::string name() const { return m_name; }
-        unsigned gblPos() const { return m_gbl_points_pos; }
-        // sorting overload
-        bool operator<(const Plane& pl) const { return m_z < pl.m_z; }
-        // set elements that might be unknown at construction
-        void setGblPos(unsigned pos) { m_gbl_points_pos = pos; }
-        void setPosition(double z) { m_z = z; }
-        void setCluster(const Cluster* cluster) {
-            m_cluster = const_cast<Cluster*>(cluster);
-            m_has_cluster = true;
-        }
+        double getPosition() const { return z_; }
+        double getMaterialBudget() const { return x_x0_; }
+        bool hasCluster() const { return has_cluster_; }
+        std::string getName() const { return name_; }
+        unsigned getGblPointPosition() const { return gbl_points_pos_; }
         Cluster* cluster() const;
+        Transform3D getToLocal() const { return to_local_; }
+        Transform3D getToGlobal() const { return to_global_; }
+
+        // sorting overload
+        bool operator<(const Plane& pl) const { return z_ < pl.z_; }
+        // set elements that might be unknown at construction
+        void setGblPos(unsigned pos) { gbl_points_pos_ = pos; }
+        void setPosition(double z) { z_ = z; }
+        void setCluster(const Cluster* cluster) {
+            cluster_ = const_cast<Cluster*>(cluster);
+            has_cluster_ = true;
+        }
+        void setToLocal(Transform3D toLocal) { to_local_ = toLocal; }
+        void setToGlobal(Transform3D toGlobal) { to_global_ = toGlobal; }
         void print(std::ostream& os) const override {
-            os << "Plane at " << m_z << " with rad. length " << m_x_x0 << ", name " << m_name << " and";
-            if(m_has_cluster)
+            os << "Plane at " << z_ << " with rad. length " << x_x0_ << ", name " << name_ << " and";
+            if(has_cluster_)
                 os << "cluster with global pos: " << cluster()->global();
             else
                 os << "no clsuter";
         }
-        void setToLocal(Transform3D toLocal) { m_toLocal = toLocal; }
-        void setToGlobal(Transform3D toGlobal) { m_toGlobal = toGlobal; }
-        Transform3D toLocal() const { return m_toLocal; }
-        Transform3D toGlobal() const { return m_toGlobal; }
-
-        static std::type_index getBaseType() { return typeid(Plane); }
 
     private:
-        double m_z, m_x_x0;
-        std::string m_name;
-        bool m_has_cluster = false;
-        TRef m_cluster = nullptr;
-        unsigned m_gbl_points_pos{};
-        Transform3D m_toLocal, m_toGlobal;
+        double z_, x_x0_;
+        std::string name_;
+        bool has_cluster_ = false;
+        TRef cluster_ = nullptr;
+        unsigned gbl_points_pos_{};
+        Transform3D to_local_, to_global_;
         ClassDefOverride(Plane, 1)
     };
 
@@ -157,37 +157,37 @@ namespace corryvreckan {
          * @brief Set the momentum of the particle
          * @param momentum
          */
-        void setParticleMomentum(double p) { m_momentum = p; }
+        void setParticleMomentum(double p) { momentum_ = p; }
 
         /**
          * @brief Get the chi2 of the track fit
          * @return chi2
          */
-        double chi2() const;
+        double getChi2() const;
 
         /**
          * @brief Get chi2/ndof of the track fit
          * @return chi2/ndof
          */
-        double chi2ndof() const;
+        double getChi2ndof() const;
 
         /**
          * @brief Get the ndof for the track fit
          * @return ndof
          */
-        double ndof() const;
+        double getNdof() const;
 
         /**
          * @brief Get the clusters contained in the track fit
          * @return vector of cluster* of track
          */
-        std::vector<Cluster*> clusters() const;
+        std::vector<Cluster*> getClusters() const;
 
         /**
          * @brief Get the clusters associated to the track
          * @return vector of cluster* assosiated to the track
          */
-        std::vector<Cluster*> associatedClusters(const std::string& detectorID) const;
+        std::vector<Cluster*> getAssociatedClusters(const std::string& detectorID) const;
 
         /**
          * @brief Check if cluster is associated
@@ -214,7 +214,7 @@ namespace corryvreckan {
          * @brief Get the number of clusters used for track fit
          * @return Number of clusters in track
          */
-        size_t nClusters() const { return m_trackClusters.size(); }
+        size_t getNClusters() const { return trackClusters_.size(); }
 
         // virtual functions to be implemented by derived classes
 
@@ -234,75 +234,75 @@ namespace corryvreckan {
          * @param z positon
          * @return ROOT::Math::XYZPoint at z position
          */
-        virtual ROOT::Math::XYZPoint intercept(double) const { return ROOT::Math::XYZPoint(0.0, 0.0, 0.0); }
+        virtual ROOT::Math::XYZPoint getIntercept(double) const { return ROOT::Math::XYZPoint(0.0, 0.0, 0.0); }
 
         /**
          * @brief Get the track state at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        virtual ROOT::Math::XYZPoint state(std::string) const { return ROOT::Math::XYZPoint(0.0, 0.0, 0.0); }
+        virtual ROOT::Math::XYZPoint getState(std::string) const { return ROOT::Math::XYZPoint(0.0, 0.0, 0.0); }
 
         /**
          * @brief Get the track direction at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
-        virtual ROOT::Math::XYZVector direction(std::string) const { return ROOT::Math::XYZVector(0.0, 0.0, 0.0); }
+        virtual ROOT::Math::XYZVector getDirection(std::string) const { return ROOT::Math::XYZVector(0.0, 0.0, 0.0); }
 
         /**
          * @brief check if the fitting routine already has been called. Chi2 etc are not set before
          * @return true if fit has already been performed, false otherwise
          */
-        bool isFitted() const { return m_isFitted; }
+        bool isFitted() const { return isFitted_; }
 
         /**
          * @brief Get the residual for a given detector layer
          * @param detectorID
          * @return  2D residual as ROOT::Math::XYPoint
          */
-        ROOT::Math::XYPoint residual(std::string detectorID) const { return m_residual.at(detectorID); }
+        ROOT::Math::XYPoint getResidual(std::string detectorID) const { return residual_.at(detectorID); }
 
         /**
          * @brief Get the materialBudget of a detector layer
          * @param detectorID
          * @return Material Budget for given layer
          */
-        double materialBudget(std::string detectorID) const {
+        double getMaterialBudget(std::string detectorID) const {
             return std::find_if(
-                       m_planes.begin(), m_planes.end(), [&detectorID](Plane plane) { return plane.name() == detectorID; })
-                ->materialbudget();
+                       planes_.begin(), planes_.end(), [&detectorID](Plane plane) { return plane.getName() == detectorID; })
+                ->getMaterialBudget();
         }
-        void registerPlane(Plane p) { m_planes.push_back(p); }
+        void registerPlane(Plane p) { planes_.push_back(p); }
 
         void updatePlane(Plane p);
 
-        ROOT::Math::XYZPoint correction(std::string detectorID) const;
+        ROOT::Math::XYZPoint getCorrection(std::string detectorID) const;
 
-        long unsigned int numScatterers() const { return m_planes.size(); }
-        void setVolumeScatter(double length) { m_scattering_length_volume = length; }
+        long unsigned int getNumScatterers() const { return planes_.size(); }
+        void setVolumeScatter(double length) { scattering_length_volume_ = length; }
 
-        void setLogging(bool on = false) { m_logging = on; }
+        void setLogging(bool on = false) { logging_ = on; }
 
-        ROOT::Math::XYPoint kink(std::string detectorID) const;
+        ROOT::Math::XYPoint getKink(std::string detectorID) const;
 
     protected:
-        std::vector<TRef> m_trackClusters;
-        std::vector<TRef> m_associatedClusters;
-        std::map<std::string, ROOT::Math::XYPoint> m_residual;
-        std::map<std::string, ROOT::Math::XYPoint> m_kink;
-        std::map<std::string, ROOT::Math::XYZPoint> m_corrections{};
-        std::vector<Plane> m_planes{};
-        bool m_logging = false;
+        std::vector<TRef> trackClusters_;
+        std::vector<TRef> associatedClusters_;
+        std::map<std::string, ROOT::Math::XYPoint> residual_;
+        std::map<std::string, ROOT::Math::XYPoint> kink_;
+        std::map<std::string, ROOT::Math::XYZPoint> corrections_{};
+        std::vector<Plane> planes_{};
+        bool logging_ = false;
 
-        std::map<std::string, TRef> closestCluster;
-        double m_chi2;
-        double m_ndof;
-        double m_chi2ndof;
-        bool m_isFitted{};
-        bool m_use_volume_scatter{};
-        double m_momentum;
-        double m_scattering_length_volume;
+        std::map<std::string, TRef> closestCluster_;
+        double chi2_;
+        double ndof_;
+        double chi2ndof_;
+        bool isFitted_{};
+        bool use_volume_scatter_{};
+        double momentum_;
+        double scattering_length_volume_;
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(Track, 8)
     };

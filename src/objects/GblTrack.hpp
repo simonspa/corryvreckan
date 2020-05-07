@@ -43,21 +43,21 @@ namespace corryvreckan {
          * @param z positon
          * @return ROOT::Math::XYZPoint at z position
          */
-        ROOT::Math::XYZPoint intercept(double z) const override;
+        ROOT::Math::XYZPoint getIntercept(double z) const override;
 
         /**
          * @brief Get the track state at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        ROOT::Math::XYZPoint state(std::string detectorID) const override;
+        ROOT::Math::XYZPoint getState(std::string detectorID) const override;
 
         /**
          * @brief Get the track direction at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
-        ROOT::Math::XYZVector direction(std::string detectorID) const override;
+        ROOT::Math::XYZVector getDirection(std::string detectorID) const override;
 
     private:
         /**
@@ -73,14 +73,14 @@ namespace corryvreckan {
         Cluster* get_seed_cluster() const;
 
         // Member variables
-        TRef m_seedCluster{nullptr};
-        double m_scattering_length_volume;
-        bool m_use_volume_scatter{};
+        TRef seed_cluster_{nullptr};
+        double scattering_length_volume_{};
+        bool use_volume_scatter_{};
 
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(GblTrack, 3);
-        std::map<std::string, ROOT::Math::XYPoint> m_localTrackPoints{};
-        std::map<std::string, ROOT::Math::XYPoint> m_inititalResidual{};
+        std::map<std::string, ROOT::Math::XYPoint> local_track_points_{};
+        std::map<std::string, ROOT::Math::XYPoint> initital_residual{};
     };
 } // namespace corryvreckan
 

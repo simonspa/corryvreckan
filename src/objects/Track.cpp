@@ -14,50 +14,50 @@
 using namespace corryvreckan;
 
 Cluster* Plane::cluster() const {
-    if(!m_cluster.IsValid() || m_cluster.GetObject() == nullptr) {
+    if(!cluster_.IsValid() || cluster_.GetObject() == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(Cluster));
     }
-    return dynamic_cast<Cluster*>(m_cluster.GetObject());
+    return dynamic_cast<Cluster*>(cluster_.GetObject());
 }
 
-Track::Track() : m_momentum(-1) {}
+Track::Track() : momentum_(-1) {}
 
 Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp()) {
-    m_isFitted = track.isFitted();
-    m_chi2 = track.chi2();
-    m_ndof = track.ndof();
-    m_chi2ndof = track.chi2ndof();
+    isFitted_ = track.isFitted();
+    chi2_ = track.getChi2();
+    ndof_ = track.getNdof();
+    chi2ndof_ = track.getChi2ndof();
     //    m_planes = track.m_planes;
-    for(auto& p : track.m_planes)
-        m_planes.push_back(Plane(p));
-    m_use_volume_scatter = track.m_use_volume_scatter;
-    auto trackClusters = track.clusters();
+    for(auto& p : track.planes_)
+        planes_.push_back(Plane(p));
+    use_volume_scatter_ = track.use_volume_scatter_;
+    auto trackClusters = track.getClusters();
     for(auto& track_cluster : trackClusters) {
         Cluster* cluster = new Cluster(*track_cluster);
         addCluster(cluster);
     }
-    auto associatedClusters = track.m_associatedClusters;
+    auto associatedClusters = track.associatedClusters_;
     for(auto& assoc_cluster : associatedClusters) {
         Cluster* cluster = new Cluster(*dynamic_cast<Cluster*>(assoc_cluster.GetObject()));
         addAssociatedCluster(cluster);
     }
-    m_scattering_length_volume = track.m_scattering_length_volume;
-    m_residual = track.m_residual;
-    m_kink = track.m_kink;
-    m_momentum = track.m_momentum;
-    m_corrections = track.m_corrections;
+    scattering_length_volume_ = track.scattering_length_volume_;
+    residual_ = track.residual_;
+    kink_ = track.kink_;
+    momentum_ = track.momentum_;
+    corrections_ = track.corrections_;
 }
 
 void Track::addCluster(const Cluster* cluster) {
-    m_trackClusters.push_back(const_cast<Cluster*>(cluster));
+    trackClusters_.push_back(const_cast<Cluster*>(cluster));
 }
 void Track::addAssociatedCluster(const Cluster* cluster) {
-    m_associatedClusters.push_back(const_cast<Cluster*>(cluster));
+    associatedClusters_.push_back(const_cast<Cluster*>(cluster));
 }
 
-std::vector<Cluster*> Track::clusters() const {
+std::vector<Cluster*> Track::getClusters() const {
     std::vector<Cluster*> clustervec;
-    for(auto& cluster : m_trackClusters) {
+    for(auto& cluster : trackClusters_) {
         if(!cluster.IsValid() || cluster.GetObject() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
         }
@@ -68,9 +68,9 @@ std::vector<Cluster*> Track::clusters() const {
     return clustervec;
 }
 
-std::vector<Cluster*> Track::associatedClusters(const std::string& detectorID) const {
+std::vector<Cluster*> Track::getAssociatedClusters(const std::string& detectorID) const {
     std::vector<Cluster*> clustervec;
-    for(auto& cluster : m_associatedClusters) {
+    for(auto& cluster : associatedClusters_) {
         // Check if reference is valid:
         if(!cluster.IsValid() || cluster.GetObject() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
@@ -88,87 +88,87 @@ std::vector<Cluster*> Track::associatedClusters(const std::string& detectorID) c
 }
 
 bool Track::hasClosestCluster(const std::string& detectorID) const {
-    return (closestCluster.find(detectorID) != closestCluster.end());
+    return (closestCluster_.find(detectorID) != closestCluster_.end());
 }
 
-double Track::chi2() const {
-    if(!m_isFitted) {
+double Track::getChi2() const {
+    if(!isFitted_) {
         throw RequestParameterBeforeFitError(this, "chi2");
     }
-    return m_chi2;
+    return chi2_;
 }
 
-double Track::chi2ndof() const {
-    if(!m_isFitted) {
+double Track::getChi2ndof() const {
+    if(!isFitted_) {
         throw RequestParameterBeforeFitError(this, "chi2ndof");
     }
-    return m_chi2ndof;
+    return chi2ndof_;
 }
 
-double Track::ndof() const {
-    if(!m_isFitted) {
+double Track::getNdof() const {
+    if(!isFitted_) {
         throw RequestParameterBeforeFitError(this, "ndof");
     }
-    return m_ndof;
+    return ndof_;
 }
 
 void Track::setClosestCluster(const Cluster* cluster) {
     auto id = cluster->getDetectorID();
 
     // Check if this detector has a closest cluster and overwrite it:
-    auto cl = closestCluster.find(id);
-    if(cl != closestCluster.end()) {
+    auto cl = closestCluster_.find(id);
+    if(cl != closestCluster_.end()) {
         cl->second = const_cast<Cluster*>(cluster);
     } else {
-        closestCluster.emplace(id, const_cast<Cluster*>(cluster));
+        closestCluster_.emplace(id, const_cast<Cluster*>(cluster));
     }
 }
 
 Cluster* Track::getClosestCluster(const std::string& id) const {
-    auto cluster_it = closestCluster.find(id);
+    auto cluster_it = closestCluster_.find(id);
     auto cluster = cluster_it->second;
-    if(cluster_it != closestCluster.end() && cluster.IsValid() && cluster.GetObject() != nullptr) {
+    if(cluster_it != closestCluster_.end() && cluster.IsValid() && cluster.GetObject() != nullptr) {
         return dynamic_cast<Cluster*>(cluster.GetObject());
     }
     throw MissingReferenceException(typeid(*this), typeid(Cluster));
 }
 
 bool Track::isAssociated(Cluster* cluster) const {
-    auto it = find_if(m_associatedClusters.begin(), m_associatedClusters.end(), [&cluster](TRef cl) {
+    auto it = find_if(associatedClusters_.begin(), associatedClusters_.end(), [&cluster](TRef cl) {
         auto acl = dynamic_cast<Cluster*>(cl.GetObject());
         return acl == cluster;
     });
-    if(it == m_associatedClusters.end()) {
+    if(it == associatedClusters_.end()) {
         return false;
     }
     return true;
 }
 
 bool Track::hasDetector(std::string detectorID) const {
-    auto it = find_if(m_trackClusters.begin(), m_trackClusters.end(), [&detectorID](TRef cl) {
+    auto it = std::find_if(trackClusters_.begin(), trackClusters_.end(), [&detectorID](TRef cl) {
         auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
         return cluster->getDetectorID() == detectorID;
     });
-    if(it == m_trackClusters.end()) {
+    if(it == trackClusters_.end()) {
         return false;
     }
     return true;
 }
 
 Cluster* Track::getClusterFromDetector(std::string detectorID) const {
-    auto it = find_if(m_trackClusters.begin(), m_trackClusters.end(), [&detectorID](TRef cl) {
+    auto it = find_if(trackClusters_.begin(), trackClusters_.end(), [&detectorID](TRef cl) {
         auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
         return cluster->getDetectorID() == detectorID;
     });
-    if(it == m_trackClusters.end()) {
+    if(it == trackClusters_.end()) {
         return nullptr;
     }
     return dynamic_cast<Cluster*>(it->GetObject());
 }
 
-ROOT::Math::XYPoint Track::kink(std::string detectorID) const {
-    if(m_kink.count(detectorID) == 1) {
-        return m_kink.at(detectorID);
+ROOT::Math::XYPoint Track::getKink(std::string detectorID) const {
+    if(kink_.count(detectorID) == 1) {
+        return kink_.at(detectorID);
     } else {
         return ROOT::Math::XYPoint(0, 0);
     }
@@ -176,12 +176,12 @@ ROOT::Math::XYPoint Track::kink(std::string detectorID) const {
 
 void Track::updatePlane(Plane p) {
     std::replace_if(
-        m_planes.begin(), m_planes.end(), [&p](auto const& plane) { return plane.name() == p.name(); }, std::move(p));
+        planes_.begin(), planes_.end(), [&p](auto const& plane) { return plane.getName() == p.getName(); }, std::move(p));
 }
 
-ROOT::Math::XYZPoint Track::correction(std::string detectorID) const {
-    if(m_corrections.count(detectorID) == 1)
-        return m_corrections.at(detectorID);
+ROOT::Math::XYZPoint Track::getCorrection(std::string detectorID) const {
+    if(corrections_.count(detectorID) == 1)
+        return corrections_.at(detectorID);
     else
         throw TrackError(typeid(Track), " calles correction on non existing detector " + detectorID);
 }

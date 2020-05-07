@@ -327,7 +327,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "Looking at next track";
 
         // Cut on the chi2/ndof
-        if(track->chi2ndof() > chi2ndofCut) {
+        if(track->getChi2ndof() > chi2ndofCut) {
             LOG(DEBUG) << " - track discarded due to Chi2/ndof";
             hCutHisto->Fill(1);
             num_tracks++;
@@ -386,7 +386,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
 
         // Loop over all associated DUT clusters:
-        for(auto assoc_cluster : track->associatedClusters(m_detector->getName())) {
+        for(auto assoc_cluster : track->getAssociatedClusters(m_detector->getName())) {
             LOG(DEBUG) << " - Looking at next associated DUT cluster";
 
             // if closest cluster should be used continue if current associated cluster is not the closest one
@@ -395,9 +395,9 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             }
             has_associated_cluster = true;
 
-            hTrackZPosDUT->Fill(track->state(m_detector->getName()).z());
+            hTrackZPosDUT->Fill(track->getState(m_detector->getName()).z());
             // Check distance between track and cluster
-            ROOT::Math::XYZPoint intercept = track->intercept(assoc_cluster->global().z());
+            ROOT::Math::XYZPoint intercept = track->getIntercept(assoc_cluster->global().z());
             double xdistance = intercept.X() - assoc_cluster->global().x();
             double ydistance = intercept.Y() - assoc_cluster->global().y();
             double xabsdistance = fabs(xdistance);
