@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 """
 jobsub: a tool for Corryvreckan job submission
 
@@ -192,9 +192,6 @@ def check_program(name):
     """ Searches PATH environment variable for executable given by parameter """
     import os
     for dir in os.environ['PATH'].split(os.pathsep):
-        prog = os.path.join(dir, name)
-        if os.path.exists(prog): return prog
-    for dir in os.environ['CORRY_PATH'].split(os.pathsep):
         prog = os.path.join(dir, name)
         if os.path.exists(prog): return prog
 
