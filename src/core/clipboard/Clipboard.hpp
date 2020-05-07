@@ -128,13 +128,13 @@ namespace corryvreckan {
         void clear();
 
         // Container for data, list of all data held
-        ClipboardData m_data;
+        ClipboardData data_;
 
         // Persistent clipboard storage
-        std::unordered_map<std::string, double> m_persistent_data;
+        std::unordered_map<std::string, double> persistent_data_;
 
         // Store the current time slice:
-        std::shared_ptr<Event> m_event{};
+        std::shared_ptr<Event> event_{};
     };
 } // namespace corryvreckan
 

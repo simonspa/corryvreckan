@@ -17,7 +17,7 @@ namespace corryvreckan {
         }
 
         // Iterator for data type:
-        ClipboardData::iterator type = m_data.begin();
+        ClipboardData::iterator type = data_.begin();
 
         /* If data type exists, returns iterator to offending key, if data type does not exist yet, creates new entry and
          * returns iterator to the newly created element.
@@ -26,7 +26,7 @@ namespace corryvreckan {
          * derived track classes will be stored as Track objects and can be fetched as such
          */
         type =
-            m_data.insert(type, ClipboardData::value_type(T::getBaseType(), std::map<std::string, std::shared_ptr<void>>()));
+            data_.insert(type, ClipboardData::value_type(T::getBaseType(), std::map<std::string, std::shared_ptr<void>>()));
 
         // Insert data into data type element and print a warning if it exists already
         auto object_ptr = std::make_shared<std::vector<std::shared_ptr<T>>>(objects);
@@ -38,25 +38,25 @@ namespace corryvreckan {
     }
 
     template <typename T> std::vector<std::shared_ptr<T>>& Clipboard::getData(const std::string& key) const {
-        if(m_data.count(typeid(T)) == 0 || m_data.at(typeid(T)).count(key) == 0) {
+        if(data_.count(typeid(T)) == 0 || data_.at(typeid(T)).count(key) == 0) {
             return *std::make_shared<std::vector<std::shared_ptr<T>>>();
         }
-        return *std::static_pointer_cast<std::vector<std::shared_ptr<T>>>(m_data.at(typeid(T)).at(key));
+        return *std::static_pointer_cast<std::vector<std::shared_ptr<T>>>(data_.at(typeid(T)).at(key));
     }
 
     template <typename T> size_t Clipboard::countObjects(const std::string& key) const {
         size_t number_of_objects = 0;
 
         // Check if we have anything of this type:
-        if(m_data.count(typeid(T)) != 0) {
+        if(data_.count(typeid(T)) != 0) {
             // Decide whether we should count all or just the ones identified by a key:
             if(key.empty()) {
-                for(const auto& block : m_data.at(typeid(T))) {
+                for(const auto& block : data_.at(typeid(T))) {
                     number_of_objects += std::static_pointer_cast<std::vector<std::shared_ptr<T>>>(block.second)->size();
                 }
-            } else if(m_data.at(typeid(T)).count(key) != 0) {
+            } else if(data_.at(typeid(T)).count(key) != 0) {
                 number_of_objects =
-                    std::static_pointer_cast<std::vector<std::shared_ptr<T>>>(m_data.at(typeid(T)).at(key))->size();
+                    std::static_pointer_cast<std::vector<std::shared_ptr<T>>>(data_.at(typeid(T)).at(key))->size();
             }
         }
         return number_of_objects;
