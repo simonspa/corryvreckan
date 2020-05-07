@@ -32,6 +32,7 @@ TrackingSpatial::TrackingSpatial(Configuration config, std::vector<std::shared_p
     minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
     excludeDUT = m_config.get<bool>("exclude_dut", true);
     trackModel = m_config.get<std::string>("track_model", "straightline");
+    rejectByROI = m_config.get<bool>("reject_by_roi", false);
 
     // Backwards compatibilty: also allow spatial_cut to be used for spatial_cut_abs
     m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
@@ -195,8 +196,8 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Now should have a track with one cluster from each plane
-        if(track->nClusters() < minHitsOnTrack) {
-            LOG(DEBUG) << "Not enough clusters on the track, found " << track->nClusters() << " but " << minHitsOnTrack
+        if(track->getNClusters() < minHitsOnTrack) {
+            LOG(DEBUG) << "Not enough clusters on the track, found " << track->getNClusters() << " but " << minHitsOnTrack
                        << " required.";
             continue;
         }
@@ -205,21 +206,36 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(TRACE) << "Fitting the track.";
         track->fit();
 
-        // Save the track
-        tracks.push_back(track);
+        if(rejectByROI && track->isFitted()) {
+            // check if the track is within ROI for all detectors
+            auto ds = get_detectors();
+            auto out_of_roi =
+                std::find_if(ds.begin(), ds.end(), [track](const auto& d) { return !d->isWithinROI(track.get()); });
+            if(out_of_roi != ds.end()) {
+                LOG(DEBUG) << "Rejecting track outside of ROI of detetctor " << out_of_roi->get()->getName();
+                continue;
+            }
+        }
+        // save the track
+        if(track->isFitted()) {
+            tracks.push_back(track);
+        } else {
+            LOG_N(WARNING, 100) << "Rejected a track due to failure in fitting";
+            continue;
+        }
 
         // Fill histograms
-        trackChi2->Fill(track->chi2());
-        clustersPerTrack->Fill(static_cast<double>(track->nClusters()));
-        trackChi2ndof->Fill(track->chi2ndof());
-        trackAngleX->Fill(atan(track->direction(track->clusters().front()->detectorID()).X()));
-        trackAngleY->Fill(atan(track->direction(track->clusters().front()->detectorID()).Y()));
+        trackChi2->Fill(track->getChi2());
+        clustersPerTrack->Fill(static_cast<double>(track->getNClusters()));
+        trackChi2ndof->Fill(track->getChi2ndof());
+        trackAngleX->Fill(atan(track->getDirection(track->getClusters().front()->detectorID()).X()));
+        trackAngleY->Fill(atan(track->getDirection(track->getClusters().front()->detectorID()).Y()));
 
         // Make residuals
-        for(auto& trackCluster : track->clusters()) {
+        for(auto& trackCluster : track->getClusters()) {
             LOG(TRACE) << "Loop over track clusters.";
             string detectorID = trackCluster->detectorID();
-            ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->global().z());
+            ROOT::Math::XYZPoint intercept = track->getIntercept(trackCluster->global().z());
             residualsX[detectorID]->Fill(intercept.X() - trackCluster->global().x());
             residualsY[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
         }
