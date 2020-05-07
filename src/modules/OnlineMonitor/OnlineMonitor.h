@@ -43,7 +43,7 @@ namespace corryvreckan {
 
         // Functions
         void initialize() override;
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard) override;
 
         // Application to allow display persistancy
         TApplication* app;

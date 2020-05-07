@@ -30,7 +30,7 @@ namespace corryvreckan {
 
         // Functions
         void initialize() override;
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard) override;
 
     private:
         std::shared_ptr<Detector> m_detector;

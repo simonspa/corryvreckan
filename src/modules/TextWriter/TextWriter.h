@@ -46,7 +46,7 @@ namespace corryvreckan {
          * @brief Loops over the selected objects on the clipboard and writes them to file
          * @param clipboard Pointer to the clipboard
          */
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard) override;
 
         /**
          * @brief No specific actions implemented

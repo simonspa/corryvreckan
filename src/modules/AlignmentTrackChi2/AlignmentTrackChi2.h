@@ -35,7 +35,7 @@ namespace corryvreckan {
         ~AlignmentTrackChi2() {}
 
         // Functions
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard) override;
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
