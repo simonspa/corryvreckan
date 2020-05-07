@@ -162,9 +162,8 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
         calculateClusterCentre(cluster.get());
 
         // check if the cluster is within ROI
-        if(reject_by_ROI_ && !m_detector->isWithinROI(cluster)) {
+        if(reject_by_ROI_ && !m_detector->isWithinROI(cluster.get())) {
             LOG(DEBUG) << "Rejecting cluster outside of " << m_detector->getName() << " ROI";
-            delete cluster;
             continue;
         }
 
