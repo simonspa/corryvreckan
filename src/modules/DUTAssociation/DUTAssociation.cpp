@@ -102,7 +102,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Loop over all tracks
     for(auto& track : tracks) {
-        LOG(TRACE) << "Proccessing track with model " << track->getType() << ", chi2 of " << track->chi2();
+        LOG(TRACE) << "Proccessing track with model " << track->getType() << ", chi2 of " << track->getChi2();
         int assoc_cls_per_track = 0;
         auto min_distance = std::numeric_limits<double>::max();
 
@@ -115,7 +115,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
         // Loop over all DUT clusters
         for(auto& cluster : clusters) {
             // Check distance between track and cluster
-            ROOT::Math::XYZPoint intercept = track->intercept(cluster->global().z());
+            ROOT::Math::XYZPoint intercept = track->getIntercept(cluster->global().z());
             auto interceptLocal = m_detector->globalToLocal(intercept);
 
             // distance of track to cluster centre

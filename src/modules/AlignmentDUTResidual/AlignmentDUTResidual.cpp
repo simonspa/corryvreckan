@@ -66,7 +66,7 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Make a local copy and store it
     for(auto& track : tracks) {
-        auto associated_clusters = track->associatedClusters(m_detector->getName());
+        auto associated_clusters = track->getAssociatedClusters(m_detector->getName());
 
         // Apply selection to tracks for alignment
         if(m_pruneTracks) {
@@ -78,8 +78,8 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // Only allow tracks with certain Chi2/NDoF:
-            if(track->chi2ndof() > m_maxTrackChi2) {
-                LOG(DEBUG) << "Discarded track with Chi2/NDoF - " << track->chi2ndof();
+            if(track->getChi2ndof() > m_maxTrackChi2) {
+                LOG(DEBUG) << "Discarded track with Chi2/NDoF - " << track->getChi2ndof();
                 m_discardedtracks++;
                 continue;
             }
@@ -152,10 +152,10 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
 
     // Loop over all tracks
     for(auto& track : globalTracks) {
-        LOG(TRACE) << "track has chi2 " << track->chi2();
+        LOG(TRACE) << "track has chi2 " << track->getChi2();
 
         // Find the cluster that needs to have its position recalculated
-        for(auto& associatedCluster : track->associatedClusters(globalDetector->getName())) {
+        for(auto& associatedCluster : track->getAssociatedClusters(globalDetector->getName())) {
             if(associatedCluster->detectorID() != globalDetector->getName()) {
                 continue;
             }
@@ -216,24 +216,25 @@ void AlignmentDUTResidual::finalize(const std::shared_ptr<ReadonlyClipboard>& cl
     globalDetector = m_detector;
     auto name = m_detector->getName();
 
-    size_t n_associatedClusters = 0;
+    size_t n_getAssociatedClusters = 0;
     // count associated clusters:
     for(auto& track : globalTracks) {
-        auto associatedClusters = track->associatedClusters(name);
+        auto associatedClusters = track->getAssociatedClusters(name);
         for(auto& associatedCluster : associatedClusters) {
             std::string detectorID = associatedCluster->detectorID();
             if(detectorID != name) {
                 continue;
             }
-            n_associatedClusters++;
+            n_getAssociatedClusters++;
             break;
         }
     }
-    if(n_associatedClusters < globalTracks.size() / 2) {
-        LOG(WARNING) << "Only " << 100 * static_cast<double>(n_associatedClusters) / static_cast<double>(globalTracks.size())
+    if(n_getAssociatedClusters < globalTracks.size() / 2) {
+        LOG(WARNING) << "Only "
+                     << 100 * static_cast<double>(n_getAssociatedClusters) / static_cast<double>(globalTracks.size())
                      << "% of all tracks have associated clusters on detector " << name;
     } else {
-        LOG(INFO) << 100 * static_cast<double>(n_associatedClusters) / static_cast<double>(globalTracks.size())
+        LOG(INFO) << 100 * static_cast<double>(n_getAssociatedClusters) / static_cast<double>(globalTracks.size())
                   << "% of all tracks have associated clusters on detector " << name;
     }
 

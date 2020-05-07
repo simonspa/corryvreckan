@@ -40,21 +40,21 @@ namespace corryvreckan {
          * @param z positon
          * @return ROOT::Math::XYZPoint at z position
          */
-        ROOT::Math::XYZPoint intercept(double z) const override;
+        ROOT::Math::XYZPoint getIntercept(double z) const override;
 
         /**
          * @brief Get the track state at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        ROOT::Math::XYZPoint state(std::string) const override { return m_state; }
+        ROOT::Math::XYZPoint getState(std::string) const override { return m_state; }
 
         /**
          * @brief Get the track direction at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
-        ROOT::Math::XYZVector direction(std::string) const override { return m_direction; }
+        ROOT::Math::XYZVector getDirection(std::string) const override { return m_direction; }
 
         ROOT::Math::XYPoint distance(const Cluster* cluster) const;
 

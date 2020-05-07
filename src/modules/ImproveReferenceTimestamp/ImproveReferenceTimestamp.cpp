@@ -67,7 +67,7 @@ StatusCode ImproveReferenceTimestamp::run(std::shared_ptr<Clipboard> clipboard) 
         else if(m_method == 1) {
             int nhits = 0;
             double avg_track_time = 0;
-            for(auto& cluster : track->clusters()) {
+            for(auto& cluster : track->getClusters()) {
                 avg_track_time += cluster->timestamp();
                 nhits++;
             }

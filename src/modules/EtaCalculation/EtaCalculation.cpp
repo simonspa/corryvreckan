@@ -88,17 +88,17 @@ StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
     for(auto& track : tracks) {
 
         // Cut on the chi2/ndof
-        if(track->chi2ndof() > m_chi2ndofCut) {
+        if(track->getChi2ndof() > m_chi2ndofCut) {
             continue;
         }
 
         // Look at the associated clusters and plot the eta function
-        for(auto& dutCluster : track->associatedClusters(m_detector->getName())) {
+        for(auto& dutCluster : track->getAssociatedClusters(m_detector->getName())) {
             calculateEta(track.get(), dutCluster);
         }
 
         // Do the same for all clusters of the track:
-        for(auto& cluster : track->clusters()) {
+        for(auto& cluster : track->getClusters()) {
             if(cluster->detectorID() != m_detector->getName()) {
                 continue;
             }

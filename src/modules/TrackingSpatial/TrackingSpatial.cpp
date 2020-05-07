@@ -196,8 +196,8 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Now should have a track with one cluster from each plane
-        if(track->nClusters() < minHitsOnTrack) {
-            LOG(DEBUG) << "Not enough clusters on the track, found " << track->nClusters() << " but " << minHitsOnTrack
+        if(track->getNClusters() < minHitsOnTrack) {
+            LOG(DEBUG) << "Not enough clusters on the track, found " << track->getNClusters() << " but " << minHitsOnTrack
                        << " required.";
             continue;
         }
@@ -225,17 +225,17 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Fill histograms
-        trackChi2->Fill(track->chi2());
-        clustersPerTrack->Fill(static_cast<double>(track->nClusters()));
-        trackChi2ndof->Fill(track->chi2ndof());
-        trackAngleX->Fill(atan(track->direction(track->clusters().front()->detectorID()).X()));
-        trackAngleY->Fill(atan(track->direction(track->clusters().front()->detectorID()).Y()));
+        trackChi2->Fill(track->getChi2());
+        clustersPerTrack->Fill(static_cast<double>(track->getNClusters()));
+        trackChi2ndof->Fill(track->getChi2ndof());
+        trackAngleX->Fill(atan(track->getDirection(track->getClusters().front()->detectorID()).X()));
+        trackAngleY->Fill(atan(track->getDirection(track->getClusters().front()->detectorID()).Y()));
 
         // Make residuals
-        for(auto& trackCluster : track->clusters()) {
+        for(auto& trackCluster : track->getClusters()) {
             LOG(TRACE) << "Loop over track clusters.";
             string detectorID = trackCluster->detectorID();
-            ROOT::Math::XYZPoint intercept = track->intercept(trackCluster->global().z());
+            ROOT::Math::XYZPoint intercept = track->getIntercept(trackCluster->global().z());
             residualsX[detectorID]->Fill(intercept.X() - trackCluster->global().x());
             residualsY[detectorID]->Fill(intercept.Y() - trackCluster->global().y());
         }

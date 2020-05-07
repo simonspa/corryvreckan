@@ -51,15 +51,15 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
     for(auto& track : tracks) {
 
         // Apply selection to tracks for alignment - only allow tracks with certain Chi2/NDoF:
-        if(m_pruneTracks && track->chi2ndof() > m_maxTrackChi2) {
-            LOG(DEBUG) << "Discarded track with Chi2/NDoF - " << track->chi2ndof();
+        if(m_pruneTracks && track->getChi2ndof() > m_maxTrackChi2) {
+            LOG(DEBUG) << "Discarded track with Chi2/NDoF - " << track->getChi2ndof();
             m_discardedtracks++;
             continue;
         }
 
         LOG(TRACE) << "Storing track with track model \"" << track->getType() << "\" for alignment";
         alignmenttracks.push_back(track);
-        for(auto& cluster : track->clusters()) {
+        for(auto& cluster : track->getClusters()) {
             alignmentclusters[cluster->detectorID()].push_back(cluster);
         }
     }
@@ -101,7 +101,7 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
         // Get the track
         auto track = globalTracks[iTrack];
         // Get all clusters on the track
-        auto trackClusters = track->clusters();
+        auto trackClusters = track->getClusters();
         // Find the cluster that needs to have its position recalculated
         for(auto& trackCluster : trackClusters) {
             if(globalDetector->getName() != trackCluster->detectorID()) {
@@ -118,7 +118,7 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
         track->fit();
 
         // Add the new chi2
-        result += track->chi2();
+        result += track->getChi2();
     }
 }
 

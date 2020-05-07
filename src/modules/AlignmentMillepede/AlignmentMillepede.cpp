@@ -86,8 +86,8 @@ StatusCode AlignmentMillepede::run(std::shared_ptr<Clipboard> clipboard) {
     // Make a local copy and store it
     for(auto& track : tracks) {
         alignmenttracks.push_back(track);
-        auto clusters = track->clusters();
-        for(auto& cluster : track->clusters()) {
+        auto clusters = track->getClusters();
+        for(auto& cluster : track->getClusters()) {
             alignmentclusters[cluster->detectorID()].push_back(cluster);
         }
     }
@@ -133,7 +133,7 @@ void AlignmentMillepede::finalize(const std::shared_ptr<ReadonlyClipboard>& clip
         unsigned int nSkipped = 0;
         unsigned int nOutliers = 0;
         for(auto& track : alignmenttracks) {
-            if(track->nClusters() != nPlanes) {
+            if(track->getNClusters() != nPlanes) {
                 ++nSkipped;
                 continue;
             }
@@ -166,7 +166,7 @@ void AlignmentMillepede::finalize(const std::shared_ptr<ReadonlyClipboard>& clip
 
         // Update the cluster coordinates based on the new geometry.
         for(auto& track : alignmenttracks) {
-            for(auto& cluster : track->clusters()) {
+            for(auto& cluster : track->getClusters()) {
                 auto detectorID = cluster->detectorID();
                 auto detector = get_detector(detectorID);
                 ROOT::Math::XYZPoint pLocal(cluster->local().x(), cluster->local().y(), 0.);
@@ -290,11 +290,11 @@ bool AlignmentMillepede::putTrack(Track* track, const size_t nPlanes) {
 
     /// Refit the track for the reference states.
     track->fit();
-    const double tx = track->state(track->clusters().front()->detectorID()).X();
-    const double ty = track->state(track->clusters().front()->detectorID()).Y();
+    const double tx = track->getState(track->getClusters().front()->detectorID()).X();
+    const double ty = track->getState(track->getClusters().front()->detectorID()).Y();
 
     // Iterate over each cluster on the track.
-    for(auto& cluster : track->clusters()) {
+    for(auto& cluster : track->getClusters()) {
         if(!has_detector(cluster->detectorID())) {
             continue;
         }
