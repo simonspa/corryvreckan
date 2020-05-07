@@ -153,8 +153,6 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
     // Loop over all tracks
     for(auto& track : globalTracks) {
         LOG(TRACE) << "track has chi2 " << track->chi2();
-        auto detector = track->clusters().front()->detectorID();
-        LOG(TRACE) << "- track has gradient " << track->direction(detector) << " at detector " << detector;
 
         // Find the cluster that needs to have its position recalculated
         for(auto& associatedCluster : track->associatedClusters(globalDetector->getName())) {
