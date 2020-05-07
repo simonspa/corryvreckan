@@ -60,7 +60,7 @@ namespace corryvreckan {
         /**
          * @brief [Finalise this module]
          */
-        void finalise();
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
         /**

@@ -52,7 +52,7 @@ namespace corryvreckan {
         /**
          * @brief Finalize file writing, provide statistics information
          */
-        void finalise() override;
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
         // Object names to include or exclude from writing

@@ -36,7 +36,7 @@ namespace corryvreckan {
         // Functions
         void initialise();
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        void finalise();
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
         ROOT::Math::XYVector pixelIntercept(Track* tr);

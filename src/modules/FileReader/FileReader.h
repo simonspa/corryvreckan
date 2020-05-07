@@ -55,7 +55,7 @@ namespace corryvreckan {
         /**
          * @brief Output summary and close the ROOT file
          */
-        void finalise() override;
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
         /**

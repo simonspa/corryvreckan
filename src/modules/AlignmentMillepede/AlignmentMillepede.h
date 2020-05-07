@@ -31,7 +31,7 @@ namespace corryvreckan {
         virtual ~AlignmentMillepede();
 
         void initialise();
-        void finalise();
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
         StatusCode run(std::shared_ptr<Clipboard>);
 
         virtual void updateGeometry();

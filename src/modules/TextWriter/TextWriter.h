@@ -51,7 +51,7 @@ namespace corryvreckan {
         /**
          * @brief No specific actions implemented
          */
-        void finalise();
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
         int m_eventNumber;

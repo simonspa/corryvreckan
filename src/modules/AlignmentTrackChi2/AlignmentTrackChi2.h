@@ -36,7 +36,7 @@ namespace corryvreckan {
 
         // Functions
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        void finalise();
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
         static void MinimiseTrackChi2(Int_t& npar, Double_t* grad, Double_t& result, Double_t* par, Int_t flag);
