@@ -160,7 +160,7 @@ void Corryvreckan::load() {
 void Corryvreckan::init() {
     if(!terminate_) {
         LOG(TRACE) << "Initializing Corryvreckan";
-        mod_mgr_->initialiseAll();
+        mod_mgr_->initializeAll();
     } else {
         LOG(INFO) << "Skip initializing modules because termination is requested";
     }

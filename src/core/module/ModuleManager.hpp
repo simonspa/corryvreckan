@@ -67,7 +67,7 @@ namespace corryvreckan {
         void load(ConfigManager* conf_mgr);
 
         void run();
-        void initialiseAll();
+        void initializeAll();
         void finalizeAll();
         void terminate();
 

@@ -105,7 +105,7 @@ namespace corryvreckan {
          *
          * Does nothing if not overloaded.
          */
-        virtual void initialise() {}
+        virtual void initialize() {}
 
         /**
          * @brief Execute the function of the module for every event

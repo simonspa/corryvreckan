@@ -506,7 +506,7 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
     return modules;
 }
 
-// Run the analysis loop - this initialises, runs and finalizes all modules
+// Run the analysis loop - this initializes, runs and finalizes all modules
 void ModuleManager::run() {
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
@@ -623,9 +623,9 @@ void ModuleManager::terminate() {
 }
 
 // Initalise all modules
-void ModuleManager::initialiseAll() {
-    // Loop over all modules and initialise them
-    LOG(STATUS) << "=================| Initialising modules |==================";
+void ModuleManager::initializeAll() {
+    // Loop over all modules and initialize them
+    LOG(STATUS) << "=================| Initializing modules |==================";
     for(auto& module : m_modules) {
         // Pass the config manager to this instance
         module->set_config_manager(conf_manager_);
@@ -667,9 +667,9 @@ void ModuleManager::initialiseAll() {
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
 
-        LOG_PROGRESS(STATUS, "MOD_INIT_LOOP") << "Initialising \"" << module->getUniqueName() << "\"";
-        // Initialise the module
-        module->initialise();
+        LOG_PROGRESS(STATUS, "MOD_INIT_LOOP") << "Initializing \"" << module->getUniqueName() << "\"";
+        // Initialize the module
+        module->initialize();
 
         // Reset logging
         Log::setSection(old_section_name);
