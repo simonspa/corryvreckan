@@ -208,11 +208,11 @@ StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         track->fit();
 
         if(rejectByROI && track->isFitted()) {
-            //check if the track is within ROI for all detectors
+            // check if the track is within ROI for all detectors
             auto ds = get_detectors();
-            auto out_of_roi = std::find_if(ds.begin(),ds.end(),[track](const auto& d) {
-                return !d->isWithinROI(track);});
+            auto out_of_roi = std::find_if(ds.begin(), ds.end(), [track](const auto& d) { return !d->isWithinROI(track); });
             if(out_of_roi != ds.end()) {
+                LOG(DEBUG) << "Rejecting track outside of ROI";
                 delete track;
                 continue;
             }
