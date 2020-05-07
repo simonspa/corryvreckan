@@ -127,6 +127,11 @@ namespace corryvreckan {
          */
         void clear();
 
+        template <typename T>
+        std::vector<std::shared_ptr<T>>& get_data(const ClipboardData& storage_element, const std::string& key) const;
+        template <typename T>
+        void put_data(ClipboardData& storage_element, std::vector<std::shared_ptr<T>> objects, const std::string& key);
+
         // Container for data, list of all data held
         ClipboardData data_;
 

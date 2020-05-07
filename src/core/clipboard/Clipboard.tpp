@@ -11,13 +11,23 @@
 namespace corryvreckan {
 
     template <typename T> void Clipboard::putData(std::vector<std::shared_ptr<T>> objects, const std::string& key) {
+        put_data(data_, std::move(objects), key);
+    }
+
+    template <typename T> std::vector<std::shared_ptr<T>>& Clipboard::getData(const std::string& key) const {
+        return get_data<T>(data_, key);
+    }
+
+    template <typename T>
+    void
+    Clipboard::put_data(ClipboardData& storage_element, std::vector<std::shared_ptr<T>> objects, const std::string& key) {
         // Do not insert empty sets:
         if(objects.empty()) {
             return;
         }
 
         // Iterator for data type:
-        ClipboardData::iterator type = data_.begin();
+        ClipboardData::iterator type = storage_element.begin();
 
         /* If data type exists, returns iterator to offending key, if data type does not exist yet, creates new entry and
          * returns iterator to the newly created element.
@@ -25,8 +35,8 @@ namespace corryvreckan {
          * We use getBaseType here to always store objects as their base class types to be able to fetch them easily. E.g.
          * derived track classes will be stored as Track objects and can be fetched as such
          */
-        type =
-            data_.insert(type, ClipboardData::value_type(T::getBaseType(), std::map<std::string, std::shared_ptr<void>>()));
+        type = storage_element.insert(
+            type, ClipboardData::value_type(T::getBaseType(), std::map<std::string, std::shared_ptr<void>>()));
 
         // Insert data into data type element and print a warning if it exists already
         auto object_ptr = std::make_shared<std::vector<std::shared_ptr<T>>>(objects);
@@ -37,11 +47,13 @@ namespace corryvreckan {
         }
     }
 
-    template <typename T> std::vector<std::shared_ptr<T>>& Clipboard::getData(const std::string& key) const {
-        if(data_.count(typeid(T)) == 0 || data_.at(typeid(T)).count(key) == 0) {
+    template <typename T>
+    std::vector<std::shared_ptr<T>>& Clipboard::get_data(const ClipboardData& storage_element,
+                                                         const std::string& key) const {
+        if(storage_element.count(typeid(T)) == 0 || storage_element.at(typeid(T)).count(key) == 0) {
             return *std::make_shared<std::vector<std::shared_ptr<T>>>();
         }
-        return *std::static_pointer_cast<std::vector<std::shared_ptr<T>>>(data_.at(typeid(T)).at(key));
+        return *std::static_pointer_cast<std::vector<std::shared_ptr<T>>>(storage_element.at(typeid(T)).at(key));
     }
 
     template <typename T> size_t Clipboard::countObjects(const std::string& key) const {
