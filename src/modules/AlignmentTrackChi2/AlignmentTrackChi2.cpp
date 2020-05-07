@@ -17,7 +17,7 @@ using namespace corryvreckan;
 using namespace std;
 
 // Global container declarations
-TrackVector globalTracks;
+TrackVector AlignmentTrackChi2globalTracks;
 std::shared_ptr<Detector> globalDetector;
 int detNum;
 
@@ -86,9 +86,7 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
     result = 0.;
 
     // Loop over all tracks
-    for(size_t iTrack = 0; iTrack < globalTracks.size(); iTrack++) {
-        // Get the track
-        auto track = globalTracks[iTrack];
+    for(auto& track : AlignmentTrackChi2globalTracks) {
         // Get all clusters on the track
         auto trackClusters = track->clusters();
         // Find the cluster that needs to have its position recalculated
@@ -127,7 +125,7 @@ void AlignmentTrackChi2::finalise() {
     residualFitter->SetFCN(MinimiseTrackChi2);
 
     // Set the global parameters
-    globalTracks = m_alignmenttracks;
+    AlignmentTrackChi2globalTracks = m_alignmenttracks;
 
     // Set the printout arguments of the fitter
     Double_t arglist[10];
