@@ -56,16 +56,17 @@ namespace corryvreckan {
         std::map<std::string, TH1F*> pullX;
         std::map<std::string, TH1F*> pullY;
         // Cuts for tracking
-        double momentum{};
-        double volumeRadiationLength{};
-        size_t minHitsOnTrack;
-        bool excludeDUT;
-        bool useVolumeScatterer{};
-        std::vector<std::string> requireDetectors;
+        double momentum_;
+        double volume_radiation_length_;
+        size_t min_hits_on_track_;
+        bool exclude_DUT_;
+        bool use_volume_scatterer_;
+        bool reject_by_ROI_;
+        std::vector<std::string> require_detectors_;
         std::map<std::shared_ptr<Detector>, double> time_cuts_;
         std::map<std::shared_ptr<Detector>, XYVector> spatial_cuts_;
-        std::string timestampFrom;
-        std::string trackModel;
+        std::string timestamp_from_;
+        std::string track_model_;
 
         // Function to calculate the weighted average timestamp from the clusters of a track
         double calculate_average_timestamp(const Track* track);
