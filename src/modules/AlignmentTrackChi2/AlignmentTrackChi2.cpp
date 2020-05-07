@@ -59,8 +59,7 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
 
         LOG(TRACE) << "Storing track with track model \"" << track->getType() << "\" for alignment";
         alignmenttracks.push_back(track);
-        auto clusters = track->clusters();
-        for(auto& cluster : clusters) {
+        for(auto& cluster : track->clusters()) {
             alignmentclusters[cluster->detectorID()].push_back(cluster);
         }
     }
