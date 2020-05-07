@@ -16,12 +16,14 @@
 #ifndef CORRYVRECKAN_OBJECT_H
 #define CORRYVRECKAN_OBJECT_H
 
-#include <TTree.h>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <typeindex>
 #include <vector>
-#include "TObject.h"
+
+#include <TObject.h>
+#include <TTree.h>
 
 namespace corryvreckan {
 
