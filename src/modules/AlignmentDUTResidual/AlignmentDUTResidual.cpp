@@ -282,4 +282,7 @@ void AlignmentDUTResidual::finalise() {
     LOG(STATUS) << m_detector->getName() << " new alignment: " << std::endl
                 << "T" << Units::display(m_detector->displacement(), {"mm", "um"}) << " R"
                 << Units::display(m_detector->rotation(), {"deg"});
+
+    // Clean up local track storage
+    AlignmentDUTResidualglobalTracks.clear();
 }

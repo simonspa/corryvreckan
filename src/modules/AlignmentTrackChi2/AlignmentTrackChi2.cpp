@@ -293,4 +293,7 @@ void AlignmentTrackChi2::finalise() {
         align_correction_rotZ[detector->getName()]->GetYaxis()->SetTitle("correction [deg]");
         align_correction_rotZ[detector->getName()]->Write(name.c_str());
     }
+
+    // Clean up local track storage
+    AlignmentTrackChi2globalTracks.clear();
 }
