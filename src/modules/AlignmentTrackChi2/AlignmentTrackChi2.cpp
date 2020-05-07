@@ -45,7 +45,7 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
     // Get the tracks
     auto tracks = clipboard->getData<Track>();
     TrackVector alignmenttracks;
-    std::vector<Cluster*> alignmentclusters;
+    std::map<std::string, std::vector<Cluster*>> alignmentclusters;
 
     // Make a local copy and store it
     for(auto& track : tracks) {
@@ -60,13 +60,17 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(TRACE) << "Storing track with track model \"" << track->getType() << "\" for alignment";
         alignmenttracks.push_back(track);
         auto clusters = track->clusters();
-        alignmentclusters.insert(alignmentclusters.end(), clusters.begin(), clusters.end());
+        for(auto& cluster : clusters) {
+            alignmentclusters[cluster->detectorID()].push_back(cluster);
+        }
     }
 
     // Store all tracks we want for alignment on the permanent storage:
     clipboard->putPersistentData(alignmenttracks);
     // Copy the objects of all track clusters on the clipboard to persistent storage:
-    clipboard->copyToPersistentData(alignmentclusters);
+    for(auto& clusters : alignmentclusters) {
+        clipboard->copyToPersistentData(clusters.second, clusters.first);
+    }
 
     // Otherwise keep going
     return StatusCode::Success;
