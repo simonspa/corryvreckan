@@ -342,7 +342,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 auto out_of_roi =
                     std::find_if(ds.begin(), ds.end(), [track](const auto& d) { return !d->isWithinROI(track.get()); });
                 if(out_of_roi != ds.end()) {
-                    LOG(DEBUG) << "Rejecting track outside of ROI";
+                    LOG(DEBUG) << "Rejecting track outside of ROI of detetctor " << out_of_roi->get()->getName();
                     continue;
                 }
             }
