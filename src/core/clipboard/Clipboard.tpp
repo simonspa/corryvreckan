@@ -58,7 +58,7 @@ namespace corryvreckan {
         }
 
         // Ship off to persistent storage
-        put_data(persistent_data_, std::move(to_persistent));
+        put_data(persistent_data_, std::move(to_persistent), key);
     }
 
     template <typename T>
