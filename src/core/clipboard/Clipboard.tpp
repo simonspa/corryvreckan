@@ -29,11 +29,12 @@ namespace corryvreckan {
         put_data(persistent_data_, std::move(objects), key);
     }
 
-    template <typename T> std::vector<std::shared_ptr<T>>& Clipboard::getPersistentData(const std::string& key) const {
+    template <typename T>
+    std::vector<std::shared_ptr<T>>& ReadonlyClipboard::getPersistentData(const std::string& key) const {
         return get_data<T>(persistent_data_, key);
     }
 
-    template <typename T> size_t Clipboard::countPersistentObjects(const std::string& key) const {
+    template <typename T> size_t ReadonlyClipboard::countPersistentObjects(const std::string& key) const {
         return count_objects<T>(persistent_data_, key);
     }
 
@@ -90,8 +91,8 @@ namespace corryvreckan {
     }
 
     template <typename T>
-    std::vector<std::shared_ptr<T>>& Clipboard::get_data(const ClipboardData& storage_element,
-                                                         const std::string& key) const {
+    std::vector<std::shared_ptr<T>>& ReadonlyClipboard::get_data(const ClipboardData& storage_element,
+                                                                 const std::string& key) const {
         if(storage_element.count(typeid(T)) == 0 || storage_element.at(typeid(T)).count(key) == 0) {
             return *std::make_shared<std::vector<std::shared_ptr<T>>>();
         }
@@ -99,7 +100,7 @@ namespace corryvreckan {
     }
 
     template <typename T>
-    size_t Clipboard::count_objects(const ClipboardData& storage_element, const std::string& key) const {
+    size_t ReadonlyClipboard::count_objects(const ClipboardData& storage_element, const std::string& key) const {
         size_t number_of_objects = 0;
 
         // Check if we have anything of this type:
