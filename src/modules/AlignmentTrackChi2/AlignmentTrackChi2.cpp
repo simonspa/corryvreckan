@@ -115,7 +115,7 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
 //  The finalise function - effectively the brains of the alignment!
 // ==================================================================
 
-void AlignmentTrackChi2::finalise() {
+void AlignmentTrackChi2::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     if(m_discardedtracks > 0) {
         LOG(INFO) << "Discarded " << m_discardedtracks << " input tracks.";

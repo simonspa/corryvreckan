@@ -170,7 +170,7 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void TreeWriterDUT::finalise() {
+void TreeWriterDUT::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     LOG(DEBUG) << "Finalise";
     auto directory = m_outputFile->mkdir("Directory");
     directory->cd();

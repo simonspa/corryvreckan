@@ -326,6 +326,6 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void EventLoaderCLICpix2::finalise() {
+void EventLoaderCLICpix2::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     delete decoder;
 }

@@ -201,7 +201,7 @@ StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void DUTAssociation::finalise() {
+void DUTAssociation::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     hCutHisto->Scale(1 / double(num_cluster));
     LOG(STATUS) << "In total, " << assoc_cluster_counter << " clusters are associated to " << track_w_assoc_cls
                 << " tracks.";

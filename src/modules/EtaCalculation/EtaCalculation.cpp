@@ -123,7 +123,7 @@ std::string EtaCalculation::fit(TF1* function, std::string fname, TProfile* prof
     return parameters.str();
 }
 
-void EtaCalculation::finalise() {
+void EtaCalculation::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     std::stringstream config;
     config << std::endl

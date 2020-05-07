@@ -116,7 +116,7 @@ StatusCode MaskCreator::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void MaskCreator::finalise() {
+void MaskCreator::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     if(m_method == "localdensity") {
         LOG(INFO) << "Using local density estimator";

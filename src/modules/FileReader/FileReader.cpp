@@ -266,7 +266,7 @@ StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
     }
 }
 
-void FileReader::finalise() {
+void FileReader::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     int branch_count = 0;
     for(auto& tree : trees_) {
         branch_count += tree->GetListOfBranches()->GetEntries();

@@ -211,7 +211,7 @@ void EventLoaderTimepix1::processHeader(string header, string& device, long long
         header.substr(header.find("ChipboardID : ") + 14, header.find(" # DACs") - (header.find("ChipboardID : ") + 14));
 }
 
-void EventLoaderTimepix1::finalise() {
+void EventLoaderTimepix1::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }

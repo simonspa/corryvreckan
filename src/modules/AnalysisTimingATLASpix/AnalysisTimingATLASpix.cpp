@@ -744,7 +744,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void AnalysisTimingATLASpix::finalise() {
+void AnalysisTimingATLASpix::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     LOG(STATUS) << "Timing analysis finished for detector " << m_detector->getName() << ": ";
 
     if(m_calcCorrections) {

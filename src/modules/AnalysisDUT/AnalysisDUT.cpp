@@ -491,7 +491,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void AnalysisDUT::finalise() {
+void AnalysisDUT::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     hCutHisto->Scale(1 / double(num_tracks));
     clusterSizeAssocNorm->Scale(1 / clusterSizeAssoc->Integral());
 }

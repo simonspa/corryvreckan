@@ -37,7 +37,7 @@ StatusCode MaskCreatorTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void MaskCreatorTimepix3::finalise() {
+void MaskCreatorTimepix3::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     // Get the trimdac file
     std::string trimdacfile = m_detector->maskFile();

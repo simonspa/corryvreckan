@@ -105,7 +105,7 @@ StatusCode JSONWriter::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void JSONWriter::finalise() {
+void JSONWriter::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     // finalize the JSON Array, add one empty Object to satisfy JSON Rules
     *output_file_ << std::endl << "]";

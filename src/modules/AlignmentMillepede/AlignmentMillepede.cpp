@@ -92,7 +92,7 @@ StatusCode AlignmentMillepede::run(std::shared_ptr<Clipboard> clipboard) {
 //=============================================================================
 // Main alignment function
 //=============================================================================
-void AlignmentMillepede::finalise() {
+void AlignmentMillepede::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(INFO) << "Millepede alignment";
 

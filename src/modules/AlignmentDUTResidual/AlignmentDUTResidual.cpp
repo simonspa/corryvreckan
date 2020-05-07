@@ -187,7 +187,7 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
     }
 }
 
-void AlignmentDUTResidual::finalise() {
+void AlignmentDUTResidual::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     if(m_discardedtracks > 0) {
         LOG(STATUS) << "Discarded " << m_discardedtracks << " input tracks.";

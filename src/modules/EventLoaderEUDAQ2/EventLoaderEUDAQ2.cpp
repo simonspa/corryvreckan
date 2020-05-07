@@ -561,7 +561,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void EventLoaderEUDAQ2::finalise() {
+void EventLoaderEUDAQ2::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(INFO) << "Found " << m_hits << " hits in the data.";
 }

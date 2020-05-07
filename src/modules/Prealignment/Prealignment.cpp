@@ -111,7 +111,7 @@ StatusCode Prealignment::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void Prealignment::finalise() {
+void Prealignment::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     double rmsX = correlationX->GetRMS();
     double rmsY = correlationY->GetRMS();

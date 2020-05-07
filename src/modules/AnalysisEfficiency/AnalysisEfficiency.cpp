@@ -333,7 +333,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void AnalysisEfficiency::finalise() {
+void AnalysisEfficiency::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     // Track selection flow:
     LOG(STATUS) << "Track selection flow:       " << n_track << std::endl
                 << "* rejected by chi2          -" << n_chi2 << std::endl

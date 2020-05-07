@@ -101,7 +101,7 @@ StatusCode TextWriter::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void TextWriter::finalise() {
+void TextWriter::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }

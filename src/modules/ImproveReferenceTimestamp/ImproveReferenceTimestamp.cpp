@@ -91,7 +91,7 @@ StatusCode ImproveReferenceTimestamp::run(std::shared_ptr<Clipboard> clipboard) 
     return StatusCode::Success;
 }
 
-void ImproveReferenceTimestamp::finalise() {
+void ImproveReferenceTimestamp::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }

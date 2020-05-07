@@ -166,7 +166,7 @@ StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void FileWriter::finalise() {
+void FileWriter::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     LOG(TRACE) << "Writing objects to file";
     output_file_->cd();
 
