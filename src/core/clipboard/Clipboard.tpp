@@ -23,6 +23,19 @@ namespace corryvreckan {
     }
 
     template <typename T>
+    void Clipboard::putPersistentData(std::vector<std::shared_ptr<T>> objects, const std::string& key) {
+        put_data(persistent_data_, std::move(objects), key);
+    }
+
+    template <typename T> std::vector<std::shared_ptr<T>>& Clipboard::getPersistentData(const std::string& key) const {
+        return get_data<T>(persistent_data_, key);
+    }
+
+    template <typename T> size_t Clipboard::countPersistentObjects(const std::string& key) const {
+        return count_objects<T>(persistent_data_, key);
+    }
+
+    template <typename T>
     void
     Clipboard::put_data(ClipboardData& storage_element, std::vector<std::shared_ptr<T>> objects, const std::string& key) {
         // Do not insert empty sets:

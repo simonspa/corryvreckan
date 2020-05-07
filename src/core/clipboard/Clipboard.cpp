@@ -14,22 +14,6 @@
 
 using namespace corryvreckan;
 
-void Clipboard::putPersistentData(std::string name, double value) {
-    persistent_data_[name] = value;
-}
-
-double Clipboard::getPersistentData(std::string name) const {
-    try {
-        return persistent_data_.at(name);
-    } catch(std::out_of_range&) {
-        throw MissingDataError(name);
-    }
-}
-
-bool Clipboard::hasPersistentData(std::string name) const {
-    return persistent_data_.find(name) != persistent_data_.end();
-}
-
 bool Clipboard::isEventDefined() const {
     return (event_ != nullptr);
 }
