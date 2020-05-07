@@ -67,16 +67,16 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
         // Apply selection to tracks for alignment
         if(m_pruneTracks) {
             // Only allow one associated cluster:
-            if(track->associatedClusters(m_detector->getName()).size() > m_maxAssocClusters) {
-                LOG(DEBUG) << "Discarded track with " << track->associatedClusters(m_detector->getName()).size()
+            if(track->getAssociatedClusters(m_detector->getName()).size() > m_maxAssocClusters) {
+                LOG(DEBUG) << "Discarded track with " << track->getAssociatedClusters(m_detector->getName()).size()
                            << " associated clusters";
                 m_discardedtracks++;
                 continue;
             }
 
             // Only allow tracks with certain Chi2/NDoF:
-            if(track->chi2ndof() > m_maxTrackChi2) {
-                LOG(DEBUG) << "Discarded track with Chi2/NDoF - " << track->chi2ndof();
+            if(track->getChi2ndof() > m_maxTrackChi2) {
+                LOG(DEBUG) << "Discarded track with Chi2/NDoF - " << track->getChi2ndof();
                 m_discardedtracks++;
                 continue;
             }
@@ -86,7 +86,7 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
         m_alignmenttracks.push_back(alignmentTrack);
 
         // Find the cluster that needs to have its position recalculated
-        for(auto& associatedCluster : track->associatedClusters(m_detector->getName())) {
+        for(auto& associatedCluster : track->getAssociatedClusters(m_detector->getName())) {
             if(associatedCluster->detectorID() != m_detector->getName()) {
                 continue;
             }
@@ -144,12 +144,12 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
 
     // Loop over all tracks
     for(auto& track : AlignmentDUTResidualglobalTracks) {
-        LOG(TRACE) << "track has chi2 " << track->chi2();
-        auto detector = track->clusters().front()->detectorID();
-        LOG(TRACE) << "- track has gradient " << track->direction(detector) << " at detector " << detector;
+        LOG(TRACE) << "track has chi2 " << track->getChi2();
+        auto detector = track->getClusters().front()->detectorID();
+        LOG(TRACE) << "- track has gradient " << track->getDirection(detector) << " at detector " << detector;
 
         // Find the cluster that needs to have its position recalculated
-        for(auto& associatedCluster : track->associatedClusters(globalDetector->getName())) {
+        for(auto& associatedCluster : track->getAssociatedClusters(globalDetector->getName())) {
             if(associatedCluster->detectorID() != globalDetector->getName()) {
                 continue;
             }
@@ -210,26 +210,26 @@ void AlignmentDUTResidual::finalise() {
     globalDetector = m_detector;
     auto name = m_detector->getName();
 
-    size_t n_associatedClusters = 0;
+    size_t n_getAssociatedClusters = 0;
     // count associated clusters:
     for(auto& track : AlignmentDUTResidualglobalTracks) {
-        auto associatedClusters = track->associatedClusters(name);
+        auto associatedClusters = track->getAssociatedClusters(name);
         for(auto& associatedCluster : associatedClusters) {
             std::string detectorID = associatedCluster->detectorID();
             if(detectorID != name) {
                 continue;
             }
-            n_associatedClusters++;
+            n_getAssociatedClusters++;
             break;
         }
     }
-    if(n_associatedClusters < AlignmentDUTResidualglobalTracks.size() / 2) {
+    if(n_getAssociatedClusters < AlignmentDUTResidualglobalTracks.size() / 2) {
         LOG(WARNING) << "Only "
-                     << 100 * static_cast<double>(n_associatedClusters) /
+                     << 100 * static_cast<double>(n_getAssociatedClusters) /
                             static_cast<double>(AlignmentDUTResidualglobalTracks.size())
                      << "% of all tracks have associated clusters on detector " << name;
     } else {
-        LOG(INFO) << 100 * static_cast<double>(n_associatedClusters) /
+        LOG(INFO) << 100 * static_cast<double>(n_getAssociatedClusters) /
                          static_cast<double>(AlignmentDUTResidualglobalTracks.size())
                   << "% of all tracks have associated clusters on detector " << name;
     }

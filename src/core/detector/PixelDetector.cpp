@@ -198,21 +198,21 @@ PositionVector3D<Cartesian3D<double>> PixelDetector::getIntercept(const Track* t
 
     // FIXME: this is else statement can only be temporary
     if(track->getType() == "GblTrack") {
-        return track->state(getName());
+        return track->getState(getName());
     } else {
         // Get the distance from the plane to the track initial state
-        double distance = (m_origin.X() - track->state(m_detectorName).X()) * m_normal.X();
-        distance += (m_origin.Y() - track->state(m_detectorName).Y()) * m_normal.Y();
-        distance += (m_origin.Z() - track->state(m_detectorName).Z()) * m_normal.Z();
-        distance /=
-            (track->direction(m_detectorName).X() * m_normal.X() + track->direction(m_detectorName).Y() * m_normal.Y() +
-             track->direction(m_detectorName).Z() * m_normal.Z());
+        double distance = (m_origin.X() - track->getState(m_detectorName).X()) * m_normal.X();
+        distance += (m_origin.Y() - track->getState(m_detectorName).Y()) * m_normal.Y();
+        distance += (m_origin.Z() - track->getState(m_detectorName).Z()) * m_normal.Z();
+        distance /= (track->getDirection(m_detectorName).X() * m_normal.X() +
+                     track->getDirection(m_detectorName).Y() * m_normal.Y() +
+                     track->getDirection(m_detectorName).Z() * m_normal.Z());
 
         // Propagate the track
         PositionVector3D<Cartesian3D<double>> globalIntercept(
-            track->state(m_detectorName).X() + distance * track->direction(m_detectorName).X(),
-            track->state(m_detectorName).Y() + distance * track->direction(m_detectorName).Y(),
-            track->state(m_detectorName).Z() + distance * track->direction(m_detectorName).Z());
+            track->getState(m_detectorName).X() + distance * track->getDirection(m_detectorName).X(),
+            track->getState(m_detectorName).Y() + distance * track->getDirection(m_detectorName).Y(),
+            track->getState(m_detectorName).Z() + distance * track->getDirection(m_detectorName).Z());
         return globalIntercept;
     }
 }
