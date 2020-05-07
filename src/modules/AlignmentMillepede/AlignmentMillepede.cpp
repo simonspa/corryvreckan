@@ -119,7 +119,7 @@ void AlignmentMillepede::finalise() {
         unsigned int nSkipped = 0;
         unsigned int nOutliers = 0;
         for(auto& track : m_alignmenttracks) {
-            if(track->nClusters() != nPlanes) {
+            if(track->getNClusters() != nPlanes) {
                 ++nSkipped;
                 continue;
             }
@@ -152,7 +152,7 @@ void AlignmentMillepede::finalise() {
 
         // Update the cluster coordinates based on the new geometry.
         for(auto& track : m_alignmenttracks) {
-            for(auto& cluster : track->clusters()) {
+            for(auto& cluster : track->getClusters()) {
                 auto detectorID = cluster->detectorID();
                 auto detector = get_detector(detectorID);
                 ROOT::Math::XYZPoint pLocal(cluster->local().x(), cluster->local().y(), 0.);
@@ -276,11 +276,11 @@ bool AlignmentMillepede::putTrack(Track* track, const size_t nPlanes) {
 
     /// Refit the track for the reference states.
     track->fit();
-    const double tx = track->state(track->clusters().front()->detectorID()).X();
-    const double ty = track->state(track->clusters().front()->detectorID()).Y();
+    const double tx = track->getState(track->getClusters().front()->detectorID()).X();
+    const double ty = track->getState(track->getClusters().front()->detectorID()).Y();
 
     // Iterate over each cluster on the track.
-    for(auto& cluster : track->clusters()) {
+    for(auto& cluster : track->getClusters()) {
         if(!has_detector(cluster->detectorID())) {
             continue;
         }
