@@ -36,7 +36,7 @@ Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detec
     reject_by_ROI_ = m_config.get<bool>("reject_by_roi", false);
 }
 
-void Clustering4D::initialise() {
+void Clustering4D::initialize() {
 
     // Cluster plots
     std::string title = m_detector->getName() + " Cluster size;cluster size;events";

@@ -36,7 +36,7 @@ namespace corryvreckan {
          * @param detector Pointer to the detector for this module instance
          */
         AnalysisEfficiency(Configuration config, std::shared_ptr<Detector> detector);
-        void initialise();
+        void initialize() override;
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 

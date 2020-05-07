@@ -42,7 +42,7 @@ namespace corryvreckan {
         /**
          * @brief Opens the file to write the objects to
          */
-        void initialise() override;
+        void initialize() override;
 
         /**
          * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects.

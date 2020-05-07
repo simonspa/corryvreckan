@@ -26,7 +26,7 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration config, std::
     // We need to check for the config files in case of scans... TBI
 }
 
-void EventLoaderMuPixTelescope::initialise() {
+void EventLoaderMuPixTelescope::initialize() {
 
     for(auto& detector : get_detectors()) {
         LOG(DEBUG) << "Initialise for detector " + detector->getName();

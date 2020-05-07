@@ -36,7 +36,7 @@ namespace corryvreckan {
         /**
          * @brief [Initialise this module]
          */
-        void initialise();
+        void initialize() override;
 
         /**
          * @brief [Run the function of this module]

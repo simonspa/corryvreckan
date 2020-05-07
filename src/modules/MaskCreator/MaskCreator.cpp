@@ -27,7 +27,7 @@ MaskCreator::MaskCreator(Configuration config, std::shared_ptr<Detector> detecto
     m_rateMax = m_config.get<double>("rate_max", 1.);
 }
 
-void MaskCreator::initialise() {
+void MaskCreator::initialize() {
 
     // adjust per-axis bandwith for pixel pitch along each axis such that the
     // covered area is approximately circular in metric coordinates.

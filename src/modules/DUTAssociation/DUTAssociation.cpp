@@ -33,7 +33,7 @@ DUTAssociation::DUTAssociation(Configuration config, std::shared_ptr<Detector> d
     LOG(DEBUG) << "use_cluster_centre = " << useClusterCentre;
 }
 
-void DUTAssociation::initialise() {
+void DUTAssociation::initialize() {
     // Cut flow histogram
     std::string title = m_detector->getName() + ": number of tracks discarded by different cuts;cut type;clusters";
     hCutHisto = new TH1F("hCutHisto", title.c_str(), 2, 1, 3);

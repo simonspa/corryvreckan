@@ -47,7 +47,7 @@ AlignmentMillepede::~AlignmentMillepede() {}
 //=============================================================================
 // Initialization
 //=============================================================================
-void AlignmentMillepede::initialise() {
+void AlignmentMillepede::initialize() {
 
     // Renumber the planes in Millepede, ignoring masked planes.
     unsigned int index = 0;

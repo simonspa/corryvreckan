@@ -40,7 +40,7 @@ uint32_t EventLoaderATLASpix::gray_decode(uint32_t gray) {
     return bin;
 }
 
-void EventLoaderATLASpix::initialise() {
+void EventLoaderATLASpix::initialize() {
 
     if(m_buffer_depth < 1) {
         throw InvalidValueError(m_config, "buffer_depth", "Buffer depth must be larger than 0.");

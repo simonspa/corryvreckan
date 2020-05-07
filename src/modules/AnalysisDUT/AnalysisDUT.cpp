@@ -24,7 +24,7 @@ AnalysisDUT::AnalysisDUT(Configuration config, std::shared_ptr<Detector> detecto
     useClosestCluster = m_config.get<bool>("use_closest_cluster", true);
 }
 
-void AnalysisDUT::initialise() {
+void AnalysisDUT::initialize() {
 
     hClusterMapAssoc = new TH2F("clusterMapAssoc",
                                 "clusterMapAssoc; cluster col; cluster row",

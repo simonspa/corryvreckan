@@ -24,7 +24,7 @@ EventLoaderCLICpix2::EventLoaderCLICpix2(Configuration config, std::shared_ptr<D
     discardZeroToT = m_config.get<bool>("discard_zero_tot", false);
 }
 
-void EventLoaderCLICpix2::initialise() {
+void EventLoaderCLICpix2::initialize() {
 
     // Take input directory from global parameters
     string inputDirectory = m_config.getPath("input_directory");

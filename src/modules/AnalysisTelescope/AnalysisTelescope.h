@@ -27,7 +27,7 @@ namespace corryvreckan {
         AnalysisTelescope(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
 
         // Functions
-        void initialise();
+        void initialize() override;
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
     private:

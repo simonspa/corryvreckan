@@ -39,7 +39,7 @@ AlignmentDUTResidual::AlignmentDUTResidual(Configuration config, std::shared_ptr
     LOG(INFO) << "Aligning detector \"" << m_detector->getName() << "\"";
 }
 
-void AlignmentDUTResidual::initialise() {
+void AlignmentDUTResidual::initialize() {
 
     auto detname = m_detector->getName();
     std::string title = detname + " Residuals X;x_{track}-x [#mum];events";

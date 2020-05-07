@@ -30,7 +30,7 @@ namespace corryvreckan {
         ~EventLoaderTimepix3() {}
 
         // Standard algorithm functions
-        void initialise();
+        void initialize() override;
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
     private:

@@ -21,7 +21,7 @@ ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration config, std::
     m_triggerLatency = m_config.get<double>("trigger_latency", Units::get<double>(0, "ns"));
 }
 
-void ImproveReferenceTimestamp::initialise() {
+void ImproveReferenceTimestamp::initialize() {
     // Initialise member variables
     m_eventNumber = 0;
 }

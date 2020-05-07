@@ -51,7 +51,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     eudaq_config_ = std::make_shared<const eudaq::Configuration>(eu_cfg);
 }
 
-void EventLoaderEUDAQ2::initialise() {
+void EventLoaderEUDAQ2::initialize() {
 
     // Declare histograms
     std::string title = ";EUDAQ event start time[ms];# entries";

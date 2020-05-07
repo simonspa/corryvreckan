@@ -37,7 +37,7 @@ FileWriter::~FileWriter() {
     }
 }
 
-void FileWriter::initialise() {
+void FileWriter::initialize() {
     // Create output file
     output_file_name_ =
         createOutputFile(corryvreckan::add_file_extension(m_config.get<std::string>("file_name", "data"), "root"), true);

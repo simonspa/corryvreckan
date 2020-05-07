@@ -42,7 +42,7 @@ namespace corryvreckan {
         ~OnlineMonitor() {}
 
         // Functions
-        void initialise();
+        void initialize() override;
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
         // Application to allow display persistancy

@@ -30,7 +30,7 @@ namespace corryvreckan {
         /// Destructor
         virtual ~AlignmentMillepede();
 
-        void initialise();
+        void initialize() override;
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
         StatusCode run(std::shared_ptr<Clipboard>);
 

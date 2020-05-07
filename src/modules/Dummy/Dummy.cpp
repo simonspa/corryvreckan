@@ -15,7 +15,7 @@ using namespace corryvreckan;
 Dummy::Dummy(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {}
 
-void Dummy::initialise() {
+void Dummy::initialize() {
 
     for(auto& detector : get_detectors()) {
         LOG(DEBUG) << "Initialise for detector " + detector->getName();

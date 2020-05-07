@@ -22,7 +22,7 @@ ClusteringSpatial::ClusteringSpatial(Configuration config, std::shared_ptr<Detec
     rejectByROI = m_config.get<bool>("reject_by_roi", false);
 }
 
-void ClusteringSpatial::initialise() {
+void ClusteringSpatial::initialize() {
 
     // Cluster plots
     std::string title = m_detector->getName() + " Cluster size;cluster size;events";

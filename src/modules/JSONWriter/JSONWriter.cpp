@@ -16,7 +16,7 @@ using namespace corryvreckan;
 JSONWriter::JSONWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {}
 
-void JSONWriter::initialise() {
+void JSONWriter::initialize() {
 
     for(auto& detector : get_detectors()) {
         LOG(DEBUG) << "Initialise for detector " + detector->getName();

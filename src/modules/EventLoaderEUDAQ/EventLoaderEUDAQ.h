@@ -29,7 +29,7 @@ namespace corryvreckan {
         ~EventLoaderEUDAQ() {}
 
         // Functions
-        void initialise();
+        void initialize() override;
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
         // EUDAQ file reader instance:

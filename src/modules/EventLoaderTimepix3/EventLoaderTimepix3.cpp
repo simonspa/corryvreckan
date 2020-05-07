@@ -36,7 +36,7 @@ EventLoaderTimepix3::EventLoaderTimepix3(Configuration config, std::shared_ptr<D
     }
 }
 
-void EventLoaderTimepix3::initialise() {
+void EventLoaderTimepix3::initialize() {
 
     // File structure is RunX/ChipID/files.dat
 

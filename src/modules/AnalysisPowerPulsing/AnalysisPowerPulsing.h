@@ -33,7 +33,7 @@ namespace corryvreckan {
         AnalysisPowerPulsing(Configuration config, std::shared_ptr<Detector> detector);
 
         // Functions
-        void initialise();
+        void initialize() override;
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
 
     private:

@@ -41,7 +41,7 @@ TreeWriterDUT::TreeWriterDUT(Configuration config, std::shared_ptr<Detector> det
 
  */
 
-void TreeWriterDUT::initialise() {
+void TreeWriterDUT::initialize() {
     LOG(DEBUG) << "Initialised TreeWriterDUT";
 
     // Create output file and directories

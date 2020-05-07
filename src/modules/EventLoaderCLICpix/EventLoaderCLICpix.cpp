@@ -19,7 +19,7 @@ EventLoaderCLICpix::EventLoaderCLICpix(Configuration config, std::shared_ptr<Det
     m_filename = "";
 }
 
-void EventLoaderCLICpix::initialise() {
+void EventLoaderCLICpix::initialize() {
     // File structure is RunX/CLICpix/RunX.dat
 
     // Take input directory from global parameters

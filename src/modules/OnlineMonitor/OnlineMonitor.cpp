@@ -63,7 +63,7 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
     canvas_time = m_config.getMatrix<std::string>("event_times", {{"Correlations/%DETECTOR%/eventTimes"}});
 }
 
-void OnlineMonitor::initialise() {
+void OnlineMonitor::initialize() {
 
     // TApplication keeps the canvases persistent
     app = new TApplication("example", nullptr, nullptr);

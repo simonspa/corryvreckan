@@ -81,7 +81,7 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
     tracks_afterClusterSizeCut = 0;
 }
 
-void AnalysisTimingATLASpix::initialise() {
+void AnalysisTimingATLASpix::initialize() {
 
     auto pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
     auto pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));

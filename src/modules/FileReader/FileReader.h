@@ -45,7 +45,7 @@ namespace corryvreckan {
         /**
          * @brief Open the ROOT file containing the stored output data
          */
-        void initialise() override;
+        void initialize() override;
 
         /**
          * @brief Move the objects stored for the current event to the clipboard

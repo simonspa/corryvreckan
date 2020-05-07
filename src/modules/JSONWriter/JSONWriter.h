@@ -41,7 +41,7 @@ namespace corryvreckan {
         /**
          * @brief Reads the configuration and opens the file to write to
          */
-        void initialise();
+        void initialize() override;
 
         /**
          * @brief Loops over the selected objects on the clipboard and writes them to file

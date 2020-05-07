@@ -41,7 +41,7 @@ bool EventLoaderTimepix1::sortByTime(string filename1, string filename2) {
     return (filetime1 < filetime2);
 }
 
-void EventLoaderTimepix1::initialise() {
+void EventLoaderTimepix1::initialize() {
 
     // Take input directory from global parameters
     m_inputDirectory = m_config.getPath("input_directory");

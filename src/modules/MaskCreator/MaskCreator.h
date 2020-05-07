@@ -28,7 +28,7 @@ namespace corryvreckan {
         ~MaskCreator() {}
 
         // Functions
-        void initialise();
+        void initialize() override;
         StatusCode run(std::shared_ptr<Clipboard> clipboard);
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
