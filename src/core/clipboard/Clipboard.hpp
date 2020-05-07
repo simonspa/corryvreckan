@@ -131,6 +131,7 @@ namespace corryvreckan {
         std::vector<std::shared_ptr<T>>& get_data(const ClipboardData& storage_element, const std::string& key) const;
         template <typename T>
         void put_data(ClipboardData& storage_element, std::vector<std::shared_ptr<T>> objects, const std::string& key);
+        template <typename T> size_t count_objects(const ClipboardData& storage_element, const std::string& key) const;
 
         // Container for data, list of all data held
         ClipboardData data_;

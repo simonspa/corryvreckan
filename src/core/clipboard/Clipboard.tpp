@@ -18,6 +18,10 @@ namespace corryvreckan {
         return get_data<T>(data_, key);
     }
 
+    template <typename T> size_t Clipboard::countObjects(const std::string& key) const {
+        return count_objects<T>(data_, key);
+    }
+
     template <typename T>
     void
     Clipboard::put_data(ClipboardData& storage_element, std::vector<std::shared_ptr<T>> objects, const std::string& key) {
@@ -32,8 +36,8 @@ namespace corryvreckan {
         /* If data type exists, returns iterator to offending key, if data type does not exist yet, creates new entry and
          * returns iterator to the newly created element.
          *
-         * We use getBaseType here to always store objects as their base class types to be able to fetch them easily. E.g.
-         * derived track classes will be stored as Track objects and can be fetched as such
+         * We use getBaseType here to always store objects as their base class types to be able to fetch them easily.
+         * E.g. derived track classes will be stored as Track objects and can be fetched as such
          */
         type = storage_element.insert(
             type, ClipboardData::value_type(T::getBaseType(), std::map<std::string, std::shared_ptr<void>>()));
@@ -56,19 +60,20 @@ namespace corryvreckan {
         return *std::static_pointer_cast<std::vector<std::shared_ptr<T>>>(storage_element.at(typeid(T)).at(key));
     }
 
-    template <typename T> size_t Clipboard::countObjects(const std::string& key) const {
+    template <typename T>
+    size_t Clipboard::count_objects(const ClipboardData& storage_element, const std::string& key) const {
         size_t number_of_objects = 0;
 
         // Check if we have anything of this type:
-        if(data_.count(typeid(T)) != 0) {
+        if(storage_element.count(typeid(T)) != 0) {
             // Decide whether we should count all or just the ones identified by a key:
             if(key.empty()) {
-                for(const auto& block : data_.at(typeid(T))) {
+                for(const auto& block : storage_element.at(typeid(T))) {
                     number_of_objects += std::static_pointer_cast<std::vector<std::shared_ptr<T>>>(block.second)->size();
                 }
-            } else if(data_.at(typeid(T)).count(key) != 0) {
+            } else if(storage_element.at(typeid(T)).count(key) != 0) {
                 number_of_objects =
-                    std::static_pointer_cast<std::vector<std::shared_ptr<T>>>(data_.at(typeid(T)).at(key))->size();
+                    std::static_pointer_cast<std::vector<std::shared_ptr<T>>>(storage_element.at(typeid(T)).at(key))->size();
             }
         }
         return number_of_objects;
