@@ -51,7 +51,7 @@ namespace corryvreckan {
         std::map<std::shared_ptr<Detector>, XYVector> spatial_cuts_;
         size_t minHitsOnTrack;
         bool excludeDUT;
-        bool rejectByROI=false;
+        bool rejectByROI;
         std::string trackModel;
     };
 } // namespace corryvreckan

@@ -49,7 +49,7 @@ namespace corryvreckan {
 
         bool useTriggerTimestamp;
         bool chargeWeighting;
-        bool rejectByROI=false;
+        bool rejectByROI;
     };
 } // namespace corryvreckan
 #endif // ClusteringSpatial_H
