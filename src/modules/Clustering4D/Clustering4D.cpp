@@ -23,16 +23,17 @@ Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detec
         throw InvalidCombinationError(
             m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
     } else if(m_config.has("time_cut_abs")) {
-        timeCut = m_config.get<double>("time_cut_abs");
+        time_cut_ = m_config.get<double>("time_cut_abs");
     } else {
-        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
+        time_cut_ = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
     }
 
     m_config.setAlias("neighbor_radius_row", "neighbour_radius_row", true);
     m_config.setAlias("neighbor_radius_col", "neighbour_radius_col", true);
-    neighborRadiusRow = m_config.get<int>("neighbor_radius_row", 1);
-    neighborRadiusCol = m_config.get<int>("neighbor_radius_col", 1);
-    chargeWeighting = m_config.get<bool>("charge_weighting", true);
+    neighbor_radius_row_ = m_config.get<int>("neighbor_radius_row", 1);
+    neighbor_radius_col_ = m_config.get<int>("neighbor_radius_col", 1);
+    charge_weighting_ = m_config.get<bool>("charge_weighting", true);
+    reject_by_ROI_ = m_config.get<bool>("reject_by_roi", false);
 }
 
 void Clustering4D::initialise() {
@@ -83,7 +84,7 @@ void Clustering4D::initialise() {
 
     // Get resolution in time of detector and calculate time cut to be applied
     LOG(DEBUG) << "Time cut to be applied for " << m_detector->getName() << " is "
-               << Units::display(timeCut, {"ns", "us", "ms"});
+               << Units::display(time_cut_, {"ns", "us", "ms"});
 }
 
 // Sort function for pixels from low to high times
@@ -137,7 +138,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
             for(size_t iNeighbour = (iP + 1); iNeighbour < totalPixels; iNeighbour++) {
                 Pixel* neighbor = pixels[iNeighbour].get();
                 // Check if they are compatible in time with the cluster pixels
-                if(abs(neighbor->timestamp() - clusterTime) > timeCut)
+                if(abs(neighbor->timestamp() - clusterTime) > time_cut_)
                     break;
 
                 // Check if they have been used
@@ -159,6 +160,12 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Finalise the cluster and save it
         calculateClusterCentre(cluster.get());
+
+        // check if the cluster is within ROI
+        if(reject_by_ROI_ && !m_detector->isWithinROI(cluster.get())) {
+            LOG(DEBUG) << "Rejecting cluster outside of " << m_detector->getName() << " ROI";
+            continue;
+        }
 
         // Fill cluster histograms
         clusterSize->Fill(static_cast<double>(cluster->size()));
@@ -206,7 +213,7 @@ bool Clustering4D::touching(Pixel* neighbor, Cluster* cluster) {
         int row_distance = abs(pixel->row() - neighbor->row());
         int col_distance = abs(pixel->column() - neighbor->column());
 
-        if(row_distance <= neighborRadiusRow && col_distance <= neighborRadiusCol) {
+        if(row_distance <= neighbor_radius_row_ && col_distance <= neighbor_radius_col_) {
             if(row_distance > 1 || col_distance > 1) {
                 cluster->setSplit(true);
             }
@@ -226,7 +233,7 @@ bool Clustering4D::closeInTime(Pixel* neighbor, Cluster* cluster) {
     for(auto& px : pixels) {
 
         double timeDifference = abs(neighbor->timestamp() - px->timestamp());
-        if(timeDifference < timeCut)
+        if(timeDifference < time_cut_)
             CloseInTime = true;
     }
     return CloseInTime;
@@ -269,7 +276,7 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         }
     }
 
-    if(chargeWeighting && !found_charge_zero) {
+    if(charge_weighting_ && !found_charge_zero) {
         // Charge-weighted centre-of-gravity for cluster centre:
         // (here it's safe to divide by the charge as it cannot be zero due to !found_charge_zero)
         column = column_sum_chargeweighted / charge;

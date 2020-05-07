@@ -14,6 +14,7 @@ These clusters are stored on the clipboard for each device.
 ### Parameters
 * `use_trigger_timestamp`: If true, set trigger timestamp of Corryvreckan event as cluster timestamp. If false, set pixel timestamp. Default value is `false`.
 * `charge_weighting`: If true, calculate a charge-weighted mean for the cluster center. If false, calculate the simple arithmetic mean. Defaults to `true`.
+* `reject_by_roi`: If true, clusters positioned outside the ROI set for the detector will be rejected. Defaults to `false`.
 
 ### Plots produced
 For each detector the following plots are produced:
