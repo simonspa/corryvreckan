@@ -157,6 +157,12 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         // Finalise the cluster and save it
         calculateClusterCentre(cluster);
 
+        //check if the cluster is within ROI
+        if(rejectByROI && !m_detector->isWithinROI(cluster)) {
+            delete cluster;
+            continue;
+        }
+        
         // Fill cluster histograms
         clusterSize->Fill(static_cast<double>(cluster->size()));
 
@@ -168,12 +174,6 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         clusterPositionLocal->Fill(cluster->column(), cluster->row());
         clusterTimes->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "ns")));
         LOG(DEBUG) << "cluster local: " << cluster->local();
-        
-        //check if the cluster is within ROI
-        if(rejectByROI && !m_detector->isWithinROI(cluster)) {
-            delete cluster;
-            continue;
-        }
         
         deviceClusters->push_back(cluster);
     }
