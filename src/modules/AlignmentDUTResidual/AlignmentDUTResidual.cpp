@@ -125,7 +125,7 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
     // Store all tracks we want for alignment on the permanent storage:
     clipboard->putPersistentData(alignmenttracks);
     // Copy the objects of all associated clusters on the clipboard to persistent storage:
-    clipboard->copyToPersistentData(alignmentclusters);
+    clipboard->copyToPersistentData(alignmentclusters, m_detector->getName());
 
     // Otherwise keep going
     return StatusCode::Success;
