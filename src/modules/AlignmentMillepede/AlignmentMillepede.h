@@ -104,8 +104,6 @@ namespace corryvreckan {
                           const unsigned int n,
                           const unsigned int m);
 
-        TrackVector m_alignmenttracks;
-
         /// Number of global derivatives
         unsigned int m_nagb;
         /// Number of local derivatives

@@ -80,21 +80,31 @@ StatusCode AlignmentMillepede::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the tracks
     auto tracks = clipboard->getData<Track>();
+    TrackVector alignmenttracks;
+    std::vector<Cluster*> alignmentclusters;
 
     // Make a local copy and store it
     for(auto& track : tracks) {
-        auto alignmentTrack = Track::Factory(track);
-        m_alignmenttracks.push_back(alignmentTrack);
+        alignmenttracks.push_back(track);
+        auto clusters = track->clusters();
+        alignmentclusters.insert(alignmentclusters.end(), clusters.begin(), clusters.end());
     }
+
+    // Store all tracks we want for alignment on the permanent storage:
+    clipboard->putPersistentData(alignmenttracks);
+    // Copy the objects of all track clusters on the clipboard to persistent storage:
+    clipboard->copyToPersistentData(alignmentclusters);
+
     return StatusCode::Success;
 }
 
 //=============================================================================
 // Main alignment function
 //=============================================================================
-void AlignmentMillepede::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
+void AlignmentMillepede::finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) {
 
     LOG(INFO) << "Millepede alignment";
+    auto alignmenttracks = clipboard->getPersistentData<Track>();
 
     size_t nPlanes = num_detectors();
     for(const auto& det : get_detectors()) {
@@ -114,11 +124,11 @@ void AlignmentMillepede::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
         const double startfact = 100.;
         // Initialise all matrices and vectors.
         reset(nPlanes, startfact);
-        LOG(INFO) << "Feeding Millepede with " << m_alignmenttracks.size() << " tracks...";
+        LOG(INFO) << "Feeding Millepede with " << alignmenttracks.size() << " tracks...";
         // Feed Millepede with tracks.
         unsigned int nSkipped = 0;
         unsigned int nOutliers = 0;
-        for(auto& track : m_alignmenttracks) {
+        for(auto& track : alignmenttracks) {
             if(track->nClusters() != nPlanes) {
                 ++nSkipped;
                 continue;
@@ -151,7 +161,7 @@ void AlignmentMillepede::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
         updateGeometry();
 
         // Update the cluster coordinates based on the new geometry.
-        for(auto& track : m_alignmenttracks) {
+        for(auto& track : alignmenttracks) {
             for(auto& cluster : track->clusters()) {
                 auto detectorID = cluster->detectorID();
                 auto detector = get_detector(detectorID);
