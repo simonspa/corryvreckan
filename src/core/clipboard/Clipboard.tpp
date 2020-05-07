@@ -26,7 +26,7 @@ namespace corryvreckan {
 
     template <typename T>
     void Clipboard::putPersistentData(std::vector<std::shared_ptr<T>> objects, const std::string& key) {
-        put_data(persistent_data_, std::move(objects), key);
+        put_data(persistent_data_, std::move(objects), key, true);
     }
 
     template <typename T>
@@ -58,12 +58,14 @@ namespace corryvreckan {
         }
 
         // Ship off to persistent storage
-        put_data(persistent_data_, std::move(to_persistent), key);
+        put_data(persistent_data_, std::move(to_persistent), key, true);
     }
 
     template <typename T>
-    void
-    Clipboard::put_data(ClipboardData& storage_element, std::vector<std::shared_ptr<T>> objects, const std::string& key) {
+    void Clipboard::put_data(ClipboardData& storage_element,
+                             std::vector<std::shared_ptr<T>> objects,
+                             const std::string& key,
+                             bool append) {
         // Do not insert empty sets:
         if(objects.empty()) {
             return;
@@ -83,10 +85,17 @@ namespace corryvreckan {
 
         // Insert data into data type element and print a warning if it exists already
         auto object_ptr = std::make_shared<std::vector<std::shared_ptr<T>>>(objects);
-        auto test = type->second.insert(std::make_pair(key, std::static_pointer_cast<void>(object_ptr)));
-        if(!test.second) {
-            LOG(WARNING) << "Dataset of type " << corryvreckan::demangle(typeid(T).name()) << " already exists for key \""
-                         << key << "\", ignoring new data";
+        auto element = type->second.insert(std::make_pair(key, std::static_pointer_cast<void>(object_ptr)));
+        if(!element.second) {
+            if(append) {
+                // Get the pointer to the existingelement vector
+                auto existing_elements = std::static_pointer_cast<std::vector<std::shared_ptr<T>>>(element.first->second);
+                // Append new elements to the end
+                existing_elements->insert(existing_elements->end(), objects.begin(), objects.end());
+            } else {
+                LOG(WARNING) << "Dataset of type " << corryvreckan::demangle(typeid(T).name())
+                             << " already exists for key \"" << key << "\", ignoring new data";
+            }
         }
     }
 
