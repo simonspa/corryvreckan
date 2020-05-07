@@ -30,7 +30,7 @@ namespace corryvreckan {
      * @brief Manager responsible for dynamically loading all modules and running their event sequence
      *
      * The module manager class is the core class which allows the event processing to run. It basically contains a vector of
-     * modules, each of which is initialised, run on each event and finalised. It does not define what an event is, merely
+     * modules, each of which is initialised, run on each event and finalized. It does not define what an event is, merely
      * runs each module sequentially and passes the clipboard between them (erasing it at the end of each run sequence). When
      * an module returns a Failure code, the event processing will stop.
      */
@@ -68,7 +68,7 @@ namespace corryvreckan {
 
         void run();
         void initialiseAll();
-        void finaliseAll();
+        void finalizeAll();
         void terminate();
 
         TBrowser* browser;

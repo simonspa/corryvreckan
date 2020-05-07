@@ -43,7 +43,7 @@ namespace corryvreckan {
      * defines the methods the children can implement:
      * - Module::initialise(): for initializing the module at the start
      * - Module::run(Clipoard* Clipboard): for doing the job of every module for every event
-     * - Module::finalise(): for finalising the module at the end
+     * - Module::finalize(): for finalising the module at the end
      */
     class Module {
         friend class ModuleManager;
@@ -122,7 +122,7 @@ namespace corryvreckan {
          *
          * Does nothing if not overloaded.
          */
-        virtual void finalise(){};
+        virtual void finalize(const std::shared_ptr<ReadonlyClipboard>&){};
 
         /**
          * @brief Get the config manager object to allow to read the global and other module configurations

@@ -506,7 +506,7 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
     return modules;
 }
 
-// Run the analysis loop - this initialises, runs and finalises all modules
+// Run the analysis loop - this initialises, runs and finalizes all modules
 void ModuleManager::run() {
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
@@ -678,10 +678,13 @@ void ModuleManager::initialiseAll() {
 }
 
 // Finalise all modules
-void ModuleManager::finaliseAll() {
+void ModuleManager::finalizeAll() {
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
-    // Loop over all modules and finalise them
+    // Create read-only version of permanent storage element from event clipboard:
+    auto readonly_clipboard = std::static_pointer_cast<ReadonlyClipboard>(m_clipboard);
+
+    // Loop over all modules and finalize them
     LOG(STATUS) << "===================| Finalising modules |===================";
     for(auto& module : m_modules) {
         // Set init module section header
@@ -695,7 +698,7 @@ void ModuleManager::finaliseAll() {
         module->getROOTDirectory()->cd();
 
         // Finalise the module
-        module->finalise();
+        module->finalize(readonly_clipboard);
 
         // Store all ROOT objects:
         module->getROOTDirectory()->Write();

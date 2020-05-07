@@ -185,7 +185,7 @@ void Corryvreckan::run() {
 void Corryvreckan::finalize() {
     if(has_run_) {
         LOG(TRACE) << "Finalizing Corryvreckan";
-        mod_mgr_->finaliseAll();
+        mod_mgr_->finalizeAll();
     } else {
         LOG(INFO) << "Skip finalizing modules because no module did run";
     }
