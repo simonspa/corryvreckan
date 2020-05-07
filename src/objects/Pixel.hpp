@@ -117,7 +117,7 @@ namespace corryvreckan {
     };
 
     // Vector type declaration
-    using PixelVector = std::vector<Pixel*>;
+    using PixelVector = std::vector<std::shared_ptr<Pixel>>;
 } // namespace corryvreckan
 
 #endif // CORRYVRECKAN_PIXEL_H

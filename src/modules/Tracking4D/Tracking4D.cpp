@@ -149,14 +149,13 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Get the clusters
         auto tempClusters = clipboard->getData<Cluster>(detector->getName());
-        if(tempClusters == nullptr || tempClusters->size() == 0) {
-            LOG(DEBUG) << "Detector " << detector->getName() << " does not have any clusters on the clipboard";
-        } else {
+        LOG(DEBUG) << "Detector " << detector->getName() << " has " << tempClusters.size() << " clusters on the clipboard";
+        if(!tempClusters.empty()) {
             // Store them
-            LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters from " << detector->getName();
+            LOG(DEBUG) << "Picked up " << tempClusters.size() << " clusters from " << detector->getName();
 
             trees.emplace(std::piecewise_construct, std::make_tuple(detector), std::make_tuple());
-            trees[detector].buildTrees(*tempClusters);
+            trees[detector].buildTrees(tempClusters);
 
             // Get first and last detectors with clusters on them:
             if(!reference_first) {
@@ -176,7 +175,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Output track container
-    auto tracks = std::make_shared<TrackVector>();
+    TrackVector tracks;
 
     // Time cut for combinations of reference clusters and for reference track with additional detector
     auto time_cut_ref = std::max(time_cuts_[reference_first], time_cuts_[reference_last]);
@@ -193,15 +192,16 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
             // The track finding is based on a straight line. Therefore a refTrack to extrapolate to the next plane is used
             StraightLineTrack refTrack;
-            refTrack.addCluster(clusterFirst);
-            refTrack.addCluster(clusterLast);
+            refTrack.addCluster(clusterFirst.get());
+            refTrack.addCluster(clusterLast.get());
             auto averageTimestamp = calculate_average_timestamp(&refTrack);
             refTrack.setTimestamp(averageTimestamp);
 
             // Make a new track
             auto track = Track::Factory(track_model_);
-            track->addCluster(clusterFirst);
-            track->addCluster(clusterLast);
+            track->addCluster(clusterFirst.get());
+            track->addCluster(clusterLast.get());
+
             track->setTimestamp(averageTimestamp);
             if(use_volume_scatterer_) {
                 track->setVolumeScatter(volume_radiation_length_);
@@ -266,7 +266,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 double interceptY = interceptPoint.Y();
 
                 for(size_t ne = 0; ne < neighbors.size(); ne++) {
-                    Cluster* newCluster = neighbors[ne];
+                    auto newCluster = neighbors[ne].get();
 
                     // Calculate the distance to the previous plane's cluster/intercept
                     double distanceX = interceptX - newCluster->global().x();
@@ -322,8 +322,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 }
                 return true;
             };
-            if(!foundRequiredDetector(track)) {
-                delete track;
+            if(!foundRequiredDetector(track.get())) {
                 continue;
             }
 
@@ -331,7 +330,6 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
             if(track->nClusters() < min_hits_on_track_) {
                 LOG(DEBUG) << "Not enough clusters on the track, found " << track->nClusters() << " but "
                            << min_hits_on_track_ << " required.";
-                delete track;
                 continue;
             }
 
@@ -345,16 +343,14 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                     std::find_if(ds.begin(), ds.end(), [track](const auto& d) { return !d->isWithinROI(track); });
                 if(out_of_roi != ds.end()) {
                     LOG(DEBUG) << "Rejecting track outside of ROI";
-                    delete track;
                     continue;
                 }
             }
             // save the track
             if(track->isFitted()) {
-                tracks->push_back(track);
+                tracks.push_back(track);
             } else {
                 LOG_N(WARNING, 100) << "Rejected a track due to failure in fitting";
-                delete track;
                 continue;
             }
             // Fill histograms
@@ -404,7 +400,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
             if(timestamp_from_.empty()) {
                 // Improve the track timestamp by taking the average of all planes
-                auto timestamp = calculate_average_timestamp(track);
+                auto timestamp = calculate_average_timestamp(track.get());
                 track->setTimestamp(timestamp);
                 LOG(DEBUG) << "Using average cluster timestamp of " << Units::display(timestamp, "us")
                            << " as track timestamp.";
@@ -418,10 +414,10 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         }
     }
 
-    tracksPerEvent->Fill(static_cast<double>(tracks->size()));
+    tracksPerEvent->Fill(static_cast<double>(tracks.size()));
 
     // Save the tracks on the clipboard
-    if(tracks->size() > 0) {
+    if(tracks.size() > 0) {
         clipboard->putData(tracks);
     }
 

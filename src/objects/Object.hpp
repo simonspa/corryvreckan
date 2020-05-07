@@ -96,7 +96,7 @@ namespace corryvreckan {
     std::ostream& operator<<(std::ostream& out, const corryvreckan::Object& obj);
 
     // Vector type declaration
-    using ObjectVector = std::vector<Object*>;
+    using ObjectVector = std::vector<std::shared_ptr<Object>>;
 } // namespace corryvreckan
 
 #endif // CORRYVRECKAN_OBJECT_H

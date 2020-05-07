@@ -90,10 +90,6 @@ namespace corryvreckan {
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(GblTrack, 3)
     };
-
-    // Vector type declaration
-    using GblTrackVector = std::vector<GblTrack*>;
-
 } // namespace corryvreckan
 
 #endif // CORRYVRECKAN_GBLTRACK_H

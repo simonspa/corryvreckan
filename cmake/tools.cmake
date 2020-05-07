@@ -20,6 +20,7 @@ FUNCTION(get_version PROJECT_VERSION)
                 MESSAGE(STATUS "Git project directory is clean.")
             ELSE(PROJECT_STATUS STREQUAL "")
                 MESSAGE(STATUS "Git project directory is dirty:\n ${PROJECT_STATUS}.")
+                SET(${PROJECT_VERSION} ${${PROJECT_VERSION}}~dirty)
             ENDIF(PROJECT_STATUS STREQUAL "")
 
             # Check if commit flag has been set by the CI:

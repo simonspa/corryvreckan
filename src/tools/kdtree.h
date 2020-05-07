@@ -38,7 +38,7 @@ namespace corryvreckan {
          * @brief Build trees in space and time from input data
          * @param input Vector of elements to construct trees for
          */
-        void buildTrees(std::vector<T*> input) {
+        void buildTrees(const std::vector<std::shared_ptr<T>>& input) {
             // Store the vector of element pointers
             elements_ = input;
 
@@ -74,14 +74,14 @@ namespace corryvreckan {
         /**
          * @brief Return all registered elements
          */
-        std::vector<T*> getAllElements() { return elements_; };
+        std::vector<std::shared_ptr<T>> getAllElements() { return elements_; };
 
         /**
          * @brief Get all neighboring elements within time range
          * @param timestamp  Reference time to return neighbors for
          * @param timeWindow Time range for neighbor search
          */
-        std::vector<T*> getAllElementsInTimeWindow(double timestamp, double timeWindow) {
+        std::vector<std::shared_ptr<T>> getAllElementsInTimeWindow(double timestamp, double timeWindow) {
             if(!kdtree_time_) {
                 throw RuntimeError("time tree not initialized");
             }
@@ -91,7 +91,7 @@ namespace corryvreckan {
             kdtree_time_->FindInRange(&timestamp, timeWindow, results);
 
             // Turn this into a vector of elements
-            std::vector<T*> result_elements;
+            std::vector<std::shared_ptr<T>> result_elements;
             for(size_t res = 0; res < results.size(); res++) {
                 result_elements.push_back(elements_[static_cast<size_t>(results[res])]);
             }
@@ -99,7 +99,7 @@ namespace corryvreckan {
         }
 
         // Function to get back all elements within a given time period with respect to a element
-        std::vector<T*> getAllElementsInTimeWindow(T* element, double timeWindow) {
+        std::vector<std::shared_ptr<T>> getAllElementsInTimeWindow(const std::shared_ptr<T>& element, double timeWindow) {
             return getAllElementsInTimeWindow(element->timestamp(), timeWindow);
         }
 
@@ -108,7 +108,7 @@ namespace corryvreckan {
          * @param element Element to return neighbors for
          * @param window  Radius for neighbor selection
          */
-        std::vector<T*> getAllElementsInSpaceWindow(T* element, double window) {
+        std::vector<std::shared_ptr<T>> getAllElementsInSpaceWindow(const std::shared_ptr<T>& element, double window) {
             if(!kdtree_space_) {
                 throw RuntimeError("space tree not initialized");
             }
@@ -119,7 +119,7 @@ namespace corryvreckan {
             kdtree_space_->FindInRange(position, window, results);
 
             // Turn this into a vector of clusters
-            std::vector<T*> result_elements;
+            std::vector<std::shared_ptr<T>> result_elements;
             for(size_t res = 0; res < results.size(); res++) {
                 result_elements.push_back(elements_[static_cast<size_t>(results[res])]);
             }
@@ -131,7 +131,7 @@ namespace corryvreckan {
          * @param  element Object to search neighbor for
          * @return         Closest neighbor to element
          */
-        T* getClosestSpaceNeighbor(T* element) {
+        std::shared_ptr<T> getClosestSpaceNeighbor(const std::shared_ptr<T>& element) {
             if(!kdtree_space_) {
                 throw RuntimeError("space tree not initialized");
             }
@@ -149,7 +149,7 @@ namespace corryvreckan {
          * @param  element Object to search neighbor for
          * @return         Closest neighbor to element
          */
-        T* getClosestTimeNeighbor(T* element) {
+        std::shared_ptr<T> getClosestTimeNeighbor(const std::shared_ptr<T>& element) {
             if(!kdtree_time_) {
                 throw RuntimeError("time tree not initialized");
             }
@@ -173,21 +173,21 @@ namespace corryvreckan {
          * @param  element The object to get the position from
          * @return         Position of the element
          */
-        XYZPoint get_position(T* element);
+        XYZPoint get_position(const std::shared_ptr<T>& element);
 
         // Trees for lookup in space and time
         std::unique_ptr<TKDTreeID> kdtree_space_;
         std::unique_ptr<TKDTreeID> kdtree_time_;
 
         // Storage for input data
-        std::vector<T*> elements_;
+        std::vector<std::shared_ptr<T>> elements_;
     };
 
     // Template specialization for Cluster
-    template <> XYZPoint KDTree<Cluster>::get_position(Cluster* element) { return element->global(); }
+    template <> XYZPoint KDTree<Cluster>::get_position(const std::shared_ptr<Cluster>& element) { return element->global(); }
 
     // Template specialization for Pixel
-    template <> XYZPoint KDTree<Pixel>::get_position(Pixel* element) {
+    template <> XYZPoint KDTree<Pixel>::get_position(const std::shared_ptr<Pixel>& element) {
         return XYZPoint(element->column(), element->row(), 0);
     }
 } // namespace corryvreckan

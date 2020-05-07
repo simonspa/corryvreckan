@@ -88,7 +88,7 @@ void Clustering4D::initialise() {
 }
 
 // Sort function for pixels from low to high times
-bool Clustering4D::sortByTime(Pixel* pixel1, Pixel* pixel2) {
+bool Clustering4D::sortByTime(const std::shared_ptr<Pixel>& pixel1, const std::shared_ptr<Pixel>& pixel2) {
     return (pixel1->timestamp() < pixel2->timestamp());
 }
 
@@ -96,25 +96,25 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());
-    if(pixels == nullptr) {
+    if(pixels.empty()) {
         LOG(DEBUG) << "Detector " << m_detector->getName() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
     }
-    LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << m_detector->getName();
+    LOG(DEBUG) << "Picked up " << pixels.size() << " pixels for device " << m_detector->getName();
 
     // Sort the pixels from low to high timestamp
-    std::sort(pixels->begin(), pixels->end(), sortByTime);
-    size_t totalPixels = pixels->size();
+    std::sort(pixels.begin(), pixels.end(), sortByTime);
+    size_t totalPixels = pixels.size();
 
     // Make the cluster storage
-    auto deviceClusters = std::make_shared<ClusterVector>();
+    ClusterVector deviceClusters;
 
     // Keep track of which pixels are used
     map<Pixel*, bool> used;
 
     // Start to cluster
-    for(size_t iP = 0; iP < pixels->size(); iP++) {
-        Pixel* pixel = (*pixels)[iP];
+    for(size_t iP = 0; iP < pixels.size(); iP++) {
+        Pixel* pixel = pixels[iP].get();
 
         // Check if pixel is used
         if(used[pixel]) {
@@ -122,7 +122,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Make the new cluster object
-        Cluster* cluster = new Cluster();
+        auto cluster = std::make_shared<Cluster>();
         LOG(DEBUG) << "==== New cluster";
 
         // Keep adding hits to the cluster until no more are found
@@ -136,7 +136,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
             nPixels = cluster->size();
             // Loop over all pixels
             for(size_t iNeighbour = (iP + 1); iNeighbour < totalPixels; iNeighbour++) {
-                Pixel* neighbor = (*pixels)[iNeighbour];
+                Pixel* neighbor = pixels[iNeighbour].get();
                 // Check if they are compatible in time with the cluster pixels
                 if(abs(neighbor->timestamp() - clusterTime) > time_cut_)
                     break;
@@ -146,7 +146,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
                     continue;
 
                 // Check if they are touching cluster pixels
-                if(!touching(neighbor, cluster))
+                if(!touching(neighbor, cluster.get()))
                     continue;
 
                 // Add to cluster
@@ -159,7 +159,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Finalise the cluster and save it
-        calculateClusterCentre(cluster);
+        calculateClusterCentre(cluster.get());
 
         // check if the cluster is within ROI
         if(reject_by_ROI_ && !m_detector->isWithinROI(cluster)) {
@@ -193,14 +193,14 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
             }
         }
 
-        deviceClusters->push_back(cluster);
+        deviceClusters.push_back(cluster);
     }
 
-    clusterMultiplicity->Fill(static_cast<double>(deviceClusters->size()));
+    clusterMultiplicity->Fill(static_cast<double>(deviceClusters.size()));
 
     // Put the clusters on the clipboard
     clipboard->putData(deviceClusters, m_detector->getName());
-    LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << m_detector->getName();
+    LOG(DEBUG) << "Made " << deviceClusters.size() << " clusters for device " << m_detector->getName();
 
     return StatusCode::Success;
 }

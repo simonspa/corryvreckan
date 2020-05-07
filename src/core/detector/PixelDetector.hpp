@@ -104,7 +104,7 @@ namespace corryvreckan {
         bool hasIntercept(const Track* track, double pixelTolerance = 0.) const override;
 
         // Function to check if a track goes through/near a masked pixel
-        bool hitMasked(Track* track, int tolerance = 0.) const override;
+        bool hitMasked(const Track* track, int tolerance = 0.) const override;
 
         // Functions to get row and column from local position
         double getRow(PositionVector3D<Cartesian3D<double>> localPosition) const override;

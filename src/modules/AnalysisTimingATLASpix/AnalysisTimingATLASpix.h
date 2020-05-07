@@ -40,7 +40,7 @@ namespace corryvreckan {
         std::shared_ptr<Detector> m_detector;
 
         // timing correction functions:
-        void correctClusterTimestamp(Cluster*, int mode);
+        void correctClusterTimestamp(std::shared_ptr<Cluster>, int mode);
 
         // 1D histograms:
         TH1F* hTrackCorrelationTime;
