@@ -26,7 +26,9 @@ DUTAssociation::DUTAssociation(Configuration& config, std::shared_ptr<Detector> 
 
     // spatial cut, relative (x * spatial_resolution) or absolute:
     spatialCut = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, config_, m_detector);
-    useClusterCentre = config_.get<bool>("use_cluster_centre", false);
+
+    config_.setDefault<bool>("use_cluster_centre", false);
+    useClusterCentre = config_.get<bool>("use_cluster_centre");
 
     LOG(DEBUG) << "time_cut = " << Units::display(timeCut, {"ms", "us", "ns"});
     LOG(DEBUG) << "spatial_cut = " << Units::display(spatialCut, {"um", "mm"});
