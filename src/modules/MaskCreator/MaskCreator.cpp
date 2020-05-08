@@ -17,14 +17,23 @@ using namespace corryvreckan;
 MaskCreator::MaskCreator(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector), m_numEvents(0) {
 
-    m_method = config_.get<std::string>("method", "frequency");
+    config_.setDefault<std::string>("method", "frequency");
+    m_method = config_.get<std::string>("method");
 
-    m_frequency = config_.get<double>("frequency_cut", 50);
+    config_.setDefault<double>("frequency_cut", 50);
+    m_frequency = config_.get<double>("frequency_cut");
 
-    binsOccupancy = config_.get<int>("bins_occupancy", 128);
-    bandwidth = config_.get<double>("density_bandwidth", 2.);
-    m_sigmaMax = config_.get<double>("sigma_above_avg_max", 5.);
-    m_rateMax = config_.get<double>("rate_max", 1.);
+    config_.setDefault<int>("bins_occupancy", 128);
+    binsOccupancy = config_.get<int>("bins_occupancy");
+
+    config_.setDefault<double>("density_bandwidth", 2.);
+    bandwidth = config_.get<double>("density_bandwidth");
+
+    config_.setDefault<double>("sigma_above_avg_max", 5.);
+    m_sigmaMax = config_.get<double>("sigma_above_avg_max");
+
+    config_.setDefault<double>("rate_max", 1.);
+    m_rateMax = config_.get<double>("rate_max");
 }
 
 void MaskCreator::initialise() {
