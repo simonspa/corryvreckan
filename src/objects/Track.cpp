@@ -138,14 +138,6 @@ Cluster* Track::getClusterFromDetector(std::string detectorID) const {
     return dynamic_cast<Cluster*>(it->GetObject());
 }
 
-ROOT::Math::XYPoint Track::getKink(std::string detectorID) const {
-    if(kink_.count(detectorID) == 1) {
-        return kink_.at(detectorID);
-    } else {
-        return ROOT::Math::XYPoint(0, 0);
-    }
-}
-
 void Track::updatePlane(Plane p) {
     std::replace_if(
         planes_.begin(), planes_.end(), [&p](auto const& plane) { return plane.getName() == p.getName(); }, std::move(p));
@@ -160,7 +152,6 @@ ROOT::Math::XYZPoint Track::getCorrection(std::string detectorID) const {
 
 std::shared_ptr<Track> corryvreckan::Track::Factory(std::string trackModel) {
     if(trackModel == "straightline") {
-
         return std::make_shared<StraightLineTrack>();
     } else if(trackModel == "gbl") {
         return std::make_shared<GblTrack>();
