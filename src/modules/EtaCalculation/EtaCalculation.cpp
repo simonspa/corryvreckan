@@ -15,9 +15,15 @@ using namespace std;
 
 EtaCalculation::EtaCalculation(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
-    m_chi2ndofCut = config_.get<double>("chi2ndof_cut", 100.);
-    m_etaFormulaX = config_.get<std::string>("eta_formula_x", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
-    m_etaFormulaY = config_.get<std::string>("eta_formula_y", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
+
+    config_.setDefault<double>("chi2ndof_cut", 100.);
+    m_chi2ndofCut = config_.get<double>("chi2ndof_cut");
+
+    config_.setDefault<std::string>("eta_formula_x", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
+    m_etaFormulaX = config_.get<std::string>("eta_formula_x");
+
+    config_.setDefault<std::string>("eta_formula_y", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
+    m_etaFormulaY = config_.get<std::string>("eta_formula_y");
 }
 
 void EtaCalculation::initialise() {
