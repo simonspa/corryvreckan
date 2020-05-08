@@ -18,12 +18,11 @@ ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration& config, std:
     : Module(config, std::move(detectors)) {
 
     config_.setDefault<int>("improvement_method", 1);
-    m_method = config_.get<int>("improvement_method");
-
     config_.setDefault<std::string>("signal_source", "W0013_G02");
-    m_source = config_.get<std::string>("signal_source");
-
     config_.setDefault<double>("trigger_latency", Units::get<double>(0, "ns"));
+
+    m_method = config_.get<int>("improvement_method");
+    m_source = config_.get<std::string>("signal_source");
     m_triggerLatency = config_.get<double>("trigger_latency");
 }
 

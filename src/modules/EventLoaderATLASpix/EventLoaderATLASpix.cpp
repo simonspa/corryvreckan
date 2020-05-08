@@ -20,21 +20,17 @@ EventLoaderATLASpix::EventLoaderATLASpix(Configuration& config, std::shared_ptr<
     m_inputDirectory = config_.getPath("input_directory");
 
     config_.setDefault<double>("clock_cycle", Units::get<double>(6.25, "ns"));
-    m_clockCycle = config_.get<double>("clock_cycle");
-
     // config_.setDefault<int>("clkdivend", 0.);
-    // m_clkdivendM = config_.get<int>("clkdivend") + 1;
-
     config_.setDefault<int>("clkdivend2", 0.);
-    m_clkdivend2M = config_.get<int>("clkdivend2") + 1;
-
     config_.setDefault<int>("high_tot_cut", 40);
-    m_highToTCut = config_.get<int>("high_tot_cut");
-
     config_.setDefault<int>("buffer_depth", 1000);
-    m_buffer_depth = config_.get<int>("buffer_depth");
-
     config_.setDefault<double>("time_offset", 0.);
+
+    m_clockCycle = config_.get<double>("clock_cycle");
+    // m_clkdivendM = config_.get<int>("clkdivend") + 1;
+    m_clkdivend2M = config_.get<int>("clkdivend2") + 1;
+    m_highToTCut = config_.get<int>("high_tot_cut");
+    m_buffer_depth = config_.get<int>("buffer_depth");
     m_time_offset = config_.get<double>("time_offset");
 
     // ts1Range = 0x800 * m_clkdivendM;

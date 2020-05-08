@@ -21,13 +21,13 @@ DUTAssociation::DUTAssociation(Configuration& config, std::shared_ptr<Detector> 
     config_.setAlias("time_cut_abs", "timing_cut", true);
     config_.setAlias("spatial_cut_abs", "spatial_cut", true);
 
+    config_.setDefault<bool>("use_cluster_centre", false);
+
     // timing cut, relative (x * time_resolution) or absolute:
     timeCut = corryvreckan::calculate_cut<double>("time_cut", 3.0, config_, m_detector);
 
     // spatial cut, relative (x * spatial_resolution) or absolute:
     spatialCut = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, config_, m_detector);
-
-    config_.setDefault<bool>("use_cluster_centre", false);
     useClusterCentre = config_.get<bool>("use_cluster_centre");
 
     LOG(DEBUG) << "time_cut = " << Units::display(timeCut, {"ms", "us", "ns"});

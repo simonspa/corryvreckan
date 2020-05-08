@@ -24,25 +24,25 @@ int detNum;
 AlignmentTrackChi2::AlignmentTrackChi2(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
     config_.setDefault<size_t>("iterations", 3);
-    nIterations = config_.get<size_t>("iterations");
-
     config_.setDefault<bool>("prune_tracks", false);
-    m_pruneTracks = config_.get<bool>("prune_tracks");
-
     config_.setDefault<bool>("align_position", true);
+    config_.setDefault<bool>("align_orientation", true);
+    config_.setDefault<size_t>("max_associated_clusters", 1);
+    config_.setDefault<double>("max_track_chi2ndof", 10.);
+
+    nIterations = config_.get<size_t>("iterations");
+    m_pruneTracks = config_.get<bool>("prune_tracks");
     m_alignPosition = config_.get<bool>("align_position");
     if(m_alignPosition) {
         LOG(INFO) << "Aligning positions";
     }
-    config_.setDefault<bool>("align_orientation", true);
+
     m_alignOrientation = config_.get<bool>("align_orientation");
     if(m_alignOrientation) {
         LOG(INFO) << "Aligning orientations";
     }
-    config_.setDefault<size_t>("max_associated_clusters", 1);
-    m_maxAssocClusters = config_.get<size_t>("max_associated_clusters");
 
-    config_.setDefault<double>("max_track_chi2ndof", 10.);
+    m_maxAssocClusters = config_.get<size_t>("max_associated_clusters");
     m_maxTrackChi2 = config_.get<double>("max_track_chi2ndof");
     LOG(INFO) << "Aligning telescope";
 }

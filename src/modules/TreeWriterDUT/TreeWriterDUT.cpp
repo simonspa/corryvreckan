@@ -20,9 +20,9 @@ TreeWriterDUT::TreeWriterDUT(Configuration& config, std::shared_ptr<Detector> de
     : Module(config, detector), m_detector(detector) {
 
     config_.setDefault<std::string>("file_name", "outputTuples.root");
-    m_fileName = config_.get<std::string>("file_name");
-
     config_.setDefault<std::string>("tree_name", "tree");
+
+    m_fileName = config_.get<std::string>("file_name");
     m_treeName = config_.get<std::string>("tree_name");
 }
 

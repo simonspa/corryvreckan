@@ -20,22 +20,18 @@ OnlineMonitor::OnlineMonitor(Configuration& config, std::vector<std::shared_ptr<
     : Module(config, std::move(detectors)) {
 
     config_.setDefault<std::string>("canvas_title", "Corryvreckan Testbeam Monitor");
-    canvasTitle = config_.get<std::string>("canvas_title");
-
     config_.setDefault<int>("update", 200);
-    updateNumber = config_.get<int>("update");
-
     config_.setDefault<bool>("ignore_aux", true);
-    ignoreAux = config_.get<bool>("ignore_aux");
-
     config_.setDefault<std::string>("clustering_module", "Clustering4D");
-    clusteringModule = config_.get<std::string>("clustering_module");
-
     config_.setDefault<std::string>("tracking_module", "Tracking4D");
+
+    canvasTitle = config_.get<std::string>("canvas_title");
+    updateNumber = config_.get<int>("update");
+    ignoreAux = config_.get<bool>("ignore_aux");
+    clusteringModule = config_.get<std::string>("clustering_module");
     trackingModule = config_.get<std::string>("tracking_module");
 
     // Set up overview plots:
-    // config_.setDefaultMatrix...
     canvas_overview = config_.getMatrix<std::string>("overview",
                                                      {{trackingModule + "/trackChi2"},
                                                       {clusteringModule + "/%REFERENCE%/clusterCharge"},

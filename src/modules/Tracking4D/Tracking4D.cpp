@@ -25,19 +25,22 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
     config_.setAlias("time_cut_abs", "timing_cut", true);
     config_.setAlias("spatial_cut_abs", "spatial_cut", true);
 
+    config_.setDefault<size_t>("min_hits_on_track", 6);
+    config_.setDefault<bool>("exclude_dut", true);
+    config_.setDefaultArray<std::string>("require_detectors", {});
+    config_.setDefault<std::string>("timestamp_from", "");
+    config_.setDefault<std::string>("track_model", "straightline");
+    config_.setDefault<double>("momentum", Units::get<double>(5, "GeV"));
+    config_.setDefault<double>("volume_radiation_length", Units::get<double>(304.2, "m"));
+    config_.setDefault<bool>("volume_scattering", false);
+    config_.setDefault<bool>("reject_by_roi", false);
+
     // timing cut, relative (x * time_resolution) or absolute:
     time_cuts_ = corryvreckan::calculate_cut<double>("time_cut", 3.0, config_, get_detectors());
-
-    config_.setDefault<size_t>("min_hits_on_track", 6);
     min_hits_on_track_ = config_.get<size_t>("min_hits_on_track");
-
-    config_.setDefault<bool>("exclude_dut", true);
     exclude_DUT_ = config_.get<bool>("exclude_dut");
 
-    config_.setDefaultArray<std::string>("require_detectors", {});
     require_detectors_ = config_.getArray<std::string>("require_detectors");
-
-    config_.setDefault<std::string>("timestamp_from", "");
     timestamp_from_ = config_.get<std::string>("timestamp_from");
     if(!timestamp_from_.empty() &&
        std::find(require_detectors_.begin(), require_detectors_.end(), timestamp_from_) == require_detectors_.end()) {
@@ -46,20 +49,12 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
         require_detectors_.push_back(timestamp_from_);
     }
 
-    config_.setDefault<std::string>("track_model", "straightline");
     track_model_ = config_.get<std::string>("track_model");
-
-    config_.setDefault<double>("momentum", Units::get<double>(5, "GeV"));
     momentum_ = config_.get<double>("momentum");
-
-    config_.setDefault<double>("volume_radiation_length", Units::get<double>(304.2, "m"));
     volume_radiation_length_ = config_.get<double>("volume_radiation_length");
-
-    config_.setDefault<bool>("volume_scattering", false);
     use_volume_scatterer_ = config_.get<bool>("volume_scattering");
-
-    config_.setDefault<bool>("reject_by_roi", false);
     reject_by_ROI_ = config_.get<bool>("reject_by_roi");
+
     // print a warning if volumeScatterer are used as this causes fit failures
     // that are still not understood
     if(use_volume_scatterer_) {

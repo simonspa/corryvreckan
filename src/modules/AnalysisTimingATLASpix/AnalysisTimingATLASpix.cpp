@@ -25,6 +25,17 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration& config, std::share
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
     config_.setAlias("time_cut_abs", "timing_cut", true);
 
+    config_.setDefault<double>("chi2ndof_cut", 3.);
+    config_.setDefault<double>("time_cut_frameedge", static_cast<double>(Units::convert(20, "ns")));
+    config_.setDefault<int>("high_tot_cut", 40);
+    config_.setDefault<int>("low_tot_cut", 10);
+    config_.setDefault<double>("timing_tail_cut", static_cast<double>(Units::convert(20, "ns")));
+    config_.setDefault<bool>("calc_corrections", false);
+    config_.setDefault<int>("tot_bin_example", 3);
+    config_.setDefault<XYVector>(
+        "inpixel_bin_size",
+        {static_cast<double>(Units::convert(1.0, "um")), static_cast<double>(Units::convert(1.0, "um"))});
+
     using namespace ROOT::Math;
     m_detector = detector;
     if(config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
@@ -35,10 +46,8 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration& config, std::share
     } else {
         m_timeCut = config_.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
     }
-    config_.setDefault<double>("chi2ndof_cut", 3.);
-    m_chi2ndofCut = config_.get<double>("chi2ndof_cut");
 
-    config_.setDefault<double>("time_cut_frameedge", static_cast<double>(Units::convert(20, "ns")));
+    m_chi2ndofCut = config_.get<double>("chi2ndof_cut");
     m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge");
 
     if(config_.has("cluster_charge_cut")) {
@@ -48,13 +57,8 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration& config, std::share
         m_clusterSizeCut = config_.get<size_t>("cluster_size_cut");
     }
 
-    config_.setDefault<int>("high_tot_cut", 40);
     m_highTotCut = config_.get<int>("high_tot_cut");
-
-    config_.setDefault<int>("low_tot_cut", 10);
     m_lowTotCut = config_.get<int>("low_tot_cut");
-
-    config_.setDefault<double>("timing_tail_cut", static_cast<double>(Units::convert(20, "ns")));
     m_timingTailCut = config_.get<double>("timing_tail_cut");
 
     if(config_.has("correction_file_row")) {
@@ -72,15 +76,8 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration& config, std::share
         m_pointwise_correction_timewalk = false;
     }
 
-    config_.setDefault<bool>("calc_corrections", false);
     m_calcCorrections = config_.get<bool>("calc_corrections");
-
-    config_.setDefault<int>("tot_bin_example", 3);
     m_totBinExample = config_.get<int>("tot_bin_example");
-
-    config_.setDefault<XYVector>(
-        "inpixel_bin_size",
-        {static_cast<double>(Units::convert(1.0, "um")), static_cast<double>(Units::convert(1.0, "um"))});
     m_inpixelBinSize = config_.get<XYVector>("inpixel_bin_size");
 
     total_tracks_uncut = 0;

@@ -18,6 +18,13 @@ Clustering4D::Clustering4D(Configuration& config, std::shared_ptr<Detector> dete
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
     config_.setAlias("time_cut_abs", "timing_cut", true);
+    config_.setAlias("neighbor_radius_row", "neighbour_radius_row", true);
+    config_.setAlias("neighbor_radius_col", "neighbour_radius_col", true);
+
+    config_.setDefault<int>("neighbor_radius_row", 1);
+    config_.setDefault<int>("neighbor_radius_col", 1);
+    config_.setDefault<bool>("charge_weighting", true);
+    config_.setDefault<bool>("reject_by_roi", false);
 
     if(config_.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(
@@ -28,19 +35,9 @@ Clustering4D::Clustering4D(Configuration& config, std::shared_ptr<Detector> dete
         time_cut_ = config_.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
     }
 
-    config_.setAlias("neighbor_radius_row", "neighbour_radius_row", true);
-    config_.setAlias("neighbor_radius_col", "neighbour_radius_col", true);
-
-    config_.setDefault<int>("neighbor_radius_row", 1);
     neighbor_radius_row_ = config_.get<int>("neighbor_radius_row");
-
-    config_.setDefault<int>("neighbor_radius_col", 1);
     neighbor_radius_col_ = config_.get<int>("neighbor_radius_col");
-
-    config_.setDefault<bool>("charge_weighting", true);
     charge_weighting_ = config_.get<bool>("charge_weighting");
-
-    config_.setDefault<bool>("reject_by_roi", false);
     reject_by_ROI_ = config_.get<bool>("reject_by_roi");
 }
 

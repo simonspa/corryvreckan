@@ -17,9 +17,9 @@ EtaCorrection::EtaCorrection(Configuration& config, std::shared_ptr<Detector> de
     : Module(config, detector), m_detector(detector) {
 
     config_.setDefault<std::string>("eta_formula_x", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
-    m_etaFormulaX = config_.get<std::string>("eta_formula_x");
-
     config_.setDefault<std::string>("eta_formula_y", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
+
+    m_etaFormulaX = config_.get<std::string>("eta_formula_x");
     m_etaFormulaY = config_.get<std::string>("eta_formula_y");
 }
 

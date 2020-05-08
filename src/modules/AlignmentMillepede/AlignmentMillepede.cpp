@@ -26,28 +26,21 @@ AlignmentMillepede::AlignmentMillepede(Configuration& config, std::vector<std::s
     : Module(config, std::move(detectors)) {
 
     config_.setDefault<bool>("exclude_dut", false);
-    m_excludeDUT = config_.get<bool>("exclude_dut", false);
-
     // config_.setDefaultArray<bool>("dofs", {true,true,false,true,true,true});
-    m_dofs = config_.getArray<bool>("dofs");
-
     config_.setDefault<size_t>("iterations", 5);
-    m_nIterations = config_.get<size_t>("iterations");
-
     config_.setDefault<double>("residual_cut", 0.05);
-    m_rescut = config_.get<double>("residual_cut");
-
     config_.setDefault<double>("residual_cut_init", 0.6);
-    m_rescut_init = config_.get<double>("residual_cut_init");
-
     config_.setDefault<int>("number_of_stddev", 0);
-    m_nstdev = config_.get<int>("number_of_stddev");
-
     config_.setDefault<double>("convergence", 0.00001);
-    m_convergence = config_.get<double>("convergence");
-
-    // Use default values for the sigmas, unless specified explicitly.
     config_.setDefaultArray<double>("sigmas", {0.05, 0.05, 0.5, 0.005, 0.005, 0.005});
+
+    m_excludeDUT = config_.get<bool>("exclude_dut");
+    m_dofs = config_.getArray<bool>("dofs");
+    m_nIterations = config_.get<size_t>("iterations");
+    m_rescut = config_.get<double>("residual_cut");
+    m_rescut_init = config_.get<double>("residual_cut_init");
+    m_nstdev = config_.get<int>("number_of_stddev");
+    m_convergence = config_.get<double>("convergence");
     m_sigmas = config_.getArray<double>("sigmas");
 }
 

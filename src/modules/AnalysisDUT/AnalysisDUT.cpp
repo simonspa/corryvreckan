@@ -20,12 +20,11 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
     : Module(config, detector), m_detector(detector) {
 
     config_.setDefault<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
-    m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge");
-
     config_.setDefault<double>("chi2ndof_cut", 3.);
-    chi2ndofCut = config_.get<double>("chi2ndof_cut");
-
     config_.setDefault<bool>("use_closest_cluster", true);
+
+    m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge");
+    chi2ndofCut = config_.get<double>("chi2ndof_cut");
     useClosestCluster = config_.get<bool>("use_closest_cluster");
 }
 

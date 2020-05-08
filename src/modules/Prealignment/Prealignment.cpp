@@ -16,21 +16,19 @@ using namespace std;
 Prealignment::Prealignment(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
-    config_.setDefault<double>("max_correlation_rms", Units::get<double>(6, "mm"));
-    max_correlation_rms = config_.get<double>("max_correlation_rms");
-
-    config_.setDefault<double>("damping_factor", 1.0);
-    damping_factor = config_.get<double>("damping_factor");
-
-    config_.setDefault<std::string>("method", "mean");
-    method = config_.get<std::string>("method");
-    std::transform(method.begin(), method.end(), method.begin(), ::tolower);
-
-    config_.setDefault<int>("fit_range_rel", 500);
-    fit_range_rel = config_.get<int>("fit_range_rel");
-
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
     config_.setAlias("time_cut_abs", "timing_cut", true);
+
+    config_.setDefault<double>("max_correlation_rms", Units::get<double>(6, "mm"));
+    config_.setDefault<double>("damping_factor", 1.0);
+    config_.setDefault<std::string>("method", "mean");
+    config_.setDefault<int>("fit_range_rel", 500);
+
+    max_correlation_rms = config_.get<double>("max_correlation_rms");
+    damping_factor = config_.get<double>("damping_factor");
+    method = config_.get<std::string>("method");
+    std::transform(method.begin(), method.end(), method.begin(), ::tolower);
+    fit_range_rel = config_.get<int>("fit_range_rel");
 
     if(config_.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(
