@@ -20,7 +20,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     config_.setDefault<bool>("get_tag_vectors", false);
     config_.setDefault<bool>("ignore_bore", true);
     config_.setDefault<double>("skip_time", 0.);
-    // config_.setDefaultMatrix<std::string>("adjust_event_times", "");
+    config_.setDefaultMatrix<std::string>("adjust_event_times", {});
     config_.setDefault<int>("buffer_depth", 0);
     config_.setDefault<int>("shift_triggers", 0);
     config_.setDefault<bool>("inclusive", true);
@@ -31,7 +31,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     m_get_tag_vectors = config_.get<bool>("get_tag_vectors");
     m_ignore_bore = config_.get<bool>("ignore_bore");
     m_skip_time = config_.get<double>("skip_time");
-    m_adjust_event_times = config_.getMatrix<std::string>("adjust_event_times", {});
+    m_adjust_event_times = config_.getMatrix<std::string>("adjust_event_times");
     m_buffer_depth = config_.get<int>("buffer_depth");
     m_shift_triggers = config_.get<int>("shift_triggers");
     m_inclusive = config_.get<bool>("inclusive");
