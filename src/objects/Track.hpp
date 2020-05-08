@@ -30,12 +30,13 @@ namespace corryvreckan {
 
         static std::type_index getBaseType() { return typeid(Plane); }
         // access elements
-        double getPosition() const { return z_; }
+        // access elements
+        double getPlanePosition() const { return z_; }
         double getMaterialBudget() const { return x_x0_; }
         bool hasCluster() const { return has_cluster_; }
         std::string getName() const { return name_; }
         unsigned getGblPointPosition() const { return gbl_points_pos_; }
-        Cluster* cluster() const;
+        Cluster* getCluster() const;
         Transform3D getToLocal() const { return to_local_; }
         Transform3D getToGlobal() const { return to_global_; }
 
@@ -53,7 +54,7 @@ namespace corryvreckan {
         void print(std::ostream& os) const override {
             os << "Plane at " << z_ << " with rad. length " << x_x0_ << ", name " << name_ << " and";
             if(has_cluster_)
-                os << "cluster with global pos: " << cluster()->global();
+                os << "cluster with global pos: " << getCluster()->global();
             else
                 os << "no clsuter";
         }
@@ -214,7 +215,7 @@ namespace corryvreckan {
          * @brief Get the number of clusters used for track fit
          * @return Number of clusters in track
          */
-        size_t getNClusters() const { return trackClusters_.size(); }
+        size_t getNClusters() const { return track_clusters_.size(); }
 
         // virtual functions to be implemented by derived classes
 
@@ -281,21 +282,20 @@ namespace corryvreckan {
 
         long unsigned int getNumScatterers() const { return planes_.size(); }
         void setVolumeScatter(double length) { scattering_length_volume_ = length; }
-
         void setLogging(bool on = false) { logging_ = on; }
 
         ROOT::Math::XYPoint getKink(std::string detectorID) const;
 
     protected:
-        std::vector<TRef> trackClusters_;
-        std::vector<TRef> associatedClusters_;
+        std::vector<TRef> track_clusters_;
+        std::vector<TRef> associated_clusters_;
         std::map<std::string, ROOT::Math::XYPoint> residual_;
         std::map<std::string, ROOT::Math::XYPoint> kink_;
         std::map<std::string, ROOT::Math::XYZPoint> corrections_{};
         std::vector<Plane> planes_{};
         bool logging_ = false;
 
-        std::map<std::string, TRef> closestCluster_;
+        std::map<std::string, TRef> closest_cluster_;
         double chi2_;
         double ndof_;
         double chi2ndof_;

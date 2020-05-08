@@ -42,12 +42,12 @@ void GblTrack::fit() {
     local_track_points_.clear();
 
     // Fitting with less than 2 clusters is pointless
-    if(trackClusters_.size() < 2) {
+    if(track_clusters_.size() < 2) {
         throw TrackError(typeid(GblTrack), " attempting to fit a track with less than 2 clusters");
     }
     // store the used clusters in a map for easy access:
     std::map<std::string, Cluster*> clusters;
-    for(auto& c : trackClusters_) {
+    for(auto& c : track_clusters_) {
         auto cluster = dynamic_cast<Cluster*>(c.GetObject());
         clusters[cluster->detectorID()] = cluster;
     }
@@ -62,11 +62,13 @@ void GblTrack::fit() {
         }
     }
     // get the seedcluster for the fit - find the first plane with a cluster to use
-    set_seed_cluster(std::find_if(planes_.begin(), planes_.end(), [](auto plane) { return plane.hasCluster(); })->cluster());
+    set_seed_cluster(
+        std::find_if(planes_.begin(), planes_.end(), [](auto plane) { return plane.hasCluster(); })->getCluster());
 
     // add volume scattering length - for now simply the distance between first and last plane
     if(use_volume_scatter_) {
-        total_material += (planes_.back().getPosition() - planes_.front().getPosition()) / scattering_length_volume_;
+        total_material +=
+            (planes_.back().getPlanePosition() - planes_.front().getPlanePosition()) / scattering_length_volume_;
     }
 
     std::vector<GblPoint> points;
@@ -129,7 +131,7 @@ void GblTrack::fit() {
     };
     auto addMeasurementtoGblPoint = [&localTangent, &localPosTrack, &globalTrackPos, this](GblPoint& point,
                                                                                            std::vector<Plane>::iterator& p) {
-        auto cluster = p->cluster();
+        auto cluster = p->getCluster();
         Vector2d initialResidual;
         initialResidual(0) = cluster->local().x() - localPosTrack[0];
         initialResidual(1) = cluster->local().y() - localPosTrack[1];
@@ -141,14 +143,14 @@ void GblTrack::fit() {
         initital_residual[p->getName()] = ROOT::Math::XYPoint(initialResidual(0), initialResidual(1));
         if(logging_) {
             std::cout << "*********** Plane:  " << p->getName() << " \n Global Res to fit: \t("
-                      << (cluster->global().x() - planes_.begin()->cluster()->global().x()) << ", "
-                      << (cluster->global().y() - planes_.begin()->cluster()->global().y()) << ")\n Local Res to fit: \t("
+                      << (cluster->global().x() - planes_.begin()->getCluster()->global().x()) << ", "
+                      << (cluster->global().y() - planes_.begin()->getCluster()->global().y()) << ")\n Local Res to fit: \t("
                       << (cluster->local().x() - localPosTrack[0]) << ", " << (cluster->local().y() - localPosTrack[1])
                       << ")\n Local  track pos: \t(" << localPosTrack[0] << ", " << localPosTrack[1] << ", "
                       << localPosTrack[2] << ", " << localPosTrack[3] << ")\n global track Pos:\t" << globalTrackPos
                       << "\n local tangent:\t\t(" << localTangent[0] << ", " << localTangent[1] << ", " << localTangent[2]
-                      << ", " << localTangent[3] << ")\n cluster global:\t " << p->cluster()->global()
-                      << " \n cluster local:\t" << p->cluster()->local() << std::endl;
+                      << ", " << localTangent[3] << ")\n cluster global:\t " << p->getCluster()->global()
+                      << " \n cluster local:\t" << p->getCluster()->local() << std::endl;
         }
     };
 
@@ -284,7 +286,7 @@ void GblTrack::fit() {
                 (ROOT::Math::XYZPoint(local_track_points_.at(plane.getName()).x() + corrections_.at(plane.getName()).x(),
                                       local_track_points_.at(plane.getName()).y() + corrections_.at(plane.getName()).y(),
                                       0));
-            ROOT::Math::XYZPoint clusterPos = plane.cluster()->global();
+            ROOT::Math::XYZPoint clusterPos = plane.getCluster()->global();
             residual_[plane.getName()] = ROOT::Math::XYPoint(clusterPos.x() - corPos.x(), clusterPos.y() - corPos.y());
             // m_residual[plane.name()] = ROOT::Math::XYPoint(gblResiduals(0),gblResiduals(1));
             if(logging_) {
@@ -314,7 +316,7 @@ ROOT::Math::XYZPoint GblTrack::getIntercept(double z) const {
     }
 
     for(auto l : planes_) {
-        if(l.getPosition() >= z) {
+        if(l.getPlanePosition() >= z) {
             found = true;
             break;
         }
@@ -385,6 +387,6 @@ ROOT::Math::XYZVector GblTrack::getDirection(std::string detectorID) const {
 }
 
 void GblTrack::print(std::ostream& out) const {
-    out << "GblTrack with nhits = " << trackClusters_.size() << " and nscatterers = " << planes_.size()
+    out << "GblTrack with nhits = " << track_clusters_.size() << " and nscatterers = " << planes_.size()
         << ", chi2 = " << chi2_ << ", ndf = " << ndof_;
 }

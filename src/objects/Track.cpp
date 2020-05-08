@@ -13,7 +13,7 @@
 
 using namespace corryvreckan;
 
-Cluster* Plane::cluster() const {
+Cluster* Plane::getCluster() const {
     if(!cluster_.IsValid() || cluster_.GetObject() == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(Cluster));
     }
@@ -36,7 +36,7 @@ Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp())
         Cluster* cluster = new Cluster(*track_cluster);
         addCluster(cluster);
     }
-    auto associatedClusters = track.associatedClusters_;
+    auto associatedClusters = track.associated_clusters_;
     for(auto& assoc_cluster : associatedClusters) {
         Cluster* cluster = new Cluster(*dynamic_cast<Cluster*>(assoc_cluster.GetObject()));
         addAssociatedCluster(cluster);
@@ -49,15 +49,15 @@ Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp())
 }
 
 void Track::addCluster(const Cluster* cluster) {
-    trackClusters_.push_back(const_cast<Cluster*>(cluster));
+    track_clusters_.push_back(const_cast<Cluster*>(cluster));
 }
 void Track::addAssociatedCluster(const Cluster* cluster) {
-    associatedClusters_.push_back(const_cast<Cluster*>(cluster));
+    associated_clusters_.push_back(const_cast<Cluster*>(cluster));
 }
 
 std::vector<Cluster*> Track::getClusters() const {
     std::vector<Cluster*> clustervec;
-    for(auto& cluster : trackClusters_) {
+    for(auto& cluster : track_clusters_) {
         if(!cluster.IsValid() || cluster.GetObject() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
         }
@@ -70,7 +70,7 @@ std::vector<Cluster*> Track::getClusters() const {
 
 std::vector<Cluster*> Track::getAssociatedClusters(const std::string& detectorID) const {
     std::vector<Cluster*> clustervec;
-    for(auto& cluster : associatedClusters_) {
+    for(auto& cluster : associated_clusters_) {
         // Check if reference is valid:
         if(!cluster.IsValid() || cluster.GetObject() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
@@ -88,7 +88,7 @@ std::vector<Cluster*> Track::getAssociatedClusters(const std::string& detectorID
 }
 
 bool Track::hasClosestCluster(const std::string& detectorID) const {
-    return (closestCluster_.find(detectorID) != closestCluster_.end());
+    return (closest_cluster_.find(detectorID) != closest_cluster_.end());
 }
 
 double Track::getChi2() const {
@@ -116,51 +116,51 @@ void Track::setClosestCluster(const Cluster* cluster) {
     auto id = cluster->getDetectorID();
 
     // Check if this detector has a closest cluster and overwrite it:
-    auto cl = closestCluster_.find(id);
-    if(cl != closestCluster_.end()) {
+    auto cl = closest_cluster_.find(id);
+    if(cl != closest_cluster_.end()) {
         cl->second = const_cast<Cluster*>(cluster);
     } else {
-        closestCluster_.emplace(id, const_cast<Cluster*>(cluster));
+        closest_cluster_.emplace(id, const_cast<Cluster*>(cluster));
     }
 }
 
 Cluster* Track::getClosestCluster(const std::string& id) const {
-    auto cluster_it = closestCluster_.find(id);
+    auto cluster_it = closest_cluster_.find(id);
     auto cluster = cluster_it->second;
-    if(cluster_it != closestCluster_.end() && cluster.IsValid() && cluster.GetObject() != nullptr) {
+    if(cluster_it != closest_cluster_.end() && cluster.IsValid() && cluster.GetObject() != nullptr) {
         return dynamic_cast<Cluster*>(cluster.GetObject());
     }
     throw MissingReferenceException(typeid(*this), typeid(Cluster));
 }
 
 bool Track::isAssociated(Cluster* cluster) const {
-    auto it = find_if(associatedClusters_.begin(), associatedClusters_.end(), [&cluster](TRef cl) {
+    auto it = find_if(associated_clusters_.begin(), associated_clusters_.end(), [&cluster](TRef cl) {
         auto acl = dynamic_cast<Cluster*>(cl.GetObject());
         return acl == cluster;
     });
-    if(it == associatedClusters_.end()) {
+    if(it == associated_clusters_.end()) {
         return false;
     }
     return true;
 }
 
 bool Track::hasDetector(std::string detectorID) const {
-    auto it = std::find_if(trackClusters_.begin(), trackClusters_.end(), [&detectorID](TRef cl) {
+    auto it = find_if(track_clusters_.begin(), track_clusters_.end(), [&detectorID](TRef cl) {
         auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
         return cluster->getDetectorID() == detectorID;
     });
-    if(it == trackClusters_.end()) {
+    if(it == track_clusters_.end()) {
         return false;
     }
     return true;
 }
 
 Cluster* Track::getClusterFromDetector(std::string detectorID) const {
-    auto it = find_if(trackClusters_.begin(), trackClusters_.end(), [&detectorID](TRef cl) {
+    auto it = find_if(track_clusters_.begin(), track_clusters_.end(), [&detectorID](TRef cl) {
         auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
         return cluster->getDetectorID() == detectorID;
     });
-    if(it == trackClusters_.end()) {
+    if(it == track_clusters_.end()) {
         return nullptr;
     }
     return dynamic_cast<Cluster*>(it->GetObject());

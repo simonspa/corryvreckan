@@ -16,7 +16,7 @@
 using namespace corryvreckan;
 
 // Global container declarations
-TrackVector globalTracks;
+TrackVector AlignmentDUTResidualglobalTracks;
 std::shared_ptr<Detector> globalDetector;
 
 AlignmentDUTResidual::AlignmentDUTResidual(Configuration config, std::shared_ptr<Detector> detector)
@@ -140,10 +140,11 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
     // The chi2 value to be returned
     result = 0.;
 
-    LOG(DEBUG) << "Looping over " << globalTracks.size() << " tracks";
+    LOG(DEBUG) << "Looping over " << AlignmentDUTResidualglobalTracks.size() << " tracks";
 
     // Loop over all tracks
-    for(auto& track : globalTracks) {
+
+    for(auto& track : AlignmentDUTResidualglobalTracks) {
         LOG(TRACE) << "track has chi2 " << track->getChi2();
         auto detector = track->getClusters().front()->detectorID();
         LOG(TRACE) << "- track has gradient " << track->getDirection(detector) << " at detector " << detector;
@@ -196,7 +197,7 @@ void AlignmentDUTResidual::finalise() {
     residualFitter->SetFCN(MinimiseResiduals);
 
     // Set the global parameters
-    globalTracks = m_alignmenttracks;
+    AlignmentDUTResidualglobalTracks = m_alignmenttracks;
 
     // Set the printout arguments of the fitter
     Double_t arglist[10];
@@ -210,24 +211,27 @@ void AlignmentDUTResidual::finalise() {
     globalDetector = m_detector;
     auto name = m_detector->getName();
 
-    size_t n_associatedClusters = 0;
+    size_t n_getAssociatedClusters = 0;
     // count associated clusters:
-    for(auto& track : globalTracks) {
+    for(auto& track : AlignmentDUTResidualglobalTracks) {
         auto associatedClusters = track->getAssociatedClusters(name);
         for(auto& associatedCluster : associatedClusters) {
             std::string detectorID = associatedCluster->detectorID();
             if(detectorID != name) {
                 continue;
             }
-            n_associatedClusters++;
+            n_getAssociatedClusters++;
             break;
         }
     }
-    if(n_associatedClusters < globalTracks.size() / 2) {
-        LOG(WARNING) << "Only " << 100 * static_cast<double>(n_associatedClusters) / static_cast<double>(globalTracks.size())
+    if(n_getAssociatedClusters < AlignmentDUTResidualglobalTracks.size() / 2) {
+        LOG(WARNING) << "Only "
+                     << 100 * static_cast<double>(n_getAssociatedClusters) /
+                            static_cast<double>(AlignmentDUTResidualglobalTracks.size())
                      << "% of all tracks have associated clusters on detector " << name;
     } else {
-        LOG(INFO) << 100 * static_cast<double>(n_associatedClusters) / static_cast<double>(globalTracks.size())
+        LOG(INFO) << 100 * static_cast<double>(n_getAssociatedClusters) /
+                         static_cast<double>(AlignmentDUTResidualglobalTracks.size())
                   << "% of all tracks have associated clusters on detector " << name;
     }
 

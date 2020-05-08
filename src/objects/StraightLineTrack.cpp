@@ -41,12 +41,13 @@ ROOT::Math::XYPoint StraightLineTrack::distance(const Cluster* cluster) const {
 void StraightLineTrack::calculateChi2() {
 
     // Get the number of clusters
-    ndof_ = static_cast<double>(trackClusters_.size()) - 2.;
+
+    ndof_ = static_cast<double>(track_clusters_.size()) - 2.;
     chi2_ = 0.;
     chi2ndof_ = 0.;
 
     // Loop over all clusters
-    for(auto& cl : trackClusters_) {
+    for(auto& cl : track_clusters_) {
         auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
         if(cluster == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
@@ -64,7 +65,7 @@ void StraightLineTrack::calculateChi2() {
 }
 
 void StraightLineTrack::calculateResiduals() {
-    for(auto c : trackClusters_) {
+    for(auto c : track_clusters_) {
         auto cluster = dynamic_cast<Cluster*>(c.GetObject());
         residual_[cluster->detectorID()] = cluster->global() - getIntercept(cluster->global().z());
     }
@@ -92,7 +93,7 @@ void StraightLineTrack::fit() {
     Eigen::Vector4d vec(Eigen::Vector4d::Zero());
 
     // Loop over all clusters and fill the matrices
-    for(auto& cl : trackClusters_) {
+    for(auto& cl : track_clusters_) {
         auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
         if(cluster == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
