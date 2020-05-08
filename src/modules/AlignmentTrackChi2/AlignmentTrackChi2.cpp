@@ -18,7 +18,7 @@ using namespace std;
 
 // Global container declarations
 TrackVector AlignmentTrackChi2globalTracks;
-std::shared_ptr<Detector> globalDetector;
+std::shared_ptr<Detector> AlignmentTrackChi2globalDetector;
 int detNum;
 
 AlignmentTrackChi2::AlignmentTrackChi2(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
@@ -76,11 +76,11 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
 void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, Double_t* par, Int_t) {
 
     // Pick up new alignment conditions
-    globalDetector->displacement(XYZPoint(par[detNum * 6 + 0], par[detNum * 6 + 1], par[detNum * 6 + 2]));
-    globalDetector->rotation(XYZVector(par[detNum * 6 + 3], par[detNum * 6 + 4], par[detNum * 6 + 5]));
+    AlignmentTrackChi2globalDetector->displacement(XYZPoint(par[detNum * 6 + 0], par[detNum * 6 + 1], par[detNum * 6 + 2]));
+    AlignmentTrackChi2globalDetector->rotation(XYZVector(par[detNum * 6 + 3], par[detNum * 6 + 4], par[detNum * 6 + 5]));
 
     // Apply new alignment conditions
-    globalDetector->update();
+    AlignmentTrackChi2globalDetector->update();
 
     // The chi2 value to be returned
     result = 0.;
@@ -92,13 +92,13 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
         // Find the cluster that needs to have its position recalculated
         for(size_t iTrackCluster = 0; iTrackCluster < trackClusters.size(); iTrackCluster++) {
             Cluster* trackCluster = trackClusters[iTrackCluster];
-            if(globalDetector->getName() != trackCluster->detectorID()) {
+            if(AlignmentTrackChi2globalDetector->getName() != trackCluster->detectorID()) {
                 continue;
             }
 
             // Recalculate the global position from the local
             auto positionLocal = trackCluster->local();
-            auto positionGlobal = globalDetector->localToGlobal(positionLocal);
+            auto positionGlobal = AlignmentTrackChi2globalDetector->localToGlobal(positionLocal);
             trackCluster->setClusterCentre(positionGlobal);
         }
 
@@ -159,7 +159,7 @@ void AlignmentTrackChi2::finalise() {
             }
 
             // Say that this is the detector we align
-            globalDetector = detector;
+            AlignmentTrackChi2globalDetector = detector;
 
             detNum = det;
             // Add the parameters to the fitter (z displacement not allowed to move!)
@@ -296,4 +296,5 @@ void AlignmentTrackChi2::finalise() {
 
     // Clean up local track storage
     AlignmentTrackChi2globalTracks.clear();
+    AlignmentTrackChi2globalDetector.reset();
 }

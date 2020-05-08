@@ -17,7 +17,7 @@ using namespace corryvreckan;
 
 // Global container declarations
 TrackVector AlignmentDUTResidualglobalTracks;
-std::shared_ptr<Detector> globalDetector;
+std::shared_ptr<Detector> AlignmentDUTResidualglobalDetector;
 
 AlignmentDUTResidual::AlignmentDUTResidual(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
@@ -130,12 +130,12 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
 void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result, Double_t* par, Int_t) {
 
     // Pick up new alignment conditions
-    globalDetector->displacement(XYZPoint(par[0], par[1], par[2]));
-    globalDetector->rotation(XYZVector(par[3], par[4], par[5]));
+    AlignmentDUTResidualglobalDetector->displacement(XYZPoint(par[0], par[1], par[2]));
+    AlignmentDUTResidualglobalDetector->rotation(XYZVector(par[3], par[4], par[5]));
 
     // Apply new alignment conditions
-    globalDetector->update();
-    LOG(DEBUG) << "Updated parameters for " << globalDetector->getName();
+    AlignmentDUTResidualglobalDetector->update();
+    LOG(DEBUG) << "Updated parameters for " << AlignmentDUTResidualglobalDetector->getName();
 
     // The chi2 value to be returned
     result = 0.;
@@ -149,20 +149,20 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
         LOG(TRACE) << "- track has gradient " << track->getDirection(detector) << " at detector " << detector;
 
         // Find the cluster that needs to have its position recalculated
-        for(auto& associatedCluster : track->getAssociatedClusters(globalDetector->getName())) {
-            if(associatedCluster->detectorID() != globalDetector->getName()) {
+        for(auto& associatedCluster : track->getAssociatedClusters(AlignmentDUTResidualglobalDetector->getName())) {
+            if(associatedCluster->detectorID() != AlignmentDUTResidualglobalDetector->getName()) {
                 continue;
             }
 
             // Get the track intercept with the detector
             auto position = associatedCluster->local();
-            auto trackIntercept = globalDetector->getIntercept(track.get());
-            auto intercept = globalDetector->globalToLocal(trackIntercept);
+            auto trackIntercept = AlignmentDUTResidualglobalDetector->getIntercept(track.get());
+            auto intercept = AlignmentDUTResidualglobalDetector->globalToLocal(trackIntercept);
 
             /*
             // Recalculate the global position from the local
             auto positionLocal = associatedCluster->local();
-            auto position = globalDetector->localToGlobal(positionLocal);
+            auto position = AlignmentDUTResidualglobalDetector->localToGlobal(positionLocal);
 
             // Get the track intercept with the detector
             ROOT::Math::XYZPoint intercept = track->intercept(position.Z());
@@ -207,7 +207,7 @@ void AlignmentDUTResidual::finalise() {
     arglist[0] = 1000;  // number of function calls
     arglist[1] = 0.001; // tolerance
 
-    globalDetector = m_detector;
+    AlignmentDUTResidualglobalDetector = m_detector;
     auto name = m_detector->getName();
 
     size_t n_getAssociatedClusters = 0;
@@ -285,4 +285,5 @@ void AlignmentDUTResidual::finalise() {
 
     // Clean up local track storage
     AlignmentDUTResidualglobalTracks.clear();
+    AlignmentDUTResidualglobalDetector.reset();
 }
