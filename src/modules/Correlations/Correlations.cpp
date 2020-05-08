@@ -20,7 +20,8 @@ Correlations::Correlations(Configuration& config, std::shared_ptr<Detector> dete
     config_.setAlias("time_cut_abs", "timing_cut", true);
     config_.setAlias("do_time_cut", "do_timing_cut", true);
 
-    do_time_cut_ = config_.get<bool>("do_time_cut", false);
+    config_.setDefault<bool>("do_time_cut", false);
+    do_time_cut_ = config_.get<bool>("do_time_cut");
     if(config_.count({"time_cut_rel", "time_cut_abs"}) > 1) {
         throw InvalidCombinationError(
             config_, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
@@ -30,7 +31,8 @@ Correlations::Correlations(Configuration& config, std::shared_ptr<Detector> dete
         timeCut = config_.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
     }
 
-    m_corr_vs_time = config_.get<bool>("correlation_vs_time", false);
+    config_.setDefault<bool>("correlation_vs_time", false);
+    m_corr_vs_time = config_.get<bool>("correlation_vs_time");
 }
 
 void Correlations::initialise() {
