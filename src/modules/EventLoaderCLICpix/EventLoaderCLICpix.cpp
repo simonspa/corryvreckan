@@ -19,7 +19,7 @@ EventLoaderCLICpix::EventLoaderCLICpix(Configuration config, std::shared_ptr<Det
     m_filename = "";
 }
 
-void EventLoaderCLICpix::initialise() {
+void EventLoaderCLICpix::initialize() {
     // File structure is RunX/CLICpix/RunX.dat
 
     // Take input directory from global parameters
@@ -145,7 +145,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void EventLoaderCLICpix::finalise() {
+void EventLoaderCLICpix::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }

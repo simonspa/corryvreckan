@@ -31,8 +31,8 @@ namespace corryvreckan {
         ~Tracking4D() {}
 
         // Functions
-        void initialise();
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        void initialize() override;
+        StatusCode run(std::shared_ptr<Clipboard> clipboard) override;
 
     private:
         // Histograms

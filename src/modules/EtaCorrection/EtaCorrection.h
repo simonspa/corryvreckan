@@ -34,9 +34,8 @@ namespace corryvreckan {
         ~EtaCorrection() {}
 
         // Functions
-        void initialise();
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        void finalise(){};
+        void initialize() override;
+        StatusCode run(std::shared_ptr<Clipboard> clipboard) override;
 
     private:
         void applyEta(Cluster* cluster);

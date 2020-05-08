@@ -38,7 +38,7 @@ Prealignment::Prealignment(Configuration config, std::shared_ptr<Detector> detec
     LOG(DEBUG) << "Setting damping_factor to : " << damping_factor;
 }
 
-void Prealignment::initialise() {
+void Prealignment::initialize() {
 
     // get the reference detector:
     std::shared_ptr<Detector> reference = get_reference();
@@ -111,7 +111,7 @@ StatusCode Prealignment::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void Prealignment::finalise() {
+void Prealignment::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     double rmsX = correlationX->GetRMS();
     double rmsY = correlationY->GetRMS();

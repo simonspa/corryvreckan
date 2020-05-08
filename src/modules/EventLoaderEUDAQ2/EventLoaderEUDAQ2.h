@@ -50,17 +50,17 @@ namespace corryvreckan {
         /**
          * @brief [Initialise this module]
          */
-        void initialise();
+        void initialize() override;
 
         /**
          * @brief [Run the function of this module]
          */
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        StatusCode run(std::shared_ptr<Clipboard> clipboard) override;
 
         /**
          * @brief [Finalise this module]
          */
-        void finalise();
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
         /**

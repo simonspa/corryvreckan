@@ -27,7 +27,7 @@ MaskCreator::MaskCreator(Configuration config, std::shared_ptr<Detector> detecto
     m_rateMax = m_config.get<double>("rate_max", 1.);
 }
 
-void MaskCreator::initialise() {
+void MaskCreator::initialize() {
 
     // adjust per-axis bandwith for pixel pitch along each axis such that the
     // covered area is approximately circular in metric coordinates.
@@ -116,7 +116,7 @@ StatusCode MaskCreator::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void MaskCreator::finalise() {
+void MaskCreator::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     if(m_method == "localdensity") {
         LOG(INFO) << "Using local density estimator";

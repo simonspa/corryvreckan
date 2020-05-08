@@ -33,7 +33,7 @@ Correlations::Correlations(Configuration config, std::shared_ptr<Detector> detec
     m_corr_vs_time = m_config.get<bool>("correlation_vs_time", false);
 }
 
-void Correlations::initialise() {
+void Correlations::initialize() {
 
     // Do not produce correlations plots for auxiliary devices
     if(m_detector->isAuxiliary()) {

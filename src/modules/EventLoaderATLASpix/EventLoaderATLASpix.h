@@ -38,8 +38,8 @@ namespace corryvreckan {
         ~EventLoaderATLASpix() {}
 
         // Functions
-        void initialise();
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        void initialize() override;
+        StatusCode run(std::shared_ptr<Clipboard> clipboard) override;
 
     private:
         /*

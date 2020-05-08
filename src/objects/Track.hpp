@@ -20,11 +20,11 @@
 #include "Cluster.hpp"
 #include "core/utils/type.h"
 namespace corryvreckan {
+
     using namespace ROOT::Math;
     class Plane : public Object {
     public:
         Plane() : Object(){};
-
         Plane(double z, double x_x0, std::string name, bool has_cluster)
             : Object(), z_(z), x_x0_(x_x0), name_(name), has_cluster_(has_cluster){};
 
@@ -86,16 +86,6 @@ namespace corryvreckan {
          * @return By param trackModel assigned track model to be used
          */
         static std::shared_ptr<Track> Factory(std::string trackModel);
-
-        /**
-         * @brief Track object constructor
-         */
-        Track();
-        /**
-         * @brief Copy a track object, including used/associated clusters
-         * @param track to be copied from
-         */
-        Track(const Track& track);
 
         /**
          * @brief Add a cluster to the tack, which will be used in the fit
@@ -225,12 +215,6 @@ namespace corryvreckan {
         virtual void fit() = 0;
 
         /**
-         * @brief Virtual function to copy a class
-         * @return pointer to copied object
-         */
-        virtual Track* clone() const = 0;
-
-        /**
          * @brief Get the track position for a certain z position
          * @param z positon
          * @return ROOT::Math::XYZPoint at z position
@@ -263,6 +247,13 @@ namespace corryvreckan {
          * @return  2D residual as ROOT::Math::XYPoint
          */
         ROOT::Math::XYPoint getResidual(std::string detectorID) const { return residual_.at(detectorID); }
+
+        /**
+         * @brief Get the kink at a given detector layer. This is ill defined for last and first layer
+         * @param  detectorID Detector ID at which the kink should be evaluated
+         * @return  2D kink at given detector
+         */
+        virtual ROOT::Math::XYPoint getKinkAt(std::string detectorID) const = 0;
 
         /**
          * @brief Get the materialBudget of a detector layer
@@ -300,9 +291,8 @@ namespace corryvreckan {
         double ndof_;
         double chi2ndof_;
         bool isFitted_{};
-        bool use_volume_scatter_{};
-        double momentum_;
-        double scattering_length_volume_;
+        double momentum_{-1};
+
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(Track, 8)
     };

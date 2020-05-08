@@ -21,7 +21,7 @@ Metronome::Metronome(Configuration config, std::vector<std::shared_ptr<Detector>
     m_triggersPerEvent = m_config.get<uint32_t>("triggers", 0);
 }
 
-void Metronome::initialise() {
+void Metronome::initialize() {
 
     // Set initial values for the start and stop time of the first event:
     m_eventStart = m_config.get<double>("skip_time", 0.);

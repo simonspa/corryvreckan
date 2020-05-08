@@ -25,9 +25,9 @@
 #include <TSystem.h>
 #include <iostream>
 
+#include "GuiDisplay.hpp"
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
-#include "objects/GuiDisplay.hpp"
 #include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
 
@@ -42,8 +42,8 @@ namespace corryvreckan {
         ~OnlineMonitor() {}
 
         // Functions
-        void initialise();
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        void initialize() override;
+        StatusCode run(std::shared_ptr<Clipboard> clipboard) override;
 
         // Application to allow display persistancy
         TApplication* app;

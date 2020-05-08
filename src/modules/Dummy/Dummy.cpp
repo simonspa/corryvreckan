@@ -15,7 +15,7 @@ using namespace corryvreckan;
 Dummy::Dummy(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {}
 
-void Dummy::initialise() {
+void Dummy::initialize() {
 
     for(auto& detector : get_detectors()) {
         LOG(DEBUG) << "Initialise for detector " + detector->getName();
@@ -41,7 +41,7 @@ StatusCode Dummy::run(std::shared_ptr<Clipboard>) {
     return StatusCode::Success;
 }
 
-void Dummy::finalise() {
+void Dummy::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }

@@ -34,9 +34,9 @@ namespace corryvreckan {
         ~EtaCalculation() {}
 
         // Functions
-        void initialise();
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        void finalise();
+        void initialize() override;
+        StatusCode run(std::shared_ptr<Clipboard> clipboard) override;
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
         ROOT::Math::XYVector pixelIntercept(Track* tr);

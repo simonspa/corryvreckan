@@ -54,7 +54,7 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, m_config, get_detectors());
 }
 
-void Tracking4D::initialise() {
+void Tracking4D::initialize() {
 
     // Set up histograms
     std::string title = "Track #chi^{2};#chi^{2};events";

@@ -45,7 +45,7 @@ namespace corryvreckan {
         /**
          * @brief Open the ROOT file containing the stored output data
          */
-        void initialise() override;
+        void initialize() override;
 
         /**
          * @brief Move the objects stored for the current event to the clipboard
@@ -55,7 +55,7 @@ namespace corryvreckan {
         /**
          * @brief Output summary and close the ROOT file
          */
-        void finalise() override;
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
         /**

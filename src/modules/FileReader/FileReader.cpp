@@ -100,7 +100,7 @@ template <typename T> static FileReader::ObjectCreatorMap gen_creator_map() {
     return ret_map;
 }
 
-void FileReader::initialise() {
+void FileReader::initialize() {
     // Read include and exclude list
     if(m_config.has("include") && m_config.has("exclude")) {
         throw InvalidCombinationError(
@@ -266,7 +266,7 @@ StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
     }
 }
 
-void FileReader::finalise() {
+void FileReader::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     int branch_count = 0;
     for(auto& tree : trees_) {
         branch_count += tree->GetListOfBranches()->GetEntries();

@@ -7,7 +7,6 @@
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
- *
  */
 
 #include "GblTrack.hpp"
@@ -18,19 +17,12 @@
 #include "GblPoint.h"
 #include "GblTrajectory.h"
 #include "Math/Vector3D.h"
+
 using namespace corryvreckan;
 using namespace gbl;
 using namespace Eigen;
 
 GblTrack::GblTrack() : Track() {}
-
-GblTrack::GblTrack(const GblTrack& track) : Track(track) {
-    if(track.getType() != this->getType())
-        throw TrackModelChanged(typeid(*this), track.getType(), this->getType());
-    for(auto local : track.local_track_points_) {
-        local_track_points_[local.first] = local.second;
-    }
-}
 
 void GblTrack::fit() {
     if(logging_)

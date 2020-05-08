@@ -24,7 +24,7 @@ EventLoaderCLICpix2::EventLoaderCLICpix2(Configuration config, std::shared_ptr<D
     discardZeroToT = m_config.get<bool>("discard_zero_tot", false);
 }
 
-void EventLoaderCLICpix2::initialise() {
+void EventLoaderCLICpix2::initialize() {
 
     // Take input directory from global parameters
     string inputDirectory = m_config.getPath("input_directory");
@@ -326,6 +326,6 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void EventLoaderCLICpix2::finalise() {
+void EventLoaderCLICpix2::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     delete decoder;
 }

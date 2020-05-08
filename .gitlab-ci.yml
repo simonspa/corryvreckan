@@ -140,6 +140,13 @@ tst:tracking:
         - mkdir -p ../testing/data
         - ctest -R test_tracking --output-on-failure -j1
 
+tst:align:
+    extends: .test
+    script:
+        - cd build/
+        - mkdir -p ../testing/data
+        - ctest -R test_align --output-on-failure -j1
+
 tst:io:
     extends: .test
     script:

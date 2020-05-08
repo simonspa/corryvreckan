@@ -20,34 +20,6 @@ Cluster* Plane::getCluster() const {
     return dynamic_cast<Cluster*>(cluster_.GetObject());
 }
 
-Track::Track() : momentum_(-1) {}
-
-Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp()) {
-    isFitted_ = track.isFitted();
-    chi2_ = track.getChi2();
-    ndof_ = track.getNdof();
-    chi2ndof_ = track.getChi2ndof();
-    //    m_planes = track.m_planes;
-    for(auto& p : track.planes_)
-        planes_.push_back(Plane(p));
-    use_volume_scatter_ = track.use_volume_scatter_;
-    auto trackClusters = track.getClusters();
-    for(auto& track_cluster : trackClusters) {
-        Cluster* cluster = new Cluster(*track_cluster);
-        addCluster(cluster);
-    }
-    auto associatedClusters = track.associated_clusters_;
-    for(auto& assoc_cluster : associatedClusters) {
-        Cluster* cluster = new Cluster(*dynamic_cast<Cluster*>(assoc_cluster.GetObject()));
-        addAssociatedCluster(cluster);
-    }
-    scattering_length_volume_ = track.scattering_length_volume_;
-    residual_ = track.residual_;
-    kink_ = track.kink_;
-    momentum_ = track.momentum_;
-    corrections_ = track.corrections_;
-}
-
 void Track::addCluster(const Cluster* cluster) {
     track_clusters_.push_back(const_cast<Cluster*>(cluster));
 }

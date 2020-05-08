@@ -16,7 +16,7 @@ using namespace corryvreckan;
 TextWriter::TextWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {}
 
-void TextWriter::initialise() {
+void TextWriter::initialize() {
 
     for(auto& detector : get_detectors()) {
         LOG(DEBUG) << "Initialise for detector " + detector->getName();
@@ -101,7 +101,7 @@ StatusCode TextWriter::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void TextWriter::finalise() {
+void TextWriter::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }

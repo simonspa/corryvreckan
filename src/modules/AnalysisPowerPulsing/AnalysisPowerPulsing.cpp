@@ -18,7 +18,7 @@ using namespace std;
 AnalysisPowerPulsing::AnalysisPowerPulsing(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {}
 
-void AnalysisPowerPulsing::initialise() {
+void AnalysisPowerPulsing::initialize() {
 
     // int timeN = 1500000;
     // int timeN = 3000000;

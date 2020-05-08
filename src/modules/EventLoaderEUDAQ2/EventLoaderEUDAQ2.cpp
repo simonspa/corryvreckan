@@ -51,7 +51,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     eudaq_config_ = std::make_shared<const eudaq::Configuration>(eu_cfg);
 }
 
-void EventLoaderEUDAQ2::initialise() {
+void EventLoaderEUDAQ2::initialize() {
 
     // Declare histograms
     std::string title = ";EUDAQ event start time[ms];# entries";
@@ -561,7 +561,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void EventLoaderEUDAQ2::finalise() {
+void EventLoaderEUDAQ2::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(INFO) << "Found " << m_hits << " hits in the data.";
 }
