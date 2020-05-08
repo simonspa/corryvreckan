@@ -186,4 +186,10 @@ namespace corryvreckan {
             setArray<T>(key, val);
         }
     }
+
+    template <typename T> void Configuration::setDefaultMatrix(const std::string& key, const Matrix<T>& val) {
+        if(!has(key)) {
+            setMatrix<T>(key, val);
+        }
+    }
 } // namespace corryvreckan
