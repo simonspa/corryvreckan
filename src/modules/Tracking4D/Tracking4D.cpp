@@ -179,7 +179,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
     // register the used detectors:
     auto registerDetector = [](shared_ptr<Track> track, std::shared_ptr<Detector> det) {
-        Plane p(det->localToGlobal(ROOT::Math::XYZPoint(0, 0, 0)).z(), det->materialBudget(), det->getName(), false);
+        Plane p(det->localToGlobal(ROOT::Math::XYZPoint(0, 0, 0)).z(), det->materialBudget(), det->getName());
         p.setToLocal(det->toLocal());
         p.setToGlobal(det->toGlobal());
         track->registerPlane(p);
@@ -401,7 +401,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                     continue;
                 }
 
-                XYPoint kink = track->getKink(det);
+                XYPoint kink = track->getKinkAt(det);
                 kinkX.at(det)->Fill(kink.x());
                 kinkY.at(det)->Fill(kink.y());
             }

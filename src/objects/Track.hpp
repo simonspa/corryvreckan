@@ -274,8 +274,6 @@ namespace corryvreckan {
         virtual void setVolumeScatter(double length) = 0;
         void setLogging(bool on = false) { logging_ = on; }
 
-        ROOT::Math::XYPoint getKink(std::string detectorID) const;
-
     protected:
         std::vector<TRef> track_clusters_;
         std::vector<TRef> associated_clusters_;
