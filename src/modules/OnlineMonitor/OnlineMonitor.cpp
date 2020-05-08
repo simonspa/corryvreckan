@@ -18,14 +18,24 @@ using namespace std;
 
 OnlineMonitor::OnlineMonitor(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
-    canvasTitle = config_.get<std::string>("canvas_title", "Corryvreckan Testbeam Monitor");
-    updateNumber = config_.get<int>("update", 200);
-    ignoreAux = config_.get<bool>("ignore_aux", true);
 
-    clusteringModule = config_.get<std::string>("clustering_module", "Clustering4D");
-    trackingModule = config_.get<std::string>("tracking_module", "Tracking4D");
+    config_.setDefault<std::string>("canvas_title", "Corryvreckan Testbeam Monitor");
+    canvasTitle = config_.get<std::string>("canvas_title");
+
+    config_.setDefault<int>("update", 200);
+    updateNumber = config_.get<int>("update");
+
+    config_.setDefault<bool>("ignore_aux", true);
+    ignoreAux = config_.get<bool>("ignore_aux");
+
+    config_.setDefault<std::string>("clustering_module", "Clustering4D");
+    clusteringModule = config_.get<std::string>("clustering_module");
+
+    config_.setDefault<std::string>("tracking_module", "Tracking4D");
+    trackingModule = config_.get<std::string>("tracking_module");
 
     // Set up overview plots:
+    // config_.setDefaultMatrix...
     canvas_overview = config_.getMatrix<std::string>("overview",
                                                      {{trackingModule + "/trackChi2"},
                                                       {clusteringModule + "/%REFERENCE%/clusterCharge"},
