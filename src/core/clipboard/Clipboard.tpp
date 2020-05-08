@@ -88,7 +88,7 @@ namespace corryvreckan {
         auto element = type->second.insert(std::make_pair(key, std::static_pointer_cast<void>(object_ptr)));
         if(!element.second) {
             if(append) {
-                // Get the pointer to the existingelement vector
+                // Get the pointer to the existing element vector
                 auto existing_elements = std::static_pointer_cast<std::vector<std::shared_ptr<T>>>(element.first->second);
                 // Append new elements to the end
                 existing_elements->insert(existing_elements->end(), objects.begin(), objects.end());

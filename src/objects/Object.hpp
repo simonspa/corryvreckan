@@ -50,7 +50,7 @@ namespace corryvreckan {
 
         /// @{
         /**
-         * @brief Use default copy behaviour
+         * @brief Use default copy behavior
          */
         Object(const Object&) = default;
         Object& operator=(const Object&) = default;
@@ -58,7 +58,7 @@ namespace corryvreckan {
 
         /// @{
         /**
-         * @brief Use default move behaviour
+         * @brief Use default move behavior
          */
         Object(Object&&) = default;
         Object& operator=(Object&&) = default;
