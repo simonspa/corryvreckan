@@ -20,7 +20,8 @@ using namespace std;
 AnalysisTelescope::AnalysisTelescope(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
 
-    chi2ndofCut = config_.get<double>("chi2ndof_cut", 3.);
+    config_.setDefault<double>("chi2ndof_cut", 3.);
+    chi2ndofCut = config_.get<double>("chi2ndof_cut");
 }
 
 void AnalysisTelescope::initialise() {
