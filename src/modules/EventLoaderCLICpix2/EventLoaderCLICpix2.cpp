@@ -21,7 +21,8 @@ using namespace clicpix2_utils;
 EventLoaderCLICpix2::EventLoaderCLICpix2(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
-    discardZeroToT = config_.get<bool>("discard_zero_tot", false);
+    config_.setDefault<bool>("discard_zero_tot", false);
+    discardZeroToT = config_.get<bool>("discard_zero_tot");
 }
 
 void EventLoaderCLICpix2::initialise() {
