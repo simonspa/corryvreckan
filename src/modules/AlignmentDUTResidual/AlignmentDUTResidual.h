@@ -54,6 +54,10 @@ namespace corryvreckan {
         std::shared_ptr<Detector> m_detector;
         int m_discardedtracks{};
 
+        // Global container declarations
+        static TrackVector globalTracks;
+        static std::shared_ptr<Detector> globalDetector;
+
         size_t nIterations;
         bool m_pruneTracks;
         bool m_alignPosition;

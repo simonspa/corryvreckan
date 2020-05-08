@@ -44,6 +44,11 @@ namespace corryvreckan {
         // Member variables
         int m_discardedtracks{};
 
+        // Static members
+        static TrackVector globalTracks;
+        static std::shared_ptr<Detector> globalDetector;
+        static int detNum;
+
         size_t nIterations;
         bool m_pruneTracks;
         bool m_alignPosition;
