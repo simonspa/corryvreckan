@@ -23,8 +23,9 @@ void TextWriter::initialise() {
     }
 
     // Create output file
+    config_.setDefault<std::string>("file_name", "data");
     output_file_name_ =
-        createOutputFile(corryvreckan::add_file_extension(config_.get<std::string>("file_name", "data"), "txt"), true);
+        createOutputFile(corryvreckan::add_file_extension(config_.get<std::string>("file_name"), "txt"), true);
     output_file_ = std::make_unique<std::ofstream>(output_file_name_);
 
     *output_file_ << "# Corryvreckan ASCII data" << std::endl << std::endl;
