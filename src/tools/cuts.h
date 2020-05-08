@@ -52,7 +52,7 @@ namespace corryvreckan {
     template <typename T>
     static T calculate_cut(const std::string& name,
                            double rel_default,
-                           const Configuration& config,
+                           Configuration& config,
                            const std::shared_ptr<Detector>& detector) {
 
         std::string absolute = name + "_abs";
@@ -65,6 +65,7 @@ namespace corryvreckan {
             return config.get<T>(absolute);
         } else {
             try {
+                config.setDefault(relative, rel_default);
                 return get_resolution<T>(name, detector) * config.get<double>(relative, rel_default);
             } catch(ConfigurationError&) {
                 throw InvalidValueError(config, relative, "key doesn't match requested resolution type");
@@ -84,7 +85,7 @@ namespace corryvreckan {
     template <typename T>
     static std::map<std::shared_ptr<Detector>, T> calculate_cut(const std::string& name,
                                                                 double rel_default,
-                                                                const Configuration& config,
+                                                                Configuration& config,
                                                                 const std::vector<std::shared_ptr<Detector>>& detectors) {
         std::map<std::shared_ptr<Detector>, T> cut_map;
         for(const auto& detector : detectors) {
