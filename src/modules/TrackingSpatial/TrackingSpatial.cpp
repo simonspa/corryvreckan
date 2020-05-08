@@ -29,10 +29,17 @@ reconstruction with a mostly colinear beam.
 TrackingSpatial::TrackingSpatial(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
 
-    minHitsOnTrack = config_.get<size_t>("min_hits_on_track", 6);
-    excludeDUT = config_.get<bool>("exclude_dut", true);
-    trackModel = config_.get<std::string>("track_model", "straightline");
-    rejectByROI = config_.get<bool>("reject_by_roi", false);
+    config_.setDefault<size_t>("min_hits_on_track", 6);
+    minHitsOnTrack = config_.get<size_t>("min_hits_on_track");
+
+    config_.setDefault<bool>("exclude_dut", true);
+    excludeDUT = config_.get<bool>("exclude_dut");
+
+    config_.setDefault<std::string>("track_model", "straightline");
+    trackModel = config_.get<std::string>("track_model");
+
+    config_.setDefault<bool>("reject_by_roi", false);
+    rejectByROI = config_.get<bool>("reject_by_roi");
 
     // Backwards compatibilty: also allow spatial_cut to be used for spatial_cut_abs
     config_.setAlias("spatial_cut_abs", "spatial_cut", true);
