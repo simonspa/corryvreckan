@@ -35,8 +35,11 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration& config, std::share
     } else {
         m_timeCut = config_.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
     }
-    m_chi2ndofCut = config_.get<double>("chi2ndof_cut", 3.);
-    m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge", static_cast<double>(Units::convert(20, "ns")));
+    config_.setDefault<double>("chi2ndof_cut", 3.);
+    m_chi2ndofCut = config_.get<double>("chi2ndof_cut");
+
+    config_.setDefault<double>("time_cut_frameedge", static_cast<double>(Units::convert(20, "ns")));
+    m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge");
 
     if(config_.has("cluster_charge_cut")) {
         m_clusterChargeCut = config_.get<double>("cluster_charge_cut");
@@ -44,9 +47,15 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration& config, std::share
     if(config_.has("cluster_size_cut")) {
         m_clusterSizeCut = config_.get<size_t>("cluster_size_cut");
     }
-    m_highTotCut = config_.get<int>("high_tot_cut", 40);
-    m_lowTotCut = config_.get<int>("low_tot_cut", 10);
-    m_timingTailCut = config_.get<double>("timing_tail_cut", static_cast<double>(Units::convert(20, "ns")));
+
+    config_.setDefault<int>("high_tot_cut", 40);
+    m_highTotCut = config_.get<int>("high_tot_cut");
+
+    config_.setDefault<int>("low_tot_cut", 10);
+    m_lowTotCut = config_.get<int>("low_tot_cut");
+
+    config_.setDefault<double>("timing_tail_cut", static_cast<double>(Units::convert(20, "ns")));
+    m_timingTailCut = config_.get<double>("timing_tail_cut");
 
     if(config_.has("correction_file_row")) {
         m_correctionFile_row = config_.get<std::string>("correction_file_row");
@@ -63,12 +72,16 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration& config, std::share
         m_pointwise_correction_timewalk = false;
     }
 
-    m_calcCorrections = config_.get<bool>("calc_corrections", false);
-    m_totBinExample = config_.get<int>("tot_bin_example", 3);
+    config_.setDefault<bool>("calc_corrections", false);
+    m_calcCorrections = config_.get<bool>("calc_corrections");
 
-    m_inpixelBinSize = config_.get<XYVector>(
+    config_.setDefault<int>("tot_bin_example", 3);
+    m_totBinExample = config_.get<int>("tot_bin_example");
+
+    config_.setDefault<XYVector>(
         "inpixel_bin_size",
         {static_cast<double>(Units::convert(1.0, "um")), static_cast<double>(Units::convert(1.0, "um"))});
+    m_inpixelBinSize = config_.get<XYVector>("inpixel_bin_size");
 
     total_tracks_uncut = 0;
     tracks_afterChi2Cut = 0;
