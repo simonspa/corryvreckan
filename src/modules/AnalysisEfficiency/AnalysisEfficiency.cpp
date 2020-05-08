@@ -20,9 +20,14 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration& config, std::shared_ptr<De
     : Module(config, detector) {
     m_detector = detector;
 
-    m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
-    m_chi2ndofCut = config_.get<double>("chi2ndof_cut", 3.);
-    m_inpixelBinSize = config_.get<double>("inpixel_bin_size", Units::get<double>(1.0, "um"));
+    config_.setDefault<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
+    m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge");
+
+    config_.setDefault<double>("chi2ndof_cut", 3.);
+    m_chi2ndofCut = config_.get<double>("chi2ndof_cut");
+
+    config_.setDefault<double>("inpixel_bin_size", Units::get<double>(1.0, "um"));
+    m_inpixelBinSize = config_.get<double>("inpixel_bin_size");
 }
 
 void AnalysisEfficiency::initialise() {
