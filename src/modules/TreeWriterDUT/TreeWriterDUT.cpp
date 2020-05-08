@@ -19,8 +19,11 @@ using namespace std;
 TreeWriterDUT::TreeWriterDUT(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
-    m_fileName = config_.get<std::string>("file_name", "outputTuples.root");
-    m_treeName = config_.get<std::string>("tree_name", "tree");
+    config_.setDefault<std::string>("file_name", "outputTuples.root");
+    m_fileName = config_.get<std::string>("file_name");
+
+    config_.setDefault<std::string>("tree_name", "tree");
+    m_treeName = config_.get<std::string>("tree_name");
 }
 
 /*
