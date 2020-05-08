@@ -272,7 +272,7 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint getCorrection(std::string detectorID) const;
 
         long unsigned int getNumScatterers() const { return planes_.size(); }
-        void setVolumeScatter(double length) { scattering_length_volume_ = length; }
+        virtual void setVolumeScatter(double length) = 0;
         void setLogging(bool on = false) { logging_ = on; }
 
         ROOT::Math::XYPoint getKink(std::string detectorID) const;

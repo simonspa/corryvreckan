@@ -29,6 +29,10 @@ ROOT::Math::XYPoint StraightLineTrack::distance(const Cluster* cluster) const {
     return ROOT::Math::XYPoint(dx, dy);
 }
 
+ROOT::Math::XYPoint StraightLineTrack::getKinkAt(std::string) const {
+    return ROOT::Math::XYPoint(0, 0);
+}
+
 void StraightLineTrack::calculateChi2() {
 
     // Get the number of clusters

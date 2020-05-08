@@ -22,7 +22,18 @@ using namespace corryvreckan;
 using namespace gbl;
 using namespace Eigen;
 
-GblTrack::GblTrack() : Track() {}
+ROOT::Math::XYPoint GblTrack::getKinkAt(std::string detectorID) const {
+    if(kink_.count(detectorID) == 1) {
+        return kink_.at(detectorID);
+    } else {
+        return ROOT::Math::XYPoint(0, 0);
+    }
+}
+
+void GblTrack::setVolumeScatter(double length) {
+    scattering_length_volume_ = length;
+    use_volume_scatter_ = true;
+}
 
 void GblTrack::fit() {
     if(logging_)

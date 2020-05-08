@@ -23,9 +23,6 @@ namespace corryvreckan {
     class GblTrack : public Track {
 
     public:
-        // Constructors and destructors
-        GblTrack();
-
         void print(std::ostream& out) const override;
 
         /**
@@ -53,6 +50,15 @@ namespace corryvreckan {
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
         ROOT::Math::XYZVector getDirection(std::string detectorID) const override;
+
+        /**
+         * @brief Return kink of track at given detector
+         * @param  detectorID Detector ID at which the kink should be evaluated
+         * @return            Kink at given detector
+         */
+        ROOT::Math::XYPoint getKinkAt(std::string detectorID) const override;
+
+        void setVolumeScatter(double length) override;
 
     private:
         /**
