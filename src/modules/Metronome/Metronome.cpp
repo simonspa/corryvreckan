@@ -17,8 +17,11 @@ using namespace std;
 Metronome::Metronome(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)), m_triggers(0) {
 
-    m_eventLength = config_.get<double>("event_length", Units::get<double>(10, "us"));
-    m_triggersPerEvent = config_.get<uint32_t>("triggers", 0);
+    config_.setDefault<double>("event_length", Units::get<double>(10, "us"));
+    m_eventLength = config_.get<double>("event_length");
+
+    config_.setDefault<uint32_t>("triggers", 0);
+    m_triggersPerEvent = config_.get<uint32_t>("triggers");
 }
 
 void Metronome::initialise() {
