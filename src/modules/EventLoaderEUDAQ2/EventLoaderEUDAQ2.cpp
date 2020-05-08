@@ -17,14 +17,30 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     : Module(config, detector), m_detector(detector) {
 
     m_filename = config_.getPath("file_name", true);
-    m_get_time_residuals = config_.get<bool>("get_time_residuals", false);
-    m_get_tag_vectors = config_.get<bool>("get_tag_vectors", false);
-    m_ignore_bore = config_.get<bool>("ignore_bore", true);
-    m_skip_time = config_.get<double>("skip_time", 0.);
+
+    config_.setDefault<bool>("get_time_residuals", false);
+    m_get_time_residuals = config_.get<bool>("get_time_residuals");
+
+    config_.setDefault<bool>("get_tag_vectors", false);
+    m_get_tag_vectors = config_.get<bool>("get_tag_vectors");
+
+    config_.setDefault<bool>("ignore_bore", true);
+    m_ignore_bore = config_.get<bool>("ignore_bore");
+
+    config_.setDefault<double>("skip_time", 0.);
+    m_skip_time = config_.get<double>("skip_time");
+
+    // config_.setDefaultMatrix<std::string>("adjust_event_times", "");
     m_adjust_event_times = config_.getMatrix<std::string>("adjust_event_times", {});
-    m_buffer_depth = config_.get<int>("buffer_depth", 0);
-    m_shift_triggers = config_.get<int>("shift_triggers", 0);
-    m_inclusive = config_.get("inclusive", true);
+
+    config_.setDefault<int>("buffer_depth", 0);
+    m_buffer_depth = config_.get<int>("buffer_depth");
+
+    config_.setDefault<int>("shift_triggers", 0);
+    m_shift_triggers = config_.get<int>("shift_triggers");
+
+    config_.setDefault<bool>("inclusive", true);
+    m_inclusive = config_.get<bool>("inclusive");
 
     // Prepare EUDAQ2 config object
     eudaq::Configuration cfg;
