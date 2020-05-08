@@ -145,7 +145,7 @@ tst:align:
     script:
         - cd build/
         - mkdir -p ../testing/data
-        - ctest -R test_align -V --output-on-failure -j1
+        - ctest -R test_align --output-on-failure -j1
 
 tst:io:
     extends: .test
