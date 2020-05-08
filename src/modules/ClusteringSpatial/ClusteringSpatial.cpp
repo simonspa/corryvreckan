@@ -17,9 +17,14 @@ using namespace std;
 ClusteringSpatial::ClusteringSpatial(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
-    useTriggerTimestamp = config_.get<bool>("use_trigger_timestamp", false);
-    chargeWeighting = config_.get<bool>("charge_weighting", true);
-    rejectByROI = config_.get<bool>("reject_by_roi", false);
+    config_.setDefault<bool>("use_trigger_timestamp", false);
+    useTriggerTimestamp = config_.get<bool>("use_trigger_timestamp");
+
+    config_.setDefault<bool>("charge_weighting", true);
+    chargeWeighting = config_.get<bool>("charge_weighting");
+
+    config_.setDefault<bool>("reject_by_roi", false);
+    rejectByROI = config_.get<bool>("reject_by_roi");
 }
 
 void ClusteringSpatial::initialise() {
