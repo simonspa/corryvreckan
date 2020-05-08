@@ -24,16 +24,15 @@ namespace corryvreckan {
     using namespace ROOT::Math;
     class Plane : public Object {
     public:
-        Plane() : Object(){};
-        Plane(double z, double x_x0, std::string name, bool has_cluster)
-            : Object(), z_(z), x_x0_(x_x0), name_(name), has_cluster_(has_cluster){};
+        Plane() = default;
+        Plane(double z, double x_x0, std::string name) : Object(), z_(z), x_x0_(x_x0), name_(name){};
 
         static std::type_index getBaseType() { return typeid(Plane); }
-        // access elements
-        // access elements
+
         double getPlanePosition() const { return z_; }
         double getMaterialBudget() const { return x_x0_; }
-        bool hasCluster() const { return has_cluster_; }
+        bool hasCluster() const { return (cluster_.IsValid() && cluster_.GetObject() != nullptr); }
+
         std::string getName() const { return name_; }
         unsigned getGblPointPosition() const { return gbl_points_pos_; }
         Cluster* getCluster() const;
@@ -45,27 +44,27 @@ namespace corryvreckan {
         // set elements that might be unknown at construction
         void setGblPos(unsigned pos) { gbl_points_pos_ = pos; }
         void setPosition(double z) { z_ = z; }
-        void setCluster(const Cluster* cluster) {
-            cluster_ = const_cast<Cluster*>(cluster);
-            has_cluster_ = true;
-        }
+
+        void setCluster(const Cluster* cluster) { cluster_ = const_cast<Cluster*>(cluster); }
+
         void setToLocal(Transform3D toLocal) { to_local_ = toLocal; }
         void setToGlobal(Transform3D toGlobal) { to_global_ = toGlobal; }
         void print(std::ostream& os) const override {
             os << "Plane at " << z_ << " with rad. length " << x_x0_ << ", name " << name_ << " and";
-            if(has_cluster_)
+            if(hasCluster()) {
                 os << "cluster with global pos: " << getCluster()->global();
-            else
+            } else {
                 os << "no clsuter";
+            }
         }
 
     private:
         double z_, x_x0_;
         std::string name_;
-        bool has_cluster_ = false;
-        TRef cluster_ = nullptr;
+        TRef cluster_;
         unsigned gbl_points_pos_{};
         Transform3D to_local_, to_global_;
+
         ClassDefOverride(Plane, 1)
     };
 
