@@ -85,15 +85,14 @@ void OnlineMonitor::initialise() {
     app = new TApplication("example", nullptr, nullptr);
 
     // Make the GUI
-    gui = new GuiDisplay();
+    gui = new GuiDisplay(gClient->GetRoot(), 1200, 600);
 
     // Make the main window object and set the attributes
-    gui->m_mainFrame = new TGMainFrame(gClient->GetRoot(), 1200, 600);
-    gui->buttonMenu = new TGHorizontalFrame(gui->m_mainFrame, 1200, 50);
-    gui->canvas = new TRootEmbeddedCanvas("canvas", gui->m_mainFrame, 1200, 600);
-    gui->m_mainFrame->AddFrame(gui->canvas, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10, 10, 10, 10));
-    gui->m_mainFrame->SetCleanup(kDeepCleanup);
-    gui->m_mainFrame->DontCallClose();
+    gui->buttonMenu = new TGHorizontalFrame(gui, 1200, 50);
+    gui->canvas = new TRootEmbeddedCanvas("canvas", gui, 1200, 600);
+    gui->AddFrame(gui->canvas, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10, 10, 10, 10));
+    gui->SetCleanup(kDeepCleanup);
+    gui->DontCallClose();
 
     // Add canvases and histograms
     AddCanvasGroup("Tracking");
@@ -140,13 +139,13 @@ void OnlineMonitor::initialise() {
     gui->buttonGroups["Controls"]->AddFrame(gui->buttons["exit"], new TGLayoutHints(kLHintsTop | kLHintsExpandX));
 
     // Main frame resizing
-    gui->m_mainFrame->AddFrame(gui->buttonMenu, new TGLayoutHints(kLHintsLeft, 10, 10, 10, 10));
-    gui->m_mainFrame->SetWindowName(canvasTitle.c_str());
-    gui->m_mainFrame->MapSubwindows();
-    gui->m_mainFrame->Resize(gui->m_mainFrame->GetDefaultSize());
+    gui->AddFrame(gui->buttonMenu, new TGLayoutHints(kLHintsLeft, 10, 10, 10, 10));
+    gui->SetWindowName(canvasTitle.c_str());
+    gui->MapSubwindows();
+    gui->Resize(gui->GetDefaultSize());
 
     // Draw the main frame
-    gui->m_mainFrame->MapWindow();
+    gui->MapWindow();
 
     // Plot the overview tab (if it exists)
     if(gui->histograms["OverviewCanvas"].size() != 0) {
