@@ -150,6 +150,13 @@ ROOT::Math::XYZPoint Track::getCorrection(std::string detectorID) const {
         throw TrackError(typeid(Track), " calles correction on non existing detector " + detectorID);
 }
 
+void Track::registerPlane(std::shared_ptr<Detector> detector) {
+    Plane p(detector->localToGlobal(ROOT::Math::XYZPoint(0, 0, 0)).z(), detector->materialBudget(), detector->getName());
+    p.setToLocal(detector->toLocal());
+    p.setToGlobal(detector->toGlobal());
+    planes_.push_back(p);
+}
+
 std::shared_ptr<Track> corryvreckan::Track::Factory(std::string trackModel) {
     if(trackModel == "straightline") {
         return std::make_shared<StraightLineTrack>();

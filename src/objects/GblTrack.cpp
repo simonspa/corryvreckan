@@ -273,9 +273,10 @@ void GblTrack::fit() {
         traj.getScatResults(
             plane.getGblPointPosition(), numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
         // this is of course the kink in local coordinates and not to meaningful for further usage
-        kink_[plane.getName()] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
+        auto name = plane.getName();
+        kink_[name] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
         traj.getResults(int(plane.getGblPointPosition()), localPar, localCov);
-        corrections_[plane.getName()] = ROOT::Math::XYZPoint(localPar(3), localPar(4), 0);
+        corrections_[name] = ROOT::Math::XYZPoint(localPar(3), localPar(4), 0);
         if(plane.hasCluster()) {
             traj.getMeasResults(plane.getGblPointPosition(),
                                 numData,
@@ -285,23 +286,21 @@ void GblTrack::fit() {
                                 gblDownWeights);
             // to be consistent with previous residuals global ones here:
             ROOT::Math::XYZPoint corPos =
-                plane.getToGlobal() *
-                (ROOT::Math::XYZPoint(local_track_points_.at(plane.getName()).x() + corrections_.at(plane.getName()).x(),
-                                      local_track_points_.at(plane.getName()).y() + corrections_.at(plane.getName()).y(),
-                                      0));
+                plane.getToGlobal() * (ROOT::Math::XYZPoint(local_track_points_.at(name).x() + corrections_.at(name).x(),
+                                                            local_track_points_.at(name).y() + corrections_.at(name).y(),
+                                                            0));
             ROOT::Math::XYZPoint clusterPos = plane.getCluster()->global();
-            residual_[plane.getName()] = ROOT::Math::XYPoint(clusterPos.x() - corPos.x(), clusterPos.y() - corPos.y());
+            residual_[name] = ROOT::Math::XYPoint(clusterPos.x() - corPos.x(), clusterPos.y() - corPos.y());
             // m_residual[plane.name()] = ROOT::Math::XYPoint(gblResiduals(0),gblResiduals(1));
             if(logging_) {
-                std::cout << "********* " << plane.getName() << "\n Fitted res local:\t" << residual_.at(plane.getName())
-                          << "\n seed res:\t" << initital_residual.at(plane.getName()) << " \n fitted res global:\t"
+                std::cout << "********* " << name << "\n Fitted res local:\t" << residual_.at(name) << "\n seed res:\t"
+                          << initital_residual.at(name) << " \n fitted res global:\t"
                           << ROOT::Math::XYPoint(clusterPos.x() - corPos.x(), clusterPos.y() - corPos.y()) << std::endl
                           << "*********\n";
             }
         }
         if(logging_) {
-            std::cout << "Plane: " << plane.getName() << ": res" << residual_[plane.getName()]
-                      << "\t kink: " << kink_[plane.getName()] << std::endl;
+            std::cout << "Plane: " << name << ": res" << residual_[name] << "\t kink: " << kink_[name] << std::endl;
         }
     }
     isFitted_ = true;

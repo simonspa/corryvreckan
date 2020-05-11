@@ -18,6 +18,7 @@
 #include <TRef.h>
 
 #include "Cluster.hpp"
+#include "core/detector/Detector.hpp"
 #include "core/utils/type.h"
 namespace corryvreckan {
 
@@ -33,7 +34,7 @@ namespace corryvreckan {
         double getMaterialBudget() const { return x_x0_; }
         bool hasCluster() const { return (cluster_.IsValid() && cluster_.GetObject() != nullptr); }
 
-        std::string getName() const { return name_; }
+        const std::string& getName() const { return name_; }
         unsigned getGblPointPosition() const { return gbl_points_pos_; }
         Cluster* getCluster() const;
         Transform3D getToLocal() const { return to_local_; }
@@ -264,7 +265,6 @@ namespace corryvreckan {
                        planes_.begin(), planes_.end(), [&detectorID](Plane plane) { return plane.getName() == detectorID; })
                 ->getMaterialBudget();
         }
-        void registerPlane(Plane p) { planes_.push_back(p); }
 
         void updatePlane(Plane p);
 
@@ -273,6 +273,8 @@ namespace corryvreckan {
         long unsigned int getNumScatterers() const { return planes_.size(); }
         virtual void setVolumeScatter(double length) = 0;
         void setLogging(bool on = false) { logging_ = on; }
+
+        void registerPlane(std::shared_ptr<Detector> detector);
 
     protected:
         std::vector<TRef> track_clusters_;
