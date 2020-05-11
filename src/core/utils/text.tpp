@@ -82,6 +82,17 @@ namespace corryvreckan {
         return out.str();
     }
 
+#ifdef __APPLE__
+    /**
+     * AppleClang seems to need an explicit conversion from bool to string for some reason.
+     */
+    template <> std::string to_string_impl(bool inp, empty_tag) {
+        std::ostringstream out;
+        out << std::boolalpha << inp << std::noboolalpha;
+        return out.str();
+    }
+#endif
+
     template <typename T> std::vector<T> split(std::string str, const std::string& delims) {
         str = trim(str, delims);
 
