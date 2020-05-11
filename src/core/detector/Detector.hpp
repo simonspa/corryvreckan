@@ -303,7 +303,16 @@ namespace corryvreckan {
          */
         double materialBudget() const { return m_materialBudget; }
 
+        /**
+         * @brief toGlobal Get the transformation from global to local coordinates
+         * @return Transform3D global to local
+         */
         Transform3D toGlobal() const { return m_localToGlobal; }
+
+        /**
+         * @brief toLocal Get the transformation from local to global coordinates
+         * @return Transform3D local to global
+         */
         Transform3D toLocal() const { return m_globalToLocal; }
 
     protected:

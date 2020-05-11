@@ -113,18 +113,16 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
             auto positionLocal = trackCluster->local();
             auto positionGlobal = AlignmentTrackChi2::globalDetector->localToGlobal(positionLocal);
             trackCluster->setClusterCentre(positionGlobal);
-            LOG(DEBUG) << "updating cluster";
+            LOG(DEBUG) << "Updating cluster with corrected global position for detector "
+                       << AlignmentTrackChi2::globalDetector->getName();
         }
 
         // Refit the track
 
-        LOG(DEBUG) << "Updating plane: " << pl;
         track->updatePlane(AlignmentTrackChi2::globalDetector);
-        LOG(DEBUG) << "Updated plane";
+        LOG(DEBUG) << "Updated Transformations for detector " << AlignmentTrackChi2::globalDetector->getName();
         IFLOG(DEBUG) { track->setLogging(true); }
         track->fit();
-
-        LOG(DEBUG) << pl << pl.getName() << pl.getToGlobal() << std::flush;
 
         // Add the new chi2
         result += track->getChi2();
