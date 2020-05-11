@@ -40,7 +40,7 @@ AlignmentTrackChi2::AlignmentTrackChi2(Configuration config, std::vector<std::sh
 }
 
 // During run, just pick up tracks and save them till the end
-StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AlignmentTrackChi2::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the tracks
     auto tracks = clipboard->getData<Track>();

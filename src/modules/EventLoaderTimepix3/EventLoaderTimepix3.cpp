@@ -221,7 +221,7 @@ void EventLoaderTimepix3::initialize() {
                        m_detector->nPixels().Y() - 0.5);
 }
 
-StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EventLoaderTimepix3::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // This will loop through each timepix3 registered, and load data from each of them. This can
     // be done in one of two ways: by taking all data in the time interval (t,t+delta), or by
@@ -327,7 +327,7 @@ void EventLoaderTimepix3::loadCalibration(std::string path, char delim, std::vec
 }
 
 // Function to load data for a given device, into the relevant container
-bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
+bool EventLoaderTimepix3::loadData(const std::shared_ptr<Clipboard>& clipboard,
                                    PixelVector& devicedata,
                                    SpidrSignalVector& spidrData) {
 

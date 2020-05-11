@@ -31,7 +31,7 @@ namespace corryvreckan {
 
         // Standard algorithm functions
         void initialize() override;
-        StatusCode run(std::shared_ptr<Clipboard> clipboard) override;
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
     private:
         std::shared_ptr<Detector> m_detector;
@@ -49,7 +49,7 @@ namespace corryvreckan {
         TH2F* pixelTOAParameterT;
         TH1F* timeshiftPlot;
 
-        bool loadData(std::shared_ptr<Clipboard> clipboard, PixelVector&, SpidrSignalVector&);
+        bool loadData(const std::shared_ptr<Clipboard>& clipboard, PixelVector&, SpidrSignalVector&);
         void loadCalibration(std::string path, char delim, std::vector<std::vector<float>>& dat);
         void maskPixels(std::string);
 

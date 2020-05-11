@@ -315,7 +315,7 @@ void AnalysisDUT::initialize() {
                  10);
 }
 
-StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();

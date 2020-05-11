@@ -28,7 +28,7 @@ void Metronome::initialize() {
     m_eventEnd = m_eventStart + m_eventLength;
 }
 
-StatusCode Metronome::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode Metronome::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Set up the current event:
     auto event = std::make_shared<Event>(m_eventStart, m_eventEnd);

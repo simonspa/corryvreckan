@@ -73,7 +73,7 @@ void Prealignment::initialize() {
     correlationY2D = new TH2F("correlationY_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);
 }
 
-StatusCode Prealignment::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode Prealignment::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the clusters
     auto clusters = clipboard->getData<Cluster>(m_detector->getName());

@@ -56,7 +56,7 @@ void EventLoaderCLICpix::initialize() {
     hPixelMultiplicity = new TH1F("pixelMultiplicity", "Pixel Multiplicity; # pixels; # events", 4100, -0.5, 4099.5);
 }
 
-StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EventLoaderCLICpix::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {

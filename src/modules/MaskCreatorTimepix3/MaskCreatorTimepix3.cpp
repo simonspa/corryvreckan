@@ -17,7 +17,7 @@ using namespace corryvreckan;
 MaskCreatorTimepix3::MaskCreatorTimepix3(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {}
 
-StatusCode MaskCreatorTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode MaskCreatorTimepix3::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the pixels
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());

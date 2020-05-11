@@ -44,7 +44,7 @@ void TextWriter::initialize() {
     m_eventNumber = 0;
 }
 
-StatusCode TextWriter::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode TextWriter::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     if(!clipboard->isEventDefined()) {
         ModuleError("No Clipboard event defined, cannot continue");

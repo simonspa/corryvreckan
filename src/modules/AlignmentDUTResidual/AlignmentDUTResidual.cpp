@@ -56,7 +56,7 @@ void AlignmentDUTResidual::initialize() {
     profile_dX_Y = new TProfile("profile_dX_Y", title.c_str(), 1000, -500, 500);
 }
 
-StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AlignmentDUTResidual::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the tracks
     auto tracks = clipboard->getData<Track>();

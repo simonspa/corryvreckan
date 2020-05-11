@@ -58,7 +58,7 @@ void ClusteringSpatial::initialize() {
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
 }
 
-StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode ClusteringSpatial::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the pixels
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());

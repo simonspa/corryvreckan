@@ -176,7 +176,7 @@ void EventLoaderATLASpix::initialize() {
     eof_reached = false;
 }
 
-StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EventLoaderATLASpix::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Check if event frame is defined:
     if(!clipboard->isEventDefined()) {
@@ -193,7 +193,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     while(true) {
 
         if(sorted_pixels_.empty() && eof_reached) {
-            // break while loop but still go until the end of the run() function
+            // break while loop but still go until the end of the run function
             LOG(TRACE) << "break while(true) --> end of file reached";
             break;
         }

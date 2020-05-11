@@ -60,7 +60,7 @@ void FileWriter::initialize() {
     event_tree_->Bronch("global", "corryvreckan::Event", &event_);
 }
 
-StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode FileWriter::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     if(!clipboard->isEventDefined()) {
         ModuleError("No Clipboard event defined, cannot continue");

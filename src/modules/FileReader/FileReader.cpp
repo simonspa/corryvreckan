@@ -47,7 +47,7 @@ FileReader::~FileReader() {
  * particular type of object from its typeid.
  */
 template <typename T> static void add_creator(FileReader::ObjectCreatorMap& map) {
-    map[typeid(T)] = [&](std::vector<Object*> objects, std::string detector, std::shared_ptr<Clipboard> clipboard) {
+    map[typeid(T)] = [&](std::vector<Object*> objects, std::string detector, const std::shared_ptr<Clipboard>& clipboard) {
         std::vector<std::shared_ptr<T>> data;
         // Copy the objects to data vector
         for(auto& object : objects) {
@@ -212,7 +212,7 @@ void FileReader::initialize() {
     }
 }
 
-StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode FileReader::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     if(clipboard->isEventDefined()) {
         ModuleError("Clipboard event already defined, cannot continue");
