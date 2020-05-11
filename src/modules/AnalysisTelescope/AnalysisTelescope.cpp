@@ -23,7 +23,7 @@ AnalysisTelescope::AnalysisTelescope(Configuration config, std::vector<std::shar
     chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
 }
 
-void AnalysisTelescope::initialise() {
+void AnalysisTelescope::initialize() {
 
     // Initialise biased telescope residuals per telescope device and telescope resolution plots (using MCparticles) at the
     // position of the DUTs
@@ -81,7 +81,7 @@ ROOT::Math::XYZPoint AnalysisTelescope::closestApproach(ROOT::Math::XYZPoint pos
     return particlePosition;
 }
 
-StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AnalysisTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the tracks from the clipboard
     auto tracks = clipboard->getData<Track>();

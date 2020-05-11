@@ -23,7 +23,7 @@ EventLoaderEUDAQ::EventLoaderEUDAQ(Configuration config, std::vector<std::shared
     m_longID = m_config.get<bool>("long_detector_id", true);
 }
 
-void EventLoaderEUDAQ::initialise() {
+void EventLoaderEUDAQ::initialize() {
 
     // Create new file reader:
     try {
@@ -33,7 +33,7 @@ void EventLoaderEUDAQ::initialise() {
     }
 }
 
-StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EventLoaderEUDAQ::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Read next event from EUDAQ reader:
     const eudaq::DetectorEvent& evt = reader->Event();

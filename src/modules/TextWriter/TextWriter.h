@@ -40,18 +40,18 @@ namespace corryvreckan {
         /**
          * @brief Reads the configuration and opens the file to write to
          */
-        void initialise();
+        void initialize() override;
 
         /**
          * @brief Loops over the selected objects on the clipboard and writes them to file
          * @param clipboard Pointer to the clipboard
          */
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
         /**
          * @brief No specific actions implemented
          */
-        void finalise();
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
         int m_eventNumber;

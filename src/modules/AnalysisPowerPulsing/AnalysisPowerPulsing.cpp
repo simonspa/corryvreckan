@@ -18,7 +18,7 @@ using namespace std;
 AnalysisPowerPulsing::AnalysisPowerPulsing(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {}
 
-void AnalysisPowerPulsing::initialise() {
+void AnalysisPowerPulsing::initialize() {
 
     // int timeN = 1500000;
     // int timeN = 3000000;
@@ -52,7 +52,7 @@ void AnalysisPowerPulsing::initialise() {
     v_minTime.clear();
 }
 
-StatusCode AnalysisPowerPulsing::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AnalysisPowerPulsing::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     LOG(TRACE) << "Power on time: " << static_cast<double>(m_powerOnTime) / (4096. * 40000000.);
     LOG(TRACE) << "Power off time: " << static_cast<double>(m_powerOffTime) / (4096. * 40000000.);

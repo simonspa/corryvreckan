@@ -40,10 +40,12 @@ AlignmentTrackChi2::AlignmentTrackChi2(Configuration config, std::vector<std::sh
 }
 
 // During run, just pick up tracks and save them till the end
-StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AlignmentTrackChi2::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the tracks
     auto tracks = clipboard->getData<Track>();
+    TrackVector alignmenttracks;
+    std::map<std::string, std::vector<Cluster*>> alignmentclusters;
 
     // Make a local copy and store it
     for(auto& track : tracks) {
@@ -55,9 +57,18 @@ StatusCode AlignmentTrackChi2::run(std::shared_ptr<Clipboard> clipboard) {
             continue;
         }
 
-        LOG(TRACE) << "Cloning track with track model \"" << track->getType() << "\" for alignment";
-        auto alignmentTrack = std::shared_ptr<Track>(track->clone());
-        m_alignmenttracks.push_back(alignmentTrack);
+        LOG(TRACE) << "Storing track with track model \"" << track->getType() << "\" for alignment";
+        alignmenttracks.push_back(track);
+        for(auto& cluster : track->getClusters()) {
+            alignmentclusters[cluster->detectorID()].push_back(cluster);
+        }
+    }
+
+    // Store all tracks we want for alignment on the permanent storage:
+    clipboard->putPersistentData(alignmenttracks);
+    // Copy the objects of all track clusters on the clipboard to persistent storage:
+    for(auto& clusters : alignmentclusters) {
+        clipboard->copyToPersistentData(clusters.second, clusters.first);
     }
 
     // Otherwise keep going
@@ -115,7 +126,7 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
 //  The finalise function - effectively the brains of the alignment!
 // ==================================================================
 
-void AlignmentTrackChi2::finalise() {
+void AlignmentTrackChi2::finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) {
 
     if(m_discardedtracks > 0) {
         LOG(INFO) << "Discarded " << m_discardedtracks << " input tracks.";
@@ -126,7 +137,7 @@ void AlignmentTrackChi2::finalise() {
     residualFitter->SetFCN(MinimiseTrackChi2);
 
     // Set the global parameters
-    AlignmentTrackChi2::globalTracks = m_alignmenttracks;
+    AlignmentTrackChi2::globalTracks = clipboard->getPersistentData<Track>();
 
     // Set the printout arguments of the fitter
     Double_t arglist[10];

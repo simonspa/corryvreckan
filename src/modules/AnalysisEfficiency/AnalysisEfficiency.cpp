@@ -25,7 +25,7 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration config, std::shared_ptr<Det
     m_inpixelBinSize = m_config.get<double>("inpixel_bin_size", Units::get<double>(1.0, "um"));
 }
 
-void AnalysisEfficiency::initialise() {
+void AnalysisEfficiency::initialize() {
 
     hPixelEfficiency = new TH1D(
         "hPixelEfficiency", "hPixelEfficiency; single pixel efficiency; # entries", 201, 0, 1.005); // get 0.5%-wide bins
@@ -176,7 +176,7 @@ void AnalysisEfficiency::initialise() {
     prev_hit_ts.assign(nCols, v_row);     // use vector v_row to construct matrix
 }
 
-StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
@@ -333,7 +333,7 @@ StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void AnalysisEfficiency::finalise() {
+void AnalysisEfficiency::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     // Track selection flow:
     LOG(STATUS) << "Track selection flow:       " << n_track << std::endl
                 << "* rejected by chi2          -" << n_chi2 << std::endl

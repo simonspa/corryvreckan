@@ -81,7 +81,7 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
     tracks_afterClusterSizeCut = 0;
 }
 
-void AnalysisTimingATLASpix::initialise() {
+void AnalysisTimingATLASpix::initialize() {
 
     auto pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
     auto pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));
@@ -515,7 +515,7 @@ void AnalysisTimingATLASpix::initialise() {
     }
 }
 
-StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AnalysisTimingATLASpix::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
@@ -744,7 +744,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void AnalysisTimingATLASpix::finalise() {
+void AnalysisTimingATLASpix::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     LOG(STATUS) << "Timing analysis finished for detector " << m_detector->getName() << ": ";
 
     if(m_calcCorrections) {

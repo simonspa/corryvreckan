@@ -26,11 +26,6 @@ namespace corryvreckan {
         // Constructors and destructors
         GblTrack();
 
-        // copy constructor
-        GblTrack(const GblTrack& track);
-
-        virtual GblTrack* clone() const override { return new GblTrack(*this); }
-
         void print(std::ostream& out) const override;
 
         /**
