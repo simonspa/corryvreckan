@@ -288,7 +288,7 @@ PositionVector3D<Cartesian3D<double>> PixelDetector::getLocalPosition(double col
 // Function to get in-pixel position
 ROOT::Math::XYVector PixelDetector::inPixel(const double column, const double row) const {
     // a pixel ranges from (col-0.5) to (col+0.5)
-    return XYVector(m_pitch.X() * (column - floor(column) - 0.5), m_pitch.Y() * (row - floor(row) - 0.5));
+    return XYVector(m_pitch.X() * (column - floor(column + 0.5)), m_pitch.Y() * (row - floor(row + 0.5)));
 }
 
 ROOT::Math::XYVector PixelDetector::inPixel(const PositionVector3D<Cartesian3D<double>> localPosition) const {
