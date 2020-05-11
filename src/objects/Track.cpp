@@ -138,9 +138,12 @@ Cluster* Track::getClusterFromDetector(std::string detectorID) const {
     return dynamic_cast<Cluster*>(it->GetObject());
 }
 
-void Track::updatePlane(Plane p) {
+void Track::updatePlane(std::shared_ptr<Detector> det) {
+    Plane pl(det->displacement().z(), det->materialBudget(), det->getName());
+    pl.setToLocal(det->toLocal());
+    pl.setToGlobal(det->toGlobal());
     std::replace_if(
-        planes_.begin(), planes_.end(), [&p](auto const& plane) { return plane.getName() == p.getName(); }, std::move(p));
+        planes_.begin(), planes_.end(), [&pl](auto const& plane) { return plane.getName() == pl.getName(); }, std::move(pl));
 }
 
 ROOT::Math::XYZPoint Track::getCorrection(std::string detectorID) const {

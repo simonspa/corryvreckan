@@ -266,7 +266,7 @@ namespace corryvreckan {
                 ->getMaterialBudget();
         }
 
-        void updatePlane(Plane p);
+        void updatePlane(std::shared_ptr<Detector> det);
 
         ROOT::Math::XYZPoint getCorrection(std::string detectorID) const;
 
