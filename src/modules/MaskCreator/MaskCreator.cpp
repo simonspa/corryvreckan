@@ -94,7 +94,7 @@ void MaskCreator::initialize() {
     }
 }
 
-StatusCode MaskCreator::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode MaskCreator::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Count this event:
     m_numEvents++;

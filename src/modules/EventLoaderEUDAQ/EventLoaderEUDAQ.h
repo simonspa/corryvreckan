@@ -30,7 +30,7 @@ namespace corryvreckan {
 
         // Functions
         void initialize() override;
-        StatusCode run(std::shared_ptr<Clipboard> clipboard) override;
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
         // EUDAQ file reader instance:
         eudaq::FileReader* reader;

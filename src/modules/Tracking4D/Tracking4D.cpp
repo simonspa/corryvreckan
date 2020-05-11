@@ -134,7 +134,7 @@ double Tracking4D::calculate_average_timestamp(const Track* track) {
     return (sum_weighted_time / sum_weights);
 }
 
-StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     LOG(DEBUG) << "Start of event";
     // Container for all clusters, and detectors in tracking

@@ -144,7 +144,7 @@ void OnlineMonitor::initialize() {
     eventNumber = 0;
 }
 
-StatusCode OnlineMonitor::run(std::shared_ptr<Clipboard>) {
+StatusCode OnlineMonitor::run(const std::shared_ptr<Clipboard>&) {
 
     if(!gui->isPaused()) {
         // Draw all histograms

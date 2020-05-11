@@ -87,7 +87,7 @@ void TrackingSpatial::initialize() {
     }
 }
 
-StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode TrackingSpatial::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Container for all clusters, and detectors in tracking
     map<string, KDTree<Cluster>> trees;

@@ -81,7 +81,7 @@ void EtaCalculation::calculateEta(Track* track, Cluster* cluster) {
     }
 }
 
-StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EtaCalculation::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Loop over all tracks and look at the associated clusters to plot the eta distribution
     auto tracks = clipboard->getData<Track>();

@@ -114,7 +114,7 @@ namespace corryvreckan {
          *
          * Does nothing if not overloaded.
          */
-        virtual StatusCode run(std::shared_ptr<Clipboard>) { return StatusCode::Success; }
+        virtual StatusCode run(const std::shared_ptr<Clipboard>&) { return StatusCode::Success; }
 
         /**
          * @brief Finalise the module after the event sequence

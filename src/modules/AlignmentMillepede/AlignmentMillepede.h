@@ -32,7 +32,7 @@ namespace corryvreckan {
 
         void initialize() override;
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
-        StatusCode run(std::shared_ptr<Clipboard> clipboard) override;
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
         virtual void updateGeometry();
 

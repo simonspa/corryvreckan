@@ -92,7 +92,7 @@ bool Clustering4D::sortByTime(const std::shared_ptr<Pixel>& pixel1, const std::s
     return (pixel1->timestamp() < pixel2->timestamp());
 }
 
-StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode Clustering4D::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the pixels
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());

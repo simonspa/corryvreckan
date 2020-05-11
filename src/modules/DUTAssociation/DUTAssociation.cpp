@@ -93,7 +93,7 @@ void DUTAssociation::initialize() {
     LOG(DEBUG) << "DUT association time cut = " << Units::display(timeCut, {"ms", "ns"});
 }
 
-StatusCode DUTAssociation::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode DUTAssociation::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the tracks from the clipboard
     auto tracks = clipboard->getData<Track>();

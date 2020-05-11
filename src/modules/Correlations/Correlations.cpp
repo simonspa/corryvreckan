@@ -167,7 +167,7 @@ void Correlations::initialize() {
     eventTimes = new TH1F("eventTimes", title.c_str(), 3000000, 0, 300);
 }
 
-StatusCode Correlations::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Do not attempt plotting for aux devices
     if(m_detector->isAuxiliary()) {

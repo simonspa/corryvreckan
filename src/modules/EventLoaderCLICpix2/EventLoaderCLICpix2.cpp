@@ -179,7 +179,7 @@ void EventLoaderCLICpix2::initialize() {
     m_eventNumber = 0;
 }
 
-StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EventLoaderCLICpix2::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {

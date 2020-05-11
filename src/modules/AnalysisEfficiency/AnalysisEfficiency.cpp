@@ -176,7 +176,7 @@ void AnalysisEfficiency::initialize() {
     prev_hit_ts.assign(nCols, v_row);     // use vector v_row to construct matrix
 }
 
-StatusCode AnalysisEfficiency::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();

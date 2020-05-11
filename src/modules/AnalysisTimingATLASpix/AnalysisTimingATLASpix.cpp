@@ -515,7 +515,7 @@ void AnalysisTimingATLASpix::initialize() {
     }
 }
 
-StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AnalysisTimingATLASpix::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();

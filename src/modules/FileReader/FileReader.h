@@ -27,9 +27,9 @@ namespace corryvreckan {
      */
     class FileReader : public Module {
     public:
-        using ObjectCreatorMap =
-            std::map<std::type_index,
-                     std::function<void(std::vector<Object*>, std::string detector, std::shared_ptr<Clipboard> clipboard)>>;
+        using ObjectCreatorMap = std::map<
+            std::type_index,
+            std::function<void(std::vector<Object*>, std::string detector, const std::shared_ptr<Clipboard>& clipboard)>>;
 
         /**
          * @brief Constructor for this global module
@@ -50,7 +50,7 @@ namespace corryvreckan {
         /**
          * @brief Move the objects stored for the current event to the clipboard
          */
-        StatusCode run(std::shared_ptr<Clipboard> clipboard) override;
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
         /**
          * @brief Output summary and close the ROOT file

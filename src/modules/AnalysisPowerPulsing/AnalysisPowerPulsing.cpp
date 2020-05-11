@@ -52,7 +52,7 @@ void AnalysisPowerPulsing::initialize() {
     v_minTime.clear();
 }
 
-StatusCode AnalysisPowerPulsing::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AnalysisPowerPulsing::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     LOG(TRACE) << "Power on time: " << static_cast<double>(m_powerOnTime) / (4096. * 40000000.);
     LOG(TRACE) << "Power off time: " << static_cast<double>(m_powerOffTime) / (4096. * 40000000.);
