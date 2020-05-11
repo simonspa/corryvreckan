@@ -280,8 +280,9 @@ double PixelDetector::getColumn(const PositionVector3D<Cartesian3D<double>> loca
 // Function to get local position from row and column
 PositionVector3D<Cartesian3D<double>> PixelDetector::getLocalPosition(double column, double row) const {
 
-    return PositionVector3D<Cartesian3D<double>>(
-        m_pitch.X() * (column - m_nPixels.X() / 2), m_pitch.Y() * (row - m_nPixels.Y() / 2), 0.);
+    return PositionVector3D<Cartesian3D<double>>(m_pitch.X() * (column - static_cast<double>(m_nPixels.X() - 1) / 2.),
+                                                 m_pitch.Y() * (row - static_cast<double>(m_nPixels.Y() - 1) / 2.),
+                                                 0.);
 }
 
 // Function to get in-pixel position
