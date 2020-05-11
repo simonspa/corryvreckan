@@ -26,8 +26,7 @@ AlignmentMillepede::AlignmentMillepede(Configuration& config, std::vector<std::s
     : Module(config, std::move(detectors)) {
 
     config_.setDefault<bool>("exclude_dut", false);
-    // config_.setDefaultArray<bool>("dofs", {true, true, false, true, true, true});
-    config_.setDefaultArray<bool>("dofs", {1, 1, 0, 1, 1, 1});
+    config_.setDefaultArray<bool>("dofs", std::vector<bool>{true, true, false, true, true, true});
     config_.setDefault<size_t>("iterations", 5);
     config_.setDefault<double>("residual_cut", 0.05);
     config_.setDefault<double>("residual_cut_init", 0.6);
