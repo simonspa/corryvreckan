@@ -24,14 +24,14 @@ Metronome::Metronome(Configuration& config, std::vector<std::shared_ptr<Detector
     m_triggersPerEvent = config_.get<uint32_t>("triggers");
 }
 
-void Metronome::initialise() {
+void Metronome::initialize() {
 
     // Set initial values for the start and stop time of the first event:
     m_eventStart = config_.get<double>("skip_time", 0.);
     m_eventEnd = m_eventStart + m_eventLength;
 }
 
-StatusCode Metronome::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode Metronome::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Set up the current event:
     auto event = std::make_shared<Event>(m_eventStart, m_eventEnd);

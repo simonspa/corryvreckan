@@ -26,12 +26,12 @@ ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration& config, std:
     m_triggerLatency = config_.get<double>("trigger_latency");
 }
 
-void ImproveReferenceTimestamp::initialise() {
+void ImproveReferenceTimestamp::initialize() {
     // Initialise member variables
     m_eventNumber = 0;
 }
 
-StatusCode ImproveReferenceTimestamp::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode ImproveReferenceTimestamp::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Recieved triggers
     std::vector<double> trigger_times;
@@ -96,7 +96,7 @@ StatusCode ImproveReferenceTimestamp::run(std::shared_ptr<Clipboard> clipboard) 
     return StatusCode::Success;
 }
 
-void ImproveReferenceTimestamp::finalise() {
+void ImproveReferenceTimestamp::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }

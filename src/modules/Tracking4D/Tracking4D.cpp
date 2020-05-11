@@ -65,7 +65,7 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
     spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, config_, get_detectors());
 }
 
-void Tracking4D::initialise() {
+void Tracking4D::initialize() {
 
     // Set up histograms
     std::string title = "Track #chi^{2};#chi^{2};events";
@@ -145,7 +145,7 @@ double Tracking4D::calculate_average_timestamp(const Track* track) {
     return (sum_weighted_time / sum_weights);
 }
 
-StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     LOG(DEBUG) << "Start of event";
     // Container for all clusters, and detectors in tracking

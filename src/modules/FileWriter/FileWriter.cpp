@@ -37,7 +37,7 @@ FileWriter::~FileWriter() {
     }
 }
 
-void FileWriter::initialise() {
+void FileWriter::initialize() {
     // Create output file
     config_.setDefault<std::string>("file_name", "data");
     output_file_name_ =
@@ -61,7 +61,7 @@ void FileWriter::initialise() {
     event_tree_->Bronch("global", "corryvreckan::Event", &event_);
 }
 
-StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode FileWriter::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     if(!clipboard->isEventDefined()) {
         ModuleError("No Clipboard event defined, cannot continue");
@@ -167,7 +167,7 @@ StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void FileWriter::finalise() {
+void FileWriter::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     LOG(TRACE) << "Writing objects to file";
     output_file_->cd();
 

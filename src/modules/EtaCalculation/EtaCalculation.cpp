@@ -25,7 +25,7 @@ EtaCalculation::EtaCalculation(Configuration& config, std::shared_ptr<Detector> 
     m_etaFormulaY = config_.get<std::string>("eta_formula_y");
 }
 
-void EtaCalculation::initialise() {
+void EtaCalculation::initialize() {
 
     // Initialise histograms
     double pitchX = m_detector->getPitch().X();
@@ -86,7 +86,7 @@ void EtaCalculation::calculateEta(Track* track, Cluster* cluster) {
     }
 }
 
-StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EtaCalculation::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Loop over all tracks and look at the associated clusters to plot the eta distribution
     auto tracks = clipboard->getData<Track>();
@@ -128,7 +128,7 @@ std::string EtaCalculation::fit(TF1* function, std::string fname, TProfile* prof
     return parameters.str();
 }
 
-void EtaCalculation::finalise() {
+void EtaCalculation::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     std::stringstream config;
     config << std::endl

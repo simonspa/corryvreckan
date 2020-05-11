@@ -13,29 +13,6 @@
 
 using namespace corryvreckan;
 
-Track::Track() : momentum_(-1) {}
-
-Track::Track(const Track& track) : Object(track.detectorID(), track.timestamp()) {
-    isFitted_ = track.isFitted();
-    chi2_ = track.getChi2();
-    ndof_ = track.getNdof();
-    chi2ndof_ = track.getChi2ndof();
-
-    auto trackClusters = track.getClusters();
-    for(auto& track_cluster : trackClusters) {
-        Cluster* cluster = new Cluster(*track_cluster);
-        addCluster(cluster);
-    }
-    auto associatedClusters = track.associated_clusters_;
-    for(auto& assoc_cluster : associatedClusters) {
-        Cluster* cluster = new Cluster(*dynamic_cast<Cluster*>(assoc_cluster.GetObject()));
-        addAssociatedCluster(cluster);
-    }
-    material_budget_ = track.material_budget_;
-    residual_ = track.residual_;
-    corrections_ = track.corrections_;
-}
-
 void Track::addCluster(const Cluster* cluster) {
     track_clusters_.push_back(const_cast<Cluster*>(cluster));
 }
@@ -167,7 +144,6 @@ ROOT::Math::XYZPoint Track::getCorrection(std::string detectorID) const {
 
 std::shared_ptr<Track> corryvreckan::Track::Factory(std::string trackModel) {
     if(trackModel == "straightline") {
-
         return std::make_shared<StraightLineTrack>();
     } else if(trackModel == "gbl") {
         return std::make_shared<GblTrack>();

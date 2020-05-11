@@ -35,14 +35,13 @@ namespace corryvreckan {
         ~AlignmentTrackChi2() {}
 
         // Functions
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        void finalise();
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
         static void MinimiseTrackChi2(Int_t& npar, Double_t* grad, Double_t& result, Double_t* par, Int_t flag);
 
         // Member variables
-        TrackVector m_alignmenttracks;
         int m_discardedtracks{};
 
         // Static members

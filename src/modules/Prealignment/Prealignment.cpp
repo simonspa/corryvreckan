@@ -42,7 +42,7 @@ Prealignment::Prealignment(Configuration& config, std::shared_ptr<Detector> dete
     LOG(DEBUG) << "Setting damping_factor to : " << damping_factor;
 }
 
-void Prealignment::initialise() {
+void Prealignment::initialize() {
 
     // get the reference detector:
     std::shared_ptr<Detector> reference = get_reference();
@@ -77,7 +77,7 @@ void Prealignment::initialise() {
     correlationY2D = new TH2F("correlationY_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);
 }
 
-StatusCode Prealignment::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode Prealignment::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the clusters
     auto clusters = clipboard->getData<Cluster>(m_detector->getName());
@@ -115,7 +115,7 @@ StatusCode Prealignment::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void Prealignment::finalise() {
+void Prealignment::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     double rmsX = correlationX->GetRMS();
     double rmsY = correlationY->GetRMS();

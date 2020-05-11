@@ -52,7 +52,7 @@ AlignmentMillepede::~AlignmentMillepede() {}
 //=============================================================================
 // Initialization
 //=============================================================================
-void AlignmentMillepede::initialise() {
+void AlignmentMillepede::initialize() {
 
     // Renumber the planes in Millepede, ignoring masked planes.
     unsigned int index = 0;
@@ -81,25 +81,39 @@ void AlignmentMillepede::initialise() {
 }
 
 // During run, just pick up tracks and save them till the end
-StatusCode AlignmentMillepede::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AlignmentMillepede::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the tracks
     auto tracks = clipboard->getData<Track>();
+    TrackVector alignmenttracks;
+    std::map<std::string, std::vector<Cluster*>> alignmentclusters;
 
     // Make a local copy and store it
     for(auto& track : tracks) {
-        auto alignmentTrack = std::shared_ptr<Track>(track->clone());
-        m_alignmenttracks.push_back(alignmentTrack);
+        alignmenttracks.push_back(track);
+        auto clusters = track->getClusters();
+        for(auto& cluster : track->getClusters()) {
+            alignmentclusters[cluster->detectorID()].push_back(cluster);
+        }
     }
+
+    // Store all tracks we want for alignment on the permanent storage:
+    clipboard->putPersistentData(alignmenttracks);
+    // Copy the objects of all track clusters on the clipboard to persistent storage:
+    for(auto& clusters : alignmentclusters) {
+        clipboard->copyToPersistentData(clusters.second, clusters.first);
+    }
+
     return StatusCode::Success;
 }
 
 //=============================================================================
 // Main alignment function
 //=============================================================================
-void AlignmentMillepede::finalise() {
+void AlignmentMillepede::finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) {
 
     LOG(INFO) << "Millepede alignment";
+    auto alignmenttracks = clipboard->getPersistentData<Track>();
 
     size_t nPlanes = num_detectors();
     for(const auto& det : get_detectors()) {
@@ -119,11 +133,11 @@ void AlignmentMillepede::finalise() {
         const double startfact = 100.;
         // Initialise all matrices and vectors.
         reset(nPlanes, startfact);
-        LOG(INFO) << "Feeding Millepede with " << m_alignmenttracks.size() << " tracks...";
+        LOG(INFO) << "Feeding Millepede with " << alignmenttracks.size() << " tracks...";
         // Feed Millepede with tracks.
         unsigned int nSkipped = 0;
         unsigned int nOutliers = 0;
-        for(auto& track : m_alignmenttracks) {
+        for(auto& track : alignmenttracks) {
             if(track->getNClusters() != nPlanes) {
                 ++nSkipped;
                 continue;
@@ -156,7 +170,7 @@ void AlignmentMillepede::finalise() {
         updateGeometry();
 
         // Update the cluster coordinates based on the new geometry.
-        for(auto& track : m_alignmenttracks) {
+        for(auto& track : alignmenttracks) {
             for(auto& cluster : track->getClusters()) {
                 auto detectorID = cluster->detectorID();
                 auto detector = get_detector(detectorID);

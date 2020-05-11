@@ -30,8 +30,8 @@ namespace corryvreckan {
         ~Clustering4D() {}
 
         // Functions
-        void initialise();
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        void initialize() override;
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
     private:
         std::shared_ptr<Detector> m_detector;

@@ -47,7 +47,7 @@ AlignmentDUTResidual::AlignmentDUTResidual(Configuration& config, std::shared_pt
     LOG(INFO) << "Aligning detector \"" << m_detector->getName() << "\"";
 }
 
-void AlignmentDUTResidual::initialise() {
+void AlignmentDUTResidual::initialize() {
 
     auto detname = m_detector->getName();
     std::string title = detname + " Residuals X;x_{track}-x [#mum];events";
@@ -64,20 +64,23 @@ void AlignmentDUTResidual::initialise() {
     profile_dX_Y = new TProfile("profile_dX_Y", title.c_str(), 1000, -500, 500);
 }
 
-StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AlignmentDUTResidual::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the tracks
     auto tracks = clipboard->getData<Track>();
 
+    TrackVector alignmenttracks;
+    std::vector<Cluster*> alignmentclusters;
+
     // Make a local copy and store it
     for(auto& track : tracks) {
+        auto associated_clusters = track->getAssociatedClusters(m_detector->getName());
 
         // Apply selection to tracks for alignment
         if(m_pruneTracks) {
             // Only allow one associated cluster:
-            if(track->getAssociatedClusters(m_detector->getName()).size() > m_maxAssocClusters) {
-                LOG(DEBUG) << "Discarded track with " << track->getAssociatedClusters(m_detector->getName()).size()
-                           << " associated clusters";
+            if(associated_clusters.size() > m_maxAssocClusters) {
+                LOG(DEBUG) << "Discarded track with " << associated_clusters.size() << " associated clusters";
                 m_discardedtracks++;
                 continue;
             }
@@ -90,16 +93,16 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
             }
         }
         LOG(TRACE) << "Cloning track with track model \"" << track->getType() << "\" for alignment";
-        auto alignmentTrack = std::shared_ptr<Track>(track->clone());
-        m_alignmenttracks.push_back(alignmentTrack);
+
+        // Keep this track on persistent storage for alignment:
+        alignmenttracks.push_back(track);
+        // Append associated clusters to the list we want to keep:
+        alignmentclusters.insert(alignmentclusters.end(), associated_clusters.begin(), associated_clusters.end());
 
         // Find the cluster that needs to have its position recalculated
-        for(auto& associatedCluster : track->getAssociatedClusters(m_detector->getName())) {
-            if(associatedCluster->detectorID() != m_detector->getName()) {
-                continue;
-            }
+        for(auto& associated_cluster : associated_clusters) {
             // Local position of the cluster
-            auto position = associatedCluster->local();
+            auto position = associated_cluster->local();
 
             // Get the track intercept with the detector
             auto trackIntercept = m_detector->getIntercept(track.get());
@@ -127,6 +130,11 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
         }
     }
 
+    // Store all tracks we want for alignment on the permanent storage:
+    clipboard->putPersistentData(alignmenttracks);
+    // Copy the objects of all associated clusters on the clipboard to persistent storage:
+    clipboard->copyToPersistentData(alignmentclusters, m_detector->getName());
+
     // Otherwise keep going
     return StatusCode::Success;
 }
@@ -153,8 +161,6 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
     // Loop over all tracks
     for(auto& track : AlignmentDUTResidual::globalTracks) {
         LOG(TRACE) << "track has chi2 " << track->getChi2();
-        auto detector = track->getClusters().front()->detectorID();
-        LOG(TRACE) << "- track has gradient " << track->getDirection(detector) << " at detector " << detector;
 
         // Find the cluster that needs to have its position recalculated
         for(auto& associatedCluster : track->getAssociatedClusters(AlignmentDUTResidual::globalDetector->getName())) {
@@ -193,7 +199,7 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
     }
 }
 
-void AlignmentDUTResidual::finalise() {
+void AlignmentDUTResidual::finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) {
 
     if(m_discardedtracks > 0) {
         LOG(STATUS) << "Discarded " << m_discardedtracks << " input tracks.";
@@ -204,7 +210,7 @@ void AlignmentDUTResidual::finalise() {
     residualFitter->SetFCN(MinimiseResiduals);
 
     // Set the global parameters
-    AlignmentDUTResidual::globalTracks = m_alignmenttracks;
+    AlignmentDUTResidual::globalTracks = clipboard->getPersistentData<Track>();
 
     // Set the printout arguments of the fitter
     Double_t arglist[10];

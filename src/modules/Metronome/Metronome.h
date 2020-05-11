@@ -31,8 +31,8 @@ namespace corryvreckan {
         ~Metronome() {}
 
         // Functions
-        void initialise();
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        void initialize() override;
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
     private:
         double m_eventStart, m_eventEnd, m_eventLength;

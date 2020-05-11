@@ -30,7 +30,7 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
     // We need to check for the config files in case of scans... TBI
 }
 
-void EventLoaderMuPixTelescope::initialise() {
+void EventLoaderMuPixTelescope::initialize() {
 
     for(auto& detector : get_detectors()) {
         LOG(DEBUG) << "Initialise for detector " + detector->getName();
@@ -69,7 +69,7 @@ void EventLoaderMuPixTelescope::initialise() {
     hTimeStamp = new TH1F("pixelTS", "pixelTS; TS in clock cycles; ", 1024, -0.5, 1023.5);
 }
 
-StatusCode EventLoaderMuPixTelescope::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EventLoaderMuPixTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Loop over all detectors
     vector<string> detectors;

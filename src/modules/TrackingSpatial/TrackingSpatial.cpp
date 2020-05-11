@@ -46,7 +46,7 @@ TrackingSpatial::TrackingSpatial(Configuration& config, std::vector<std::shared_
     spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, config_, get_detectors());
 }
 
-void TrackingSpatial::initialise() {
+void TrackingSpatial::initialize() {
 
     // Set up histograms
     std::string title = "Track #chi^{2};#chi^{2};events";
@@ -92,7 +92,7 @@ void TrackingSpatial::initialise() {
     }
 }
 
-StatusCode TrackingSpatial::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode TrackingSpatial::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Container for all clusters, and detectors in tracking
     map<string, KDTree<Cluster>> trees;

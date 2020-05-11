@@ -45,7 +45,7 @@ uint32_t EventLoaderATLASpix::gray_decode(uint32_t gray) {
     return bin;
 }
 
-void EventLoaderATLASpix::initialise() {
+void EventLoaderATLASpix::initialize() {
 
     if(m_buffer_depth < 1) {
         throw InvalidValueError(config_, "buffer_depth", "Buffer depth must be larger than 0.");
@@ -181,7 +181,7 @@ void EventLoaderATLASpix::initialise() {
     eof_reached = false;
 }
 
-StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EventLoaderATLASpix::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Check if event frame is defined:
     if(!clipboard->isEventDefined()) {
@@ -198,7 +198,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     while(true) {
 
         if(sorted_pixels_.empty() && eof_reached) {
-            // break while loop but still go until the end of the run() function
+            // break while loop but still go until the end of the run function
             LOG(TRACE) << "break while(true) --> end of file reached";
             break;
         }
