@@ -186,12 +186,12 @@ namespace corryvreckan {
     };
 
     // Template specialization for Cluster
-    template <> XYZPoint KDTree<Cluster>::get_position(const std::shared_ptr<Cluster>& element) const {
+    template <> inline XYZPoint KDTree<Cluster>::get_position(const std::shared_ptr<Cluster>& element) const {
         return element->global();
     }
 
     // Template specialization for Pixel
-    template <> XYZPoint KDTree<Pixel>::get_position(const std::shared_ptr<Pixel>& element) const {
+    template <> inline XYZPoint KDTree<Pixel>::get_position(const std::shared_ptr<Pixel>& element) const {
         return XYZPoint(element->column(), element->row(), 0);
     }
 } // namespace corryvreckan
