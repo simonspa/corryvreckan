@@ -37,7 +37,7 @@ TrackingSpatial::TrackingSpatial(Configuration& config, std::vector<std::shared_
     config_.setDefault<std::string>("track_model", "straightline");
     config_.setDefault<bool>("reject_by_roi", false);
 
-    if(config_.count({"spatial_cut_rel", "spatial_cut_rel"}) == 0) {
+    if(config_.count({"spatial_cut_rel", "spatial_cut_abs"}) == 0) {
         config_.setDefault("spatial_cut_rel", 3.0);
     }
 
