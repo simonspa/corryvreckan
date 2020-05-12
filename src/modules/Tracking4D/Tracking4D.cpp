@@ -35,8 +35,18 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
     config_.setDefault<bool>("volume_scattering", false);
     config_.setDefault<bool>("reject_by_roi", false);
 
+    if(config_.count({"time_cut_rel", "time_cut_rel"}) == 0) {
+        config_.setDefault("time_cut_rel", 3.0);
+    }
+    if(config_.count({"spatial_cut_rel", "spatial_cut_rel"}) == 0) {
+        config_.setDefault("spatial_cut_rel", 3.0);
+    }
+
     // timing cut, relative (x * time_resolution) or absolute:
-    time_cuts_ = corryvreckan::calculate_cut<double>("time_cut", 3.0, config_, get_detectors());
+    time_cuts_ = corryvreckan::calculate_cut<double>("time_cut", config_, get_detectors());
+    // spatial cut, relative (x * spatial_resolution) or absolute:
+    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", config_, get_detectors());
+
     min_hits_on_track_ = config_.get<size_t>("min_hits_on_track");
     exclude_DUT_ = config_.get<bool>("exclude_dut");
 
@@ -61,8 +71,6 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
         LOG_ONCE(WARNING) << "Taking volume scattering effects into account is still WIP and causes the GBL to fail - these "
                              "tracks are rejected";
     }
-    // spatial cut, relative (x * spatial_resolution) or absolute:
-    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, config_, get_detectors());
 }
 
 void Tracking4D::initialize() {
