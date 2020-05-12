@@ -8,6 +8,9 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#ifndef CORRYVRECKAN_TRACKINGMULTIPLET_H
+#define CORRYVRECKAN_TRACKINGMULTIPLET_H 1
+
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -95,3 +98,5 @@ namespace corryvreckan {
     };
 
 } // namespace corryvreckan
+
+#endif // CORRYVRECKAN_TRACKINGMULTIPLET_H
