@@ -281,8 +281,8 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
     double time_cut_ref_track = std::min(time_cuts_[reference_first], time_cuts_[reference_last]);
 
     // Tracklet finding
-    for(auto& clusterFirst : cluster_trees[reference_first].getAllElements()) {
-        for(auto& clusterLast : cluster_trees[reference_last].getAllElements()) {
+    for(const auto& clusterFirst : cluster_trees[reference_first].getAllElements()) {
+        for(const auto& clusterLast : cluster_trees[reference_last].getAllElements()) {
 
             if(std::fabs(clusterFirst->timestamp() - clusterLast->timestamp()) > time_cut_refs) {
                 LOG(DEBUG) << "Reference clusters not within time cuts.";
@@ -297,7 +297,7 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
             trackletCandidate->setTimestamp(averageTimestamp);
 
             size_t detector_nr = 2;
-            for(auto& detector_tree : cluster_trees) {
+            for(const auto& detector_tree : cluster_trees) {
                 auto detector = detector_tree.first;
                 if(detector == reference_first || detector == reference_last) {
                     continue;
