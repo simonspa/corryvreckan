@@ -14,6 +14,8 @@
 #include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
 
+#include "tools/cuts.h"
+
 #include "TF1.h"
 #include "TFile.h"
 
@@ -36,14 +38,12 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration& config, std::share
 
     using namespace ROOT::Math;
     m_detector = detector;
-    if(config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            config_, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
-    } else if(config_.has("time_cut_abs")) {
-        m_timeCut = config_.get<double>("time_cut_abs");
-    } else {
-        m_timeCut = config_.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
+    if(config_.count({"time_cut_rel", "time_cut_abs"}) == 0) {
+        config_.setDefault("time_cut_rel", 3.0);
     }
+
+    // timing cut, relative (x * time_resolution) or absolute:
+    m_timeCut = corryvreckan::calculate_cut<double>("time_cut", config_, m_detector);
 
     m_chi2ndofCut = config_.get<double>("chi2ndof_cut");
     m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge");
