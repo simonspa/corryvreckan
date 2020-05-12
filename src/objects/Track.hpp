@@ -18,8 +18,8 @@
 #include <TRef.h>
 
 #include "Cluster.hpp"
-#include "core/detector/Detector.hpp"
 #include "core/utils/type.h"
+
 namespace corryvreckan {
 
     using namespace ROOT::Math;
@@ -266,15 +266,20 @@ namespace corryvreckan {
                 ->getMaterialBudget();
         }
 
-        void updatePlane(std::shared_ptr<Detector> det);
-
         ROOT::Math::XYZPoint getCorrection(std::string detectorID) const;
 
         long unsigned int getNumScatterers() const { return planes_.size(); }
         virtual void setVolumeScatter(double length) = 0;
         void setLogging(bool on = false) { logging_ = on; }
 
-        void registerPlane(std::shared_ptr<Detector> detector);
+        void registerPlane(Plane p) { planes_.push_back(p); }
+        void updatePlane(Plane p) {
+            std::replace_if(
+                planes_.begin(),
+                planes_.end(),
+                [&p](auto const& plane) { return plane.getName() == p.getName(); },
+                std::move(p));
+        }
 
     protected:
         std::vector<TRef> track_clusters_;

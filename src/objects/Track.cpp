@@ -138,26 +138,11 @@ Cluster* Track::getClusterFromDetector(std::string detectorID) const {
     return dynamic_cast<Cluster*>(it->GetObject());
 }
 
-void Track::updatePlane(std::shared_ptr<Detector> det) {
-    Plane pl(det->displacement().z(), det->materialBudget(), det->getName());
-    pl.setToLocal(det->toLocal());
-    pl.setToGlobal(det->toGlobal());
-    std::replace_if(
-        planes_.begin(), planes_.end(), [&pl](auto const& plane) { return plane.getName() == pl.getName(); }, std::move(pl));
-}
-
 ROOT::Math::XYZPoint Track::getCorrection(std::string detectorID) const {
     if(corrections_.count(detectorID) == 1)
         return corrections_.at(detectorID);
     else
         throw TrackError(typeid(Track), " calles correction on non existing detector " + detectorID);
-}
-
-void Track::registerPlane(std::shared_ptr<Detector> detector) {
-    Plane p(detector->localToGlobal(ROOT::Math::XYZPoint(0, 0, 0)).z(), detector->materialBudget(), detector->getName());
-    p.setToLocal(detector->toLocal());
-    p.setToGlobal(detector->toGlobal());
-    planes_.push_back(p);
 }
 
 std::shared_ptr<Track> corryvreckan::Track::Factory(std::string trackModel) {
