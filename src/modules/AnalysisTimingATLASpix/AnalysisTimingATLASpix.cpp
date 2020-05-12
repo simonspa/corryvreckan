@@ -26,15 +26,13 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration& config, std::share
     config_.setAlias("time_cut_abs", "timing_cut", true);
 
     config_.setDefault<double>("chi2ndof_cut", 3.);
-    config_.setDefault<double>("time_cut_frameedge", static_cast<double>(Units::convert(20, "ns")));
+    config_.setDefault<double>("time_cut_frameedge", static_cast<double>(Units::get(20, "ns")));
     config_.setDefault<int>("high_tot_cut", 40);
     config_.setDefault<int>("low_tot_cut", 10);
-    config_.setDefault<double>("timing_tail_cut", static_cast<double>(Units::convert(20, "ns")));
+    config_.setDefault<double>("timing_tail_cut", static_cast<double>(Units::get(20, "ns")));
     config_.setDefault<bool>("calc_corrections", false);
     config_.setDefault<int>("tot_bin_example", 3);
-    config_.setDefault<XYVector>(
-        "inpixel_bin_size",
-        {static_cast<double>(Units::convert(1.0, "um")), static_cast<double>(Units::convert(1.0, "um"))});
+    config_.setDefault<XYVector>("inpixel_bin_size", {Units::get(1.0, "um"), Units::get(1.0, "um")});
 
     using namespace ROOT::Math;
     m_detector = detector;
