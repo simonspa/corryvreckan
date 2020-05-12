@@ -23,11 +23,18 @@ DUTAssociation::DUTAssociation(Configuration& config, std::shared_ptr<Detector> 
 
     config_.setDefault<bool>("use_cluster_centre", false);
 
+    if(config_.count({"time_cut_rel", "time_cut_rel"}) == 0) {
+        config_.setDefault("time_cut_rel", 3.0);
+    }
+    if(config_.count({"spatial_cut_rel", "spatial_cut_rel"}) == 0) {
+        config_.setDefault("spatial_cut_rel", 3.0);
+    }
+
     // timing cut, relative (x * time_resolution) or absolute:
-    timeCut = corryvreckan::calculate_cut<double>("time_cut", 3.0, config_, m_detector);
+    timeCut = corryvreckan::calculate_cut<double>("time_cut", config_, m_detector);
 
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    spatialCut = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, config_, m_detector);
+    spatialCut = corryvreckan::calculate_cut<XYVector>("spatial_cut", config_, m_detector);
     useClusterCentre = config_.get<bool>("use_cluster_centre");
 
     LOG(DEBUG) << "time_cut = " << Units::display(timeCut, {"ms", "us", "ns"});
