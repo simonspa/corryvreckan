@@ -74,21 +74,21 @@ namespace corryvreckan {
         /**
          * @brief Return all registered elements
          */
-        std::vector<std::shared_ptr<T>> getAllElements() { return elements_; };
+        std::vector<std::shared_ptr<T>> getAllElements() const { return elements_; };
 
         /**
          * @brief Get all neighboring elements within time range
          * @param timestamp  Reference time to return neighbors for
          * @param timeWindow Time range for neighbor search
          */
-        std::vector<std::shared_ptr<T>> getAllElementsInTimeWindow(double timestamp, double timeWindow) {
+        std::vector<std::shared_ptr<T>> getAllElementsInTimeWindow(const double timestamp, const double timeWindow) const {
             if(!kdtree_time_) {
                 throw RuntimeError("time tree not initialized");
             }
 
             // Get iterators of all elements within the time window
             std::vector<int> results;
-            kdtree_time_->FindInRange(&timestamp, timeWindow, results);
+            kdtree_time_->FindInRange(const_cast<double*>(&timestamp), timeWindow, results);
 
             // Turn this into a vector of elements
             std::vector<std::shared_ptr<T>> result_elements;
@@ -99,7 +99,8 @@ namespace corryvreckan {
         }
 
         // Function to get back all elements within a given time period with respect to a element
-        std::vector<std::shared_ptr<T>> getAllElementsInTimeWindow(const std::shared_ptr<T>& element, double timeWindow) {
+        std::vector<std::shared_ptr<T>> getAllElementsInTimeWindow(const std::shared_ptr<T>& element,
+                                                                   const double timeWindow) const {
             return getAllElementsInTimeWindow(element->timestamp(), timeWindow);
         }
 
@@ -108,7 +109,8 @@ namespace corryvreckan {
          * @param element Element to return neighbors for
          * @param window  Radius for neighbor selection
          */
-        std::vector<std::shared_ptr<T>> getAllElementsInSpaceWindow(const std::shared_ptr<T>& element, double window) {
+        std::vector<std::shared_ptr<T>> getAllElementsInSpaceWindow(const std::shared_ptr<T>& element,
+                                                                    const double window) const {
             if(!kdtree_space_) {
                 throw RuntimeError("space tree not initialized");
             }
@@ -131,7 +133,7 @@ namespace corryvreckan {
          * @param  element Object to search neighbor for
          * @return         Closest neighbor to element
          */
-        std::shared_ptr<T> getClosestSpaceNeighbor(const std::shared_ptr<T>& element) {
+        std::shared_ptr<T> getClosestSpaceNeighbor(const std::shared_ptr<T>& element) const {
             if(!kdtree_space_) {
                 throw RuntimeError("space tree not initialized");
             }
@@ -149,7 +151,7 @@ namespace corryvreckan {
          * @param  element Object to search neighbor for
          * @return         Closest neighbor to element
          */
-        std::shared_ptr<T> getClosestTimeNeighbor(const std::shared_ptr<T>& element) {
+        std::shared_ptr<T> getClosestTimeNeighbor(const std::shared_ptr<T>& element) const {
             if(!kdtree_time_) {
                 throw RuntimeError("time tree not initialized");
             }
@@ -173,7 +175,7 @@ namespace corryvreckan {
          * @param  element The object to get the position from
          * @return         Position of the element
          */
-        XYZPoint get_position(const std::shared_ptr<T>& element);
+        XYZPoint get_position(const std::shared_ptr<T>& element) const;
 
         // Trees for lookup in space and time
         std::unique_ptr<TKDTreeID> kdtree_space_;
@@ -184,10 +186,12 @@ namespace corryvreckan {
     };
 
     // Template specialization for Cluster
-    template <> XYZPoint KDTree<Cluster>::get_position(const std::shared_ptr<Cluster>& element) { return element->global(); }
+    template <> XYZPoint KDTree<Cluster>::get_position(const std::shared_ptr<Cluster>& element) const {
+        return element->global();
+    }
 
     // Template specialization for Pixel
-    template <> XYZPoint KDTree<Pixel>::get_position(const std::shared_ptr<Pixel>& element) {
+    template <> XYZPoint KDTree<Pixel>::get_position(const std::shared_ptr<Pixel>& element) const {
         return XYZPoint(element->column(), element->row(), 0);
     }
 } // namespace corryvreckan
