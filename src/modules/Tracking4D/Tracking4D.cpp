@@ -27,8 +27,6 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
 
     config_.setDefault<size_t>("min_hits_on_track", 6);
     config_.setDefault<bool>("exclude_dut", true);
-    config_.setDefaultArray<std::string>("require_detectors", {});
-    config_.setDefault<std::string>("timestamp_from", "");
     config_.setDefault<std::string>("track_model", "straightline");
     config_.setDefault<double>("momentum", Units::get<double>(5, "GeV"));
     config_.setDefault<double>("volume_radiation_length", Units::get<double>(304.2, "m"));
@@ -50,8 +48,8 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
     min_hits_on_track_ = config_.get<size_t>("min_hits_on_track");
     exclude_DUT_ = config_.get<bool>("exclude_dut");
 
-    require_detectors_ = config_.getArray<std::string>("require_detectors");
-    timestamp_from_ = config_.get<std::string>("timestamp_from");
+    require_detectors_ = config_.getArray<std::string>("require_detectors", {});
+    timestamp_from_ = config_.get<std::string>("timestamp_from", {});
     if(!timestamp_from_.empty() &&
        std::find(require_detectors_.begin(), require_detectors_.end(), timestamp_from_) == require_detectors_.end()) {
         LOG(WARNING) << "Adding detector " << timestamp_from_
