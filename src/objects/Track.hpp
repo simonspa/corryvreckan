@@ -273,7 +273,7 @@ namespace corryvreckan {
         void setLogging(bool on = false) { logging_ = on; }
 
         void registerPlane(Plane p) { planes_.push_back(p); }
-        void updatePlane(Plane p) {
+        void replacePlane(Plane p) {
             std::replace_if(
                 planes_.begin(),
                 planes_.end(),

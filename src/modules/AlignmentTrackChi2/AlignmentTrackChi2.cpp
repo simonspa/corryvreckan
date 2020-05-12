@@ -125,7 +125,7 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
         pl.setToGlobal(AlignmentTrackChi2::globalDetector->toGlobal());
         LOG(DEBUG) << "Updating plane: " << pl;
 
-        track->updatePlane(pl);
+        track->replacePlane(pl);
         LOG(DEBUG) << "Updated Transformations for detector " << AlignmentTrackChi2::globalDetector->getName();
         IFLOG(DEBUG) { track->setLogging(true); }
         track->fit();

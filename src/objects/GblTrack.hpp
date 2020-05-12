@@ -78,10 +78,10 @@ namespace corryvreckan {
         double scattering_length_volume_{};
         bool use_volume_scatter_{};
 
-        // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(GblTrack, 3);
         std::map<std::string, ROOT::Math::XYPoint> local_track_points_{};
         std::map<std::string, ROOT::Math::XYPoint> initital_residual{};
+        // ROOT I/O class definition - update version number when you change this class!
+        ClassDefOverride(GblTrack, 3);
     };
 } // namespace corryvreckan
 
