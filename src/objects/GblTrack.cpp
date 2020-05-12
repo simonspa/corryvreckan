@@ -16,7 +16,6 @@
 
 #include "GblTrack.hpp"
 #include "exceptions.h"
-
 using namespace corryvreckan;
 using namespace gbl;
 using namespace Eigen;
@@ -142,7 +141,7 @@ void GblTrack::fit() {
         covv(0, 0) = 1. / cluster->errorX() / cluster->errorX();
         covv(1, 1) = 1. / cluster->errorY() / cluster->errorY();
         point.addMeasurement(initialResidual, covv);
-        initital_residual[p->getName()] = ROOT::Math::XYPoint(initialResidual(0), initialResidual(1));
+        initital_residual_[p->getName()] = ROOT::Math::XYPoint(initialResidual(0), initialResidual(1));
         if(logging_) {
             std::cout << "*********** Plane:  " << p->getName() << " \n Global Res to fit: \t("
                       << (cluster->global().x() - planes_.begin()->getCluster()->global().x()) << ", "
@@ -222,8 +221,8 @@ void GblTrack::fit() {
         prevToGlobal = plane->getToGlobal();
         prevToLocal = plane->getToLocal();
         points.push_back(point);
-        plane->setGblPos(unsigned(points.size())); // gbl starts counting at 1
-        globalTrackPos =                           // Constant switching between ROOT and EIGEN is really a pain...
+        plane->setGblPointPosition(unsigned(points.size())); // gbl starts counting at 1
+        globalTrackPos =                                     // Constant switching between ROOT and EIGEN is really a pain...
             plane->getToGlobal() *
             ROOT::Math::XYZPoint(localPosTrack(0), localPosTrack(1), localPosTrack(2)); // reference slope stays unchanged
     };
@@ -296,7 +295,7 @@ void GblTrack::fit() {
             // m_residual[plane.name()] = ROOT::Math::XYPoint(gblResiduals(0),gblResiduals(1));
             if(logging_) {
                 std::cout << "********* " << name << "\n Fitted res local:\t" << residual_.at(name) << "\n seed res:\t"
-                          << initital_residual.at(name) << " \n fitted res global:\t"
+                          << initital_residual_.at(name) << " \n fitted res global:\t"
                           << ROOT::Math::XYPoint(clusterPos.x() - corPos.x(), clusterPos.y() - corPos.y()) << std::endl
                           << "*********\n";
             }

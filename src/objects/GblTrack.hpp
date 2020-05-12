@@ -79,7 +79,7 @@ namespace corryvreckan {
         bool use_volume_scatter_{};
 
         std::map<std::string, ROOT::Math::XYPoint> local_track_points_{};
-        std::map<std::string, ROOT::Math::XYPoint> initital_residual{};
+        std::map<std::string, ROOT::Math::XYPoint> initital_residual_{};
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(GblTrack, 3);
     };

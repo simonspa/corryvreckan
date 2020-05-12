@@ -43,7 +43,7 @@ namespace corryvreckan {
         // sorting overload
         bool operator<(const Plane& pl) const { return z_ < pl.z_; }
         // set elements that might be unknown at construction
-        void setGblPos(unsigned pos) { gbl_points_pos_ = pos; }
+        void setGblPointPosition(unsigned pos) { gbl_points_pos_ = pos; }
         void setPosition(double z) { z_ = z; }
 
         void setCluster(const Cluster* cluster) { cluster_ = const_cast<Cluster*>(cluster); }
@@ -268,7 +268,6 @@ namespace corryvreckan {
 
         ROOT::Math::XYZPoint getCorrection(std::string detectorID) const;
 
-        long unsigned int getNumScatterers() const { return planes_.size(); }
         virtual void setVolumeScatter(double length) = 0;
         void setLogging(bool on = false) { logging_ = on; }
 
