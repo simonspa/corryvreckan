@@ -223,7 +223,7 @@ void AlignmentTrackChi2::finalize(const std::shared_ptr<ReadonlyClipboard>& clip
             auto old_orientation = detector->rotation();
 
             // Fit this plane (minimising global track chi2)
-            LOG(DEBUG) << "fitting residuals";
+            LOG(DEBUG) << "fitting residuals for detetcor " << detector->getName();
             residualFitter->ExecuteCommand("MIGRAD", arglist, 2);
 
             // Retrieve fit results:

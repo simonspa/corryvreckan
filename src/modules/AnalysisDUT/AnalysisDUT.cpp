@@ -55,8 +55,8 @@ void AnalysisDUT::initialize() {
                                             0,
                                             500);
 
-    hTrackZPosDUT = new TH1F("trackZPos",
-                             "trackZPos; track intersection [mm]; #entries ",
+    hTrackZPosDUT = new TH1F("globalTrackZPosOnDUT",
+                             "globalTrackZPosOnDUT; global z of track intersection [mm]; #entries ",
                              400,
                              m_detector->displacement().z() - 10,
                              m_detector->displacement().z() + 10);
