@@ -103,7 +103,7 @@ namespace corryvreckan {
         ClassDefOverride(Multiplet, 1)
     };
     // Vector type declaration
-    using MultipletVector = std::vector<Multiplet*>;
+    using MultipletVector = std::vector<std::shared_ptr<Multiplet>>;
 } // namespace corryvreckan
 
 #endif // CORRYVRECKAN_Multiplet_H
