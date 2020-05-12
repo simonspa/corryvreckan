@@ -12,12 +12,13 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <iostream>
+
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
-#include "objects/KDTree.hpp"
 #include "objects/Multiplet.hpp"
 #include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
+#include "tools/kdtree.h"
 
 namespace corryvreckan {
     /** @ingroup Modules
@@ -31,18 +32,16 @@ namespace corryvreckan {
     public:
         // Constructors and destructors
         TrackingMultiplet(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
-        ~TrackingMultiplet() {}
 
         // Init, run and finalise functions
-        void initialise();
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        void finalise(){};
+        void initialize();
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard);
 
         /**
          * @brief Find tracklets for upstream or downstream tracklets
          */
         TrackVector find_multiplet_tracklets(const streams& stream,
-                                             std::map<std::shared_ptr<Detector>, KDTree*>& cluster_trees,
+                                             std::map<std::shared_ptr<Detector>, KDTree<Cluster>>& cluster_trees,
                                              std::shared_ptr<Detector> reference_first,
                                              std::shared_ptr<Detector> reference_last);
 
