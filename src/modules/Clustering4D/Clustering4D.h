@@ -30,12 +30,12 @@ namespace corryvreckan {
         ~Clustering4D() {}
 
         // Functions
-        void initialise();
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        void initialize() override;
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
     private:
         std::shared_ptr<Detector> m_detector;
-        static bool sortByTime(Pixel* pixel1, Pixel* pixel2);
+        static bool sortByTime(const std::shared_ptr<Pixel>& pixel1, const std::shared_ptr<Pixel>& pixel2);
         void calculateClusterCentre(Cluster*);
         bool touching(Pixel*, Cluster*);
         bool closeInTime(Pixel*, Cluster*);
@@ -46,14 +46,20 @@ namespace corryvreckan {
         TH1F* clusterWidthRow;
         TH1F* clusterWidthColumn;
         TH1F* clusterCharge;
+        TH1F* clusterCharge_1px;
+        TH1F* clusterCharge_2px;
+        TH1F* clusterCharge_3px;
         TH2F* clusterPositionGlobal;
+        TH2F* clusterPositionLocal;
         TH1F* clusterTimes;
         TH1F* clusterMultiplicity;
+        TH1F* pixelTimeMinusClusterTime;
 
-        double timeCut;
-        int neighbourRadiusRow;
-        int neighbourRadiusCol;
-        bool chargeWeighting;
+        double time_cut_;
+        int neighbor_radius_row_;
+        int neighbor_radius_col_;
+        bool charge_weighting_;
+        bool reject_by_ROI_;
     };
 } // namespace corryvreckan
 #endif // CLUSTERING4D_H

@@ -13,7 +13,7 @@ For each telescope detector except the reference plane, this method moves the de
 * `iterations`: Number of times the chosen alignment method is to be iterated. Default value is `3`.
 * `align_position`: Boolean to select whether to align the X and Y displacements of the detector or not. Note that the Z displacement is never aligned. The default value is `true`.
 * `align_orientation`: Boolean to select whether to align the three rotations of the detector under consideration or not. The default value is `true`.
-* `prune_tracks`: Boolean to set if tracks with a number of associated clusters > `max_associated_clusters` or with a track chi^2 > `max_track_chi2ndof` should be excluded from use in the alignment. The number of discarded tracks is outputted on terminal. Default is `false`.
+* `prune_tracks`: Boolean to set if tracks with a track chi^2 > `max_track_chi2ndof` should be excluded from use in the alignment. The number of discarded tracks is outputted on terminal. Default is `false`.
 * `max_associated_clusters`: Maximum number of associated clusters per track allowed when `prune_tracks = true` for the track to be used in the alignment. Default value is `1`.
 * `max_track_chi2ndof`: Maximum track chi^2 value allowed when `prune_tracks = true` for the track to be used in the alignment. Default value is `10.0`.
 

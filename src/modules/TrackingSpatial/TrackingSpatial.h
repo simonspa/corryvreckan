@@ -33,8 +33,8 @@ namespace corryvreckan {
         ~TrackingSpatial() {}
 
         // Functions
-        void initialise();
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        void initialize() override;
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
     private:
         // Histograms
@@ -51,6 +51,7 @@ namespace corryvreckan {
         std::map<std::shared_ptr<Detector>, XYVector> spatial_cuts_;
         size_t minHitsOnTrack;
         bool excludeDUT;
+        bool rejectByROI;
         std::string trackModel;
     };
 } // namespace corryvreckan

@@ -40,7 +40,7 @@ uint32_t EventLoaderATLASpix::gray_decode(uint32_t gray) {
     return bin;
 }
 
-void EventLoaderATLASpix::initialise() {
+void EventLoaderATLASpix::initialize() {
 
     if(m_buffer_depth < 1) {
         throw InvalidValueError(m_config, "buffer_depth", "Buffer depth must be larger than 0.");
@@ -109,37 +109,40 @@ void EventLoaderATLASpix::initialise() {
                                          0,
                                          100);
 
-    hPixelToT = new TH1F("pixelToT", "pixelToT; pixel ToT in TS2 clock cycles; # events", 64, 0, 64);
-    hPixelToT_beforeCorrection = new TH1F(
-        "pixelToT_beforeCorrection", "pixelToT_beforeCorrection; pixel ToT in TS2 clock cycles; # events", 2 * 64, -64, 64);
-    hPixelCharge = new TH1F("pixelCharge", "pixelCharge; pixel charge [e]; # events", 100, 0, 100);
+    hPixelToT = new TH1F("pixelToT", "pixelToT; pixel ToT in TS2 clock cycles; # events", 64, -0.5, 63.5);
+    hPixelToT_beforeCorrection = new TH1F("pixelToT_beforeCorrection",
+                                          "pixelToT_beforeCorrection; pixel ToT in TS2 clock cycles; # events",
+                                          2 * 64,
+                                          -64.5,
+                                          63.5);
+    hPixelCharge = new TH1F("pixelCharge", "pixelCharge; pixel charge [e]; # events", 100, -0.5, 99.5);
     hPixelToA = new TH1F("pixelToA", "pixelToA; pixel ToA [ns]; # events", 100, 0, 100);
-    hPixelMultiplicity = new TH1F("pixelMultiplicity", "Pixel Multiplicity; # pixels; # events", 200, 0, 200);
+    hPixelMultiplicity = new TH1F("pixelMultiplicity", "Pixel Multiplicity; # pixels; # events", 200, -0.5, 199.5);
     hPixelTimes = new TH1F("hPixelTimes", "pixelTimes; hit timestamp [ms]; # events", 3e6, 0, 3e3);
     hPixelTimes_long = new TH1F("hPixelTimes_long", "pixelTimes_long; hit timestamp [s]; # events", 3e6, 0, 3e3);
 
-    hPixelTS1 = new TH1F("pixelTS1", "pixelTS1; pixel TS1 [lsb]; # events", 2050, 0, 2050);
-    hPixelTS2 = new TH1F("pixelTS2", "pixelTS2; pixel TS2 [lsb]; # events", 130, 0, 130);
-    hPixelTS1bits = new TH1F("pixelTS1bits", "pixelTS1bits; pixel TS1 bit [lsb->msb]; # events", 12, 0, 12);
-    hPixelTS2bits = new TH1F("pixelTS2bits", "pixelTS2bits; pixel TS2 bit [lsb->msb]; # events", 8, 0, 8);
+    hPixelTS1 = new TH1F("pixelTS1", "pixelTS1; pixel TS1 [lsb]; # events", 2050, -0.5, 2049.5);
+    hPixelTS2 = new TH1F("pixelTS2", "pixelTS2; pixel TS2 [lsb]; # events", 130, -0.5, 129.5);
+    hPixelTS1bits = new TH1F("pixelTS1bits", "pixelTS1bits; pixel TS1 bit [lsb->msb]; # events", 12, -0.5, 11.5);
+    hPixelTS2bits = new TH1F("pixelTS2bits", "pixelTS2bits; pixel TS2 bit [lsb->msb]; # events", 8, -0.5, 7.5);
 
-    hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;entries", 20, 0, 20);
+    hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;entries", 20, -0.5, 19.5);
 
     // low ToT:
-    hPixelTS1_lowToT = new TH1F("pixelTS1_lowToT", "pixelTS1_lowToT; pixel TS1 [lsb]; # events", 2050, 0, 2050);
-    hPixelTS2_lowToT = new TH1F("pixelTS2_lowToT", "pixelTS2_lowToT; pixel TS2 [lsb]; # events", 130, 0, 130);
+    hPixelTS1_lowToT = new TH1F("pixelTS1_lowToT", "pixelTS1_lowToT; pixel TS1 [lsb]; # events", 2050, -0.5, 2049.5);
+    hPixelTS2_lowToT = new TH1F("pixelTS2_lowToT", "pixelTS2_lowToT; pixel TS2 [lsb]; # events", 130, -0.5, 129.5);
     hPixelTS1bits_lowToT =
-        new TH1F("pixelTS1bits_lowToT", "pixelTS1bits_lowToT; pixel TS1 bit [lsb->msb]; # events", 12, 0, 12);
+        new TH1F("pixelTS1bits_lowToT", "pixelTS1bits_lowToT; pixel TS1 bit [lsb->msb]; # events", 12, -0.5, 11.5);
     hPixelTS2bits_lowToT =
-        new TH1F("pixelTS2bits_lowToT", "pixelTS2bits_lowToT; pixel TS2 bit [lsb->msb]; # events", 8, 0, 8);
+        new TH1F("pixelTS2bits_lowToT", "pixelTS2bits_lowToT; pixel TS2 bit [lsb->msb]; # events", 8, -0.5, 7.5);
 
     // high ToT:
-    hPixelTS1_highToT = new TH1F("pixelTS1_highToT", "pixelTS1_highToT; pixel TS1 [lsb]; # events", 2050, 0, 2050);
-    hPixelTS2_highToT = new TH1F("pixelTS2_highToT", "pixelTS2_highToT; pixel TS2 [lsb]; # events", 130, 0, 130);
+    hPixelTS1_highToT = new TH1F("pixelTS1_highToT", "pixelTS1_highToT; pixel TS1 [lsb]; # events", 2050, -0.5, 2049.5);
+    hPixelTS2_highToT = new TH1F("pixelTS2_highToT", "pixelTS2_highToT; pixel TS2 [lsb]; # events", 130, -0.5, 129.5);
     hPixelTS1bits_highToT =
-        new TH1F("pixelTS1bits_highToT", "pixelTS1bits_highToT; pixel TS1 bit [lsb->msb]; # events", 12, 0, 12);
+        new TH1F("pixelTS1bits_highToT", "pixelTS1bits_highToT; pixel TS1 bit [lsb->msb]; # events", 12, -0.5, 11.5);
     hPixelTS2bits_highToT =
-        new TH1F("pixelTS2bits_highToT", "pixelTS2bits_highToT; pixel TS2 bit [lsb->msb]; # events", 8, 0, 8);
+        new TH1F("pixelTS2bits_highToT", "pixelTS2bits_highToT; pixel TS2 bit [lsb->msb]; # events", 8, -0.5, 7.5);
 
     hPixelTimeEventBeginResidual = new TH1F("hPixelTimeEventBeginResidual",
                                             "hPixelTimeEventBeginResidual;pixel_ts - clipboard event begin [us]; # entries",
@@ -173,7 +176,7 @@ void EventLoaderATLASpix::initialise() {
     eof_reached = false;
 }
 
-StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EventLoaderATLASpix::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Check if event frame is defined:
     if(!clipboard->isEventDefined()) {
@@ -186,11 +189,11 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     double end_time = event->end();
 
     // prepare pixels vector
-    std::shared_ptr<PixelVector> pixels = std::make_shared<PixelVector>();
+    PixelVector pixels;
     while(true) {
 
         if(sorted_pixels_.empty() && eof_reached) {
-            // break while loop but still go until the end of the run() function
+            // break while loop but still go until the end of the run function
             LOG(TRACE) << "break while(true) --> end of file reached";
             break;
         }
@@ -233,7 +236,7 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
         // add to vector of pixels
         LOG(DEBUG) << "Pixel is during event: (" << pixel->column() << ", " << pixel->row()
                    << ") ts: " << Units::display(pixel->timestamp(), {"ns", "us", "ms"});
-        pixels->push_back(pixel);
+        pixels.push_back(pixel);
 
         // fill all per-pixel histograms:
         hHitMap->Fill(pixel->column(), pixel->row());
@@ -277,12 +280,12 @@ StatusCode EventLoaderATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     LOG(DEBUG) << "nTriggers = " << nTriggers;
     hTriggersPerEvent->Fill(static_cast<double>(nTriggers));
 
-    hPixelMultiplicity->Fill(static_cast<double>(pixels->size()));
+    hPixelMultiplicity->Fill(static_cast<double>(pixels.size()));
 
     // Put the data on the clipboard
     clipboard->putData(pixels, m_detector->getName());
 
-    if(pixels->empty()) {
+    if(pixels.empty()) {
         LOG(DEBUG) << "Returning <NoData> status, no hits found.";
         return StatusCode::NoData;
     }
@@ -400,7 +403,7 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
         LOG(DEBUG) << "Adding time_offset of " << m_time_offset << " to pixel timestamp. New pixel timestamp: " << timestamp;
 
         // since calibration is not implemented yet, set charge = tot
-        Pixel* pixel = new Pixel(m_detector->getName(), col, row, tot, tot, timestamp);
+        auto pixel = std::make_shared<Pixel>(m_detector->getName(), col, row, tot, tot, timestamp);
 
         // FIXME: implement conversion from ToT to charge:
         // thres-->e: 1620e/0.15V, or 1080e/100mV

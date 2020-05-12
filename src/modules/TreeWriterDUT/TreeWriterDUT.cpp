@@ -41,7 +41,7 @@ TreeWriterDUT::TreeWriterDUT(Configuration config, std::shared_ptr<Detector> det
 
  */
 
-void TreeWriterDUT::initialise() {
+void TreeWriterDUT::initialize() {
     LOG(DEBUG) << "Initialised TreeWriterDUT";
 
     // Create output file and directories
@@ -68,7 +68,7 @@ void TreeWriterDUT::initialise() {
     m_outputTree->Branch("intercepts", &v_intercepts);
 }
 
-StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode TreeWriterDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
     // Counter for cluster event ID
     eventID++;
 
@@ -85,15 +85,15 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Getting tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
+    if(tracks.empty()) {
         LOG(DEBUG) << "No tracks on the clipboard";
-        return StatusCode::Success;
+        return StatusCode::NoData;
     }
 
     // Iterate through tracks found
-    for(auto& track : (*tracks)) {
+    for(auto& track : tracks) {
         // CHeck if we have associated clusters:
-        auto associatedClusters = track->associatedClusters();
+        auto associatedClusters = track->getAssociatedClusters(m_detector->getName());
         if(associatedClusters.empty()) {
             LOG(TRACE) << "No associated clusters, skipping track.";
             continue;
@@ -107,7 +107,7 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "Found track with associated cluster";
 
         // Get track intercept with DUT in global coordinates
-        trackIntercept = m_detector->getIntercept(track);
+        trackIntercept = m_detector->getIntercept(track.get());
 
         // Calculate the intercept in local coordinates
         trackInterceptLocal = m_detector->globalToLocal(trackIntercept);
@@ -170,7 +170,7 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void TreeWriterDUT::finalise() {
+void TreeWriterDUT::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     LOG(DEBUG) << "Finalise";
     auto directory = m_outputFile->mkdir("Directory");
     directory->cd();

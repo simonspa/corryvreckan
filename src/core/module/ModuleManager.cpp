@@ -506,7 +506,7 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
     return modules;
 }
 
-// Run the analysis loop - this initialises, runs and finalises all modules
+// Run the analysis loop - this initializes, runs and finalizes all modules
 void ModuleManager::run() {
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
@@ -562,6 +562,9 @@ void ModuleManager::run() {
             }
         }
 
+        // Increment event number
+        m_events++;
+
         // Print statistics:
         m_tracks += static_cast<int>(m_clipboard->countObjects<Track>());
         m_pixels += static_cast<int>(m_clipboard->countObjects<Pixel>());
@@ -587,7 +590,7 @@ void ModuleManager::run() {
         }
 
         // Check if we have reached the maximum number of events
-        if(number_of_events > -1 && m_events >= number_of_events - 1) {
+        if(number_of_events > -1 && m_events >= number_of_events) {
             break;
         }
 
@@ -612,9 +615,6 @@ void ModuleManager::run() {
 
         // Clear objects from this iteration from the clipboard
         m_clipboard->clear();
-
-        // Increment event number
-        m_events++;
     }
 }
 
@@ -623,9 +623,9 @@ void ModuleManager::terminate() {
 }
 
 // Initalise all modules
-void ModuleManager::initialiseAll() {
-    // Loop over all modules and initialise them
-    LOG(STATUS) << "=================| Initialising modules |==================";
+void ModuleManager::initializeAll() {
+    // Loop over all modules and initialize them
+    LOG(STATUS) << "=================| Initializing modules |==================";
     for(auto& module : m_modules) {
         // Pass the config manager to this instance
         module->set_config_manager(conf_manager_);
@@ -667,9 +667,9 @@ void ModuleManager::initialiseAll() {
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
 
-        LOG_PROGRESS(STATUS, "MOD_INIT_LOOP") << "Initialising \"" << module->getUniqueName() << "\"";
-        // Initialise the module
-        module->initialise();
+        LOG_PROGRESS(STATUS, "MOD_INIT_LOOP") << "Initializing \"" << module->getUniqueName() << "\"";
+        // Initialize the module
+        module->initialize();
 
         // Reset logging
         Log::setSection(old_section_name);
@@ -678,10 +678,13 @@ void ModuleManager::initialiseAll() {
 }
 
 // Finalise all modules
-void ModuleManager::finaliseAll() {
+void ModuleManager::finalizeAll() {
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
-    // Loop over all modules and finalise them
+    // Create read-only version of permanent storage element from event clipboard:
+    auto readonly_clipboard = std::static_pointer_cast<ReadonlyClipboard>(m_clipboard);
+
+    // Loop over all modules and finalize them
     LOG(STATUS) << "===================| Finalising modules |===================";
     for(auto& module : m_modules) {
         // Set init module section header
@@ -695,7 +698,7 @@ void ModuleManager::finaliseAll() {
         module->getROOTDirectory()->cd();
 
         // Finalise the module
-        module->finalise();
+        module->finalize(readonly_clipboard);
 
         // Store all ROOT objects:
         module->getROOTDirectory()->Write();

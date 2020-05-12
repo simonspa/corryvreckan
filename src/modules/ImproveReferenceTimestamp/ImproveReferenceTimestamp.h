@@ -32,9 +32,9 @@ namespace corryvreckan {
         ~ImproveReferenceTimestamp() {}
 
         // Functions
-        void initialise();
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
-        void finalise();
+        void initialize() override;
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
         // Histograms for several devices
         std::map<std::string, TH2F*> plotPerDevice;

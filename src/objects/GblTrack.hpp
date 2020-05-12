@@ -26,11 +26,6 @@ namespace corryvreckan {
         // Constructors and destructors
         GblTrack();
 
-        // copy constructor
-        GblTrack(const GblTrack& track);
-
-        virtual GblTrack* clone() const override { return new GblTrack(*this); }
-
         void print(std::ostream& out) const override;
 
         /**
@@ -43,21 +38,30 @@ namespace corryvreckan {
          * @param z positon
          * @return ROOT::Math::XYZPoint at z position
          */
-        ROOT::Math::XYZPoint intercept(double z) const override;
+        ROOT::Math::XYZPoint getIntercept(double z) const override;
 
         /**
          * @brief Get the track state at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        ROOT::Math::XYZPoint state(std::string detectorID) const override;
+        ROOT::Math::XYZPoint getState(std::string detectorID) const override;
 
         /**
          * @brief Get the track direction at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
-        ROOT::Math::XYZVector direction(std::string detectorID) const override;
+        ROOT::Math::XYZVector getDirection(std::string detectorID) const override;
+
+        /**
+         * @brief Return kink of track at given detector
+         * @param  detectorID Detector ID at which the kink should be evaluated
+         * @return            Kink at given detector
+         */
+        ROOT::Math::XYPoint getKinkAt(std::string detectorID) const override;
+
+        void setVolumeScatter(double length) override;
 
     private:
         /**
@@ -74,13 +78,13 @@ namespace corryvreckan {
 
         // Member variables
         TRef m_seedCluster{nullptr};
+        std::map<std::string, ROOT::Math::XYPoint> m_kink;
+        double m_scattering_length_volume;
+        bool m_use_volume_scatter{};
+
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(GblTrack, 2)
+        ClassDefOverride(GblTrack, 3)
     };
-
-    // Vector type declaration
-    using GblTrackVector = std::vector<GblTrack*>;
-
 } // namespace corryvreckan
 
 #endif // CORRYVRECKAN_GBLTRACK_H

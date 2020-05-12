@@ -16,12 +16,14 @@
 #ifndef CORRYVRECKAN_OBJECT_H
 #define CORRYVRECKAN_OBJECT_H
 
-#include <TTree.h>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <typeindex>
 #include <vector>
-#include "TObject.h"
+
+#include <TObject.h>
+#include <TTree.h>
 
 namespace corryvreckan {
 
@@ -39,16 +41,32 @@ namespace corryvreckan {
         /**
          * @brief Required default constructor
          */
-        Object();
-        explicit Object(std::string detectorID);
-        explicit Object(double timestamp);
-        Object(std::string detectorID, double timestamp);
-        Object(const Object&);
+        Object() = default;
 
         /**
          * @brief Required virtual destructor
          */
-        ~Object() override;
+        ~Object() override = default;
+
+        /// @{
+        /**
+         * @brief Use default copy behavior
+         */
+        Object(const Object&) = default;
+        Object& operator=(const Object&) = default;
+        /// @}
+
+        /// @{
+        /**
+         * @brief Use default move behavior
+         */
+        Object(Object&&) = default;
+        Object& operator=(Object&&) = default;
+        /// @}
+
+        explicit Object(std::string detectorID);
+        explicit Object(double timestamp);
+        Object(std::string detectorID, double timestamp);
 
         // Methods to get member variables
         std::string getDetectorID() const { return m_detectorID; }
@@ -96,7 +114,7 @@ namespace corryvreckan {
     std::ostream& operator<<(std::ostream& out, const corryvreckan::Object& obj);
 
     // Vector type declaration
-    using ObjectVector = std::vector<Object*>;
+    using ObjectVector = std::vector<std::shared_ptr<Object>>;
 } // namespace corryvreckan
 
 #endif // CORRYVRECKAN_OBJECT_H

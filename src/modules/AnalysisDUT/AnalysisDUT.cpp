@@ -24,7 +24,7 @@ AnalysisDUT::AnalysisDUT(Configuration config, std::shared_ptr<Detector> detecto
     useClosestCluster = m_config.get<bool>("use_closest_cluster", true);
 }
 
-void AnalysisDUT::initialise() {
+void AnalysisDUT::initialize() {
 
     hClusterMapAssoc = new TH2F("clusterMapAssoc",
                                 "clusterMapAssoc; cluster col; cluster row",
@@ -72,7 +72,7 @@ void AnalysisDUT::initialise() {
                           m_detector->nPixels().Y(),
                           -0.5,
                           m_detector->nPixels().Y() - 0.5);
-    hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc", "pixelRawValueAssoc;pixel raw value;#entries", 1024, 0, 1024);
+    hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc", "pixelRawValueAssoc;pixel raw value;#entries", 1024, -0.5, 1023.5);
     hPixelRawValueMapAssoc = new TProfile2D("pixelRawValueMapAssoc",
                                             "pixelRawValueMapAssoc;pixel raw values;# entries",
                                             m_detector->nPixels().X(),
@@ -106,13 +106,13 @@ void AnalysisDUT::initialise() {
 
     clusterChargeAssoc =
         new TH1F("clusterChargeAssociated", "clusterChargeAssociated;cluster charge [e];# entries", 10000, 0, 10000);
-    clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated;cluster size; # entries", 30, 0, 30);
+    clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated;cluster size; # entries", 30, -0.5, 29.5);
     clusterSizeAssocNorm = new TH1F(
         "clusterSizeAssociatedNormalized", "clusterSizeAssociatedNormalized;cluster size normalized;#entries", 30, 0, 30);
     clusterWidthRowAssoc =
-        new TH1F("clusterWidthRowAssociated", "clusterWidthRowAssociated;cluster size row; # entries", 30, 0, 30);
+        new TH1F("clusterWidthRowAssociated", "clusterWidthRowAssociated;cluster size row; # entries", 30, -0.5, 29.5);
     clusterWidthColAssoc =
-        new TH1F("clusterWidthColAssociated", "clusterWidthColAssociated;cluster size col; # entries", 30, 0, 30);
+        new TH1F("clusterWidthColAssociated", "clusterWidthColAssociated;cluster size col; # entries", 30, -0.5, 29.5);
 
     // In-pixel studies:
     auto pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
@@ -310,25 +310,19 @@ void AnalysisDUT::initialise() {
                  10);
 }
 
-StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
-        LOG(DEBUG) << "No tracks on the clipboard";
-        return StatusCode::Success;
-    }
 
     // Loop over all tracks
-    for(auto& track : (*tracks)) {
+    for(auto& track : tracks) {
         // Flags to select clusters and tracks
         bool has_associated_cluster = false;
-        bool is_within_roi = true;
-
         LOG(DEBUG) << "Looking at next track";
 
         // Cut on the chi2/ndof
-        if(track->chi2ndof() > chi2ndofCut) {
+        if(track->getChi2ndof() > chi2ndofCut) {
             LOG(DEBUG) << " - track discarded due to Chi2/ndof";
             hCutHisto->Fill(1);
             num_tracks++;
@@ -336,10 +330,10 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Check if it intercepts the DUT
-        auto globalIntercept = m_detector->getIntercept(track);
+        auto globalIntercept = m_detector->getIntercept(track.get());
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
-        if(!m_detector->hasIntercept(track, 0.5)) {
+        if(!m_detector->hasIntercept(track.get(), 0.5)) {
             LOG(DEBUG) << " - track outside DUT area";
             hCutHisto->Fill(2);
             num_tracks++;
@@ -347,12 +341,12 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Check that track is within region of interest using winding number algorithm
-        if(!m_detector->isWithinROI(track)) {
-            is_within_roi = false;
+        if(!m_detector->isWithinROI(track.get())) {
+            continue;
         }
 
         // Check that it doesn't go through/near a masked pixel
-        if(m_detector->hitMasked(track, 1.)) {
+        if(m_detector->hitMasked(track.get(), 1.)) {
             LOG(DEBUG) << " - track close to masked pixel";
             hCutHisto->Fill(3);
             num_tracks++;
@@ -387,19 +381,17 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
         auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
 
         // Loop over all associated DUT clusters:
-        for(auto assoc_cluster : track->associatedClusters()) {
+        for(auto assoc_cluster : track->getAssociatedClusters(m_detector->getName())) {
             LOG(DEBUG) << " - Looking at next associated DUT cluster";
 
             // if closest cluster should be used continue if current associated cluster is not the closest one
-            if(useClosestCluster) {
-                if(track->getClosestCluster() != assoc_cluster) {
-                    continue;
-                }
+            if(useClosestCluster && track->getClosestCluster(m_detector->getName()) != assoc_cluster) {
+                continue;
             }
             has_associated_cluster = true;
 
             // Check distance between track and cluster
-            ROOT::Math::XYZPoint intercept = track->intercept(assoc_cluster->global().z());
+            ROOT::Math::XYZPoint intercept = track->getIntercept(assoc_cluster->global().z());
             double xdistance = intercept.X() - assoc_cluster->global().x();
             double ydistance = intercept.Y() - assoc_cluster->global().y();
             double xabsdistance = fabs(xdistance);
@@ -433,9 +425,6 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             // Fill per-pixel histograms
             for(auto& pixel : assoc_cluster->pixels()) {
                 hHitMapAssoc->Fill(pixel->column(), pixel->row());
-                if(is_within_roi) {
-                    hHitMapROI->Fill(pixel->column(), pixel->row());
-                }
                 hPixelRawValueAssoc->Fill(pixel->raw());
                 hPixelRawValueMapAssoc->Fill(pixel->column(), pixel->row(), pixel->raw());
             }
@@ -468,29 +457,28 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
             clusterWidthColAssoc->Fill(assoc_cluster->columnWidth());
 
             // Fill in-pixel plots: (all as function of track position within pixel cell)
-            if(is_within_roi) {
-                qvsxmym->Fill(xmod, ymod, cluster_charge);                     // cluster charge profile
-                qMoyalvsxmym->Fill(xmod, ymod, exp(-normalized_charge / 3.5)); // norm. cluster charge profile
+            qvsxmym->Fill(xmod, ymod, cluster_charge);                     // cluster charge profile
+            qMoyalvsxmym->Fill(xmod, ymod, exp(-normalized_charge / 3.5)); // norm. cluster charge profile
 
-                // mean charge of cluster seed
-                pxqvsxmym->Fill(xmod, ymod, assoc_cluster->getSeedPixel()->charge());
+            // mean charge of cluster seed
+            pxqvsxmym->Fill(xmod, ymod, assoc_cluster->getSeedPixel()->charge());
 
-                // mean cluster size
-                npxvsxmym->Fill(xmod, ymod, static_cast<double>(assoc_cluster->size()));
-                if(assoc_cluster->size() == 1)
-                    npx1vsxmym->Fill(xmod, ymod);
-                if(assoc_cluster->size() == 2)
-                    npx2vsxmym->Fill(xmod, ymod);
-                if(assoc_cluster->size() == 3)
-                    npx3vsxmym->Fill(xmod, ymod);
-                if(assoc_cluster->size() == 4)
-                    npx4vsxmym->Fill(xmod, ymod);
+            // mean cluster size
+            npxvsxmym->Fill(xmod, ymod, static_cast<double>(assoc_cluster->size()));
+            if(assoc_cluster->size() == 1)
+                npx1vsxmym->Fill(xmod, ymod);
+            if(assoc_cluster->size() == 2)
+                npx2vsxmym->Fill(xmod, ymod);
+            if(assoc_cluster->size() == 3)
+                npx3vsxmym->Fill(xmod, ymod);
+            if(assoc_cluster->size() == 4)
+                npx4vsxmym->Fill(xmod, ymod);
 
-                // residual MAD x, y, combined (sqrt(x*x + y*y))
-                rmsxvsxmym->Fill(xmod, ymod, xabsdistance);
-                rmsyvsxmym->Fill(xmod, ymod, yabsdistance);
-                rmsxyvsxmym->Fill(xmod, ymod, fabs(sqrt(xdistance * xdistance + ydistance * ydistance)));
-            }
+            // residual MAD x, y, combined (sqrt(x*x + y*y))
+            rmsxvsxmym->Fill(xmod, ymod, xabsdistance);
+            rmsyvsxmym->Fill(xmod, ymod, yabsdistance);
+            rmsxyvsxmym->Fill(xmod, ymod, fabs(sqrt(xdistance * xdistance + ydistance * ydistance)));
+
             hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
             hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
         }
@@ -503,7 +491,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void AnalysisDUT::finalise() {
+void AnalysisDUT::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     hCutHisto->Scale(1 / double(num_tracks));
     clusterSizeAssocNorm->Scale(1 / clusterSizeAssoc->Integral());
 }

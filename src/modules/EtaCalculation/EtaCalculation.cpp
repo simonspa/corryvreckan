@@ -20,7 +20,7 @@ EtaCalculation::EtaCalculation(Configuration config, std::shared_ptr<Detector> d
     m_etaFormulaY = m_config.get<std::string>("eta_formula_y", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
 }
 
-void EtaCalculation::initialise() {
+void EtaCalculation::initialize() {
 
     // Initialise histograms
     double pitchX = m_detector->getPitch().X();
@@ -81,36 +81,28 @@ void EtaCalculation::calculateEta(Track* track, Cluster* cluster) {
     }
 }
 
-StatusCode EtaCalculation::run(std::shared_ptr<Clipboard> clipboard) {
-
-    // Get the tracks from the clipboard
-    auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
-        LOG(DEBUG) << "No tracks on the clipboard";
-        return StatusCode::Success;
-    }
+StatusCode EtaCalculation::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Loop over all tracks and look at the associated clusters to plot the eta distribution
-    for(auto& track : (*tracks)) {
+    auto tracks = clipboard->getData<Track>();
+    for(auto& track : tracks) {
 
         // Cut on the chi2/ndof
-        if(track->chi2ndof() > m_chi2ndofCut) {
+        if(track->getChi2ndof() > m_chi2ndofCut) {
             continue;
         }
 
         // Look at the associated clusters and plot the eta function
-        for(auto& dutCluster : track->associatedClusters()) {
-            if(dutCluster->detectorID() != m_detector->getName()) {
-                continue;
-            }
-            calculateEta(track, dutCluster);
+        for(auto& dutCluster : track->getAssociatedClusters(m_detector->getName())) {
+            calculateEta(track.get(), dutCluster);
         }
+
         // Do the same for all clusters of the track:
-        for(auto& cluster : track->clusters()) {
+        for(auto& cluster : track->getClusters()) {
             if(cluster->detectorID() != m_detector->getName()) {
                 continue;
             }
-            calculateEta(track, cluster);
+            calculateEta(track.get(), cluster);
         }
     }
 
@@ -131,7 +123,7 @@ std::string EtaCalculation::fit(TF1* function, std::string fname, TProfile* prof
     return parameters.str();
 }
 
-void EtaCalculation::finalise() {
+void EtaCalculation::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     std::stringstream config;
     config << std::endl

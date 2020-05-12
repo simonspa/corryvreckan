@@ -21,38 +21,30 @@ ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration config, std::
     m_triggerLatency = m_config.get<double>("trigger_latency", Units::get<double>(0, "ns"));
 }
 
-void ImproveReferenceTimestamp::initialise() {
+void ImproveReferenceTimestamp::initialize() {
     // Initialise member variables
     m_eventNumber = 0;
 }
 
-StatusCode ImproveReferenceTimestamp::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode ImproveReferenceTimestamp::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Recieved triggers
     std::vector<double> trigger_times;
 
     // Get trigger signals
     auto spidrData = clipboard->getData<SpidrSignal>(m_source);
-    if(spidrData != nullptr) {
-        // Loop over all signals registered
-        for(auto& signal : (*spidrData)) {
-            if(signal->type() == "trigger") {
-                trigger_times.push_back(signal->timestamp() - m_triggerLatency);
-            }
+    // Loop over all signals registered
+    for(auto& signal : spidrData) {
+        if(signal->type() == "trigger") {
+            trigger_times.push_back(signal->timestamp() - m_triggerLatency);
         }
-        LOG(DEBUG) << "Number of triggers found: " << trigger_times.size();
     }
+    LOG(DEBUG) << "Number of triggers found: " << trigger_times.size();
 
     // Get the tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
-        LOG(DEBUG) << "No tracks on the clipboard";
-        return StatusCode::Success;
-    }
-    LOG(DEBUG) << "Number of tracks found: " << tracks->size();
-
-    // Loop over all tracks
-    for(auto& track : (*tracks)) {
+    LOG(DEBUG) << "Number of tracks found: " << tracks.size();
+    for(auto& track : tracks) {
 
         double improved_time = track->timestamp();
 
@@ -75,7 +67,7 @@ StatusCode ImproveReferenceTimestamp::run(std::shared_ptr<Clipboard> clipboard) 
         else if(m_method == 1) {
             int nhits = 0;
             double avg_track_time = 0;
-            for(auto& cluster : track->clusters()) {
+            for(auto& cluster : track->getClusters()) {
                 avg_track_time += cluster->timestamp();
                 nhits++;
             }
@@ -99,7 +91,7 @@ StatusCode ImproveReferenceTimestamp::run(std::shared_ptr<Clipboard> clipboard) 
     return StatusCode::Success;
 }
 
-void ImproveReferenceTimestamp::finalise() {
+void ImproveReferenceTimestamp::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }

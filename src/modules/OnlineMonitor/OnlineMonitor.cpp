@@ -22,12 +22,15 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
     updateNumber = m_config.get<int>("update", 200);
     ignoreAux = m_config.get<bool>("ignore_aux", true);
 
+    clusteringModule = m_config.get<std::string>("clustering_module", "Clustering4D");
+    trackingModule = m_config.get<std::string>("tracking_module", "Tracking4D");
+
     // Set up overview plots:
     canvas_overview = m_config.getMatrix<std::string>("overview",
-                                                      {{"Tracking4D/trackChi2"},
-                                                       {"Clustering4D/%REFERENCE%/clusterCharge"},
+                                                      {{trackingModule + "/trackChi2"},
+                                                       {clusteringModule + "/%REFERENCE%/clusterCharge"},
                                                        {"Correlations/%REFERENCE%/hitmap", "colz"},
-                                                       {"Tracking4D/%REFERENCE%/residualsX"}});
+                                                       {trackingModule + "/%REFERENCE%/residualsX"}});
 
     // Set up individual plots for the DUT
     canvas_dutplots = m_config.getMatrix<std::string>("dut_plots",
@@ -38,14 +41,14 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
                                                        {"AnalysisDUT/%DUT%/clusterChargeAssociated"},
                                                        {"AnalysisDUT/%DUT%/associatedTracksVersusTime"}});
     canvas_tracking = m_config.getMatrix<std::string>("tracking",
-                                                      {{"Tracking4D/trackChi2"},
-                                                       {"Tracking4D/trackAngleX"},
-                                                       {"Tracking4D/trackAngleY"},
-                                                       {"Tracking4D/trackChi2ndof"},
-                                                       {"Tracking4D/tracksPerEvent"},
-                                                       {"Tracking4D/clustersPerTrack"}});
+                                                      {{trackingModule + "/trackChi2"},
+                                                       {trackingModule + "/trackAngleX"},
+                                                       {trackingModule + "/trackAngleY"},
+                                                       {trackingModule + "/trackChi2ndof"},
+                                                       {trackingModule + "/tracksPerEvent"},
+                                                       {trackingModule + "/clustersPerTrack"}});
     canvas_hitmaps = m_config.getMatrix<std::string>("hitmaps", {{"Correlations/%DETECTOR%/hitmap", "colz"}});
-    canvas_residuals = m_config.getMatrix<std::string>("residuals", {{"Tracking4D/%DETECTOR%/residualsX"}});
+    canvas_residuals = m_config.getMatrix<std::string>("residuals", {{trackingModule + "/%DETECTOR%/residualsX"}});
 
     canvas_cx = m_config.getMatrix<std::string>("correlation_x", {{"Correlations/%DETECTOR%/correlationX"}});
     canvas_cx2d =
@@ -54,26 +57,26 @@ OnlineMonitor::OnlineMonitor(Configuration config, std::vector<std::shared_ptr<D
     canvas_cy2d =
         m_config.getMatrix<std::string>("correlation_y2d", {{"Correlations/%DETECTOR%/correlationY_2Dlocal", "colz"}});
 
-    canvas_charge = m_config.getMatrix<std::string>("charge_distributions", {{"Clustering4D/%DETECTOR%/clusterCharge"}});
+    canvas_charge =
+        m_config.getMatrix<std::string>("charge_distributions", {{clusteringModule + "/%DETECTOR%/clusterCharge"}});
 
     canvas_time = m_config.getMatrix<std::string>("event_times", {{"Correlations/%DETECTOR%/eventTimes"}});
 }
 
-void OnlineMonitor::initialise() {
+void OnlineMonitor::initialize() {
 
     // TApplication keeps the canvases persistent
     app = new TApplication("example", nullptr, nullptr);
 
     // Make the GUI
-    gui = new GuiDisplay();
+    gui = new GuiDisplay(gClient->GetRoot(), 1200, 600);
 
     // Make the main window object and set the attributes
-    gui->m_mainFrame = new TGMainFrame(gClient->GetRoot(), 1200, 600);
-    gui->buttonMenu = new TGHorizontalFrame(gui->m_mainFrame, 1200, 50);
-    gui->canvas = new TRootEmbeddedCanvas("canvas", gui->m_mainFrame, 1200, 600);
-    gui->m_mainFrame->AddFrame(gui->canvas, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10, 10, 10, 10));
-    gui->m_mainFrame->SetCleanup(kDeepCleanup);
-    gui->m_mainFrame->DontCallClose();
+    gui->buttonMenu = new TGHorizontalFrame(gui, 1200, 50);
+    gui->canvas = new TRootEmbeddedCanvas("canvas", gui, 1200, 600);
+    gui->AddFrame(gui->canvas, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10, 10, 10, 10));
+    gui->SetCleanup(kDeepCleanup);
+    gui->DontCallClose();
 
     // Add canvases and histograms
     AddCanvasGroup("Tracking");
@@ -120,13 +123,13 @@ void OnlineMonitor::initialise() {
     gui->buttonGroups["Controls"]->AddFrame(gui->buttons["exit"], new TGLayoutHints(kLHintsTop | kLHintsExpandX));
 
     // Main frame resizing
-    gui->m_mainFrame->AddFrame(gui->buttonMenu, new TGLayoutHints(kLHintsLeft, 10, 10, 10, 10));
-    gui->m_mainFrame->SetWindowName(canvasTitle.c_str());
-    gui->m_mainFrame->MapSubwindows();
-    gui->m_mainFrame->Resize(gui->m_mainFrame->GetDefaultSize());
+    gui->AddFrame(gui->buttonMenu, new TGLayoutHints(kLHintsLeft, 10, 10, 10, 10));
+    gui->SetWindowName(canvasTitle.c_str());
+    gui->MapSubwindows();
+    gui->Resize(gui->GetDefaultSize());
 
     // Draw the main frame
-    gui->m_mainFrame->MapWindow();
+    gui->MapWindow();
 
     // Plot the overview tab (if it exists)
     if(gui->histograms["OverviewCanvas"].size() != 0) {
@@ -141,7 +144,7 @@ void OnlineMonitor::initialise() {
     eventNumber = 0;
 }
 
-StatusCode OnlineMonitor::run(std::shared_ptr<Clipboard>) {
+StatusCode OnlineMonitor::run(const std::shared_ptr<Clipboard>&) {
 
     if(!gui->isPaused()) {
         // Draw all histograms

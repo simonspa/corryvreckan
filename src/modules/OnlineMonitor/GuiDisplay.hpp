@@ -12,7 +12,6 @@
 #define CORRYVRECKAN_GUIDISPLAY_H 1
 
 // Local includes
-#include "Object.hpp"
 #include "core/utils/log.h"
 
 // Global includes
@@ -36,37 +35,17 @@
 
 namespace corryvreckan {
     /**
-     * @ingroup Objects
      * @brief Display class for ROOT GUIs
      */
-    class GuiDisplay : public Object {
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
-        RQ_OBJECT("GuiDisplay")
-#pragma GCC diagnostic pop
-#endif
-
+    class GuiDisplay : public TGMainFrame {
     public:
         // Constructors and destructors
-        GuiDisplay() : running_(true){};
-        ~GuiDisplay() {}
-
-        /**
-         * @brief Static member function to obtain base class for storage on the clipboard.
-         * This method is used to store objects from derived classes under the typeid of their base classes
-         *
-         * @warning This function should not be implemented for derived object classes
-         *
-         * @return Class type of the base object
-         */
-        static std::type_index getBaseType() { return typeid(GuiDisplay); }
+        GuiDisplay(const TGWindow* p = nullptr, UInt_t w = 1, UInt_t h = 1) : TGMainFrame(p, w, h) {}
+        ~GuiDisplay() = default;
 
         bool isPaused() { return !running_; }
 
         // Graphics associated with GUI
-        TGMainFrame* m_mainFrame;
         TRootEmbeddedCanvas* canvas;
         std::map<std::string, std::vector<TH1*>> histograms;
         std::map<TH1*, std::string> styles;
@@ -76,7 +55,7 @@ namespace corryvreckan {
         std::map<TRootEmbeddedCanvas*, bool> stackedCanvas;
         TGHorizontalFrame* buttonMenu;
 
-        bool running_;
+        bool running_ = true;
 
         // Button functions
         inline void Display(char* canvasNameC) {
@@ -139,8 +118,7 @@ namespace corryvreckan {
             canvas->GetCanvas()->Update();
         }
 
-        // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(GuiDisplay, 3)
+        ClassDef(GuiDisplay, 0);
     };
 } // namespace corryvreckan
 

@@ -81,7 +81,7 @@ AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration config, std::shared
     tracks_afterClusterSizeCut = 0;
 }
 
-void AnalysisTimingATLASpix::initialise() {
+void AnalysisTimingATLASpix::initialize() {
 
     auto pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
     auto pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));
@@ -186,22 +186,22 @@ void AnalysisTimingATLASpix::initialise() {
 
     // control plot: time walk dependence, not row corrected
     name = "hTrackCorrelationTimeVsTot";
-    hTrackCorrelationTimeVsTot = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, 0, 64);
+    hTrackCorrelationTimeVsTot = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, -0.5, 63.5);
     hTrackCorrelationTimeVsTot->GetYaxis()->SetTitle("seed pixel tot [lsb]");
     hTrackCorrelationTimeVsTot->GetXaxis()->SetTitle("ts_{track} - ts_{cluster} [ns]");
 
     name = "hTrackCorrelationTimeVsTot_1px";
-    hTrackCorrelationTimeVsTot_1px = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, 0, 64);
+    hTrackCorrelationTimeVsTot_1px = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, -0.5, 63.5);
     hTrackCorrelationTimeVsTot_1px->GetYaxis()->SetTitle("seed pixel tot [lsb] (if clustersize = 1)");
     hTrackCorrelationTimeVsTot_1px->GetXaxis()->SetTitle("ts_{track} - ts_{cluster} [ns]");
 
     name = "hTrackCorrelationTimeVsTot_npx";
-    hTrackCorrelationTimeVsTot_npx = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, 0, 64);
+    hTrackCorrelationTimeVsTot_npx = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, -0.5, 63.5);
     hTrackCorrelationTimeVsTot_npx->GetYaxis()->SetTitle("seed pixel tot [lsb] (if clustersize > 1)");
     hTrackCorrelationTimeVsTot_npx->GetXaxis()->SetTitle("ts_{track} - ts_{cluster} [ns]");
 
     name = "hTrackCorrelationTimeVsTot_px";
-    hTrackCorrelationTimeVsTot_px = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, 0, 64);
+    hTrackCorrelationTimeVsTot_px = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, -0.5, 63.5);
     hTrackCorrelationTimeVsTot_px->GetYaxis()->SetTitle("pixel tot [lsb]");
     hTrackCorrelationTimeVsTot_px->GetXaxis()->SetTitle("ts_{track} - ts_{pixel} (all pixels from cluster) [ns]");
 
@@ -213,17 +213,17 @@ void AnalysisTimingATLASpix::initialise() {
     // timewalk after row correction
     if(m_pointwise_correction_row) {
         name = "hTrackCorrelationTimeVsTot_rowCorr";
-        hTrackCorrelationTimeVsTot_rowCorr = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, 0, 64);
+        hTrackCorrelationTimeVsTot_rowCorr = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, -0.5, 63.5);
         hTrackCorrelationTimeVsTot_rowCorr->GetYaxis()->SetTitle("seed pixel tot [lsb]");
         hTrackCorrelationTimeVsTot_rowCorr->GetXaxis()->SetTitle("ts_{track} - ts_{seed pixel} [ns]");
 
         name = "hTrackCorrelationTimeVsTot_rowCorr_1px";
-        hTrackCorrelationTimeVsTot_rowCorr_1px = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, 0, 64);
+        hTrackCorrelationTimeVsTot_rowCorr_1px = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, -0.5, 63.5);
         hTrackCorrelationTimeVsTot_rowCorr_1px->GetYaxis()->SetTitle("seed pixel tot [lsb] (single-pixel clusters)");
         hTrackCorrelationTimeVsTot_rowCorr_1px->GetXaxis()->SetTitle("ts_{track} - ts_{cluster} [ns]");
 
         name = "hTrackCorrelationTimeVsTot_rowCorr_npx";
-        hTrackCorrelationTimeVsTot_rowCorr_npx = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, 0, 64);
+        hTrackCorrelationTimeVsTot_rowCorr_npx = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, -0.5, 63.5);
         hTrackCorrelationTimeVsTot_rowCorr_npx->GetYaxis()->SetTitle("seed pixel tot [lsb] (multi-pixel clusters)");
         hTrackCorrelationTimeVsTot_rowCorr_npx->GetXaxis()->SetTitle("ts_{track} - ts_{cluster} [ns]");
     }
@@ -243,7 +243,7 @@ void AnalysisTimingATLASpix::initialise() {
         hTrackCorrelationTimeVsRow_rowAndTWCorr->GetXaxis()->SetTitle("ts_{track} - ts_{seed pixel} [ns]");
 
         name = "hTrackCorrelationTimeVsTot_rowAndTWCorr";
-        hTrackCorrelationTimeVsTot_rowAndTWCorr = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, 0, 64);
+        hTrackCorrelationTimeVsTot_rowAndTWCorr = new TH2F(name.c_str(), name.c_str(), 20000, -5000, 5000, 64, -0.5, 63.5);
         hTrackCorrelationTimeVsTot_rowAndTWCorr->GetYaxis()->SetTitle("seed pixel tot [lsb]");
         hTrackCorrelationTimeVsTot_rowAndTWCorr->GetXaxis()->SetTitle("ts_{track} - ts_{cluster} [ns]");
     }
@@ -269,7 +269,7 @@ void AnalysisTimingATLASpix::initialise() {
                                                    m_timeCut);
 
     name = "hClusterSizeVsTot_Assoc";
-    hClusterSizeVsTot_Assoc = new TH2F(name.c_str(), name.c_str(), 20, 0, 20, 64, 0, 64);
+    hClusterSizeVsTot_Assoc = new TH2F(name.c_str(), name.c_str(), 20, 0, 20, 64, -0.5, 63.5);
     hClusterSizeVsTot_Assoc->GetYaxis()->SetTitle("pixel ToT [lsb] (all pixels from cluster)");
     hClusterSizeVsTot_Assoc->GetXaxis()->SetTitle("clusterSize");
 
@@ -279,8 +279,8 @@ void AnalysisTimingATLASpix::initialise() {
                             -0.5,
                             m_detector->nPixels().X() - 0.5,
                             m_detector->nPixels().Y(),
-                            0,
-                            m_detector->nPixels().Y());
+                            -0.5,
+                            m_detector->nPixels().Y() - 0.5);
     hHitMapAssoc_highToT = new TH2F("hitMapAssoc_highToT",
                                     "hitMapAssoc_highToT; x_{track} [px]; y_{track} [px];# entries",
                                     m_detector->nPixels().X(),
@@ -320,17 +320,17 @@ void AnalysisTimingATLASpix::initialise() {
     hTotVsRow = new TH2F("hTotVsRow",
                          "hTotVsRow;seed-pixel row;seed-pixel ToT [lsb]",
                          m_detector->nPixels().Y(),
-                         0,
-                         m_detector->nPixels().Y(),
+                         -0.5,
+                         m_detector->nPixels().Y() - 0.5,
                          64,
-                         0,
-                         64);
+                         -0.5,
+                         63.5);
 
-    hTotVsTime = new TH2F("hTotVsTime", "hTotVsTime", 64, 0, 64, 1e6, 0, 100);
+    hTotVsTime = new TH2F("hTotVsTime", "hTotVsTime", 64, -0.5, 63.5, 1e6, 0, 100);
     hTotVsTime->GetXaxis()->SetTitle("pixel ToT [lsb]");
     hTotVsTime->GetYaxis()->SetTitle("time [s]");
     if(m_config.has("high_tot_cut")) {
-        hTotVsTime_highToT = new TH2F("hTotVsTime_highToT", "hTotVsTime_highToT", 64, 0, 64, 1e6, 0, 100);
+        hTotVsTime_highToT = new TH2F("hTotVsTime_highToT", "hTotVsTime_highToT", 64, -0.5, 63.5, 1e6, 0, 100);
         hTotVsTime_highToT->GetXaxis()->SetTitle("pixel ToT [lsb] if > high_tot_cut");
         hTotVsTime_highToT->GetYaxis()->SetTitle("time [s]");
     }
@@ -391,36 +391,36 @@ void AnalysisTimingATLASpix::initialise() {
                      m_detector->nPixels().Y(),
                      -0.5,
                      m_detector->nPixels().Y() - 0.5);
-        hClusterSize_leftTail =
-            new TH1F("clusterSize_leftTail", "clusterSize (left tail of time residual);cluster size;# entries", 100, 0, 100);
+        hClusterSize_leftTail = new TH1F(
+            "clusterSize_leftTail", "clusterSize (left tail of time residual);cluster size;# entries", 100, -0.5, 99.5);
         hClusterSize_rightTail = new TH1F(
-            "clusterSize_rightTail", "clusterSize (right tail of time residual);cluster size;# entries", 100, 0, 100);
-        hClusterSize_mainPeak =
-            new TH1F("clusterSize_mainPeak", "clusterSize (main peak of time residual);cluster size;# entries", 100, 0, 100);
+            "clusterSize_rightTail", "clusterSize (right tail of time residual);cluster size;# entries", 100, -0.5, 99.5);
+        hClusterSize_mainPeak = new TH1F(
+            "clusterSize_mainPeak", "clusterSize (main peak of time residual);cluster size;# entries", 100, -0.5, 99.5);
         hTot_leftTail =
-            new TH1F("hTot_leftTail", "ToT (left tail of time residual);seed pixel ToT [lsb];# events", 2 * 64, -64, 64);
-        hTot_rightTail =
-            new TH1F("hTot_rightTail", "ToT (right tail of time residual);seed pixel ToT [lsb];# events", 2 * 64, -64, 64);
+            new TH1F("hTot_leftTail", "ToT (left tail of time residual);seed pixel ToT [lsb];# events", 2 * 64, -64.5, 63.5);
+        hTot_rightTail = new TH1F(
+            "hTot_rightTail", "ToT (right tail of time residual);seed pixel ToT [lsb];# events", 2 * 64, -64.5, 63.5);
         hTot_mainPeak = new TH1F("hTot_mainPeak",
                                  "ToT (main peak of time residual, 1px clusters);seed pixel ToT [lsb];# events",
                                  2 * 64,
-                                 -64,
-                                 64);
+                                 -64.5,
+                                 63.5);
         hTot_leftTail_1px = new TH1F("hTot_leftTail_1px",
                                      "ToT (left tail of time residual, 1px clusters);seed pixel ToT [lsb];# events",
                                      2 * 64,
-                                     -64,
-                                     64);
+                                     -64.5,
+                                     63.5);
         hTot_rightTail_1px = new TH1F("hTot_rightTail_1px",
                                       "ToT (right tail of time residual, 1px clusters);seed pixel ToT [lsb];# events",
                                       2 * 64,
-                                      -64,
-                                      64);
+                                      -64.5,
+                                      63.5);
         hTot_mainPeak_1px = new TH1F("hTot_mainPeak_1px",
                                      "ToT (main peak of time residual, 1px clusters);seed pixel ToT [lsb];# events",
                                      2 * 64,
-                                     -64,
-                                     64);
+                                     -64.5,
+                                     63.5);
         hPixelTimestamp_leftTail = new TH1F("pixelTimestamp_leftTail",
                                             "pixelTimestamp (left tail of time residual);pixel timestamp [ms];# events",
                                             3e6,
@@ -515,45 +515,39 @@ void AnalysisTimingATLASpix::initialise() {
     }
 }
 
-StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AnalysisTimingATLASpix::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
-        LOG(DEBUG) << "No tracks on the clipboard";
-        return StatusCode::Success;
-    }
-
-    // Loop over all tracks
-    for(auto& track : (*tracks)) {
+    for(auto& track : tracks) {
         bool has_associated_cluster = false;
         bool is_within_roi = true;
         LOG(DEBUG) << "Looking at next track";
         total_tracks_uncut++;
 
         // Cut on the chi2/ndof
-        if(track->chi2ndof() > m_chi2ndofCut) {
+        if(track->getChi2ndof() > m_chi2ndofCut) {
             LOG(DEBUG) << " - track discarded due to Chi2/ndof";
             continue;
         }
         tracks_afterChi2Cut++;
 
         // Check if it intercepts the DUT
-        if(!m_detector->hasIntercept(track, 1.)) {
+        if(!m_detector->hasIntercept(track.get(), 1.)) {
             LOG(DEBUG) << " - track outside DUT area";
             continue;
         }
         tracks_hasIntercept++;
 
         // Check that track is within region of interest using winding number algorithm
-        if(!m_detector->isWithinROI(track)) {
+        if(!m_detector->isWithinROI(track.get())) {
             LOG(DEBUG) << " - track outside ROI";
             is_within_roi = false;
         }
         tracks_isWithinROI++;
 
         // Check that it doesn't go through/near a masked pixel
-        if(m_detector->hitMasked(track, 1.)) {
+        if(m_detector->hitMasked(track.get(), 1.)) {
             LOG(DEBUG) << " - track close to masked pixel";
             continue;
         }
@@ -582,170 +576,165 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
 
         // Get the DUT clusters from the clipboard
         auto clusters = clipboard->getData<Cluster>(m_detector->getName());
-        if(clusters == nullptr) {
-            LOG(DEBUG) << " - no DUT clusters";
-        } else {
+        // Loop over all DUT clusters to find matches:
+        for(auto& cluster : clusters) {
+            LOG(DEBUG) << " - Looking at next DUT cluster";
 
-            // Loop over all DUT clusters to find matches:
-            for(auto* cluster : (*clusters)) {
-                LOG(DEBUG) << " - Looking at next DUT cluster";
+            hTrackCorrelationTime->Fill(track->timestamp() - cluster->timestamp());
 
-                hTrackCorrelationTime->Fill(track->timestamp() - cluster->timestamp());
+            auto associated_clusters = track->getAssociatedClusters(m_detector->getName());
+            if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster.get()) !=
+               associated_clusters.end()) {
+                LOG(DEBUG) << "Found associated cluster " << (*cluster);
+                has_associated_cluster = true;
+                matched_tracks++;
 
-                auto associated_clusters = track->associatedClusters();
-                if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster) != associated_clusters.end()) {
-                    LOG(DEBUG) << "Found associated cluster " << (*cluster);
-                    has_associated_cluster = true;
-                    matched_tracks++;
+                if(m_config.has("cluster_charge_cut") && cluster->charge() > m_clusterChargeCut) {
+                    LOG(DEBUG) << " - track discarded due to clusterChargeCut";
+                    continue;
+                }
+                tracks_afterClusterChargeCut++;
 
-                    if(m_config.has("cluster_charge_cut") && cluster->charge() > m_clusterChargeCut) {
-                        LOG(DEBUG) << " - track discarded due to clusterChargeCut";
-                        continue;
+                if(m_config.has("cluster_size_cut") && cluster->size() > m_clusterSizeCut) {
+                    LOG(DEBUG) << " - track discarded due to clusterSizeCut";
+                    continue;
+                }
+                tracks_afterClusterSizeCut++;
+
+                double timeDiff = track->timestamp() - cluster->timestamp();
+                hTrackCorrelationTimeAssoc->Fill(timeDiff);
+                hTrackCorrelationTimeAssocVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                                       static_cast<double>(Units::convert(timeDiff, "us")));
+
+                hTrackCorrelationTimeVsTot->Fill(timeDiff, cluster->getSeedPixel()->raw());
+                hTrackCorrelationTimeVsCol->Fill(timeDiff, cluster->getSeedPixel()->column());
+                hTrackCorrelationTimeVsRow->Fill(timeDiff, cluster->getSeedPixel()->row());
+
+                hTotVsRow->Fill(cluster->getSeedPixel()->row(), cluster->getSeedPixel()->raw());
+
+                // single-pixel and multi-pixel clusters:
+                if(cluster->size() == 1) {
+                    hTrackCorrelationTimeVsTot_1px->Fill(timeDiff, cluster->getSeedPixel()->raw());
+                    hTrackCorrelationTimeVsRow_1px->Fill(timeDiff, cluster->getSeedPixel()->row());
+                } else {
+                    hTrackCorrelationTimeVsTot_npx->Fill(timeDiff, cluster->getSeedPixel()->raw());
+                    hTrackCorrelationTimeVsRow_npx->Fill(timeDiff, cluster->getSeedPixel()->row());
+                }
+
+                // Calculate in-pixel position of track in microns
+                auto globalIntercept = m_detector->getIntercept(track.get());
+                auto localIntercept = m_detector->globalToLocal(globalIntercept);
+                auto inpixel = m_detector->inPixel(localIntercept);
+                auto xmod = static_cast<double>(Units::convert(inpixel.X(), "um"));
+                auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
+                hHitMapAssoc_inPixel->Fill(xmod, ymod);
+                if(m_config.has("high_tot_cut") && cluster->charge() > m_highTotCut && cluster->size() == 1) {
+                    hHitMapAssoc_inPixel_highToT->Fill(xmod, ymod);
+                }
+                hPixelTrackCorrelationTimeMap->Fill(xmod, ymod, timeDiff);
+
+                // 2D histograms: --> fill for all pixels from cluster
+                for(auto& pixel : cluster->pixels()) {
+
+                    hTrackCorrelationTimeVsTot_px->Fill(track->timestamp() - pixel->timestamp(), pixel->raw());
+
+                    // to check that cluster timestamp = earliest pixel timestamp
+                    if(cluster->size() > 1) {
+                        hClusterTimeMinusPixelTime->Fill(cluster->timestamp() - pixel->timestamp());
                     }
-                    tracks_afterClusterChargeCut++;
 
-                    if(m_config.has("cluster_size_cut") && cluster->size() > m_clusterSizeCut) {
-                        LOG(DEBUG) << " - track discarded due to clusterSizeCut";
-                        continue;
+                    hClusterSizeVsTot_Assoc->Fill(static_cast<double>(cluster->size()), pixel->raw());
+                    hHitMapAssoc->Fill(pixel->column(), pixel->row());
+                    hTotVsTime->Fill(pixel->raw(), static_cast<double>(Units::convert(pixel->timestamp(), "s")));
+                    if(m_config.has("high_tot_cut") && pixel->raw() > m_highTotCut) {
+                        hHitMapAssoc_highToT->Fill(pixel->column(), pixel->row());
+                        hTotVsTime_highToT->Fill(pixel->raw(), static_cast<double>(Units::convert(pixel->timestamp(), "s")));
                     }
-                    tracks_afterClusterSizeCut++;
-
-                    double timeDiff = track->timestamp() - cluster->timestamp();
-                    hTrackCorrelationTimeAssoc->Fill(timeDiff);
-                    hTrackCorrelationTimeAssocVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
-                                                           static_cast<double>(Units::convert(timeDiff, "us")));
-
-                    hTrackCorrelationTimeVsTot->Fill(timeDiff, cluster->getSeedPixel()->raw());
-                    hTrackCorrelationTimeVsCol->Fill(timeDiff, cluster->getSeedPixel()->column());
-                    hTrackCorrelationTimeVsRow->Fill(timeDiff, cluster->getSeedPixel()->row());
-
-                    hTotVsRow->Fill(cluster->getSeedPixel()->row(), cluster->getSeedPixel()->raw());
-
-                    // single-pixel and multi-pixel clusters:
-                    if(cluster->size() == 1) {
-                        hTrackCorrelationTimeVsTot_1px->Fill(timeDiff, cluster->getSeedPixel()->raw());
-                        hTrackCorrelationTimeVsRow_1px->Fill(timeDiff, cluster->getSeedPixel()->row());
+                }
+                hClusterMapAssoc->Fill(cluster->column(), cluster->row());
+                if(m_config.has("timing_tail_cut") && m_pointwise_correction_timewalk) {
+                    if(track->timestamp() - cluster->timestamp() < -m_timingTailCut) {
+                        hInPixelMap_leftTail->Fill(xmod, ymod);
+                    } else if(track->timestamp() - cluster->timestamp() > m_timingTailCut) {
+                        hInPixelMap_rightTail->Fill(xmod, ymod);
                     } else {
-                        hTrackCorrelationTimeVsTot_npx->Fill(timeDiff, cluster->getSeedPixel()->raw());
-                        hTrackCorrelationTimeVsRow_npx->Fill(timeDiff, cluster->getSeedPixel()->row());
+                        hInPixelMap_mainPeak->Fill(xmod, ymod);
                     }
+                }
 
-                    // Calculate in-pixel position of track in microns
-                    auto globalIntercept = m_detector->getIntercept(track);
-                    auto localIntercept = m_detector->globalToLocal(globalIntercept);
-                    auto inpixel = m_detector->inPixel(localIntercept);
-                    auto xmod = static_cast<double>(Units::convert(inpixel.X(), "um"));
-                    auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
-                    hHitMapAssoc_inPixel->Fill(xmod, ymod);
-                    if(m_config.has("high_tot_cut") && cluster->charge() > m_highTotCut && cluster->size() == 1) {
-                        hHitMapAssoc_inPixel_highToT->Fill(xmod, ymod);
-                    }
-                    hPixelTrackCorrelationTimeMap->Fill(xmod, ymod, timeDiff);
+                // !!! Have to do this in the end because it changes the cluster time and position!!!
+                // row-by-row correction using points from TGraphError directly instead of fit.
 
-                    // 2D histograms: --> fill for all pixels from cluster
-                    for(auto& pixel : cluster->pixels()) {
-
-                        hTrackCorrelationTimeVsTot_px->Fill(track->timestamp() - pixel->timestamp(), pixel->raw());
-
-                        // to check that cluster timestamp = earliest pixel timestamp
-                        if(cluster->size() > 1) {
-                            hClusterTimeMinusPixelTime->Fill(cluster->timestamp() - pixel->timestamp());
-                        }
-
-                        hClusterSizeVsTot_Assoc->Fill(static_cast<double>(cluster->size()), pixel->raw());
-                        hHitMapAssoc->Fill(pixel->column(), pixel->row());
-                        hTotVsTime->Fill(pixel->raw(), static_cast<double>(Units::convert(pixel->timestamp(), "s")));
-                        if(m_config.has("high_tot_cut") && pixel->raw() > m_highTotCut) {
-                            hHitMapAssoc_highToT->Fill(pixel->column(), pixel->row());
-                            hTotVsTime_highToT->Fill(pixel->raw(),
-                                                     static_cast<double>(Units::convert(pixel->timestamp(), "s")));
-                        }
-                    }
-                    hClusterMapAssoc->Fill(cluster->column(), cluster->row());
-                    if(m_config.has("timing_tail_cut") && m_pointwise_correction_timewalk) {
-                        if(track->timestamp() - cluster->timestamp() < -m_timingTailCut) {
-                            hInPixelMap_leftTail->Fill(xmod, ymod);
-                        } else if(track->timestamp() - cluster->timestamp() > m_timingTailCut) {
-                            hInPixelMap_rightTail->Fill(xmod, ymod);
-                        } else {
-                            hInPixelMap_mainPeak->Fill(xmod, ymod);
-                        }
-                    }
-
-                    // !!! Have to do this in the end because it changes the cluster time and position!!!
-                    // row-by-row correction using points from TGraphError directly instead of fit.
-
-                    // point-wise correction:
-                    if(m_pointwise_correction_row) {
-                        correctClusterTimestamp(cluster, 0); // mode=0 --> row correction
-                        hTrackCorrelationTime_rowCorr->Fill(track->timestamp() - cluster->timestamp());
-                        // for(auto& pixel : (*cluster->pixels())) {
-                        hTrackCorrelationTimeVsRow_rowCorr->Fill(track->timestamp() - cluster->getSeedPixel()->timestamp(),
-                                                                 cluster->getSeedPixel()->row());
-                        hTrackCorrelationTimeVsTot_rowCorr->Fill(track->timestamp() - cluster->getSeedPixel()->timestamp(),
-                                                                 cluster->getSeedPixel()->raw());
-                        if(cluster->size() == 1) {
-                            hTrackCorrelationTimeVsTot_rowCorr_1px->Fill(
-                                track->timestamp() - cluster->getSeedPixel()->timestamp(), cluster->getSeedPixel()->raw());
-                        }
-                        if(cluster->size() > 1) {
-                            hTrackCorrelationTimeVsTot_rowCorr_npx->Fill(
-                                track->timestamp() - cluster->getSeedPixel()->timestamp(), cluster->getSeedPixel()->raw());
-                        }
-                        //} for(auto& pixels : ...)
-                    }
-                    // point-wise timewalk correction on top:
-                    if(m_pointwise_correction_timewalk) {
-                        correctClusterTimestamp(cluster, 1); // mode=1 --> timewalk correction
-                        hTrackCorrelationTime_rowAndTWCorr->Fill(track->timestamp() - cluster->timestamp());
-                        if(cluster->getSeedPixel()->raw() < 25) {
-                            hTrackCorrelationTime_rowAndTWCorr_l25->Fill(track->timestamp() - cluster->timestamp());
-                        }
-                        if(cluster->getSeedPixel()->raw() < 40) {
-                            hTrackCorrelationTime_rowAndTWCorr_l40->Fill(track->timestamp() - cluster->timestamp());
-                        }
-                        if(cluster->getSeedPixel()->raw() > 40) {
-                            hTrackCorrelationTime_rowAndTWCorr_g40->Fill(track->timestamp() - cluster->timestamp());
-                        }
-
-                        hTrackCorrelationTimeVsRow_rowAndTWCorr->Fill(
-                            track->timestamp() - cluster->getSeedPixel()->timestamp(), cluster->getSeedPixel()->row());
-                        hTrackCorrelationTimeVsTot_rowAndTWCorr->Fill(
+                // point-wise correction:
+                if(m_pointwise_correction_row) {
+                    correctClusterTimestamp(cluster, 0); // mode=0 --> row correction
+                    hTrackCorrelationTime_rowCorr->Fill(track->timestamp() - cluster->timestamp());
+                    // for(auto& pixel : (*cluster->pixels())) {
+                    hTrackCorrelationTimeVsRow_rowCorr->Fill(track->timestamp() - cluster->getSeedPixel()->timestamp(),
+                                                             cluster->getSeedPixel()->row());
+                    hTrackCorrelationTimeVsTot_rowCorr->Fill(track->timestamp() - cluster->getSeedPixel()->timestamp(),
+                                                             cluster->getSeedPixel()->raw());
+                    if(cluster->size() == 1) {
+                        hTrackCorrelationTimeVsTot_rowCorr_1px->Fill(
                             track->timestamp() - cluster->getSeedPixel()->timestamp(), cluster->getSeedPixel()->raw());
+                    }
+                    if(cluster->size() > 1) {
+                        hTrackCorrelationTimeVsTot_rowCorr_npx->Fill(
+                            track->timestamp() - cluster->getSeedPixel()->timestamp(), cluster->getSeedPixel()->raw());
+                    }
+                    //} for(auto& pixels : ...)
+                }
+                // point-wise timewalk correction on top:
+                if(m_pointwise_correction_timewalk) {
+                    correctClusterTimestamp(cluster, 1); // mode=1 --> timewalk correction
+                    hTrackCorrelationTime_rowAndTWCorr->Fill(track->timestamp() - cluster->timestamp());
+                    if(cluster->getSeedPixel()->raw() < 25) {
+                        hTrackCorrelationTime_rowAndTWCorr_l25->Fill(track->timestamp() - cluster->timestamp());
+                    }
+                    if(cluster->getSeedPixel()->raw() < 40) {
+                        hTrackCorrelationTime_rowAndTWCorr_l40->Fill(track->timestamp() - cluster->timestamp());
+                    }
+                    if(cluster->getSeedPixel()->raw() > 40) {
+                        hTrackCorrelationTime_rowAndTWCorr_g40->Fill(track->timestamp() - cluster->timestamp());
+                    }
 
-                        // control plots to investigate "left/right tail" in time correlation:
-                        if(m_config.has("timing_tail_cut")) {
-                            if(track->timestamp() - cluster->timestamp() < -m_timingTailCut) {
-                                hClusterMap_leftTail->Fill(cluster->column(), cluster->row());
-                                hTot_leftTail->Fill(cluster->getSeedPixel()->raw());
-                                hPixelTimestamp_leftTail->Fill(cluster->getSeedPixel()->timestamp());
-                                hClusterSize_leftTail->Fill(static_cast<double>(cluster->size()));
-                                if(cluster->size() == 1) {
-                                    hTot_leftTail_1px->Fill(cluster->getSeedPixel()->raw());
-                                }
-                            } else if(track->timestamp() - cluster->timestamp() > m_timingTailCut) {
-                                hClusterMap_rightTail->Fill(cluster->column(), cluster->row());
-                                hTot_rightTail->Fill(cluster->getSeedPixel()->raw());
-                                hPixelTimestamp_rightTail->Fill(cluster->getSeedPixel()->timestamp());
-                                hClusterSize_rightTail->Fill(static_cast<double>(cluster->size()));
-                                if(cluster->size() == 1) {
-                                    hTot_rightTail_1px->Fill(cluster->getSeedPixel()->raw());
-                                }
-                            } else {
-                                hClusterMap_mainPeak->Fill(cluster->column(), cluster->row());
-                                hTot_mainPeak->Fill(cluster->getSeedPixel()->raw());
-                                hPixelTimestamp_mainPeak->Fill(cluster->getSeedPixel()->timestamp());
-                                hClusterSize_mainPeak->Fill(static_cast<double>(cluster->size()));
-                                if(cluster->size() == 1) {
-                                    hTot_mainPeak_1px->Fill(cluster->getSeedPixel()->raw());
-                                }
+                    hTrackCorrelationTimeVsRow_rowAndTWCorr->Fill(track->timestamp() - cluster->getSeedPixel()->timestamp(),
+                                                                  cluster->getSeedPixel()->row());
+                    hTrackCorrelationTimeVsTot_rowAndTWCorr->Fill(track->timestamp() - cluster->getSeedPixel()->timestamp(),
+                                                                  cluster->getSeedPixel()->raw());
+
+                    // control plots to investigate "left/right tail" in time correlation:
+                    if(m_config.has("timing_tail_cut")) {
+                        if(track->timestamp() - cluster->timestamp() < -m_timingTailCut) {
+                            hClusterMap_leftTail->Fill(cluster->column(), cluster->row());
+                            hTot_leftTail->Fill(cluster->getSeedPixel()->raw());
+                            hPixelTimestamp_leftTail->Fill(cluster->getSeedPixel()->timestamp());
+                            hClusterSize_leftTail->Fill(static_cast<double>(cluster->size()));
+                            if(cluster->size() == 1) {
+                                hTot_leftTail_1px->Fill(cluster->getSeedPixel()->raw());
+                            }
+                        } else if(track->timestamp() - cluster->timestamp() > m_timingTailCut) {
+                            hClusterMap_rightTail->Fill(cluster->column(), cluster->row());
+                            hTot_rightTail->Fill(cluster->getSeedPixel()->raw());
+                            hPixelTimestamp_rightTail->Fill(cluster->getSeedPixel()->timestamp());
+                            hClusterSize_rightTail->Fill(static_cast<double>(cluster->size()));
+                            if(cluster->size() == 1) {
+                                hTot_rightTail_1px->Fill(cluster->getSeedPixel()->raw());
+                            }
+                        } else {
+                            hClusterMap_mainPeak->Fill(cluster->column(), cluster->row());
+                            hTot_mainPeak->Fill(cluster->getSeedPixel()->raw());
+                            hPixelTimestamp_mainPeak->Fill(cluster->getSeedPixel()->timestamp());
+                            hClusterSize_mainPeak->Fill(static_cast<double>(cluster->size()));
+                            if(cluster->size() == 1) {
+                                hTot_mainPeak_1px->Fill(cluster->getSeedPixel()->raw());
                             }
                         }
                     }
                 }
+            }
 
-            } // for loop over all clusters
-        }     // else (clusters != nullptr)
+        } // for loop over all clusters
 
         LOG(DEBUG) << "is_within_roi = " << is_within_roi;
         LOG(DEBUG) << "has_associated_cluster = " << has_associated_cluster;
@@ -755,7 +744,7 @@ StatusCode AnalysisTimingATLASpix::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void AnalysisTimingATLASpix::finalise() {
+void AnalysisTimingATLASpix::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     LOG(STATUS) << "Timing analysis finished for detector " << m_detector->getName() << ": ";
 
     if(m_calcCorrections) {
@@ -943,7 +932,7 @@ void AnalysisTimingATLASpix::finalise() {
     LOG(INFO) << "after clusterSizeCut:\t" << tracks_afterClusterSizeCut;
 }
 
-void AnalysisTimingATLASpix::correctClusterTimestamp(Cluster* cluster, int mode) {
+void AnalysisTimingATLASpix::correctClusterTimestamp(std::shared_ptr<Cluster> cluster, int mode) {
 
     /*
      * MODE:

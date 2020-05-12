@@ -1,5 +1,5 @@
 # Tracking4D
-**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>), Paul Schütze (<paul.schuetze@desy.de>)  
 **Module Type**: *GLOBAL*  
 **Status**: Functional
 
@@ -24,6 +24,7 @@ The DUT plane can be excluded from the track finding.
 * `momentum`: Set the beam momentum. Defaults to 5 GeV
 * `volume_scattering`: Select if volume scattering will be taken into account - defaults to false
 * `volume_radiation_length`: Define the radiation length of the volume around the telescope. Defaults to dry air with a radiation length of`304.2 m`
+* `reject_by_roi`: If true, tracks intercepting any detector outside its ROI will be rejected. Defaults to `false`.
 
 ### Plots produced
 

@@ -4,6 +4,8 @@ bin/
 lib/
 obj/
 testing/data
+testing/output
+testing/geometries/*updated*.conf
 
 # root and data files do not belong into the repository
 *.root

@@ -19,7 +19,7 @@ EventLoaderCLICpix::EventLoaderCLICpix(Configuration config, std::shared_ptr<Det
     m_filename = "";
 }
 
-void EventLoaderCLICpix::initialise() {
+void EventLoaderCLICpix::initialize() {
     // File structure is RunX/CLICpix/RunX.dat
 
     // Take input directory from global parameters
@@ -50,13 +50,13 @@ void EventLoaderCLICpix::initialise() {
     m_file.open(m_filename.c_str());
 
     // Make histograms for debugging
-    hHitMap = new TH2F("hitMap", "hitMap", 64, 0, 64, 64, 0, 64);
-    hPixelToT = new TH1F("pixelToT", "pixelToT", 20, 0, 20);
+    hHitMap = new TH2F("hitMap", "hitMap", 64, -0.5, 63.5, 64, -0.5, 63.5);
+    hPixelToT = new TH1F("pixelToT", "pixelToT", 20, -0.5, 19.5);
     hShutterLength = new TH1F("shutterLength", "shutterLength", 3000, 0, 0.3);
-    hPixelMultiplicity = new TH1F("pixelMultiplicity", "Pixel Multiplicity; # pixels; # events", 4100, 0, 4100);
+    hPixelMultiplicity = new TH1F("pixelMultiplicity", "Pixel Multiplicity; # pixels; # events", 4100, -0.5, 4099.5);
 }
 
-StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EventLoaderCLICpix::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
@@ -67,7 +67,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     // Otherwise load a new frame
 
     // Pixel container, shutter information
-    auto pixels = std::make_shared<PixelVector>();
+    PixelVector pixels;
     double shutterStartTime = 0, shutterStopTime = 0;
     string data;
 
@@ -123,8 +123,8 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
             continue;
 
         // when calibration is not available, set charge = tot
-        Pixel* pixel = new Pixel(m_detector->getName(), col, row, tot, tot, 0);
-        pixels->push_back(pixel);
+        auto pixel = std::make_shared<Pixel>(m_detector->getName(), col, row, tot, tot, 0);
+        pixels.push_back(pixel);
         npixels++;
         hHitMap->Fill(col, row);
         hPixelToT->Fill(tot);
@@ -145,7 +145,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void EventLoaderCLICpix::finalise() {
+void EventLoaderCLICpix::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }

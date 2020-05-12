@@ -11,23 +11,25 @@ If the pixel information is binary (i.e. no valid charge-equivalent information 
 Also, if one pixel of a cluster has charge zero, the arithmetic mean is calculated even if charge-weighting is selected because it is assumed that the zero-reading is false and does not to represent a low charge but an unknown value.
 Thus, the  arithmetic mean is safer.
 
-Split clusters can be recovered using a larger search radius for neighbouring pixels.
+Split clusters can be recovered using a larger search radius for neighboring pixels.
 
 ### Parameters
 * `time_cut_rel`: Number of standard deviations the `time_resolution` of the detector plane will be multiplied by. This value is then used as the maximum time difference allowed between pixels for association to a cluster. By default, a relative time cut is applied. Absolute and relative time cuts are mutually exclusive. Defaults to `3.0`.
 * `time_cut_abs`: Specifies an absolute value for the maximum time difference allowed between pixels for association to a cluster. Absolute and relative time cuts are mutually exclusive. No default value.
-* `neighbour_radius_col`: Search radius for neighbouring pixels in column direction, defaults to `1` (do not allow split clusters)
-* `neighbour_radius_row`:  Search radius for neighbouring pixels in row direction, defaults to `1` (do not allow split clusters)
+* `neighbor_radius_col`: Search radius for neighboring pixels in column direction, defaults to `1` (do not allow split clusters)
+* `neighbor_radius_row`:  Search radius for neighboring pixels in row direction, defaults to `1` (do not allow split clusters)
 * `charge_weighting`: If true, calculate a charge-weighted mean for the cluster centre. If false, calculate the simple arithmetic mean. Defaults to `true`.
+* `reject_by_roi`: If true, clusters positioned outside the ROI set for the detector will be rejected. Defaults to `false`.
 
 ### Plots produced
 For each detector the following plots are produced:
 
 * Histograms for cluster size, seed charge, width (columns/X and rows/Y)
-* Cluster charge histogram
+* Cluster charge histogram for all clusters as well as 1-px, 2-px, 3-px clusters
 * 2D cluster positions in global coordinates
 * Cluster times
 * Cluster multiplicity
+* Histogram with time difference of pixel time and cluster time for all pixels in a cluster
 
 ### Usage
 ```toml

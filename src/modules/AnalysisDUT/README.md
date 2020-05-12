@@ -5,7 +5,8 @@
 **Status**: Functional
 
 ### Description
-Generic analysis module for all prototypes.
+Generic analysis module for all types of detectors. Produces a number of commonly used plots to gauge detector performance and allows to discard tracks based on their chi2/ndf value.
+If a region of interest (ROI) is defined for the detector under investigation, only tracks from within this region are evaluated, all others are discarded.
 
 ### Parameters
 * `time_cut_frameedge`: Parameter to discard telescope tracks at the frame edges (start and end of the current CLICpix2 frame). Defaults to `20ns`.

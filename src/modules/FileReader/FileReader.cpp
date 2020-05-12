@@ -47,17 +47,18 @@ FileReader::~FileReader() {
  * particular type of object from its typeid.
  */
 template <typename T> static void add_creator(FileReader::ObjectCreatorMap& map) {
-    map[typeid(T)] = [&](std::vector<Object*> objects, std::string detector, std::shared_ptr<Clipboard> clipboard) {
-        std::vector<T*> data;
+    map[typeid(T)] = [&](std::vector<Object*> objects, std::string detector, const std::shared_ptr<Clipboard>& clipboard) {
+        std::vector<std::shared_ptr<T>> data;
         // Copy the objects to data vector
         for(auto& object : objects) {
-            data.push_back(new T(*static_cast<T*>(object)));
+            data.push_back(std::make_shared<T>(*static_cast<T*>(object)));
         }
 
         // Fix the object references (NOTE: we do this after insertion as otherwise the objects could have been relocated)
         for(size_t i = 0; i < objects.size(); ++i) {
             auto& prev_obj = *objects[i];
-            auto& new_obj = data[i];
+            auto addr = data[i].get();
+            auto& new_obj = addr;
 
             // Only update the reference for objects that have been referenced before
             if(prev_obj.TestBit(kIsReferenced)) {
@@ -73,9 +74,9 @@ template <typename T> static void add_creator(FileReader::ObjectCreatorMap& map)
 
         // Store the ojects on the clipboard:
         if(detector.empty()) {
-            clipboard->putData(std::make_shared<std::vector<T*>>(std::move(data)));
+            clipboard->putData(std::move(data));
         } else {
-            clipboard->putData(std::make_shared<std::vector<T*>>(std::move(data)), detector);
+            clipboard->putData(std::move(data), detector);
         }
     };
 }
@@ -99,7 +100,7 @@ template <typename T> static FileReader::ObjectCreatorMap gen_creator_map() {
     return ret_map;
 }
 
-void FileReader::initialise() {
+void FileReader::initialize() {
     // Read include and exclude list
     if(m_config.has("include") && m_config.has("exclude")) {
         throw InvalidCombinationError(
@@ -211,7 +212,7 @@ void FileReader::initialise() {
     }
 }
 
-StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode FileReader::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     if(clipboard->isEventDefined()) {
         ModuleError("Clipboard event already defined, cannot continue");
@@ -265,7 +266,7 @@ StatusCode FileReader::run(std::shared_ptr<Clipboard> clipboard) {
     }
 }
 
-void FileReader::finalise() {
+void FileReader::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     int branch_count = 0;
     for(auto& tree : trees_) {
         branch_count += tree->GetListOfBranches()->GetEntries();
