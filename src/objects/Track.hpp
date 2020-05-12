@@ -272,13 +272,7 @@ namespace corryvreckan {
         void setLogging(bool on = false) { logging_ = on; }
 
         void registerPlane(Plane p) { planes_.push_back(p); }
-        void replacePlane(Plane p) {
-            std::replace_if(
-                planes_.begin(),
-                planes_.end(),
-                [&p](auto const& plane) { return plane.getName() == p.getName(); },
-                std::move(p));
-        }
+        void replacePlane(Plane p);
 
     protected:
         std::vector<TRef> track_clusters_;
