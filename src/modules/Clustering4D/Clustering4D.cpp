@@ -9,6 +9,7 @@
  */
 
 #include "Clustering4D.h"
+#include "tools/cuts.h"
 
 using namespace corryvreckan;
 using namespace std;
@@ -26,14 +27,12 @@ Clustering4D::Clustering4D(Configuration& config, std::shared_ptr<Detector> dete
     config_.setDefault<bool>("charge_weighting", true);
     config_.setDefault<bool>("reject_by_roi", false);
 
-    if(config_.count({"time_cut_rel", "time_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            config_, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
-    } else if(config_.has("time_cut_abs")) {
-        time_cut_ = config_.get<double>("time_cut_abs");
-    } else {
-        time_cut_ = config_.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
+    if(config_.count({"time_cut_rel", "time_cut_abs"}) == 0) {
+        config_.setDefault("time_cut_rel", 3.0);
     }
+
+    // timing cut, relative (x * time_resolution) or absolute:
+    time_cut_ = corryvreckan::calculate_cut<double>("time_cut", config_, m_detector);
 
     neighbor_radius_row_ = config_.get<int>("neighbor_radius_row");
     neighbor_radius_col_ = config_.get<int>("neighbor_radius_col");
