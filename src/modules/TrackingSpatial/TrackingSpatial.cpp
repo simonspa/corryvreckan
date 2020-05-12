@@ -37,13 +37,17 @@ TrackingSpatial::TrackingSpatial(Configuration& config, std::vector<std::shared_
     config_.setDefault<std::string>("track_model", "straightline");
     config_.setDefault<bool>("reject_by_roi", false);
 
+    if(config_.count({"spatial_cut_rel", "spatial_cut_rel"}) == 0) {
+        config_.setDefault("spatial_cut_rel", 3.0);
+    }
+
     minHitsOnTrack = config_.get<size_t>("min_hits_on_track");
     excludeDUT = config_.get<bool>("exclude_dut");
     trackModel = config_.get<std::string>("track_model");
     rejectByROI = config_.get<bool>("reject_by_roi");
 
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, config_, get_detectors());
+    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", config_, get_detectors());
 }
 
 void TrackingSpatial::initialize() {
