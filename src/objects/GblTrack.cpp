@@ -9,14 +9,13 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include "GblTrack.hpp"
-#include "Track.hpp"
-#include "exceptions.h"
-
+#include <GblPoint.h>
+#include <GblTrajectory.h>
 #include <Math/Point3D.h>
-#include "GblPoint.h"
-#include "GblTrajectory.h"
-#include "Math/Vector3D.h"
+#include <Math/Vector3D.h>
+
+#include "GblTrack.hpp"
+#include "exceptions.h"
 
 using namespace corryvreckan;
 using namespace gbl;
@@ -237,6 +236,9 @@ void GblTrack::fit() {
     }
 
     // Make sure we missed nothing
+    // Case 1: We take the material into account which adds a scatterer left and right of each detetcor. The very first
+    // and very last one are not relevant and therefore ignored
+    // Case 2: Each plane is a scatter,volume ignored
     if((points.size() != ((planes_.size() * 3) - 2) && use_volume_scatter_) ||
        (points.size() != planes_.size() && !use_volume_scatter_)) {
         throw TrackError(typeid(GblTrack),
@@ -272,7 +274,7 @@ void GblTrack::fit() {
     for(auto plane : planes_) {
         traj.getScatResults(
             plane.getGblPointPosition(), numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
-        // this is of course the kink in local coordinates and not to meaningful for further usage
+        // this is of course the kink in local coordinates and not to meaningful for further usage if rotations are large
         auto name = plane.getName();
         kink_[name] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
         traj.getResults(int(plane.getGblPointPosition()), localPar, localCov);
@@ -339,9 +341,9 @@ ROOT::Math::XYZPoint GblTrack::getState(std::string detectorID) const {
     if(logging_)
         std::cout << "Requesting state at: " << detectorID << std::endl;
     if(!isFitted_)
-        throw TrackError(typeid(GblTrack), " detector " + detectorID + " state is not defined before fitting");
+        throw TrackError(typeid(GblTrack), " has no difned state for" + detectorID + " before fitting");
     if(local_track_points_.count(detectorID) != 1) {
-        throw TrackError(typeid(GblTrack), "Detector " + detectorID + " is not part of the GBL");
+        throw TrackError(typeid(GblTrack), "  does not have any entry for detector " + detectorID);
     }
     // The local track position can simply be transformed to global coordinates
     auto p =
@@ -383,7 +385,7 @@ ROOT::Math::XYZVector GblTrack::getDirection(std::string detectorID) const {
         }
     }
     if(nextLayer == "")
-        throw TrackError(typeid(GblTrack), ": Direction after the last telescope plane not defined");
+        throw TrackError(typeid(GblTrack), " does not define a direction after the last telescope plane");
     ROOT::Math::XYZPoint pointAfter = getState(nextLayer);
     return ((pointAfter - point) / (pointAfter.z() - point.z()));
 }
