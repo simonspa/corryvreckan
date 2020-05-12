@@ -35,10 +35,10 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
     config_.setDefault<bool>("volume_scattering", false);
     config_.setDefault<bool>("reject_by_roi", false);
 
-    if(config_.count({"time_cut_rel", "time_cut_rel"}) == 0) {
+    if(config_.count({"time_cut_rel", "time_cut_abs"}) == 0) {
         config_.setDefault("time_cut_rel", 3.0);
     }
-    if(config_.count({"spatial_cut_rel", "spatial_cut_rel"}) == 0) {
+    if(config_.count({"spatial_cut_rel", "spatial_cut_abs"}) == 0) {
         config_.setDefault("spatial_cut_rel", 3.0);
     }
 
