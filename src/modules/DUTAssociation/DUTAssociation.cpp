@@ -23,10 +23,10 @@ DUTAssociation::DUTAssociation(Configuration& config, std::shared_ptr<Detector> 
 
     config_.setDefault<bool>("use_cluster_centre", false);
 
-    if(config_.count({"time_cut_rel", "time_cut_rel"}) == 0) {
+    if(config_.count({"time_cut_rel", "time_cut_abs"}) == 0) {
         config_.setDefault("time_cut_rel", 3.0);
     }
-    if(config_.count({"spatial_cut_rel", "spatial_cut_rel"}) == 0) {
+    if(config_.count({"spatial_cut_rel", "spatial_cut_abs"}) == 0) {
         config_.setDefault("spatial_cut_rel", 3.0);
     }
 
