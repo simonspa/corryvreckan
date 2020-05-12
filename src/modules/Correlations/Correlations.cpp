@@ -9,6 +9,7 @@
  */
 
 #include "Correlations.h"
+#include "tools/cuts.h"
 
 using namespace corryvreckan;
 using namespace std;
@@ -23,15 +24,13 @@ Correlations::Correlations(Configuration& config, std::shared_ptr<Detector> dete
     config_.setDefault<bool>("do_time_cut", false);
     config_.setDefault<bool>("correlation_vs_time", false);
 
-    do_time_cut_ = config_.get<bool>("do_time_cut");
-    if(config_.count({"time_cut_rel", "time_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            config_, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
-    } else if(config_.has("time_cut_abs")) {
-        timeCut = config_.get<double>("time_cut_abs");
-    } else {
-        timeCut = config_.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
+    if(config_.count({"time_cut_rel", "time_cut_abs"}) == 0) {
+        config_.setDefault("time_cut_rel", 3.0);
     }
+
+    // timing cut, relative (x * time_resolution) or absolute:
+    timeCut = corryvreckan::calculate_cut<double>("time_cut", config_, m_detector);
+    do_time_cut_ = config_.get<bool>("do_time_cut");
 
     m_corr_vs_time = config_.get<bool>("correlation_vs_time");
 }
