@@ -148,8 +148,10 @@ Cluster* Track::getClusterFromDetector(std::string detectorID) const {
 }
 
 double Track::getMaterialBudget(const std::string& detectorID) const {
-    return std::find_if(planes_.begin(), planes_.end(), [&detectorID](Plane plane) { return plane.getName() == detectorID; })
-        ->getMaterialBudget();
+    auto budget = std::find_if(planes_.begin(), planes_.end(), [&detectorID](Plane plane) {
+                      return plane.getName() == detectorID;
+                  })->getMaterialBudget();
+    return budget;
 }
 
 ROOT::Math::XYZPoint Track::getCorrection(const std::string& detectorID) const {
