@@ -89,6 +89,7 @@ StatusCode AnalysisTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
         LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
     }
+    LOG(DEBUG) << "Picked up " << tracks.size() << "tracks from the clipboard evnt";
     for(auto& track : tracks) {
         IFLOG(DEBUG) { track->setLogging(true); }
         // Cut on the chi2/ndof
@@ -104,9 +105,8 @@ StatusCode AnalysisTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
             }
 
             auto name = detector->getName();
-            GblTrack t;
             auto intercept = detector->getIntercept(track.get());
-            if(track->getType() != t.getType()) {
+            if(track->getType() != "GblTrack") {
                 intercept = track->getIntercept(cluster->global().z());
             }
             auto interceptLocal = detector->globalToLocal(intercept);
