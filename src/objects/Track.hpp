@@ -238,18 +238,6 @@ namespace corryvreckan {
         virtual ROOT::Math::XYPoint getKinkAt(std::string detectorID) const = 0;
 
         /**
-         * @brief Get the track intercept at the position of the scatterer
-         * @return ROOT::Math::XYPoint Track position at scatterer
-         */
-        ROOT::Math::XYZPoint getPositionAtScatterer() { return positionAtScatterer_; };
-
-        /**
-         * @brief Get the kink angle between up- & downstream tracklet at the position of the scatterer
-         * @return ROOT::Math::XYVector kink at scatterer
-         */
-        ROOT::Math::XYVector getKinkAtScatterer() { return kinkAtScatterer_; };
-
-        /**
          * @brief Get the materialBudget of a detector layer
          * @param detectorID
          * @return Material Budget for given layer
@@ -263,9 +251,6 @@ namespace corryvreckan {
         long unsigned int getNumScatterers() const { return material_budget_.size(); }
 
         virtual void setVolumeScatter(double length) = 0;
-
-        void setPositionAtScatterer(ROOT::Math::XYZPoint position) { positionAtScatterer_ = position; }
-        void setKinkAtScatterer(ROOT::Math::XYVector kink) { kinkAtScatterer_ = kink; }
 
     protected:
         std::vector<TRef> track_clusters_;
@@ -281,11 +266,9 @@ namespace corryvreckan {
         double chi2ndof_;
         bool isFitted_{};
         double momentum_{-1};
-        ROOT::Math::XYZPoint positionAtScatterer_;
-        ROOT::Math::XYVector kinkAtScatterer_;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Track, 9)
+        ClassDefOverride(Track, 8)
     };
     // Vector type declaration
     using TrackVector = std::vector<std::shared_ptr<Track>>;
