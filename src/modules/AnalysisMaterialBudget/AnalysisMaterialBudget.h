@@ -62,11 +62,12 @@ namespace corryvreckan {
         std::map<std::pair<int, int>, int> m_all_entries;
 
         /**
-         * @brief Method re-calculating the AAD of a given image cell
+         * @brief Method re-calculating the average absolute deviation from 0 for the scattering distribution of a given
+         * image cell
          * @param Cell ID in x
          * @param Cell ID in y
          */
-        double getAAD(int cell_x, int cell_y);
+        double get_aad(int cell_x, int cell_y);
     };
 
 } // namespace corryvreckan

@@ -64,7 +64,7 @@ void AnalysisMaterialBudget::initialize() {
                                 0,
                                 angle_cut_mrad * angle_cut_mrad);
     MBI = new TH2F("MBI",
-                   "Material Budget Image; x [mm]; y [mm]; AAD90(kink)^{2} [mrad^{2}]",
+                   "Material Budget Image; x [mm]; y [mm]; AAD(kink)^{2} [mrad^{2}]",
                    n_cells_x,
                    -static_cast<double>(Units::convert(image_size_.x(), "mm")) / 2,
                    static_cast<double>(Units::convert(image_size_.x(), "mm")) / 2,
@@ -95,7 +95,7 @@ void AnalysisMaterialBudget::initialize() {
     m_eventNumber = 0;
 }
 
-double AnalysisMaterialBudget::getAAD(int cell_x, int cell_y) {
+double AnalysisMaterialBudget::get_aad(int cell_x, int cell_y) {
 
     // First let's sort the vector
     std::vector<double> vec = m_all_kinks.at(std::make_pair(cell_x, cell_y));
