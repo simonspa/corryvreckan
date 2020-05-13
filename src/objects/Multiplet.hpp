@@ -12,7 +12,6 @@
 #define CORRYVRECKAN_Multiplet_H 1
 
 #include <Math/DisplacementVector3D.h>
-#include "StraightLineTrack.hpp"
 #include "Track.hpp"
 
 namespace corryvreckan {

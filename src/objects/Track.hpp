@@ -26,30 +26,28 @@ namespace corryvreckan {
     class Plane : public Object {
     public:
         Plane() = default;
-        Plane(double z, double x_x0, std::string name) : Object(), z_(z), x_x0_(x_x0), name_(name){};
+        Plane(double z, double x_x0, std::string name);
 
-        static std::type_index getBaseType() { return typeid(Plane); }
+        static std::type_index getBaseType();
 
-        double getPlanePosition() const { return z_; }
-        double getMaterialBudget() const { return x_x0_; }
-        bool hasCluster() const { return (cluster_.IsValid() && cluster_.GetObject() != nullptr); }
+        double getPlanePosition() const;
+        double getMaterialBudget() const;
+        bool hasCluster() const;
 
-        const std::string& getName() const { return name_; }
-        unsigned getGblPointPosition() const { return gbl_points_pos_; }
+        const std::string& getName() const;
+        unsigned getGblPointPosition() const;
         Cluster* getCluster() const;
-        Transform3D getToLocal() const { return to_local_; }
-        Transform3D getToGlobal() const { return to_global_; }
+        Transform3D getToLocal() const;
+        Transform3D getToGlobal() const;
 
         // sorting overload
-        bool operator<(const Plane& pl) const { return z_ < pl.z_; }
+        bool operator<(const Plane& pl) const;
         // set elements that might be unknown at construction
-        void setGblPointPosition(unsigned pos) { gbl_points_pos_ = pos; }
+        void setGblPointPosition(unsigned pos);
         void setPosition(double z) { z_ = z; }
-
-        void setCluster(const Cluster* cluster) { cluster_ = const_cast<Cluster*>(cluster); }
-
-        void setToLocal(Transform3D toLocal) { to_local_ = toLocal; }
-        void setToGlobal(Transform3D toGlobal) { to_global_ = toGlobal; }
+        void setCluster(const Cluster* cluster);
+        void setToLocal(Transform3D toLocal);
+        void setToGlobal(Transform3D toGlobal);
         void print(std::ostream& os) const override;
 
     private:
@@ -92,13 +90,13 @@ namespace corryvreckan {
          *
          * @return Class type of the base object
          */
-        static std::type_index getBaseType() { return typeid(Track); }
+        static std::type_index getBaseType();
 
         /**
          * @brief get the track type used
          * @return track type
          */
-        std::string getType() const { return corryvreckan::demangle(typeid(*this).name()); }
+        std::string getType() const;
 
         /**
          * * @brief Add a cluster to the tack, which will be used in the fit
@@ -135,13 +133,13 @@ namespace corryvreckan {
          * @brief Print an ASCII representation of the Track to the given stream
          * @param ostream to print to
          */
-        void print(std::ostream& out) const override { out << "Base class - nothing to see here" << std::endl; }
+        void print(std::ostream& out) const override;
 
         /**
          * @brief Set the momentum of the particle
          * @param momentum
          */
-        void setParticleMomentum(double p) { momentum_ = p; }
+        void setParticleMomentum(double p);
 
         /**
          * @brief Get the chi2 of the track fit
@@ -212,21 +210,21 @@ namespace corryvreckan {
          * @param z positon
          * @return ROOT::Math::XYZPoint at z position
          */
-        virtual ROOT::Math::XYZPoint getIntercept(double) const { return ROOT::Math::XYZPoint(0.0, 0.0, 0.0); }
+        virtual ROOT::Math::XYZPoint getIntercept(double) const;
 
         /**
          * @brief Get the track state at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        virtual ROOT::Math::XYZPoint getState(const std::string&) const { return ROOT::Math::XYZPoint(0.0, 0.0, 0.0); }
+        virtual ROOT::Math::XYZPoint getState(const std::string&) const;
 
         /**
          * @brief Get the track direction at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
-        virtual ROOT::Math::XYZVector getDirection(const std::string&) const { return ROOT::Math::XYZVector(0.0, 0.0, 0.0); }
+        virtual ROOT::Math::XYZVector getDirection(const std::string&) const;
 
         /**
          * @brief check if the fitting routine already has been called. Chi2 etc are not set before
@@ -239,7 +237,7 @@ namespace corryvreckan {
          * @param detectorID
          * @return  2D residual as ROOT::Math::XYPoint
          */
-        ROOT::Math::XYPoint getResidual(const std::string& detectorID) const { return residual_.at(detectorID); }
+        ROOT::Math::XYPoint getResidual(const std::string& detectorID) const;
 
         /**
          * @brief Get the kink at a given detector layer. This is ill defined for last and first layer
@@ -258,9 +256,9 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint getCorrection(const std::string& detectorID) const;
 
         virtual void setVolumeScatter(double length) = 0;
-        void setLogging(bool on = false) { logging_ = on; }
+        void setLogging(bool on = false);
 
-        void registerPlane(Plane p) { planes_.push_back(p); }
+        void registerPlane(Plane p);
         void replacePlane(Plane p);
 
     protected:
@@ -287,5 +285,6 @@ namespace corryvreckan {
 
 // include all tracking methods here to have one header to be include everywhere
 #include "GblTrack.hpp"
+#include "Multiplet.hpp"
 #include "StraightLineTrack.hpp"
 #endif // CORRYVRECKAN_TRACK_H
