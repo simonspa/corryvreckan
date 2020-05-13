@@ -22,20 +22,14 @@
 
 namespace corryvreckan {
     /** @ingroup Modules
-     * @brief Module to do function
-     *
-     * More detailed explanation of module
      */
     class AnalysisMaterialBudget : public Module {
 
     public:
-        /**
-         * @brief Constructor for this unique module
-         * @param config Configuration object for this module as retrieved from the steering file
-         * @param detectors Vector of pointers to the detectors
-         */
+        // Constructor
         AnalysisMaterialBudget(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
 
+        // Module functions
         void initialize() override;
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
