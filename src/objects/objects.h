@@ -9,6 +9,7 @@
 
 #include "Cluster.hpp"
 #include "MCParticle.hpp"
+#include "Multiplet.hpp"
 #include "Pixel.hpp"
 #include "SpidrSignal.hpp"
 #include "Track.hpp"
@@ -17,5 +18,5 @@ namespace corryvreckan {
     /**
      * @brief Tuple containing all objects
      */
-    using OBJECTS = std::tuple<Cluster, MCParticle, Pixel, SpidrSignal, StraightLineTrack, GblTrack, Plane>;
+    using OBJECTS = std::tuple<Cluster, MCParticle, Pixel, SpidrSignal, StraightLineTrack, GblTrack, Plane, Multiplet>;
 } // namespace corryvreckan
