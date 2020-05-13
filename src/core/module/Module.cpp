@@ -129,6 +129,15 @@ std::shared_ptr<Detector> Module::get_reference() {
     return m_reference;
 }
 
+std::vector<std::shared_ptr<Detector>> Module::get_duts() {
+    std::vector<std::shared_ptr<Detector>> duts;
+    for_each(m_detectors.begin(), m_detectors.end(), [&duts](std::shared_ptr<Detector> obj) {
+        if(obj->isDUT())
+            duts.push_back(obj);
+    });
+    return duts;
+}
+
 bool Module::has_detector(std::string name) {
     auto it = find_if(
         m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->getName() == name; });
