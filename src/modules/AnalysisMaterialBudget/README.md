@@ -5,9 +5,13 @@
 
 ### Description
 This module analyses the kink angle distributions at the position of a scatterer. This requires the availability of `Multiplet` tracks.
-A material budget image is computed, which represents the widths of the scattering distributions of individual image cells, taking into account all particles traversing this cell.
+A material budget image is computed, which represents the widths of the scattering angle distribution of all particles traversing a given image cell.
 The widths are calculated as average absolute deviation from `0` for the selected quantile of the distribution.
+At this point, no attempt is made to translate this width into the actual material budget (x/X0), given the fact that the absolute values strongly depend on the detector setup and the detector resolution and include scattering in air and neighbouring detectors. For this, a calibration would be required for every individual setup.
+
 Further information on this technique can be found in [@material_budget_imaging].
+
+
 
 ### Parameters
 * `image_size`: Two dimensional Field of view extent for all histograms. Defaults to `10mm 10 mm`.
