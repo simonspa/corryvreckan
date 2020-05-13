@@ -9,6 +9,7 @@
  */
 
 #include "AnalysisMaterialBudget.h"
+#include "objects/Multiplet.hpp"
 
 using namespace corryvreckan;
 
@@ -124,13 +125,19 @@ StatusCode AnalysisMaterialBudget::run(const std::shared_ptr<Clipboard>& clipboa
     auto tracks = clipboard->getData<Track>();
 
     for(auto& track : tracks) {
-        double pos_x = static_cast<double>(Units::convert(track->getPositionAtScatterer().x(), "mm"));
-        double pos_y = static_cast<double>(Units::convert(track->getPositionAtScatterer().y(), "mm"));
+        auto multiplet = std::dynamic_pointer_cast<Multiplet>(track);
+        if(multiplet == nullptr) {
+            LOG_ONCE(WARNING) << "Stored track is not a Multiplet. Skipping this track.";
+            continue;
+        };
+
+        double pos_x = static_cast<double>(Units::convert(multiplet->getPositionAtScatterer().x(), "mm"));
+        double pos_y = static_cast<double>(Units::convert(multiplet->getPositionAtScatterer().y(), "mm"));
         if(fabs(pos_x) > image_size_.x() / 2. || fabs(pos_y) > image_size_.y() / 2.) {
             continue;
         }
-        double kink_x = static_cast<double>(Units::convert(track->getKinkAtScatterer().x(), "mrad"));
-        double kink_y = static_cast<double>(Units::convert(track->getKinkAtScatterer().y(), "mrad"));
+        double kink_x = static_cast<double>(Units::convert(multiplet->getKinkAtScatterer().x(), "mrad"));
+        double kink_y = static_cast<double>(Units::convert(multiplet->getKinkAtScatterer().y(), "mrad"));
 
         double kink_x_sq = kink_x * kink_x;
         double kink_y_sq = kink_y * kink_y;
