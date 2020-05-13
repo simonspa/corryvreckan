@@ -49,9 +49,9 @@ void Multiplet::fit() {
 
     // FIXME: Currently asking for direction of "". Should be the last detector plane -> Would enable using more generic
     // tracks
-    m_positionAtScatterer = ((m_downstream->getIntercept(m_scattererPosition) -
-                              (ROOT::Math::XYZPoint(0, 0, 0) - m_upstream->getIntercept(m_scattererPosition))) /
-                             2.);
+    positionAtScatterer_ = ((m_downstream->getIntercept(m_scattererPosition) -
+                             (ROOT::Math::XYZPoint(0, 0, 0) - m_upstream->getIntercept(m_scattererPosition))) /
+                            2.);
     m_offsetAtScatterer = m_downstream->getIntercept(m_scattererPosition) - m_upstream->getIntercept(m_scattererPosition);
 
     // Calculate the angle
@@ -59,7 +59,7 @@ void Multiplet::fit() {
     double slopeYup = m_upstream->getDirection("").Y() / m_upstream->getDirection("").Z();
     double slopeXdown = m_downstream->getDirection("").X() / m_downstream->getDirection("").Z();
     double slopeYdown = m_downstream->getDirection("").Y() / m_downstream->getDirection("").Z();
-    m_kinkAtScatterer = ROOT::Math::XYVector(slopeXdown - slopeXup, slopeYdown - slopeYup);
+    kinkAtScatterer_ = ROOT::Math::XYVector(slopeXdown - slopeXup, slopeYdown - slopeYup);
 
     this->calculateChi2();
     this->calculateResiduals();
@@ -68,7 +68,7 @@ void Multiplet::fit() {
 
 ROOT::Math::XYZPoint Multiplet::getIntercept(double z) const {
     return z == m_scattererPosition
-               ? m_positionAtScatterer
+               ? positionAtScatterer_
                : (z < m_scattererPosition ? m_upstream->getIntercept(z) : m_downstream->getIntercept(z));
 }
 
@@ -83,7 +83,7 @@ ROOT::Math::XYZVector Multiplet::getDirection(std::string detectorID) const {
 }
 
 void Multiplet::print(std::ostream& out) const {
-    out << "Multiplet " << this->m_scattererPosition << ", " << this->m_positionAtScatterer << ", "
-        << this->m_offsetAtScatterer << ", " << this->m_kinkAtScatterer << ", " << this->chi2_ << ", " << this->ndof_ << ", "
+    out << "Multiplet " << this->m_scattererPosition << ", " << this->positionAtScatterer_ << ", "
+        << this->m_offsetAtScatterer << ", " << this->kinkAtScatterer_ << ", " << this->chi2_ << ", " << this->ndof_ << ", "
         << this->chi2ndof_ << ", " << this->timestamp();
 }
