@@ -285,7 +285,7 @@ namespace corryvreckan {
         ROOT::Math::XYVector kinkAtScatterer_;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Track, 8)
+        ClassDefOverride(Track, 9)
     };
     // Vector type declaration
     using TrackVector = std::vector<std::shared_ptr<Track>>;
