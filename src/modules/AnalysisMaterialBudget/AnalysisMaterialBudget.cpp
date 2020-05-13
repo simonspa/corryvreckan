@@ -25,7 +25,7 @@ AnalysisMaterialBudget::AnalysisMaterialBudget(Configuration config, std::vector
     live_update_ = m_config.get<bool>("live_update", true);
 }
 
-void AnalysisMaterialBudget::initialise() {
+void AnalysisMaterialBudget::initialize() {
 
     trackKinkX = new TH1F("trackKinkX", "Track Kink X; kink x [mrad]; Tracks", 200, -200, 200);
     trackKinkY = new TH1F("trackKinkY", "Track Kink Y; kink y [mrad]; Tracks", 200, -200, 200);
@@ -119,7 +119,7 @@ double AnalysisMaterialBudget::getAAD(int cell_x, int cell_y) {
     return AAD;
 }
 
-StatusCode AnalysisMaterialBudget::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AnalysisMaterialBudget::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     auto tracks = clipboard->getData<Track>();
 
@@ -201,7 +201,7 @@ StatusCode AnalysisMaterialBudget::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void AnalysisMaterialBudget::finalise() {
+void AnalysisMaterialBudget::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 
     if(!live_update_) {

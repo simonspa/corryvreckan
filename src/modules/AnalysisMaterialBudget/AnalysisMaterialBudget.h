@@ -36,20 +36,9 @@ namespace corryvreckan {
          */
         AnalysisMaterialBudget(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
 
-        /**
-         * @brief [Initialise this module]
-         */
-        void initialise();
-
-        /**
-         * @brief [Run the function of this module]
-         */
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
-
-        /**
-         * @brief [Finalise module]
-         */
-        void finalise();
+        void initialize() override;
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
         int m_eventNumber;
