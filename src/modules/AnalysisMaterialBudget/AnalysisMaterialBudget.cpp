@@ -123,11 +123,7 @@ StatusCode AnalysisMaterialBudget::run(const std::shared_ptr<Clipboard>& clipboa
 
     auto tracks = clipboard->getData<Track>();
 
-    if(tracks == nullptr) {
-        return StatusCode::Success;
-    }
-
-    for(auto& track : (*tracks)) {
+    for(auto& track : tracks) {
         double pos_x = static_cast<double>(Units::convert(track->getPositionAtScatterer().x(), "mm"));
         double pos_y = static_cast<double>(Units::convert(track->getPositionAtScatterer().y(), "mm"));
         if(fabs(pos_x) > image_size_.x() / 2. || fabs(pos_y) > image_size_.y() / 2.) {
