@@ -148,7 +148,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
 
                 // Add to cluster
                 cluster->addPixel(neighbour);
-                clusterTime = neighbour->timestamp();
+                clusterTime = (neighbour->timestamp() < clusterTime) ? neighbour->timestamp() : clusterTime;
                 used[neighbour] = true;
                 LOG(DEBUG) << "Adding pixel: " << neighbour->column() << "," << neighbour->row() << " time "
                            << Units::display(neighbour->timestamp(), {"ns", "us", "s"});
