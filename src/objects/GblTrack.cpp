@@ -20,7 +20,7 @@ using namespace corryvreckan;
 using namespace gbl;
 using namespace Eigen;
 
-ROOT::Math::XYPoint GblTrack::getKinkAt(std::string detectorID) const {
+ROOT::Math::XYPoint GblTrack::getKinkAt(const std::string& detectorID) const {
     if(kink_.count(detectorID) == 1) {
         return kink_.at(detectorID);
     } else {
@@ -97,6 +97,8 @@ void GblTrack::fit() {
     // lambda to add a scatterer to a GBLPoint
     auto addScattertoGblPoint = [&total_material, &scatteringTheta, &localTangent](GblPoint& point, double material) {
         Matrix<double, 2, 2> scatter;
+        // This can only happen if someone messes up the tracking code. Simply renormalizing would shadow the mistake made at
+        // a different position and therefore the used plane distances would be wrong.
         if(localTangent(2) != 1)
             throw TrackError(typeid(GblTrack),
                              "wrong normalization of local slope, should be 1 but is " + std::to_string(localTangent(2)));
@@ -143,7 +145,7 @@ void GblTrack::fit() {
         point.addMeasurement(initialResidual, covv);
         initital_residual_[p->getName()] = ROOT::Math::XYPoint(initialResidual(0), initialResidual(1));
         if(logging_) {
-            std::cout << "*********** Plane:  " << p->getName() << " \n Global Res to fit: \t("
+            std::cout << "Plane:  " << p->getName() << " \n Global Res to fit: \t("
                       << (cluster->global().x() - planes_.begin()->getCluster()->global().x()) << ", "
                       << (cluster->global().y() - planes_.begin()->getCluster()->global().y()) << ")\n Local Res to fit: \t("
                       << (cluster->local().x() - localPosTrack[0]) << ", " << (cluster->local().y() - localPosTrack[1])
@@ -271,10 +273,10 @@ void GblTrack::fit() {
     unsigned int numData = 2;
 
     for(auto plane : planes_) {
+        auto name = plane.getName();
         traj.getScatResults(
             plane.getGblPointPosition(), numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
-        // this is of course the kink in local coordinates and not to meaningful for further usage if rotations are large
-        auto name = plane.getName();
+        // fixme: Kinks are in local coordinates and would be more reasonably in global
         kink_[name] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
         traj.getResults(int(plane.getGblPointPosition()), localPar, localCov);
         corrections_[name] = ROOT::Math::XYZPoint(localPar(3), localPar(4), 0);
@@ -334,7 +336,7 @@ ROOT::Math::XYZPoint GblTrack::getIntercept(double z) const {
     return (getState(layer) + getDirection(layer) * (z - getState(layer).z()));
 }
 
-ROOT::Math::XYZPoint GblTrack::getState(std::string detectorID) const {
+ROOT::Math::XYZPoint GblTrack::getState(const std::string& detectorID) const {
     // The track state is given in global coordinates and represents intersect of track and detetcor plane.
     // Let's check first if the data is fitted and all components are there
     if(logging_)
@@ -364,7 +366,7 @@ Cluster* GblTrack::get_seed_cluster() const {
     return dynamic_cast<Cluster*>(seed_cluster_.GetObject());
 }
 
-ROOT::Math::XYZVector GblTrack::getDirection(std::string detectorID) const {
+ROOT::Math::XYZVector GblTrack::getDirection(const std::string& detectorID) const {
 
     // Defining the direction following the particle results in the direction
     // beeing definded from the requested plane onwards to the next one

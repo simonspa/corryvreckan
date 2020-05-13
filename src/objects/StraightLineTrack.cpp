@@ -29,7 +29,7 @@ ROOT::Math::XYPoint StraightLineTrack::distance(const Cluster* cluster) const {
     return ROOT::Math::XYPoint(dx, dy);
 }
 
-ROOT::Math::XYPoint StraightLineTrack::getKinkAt(std::string) const {
+ROOT::Math::XYPoint StraightLineTrack::getKinkAt(const std::string&) const {
     return ROOT::Math::XYPoint(0, 0);
 }
 

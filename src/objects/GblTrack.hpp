@@ -12,6 +12,7 @@
 #define CORRYVRECKAN_GBLTRACK_H 1
 
 #include "Track.hpp"
+
 namespace corryvreckan {
     /**
      * @ingroup Objects
@@ -42,21 +43,21 @@ namespace corryvreckan {
          * @param name of detector
          * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        ROOT::Math::XYZPoint getState(std::string detectorID) const override;
+        ROOT::Math::XYZPoint getState(const std::string& detectorID) const override;
 
         /**
          * @brief Get the track direction at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
-        ROOT::Math::XYZVector getDirection(std::string detectorID) const override;
+        ROOT::Math::XYZVector getDirection(const std::string& detectorID) const override;
 
         /**
          * @brief Return kink of track at given detector
          * @param  detectorID Detector ID at which the kink should be evaluated
          * @return            Kink at given detector
          */
-        ROOT::Math::XYPoint getKinkAt(std::string detectorID) const override;
+        ROOT::Math::XYPoint getKinkAt(const std::string& detectorID) const override;
 
         void setVolumeScatter(double length) override;
 

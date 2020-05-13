@@ -27,7 +27,7 @@ Multiplet::Multiplet(std::shared_ptr<Track> upstream, std::shared_ptr<Track> dow
     }
 }
 
-ROOT::Math::XYPoint Multiplet::getKinkAt(std::string) const {
+ROOT::Math::XYPoint Multiplet::getKinkAt(const std::string&) const {
     return ROOT::Math::XYPoint(0, 0);
 }
 
@@ -72,12 +72,12 @@ ROOT::Math::XYZPoint Multiplet::getIntercept(double z) const {
                : (z < m_scattererPosition ? m_upstream->getIntercept(z) : m_downstream->getIntercept(z));
 }
 
-ROOT::Math::XYZPoint Multiplet::getState(std::string detectorID) const {
+ROOT::Math::XYZPoint Multiplet::getState(const std::string& detectorID) const {
     return getClusterFromDetector(detectorID)->global().z() <= m_scattererPosition ? m_upstream->getState(detectorID)
                                                                                    : m_downstream->getState(detectorID);
 }
 
-ROOT::Math::XYZVector Multiplet::getDirection(std::string detectorID) const {
+ROOT::Math::XYZVector Multiplet::getDirection(const std::string& detectorID) const {
     return getClusterFromDetector(detectorID)->global().z() <= m_scattererPosition ? m_upstream->getDirection(detectorID)
                                                                                    : m_downstream->getDirection(detectorID);
 }

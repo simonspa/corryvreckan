@@ -50,14 +50,7 @@ namespace corryvreckan {
 
         void setToLocal(Transform3D toLocal) { to_local_ = toLocal; }
         void setToGlobal(Transform3D toGlobal) { to_global_ = toGlobal; }
-        void print(std::ostream& os) const override {
-            os << "Plane at " << z_ << " with rad. length " << x_x0_ << ", name " << name_ << " and";
-            if(hasCluster()) {
-                os << "cluster with global pos: " << getCluster()->global();
-            } else {
-                os << "no clsuter";
-            }
-        }
+        void print(std::ostream& os) const override;
 
     private:
         double z_, x_x0_;
@@ -192,7 +185,7 @@ namespace corryvreckan {
          * @param  detectorID DetectorID of the detector to check
          * @return True if detector has a cluster on this Track, false if not.
          */
-        bool hasDetector(std::string detectorID) const;
+        bool hasDetector(const std::string& detectorID) const;
 
         /**
          * @brief Get a Track cluster from a given detector
@@ -226,14 +219,14 @@ namespace corryvreckan {
          * @param name of detector
          * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        virtual ROOT::Math::XYZPoint getState(std::string) const { return ROOT::Math::XYZPoint(0.0, 0.0, 0.0); }
+        virtual ROOT::Math::XYZPoint getState(const std::string&) const { return ROOT::Math::XYZPoint(0.0, 0.0, 0.0); }
 
         /**
          * @brief Get the track direction at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
-        virtual ROOT::Math::XYZVector getDirection(std::string) const { return ROOT::Math::XYZVector(0.0, 0.0, 0.0); }
+        virtual ROOT::Math::XYZVector getDirection(const std::string&) const { return ROOT::Math::XYZVector(0.0, 0.0, 0.0); }
 
         /**
          * @brief check if the fitting routine already has been called. Chi2 etc are not set before
@@ -246,27 +239,23 @@ namespace corryvreckan {
          * @param detectorID
          * @return  2D residual as ROOT::Math::XYPoint
          */
-        ROOT::Math::XYPoint getResidual(std::string detectorID) const { return residual_.at(detectorID); }
+        ROOT::Math::XYPoint getResidual(const std::string& detectorID) const { return residual_.at(detectorID); }
 
         /**
          * @brief Get the kink at a given detector layer. This is ill defined for last and first layer
          * @param  detectorID Detector ID at which the kink should be evaluated
          * @return  2D kink at given detector
          */
-        virtual ROOT::Math::XYPoint getKinkAt(std::string detectorID) const = 0;
+        virtual ROOT::Math::XYPoint getKinkAt(const std::string& detectorID) const = 0;
 
         /**
          * @brief Get the materialBudget of a detector layer
          * @param detectorID
          * @return Material Budget for given layer
          */
-        double getMaterialBudget(std::string detectorID) const {
-            return std::find_if(
-                       planes_.begin(), planes_.end(), [&detectorID](Plane plane) { return plane.getName() == detectorID; })
-                ->getMaterialBudget();
-        }
+        double getMaterialBudget(const std::string& detectorID) const;
 
-        ROOT::Math::XYZPoint getCorrection(std::string detectorID) const;
+        ROOT::Math::XYZPoint getCorrection(const std::string& detectorID) const;
 
         virtual void setVolumeScatter(double length) = 0;
         void setLogging(bool on = false) { logging_ = on; }

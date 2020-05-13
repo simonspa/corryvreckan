@@ -20,6 +20,15 @@ Cluster* Plane::getCluster() const {
     return dynamic_cast<Cluster*>(cluster_.GetObject());
 }
 
+void Plane::print(std::ostream& os) const {
+    os << "Plane at " << z_ << " with rad. length " << x_x0_ << ", name " << name_ << " and";
+    if(hasCluster()) {
+        os << "cluster with global pos: " << getCluster()->global();
+    } else {
+        os << "no clsuter";
+    }
+}
+
 void Track::addCluster(const Cluster* cluster) {
     track_clusters_.push_back(const_cast<Cluster*>(cluster));
 }
@@ -116,7 +125,7 @@ bool Track::isAssociated(Cluster* cluster) const {
     return true;
 }
 
-bool Track::hasDetector(std::string detectorID) const {
+bool Track::hasDetector(const std::string& detectorID) const {
     auto it = find_if(track_clusters_.begin(), track_clusters_.end(), [&detectorID](TRef cl) {
         auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
         return cluster->getDetectorID() == detectorID;
@@ -138,7 +147,12 @@ Cluster* Track::getClusterFromDetector(std::string detectorID) const {
     return dynamic_cast<Cluster*>(it->GetObject());
 }
 
-ROOT::Math::XYZPoint Track::getCorrection(std::string detectorID) const {
+double Track::getMaterialBudget(const std::string& detectorID) const {
+    return std::find_if(planes_.begin(), planes_.end(), [&detectorID](Plane plane) { return plane.getName() == detectorID; })
+        ->getMaterialBudget();
+}
+
+ROOT::Math::XYZPoint Track::getCorrection(const std::string& detectorID) const {
     if(corrections_.count(detectorID) == 1)
         return corrections_.at(detectorID);
     else

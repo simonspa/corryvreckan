@@ -48,14 +48,14 @@ namespace corryvreckan {
          * @param name of detector
          * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        ROOT::Math::XYZPoint getState(std::string detectorID) const override;
+        ROOT::Math::XYZPoint getState(const std::string& detectorID) const override;
 
         /**
          * @brief Get the track direction at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
-        ROOT::Math::XYZVector getDirection(std::string detectorID) const override;
+        ROOT::Math::XYZVector getDirection(const std::string& detectorID) const override;
 
         /**
          * @brief Get the track intercept at the position of the scatterer
@@ -84,7 +84,7 @@ namespace corryvreckan {
         std::shared_ptr<Track> getUpstreamTracklet() { return m_upstream; };
         std::shared_ptr<Track> getDownstreamTracklet() { return m_downstream; };
 
-        ROOT::Math::XYPoint getKinkAt(std::string) const override;
+        ROOT::Math::XYPoint getKinkAt(const std::string&) const override;
         void setVolumeScatter(double) override{};
 
     private:
