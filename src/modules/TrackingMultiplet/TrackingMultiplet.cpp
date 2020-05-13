@@ -50,7 +50,6 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
     }
 
     // Read the scatterer position and the up- and downstream detectors
-    // FIXME: Use DUT position
     auto dut_vector = get_duts();
     if(dut_vector.size() == 1) {
         m_config.setDefault<double>("scatterer_position", dut_vector.at(0)->displacement().Z());
