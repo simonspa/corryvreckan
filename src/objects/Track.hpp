@@ -278,7 +278,6 @@ namespace corryvreckan {
         std::vector<TRef> track_clusters_;
         std::vector<TRef> associated_clusters_;
         std::map<std::string, ROOT::Math::XYPoint> residual_;
-        std::map<std::string, ROOT::Math::XYPoint> kink_;
         std::map<std::string, ROOT::Math::XYZPoint> corrections_{};
         std::vector<Plane> planes_{};
         bool logging_ = false;
