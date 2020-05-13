@@ -272,16 +272,18 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         column_sum_chargeweighted += (pixel->column() * pixel->charge());
         row_sum_chargeweighted += (pixel->row() * pixel->charge());
 
-        // If charge is available: cluster timestamp = pixel with largest charge:
-        if(!found_charge_zero && !use_earliest_pixel_) {
-            if(pixel->charge() > maxcharge) {
-                timestamp = pixel->timestamp();
-                maxcharge = pixel->charge();
-            }
-        } else { // use earliest pixel
-            if(pixel->timestamp() < timestamp) {
-                timestamp = pixel->timestamp();
-            }
+        // Set cluster timestamp = timestamp from pixel with largest charge
+        // Update timestamp if:
+        //    1) found_charge_zero = false, i.e. no zero charge was detected
+        //    2) use_earliest_pixel was NOT chosen by the user
+        //    3) the current pixel charge is larger than the previous maximum
+        if(!found_charge_zero && !use_earliest_pixel_ && pixel->charge() > maxcharge) {
+            timestamp = pixel->timestamp();
+            maxcharge = pixel->charge();
+
+            // else: use earliest pixel
+        } else if(pixel->timestamp() < timestamp) {
+            timestamp = pixel->timestamp();
         }
     }
 
