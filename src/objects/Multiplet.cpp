@@ -14,39 +14,34 @@
 #include "exceptions.h"
 
 using namespace corryvreckan;
+Multiplet::Multiplet(std::shared_ptr<Track> upstream, std::shared_ptr<Track> downstream) : Track() {
+    m_upstream = upstream;
+    m_downstream = downstream;
 
-Multiplet::Multiplet() : Track() {}
-
-Multiplet::Multiplet(const Multiplet& multiplet) : Track(multiplet) {}
-
-Multiplet::Multiplet(Track* upstream, Track* downstream) : Track() {
-    m_upstream = upstream->clone();
-    m_downstream = downstream->clone();
-
-    for(auto& cluster : m_upstream->clusters()) {
+    // All clusters from up- and downstream should be referenced from this track:
+    for(auto& cluster : m_upstream->getClusters()) {
         this->addCluster(cluster);
     }
-    for(auto& cluster : m_downstream->clusters()) {
+    for(auto& cluster : m_downstream->getClusters()) {
         this->addCluster(cluster);
     }
 }
 
-Multiplet::~Multiplet() {
-    delete m_upstream;
-    delete m_downstream;
+ROOT::Math::XYPoint Multiplet::getKinkAt(std::string) const {
+    return ROOT::Math::XYPoint(0, 0);
 }
 
 void Multiplet::calculateChi2() {
 
-    m_chi2 = m_upstream->chi2() + m_downstream->chi2() + sqrt(m_offsetAtScatterer.Dot(m_offsetAtScatterer));
-    m_ndof = static_cast<double>(m_trackClusters.size()) - 4.;
-    m_chi2ndof = m_chi2 / m_ndof;
+    chi2_ = m_upstream->getChi2() + m_downstream->getChi2() + sqrt(m_offsetAtScatterer.Dot(m_offsetAtScatterer));
+    ndof_ = static_cast<double>(track_clusters_.size()) - 4.;
+    chi2ndof_ = chi2_ / ndof_;
 }
 
 void Multiplet::calculateResiduals() {
-    for(auto c : m_trackClusters) {
+    for(auto c : track_clusters_) {
         auto cluster = dynamic_cast<Cluster*>(c.GetObject());
-        m_residual[cluster->detectorID()] = cluster->global() - intercept(cluster->global().z());
+        residual_[cluster->detectorID()] = cluster->global() - getIntercept(cluster->global().z());
     }
 }
 
@@ -54,40 +49,41 @@ void Multiplet::fit() {
 
     // FIXME: Currently asking for direction of "". Should be the last detector plane -> Would enable using more generic
     // tracks
-    m_positionAtScatterer = ((m_downstream->intercept(m_scattererPosition) -
-                              (ROOT::Math::XYZPoint(0, 0, 0) - m_upstream->intercept(m_scattererPosition))) /
+    m_positionAtScatterer = ((m_downstream->getIntercept(m_scattererPosition) -
+                              (ROOT::Math::XYZPoint(0, 0, 0) - m_upstream->getIntercept(m_scattererPosition))) /
                              2.);
-    m_offsetAtScatterer = m_downstream->intercept(m_scattererPosition) - m_upstream->intercept(m_scattererPosition);
+    m_offsetAtScatterer = m_downstream->getIntercept(m_scattererPosition) - m_upstream->getIntercept(m_scattererPosition);
 
     // Calculate the angle
-    double slopeXup = m_upstream->direction("").X() / m_upstream->direction("").Z();
-    double slopeYup = m_upstream->direction("").Y() / m_upstream->direction("").Z();
-    double slopeXdown = m_downstream->direction("").X() / m_downstream->direction("").Z();
-    double slopeYdown = m_downstream->direction("").Y() / m_downstream->direction("").Z();
+    double slopeXup = m_upstream->getDirection("").X() / m_upstream->getDirection("").Z();
+    double slopeYup = m_upstream->getDirection("").Y() / m_upstream->getDirection("").Z();
+    double slopeXdown = m_downstream->getDirection("").X() / m_downstream->getDirection("").Z();
+    double slopeYdown = m_downstream->getDirection("").Y() / m_downstream->getDirection("").Z();
     m_kinkAtScatterer = ROOT::Math::XYVector(slopeXdown - slopeXup, slopeYdown - slopeYup);
 
     this->calculateChi2();
     this->calculateResiduals();
-    m_isFitted = true;
+    isFitted_ = true;
 }
 
-ROOT::Math::XYZPoint Multiplet::intercept(double z) const {
-    return z == m_scattererPosition ? m_positionAtScatterer
-                                    : (z < m_scattererPosition ? m_upstream->intercept(z) : m_downstream->intercept(z));
+ROOT::Math::XYZPoint Multiplet::getIntercept(double z) const {
+    return z == m_scattererPosition
+               ? m_positionAtScatterer
+               : (z < m_scattererPosition ? m_upstream->getIntercept(z) : m_downstream->getIntercept(z));
 }
 
-ROOT::Math::XYZPoint Multiplet::state(std::string detectorID) const {
-    return getClusterFromDetector(detectorID)->global().z() <= m_scattererPosition ? m_upstream->state(detectorID)
-                                                                                   : m_downstream->state(detectorID);
+ROOT::Math::XYZPoint Multiplet::getState(std::string detectorID) const {
+    return getClusterFromDetector(detectorID)->global().z() <= m_scattererPosition ? m_upstream->getState(detectorID)
+                                                                                   : m_downstream->getState(detectorID);
 }
 
-ROOT::Math::XYZVector Multiplet::direction(std::string detectorID) const {
-    return getClusterFromDetector(detectorID)->global().z() <= m_scattererPosition ? m_upstream->direction(detectorID)
-                                                                                   : m_downstream->direction(detectorID);
+ROOT::Math::XYZVector Multiplet::getDirection(std::string detectorID) const {
+    return getClusterFromDetector(detectorID)->global().z() <= m_scattererPosition ? m_upstream->getDirection(detectorID)
+                                                                                   : m_downstream->getDirection(detectorID);
 }
 
 void Multiplet::print(std::ostream& out) const {
     out << "Multiplet " << this->m_scattererPosition << ", " << this->m_positionAtScatterer << ", "
-        << this->m_offsetAtScatterer << ", " << this->m_kinkAtScatterer << ", " << this->m_chi2 << ", " << this->m_ndof
-        << ", " << this->m_chi2ndof << ", " << this->timestamp();
+        << this->m_offsetAtScatterer << ", " << this->m_kinkAtScatterer << ", " << this->chi2_ << ", " << this->ndof_ << ", "
+        << this->chi2ndof_ << ", " << this->timestamp();
 }

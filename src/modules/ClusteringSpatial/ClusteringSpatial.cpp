@@ -19,21 +19,22 @@ ClusteringSpatial::ClusteringSpatial(Configuration config, std::shared_ptr<Detec
 
     useTriggerTimestamp = m_config.get<bool>("use_trigger_timestamp", false);
     chargeWeighting = m_config.get<bool>("charge_weighting", true);
+    rejectByROI = m_config.get<bool>("reject_by_roi", false);
 }
 
-void ClusteringSpatial::initialise() {
+void ClusteringSpatial::initialize() {
 
     // Cluster plots
     std::string title = m_detector->getName() + " Cluster size;cluster size;events";
-    clusterSize = new TH1F("clusterSize", title.c_str(), 100, 0, 100);
+    clusterSize = new TH1F("clusterSize", title.c_str(), 100, -0.5, 99.5);
     title = m_detector->getName() + " Cluster seed charge;cluster seed charge [e];events";
-    clusterSeedCharge = new TH1F("clusterSeedCharge", title.c_str(), 256, 0, 256);
+    clusterSeedCharge = new TH1F("clusterSeedCharge", title.c_str(), 256, -0.5, 255.5);
     title = m_detector->getName() + " Cluster Width - Rows;cluster width [rows];events";
-    clusterWidthRow = new TH1F("clusterWidthRow", title.c_str(), 25, 0, 25);
+    clusterWidthRow = new TH1F("clusterWidthRow", title.c_str(), 25, -0.5, 24.5);
     title = m_detector->getName() + " Cluster Width - Columns;cluster width [columns];events";
-    clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, 0, 100);
+    clusterWidthColumn = new TH1F("clusterWidthColumn", title.c_str(), 100, -0.5, 99.5);
     title = m_detector->getName() + " Cluster Charge;cluster charge [e];events";
-    clusterCharge = new TH1F("clusterCharge", title.c_str(), 5000, 0, 50000);
+    clusterCharge = new TH1F("clusterCharge", title.c_str(), 5000, -0.5, 49999.5);
     title = m_detector->getName() + " Cluster Position (Global);x [mm];y [mm];events";
     clusterPositionGlobal = new TH2F("clusterPositionGlobal",
                                      title.c_str(),
@@ -47,29 +48,29 @@ void ClusteringSpatial::initialise() {
     clusterPositionLocal = new TH2F("clusterPositionLocal",
                                     title.c_str(),
                                     m_detector->nPixels().X(),
-                                    -m_detector->nPixels().X() / 2.,
-                                    m_detector->nPixels().X() / 2.,
+                                    -0.5,
+                                    m_detector->nPixels().X() - 0.5,
                                     m_detector->nPixels().Y(),
-                                    -m_detector->nPixels().Y() / 2.,
-                                    m_detector->nPixels().Y() / 2.);
+                                    -0.5,
+                                    m_detector->nPixels().Y() - 0.5);
 
     title = ";cluster timestamp [ns]; # events";
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
 }
 
-StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode ClusteringSpatial::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the pixels
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());
-    if(pixels == nullptr) {
+    if(pixels.empty()) {
         LOG(DEBUG) << "Detector " << m_detector->getName() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
     }
 
     // Make the cluster container and the maps for clustering
-    auto deviceClusters = std::make_shared<ClusterVector>();
-    map<Pixel*, bool> used;
-    map<int, map<int, Pixel*>> hitmap;
+    ClusterVector deviceClusters;
+    map<std::shared_ptr<Pixel>, bool> used;
+    map<int, map<int, std::shared_ptr<Pixel>>> hitmap;
     bool addedPixel;
 
     // Get the device dimensions
@@ -77,18 +78,18 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
     int nCols = m_detector->nPixels().X();
 
     // Pre-fill the hitmap with pixels
-    for(auto pixel : (*pixels)) {
+    for(auto pixel : pixels) {
         hitmap[pixel->column()][pixel->row()] = pixel;
     }
 
-    for(auto pixel : (*pixels)) {
+    for(auto pixel : pixels) {
         if(used[pixel]) {
             continue;
         }
 
         // New pixel => new cluster
-        Cluster* cluster = new Cluster();
-        cluster->addPixel(pixel);
+        auto cluster = std::make_shared<Cluster>();
+        cluster->addPixel(&*pixel);
 
         if(useTriggerTimestamp) {
             if(!clipboard->getEvent()->triggerList().empty()) {
@@ -109,10 +110,10 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
 
         used[pixel] = true;
         addedPixel = true;
-        // Somewhere to store found neighbours
-        PixelVector neighbours;
+        // Somewhere to store found neighbors
+        PixelVector neighbors;
 
-        // Now we check the neighbours and keep adding more hits while there are connected pixels
+        // Now we check the neighbors and keep adding more hits while there are connected pixels
         while(addedPixel) {
 
             addedPixel = false;
@@ -137,24 +138,30 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
                     }
 
                     // Otherwise add the pixel to the cluster and store it as a found
-                    // neighbour
-                    cluster->addPixel(hitmap[col][row]);
+                    // neighbor
+                    cluster->addPixel(&*hitmap[col][row]);
                     used[hitmap[col][row]] = true;
-                    neighbours.push_back(hitmap[col][row]);
+                    neighbors.push_back(hitmap[col][row]);
                 }
             }
 
-            // If we have neighbours that have not yet been checked, continue
+            // If we have neighbors that have not yet been checked, continue
             // looking for more pixels
-            if(neighbours.size() > 0) {
+            if(neighbors.size() > 0) {
                 addedPixel = true;
-                pixel = neighbours.back();
-                neighbours.pop_back();
+                pixel = neighbors.back();
+                neighbors.pop_back();
             }
         }
 
         // Finalise the cluster and save it
-        calculateClusterCentre(cluster);
+        calculateClusterCentre(cluster.get());
+
+        // check if the cluster is within ROI
+        if(rejectByROI && !m_detector->isWithinROI(cluster.get())) {
+            LOG(DEBUG) << "Rejecting cluster outside of " << m_detector->getName() << " ROI";
+            continue;
+        }
 
         // Fill cluster histograms
         clusterSize->Fill(static_cast<double>(cluster->size()));
@@ -164,15 +171,16 @@ StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
         clusterCharge->Fill(cluster->charge());
         clusterSeedCharge->Fill(cluster->getSeedPixel()->charge());
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
-        clusterPositionLocal->Fill(cluster->local().x(), cluster->local().y());
+        clusterPositionLocal->Fill(cluster->column(), cluster->row());
         clusterTimes->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "ns")));
         LOG(DEBUG) << "cluster local: " << cluster->local();
-        deviceClusters->push_back(cluster);
+
+        deviceClusters.push_back(cluster);
     }
 
     clipboard->putData(deviceClusters, m_detector->getName());
-    LOG(DEBUG) << "Put " << deviceClusters->size() << " clusters on the clipboard for detector " << m_detector->getName()
-               << ". From " << pixels->size() << " pixels";
+    LOG(DEBUG) << "Put " << deviceClusters.size() << " clusters on the clipboard for detector " << m_detector->getName()
+               << ". From " << pixels.size() << " pixels";
 
     // Return value telling analysis to keep running
     return StatusCode::Success;

@@ -33,7 +33,7 @@ Correlations::Correlations(Configuration config, std::shared_ptr<Detector> detec
     m_corr_vs_time = m_config.get<bool>("correlation_vs_time", false);
 }
 
-void Correlations::initialise() {
+void Correlations::initialize() {
 
     // Do not produce correlations plots for auxiliary devices
     if(m_detector->isAuxiliary()) {
@@ -99,7 +99,7 @@ void Correlations::initialise() {
     correlationTime_px =
         new TH1F("correlationTime_px", title.c_str(), static_cast<int>(2. * timeCut), -1 * timeCut, timeCut);
     title = m_detector->getName() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [1/40MHz];events";
-    correlationTimeInt = new TH1F("correlationTimeInt", title.c_str(), 8000, -40000, 40000);
+    correlationTimeInt = new TH1F("correlationTimeInt", title.c_str(), 8000, -40000.5, 39999.5);
 
     // 2D correlation plots (pixel-by-pixel, local coordinates):
     title = m_detector->getName() + ": 2D correlation X (local);x [px];x_{ref} [px];events";
@@ -167,7 +167,7 @@ void Correlations::initialise() {
     eventTimes = new TH1F("eventTimes", title.c_str(), 3000000, 0, 300);
 }
 
-StatusCode Correlations::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Do not attempt plotting for aux devices
     if(m_detector->isAuxiliary()) {
@@ -176,13 +176,7 @@ StatusCode Correlations::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the pixels
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());
-    if(pixels == nullptr) {
-        LOG(DEBUG) << "Detector " << m_detector->getName() << " does not have any pixels on the clipboard";
-        return StatusCode::NoData;
-    }
-
-    // Loop over all pixels and make hitmaps
-    for(auto& pixel : (*pixels)) {
+    for(auto& pixel : pixels) {
         // Hitmap
         hitmap->Fill(pixel->column(), pixel->row());
         // Timing plots
@@ -191,11 +185,7 @@ StatusCode Correlations::run(std::shared_ptr<Clipboard> clipboard) {
 
     // Get the clusters
     auto clusters = clipboard->getData<Cluster>(m_detector->getName());
-    if(clusters == nullptr) {
-        LOG(DEBUG) << "Detector " << m_detector->getName() << " does not have any clusters on the clipboard";
-        return StatusCode::NoData;
-    }
-    for(auto& cluster : (*clusters)) {
+    for(auto& cluster : clusters) {
         hitmap_clusters->Fill(cluster->column(), cluster->row());
     }
 
@@ -203,15 +193,9 @@ StatusCode Correlations::run(std::shared_ptr<Clipboard> clipboard) {
     auto reference = get_reference();
     auto referencePixels = clipboard->getData<Pixel>(reference->getName());
     auto referenceClusters = clipboard->getData<Cluster>(reference->getName());
-    if(referenceClusters == nullptr) {
-        LOG(DEBUG) << "Reference detector " << reference->getName() << " does not have any clusters on the clipboard";
-        return StatusCode::NoData;
-    }
-
-    // Loop over all clusters and fill histograms
-    for(auto& pixel : (*pixels)) {
+    for(auto& pixel : pixels) {
         // Loop over reference plane pixels:
-        for(auto& refPixel : (*referencePixels)) {
+        for(auto& refPixel : referencePixels) {
             correlationColCol_px->Fill(pixel->column(), refPixel->column());
             correlationColRow_px->Fill(pixel->column(), refPixel->row());
             correlationRowCol_px->Fill(pixel->row(), refPixel->column());
@@ -221,51 +205,52 @@ StatusCode Correlations::run(std::shared_ptr<Clipboard> clipboard) {
         }
     }
 
-    for(auto& cluster : (*clusters)) {
+    for(auto& cluster : clusters) {
 
         // Check that track is within region of interest using winding number algorithm
-        if(!m_detector->isWithinROI(cluster)) {
+        if(!m_detector->isWithinROI(cluster.get())) {
             LOG(DEBUG) << " - cluster outside ROI";
-        } else {
-            // Loop over reference plane clusters to make correlation plots
-            for(auto& refCluster : (*referenceClusters)) {
+            continue;
+        }
 
-                double timeDifference = refCluster->timestamp() - cluster->timestamp();
-                // in 40 MHz:
-                long long int timeDifferenceInt = static_cast<long long int>(timeDifference / 25);
+        // Loop over reference plane clusters to make correlation plots
+        for(auto& refCluster : referenceClusters) {
 
-                // Correlation plots
-                if(abs(timeDifference) < timeCut || !do_time_cut_) {
-                    correlationX->Fill(refCluster->global().x() - cluster->global().x());
-                    correlationX2D->Fill(cluster->global().x(), refCluster->global().x());
-                    correlationX2Dlocal->Fill(cluster->column(), refCluster->column());
+            double timeDifference = refCluster->timestamp() - cluster->timestamp();
+            // in 40 MHz:
+            long long int timeDifferenceInt = static_cast<long long int>(timeDifference / 25);
 
-                    correlationY->Fill(refCluster->global().y() - cluster->global().y());
-                    correlationY2D->Fill(cluster->global().y(), refCluster->global().y());
-                    correlationY2Dlocal->Fill(cluster->row(), refCluster->row());
+            // Correlation plots
+            if(abs(timeDifference) < timeCut || !do_time_cut_) {
+                correlationX->Fill(refCluster->global().x() - cluster->global().x());
+                correlationX2D->Fill(cluster->global().x(), refCluster->global().x());
+                correlationX2Dlocal->Fill(cluster->column(), refCluster->column());
 
-                    correlationXY->Fill(refCluster->global().y() - cluster->global().x());
-                    correlationYX->Fill(refCluster->global().x() - cluster->global().y());
-                }
+                correlationY->Fill(refCluster->global().y() - cluster->global().y());
+                correlationY2D->Fill(cluster->global().y(), refCluster->global().y());
+                correlationY2Dlocal->Fill(cluster->row(), refCluster->row());
 
-                correlationTime->Fill(timeDifference); // time difference in ns
-                LOG(DEBUG) << "Time difference: " << Units::display(timeDifference, {"ns", "us"})
-                           << ", Time ref. cluster: " << Units::display(refCluster->timestamp(), {"ns", "us"})
-                           << ", Time cluster: " << Units::display(cluster->timestamp(), {"ns", "us"});
-
-                if(m_corr_vs_time) {
-                    if(abs(timeDifference) < timeCut || !do_time_cut_) {
-                        correlationXVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
-                                                 refCluster->global().x() - cluster->global().x());
-                        correlationYVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
-                                                 refCluster->global().y() - cluster->global().y());
-                    }
-                    // Time difference in ns
-                    correlationTimeOverTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
-                                                  timeDifference);
-                }
-                correlationTimeInt->Fill(static_cast<double>(timeDifferenceInt));
+                correlationXY->Fill(refCluster->global().y() - cluster->global().x());
+                correlationYX->Fill(refCluster->global().x() - cluster->global().y());
             }
+
+            correlationTime->Fill(timeDifference); // time difference in ns
+            LOG(DEBUG) << "Time difference: " << Units::display(timeDifference, {"ns", "us"})
+                       << ", Time ref. cluster: " << Units::display(refCluster->timestamp(), {"ns", "us"})
+                       << ", Time cluster: " << Units::display(cluster->timestamp(), {"ns", "us"});
+
+            if(m_corr_vs_time) {
+                if(abs(timeDifference) < timeCut || !do_time_cut_) {
+                    correlationXVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                             refCluster->global().x() - cluster->global().x());
+                    correlationYVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                             refCluster->global().y() - cluster->global().y());
+                }
+                // Time difference in ns
+                correlationTimeOverTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                              timeDifference);
+            }
+            correlationTimeInt->Fill(static_cast<double>(timeDifferenceInt));
         }
     }
 

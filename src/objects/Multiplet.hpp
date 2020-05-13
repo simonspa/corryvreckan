@@ -27,21 +27,7 @@ namespace corryvreckan {
     class Multiplet : public Track {
 
     public:
-        /**
-         * @brief Multiplet object constructor
-         */
-        Multiplet();
-        /**
-         * @brief Copy a Multiplet object, including used/associated clusters
-         * @param Multiplet to be copied from
-         */
-        Multiplet(const Multiplet& multiplet);
-
-        Multiplet(Track* upstream, Track* downstream);
-
-        virtual ~Multiplet();
-
-        virtual Multiplet* clone() const override { return new Multiplet(*this); }
+        Multiplet(std::shared_ptr<Track> upstream, std::shared_ptr<Track> downstream);
 
         void print(std::ostream& out) const override;
 
@@ -55,21 +41,21 @@ namespace corryvreckan {
          * @param z positon
          * @return ROOT::Math::XYZPoint at z position
          */
-        ROOT::Math::XYZPoint intercept(double z) const override;
+        ROOT::Math::XYZPoint getIntercept(double z) const override;
 
         /**
          * @brief Get the track state at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        ROOT::Math::XYZPoint state(std::string detectorID) const override;
+        ROOT::Math::XYZPoint getState(std::string detectorID) const override;
 
         /**
          * @brief Get the track direction at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
-        ROOT::Math::XYZVector direction(std::string detectorID) const override;
+        ROOT::Math::XYZVector getDirection(std::string detectorID) const override;
 
         /**
          * @brief Get the offset between up- & downstream tracklet at the position of the scatterer
@@ -83,13 +69,15 @@ namespace corryvreckan {
          */
         void setScattererPosition(double scattererPosition) { m_scattererPosition = scattererPosition; };
 
-        Track* getUpstreamTracklet() { return m_upstream; };
+        std::shared_ptr<Track> getUpstreamTracklet() { return m_upstream; };
+        std::shared_ptr<Track> getDownstreamTracklet() { return m_downstream; };
 
-        Track* getDownstreamTracklet() { return m_downstream; };
+        ROOT::Math::XYPoint getKinkAt(std::string) const override;
+        void setVolumeScatter(double) override{};
 
     private:
-        Track* m_upstream;
-        Track* m_downstream;
+        std::shared_ptr<Track> m_upstream;
+        std::shared_ptr<Track> m_downstream;
 
         void calculateChi2();
         void calculateResiduals();
@@ -101,7 +89,7 @@ namespace corryvreckan {
         ClassDefOverride(Multiplet, 1)
     };
     // Vector type declaration
-    using MultipletVector = std::vector<Multiplet*>;
+    using MultipletVector = std::vector<std::shared_ptr<Multiplet>>;
 } // namespace corryvreckan
 
 #endif // CORRYVRECKAN_Multiplet_H

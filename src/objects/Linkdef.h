@@ -17,8 +17,6 @@
 #pragma link C++ class corryvreckan::Object + ;
 #pragma link C++ class corryvreckan::Pixel + ;
 #pragma link C++ class corryvreckan::Cluster + ;
-#pragma link C++ class corryvreckan::GuiDisplay + ;
-#pragma link C++ class corryvreckan::KDTree + ;
 #pragma link C++ class corryvreckan::SpidrSignal + ;
 #pragma link C++ class corryvreckan::Track + ;
 #pragma link C++ class corryvreckan::StraightLineTrack + ;

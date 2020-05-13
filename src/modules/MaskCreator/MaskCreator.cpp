@@ -27,7 +27,7 @@ MaskCreator::MaskCreator(Configuration config, std::shared_ptr<Detector> detecto
     m_rateMax = m_config.get<double>("rate_max", 1.);
 }
 
-void MaskCreator::initialise() {
+void MaskCreator::initialize() {
 
     // adjust per-axis bandwith for pixel pitch along each axis such that the
     // covered area is approximately circular in metric coordinates.
@@ -94,21 +94,21 @@ void MaskCreator::initialise() {
     }
 }
 
-StatusCode MaskCreator::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode MaskCreator::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Count this event:
     m_numEvents++;
 
     // Get the pixels
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());
-    if(pixels == nullptr) {
+    if(pixels.empty()) {
         LOG(TRACE) << "Detector " << m_detector->getName() << " does not have any pixels on the clipboard";
         return StatusCode::NoData;
     }
-    LOG(TRACE) << "Picked up " << pixels->size() << " pixels for device " << m_detector->getName();
+    LOG(TRACE) << "Picked up " << pixels.size() << " pixels for device " << m_detector->getName();
 
     // Loop over all pixels
-    for(auto& pixel : (*pixels)) {
+    for(auto& pixel : pixels) {
         // Enter another pixel hit for this channel
         m_occupancy->Fill(pixel->column(), pixel->row());
     }
@@ -116,7 +116,7 @@ StatusCode MaskCreator::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void MaskCreator::finalise() {
+void MaskCreator::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     if(m_method == "localdensity") {
         LOG(INFO) << "Using local density estimator";

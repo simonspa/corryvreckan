@@ -50,7 +50,6 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
     }
 
     // Read the scatterer position and the up- and downstream detectors
-    // FIXME: Use DUT position
     auto dut_vector = get_duts();
     if(dut_vector.size() == 1) {
         m_config.setDefault<double>("scatterer_position", dut_vector.at(0)->displacement().Z());
@@ -164,7 +163,7 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
     isolation_cut_ = m_config.get<double>("isolation_cut", scatterer_matching_cut_ * 2.);
 }
 
-void TrackingMultiplet::initialise() {
+void TrackingMultiplet::initialize() {
 
     std::string title = "Multiplet multiplicity;multiplets;events";
     multipletMultiplicity = new TH1F("multipletMultiplicity", title.c_str(), 40, 0, 40);
@@ -253,7 +252,7 @@ void TrackingMultiplet::initialise() {
 double TrackingMultiplet::calculate_average_timestamp(const Track* track) {
     double sum_weighted_time = 0;
     double sum_weights = 0;
-    for(auto& cluster : track->clusters()) {
+    for(auto& cluster : track->getClusters()) {
         double weight = 1 / (time_cuts_[get_detector(cluster->getDetectorID())]);
         double time_of_flight = static_cast<double>(Units::convert(cluster->global().z(), "mm") / (299.792458));
         sum_weights += weight;
@@ -264,7 +263,7 @@ double TrackingMultiplet::calculate_average_timestamp(const Track* track) {
 
 // Method containing the straight line tracklet finding for the arms of the multiplets
 TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
-                                                        std::map<std::shared_ptr<Detector>, KDTree*>& cluster_trees,
+                                                        std::map<std::shared_ptr<Detector>, KDTree<Cluster>>& cluster_trees,
                                                         std::shared_ptr<Detector> reference_first,
                                                         std::shared_ptr<Detector> reference_last) {
 
@@ -277,19 +276,23 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
 
     TrackVector tracklets;
 
+    double time_cut_refs = std::max(time_cuts_[reference_first], time_cuts_[reference_last]);
+    double time_cut_ref_track = std::min(time_cuts_[reference_first], time_cuts_[reference_last]);
+
     // Tracklet finding
-    for(auto& clusterFirst : cluster_trees[reference_first]->getAllClusters()) {
-        for(auto& clusterLast : cluster_trees[reference_last]->getAllClusters()) {
-            auto trackletCandidate = new StraightLineTrack();
-            trackletCandidate->addCluster(clusterFirst);
-            trackletCandidate->addCluster(clusterLast);
-            if((clusterFirst->timestamp() - clusterLast->timestamp()) >
-               (time_cuts_[reference_first] + time_cuts_[reference_last])) {
+    for(const auto& clusterFirst : cluster_trees[reference_first].getAllElements()) {
+        for(const auto& clusterLast : cluster_trees[reference_last].getAllElements()) {
+
+            if(std::fabs(clusterFirst->timestamp() - clusterLast->timestamp()) > time_cut_refs) {
                 LOG(DEBUG) << "Reference clusters not within time cuts.";
-                delete trackletCandidate;
                 continue;
             }
-            auto averageTimestamp = calculate_average_timestamp(trackletCandidate);
+
+            auto trackletCandidate = std::make_shared<StraightLineTrack>();
+            trackletCandidate->addCluster(clusterFirst.get());
+            trackletCandidate->addCluster(clusterLast.get());
+
+            auto averageTimestamp = calculate_average_timestamp(trackletCandidate.get());
             trackletCandidate->setTimestamp(averageTimestamp);
 
             size_t detector_nr = 2;
@@ -300,11 +303,22 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
                 }
 
                 detector_nr++;
-                if(trackletCandidate->nClusters() + (cluster_trees.size() - detector_nr + 1) < min_hits) {
-                    LOG(DEBUG) << "No chance to find a track - too few detectors left: " << trackletCandidate->nClusters()
+                if(trackletCandidate->getNClusters() + (cluster_trees.size() - detector_nr + 1) < min_hits) {
+                    LOG(DEBUG) << "No chance to find a track - too few detectors left: " << trackletCandidate->getNClusters()
                                << " + " << cluster_trees.size() << " - " << detector_nr << " < " << min_hits;
                     continue;
                 }
+
+                double timeCut = std::max(time_cut_ref_track, time_cuts_[detector]);
+                LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
+                auto neighbours = detector_tree.second.getAllElementsInTimeWindow(trackletCandidate->timestamp(), timeCut);
+
+                if(neighbours.empty()) {
+                    LOG(DEBUG) << "No neighbours found within the correct time window.";
+                    continue;
+                }
+
+                LOG(DEBUG) << "- found " << neighbours.size() << " neighbours within the correct time window";
 
                 // Now let's see if there's a cluster matching in time and space.
                 Cluster* closestCluster = nullptr;
@@ -313,23 +327,16 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
                 double closestClusterDistance = sqrt(spatial_cuts_[detector].x() * spatial_cuts_[detector].x() +
                                                      spatial_cuts_[detector].y() * spatial_cuts_[detector].y());
 
-                double timeCut =
-                    std::max(std::min(time_cuts_[reference_first], time_cuts_[reference_last]), time_cuts_[detector]);
-                LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
-                auto neighbours = detector_tree.second->getAllClustersInTimeWindow(trackletCandidate->timestamp(), timeCut);
-
-                LOG(DEBUG) << "- found " << neighbours.size() << " neighbours within the correct time window";
-
                 // Now look for the spatially closest cluster on the next plane
                 trackletCandidate->fit();
 
                 double interceptX, interceptY;
-                PositionVector3D<Cartesian3D<double>> interceptPoint = detector->getIntercept(trackletCandidate);
+                PositionVector3D<Cartesian3D<double>> interceptPoint = detector->getIntercept(trackletCandidate.get());
                 interceptX = interceptPoint.X();
                 interceptY = interceptPoint.Y();
 
                 for(size_t ne = 0; ne < neighbours.size(); ne++) {
-                    Cluster* newCluster = neighbours[ne];
+                    Cluster* newCluster = neighbours[ne].get();
 
                     // Calculate the distance to the previous plane's cluster/intercept
                     double distanceX = interceptX - newCluster->global().x();
@@ -367,15 +374,14 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
 
                 // Add the cluster to the tracklet
                 trackletCandidate->addCluster(closestCluster);
-                averageTimestamp = calculate_average_timestamp(trackletCandidate);
+                averageTimestamp = calculate_average_timestamp(trackletCandidate.get());
                 trackletCandidate->setTimestamp(averageTimestamp);
                 LOG(DEBUG) << "Added cluster to tracklet candidate";
             }
 
-            if(trackletCandidate->nClusters() < min_hits) {
-                LOG(DEBUG) << "Not enough clusters on the tracklet, found " << trackletCandidate->nClusters() << " but "
+            if(trackletCandidate->getNClusters() < min_hits) {
+                LOG(DEBUG) << "Not enough clusters on the tracklet, found " << trackletCandidate->getNClusters() << " but "
                            << min_hits << " required";
-                delete trackletCandidate;
                 continue;
             }
 
@@ -390,9 +396,9 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
 
     if(tracklets.size() > 1 && isolation_cut_ != 0) {
         for(TrackVector::iterator it0 = tracklets.begin(); it0 != tracklets.end(); ++it0) {
-            auto positionAtScatterer = (*it0)->intercept(scatterer_position_);
+            auto positionAtScatterer = (*it0)->getIntercept(scatterer_position_);
             for(TrackVector::iterator it1 = it0 + 1; it1 != tracklets.end(); ++it1) {
-                auto otherPositionAtScatterer = (*it1)->intercept(scatterer_position_);
+                auto otherPositionAtScatterer = (*it1)->getIntercept(scatterer_position_);
 
                 auto distance = otherPositionAtScatterer - positionAtScatterer;
 
@@ -412,14 +418,13 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
         if(std::find(unisolatedTracklets.begin(), unisolatedTracklets.end(), --rit.base()) != unisolatedTracklets.end()) {
             // Erase --rit.base(), since (reverse_iterator::base() = iterator + 1)
             LOG(DEBUG) << "Removing unisolated tracklet";
-            delete *(--rit.base());
             tracklets.erase(--rit.base());
         }
     }
 
     // Get timestamp for tracklets
     for(auto& tracklet : tracklets) {
-        double tracklet_timestamp = calculate_average_timestamp(tracklet);
+        double tracklet_timestamp = calculate_average_timestamp(tracklet.get());
         tracklet->setTimestamp(tracklet_timestamp);
     }
 
@@ -437,32 +442,32 @@ void TrackingMultiplet::fill_tracklet_histograms(const streams& stream, TrackVec
         LOG(DEBUG) << "Filling plots for " << stream_name << " tracklets";
 
         for(auto& tracklet : tracklets) {
-            clustersPerTracklet[stream]->Fill(static_cast<double>(tracklet->nClusters()));
+            clustersPerTracklet[stream]->Fill(static_cast<double>(tracklet->getNClusters()));
 
-            trackletAngleX[stream]->Fill(
-                static_cast<double>(Units::convert(tracklet->direction("").X() / tracklet->direction("").Z(), "mrad")));
-            trackletAngleY[stream]->Fill(
-                static_cast<double>(Units::convert(tracklet->direction("").Y() / tracklet->direction("").Z(), "mrad")));
+            trackletAngleX[stream]->Fill(static_cast<double>(
+                Units::convert(tracklet->getDirection("").X() / tracklet->getDirection("").Z(), "mrad")));
+            trackletAngleY[stream]->Fill(static_cast<double>(
+                Units::convert(tracklet->getDirection("").Y() / tracklet->getDirection("").Z(), "mrad")));
 
-            trackletPositionAtScattererX[stream]->Fill(tracklet->intercept(scatterer_position_).X());
-            trackletPositionAtScattererY[stream]->Fill(tracklet->intercept(scatterer_position_).Y());
+            trackletPositionAtScattererX[stream]->Fill(tracklet->getIntercept(scatterer_position_).X());
+            trackletPositionAtScattererY[stream]->Fill(tracklet->getIntercept(scatterer_position_).Y());
 
-            auto trackletClusters = tracklet->clusters();
+            auto trackletClusters = tracklet->getClusters();
             for(auto& trackletCluster : trackletClusters) {
                 std::string detectorID = trackletCluster->detectorID();
-                residualsX[detectorID]->Fill(tracklet->residual(detectorID).X());
-                residualsY[detectorID]->Fill(tracklet->residual(detectorID).Y());
+                residualsX[detectorID]->Fill(tracklet->getResidual(detectorID).X());
+                residualsY[detectorID]->Fill(tracklet->getResidual(detectorID).Y());
             }
         }
     }
 }
 
-StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode TrackingMultiplet::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     LOG(DEBUG) << "Start of event";
 
-    std::map<std::shared_ptr<Detector>, KDTree*> upstream_trees;
-    std::map<std::shared_ptr<Detector>, KDTree*> downstream_trees;
+    std::map<std::shared_ptr<Detector>, KDTree<Cluster>> upstream_trees;
+    std::map<std::shared_ptr<Detector>, KDTree<Cluster>> downstream_trees;
 
     // Store upstream data in KDTrees and define reference detectors
     std::shared_ptr<Detector> reference_up_first = nullptr;
@@ -472,14 +477,13 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "Store data for upstream detector " << upstream_detector_ID;
 
         auto clusters = clipboard->getData<Cluster>(upstream_detector_ID);
-        if(clusters == nullptr || clusters->size() == 0) {
+        LOG(DEBUG) << "Cluster count: " << clusters.size();
+        if(clusters.empty()) {
             continue;
         }
-        LOG(DEBUG) << "Cluster count: " << clusters->size();
 
-        KDTree* clusterTree = new KDTree();
-        clusterTree->buildTimeTree(*clusters);
-        upstream_trees[upstream_detector] = clusterTree;
+        upstream_trees.emplace(std::piecewise_construct, std::make_tuple(upstream_detector), std::make_tuple());
+        upstream_trees[upstream_detector].buildTrees(clusters);
 
         if(reference_up_first == nullptr) {
             reference_up_first = upstream_detector;
@@ -495,14 +499,13 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         LOG(DEBUG) << "Store data for downstream detector " << downstream_detector_ID;
 
         auto clusters = clipboard->getData<Cluster>(downstream_detector_ID);
-        if(clusters == nullptr || clusters->size() == 0) {
+        LOG(DEBUG) << "Cluster count: " << clusters.size();
+        if(clusters.empty()) {
             continue;
         }
-        LOG(DEBUG) << "Cluster count: " << clusters->size();
 
-        KDTree* clusterTree = new KDTree();
-        clusterTree->buildTimeTree(*clusters);
-        downstream_trees[downstream_detector] = clusterTree;
+        downstream_trees.emplace(std::piecewise_construct, std::make_tuple(downstream_detector), std::make_tuple());
+        downstream_trees[downstream_detector].buildTrees(clusters);
 
         if(reference_down_first == nullptr) {
             reference_down_first = downstream_detector;
@@ -537,41 +540,40 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
     fill_tracklet_histograms(downstream, downstream_tracklets);
 
     // Multiplet merging
-    auto multiplets = std::make_shared<MultipletVector>();
+    MultipletVector multiplets;
     for(auto& uptracklet : upstream_tracklets) {
-        Multiplet* multiplet = nullptr;
+        std::shared_ptr<Multiplet> multiplet;
 
         double time_cut_upstream = std::numeric_limits<double>::max();
-        for(auto& cluster : uptracklet->clusters()) {
+        for(auto& cluster : uptracklet->getClusters()) {
             if(time_cuts_[get_detector(cluster->getDetectorID())] < time_cut_upstream) {
                 time_cut_upstream = time_cuts_[get_detector(cluster->getDetectorID())];
             }
         }
 
         double closestMatchingDistance = scatterer_matching_cut_;
-
-        for(auto& downtracklet : downstream_tracklets) {
+        TrackVector::iterator used_downtracklet;
+        for(auto it = downstream_tracklets.begin(); it != downstream_tracklets.end(); ++it) {
             double time_cut_downstream = std::numeric_limits<double>::max();
-            for(auto& cluster : downtracklet->clusters()) {
+            for(auto& cluster : (*it)->getClusters()) {
                 if(time_cuts_[get_detector(cluster->getDetectorID())] < time_cut_downstream) {
                     time_cut_downstream = time_cuts_[get_detector(cluster->getDetectorID())];
                 }
             }
 
-            auto multipletCandidate = new Multiplet(uptracklet, downtracklet);
+            // calculate time cut as the maximum of the minimal time cut of each tracklet.
+            double time_cut = std::max(time_cut_upstream, time_cut_downstream);
+
+            if(std::fabs((*it)->timestamp() - uptracklet->timestamp()) > time_cut) {
+                LOG(DEBUG) << "Multiplet candidate discarded due to time cut";
+                continue;
+            }
+
+            auto multipletCandidate = std::make_shared<Multiplet>(uptracklet, (*it));
             LOG(DEBUG) << "Got new candidate.";
 
             multipletCandidate->setScattererPosition(scatterer_position_);
             multipletCandidate->fit();
-
-            // calculate time cut as the maximum of the minimal time cut of each tracklet.
-            double time_cut = std::max(time_cut_upstream, time_cut_downstream);
-
-            if(downtracklet->timestamp() - uptracklet->timestamp() > time_cut) {
-                LOG(DEBUG) << "Multiplet candidate discarded due to time cut";
-                delete multipletCandidate;
-                continue;
-            }
 
             double distanceX = multipletCandidate->getOffsetAtScatterer().X();
             double distanceY = multipletCandidate->getOffsetAtScatterer().Y();
@@ -585,20 +587,18 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
 
             if(distance > scatterer_matching_cut_) {
                 LOG(DEBUG) << "Multiplet candidate discarded due to high distance at scatterer";
-                delete multipletCandidate;
                 continue;
             }
 
             if(distance > closestMatchingDistance) {
                 LOG(DEBUG) << "Multiplet candidate discarded - there's a closer match";
-                delete multipletCandidate;
                 continue;
             }
 
             LOG(DEBUG) << "Closest multiplet match so far. Proceed as candidate.";
             closestMatchingDistance = distance;
-            delete multiplet;
             multiplet = multipletCandidate;
+            used_downtracklet = it;
         }
 
         if(multiplet == nullptr) {
@@ -610,10 +610,13 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         multiplet->setTimestamp(
             (multiplet->getUpstreamTracklet()->timestamp() + multiplet->getDownstreamTracklet()->timestamp()) / 2.);
 
-        multiplets->push_back(multiplet);
+        LOG(DEBUG) << "Deleting downstream tracklet";
+        downstream_tracklets.erase(used_downtracklet);
 
-        trackChi2->Fill(multiplet->chi2());
-        trackChi2ndof->Fill(multiplet->chi2ndof());
+        multiplets.push_back(multiplet);
+
+        trackChi2->Fill(multiplet->getChi2());
+        trackChi2ndof->Fill(multiplet->getChi2ndof());
 
         double distanceX = multiplet->getOffsetAtScatterer().X();
         double distanceY = multiplet->getOffsetAtScatterer().Y();
@@ -628,30 +631,10 @@ StatusCode TrackingMultiplet::run(std::shared_ptr<Clipboard> clipboard) {
         multipletKinkAtScattererY->Fill(static_cast<double>(Units::convert(kinkY, "mrad")));
     }
 
-    LOG(DEBUG) << "Found " << multiplets->size() << " multiplets";
-    multipletMultiplicity->Fill(static_cast<double>(multiplets->size()));
+    LOG(DEBUG) << "Found " << multiplets.size() << " multiplets";
+    multipletMultiplicity->Fill(static_cast<double>(multiplets.size()));
 
-    // Clean up tree and vector objects
-    LOG(DEBUG) << "Cleaning up";
-    for(auto tree = upstream_trees.cbegin(); tree != upstream_trees.cend();) {
-        delete tree->second;
-        tree = upstream_trees.erase(tree);
-    }
-    for(auto tree = downstream_trees.cbegin(); tree != downstream_trees.cend();) {
-        delete tree->second;
-        tree = downstream_trees.erase(tree);
-    }
-
-    for(auto& uptracklet : upstream_tracklets) {
-        delete uptracklet;
-    }
-    for(auto& downtracklet : downstream_tracklets) {
-        delete downtracklet;
-    }
-    upstream_tracklets.clear();
-    downstream_tracklets.clear();
-
-    if(multiplets->size() > 0) {
+    if(multiplets.size() > 0) {
         clipboard->putData(multiplets);
     }
 

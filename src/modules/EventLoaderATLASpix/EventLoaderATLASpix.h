@@ -38,8 +38,8 @@ namespace corryvreckan {
         ~EventLoaderATLASpix() {}
 
         // Functions
-        void initialise();
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        void initialize() override;
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
     private:
         /*
@@ -55,10 +55,12 @@ namespace corryvreckan {
 
         // custom comparator for time-sorted priority_queue
         struct CompareTimeGreater {
-            bool operator()(const Pixel* a, const Pixel* b) { return a->timestamp() > b->timestamp(); }
+            bool operator()(const std::shared_ptr<Pixel> a, const std::shared_ptr<Pixel> b) {
+                return a->timestamp() > b->timestamp();
+            }
         };
         // Buffer of timesorted pixel hits: (need to use greater here!)
-        std::priority_queue<Pixel*, std::vector<Pixel*>, CompareTimeGreater> sorted_pixels_;
+        std::priority_queue<std::shared_ptr<Pixel>, PixelVector, CompareTimeGreater> sorted_pixels_;
 
         std::shared_ptr<Detector> m_detector;
         unsigned long long int m_oldtoa;

@@ -25,6 +25,38 @@
 namespace corryvreckan {
     typedef std::map<std::type_index, std::map<std::string, std::shared_ptr<void>>> ClipboardData;
 
+    class ReadonlyClipboard {
+    public:
+        /**
+         * @brief Construct the clipboard
+         */
+        ReadonlyClipboard() = default;
+        /**
+         * @brief Required virtual destructor
+         */
+        virtual ~ReadonlyClipboard() = default;
+
+        /**
+         * @brief Method to retrieve objects from the clipboard
+         * @param key Identifying key of objects to be fetched. Defaults to empty key
+         */
+        template <typename T> std::vector<std::shared_ptr<T>>& getPersistentData(const std::string& key = "") const;
+
+        /**
+         * @brief Method to count the number of objects of a given type on the clipboard
+         * @param key Identifying key of objects to be counted. An empty key will count all objects available.
+         */
+        template <typename T> size_t countPersistentObjects(const std::string& key = "") const;
+
+    protected:
+        template <typename T>
+        std::vector<std::shared_ptr<T>>& get_data(const ClipboardData& storage_element, const std::string& key) const;
+        template <typename T> size_t count_objects(const ClipboardData& storage_element, const std::string& key) const;
+
+        // Persistent clipboard storage
+        ClipboardData persistent_data_;
+    };
+
     /**
      * @brief Class for temporary data storage for exachange between modules
      *
@@ -35,31 +67,22 @@ namespace corryvreckan {
      * In addition, a permanent clipboard storage area for variables of type double is provided, which allow to exchange
      * information which should outlast a single event. This is dubbed the "persistent storage"
      */
-    class Clipboard {
+    class Clipboard : public ReadonlyClipboard {
         friend class ModuleManager;
 
     public:
-        /**
-         * @brief Construct the clipboard
-         */
-        Clipboard() noexcept {};
-        /**
-         * @brief Required virtual destructor
-         */
-        virtual ~Clipboard() {}
-
         /**
          * @brief Method to add a vector of objects to the clipboard
          * @param objects Shared pointer to vector of objects to be stored
          * @param key     Identifying key for this set of objects. Defaults to empty key
          */
-        template <typename T> void putData(std::shared_ptr<std::vector<T*>> objects, const std::string& key = "");
+        template <typename T> void putData(std::vector<std::shared_ptr<T>> objects, const std::string& key = "");
 
         /**
          * @brief Method to retrieve objects from the clipboard
          * @param key Identifying key of objects to be fetched. Defaults to empty key
          */
-        template <typename T> std::shared_ptr<std::vector<T*>> getData(const std::string& key = "") const;
+        template <typename T> std::vector<std::shared_ptr<T>>& getData(const std::string& key = "") const;
 
         /**
          * @brief Method to count the number of objects of a given type on the clipboard
@@ -88,26 +111,26 @@ namespace corryvreckan {
         std::shared_ptr<Event> getEvent() const;
 
         /**
-         * @brief Store or update variable on the persistent clipboard storage
-         * @param name Name of the variable
-         * @param value Value to be stored
+         * @brief Method to add a vector of objects to the clipboard
+         * @param objects Shared pointer to vector of objects to be stored
+         * @param key     Identifying key for this set of objects. Defaults to empty key
          */
-        void putPersistentData(std::string name, double value);
+        template <typename T> void putPersistentData(std::vector<std::shared_ptr<T>> objects, const std::string& key = "");
 
         /**
-         * @brief Retrieve variable from the persistent clipboard storage
-         * @param name Name of the variable
-         * @return Stored value from the persistent clipboard storage
-         * @throws MissingDataError in case the key is not found.
+         * @brief Method to find objects in the event storage and copy the to the persistent storage of the clipboard.
+         *
+         * This method is useful to copy objects to persistent storage from which only the references, i.e. raw pointers are
+         * available. This method looks up the relevant volatile storage element and compares the stored objects with the
+         * pointers provided. It then stores the matched objects on permanent storage for later reference.
+         *
+         * The vector delivered at the input is cleared of duplicates.
+         *
+         * @param objects Vector of raw pointers of data elements already stored on the event storage element
+         * @param key     Identifying key for this set of objects. Defaults to empty key
+         * @throws MissingDataError if the related object could not be found on the storage
          */
-        double getPersistentData(std::string name) const;
-
-        /**
-         * @brief Check if variable exists on the persistent clipboard storage
-         * @param name Name of the variable
-         * @return True if value exists, false if it does not exist.
-         */
-        bool hasPersistentData(std::string name) const;
+        template <typename T> void copyToPersistentData(std::vector<T*> objects, const std::string& key = "");
 
         /**
          * @brief Get a list of currently held collections on the clipboard event storage
@@ -127,14 +150,17 @@ namespace corryvreckan {
          */
         void clear();
 
-        // Container for data, list of all data held
-        ClipboardData m_data;
+        template <typename T>
+        void put_data(ClipboardData& storage_element,
+                      std::vector<std::shared_ptr<T>> objects,
+                      const std::string& key,
+                      bool append = false);
 
-        // Persistent clipboard storage
-        std::unordered_map<std::string, double> m_persistent_data;
+        // Container for data, list of all data held
+        ClipboardData data_;
 
         // Store the current time slice:
-        std::shared_ptr<Event> m_event{};
+        std::shared_ptr<Event> event_{};
     };
 } // namespace corryvreckan
 

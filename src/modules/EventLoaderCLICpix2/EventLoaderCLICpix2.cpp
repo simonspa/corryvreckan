@@ -24,7 +24,7 @@ EventLoaderCLICpix2::EventLoaderCLICpix2(Configuration config, std::shared_ptr<D
     discardZeroToT = m_config.get<bool>("discard_zero_tot", false);
 }
 
-void EventLoaderCLICpix2::initialise() {
+void EventLoaderCLICpix2::initialize() {
 
     // Take input directory from global parameters
     string inputDirectory = m_config.getPath("input_directory");
@@ -133,7 +133,7 @@ void EventLoaderCLICpix2::initialise() {
                                 -0.5,
                                 m_detector->nPixels().Y() - 0.5);
     title = m_detector->getName() + " TOT spectrum;TOT;pixels";
-    hPixelToT = new TH1F("pixelToT", title.c_str(), 32, 0, 31);
+    hPixelToT = new TH1F("pixelToT", title.c_str(), 32, -0.5, 31.5);
     title = m_detector->getName() + " TOT map;x [px];y [px];TOT";
     hPixelToTMap = new TProfile2D("pixelToTMap",
                                   title.c_str(),
@@ -146,14 +146,14 @@ void EventLoaderCLICpix2::initialise() {
                                   0,
                                   maxcounter - 1);
     title = m_detector->getName() + " TOA spectrum;TOA;pixels";
-    hPixelToA = new TH1F("pixelToA", title.c_str(), maxcounter, 0, maxcounter - 1);
+    hPixelToA = new TH1F("pixelToA", title.c_str(), maxcounter, -0.5, maxcounter - 0.5);
     title = m_detector->getName() + " CNT spectrum;CNT;pixels";
-    hPixelCnt = new TH1F("pixelCnt", title.c_str(), maxcounter, 0, maxcounter - 1);
+    hPixelCnt = new TH1F("pixelCnt", title.c_str(), maxcounter, -0.5, maxcounter - 0.5);
     title = m_detector->getName() + " Pixel Multiplicity; # pixels; # events";
-    hPixelMultiplicity = new TH1F("pixelMultiplicity", title.c_str(), 1000, 0, 1000);
+    hPixelMultiplicity = new TH1F("pixelMultiplicity", title.c_str(), 1000, -0.5, 999.5);
 
     title = m_detector->getName() + " Timewalk;TOA;TOT;pixels";
-    hTimeWalk = new TH2F("timewalk", title.c_str(), maxcounter, 0, maxcounter - 1, 32, 0, 31);
+    hTimeWalk = new TH2F("timewalk", title.c_str(), maxcounter, -0.5, maxcounter - 0.5, 32, -0.5, 31.5);
 
     title = m_detector->getName() + " Map of masked pixels;x [px];y [px];mask code";
     hMaskMap = new TH2F("maskMap",
@@ -179,7 +179,7 @@ void EventLoaderCLICpix2::initialise() {
     m_eventNumber = 0;
 }
 
-StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EventLoaderCLICpix2::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
@@ -188,7 +188,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Pixel container, shutter information
-    auto pixels = std::make_shared<PixelVector>();
+    PixelVector pixels;
     long long int shutterStartTimeInt = 0, shutterStopTimeInt = 0;
     double shutterStartTime, shutterStopTime;
     string datastring;
@@ -290,12 +290,12 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
             }
 
             // when calibration is not available, set charge = tot
-            Pixel* pixel = new Pixel(m_detector->getName(), col, row, tot, tot, timestamp);
+            auto pixel = std::make_shared<Pixel>(m_detector->getName(), col, row, tot, tot, timestamp);
 
             if(tot == 0 && discardZeroToT) {
                 hHitMapDiscarded->Fill(col, row);
             } else {
-                pixels->push_back(pixel);
+                pixels.push_back(pixel);
                 npixels++;
                 hHitMap->Fill(col, row);
                 LOG(TRACE) << "Adding pixel (col, row, tot, timestamp): " << col << ", " << row << ", " << tot << ", "
@@ -305,7 +305,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     } catch(caribou::DataException& e) {
         LOG(ERROR) << "Caugth DataException: " << e.what() << ", clearing event data.";
     }
-    LOG(DEBUG) << "Finished decoding, storing " << pixels->size() << " pixels";
+    LOG(DEBUG) << "Finished decoding, storing " << pixels.size() << " pixels";
 
     // Store current frame time and the length of the event:
     LOG(DEBUG) << "Event time: " << Units::display(shutterStartTime, {"ns", "us", "s"})
@@ -315,7 +315,7 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     // Put the data on the clipboard
     clipboard->putData(pixels, m_detector->getName());
 
-    if(pixels->empty()) {
+    if(pixels.empty()) {
         return StatusCode::NoData;
     }
 
@@ -326,6 +326,6 @@ StatusCode EventLoaderCLICpix2::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void EventLoaderCLICpix2::finalise() {
+void EventLoaderCLICpix2::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     delete decoder;
 }
