@@ -87,9 +87,6 @@ namespace corryvreckan {
         ROOT::Math::XYPoint getKinkAt(std::string) const override;
         void setVolumeScatter(double) override{};
 
-        void setPositionAtScatterer(ROOT::Math::XYZPoint position) { m_positionAtScatterer = position; }
-        void setKinkAtScatterer(ROOT::Math::XYVector kink) { m_kinkAtScatterer = kink; }
-
     private:
         std::shared_ptr<Track> m_upstream;
         std::shared_ptr<Track> m_downstream;
