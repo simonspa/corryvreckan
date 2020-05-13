@@ -33,8 +33,8 @@ Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detec
     neighbor_radius_row_ = m_config.get<int>("neighbor_radius_row", 1);
     neighbor_radius_col_ = m_config.get<int>("neighbor_radius_col", 1);
     charge_weighting_ = m_config.get<bool>("charge_weighting", true);
-    reject_by_ROI_ = m_config.get<bool>("reject_by_roi", false);
     use_earliest_pixel_ = m_config.get<bool>("use_earliest_pixel", false);
+    reject_by_ROI_ = m_config.get<bool>("reject_by_roi", false);
 }
 
 void Clustering4D::initialize() {

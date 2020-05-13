@@ -59,8 +59,8 @@ namespace corryvreckan {
         int neighbor_radius_row_;
         int neighbor_radius_col_;
         bool charge_weighting_;
-        bool reject_by_ROI_;
         bool use_earliest_pixel_;
+        bool reject_by_ROI_;
     };
 } // namespace corryvreckan
 #endif // CLUSTERING4D_H
