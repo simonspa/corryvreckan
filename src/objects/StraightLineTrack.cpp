@@ -15,15 +15,6 @@
 
 using namespace corryvreckan;
 
-StraightLineTrack::StraightLineTrack() : Track(), m_direction(0, 0, 1.), m_state(0, 0, 0.) {}
-
-StraightLineTrack::StraightLineTrack(const StraightLineTrack& track) : Track(track) {
-    if(track.getType() != this->getType())
-        throw TrackModelChanged(typeid(*this), track.getType(), this->getType());
-    m_direction = track.m_direction;
-    m_state = track.m_state;
-}
-
 ROOT::Math::XYPoint StraightLineTrack::distance(const Cluster* cluster) const {
 
     // Get the StraightLineTrack X and Y at the cluster z position
@@ -45,12 +36,12 @@ ROOT::Math::XYPoint StraightLineTrack::getKinkAt(std::string) const {
 void StraightLineTrack::calculateChi2() {
 
     // Get the number of clusters
-    m_ndof = static_cast<double>(m_trackClusters.size()) - 2.;
-    m_chi2 = 0.;
-    m_chi2ndof = 0.;
+    ndof_ = static_cast<double>(track_clusters_.size()) - 2.;
+    chi2_ = 0.;
+    chi2ndof_ = 0.;
 
     // Loop over all clusters
-    for(auto& cl : m_trackClusters) {
+    for(auto& cl : track_clusters_) {
         auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
         if(cluster == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
@@ -60,17 +51,17 @@ void StraightLineTrack::calculateChi2() {
         ROOT::Math::XYPoint dist = this->distance(cluster);
         double ex2 = cluster->errorX() * cluster->errorX();
         double ey2 = cluster->errorY() * cluster->errorY();
-        m_chi2 += ((dist.x() * dist.x() / ex2) + (dist.y() * dist.y() / ey2));
+        chi2_ += ((dist.x() * dist.x() / ex2) + (dist.y() * dist.y() / ey2));
     }
 
     // Store also the chi2/degrees of freedom
-    m_chi2ndof = m_chi2 / m_ndof;
+    chi2ndof_ = chi2_ / ndof_;
 }
 
 void StraightLineTrack::calculateResiduals() {
-    for(auto c : m_trackClusters) {
+    for(auto c : track_clusters_) {
         auto cluster = dynamic_cast<Cluster*>(c.GetObject());
-        m_residual[cluster->detectorID()] = cluster->global() - intercept(cluster->global().z());
+        residual_[cluster->detectorID()] = cluster->global() - getIntercept(cluster->global().z());
     }
 }
 
@@ -86,7 +77,7 @@ double StraightLineTrack::operator()(const double* parameters) {
     this->calculateChi2();
 
     // Return this to minuit
-    return m_chi2;
+    return chi2_;
 }
 
 void StraightLineTrack::fit() {
@@ -95,7 +86,7 @@ void StraightLineTrack::fit() {
     Eigen::Vector4d vec(Eigen::Vector4d::Zero());
 
     // Loop over all clusters and fill the matrices
-    for(auto& cl : m_trackClusters) {
+    for(auto& cl : track_clusters_) {
         auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
         if(cluster == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
@@ -136,14 +127,14 @@ void StraightLineTrack::fit() {
     // Calculate the chi2
     this->calculateChi2();
     this->calculateResiduals();
-    m_isFitted = true;
+    isFitted_ = true;
 }
 
-ROOT::Math::XYZPoint StraightLineTrack::intercept(double z) const {
+ROOT::Math::XYZPoint StraightLineTrack::getIntercept(double z) const {
     return m_state + m_direction * z;
 }
 
 void StraightLineTrack::print(std::ostream& out) const {
-    out << "StraightLineTrack " << this->m_state << ", " << this->m_direction << ", " << this->m_chi2 << ", " << this->m_ndof
-        << ", " << this->m_chi2ndof << ", " << this->timestamp();
+    out << "StraightLineTrack " << this->m_state << ", " << this->m_direction << ", " << this->chi2_ << ", " << this->ndof_
+        << ", " << this->chi2ndof_ << ", " << this->timestamp();
 }

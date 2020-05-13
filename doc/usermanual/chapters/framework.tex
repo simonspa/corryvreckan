@@ -27,7 +27,7 @@ There are three types of keys that can be specified:
 \begin{itemize}
     \item Keys to set \textbf{framework parameters}: These have to be provided in exactly the same way as they would be in the main configuration file (a section does not need to be specified). An example to overwrite the standard output directory would be \texttt{corry -c <file> -o output\_directory="run123456"}.
     \item Keys for \textbf{module configurations}: These are specified by adding a dot (\texttt{.}) between the module and the key as it would be given in the configuration file (thus \textit{module}.\textit{key}). An example to overwrite the number of hits required for accepting a track candidate would be \command{corry -c <file> -o Tracking4D.min_hits_on_track=5}.
-    \item Keys to specify values for a particular \textbf{module instantiation}: The identifier of the instantiation and the name of the key are split by a dot (\texttt{.}), in the same way as for keys for module configurations (thus \textit{identifier}.\textit{key}). The unique identifier for a module can contain one or more colons (\texttt{:}) to distinguish between various instantiations of the same module. The exact name of an identifier depends on the name of the detector. An example to change the neighbor pixel search radius of the clustering algorithm for a particular instantiation of the detector named \textit{my\_dut} could be \command{corry -c <file> -o Clustering4D:my_dut.neighbour_radius_row=2}.
+    \item Keys to specify values for a particular \textbf{module instantiation}: The identifier of the instantiation and the name of the key are split by a dot (\texttt{.}), in the same way as for keys for module configurations (thus \textit{identifier}.\textit{key}). The unique identifier for a module can contain one or more colons (\texttt{:}) to distinguish between various instantiations of the same module. The exact name of an identifier depends on the name of the detector. An example to change the neighbor pixel search radius of the clustering algorithm for a particular instantiation of the detector named \textit{my\_dut} could be \command{corry -c <file> -o Clustering4D:my_dut.neighbor_radius_row=2}.
 \end{itemize}
 Note that only the single argument directly following the \texttt{-o} is interpreted as the option. If there is whitespace in the key-value pair this should be properly enclosed in quotation marks to ensure that the argument is parsed correctly.
 \item \texttt{-g <option>}: Passes extra detector options that are added to and/or overwritten in the detector configuration file.
@@ -66,8 +66,15 @@ The temporary storage acts as the main data structure to communicate information
 In order to be able to flexibly store different data types on the clipboard, the access methods for the temporary data storage are implemented as templates, and vectors of any data type deriving from \parameter{corry::Object} can be stored and retrieved.
 
 \subsection{Persistent Storage}
-The persistent storage is not cleared at the end of processing each event and can be used to store information used in multiple events.
-Currently this storage only allows for the caching of double-precision floating point numbers.
+The persistent storage is not cleared at the end of processing each event and can therefore be used to store information across multiple events or even until the end of the run.
+This allows for example to accumulate tracks over a full run for an alignment procedure executed at the very end of the run.
+
+The persistent storage element has the same data access methods as the temporary event storage. In addition, a helper function allows to provide raw pointers to data stored on the temporary storage element in order to directly copy over the relevant data to persistent storage.
+
+\begin{warning}
+    The persistent clipboard storage does not automatically resolve object history. This means in order to access for example the clusters referenced in a track at the end of the run, both the track and the relevant cluster objects have to be copied to the persistent storage.
+    Not copying the clusters will lead to missing data and unavailable references.
+\end{warning}
 
 
 \section{Global Framework Parameters}
@@ -238,6 +245,6 @@ The global coordinate system is chosen as a right-handed Cartesian system, and t
 Here, the beam direction defines the positive z-axis at the origin of the x-y-plane.
 The origin along the z-axis is fixed by the placement of the detectors in the geometry of the setup.
 
-There are several kinds of detectors with different local coordinate system, e.g., Cartesian coordinate for pixel detector and polar coordinate for some specific strip detectors. For this reason, the \textsl{Detector} class is designed as an interface, the detector with a specific coordinate system will be generated according to the parameter in the detector configuration file. In the current version, the Cartesian coordinate is the only available one. 
+There are several kinds of detectors with different local coordinate system, e.g., Cartesian coordinate for pixel detector and polar coordinate for some specific strip detectors. For this reason, the \textsl{Detector} class is designed as an interface, the detector with a specific coordinate system will be generated according to the parameter in the detector configuration file. In the current version, the Cartesian coordinate is the only available one.
 
 For the local Cartesian coordinate system, it is right-handed with the x- and y-axes defining the sensor plane.  The origin of this coordinate system is the center of the lower left pixel in the grid, i.e.\ the pixel with indices (0,0).  This simplifies calculations in the local coordinate system as all positions can either be stated in absolute numbers or in fractions of the pixel pitch.

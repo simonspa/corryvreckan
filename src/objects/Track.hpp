@@ -24,31 +24,31 @@ namespace corryvreckan {
     public:
         Plane(){};
         Plane(double z, double x_x0, std::string name, bool has_cluster)
-            : m_z(z), m_x_x0(x_x0), m_name(name), m_has_cluster(has_cluster){};
+            : z_(z), x_x0_(x_x0), name_(name), has_cluster_(has_cluster){};
         // access elements
-        double position() const { return m_z; }
-        double materialbudget() const { return m_x_x0; }
-        bool hasCluster() const { return m_has_cluster; }
-        std::string name() const { return m_name; }
-        unsigned gblPos() const { return m_gbl_points_pos; }
+        double getPlanePosition() const { return z_; }
+        double getMaterialBudget() const { return x_x0_; }
+        bool hasCluster() const { return has_cluster_; }
+        std::string getName() const { return name_; }
+        unsigned getGblPointPosition() const { return gbl_points_pos_; }
 
         // sorting overload
-        bool operator<(const Plane& pl) const { return m_z < pl.m_z; }
+        bool operator<(const Plane& pl) const { return z_ < pl.z_; }
         // set elements that might be unknown at construction
-        void setGblPos(unsigned pos) { m_gbl_points_pos = pos; }
-        void setPosition(double z) { m_z = z; }
-        void setCluster(const Cluster* cluster) { m_cluster = const_cast<Cluster*>(cluster); }
-        Cluster* cluster() const { return m_cluster; }
+        void setGblPointPosition(unsigned pos) { gbl_points_pos_ = pos; }
+        void setPosition(double z) { z_ = z; }
+        void setCluster(const Cluster* cluster) { cluster_ = const_cast<Cluster*>(cluster); }
+        Cluster* getCluster() const { return cluster_; }
         void print(std::ostream& os) const {
-            os << "Plane at " << m_z << " with rad. length " << m_x_x0 << " and cluster: " << (m_has_cluster) << std::endl;
+            os << "Plane at " << z_ << " with rad. length " << x_x0_ << " and cluster: " << (has_cluster_) << std::endl;
         }
 
     private:
-        double m_z, m_x_x0;
-        std::string m_name;
-        bool m_has_cluster;
-        Cluster* m_cluster = nullptr;
-        unsigned m_gbl_points_pos{};
+        double z_, x_x0_;
+        std::string name_;
+        bool has_cluster_;
+        Cluster* cluster_ = nullptr;
+        unsigned gbl_points_pos_{};
     };
 
     /**
@@ -67,17 +67,7 @@ namespace corryvreckan {
          * @param The name of the track model which should be used
          * @return By param trackModel assigned track model to be used
          */
-        static Track* Factory(std::string trackModel);
-
-        /**
-         * @brief Track object constructor
-         */
-        Track();
-        /**
-         * @brief Copy a track object, including used/associated clusters
-         * @param track to be copied from
-         */
-        Track(const Track& track);
+        static std::shared_ptr<Track> Factory(std::string trackModel);
 
         /**
          * @brief Add a cluster to the tack, which will be used in the fit
@@ -140,37 +130,37 @@ namespace corryvreckan {
          * @brief Set the momentum of the particle
          * @param momentum
          */
-        void setParticleMomentum(double p) { m_momentum = p; }
+        void setParticleMomentum(double p) { momentum_ = p; }
 
         /**
          * @brief Get the chi2 of the track fit
          * @return chi2
          */
-        double chi2() const;
+        double getChi2() const;
 
         /**
          * @brief Get chi2/ndof of the track fit
          * @return chi2/ndof
          */
-        double chi2ndof() const;
+        double getChi2ndof() const;
 
         /**
          * @brief Get the ndof for the track fit
          * @return ndof
          */
-        double ndof() const;
+        double getNdof() const;
 
         /**
          * @brief Get the clusters contained in the track fit
          * @return vector of cluster* of track
          */
-        std::vector<Cluster*> clusters() const;
+        std::vector<Cluster*> getClusters() const;
 
         /**
          * @brief Get the clusters associated to the track
          * @return vector of cluster* assosiated to the track
          */
-        std::vector<Cluster*> associatedClusters(const std::string& detectorID) const;
+        std::vector<Cluster*> getAssociatedClusters(const std::string& detectorID) const;
 
         /**
          * @brief Check if cluster is associated
@@ -197,7 +187,7 @@ namespace corryvreckan {
          * @brief Get the number of clusters used for track fit
          * @return Number of clusters in track
          */
-        size_t nClusters() const { return m_trackClusters.size(); }
+        size_t getNClusters() const { return track_clusters_.size(); }
 
         // virtual functions to be implemented by derived classes
 
@@ -207,44 +197,38 @@ namespace corryvreckan {
         virtual void fit() = 0;
 
         /**
-         * @brief Virtual function to copy a class
-         * @return pointer to copied object
-         */
-        virtual Track* clone() const = 0;
-
-        /**
          * @brief Get the track position for a certain z position
          * @param z positon
          * @return ROOT::Math::XYZPoint at z position
          */
-        virtual ROOT::Math::XYZPoint intercept(double) const { return ROOT::Math::XYZPoint(0.0, 0.0, 0.0); }
+        virtual ROOT::Math::XYZPoint getIntercept(double) const { return ROOT::Math::XYZPoint(0.0, 0.0, 0.0); }
 
         /**
          * @brief Get the track state at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        virtual ROOT::Math::XYZPoint state(std::string) const { return ROOT::Math::XYZPoint(0.0, 0.0, 0.0); }
+        virtual ROOT::Math::XYZPoint getState(std::string) const { return ROOT::Math::XYZPoint(0.0, 0.0, 0.0); }
 
         /**
          * @brief Get the track direction at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
-        virtual ROOT::Math::XYZVector direction(std::string) const { return ROOT::Math::XYZVector(0.0, 0.0, 0.0); }
+        virtual ROOT::Math::XYZVector getDirection(std::string) const { return ROOT::Math::XYZVector(0.0, 0.0, 0.0); }
 
         /**
          * @brief check if the fitting routine already has been called. Chi2 etc are not set before
          * @return true if fit has already been performed, false otherwise
          */
-        bool isFitted() const { return m_isFitted; }
+        bool isFitted() const { return isFitted_; }
 
         /**
          * @brief Get the residual for a given detector layer
          * @param detectorID
          * @return  2D residual as ROOT::Math::XYPoint
          */
-        ROOT::Math::XYPoint residual(std::string detectorID) const { return m_residual.at(detectorID); }
+        ROOT::Math::XYPoint getResidual(std::string detectorID) const { return residual_.at(detectorID); }
 
         /**
          * @brief Get the kink at a given detector layer. This is ill defined for last and first layer
@@ -258,36 +242,36 @@ namespace corryvreckan {
          * @param detectorID
          * @return Material Budget for given layer
          */
-        double materialBudget(std::string detectorID) const { return m_materialBudget.at(detectorID).first; }
+        double getMaterialBudget(std::string detectorID) const { return material_budget_.at(detectorID).first; }
 
         void addMaterial(std::string detetcorID, double x_x0, double z);
 
-        ROOT::Math::XYZPoint correction(std::string detectorID) const;
+        ROOT::Math::XYZPoint getCorrection(std::string detectorID) const;
 
-        long unsigned int numScatterers() const { return m_materialBudget.size(); }
+        long unsigned int getNumScatterers() const { return material_budget_.size(); }
 
         virtual void setVolumeScatter(double length) = 0;
 
     protected:
-        std::vector<TRef> m_trackClusters;
-        std::vector<TRef> m_associatedClusters;
-        std::map<std::string, ROOT::Math::XYPoint> m_residual;
-        std::map<std::string, std::pair<double, double>> m_materialBudget;
-        std::map<std::string, ROOT::Math::XYZPoint> m_corrections{};
-        std::vector<Plane> m_planes{};
+        std::vector<TRef> track_clusters_;
+        std::vector<TRef> associated_clusters_;
+        std::map<std::string, ROOT::Math::XYPoint> residual_;
+        std::map<std::string, std::pair<double, double>> material_budget_;
+        std::map<std::string, ROOT::Math::XYZPoint> corrections_{};
+        std::vector<Plane> planes_{};
 
-        std::map<std::string, TRef> closestCluster;
-        double m_chi2;
-        double m_ndof;
-        double m_chi2ndof;
-        bool m_isFitted{};
-        double m_momentum;
+        std::map<std::string, TRef> closest_cluster_;
+        double chi2_;
+        double ndof_;
+        double chi2ndof_;
+        bool isFitted_{};
+        double momentum_{-1};
 
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(Track, 8)
     };
     // Vector type declaration
-    using TrackVector = std::vector<Track*>;
+    using TrackVector = std::vector<std::shared_ptr<Track>>;
 } // namespace corryvreckan
 
 // include all tracking methods here to have one header to be include everywhere

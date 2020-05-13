@@ -36,7 +36,7 @@ EventLoaderTimepix3::EventLoaderTimepix3(Configuration config, std::shared_ptr<D
     }
 }
 
-void EventLoaderTimepix3::initialise() {
+void EventLoaderTimepix3::initialize() {
 
     // File structure is RunX/ChipID/files.dat
 
@@ -221,7 +221,7 @@ void EventLoaderTimepix3::initialise() {
                        m_detector->nPixels().Y() - 0.5);
 }
 
-StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EventLoaderTimepix3::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // This will loop through each timepix3 registered, and load data from each of them. This can
     // be done in one of two ways: by taking all data in the time interval (t,t+delta), or by
@@ -238,19 +238,19 @@ StatusCode EventLoaderTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     }
 
     // Make a new container for the data
-    auto deviceData = std::make_shared<PixelVector>();
-    auto spidrData = std::make_shared<SpidrSignalVector>();
+    PixelVector deviceData;
+    SpidrSignalVector spidrData;
 
     // Load the next chunk of data
     bool data = loadData(clipboard, deviceData, spidrData);
 
     // If data was loaded then put it on the clipboard
     if(data) {
-        LOG(DEBUG) << "Loaded " << deviceData->size() << " pixels for device " << m_detector->getName();
+        LOG(DEBUG) << "Loaded " << deviceData.size() << " pixels for device " << m_detector->getName();
         clipboard->putData(deviceData, m_detector->getName());
     }
 
-    if(!spidrData->empty()) {
+    if(!spidrData.empty()) {
         clipboard->putData(spidrData, m_detector->getName());
     }
 
@@ -327,9 +327,9 @@ void EventLoaderTimepix3::loadCalibration(std::string path, char delim, std::vec
 }
 
 // Function to load data for a given device, into the relevant container
-bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
-                                   std::shared_ptr<PixelVector>& devicedata,
-                                   std::shared_ptr<SpidrSignalVector>& spidrData) {
+bool EventLoaderTimepix3::loadData(const std::shared_ptr<Clipboard>& clipboard,
+                                   PixelVector& devicedata,
+                                   SpidrSignalVector& spidrData) {
 
     std::string detectorID = m_detector->getName();
     auto event = clipboard->getEvent();
@@ -447,24 +447,24 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
                     break;
                 }
 
-                SpidrSignal* powerSignal =
-                    (powerOn ? new SpidrSignal("powerOn", timestamp) : new SpidrSignal("powerOff", timestamp));
-                spidrData->push_back(powerSignal);
+                auto powerSignal = (powerOn ? std::make_shared<SpidrSignal>("powerOn", timestamp)
+                                            : std::make_shared<SpidrSignal>("powerOff", timestamp));
+                spidrData.push_back(powerSignal);
                 LOG(DEBUG) << "Power is " << (powerOn ? "on" : "off") << " power! Time: " << Units::display(timestamp, "ns");
 
                 LOG(TRACE) << "Shutter closed: " << hex << shutterClosed << dec;
 
-                SpidrSignal* shutterSignal = (shutterClosed ? new SpidrSignal("shutterClosed", timestamp)
-                                                            : new SpidrSignal("shutterOpen", timestamp));
+                auto shutterSignal = (shutterClosed ? std::make_shared<SpidrSignal>("shutterClosed", timestamp)
+                                                    : std::make_shared<SpidrSignal>("shutterOpen", timestamp));
                 if(!shutterClosed) {
-                    spidrData->push_back(shutterSignal);
+                    spidrData.push_back(shutterSignal);
                     m_shutterOpen = true;
                     LOG(TRACE) << "Have opened shutter with signal " << shutterSignal->type() << " at time "
                                << Units::display(timestamp, "ns");
                 }
 
                 if(shutterClosed && m_shutterOpen) {
-                    spidrData->push_back(shutterSignal);
+                    spidrData.push_back(shutterSignal);
                     m_shutterOpen = false;
                     LOG(TRACE) << "Have closed shutter with signal " << shutterSignal->type() << " at time "
                                << Units::display(timestamp, "ns");
@@ -478,15 +478,15 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
             // 0x6 is power on
             if(header2 == 0x6){
               const double timestamp = ((pixdata & 0x0000000FFFFFFFFF) << 12 ) / (4096 * 0.04);
-              SpidrSignal* signal = new SpidrSignal("powerOn",timestamp);
-              spidrData->push_back(signal);
+              auto signal = std::make_shared<SpidrSignal>("powerOn",timestamp);
+              spidrData.push_back(signal);
               LOG(DEBUG) <<"Turned on power! Time: " << Units::display(timestamp, "ns");
             }
             // 0x7 is power off
             if(header2 == 0x7){
               const double timestamp = ((pixdata & 0x0000000FFFFFFFFF) << 12 ) / (4096 * 0.04);
-              SpidrSignal* signal = new SpidrSignal("powerOff",timestamp);
-              spidrData->push_back(signal);
+              auto signal = std::make_shared<SpidrSignal>("powerOff",timestamp);
+              spidrData.push_back(signal);
               LOG(DEBUG) <<"Turned off power! Time: " << Units::display(timestamp, "ns");
             }
              */
@@ -513,8 +513,8 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
 
                 double triggerTime =
                     (static_cast<double>(timestamp) + static_cast<double>(stamp) / 12) / (8. * 0.04); // 320 MHz clock
-                SpidrSignal* triggerSignal = new SpidrSignal("trigger", triggerTime);
-                spidrData->push_back(triggerSignal);
+                auto triggerSignal = std::make_shared<SpidrSignal>("trigger", triggerTime);
+                spidrData.push_back(triggerSignal);
             }
         }
 
@@ -627,9 +627,9 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
                 }
                 // creating new pixel object with calibrated values of tot and toa
                 // when calibration is not available, set charge = tot
-                Pixel* pixel = new Pixel(detectorID, col, row, static_cast<int>(tot), tot, ftimestamp);
+                auto pixel = std::make_shared<Pixel>(detectorID, col, row, static_cast<int>(tot), tot, ftimestamp);
                 pixel->setCharge(fcharge);
-                devicedata->push_back(pixel);
+                devicedata.push_back(pixel);
                 hHitMap->Fill(col, row);
                 LOG(DEBUG) << "Pixel Charge = " << fcharge << "; ToT value = " << tot;
                 pixelToT_aftercalibration->Fill(fcharge);
@@ -637,8 +637,8 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
                 LOG(DEBUG) << "Pixel hit at " << Units::display(timestamp, {"s", "ns"});
                 // creating new pixel object with non-calibrated values of tot and toa
                 // when calibration is not available, set charge = tot
-                Pixel* pixel = new Pixel(detectorID, col, row, static_cast<int>(tot), tot, timestamp);
-                devicedata->push_back(pixel);
+                auto pixel = std::make_shared<Pixel>(detectorID, col, row, static_cast<int>(tot), tot, timestamp);
+                devicedata.push_back(pixel);
                 hHitMap->Fill(col, row);
             }
 
@@ -650,7 +650,7 @@ bool EventLoaderTimepix3::loadData(std::shared_ptr<Clipboard> clipboard,
     // the data from one event onto it.
 
     // If no data was loaded, return false
-    if(devicedata->empty()) {
+    if(devicedata.empty()) {
         return false;
     }
 

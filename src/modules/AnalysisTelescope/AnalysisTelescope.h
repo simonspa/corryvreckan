@@ -27,11 +27,11 @@ namespace corryvreckan {
         AnalysisTelescope(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
 
         // Functions
-        void initialise();
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        void initialize() override;
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
     private:
-        ROOT::Math::XYZPoint closestApproach(ROOT::Math::XYZPoint position, std::shared_ptr<MCParticleVector> particles);
+        ROOT::Math::XYZPoint closestApproach(ROOT::Math::XYZPoint position, const MCParticleVector& particles);
 
         // Histograms for each of the devices
         std::map<std::string, TH1F*> telescopeMCresidualsLocalX;

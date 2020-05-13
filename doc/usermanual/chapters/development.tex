@@ -7,6 +7,56 @@ Getting in touch with other developers early in the development cycle avoids spe
 
 The repository contains a few tools to facilitate contributions and to ensure code quality as detailed in Chapter~\ref{ch:testing}.
 
+\section{Coding and Naming Conventions}
+
+The code base of the \corry is well-documented and follows concise rules on naming schemes and coding conventions.
+This enables maintaining a high quality of code and ensures maintainability over a longer period of time.
+In the following, some of the most important conventions are described.
+In case of doubt, existing code should be used to infer the coding style from.
+
+\subsection{Naming Schemes}
+
+The following coding and naming conventions should be adhered to when writing code which eventually should be merged into the main repository.
+
+\begin{description}
+    \item[Namespace] The \parameter{corryvreckan} namespace is to be used for all classes which are part of the framework, nested namespaces may be defined. It is encouraged to make use of \command{using namespace corryvreckan;} in implementation files only for this namespace. Especially the namespace \parameter{std} should always be referred to directly at the function to be called, e.g.\ \command{std::string test}. In a few other cases, such as \parameter{ROOT::Math}, the \command{using} directive may be used to improve readability of the code.
+
+    \item[Class names] Class names are typeset in CamelCase, starting with a capital letter, e.g.\ \command{class ModuleManager{}}. Every class should provide sensible Doxygen documentation for the class itself as well as for all member functions.
+
+    \item[Member functions] Naming conventions are different for public and private class members. Public member function names are typeset as camelCase names without underscores, e.g.\ \command{getTimeResolution()}. Private member functions use lower-case names, separating individual words by an underscore, e.g.\ \command{create_detector_modules(...)}. This allows to visually distinguish between public and restricted access when reading code.
+
+    In general, public member function names should follow the \command{get}/\command{set} convention, i.e.\ functions which retrieve information and alter the state of an object should be marked accordingly. Getter functions should be made \parameter{const} where possible to allow usage of constant objects of the respective class.
+
+    \item[Member variables] Member variables of classes should always be private and accessed only via respective public member functions. This allows to change the class implementation and its internal members without requiring to rewrite code which accesses them. Member names should be typeset in lower-case letters, a trailing underscore is used to mark them as member variables, e.g.\ \parameter{bool terminate_}. This immediately sets them apart from local variables declared within a function.
+\end{description}
+
+\subsection{Formatting}
+
+A set of formatting rules is applied to the code base in order to avoid unnecessary changes from different editors and to maintain readable code.
+It is vital to follow these rules during development in order to avoid additional changes to the code, just to adhere to the formatting.
+There are several options to integrate this into the development workflow:
+
+\begin{itemize}
+  \item Many popular editors feature direct integration either with \command{clang-format} or their own formatting facilities.
+  \item A build target called \command{make format} is provided if the \command{clang-format} tool is installed. Running this command before committing code will ensure correct formatting.
+  \item This can be further simplified by installing the \emph{git hook} provided in the directory \dir{/etc/git-hooks/}. A hook is a script called by \command{git} before a certain action. In this case, it is a pre-commit hook which automatically runs \command{clang-format} in the background and offers to update the formatting of the code to be committed. It can be installed by calling
+  \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{bash}
+  ./etc/git-hooks/install-hooks.sh
+  \end{minted}
+  once.
+\end{itemize}
+The formatting rules are defined in the \file{.clang-format} file in the repository in machine-readable form (for \command{clang-format}, that is) but can be summarized as follows:
+
+\begin{itemize}
+  \item The column width should be 125 characters, with a line break afterwards.
+  \item New scopes are indented by four whitespaces, no tab characters are to be used.
+  \item Namespaces are indented just as other code is.
+  \item No spaces should be introduced before parentheses ().
+  \item Included header files should be sorted alphabetically.
+  \item The pointer asterisk should be left-aligned, i.e. \command{int* foo} instead of \command{int *foo}.
+\end{itemize}
+The continuous integration automatically checks if the code adheres to the defined format as described in Section~\ref{sec:ci}.
+
 \section{Writing Additional Modules}
 
 Given the modular structure of the framework, its functionality can be easily extended by adding a new module.
@@ -122,11 +172,12 @@ TestModule(Configuration& config, std::shared_ptr<Detector> detector): Module(st
 
 In addition to the constructor, each module can override the following methods:
 \begin{itemize}
-\item \parameter{initialise()}: Called after loading and constructing all modules and before starting the analysis loop.
+\item \parameter{initialize()}: Called after loading and constructing all modules and before starting the analysis loop.
 This method can for example be used to initialize histograms.
-\item \parameter{run(std::shared_ptr<Clipboard> clipboard)}: Called for every time frame or triggered event to be analyzed. The argument represents a pointer to the clipboard where the event data is stored.
+\item \parameter{run(const std::shared_ptr<Clipboard>& clipboard)}: Called for every time frame or triggered event to be analyzed. The argument represents a pointer to the clipboard where the event data is stored.
 A status code is returned to signal the framework whether to continue processing data or to end the run.
-\item \parameter{finalise()}: Called after processing all events in the run and before destructing the module.
+\item \parameter{finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard)}: Called after processing all events in the run and before destructing the module.
 Typically used to summarize statistics like the number of tracks used in the analysis or analysis results like the chip efficiency.
+The argument is a reference to a read-only instance of the clipboard with the persistent storage containing all collected data from the run.
 Any exceptions should be thrown from here instead of the destructor.
 \end{itemize}

@@ -23,17 +23,21 @@ Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detec
         throw InvalidCombinationError(
             m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
     } else if(m_config.has("time_cut_abs")) {
-        timeCut = m_config.get<double>("time_cut_abs");
+        time_cut_ = m_config.get<double>("time_cut_abs");
     } else {
-        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
+        time_cut_ = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
     }
-    neighbourRadiusRow = m_config.get<int>("neighbour_radius_row", 1);
-    neighbourRadiusCol = m_config.get<int>("neighbour_radius_col", 1);
-    chargeWeighting = m_config.get<bool>("charge_weighting", true);
-    useEarliestPixel = m_config.get<bool>("use_earliest_pixel", false);
+
+    m_config.setAlias("neighbor_radius_row", "neighbour_radius_row", true);
+    m_config.setAlias("neighbor_radius_col", "neighbour_radius_col", true);
+    neighbor_radius_row_ = m_config.get<int>("neighbor_radius_row", 1);
+    neighbor_radius_col_ = m_config.get<int>("neighbor_radius_col", 1);
+    charge_weighting_ = m_config.get<bool>("charge_weighting", true);
+    reject_by_ROI_ = m_config.get<bool>("reject_by_roi", false);
+    use_earliest_pixel_ = m_config.get<bool>("use_earliest_pixel", false);
 }
 
-void Clustering4D::initialise() {
+void Clustering4D::initialize() {
 
     // Cluster plots
     std::string title = m_detector->getName() + " Cluster size;cluster size;events";
@@ -81,37 +85,37 @@ void Clustering4D::initialise() {
 
     // Get resolution in time of detector and calculate time cut to be applied
     LOG(DEBUG) << "Time cut to be applied for " << m_detector->getName() << " is "
-               << Units::display(timeCut, {"ns", "us", "ms"});
+               << Units::display(time_cut_, {"ns", "us", "ms"});
 }
 
 // Sort function for pixels from low to high times
-bool Clustering4D::sortByTime(Pixel* pixel1, Pixel* pixel2) {
+bool Clustering4D::sortByTime(const std::shared_ptr<Pixel>& pixel1, const std::shared_ptr<Pixel>& pixel2) {
     return (pixel1->timestamp() < pixel2->timestamp());
 }
 
-StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode Clustering4D::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the pixels
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());
-    if(pixels == nullptr) {
+    if(pixels.empty()) {
         LOG(DEBUG) << "Detector " << m_detector->getName() << " does not have any pixels on the clipboard";
         return StatusCode::Success;
     }
-    LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << m_detector->getName();
+    LOG(DEBUG) << "Picked up " << pixels.size() << " pixels for device " << m_detector->getName();
 
     // Sort the pixels from low to high timestamp
-    std::sort(pixels->begin(), pixels->end(), sortByTime);
-    size_t totalPixels = pixels->size();
+    std::sort(pixels.begin(), pixels.end(), sortByTime);
+    size_t totalPixels = pixels.size();
 
     // Make the cluster storage
-    auto deviceClusters = std::make_shared<ClusterVector>();
+    ClusterVector deviceClusters;
 
     // Keep track of which pixels are used
     map<Pixel*, bool> used;
 
     // Start to cluster
-    for(size_t iP = 0; iP < pixels->size(); iP++) {
-        Pixel* pixel = (*pixels)[iP];
+    for(size_t iP = 0; iP < pixels.size(); iP++) {
+        Pixel* pixel = pixels[iP].get();
 
         // Check if pixel is used
         if(used[pixel]) {
@@ -119,7 +123,7 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
         }
 
         // Make the new cluster object
-        Cluster* cluster = new Cluster();
+        auto cluster = std::make_shared<Cluster>();
         LOG(DEBUG) << "==== New cluster";
 
         // Keep adding hits to the cluster until no more are found
@@ -133,30 +137,36 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
             nPixels = cluster->size();
             // Loop over all pixels
             for(size_t iNeighbour = (iP + 1); iNeighbour < totalPixels; iNeighbour++) {
-                Pixel* neighbour = (*pixels)[iNeighbour];
+                Pixel* neighbor = pixels[iNeighbour].get();
                 // Check if they are compatible in time with the cluster pixels
-                if(abs(neighbour->timestamp() - clusterTime) > timeCut)
+                if(abs(neighbor->timestamp() - clusterTime) > time_cut_)
                     break;
 
                 // Check if they have been used
-                if(used[neighbour])
+                if(used[neighbor])
                     continue;
 
                 // Check if they are touching cluster pixels
-                if(!touching(neighbour, cluster))
+                if(!touching(neighbor, cluster.get()))
                     continue;
 
                 // Add to cluster
-                cluster->addPixel(neighbour);
-                clusterTime = (neighbour->timestamp() < clusterTime) ? neighbour->timestamp() : clusterTime;
-                used[neighbour] = true;
-                LOG(DEBUG) << "Adding pixel: " << neighbour->column() << "," << neighbour->row() << " time "
-                           << Units::display(neighbour->timestamp(), {"ns", "us", "s"});
+                cluster->addPixel(neighbor);
+                clusterTime = (neighbor->timestamp() < clusterTime) ? neighbor->timestamp() : clusterTime;
+                used[neighbor] = true;
+                LOG(DEBUG) << "Adding pixel: " << neighbor->column() << "," << neighbor->row() << " time "
+                           << Units::display(neighbor->timestamp(), {"ns", "us", "s"});
             }
         }
 
         // Finalise the cluster and save it
-        calculateClusterCentre(cluster);
+        calculateClusterCentre(cluster.get());
+
+        // check if the cluster is within ROI
+        if(reject_by_ROI_ && !m_detector->isWithinROI(cluster.get())) {
+            LOG(DEBUG) << "Rejecting cluster outside of " << m_detector->getName() << " ROI";
+            continue;
+        }
 
         // Fill cluster histograms
         clusterSize->Fill(static_cast<double>(cluster->size()));
@@ -183,28 +193,28 @@ StatusCode Clustering4D::run(std::shared_ptr<Clipboard> clipboard) {
             }
         }
 
-        deviceClusters->push_back(cluster);
+        deviceClusters.push_back(cluster);
     }
 
-    clusterMultiplicity->Fill(static_cast<double>(deviceClusters->size()));
+    clusterMultiplicity->Fill(static_cast<double>(deviceClusters.size()));
 
     // Put the clusters on the clipboard
     clipboard->putData(deviceClusters, m_detector->getName());
-    LOG(DEBUG) << "Made " << deviceClusters->size() << " clusters for device " << m_detector->getName();
+    LOG(DEBUG) << "Made " << deviceClusters.size() << " clusters for device " << m_detector->getName();
 
     return StatusCode::Success;
 }
 
 // Check if a pixel touches any of the pixels in a cluster
-bool Clustering4D::touching(Pixel* neighbour, Cluster* cluster) {
+bool Clustering4D::touching(Pixel* neighbor, Cluster* cluster) {
 
     bool Touching = false;
 
     for(auto pixel : cluster->pixels()) {
-        int row_distance = abs(pixel->row() - neighbour->row());
-        int col_distance = abs(pixel->column() - neighbour->column());
+        int row_distance = abs(pixel->row() - neighbor->row());
+        int col_distance = abs(pixel->column() - neighbor->column());
 
-        if(row_distance <= neighbourRadiusRow && col_distance <= neighbourRadiusCol) {
+        if(row_distance <= neighbor_radius_row_ && col_distance <= neighbor_radius_col_) {
             if(row_distance > 1 || col_distance > 1) {
                 cluster->setSplit(true);
             }
@@ -216,15 +226,15 @@ bool Clustering4D::touching(Pixel* neighbour, Cluster* cluster) {
 }
 
 // Check if a pixel is close in time to the pixels of a cluster
-bool Clustering4D::closeInTime(Pixel* neighbour, Cluster* cluster) {
+bool Clustering4D::closeInTime(Pixel* neighbor, Cluster* cluster) {
 
     bool CloseInTime = false;
 
     auto pixels = cluster->pixels();
     for(auto& px : pixels) {
 
-        double timeDifference = abs(neighbour->timestamp() - px->timestamp());
-        if(timeDifference < timeCut)
+        double timeDifference = abs(neighbor->timestamp() - px->timestamp());
+        if(timeDifference < time_cut_)
             CloseInTime = true;
     }
     return CloseInTime;
@@ -263,7 +273,7 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         row_sum_chargeweighted += (pixel->row() * pixel->charge());
 
         // If charge is available: cluster timestamp = pixel with largest charge:
-        if(!found_charge_zero && !useEarliestPixel) {
+        if(!found_charge_zero && !use_earliest_pixel_) {
             if(pixel->charge() > maxcharge) {
                 timestamp = pixel->timestamp();
                 maxcharge = pixel->charge();
@@ -275,7 +285,7 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         }
     }
 
-    if(chargeWeighting && !found_charge_zero) {
+    if(charge_weighting_ && !found_charge_zero) {
         // Charge-weighted centre-of-gravity for cluster centre:
         // (here it's safe to divide by the charge as it cannot be zero due to !found_charge_zero)
         column = column_sum_chargeweighted / charge;

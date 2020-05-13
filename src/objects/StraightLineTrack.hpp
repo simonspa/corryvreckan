@@ -24,14 +24,6 @@ namespace corryvreckan {
     class StraightLineTrack : public Track {
 
     public:
-        // Constructors and destructors
-        StraightLineTrack();
-
-        // copy constructor
-        StraightLineTrack(const StraightLineTrack& track);
-
-        virtual StraightLineTrack* clone() const override { return new StraightLineTrack(*this); }
-
         // Minimisation operator used by Minuit. Minuit passes the current iteration of the parameters and checks if the chi2
         // is better or worse
         double operator()(const double* parameters);
@@ -48,21 +40,21 @@ namespace corryvreckan {
          * @param z positon
          * @return ROOT::Math::XYZPoint at z position
          */
-        ROOT::Math::XYZPoint intercept(double z) const override;
+        ROOT::Math::XYZPoint getIntercept(double z) const override;
 
         /**
          * @brief Get the track state at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        ROOT::Math::XYZPoint state(std::string) const override { return m_state; }
+        ROOT::Math::XYZPoint getState(std::string) const override { return m_state; }
 
         /**
          * @brief Get the track direction at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
-        ROOT::Math::XYZVector direction(std::string) const override { return m_direction; }
+        ROOT::Math::XYZVector getDirection(std::string) const override { return m_direction; }
 
         ROOT::Math::XYPoint distance(const Cluster* cluster) const;
 
@@ -83,15 +75,12 @@ namespace corryvreckan {
 
         void calculateResiduals();
         // Member variables
-        ROOT::Math::XYZVector m_direction;
-        ROOT::Math::XYZPoint m_state;
+        ROOT::Math::XYZVector m_direction{0, 0, 1.};
+        ROOT::Math::XYZPoint m_state{0, 0, 0.};
 
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(StraightLineTrack, 1)
     };
-
-    // Vector type declaration
-    using StraightLineTrackVector = std::vector<StraightLineTrack*>;
 } // namespace corryvreckan
 
 #endif // CORRYVRECKAN_STRAIGHTLINETRACK_H

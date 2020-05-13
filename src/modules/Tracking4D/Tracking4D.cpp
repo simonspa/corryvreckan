@@ -11,7 +11,9 @@
 #include "Tracking4D.h"
 #include <TCanvas.h>
 #include <TDirectory.h>
-#include "objects/KDTree.hpp"
+
+#include "tools/cuts.h"
+#include "tools/kdtree.h"
 
 using namespace corryvreckan;
 using namespace std;
@@ -24,60 +26,35 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
     m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
 
     // timing cut, relative (x * time_resolution) or absolute:
-    if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
-    } else if(m_config.has("time_cut_abs")) {
-        double time_cut_abs_ = m_config.get<double>("time_cut_abs");
-        for(auto& detector : get_detectors()) {
-            time_cuts_[detector] = time_cut_abs_;
-        }
-    } else {
-        double time_cut_rel_ = m_config.get<double>("time_cut_rel", 3.0);
-        for(auto& detector : get_detectors()) {
-            time_cuts_[detector] = detector->getTimeResolution() * time_cut_rel_;
-        }
-    }
-    minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
-    excludeDUT = m_config.get<bool>("exclude_dut", true);
-    requireDetectors = m_config.getArray<std::string>("require_detectors", {""});
-    timestampFrom = m_config.get<std::string>("timestamp_from", {});
-    if(!timestampFrom.empty() &&
-       std::find(requireDetectors.begin(), requireDetectors.end(), timestampFrom) == requireDetectors.end()) {
-        LOG(WARNING) << "Adding detector " << timestampFrom << " to list of required detectors as it provides the timestamp";
-        requireDetectors.push_back(timestampFrom);
+    time_cuts_ = corryvreckan::calculate_cut<double>("time_cut", 3.0, m_config, get_detectors());
+
+    min_hits_on_track_ = m_config.get<size_t>("min_hits_on_track", 6);
+    exclude_DUT_ = m_config.get<bool>("exclude_dut", true);
+    require_detectors_ = m_config.getArray<std::string>("require_detectors", {""});
+    timestamp_from_ = m_config.get<std::string>("timestamp_from", {});
+    if(!timestamp_from_.empty() &&
+       std::find(require_detectors_.begin(), require_detectors_.end(), timestamp_from_) == require_detectors_.end()) {
+        LOG(WARNING) << "Adding detector " << timestamp_from_
+                     << " to list of required detectors as it provides the timestamp";
+        require_detectors_.push_back(timestamp_from_);
     }
 
-    trackModel = m_config.get<std::string>("track_model", "straightline");
-    momentum = m_config.get<double>("momentum", Units::get<double>(5, "GeV"));
-    volumeRadiationLength = m_config.get<double>("volume_radiation_length", Units::get<double>(304.2, "m"));
-    useVolumeScatterer = m_config.get<bool>("volume_scattering", false);
-
+    track_model_ = m_config.get<std::string>("track_model", "straightline");
+    momentum_ = m_config.get<double>("momentum", Units::get<double>(5, "GeV"));
+    volume_radiation_length_ = m_config.get<double>("volume_radiation_length", Units::get<double>(304.2, "m"));
+    use_volume_scatterer_ = m_config.get<bool>("volume_scattering", false);
+    reject_by_ROI_ = m_config.get<bool>("reject_by_roi", false);
     // print a warning if volumeScatterer are used as this causes fit failures
     // that are still not understood
-    if(useVolumeScatterer) {
+    if(use_volume_scatterer_) {
         LOG_ONCE(WARNING) << "Taking volume scattering effects into account is still WIP and causes the GBL to fail - these "
                              "tracks are rejected";
     }
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            m_config, {"spatial_cut_rel", "spatial_cut_abs"}, "Absolute and relative spatial cuts are mutually exclusive.");
-    } else if(m_config.has("spatial_cut_abs")) {
-        auto spatial_cut_abs_ = m_config.get<XYVector>("spatial_cut_abs");
-        for(auto& detector : get_detectors()) {
-            spatial_cuts_[detector] = spatial_cut_abs_;
-        }
-    } else {
-        // default is 3.0 * spatial_resolution
-        auto spatial_cut_rel_ = m_config.get<double>("spatial_cut_rel", 3.0);
-        for(auto& detector : get_detectors()) {
-            spatial_cuts_[detector] = detector->getSpatialResolution() * spatial_cut_rel_;
-        }
-    }
+    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, m_config, get_detectors());
 }
 
-void Tracking4D::initialise() {
+void Tracking4D::initialize() {
 
     // Set up histograms
     std::string title = "Track #chi^{2};#chi^{2};events";
@@ -116,7 +93,7 @@ void Tracking4D::initialise() {
         kinkY[detectorID] = new TH1F("kinkY", title.c_str(), 500, -0.01, -0.01);
 
         // Do not create plots for detectors not participating in the tracking:
-        if(excludeDUT && detector->isDUT()) {
+        if(exclude_DUT_ && detector->isDUT()) {
             continue;
         }
 
@@ -148,7 +125,7 @@ void Tracking4D::initialise() {
 double Tracking4D::calculate_average_timestamp(const Track* track) {
     double sum_weighted_time = 0;
     double sum_weights = 0;
-    for(auto& cluster : track->clusters()) {
+    for(auto& cluster : track->getClusters()) {
         double weight = 1 / (time_cuts_[get_detector(cluster->getDetectorID())]);
         double time_of_flight = static_cast<double>(Units::convert(cluster->global().z(), "mm") / (299.792458));
         sum_weights += weight;
@@ -157,30 +134,28 @@ double Tracking4D::calculate_average_timestamp(const Track* track) {
     return (sum_weighted_time / sum_weights);
 }
 
-StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     LOG(DEBUG) << "Start of event";
     // Container for all clusters, and detectors in tracking
-    map<std::shared_ptr<Detector>, KDTree*> trees;
+    map<std::shared_ptr<Detector>, KDTree<Cluster>> trees;
 
     std::shared_ptr<Detector> reference_first, reference_last;
     for(auto& detector : get_detectors()) {
-        if(excludeDUT && detector->isDUT()) {
+        if(exclude_DUT_ && detector->isDUT()) {
             LOG(DEBUG) << "Skipping DUT plane.";
             continue;
         }
 
         // Get the clusters
         auto tempClusters = clipboard->getData<Cluster>(detector->getName());
-        if(tempClusters == nullptr || tempClusters->size() == 0) {
-            LOG(DEBUG) << "Detector " << detector->getName() << " does not have any clusters on the clipboard";
-        } else {
+        LOG(DEBUG) << "Detector " << detector->getName() << " has " << tempClusters.size() << " clusters on the clipboard";
+        if(!tempClusters.empty()) {
             // Store them
-            LOG(DEBUG) << "Picked up " << tempClusters->size() << " clusters from " << detector->getName();
+            LOG(DEBUG) << "Picked up " << tempClusters.size() << " clusters from " << detector->getName();
 
-            KDTree* clusterTree = new KDTree();
-            clusterTree->buildTimeTree(*tempClusters);
-            trees[detector] = clusterTree;
+            trees.emplace(std::piecewise_construct, std::make_tuple(detector), std::make_tuple());
+            trees[detector].buildTrees(tempClusters);
 
             // Get first and last detectors with clusters on them:
             if(!reference_first) {
@@ -195,25 +170,19 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
         // Fill histogram
         tracksPerEvent->Fill(0);
 
-        // Clean up tree objects
-        for(auto tree = trees.cbegin(); tree != trees.cend();) {
-            delete tree->second;
-            tree = trees.erase(tree);
-        }
-
         LOG(DEBUG) << "Too few hit detectors for finding a track; end of event.";
         return StatusCode::Success;
     }
 
     // Output track container
-    auto tracks = std::make_shared<TrackVector>();
+    TrackVector tracks;
 
     // Time cut for combinations of reference clusters and for reference track with additional detector
     auto time_cut_ref = std::max(time_cuts_[reference_first], time_cuts_[reference_last]);
     auto time_cut_ref_track = std::min(time_cuts_[reference_first], time_cuts_[reference_last]);
 
-    for(auto& clusterFirst : trees[reference_first]->getAllClusters()) {
-        for(auto& clusterLast : trees[reference_last]->getAllClusters()) {
+    for(auto& clusterFirst : trees[reference_first].getAllElements()) {
+        for(auto& clusterLast : trees[reference_last].getAllElements()) {
             LOG(DEBUG) << "Looking at next reference cluster pair";
 
             if(std::fabs(clusterFirst->timestamp() - clusterLast->timestamp()) > time_cut_ref) {
@@ -223,20 +192,21 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
             // The track finding is based on a straight line. Therefore a refTrack to extrapolate to the next plane is used
             StraightLineTrack refTrack;
-            refTrack.addCluster(clusterFirst);
-            refTrack.addCluster(clusterLast);
+            refTrack.addCluster(clusterFirst.get());
+            refTrack.addCluster(clusterLast.get());
             auto averageTimestamp = calculate_average_timestamp(&refTrack);
             refTrack.setTimestamp(averageTimestamp);
 
             // Make a new track
-            auto track = Track::Factory(trackModel);
-            track->addCluster(clusterFirst);
-            track->addCluster(clusterLast);
+            auto track = Track::Factory(track_model_);
+            track->addCluster(clusterFirst.get());
+            track->addCluster(clusterLast.get());
+
             track->setTimestamp(averageTimestamp);
-            if(useVolumeScatterer) {
-                track->setVolumeScatter(volumeRadiationLength);
+            if(use_volume_scatterer_) {
+                track->setVolumeScatter(volume_radiation_length_);
             }
-            track->setParticleMomentum(momentum);
+            track->setParticleMomentum(momentum_);
 
             // Loop over each subsequent plane and look for a cluster within the timing cuts
             size_t detector_nr = 2;
@@ -253,7 +223,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                     continue;
                 }
 
-                if(excludeDUT && detector->isDUT()) {
+                if(exclude_DUT_ && detector->isDUT()) {
                     LOG(DEBUG) << "Skipping DUT plane.";
                     continue;
                 }
@@ -261,9 +231,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 // Determine whether a track can still be assembled given the number of current hits and the number of
                 // detectors to come. Reduces computing time.
                 detector_nr++;
-                if(refTrack.nClusters() + (trees.size() - detector_nr + 1) < minHitsOnTrack) {
-                    LOG(DEBUG) << "No chance to find a track - too few detectors left: " << refTrack.nClusters() << " + "
-                               << trees.size() << " - " << detector_nr << " < " << minHitsOnTrack;
+                if(refTrack.getNClusters() + (trees.size() - detector_nr + 1) < min_hits_on_track_) {
+                    LOG(DEBUG) << "No chance to find a track - too few detectors left: " << refTrack.getNClusters() << " + "
+                               << trees.size() << " - " << detector_nr << " < " << min_hits_on_track_;
                     continue;
                 }
 
@@ -272,8 +242,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                     continue;
                 }
 
-                // Get all neighbours within the timing cut
-                LOG(DEBUG) << "Searching for neighbouring cluster on device " << detector->getName();
+                // Get all neighbors within the timing cut
+                LOG(DEBUG) << "Searching for neighboring cluster on device " << detector->getName();
                 LOG(DEBUG) << "- reference time is " << Units::display(refTrack.timestamp(), {"ns", "us", "s"});
                 Cluster* closestCluster = nullptr;
 
@@ -284,9 +254,9 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 double timeCut = std::max(time_cut_ref_track, time_cuts_[detector]);
                 LOG(DEBUG) << "Using timing cut of " << Units::display(timeCut, {"ns", "us", "s"});
 
-                auto neighbours = trees[detector]->getAllClustersInTimeWindow(refTrack.timestamp(), timeCut);
+                auto neighbors = trees[detector].getAllElementsInTimeWindow(refTrack.timestamp(), timeCut);
 
-                LOG(DEBUG) << "- found " << neighbours.size() << " neighbours within the correct time window";
+                LOG(DEBUG) << "- found " << neighbors.size() << " neighbors within the correct time window";
 
                 // Now look for the spatially closest cluster on the next plane
                 refTrack.fit();
@@ -295,8 +265,8 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 double interceptX = interceptPoint.X();
                 double interceptY = interceptPoint.Y();
 
-                for(size_t ne = 0; ne < neighbours.size(); ne++) {
-                    Cluster* newCluster = neighbours[ne];
+                for(size_t ne = 0; ne < neighbors.size(); ne++) {
+                    auto newCluster = neighbors[ne].get();
 
                     // Calculate the distance to the previous plane's cluster/intercept
                     double distanceX = interceptX - newCluster->global().x();
@@ -344,7 +314,7 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
 
             // check if track has required detector(s):
             auto foundRequiredDetector = [this](Track* t) {
-                for(auto& requireDet : requireDetectors) {
+                for(auto& requireDet : require_detectors_) {
                     if(!requireDet.empty() && !t->hasDetector(requireDet)) {
                         LOG(DEBUG) << "No cluster from required detector " << requireDet << " on the track.";
                         return false;
@@ -352,55 +322,65 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 }
                 return true;
             };
-            if(!foundRequiredDetector(track)) {
-                delete track;
+            if(!foundRequiredDetector(track.get())) {
                 continue;
             }
 
             // Now should have a track with one cluster from each plane
-            if(track->nClusters() < minHitsOnTrack) {
-                LOG(DEBUG) << "Not enough clusters on the track, found " << track->nClusters() << " but " << minHitsOnTrack
-                           << " required.";
-                delete track;
+            if(track->getNClusters() < min_hits_on_track_) {
+                LOG(DEBUG) << "Not enough clusters on the track, found " << track->getNClusters() << " but "
+                           << min_hits_on_track_ << " required.";
                 continue;
             }
-            // Fit the track and save it
+
+            // Fit the track
             track->fit();
+
+            if(reject_by_ROI_ && track->isFitted()) {
+                // check if the track is within ROI for all detectors
+                auto ds = get_detectors();
+                auto out_of_roi =
+                    std::find_if(ds.begin(), ds.end(), [track](const auto& d) { return !d->isWithinROI(track.get()); });
+                if(out_of_roi != ds.end()) {
+                    LOG(DEBUG) << "Rejecting track outside of ROI of detetctor " << out_of_roi->get()->getName();
+                    continue;
+                }
+            }
+            // save the track
             if(track->isFitted()) {
-                tracks->push_back(track);
+                tracks.push_back(track);
             } else {
                 LOG_N(WARNING, 100) << "Rejected a track due to failure in fitting";
-                delete track;
                 continue;
             }
             // Fill histograms
-            trackChi2->Fill(track->chi2());
-            clustersPerTrack->Fill(static_cast<double>(track->nClusters()));
-            trackChi2ndof->Fill(track->chi2ndof());
-            if(!(trackModel == "gbl")) {
-                trackAngleX->Fill(atan(track->direction(track->clusters().front()->detectorID()).X()));
-                trackAngleY->Fill(atan(track->direction(track->clusters().front()->detectorID()).Y()));
+            trackChi2->Fill(track->getChi2());
+            clustersPerTrack->Fill(static_cast<double>(track->getNClusters()));
+            trackChi2ndof->Fill(track->getChi2ndof());
+            if(!(track_model_ == "gbl")) {
+                trackAngleX->Fill(atan(track->getDirection(track->getClusters().front()->detectorID()).X()));
+                trackAngleY->Fill(atan(track->getDirection(track->getClusters().front()->detectorID()).Y()));
             }
             // Make residuals
-            auto trackClusters = track->clusters();
+            auto trackClusters = track->getClusters();
             for(auto& trackCluster : trackClusters) {
                 string detectorID = trackCluster->detectorID();
-                residualsX[detectorID]->Fill(track->residual(detectorID).X());
-                pullX[detectorID]->Fill(track->residual(detectorID).X() / track->clusters().front()->errorX());
-                pullY[detectorID]->Fill(track->residual(detectorID).Y() / track->clusters().front()->errorY());
+                residualsX[detectorID]->Fill(track->getResidual(detectorID).X());
+                pullX[detectorID]->Fill(track->getResidual(detectorID).X() / track->getClusters().front()->errorX());
+                pullY[detectorID]->Fill(track->getResidual(detectorID).Y() / track->getClusters().front()->errorY());
                 if(trackCluster->columnWidth() == 1)
-                    residualsXwidth1[detectorID]->Fill(track->residual(detectorID).X());
+                    residualsXwidth1[detectorID]->Fill(track->getResidual(detectorID).X());
                 if(trackCluster->columnWidth() == 2)
-                    residualsXwidth2[detectorID]->Fill(track->residual(detectorID).X());
+                    residualsXwidth2[detectorID]->Fill(track->getResidual(detectorID).X());
                 if(trackCluster->columnWidth() == 3)
-                    residualsXwidth3[detectorID]->Fill(track->residual(detectorID).X());
-                residualsY[detectorID]->Fill(track->residual(detectorID).Y());
+                    residualsXwidth3[detectorID]->Fill(track->getResidual(detectorID).X());
+                residualsY[detectorID]->Fill(track->getResidual(detectorID).Y());
                 if(trackCluster->rowWidth() == 1)
-                    residualsYwidth1[detectorID]->Fill(track->residual(detectorID).Y());
+                    residualsYwidth1[detectorID]->Fill(track->getResidual(detectorID).Y());
                 if(trackCluster->rowWidth() == 2)
-                    residualsYwidth2[detectorID]->Fill(track->residual(detectorID).Y());
+                    residualsYwidth2[detectorID]->Fill(track->getResidual(detectorID).Y());
                 if(trackCluster->rowWidth() == 3)
-                    residualsYwidth3[detectorID]->Fill(track->residual(detectorID).Y());
+                    residualsYwidth3[detectorID]->Fill(track->getResidual(detectorID).Y());
             }
 
             for(auto& detector : get_detectors()) {
@@ -418,33 +398,27 @@ StatusCode Tracking4D::run(std::shared_ptr<Clipboard> clipboard) {
                 kinkY.at(det)->Fill(kink.y());
             }
 
-            if(timestampFrom.empty()) {
+            if(timestamp_from_.empty()) {
                 // Improve the track timestamp by taking the average of all planes
-                auto timestamp = calculate_average_timestamp(track);
+                auto timestamp = calculate_average_timestamp(track.get());
                 track->setTimestamp(timestamp);
                 LOG(DEBUG) << "Using average cluster timestamp of " << Units::display(timestamp, "us")
                            << " as track timestamp.";
             } else {
                 // use timestamp of required detector:
-                double track_timestamp = track->getClusterFromDetector(timestampFrom)->timestamp();
-                LOG(DEBUG) << "Using timestamp of detector " << timestampFrom
+                double track_timestamp = track->getClusterFromDetector(timestamp_from_)->timestamp();
+                LOG(DEBUG) << "Using timestamp of detector " << timestamp_from_
                            << " as track timestamp: " << Units::display(track_timestamp, "us");
                 track->setTimestamp(track_timestamp);
             }
         }
     }
 
-    tracksPerEvent->Fill(static_cast<double>(tracks->size()));
+    tracksPerEvent->Fill(static_cast<double>(tracks.size()));
 
     // Save the tracks on the clipboard
-    if(tracks->size() > 0) {
+    if(tracks.size() > 0) {
         clipboard->putData(tracks);
-    }
-
-    // Clean up tree objects
-    for(auto tree = trees.cbegin(); tree != trees.cend();) {
-        delete tree->second;
-        tree = trees.erase(tree);
     }
 
     LOG(DEBUG) << "End of event";

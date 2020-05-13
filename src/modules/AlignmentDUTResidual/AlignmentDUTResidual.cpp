@@ -16,8 +16,8 @@
 using namespace corryvreckan;
 
 // Global container declarations
-TrackVector globalTracks;
-std::shared_ptr<Detector> globalDetector;
+TrackVector AlignmentDUTResidual::globalTracks;
+std::shared_ptr<Detector> AlignmentDUTResidual::globalDetector;
 
 AlignmentDUTResidual::AlignmentDUTResidual(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {
@@ -39,7 +39,7 @@ AlignmentDUTResidual::AlignmentDUTResidual(Configuration config, std::shared_ptr
     LOG(INFO) << "Aligning detector \"" << m_detector->getName() << "\"";
 }
 
-void AlignmentDUTResidual::initialise() {
+void AlignmentDUTResidual::initialize() {
 
     auto detname = m_detector->getName();
     std::string title = detname + " Residuals X;x_{track}-x [#mum];events";
@@ -56,48 +56,48 @@ void AlignmentDUTResidual::initialise() {
     profile_dX_Y = new TProfile("profile_dX_Y", title.c_str(), 1000, -500, 500);
 }
 
-StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AlignmentDUTResidual::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the tracks
     auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
-        return StatusCode::Success;
-    }
+
+    TrackVector alignmenttracks;
+    std::vector<Cluster*> alignmentclusters;
 
     // Make a local copy and store it
-    for(auto& track : (*tracks)) {
+    for(auto& track : tracks) {
+        auto associated_clusters = track->getAssociatedClusters(m_detector->getName());
 
         // Apply selection to tracks for alignment
         if(m_pruneTracks) {
             // Only allow one associated cluster:
-            if(track->associatedClusters(m_detector->getName()).size() > m_maxAssocClusters) {
-                LOG(DEBUG) << "Discarded track with " << track->associatedClusters(m_detector->getName()).size()
-                           << " associated clusters";
+            if(associated_clusters.size() > m_maxAssocClusters) {
+                LOG(DEBUG) << "Discarded track with " << associated_clusters.size() << " associated clusters";
                 m_discardedtracks++;
                 continue;
             }
 
             // Only allow tracks with certain Chi2/NDoF:
-            if(track->chi2ndof() > m_maxTrackChi2) {
-                LOG(DEBUG) << "Discarded track with Chi2/NDoF - " << track->chi2ndof();
+            if(track->getChi2ndof() > m_maxTrackChi2) {
+                LOG(DEBUG) << "Discarded track with Chi2/NDoF - " << track->getChi2ndof();
                 m_discardedtracks++;
                 continue;
             }
         }
         LOG(TRACE) << "Cloning track with track model \"" << track->getType() << "\" for alignment";
-        auto alignmentTrack = track->clone();
-        m_alignmenttracks.push_back(alignmentTrack);
+
+        // Keep this track on persistent storage for alignment:
+        alignmenttracks.push_back(track);
+        // Append associated clusters to the list we want to keep:
+        alignmentclusters.insert(alignmentclusters.end(), associated_clusters.begin(), associated_clusters.end());
 
         // Find the cluster that needs to have its position recalculated
-        for(auto& associatedCluster : track->associatedClusters(m_detector->getName())) {
-            if(associatedCluster->detectorID() != m_detector->getName()) {
-                continue;
-            }
+        for(auto& associated_cluster : associated_clusters) {
             // Local position of the cluster
-            auto position = associatedCluster->local();
+            auto position = associated_cluster->local();
 
             // Get the track intercept with the detector
-            auto trackIntercept = m_detector->getIntercept(track);
+            auto trackIntercept = m_detector->getIntercept(track.get());
             auto intercept = m_detector->globalToLocal(trackIntercept);
 
             // Calculate the local residuals
@@ -122,6 +122,11 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
         }
     }
 
+    // Store all tracks we want for alignment on the permanent storage:
+    clipboard->putPersistentData(alignmenttracks);
+    // Copy the objects of all associated clusters on the clipboard to persistent storage:
+    clipboard->copyToPersistentData(alignmentclusters, m_detector->getName());
+
     // Otherwise keep going
     return StatusCode::Success;
 }
@@ -133,39 +138,37 @@ StatusCode AlignmentDUTResidual::run(std::shared_ptr<Clipboard> clipboard) {
 void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result, Double_t* par, Int_t) {
 
     // Pick up new alignment conditions
-    globalDetector->displacement(XYZPoint(par[0], par[1], par[2]));
-    globalDetector->rotation(XYZVector(par[3], par[4], par[5]));
+    AlignmentDUTResidual::globalDetector->displacement(XYZPoint(par[0], par[1], par[2]));
+    AlignmentDUTResidual::globalDetector->rotation(XYZVector(par[3], par[4], par[5]));
 
     // Apply new alignment conditions
-    globalDetector->update();
-    LOG(DEBUG) << "Updated parameters for " << globalDetector->getName();
+    AlignmentDUTResidual::globalDetector->update();
+    LOG(DEBUG) << "Updated parameters for " << AlignmentDUTResidual::globalDetector->getName();
 
     // The chi2 value to be returned
     result = 0.;
 
-    LOG(DEBUG) << "Looping over " << globalTracks.size() << " tracks";
+    LOG(DEBUG) << "Looping over " << AlignmentDUTResidual::globalTracks.size() << " tracks";
 
     // Loop over all tracks
-    for(auto& track : globalTracks) {
-        LOG(TRACE) << "track has chi2 " << track->chi2();
-        auto detector = track->clusters().front()->detectorID();
-        LOG(TRACE) << "- track has gradient " << track->direction(detector) << " at detector " << detector;
+    for(auto& track : AlignmentDUTResidual::globalTracks) {
+        LOG(TRACE) << "track has chi2 " << track->getChi2();
 
         // Find the cluster that needs to have its position recalculated
-        for(auto& associatedCluster : track->associatedClusters(globalDetector->getName())) {
-            if(associatedCluster->detectorID() != globalDetector->getName()) {
+        for(auto& associatedCluster : track->getAssociatedClusters(AlignmentDUTResidual::globalDetector->getName())) {
+            if(associatedCluster->detectorID() != AlignmentDUTResidual::globalDetector->getName()) {
                 continue;
             }
 
             // Get the track intercept with the detector
             auto position = associatedCluster->local();
-            auto trackIntercept = globalDetector->getIntercept(track);
-            auto intercept = globalDetector->globalToLocal(trackIntercept);
+            auto trackIntercept = AlignmentDUTResidual::globalDetector->getIntercept(track.get());
+            auto intercept = AlignmentDUTResidual::globalDetector->globalToLocal(trackIntercept);
 
             /*
             // Recalculate the global position from the local
             auto positionLocal = associatedCluster->local();
-            auto position = globalDetector->localToGlobal(positionLocal);
+            auto position = AlignmentDUTResidual::globalDetector->localToGlobal(positionLocal);
 
             // Get the track intercept with the detector
             ROOT::Math::XYZPoint intercept = track->intercept(position.Z());
@@ -188,7 +191,7 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
     }
 }
 
-void AlignmentDUTResidual::finalise() {
+void AlignmentDUTResidual::finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) {
 
     if(m_discardedtracks > 0) {
         LOG(STATUS) << "Discarded " << m_discardedtracks << " input tracks.";
@@ -199,7 +202,7 @@ void AlignmentDUTResidual::finalise() {
     residualFitter->SetFCN(MinimiseResiduals);
 
     // Set the global parameters
-    globalTracks = m_alignmenttracks;
+    AlignmentDUTResidual::globalTracks = clipboard->getPersistentData<Track>();
 
     // Set the printout arguments of the fitter
     Double_t arglist[10];
@@ -210,27 +213,30 @@ void AlignmentDUTResidual::finalise() {
     arglist[0] = 1000;  // number of function calls
     arglist[1] = 0.001; // tolerance
 
-    globalDetector = m_detector;
+    AlignmentDUTResidual::globalDetector = m_detector;
     auto name = m_detector->getName();
 
-    size_t n_associatedClusters = 0;
+    size_t n_getAssociatedClusters = 0;
     // count associated clusters:
-    for(auto& track : globalTracks) {
-        ClusterVector associatedClusters = track->associatedClusters(name);
+    for(auto& track : AlignmentDUTResidual::globalTracks) {
+        auto associatedClusters = track->getAssociatedClusters(name);
         for(auto& associatedCluster : associatedClusters) {
             std::string detectorID = associatedCluster->detectorID();
             if(detectorID != name) {
                 continue;
             }
-            n_associatedClusters++;
+            n_getAssociatedClusters++;
             break;
         }
     }
-    if(n_associatedClusters < globalTracks.size() / 2) {
-        LOG(WARNING) << "Only " << 100 * static_cast<double>(n_associatedClusters) / static_cast<double>(globalTracks.size())
+    if(n_getAssociatedClusters < AlignmentDUTResidual::globalTracks.size() / 2) {
+        LOG(WARNING) << "Only "
+                     << 100 * static_cast<double>(n_getAssociatedClusters) /
+                            static_cast<double>(AlignmentDUTResidual::globalTracks.size())
                      << "% of all tracks have associated clusters on detector " << name;
     } else {
-        LOG(INFO) << 100 * static_cast<double>(n_associatedClusters) / static_cast<double>(globalTracks.size())
+        LOG(INFO) << 100 * static_cast<double>(n_getAssociatedClusters) /
+                         static_cast<double>(AlignmentDUTResidual::globalTracks.size())
                   << "% of all tracks have associated clusters on detector " << name;
     }
 
@@ -282,4 +288,8 @@ void AlignmentDUTResidual::finalise() {
     LOG(STATUS) << m_detector->getName() << " new alignment: " << std::endl
                 << "T" << Units::display(m_detector->displacement(), {"mm", "um"}) << " R"
                 << Units::display(m_detector->rotation(), {"deg"});
+
+    // Clean up local track storage
+    AlignmentDUTResidual::globalTracks.clear();
+    AlignmentDUTResidual::globalDetector.reset();
 }

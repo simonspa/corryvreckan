@@ -18,7 +18,7 @@ using namespace std;
 AnalysisPowerPulsing::AnalysisPowerPulsing(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {}
 
-void AnalysisPowerPulsing::initialise() {
+void AnalysisPowerPulsing::initialize() {
 
     // int timeN = 1500000;
     // int timeN = 3000000;
@@ -52,7 +52,7 @@ void AnalysisPowerPulsing::initialise() {
     v_minTime.clear();
 }
 
-StatusCode AnalysisPowerPulsing::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AnalysisPowerPulsing::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     LOG(TRACE) << "Power on time: " << static_cast<double>(m_powerOnTime) / (4096. * 40000000.);
     LOG(TRACE) << "Power off time: " << static_cast<double>(m_powerOffTime) / (4096. * 40000000.);
@@ -103,57 +103,50 @@ StatusCode AnalysisPowerPulsing::run(std::shared_ptr<Clipboard> clipboard) {
     // Now update the power pulsing with any new signals
     auto spidrData = clipboard->getData<SpidrSignal>(m_detector->getName());
 
-    // If there are new signals
-    if(spidrData != nullptr) {
-        // Loop over all signals registered
-        for(auto& signal : (*spidrData)) {
-            // Register the power on or power off time, and whether the shutter is
-            // open or not
-            if(signal->type() == "shutterOpen") {
-                // There may be multiple power on/off in 1 time window. At the moment,
-                // take earliest if within 1ms -> 10us
-                //     if(abs(Units::convert(signal->timestamp() - m_shutterOpenTime, "s")) < 0.00001) {
-                //     //if(fabs(double(signal->timestamp() - m_shutterOpenTime) / (4096. * 40000000.)) < 0.001){
-                //         //LOG(WARNING) << "Removed a shutterOpen signal "<<hex<< signal <<dec<<" , too close to the
-                //         previous one: "<<double(signal->timestamp() - m_shutterOpenTime) / (4096. * 40000000.);
-                //         LOG(WARNING) << "Removed a shutterOpen signal "<<hex<< signal <<dec<<" , too close to the previous
-                //         one: "<<Units::display(signal->timestamp() - m_shutterOpenTime,  {"ns", "us", "s"}); continue;
-                //     }
-                openSignalVersusTime->Fill(static_cast<double>(Units::convert(signal->timestamp(), "s")));
-                // openSignalVersusTime->Fill( (double)(signal->timestamp()) / (4096. * 40000000.));
-                // openSignalVersusTime->Fill( (double)(signal->timestamp() - oldOpen) / (4096. * 40000000.));
-                m_shutterOpenTime = signal->timestamp();
-                // LOG(DEBUG) << "Shutter opened at " << double(m_shutterOpenTime) / (4096. * 40000000.);
-                LOG(DEBUG) << "Shutter opened at " << Units::display(m_shutterOpenTime, {"ns", "us"}); //, "s"});
-            }
-            if(signal->type() == "shutterClosed") {
-                // There may be multiple power on/off in 1 time window. At the moment,
-                // take earliest if within 1ms
-                // if(fabs(double(signal->timestamp() - m_shutterCloseTime) / (4096. * 40000000.)) < 0.001){
-                //     if(abs(Units::convert(signal->timestamp() - m_shutterCloseTime, "s")) < 0.00001){
-                //         LOG(WARNING) << "Removed a shutterClose signal "<<hex<< signal <<dec<<" , too close to the
-                //         previous one: "<<Units::display(signal->timestamp() - m_shutterCloseTime,  {"ns", "us", "s"});
-                //         continue;
-                //     }
-                closeSignalVersusTime->Fill(static_cast<double>(Units::convert(signal->timestamp(), "s")));
-                // closeSignalVersusTime->Fill((double)(signal->timestamp() - oldClose ) / (4096. * 40000000.));
-                m_shutterCloseTime = signal->timestamp();
-                // LOG(DEBUG) << "Shutter closed at " << double(m_shutterCloseTime) / (4096. * 40000000.);
-                LOG(DEBUG) << "Shutter closed at " << Units::display(m_shutterCloseTime, {"ns", "us"}); //, "s"});
-            }
+    // Loop over all signals registered
+    for(auto& signal : spidrData) {
+        // Register the power on or power off time, and whether the shutter is
+        // open or not
+        if(signal->type() == "shutterOpen") {
+            // There may be multiple power on/off in 1 time window. At the moment,
+            // take earliest if within 1ms -> 10us
+            //     if(abs(Units::convert(signal->timestamp() - m_shutterOpenTime, "s")) < 0.00001) {
+            //     //if(fabs(double(signal->timestamp() - m_shutterOpenTime) / (4096. * 40000000.)) < 0.001){
+            //         //LOG(WARNING) << "Removed a shutterOpen signal "<<hex<< signal <<dec<<" , too close to the
+            //         previous one: "<<double(signal->timestamp() - m_shutterOpenTime) / (4096. * 40000000.);
+            //         LOG(WARNING) << "Removed a shutterOpen signal "<<hex<< signal <<dec<<" , too close to the previous
+            //         one: "<<Units::display(signal->timestamp() - m_shutterOpenTime,  {"ns", "us", "s"}); continue;
+            //     }
+            openSignalVersusTime->Fill(static_cast<double>(Units::convert(signal->timestamp(), "s")));
+            // openSignalVersusTime->Fill( (double)(signal->timestamp()) / (4096. * 40000000.));
+            // openSignalVersusTime->Fill( (double)(signal->timestamp() - oldOpen) / (4096. * 40000000.));
+            m_shutterOpenTime = signal->timestamp();
+            // LOG(DEBUG) << "Shutter opened at " << double(m_shutterOpenTime) / (4096. * 40000000.);
+            LOG(DEBUG) << "Shutter opened at " << Units::display(m_shutterOpenTime, {"ns", "us"}); //, "s"});
+        }
+        if(signal->type() == "shutterClosed") {
+            // There may be multiple power on/off in 1 time window. At the moment,
+            // take earliest if within 1ms
+            // if(fabs(double(signal->timestamp() - m_shutterCloseTime) / (4096. * 40000000.)) < 0.001){
+            //     if(abs(Units::convert(signal->timestamp() - m_shutterCloseTime, "s")) < 0.00001){
+            //         LOG(WARNING) << "Removed a shutterClose signal "<<hex<< signal <<dec<<" , too close to the
+            //         previous one: "<<Units::display(signal->timestamp() - m_shutterCloseTime,  {"ns", "us", "s"});
+            //         continue;
+            //     }
+            closeSignalVersusTime->Fill(static_cast<double>(Units::convert(signal->timestamp(), "s")));
+            // closeSignalVersusTime->Fill((double)(signal->timestamp() - oldClose ) / (4096. * 40000000.));
+            m_shutterCloseTime = signal->timestamp();
+            // LOG(DEBUG) << "Shutter closed at " << double(m_shutterCloseTime) / (4096. * 40000000.);
+            LOG(DEBUG) << "Shutter closed at " << Units::display(m_shutterCloseTime, {"ns", "us"}); //, "s"});
         }
     }
 
     // Get the DUT clusters from the clipboard
     auto clusters = clipboard->getData<Cluster>(m_detector->getName());
-    if(clusters == nullptr) {
-        LOG(DEBUG) << "No DUT clusters on the clipboard!";
-        return StatusCode::Success;
-    }
 
     double minTimePerEvent = 99999.;
     double minCluster = 99999.;
-    for(auto& cluster : (*clusters)) {
+    for(auto& cluster : clusters) {
 
         // Fill the tot histograms on the first run
         // if(first_track == 0){

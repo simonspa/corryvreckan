@@ -23,7 +23,7 @@ AnalysisTelescope::AnalysisTelescope(Configuration config, std::vector<std::shar
     chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
 }
 
-void AnalysisTelescope::initialise() {
+void AnalysisTelescope::initialize() {
 
     // Initialise biased telescope residuals per telescope device and telescope resolution plots (using MCparticles) at the
     // position of the DUTs
@@ -64,12 +64,11 @@ void AnalysisTelescope::initialise() {
     }
 }
 
-ROOT::Math::XYZPoint AnalysisTelescope::closestApproach(ROOT::Math::XYZPoint position,
-                                                        std::shared_ptr<MCParticleVector> particles) {
+ROOT::Math::XYZPoint AnalysisTelescope::closestApproach(ROOT::Math::XYZPoint position, const MCParticleVector& particles) {
     // Find the closest MC particle
     double smallestDistance(DBL_MAX);
     ROOT::Math::XYZPoint particlePosition;
-    for(auto& particle : (*particles)) {
+    for(auto& particle : particles) {
         ROOT::Math::XYZPoint entry = particle->getLocalStart();
         ROOT::Math::XYZPoint exit = particle->getLocalEnd();
         ROOT::Math::XYZPoint centre((entry.X() + exit.X()) / 2., (entry.Y() + exit.Y()) / 2., (entry.Z() + exit.Z()) / 2.);
@@ -82,31 +81,26 @@ ROOT::Math::XYZPoint AnalysisTelescope::closestApproach(ROOT::Math::XYZPoint pos
     return particlePosition;
 }
 
-StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AnalysisTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
-    if(tracks == nullptr) {
-        LOG(DEBUG) << "No tracks on the clipboard";
-        return StatusCode::Success;
-    }
-
-    for(auto& track : (*tracks)) {
+    for(auto& track : tracks) {
 
         // Cut on the chi2/ndof
-        if(track->chi2ndof() > chi2ndofCut) {
+        if(track->getChi2ndof() > chi2ndofCut) {
             continue;
         }
 
         // Loop over clusters of the track:
-        for(auto& cluster : track->clusters()) {
+        for(auto& cluster : track->getClusters()) {
             auto detector = get_detector(cluster->detectorID());
             if(detector == nullptr || detector->isDUT()) {
                 continue;
             }
 
             auto name = detector->getName();
-            ROOT::Math::XYZPoint intercept = track->intercept(cluster->global().z());
+            ROOT::Math::XYZPoint intercept = track->getIntercept(cluster->global().z());
             auto interceptLocal = detector->globalToLocal(intercept);
             telescopeResidualsLocalX[name]->Fill(cluster->local().x() - interceptLocal.X());
             telescopeResidualsLocalY[name]->Fill(cluster->local().y() - interceptLocal.Y());
@@ -115,7 +109,7 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
 
             // Get the MC particles from the clipboard
             auto mcParticles = clipboard->getData<MCParticle>(name);
-            if(mcParticles == nullptr) {
+            if(mcParticles.empty()) {
                 continue;
             }
 
@@ -136,11 +130,11 @@ StatusCode AnalysisTelescope::run(std::shared_ptr<Clipboard> clipboard) {
 
             // Get the MC particles from the clipboard
             auto mcParticles = clipboard->getData<MCParticle>(detector->getName());
-            if(mcParticles == nullptr) {
+            if(mcParticles.empty()) {
                 continue;
             }
 
-            auto intercept = detector->getIntercept(track);
+            auto intercept = detector->getIntercept(track.get());
             auto interceptLocal = detector->globalToLocal(intercept);
             auto particlePosition = closestApproach(interceptLocal, mcParticles);
 

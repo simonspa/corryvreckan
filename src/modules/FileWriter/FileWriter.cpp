@@ -37,7 +37,7 @@ FileWriter::~FileWriter() {
     }
 }
 
-void FileWriter::initialise() {
+void FileWriter::initialize() {
     // Create output file
     output_file_name_ =
         createOutputFile(corryvreckan::add_file_extension(m_config.get<std::string>("file_name", "data"), "root"), true);
@@ -60,7 +60,7 @@ void FileWriter::initialise() {
     event_tree_->Bronch("global", "corryvreckan::Event", &event_);
 }
 
-StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode FileWriter::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     if(!clipboard->isEventDefined()) {
         ModuleError("No Clipboard event defined, cannot continue");
@@ -139,7 +139,7 @@ StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
                 // Fill the branch vector
                 for(auto& object : *objects) {
                     ++write_cnt_;
-                    write_list_[index_tuple]->push_back(object);
+                    write_list_[index_tuple]->push_back(object.get());
                 }
             }
         } catch(...) {
@@ -166,7 +166,7 @@ StatusCode FileWriter::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void FileWriter::finalise() {
+void FileWriter::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     LOG(TRACE) << "Writing objects to file";
     output_file_->cd();
 

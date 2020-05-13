@@ -4,7 +4,7 @@
 **Status**: Functional
 
 ### Description
-This module performs track finding using only positional information (no timing information). It is based on a linear extrapolation along the Z-axis, followed by a nearest neighbour search.
+This module performs track finding using only positional information (no timing information). It is based on a linear extrapolation along the Z-axis, followed by a nearest neighbor search.
 
 
 ### Parameters
@@ -14,6 +14,7 @@ This module performs track finding using only positional information (no timing 
 * `exclude_dut`: Boolean to set if the DUT should be included in the track fitting. Default value is `true`.
 * `track_model`: Select the track model used for reconstruction. Defaults to
 the only supported fit at the "straightline"
+* `reject_by_roi`: If true, tracks intercepting any detector outside its ROI will be rejected. Defaults to `false`.
 
 ### Plots produced
 

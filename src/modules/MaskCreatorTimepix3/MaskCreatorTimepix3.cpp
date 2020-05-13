@@ -17,18 +17,18 @@ using namespace corryvreckan;
 MaskCreatorTimepix3::MaskCreatorTimepix3(Configuration config, std::shared_ptr<Detector> detector)
     : Module(std::move(config), detector), m_detector(detector) {}
 
-StatusCode MaskCreatorTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode MaskCreatorTimepix3::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the pixels
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());
-    if(pixels == nullptr) {
+    if(pixels.empty()) {
         LOG(DEBUG) << "Detector " << m_detector->getName() << " does not have any pixels on the clipboard";
         return StatusCode::NoData;
     }
-    LOG(DEBUG) << "Picked up " << pixels->size() << " pixels for device " << m_detector->getName();
+    LOG(DEBUG) << "Picked up " << pixels.size() << " pixels for device " << m_detector->getName();
 
     // Loop over all pixels
-    for(auto& pixel : (*pixels)) {
+    for(auto& pixel : pixels) {
         // Enter another pixel hit for this channel
         int channelID = pixel->row() + 256 * pixel->column();
         pixelhits[channelID]++;
@@ -37,7 +37,7 @@ StatusCode MaskCreatorTimepix3::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void MaskCreatorTimepix3::finalise() {
+void MaskCreatorTimepix3::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     // Get the trimdac file
     std::string trimdacfile = m_detector->maskFile();

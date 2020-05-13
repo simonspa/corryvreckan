@@ -51,7 +51,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     eudaq_config_ = std::make_shared<const eudaq::Configuration>(eu_cfg);
 }
 
-void EventLoaderEUDAQ2::initialise() {
+void EventLoaderEUDAQ2::initialize() {
 
     // Declare histograms
     std::string title = ";EUDAQ event start time[ms];# entries";
@@ -243,7 +243,7 @@ void EventLoaderEUDAQ2::retrieve_event_tags(const eudaq::EventSPC evt) {
         }
     }
 }
-Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> clipboard,
+Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboard>& clipboard,
                                                    std::shared_ptr<eudaq::StandardEvent> evt) const {
 
     // Check if this event has timestamps available:
@@ -336,10 +336,9 @@ Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> cl
     return position;
 }
 
-std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt,
-                                                               int plane_id) const {
+PixelVector EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEvent> evt, int plane_id) const {
 
-    auto pixels = std::make_shared<PixelVector>();
+    PixelVector pixels;
 
     // No plane found:
     if(plane_id < 0) {
@@ -384,7 +383,7 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
         }
 
         // when calibration is not available, set charge = raw
-        Pixel* pixel = new Pixel(m_detector->getName(), col, row, raw, raw, ts);
+        auto pixel = std::make_shared<Pixel>(m_detector->getName(), col, row, raw, raw, ts);
 
         hitmap->Fill(col, row);
         hPixelTimes->Fill(static_cast<double>(Units::convert(ts, "ms")));
@@ -392,10 +391,10 @@ std::shared_ptr<PixelVector> EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<e
         hPixelRawValues->Fill(raw);
         hRawValuesMap->Fill(col, row, raw);
 
-        pixels->push_back(pixel);
+        pixels.push_back(pixel);
     }
-    hPixelMultiplicityPerEudaqEvent->Fill(static_cast<int>(pixels->size()));
-    LOG(DEBUG) << m_detector->getName() << ": Plane contains " << pixels->size() << " pixels";
+    hPixelMultiplicityPerEudaqEvent->Fill(static_cast<int>(pixels.size()));
+    LOG(DEBUG) << m_detector->getName() << ": Plane contains " << pixels.size() << " pixels";
 
     return pixels;
 }
@@ -450,9 +449,9 @@ bool EventLoaderEUDAQ2::filter_detectors(std::shared_ptr<eudaq::StandardEvent> e
     return false;
 }
 
-StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
 
-    auto pixels = std::make_shared<PixelVector>();
+    PixelVector pixels;
 
     Event::Position current_position = Event::Position::UNKNOWN;
     while(1) {
@@ -485,8 +484,8 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
             LOG(DEBUG) << "Is within current Corryvreckan event, storing data";
             // Store data on the clipboard
             auto new_pixels = get_pixel_data(event_, plane_id);
-            m_hits += new_pixels->size();
-            pixels->insert(pixels->end(), new_pixels->begin(), new_pixels->end());
+            m_hits += new_pixels.size();
+            pixels.insert(pixels.end(), new_pixels.begin(), new_pixels.end());
         }
 
         // If this event was after the current event or if we have not enough information, stop reading:
@@ -519,12 +518,12 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
 
     // histogram only exists for non-auxiliary detectors:
     if(!m_detector->isAuxiliary()) {
-        hPixelMultiplicityPerCorryEvent->Fill(static_cast<int>(pixels->size()));
+        hPixelMultiplicityPerCorryEvent->Fill(static_cast<int>(pixels.size()));
     }
 
     // Loop over pixels for plotting
     if(m_get_time_residuals) {
-        for(auto& pixel : (*pixels)) {
+        for(auto& pixel : pixels) {
             hPixelTimeEventBeginResidual->Fill(
                 static_cast<double>(Units::convert(pixel->timestamp() - event->start(), "us")));
             hPixelTimeEventBeginResidual_wide->Fill(
@@ -562,7 +561,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void EventLoaderEUDAQ2::finalise() {
+void EventLoaderEUDAQ2::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(INFO) << "Found " << m_hits << " hits in the data.";
 }

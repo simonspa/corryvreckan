@@ -23,7 +23,7 @@ EventLoaderEUDAQ::EventLoaderEUDAQ(Configuration config, std::vector<std::shared
     m_longID = m_config.get<bool>("long_detector_id", true);
 }
 
-void EventLoaderEUDAQ::initialise() {
+void EventLoaderEUDAQ::initialize() {
 
     // Create new file reader:
     try {
@@ -33,7 +33,7 @@ void EventLoaderEUDAQ::initialise() {
     }
 }
 
-StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EventLoaderEUDAQ::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Read next event from EUDAQ reader:
     const eudaq::DetectorEvent& evt = reader->Event();
@@ -75,7 +75,7 @@ StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
             auto detector = get_detector(detectorID);
 
             // Make a new container for the data
-            auto deviceData = std::make_shared<PixelVector>();
+            PixelVector deviceData;
             for(unsigned int ipix = 0; ipix < plane.HitPixels(); ++ipix) {
                 auto col = static_cast<int>(plane.GetX(ipix));
                 auto row = static_cast<int>(plane.GetY(ipix));
@@ -92,12 +92,12 @@ StatusCode EventLoaderEUDAQ::run(std::shared_ptr<Clipboard> clipboard) {
                 }
 
                 // when calibration is not available, set charge = tot, timestamp not available -> set to 0
-                Pixel* pixel =
-                    new Pixel(detectorID, col, row, static_cast<int>(plane.GetPixel(ipix)), plane.GetPixel(ipix), 0.);
+                auto pixel = std::make_shared<Pixel>(
+                    detectorID, col, row, static_cast<int>(plane.GetPixel(ipix)), plane.GetPixel(ipix), 0.);
 
                 // Pixel gets timestamp of trigger assigned:
                 pixel->timestamp(timestamp);
-                deviceData->push_back(pixel);
+                deviceData.push_back(pixel);
             }
 
             // Store on clipboard
