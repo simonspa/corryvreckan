@@ -13,18 +13,27 @@
 
 using namespace corryvreckan;
 
-EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {
+EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Detector> detector)
+    : Module(config, detector), m_detector(detector) {
 
-    m_filename = m_config.getPath("file_name", true);
-    m_get_time_residuals = m_config.get<bool>("get_time_residuals", false);
-    m_get_tag_vectors = m_config.get<bool>("get_tag_vectors", false);
-    m_ignore_bore = m_config.get<bool>("ignore_bore", true);
-    m_skip_time = m_config.get<double>("skip_time", 0.);
-    m_adjust_event_times = m_config.getMatrix<std::string>("adjust_event_times", {});
-    m_buffer_depth = m_config.get<int>("buffer_depth", 0);
-    m_shift_triggers = m_config.get<int>("shift_triggers", 0);
-    m_inclusive = m_config.get("inclusive", true);
+    config_.setDefault<bool>("get_time_residuals", false);
+    config_.setDefault<bool>("get_tag_vectors", false);
+    config_.setDefault<bool>("ignore_bore", true);
+    config_.setDefault<double>("skip_time", 0.);
+    config_.setDefault<int>("buffer_depth", 0);
+    config_.setDefault<int>("shift_triggers", 0);
+    config_.setDefault<bool>("inclusive", true);
+
+    m_filename = config_.getPath("file_name", true);
+    m_get_time_residuals = config_.get<bool>("get_time_residuals");
+
+    m_get_tag_vectors = config_.get<bool>("get_tag_vectors");
+    m_ignore_bore = config_.get<bool>("ignore_bore");
+    m_skip_time = config_.get<double>("skip_time");
+    m_adjust_event_times = config_.getMatrix<std::string>("adjust_event_times", {});
+    m_buffer_depth = config_.get<int>("buffer_depth");
+    m_shift_triggers = config_.get<int>("shift_triggers");
+    m_inclusive = config_.get<bool>("inclusive");
 
     // Prepare EUDAQ2 config object
     eudaq::Configuration cfg;
@@ -39,7 +48,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
 
     // Forward all settings to EUDAQ
     // WARNING: the EUDAQ Configuration class is not very flexible and e.g. booleans have to be passed as 1 and 0.
-    auto configs = m_config.getAll();
+    auto configs = config_.getAll();
     for(const auto& key : configs) {
         LOG(DEBUG) << "Forwarding key \"" << key.first << " = " << key.second << "\" to EUDAQ converter";
         cfg.Set(key.first, key.second);
@@ -146,14 +155,14 @@ void EventLoaderEUDAQ2::initialize() {
     } catch(...) {
         LOG(ERROR) << "eudaq::FileReader could not read the input file ' " << m_filename
                    << " '. Please verify that the path and file name are correct.";
-        throw InvalidValueError(m_config, "file_path", "Parsing error!");
+        throw InvalidValueError(config_, "file_path", "Parsing error!");
     }
 
     // Check if all elements of m_adjust_event_times have a valid size of 3, if not throw error.
     for(auto& shift_times : m_adjust_event_times) {
         if(shift_times.size() != 3) {
             throw InvalidValueError(
-                m_config,
+                config_,
                 "adjust_event_times",
                 "Parameter needs 3 values per row: [\"event type\", shift event start, shift event end]");
         }

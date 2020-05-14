@@ -36,7 +36,7 @@ namespace corryvreckan {
          * @param config Configuration object for this module as retrieved from the steering file
          * @param detectors List of detectors to perform task on
          */
-        FileReader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        FileReader(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
         /**
          * @brief Destructor deletes the internal objects read from ROOT Tree
          */

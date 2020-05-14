@@ -19,22 +19,30 @@ using namespace corryvreckan;
 TrackVector AlignmentDUTResidual::globalTracks;
 std::shared_ptr<Detector> AlignmentDUTResidual::globalDetector;
 
-AlignmentDUTResidual::AlignmentDUTResidual(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {
+AlignmentDUTResidual::AlignmentDUTResidual(Configuration& config, std::shared_ptr<Detector> detector)
+    : Module(config, detector), m_detector(detector) {
 
-    nIterations = m_config.get<size_t>("iterations", 3);
+    config_.setDefault<size_t>("iterations", 3);
+    config_.setDefault<bool>("prune_tracks", false);
+    config_.setDefault<bool>("align_position", true);
+    config_.setDefault<bool>("align_orientation", true);
+    config_.setDefault<size_t>("max_associated_clusters", 1);
+    config_.setDefault<double>("max_track_chi2ndof", 10.);
 
-    m_pruneTracks = m_config.get<bool>("prune_tracks", false);
-    m_alignPosition = m_config.get<bool>("align_position", true);
+    nIterations = config_.get<size_t>("iterations");
+    m_pruneTracks = config_.get<bool>("prune_tracks");
+    m_alignPosition = config_.get<bool>("align_position");
     if(m_alignPosition) {
         LOG(INFO) << "Aligning positions";
     }
-    m_alignOrientation = m_config.get<bool>("align_orientation", true);
+
+    m_alignOrientation = config_.get<bool>("align_orientation");
     if(m_alignOrientation) {
         LOG(INFO) << "Aligning orientations";
     }
-    m_maxAssocClusters = m_config.get<size_t>("max_associated_clusters", 1);
-    m_maxTrackChi2 = m_config.get<double>("max_track_chi2ndof", 10.);
+
+    m_maxAssocClusters = config_.get<size_t>("max_associated_clusters");
+    m_maxTrackChi2 = config_.get<double>("max_track_chi2ndof");
 
     LOG(INFO) << "Aligning detector \"" << m_detector->getName() << "\"";
 }

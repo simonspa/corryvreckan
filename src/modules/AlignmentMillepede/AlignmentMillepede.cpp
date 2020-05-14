@@ -22,21 +22,30 @@ using namespace std;
 //=============================================================================
 // Standard constructor, initializes variables
 //=============================================================================
-AlignmentMillepede::AlignmentMillepede(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
+AlignmentMillepede::AlignmentMillepede(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
+    : Module(config, std::move(detectors)) {
 
-    m_excludeDUT = m_config.get<bool>("exclude_dut", false);
-    m_dofs = m_config.getArray<bool>("dofs", {});
-    m_nIterations = m_config.get<size_t>("iterations", 5);
+    config_.setDefault<bool>("exclude_dut", false);
+    config_.setDefaultArray<bool>("dofs", {true, true, false, true, true, true});
+    config_.setDefault<size_t>("iterations", 5);
+    config_.setDefault<double>("residual_cut", 0.05);
+    config_.setDefault<double>("residual_cut_init", 0.6);
+    config_.setDefault<int>("number_of_stddev", 0);
+    config_.setDefault<double>("convergence", 0.00001);
+    config_.setDefaultArray<double>("sigmas", {0.05, 0.05, 0.5, 0.005, 0.005, 0.005});
 
-    m_rescut = m_config.get<double>("residual_cut", 0.05);
-    m_rescut_init = m_config.get<double>("residual_cut_init", 0.6);
-    m_nstdev = m_config.get<int>("number_of_stddev", 0);
+    m_excludeDUT = config_.get<bool>("exclude_dut");
+    m_dofs = config_.getArray<bool>("dofs");
+    m_nIterations = config_.get<size_t>("iterations");
+    m_rescut = config_.get<double>("residual_cut");
+    m_rescut_init = config_.get<double>("residual_cut_init");
+    m_nstdev = config_.get<int>("number_of_stddev");
+    m_convergence = config_.get<double>("convergence");
+    m_sigmas = config_.getArray<double>("sigmas");
 
-    m_convergence = m_config.get<double>("convergence", 0.00001);
-
-    // Use default values for the sigmas, unless specified explicitly.
-    m_sigmas = m_config.getArray<double>("sigmas", {0.05, 0.05, 0.5, 0.005, 0.005, 0.005});
+    if(m_dofs.size() != 6) {
+        throw InvalidValueError(config_, "dofs", "Invalid number of degrees of freedom.");
+    }
 }
 
 //=============================================================================
@@ -59,14 +68,8 @@ void AlignmentMillepede::initialize() {
         ++index;
     }
 
-    // Set the degrees of freedom.
-    if(m_dofs.size() != 6) {
-        LOG(INFO) << "Using the default degrees of freedom:";
-        m_dofs = {true, true, false, true, true, true};
-    } else {
-        LOG(INFO) << "Using the following degrees of freedom:";
-    }
     // Print the degrees of freedom.
+    LOG(INFO) << "Using the following degrees of freedom:";
     const std::vector<std::string> labels = {
         "Translation X", "Translation Y", "Translation Z", "Rotation X", "Rotation Y", "Rotation Z"};
     for(unsigned int i = 0; i < 6; ++i) {

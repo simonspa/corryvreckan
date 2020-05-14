@@ -14,8 +14,8 @@
 
 using namespace corryvreckan;
 
-MaskCreatorTimepix3::MaskCreatorTimepix3(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {}
+MaskCreatorTimepix3::MaskCreatorTimepix3(Configuration& config, std::shared_ptr<Detector> detector)
+    : Module(config, detector), m_detector(detector) {}
 
 StatusCode MaskCreatorTimepix3::run(const std::shared_ptr<Clipboard>& clipboard) {
 

@@ -38,7 +38,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        OnlineMonitor(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        OnlineMonitor(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
         ~OnlineMonitor() {}
 
         // Functions

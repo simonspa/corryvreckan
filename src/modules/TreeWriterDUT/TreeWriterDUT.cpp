@@ -16,11 +16,14 @@
 using namespace corryvreckan;
 using namespace std;
 
-TreeWriterDUT::TreeWriterDUT(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {
+TreeWriterDUT::TreeWriterDUT(Configuration& config, std::shared_ptr<Detector> detector)
+    : Module(config, detector), m_detector(detector) {
 
-    m_fileName = m_config.get<std::string>("file_name", "outputTuples.root");
-    m_treeName = m_config.get<std::string>("tree_name", "tree");
+    config_.setDefault<std::string>("file_name", "outputTuples.root");
+    config_.setDefault<std::string>("tree_name", "tree");
+
+    m_fileName = config_.get<std::string>("file_name");
+    m_treeName = config_.get<std::string>("tree_name");
 }
 
 /*

@@ -26,7 +26,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Clustering4D(Configuration config, std::shared_ptr<Detector> detector);
+        Clustering4D(Configuration& config, std::shared_ptr<Detector> detector);
         ~Clustering4D() {}
 
         // Functions

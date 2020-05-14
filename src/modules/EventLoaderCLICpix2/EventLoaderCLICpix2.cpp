@@ -18,16 +18,17 @@ using namespace std;
 using namespace caribou;
 using namespace clicpix2_utils;
 
-EventLoaderCLICpix2::EventLoaderCLICpix2(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {
+EventLoaderCLICpix2::EventLoaderCLICpix2(Configuration& config, std::shared_ptr<Detector> detector)
+    : Module(config, detector), m_detector(detector) {
 
-    discardZeroToT = m_config.get<bool>("discard_zero_tot", false);
+    config_.setDefault<bool>("discard_zero_tot", false);
+    discardZeroToT = config_.get<bool>("discard_zero_tot");
 }
 
 void EventLoaderCLICpix2::initialize() {
 
     // Take input directory from global parameters
-    string inputDirectory = m_config.getPath("input_directory");
+    string inputDirectory = config_.getPath("input_directory");
 
     // Open the root directory
     DIR* directory = opendir(inputDirectory.c_str());

@@ -34,7 +34,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        EventLoaderATLASpix(Configuration config, std::shared_ptr<Detector> detector);
+        EventLoaderATLASpix(Configuration& config, std::shared_ptr<Detector> detector);
         ~EventLoaderATLASpix() {}
 
         // Functions

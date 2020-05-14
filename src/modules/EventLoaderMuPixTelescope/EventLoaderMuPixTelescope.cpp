@@ -17,12 +17,16 @@
 using namespace corryvreckan;
 // using namespace std;
 
-EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)), m_blockFile(nullptr) {
-    m_inputDirectory = m_config.getPath("input_directory");
-    m_runNumber = m_config.get<int>("Run", -1); // meaningless default runnumber
-    m_isSorted = m_config.get<bool>("is_sorted", false);
-    m_ts2IsGray = m_config.get<bool>("ts2_is_gray", false);
+EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
+    : Module(config, std::move(detectors)), m_blockFile(nullptr) {
+
+    config_.setDefault<bool>("is_sorted", false);
+    config_.setDefault<bool>("ts2_is_gray", false);
+
+    m_inputDirectory = config_.getPath("input_directory");
+    m_runNumber = config_.get<int>("Run");
+    m_isSorted = config_.get<bool>("is_sorted");
+    m_ts2IsGray = config_.get<bool>("ts2_is_gray");
     // We need to check for the config files in case of scans... TBI
 }
 

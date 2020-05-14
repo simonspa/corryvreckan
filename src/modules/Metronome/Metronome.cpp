@@ -14,17 +14,20 @@
 using namespace corryvreckan;
 using namespace std;
 
-Metronome::Metronome(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)), m_triggers(0) {
+Metronome::Metronome(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
+    : Module(config, std::move(detectors)), m_triggers(0) {
 
-    m_eventLength = m_config.get<double>("event_length", Units::get<double>(10, "us"));
-    m_triggersPerEvent = m_config.get<uint32_t>("triggers", 0);
+    config_.setDefault<double>("event_length", Units::get<double>(10, "us"));
+    config_.setDefault<uint32_t>("triggers", 0);
+
+    m_eventLength = config_.get<double>("event_length");
+    m_triggersPerEvent = config_.get<uint32_t>("triggers");
 }
 
 void Metronome::initialize() {
 
     // Set initial values for the start and stop time of the first event:
-    m_eventStart = m_config.get<double>("skip_time", 0.);
+    m_eventStart = config_.get<double>("skip_time", 0.);
     m_eventEnd = m_eventStart + m_eventLength;
 }
 

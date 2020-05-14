@@ -31,7 +31,7 @@ namespace corryvreckan {
          * @param config Configuration object for this module as retrieved from the steering file
          * @param detector Pointer to the detector for this module instance
          */
-        AnalysisTimingATLASpix(Configuration config, std::shared_ptr<Detector> detector);
+        AnalysisTimingATLASpix(Configuration& config, std::shared_ptr<Detector> detector);
         void initialize() override;
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;

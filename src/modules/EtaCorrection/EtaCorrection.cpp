@@ -13,10 +13,14 @@
 using namespace corryvreckan;
 using namespace std;
 
-EtaCorrection::EtaCorrection(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {
-    m_etaFormulaX = m_config.get<std::string>("eta_formula_x", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
-    m_etaFormulaY = m_config.get<std::string>("eta_formula_y", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
+EtaCorrection::EtaCorrection(Configuration& config, std::shared_ptr<Detector> detector)
+    : Module(config, detector), m_detector(detector) {
+
+    config_.setDefault<std::string>("eta_formula_x", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
+    config_.setDefault<std::string>("eta_formula_y", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
+
+    m_etaFormulaX = config_.get<std::string>("eta_formula_x");
+    m_etaFormulaY = config_.get<std::string>("eta_formula_y");
 }
 
 void EtaCorrection::initialize() {
@@ -26,8 +30,8 @@ void EtaCorrection::initialize() {
     double pitchY = m_detector->getPitch().Y();
 
     // Get info from configuration:
-    std::vector<double> m_etaConstantsX = m_config.getArray<double>("eta_constants_x_" + m_detector->getName(), {});
-    std::vector<double> m_etaConstantsY = m_config.getArray<double>("eta_constants_y_" + m_detector->getName(), {});
+    std::vector<double> m_etaConstantsX = config_.getArray<double>("eta_constants_x_" + m_detector->getName(), {});
+    std::vector<double> m_etaConstantsY = config_.getArray<double>("eta_constants_y_" + m_detector->getName(), {});
     if(!m_etaConstantsX.empty() || !m_etaConstantsY.empty()) {
         LOG(INFO) << "Found Eta correction factors for detector \"" << m_detector->getName()
                   << "\": " << (m_etaConstantsX.empty() ? "" : "X ") << (m_etaConstantsY.empty() ? "" : "Y ");

@@ -18,20 +18,38 @@
 using namespace corryvreckan;
 using namespace std;
 
-Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
+Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
+    : Module(config, std::move(detectors)) {
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs and spatial_cut for spatial_cut_abs
-    m_config.setAlias("time_cut_abs", "timing_cut", true);
-    m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
+    config_.setAlias("time_cut_abs", "timing_cut", true);
+    config_.setAlias("spatial_cut_abs", "spatial_cut", true);
+
+    config_.setDefault<size_t>("min_hits_on_track", 6);
+    config_.setDefault<bool>("exclude_dut", true);
+    config_.setDefault<std::string>("track_model", "straightline");
+    config_.setDefault<double>("momentum", Units::get<double>(5, "GeV"));
+    config_.setDefault<double>("volume_radiation_length", Units::get<double>(304.2, "m"));
+    config_.setDefault<bool>("volume_scattering", false);
+    config_.setDefault<bool>("reject_by_roi", false);
+
+    if(config_.count({"time_cut_rel", "time_cut_abs"}) == 0) {
+        config_.setDefault("time_cut_rel", 3.0);
+    }
+    if(config_.count({"spatial_cut_rel", "spatial_cut_abs"}) == 0) {
+        config_.setDefault("spatial_cut_rel", 3.0);
+    }
 
     // timing cut, relative (x * time_resolution) or absolute:
-    time_cuts_ = corryvreckan::calculate_cut<double>("time_cut", 3.0, m_config, get_detectors());
+    time_cuts_ = corryvreckan::calculate_cut<double>("time_cut", config_, get_detectors());
+    // spatial cut, relative (x * spatial_resolution) or absolute:
+    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", config_, get_detectors());
 
-    min_hits_on_track_ = m_config.get<size_t>("min_hits_on_track", 6);
-    exclude_DUT_ = m_config.get<bool>("exclude_dut", true);
-    require_detectors_ = m_config.getArray<std::string>("require_detectors", {""});
-    timestamp_from_ = m_config.get<std::string>("timestamp_from", {});
+    min_hits_on_track_ = config_.get<size_t>("min_hits_on_track");
+    exclude_DUT_ = config_.get<bool>("exclude_dut");
+
+    require_detectors_ = config_.getArray<std::string>("require_detectors", {});
+    timestamp_from_ = config_.get<std::string>("timestamp_from", {});
     if(!timestamp_from_.empty() &&
        std::find(require_detectors_.begin(), require_detectors_.end(), timestamp_from_) == require_detectors_.end()) {
         LOG(WARNING) << "Adding detector " << timestamp_from_
@@ -39,19 +57,18 @@ Tracking4D::Tracking4D(Configuration config, std::vector<std::shared_ptr<Detecto
         require_detectors_.push_back(timestamp_from_);
     }
 
-    track_model_ = m_config.get<std::string>("track_model", "straightline");
-    momentum_ = m_config.get<double>("momentum", Units::get<double>(5, "GeV"));
-    volume_radiation_length_ = m_config.get<double>("volume_radiation_length", Units::get<double>(304.2, "m"));
-    use_volume_scatterer_ = m_config.get<bool>("volume_scattering", false);
-    reject_by_ROI_ = m_config.get<bool>("reject_by_roi", false);
+    track_model_ = config_.get<std::string>("track_model");
+    momentum_ = config_.get<double>("momentum");
+    volume_radiation_length_ = config_.get<double>("volume_radiation_length");
+    use_volume_scatterer_ = config_.get<bool>("volume_scattering");
+    reject_by_ROI_ = config_.get<bool>("reject_by_roi");
+
     // print a warning if volumeScatterer are used as this causes fit failures
     // that are still not understood
     if(use_volume_scatterer_) {
         LOG_ONCE(WARNING) << "Taking volume scattering effects into account is still WIP and causes the GBL to fail - these "
                              "tracks are rejected";
     }
-    // spatial cut, relative (x * spatial_resolution) or absolute:
-    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, m_config, get_detectors());
 }
 
 void Tracking4D::initialize() {

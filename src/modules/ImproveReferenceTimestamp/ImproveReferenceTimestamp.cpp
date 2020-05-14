@@ -14,11 +14,16 @@
 using namespace corryvreckan;
 using namespace std;
 
-ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
-    m_method = m_config.get<int>("improvement_method", 1);
-    m_source = m_config.get<std::string>("signal_source", "W0013_G02");
-    m_triggerLatency = m_config.get<double>("trigger_latency", Units::get<double>(0, "ns"));
+ImproveReferenceTimestamp::ImproveReferenceTimestamp(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
+    : Module(config, std::move(detectors)) {
+
+    config_.setDefault<int>("improvement_method", 1);
+    config_.setDefault<std::string>("signal_source", "W0013_G02");
+    config_.setDefault<double>("trigger_latency", Units::get<double>(0, "ns"));
+
+    m_method = config_.get<int>("improvement_method");
+    m_source = config_.get<std::string>("signal_source");
+    m_triggerLatency = config_.get<double>("trigger_latency");
 }
 
 void ImproveReferenceTimestamp::initialize() {

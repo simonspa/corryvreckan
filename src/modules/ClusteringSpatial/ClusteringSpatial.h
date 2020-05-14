@@ -25,7 +25,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        ClusteringSpatial(Configuration config, std::shared_ptr<Detector> detector);
+        ClusteringSpatial(Configuration& config, std::shared_ptr<Detector> detector);
         ~ClusteringSpatial() {}
 
         // Functions

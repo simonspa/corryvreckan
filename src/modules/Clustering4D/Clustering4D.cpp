@@ -9,32 +9,37 @@
  */
 
 #include "Clustering4D.h"
+#include "tools/cuts.h"
 
 using namespace corryvreckan;
 using namespace std;
 
-Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {
+Clustering4D::Clustering4D(Configuration& config, std::shared_ptr<Detector> detector)
+    : Module(config, detector), m_detector(detector) {
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
-    m_config.setAlias("time_cut_abs", "timing_cut", true);
+    config_.setAlias("time_cut_abs", "timing_cut", true);
+    config_.setAlias("neighbor_radius_row", "neighbour_radius_row", true);
+    config_.setAlias("neighbor_radius_col", "neighbour_radius_col", true);
 
-    if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
-    } else if(m_config.has("time_cut_abs")) {
-        time_cut_ = m_config.get<double>("time_cut_abs");
-    } else {
-        time_cut_ = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
+    config_.setDefault<int>("neighbor_radius_row", 1);
+    config_.setDefault<int>("neighbor_radius_col", 1);
+    config_.setDefault<bool>("charge_weighting", true);
+    config_.setDefault<bool>("use_earliest_pixel", false);
+    config_.setDefault<bool>("reject_by_roi", false);
+
+    if(config_.count({"time_cut_rel", "time_cut_abs"}) == 0) {
+        config_.setDefault("time_cut_rel", 3.0);
     }
 
-    m_config.setAlias("neighbor_radius_row", "neighbour_radius_row", true);
-    m_config.setAlias("neighbor_radius_col", "neighbour_radius_col", true);
-    neighbor_radius_row_ = m_config.get<int>("neighbor_radius_row", 1);
-    neighbor_radius_col_ = m_config.get<int>("neighbor_radius_col", 1);
-    charge_weighting_ = m_config.get<bool>("charge_weighting", true);
-    use_earliest_pixel_ = m_config.get<bool>("use_earliest_pixel", false);
-    reject_by_ROI_ = m_config.get<bool>("reject_by_roi", false);
+    // timing cut, relative (x * time_resolution) or absolute:
+    time_cut_ = corryvreckan::calculate_cut<double>("time_cut", config_, m_detector);
+
+    neighbor_radius_row_ = config_.get<int>("neighbor_radius_row");
+    neighbor_radius_col_ = config_.get<int>("neighbor_radius_col");
+    charge_weighting_ = config_.get<bool>("charge_weighting");
+    use_earliest_pixel_ = config_.get<bool>("use_earliest_pixel");
+    reject_by_ROI_ = config_.get<bool>("reject_by_roi");
 }
 
 void Clustering4D::initialize() {

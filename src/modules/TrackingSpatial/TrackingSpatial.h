@@ -29,7 +29,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        TrackingSpatial(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        TrackingSpatial(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
         ~TrackingSpatial() {}
 
         // Functions

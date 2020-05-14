@@ -26,7 +26,7 @@ namespace corryvreckan {
     class AlignmentMillepede : public Module {
     public:
         /// Constructor
-        AlignmentMillepede(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        AlignmentMillepede(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
         /// Destructor
         virtual ~AlignmentMillepede();
 
