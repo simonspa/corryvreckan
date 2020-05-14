@@ -96,9 +96,8 @@ void AnalysisMaterialBudget::initialize() {
 
 double AnalysisMaterialBudget::get_aad(int cell_x, int cell_y) {
 
-    size_t entries = m_all_kinks.at(std::make_pair(cell_x, cell_y)).size();
-    // m_all_kinks.at(std::make_pair(cell_x, cell_y))
     // Calculate the quantile offsets
+    size_t entries = m_all_kinks.at(std::make_pair(cell_x, cell_y)).size();
     size_t cut_off = size_t(round(double(entries) * quantile_cut_));
 
     double AAD = 0;
@@ -107,9 +106,10 @@ double AnalysisMaterialBudget::get_aad(int cell_x, int cell_y) {
     for(auto it = m_all_kinks.at(std::make_pair(cell_x, cell_y)).begin();
         it != m_all_kinks.at(std::make_pair(cell_x, cell_y)).end();
         ++it) {
-        ++i;
-        if(i >= cut_off && i < entries - cut_off)
+        if(i >= cut_off && i < entries - cut_off) {
             AAD += fabs(*it);
+        }
+        ++i;
     }
     AAD /= double(entries - 2 * cut_off);
 
