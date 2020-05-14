@@ -33,6 +33,7 @@ Clustering4D::Clustering4D(Configuration config, std::shared_ptr<Detector> detec
     neighbor_radius_row_ = m_config.get<int>("neighbor_radius_row", 1);
     neighbor_radius_col_ = m_config.get<int>("neighbor_radius_col", 1);
     charge_weighting_ = m_config.get<bool>("charge_weighting", true);
+    use_earliest_pixel_ = m_config.get<bool>("use_earliest_pixel", false);
     reject_by_ROI_ = m_config.get<bool>("reject_by_roi", false);
 }
 
@@ -151,7 +152,7 @@ StatusCode Clustering4D::run(const std::shared_ptr<Clipboard>& clipboard) {
 
                 // Add to cluster
                 cluster->addPixel(neighbor);
-                clusterTime = neighbor->timestamp();
+                clusterTime = (neighbor->timestamp() < clusterTime) ? neighbor->timestamp() : clusterTime;
                 used[neighbor] = true;
                 LOG(DEBUG) << "Adding pixel: " << neighbor->column() << "," << neighbor->row() << " time "
                            << Units::display(neighbor->timestamp(), {"ns", "us", "s"});
@@ -243,7 +244,7 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
 
     LOG(DEBUG) << "== Making cluster centre";
     // Empty variables to calculate cluster position
-    double column(0), row(0), charge(0);
+    double column(0), row(0), charge(0), maxcharge(0);
     double column_sum(0), column_sum_chargeweighted(0);
     double row_sum(0), row_sum_chargeweighted(0);
     bool found_charge_zero = false;
@@ -271,7 +272,17 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
         column_sum_chargeweighted += (pixel->column() * pixel->charge());
         row_sum_chargeweighted += (pixel->row() * pixel->charge());
 
-        if(pixel->timestamp() < timestamp) {
+        // Set cluster timestamp = timestamp from pixel with largest charge
+        // Update timestamp if:
+        //    1) found_charge_zero = false, i.e. no zero charge was detected
+        //    2) use_earliest_pixel was NOT chosen by the user
+        //    3) the current pixel charge is larger than the previous maximum
+        if(!found_charge_zero && !use_earliest_pixel_ && pixel->charge() > maxcharge) {
+            timestamp = pixel->timestamp();
+            maxcharge = pixel->charge();
+
+            // else: use earliest pixel
+        } else if(pixel->timestamp() < timestamp) {
             timestamp = pixel->timestamp();
         }
     }

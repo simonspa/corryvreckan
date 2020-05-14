@@ -19,6 +19,7 @@ Split clusters can be recovered using a larger search radius for neighboring pix
 * `neighbor_radius_col`: Search radius for neighboring pixels in column direction, defaults to `1` (do not allow split clusters)
 * `neighbor_radius_row`:  Search radius for neighboring pixels in row direction, defaults to `1` (do not allow split clusters)
 * `charge_weighting`: If true, calculate a charge-weighted mean for the cluster centre. If false, calculate the simple arithmetic mean. Defaults to `true`.
+* `use_earliest_pixel` : If `true`, the pixel with the earliest timestamp will be used to set the cluster timestamp. If `false`, the pixel with the largest charge will be used. Defaults to `false`.
 * `reject_by_roi`: If true, clusters positioned outside the ROI set for the detector will be rejected. Defaults to `false`.
 
 ### Plots produced
