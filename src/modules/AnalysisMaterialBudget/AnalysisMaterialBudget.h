@@ -59,7 +59,6 @@ namespace corryvreckan {
 
         std::map<std::pair<int, int>, std::multiset<double>> m_all_kinks;
         std::map<std::pair<int, int>, double> m_all_sum;
-        std::map<std::pair<int, int>, int> m_all_entries;
 
         /**
          * @brief Method re-calculating the average absolute deviation from 0 for the scattering distribution of a given

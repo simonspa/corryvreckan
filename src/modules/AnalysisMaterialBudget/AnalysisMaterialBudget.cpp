@@ -83,7 +83,6 @@ void AnalysisMaterialBudget::initialize() {
     for(int ix = 0; ix < n_cells_x; ++ix) {
         for(int iy = 0; iy < n_cells_y; ++iy) {
             m_all_kinks.insert(std::make_pair(std::make_pair(ix, iy), std::multiset<double>()));
-            m_all_entries.insert(std::make_pair(std::make_pair(ix, iy), 0));
             m_all_sum.insert(std::make_pair(std::make_pair(ix, iy), 0));
             MBI->SetBinContent(ix, iy, 0);
         }
@@ -167,18 +166,16 @@ StatusCode AnalysisMaterialBudget::run(const std::shared_ptr<Clipboard>& clipboa
         int filled_angles = 0;
         if(fabs(kink_x) < static_cast<double>(Units::convert(angle_cut_, "mrad"))) {
             m_all_kinks.at(std::make_pair(cell_x, cell_y)).insert(kink_x);
-            m_all_entries.at(std::make_pair(cell_x, cell_y))++;
             ++filled_angles;
         }
         if(fabs(kink_y) < static_cast<double>(Units::convert(angle_cut_, "mrad"))) {
             m_all_kinks.at(std::make_pair(cell_x, cell_y)).insert(kink_y);
-            m_all_entries.at(std::make_pair(cell_x, cell_y))++;
             ++filled_angles;
         }
 
         m_all_sum.at(std::make_pair(cell_x, cell_y)) += (kink_x + kink_y);
 
-        int entries = m_all_entries.at(std::make_pair(cell_x, cell_y));
+        auto entries = static_cast<int>(m_all_kinks.at(std::make_pair(cell_x, cell_y)).size());
 
         entriesPerCell->SetBinContent(entries - filled_angles, entriesPerCell->GetBinContent(entries - filled_angles) - 1);
         entriesPerCell->SetBinContent(entries, entriesPerCell->GetBinContent(entries) + 1);
@@ -187,10 +184,7 @@ StatusCode AnalysisMaterialBudget::run(const std::shared_ptr<Clipboard>& clipboa
             // Calculate AAD and set image value
             if(entries >= min_cell_content_) {
                 MBI->SetBinContent(cell_x, cell_y, get_aad(cell_x, cell_y));
-                meanAngles->SetBinContent(cell_x,
-                                          cell_y,
-                                          m_all_sum.at(std::make_pair(cell_x, cell_y)) /
-                                              m_all_entries.at(std::make_pair(cell_x, cell_y)));
+                meanAngles->SetBinContent(cell_x, cell_y, m_all_sum.at(std::make_pair(cell_x, cell_y)) / entries);
             }
         }
     }
@@ -207,13 +201,10 @@ void AnalysisMaterialBudget::finalize(const std::shared_ptr<ReadonlyClipboard>&)
     if(!live_update_) {
         for(int cell_x = 0; cell_x < n_cells_x; ++cell_x) {
             for(int cell_y = 0; cell_y < n_cells_y; ++cell_y) {
-                int entries = m_all_entries.at(std::make_pair(cell_x, cell_y));
+                auto entries = static_cast<int>(m_all_kinks.at(std::make_pair(cell_x, cell_y)).size());
                 if(entries >= min_cell_content_) {
                     MBI->SetBinContent(cell_x, cell_y, get_aad(cell_x, cell_y));
-                    meanAngles->SetBinContent(cell_x,
-                                              cell_y,
-                                              m_all_sum.at(std::make_pair(cell_x, cell_y)) /
-                                                  m_all_entries.at(std::make_pair(cell_x, cell_y)));
+                    meanAngles->SetBinContent(cell_x, cell_y, m_all_sum.at(std::make_pair(cell_x, cell_y)) / entries);
                 }
             }
         }
