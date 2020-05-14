@@ -193,6 +193,13 @@ namespace corryvreckan {
         template <typename T> void setDefaultArray(const std::string& key, const std::vector<T>& val);
 
         /**
+         * @brief Set default matrix of values for a key only if it is not defined yet
+         * @param key Key to possible set values of
+         * @param val Matrix of values to assign to the key if the key is not defined yet
+         */
+        template <typename T> void setDefaultMatrix(const std::string& key, const Matrix<T>& val);
+
+        /**
          * @brief Set literal value of a key as string
          * @param key Key to set value of
          * @param val Literal string to assign key to

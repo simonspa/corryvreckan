@@ -26,7 +26,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        EventLoaderTimepix3(Configuration config, std::shared_ptr<Detector> detector);
+        EventLoaderTimepix3(Configuration& config, std::shared_ptr<Detector> detector);
         ~EventLoaderTimepix3() {}
 
         // Standard algorithm functions

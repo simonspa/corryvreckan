@@ -30,8 +30,8 @@
 
 using namespace corryvreckan;
 
-FileReader::FileReader(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {}
+FileReader::FileReader(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
+    : Module(config, std::move(detectors)) {}
 
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
@@ -102,14 +102,14 @@ template <typename T> static FileReader::ObjectCreatorMap gen_creator_map() {
 
 void FileReader::initialize() {
     // Read include and exclude list
-    if(m_config.has("include") && m_config.has("exclude")) {
+    if(config_.has("include") && config_.has("exclude")) {
         throw InvalidCombinationError(
-            m_config, {"exclude", "include"}, "include and exclude parameter are mutually exclusive");
-    } else if(m_config.has("include")) {
-        auto inc_arr = m_config.getArray<std::string>("include");
+            config_, {"exclude", "include"}, "include and exclude parameter are mutually exclusive");
+    } else if(config_.has("include")) {
+        auto inc_arr = config_.getArray<std::string>("include");
         include_.insert(inc_arr.begin(), inc_arr.end());
-    } else if(m_config.has("exclude")) {
-        auto exc_arr = m_config.getArray<std::string>("exclude");
+    } else if(config_.has("exclude")) {
+        auto exc_arr = config_.getArray<std::string>("exclude");
         exclude_.insert(exc_arr.begin(), exc_arr.end());
     }
 
@@ -117,7 +117,7 @@ void FileReader::initialize() {
     object_creator_map_ = gen_creator_map<corryvreckan::OBJECTS>();
 
     // Open the file with the objects
-    input_file_ = std::make_unique<TFile>(m_config.getPath("file_name", true).c_str());
+    input_file_ = std::make_unique<TFile>(config_.getPath("file_name", true).c_str());
 
     // Read all the trees in the file
     TList* keys = input_file_->GetListOfKeys();

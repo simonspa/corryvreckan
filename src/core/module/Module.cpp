@@ -11,13 +11,13 @@
 
 using namespace corryvreckan;
 
-Module::Module(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), std::vector<std::shared_ptr<Detector>>{detector}) {}
+Module::Module(Configuration& config, std::shared_ptr<Detector> detector)
+    : Module(config, std::vector<std::shared_ptr<Detector>>{detector}) {}
 
 Module::~Module() {}
 
-Module::Module(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : m_config(std::move(config)), m_detectors(std::move(detectors)) {}
+Module::Module(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
+    : config_(config), m_detectors(std::move(detectors)) {}
 
 /**
  * @throws InvalidModuleActionException If this method is called from the constructor
@@ -51,9 +51,9 @@ ModuleIdentifier Module::get_identifier() const {
 std::string Module::createOutputFile(const std::string& path, bool global) {
     std::string file;
     if(global) {
-        file = m_config.get<std::string>("_global_dir", std::string());
+        file = config_.get<std::string>("_global_dir", std::string());
     } else {
-        file = m_config.get<std::string>("_output_dir", std::string());
+        file = config_.get<std::string>("_output_dir", std::string());
     }
 
     // The file name will only be empty if this method is executed from the constructor
@@ -71,7 +71,7 @@ std::string Module::createOutputFile(const std::string& path, bool global) {
 
         if(path_is_file(file)) {
             auto global_overwrite = getConfigManager()->getGlobalConfiguration().get<bool>("deny_overwrite", false);
-            if(m_config.get<bool>("deny_overwrite", global_overwrite)) {
+            if(config_.get<bool>("deny_overwrite", global_overwrite)) {
                 throw ModuleError("Overwriting of existing file " + file + " denied.");
             }
             LOG(WARNING) << "File " << file << " exists and will be overwritten.";
@@ -148,7 +148,7 @@ bool Module::has_detector(std::string name) {
 }
 
 Configuration& Module::get_configuration() {
-    return m_config;
+    return config_;
 }
 
 /**

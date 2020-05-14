@@ -42,18 +42,14 @@ namespace corryvreckan {
 
     /**
      * @brief Method to calculate an absolute cut based on either relative or absolute configuration parameters. It checks
-     * which one is provided, and throws an exception if both are specified. The default is a relative cut.
+     * which one is provided, and throws an exception if both are specified. No default.
      * @param  name        Name of the cut parameter. Is automatically extended by "_abs" or "_rel" when reading
-     * @param  rel_default Default value in case a relative cut is chosen.
      * @param  config      Configuration object to query for cut settings
      * @param  detector    Detector for which the cuts should be calculated
      * @return             Cut object with absolute measures for the given detector
      */
     template <typename T>
-    static T calculate_cut(const std::string& name,
-                           double rel_default,
-                           const Configuration& config,
-                           const std::shared_ptr<Detector>& detector) {
+    static T calculate_cut(const std::string& name, const Configuration& config, const std::shared_ptr<Detector>& detector) {
 
         std::string absolute = name + "_abs";
         std::string relative = name + "_rel";
@@ -65,7 +61,7 @@ namespace corryvreckan {
             return config.get<T>(absolute);
         } else {
             try {
-                return get_resolution<T>(name, detector) * config.get<double>(relative, rel_default);
+                return get_resolution<T>(name, detector) * config.get<double>(relative);
             } catch(ConfigurationError&) {
                 throw InvalidValueError(config, relative, "key doesn't match requested resolution type");
             }
@@ -74,21 +70,19 @@ namespace corryvreckan {
 
     /**
      * @brief Method to calculate an absolute cut based on either relative or absolute configuration parameters. It checks
-     * which one is provided, and throws an exception if both are specified. The default is a relative cut.
+     * which one is provided, and throws an exception if both are specified. No default.
      * @param  name        Name of the cut parameter. Is automatically extended by "_abs" or "_rel" when reading
-     * @param  rel_default Default value in case a relative cut is chosen.
      * @param  config      Configuration object to query for cut settings
      * @param  detector    Detectors for which the cuts should be calculated
      * @return             Map of cut object with absolute measures, the detector is used as key
      */
     template <typename T>
     static std::map<std::shared_ptr<Detector>, T> calculate_cut(const std::string& name,
-                                                                double rel_default,
                                                                 const Configuration& config,
                                                                 const std::vector<std::shared_ptr<Detector>>& detectors) {
         std::map<std::shared_ptr<Detector>, T> cut_map;
         for(const auto& detector : detectors) {
-            cut_map[detector] = calculate_cut<T>(name, rel_default, config, detector);
+            cut_map[detector] = calculate_cut<T>(name, config, detector);
         }
         return cut_map;
     }

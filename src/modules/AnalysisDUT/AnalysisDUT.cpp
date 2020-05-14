@@ -16,12 +16,16 @@
 
 using namespace corryvreckan;
 
-AnalysisDUT::AnalysisDUT(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {
+AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detector)
+    : Module(config, detector), m_detector(detector) {
 
-    m_timeCutFrameEdge = m_config.get<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
-    chi2ndofCut = m_config.get<double>("chi2ndof_cut", 3.);
-    useClosestCluster = m_config.get<bool>("use_closest_cluster", true);
+    config_.setDefault<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
+    config_.setDefault<double>("chi2ndof_cut", 3.);
+    config_.setDefault<bool>("use_closest_cluster", true);
+
+    m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge");
+    chi2ndofCut = config_.get<double>("chi2ndof_cut");
+    useClosestCluster = config_.get<bool>("use_closest_cluster");
 }
 
 void AnalysisDUT::initialize() {

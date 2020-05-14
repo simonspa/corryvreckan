@@ -311,7 +311,7 @@ std::shared_ptr<Detector> ModuleManager::get_detector(std::string name) {
     return (it != m_detectors.end() ? (*it) : nullptr);
 }
 
-std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* library, Configuration config) {
+std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* library, Configuration& config) {
     // Create the identifier
     ModuleIdentifier identifier(config.getName(), "", 0);
 
@@ -347,7 +347,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* l
 
     // Convert to correct generator function
     auto module_generator =
-        reinterpret_cast<Module* (*)(Configuration, std::vector<std::shared_ptr<Detector>>)>(generator); // NOLINT
+        reinterpret_cast<Module* (*)(Configuration&, std::vector<std::shared_ptr<Detector>>)>(generator); // NOLINT
 
     // Set the log section header
     std::string old_section_name = Log::getSection();
@@ -370,7 +370,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_module(void* l
 }
 
 std::vector<std::pair<ModuleIdentifier, Module*>>
-ModuleManager::create_detector_modules(void* library, Configuration config, bool dut_only, std::vector<std::string> types) {
+ModuleManager::create_detector_modules(void* library, Configuration& config, bool dut_only, std::vector<std::string> types) {
     LOG(TRACE) << "Creating instantiations for module " << config.getName() << ", using generator \""
                << CORRYVRECKAN_GENERATOR_FUNCTION << "\"";
 
@@ -384,7 +384,7 @@ ModuleManager::create_detector_modules(void* library, Configuration config, bool
     }
 
     // Convert to correct generator function
-    auto module_generator = reinterpret_cast<Module* (*)(Configuration, std::shared_ptr<Detector>)>(generator); // NOLINT
+    auto module_generator = reinterpret_cast<Module* (*)(Configuration&, std::shared_ptr<Detector>)>(generator); // NOLINT
     auto module_base_name = config.getName();
 
     // Figure out which detectors should run on this module:
@@ -535,7 +535,7 @@ void ModuleManager::run() {
             section_name += module->getUniqueName();
             Log::setSection(section_name);
             // Set module specific settings
-            auto old_settings = set_module_before(module->getUniqueName(), module->getConfig());
+            auto old_settings = set_module_before(module->getUniqueName(), module->get_configuration());
             // Change to the output file directory
             module->getROOTDirectory()->cd();
 
@@ -632,7 +632,7 @@ void ModuleManager::initializeAll() {
 
         // Create main ROOT directory for this module class if it does not exists yet
         LOG(TRACE) << "Creating and accessing ROOT directory";
-        std::string module_name = module->getConfig().getName();
+        std::string module_name = module->get_configuration().getName();
         auto directory = m_histogramFile->GetDirectory(module_name.c_str());
         if(directory == nullptr) {
             directory = m_histogramFile->mkdir(module_name.c_str());
@@ -663,7 +663,7 @@ void ModuleManager::initializeAll() {
         section_name += module->getUniqueName();
         Log::setSection(section_name);
         // Set module specific settings
-        auto old_settings = set_module_before(module->getUniqueName(), module->getConfig());
+        auto old_settings = set_module_before(module->getUniqueName(), module->get_configuration());
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
 
@@ -693,7 +693,7 @@ void ModuleManager::finalizeAll() {
         section_name += module->getUniqueName();
         Log::setSection(section_name);
         // Set module specific settings
-        auto old_settings = set_module_before(module->getUniqueName(), module->getConfig());
+        auto old_settings = set_module_before(module->getUniqueName(), module->get_configuration());
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
 
@@ -751,7 +751,7 @@ void ModuleManager::timing() {
     LOG(STATUS) << "===============| Wall-clock timing (seconds) |================";
     for(auto& module : m_modules) {
         auto identifier = module->get_identifier().getIdentifier();
-        LOG(STATUS) << std::setw(20) << module->getConfig().getName() << (identifier.empty() ? "   " : " : ")
+        LOG(STATUS) << std::setw(20) << module->get_configuration().getName() << (identifier.empty() ? "   " : " : ")
                     << std::setw(10) << identifier << "  --  " << std::fixed << std::setprecision(5)
                     << module_execution_time_[module.get()] << "s = " << std::setprecision(6)
                     << 1000 * module_execution_time_[module.get()] / m_events << "ms/evt";

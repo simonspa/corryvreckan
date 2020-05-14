@@ -109,7 +109,7 @@ namespace corryvreckan {
          * @param config Configuration of the module
          * @return An unique module together with its identifier
          */
-        std::pair<ModuleIdentifier, Module*> create_unique_module(void* library, Configuration config);
+        std::pair<ModuleIdentifier, Module*> create_unique_module(void* library, Configuration& config);
 
         /**
          * @brief Create detector modules
@@ -120,7 +120,7 @@ namespace corryvreckan {
          * @return A list of all created detector modules and their identifiers
          */
         std::vector<std::pair<ModuleIdentifier, Module*>>
-        create_detector_modules(void* library, Configuration config, bool dut_only, std::vector<std::string> types);
+        create_detector_modules(void* library, Configuration& config, bool dut_only, std::vector<std::string> types);
 
         using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
 

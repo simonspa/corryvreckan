@@ -27,7 +27,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Prealignment(Configuration config, std::shared_ptr<Detector> detector);
+        Prealignment(Configuration& config, std::shared_ptr<Detector> detector);
         ~Prealignment() {}
 
         // Functions

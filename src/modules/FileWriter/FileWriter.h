@@ -32,7 +32,7 @@ namespace corryvreckan {
          * @param config Configuration object for this module as retrieved from the steering file
          * @param detectors List of detectors to perform task on
          */
-        FileWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        FileWriter(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
 
         /**
          * @brief Destructor deletes the internal objects used to build the ROOT Tree

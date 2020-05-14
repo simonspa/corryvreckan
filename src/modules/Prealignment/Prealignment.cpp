@@ -9,31 +9,35 @@
  */
 
 #include "Prealignment.h"
+#include "tools/cuts.h"
 
 using namespace corryvreckan;
 using namespace std;
 
-Prealignment::Prealignment(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {
-
-    max_correlation_rms = m_config.get<double>("max_correlation_rms", Units::get<double>(6, "mm"));
-    damping_factor = m_config.get<double>("damping_factor", 1.0);
-
-    method = m_config.get<std::string>("method", "mean");
-    std::transform(method.begin(), method.end(), method.begin(), ::tolower);
-    fit_range_rel = m_config.get<int>("fit_range_rel", 500);
+Prealignment::Prealignment(Configuration& config, std::shared_ptr<Detector> detector)
+    : Module(config, detector), m_detector(detector) {
 
     // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
-    m_config.setAlias("time_cut_abs", "timing_cut", true);
+    config_.setAlias("time_cut_abs", "timing_cut", true);
 
-    if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
-    } else if(m_config.has("time_cut_abs")) {
-        timeCut = m_config.get<double>("time_cut_abs");
-    } else {
-        timeCut = m_config.get<double>("time_cut_rel", 3.0) * m_detector->getTimeResolution();
+    config_.setDefault<double>("max_correlation_rms", Units::get<double>(6, "mm"));
+    config_.setDefault<double>("damping_factor", 1.0);
+    config_.setDefault<std::string>("method", "mean");
+    config_.setDefault<int>("fit_range_rel", 500);
+
+    if(config_.count({"time_cut_rel", "time_cut_abs"}) == 0) {
+        config_.setDefault("time_cut_rel", 3.0);
     }
+
+    // timing cut, relative (x * time_resolution) or absolute:
+    timeCut = corryvreckan::calculate_cut<double>("time_cut", config_, m_detector);
+
+    max_correlation_rms = config_.get<double>("max_correlation_rms");
+    damping_factor = config_.get<double>("damping_factor");
+    method = config_.get<std::string>("method");
+    std::transform(method.begin(), method.end(), method.begin(), ::tolower);
+    fit_range_rel = config_.get<int>("fit_range_rel");
+
     LOG(DEBUG) << "Setting max_correlation_rms to : " << max_correlation_rms;
     LOG(DEBUG) << "Setting damping_factor to : " << damping_factor;
 }
@@ -159,7 +163,7 @@ void Prealignment::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
             int binMaxY = correlationY->GetMaximumBin();
             shift_Y = correlationY->GetXaxis()->GetBinCenter(binMaxY);
         } else {
-            throw InvalidValueError(m_config, "method", "Invalid prealignment method");
+            throw InvalidValueError(config_, "method", "Invalid prealignment method");
         }
 
         LOG(DEBUG) << "Shift (without damping factor)" << m_detector->getName()

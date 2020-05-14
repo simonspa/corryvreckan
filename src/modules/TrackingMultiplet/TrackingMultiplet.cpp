@@ -11,52 +11,35 @@
 #include "TrackingMultiplet.h"
 #include <TDirectory.h>
 
+#include "tools/cuts.h"
+
 using namespace corryvreckan;
 
-TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
+TrackingMultiplet::TrackingMultiplet(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
+    : Module(config, std::move(detectors)) {
 
-    // timing cut, relative (x * time_resolution) or absolute:
-    if(m_config.count({"time_cut_rel", "time_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            m_config, {"time_cut_rel", "time_cut_abs"}, "Absolute and relative time cuts are mutually exclusive.");
-    } else if(m_config.has("time_cut_abs")) {
-        double time_cut_abs_ = m_config.get<double>("time_cut_abs");
-        for(auto& detector : get_detectors()) {
-            time_cuts_[detector] = time_cut_abs_;
-        }
-    } else {
-        double time_cut_rel_ = m_config.get<double>("time_cut_rel", 3.0);
-        for(auto& detector : get_detectors()) {
-            time_cuts_[detector] = detector->getTimeResolution() * time_cut_rel_;
-        }
+    config_.setDefault<double>("isolation_cut", scatterer_matching_cut_ * 2.);
+
+    if(config_.count({"time_cut_rel", "time_cut_abs"}) == 0) {
+        config_.setDefault("time_cut_rel", 3.0);
     }
-
-    // spatial cut, relative (x * spatial_resolution) or absolute:
-    if(m_config.count({"spatial_cut_rel", "spatial_cut_abs"}) > 1) {
-        throw InvalidCombinationError(
-            m_config, {"spatial_cut_rel", "spatial_cut_abs"}, "Absolute and relative spatial cuts are mutually exclusive.");
-    } else if(m_config.has("spatial_cut_abs")) {
-        auto spatial_cut_abs_ = m_config.get<XYVector>("spatial_cut_abs");
-        for(auto& detector : get_detectors()) {
-            spatial_cuts_[detector] = spatial_cut_abs_;
-        }
-    } else {
-        // default is 3.0 * spatial_resolution
-        auto spatial_cut_rel_ = m_config.get<double>("spatial_cut_rel", 3.0);
-        for(auto& detector : get_detectors()) {
-            spatial_cuts_[detector] = detector->getSpatialResolution() * spatial_cut_rel_;
-        }
+    if(config_.count({"spatial_cut_rel", "spatial_cut_abs"}) == 0) {
+        config_.setDefault("spatial_cut_rel", 3.0);
     }
 
     // Read the scatterer position and the up- and downstream detectors
     auto dut_vector = get_duts();
     if(dut_vector.size() == 1) {
-        m_config.setDefault<double>("scatterer_position", dut_vector.at(0)->displacement().Z());
+        config_.setDefault<double>("scatterer_position", dut_vector.at(0)->displacement().Z());
     }
 
-    scatterer_position_ = m_config.get<double>("scatterer_position");
+    scatterer_position_ = config_.get<double>("scatterer_position");
     LOG(DEBUG) << "Set scatterer position: " << Units::display(scatterer_position_, {"mm", "m"});
+
+    // timing cut, relative (x * time_resolution) or absolute:
+    time_cuts_ = corryvreckan::calculate_cut<double>("time_cut", config_, get_detectors());
+    // spatial cut, relative (x * spatial_resolution) or absolute:
+    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", config_, get_detectors());
 
     // Use detectors before and after scatterer as up- and downstream detectors
     std::vector<std::string> default_upstream_detectors, default_downstream_detectors;
@@ -70,12 +53,12 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
             default_downstream_detectors.push_back(detector->getName());
         }
     }
+    config_.setDefaultArray<std::string>("upstream_detectors", default_upstream_detectors);
+    config_.setDefaultArray<std::string>("downstream_detectors", default_downstream_detectors);
 
     // Get the strings of detectors and translate it to shared_ptr<Detector>
-    std::vector<std::string> upstream_detectors_str =
-        m_config.getArray<std::string>("upstream_detectors", default_upstream_detectors);
-    std::vector<std::string> downstream_detectors_str =
-        m_config.getArray<std::string>("downstream_detectors", default_downstream_detectors);
+    std::vector<std::string> upstream_detectors_str = config_.getArray<std::string>("upstream_detectors");
+    std::vector<std::string> downstream_detectors_str = config_.getArray<std::string>("downstream_detectors");
 
     for(auto detectorID : upstream_detectors_str) {
         m_upstream_detectors.push_back(get_detector(detectorID));
@@ -85,10 +68,10 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
     }
 
     if(m_upstream_detectors.size() < 2) {
-        throw InvalidValueError(m_config, "upstream_detectors", "At least two upstream detectors have to be provided.");
+        throw InvalidValueError(config_, "upstream_detectors", "At least two upstream detectors have to be provided.");
     }
     if(m_downstream_detectors.size() < 2) {
-        throw InvalidValueError(m_config, "downstream_detectors", "At least two downstream detectors have to be provided.");
+        throw InvalidValueError(config_, "downstream_detectors", "At least two downstream detectors have to be provided.");
     }
 
     double max_z_upstream = std::numeric_limits<double>::min();
@@ -98,7 +81,7 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
         }
         if(detector->isAuxiliary()) {
             throw InvalidValueError(
-                m_config, "upstream_detectors", "Auxiliary device listed as upstream detector. This is not supported.");
+                config_, "upstream_detectors", "Auxiliary device listed as upstream detector. This is not supported.");
         }
         if(detector->displacement().Z() > max_z_upstream) {
             max_z_upstream = detector->displacement().Z();
@@ -112,10 +95,10 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
         }
         if(detector->isAuxiliary()) {
             throw InvalidValueError(
-                m_config, "downstream_detectors", "Auxiliary device listed as downstream detector. This is not supported.");
+                config_, "downstream_detectors", "Auxiliary device listed as downstream detector. This is not supported.");
         }
         if(std::find(m_upstream_detectors.begin(), m_upstream_detectors.end(), detector) != m_upstream_detectors.end()) {
-            throw InvalidCombinationError(m_config,
+            throw InvalidCombinationError(config_,
                                           {"upstream_detectors", "downstream_detectors"},
                                           "Detector " + detector->getName() +
                                               " is listed both as upstream and downstream detector.");
@@ -126,20 +109,23 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
     }
 
     if(max_z_upstream > min_z_downstream) {
-        throw InvalidCombinationError(m_config,
+        throw InvalidCombinationError(config_,
                                       {"upstream_detectors", "downstream_detectors"},
                                       "Last upstream detector is located behind first downstream detector.");
     }
 
-    min_hits_upstream_ = m_config.get<size_t>("min_hits_upstream", m_upstream_detectors.size());
-    min_hits_downstream_ = m_config.get<size_t>("min_hits_downstream", m_downstream_detectors.size());
+    config_.setDefault<size_t>("min_hits_upstream", m_upstream_detectors.size());
+    config_.setDefault<size_t>("min_hits_downstream", m_downstream_detectors.size());
+
+    min_hits_upstream_ = config_.get<size_t>("min_hits_upstream", m_upstream_detectors.size());
+    min_hits_downstream_ = config_.get<size_t>("min_hits_downstream", m_downstream_detectors.size());
     if(min_hits_upstream_ > m_upstream_detectors.size() || min_hits_upstream_ < 2) {
         throw InvalidValueError(
-            m_config, "min_hits_upstream", "Number has to be 2 <= n <= " + to_string(m_upstream_detectors.size()));
+            config_, "min_hits_upstream", "Number has to be 2 <= n <= " + to_string(m_upstream_detectors.size()));
     }
     if(min_hits_downstream_ > m_downstream_detectors.size() || min_hits_downstream_ < 2) {
         throw InvalidValueError(
-            m_config, "min_hits_downstream", "Number has to be 2 <= n <= " + to_string(m_downstream_detectors.size()));
+            config_, "min_hits_downstream", "Number has to be 2 <= n <= " + to_string(m_downstream_detectors.size()));
     }
     if(min_hits_upstream_ == 2) {
         LOG(WARNING) << "Number of required upstream hits equals 2. This leads to an underconstrained track fit.";
@@ -149,18 +135,19 @@ TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shar
     }
 
     if(scatterer_position_ < max_z_upstream) {
-        throw InvalidCombinationError(m_config,
+        throw InvalidCombinationError(config_,
                                       {"upstream_detectors", "scatterer_position"},
                                       "Scatterer position is located in front of last upstream detector.");
     }
     if(scatterer_position_ > min_z_downstream) {
-        throw InvalidCombinationError(m_config,
+        throw InvalidCombinationError(config_,
                                       {"downstream_detectors", "scatterer_position"},
                                       "Scatterer position is located behind first downstream detector.");
     }
 
-    scatterer_matching_cut_ = m_config.get<double>("scatterer_matching_cut");
-    isolation_cut_ = m_config.get<double>("isolation_cut", scatterer_matching_cut_ * 2.);
+    scatterer_matching_cut_ = config_.get<double>("scatterer_matching_cut");
+
+    isolation_cut_ = config_.get<double>("isolation_cut");
 }
 
 void TrackingMultiplet::initialize() {

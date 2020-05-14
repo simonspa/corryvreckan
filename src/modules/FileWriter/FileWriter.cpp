@@ -25,8 +25,8 @@
 
 using namespace corryvreckan;
 
-FileWriter::FileWriter(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {}
+FileWriter::FileWriter(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
+    : Module(config, std::move(detectors)) {}
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
  */
@@ -39,19 +39,20 @@ FileWriter::~FileWriter() {
 
 void FileWriter::initialize() {
     // Create output file
+    config_.setDefault<std::string>("file_name", "data");
     output_file_name_ =
-        createOutputFile(corryvreckan::add_file_extension(m_config.get<std::string>("file_name", "data"), "root"), true);
+        createOutputFile(corryvreckan::add_file_extension(config_.get<std::string>("file_name"), "root"), true);
     output_file_ = std::make_unique<TFile>(output_file_name_.c_str(), "RECREATE");
     output_file_->cd();
 
     // Read include and exclude list
-    if(m_config.has("include") && m_config.has("exclude")) {
-        throw InvalidValueError(m_config, "exclude", "include and exclude parameter are mutually exclusive");
-    } else if(m_config.has("include")) {
-        auto inc_arr = m_config.getArray<std::string>("include");
+    if(config_.has("include") && config_.has("exclude")) {
+        throw InvalidValueError(config_, "exclude", "include and exclude parameter are mutually exclusive");
+    } else if(config_.has("include")) {
+        auto inc_arr = config_.getArray<std::string>("include");
         include_.insert(inc_arr.begin(), inc_arr.end());
-    } else if(m_config.has("exclude")) {
-        auto exc_arr = m_config.getArray<std::string>("exclude");
+    } else if(config_.has("exclude")) {
+        auto exc_arr = config_.getArray<std::string>("exclude");
         exclude_.insert(exc_arr.begin(), exc_arr.end());
     }
 
@@ -176,6 +177,44 @@ void FileWriter::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
         branch_count += tree.second->GetListOfBranches()->GetEntries();
     }
     branch_count += event_tree_->GetListOfBranches()->GetEntries();
+
+    // Create main config directory
+    TDirectory* config_dir = output_file_->mkdir("config");
+    config_dir->cd();
+
+    // Get the config manager
+    ConfigManager* conf_manager = getConfigManager();
+
+    // Save the main configuration to the output file
+    auto global_dir = config_dir->mkdir("Corryvreckan");
+    LOG(TRACE) << "Writing global configuration";
+
+    // Loop over all values in the global configuration
+    for(auto& key_value : conf_manager->getGlobalConfiguration().getAll()) {
+        global_dir->WriteObject(&key_value.second, key_value.first.c_str());
+    }
+
+    // Save the instance configuration to the output file
+    for(auto& config : conf_manager->getInstanceConfigurations()) {
+        // Create a new directory per section, using the unique module name
+        auto unique_name = config.getName();
+        auto identifier = config.get<std::string>("identifier");
+        if(!identifier.empty()) {
+            unique_name += ":";
+            unique_name += identifier;
+        }
+        auto section_dir = config_dir->mkdir(unique_name.c_str());
+        LOG(TRACE) << "Writing configuration for: " << unique_name;
+
+        // Loop over all values in the section
+        for(auto& key_value : config.getAll()) {
+            // Skip the identifier
+            if(key_value.first == "identifier") {
+                continue;
+            }
+            section_dir->WriteObject(&key_value.second, key_value.first.c_str());
+        }
+    }
 
     // Finish writing to output file
     output_file_->Write();

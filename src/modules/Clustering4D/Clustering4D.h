@@ -26,7 +26,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Clustering4D(Configuration config, std::shared_ptr<Detector> detector);
+        Clustering4D(Configuration& config, std::shared_ptr<Detector> detector);
         ~Clustering4D() {}
 
         // Functions
@@ -59,6 +59,7 @@ namespace corryvreckan {
         int neighbor_radius_row_;
         int neighbor_radius_col_;
         bool charge_weighting_;
+        bool use_earliest_pixel_;
         bool reject_by_ROI_;
     };
 } // namespace corryvreckan

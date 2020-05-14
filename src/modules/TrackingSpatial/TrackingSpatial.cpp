@@ -26,19 +26,28 @@ reconstruction with a mostly colinear beam.
 
 */
 
-TrackingSpatial::TrackingSpatial(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(std::move(config), std::move(detectors)) {
-
-    minHitsOnTrack = m_config.get<size_t>("min_hits_on_track", 6);
-    excludeDUT = m_config.get<bool>("exclude_dut", true);
-    trackModel = m_config.get<std::string>("track_model", "straightline");
-    rejectByROI = m_config.get<bool>("reject_by_roi", false);
+TrackingSpatial::TrackingSpatial(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
+    : Module(config, std::move(detectors)) {
 
     // Backwards compatibilty: also allow spatial_cut to be used for spatial_cut_abs
-    m_config.setAlias("spatial_cut_abs", "spatial_cut", true);
+    config_.setAlias("spatial_cut_abs", "spatial_cut", true);
+
+    config_.setDefault<size_t>("min_hits_on_track", 6);
+    config_.setDefault<bool>("exclude_dut", true);
+    config_.setDefault<std::string>("track_model", "straightline");
+    config_.setDefault<bool>("reject_by_roi", false);
+
+    if(config_.count({"spatial_cut_rel", "spatial_cut_abs"}) == 0) {
+        config_.setDefault("spatial_cut_rel", 3.0);
+    }
+
+    minHitsOnTrack = config_.get<size_t>("min_hits_on_track");
+    excludeDUT = config_.get<bool>("exclude_dut");
+    trackModel = config_.get<std::string>("track_model");
+    rejectByROI = config_.get<bool>("reject_by_roi");
 
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", 3.0, m_config, get_detectors());
+    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", config_, get_detectors());
 }
 
 void TrackingSpatial::initialize() {

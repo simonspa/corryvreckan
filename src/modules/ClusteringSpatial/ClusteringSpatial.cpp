@@ -14,12 +14,16 @@
 using namespace corryvreckan;
 using namespace std;
 
-ClusteringSpatial::ClusteringSpatial(Configuration config, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), m_detector(detector) {
+ClusteringSpatial::ClusteringSpatial(Configuration& config, std::shared_ptr<Detector> detector)
+    : Module(config, detector), m_detector(detector) {
 
-    useTriggerTimestamp = m_config.get<bool>("use_trigger_timestamp", false);
-    chargeWeighting = m_config.get<bool>("charge_weighting", true);
-    rejectByROI = m_config.get<bool>("reject_by_roi", false);
+    config_.setDefault<bool>("use_trigger_timestamp", false);
+    config_.setDefault<bool>("charge_weighting", true);
+    config_.setDefault<bool>("reject_by_roi", false);
+
+    useTriggerTimestamp = config_.get<bool>("use_trigger_timestamp");
+    chargeWeighting = config_.get<bool>("charge_weighting");
+    rejectByROI = config_.get<bool>("reject_by_roi");
 }
 
 void ClusteringSpatial::initialize() {
