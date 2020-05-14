@@ -43,7 +43,6 @@ AlignmentMillepede::AlignmentMillepede(Configuration& config, std::vector<std::s
     m_convergence = config_.get<double>("convergence");
     m_sigmas = config_.getArray<double>("sigmas");
 
-    // Set the degrees of freedom.
     if(m_dofs.size() != 6) {
         throw InvalidValueError(config_, "dofs", "Invalid number of degrees of freedom.");
     }
