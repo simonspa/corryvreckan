@@ -27,7 +27,7 @@ namespace corryvreckan {
 
     public:
         // Constructor
-        AnalysisMaterialBudget(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        AnalysisMaterialBudget(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
 
         // Module functions
         void initialize() override;

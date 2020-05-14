@@ -13,7 +13,7 @@
 
 using namespace corryvreckan;
 
-AnalysisMaterialBudget::AnalysisMaterialBudget(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+AnalysisMaterialBudget::AnalysisMaterialBudget(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
     cell_size_ = m_config.get<ROOT::Math::XYVector>(
         "cell_size", ROOT::Math::XYVector(Units::get<double>(50, "um"), Units::get<double>(50, "um")));
