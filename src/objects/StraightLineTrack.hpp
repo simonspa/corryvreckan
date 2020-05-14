@@ -24,14 +24,6 @@ namespace corryvreckan {
     class StraightLineTrack : public Track {
 
     public:
-        // Constructors and destructors
-        StraightLineTrack();
-
-        // copy constructor
-        StraightLineTrack(const StraightLineTrack& track);
-
-        virtual StraightLineTrack* clone() const override { return new StraightLineTrack(*this); }
-
         // Minimisation operator used by Minuit. Minuit passes the current iteration of the parameters and checks if the chi2
         // is better or worse
         double operator()(const double* parameters);
@@ -83,8 +75,8 @@ namespace corryvreckan {
 
         void calculateResiduals();
         // Member variables
-        ROOT::Math::XYZVector m_direction;
-        ROOT::Math::XYZPoint m_state;
+        ROOT::Math::XYZVector m_direction{0, 0, 1.};
+        ROOT::Math::XYZPoint m_state{0, 0, 0.};
 
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(StraightLineTrack, 1)

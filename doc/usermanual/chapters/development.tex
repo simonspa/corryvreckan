@@ -172,11 +172,12 @@ TestModule(Configuration& config, std::shared_ptr<Detector> detector): Module(st
 
 In addition to the constructor, each module can override the following methods:
 \begin{itemize}
-\item \parameter{initialise()}: Called after loading and constructing all modules and before starting the analysis loop.
+\item \parameter{initialize()}: Called after loading and constructing all modules and before starting the analysis loop.
 This method can for example be used to initialize histograms.
-\item \parameter{run(std::shared_ptr<Clipboard> clipboard)}: Called for every time frame or triggered event to be analyzed. The argument represents a pointer to the clipboard where the event data is stored.
+\item \parameter{run(const std::shared_ptr<Clipboard>& clipboard)}: Called for every time frame or triggered event to be analyzed. The argument represents a pointer to the clipboard where the event data is stored.
 A status code is returned to signal the framework whether to continue processing data or to end the run.
-\item \parameter{finalise()}: Called after processing all events in the run and before destructing the module.
+\item \parameter{finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard)}: Called after processing all events in the run and before destructing the module.
 Typically used to summarize statistics like the number of tracks used in the analysis or analysis results like the chip efficiency.
+The argument is a reference to a read-only instance of the clipboard with the persistent storage containing all collected data from the run.
 Any exceptions should be thrown from here instead of the destructor.
 \end{itemize}

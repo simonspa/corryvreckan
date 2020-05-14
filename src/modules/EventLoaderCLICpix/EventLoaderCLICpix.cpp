@@ -19,7 +19,7 @@ EventLoaderCLICpix::EventLoaderCLICpix(Configuration config, std::shared_ptr<Det
     m_filename = "";
 }
 
-void EventLoaderCLICpix::initialise() {
+void EventLoaderCLICpix::initialize() {
     // File structure is RunX/CLICpix/RunX.dat
 
     // Take input directory from global parameters
@@ -56,7 +56,7 @@ void EventLoaderCLICpix::initialise() {
     hPixelMultiplicity = new TH1F("pixelMultiplicity", "Pixel Multiplicity; # pixels; # events", 4100, -0.5, 4099.5);
 }
 
-StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EventLoaderCLICpix::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // If have reached the end of file, close it and exit program running
     if(m_file.eof()) {
@@ -145,7 +145,7 @@ StatusCode EventLoaderCLICpix::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void EventLoaderCLICpix::finalise() {
+void EventLoaderCLICpix::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }

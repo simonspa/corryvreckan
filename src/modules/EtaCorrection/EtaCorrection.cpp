@@ -19,7 +19,7 @@ EtaCorrection::EtaCorrection(Configuration config, std::shared_ptr<Detector> det
     m_etaFormulaY = m_config.get<std::string>("eta_formula_y", "[0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 + [5]*x^5");
 }
 
-void EtaCorrection::initialise() {
+void EtaCorrection::initialize() {
 
     // Initialise histograms
     double pitchX = m_detector->getPitch().X();
@@ -83,7 +83,7 @@ void EtaCorrection::applyEta(Cluster* cluster) {
     cluster->setClusterCentreLocal(positionLocal);
 }
 
-StatusCode EtaCorrection::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EtaCorrection::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the clusters
     auto clusters = clipboard->getData<Cluster>(m_detector->getName());

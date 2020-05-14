@@ -41,7 +41,7 @@ bool EventLoaderTimepix1::sortByTime(string filename1, string filename2) {
     return (filetime1 < filetime2);
 }
 
-void EventLoaderTimepix1::initialise() {
+void EventLoaderTimepix1::initialize() {
 
     // Take input directory from global parameters
     m_inputDirectory = m_config.getPath("input_directory");
@@ -85,7 +85,7 @@ void EventLoaderTimepix1::initialise() {
 }
 
 // In each event, load one frame of data from all devices
-StatusCode EventLoaderTimepix1::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EventLoaderTimepix1::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     LOG_PROGRESS(INFO, "tpx_loader") << "\rRunning over event " << m_eventNumber;
 
@@ -211,7 +211,7 @@ void EventLoaderTimepix1::processHeader(string header, string& device, long long
         header.substr(header.find("ChipboardID : ") + 14, header.find(" # DACs") - (header.find("ChipboardID : ") + 14));
 }
 
-void EventLoaderTimepix1::finalise() {
+void EventLoaderTimepix1::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }

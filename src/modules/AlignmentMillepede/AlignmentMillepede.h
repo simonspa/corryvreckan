@@ -30,9 +30,9 @@ namespace corryvreckan {
         /// Destructor
         virtual ~AlignmentMillepede();
 
-        void initialise();
-        void finalise();
-        StatusCode run(std::shared_ptr<Clipboard>);
+        void initialize() override;
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
         virtual void updateGeometry();
 
@@ -103,8 +103,6 @@ namespace corryvreckan {
                           std::vector<std::vector<double>>& w,
                           const unsigned int n,
                           const unsigned int m);
-
-        TrackVector m_alignmenttracks;
 
         /// Number of global derivatives
         unsigned int m_nagb;

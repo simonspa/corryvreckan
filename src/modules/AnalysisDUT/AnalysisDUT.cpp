@@ -24,7 +24,7 @@ AnalysisDUT::AnalysisDUT(Configuration config, std::shared_ptr<Detector> detecto
     useClosestCluster = m_config.get<bool>("use_closest_cluster", true);
 }
 
-void AnalysisDUT::initialise() {
+void AnalysisDUT::initialize() {
 
     hClusterMapAssoc = new TH2F("clusterMapAssoc",
                                 "clusterMapAssoc; cluster col; cluster row",
@@ -310,7 +310,7 @@ void AnalysisDUT::initialise() {
                  10);
 }
 
-StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
@@ -491,7 +491,7 @@ StatusCode AnalysisDUT::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void AnalysisDUT::finalise() {
+void AnalysisDUT::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     hCutHisto->Scale(1 / double(num_tracks));
     clusterSizeAssocNorm->Scale(1 / clusterSizeAssoc->Integral());
 }

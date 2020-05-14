@@ -41,7 +41,7 @@ TreeWriterDUT::TreeWriterDUT(Configuration config, std::shared_ptr<Detector> det
 
  */
 
-void TreeWriterDUT::initialise() {
+void TreeWriterDUT::initialize() {
     LOG(DEBUG) << "Initialised TreeWriterDUT";
 
     // Create output file and directories
@@ -68,7 +68,7 @@ void TreeWriterDUT::initialise() {
     m_outputTree->Branch("intercepts", &v_intercepts);
 }
 
-StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode TreeWriterDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
     // Counter for cluster event ID
     eventID++;
 
@@ -170,7 +170,7 @@ StatusCode TreeWriterDUT::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void TreeWriterDUT::finalise() {
+void TreeWriterDUT::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     LOG(DEBUG) << "Finalise";
     auto directory = m_outputFile->mkdir("Directory");
     directory->cd();

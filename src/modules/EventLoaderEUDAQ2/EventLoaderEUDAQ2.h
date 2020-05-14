@@ -50,17 +50,17 @@ namespace corryvreckan {
         /**
          * @brief [Initialise this module]
          */
-        void initialise();
+        void initialize() override;
 
         /**
          * @brief [Run the function of this module]
          */
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
         /**
          * @brief [Finalise this module]
          */
-        void finalise();
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
         /**
@@ -78,7 +78,7 @@ namespace corryvreckan {
          * @param  evt        The EUDAQ StandardEvent to check
          * @return            Position of the StandardEvent with respect to the current Corryvreckan event
          */
-        Event::Position is_within_event(std::shared_ptr<Clipboard> clipboard,
+        Event::Position is_within_event(const std::shared_ptr<Clipboard>& clipboard,
                                         std::shared_ptr<eudaq::StandardEvent> evt) const;
 
         /**

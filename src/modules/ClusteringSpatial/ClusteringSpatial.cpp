@@ -22,7 +22,7 @@ ClusteringSpatial::ClusteringSpatial(Configuration config, std::shared_ptr<Detec
     rejectByROI = m_config.get<bool>("reject_by_roi", false);
 }
 
-void ClusteringSpatial::initialise() {
+void ClusteringSpatial::initialize() {
 
     // Cluster plots
     std::string title = m_detector->getName() + " Cluster size;cluster size;events";
@@ -58,7 +58,7 @@ void ClusteringSpatial::initialise() {
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
 }
 
-StatusCode ClusteringSpatial::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode ClusteringSpatial::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the pixels
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());

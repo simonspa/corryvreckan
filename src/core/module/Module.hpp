@@ -43,7 +43,7 @@ namespace corryvreckan {
      * defines the methods the children can implement:
      * - Module::initialise(): for initializing the module at the start
      * - Module::run(Clipoard* Clipboard): for doing the job of every module for every event
-     * - Module::finalise(): for finalising the module at the end
+     * - Module::finalize(): for finalising the module at the end
      */
     class Module {
         friend class ModuleManager;
@@ -105,7 +105,7 @@ namespace corryvreckan {
          *
          * Does nothing if not overloaded.
          */
-        virtual void initialise() {}
+        virtual void initialize() {}
 
         /**
          * @brief Execute the function of the module for every event
@@ -114,7 +114,7 @@ namespace corryvreckan {
          *
          * Does nothing if not overloaded.
          */
-        virtual StatusCode run(std::shared_ptr<Clipboard>) { return StatusCode::Success; }
+        virtual StatusCode run(const std::shared_ptr<Clipboard>&) { return StatusCode::Success; }
 
         /**
          * @brief Finalise the module after the event sequence
@@ -122,7 +122,7 @@ namespace corryvreckan {
          *
          * Does nothing if not overloaded.
          */
-        virtual void finalise(){};
+        virtual void finalize(const std::shared_ptr<ReadonlyClipboard>&){};
 
         /**
          * @brief Get the config manager object to allow to read the global and other module configurations
@@ -169,6 +169,12 @@ namespace corryvreckan {
          * @return Pointer to the reference detector
          */
         std::shared_ptr<Detector> get_reference();
+
+        /**
+         * @brief Get list of dut detectors this module acts on
+         * @return List of dut detectors for this module
+         */
+        std::vector<std::shared_ptr<Detector>> get_duts();
 
         /**
          * @brief Check if this module should act on a given detector

@@ -36,12 +36,12 @@ namespace corryvreckan {
         /**
          * @brief [Initialise this module]
          */
-        void initialise();
+        void initialize() override;
 
         /**
          * @brief [Run the function of this module]
          */
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
     private:
         std::string m_inputDirectory;

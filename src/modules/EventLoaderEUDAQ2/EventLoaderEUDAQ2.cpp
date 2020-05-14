@@ -51,7 +51,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration config, std::shared_ptr<Detec
     eudaq_config_ = std::make_shared<const eudaq::Configuration>(eu_cfg);
 }
 
-void EventLoaderEUDAQ2::initialise() {
+void EventLoaderEUDAQ2::initialize() {
 
     // Declare histograms
     std::string title = ";EUDAQ event start time[ms];# entries";
@@ -243,7 +243,7 @@ void EventLoaderEUDAQ2::retrieve_event_tags(const eudaq::EventSPC evt) {
         }
     }
 }
-Event::Position EventLoaderEUDAQ2::is_within_event(std::shared_ptr<Clipboard> clipboard,
+Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboard>& clipboard,
                                                    std::shared_ptr<eudaq::StandardEvent> evt) const {
 
     // Check if this event has timestamps available:
@@ -449,7 +449,7 @@ bool EventLoaderEUDAQ2::filter_detectors(std::shared_ptr<eudaq::StandardEvent> e
     return false;
 }
 
-StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     PixelVector pixels;
 
@@ -561,7 +561,7 @@ StatusCode EventLoaderEUDAQ2::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void EventLoaderEUDAQ2::finalise() {
+void EventLoaderEUDAQ2::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(INFO) << "Found " << m_hits << " hits in the data.";
 }
