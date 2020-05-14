@@ -54,7 +54,7 @@ void AnalysisMaterialBudget::initialize() {
                            angle_cut_mrad * angle_cut_mrad);
 
     MBIpreview = new TProfile2D("MBIpreview",
-                                "Kink vs incidence position, medium; x [mm]; y [mm]; <kink^{2}> [mrad^{2}]",
+                                "Square kink vs incidence position, medium; x [mm]; y [mm]; <kink^{2}> [mrad^{2}]",
                                 n_cells_x,
                                 -static_cast<double>(Units::convert(image_size_.x(), "mm")) / 2,
                                 static_cast<double>(Units::convert(image_size_.x(), "mm")) / 2,
@@ -64,7 +64,7 @@ void AnalysisMaterialBudget::initialize() {
                                 0,
                                 angle_cut_mrad * angle_cut_mrad);
     MBI = new TH2F("MBI",
-                   "Material Budget Image; x [mm]; y [mm]; AAD(kink)^{2} [mrad^{2}]",
+                   "Material Budget Image (AAD^{2}); x [mm]; y [mm]; AAD(kink)^{2} [mrad^{2}]",
                    n_cells_x,
                    -static_cast<double>(Units::convert(image_size_.x(), "mm")) / 2,
                    static_cast<double>(Units::convert(image_size_.x(), "mm")) / 2,
