@@ -42,6 +42,11 @@ AlignmentMillepede::AlignmentMillepede(Configuration& config, std::vector<std::s
     m_nstdev = config_.get<int>("number_of_stddev");
     m_convergence = config_.get<double>("convergence");
     m_sigmas = config_.getArray<double>("sigmas");
+
+    // Set the degrees of freedom.
+    if(m_dofs.size() != 6) {
+        throw InvalidValueError(config_, "dofs", "Invalid number of degrees of freedom.");
+    }
 }
 
 //=============================================================================
@@ -64,14 +69,8 @@ void AlignmentMillepede::initialize() {
         ++index;
     }
 
-    // Set the degrees of freedom.
-    if(m_dofs.size() != 6) {
-        LOG(INFO) << "Using the default degrees of freedom:";
-        m_dofs = {true, true, false, true, true, true};
-    } else {
-        LOG(INFO) << "Using the following degrees of freedom:";
-    }
     // Print the degrees of freedom.
+    LOG(INFO) << "Using the following degrees of freedom:";
     const std::vector<std::string> labels = {
         "Translation X", "Translation Y", "Translation Z", "Rotation X", "Rotation Y", "Rotation Z"};
     for(unsigned int i = 0; i < 6; ++i) {
