@@ -16,9 +16,8 @@ using namespace corryvreckan;
 AnalysisMaterialBudget::AnalysisMaterialBudget(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
 
-    config_.setDefault<ROOT::Math::XYVector>(
-        "cell_size", <ROOT::Math::XYVector>(Units::get<double>(50, "um"), Units::get<double>(50, "um")));
-    config_.setDefault<ROOT::Math::XYVector>("image_size", <ROOT::Math::XYVector>(10, 10));
+    config_.setDefault<ROOT::Math::XYVector>("cell_size", {Units::get<double>(50, "um"), Units::get<double>(50, "um")});
+    config_.setDefault<ROOT::Math::XYVector>("image_size", {10, 10});
     config_.setDefault<double>("angle_cut", Units::get<double>(100, "mrad"));
     config_.setDefault<double>("quantile", 0.9);
     config_.setDefault<int>("min_cell_content", 20);
