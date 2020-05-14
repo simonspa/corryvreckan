@@ -64,8 +64,14 @@ namespace corryvreckan {
         double rowWidth() const { return m_rowWidth; }
         std::vector<const Pixel*> pixels() const;
 
-        // Retrieve the seed pixel of the cluster, defined as the one with the highest charge.
-        // In case all pixels have zero charge, return the earliest pixel.
+        /**
+         * @brief Retrieve the seed pixel of the cluster.
+         *
+         * The seed pixel is defined as the one with the highest charge. In case all pixels have zero charge, return the
+         * pixel with the earliest timestamp..
+         *
+         * @return Seed pixel of the cluster
+         */
         const Pixel* getSeedPixel() const;
 
         // Set cluster parameters
