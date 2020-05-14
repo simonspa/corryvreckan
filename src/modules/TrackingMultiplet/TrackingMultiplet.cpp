@@ -18,9 +18,6 @@ using namespace corryvreckan;
 TrackingMultiplet::TrackingMultiplet(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
 
-    config_.setDefault<size_t>("min_hits_upstream", m_upstream_detectors.size());
-    config_.setDefault<size_t>("min_hits_downstream", m_downstream_detectors.size());
-
     config_.setDefault<double>("isolation_cut", scatterer_matching_cut_ * 2.);
 
     if(config_.count({"time_cut_rel", "time_cut_abs"}) == 0) {
@@ -116,6 +113,9 @@ TrackingMultiplet::TrackingMultiplet(Configuration& config, std::vector<std::sha
                                       {"upstream_detectors", "downstream_detectors"},
                                       "Last upstream detector is located behind first downstream detector.");
     }
+
+    config_.setDefault<size_t>("min_hits_upstream", m_upstream_detectors.size());
+    config_.setDefault<size_t>("min_hits_downstream", m_downstream_detectors.size());
 
     min_hits_upstream_ = config_.get<size_t>("min_hits_upstream", m_upstream_detectors.size());
     min_hits_downstream_ = config_.get<size_t>("min_hits_downstream", m_downstream_detectors.size());
