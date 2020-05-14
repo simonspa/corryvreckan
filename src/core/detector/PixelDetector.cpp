@@ -271,27 +271,24 @@ bool PixelDetector::hitMasked(const Track* track, int tolerance) const {
 
 // Functions to get row and column from local position
 double PixelDetector::getRow(const PositionVector3D<Cartesian3D<double>> localPosition) const {
-    // (1-m_nPixelsY%2)/2. --> add 1/2 pixel pitch if even number of columns
-    double row = localPosition.Y() / m_pitch.Y() + static_cast<double>(m_nPixels.Y()) / 2. + (1 - m_nPixels.Y() % 2) / 2.;
-    return row;
+    return localPosition.Y() / m_pitch.Y() + static_cast<double>(m_nPixels.Y() - 1) / 2.;
 }
 double PixelDetector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosition) const {
-    // (1-m_nPixelsX%2)/2. --> add 1/2 pixel pitch if even number of columns
-    double column = localPosition.X() / m_pitch.X() + static_cast<double>(m_nPixels.X()) / 2. + (1 - m_nPixels.X() % 2) / 2.;
-    return column;
+    return localPosition.X() / m_pitch.X() + static_cast<double>(m_nPixels.X() - 1) / 2.;
 }
 
 // Function to get local position from row and column
 PositionVector3D<Cartesian3D<double>> PixelDetector::getLocalPosition(double column, double row) const {
 
-    return PositionVector3D<Cartesian3D<double>>(
-        m_pitch.X() * (column - m_nPixels.X() / 2), m_pitch.Y() * (row - m_nPixels.Y() / 2), 0.);
+    return PositionVector3D<Cartesian3D<double>>(m_pitch.X() * (column - static_cast<double>(m_nPixels.X() - 1) / 2.),
+                                                 m_pitch.Y() * (row - static_cast<double>(m_nPixels.Y() - 1) / 2.),
+                                                 0.);
 }
 
 // Function to get in-pixel position
 ROOT::Math::XYVector PixelDetector::inPixel(const double column, const double row) const {
     // a pixel ranges from (col-0.5) to (col+0.5)
-    return XYVector(m_pitch.X() * (column - floor(column) - 0.5), m_pitch.Y() * (row - floor(row) - 0.5));
+    return XYVector(m_pitch.X() * (column - floor(column + 0.5)), m_pitch.Y() * (row - floor(row + 0.5)));
 }
 
 ROOT::Math::XYVector PixelDetector::inPixel(const PositionVector3D<Cartesian3D<double>> localPosition) const {
