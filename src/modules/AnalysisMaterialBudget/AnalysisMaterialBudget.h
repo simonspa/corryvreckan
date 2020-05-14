@@ -57,7 +57,7 @@ namespace corryvreckan {
         TH2F* MBI;
         TH2F* meanAngles;
 
-        std::map<std::pair<int, int>, std::vector<double>> m_all_kinks;
+        std::map<std::pair<int, int>, std::multiset<double>> m_all_kinks;
         std::map<std::pair<int, int>, double> m_all_sum;
         std::map<std::pair<int, int>, int> m_all_entries;
 

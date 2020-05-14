@@ -82,7 +82,7 @@ void AnalysisMaterialBudget::initialize() {
 
     for(int ix = 0; ix < n_cells_x; ++ix) {
         for(int iy = 0; iy < n_cells_y; ++iy) {
-            m_all_kinks.insert(std::make_pair(std::make_pair(ix, iy), std::vector<double>()));
+            m_all_kinks.insert(std::make_pair(std::make_pair(ix, iy), std::multiset<double>()));
             m_all_entries.insert(std::make_pair(std::make_pair(ix, iy), 0));
             m_all_sum.insert(std::make_pair(std::make_pair(ix, iy), 0));
             MBI->SetBinContent(ix, iy, 0);
@@ -97,25 +97,22 @@ void AnalysisMaterialBudget::initialize() {
 
 double AnalysisMaterialBudget::get_aad(int cell_x, int cell_y) {
 
-    // First let's sort the vector
-    std::vector<double> vec = m_all_kinks.at(std::make_pair(cell_x, cell_y));
-    std::sort(vec.begin(), vec.end());
+    size_t entries = m_all_kinks.at(std::make_pair(cell_x, cell_y)).size();
+    // m_all_kinks.at(std::make_pair(cell_x, cell_y))
+    // Calculate the quantile offsets
+    size_t cut_off = size_t(round(double(entries) * quantile_cut_));
 
-    // Create quantile distribution by deleting a certain percentage of entries at both ends
-    int cut_off = int(round(double(vec.size()) * quantile_cut_));
-    for(int i = 0; i < cut_off; ++i) {
-        vec.erase(vec.begin());
-        vec.pop_back();
-    }
-
-    // Now calculate the AAD
     double AAD = 0;
 
-    for(auto const& val : vec) {
-        AAD +=
-            (fabs(val - (m_all_sum.at(std::make_pair(cell_x, cell_y)) / m_all_entries.at(std::make_pair(cell_x, cell_y)))));
+    size_t i = 0;
+    for(auto it = m_all_kinks.at(std::make_pair(cell_x, cell_y)).begin();
+        it != m_all_kinks.at(std::make_pair(cell_x, cell_y)).end();
+        ++it) {
+        ++i;
+        if(i >= cut_off && i < entries - cut_off)
+            AAD += fabs(*it);
     }
-    AAD /= double(vec.size());
+    AAD /= double(entries - 2 * cut_off);
 
     return AAD;
 }
@@ -166,15 +163,15 @@ StatusCode AnalysisMaterialBudget::run(const std::shared_ptr<Clipboard>& clipboa
             continue;
         }
 
-        // Fill vector of kinks
+        // Fill multiset of kinks
         int filled_angles = 0;
         if(fabs(kink_x) < static_cast<double>(Units::convert(angle_cut_, "mrad"))) {
-            m_all_kinks.at(std::make_pair(cell_x, cell_y)).push_back(kink_x);
+            m_all_kinks.at(std::make_pair(cell_x, cell_y)).insert(kink_x);
             m_all_entries.at(std::make_pair(cell_x, cell_y))++;
             ++filled_angles;
         }
         if(fabs(kink_y) < static_cast<double>(Units::convert(angle_cut_, "mrad"))) {
-            m_all_kinks.at(std::make_pair(cell_x, cell_y)).push_back(kink_y);
+            m_all_kinks.at(std::make_pair(cell_x, cell_y)).insert(kink_y);
             m_all_entries.at(std::make_pair(cell_x, cell_y))++;
             ++filled_angles;
         }
