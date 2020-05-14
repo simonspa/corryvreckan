@@ -183,7 +183,7 @@ StatusCode AnalysisMaterialBudget::run(const std::shared_ptr<Clipboard>& clipboa
         if(live_update_) {
             // Calculate AAD and set image value
             if(entries >= min_cell_content_) {
-                MBI->SetBinContent(cell_x, cell_y, get_aad(cell_x, cell_y));
+                MBI->SetBinContent(cell_x, cell_y, pow(get_aad(cell_x, cell_y), 2));
                 meanAngles->SetBinContent(cell_x, cell_y, m_all_sum.at(std::make_pair(cell_x, cell_y)) / entries);
             }
         }
