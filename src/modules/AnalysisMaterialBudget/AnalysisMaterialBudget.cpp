@@ -15,15 +15,23 @@ using namespace corryvreckan;
 
 AnalysisMaterialBudget::AnalysisMaterialBudget(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(std::move(config), std::move(detectors)) {
-    cell_size_ = m_config.get<ROOT::Math::XYVector>(
-        "cell_size", ROOT::Math::XYVector(Units::get<double>(50, "um"), Units::get<double>(50, "um")));
-    image_size_ = m_config.get<ROOT::Math::XYVector>("image_size", ROOT::Math::XYVector(10, 10));
 
-    angle_cut_ = m_config.get<double>("angle_cut", Units::get<double>(100, "mrad"));
-    double quantiles = m_config.get<double>("quantile", 0.9);
+    m_config.setDefault<ROOT::Math::XYVector>(
+        "cell_size", <ROOT::Math::XYVector>(Units::get<double>(50, "um"), Units::get<double>(50, "um")));
+    m_config.setDefault<ROOT::Math::XYVector>("image_size", <ROOT::Math::XYVector>(10, 10));
+    m_config.setDefault<double>("angle_cut", Units::get<double>(100, "mrad"));
+    m_config.setDefault<double>("quantile", 0.9);
+    m_config.setDefault<int>("min_cell_content", 20);
+    m_config.setDefault<bool>("update", false);
+
+    cell_size_ = m_config.get<ROOT::Math::XYVector>("cell_size");
+    image_size_ = m_config.get<ROOT::Math::XYVector>("image_size");
+
+    angle_cut_ = m_config.get<double>("angle_cut");
+    double quantiles = m_config.get<double>("quantile");
     quantile_cut_ = (1.0 - quantiles) / 2.0;
-    min_cell_content_ = m_config.get<int>("min_cell_content", 20);
-    update_ = m_config.get<bool>("update", false);
+    min_cell_content_ = m_config.get<int>("min_cell_content");
+    update_ = m_config.get<bool>("update");
 }
 
 void AnalysisMaterialBudget::initialize() {
