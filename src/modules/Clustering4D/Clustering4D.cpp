@@ -25,7 +25,7 @@ Clustering4D::Clustering4D(Configuration& config, std::shared_ptr<Detector> dete
     config_.setDefault<int>("neighbor_radius_row", 1);
     config_.setDefault<int>("neighbor_radius_col", 1);
     config_.setDefault<bool>("charge_weighting", true);
-    confog_.setDefault<bool>("use_earliest_pixel", false);
+    config_.setDefault<bool>("use_earliest_pixel", false);
     config_.setDefault<bool>("reject_by_roi", false);
 
     if(config_.count({"time_cut_rel", "time_cut_abs"}) == 0) {
