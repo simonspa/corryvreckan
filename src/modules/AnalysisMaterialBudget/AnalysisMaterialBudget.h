@@ -55,6 +55,8 @@ namespace corryvreckan {
         TProfile* kinkVsY;
         TProfile2D* MBIpreview;
         TH2F* MBI;
+        TProfile2D* MBIpreviewSqrt;
+        TH2F* MBISqrt;
         TH2F* meanAngles;
 
         std::map<std::pair<int, int>, std::multiset<double>> m_all_kinks;

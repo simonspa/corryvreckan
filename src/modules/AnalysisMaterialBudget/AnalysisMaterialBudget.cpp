@@ -71,6 +71,26 @@ void AnalysisMaterialBudget::initialize() {
                    n_cells_y,
                    -static_cast<double>(Units::convert(image_size_.y(), "mm")) / 2,
                    static_cast<double>(Units::convert(image_size_.y(), "mm")) / 2);
+
+    MBIpreviewSqrt = new TProfile2D("MBIpreviewSqrt",
+                                    "Kink vs incidence position, medium; x [mm]; y [mm]; RMS(kink) [mrad]",
+                                    n_cells_x,
+                                    -static_cast<double>(Units::convert(image_size_.x(), "mm")) / 2,
+                                    static_cast<double>(Units::convert(image_size_.x(), "mm")) / 2,
+                                    n_cells_y,
+                                    -static_cast<double>(Units::convert(image_size_.y(), "mm")) / 2,
+                                    static_cast<double>(Units::convert(image_size_.y(), "mm")) / 2,
+                                    0,
+                                    angle_cut_mrad * angle_cut_mrad);
+    MBISqrt = new TH2F("MBISqrt",
+                       "Material Budget Image (AAD); x [mm]; y [mm]; AAD(kink) [mrad]",
+                       n_cells_x,
+                       -static_cast<double>(Units::convert(image_size_.x(), "mm")) / 2,
+                       static_cast<double>(Units::convert(image_size_.x(), "mm")) / 2,
+                       n_cells_y,
+                       -static_cast<double>(Units::convert(image_size_.y(), "mm")) / 2,
+                       static_cast<double>(Units::convert(image_size_.y(), "mm")) / 2);
+
     meanAngles = new TH2F("meanAngles",
                           "Mean Angles; x [mm]; y [mm]; <kink> [mrad]",
                           n_cells_x,
@@ -149,6 +169,9 @@ StatusCode AnalysisMaterialBudget::run(const std::shared_ptr<Clipboard>& clipboa
         MBIpreview->Fill(pos_x, pos_y, kink_x_sq);
         MBIpreview->Fill(pos_x, pos_y, kink_y_sq);
 
+        MBIpreviewSqrt->Fill(pos_x, pos_y, kink_x);
+        MBIpreviewSqrt->Fill(pos_x, pos_y, kink_y);
+
         int cell_x = int((pos_x + image_size_.x() / 2) / cell_size_.x());
         int cell_y = int((pos_y + image_size_.y() / 2) / cell_size_.y());
         LOG(DEBUG) << "Track is in cell " << cell_x << " " << cell_y;
@@ -183,7 +206,9 @@ StatusCode AnalysisMaterialBudget::run(const std::shared_ptr<Clipboard>& clipboa
         if(live_update_) {
             // Calculate AAD and set image value
             if(entries >= min_cell_content_) {
-                MBI->SetBinContent(cell_x, cell_y, pow(get_aad(cell_x, cell_y), 2));
+                auto aad = get_aad(cell_x, cell_y);
+                MBI->SetBinContent(cell_x, cell_y, aad * aad);
+                MBISqrt->SetBinContent(cell_x, cell_y, aad);
                 meanAngles->SetBinContent(cell_x, cell_y, m_all_sum.at(std::make_pair(cell_x, cell_y)) / entries);
             }
         }
@@ -203,7 +228,9 @@ void AnalysisMaterialBudget::finalize(const std::shared_ptr<ReadonlyClipboard>&)
             for(int cell_y = 0; cell_y < n_cells_y; ++cell_y) {
                 auto entries = static_cast<int>(m_all_kinks.at(std::make_pair(cell_x, cell_y)).size());
                 if(entries >= min_cell_content_) {
-                    MBI->SetBinContent(cell_x, cell_y, get_aad(cell_x, cell_y));
+                    auto aad = get_aad(cell_x, cell_y);
+                    MBI->SetBinContent(cell_x, cell_y, aad * aad);
+                    MBISqrt->SetBinContent(cell_x, cell_y, aad);
                     meanAngles->SetBinContent(cell_x, cell_y, m_all_sum.at(std::make_pair(cell_x, cell_y)) / entries);
                 }
             }
