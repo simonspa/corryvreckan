@@ -19,7 +19,7 @@ Further information on this technique can be found in [@material_budget_imaging]
 * `angle_cut`: Maximum kink angle to evaluate. Defaults to `100 mrad`.
 * `quantile`: Fraction of entries per distribution for which the width is evaluated in material budget images. Defaults to `0.9`.
 * `min_cell_content`: Minimum number of registered kink angles per image cell required for the cell evaluation in the material budget image. Defaults to `20`.
-* `live_update`: Determines whether the material budget image is updated during run time. Otherwise this process is done only once during the finalisation. Defaults to `true`.
+* `update`: Determines whether the material budget image is updated during run time. Otherwise this process is done only once during the finalisation. Defaults to `false`.
 
 ### Plots produced
 * Histogram of kink angles in x/y

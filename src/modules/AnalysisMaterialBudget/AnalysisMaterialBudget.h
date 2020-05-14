@@ -43,7 +43,7 @@ namespace corryvreckan {
         double angle_cut_;
         double quantile_cut_;
         int min_cell_content_;
-        bool live_update_;
+        bool update_;
 
         int n_cells_x, n_cells_y;
 

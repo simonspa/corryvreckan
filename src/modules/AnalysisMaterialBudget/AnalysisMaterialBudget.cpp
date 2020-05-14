@@ -23,7 +23,7 @@ AnalysisMaterialBudget::AnalysisMaterialBudget(Configuration config, std::vector
     double quantiles = m_config.get<double>("quantile", 0.9);
     quantile_cut_ = (1.0 - quantiles) / 2.0;
     min_cell_content_ = m_config.get<int>("min_cell_content", 20);
-    live_update_ = m_config.get<bool>("live_update", true);
+    update_ = m_config.get<bool>("update", false);
 }
 
 void AnalysisMaterialBudget::initialize() {
@@ -203,7 +203,7 @@ StatusCode AnalysisMaterialBudget::run(const std::shared_ptr<Clipboard>& clipboa
         entriesPerCell->SetBinContent(entries - filled_angles, entriesPerCell->GetBinContent(entries - filled_angles) - 1);
         entriesPerCell->SetBinContent(entries, entriesPerCell->GetBinContent(entries) + 1);
 
-        if(live_update_) {
+        if(update_) {
             // Calculate AAD and set image value
             if(entries >= min_cell_content_) {
                 auto aad = get_aad(cell_x, cell_y);
@@ -223,7 +223,7 @@ StatusCode AnalysisMaterialBudget::run(const std::shared_ptr<Clipboard>& clipboa
 void AnalysisMaterialBudget::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 
-    if(!live_update_) {
+    if(!update_) {
         for(int cell_x = 0; cell_x < n_cells_x; ++cell_x) {
             for(int cell_y = 0; cell_y < n_cells_y; ++cell_y) {
                 auto entries = static_cast<int>(m_all_kinks.at(std::make_pair(cell_x, cell_y)).size());
