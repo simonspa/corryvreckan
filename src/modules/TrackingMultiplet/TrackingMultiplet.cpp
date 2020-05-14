@@ -15,7 +15,7 @@
 
 using namespace corryvreckan;
 
-TrackingMultiplet::TrackingMultiplet(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+TrackingMultiplet::TrackingMultiplet(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
 
     config_.setDefault<size_t>("min_hits_upstream", m_upstream_detectors.size());

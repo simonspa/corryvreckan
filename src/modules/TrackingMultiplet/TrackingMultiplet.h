@@ -34,7 +34,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        TrackingMultiplet(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
+        TrackingMultiplet(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
 
         // Init, run and finalise functions
         void initialize();
