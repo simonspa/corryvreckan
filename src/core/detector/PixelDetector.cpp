@@ -148,9 +148,22 @@ void PixelDetector::initialise() {
 
     Rotation3D rotations;
     if(m_orientation_mode == "xyz") {
+        LOG(DEBUG) << "Interpreting Euler angles as XYZ rotation";
+        // First angle given in the configuration file is around x, second around y, last around z:
         rotations = RotationZ(m_orientation.Z()) * RotationY(m_orientation.Y()) * RotationX(m_orientation.X());
     } else if(m_orientation_mode == "zyx") {
-        rotations = RotationZYX(m_orientation.x(), m_orientation.y(), m_orientation.x());
+        LOG(DEBUG) << "Interpreting Euler angles as ZYX rotation";
+        // First angle given in the configuration file is around z, second around y, last around x:
+        rotations = RotationZYX(m_orientation.x(), m_orientation.y(), m_orientation.z());
+    } else if(m_orientation_mode == "zxz") {
+        LOG(DEBUG) << "Interpreting Euler angles as ZXZ rotation";
+        // First angle given in the configuration file is around z, second around x, last around z:
+        rotations = EulerAngles(m_orientation.x(), m_orientation.y(), m_orientation.z());
+    } else {
+        LOG(ERROR) << "orientation_mode should be either 'zyx', xyz' or 'zxz'";
+        // FIXME: To through exception, initialise needs to be changed to "initialise(const Configuration& config)"
+        // throw InvalidValueError(
+        //     config, "orientation_mode", "orientation_mode should be either 'zyx', xyz' or 'zxz'");
     }
 
     m_localToGlobal = Transform3D(rotations, translations);
