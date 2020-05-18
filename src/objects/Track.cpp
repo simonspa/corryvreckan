@@ -243,10 +243,6 @@ ROOT::Math::XYZPoint Track::getCorrection(const std::string& detectorID) const {
         throw TrackError(typeid(Track), " calles correction on non existing detector " + detectorID);
 }
 
-void Track::setLogging(bool on) {
-    logging_ = on;
-}
-
 void Track::registerPlane(Plane p) {
     planes_.push_back(p);
 }
