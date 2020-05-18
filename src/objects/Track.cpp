@@ -13,7 +13,8 @@
 
 using namespace corryvreckan;
 
-Plane::Plane(double z, double x_x0, std::string name) : Object(), z_(z), x_x0_(x_x0), name_(name) {}
+Plane::Plane(double z, double x_x0, std::string name, Transform3D to_local)
+    : Object(), z_(z), x_x0_(x_x0), name_(name), to_local_(to_local) {}
 
 std::type_index Plane::getBaseType() {
     return typeid(Plane);
@@ -64,10 +65,6 @@ void Plane::setGblPointPosition(unsigned pos) {
 
 void Plane::setCluster(const Cluster* cluster) {
     cluster_ = const_cast<Cluster*>(cluster);
-}
-
-void Plane::setToLocal(Transform3D toLocal) {
-    to_local_ = toLocal;
 }
 
 void Plane::print(std::ostream& os) const {

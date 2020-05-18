@@ -196,8 +196,8 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // register the used detectors:
     auto registerDetector = [](shared_ptr<Track> track, std::shared_ptr<Detector> det) {
-        Plane p(det->localToGlobal(ROOT::Math::XYZPoint(0, 0, 0)).z(), det->materialBudget(), det->getName());
-        p.setToLocal(det->toLocal());
+        Plane p(
+            det->localToGlobal(ROOT::Math::XYZPoint(0, 0, 0)).z(), det->materialBudget(), det->getName(), det->toLocal());
         track->registerPlane(p);
     };
     // Time cut for combinations of reference clusters and for reference track with additional detector

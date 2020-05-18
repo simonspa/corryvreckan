@@ -26,7 +26,7 @@ namespace corryvreckan {
     class Plane : public Object {
     public:
         Plane() = default;
-        Plane(double z, double x_x0, std::string name);
+        Plane(double z, double x_x0, std::string name, Transform3D to_local);
 
         static std::type_index getBaseType();
 
@@ -46,7 +46,6 @@ namespace corryvreckan {
         void setGblPointPosition(unsigned pos);
         void setPosition(double z) { z_ = z; }
         void setCluster(const Cluster* cluster);
-        void setToLocal(Transform3D toLocal);
         void print(std::ostream& os) const override;
 
     private:

@@ -128,8 +128,8 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
         // Refit the track
         Plane pl(AlignmentTrackChi2::globalDetector->displacement().z(),
                  AlignmentTrackChi2::globalDetector->materialBudget(),
-                 AlignmentTrackChi2::globalDetector->getName());
-        pl.setToLocal(AlignmentTrackChi2::globalDetector->toLocal());
+                 AlignmentTrackChi2::globalDetector->getName(),
+                 AlignmentTrackChi2::globalDetector->toLocal());
         LOG(DEBUG) << "Updating plane: " << pl;
 
         track->replacePlane(pl);
