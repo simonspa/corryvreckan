@@ -15,7 +15,9 @@
 #include <Math/Vector3D.h>
 
 #include "GblTrack.hpp"
+#include "core/utils/log.h"
 #include "exceptions.h"
+
 using namespace corryvreckan;
 using namespace gbl;
 using namespace Eigen;
@@ -34,8 +36,7 @@ void GblTrack::setVolumeScatter(double length) {
 }
 
 void GblTrack::fit() {
-    if(logging_)
-        std::cout << "Starting fit" << std::endl;
+    LOG(DEBUG) << "Starting GBL fit";
     isFitted_ = false;
     residual_.clear();
     kink_.clear();
@@ -144,17 +145,18 @@ void GblTrack::fit() {
         covv(1, 1) = 1. / cluster->errorY() / cluster->errorY();
         point.addMeasurement(initialResidual, covv);
         initital_residual_[p->getName()] = ROOT::Math::XYPoint(initialResidual(0), initialResidual(1));
-        if(logging_) {
-            std::cout << "Plane:  " << p->getName() << " \n Global Res to fit: \t("
-                      << (cluster->global().x() - planes_.begin()->getCluster()->global().x()) << ", "
-                      << (cluster->global().y() - planes_.begin()->getCluster()->global().y()) << ")\n Local Res to fit: \t("
-                      << (cluster->local().x() - localPosTrack[0]) << ", " << (cluster->local().y() - localPosTrack[1])
-                      << ")\n Local  track pos: \t(" << localPosTrack[0] << ", " << localPosTrack[1] << ", "
-                      << localPosTrack[2] << ", " << localPosTrack[3] << ")\n global track Pos:\t" << globalTrackPos
-                      << "\n local tangent:\t\t(" << localTangent[0] << ", " << localTangent[1] << ", " << localTangent[2]
-                      << ", " << localTangent[3] << ")\n cluster global:\t " << p->getCluster()->global()
-                      << " \n cluster local:\t" << p->getCluster()->local() << std::endl;
-        }
+        LOG(TRACE) << "Plane:  " << p->getName() << std::endl
+                   << "Global Res to fit: \t(" << (cluster->global() - planes_.begin()->getCluster()->global()) << ")"
+                   << std::endl
+                   << "Local Res to fit: \t(" << (cluster->local().x() - localPosTrack[0]) << ", "
+                   << (cluster->local().y() - localPosTrack[1]) << ")" << std::endl
+                   << "Local  track pos: \t(" << localPosTrack[0] << ", " << localPosTrack[1] << ", " << localPosTrack[2]
+                   << ", " << localPosTrack[3] << ")" << std::endl
+                   << "global track Pos:\t" << globalTrackPos << std::endl
+                   << "local tangent:\t\t(" << localTangent[0] << ", " << localTangent[1] << ", " << localTangent[2] << ", "
+                   << localTangent[3] << ")" << std::endl
+                   << "cluster global:\t " << p->getCluster()->global() << std::endl
+                   << "cluster local:\t" << p->getCluster()->local();
     };
 
     // lambda to add plane (not the first one) and air scatterers
@@ -177,10 +179,10 @@ void GblTrack::fit() {
         localPosTrack = Vector4d{tmp_local.x(), tmp_local.y(), tmp_local.z(), 1};
         localTangent = getRotation(plane->getToLocal()) * globalTangent;
         double dist = localPosTrack[2];
-        if(logging_) {
-            std::cout << getRotation(plane->getToLocal()) << "\n local tan before normalization" << localTangent
-                      << "\n distance: " << dist << std::endl;
-        }
+        LOG(TRACE) << "Rotation: " << getRotation(plane->getToLocal());
+        LOG(TRACE) << "Local tan before normalization: " << localTangent;
+        LOG(TRACE) << "Distance: " << dist;
+
         localTangent /= localTangent.z();
         localPosTrack -= dist * localTangent;
         // add the local track pos for future reference - e.g. dut position:
@@ -253,9 +255,7 @@ void GblTrack::fit() {
     int ndf = 0;
     auto fitReturnValue = traj.fit(chi2_, ndf, lostWeight);
     if(fitReturnValue != 0) { // Is this a good ieda? should we discard track candidates that fail?
-        if(logging_) {
-            std::cout << "GBL failed with return value " << fitReturnValue << std::endl;
-        }
+        LOG(DEBUG) << "GBL failed with return value " << fitReturnValue;
         return;
     }
 
@@ -295,15 +295,12 @@ void GblTrack::fit() {
             ROOT::Math::XYZPoint clusterPos = plane.getCluster()->global();
             residual_[name] = ROOT::Math::XYPoint(clusterPos.x() - corPos.x(), clusterPos.y() - corPos.y());
             // m_residual[plane.name()] = ROOT::Math::XYPoint(gblResiduals(0),gblResiduals(1));
-            if(logging_) {
-                std::cout << "Results for detector  " << name << "\n Fitted res local:\t" << residual_.at(name)
-                          << "\n seed res:\t" << initital_residual_.at(name) << " \n fitted res global:\t"
-                          << ROOT::Math::XYPoint(clusterPos.x() - corPos.x(), clusterPos.y() - corPos.y()) << std::endl;
-            }
+            LOG(TRACE) << "Results for detector  " << name << std::endl
+                       << "Fitted residual local:\t" << residual_.at(name) << std::endl
+                       << "Seed residual:\t" << initital_residual_.at(name) << std::endl
+                       << "Ditted residual global:\t" << ROOT::Math::XYPoint(clusterPos - corPos);
         }
-        if(logging_) {
-            std::cout << "Plane: " << name << ": res" << residual_[name] << "\t kink: " << kink_[name] << std::endl;
-        }
+        LOG(DEBUG) << "Plane: " << name << ": residual " << residual_[name] << ", kink: " << kink_[name];
     }
     isFitted_ = true;
 }
@@ -311,8 +308,7 @@ void GblTrack::fit() {
 ROOT::Math::XYZPoint GblTrack::getIntercept(double z) const {
     // find the detector with largest z-positon <= z, assumes detectors sorted by z position
     std::string layer = "";
-    if(logging_)
-        std::cout << "Requesting intercept at: " << z << std::endl;
+    LOG(DEBUG) << "Requesting intercept at: " << z;
     bool found = false;
 
     if(!isFitted_) {
@@ -338,8 +334,7 @@ ROOT::Math::XYZPoint GblTrack::getIntercept(double z) const {
 ROOT::Math::XYZPoint GblTrack::getState(const std::string& detectorID) const {
     // The track state is given in global coordinates and represents intersect of track and detetcor plane.
     // Let's check first if the data is fitted and all components are there
-    if(logging_)
-        std::cout << "Requesting state at: " << detectorID << std::endl;
+    LOG(DEBUG) << "Requesting state at: " << detectorID;
     if(!isFitted_)
         throw TrackError(typeid(GblTrack), " has no difned state for" + detectorID + " before fitting");
     if(local_track_points_.count(detectorID) != 1) {
@@ -370,8 +365,7 @@ ROOT::Math::XYZVector GblTrack::getDirection(const std::string& detectorID) cons
     // Defining the direction following the particle results in the direction
     // beeing definded from the requested plane onwards to the next one
     ROOT::Math::XYZPoint point = getState(detectorID);
-    if(logging_)
-        std::cout << "Requesting direction at: " << detectorID << std::endl;
+    LOG(DEBUG) << "Requesting direction at: " << detectorID;
 
     // searching for the next detector layer - fixme: can this be done nicer?
     bool found = false;
