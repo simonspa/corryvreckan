@@ -296,10 +296,9 @@ void GblTrack::fit() {
             residual_[name] = ROOT::Math::XYPoint(clusterPos.x() - corPos.x(), clusterPos.y() - corPos.y());
             // m_residual[plane.name()] = ROOT::Math::XYPoint(gblResiduals(0),gblResiduals(1));
             if(logging_) {
-                std::cout << "********* " << name << "\n Fitted res local:\t" << residual_.at(name) << "\n seed res:\t"
-                          << initital_residual_.at(name) << " \n fitted res global:\t"
-                          << ROOT::Math::XYPoint(clusterPos.x() - corPos.x(), clusterPos.y() - corPos.y()) << std::endl
-                          << "*********\n";
+                std::cout << "Results for detector  " << name << "\n Fitted res local:\t" << residual_.at(name)
+                          << "\n seed res:\t" << initital_residual_.at(name) << " \n fitted res global:\t"
+                          << ROOT::Math::XYPoint(clusterPos.x() - corPos.x(), clusterPos.y() - corPos.y()) << std::endl;
             }
         }
         if(logging_) {

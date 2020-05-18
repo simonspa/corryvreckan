@@ -85,11 +85,11 @@ StatusCode AnalysisTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
+
     if(tracks.empty()) {
-        LOG(DEBUG) << "No tracks on the clipboard";
         return StatusCode::Success;
     }
-    LOG(DEBUG) << "Picked up " << tracks.size() << "tracks from the clipboard evnt";
+    LOG(DEBUG) << "Picked up " << (tracks.empty() ? 0 : tracks.size()) << "tracks from the clipboard evnt";
     for(auto& track : tracks) {
         IFLOG(DEBUG) { track->setLogging(true); }
         // Cut on the chi2/ndof
