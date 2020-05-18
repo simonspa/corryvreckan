@@ -221,8 +221,12 @@ XYZVector Track::getDirection(const std::string&) const {
     return ROOT::Math::XYZVector(0.0, 0.0, 0.0);
 }
 
-XYPoint Track::getResidual(const std::string& detectorID) const {
-    return residual_.at(detectorID);
+XYPoint Track::getLocalResidual(const std::string& detectorID) const {
+    return residual_local_.at(detectorID);
+}
+
+XYZPoint Track::getGlobalResidual(const std::string& detectorID) const {
+    return residual_global_.at(detectorID);
 }
 
 double Track::getMaterialBudget(const std::string& detectorID) const {
@@ -250,6 +254,14 @@ void Track::registerPlane(Plane p) {
 void Track::replacePlane(Plane p) {
     std::replace_if(
         planes_.begin(), planes_.end(), [&p](Plane const& plane) { return plane.getName() == p.getName(); }, std::move(p));
+}
+
+Plane* Track::getPlane(std::string detetorID) {
+    auto plane =
+        std::find_if(planes_.begin(), planes_.end(), [&detetorID](Plane const& p) { return p.getName() == detetorID; });
+    if(plane == planes_.end())
+        return nullptr;
+    return &(*plane);
 }
 
 std::shared_ptr<Track> corryvreckan::Track::Factory(std::string trackModel) {

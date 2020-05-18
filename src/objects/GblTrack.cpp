@@ -37,7 +37,8 @@ void GblTrack::fit() {
     if(logging_)
         std::cout << "Starting fit" << std::endl;
     isFitted_ = false;
-    residual_.clear();
+    residual_local_.clear();
+    residual_global_.clear();
     kink_.clear();
     corrections_.clear();
     local_track_points_.clear();
@@ -293,16 +294,16 @@ void GblTrack::fit() {
                                                             local_track_points_.at(name).y() + corrections_.at(name).y(),
                                                             0));
             ROOT::Math::XYZPoint clusterPos = plane.getCluster()->global();
-            residual_[name] = ROOT::Math::XYPoint(clusterPos.x() - corPos.x(), clusterPos.y() - corPos.y());
-            // m_residual[plane.name()] = ROOT::Math::XYPoint(gblResiduals(0),gblResiduals(1));
+            residual_global_[name] = clusterPos - corPos;
+            residual_local_[plane.getName()] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
             if(logging_) {
-                std::cout << "Results for detector  " << name << "\n Fitted res local:\t" << residual_.at(name)
+                std::cout << "Results for detector  " << name << "\n Fitted res local:\t" << residual_global_.at(name)
                           << "\n seed res:\t" << initital_residual_.at(name) << " \n fitted res global:\t"
                           << ROOT::Math::XYPoint(clusterPos.x() - corPos.x(), clusterPos.y() - corPos.y()) << std::endl;
             }
         }
         if(logging_) {
-            std::cout << "Plane: " << name << ": res" << residual_[name] << "\t kink: " << kink_[name] << std::endl;
+            std::cout << "Plane: " << name << ": res" << residual_global_[name] << "\t kink: " << kink_[name] << std::endl;
         }
     }
     isFitted_ = true;
