@@ -235,7 +235,7 @@ namespace corryvreckan {
             Plane() = default;
             Plane(std::string name, double z, double x_x0, Transform3D to_local);
 
-            double getPlanePosition() const;
+            double getPosition() const;
             double getMaterialBudget() const;
             bool hasCluster() const;
 

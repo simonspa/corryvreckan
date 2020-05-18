@@ -16,7 +16,7 @@ using namespace corryvreckan;
 Track::Plane::Plane(std::string name, double z, double x_x0, Transform3D to_local)
     : z_(z), x_x0_(x_x0), name_(name), to_local_(to_local) {}
 
-double Track::Plane::getPlanePosition() const {
+double Track::Plane::getPosition() const {
     return z_;
 }
 
