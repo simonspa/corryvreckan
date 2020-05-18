@@ -12,6 +12,7 @@
 #define CORRYVRECKAN_GBLTRACK_H 1
 
 #include "Track.hpp"
+
 namespace corryvreckan {
     /**
      * @ingroup Objects
@@ -23,9 +24,6 @@ namespace corryvreckan {
     class GblTrack : public Track {
 
     public:
-        // Constructors and destructors
-        GblTrack();
-
         void print(std::ostream& out) const override;
 
         /**
@@ -45,21 +43,21 @@ namespace corryvreckan {
          * @param name of detector
          * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        ROOT::Math::XYZPoint getState(std::string detectorID) const override;
+        ROOT::Math::XYZPoint getState(const std::string& detectorID) const override;
 
         /**
          * @brief Get the track direction at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
-        ROOT::Math::XYZVector getDirection(std::string detectorID) const override;
+        ROOT::Math::XYZVector getDirection(const std::string& detectorID) const override;
 
         /**
          * @brief Return kink of track at given detector
          * @param  detectorID Detector ID at which the kink should be evaluated
          * @return            Kink at given detector
          */
-        ROOT::Math::XYPoint getKinkAt(std::string detectorID) const override;
+        ROOT::Math::XYPoint getKinkAt(const std::string& detectorID) const override;
 
         void setVolumeScatter(double length) override;
 
@@ -68,22 +66,24 @@ namespace corryvreckan {
          * @brief Set seedcluster used for track fitting
          * @param Pointer to seedcluster of the GblTrack
          */
-        void setSeedCluster(const Cluster* cluster);
+        void set_seed_cluster(const Cluster* cluster);
 
         /**
          * @brief Get seedcluster used for track fitting
          * @return Pointer to seedcluster of the GblTrack if set, nullptr otherwise
          */
-        Cluster* getSeedCluster() const;
+        Cluster* get_seed_cluster() const;
 
         // Member variables
-        TRef m_seedCluster{nullptr};
-        std::map<std::string, ROOT::Math::XYPoint> m_kink;
-        double m_scattering_length_volume;
-        bool m_use_volume_scatter{};
+        TRef seed_cluster_{nullptr};
+        double scattering_length_volume_{};
+        bool use_volume_scatter_{};
 
+        std::map<std::string, ROOT::Math::XYPoint> local_track_points_{};
+        std::map<std::string, ROOT::Math::XYPoint> initital_residual_{};
+        std::map<std::string, ROOT::Math::XYPoint> kink_;
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(GblTrack, 3)
+        ClassDefOverride(GblTrack, 4);
     };
 } // namespace corryvreckan
 

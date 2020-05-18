@@ -18,5 +18,5 @@ namespace corryvreckan {
     /**
      * @brief Tuple containing all objects
      */
-    using OBJECTS = std::tuple<Cluster, MCParticle, Pixel, SpidrSignal, StraightLineTrack, GblTrack, Multiplet>;
+    using OBJECTS = std::tuple<Cluster, MCParticle, Pixel, SpidrSignal, StraightLineTrack, GblTrack, Plane, Multiplet>;
 } // namespace corryvreckan

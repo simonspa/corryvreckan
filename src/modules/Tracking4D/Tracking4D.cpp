@@ -194,10 +194,16 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
     // Output track container
     TrackVector tracks;
 
+    // register the used detectors:
+    auto registerDetector = [](shared_ptr<Track> track, std::shared_ptr<Detector> det) {
+        Plane p(det->localToGlobal(ROOT::Math::XYZPoint(0, 0, 0)).z(), det->materialBudget(), det->getName());
+        p.setToLocal(det->toLocal());
+        p.setToGlobal(det->toGlobal());
+        track->registerPlane(p);
+    };
     // Time cut for combinations of reference clusters and for reference track with additional detector
     auto time_cut_ref = std::max(time_cuts_[reference_first], time_cuts_[reference_last]);
     auto time_cut_ref_track = std::min(time_cuts_[reference_first], time_cuts_[reference_last]);
-
     for(auto& clusterFirst : trees[reference_first].getAllElements()) {
         for(auto& clusterLast : trees[reference_last].getAllElements()) {
             LOG(DEBUG) << "Looking at next reference cluster pair";
@@ -216,6 +222,8 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             // Make a new track
             auto track = Track::Factory(track_model_);
+            IFLOG(DEBUG) { track->setLogging(true); }
+
             track->addCluster(clusterFirst.get());
             track->addCluster(clusterLast.get());
 
@@ -231,10 +239,10 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
                 if(detector->isAuxiliary()) {
                     continue;
                 }
-                // always add the material budget:
-                track->addMaterial(detector->getName(), detector->materialBudget(), detector->displacement().z());
-                LOG(TRACE) << "added material budget for " << detector->getName()
-                           << " at z = " << detector->displacement().z();
+                auto detectorID = detector->getName();
+
+                registerDetector(track, detector);
+                LOG(TRACE) << "added material budget for " << detectorID << " at z = " << detector->displacement().z();
 
                 if(detector == reference_first || detector == reference_last) {
                     continue;

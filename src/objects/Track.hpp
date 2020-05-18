@@ -13,42 +13,51 @@
 
 #include <Math/Point2D.h>
 #include <Math/Point3D.h>
+#include <Math/Transform3D.h>
 #include <Math/Vector3D.h>
 #include <TRef.h>
 
 #include "Cluster.hpp"
 #include "core/utils/type.h"
+
 namespace corryvreckan {
 
-    class Plane {
+    using namespace ROOT::Math;
+    class Plane : public Object {
     public:
-        Plane(){};
-        Plane(double z, double x_x0, std::string name, bool has_cluster)
-            : z_(z), x_x0_(x_x0), name_(name), has_cluster_(has_cluster){};
-        // access elements
-        double getPlanePosition() const { return z_; }
-        double getMaterialBudget() const { return x_x0_; }
-        bool hasCluster() const { return has_cluster_; }
-        std::string getName() const { return name_; }
-        unsigned getGblPointPosition() const { return gbl_points_pos_; }
+        Plane() = default;
+        Plane(double z, double x_x0, std::string name);
+
+        static std::type_index getBaseType();
+
+        double getPlanePosition() const;
+        double getMaterialBudget() const;
+        bool hasCluster() const;
+
+        const std::string& getName() const;
+        unsigned getGblPointPosition() const;
+        Cluster* getCluster() const;
+        Transform3D getToLocal() const;
+        Transform3D getToGlobal() const;
 
         // sorting overload
-        bool operator<(const Plane& pl) const { return z_ < pl.z_; }
+        bool operator<(const Plane& pl) const;
         // set elements that might be unknown at construction
-        void setGblPointPosition(unsigned pos) { gbl_points_pos_ = pos; }
+        void setGblPointPosition(unsigned pos);
         void setPosition(double z) { z_ = z; }
-        void setCluster(const Cluster* cluster) { cluster_ = const_cast<Cluster*>(cluster); }
-        Cluster* getCluster() const { return cluster_; }
-        void print(std::ostream& os) const {
-            os << "Plane at " << z_ << " with rad. length " << x_x0_ << " and cluster: " << (has_cluster_) << std::endl;
-        }
+        void setCluster(const Cluster* cluster);
+        void setToLocal(Transform3D toLocal);
+        void setToGlobal(Transform3D toGlobal);
+        void print(std::ostream& os) const override;
 
     private:
         double z_, x_x0_;
         std::string name_;
-        bool has_cluster_;
-        Cluster* cluster_ = nullptr;
+        TRef cluster_;
         unsigned gbl_points_pos_{};
+        Transform3D to_local_, to_global_;
+
+        ClassDefOverride(Plane, 1)
     };
 
     /**
@@ -81,13 +90,13 @@ namespace corryvreckan {
          *
          * @return Class type of the base object
          */
-        static std::type_index getBaseType() { return typeid(Track); }
+        static std::type_index getBaseType();
 
         /**
          * @brief get the track type used
          * @return track type
          */
-        std::string getType() const { return corryvreckan::demangle(typeid(*this).name()); }
+        std::string getType() const;
 
         /**
          * * @brief Add a cluster to the tack, which will be used in the fit
@@ -124,13 +133,13 @@ namespace corryvreckan {
          * @brief Print an ASCII representation of the Track to the given stream
          * @param ostream to print to
          */
-        void print(std::ostream& out) const override { out << "Base class - nothing to see here" << std::endl; }
+        void print(std::ostream& out) const override;
 
         /**
          * @brief Set the momentum of the particle
          * @param momentum
          */
-        void setParticleMomentum(double p) { momentum_ = p; }
+        void setParticleMomentum(double p);
 
         /**
          * @brief Get the chi2 of the track fit
@@ -174,7 +183,7 @@ namespace corryvreckan {
          * @param  detectorID DetectorID of the detector to check
          * @return True if detector has a cluster on this Track, false if not.
          */
-        bool hasDetector(std::string detectorID) const;
+        bool hasDetector(const std::string& detectorID) const;
 
         /**
          * @brief Get a Track cluster from a given detector
@@ -201,21 +210,21 @@ namespace corryvreckan {
          * @param z positon
          * @return ROOT::Math::XYZPoint at z position
          */
-        virtual ROOT::Math::XYZPoint getIntercept(double) const { return ROOT::Math::XYZPoint(0.0, 0.0, 0.0); }
+        virtual ROOT::Math::XYZPoint getIntercept(double) const;
 
         /**
          * @brief Get the track state at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        virtual ROOT::Math::XYZPoint getState(std::string) const { return ROOT::Math::XYZPoint(0.0, 0.0, 0.0); }
+        virtual ROOT::Math::XYZPoint getState(const std::string&) const;
 
         /**
          * @brief Get the track direction at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
-        virtual ROOT::Math::XYZVector getDirection(std::string) const { return ROOT::Math::XYZVector(0.0, 0.0, 0.0); }
+        virtual ROOT::Math::XYZVector getDirection(const std::string&) const;
 
         /**
          * @brief check if the fitting routine already has been called. Chi2 etc are not set before
@@ -228,37 +237,37 @@ namespace corryvreckan {
          * @param detectorID
          * @return  2D residual as ROOT::Math::XYPoint
          */
-        ROOT::Math::XYPoint getResidual(std::string detectorID) const { return residual_.at(detectorID); }
+        ROOT::Math::XYPoint getResidual(const std::string& detectorID) const;
 
         /**
          * @brief Get the kink at a given detector layer. This is ill defined for last and first layer
          * @param  detectorID Detector ID at which the kink should be evaluated
          * @return  2D kink at given detector
          */
-        virtual ROOT::Math::XYPoint getKinkAt(std::string detectorID) const = 0;
+        virtual ROOT::Math::XYPoint getKinkAt(const std::string& detectorID) const = 0;
 
         /**
          * @brief Get the materialBudget of a detector layer
          * @param detectorID
          * @return Material Budget for given layer
          */
-        double getMaterialBudget(std::string detectorID) const { return material_budget_.at(detectorID).first; }
+        double getMaterialBudget(const std::string& detectorID) const;
 
-        void addMaterial(std::string detetcorID, double x_x0, double z);
-
-        ROOT::Math::XYZPoint getCorrection(std::string detectorID) const;
-
-        long unsigned int getNumScatterers() const { return material_budget_.size(); }
+        ROOT::Math::XYZPoint getCorrection(const std::string& detectorID) const;
 
         virtual void setVolumeScatter(double length) = 0;
+        void setLogging(bool on = false);
+
+        void registerPlane(Plane p);
+        void replacePlane(Plane p);
 
     protected:
         std::vector<TRef> track_clusters_;
         std::vector<TRef> associated_clusters_;
         std::map<std::string, ROOT::Math::XYPoint> residual_;
-        std::map<std::string, std::pair<double, double>> material_budget_;
         std::map<std::string, ROOT::Math::XYZPoint> corrections_{};
         std::vector<Plane> planes_{};
+        bool logging_ = false;
 
         std::map<std::string, TRef> closest_cluster_;
         double chi2_;
@@ -276,5 +285,6 @@ namespace corryvreckan {
 
 // include all tracking methods here to have one header to be include everywhere
 #include "GblTrack.hpp"
+#include "Multiplet.hpp"
 #include "StraightLineTrack.hpp"
 #endif // CORRYVRECKAN_TRACK_H

@@ -59,6 +59,11 @@ void AnalysisDUT::initialize() {
                                             0,
                                             500);
 
+    hTrackZPosDUT = new TH1F("globalTrackZPosOnDUT",
+                             "globalTrackZPosOnDUT; global z of track intersection [mm]; #entries ",
+                             400,
+                             m_detector->displacement().z() - 10,
+                             m_detector->displacement().z() + 10);
     // Per-pixel histograms
     hHitMapAssoc = new TH2F("hitMapAssoc",
                             "hitMapAssoc; hit column; hit row",
@@ -394,6 +399,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             }
             has_associated_cluster = true;
 
+            hTrackZPosDUT->Fill(track->getState(m_detector->getName()).z());
             // Check distance between track and cluster
             ROOT::Math::XYZPoint intercept = track->getIntercept(assoc_cluster->global().z());
             double xdistance = intercept.X() - assoc_cluster->global().x();

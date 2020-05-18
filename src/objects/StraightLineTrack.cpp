@@ -29,13 +29,14 @@ ROOT::Math::XYPoint StraightLineTrack::distance(const Cluster* cluster) const {
     return ROOT::Math::XYPoint(dx, dy);
 }
 
-ROOT::Math::XYPoint StraightLineTrack::getKinkAt(std::string) const {
+ROOT::Math::XYPoint StraightLineTrack::getKinkAt(const std::string&) const {
     return ROOT::Math::XYPoint(0, 0);
 }
 
 void StraightLineTrack::calculateChi2() {
 
     // Get the number of clusters
+
     ndof_ = static_cast<double>(track_clusters_.size()) - 2.;
     chi2_ = 0.;
     chi2ndof_ = 0.;
@@ -82,6 +83,7 @@ double StraightLineTrack::operator()(const double* parameters) {
 
 void StraightLineTrack::fit() {
 
+    isFitted_ = false;
     Eigen::Matrix4d mat(Eigen::Matrix4d::Zero());
     Eigen::Vector4d vec(Eigen::Vector4d::Zero());
 

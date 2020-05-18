@@ -47,14 +47,14 @@ namespace corryvreckan {
          * @param name of detector
          * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        ROOT::Math::XYZPoint getState(std::string) const override { return m_state; }
+        ROOT::Math::XYZPoint getState(const std::string&) const override { return m_state; }
 
         /**
          * @brief Get the track direction at a detector
          * @param name of detector
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
-        ROOT::Math::XYZVector getDirection(std::string) const override { return m_direction; }
+        ROOT::Math::XYZVector getDirection(const std::string&) const override { return m_direction; }
 
         ROOT::Math::XYPoint distance(const Cluster* cluster) const;
 
@@ -63,7 +63,7 @@ namespace corryvreckan {
          * @param  detectorID Detector ID at which the kink should be evaluated
          * @return            Kink at given detector
          */
-        ROOT::Math::XYPoint getKinkAt(std::string detectorID) const override;
+        ROOT::Math::XYPoint getKinkAt(const std::string& detectorID) const override;
 
         void setVolumeScatter(double) override{};
 

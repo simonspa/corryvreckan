@@ -94,6 +94,7 @@ StatusCode AlignmentTrackChi2::run(const std::shared_ptr<Clipboard>& clipboard) 
 // it would do nothing!
 void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, Double_t* par, Int_t) {
 
+    LOG(DEBUG) << AlignmentTrackChi2::globalDetector->displacement() << "' " << globalDetector->rotation();
     // Pick up new alignment conditions
     AlignmentTrackChi2::globalDetector->displacement(
         XYZPoint(par[detNum * 6 + 0], par[detNum * 6 + 1], par[detNum * 6 + 2]));
@@ -120,9 +121,21 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
             auto positionLocal = trackCluster->local();
             auto positionGlobal = AlignmentTrackChi2::globalDetector->localToGlobal(positionLocal);
             trackCluster->setClusterCentre(positionGlobal);
+            LOG(DEBUG) << "Updating cluster with corrected global position for detector "
+                       << AlignmentTrackChi2::globalDetector->getName();
         }
 
         // Refit the track
+        Plane pl(AlignmentTrackChi2::globalDetector->displacement().z(),
+                 AlignmentTrackChi2::globalDetector->materialBudget(),
+                 AlignmentTrackChi2::globalDetector->getName());
+        pl.setToLocal(AlignmentTrackChi2::globalDetector->toLocal());
+        pl.setToGlobal(AlignmentTrackChi2::globalDetector->toGlobal());
+        LOG(DEBUG) << "Updating plane: " << pl;
+
+        track->replacePlane(pl);
+        LOG(DEBUG) << "Updated Transformations for detector " << AlignmentTrackChi2::globalDetector->getName();
+        IFLOG(DEBUG) { track->setLogging(true); }
         track->fit();
 
         // Add the new chi2
@@ -175,6 +188,7 @@ void AlignmentTrackChi2::finalize(const std::shared_ptr<ReadonlyClipboard>& clip
 
             // Do not align the reference plane
             if(detector->isReference() || detector->isDUT() || detector->isAuxiliary()) {
+                LOG(DEBUG) << "Skipping detector " << detector->getName();
                 continue;
             }
 
@@ -217,6 +231,7 @@ void AlignmentTrackChi2::finalize(const std::shared_ptr<ReadonlyClipboard>& clip
             auto old_orientation = detector->rotation();
 
             // Fit this plane (minimising global track chi2)
+            LOG(DEBUG) << "fitting residuals for detetcor " << detector->getName();
             residualFitter->ExecuteCommand("MIGRAD", arglist, 2);
 
             // Retrieve fit results:
