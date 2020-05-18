@@ -256,7 +256,6 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint getCorrection(const std::string& detectorID) const;
 
         virtual void setVolumeScatter(double length) = 0;
-        void setLogging(bool on = false);
 
         void registerPlane(Plane p);
         void replacePlane(Plane p);
@@ -267,7 +266,6 @@ namespace corryvreckan {
         std::map<std::string, ROOT::Math::XYPoint> residual_;
         std::map<std::string, ROOT::Math::XYZPoint> corrections_{};
         std::vector<Plane> planes_{};
-        bool logging_ = false;
 
         std::map<std::string, TRef> closest_cluster_;
         double chi2_;
@@ -277,7 +275,7 @@ namespace corryvreckan {
         double momentum_{-1};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Track, 8)
+        ClassDefOverride(Track, 9)
     };
     // Vector type declaration
     using TrackVector = std::vector<std::shared_ptr<Track>>;
