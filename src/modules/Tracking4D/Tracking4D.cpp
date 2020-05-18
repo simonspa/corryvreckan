@@ -418,7 +418,7 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
             for(auto& trackCluster : trackClusters) {
                 string detectorID = trackCluster->detectorID();
                 ROOT::Math::XYZPoint globalRes = track->getGlobalResidual(detectorID);
-                ROOT::Math::XYZPoint localRes = track->getGlobalResidual(detectorID);
+                ROOT::Math::XYPoint localRes = track->getLocalResidual(detectorID);
 
                 residualsX_local[detectorID]->Fill(localRes.X());
                 residualsX_global[detectorID]->Fill(globalRes.X());
