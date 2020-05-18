@@ -13,68 +13,57 @@
 
 using namespace corryvreckan;
 
-Plane::Plane(double z, double x_x0, std::string name) : Object(), z_(z), x_x0_(x_x0), name_(name) {}
+Track::Plane::Plane(std::string name, double z, double x_x0, Transform3D to_local)
+    : z_(z), x_x0_(x_x0), name_(name), to_local_(to_local) {}
 
-std::type_index Plane::getBaseType() {
-    return typeid(Plane);
-}
-
-double Plane::getPlanePosition() const {
+double Track::Plane::getPlanePosition() const {
     return z_;
 }
 
-double Plane::getMaterialBudget() const {
+double Track::Plane::getMaterialBudget() const {
     return x_x0_;
 }
 
-bool Plane::hasCluster() const {
+bool Track::Plane::hasCluster() const {
     return (cluster_.IsValid() && cluster_.GetObject() != nullptr);
 }
 
-const std::string& Plane::getName() const {
+const std::string& Track::Plane::getName() const {
     return name_;
 }
 
-unsigned Plane::getGblPointPosition() const {
+unsigned Track::Plane::getGblPointPosition() const {
     return gbl_points_pos_;
 }
 
-Cluster* Plane::getCluster() const {
+Cluster* Track::Plane::getCluster() const {
     if(!cluster_.IsValid() || cluster_.GetObject() == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(Cluster));
     }
     return dynamic_cast<Cluster*>(cluster_.GetObject());
 }
 
-Transform3D Plane::getToLocal() const {
+Transform3D Track::Plane::getToLocal() const {
     return to_local_;
 }
 
-Transform3D Plane::getToGlobal() const {
-    return to_global_;
+Transform3D Track::Plane::getToGlobal() const {
+    return to_local_.Inverse();
 }
 
-bool Plane::operator<(const Plane& pl) const {
+bool Track::Plane::operator<(const Plane& pl) const {
     return z_ < pl.z_;
 }
 
-void Plane::setGblPointPosition(unsigned pos) {
+void Track::Plane::setGblPointPosition(unsigned pos) {
     gbl_points_pos_ = pos;
 }
 
-void Plane::setCluster(const Cluster* cluster) {
+void Track::Plane::setCluster(const Cluster* cluster) {
     cluster_ = const_cast<Cluster*>(cluster);
 }
 
-void Plane::setToLocal(Transform3D toLocal) {
-    to_local_ = toLocal;
-}
-
-void Plane::setToGlobal(Transform3D toGlobal) {
-    to_global_ = toGlobal;
-}
-
-void Plane::print(std::ostream& os) const {
+void Track::Plane::print(std::ostream& os) const {
     os << "Plane at " << z_ << " with rad. length " << x_x0_ << ", name " << name_ << " and";
     if(hasCluster()) {
         os << "cluster with global pos: " << getCluster()->global();
@@ -239,13 +228,15 @@ ROOT::Math::XYZPoint Track::getCorrection(const std::string& detectorID) const {
         throw TrackError(typeid(Track), " calles correction on non existing detector " + detectorID);
 }
 
-void Track::registerPlane(Plane p) {
-    planes_.push_back(p);
-}
-
-void Track::replacePlane(Plane p) {
-    std::replace_if(
-        planes_.begin(), planes_.end(), [&p](Plane const& plane) { return plane.getName() == p.getName(); }, std::move(p));
+void Track::registerPlane(const std::string& name, double z, double x0, Transform3D g2l) {
+    Plane p(name, z, x0, g2l);
+    auto pl =
+        std::find_if(planes_.begin(), planes_.end(), [&p](const Plane& plane) { return plane.getName() == p.getName(); });
+    if(pl == planes_.end()) {
+        planes_.push_back(std::move(p));
+    } else {
+        *pl = std::move(p);
+    }
 }
 
 std::shared_ptr<Track> corryvreckan::Track::Factory(std::string trackModel) {

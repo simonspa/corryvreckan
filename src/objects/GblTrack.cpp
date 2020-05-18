@@ -336,9 +336,9 @@ ROOT::Math::XYZPoint GblTrack::getState(const std::string& detectorID) const {
     // Let's check first if the data is fitted and all components are there
     LOG(DEBUG) << "Requesting state at: " << detectorID;
     if(!isFitted_)
-        throw TrackError(typeid(GblTrack), " has no difned state for" + detectorID + " before fitting");
+        throw TrackError(typeid(GblTrack), " has no defined state for " + detectorID + " before fitting");
     if(local_track_points_.count(detectorID) != 1) {
-        throw TrackError(typeid(GblTrack), "  does not have any entry for detector " + detectorID);
+        throw TrackError(typeid(GblTrack), " does not have any entry for detector " + detectorID);
     }
     // The local track position can simply be transformed to global coordinates
     auto p =

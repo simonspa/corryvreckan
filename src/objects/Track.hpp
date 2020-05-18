@@ -23,42 +23,6 @@
 namespace corryvreckan {
 
     using namespace ROOT::Math;
-    class Plane : public Object {
-    public:
-        Plane() = default;
-        Plane(double z, double x_x0, std::string name);
-
-        static std::type_index getBaseType();
-
-        double getPlanePosition() const;
-        double getMaterialBudget() const;
-        bool hasCluster() const;
-
-        const std::string& getName() const;
-        unsigned getGblPointPosition() const;
-        Cluster* getCluster() const;
-        Transform3D getToLocal() const;
-        Transform3D getToGlobal() const;
-
-        // sorting overload
-        bool operator<(const Plane& pl) const;
-        // set elements that might be unknown at construction
-        void setGblPointPosition(unsigned pos);
-        void setPosition(double z) { z_ = z; }
-        void setCluster(const Cluster* cluster);
-        void setToLocal(Transform3D toLocal);
-        void setToGlobal(Transform3D toGlobal);
-        void print(std::ostream& os) const override;
-
-    private:
-        double z_, x_x0_;
-        std::string name_;
-        TRef cluster_;
-        unsigned gbl_points_pos_{};
-        Transform3D to_local_, to_global_;
-
-        ClassDefOverride(Plane, 1)
-    };
 
     /**
      * @ingroup Objects
@@ -257,15 +221,46 @@ namespace corryvreckan {
 
         virtual void setVolumeScatter(double length) = 0;
 
-        void registerPlane(Plane p);
-        void replacePlane(Plane p);
+        void registerPlane(const std::string& name, double z, double x0, Transform3D g2l);
+
+        class Plane {
+        public:
+            Plane() = default;
+            Plane(std::string name, double z, double x_x0, Transform3D to_local);
+
+            double getPlanePosition() const;
+            double getMaterialBudget() const;
+            bool hasCluster() const;
+
+            const std::string& getName() const;
+            unsigned getGblPointPosition() const;
+            Cluster* getCluster() const;
+            Transform3D getToLocal() const;
+            Transform3D getToGlobal() const;
+
+            // sorting overload
+            bool operator<(const Plane& pl) const;
+            // set elements that might be unknown at construction
+            void setGblPointPosition(unsigned pos);
+            void setPosition(double z) { z_ = z; }
+            void setCluster(const Cluster* cluster);
+            void print(std::ostream& os) const;
+
+        private:
+            double z_, x_x0_;
+            std::string name_;
+            TRef cluster_;
+            unsigned gbl_points_pos_{};
+            Transform3D to_local_;
+        };
 
     protected:
         std::vector<TRef> track_clusters_;
         std::vector<TRef> associated_clusters_;
         std::map<std::string, ROOT::Math::XYPoint> residual_;
         std::map<std::string, ROOT::Math::XYZPoint> corrections_{};
-        std::vector<Plane> planes_{};
+
+        std::vector<Plane> planes_;
 
         std::map<std::string, TRef> closest_cluster_;
         double chi2_;

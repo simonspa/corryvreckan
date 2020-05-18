@@ -126,15 +126,12 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
         }
 
         // Refit the track
-        Plane pl(AlignmentTrackChi2::globalDetector->displacement().z(),
-                 AlignmentTrackChi2::globalDetector->materialBudget(),
-                 AlignmentTrackChi2::globalDetector->getName());
-        pl.setToLocal(AlignmentTrackChi2::globalDetector->toLocal());
-        pl.setToGlobal(AlignmentTrackChi2::globalDetector->toGlobal());
-        LOG(DEBUG) << "Updating plane: " << pl;
+        track->registerPlane(AlignmentTrackChi2::globalDetector->getName(),
+                             AlignmentTrackChi2::globalDetector->displacement().z(),
+                             AlignmentTrackChi2::globalDetector->materialBudget(),
+                             AlignmentTrackChi2::globalDetector->toLocal());
+        LOG(DEBUG) << "Updated transformations for detector " << AlignmentTrackChi2::globalDetector->getName();
 
-        track->replacePlane(pl);
-        LOG(DEBUG) << "Updated Transformations for detector " << AlignmentTrackChi2::globalDetector->getName();
         track->fit();
 
         // Add the new chi2
