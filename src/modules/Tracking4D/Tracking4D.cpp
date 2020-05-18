@@ -222,8 +222,6 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             // Make a new track
             auto track = Track::Factory(track_model_);
-            IFLOG(DEBUG) { track->setLogging(true); }
-
             track->addCluster(clusterFirst.get());
             track->addCluster(clusterLast.get());
 

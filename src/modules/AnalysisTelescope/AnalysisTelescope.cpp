@@ -89,7 +89,6 @@ StatusCode AnalysisTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     LOG(DEBUG) << "Picked up " << tracks.size() << "tracks from the clipboard evnt";
     for(auto& track : tracks) {
-        IFLOG(DEBUG) { track->setLogging(true); }
         // Cut on the chi2/ndof
         if(track->getChi2ndof() > chi2ndofCut) {
             continue;

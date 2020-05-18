@@ -135,7 +135,6 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
 
         track->replacePlane(pl);
         LOG(DEBUG) << "Updated Transformations for detector " << AlignmentTrackChi2::globalDetector->getName();
-        IFLOG(DEBUG) { track->setLogging(true); }
         track->fit();
 
         // Add the new chi2
