@@ -13,7 +13,7 @@
 
 using namespace corryvreckan;
 
-Plane::Plane(double z, double x_x0, std::string name, Transform3D to_local)
+Plane::Plane(std::string name, double z, double x_x0, Transform3D to_local)
     : Object(), z_(z), x_x0_(x_x0), name_(name), to_local_(to_local) {}
 
 std::type_index Plane::getBaseType() {
@@ -232,13 +232,15 @@ ROOT::Math::XYZPoint Track::getCorrection(const std::string& detectorID) const {
         throw TrackError(typeid(Track), " calles correction on non existing detector " + detectorID);
 }
 
-void Track::registerPlane(Plane p) {
-    planes_.push_back(p);
-}
-
-void Track::replacePlane(Plane p) {
-    std::replace_if(
-        planes_.begin(), planes_.end(), [&p](Plane const& plane) { return plane.getName() == p.getName(); }, std::move(p));
+void Track::registerPlane(const std::string& name, double z, double x0, Transform3D g2l) {
+    Plane p(name, z, x0, g2l);
+    auto pl =
+        std::find_if(planes_.begin(), planes_.end(), [&p](const Plane& plane) { return plane.getName() == p.getName(); });
+    if(pl == planes_.end()) {
+        planes_.push_back(std::move(p));
+    } else {
+        *pl = std::move(p);
+    }
 }
 
 std::shared_ptr<Track> corryvreckan::Track::Factory(std::string trackModel) {

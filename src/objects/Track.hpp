@@ -26,7 +26,7 @@ namespace corryvreckan {
     class Plane : public Object {
     public:
         Plane() = default;
-        Plane(double z, double x_x0, std::string name, Transform3D to_local);
+        Plane(std::string name, double z, double x_x0, Transform3D to_local);
 
         static std::type_index getBaseType();
 
@@ -255,15 +255,15 @@ namespace corryvreckan {
 
         virtual void setVolumeScatter(double length) = 0;
 
-        void registerPlane(Plane p);
-        void replacePlane(Plane p);
+        void registerPlane(const std::string& name, double z, double x0, Transform3D g2l);
 
     protected:
         std::vector<TRef> track_clusters_;
         std::vector<TRef> associated_clusters_;
         std::map<std::string, ROOT::Math::XYPoint> residual_;
         std::map<std::string, ROOT::Math::XYZPoint> corrections_{};
-        std::vector<Plane> planes_{};
+
+        std::vector<Plane> planes_;
 
         std::map<std::string, TRef> closest_cluster_;
         double chi2_;

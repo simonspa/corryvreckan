@@ -194,12 +194,6 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
     // Output track container
     TrackVector tracks;
 
-    // register the used detectors:
-    auto registerDetector = [](shared_ptr<Track> track, std::shared_ptr<Detector> det) {
-        Plane p(
-            det->localToGlobal(ROOT::Math::XYZPoint(0, 0, 0)).z(), det->materialBudget(), det->getName(), det->toLocal());
-        track->registerPlane(p);
-    };
     // Time cut for combinations of reference clusters and for reference track with additional detector
     auto time_cut_ref = std::max(time_cuts_[reference_first], time_cuts_[reference_last]);
     auto time_cut_ref_track = std::min(time_cuts_[reference_first], time_cuts_[reference_last]);
@@ -237,9 +231,9 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
                     continue;
                 }
                 auto detectorID = detector->getName();
-
-                registerDetector(track, detector);
                 LOG(TRACE) << "added material budget for " << detectorID << " at z = " << detector->displacement().z();
+                track->registerPlane(
+                    detectorID, detector->displacement().z(), detector->materialBudget(), detector->toLocal());
 
                 if(detector == reference_first || detector == reference_last) {
                     continue;
