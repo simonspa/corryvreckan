@@ -47,7 +47,6 @@ namespace corryvreckan {
         void setPosition(double z) { z_ = z; }
         void setCluster(const Cluster* cluster);
         void setToLocal(Transform3D toLocal);
-        void setToGlobal(Transform3D toGlobal);
         void print(std::ostream& os) const override;
 
     private:
@@ -55,7 +54,7 @@ namespace corryvreckan {
         std::string name_;
         TRef cluster_;
         unsigned gbl_points_pos_{};
-        Transform3D to_local_, to_global_;
+        Transform3D to_local_;
 
         ClassDefOverride(Plane, 1)
     };

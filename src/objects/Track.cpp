@@ -51,7 +51,7 @@ Transform3D Plane::getToLocal() const {
 }
 
 Transform3D Plane::getToGlobal() const {
-    return to_global_;
+    return to_local_.Inverse();
 }
 
 bool Plane::operator<(const Plane& pl) const {
@@ -68,10 +68,6 @@ void Plane::setCluster(const Cluster* cluster) {
 
 void Plane::setToLocal(Transform3D toLocal) {
     to_local_ = toLocal;
-}
-
-void Plane::setToGlobal(Transform3D toGlobal) {
-    to_global_ = toGlobal;
 }
 
 void Plane::print(std::ostream& os) const {
