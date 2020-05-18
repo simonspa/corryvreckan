@@ -38,7 +38,8 @@ void GblTrack::setVolumeScatter(double length) {
 void GblTrack::fit() {
     LOG(DEBUG) << "Starting GBL fit";
     isFitted_ = false;
-    residual_.clear();
+    residual_local_.clear();
+    residual_global_.clear();
     kink_.clear();
     corrections_.clear();
     local_track_points_.clear();
@@ -293,14 +294,15 @@ void GblTrack::fit() {
                                                             local_track_points_.at(name).y() + corrections_.at(name).y(),
                                                             0));
             ROOT::Math::XYZPoint clusterPos = plane.getCluster()->global();
-            residual_[name] = ROOT::Math::XYPoint(clusterPos.x() - corPos.x(), clusterPos.y() - corPos.y());
-            // m_residual[plane.name()] = ROOT::Math::XYPoint(gblResiduals(0),gblResiduals(1));
+            residual_global_[name] = clusterPos - corPos;
+            residual_local_[plane.getName()] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
+
             LOG(TRACE) << "Results for detector  " << name << std::endl
-                       << "Fitted residual local:\t" << residual_.at(name) << std::endl
+                       << "Fitted residual local:\t" << residual_local_.at(name) << std::endl
                        << "Seed residual:\t" << initital_residual_.at(name) << std::endl
                        << "Ditted residual global:\t" << ROOT::Math::XYPoint(clusterPos - corPos);
         }
-        LOG(DEBUG) << "Plane: " << name << ": residual " << residual_[name] << ", kink: " << kink_[name];
+        LOG(DEBUG) << "Plane: " << name << ": residual " << residual_local_[name] << ", kink: " << kink_[name];
     }
     isFitted_ = true;
 }

@@ -62,7 +62,12 @@ void StraightLineTrack::calculateChi2() {
 void StraightLineTrack::calculateResiduals() {
     for(auto c : track_clusters_) {
         auto cluster = dynamic_cast<Cluster*>(c.GetObject());
-        residual_[cluster->detectorID()] = cluster->global() - getIntercept(cluster->global().z());
+        // fixme: cluster->global.z() is only an approximation for the plane intersect. Can be fixed after !115
+        residual_global_[cluster->detectorID()] = cluster->global() - getIntercept(cluster->global().z());
+        if(getPlane(cluster->detectorID()) != nullptr) {
+            residual_local_[cluster->detectorID()] =
+                cluster->local() - getPlane(cluster->detectorID())->getToLocal() * getIntercept(cluster->global().z());
+        }
     }
 }
 

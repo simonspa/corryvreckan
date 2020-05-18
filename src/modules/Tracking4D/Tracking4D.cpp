@@ -113,29 +113,58 @@ void Tracking4D::initialize() {
         if(exclude_DUT_ && detector->isDUT()) {
             continue;
         }
+        // local
+        TDirectory* local_res = local_directory->mkdir("local_residuals");
+        local_res->cd();
+        title = detectorID + "Local Residual X;x-x_{track} [mm];events";
+        residualsX_local[detectorID] = new TH1F("LocalResidualsX", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + "Local  Residual X, cluster column width 1;x-x_{track} [mm];events";
+        residualsXwidth1_local[detectorID] = new TH1F("LocalResidualsXwidth1", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + "Local  Residual X, cluster column width  2;x-x_{track} [mm];events";
+        residualsXwidth2_local[detectorID] = new TH1F("LocalResidualsXwidth2", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + "Local  Residual X, cluster column width  3;x-x_{track} [mm];events";
+        residualsXwidth3_local[detectorID] = new TH1F("LocalResidualsXwidth3", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + "Local  Residual Y;y-y_{track} [mm];events";
+        residualsY_local[detectorID] = new TH1F("LocalResidualsY", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + "Local  Residual Y, cluster row width 1;y-y_{track} [mm];events";
+        residualsYwidth1_local[detectorID] = new TH1F("LocalResidualsYwidth1", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + "Local  Residual Y, cluster row width 2;y-y_{track} [mm];events";
+        residualsYwidth2_local[detectorID] = new TH1F("LocalResidualsYwidth2", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + "Local  Residual Y, cluster row width 3;y-y_{track} [mm];events";
+        residualsYwidth3_local[detectorID] = new TH1F("LocalResidualsYwidth3", title.c_str(), 500, -0.1, 0.1);
 
-        title = detectorID + " Residual X;x_{track}-x [mm];events";
-        residualsX[detectorID] = new TH1F("residualsX", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual X, cluster column width 1;x_{track}-x [mm];events";
-        residualsXwidth1[detectorID] = new TH1F("residualsXwidth1", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual X, cluster column width  2;x_{track}-x [mm];events";
-        residualsXwidth2[detectorID] = new TH1F("residualsXwidth2", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual X, cluster column width  3;x_{track}-x [mm];events";
-        residualsXwidth3[detectorID] = new TH1F("residualsXwidth3", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual Y;y_{track}-y [mm];events";
-        residualsY[detectorID] = new TH1F("residualsY", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual Y, cluster row width 1;y_{track}-y [mm];events";
-        residualsYwidth1[detectorID] = new TH1F("residualsYwidth1", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual Y, cluster row width 2;y_{track}-y [mm];events";
-        residualsYwidth2[detectorID] = new TH1F("residualsYwidth2", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual Y, cluster row width 3;y_{track}-y [mm];events";
-        residualsYwidth3[detectorID] = new TH1F("residualsYwidth3", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + " Pull X;x-x_{track}/resolution;events";
+        pullX_local[detectorID] = new TH1F("LocalpullX", title.c_str(), 500, -5, 5);
 
-        title = detectorID + " Pull X;x_{track}-x/resolution;events";
-        pullX[detectorID] = new TH1F("pullX", title.c_str(), 500, -5, 5);
+        title = detectorID + " Pull Y;y-y_{track}/resolution;events";
+        pullY_local[detectorID] = new TH1F("Localpully", title.c_str(), 500, -5, 5);
+        // global
+        TDirectory* global_res = local_directory->mkdir("global_residuals");
+        global_res->cd();
+        title = detectorID + "global Residual X;x-x_{track} [mm];events";
+        residualsX_global[detectorID] = new TH1F("GlobalResidualsX", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + "global  Residual X, cluster column width 1;x-x_{track} [mm];events";
+        residualsXwidth1_global[detectorID] = new TH1F("GlobalResidualsXwidth1", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + "global  Residual X, cluster column width  2;x-x_{track} [mm];events";
+        residualsXwidth2_global[detectorID] = new TH1F("GlobalResidualsXwidth2", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + "global  Residual X, cluster column width  3;x-x_{track} [mm];events";
+        residualsXwidth3_global[detectorID] = new TH1F("GlobalResidualsXwidth3", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + "global  Residual Y;y-y_{track} [mm];events";
+        title = detectorID + " Pull X;x-x_{track}/resolution;events";
+        pullX_global[detectorID] = new TH1F("GlobalpullX", title.c_str(), 500, -5, 5);
 
-        title = detectorID + " Pull Y;y_{track}-y/resolution;events";
-        pullY[detectorID] = new TH1F("pully", title.c_str(), 500, -5, 5);
+        residualsY_global[detectorID] = new TH1F("GlobalResidualsY", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + "global  Residual Y, cluster row width 1;y-y_{track} [mm];events";
+        residualsYwidth1_global[detectorID] = new TH1F("GlobalResidualsYwidth1", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + "global  Residual Y, cluster row width 2;y-y_{track} [mm];events";
+        residualsYwidth2_global[detectorID] = new TH1F("GlobalResidualsYwidth2", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + "global  Residual Y, cluster row width 3;y-y_{track} [mm];events";
+        residualsYwidth3_global[detectorID] = new TH1F("GlobalResidualsYwidth3", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + " Pull Y;y-y_{track}/resolution;events";
+        pullY_global[detectorID] = new TH1F("Globalpully", title.c_str(), 500, -5, 5);
+
+        residualsZ_global[detectorID] = new TH1F("GlobalResidualsz", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + "global  Residual Z, cluster row width 1;z_{track}-z [mm];events";
     }
 }
 
@@ -381,22 +410,42 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
             auto trackClusters = track->getClusters();
             for(auto& trackCluster : trackClusters) {
                 string detectorID = trackCluster->detectorID();
-                residualsX[detectorID]->Fill(track->getResidual(detectorID).X());
-                pullX[detectorID]->Fill(track->getResidual(detectorID).X() / track->getClusters().front()->errorX());
-                pullY[detectorID]->Fill(track->getResidual(detectorID).Y() / track->getClusters().front()->errorY());
-                if(trackCluster->columnWidth() == 1)
-                    residualsXwidth1[detectorID]->Fill(track->getResidual(detectorID).X());
-                if(trackCluster->columnWidth() == 2)
-                    residualsXwidth2[detectorID]->Fill(track->getResidual(detectorID).X());
-                if(trackCluster->columnWidth() == 3)
-                    residualsXwidth3[detectorID]->Fill(track->getResidual(detectorID).X());
-                residualsY[detectorID]->Fill(track->getResidual(detectorID).Y());
-                if(trackCluster->rowWidth() == 1)
-                    residualsYwidth1[detectorID]->Fill(track->getResidual(detectorID).Y());
-                if(trackCluster->rowWidth() == 2)
-                    residualsYwidth2[detectorID]->Fill(track->getResidual(detectorID).Y());
-                if(trackCluster->rowWidth() == 3)
-                    residualsYwidth3[detectorID]->Fill(track->getResidual(detectorID).Y());
+                ROOT::Math::XYZPoint globalRes = track->getGlobalResidual(detectorID);
+                ROOT::Math::XYPoint localRes = track->getLocalResidual(detectorID);
+
+                residualsX_local[detectorID]->Fill(localRes.X());
+                residualsX_global[detectorID]->Fill(globalRes.X());
+
+                pullX_local[detectorID]->Fill(localRes.x() / track->getClusterFromDetector(detectorID)->errorX());
+                pullX_global[detectorID]->Fill(globalRes.x() / track->getClusterFromDetector(detectorID)->errorX());
+
+                pullY_local[detectorID]->Fill(localRes.Y() / track->getClusterFromDetector(detectorID)->errorY());
+                pullY_global[detectorID]->Fill(globalRes.Y() / track->getClusterFromDetector(detectorID)->errorY());
+
+                if(trackCluster->columnWidth() == 1) {
+                    residualsXwidth1_local[detectorID]->Fill(localRes.X());
+                    residualsXwidth1_global[detectorID]->Fill(globalRes.X());
+                } else if(trackCluster->columnWidth() == 2) {
+                    residualsXwidth2_local[detectorID]->Fill(localRes.X());
+                    residualsXwidth2_global[detectorID]->Fill(globalRes.X());
+                } else if(trackCluster->columnWidth() == 3) {
+                    residualsXwidth3_local[detectorID]->Fill(localRes.X());
+                    residualsXwidth3_global[detectorID]->Fill(globalRes.X());
+                }
+
+                residualsY_local[detectorID]->Fill(localRes.Y());
+                residualsY_global[detectorID]->Fill(globalRes.Y());
+                if(trackCluster->rowWidth() == 1) {
+                    residualsYwidth1_local[detectorID]->Fill(localRes.Y());
+                    residualsYwidth1_global[detectorID]->Fill(globalRes.Y());
+                } else if(trackCluster->rowWidth() == 2) {
+                    residualsYwidth2_local[detectorID]->Fill(localRes.Y());
+                    residualsYwidth2_global[detectorID]->Fill(globalRes.Y());
+                } else if(trackCluster->rowWidth() == 3) {
+                    residualsYwidth3_local[detectorID]->Fill(localRes.Y());
+                    residualsYwidth3_global[detectorID]->Fill(globalRes.Y());
+                }
+                residualsZ_global[detectorID]->Fill(globalRes.Z());
             }
 
             for(auto& detector : get_detectors()) {

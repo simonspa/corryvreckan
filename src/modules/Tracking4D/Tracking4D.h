@@ -42,19 +42,31 @@ namespace corryvreckan {
         TH1F* tracksPerEvent;
         TH1F* trackAngleX;
         TH1F* trackAngleY;
-        std::map<std::string, TH1F*> residualsX;
-        std::map<std::string, TH1F*> residualsXwidth1;
-        std::map<std::string, TH1F*> residualsXwidth2;
-        std::map<std::string, TH1F*> residualsXwidth3;
-        std::map<std::string, TH1F*> residualsY;
-        std::map<std::string, TH1F*> residualsYwidth1;
-        std::map<std::string, TH1F*> residualsYwidth2;
-        std::map<std::string, TH1F*> residualsYwidth3;
+        std::map<std::string, TH1F*> residualsX_local;
+        std::map<std::string, TH1F*> residualsXwidth1_local;
+        std::map<std::string, TH1F*> residualsXwidth2_local;
+        std::map<std::string, TH1F*> residualsXwidth3_local;
+        std::map<std::string, TH1F*> pullY_local;
+        std::map<std::string, TH1F*> residualsY_local;
+        std::map<std::string, TH1F*> residualsYwidth1_local;
+        std::map<std::string, TH1F*> residualsYwidth2_local;
+        std::map<std::string, TH1F*> residualsYwidth3_local;
+        std::map<std::string, TH1F*> pullX_local;
+
+        std::map<std::string, TH1F*> residualsX_global;
+        std::map<std::string, TH1F*> residualsXwidth1_global;
+        std::map<std::string, TH1F*> residualsXwidth2_global;
+        std::map<std::string, TH1F*> residualsXwidth3_global;
+        std::map<std::string, TH1F*> pullX_global;
+        std::map<std::string, TH1F*> residualsY_global;
+        std::map<std::string, TH1F*> residualsYwidth1_global;
+        std::map<std::string, TH1F*> residualsYwidth2_global;
+        std::map<std::string, TH1F*> residualsYwidth3_global;
+        std::map<std::string, TH1F*> pullY_global;
+        std::map<std::string, TH1F*> residualsZ_global;
 
         std::map<std::string, TH1F*> kinkX;
         std::map<std::string, TH1F*> kinkY;
-        std::map<std::string, TH1F*> pullX;
-        std::map<std::string, TH1F*> pullY;
         // Cuts for tracking
         double momentum_;
         double volume_radiation_length_;

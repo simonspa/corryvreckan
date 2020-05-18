@@ -197,11 +197,18 @@ namespace corryvreckan {
         bool isFitted() const { return isFitted_; }
 
         /**
-         * @brief Get the residual for a given detector layer
+         * @brief Get the local residual for a given detector layer
          * @param detectorID
-         * @return  2D residual as ROOT::Math::XYPoint
+         * @return  2D local residual as ROOT::Math::XYPoint
          */
-        ROOT::Math::XYPoint getResidual(const std::string& detectorID) const;
+        ROOT::Math::XYPoint getLocalResidual(const std::string& detectorID) const;
+
+        /**
+         * @brief Get the global residual for a given detector layer
+         * @param detectorID
+         * @return  3D global residual as ROOT::Math::XYPoint
+         */
+        ROOT::Math::XYZPoint getGlobalResidual(const std::string& detectorID) const;
 
         /**
          * @brief Get the kink at a given detector layer. This is ill defined for last and first layer
@@ -255,9 +262,11 @@ namespace corryvreckan {
         };
 
     protected:
+        Plane* getPlane(std::string detetorID);
         std::vector<TRef> track_clusters_;
         std::vector<TRef> associated_clusters_;
-        std::map<std::string, ROOT::Math::XYPoint> residual_;
+        std::map<std::string, ROOT::Math::XYPoint> residual_local_;
+        std::map<std::string, ROOT::Math::XYZPoint> residual_global_;
         std::map<std::string, ROOT::Math::XYZPoint> corrections_{};
 
         std::vector<Plane> planes_;
