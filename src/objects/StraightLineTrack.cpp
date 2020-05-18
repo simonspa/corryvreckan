@@ -64,9 +64,9 @@ void StraightLineTrack::calculateResiduals() {
         auto cluster = dynamic_cast<Cluster*>(c.GetObject());
         // fixme: cluster->global.z() is only an approximation for the plane intersect. Can be fixed after !115
         residual_global_[cluster->detectorID()] = cluster->global() - getIntercept(cluster->global().z());
-        if(getPlane(cluster->detectorID()) != nullptr) {
+        if(get_plane(cluster->detectorID()) != nullptr) {
             residual_local_[cluster->detectorID()] =
-                cluster->local() - getPlane(cluster->detectorID())->getToLocal() * getIntercept(cluster->global().z());
+                cluster->local() - get_plane(cluster->detectorID())->getToLocal() * getIntercept(cluster->global().z());
         }
     }
 }

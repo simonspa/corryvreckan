@@ -262,7 +262,7 @@ namespace corryvreckan {
         };
 
     protected:
-        Plane* getPlane(std::string detetorID);
+        Plane* get_plane(std::string detetorID);
         std::vector<TRef> track_clusters_;
         std::vector<TRef> associated_clusters_;
         std::map<std::string, ROOT::Math::XYPoint> residual_local_;
