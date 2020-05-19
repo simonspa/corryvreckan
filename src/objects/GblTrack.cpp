@@ -328,7 +328,7 @@ ROOT::Math::XYZPoint GblTrack::getIntercept(double z) const {
     // We do not find a plane with larger z (found == false) -> ased for intercept behind telescope
     // We have been asked to allow extrapolation outside the coverage
     if(!found || layer == "") {
-        LOG(WARNING)
+        LOG_N(WARNING, 10)
             << "Requesting extrapolation outside the telescope coverage. Scattering at first/last plane set to zero";
         return get_position_outside_telescope(z);
     }
