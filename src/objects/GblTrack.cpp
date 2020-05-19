@@ -365,17 +365,17 @@ Cluster* GblTrack::get_seed_cluster() const {
 }
 
 XYZPoint GblTrack::get_position_outside_telescope(double z) const {
-    // most up and downstream plane with a cluster
-    auto firstCluster = std::find_if(planes_.begin(), planes_.end(), [](const Plane& p) { return p.hasCluster(); });
-    auto lastCluster = std::find_if(planes_.rbegin(), planes_.rend(), [](const Plane& p) { return p.hasCluster(); });
+    // most up and downstream plane
+    auto first = planes_.begin();
+    auto last = planes_.end();
     // check if z is up or downstream
-    bool upstream = (z < firstCluster->getPosition());
+    bool upstream = (z < first->getPosition());
 
-    auto outerPlane = (upstream ? firstCluster->getName() : lastCluster->getName());
+    auto outerPlane = (upstream ? first->getName() : last->getName());
     // inner neighbour of plane - simply adjust the iterators
-    firstCluster++;
-    lastCluster--;
-    auto innerPlane = (upstream ? firstCluster->getName() : lastCluster->getName());
+    first++;
+    last--;
+    auto innerPlane = (upstream ? last->getName() : last->getName());
     // connect the states to get the direction
     XYZVector direction =
         (upstream ? getState(outerPlane) - getState(innerPlane) : getState(innerPlane) - getState(outerPlane));
