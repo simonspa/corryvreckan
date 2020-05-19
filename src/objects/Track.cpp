@@ -16,7 +16,7 @@ using namespace corryvreckan;
 Track::Plane::Plane(std::string name, double z, double x_x0, Transform3D to_local)
     : z_(z), x_x0_(x_x0), name_(name), to_local_(to_local) {}
 
-double Track::Plane::getPlanePosition() const {
+double Track::Plane::getPosition() const {
     return z_;
 }
 
@@ -243,7 +243,7 @@ void Track::registerPlane(const std::string& name, double z, double x0, Transfor
     }
 }
 
-Plane* Track::getPlane(std::string detetorID) {
+Track::Plane* Track::get_plane(std::string detetorID) {
     auto plane =
         std::find_if(planes_.begin(), planes_.end(), [&detetorID](Plane const& p) { return p.getName() == detetorID; });
     if(plane == planes_.end())

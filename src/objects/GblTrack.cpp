@@ -70,8 +70,7 @@ void GblTrack::fit() {
 
     // add volume scattering length - for now simply the distance between first and last plane
     if(use_volume_scatter_) {
-        total_material +=
-            (planes_.back().getPlanePosition() - planes_.front().getPlanePosition()) / scattering_length_volume_;
+        total_material += (planes_.back().getPosition() - planes_.front().getPosition()) / scattering_length_volume_;
     }
 
     std::vector<GblPoint> points;
@@ -318,7 +317,7 @@ ROOT::Math::XYZPoint GblTrack::getIntercept(double z) const {
     }
 
     for(auto l : planes_) {
-        if(l.getPlanePosition() >= z) {
+        if(l.getPosition() >= z) {
             found = true;
             break;
         }

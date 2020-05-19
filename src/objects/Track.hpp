@@ -235,7 +235,7 @@ namespace corryvreckan {
             Plane() = default;
             Plane(std::string name, double z, double x_x0, Transform3D to_local);
 
-            double getPlanePosition() const;
+            double getPosition() const;
             double getMaterialBudget() const;
             bool hasCluster() const;
 
@@ -262,7 +262,7 @@ namespace corryvreckan {
         };
 
     protected:
-        Plane* getPlane(std::string detetorID);
+        Plane* get_plane(std::string detetorID);
         std::vector<TRef> track_clusters_;
         std::vector<TRef> associated_clusters_;
         std::map<std::string, ROOT::Math::XYPoint> residual_local_;
