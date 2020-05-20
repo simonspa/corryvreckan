@@ -74,6 +74,13 @@ namespace corryvreckan {
          */
         Cluster* get_seed_cluster() const;
 
+        /**
+         * @brief get_position_outside_telescope
+         * @param z Poisiton of requested point
+         * @return XYZ Point of track outside telescope coverage
+         */
+        ROOT::Math::XYZPoint get_position_outside_telescope(double z) const;
+
         // Member variables
         TRef seed_cluster_{nullptr};
         double scattering_length_volume_{};

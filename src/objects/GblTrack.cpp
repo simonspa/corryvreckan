@@ -326,9 +326,13 @@ ROOT::Math::XYZPoint GblTrack::getIntercept(double z) const {
     // Two cases to not return an intercept and throw an error
     // Most upstream plane has larger z (layer == "") -> asked for intercept in front of telescope
     // We do not find a plane with larger z (found == false) -> ased for intercept behind telescope
+    // We have been asked to allow extrapolation outside the coverage
     if(!found || layer == "") {
-        throw TrackError(typeid(GblTrack), "Z-Position of " + std::to_string(z) + " is outside the telescopes z-coverage");
+        LOG_N(DEBUG, 10)
+            << "Requesting extrapolation outside the telescope coverage. Scattering at first/last plane set to zero";
+        return get_position_outside_telescope(z);
     }
+
     return (getState(layer) + getDirection(layer) * (z - getState(layer).z()));
 }
 
@@ -344,7 +348,6 @@ ROOT::Math::XYZPoint GblTrack::getState(const std::string& detectorID) const {
     // The local track position can simply be transformed to global coordinates
     auto p =
         std::find_if(planes_.begin(), planes_.end(), [detectorID](auto plane) { return (plane.getName() == detectorID); });
-
     return (p->getToGlobal() * ROOT::Math::XYZPoint(local_track_points_.at(detectorID).x() + getCorrection(detectorID).x(),
                                                     local_track_points_.at(detectorID).y() + getCorrection(detectorID).y(),
                                                     0));
@@ -359,6 +362,27 @@ Cluster* GblTrack::get_seed_cluster() const {
         throw MissingReferenceException(typeid(*this), typeid(Cluster));
     }
     return dynamic_cast<Cluster*>(seed_cluster_.GetObject());
+}
+
+XYZPoint GblTrack::get_position_outside_telescope(double z) const {
+    // most up and downstream plane
+    auto first = planes_.begin();
+    auto last = planes_.end();
+    // check if z is up or downstream
+    bool upstream = (z < first->getPosition());
+
+    auto outerPlane = (upstream ? first->getName() : last->getName());
+    // inner neighbour of plane - simply adjust the iterators
+    first++;
+    last--;
+    auto innerPlane = (upstream ? last->getName() : last->getName());
+    // connect the states to get the direction
+    XYZVector direction =
+        (upstream ? getState(outerPlane) - getState(innerPlane) : getState(innerPlane) - getState(outerPlane));
+    // scale to get a slope
+    direction /= direction.z();
+    // return extrapolated position
+    return (getState(outerPlane) + direction * (z - getState(outerPlane).z()));
 }
 
 ROOT::Math::XYZVector GblTrack::getDirection(const std::string& detectorID) const {
