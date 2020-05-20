@@ -57,6 +57,13 @@ namespace corryvreckan {
         ROOT::Math::XYZVector getDirection(const std::string& detectorID) const override;
 
         /**
+         * @brief Get the track direction at any given z position
+         * @param global z position
+         * @return ROOT::Math::XYZPoint direction at z
+         */
+        ROOT::Math::XYZVector getDirection(const double& z) const override;
+
+        /**
          * @brief Get the offset between up- & downstream tracklet at the position of the scatterer
          * @return ROOT::Math::XYVector offset at scatterer
          */

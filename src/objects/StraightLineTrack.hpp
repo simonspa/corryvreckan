@@ -56,6 +56,13 @@ namespace corryvreckan {
          */
         ROOT::Math::XYZVector getDirection(const std::string&) const override { return m_direction; }
 
+        /**
+         * @brief Get the track direction at any given z position
+         * @param global z position
+         * @return ROOT::Math::XYZPoint direction at z
+         */
+        ROOT::Math::XYZVector getDirection(const double&) const override { return m_direction; }
+
         ROOT::Math::XYPoint distance(const Cluster* cluster) const;
 
         /**

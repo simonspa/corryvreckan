@@ -85,6 +85,10 @@ ROOT::Math::XYZVector Multiplet::getDirection(const std::string& detectorID) con
                                                                                    : m_downstream->getDirection(detectorID);
 }
 
+XYZVector Multiplet::getDirection(const double& z) const {
+    return (z <= m_scattererPosition ? m_upstream->getDirection(z) : m_downstream->getDirection(z));
+}
+
 void Multiplet::print(std::ostream& out) const {
     out << "Multiplet " << this->m_scattererPosition << ", " << this->m_positionAtScatterer << ", "
         << this->m_offsetAtScatterer << ", " << this->m_kinkAtScatterer << ", " << this->chi2_ << ", " << this->ndof_ << ", "

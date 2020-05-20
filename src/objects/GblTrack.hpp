@@ -53,6 +53,13 @@ namespace corryvreckan {
         ROOT::Math::XYZVector getDirection(const std::string& detectorID) const override;
 
         /**
+         * @brief Get the track direction at any given z position
+         * @param global z position
+         * @return ROOT::Math::XYZPoint direction at z
+         */
+        ROOT::Math::XYZVector getDirection(const double& z) const override;
+
+        /**
          * @brief Return kink of track at given detector
          * @param  detectorID Detector ID at which the kink should be evaluated
          * @return            Kink at given detector

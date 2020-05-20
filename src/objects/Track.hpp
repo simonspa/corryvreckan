@@ -191,6 +191,13 @@ namespace corryvreckan {
         virtual ROOT::Math::XYZVector getDirection(const std::string&) const;
 
         /**
+         * @brief Get the track direction at any given z position
+         * @param global z position
+         * @return ROOT::Math::XYZPoint direction at z
+         */
+        virtual ROOT::Math::XYZVector getDirection(const double&) const;
+
+        /**
          * @brief check if the fitting routine already has been called. Chi2 etc are not set before
          * @return true if fit has already been performed, false otherwise
          */

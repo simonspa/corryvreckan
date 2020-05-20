@@ -409,6 +409,15 @@ ROOT::Math::XYZVector GblTrack::getDirection(const std::string& detectorID) cons
     return ((pointAfter - point) / (pointAfter.z() - point.z()));
 }
 
+XYZVector GblTrack::getDirection(const double& z) const {
+    auto planeUpstream = std::find_if(planes_.begin(), planes_.end(), [&z](const Plane& p) { return p.getPosition() > z; });
+    if(planeUpstream != planes_.end()) {
+        return getDirection(planeUpstream->getName());
+    } else {
+        return getDirection(planes_.end()->getName());
+    }
+}
+
 void GblTrack::print(std::ostream& out) const {
     out << "GblTrack with nhits = " << track_clusters_.size() << " and nscatterers = " << planes_.size()
         << ", chi2 = " << chi2_ << ", ndf = " << ndof_;
