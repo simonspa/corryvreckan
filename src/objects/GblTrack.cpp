@@ -392,20 +392,18 @@ ROOT::Math::XYZVector GblTrack::getDirection(const std::string& detectorID) cons
     ROOT::Math::XYZPoint point = getState(detectorID);
     LOG(DEBUG) << "Requesting direction at: " << detectorID;
 
-    // searching for the next detector layer - fixme: can this be done nicer?
-    bool found = false;
-    std::string nextLayer = "";
-    for(auto& layer : planes_) {
-        if(found) {
-            nextLayer = layer.getName();
-            break;
-        } else if(layer.getName() == detectorID) {
-            found = true;
-        }
+    // searching for the next detector layer
+    auto plane =
+        std::find_if(planes_.begin(), planes_.end(), [&detectorID](const Plane& p) { return p.getName() == detectorID; });
+    plane++;
+    // If we are at the end we have no kink -> take the last two palbes
+    if(plane == planes_.end()) {
+        plane -= 2;
+        ROOT::Math::XYZPoint pointBefore = getState(plane->getName());
+        return ((point - pointBefore) / (point.z() - pointBefore.z()));
     }
-    if(nextLayer == "")
-        throw TrackError(typeid(GblTrack), " does not define a direction after the last telescope plane");
-    ROOT::Math::XYZPoint pointAfter = getState(nextLayer);
+
+    ROOT::Math::XYZPoint pointAfter = getState(plane->getName());
     return ((pointAfter - point) / (pointAfter.z() - point.z()));
 }
 
