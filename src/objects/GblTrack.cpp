@@ -368,6 +368,7 @@ XYZPoint GblTrack::get_position_outside_telescope(double z) const {
     // most up and downstream plane
     auto first = planes_.begin();
     auto last = planes_.end();
+    last--; // No direct iterator for last element
     // check if z is up or downstream
     bool upstream = (z < first->getPosition());
 
