@@ -68,6 +68,9 @@ namespace corryvreckan {
         size_t min_hits_upstream_;
         size_t min_hits_downstream_;
 
+        // track model for up/downstream fit
+        std::string track_model_;
+
         // Member histograms
         std::map<streams, TH1F*> trackletMultiplicity;
         std::map<streams, TH1F*> clustersPerTracklet;

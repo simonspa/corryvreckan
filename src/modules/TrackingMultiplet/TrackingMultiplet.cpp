@@ -148,6 +148,8 @@ TrackingMultiplet::TrackingMultiplet(Configuration& config, std::vector<std::sha
     scatterer_matching_cut_ = config_.get<double>("scatterer_matching_cut");
 
     isolation_cut_ = config_.get<double>("isolation_cut");
+
+    track_model_ = config_.get<std::string>("track_model", "straightline");
 }
 
 void TrackingMultiplet::initialize() {
@@ -275,7 +277,7 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
                 continue;
             }
 
-            auto trackletCandidate = std::make_shared<GblTrack>();
+            auto trackletCandidate = Track::Factory(track_model_);
             // register all planes:
             for(auto& det : cluster_trees) {
                 auto detector = det.first.get();
@@ -432,20 +434,22 @@ void TrackingMultiplet::fill_tracklet_histograms(const streams& stream, TrackVec
     trackletMultiplicity[stream]->Fill(static_cast<double>(tracklets.size()));
 
     if(tracklets.size() > 0) {
-        LOG(DEBUG) << "Filling plots for " << stream_name << " tracklets";
+        LOG(WARNING) << "Filling plots for " << stream_name << " tracklets";
 
         for(auto& tracklet : tracklets) {
             clustersPerTracklet[stream]->Fill(static_cast<double>(tracklet->getNClusters()));
+            LOG(WARNING) << "number";
+            trackletAngleX[stream]->Fill(static_cast<double>(Units::convert(
+                tracklet->getDirection(scatterer_position_).X() / tracklet->getDirection(scatterer_position_).Z(), "mrad")));
+            trackletAngleY[stream]->Fill(static_cast<double>(Units::convert(
+                tracklet->getDirection(scatterer_position_).Y() / tracklet->getDirection(scatterer_position_).Z(), "mrad")));
 
-            trackletAngleX[stream]->Fill(static_cast<double>(
-                Units::convert(tracklet->getDirection("").X() / tracklet->getDirection("").Z(), "mrad")));
-            trackletAngleY[stream]->Fill(static_cast<double>(
-                Units::convert(tracklet->getDirection("").Y() / tracklet->getDirection("").Z(), "mrad")));
-
+            LOG(WARNING) << "Slopes";
             trackletPositionAtScattererX[stream]->Fill(tracklet->getIntercept(scatterer_position_).X());
             trackletPositionAtScattererY[stream]->Fill(tracklet->getIntercept(scatterer_position_).Y());
 
             auto trackletClusters = tracklet->getClusters();
+            LOG(WARNING) << "clusters";
             for(auto& trackletCluster : trackletClusters) {
                 std::string detectorID = trackletCluster->detectorID();
                 residualsX[detectorID]->Fill(tracklet->getGlobalResidual(detectorID).X());
