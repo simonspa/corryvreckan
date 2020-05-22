@@ -413,7 +413,7 @@ XYZVector GblTrack::getDirection(const double& z) const {
     if(planeUpstream != planes_.end()) {
         return getDirection(planeUpstream->getName());
     } else {
-        return getDirection(planes_.end()->getName());
+        return getDirection(planes_.back().getName());
     }
 }
 
