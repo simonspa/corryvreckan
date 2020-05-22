@@ -248,7 +248,7 @@ double TrackingMultiplet::calculate_average_timestamp(const Track* track) {
     return (sum_weighted_time / sum_weights);
 }
 
-// Method containing the straight line tracklet finding for the arms of the multiplets
+// Method containing the tracklet finding for the arms of the multiplets
 TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
                                                         std::map<std::shared_ptr<Detector>, KDTree<Cluster>>& cluster_trees,
                                                         std::shared_ptr<Detector> reference_first,
@@ -275,7 +275,13 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
                 continue;
             }
 
-            auto trackletCandidate = std::make_shared<StraightLineTrack>();
+            auto trackletCandidate = std::make_shared<GblTrack>();
+            // register all planes:
+            for(auto& det : cluster_trees) {
+                auto detector = det.first.get();
+                trackletCandidate->registerPlane(
+                    detector->getName(), detector->displacement().x(), detector->materialBudget(), detector->toGlobal());
+            }
             trackletCandidate->addCluster(clusterFirst.get());
             trackletCandidate->addCluster(clusterLast.get());
 

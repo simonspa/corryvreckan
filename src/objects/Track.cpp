@@ -209,6 +209,9 @@ XYZPoint Track::getState(const std::string&) const {
 XYZVector Track::getDirection(const std::string&) const {
     return ROOT::Math::XYZVector(0.0, 0.0, 0.0);
 }
+XYZVector Track::getDirection(const double&) const {
+    return ROOT::Math::XYZVector(0.0, 0.0, 0.0);
+}
 
 XYPoint Track::getLocalResidual(const std::string& detectorID) const {
     return residual_local_.at(detectorID);
