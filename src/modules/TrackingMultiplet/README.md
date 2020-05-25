@@ -27,7 +27,9 @@ For each upstream tracklet, the downstream tracklet with the lowest matching dis
 * `time_cut_abs`: Specifies an absolute value for the maximum time difference allowed between clusters and an upstream or downstream tracklet for association to the tracklet. Absolute and relative time cuts are mutually exclusive. No default value.
 * `spatial_cut_rel`: Factor by which the `spatial_resolution` in x and y of each detector plane will be multiplied. These calculated value are defining an ellipse which is then used as the maximum distance in the XY plane allowed between clusters and an upstream or downstream tracklet for association to the tracklet. This allows the spatial cuts between different planes to be detector appropriate. By default, a relative spatial cut is applied. Absolute and relative spatial cuts are mutually exclusive. Defaults to `3.0`.
 * `spatial_cut_abs`: Specifies a set of absolute value (x and y) which defines an ellipse for the maximum spatial distance in the XY plane between clusters and an upstream or downstream tracklet for association to the tracklet. Absolute and relative spatial cuts are mutually exclusive. No default value.
-
+* `track_model`: Specifies the track model used for the up and downstream
+arms. Defaults to `straightline`
+* `momentum`: Defines the beam momentum. Only requiered if `track_model="gbl"`
 
 ### Plots produced
 
@@ -58,4 +60,5 @@ downstream_detectors = "telescope3" "telescope4" "telescope5"
 
 scatterer_position = 150mm
 scatterer_matching_cut = 50um
+
 ```
