@@ -58,7 +58,7 @@ void Multiplet::fit() {
 
     // Calculate the angle
     ROOT::Math::XYZVector slopeUp = m_upstream->getDirection(m_scattererPosition);
-    ROOT::Math::XYZVector slopeDown = m_upstream->getDirection(m_scattererPosition);
+    ROOT::Math::XYZVector slopeDown = m_downstream->getDirection(m_scattererPosition);
     //
     ROOT::Math::XYZVector kinks = (slopeDown /= slopeDown.z()) - (slopeUp /= slopeUp.z());
     m_kinkAtScatterer = ROOT::Math::XYVector(kinks.x(), kinks.y());
