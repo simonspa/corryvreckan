@@ -60,7 +60,7 @@ void Multiplet::fit() {
     ROOT::Math::XYZVector slopeUp = m_upstream->getDirection(m_scattererPosition);
     ROOT::Math::XYZVector slopeDown = m_upstream->getDirection(m_scattererPosition);
     //
-    ROOT::Math::XYZVector kinks = (slopeUp /= slopeUp.z()) - (slopeDown /= slopeDown.z());
+    ROOT::Math::XYZVector kinks = (slopeDown /= slopeDown.z()) - (slopeUp /= slopeUp.z());
     m_kinkAtScatterer = ROOT::Math::XYVector(kinks.x(), kinks.y());
 
     this->calculateChi2();
