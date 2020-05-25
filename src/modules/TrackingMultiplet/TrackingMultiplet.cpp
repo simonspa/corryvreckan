@@ -149,9 +149,12 @@ TrackingMultiplet::TrackingMultiplet(Configuration& config, std::vector<std::sha
 
     isolation_cut_ = config_.get<double>("isolation_cut");
 
-    momentum_ = config_.get<double>("momentum");
-
     track_model_ = config_.get<std::string>("track_model", "straightline");
+    if(track_model_ == "gbl") {
+        momentum_ = config_.get<double>("momentum");
+    } else {
+        momentum_ = config_.get<double>("momentum", 5000);
+    }
 }
 
 void TrackingMultiplet::initialize() {
