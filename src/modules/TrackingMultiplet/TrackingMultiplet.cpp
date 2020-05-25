@@ -278,11 +278,12 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
             }
 
             auto trackletCandidate = Track::Factory(track_model_);
+
             // register all planes:
             for(auto& det : cluster_trees) {
                 auto detector = det.first.get();
                 trackletCandidate->registerPlane(
-                    detector->getName(), detector->displacement().x(), detector->materialBudget(), detector->toGlobal());
+                    detector->getName(), detector->displacement().x(), detector->materialBudget(), detector->toLocal());
             }
             trackletCandidate->addCluster(clusterFirst.get());
             trackletCandidate->addCluster(clusterLast.get());
