@@ -63,7 +63,7 @@ void PixelDetector::build_axes(const Configuration& config) {
 
     if(config.has("mask_file")) {
         m_maskfile_name = config.get<std::string>("mask_file");
-        std::string mask_file = config.getPath("mask_file");
+        std::string mask_file = config.getPath("mask_file", true);
         LOG(DEBUG) << "Adding mask to detector \"" << config.getName() << "\", reading from " << mask_file;
         set_mask_file(mask_file);
         process_mask_file();
