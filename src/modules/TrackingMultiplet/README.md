@@ -29,7 +29,7 @@ For each upstream tracklet, the downstream tracklet with the lowest matching dis
 * `spatial_cut_abs`: Specifies a set of absolute value (x and y) which defines an ellipse for the maximum spatial distance in the XY plane between clusters and an upstream or downstream tracklet for association to the tracklet. Absolute and relative spatial cuts are mutually exclusive. No default value.
 * `track_model`: Specifies the track model used for the up and downstream
 arms. Defaults to `straightline`
-* `momentum`: Defines the beam momentum. Only requiered if `track_model="gbl"`
+* `momentum`: Defines the beam momentum. Only required if `track_model="gbl"`
 
 ### Plots produced
 
