@@ -17,7 +17,7 @@ using namespace std;
 Correlations::Correlations(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
-    // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
+    // Backwards compatibility: also allow timing_cut to be used for time_cut_abs
     config_.setAlias("time_cut_abs", "timing_cut", true);
     config_.setAlias("do_time_cut", "do_timing_cut", true);
 

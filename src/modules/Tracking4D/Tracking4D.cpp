@@ -21,7 +21,7 @@ using namespace std;
 Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
 
-    // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs and spatial_cut for spatial_cut_abs
+    // Backwards compatibility: also allow timing_cut to be used for time_cut_abs and spatial_cut for spatial_cut_abs
     config_.setAlias("time_cut_abs", "timing_cut", true);
     config_.setAlias("spatial_cut_abs", "spatial_cut", true);
 

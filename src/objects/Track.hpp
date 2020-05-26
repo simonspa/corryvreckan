@@ -131,7 +131,7 @@ namespace corryvreckan {
 
         /**
          * @brief Get the clusters associated to the track
-         * @return vector of cluster* assosiated to the track
+         * @return vector of cluster* associated to the track
          */
         std::vector<Cluster*> getAssociatedClusters(const std::string& detectorID) const;
 
@@ -171,7 +171,7 @@ namespace corryvreckan {
 
         /**
          * @brief Get the track position for a certain z position
-         * @param z positon
+         * @param z position
          * @return ROOT::Math::XYZPoint at z position
          */
         virtual ROOT::Math::XYZPoint getIntercept(double) const;

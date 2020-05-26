@@ -72,7 +72,7 @@ template <typename T> static void add_creator(FileReader::ObjectCreatorMap& map)
             }
         }
 
-        // Store the ojects on the clipboard:
+        // Store the objects on the clipboard:
         if(detector.empty()) {
             clipboard->putData(std::move(data));
         } else {
@@ -190,7 +190,7 @@ void FileReader::initialize() {
             // Check tree structure and if object type matches name
             auto split_type = corryvreckan::split<std::string>(branch->GetClassName(), "<>");
             if(split_type.size() != 2 || split_type[1].size() <= 2) {
-                throw ModuleError("Tree is malformed and cannot be used for creating objetcs");
+                throw ModuleError("Tree is malformed and cannot be used for creating objects");
             }
             std::string class_name = split_type[1].substr(0, split_type[1].size() - 1);
             std::string corry_namespace = "corryvreckan::";

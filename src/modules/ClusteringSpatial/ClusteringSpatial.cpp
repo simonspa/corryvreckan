@@ -210,7 +210,7 @@ void ClusteringSpatial::calculateClusterCentre(Cluster* cluster) {
 
     // Loop over all pixels
     for(auto& pixel : pixels) {
-        // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics):
+        // If charge == 0 (use epsilon to avoid errors in floating-point arithmetic):
         if(pixel->charge() < std::numeric_limits<double>::epsilon()) {
             // apply arithmetic mean if a pixel has zero charge
             found_charge_zero = true;

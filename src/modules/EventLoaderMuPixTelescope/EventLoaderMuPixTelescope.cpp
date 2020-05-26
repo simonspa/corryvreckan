@@ -95,7 +95,7 @@ StatusCode EventLoaderMuPixTelescope::run(const std::shared_ptr<Clipboard>& clip
             double px_timestamp = 8 * static_cast<double>(((tf.timestamp() >> 2) & 0xFFFFF700) + h.timestamp_raw());
             auto p = std::make_shared<Pixel>(detectors.at(h.tag() / 4), h.column(), h.row(), 0, 0, px_timestamp);
 
-            // Select earlies and latest pixel:
+            // Select earliest and latest pixel:
             frame_start = (px_timestamp < frame_start ? px_timestamp : frame_start);
             frame_end = (px_timestamp > frame_end ? px_timestamp : frame_end);
 

@@ -62,10 +62,10 @@ namespace caribou {
         // current RCR register value
         uint8_t rcr;
 
-        // firt column of the currently analyzed part of the package
+        // first column of the currently analyzed part of the package
         uint16_t firstColumn;
 
-        // Configutation
+        // Configuration
         bool pixelCompressionEnabled;
         bool DCandSuperPixelCompressionEnabled;
         std::map<size_t, std::map<size_t, bool>> counter_config; // [row][column]

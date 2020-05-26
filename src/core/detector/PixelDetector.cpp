@@ -27,7 +27,7 @@ PixelDetector::PixelDetector(const Configuration& config) : Detector(config) {
     // Set detector position and direction from configuration file
     SetPostionAndOrientation(config);
 
-    // intialize transform
+    // initialize transform
     this->initialise();
 
     // Auxiliary devices don't have: number_of_pixels, pixel_pitch, spatial_resolution, mask_file, region-of-interest
@@ -170,7 +170,7 @@ void PixelDetector::initialise() {
     m_globalToLocal = m_localToGlobal.Inverse();
 
     // Find the normal to the detector surface. Build two points, the origin and a unit step in z,
-    // transform these points to the global co-ordinate frame and then make a vector pointing between them
+    // transform these points to the global coordinate frame and then make a vector pointing between them
     m_origin = PositionVector3D<Cartesian3D<double>>(0., 0., 0.);
     m_origin = m_localToGlobal * m_origin;
     PositionVector3D<Cartesian3D<double>> localZ(0., 0., 1.);
@@ -237,10 +237,10 @@ PositionVector3D<Cartesian3D<double>> PixelDetector::getLocalIntercept(const Tra
 // Function to check if a track intercepts with a plane
 bool PixelDetector::hasIntercept(const Track* track, double pixelTolerance) const {
 
-    // First, get the track intercept in global co-ordinates with the plane
+    // First, get the track intercept in global coordinates with the plane
     PositionVector3D<Cartesian3D<double>> globalIntercept = this->getIntercept(track);
 
-    // Convert to local co-ordinates
+    // Convert to local coordinates
     PositionVector3D<Cartesian3D<double>> localIntercept = this->m_globalToLocal * globalIntercept;
 
     // Get the row and column numbers
@@ -260,10 +260,10 @@ bool PixelDetector::hasIntercept(const Track* track, double pixelTolerance) cons
 // Function to check if a track goes through/near a masked pixel
 bool PixelDetector::hitMasked(const Track* track, int tolerance) const {
 
-    // First, get the track intercept in global co-ordinates with the plane
+    // First, get the track intercept in global coordinates with the plane
     PositionVector3D<Cartesian3D<double>> globalIntercept = this->getIntercept(track);
 
-    // Convert to local co-ordinates
+    // Convert to local coordinates
     PositionVector3D<Cartesian3D<double>> localIntercept = this->m_globalToLocal * globalIntercept;
 
     // Get the row and column numbers

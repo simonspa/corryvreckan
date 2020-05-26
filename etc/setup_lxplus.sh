@@ -15,7 +15,7 @@ if [ -f "$ABSOLUTE_PATH/../bin/corry" ]; then
     CORRY_PATH=$( cd "$ABSOLUTE_PATH/../bin" ; pwd -P )
     export PATH=$CORRY_PATH:$PATH
 else
-    echo "Could not find corry exectuable. Please complete the installation by executing:"
+    echo "Could not find corry executable. Please complete the installation by executing:"
     echo "$ mkdir build && cd build"
     echo "$ cmake .."
     echo "$ make install -j <number_of_cores>"

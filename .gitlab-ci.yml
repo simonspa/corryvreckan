@@ -191,6 +191,19 @@ fmt:cc7-llvm-lint:
         - cd build/
         - ninja check-lint
 
+fmt:codespell:
+    stage: formatting
+    tags:
+        - docker
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    dependencies: []
+    script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - export PATH=~/.local/bin:$PATH
+        - pip install --trusted-host=pypi.org --user codespell
+        - codespell --ignore-words .gitlab-ci.d/codespell_ignored_words.txt --quiet-level 2 --skip ".git,.gitlab,cmake,3rdparty,*.svg"
+
 
 #############################
 # Documentation Compilation #

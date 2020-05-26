@@ -622,7 +622,7 @@ void ModuleManager::terminate() {
     m_terminate = true;
 }
 
-// Initalise all modules
+// Initialise all modules
 void ModuleManager::initializeAll() {
     // Loop over all modules and initialize them
     LOG(STATUS) << "=================| Initializing modules |==================";

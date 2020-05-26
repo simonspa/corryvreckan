@@ -65,7 +65,7 @@ StatusCode TextWriter::run(const std::shared_ptr<Clipboard>& clipboard) {
             auto class_name_full = corryvreckan::demangle(type_idx.name(), true);
             LOG(TRACE) << "Received objects of type \"" << class_name << "\"";
 
-            // Check if these objects hsould be read
+            // Check if these objects should be read
             if((!include_.empty() && include_.find(class_name) == include_.end()) ||
                (!exclude_.empty() && exclude_.find(class_name) != exclude_.end())) {
                 LOG(TRACE) << "Ignoring object " << corryvreckan::demangle(type_idx.name())

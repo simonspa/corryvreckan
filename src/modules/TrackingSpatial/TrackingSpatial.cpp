@@ -29,7 +29,7 @@ reconstruction with a mostly colinear beam.
 TrackingSpatial::TrackingSpatial(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
 
-    // Backwards compatibilty: also allow spatial_cut to be used for spatial_cut_abs
+    // Backwards compatibility: also allow spatial_cut to be used for spatial_cut_abs
     config_.setAlias("spatial_cut_abs", "spatial_cut", true);
 
     config_.setDefault<size_t>("min_hits_on_track", 6);

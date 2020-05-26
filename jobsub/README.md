@@ -34,7 +34,7 @@ optional arguments:
                         or can parse a comma-separated list of options. This
                         switch overrides any config file options and also
                         overwrites hard-coded settings on the Corryvreckan
-                        configration file.
+                        configuration file.
   -htc FILE, --htcondor-file FILE, --batch FILE
                         Specify condor_submit parameter file for HTCondor submission. Run
                         HTCondor submission via condor_submit instead of calling
@@ -127,10 +127,10 @@ It is also possible to specify multiple different settings for the same run numb
 Curly brackets in double-quotes `"{ }"` can be used to indicate a set (indicated by a comma `,`) or range (indicated by a dash `-`) of parameters which will be split up and processed one after the other.
 If a set or a range is detected, the parameter plus its value are attached to the name of the configuration file.
 Ranges can only be used for integer values (without units).
-However, a set or range can oly be used for one parameter, i.e. multi-dimensional parameters scans are not supported and have to be separated into individual CSV files.
+However, a set or range can only be used for one parameter, i.e. multi-dimensional parameters scans are not supported and have to be separated into individual CSV files.
 
 * `"{10,12-14}"` translates to `10`, `12`, `13`, `14` in consecutive jobs for the same run number
-* `"{10ns, 20ns}"` tranlates to `10ns`, `20ns` in consecutive jobs for the same run number
+* `"{10ns, 20ns}"` translates to `10ns`, `20ns` in consecutive jobs for the same run number
 * `"string,with,comma"` translates to `string,with,comma` in one job
 * `"{string,with,comma}"` which translates to `string`, `with`, `comma` in consecutive jobs for the same run number
 * `"\"string in quotes\""` translates to `"string in quotes"`

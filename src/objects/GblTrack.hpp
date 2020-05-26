@@ -18,7 +18,7 @@ namespace corryvreckan {
      * @ingroup Objects
      * @brief GblTrack object
      *
-     * This class is a general broken line track which knows how to fit itself. It is dervied from Track
+     * This class is a general broken line track which knows how to fit itself. It is derived from Track
      */
 
     class GblTrack : public Track {
@@ -33,7 +33,7 @@ namespace corryvreckan {
 
         /**
          * @brief Get the track position for a certain z position
-         * @param z positon
+         * @param z position
          * @return ROOT::Math::XYZPoint at z position
          */
         ROOT::Math::XYZPoint getIntercept(double z) const override;

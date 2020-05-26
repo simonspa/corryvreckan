@@ -34,7 +34,7 @@ MaskCreator::MaskCreator(Configuration& config, std::shared_ptr<Detector> detect
 
 void MaskCreator::initialize() {
 
-    // adjust per-axis bandwith for pixel pitch along each axis such that the
+    // adjust per-axis bandwidth for pixel pitch along each axis such that the
     // covered area is approximately circular in metric coordinates.
     double scale = std::hypot(m_detector->getPitch().X(), m_detector->getPitch().Y()) / M_SQRT2;
     m_bandwidthCol = static_cast<int>(std::ceil(bandwidth * scale / m_detector->getPitch().X()));

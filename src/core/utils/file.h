@@ -174,7 +174,7 @@ namespace corryvreckan {
      * @param path Path to the file
      * @throws std::invalid_argument If the file cannot be removed
      *
-     * Remove a single file at the given path. If the function returns the deletion was successfull.
+     * Remove a single file at the given path. If the function returns the deletion was successful.
      */
     inline void remove_file(const std::string& path) {
         int status = unlink(path.c_str());

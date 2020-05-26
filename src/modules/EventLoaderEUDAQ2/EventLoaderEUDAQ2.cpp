@@ -262,7 +262,7 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
 
         // If there is no event defined yet, there is little we can do:
         if(!clipboard->isEventDefined()) {
-            LOG(DEBUG) << "No Corryvreckan event defined - cannot define without timetamps.";
+            LOG(DEBUG) << "No Corryvreckan event defined - cannot define without timestamps.";
             return Event::Position::UNKNOWN;
         }
 
