@@ -45,8 +45,9 @@ Corryvreckan has been developed and is maintained by
 
 * Morag Williams, University of Glasgow/CERN, @williamm
 * Jens Kroeger, University of Heidelberg/CERN, @jekroege
-* Daniel Hynds, NIKHEF, @dhynds
-* Simon Spannagel, CERN, @simonspa
+* Lennart Huth, DESY, @lhuth
+* Paul Schütze, DESY, @pschutze
+* Simon Spannagel, DESY, @simonspa
 
 The following authors, in alphabetical order, have contributed to Corryvreckan:
 
@@ -55,11 +56,10 @@ The following authors, in alphabetical order, have contributed to Corryvreckan:
 * Katharina Dort, University of Giessen/CERN, @kdort
 * Alexander Ferk, CERN, @aferk
 * Adrian Fiergolski, CERN, @afiergol
-* Lennart Huth, DESY, @lhuth
+* Daniel Hynds, Nikhef, @dhynds
 * Magnus Mager, CERN, @mmager
 * Andreas Matthias Nürnberg, KIT, @nurnberg
-* Florian Pitters, HEPHY Vienna, @fpipper
-* Paul Schütze, DESY, @pschutze
+* Florian Pitters, HEPHY, @fpipper
 * Tomas Vanat, CERN, @tvanat
 
 ## Contributing
