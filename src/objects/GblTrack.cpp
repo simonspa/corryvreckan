@@ -288,10 +288,11 @@ void GblTrack::fit() {
                                 gblErrorsResiduals,
                                 gblDownWeights);
             // to be consistent with previous residuals global ones here:
-            ROOT::Math::XYZPoint corPos =
-                plane.getToGlobal() * (ROOT::Math::XYZPoint(local_track_points_.at(name).x() + corrections_.at(name).x(),
-                                                            local_track_points_.at(name).y() + corrections_.at(name).y(),
-                                                            0));
+            local_fitted_track_points_[name] =
+                ROOT::Math::XYZPoint(local_track_points_.at(name).x() + corrections_.at(name).x(),
+                                     local_track_points_.at(name).y() + corrections_.at(name).y(),
+                                     0);
+            auto corPos = plane.getToGlobal() * local_fitted_track_points_.at(name);
             ROOT::Math::XYZPoint clusterPos = plane.getCluster()->global();
             residual_global_[name] = clusterPos - corPos;
             residual_local_[plane.getName()] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
@@ -348,9 +349,8 @@ ROOT::Math::XYZPoint GblTrack::getState(const std::string& detectorID) const {
     // The local track position can simply be transformed to global coordinates
     auto p =
         std::find_if(planes_.begin(), planes_.end(), [detectorID](auto plane) { return (plane.getName() == detectorID); });
-    return (p->getToGlobal() * ROOT::Math::XYZPoint(local_track_points_.at(detectorID).x() + getCorrection(detectorID).x(),
-                                                    local_track_points_.at(detectorID).y() + getCorrection(detectorID).y(),
-                                                    0));
+
+    return (p->getToGlobal() * local_fitted_track_points_.at(detectorID));
 }
 
 void GblTrack::set_seed_cluster(const Cluster* cluster) {
