@@ -168,7 +168,16 @@ StatusCode DUTAssociation::run(const std::shared_ptr<Clipboard>& clipboard) {
             auto xdistance = (useClusterCentre ? xdistance_centre : xdistance_nearest);
             auto ydistance = (useClusterCentre ? ydistance_centre : ydistance_nearest);
             auto distance = sqrt(xdistance * xdistance + ydistance * ydistance);
-            if(std::abs(xdistance) > spatialCut.x() || std::abs(ydistance) > spatialCut.y()) {
+            // Check if track-cluster distance lies within ellipse defined by spatial cuts, following this example:
+            // https://www.geeksforgeeks.org/check-if-a-point-is-inside-outside-or-on-the-ellipse/
+            //
+            // ellipse defined by: x^2/a^2 + y^2/b^2 = 1: on ellipse,
+            //                                       > 1: outside,
+            //                                       < 1: inside
+            // Discard track if outside of ellipse:
+            auto norm = (xdistance * xdistance) / (spatialCut.x() * spatialCut.x()) +
+                        (ydistance * ydistance) / (spatialCut.y() * spatialCut.y());
+            if(norm > 1) {
                 LOG(DEBUG) << "Discarding DUT cluster with distance (" << Units::display(std::abs(xdistance), {"um", "mm"})
                            << "," << Units::display(std::abs(ydistance), {"um", "mm"}) << ")"
                            << " with local track intersection at " << Units::display(interceptLocal, {"um", "mm"});
