@@ -1,0 +1,10 @@
+# Words to be ignored by codespell.
+# Put one word per line and sort alphabetically.
+Claus
+gaus
+Hist
+hist
+Millepede
+nd
+pixelX
+
