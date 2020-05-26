@@ -124,8 +124,7 @@ StatusCode DUTAssociation::run(const std::shared_ptr<Clipboard>& clipboard) {
         // Loop over all DUT clusters
         for(auto& cluster : clusters) {
             // Check distance between track and cluster
-            ROOT::Math::XYZPoint intercept = track->getIntercept(cluster->global().z());
-            auto interceptLocal = m_detector->globalToLocal(intercept);
+            auto interceptLocal = m_detector->getLocalIntercept(track.get());
 
             // distance of track to cluster centre
             double xdistance_centre = std::abs(interceptLocal.X() - cluster->local().x());
