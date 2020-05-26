@@ -1,7 +1,7 @@
 \chapter{Alignment Procedure}
 \label{ch:howtoalign}
 
-As decribed in Section~\ref{sec:detector_config}, an analysis with \corry requires a configuration file defining which detectors are present in the setup.
+As described in Section~\ref{sec:detector_config}, an analysis with \corry requires a configuration file defining which detectors are present in the setup.
 This file also contains the position and rotation of each detector plane.
 The Z-positions of all planes can \textbf{and must} be measured by hand in the existing test beam setup and entered in this configuration file for the analysis.
 The X- and Y-positions as well as the rotations cannot be measured precisely by hand.
@@ -193,7 +193,7 @@ align_position=true
 
 Instead of using \texttt{[AlignmentTrackChi2]}, one can also use the module \texttt{[AlignmentMillepede]} (see Section~\ref{alignmentmillepede}).
 It allows a simultaneous fit of both the tracks and the alignment constants.
-The modules stops if the convergence, i.e.~the absolute sum of all corrections over the total number of parameters, is smaller than the configured value, and the aligment is complete.
+The modules stops if the convergence, i.e.\ the absolute sum of all corrections over the total number of parameters, is smaller than the configured value, and the alignment is complete.
 It should be noted that this module requires a rather good prealignment already.
 
 \section{Aligning the DUT}
