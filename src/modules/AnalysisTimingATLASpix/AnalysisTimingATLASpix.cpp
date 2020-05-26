@@ -24,7 +24,7 @@ using namespace corryvreckan;
 AnalysisTimingATLASpix::AnalysisTimingATLASpix(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector) {
 
-    // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
+    // Backwards compatibility: also allow timing_cut to be used for time_cut_abs
     config_.setAlias("time_cut_abs", "timing_cut", true);
 
     config_.setDefault<double>("chi2ndof_cut", 3.);
@@ -484,7 +484,7 @@ void AnalysisTimingATLASpix::initialize() {
     LOG(INFO) << "Calculate corrections: = " << m_calcCorrections;
 
     if(m_pointwise_correction_row) {
-        // Import TGraphErrors for row corection:
+        // Import TGraphErrors for row correction:
         TFile file(m_correctionFile_row.c_str());
         if(!file.IsOpen()) {
             throw InvalidValueError(config_,
@@ -503,7 +503,7 @@ void AnalysisTimingATLASpix::initialize() {
         LOG(STATUS) << "----> NO POINTWISE ROW CORRECTION!!!";
     }
     if(m_pointwise_correction_timewalk) {
-        // Import TGraphErrors for timewalk corection:
+        // Import TGraphErrors for timewalk correction:
         TFile file(m_correctionFile_timewalk.c_str());
         if(!file.IsOpen()) {
             throw InvalidValueError(config_,
@@ -777,7 +777,7 @@ void AnalysisTimingATLASpix::finalize(const std::shared_ptr<ReadonlyClipboard>&)
                 binMax = hTemp->GetMaximumBin();
                 timePeak = hTemp->GetXaxis()->GetBinCenter(binMax);
 
-                // fitting a Gaus for a good estimate of the peak positon:
+                // fitting a Gauss for a good estimate of the peak position:
                 // NOTE: initial values for Gaussian are hard-coded at the moment!
                 TF1* fPeak = new TF1("fPeak", "gaus");
                 fPeak->SetParameters(1, 100, 45);
@@ -819,7 +819,7 @@ void AnalysisTimingATLASpix::finalize(const std::shared_ptr<ReadonlyClipboard>&)
                     binMax = hTemp->GetMaximumBin();
                     timePeak = hTemp->GetXaxis()->GetBinCenter(binMax);
 
-                    // fitting a Gaus for a good estimate of the peak positon:
+                    // fitting a Gauss for a good estimate of the peak position:
                     // initial parameters are hardcoded at the moment!
                     TF1* fPeak = new TF1("fPeak", "gaus");
                     fPeak->SetParameters(1, 100, 45);
@@ -853,7 +853,7 @@ void AnalysisTimingATLASpix::finalize(const std::shared_ptr<ReadonlyClipboard>&)
                     binMax = hTemp->GetMaximumBin();
                     timePeak = hTemp->GetXaxis()->GetBinCenter(binMax);
 
-                    // fitting a Gaus for a good estimate of the peak positon:
+                    // fitting a Gauss for a good estimate of the peak position:
                     // initial parameters are hardcoded at the moment!
                     TF1* fPeak = new TF1("fPeak", "gaus");
                     fPeak->SetParameters(1, 100, 45);
@@ -886,7 +886,7 @@ void AnalysisTimingATLASpix::finalize(const std::shared_ptr<ReadonlyClipboard>&)
                     binMax = hTemp->GetMaximumBin();
                     timePeak = hTemp->GetXaxis()->GetBinCenter(binMax);
 
-                    // fitting a Gaus for a good estimate of the peak positon:
+                    // fitting a Gauss for a good estimate of the peak position:
                     // initial parameters are hardcoded at the moment!
                     TF1* fPeak = new TF1("fPeak", "gaus");
                     fPeak->SetParameters(1, 100, 45);
@@ -934,7 +934,7 @@ void AnalysisTimingATLASpix::finalize(const std::shared_ptr<ReadonlyClipboard>&)
     LOG(INFO) << "total tracks (uncut):\t" << total_tracks_uncut;
     LOG(INFO) << "after chi2 cut:\t" << tracks_afterChi2Cut;
     LOG(INFO) << "with intercept:\t" << tracks_hasIntercept;
-    LOG(INFO) << "withing ROI:\t\t" << tracks_isWithinROI;
+    LOG(INFO) << "within ROI:\t\t" << tracks_isWithinROI;
     LOG(INFO) << "frameEdge cut:\t\t" << matched_tracks;
     LOG(INFO) << "after clusterTotCut:\t" << tracks_afterClusterChargeCut;
     LOG(INFO) << "after clusterSizeCut:\t" << tracks_afterClusterSizeCut;

@@ -17,7 +17,7 @@ using namespace std;
 Prealignment::Prealignment(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
-    // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
+    // Backwards compatibility: also allow timing_cut to be used for time_cut_abs
     config_.setAlias("time_cut_abs", "timing_cut", true);
 
     config_.setDefault<double>("max_correlation_rms", Units::get<double>(6, "mm"));
