@@ -31,7 +31,7 @@ def parseIntegerString(inputstr=""):
     "10ns", "20ns"
     """
     selection = list()
-    # tokens are comma seperated values
+    # tokens are comma separated values
     tokens = [substring.strip() for substring in inputstr.split(',')]
     for i in tokens:
         try:
@@ -43,7 +43,7 @@ def parseIntegerString(inputstr=""):
                 token = [int(k.strip()) for k in i.split('-')]
                 if len(token) > 1:
                     token.sort()
-                    # we have items seperated by a dash
+                    # we have items separated by a dash
                     # try to build a valid range
                     first = token[0]
                     last = token[len(token)-1]
@@ -120,7 +120,7 @@ def loadparamsfromcsv(csvfilename, runs):
         csvfile = open(csvfilename, 'rb')
         filteredfile = CommentedFile(csvfile)
         try:
-            # contruct a sample for the csv format sniffer:
+            # construct a sample for the csv format sniffer:
             sample = ""
             try:
                 while (len(sample)<1024):
@@ -178,7 +178,7 @@ def loadparamsfromcsv(csvfilename, runs):
     return parameters_csv
 
 def checkSteer(sstring):
-    """ Check string for any occurance of @.*@ and return boolean. """
+    """ Check string for any occurrence of @.*@ and return boolean. """
     log = logging.getLogger('jobsub')
     import re
     hits = re.findall("@.*@", sstring)
@@ -216,7 +216,7 @@ def runCorryvreckan(filenamebase, jobtask, silent):
         # -oL: adjust standard output stream buffering to line buffered
         cmd = stdbuf + " -oL " + cmd
 
-    # need some addtional libraries for process interaction
+    # need some additional libraries for process interaction
     from subprocess import Popen, PIPE
     from threading  import Thread # threading used for non-blocking process output parsing
     from time import sleep
@@ -383,7 +383,7 @@ def zipLogs(path, filename):
         finally:
             log.debug("Closing log archive file")
             zf.close()
-    except IOError: # could not create zip file - path non-existant?!
+    except IOError: # could not create zip file - path non-existent?!
         log.error("Input/Output error: Could not create log and steering file archive ("+os.path.join(path, filename)+".zip"+")!")
 
 
@@ -432,7 +432,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(prog=progName, description="A tool for the convenient run-specific modification of Corryvreckan configuration files and their execution through the corry executable")
     parser.add_argument('--version', action='version', version='Revision: $Revision$, $LastChangedDate$')
     parser.add_argument("-c", "--conf-file", "--config", help="Configuration file with all Corryvreckan algorithms defined", metavar="FILE")
-    parser.add_argument('--option', '-o', action='append', metavar="NAME=VALUE", help="Specify further options such as 'beamenergy=5.3'. This switch be specified several times for multiple options or can parse a comma-separated list of options. This switch overrides any config file options and also overwrites hard-coded settings on the Corryvreckan configration file.")
+    parser.add_argument('--option', '-o', action='append', metavar="NAME=VALUE", help="Specify further options such as 'beamenergy=5.3'. This switch be specified several times for multiple options or can parse a comma-separated list of options. This switch overrides any config file options and also overwrites hard-coded settings on the Corryvreckan configuration file.")
     parser.add_argument("-htc", "--htcondor-file", "--batch", help="Specify condor_submit parameter file for HTCondor submission. Run HTCondor submission via condor_submit instead of calling Corryvreckan directly", metavar="FILE")
     parser.add_argument("-csv", "--csv-file", help="Load additional run-specific variables from table (text file in csv format)", metavar="FILE")
     parser.add_argument("--log-file", help="Save submission log to specified file", metavar="FILE")
@@ -566,7 +566,7 @@ def main(argv=None):
                 if not os.path.exists(basedirectory):
                     os.makedirs(basedirectory)
 
-                # Decend into subdirectory:
+                # Descend into subdirectory:
                 savedPath = os.getcwd()
                 os.chdir(basedirectory)
 
