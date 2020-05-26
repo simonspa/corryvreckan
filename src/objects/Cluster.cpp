@@ -55,7 +55,7 @@ const Pixel* Cluster::getSeedPixel() const {
     // If cluster has non-zero charge, return pixel with largest charge,
     // else return earliest pixel.
     double maxcharge = -1;
-    // If charge != 0 (use epsilon to avoid errors in floating-point arithmetics):
+    // If charge != 0 (use epsilon to avoid errors in floating-point arithmetic):
     if(m_charge > std::numeric_limits<double>::epsilon()) {
         // loop overall pixels and find the one with the largest charge:
         for(auto& px : m_pixels) {

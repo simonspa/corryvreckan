@@ -161,7 +161,7 @@ void GblTrack::fit() {
 
     // lambda to add plane (not the first one) and air scatterers
     auto addPlane = [&](std::vector<Plane>::iterator& plane) {
-        // Mapping of parameters in proteus - I would like to get rid of these converions once it works
+        // Mapping of parameters in proteus - I would like to get rid of these conversions once it works
         // For now they will stay here as changing this will cause the jacobian setup to be more messy right now
         Matrix<double, 5, 6> toGbl = Matrix<double, 5, 6>::Zero();
         Matrix<double, 6, 5> toProteus = Matrix<double, 6, 5>::Zero();
@@ -313,7 +313,7 @@ ROOT::Math::XYZPoint GblTrack::getIntercept(double z) const {
     bool found = false;
 
     if(!isFitted_) {
-        throw TrackError(typeid(GblTrack), "An interception is requested befor the track is fitted");
+        throw TrackError(typeid(GblTrack), "An interception is requested before the track has been fitted");
     }
 
     for(auto l : planes_) {
@@ -388,7 +388,7 @@ XYZPoint GblTrack::get_position_outside_telescope(double z) const {
 ROOT::Math::XYZVector GblTrack::getDirection(const std::string& detectorID) const {
 
     // Defining the direction following the particle results in the direction
-    // beeing definded from the requested plane onwards to the next one
+    // being defined from the requested plane onwards to the next one
     ROOT::Math::XYZPoint point = getState(detectorID);
     LOG(DEBUG) << "Requesting direction at: " << detectorID;
 
