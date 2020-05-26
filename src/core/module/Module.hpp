@@ -42,7 +42,7 @@ namespace corryvreckan {
      * The module base is the core of the modular framework. All modules should be descendants of this class. The base class
      * defines the methods the children can implement:
      * - Module::initialise(): for initializing the module at the start
-     * - Module::run(Clipoard* Clipboard): for doing the job of every module for every event
+     * - Module::run(Clipboard* Clipboard): for doing the job of every module for every event
      * - Module::finalize(): for finalising the module at the end
      */
     class Module {

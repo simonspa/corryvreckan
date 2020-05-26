@@ -84,7 +84,7 @@ std::shared_ptr<Detector> corryvreckan::Detector::factory(const Configuration& c
     if(coordinates == "cartesian") {
         return std::make_shared<PixelDetector>(config);
     } else {
-        throw InvalidValueError(config, "coordinates", "Coordiantes can only set to be cartesian now");
+        throw InvalidValueError(config, "coordinates", "Coordinates can only set to be cartesian now");
     }
 }
 
