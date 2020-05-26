@@ -38,20 +38,21 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     // Prepare EUDAQ2 config object
     eudaq::Configuration cfg;
 
-    // Provide the calibration file specified in the detector geometry:
-    // NOTE: This should go first to allow overwriting the calibration_file key in the module config
-    auto calibration_file = m_detector->calibrationFile();
-    if(!calibration_file.empty()) {
-        LOG(DEBUG) << "Forwarding detector calibration file: " << calibration_file;
-        cfg.Set("calibration_file", calibration_file);
-    }
-
     // Forward all settings to EUDAQ
     // WARNING: the EUDAQ Configuration class is not very flexible and e.g. booleans have to be passed as 1 and 0.
     auto configs = config_.getAll();
     for(const auto& key : configs) {
         LOG(DEBUG) << "Forwarding key \"" << key.first << " = " << key.second << "\" to EUDAQ converter";
         cfg.Set(key.first, key.second);
+    }
+
+    // Provide the calibration file specified in the detector geometry:
+    // NOTE: This should go last to allow overwriting the calibration_file key in the module config with absolute path
+    auto calibration_file =
+        config_.has("calibration_file") ? config_.getPath("calibration_file", true) : m_detector->calibrationFile();
+    if(!calibration_file.empty()) {
+        LOG(DEBUG) << "Forwarding detector calibration file: " << calibration_file;
+        cfg.Set("calibration_file", calibration_file);
     }
 
     // Converting the newly built configuration to a shared pointer of a const configuration object
