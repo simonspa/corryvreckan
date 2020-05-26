@@ -33,7 +33,7 @@ void ImproveReferenceTimestamp::initialize() {
 
 StatusCode ImproveReferenceTimestamp::run(const std::shared_ptr<Clipboard>& clipboard) {
 
-    // Recieved triggers
+    // Received triggers
     std::vector<double> trigger_times;
 
     // Get trigger signals

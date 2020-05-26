@@ -53,7 +53,7 @@ namespace corryvreckan {
         void loadCalibration(std::string path, char delim, std::vector<std::vector<float>>& dat);
         void maskPixels(std::string);
 
-        // configuration paramaters:
+        // configuration parameters:
         std::string m_inputDirectory;
 
         bool applyCalibration;

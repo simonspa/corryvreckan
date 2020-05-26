@@ -17,7 +17,7 @@ using namespace std;
 DUTAssociation::DUTAssociation(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
-    // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs and spatial_cut for spatial_cut_abs
+    // Backwards compatibility: also allow timing_cut to be used for time_cut_abs and spatial_cut for spatial_cut_abs
     config_.setAlias("time_cut_abs", "timing_cut", true);
     config_.setAlias("spatial_cut_abs", "spatial_cut", true);
 
@@ -111,7 +111,7 @@ StatusCode DUTAssociation::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Loop over all tracks
     for(auto& track : tracks) {
-        LOG(TRACE) << "Proccessing track with model " << track->getType() << ", chi2 of " << track->getChi2();
+        LOG(TRACE) << "Processing track with model " << track->getType() << ", chi2 of " << track->getChi2();
         int assoc_cls_per_track = 0;
         auto min_distance = std::numeric_limits<double>::max();
 

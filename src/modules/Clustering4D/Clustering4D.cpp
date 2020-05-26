@@ -17,7 +17,7 @@ using namespace std;
 Clustering4D::Clustering4D(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
 
-    // Backwards compatibilty: also allow timing_cut to be used for time_cut_abs
+    // Backwards compatibility: also allow timing_cut to be used for time_cut_abs
     config_.setAlias("time_cut_abs", "timing_cut", true);
     config_.setAlias("neighbor_radius_row", "neighbour_radius_row", true);
     config_.setAlias("neighbor_radius_col", "neighbour_radius_col", true);
@@ -262,7 +262,7 @@ void Clustering4D::calculateClusterCentre(Cluster* cluster) {
 
     // Loop over all pixels
     for(auto& pixel : pixels) {
-        // If charge == 0 (use epsilon to avoid errors in floating-point arithmetics):
+        // If charge == 0 (use epsilon to avoid errors in floating-point arithmetic):
         if(pixel->charge() < std::numeric_limits<double>::epsilon()) {
             // apply arithmetic mean if a pixel has zero charge
             found_charge_zero = true;

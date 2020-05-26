@@ -79,7 +79,7 @@ void clicpix2_frameDecoder::decodeHeader(const clicpix2_frameDecoder::WORD_TYPE 
 void clicpix2_frameDecoder::extractColumns(std::vector<clicpix2_frameDecoder::WORD_TYPE>::const_iterator& data,
                                            std::vector<clicpix2_frameDecoder::WORD_TYPE>::const_iterator dataEnd) {
     std::array<std::array<pixelReadout, 8>, CLICPIX2_ROW * 2>
-        pixels_dc; // stores results of the processed doube columns (up to 8 if compression is enabled)
+        pixels_dc; // stores results of the processed double columns (up to 8 if compression is enabled)
     std::array<size_t, 8> row_index = {
         {0, 0, 0, 0, 0, 0, 0, 0}}; // 8 independent (in case of compression) counters navigating through the <pixels_dc>
     std::array<int, 8> row_slice = {{CLICPIX2_PIXEL_SIZE - 1,
@@ -248,7 +248,7 @@ void clicpix2_frameDecoder::processDCbit(std::array<std::array<pixelReadout, 8>,
         if(dc_counter ==
            static_cast<int>(2 * (CLICPIX2_ROW * CLICPIX2_PIXEL_SIZE + CLICPIX2_ROW / CLICPIX2_SUPERPIXEL_SIZE) + 1)) {
             if(data ||                             // not empty double-column
-               !DCandSuperPixelCompressionEnabled) // or collumn compression disabled
+               !DCandSuperPixelCompressionEnabled) // or column compression disabled
                 dc_counter = 0;
             else { // empty double-column
                 for(auto i = 0; i < static_cast<int>(2 * CLICPIX2_ROW); ++i)

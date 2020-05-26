@@ -266,7 +266,7 @@ StatusCode EventLoaderCLICpix2::run(const std::shared_ptr<Clipboard>& clipboard)
                 tot = 1;
             }
 
-            // Time defaults ot rising shutter edge:
+            // Time defaults to rising shutter edge:
             double timestamp = shutterStartTime + (shutterStopTime - shutterStartTime) / 2;
 
             // Decide whether information is counter of ToA
