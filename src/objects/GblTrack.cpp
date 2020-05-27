@@ -280,6 +280,9 @@ void GblTrack::fit() {
         kink_[name] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
         traj.getResults(int(plane.getGblPointPosition()), localPar, localCov);
         corrections_[name] = ROOT::Math::XYZPoint(localPar(3), localPar(4), 0);
+        local_fitted_track_points_[name] = ROOT::Math::XYZPoint(local_track_points_.at(name).x() + corrections_.at(name).x(),
+                                                                local_track_points_.at(name).y() + corrections_.at(name).y(),
+                                                                0);
         if(plane.hasCluster()) {
             traj.getMeasResults(plane.getGblPointPosition(),
                                 numData,
@@ -288,10 +291,7 @@ void GblTrack::fit() {
                                 gblErrorsResiduals,
                                 gblDownWeights);
             // to be consistent with previous residuals global ones here:
-            local_fitted_track_points_[name] =
-                ROOT::Math::XYZPoint(local_track_points_.at(name).x() + corrections_.at(name).x(),
-                                     local_track_points_.at(name).y() + corrections_.at(name).y(),
-                                     0);
+
             auto corPos = plane.getToGlobal() * local_fitted_track_points_.at(name);
             ROOT::Math::XYZPoint clusterPos = plane.getCluster()->global();
             residual_global_[name] = clusterPos - corPos;
@@ -343,7 +343,7 @@ ROOT::Math::XYZPoint GblTrack::getState(const std::string& detectorID) const {
     LOG(DEBUG) << "Requesting state at: " << detectorID;
     if(!isFitted_)
         throw TrackError(typeid(GblTrack), " has no defined state for " + detectorID + " before fitting");
-    if(local_track_points_.count(detectorID) != 1) {
+    if(local_fitted_track_points_.count(detectorID) != 1) {
         throw TrackError(typeid(GblTrack), " does not have any entry for detector " + detectorID);
     }
     // The local track position can simply be transformed to global coordinates

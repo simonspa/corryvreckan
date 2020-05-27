@@ -98,7 +98,7 @@ namespace corryvreckan {
         std::map<std::string, ROOT::Math::XYPoint> initital_residual_{};
         std::map<std::string, ROOT::Math::XYPoint> kink_{};
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(GblTrack, 4);
+        ClassDefOverride(GblTrack, 5);
     };
 } // namespace corryvreckan
 
