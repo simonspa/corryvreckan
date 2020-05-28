@@ -31,13 +31,15 @@ Several keywords can be used in the plot path, which are parsed and interpreted 
 The "corryvreckan" namespace is not required to be added to the plot path.
 
 ### Parameters
+
+#### General parameters
 * `update`: Number of events after which to update, defaults to `500`.
 * `canvas_title`: Title of the GUI window to be shown, defaults to `Corryvreckan Testbeam Monitor`. This parameter can be used to e.g. display the current run number in the window title.
 * `ignore_aux`: With this boolean variable set, detectors with `auxiliary` roles are ignored and none of their histograms are added to the UI. Defaults to `true`.
 * `clustering_module`: Module for which the standard clustering plots are selected. Defaults to `Clustering4D`.
 * `tracking_module`: Module for which the standard tracking plots are selected. Defaults to `Tracking4D`.
 
-
+#### Canvas parameters
 * `overview`: List of plots to be placed on the "Overview" canvas of the online monitor. The list of plots created in the default configuration is listed below.
 * `dut_plots`: List of plots to be placed on the "DUTs" canvas of the online monitor. By default, this canvas contains plots collected from the `EventLoaderEUDAQ2` as well as the `AnalysisDUT` modules for the each configured DUT. This canvas should be customized for the respective DUT.
 * `hitmaps`: List of plots to be placed on the "Hitmaps" canvas of the online monitor. By default, this canvas displays `Correlations/%DETECTOR%/hitmap` for all detectors.
