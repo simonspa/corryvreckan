@@ -134,7 +134,7 @@ namespace corryvreckan {
     bool corryvreckan_module_is_dut() { return true; }
 #endif
 
-#if(!CORRYVRECKAN_MODULE_GLOBAL && CORRYVRECKAN_EXCLUDE_AUX) || defined(DOXYGEN)
+#if(!CORRYVRECKAN_MODULE_GLOBAL && defined(CORRYVRECKAN_EXCLUDE_AUX)) || defined(DOXYGEN)
     // Return that this module should not be instantiated for aux detectors
     bool corryvreckan_module_exclude_aux() { return true; }
 #else

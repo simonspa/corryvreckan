@@ -76,7 +76,6 @@ MACRO(corryvreckan_detector_module name)
     # Set the unique flag to false
     TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_GLOBAL=0)
     TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_DUT=0)
-    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_EXCLUDE_AUX=0)
 ENDMACRO()
 
 # Select whether to exclude AUX detectors or not
@@ -102,7 +101,6 @@ MACRO(corryvreckan_dut_module name)
     # Set the unique flag to false
     TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_GLOBAL=0)
     TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_DUT=1)
-    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_EXCLUDE_AUX=0)
 ENDMACRO()
 
 # Add sources to the module
