@@ -148,6 +148,12 @@ TrackingMultiplet::TrackingMultiplet(Configuration& config, std::vector<std::sha
     scatterer_matching_cut_ = config_.get<double>("scatterer_matching_cut");
 
     isolation_cut_ = config_.get<double>("isolation_cut");
+
+    track_model_ = config_.get<std::string>("track_model", "straightline");
+    if(track_model_ != "gbl") {
+        config_.setDefault("momentum", 5000);
+    }
+    momentum_ = config_.get<double>("momentum");
 }
 
 void TrackingMultiplet::initialize() {
@@ -248,7 +254,7 @@ double TrackingMultiplet::calculate_average_timestamp(const Track* track) {
     return (sum_weighted_time / sum_weights);
 }
 
-// Method containing the straight line tracklet finding for the arms of the multiplets
+// Method containing the tracklet finding for the arms of the multiplets
 TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
                                                         std::map<std::shared_ptr<Detector>, KDTree<Cluster>>& cluster_trees,
                                                         std::shared_ptr<Detector> reference_first,
@@ -275,9 +281,17 @@ TrackVector TrackingMultiplet::find_multiplet_tracklets(const streams& stream,
                 continue;
             }
 
-            auto trackletCandidate = std::make_shared<StraightLineTrack>();
+            auto trackletCandidate = Track::Factory(track_model_);
+
+            // register all planes:
+            for(auto& det : cluster_trees) {
+                auto detector = det.first.get();
+                trackletCandidate->registerPlane(
+                    detector->getName(), detector->displacement().x(), detector->materialBudget(), detector->toLocal());
+            }
             trackletCandidate->addCluster(clusterFirst.get());
             trackletCandidate->addCluster(clusterLast.get());
+            trackletCandidate->setParticleMomentum(momentum_);
 
             auto averageTimestamp = calculate_average_timestamp(trackletCandidate.get());
             trackletCandidate->setTimestamp(averageTimestamp);
@@ -430,12 +444,10 @@ void TrackingMultiplet::fill_tracklet_histograms(const streams& stream, TrackVec
 
         for(auto& tracklet : tracklets) {
             clustersPerTracklet[stream]->Fill(static_cast<double>(tracklet->getNClusters()));
-
-            trackletAngleX[stream]->Fill(static_cast<double>(
-                Units::convert(tracklet->getDirection("").X() / tracklet->getDirection("").Z(), "mrad")));
-            trackletAngleY[stream]->Fill(static_cast<double>(
-                Units::convert(tracklet->getDirection("").Y() / tracklet->getDirection("").Z(), "mrad")));
-
+            trackletAngleX[stream]->Fill(static_cast<double>(Units::convert(
+                tracklet->getDirection(scatterer_position_).X() / tracklet->getDirection(scatterer_position_).Z(), "mrad")));
+            trackletAngleY[stream]->Fill(static_cast<double>(Units::convert(
+                tracklet->getDirection(scatterer_position_).Y() / tracklet->getDirection(scatterer_position_).Z(), "mrad")));
             trackletPositionAtScattererX[stream]->Fill(tracklet->getIntercept(scatterer_position_).X());
             trackletPositionAtScattererY[stream]->Fill(tracklet->getIntercept(scatterer_position_).Y());
 

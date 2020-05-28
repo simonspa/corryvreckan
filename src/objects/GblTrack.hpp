@@ -53,6 +53,13 @@ namespace corryvreckan {
         ROOT::Math::XYZVector getDirection(const std::string& detectorID) const override;
 
         /**
+         * @brief Get the track direction at any given z position
+         * @param global z position
+         * @return ROOT::Math::XYZPoint direction at z
+         */
+        ROOT::Math::XYZVector getDirection(const double& z) const override;
+
+        /**
          * @brief Return kink of track at given detector
          * @param  detectorID Detector ID at which the kink should be evaluated
          * @return            Kink at given detector
@@ -87,10 +94,11 @@ namespace corryvreckan {
         bool use_volume_scatter_{};
 
         std::map<std::string, ROOT::Math::XYPoint> local_track_points_{};
+        std::map<std::string, ROOT::Math::XYZPoint> local_fitted_track_points_{};
         std::map<std::string, ROOT::Math::XYPoint> initital_residual_{};
-        std::map<std::string, ROOT::Math::XYPoint> kink_;
+        std::map<std::string, ROOT::Math::XYPoint> kink_{};
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(GblTrack, 4);
+        ClassDefOverride(GblTrack, 5);
     };
 } // namespace corryvreckan
 

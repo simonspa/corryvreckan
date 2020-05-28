@@ -280,6 +280,9 @@ void GblTrack::fit() {
         kink_[name] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
         traj.getResults(int(plane.getGblPointPosition()), localPar, localCov);
         corrections_[name] = ROOT::Math::XYZPoint(localPar(3), localPar(4), 0);
+        local_fitted_track_points_[name] = ROOT::Math::XYZPoint(local_track_points_.at(name).x() + corrections_.at(name).x(),
+                                                                local_track_points_.at(name).y() + corrections_.at(name).y(),
+                                                                0);
         if(plane.hasCluster()) {
             traj.getMeasResults(plane.getGblPointPosition(),
                                 numData,
@@ -288,10 +291,8 @@ void GblTrack::fit() {
                                 gblErrorsResiduals,
                                 gblDownWeights);
             // to be consistent with previous residuals global ones here:
-            ROOT::Math::XYZPoint corPos =
-                plane.getToGlobal() * (ROOT::Math::XYZPoint(local_track_points_.at(name).x() + corrections_.at(name).x(),
-                                                            local_track_points_.at(name).y() + corrections_.at(name).y(),
-                                                            0));
+
+            auto corPos = plane.getToGlobal() * local_fitted_track_points_.at(name);
             ROOT::Math::XYZPoint clusterPos = plane.getCluster()->global();
             residual_global_[name] = clusterPos - corPos;
             residual_local_[plane.getName()] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
@@ -342,15 +343,14 @@ ROOT::Math::XYZPoint GblTrack::getState(const std::string& detectorID) const {
     LOG(DEBUG) << "Requesting state at: " << detectorID;
     if(!isFitted_)
         throw TrackError(typeid(GblTrack), " has no defined state for " + detectorID + " before fitting");
-    if(local_track_points_.count(detectorID) != 1) {
+    if(local_fitted_track_points_.count(detectorID) != 1) {
         throw TrackError(typeid(GblTrack), " does not have any entry for detector " + detectorID);
     }
     // The local track position can simply be transformed to global coordinates
     auto p =
         std::find_if(planes_.begin(), planes_.end(), [detectorID](auto plane) { return (plane.getName() == detectorID); });
-    return (p->getToGlobal() * ROOT::Math::XYZPoint(local_track_points_.at(detectorID).x() + getCorrection(detectorID).x(),
-                                                    local_track_points_.at(detectorID).y() + getCorrection(detectorID).y(),
-                                                    0));
+
+    return (p->getToGlobal() * local_fitted_track_points_.at(detectorID));
 }
 
 void GblTrack::set_seed_cluster(const Cluster* cluster) {
@@ -368,6 +368,7 @@ XYZPoint GblTrack::get_position_outside_telescope(double z) const {
     // most up and downstream plane
     auto first = planes_.begin();
     auto last = planes_.end();
+    last--; // No direct iterator for last element
     // check if z is up or downstream
     bool upstream = (z < first->getPosition());
 
@@ -392,21 +393,28 @@ ROOT::Math::XYZVector GblTrack::getDirection(const std::string& detectorID) cons
     ROOT::Math::XYZPoint point = getState(detectorID);
     LOG(DEBUG) << "Requesting direction at: " << detectorID;
 
-    // searching for the next detector layer - fixme: can this be done nicer?
-    bool found = false;
-    std::string nextLayer = "";
-    for(auto& layer : planes_) {
-        if(found) {
-            nextLayer = layer.getName();
-            break;
-        } else if(layer.getName() == detectorID) {
-            found = true;
-        }
+    // searching for the next detector layer
+    auto plane =
+        std::find_if(planes_.begin(), planes_.end(), [&detectorID](const Plane& p) { return p.getName() == detectorID; });
+    plane++;
+    // If we are at the end we have no kink -> take the last two palbes
+    if(plane == planes_.end()) {
+        plane -= 2;
+        ROOT::Math::XYZPoint pointBefore = getState(plane->getName());
+        return ((point - pointBefore) / (point.z() - pointBefore.z()));
     }
-    if(nextLayer == "")
-        throw TrackError(typeid(GblTrack), " does not define a direction after the last telescope plane");
-    ROOT::Math::XYZPoint pointAfter = getState(nextLayer);
+
+    ROOT::Math::XYZPoint pointAfter = getState(plane->getName());
     return ((pointAfter - point) / (pointAfter.z() - point.z()));
+}
+
+XYZVector GblTrack::getDirection(const double& z) const {
+    auto planeUpstream = std::find_if(planes_.begin(), planes_.end(), [&z](const Plane& p) { return p.getPosition() > z; });
+    if(planeUpstream != planes_.end()) {
+        return getDirection(planeUpstream->getName());
+    } else {
+        return getDirection(planes_.back().getName());
+    }
 }
 
 void GblTrack::print(std::ostream& out) const {
