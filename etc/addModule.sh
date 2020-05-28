@@ -16,6 +16,18 @@ select yn in "global" "detector" "dut"; do
     esac
 done
 
+# If type is detector, ask if axu should be excluded:
+exclude_aux=0
+if [ "$type" == 2 ]; then
+    echo -e "Should auxiliary detectors be excluded from this module?\n"
+    select yn in "yes" "nope"; do
+        case $yn in
+            yes ) exclude_aux=1; break;;
+            nope ) exclude_aux=0; break;;
+        esac
+    done
+fi
+
 echo "Creating directory and files..."
 
 echo
@@ -28,8 +40,8 @@ DIRECTORIES[2]="src/modules"
 MODDIR=""
 for DIR in "${DIRECTORIES[@]}"; do
     if [ -d "$DIR" ]; then
-	MODDIR="$DIR"
-	break
+        MODDIR="$DIR"
+        break
     fi
 done
 
@@ -79,27 +91,33 @@ if [ "$platform" == "Darwin" ]; then opt="-i \"\""; fi
 # Change to detector or dut module type if necessary:
 if [ "$type" != 1 ]; then
 
-  # Prepare sed commands to change to per detector module
-  # Change module type in CMakeLists
-  if [ "$type" == 3 ]; then
-    command="sed $opt 's/_GLOBAL_/_DUT_/g' $MODDIR/$MODNAME/CMakeLists.txt"
-  else
-    command="sed $opt 's/_GLOBAL_/_DETECTOR_/g' $MODDIR/$MODNAME/CMakeLists.txt"
-  fi
-  eval $command
+    # Prepare sed commands to change to per detector module
+    # Change module type in CMakeLists
+    if [ "$type" == 3 ]; then
+        command="sed $opt 's/_GLOBAL_/_DUT_/g' $MODDIR/$MODNAME/CMakeLists.txt"
+    else
+        command="sed $opt 's/_GLOBAL_/_DETECTOR_/g' $MODDIR/$MODNAME/CMakeLists.txt"
+    fi
+    eval $command
 
-  # Change header file
-  command="sed ${opt} \
-      -e 's/param detectors.*/param detector Pointer to the detector for this module instance/g' \
-      -e 's/std::vector<Detector\*> detectors/Detector\* detector/g' \
-      $MODDIR/$MODNAME/${MODNAME}.h"
-  eval $command
-  # Change implementation file
-  command="sed ${opt} \
-      -e 's/std::vector<Detector\*> detectors/Detector\* detector/g' \
-      -e 's/move(detectors)/move\(detector\)/g' \
-      $MODDIR/$MODNAME/${MODNAME}.cpp"
-  eval $command
+    # Add aux exclusion for detector module if selected:
+    if [ "$exclude_aux" == 1  ]; then
+        command="sed $opt '/_DETECTOR_/ a CORRYVRECKAN_EXCLUDE_AUX(\${MODULE_NAME})' $MODDIR/$MODNAME/CMakeLists.txt"
+        eval $command
+    fi
+
+    # Change header file
+    command="sed ${opt} \
+    -e 's/param detectors.*/param detector Pointer to the detector for this module instance/g' \
+    -e 's/std::vector<Detector\*> detectors/Detector\* detector/g' \
+    $MODDIR/$MODNAME/${MODNAME}.h"
+    eval $command
+    # Change implementation file
+    command="sed ${opt} \
+    -e 's/std::vector<Detector\*> detectors/Detector\* detector/g' \
+    -e 's/move(detectors)/move\(detector\)/g' \
+    $MODDIR/$MODNAME/${MODNAME}.cpp"
+    eval $command
 fi
 
 # Print a summary of the module created:
