@@ -50,7 +50,6 @@ void Multiplet::calculateResiduals() {
 
 void Multiplet::fit() {
 
-    // FIXME: Currently asking for direction of "". Should be the last detector plane -> Would enable using more generic
     // tracks
     m_positionAtScatterer = ((m_downstream->getIntercept(m_scattererPosition) -
                               (ROOT::Math::XYZPoint(0, 0, 0) - m_upstream->getIntercept(m_scattererPosition))) /
@@ -58,11 +57,11 @@ void Multiplet::fit() {
     m_offsetAtScatterer = m_downstream->getIntercept(m_scattererPosition) - m_upstream->getIntercept(m_scattererPosition);
 
     // Calculate the angle
-    double slopeXup = m_upstream->getDirection("").X() / m_upstream->getDirection("").Z();
-    double slopeYup = m_upstream->getDirection("").Y() / m_upstream->getDirection("").Z();
-    double slopeXdown = m_downstream->getDirection("").X() / m_downstream->getDirection("").Z();
-    double slopeYdown = m_downstream->getDirection("").Y() / m_downstream->getDirection("").Z();
-    m_kinkAtScatterer = ROOT::Math::XYVector(slopeXdown - slopeXup, slopeYdown - slopeYup);
+    ROOT::Math::XYZVector slopeUp = m_upstream->getDirection(m_scattererPosition);
+    ROOT::Math::XYZVector slopeDown = m_downstream->getDirection(m_scattererPosition);
+    //
+    ROOT::Math::XYZVector kinks = (slopeDown /= slopeDown.z()) - (slopeUp /= slopeUp.z());
+    m_kinkAtScatterer = ROOT::Math::XYVector(kinks.x(), kinks.y());
 
     this->calculateChi2();
     this->calculateResiduals();
@@ -83,6 +82,10 @@ ROOT::Math::XYZPoint Multiplet::getState(const std::string& detectorID) const {
 ROOT::Math::XYZVector Multiplet::getDirection(const std::string& detectorID) const {
     return getClusterFromDetector(detectorID)->global().z() <= m_scattererPosition ? m_upstream->getDirection(detectorID)
                                                                                    : m_downstream->getDirection(detectorID);
+}
+
+XYZVector Multiplet::getDirection(const double& z) const {
+    return (z <= m_scattererPosition ? m_upstream->getDirection(z) : m_downstream->getDirection(z));
 }
 
 void Multiplet::print(std::ostream& out) const {

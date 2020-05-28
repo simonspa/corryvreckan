@@ -5,9 +5,10 @@
 
 ### Description
 This module performs particle tracking based on the _Multiplet_ track model.
-This track model is defined by two `StraightLineTrack`s (_upstream_ & _downstream_). These tracklets are connected at a certain position along `z`, where a kink of the track is allowed, representing a scatterer.
+This track model is defined by two so-called tracklets (_upstream_ & _downstream_), which are track fits to hits in the corresponding subsets of detectors.
+These tracklets are connected at a certain position along `z`, where an arbitrary kink of the track is allowed, representing a scatterer.
 
-The upstream and downstream tracklets are determined by adding all combinations of clusters in the first and the last detector plane of the corresponding stream to `StraightLineTrack` candidates.
+The upstream and downstream tracklets are determined by adding all combinations of clusters in the first and the last detector plane of the corresponding stream to track candidates.
 For each plane the cluster closest to the tracklet is added, while the fit to this tracklet is continuously updated.
 Time cuts are taken into account.
 A tracklet is stored, when it has at least `min_hits_<up/down>stream` clusters and is not closer than `isolation_cut` to another tracklet at the position of the scatterer.
@@ -27,7 +28,9 @@ For each upstream tracklet, the downstream tracklet with the lowest matching dis
 * `time_cut_abs`: Specifies an absolute value for the maximum time difference allowed between clusters and an upstream or downstream tracklet for association to the tracklet. Absolute and relative time cuts are mutually exclusive. No default value.
 * `spatial_cut_rel`: Factor by which the `spatial_resolution` in x and y of each detector plane will be multiplied. These calculated value are defining an ellipse which is then used as the maximum distance in the XY plane allowed between clusters and an upstream or downstream tracklet for association to the tracklet. This allows the spatial cuts between different planes to be detector appropriate. By default, a relative spatial cut is applied. Absolute and relative spatial cuts are mutually exclusive. Defaults to `3.0`.
 * `spatial_cut_abs`: Specifies a set of absolute value (x and y) which defines an ellipse for the maximum spatial distance in the XY plane between clusters and an upstream or downstream tracklet for association to the tracklet. Absolute and relative spatial cuts are mutually exclusive. No default value.
-
+* `track_model`: Specifies the track model used for the up and downstream
+arms. Defaults to `straightline`
+* `momentum`: Defines the beam momentum. Only required if `track_model="gbl"`
 
 ### Plots produced
 
@@ -58,4 +61,5 @@ downstream_detectors = "telescope3" "telescope4" "telescope5"
 
 scatterer_position = 150mm
 scatterer_matching_cut = 50um
+
 ```
