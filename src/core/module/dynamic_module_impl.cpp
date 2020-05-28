@@ -48,6 +48,13 @@ namespace corryvreckan {
     bool corryvreckan_module_is_dut();
 
     /**
+     * @brief Returns if the linked module should be excluded for AUX detectors
+     *
+     * Used by the ModuleManager to determine if it should instantiate a modules for AUX detectors
+     */
+    bool corryvreckan_module_exclude_aux();
+
+    /**
      * @brief Returns a list of detector types this module can run on
      *
      * Used by the ModuleManager to determine if module should instantiate for a given detector
@@ -125,6 +132,14 @@ namespace corryvreckan {
     bool corryvreckan_module_is_global() { return false; }
     // Return that this module is a generic detector module
     bool corryvreckan_module_is_dut() { return true; }
+#endif
+
+#if(!CORRYVRECKAN_MODULE_GLOBAL && CORRYVRECKAN_EXCLUDE_AUX) || defined(DOXYGEN)
+    // Return that this module should not be instantiated for aux detectors
+    bool corryvreckan_module_exclude_aux() { return true; }
+#else
+    // Return that this module should not exclude aux detectors
+    bool corryvreckan_module_exclude_aux() { return false; }
 #endif
     }
 } // namespace corryvreckan

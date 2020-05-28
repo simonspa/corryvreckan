@@ -28,6 +28,7 @@
 #define CORRYVRECKAN_GENERATOR_FUNCTION "corryvreckan_module_generator"
 #define CORRYVRECKAN_GLOBAL_FUNCTION "corryvreckan_module_is_global"
 #define CORRYVRECKAN_DUT_FUNCTION "corryvreckan_module_is_dut"
+#define CORRYVRECKAN_AUX_FUNCTION "corryvreckan_module_exclude_aux"
 #define CORRYVRECKAN_TYPE_FUNCTION "corryvreckan_detector_types"
 
 using namespace corryvreckan;
