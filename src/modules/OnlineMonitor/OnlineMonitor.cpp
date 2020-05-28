@@ -32,15 +32,15 @@ OnlineMonitor::OnlineMonitor(Configuration& config, std::vector<std::shared_ptr<
     trackingModule = config_.get<std::string>("tracking_module");
 
     config_.setDefaultMatrix<std::string>("overview",
-                                          {{trackingModule + "/trackChi2"},
+                                          {{trackingModule + "/trackChi2ndof"},
                                            {clusteringModule + "/%REFERENCE%/clusterCharge"},
                                            {"Correlations/%REFERENCE%/hitmap", "colz"},
-                                           {trackingModule + "/%REFERENCE%/residualsX"}});
+                                           {trackingModule + "/%REFERENCE%/local_residuals/LocalResidualsX"}});
     config_.setDefaultMatrix<std::string>("dut_plots",
                                           {{"EventLoaderEUDAQ2/%DUT%/hitmap", "colz"},
                                            {"EventLoaderEUDAQ2/%DUT%/hPixelTimes"},
                                            {"EventLoaderEUDAQ2/%DUT%/hPixelRawValues"},
-                                           {"EventLoaderEUDAQ2/%DUT%/pixelMultiplicity", "log"},
+                                           {"EventLoaderEUDAQ2/%DUT%/hPixelMultiplicityPerCorryEvent", "log"},
                                            {"AnalysisDUT/%DUT%/clusterChargeAssociated"},
                                            {"AnalysisDUT/%DUT%/associatedTracksVersusTime"}});
 
@@ -53,7 +53,7 @@ OnlineMonitor::OnlineMonitor(Configuration& config, std::vector<std::shared_ptr<
                                            {trackingModule + "/clustersPerTrack"}});
 
     config_.setDefaultMatrix<std::string>("hitmaps", {{"Correlations/%DETECTOR%/hitmap", "colz"}});
-    config_.setDefaultMatrix<std::string>("residuals", {{trackingModule + "/%DETECTOR%/residualsX"}});
+    config_.setDefaultMatrix<std::string>("residuals", {{trackingModule + "/%DETECTOR%/local_residuals/LocalResidualsX"}});
     config_.setDefaultMatrix<std::string>("correlation_x", {{"Correlations/%DETECTOR%/correlationX"}});
     config_.setDefaultMatrix<std::string>("correlation_x2d", {{"Correlations/%DETECTOR%/correlationX_2Dlocal", "colz"}});
     config_.setDefaultMatrix<std::string>("correlation_y", {{"Correlations/%DETECTOR%/correlationY"}});
