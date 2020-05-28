@@ -98,7 +98,7 @@ void OnlineMonitor::initialize() {
     AddCanvasGroup("Tracking");
     AddCanvas("Overview", "Tracking", canvas_overview);
     AddCanvas("Tracking Performance", "Tracking", canvas_tracking);
-    AddCanvas("Residuals", "Tracking", canvas_residuals);
+    AddCanvas("Residuals", "Tracking", canvas_residuals, true);
 
     AddCanvasGroup("Detectors");
     AddCanvas("Hitmaps", "Detectors", canvas_hitmaps);
@@ -116,7 +116,7 @@ void OnlineMonitor::initialize() {
     AddCanvasGroup("DUTs");
     for(auto& detector : get_detectors()) {
         if(detector->isDUT()) {
-            AddCanvas(detector->getName(), "DUTs", canvas_dutplots, detector->getName());
+            AddCanvas(detector->getName(), "DUTs", canvas_dutplots, false, detector->getName());
         }
     }
 
@@ -184,6 +184,7 @@ void OnlineMonitor::AddCanvasGroup(std::string group_title) {
 void OnlineMonitor::AddCanvas(std::string canvas_title,
                               std::string canvasGroup,
                               Matrix<std::string> canvas_plots,
+                              bool ignoreDut,
                               std::string detector_name) {
     std::string canvas_name = canvas_title + "Canvas";
 
@@ -200,10 +201,13 @@ void OnlineMonitor::AddCanvas(std::string canvas_title,
     LOG(INFO) << "Connecting button with command " << command.c_str();
     gui->buttons[canvas_title]->Connect("Pressed()", "corryvreckan::GuiDisplay", gui, command.c_str());
 
-    AddPlots(canvas_name, canvas_plots, detector_name);
+    AddPlots(canvas_name, canvas_plots, ignoreDut, detector_name);
 }
 
-void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas_plots, std::string detector_name) {
+void OnlineMonitor::AddPlots(std::string canvas_name,
+                             Matrix<std::string> canvas_plots,
+                             bool ignoreDut,
+                             std::string detector_name) {
     for(auto plot : canvas_plots) {
 
         // Add default plotting style if not set:
@@ -250,6 +254,11 @@ void OnlineMonitor::AddPlots(std::string canvas_name, Matrix<std::string> canvas
                 for(auto& detector : get_detectors()) {
                     // Ignore AUX detectors
                     if(ignoreAux && detector->isAuxiliary()) {
+                        continue;
+                    }
+
+                    // Ignore DUTs if configured that way:
+                    if(ignoreDut && detector->isDUT()) {
                         continue;
                     }
 
