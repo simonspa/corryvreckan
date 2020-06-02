@@ -16,7 +16,7 @@ select yn in "global" "detector" "dut"; do
     esac
 done
 
-# If type is detector, ask if axu should be excluded:
+# If type is detector, ask if aux should be excluded:
 exclude_aux=0
 if [ "$type" == 2 ]; then
     echo -e "Should auxiliary detectors be excluded from this module?\n"
