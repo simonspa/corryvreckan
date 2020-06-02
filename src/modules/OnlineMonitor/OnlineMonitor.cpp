@@ -113,9 +113,9 @@ void OnlineMonitor::initialize() {
     AddCanvas("2D X", "Correlations 2D", canvas_cx2d);
     AddCanvas("2D Y", "Correlations 2D", canvas_cy2d);
 
-    AddCanvasGroup("DUTs");
-    for(auto& detector : get_detectors()) {
-        if(detector->isDUT()) {
+    if(!get_duts().empty()) {
+        AddCanvasGroup("DUTs");
+        for(auto& detector : get_duts()) {
             AddCanvas(detector->getName(), "DUTs", canvas_dutplots, false, detector->getName());
         }
     }
