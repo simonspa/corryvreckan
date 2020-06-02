@@ -37,11 +37,6 @@ Correlations::Correlations(Configuration& config, std::shared_ptr<Detector> dete
 
 void Correlations::initialize() {
 
-    // Do not produce correlations plots for auxiliary devices
-    if(m_detector->isAuxiliary()) {
-        return;
-    }
-
     LOG_ONCE(WARNING) << "Correlations module is enabled and will significantly increase the runtime";
     LOG(DEBUG) << "Booking histograms for detector " << m_detector->getName();
 
@@ -170,11 +165,6 @@ void Correlations::initialize() {
 }
 
 StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
-
-    // Do not attempt plotting for aux devices
-    if(m_detector->isAuxiliary()) {
-        return StatusCode::Success;
-    }
 
     // Get the pixels
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());
