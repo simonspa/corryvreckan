@@ -1,0 +1,17 @@
+\section{Objetcs}
+\label{sec:objects}
+\texttt{Corryvreckan::Objects} are used to transfer data from and to the clipboard as well as to store it to \textit{root} trees. 
+\texttt{Objects} are inheriting from \texttt{ROOT::TObject} to auto create the \texttt{trees}. 
+Three base object types exist: Pixel, Cluster and Track
+In addition several specific TrackModel objects inheriting from Track and a Spidr-signal are implemented. 
+
+\subsection*{Pixel}
+A Pixel contains the basic information of a particle hit from a detector. A column, row position and a time-stamp in nanoseconds as well as a charge information and a raw information is stored. Not every detector can provide all information. If the time-stamp is not provided it should be set to zero. Charge is assumed to be in eV per default, but can be overwritten by using the raw information, which can, for example, be an ADC value or a ToT. If this is also not provided/unknown it should be set to 1. 
+
+\subsection*{Cluster}
+A cluster is a collection of Pixels and used in Tracks. Besides a 
+\subsection{Track}
+\subsection*{Straight-Line}
+\subsection*{General Broken Lines}
+\subsection*{Multiplet}
+
