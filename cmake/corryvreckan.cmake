@@ -78,6 +78,11 @@ MACRO(corryvreckan_detector_module name)
     TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE CORRYVRECKAN_MODULE_DUT=0)
 ENDMACRO()
 
+# Select whether to exclude AUX detectors or not
+MACRO(corryvreckan_exclude_aux name)
+    TARGET_COMPILE_DEFINITIONS(${name} PRIVATE CORRYVRECKAN_EXCLUDE_AUX=1)
+ENDMACRO()
+
 # Append list of possible detector types as compile definition
 MACRO(corryvreckan_detector_type name)
     SET(extra_macro_args ${ARGN})

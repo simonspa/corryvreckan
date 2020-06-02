@@ -115,12 +115,13 @@ namespace corryvreckan {
          * @brief Create detector modules
          * @param library Void pointer to the loaded library
          * @param config Configuration of the module
-         * @param dut_only Bollean signalling whether should be instantiated only for DUT detectors
+         * @param dut_only Boolean signaling whether should be instantiated only for DUT detectors
+         * @param exclude_aux Boolean to exclude instantiations for auxliary detectors
          * @param types List of detector type restrictions imposed by the module itself
          * @return A list of all created detector modules and their identifiers
          */
-        std::vector<std::pair<ModuleIdentifier, Module*>>
-        create_detector_modules(void* library, Configuration& config, bool dut_only, std::vector<std::string> types);
+        std::vector<std::pair<ModuleIdentifier, Module*>> create_detector_modules(
+            void* library, Configuration& config, bool dut_only, bool exclude_aux, std::vector<std::string> types);
 
         using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
 

@@ -93,6 +93,7 @@ CORRYVRECKAN_DETECTOR_TYPE(${MODULE_NAME} "Timepix3" "CLICpix2")
 \end{minted}
 The module will then only be instantiated for detectors of one of the given types. This is particularly useful for event loader modules which read a very specific file format.
 
+\item For detector modules, auxiliary detectors can be excluded from being instantiated by adding \parameter{CORRYVRECKAN_EXCLUDE_AUX(MODULE_NAME)} below the definition of the module type.
 \item The following lines should contain the logic to load possible dependencies of the module (below is an example to load Geant4).
 Only ROOT is automatically included and linked to the module.
 \item A line with \texttt{\textbf{CORRYVRECKAN\_MODULE\_SOURCES(\$\{MODULE\_NAME\} \textit{sources})}} defines the module source files. Here, \texttt{sources} should be replaced by a list of all source files relevant to this module.
