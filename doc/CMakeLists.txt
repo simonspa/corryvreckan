@@ -127,7 +127,7 @@ IF(LATEX_COMPILER)
             usermanual/chapters/testing.tex
             usermanual/chapters/tools.tex
             usermanual/config.tex
-
+	    usermanual/chapters/objects.tex
             CONFIGURE
             usermanual/config.tex
             EXCLUDE_FROM_ALL
