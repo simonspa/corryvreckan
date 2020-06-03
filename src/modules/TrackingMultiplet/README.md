@@ -50,7 +50,7 @@ The following plots are produced only once:
 
 For each detector the following plots are produced:
 
-* Histograms of the track residual in X/Y.
+* Histograms of the global and local track residual in X/Y.
 
 ### Usage
 ```toml

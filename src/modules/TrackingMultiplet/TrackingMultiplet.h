@@ -80,8 +80,10 @@ namespace corryvreckan {
         std::map<streams, TH1F*> trackletPositionAtScattererX;
         std::map<streams, TH1F*> trackletPositionAtScattererY;
 
-        std::map<std::string, TH1F*> residualsX;
-        std::map<std::string, TH1F*> residualsY;
+        std::map<std::string, TH1F*> residualsX_local;
+        std::map<std::string, TH1F*> residualsY_local;
+        std::map<std::string, TH1F*> residualsX_global;
+        std::map<std::string, TH1F*> residualsY_global;
 
         TH1F* multipletMultiplicity;
         TH1F* trackChi2;
