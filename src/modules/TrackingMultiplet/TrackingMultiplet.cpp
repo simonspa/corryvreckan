@@ -465,8 +465,10 @@ void TrackingMultiplet::fill_tracklet_histograms(const streams& stream, TrackVec
             auto trackletClusters = tracklet->getClusters();
             for(auto& trackletCluster : trackletClusters) {
                 std::string detectorID = trackletCluster->detectorID();
-                residualsX[detectorID]->Fill(tracklet->getGlobalResidual(detectorID).X());
-                residualsY[detectorID]->Fill(tracklet->getGlobalResidual(detectorID).Y());
+                residualsX_global[detectorID]->Fill(tracklet->getGlobalResidual(detectorID).X());
+                residualsY_global[detectorID]->Fill(tracklet->getGlobalResidual(detectorID).Y());
+                residualsX_local[detectorID]->Fill(tracklet->getLocalResidual(detectorID).X());
+                residualsY_local[detectorID]->Fill(tracklet->getLocalResidual(detectorID).Y());
             }
         }
     }
