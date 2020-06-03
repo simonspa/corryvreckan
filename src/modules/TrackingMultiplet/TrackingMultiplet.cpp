@@ -235,10 +235,21 @@ void TrackingMultiplet::initialize() {
         }
         local_directory->cd();
 
-        title = detectorID + " Residual X;x_{track}-x [mm];events";
-        residualsX[detectorID] = new TH1F("residualsX", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + " Residual Y;y_{track}-y [mm];events";
-        residualsY[detectorID] = new TH1F("residualsY", title.c_str(), 500, -0.1, 0.1);
+        TDirectory* local_res = local_directory->mkdir("local_residuals");
+        local_res->cd();
+
+        title = detectorID + " Local Residual X;x-x_{track} [mm];events";
+        residualsX_local[detectorID] = new TH1F("LocalResidualsX", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + " Local Residual Y;y-y_{track} [mm];events";
+        residualsY_local[detectorID] = new TH1F("LocalResidualsY", title.c_str(), 500, -0.1, 0.1);
+
+        TDirectory* global_res = local_directory->mkdir("global_residuals");
+        global_res->cd();
+
+        title = detectorID + " Global Residual X;x-x_{track} [mm];events";
+        residualsX_global[detectorID] = new TH1F("GlobalResidualsX", title.c_str(), 500, -0.1, 0.1);
+        title = detectorID + " Global Residual Y;y-y_{track} [mm];events";
+        residualsY_global[detectorID] = new TH1F("GlobalResidualsY", title.c_str(), 500, -0.1, 0.1);
     }
 }
 
