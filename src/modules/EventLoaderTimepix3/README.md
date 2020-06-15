@@ -21,6 +21,7 @@ The calibration is performed as described in [@Pitters_2019] [@cds-timepix3-cali
 
 ### Parameters
 * `input_directory`: Path to the directory above the data directory for each device. The device name is added to the path during the module.
+* `trigger_latency`:
 * `calibration_path`: Path to the calibration directory. If this parameter is set, a calibration will be applied to the Timepix3 plane set as `role = DUT`. The assumed folder structure is `[calibration_path]/[detector name]/cal_thr_[threshold]_ik_[ikrum dac]/`. In this directory the two files `[detector name]_cal_[tot/toa].txt` have to exist.
 
 For the ToT calibration, the file format needs to be `col | row | row | a (ADC/mV) | b (ADC) | c (ADC*mV) | t (mV) | chi2/ndf`.
