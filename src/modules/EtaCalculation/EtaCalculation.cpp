@@ -39,15 +39,15 @@ void EtaCalculation::initialize() {
                               static_cast<int>(pitch_x),
                               -pitch_x / 2.,
                               pitch_x / 2.,
-                              static_cast<int>(pitch_y),
-                              -pitch_y / 2.,
-                              pitch_y / 2.);
+                              static_cast<int>(pitch_x),
+                              -pitch_x / 2.,
+                              pitch_x / 2.);
     title = "2D #eta distribution Y;" + mod_axes_y + "No. entries";
     m_etaDistributionY = new TH2F("etaDistributionY",
                               title.c_str(),
-                              static_cast<int>(pitch_x),
-                              -pitch_x / 2.,
-                              pitch_x / 2.,
+                              static_cast<int>(pitch_y),
+                              -pitch_y / 2.,
+                              pitch_y / 2.,
                               static_cast<int>(pitch_y),
                               -pitch_y / 2.,
                               pitch_y / 2.);
@@ -59,9 +59,9 @@ void EtaCalculation::initialize() {
                               pitch_x / 2.);
     title = "#eta distribution Y;" + mod_axes_x;
     m_etaDistributionYprofile =
-        new TProfile("etaDistributionYprofile", title.c_str(),  static_cast<int>(pitch_x),
-                              -pitch_x / 2.,
-                              pitch_x / 2.);
+        new TProfile("etaDistributionYprofile", title.c_str(),  static_cast<int>(pitch_y),
+                              -pitch_y / 2.,
+                              pitch_y / 2.);
     title = "In-pixel track intercept; in-pixel x_{track} [#mum]; in-pixel y_{track} [#mum]";
     m_inpixelTrackIntercept =
         new TH2F("inpixelTrackIntercept", title.c_str(),   static_cast<int>(pitch_x),
