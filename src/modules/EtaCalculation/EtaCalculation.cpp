@@ -115,14 +115,14 @@ StatusCode EtaCalculation::run(const std::shared_ptr<Clipboard>& clipboard) {
         for(auto& dutCluster : track->getAssociatedClusters(m_detector->getName())) {
             calculateEta(track.get(), dutCluster);
         }
-    }
 
-    // Do the same for all clusters of the track:
-    for(auto& cluster : track->getClusters()) {
-        if(cluster->detectorID() != m_detector->getName()) {
-            continue;
+        // Do the same for all clusters of the track:
+        for(auto& cluster : track->getClusters()) {
+            if(cluster->detectorID() != m_detector->getName()) {
+                continue;
+            }
+            calculateEta(track.get(), cluster);
         }
-        calculateEta(track.get(), cluster);
     }
 
     // Return value telling analysis to keep running
