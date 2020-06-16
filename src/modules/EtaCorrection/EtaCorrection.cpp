@@ -26,8 +26,8 @@ EtaCorrection::EtaCorrection(Configuration& config, std::shared_ptr<Detector> de
 void EtaCorrection::initialize() {
 
     // Initialise histograms
-    double pitchX = m_detector->getPitch().X();
-    double pitchY = m_detector->getPitch().Y();
+    pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
+    pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));
 
     // Get info from configuration:
     std::vector<double> m_etaConstantsX = config_.getArray<double>("eta_constants_x_" + m_detector->getName(), {});
@@ -39,7 +39,7 @@ void EtaCorrection::initialize() {
 
     if(!m_etaConstantsX.empty()) {
         m_correctX = true;
-        m_etaCorrectorX = new TF1("etaCorrectorX", m_etaFormulaX.c_str(), -pitchX / 2., pitchX / 2.);
+        m_etaCorrectorX = new TF1("etaCorrectorX", m_etaFormulaX.c_str(), -pitch_x / 2., pitch_x / 2.);
         for(size_t x = 0; x < m_etaConstantsX.size(); x++) {
             m_etaCorrectorX->SetParameter(static_cast<int>(x), m_etaConstantsX[x]);
         }
@@ -49,12 +49,15 @@ void EtaCorrection::initialize() {
 
     if(!m_etaConstantsY.empty()) {
         m_correctY = true;
-        m_etaCorrectorY = new TF1("etaCorrectorY", m_etaFormulaY.c_str(), -pitchY / 2., pitchY / 2.);
+        m_etaCorrectorY = new TF1("etaCorrectorY", m_etaFormulaY.c_str(), -pitch_y / 2., pitch_y / 2.);
         for(size_t y = 0; y < m_etaConstantsY.size(); y++)
             m_etaCorrectorY->SetParameter(static_cast<int>(y), m_etaConstantsY[y]);
     } else {
         m_correctY = false;
     }
+    pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "mm"));
+    pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "mm"));
+    nPixels=m_detector->nPixels();
 }
 
 void EtaCorrection::applyEta(Cluster* cluster) {
@@ -70,14 +73,14 @@ void EtaCorrection::applyEta(Cluster* cluster) {
     if(cluster->columnWidth() == 2) {
         // Apply the eta correction
         if(m_correctX) {
-            newX = floor(cluster->column() + m_detector->getPitch().X() / 2) + m_etaCorrectorX->Eval(inPixelPos.X());
+            newX = pitch_x*(cluster->column() - nPixels.X()/2)+ 0.001*m_etaCorrectorX->Eval(inPixelPos.X());
         }
     }
 
     if(cluster->rowWidth() == 2) {
         // Apply the eta correction
         if(m_correctY) {
-            newY = floor(cluster->row() + m_detector->getPitch().Y() / 2) + m_etaCorrectorY->Eval(inPixelPos.Y());
+          newY = pitch_y*(cluster->row() - nPixels.Y()/2)+ 0.001*m_etaCorrectorY->Eval(inPixelPos.Y());
         }
     }
 
