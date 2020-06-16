@@ -47,8 +47,8 @@ namespace corryvreckan {
         std::string m_etaFormulaY;
         TF1* m_etaCorrectorY;
         bool m_correctY;
-        double pitch_x,pitch_y;
+        double pitch_x, pitch_y;
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels;
-      };
+    };
 } // namespace corryvreckan
 #endif // EtaCorrection_H

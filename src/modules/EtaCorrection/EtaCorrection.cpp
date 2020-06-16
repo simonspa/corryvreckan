@@ -55,9 +55,10 @@ void EtaCorrection::initialize() {
     } else {
         m_correctY = false;
     }
+
     pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "mm"));
     pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "mm"));
-    nPixels=m_detector->nPixels();
+    nPixels = m_detector->nPixels();
 }
 
 void EtaCorrection::applyEta(Cluster* cluster) {
@@ -73,14 +74,14 @@ void EtaCorrection::applyEta(Cluster* cluster) {
     if(cluster->columnWidth() == 2) {
         // Apply the eta correction
         if(m_correctX) {
-            newX = pitch_x*(cluster->column() - nPixels.X()/2)+ 0.001*m_etaCorrectorX->Eval(inPixelPos.X());
+            newX = pitch_x * (cluster->column() - nPixels.X() / 2) + 0.001 * m_etaCorrectorX->Eval(inPixelPos.X());
         }
     }
 
     if(cluster->rowWidth() == 2) {
         // Apply the eta correction
         if(m_correctY) {
-          newY = pitch_y*(cluster->row() - nPixels.Y()/2)+ 0.001*m_etaCorrectorY->Eval(inPixelPos.Y());
+            newY = pitch_y * (cluster->row() - nPixels.Y() / 2) + 0.001 * m_etaCorrectorY->Eval(inPixelPos.Y());
         }
     }
 

@@ -6,6 +6,7 @@
 
 ### Description
 This module performs a fit to obtain corrections for non-linear charge sharing, also know as the $`\eta`$-distribution. The distributions are calculated for multi-pixel clusters of any detector in analysis by comparing the in-pixel track position and the calculated cluster center position. It should be noted that clusters are only used if they have a row width or a column width of 2. Histograms for all available detectors are filled for both X and Y coordinate.
+
 At the end of the run, fits to the recorded profiles are performed using the provided formulas. A printout of the resulting fit parameters is provided in the format read by the EtaCorrection module for convenience.
 
 In order to measure the correct $`\eta`$-distribution, no additional $`\eta`$-correction should be applied before this calculation, i.e. by using the EtaCorrection module.

@@ -35,41 +35,39 @@ void EtaCalculation::initialize() {
 
     std::string title = "2D #eta distribution X;" + mod_axes_x + "No. entries";
     m_etaDistributionX = new TH2F("etaDistributionX",
-                              title.c_str(),
-                              static_cast<int>(pitch_x),
-                              -pitch_x / 2.,
-                              pitch_x / 2.,
-                              static_cast<int>(pitch_x),
-                              -pitch_x / 2.,
-                              pitch_x / 2.);
+                                  title.c_str(),
+                                  static_cast<int>(pitch_x),
+                                  -pitch_x / 2.,
+                                  pitch_x / 2.,
+                                  static_cast<int>(pitch_x),
+                                  -pitch_x / 2.,
+                                  pitch_x / 2.);
     title = "2D #eta distribution Y;" + mod_axes_y + "No. entries";
     m_etaDistributionY = new TH2F("etaDistributionY",
-                              title.c_str(),
-                              static_cast<int>(pitch_y),
-                              -pitch_y / 2.,
-                              pitch_y / 2.,
-                              static_cast<int>(pitch_y),
-                              -pitch_y / 2.,
-                              pitch_y / 2.);
+                                  title.c_str(),
+                                  static_cast<int>(pitch_y),
+                                  -pitch_y / 2.,
+                                  pitch_y / 2.,
+                                  static_cast<int>(pitch_y),
+                                  -pitch_y / 2.,
+                                  pitch_y / 2.);
 
     title = "#eta distribution X;" + mod_axes_x;
     m_etaDistributionXprofile =
-        new TProfile("etaDistributionXprofile", title.c_str(),static_cast<int>(pitch_x),
-                              -pitch_x / 2.,
-                              pitch_x / 2.);
+        new TProfile("etaDistributionXprofile", title.c_str(), static_cast<int>(pitch_x), -pitch_x / 2., pitch_x / 2.);
     title = "#eta distribution Y;" + mod_axes_x;
     m_etaDistributionYprofile =
-        new TProfile("etaDistributionYprofile", title.c_str(),  static_cast<int>(pitch_y),
-                              -pitch_y / 2.,
-                              pitch_y / 2.);
+        new TProfile("etaDistributionYprofile", title.c_str(), static_cast<int>(pitch_y), -pitch_y / 2., pitch_y / 2.);
+
     title = "In-pixel track intercept; in-pixel x_{track} [#mum]; in-pixel y_{track} [#mum]";
-    m_inpixelTrackIntercept =
-        new TH2F("inpixelTrackIntercept", title.c_str(),   static_cast<int>(pitch_x),
-                              -pitch_x / 2.,
-                              pitch_x / 2.,
-                              static_cast<int>(pitch_y),
-                              -pitch_y / 2.,
-                              pitch_y / 2.);
+    m_inpixelTrackIntercept = new TH2F("inpixelTrackIntercept",
+                                       title.c_str(),
+                                       static_cast<int>(pitch_x),
+                                       -pitch_x / 2.,
+                                       pitch_x / 2.,
+                                       static_cast<int>(pitch_y),
+                                       -pitch_y / 2.,
+                                       pitch_y / 2.);
 
     // Prepare fit functions - we need them for every detector as they might have different pitches
     m_etaFitX = new TF1("etaFormulaX", m_etaFormulaX.c_str(), -pitch_x / 2., pitch_x / 2.);
@@ -93,12 +91,12 @@ void EtaCalculation::calculateEta(Track* track, Cluster* cluster) {
     m_inpixelTrackIntercept->Fill(xmod_track, ymod_track);
 
     if(cluster->columnWidth() == 2) {
-      m_etaDistributionX->Fill(xmod_cluster, xmod_track);
-      m_etaDistributionXprofile->Fill(xmod_cluster, xmod_track);
+        m_etaDistributionX->Fill(xmod_cluster, xmod_track);
+        m_etaDistributionXprofile->Fill(xmod_cluster, xmod_track);
     }
     if(cluster->rowWidth() == 2) {
-      m_etaDistributionY->Fill(ymod_cluster, ymod_track);
-      m_etaDistributionYprofile->Fill(ymod_cluster, ymod_track);
+        m_etaDistributionY->Fill(ymod_cluster, ymod_track);
+        m_etaDistributionYprofile->Fill(ymod_cluster, ymod_track);
     }
 }
 
