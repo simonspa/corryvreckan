@@ -70,6 +70,7 @@ namespace corryvreckan {
         TH1F* hTrackCorrelationTime;
         TH1F* hTrackZPosDUT;
         TH1F* residualsTime;
+        TH2F* residualsTimeVsTot;
         TH2F* residualsTimeVsTime;
         TH2F* residualsTimeVsSignal;
 
