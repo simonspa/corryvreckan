@@ -284,7 +284,7 @@ void AnalysisDUT::initialize() {
                                    +1000);
 
     residualsTimeVsTot = new TH2F("residualsTimeVsTot",
-                                  "residualsTimeVsTot; seed pixel ToT [lsb];ts_{track} - ts_{assoc. cluster} [ns];# entries",
+                                  "residualsTimeVsTot;time_{track} - time_{hit} [ns];seed pixel ToT [lsb];# entries",
                                   20000,
                                   -5000,
                                   5000,
