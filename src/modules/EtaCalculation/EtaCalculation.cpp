@@ -59,16 +59,6 @@ void EtaCalculation::initialize() {
     m_etaDistributionYprofile =
         new TProfile("etaDistributionYprofile", title.c_str(), static_cast<int>(pitch_y), -pitch_y / 2., pitch_y / 2.);
 
-    title = "In-pixel track intercept; in-pixel x_{track} [#mum]; in-pixel y_{track} [#mum]";
-    m_inpixelTrackIntercept = new TH2F("inpixelTrackIntercept",
-                                       title.c_str(),
-                                       static_cast<int>(pitch_x),
-                                       -pitch_x / 2.,
-                                       pitch_x / 2.,
-                                       static_cast<int>(pitch_y),
-                                       -pitch_y / 2.,
-                                       pitch_y / 2.);
-
     // Prepare fit functions - we need them for every detector as they might have different pitches
     m_etaFitX = new TF1("etaFormulaX", m_etaFormulaX.c_str(), -pitch_x / 2., pitch_x / 2.);
     m_etaFitY = new TF1("etaFormulaY", m_etaFormulaY.c_str(), -pitch_y / 2., pitch_y / 2.);
@@ -87,8 +77,6 @@ void EtaCalculation::calculateEta(Track* track, Cluster* cluster) {
     auto asclust_inPixel = m_detector->inPixel(cluster->column(), cluster->row());
     auto xmod_cluster = static_cast<double>(Units::convert(asclust_inPixel.X(), "um"));
     auto ymod_cluster = static_cast<double>(Units::convert(asclust_inPixel.Y(), "um"));
-
-    m_inpixelTrackIntercept->Fill(xmod_track, ymod_track);
 
     if(cluster->columnWidth() == 2) {
         m_etaDistributionX->Fill(xmod_cluster, xmod_track);
