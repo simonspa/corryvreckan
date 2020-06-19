@@ -45,6 +45,8 @@ namespace corryvreckan {
 
         std::shared_ptr<Detector> m_detector;
         double m_chi2ndofCut;
+        double pitch_x;
+        double pitch_y;
         std::string m_etaFormulaX;
         TF1* m_etaFitX;
         std::string m_etaFormulaY;
