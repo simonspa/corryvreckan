@@ -30,8 +30,8 @@ void EtaCalculation::initialize() {
     // Initialise histograms
     auto pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
     auto pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));
-    std::string mod_axes_x = "in-pixel x_{cluster} [#mum];in-pixel x_{track} [#mum];";
-    std::string mod_axes_y = "in-pixel y_{cluster} [#mum];in-pixel y_{track} [#mum];";
+    std::string mod_axes_x = "in-2pixel x_{cluster} [#mum];in-2pixel x_{track} [#mum];";
+    std::string mod_axes_y = "in-2pixel y_{cluster} [#mum];in-2pixel y_{track} [#mum];";
 
     std::string title = "2D #eta distribution X;" + mod_axes_x + "No. entries";
     m_etaDistributionX = new TH2F("etaDistributionX",
