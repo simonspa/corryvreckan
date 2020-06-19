@@ -210,7 +210,7 @@ void EventLoaderTimepix3::initialize() {
         applyCalibration = false;
     }
     // Make debugging plots
-    std::string title = m_detector->getName() + " Hit map;x [px];y [px];pixels";
+    std::string title = m_detector->getName() + " Hit map;x [px];y [px];# entries";
     hHitMap = new TH2F("hitMap",
                        title.c_str(),
                        m_detector->nPixels().X(),
