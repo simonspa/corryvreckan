@@ -34,6 +34,8 @@ PixelDetector::PixelDetector(const Configuration& config) : Detector(config) {
     if(!isAuxiliary()) {
         build_axes(config);
     }
+    m_neighbor_radius_row = config.get<int>("neighbor_radius_row", 1);
+    m_neighbor_radius_col = config.get<int>("neighbor_radius_col", 1);
 }
 
 void PixelDetector::build_axes(const Configuration& config) {
@@ -408,4 +410,24 @@ int PixelDetector::winding_number(std::pair<int, int> probe, std::vector<std::ve
  */
 int PixelDetector::isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2) {
     return ((pt1.first - pt0.first) * (pt2.second - pt0.second) - (pt2.first - pt0.first) * (pt1.second - pt0.second));
+}
+
+// Check if a pixel touches any of the pixels in a cluster
+bool PixelDetector::Neighbor(Pixel* neighbor, Cluster* cluster) {
+
+    bool Touching = false;
+
+    for(auto pixel : cluster->pixels()) {
+        int row_distance = abs(pixel->row() - neighbor->row());
+        int col_distance = abs(pixel->column() - neighbor->column());
+
+        if(row_distance <= m_neighbor_radius_row && col_distance <= m_neighbor_radius_col) {
+            if(row_distance > 1 || col_distance > 1) {
+                cluster->setSplit(true);
+            }
+            Touching = true;
+            break;
+        }
+    }
+    return Touching;
 }

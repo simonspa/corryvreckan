@@ -152,7 +152,7 @@ StatusCode Clustering4D::run(const std::shared_ptr<Clipboard>& clipboard) {
                     continue;
 
                 // Check if they are touching cluster pixels
-                if(!touching(neighbor, cluster.get()))
+                if(!m_detector->Neighbor(neighbor, cluster.get()))
                     continue;
 
                 // Add to cluster
@@ -208,26 +208,6 @@ StatusCode Clustering4D::run(const std::shared_ptr<Clipboard>& clipboard) {
     LOG(DEBUG) << "Made " << deviceClusters.size() << " clusters for device " << m_detector->getName();
 
     return StatusCode::Success;
-}
-
-// Check if a pixel touches any of the pixels in a cluster
-bool Clustering4D::touching(Pixel* neighbor, Cluster* cluster) {
-
-    bool Touching = false;
-
-    for(auto pixel : cluster->pixels()) {
-        int row_distance = abs(pixel->row() - neighbor->row());
-        int col_distance = abs(pixel->column() - neighbor->column());
-
-        if(row_distance <= neighbor_radius_row_ && col_distance <= neighbor_radius_col_) {
-            if(row_distance > 1 || col_distance > 1) {
-                cluster->setSplit(true);
-            }
-            Touching = true;
-            break;
-        }
-    }
-    return Touching;
 }
 
 // Check if a pixel is close in time to the pixels of a cluster

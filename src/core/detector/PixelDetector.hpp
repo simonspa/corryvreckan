@@ -23,6 +23,8 @@
 #include "core/config/Configuration.hpp"
 #include "core/utils/ROOT.h"
 #include "core/utils/log.h"
+#include "objects/Cluster.hpp"
+#include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
 
 namespace corryvreckan {
@@ -167,6 +169,14 @@ namespace corryvreckan {
          */
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const override { return m_nPixels; }
 
+        /**
+         * @brief Test wheather one pixel touches the cluster
+         * @return true if it fulfill the condition
+         * @note users should define their specific clustering method in the detector class, for pixel detector, the default
+         * is 2D clustering
+         */
+        virtual bool Neighbor(Pixel*, Cluster*) override;
+
     private:
         // Initialize coordinate transformations
         void initialise() override;
@@ -199,6 +209,9 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint m_displacement;
         ROOT::Math::XYZVector m_orientation;
         std::string m_orientation_mode;
+        // Conditons to define if a pixel touches the cluster
+        int m_neighbor_radius_row;
+        int m_neighbor_radius_col;
     };
 } // namespace corryvreckan
 

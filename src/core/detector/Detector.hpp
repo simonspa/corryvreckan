@@ -315,6 +315,13 @@ namespace corryvreckan {
          */
         Transform3D toLocal() const { return m_globalToLocal; }
 
+        /**
+         * @brief Test wheather one pixel touches the cluster
+         * @return true if it fulfill the condition
+         * @note users should define their specific clustering method in the detector class
+         */
+        virtual bool Neighbor(Pixel*, Cluster*) = 0;
+
     protected:
         // Roles of the detector
         DetectorRole m_role;
