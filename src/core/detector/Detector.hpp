@@ -316,7 +316,7 @@ namespace corryvreckan {
         Transform3D toLocal() const { return m_globalToLocal; }
 
         /**
-         * @brief Test wheather one pixel touches the cluster
+         * @brief Test whether one pixel touches the cluster
          * @return true if it fulfill the condition
          * @note users should define their specific clustering method in the detector class
          */
