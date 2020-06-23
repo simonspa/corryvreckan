@@ -320,7 +320,7 @@ namespace corryvreckan {
          * @return true if it fulfill the condition
          * @note users should define their specific clustering method in the detector class
          */
-        virtual bool Neighbor(Pixel*, Cluster*) = 0;
+        virtual bool Neighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) = 0;
 
     protected:
         // Roles of the detector

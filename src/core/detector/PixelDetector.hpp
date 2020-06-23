@@ -175,7 +175,7 @@ namespace corryvreckan {
          * @note users should define their specific clustering method in the detector class, for pixel detector, the default
          * is 2D clustering
          */
-        virtual bool Neighbor(Pixel*, Cluster*) override;
+        virtual bool Neighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) override;
 
     private:
         // Initialize coordinate transformations
@@ -209,9 +209,6 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint m_displacement;
         ROOT::Math::XYZVector m_orientation;
         std::string m_orientation_mode;
-        // Conditions to define if a pixel touches the cluster
-        int m_neighbor_radius_row;
-        int m_neighbor_radius_col;
     };
 } // namespace corryvreckan
 
