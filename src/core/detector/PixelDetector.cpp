@@ -415,9 +415,6 @@ bool PixelDetector::isNeighbor(const std::shared_ptr<Pixel>& neighbor,
                                const std::shared_ptr<Cluster>& cluster,
                                const int neighbor_radius_row,
                                const int neighbor_radius_col) {
-
-    bool Touching = false;
-
     for(auto pixel : cluster->pixels()) {
         int row_distance = abs(pixel->row() - neighbor->row());
         int col_distance = abs(pixel->column() - neighbor->column());
@@ -426,9 +423,8 @@ bool PixelDetector::isNeighbor(const std::shared_ptr<Pixel>& neighbor,
             if(row_distance > 1 || col_distance > 1) {
                 cluster->setSplit(true);
             }
-            Touching = true;
-            break;
+            return true;
         }
     }
-    return Touching;
+    return false;
 }
