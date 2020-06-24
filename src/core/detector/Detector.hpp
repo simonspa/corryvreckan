@@ -317,7 +317,7 @@ namespace corryvreckan {
 
         /**
          * @brief Test whether one pixel touches the cluster
-         * @return true if it fulfils the condition
+         * @return true if it fulfills the condition
          * @note users should define their specific clustering method in the detector class
          */
         virtual bool isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) = 0;
