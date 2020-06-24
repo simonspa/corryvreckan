@@ -152,7 +152,7 @@ StatusCode Clustering4D::run(const std::shared_ptr<Clipboard>& clipboard) {
                     continue;
 
                 // Check if they are touching cluster pixels
-                if(!m_detector->Neighbor(neighbor, cluster, neighbor_radius_row_, neighbor_radius_col_))
+                if(!m_detector->isNeighbor(neighbor, cluster, neighbor_radius_row_, neighbor_radius_col_))
                     continue;
 
                 // Add to cluster

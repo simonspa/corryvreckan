@@ -411,10 +411,10 @@ int PixelDetector::isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std:
 }
 
 // Check if a pixel touches any of the pixels in a cluster
-bool PixelDetector::Neighbor(const std::shared_ptr<Pixel>& neighbor,
-                             const std::shared_ptr<Cluster>& cluster,
-                             const int neighbor_radius_row,
-                             const int neighbor_radius_col) {
+bool PixelDetector::isNeighbor(const std::shared_ptr<Pixel>& neighbor,
+                               const std::shared_ptr<Cluster>& cluster,
+                               const int neighbor_radius_row,
+                               const int neighbor_radius_col) {
 
     bool Touching = false;
 

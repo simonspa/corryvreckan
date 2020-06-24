@@ -171,11 +171,12 @@ namespace corryvreckan {
 
         /**
          * @brief Test whether one pixel touches the cluster
-         * @return true if it fulfill the condition
+         * @return true if it fulfils the condition
          * @note users should define their specific clustering method in the detector class, for pixel detector, the default
          * is 2D clustering
          */
-        virtual bool Neighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) override;
+        virtual bool
+        isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) override;
 
     private:
         // Initialize coordinate transformations
