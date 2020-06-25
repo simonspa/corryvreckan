@@ -26,9 +26,6 @@ EtaCorrection::EtaCorrection(Configuration& config, std::shared_ptr<Detector> de
 void EtaCorrection::initialize() {
 
     // Initialise histograms
-    pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
-    pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));
-
     // Get info from configuration:
     std::vector<double> m_etaConstantsX = config_.getArray<double>("eta_constants_x_" + m_detector->getName(), {});
     std::vector<double> m_etaConstantsY = config_.getArray<double>("eta_constants_y_" + m_detector->getName(), {});
@@ -39,7 +36,8 @@ void EtaCorrection::initialize() {
 
     if(!m_etaConstantsX.empty()) {
         m_correctX = true;
-        m_etaCorrectorX = new TF1("etaCorrectorX", m_etaFormulaX.c_str(), -pitch_x, pitch_x);
+        m_etaCorrectorX =
+            new TF1("etaCorrectorX", m_etaFormulaX.c_str(), -1 * m_detector->getPitch().X(), m_detector->getPitch().X());
         for(size_t x = 0; x < m_etaConstantsX.size(); x++) {
             m_etaCorrectorX->SetParameter(static_cast<int>(x), m_etaConstantsX[x]);
         }
@@ -49,7 +47,8 @@ void EtaCorrection::initialize() {
 
     if(!m_etaConstantsY.empty()) {
         m_correctY = true;
-        m_etaCorrectorY = new TF1("etaCorrectorY", m_etaFormulaY.c_str(), -pitch_y, pitch_y);
+        m_etaCorrectorY = new TF1(
+            "etaCorrectorY", m_etaFormulaY.c_str(), -1 * m_detector->getPitch().Y(), -1 * m_detector->getPitch().Y());
         for(size_t y = 0; y < m_etaConstantsY.size(); y++)
             m_etaCorrectorY->SetParameter(static_cast<int>(y), m_etaConstantsY[y]);
     } else {
@@ -74,9 +73,9 @@ void EtaCorrection::applyEta(Cluster* cluster) {
                     reference_col = pixel->column();
                 }
             }
-            auto reference_X = pitch_x * (reference_col - 0.5 * m_detector->nPixels().X());
-            auto xmod_cluster = static_cast<double>(Units::convert(cluster->local().X(), "um")) - reference_X;
-            newX = 0.001 * (m_etaCorrectorX->Eval(xmod_cluster) + reference_X);
+            auto reference_X = m_detector->getPitch().X() * (reference_col - 0.5 * m_detector->nPixels().X());
+            auto xmod_cluster = cluster->local().X() - reference_X;
+            newX = m_etaCorrectorX->Eval(xmod_cluster) + reference_X;
         }
     }
 
@@ -88,9 +87,9 @@ void EtaCorrection::applyEta(Cluster* cluster) {
                     reference_row = pixel->row();
                 }
             }
-            auto reference_Y = pitch_y * (reference_row - 0.5 * m_detector->nPixels().Y());
-            auto ymod_cluster = static_cast<double>(Units::convert(cluster->local().Y(), "um")) - reference_Y;
-            newY = 0.001 * (m_etaCorrectorY->Eval(ymod_cluster) + reference_Y);
+            auto reference_Y = m_detector->getPitch().Y() * (reference_row - 0.5 * m_detector->nPixels().Y());
+            auto ymod_cluster = cluster->local().Y() - reference_Y;
+            newY = m_etaCorrectorY->Eval(ymod_cluster) + reference_Y;
         }
     }
 
