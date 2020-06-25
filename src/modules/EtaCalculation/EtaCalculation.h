@@ -53,7 +53,6 @@ namespace corryvreckan {
         // Histograms
         TH2F* m_etaDistributionX;
         TH2F* m_etaDistributionY;
-        TH2F* m_inpixelTrackIntercept;
         TProfile* m_etaDistributionXprofile;
         TProfile* m_etaDistributionYprofile;
     };
