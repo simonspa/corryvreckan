@@ -23,6 +23,8 @@
 #include "core/config/Configuration.hpp"
 #include "core/utils/ROOT.h"
 #include "core/utils/log.h"
+#include "objects/Cluster.hpp"
+#include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
 
 namespace corryvreckan {
@@ -166,6 +168,15 @@ namespace corryvreckan {
          * @return Number of two dimensional pixels
          */
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const override { return m_nPixels; }
+
+        /**
+         * @brief Test whether one pixel touches the cluster
+         * @return true if it fulfills the condition
+         * @note users should define their specific clustering method in the detector class, for pixel detector, the default
+         * is 2D clustering
+         */
+        virtual bool
+        isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) override;
 
     private:
         // Initialize coordinate transformations

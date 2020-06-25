@@ -142,23 +142,23 @@ StatusCode Clustering4D::run(const std::shared_ptr<Clipboard>& clipboard) {
             nPixels = cluster->size();
             // Loop over all pixels
             for(size_t iNeighbour = (iP + 1); iNeighbour < totalPixels; iNeighbour++) {
-                Pixel* neighbor = pixels[iNeighbour].get();
+                auto neighbor = pixels[iNeighbour];
                 // Check if they are compatible in time with the cluster pixels
                 if(abs(neighbor->timestamp() - clusterTime) > time_cut_)
                     break;
 
                 // Check if they have been used
-                if(used[neighbor])
+                if(used[neighbor.get()])
                     continue;
 
                 // Check if they are touching cluster pixels
-                if(!touching(neighbor, cluster.get()))
+                if(!m_detector->isNeighbor(neighbor, cluster, neighbor_radius_row_, neighbor_radius_col_))
                     continue;
 
                 // Add to cluster
-                cluster->addPixel(neighbor);
+                cluster->addPixel(neighbor.get());
                 clusterTime = (neighbor->timestamp() < clusterTime) ? neighbor->timestamp() : clusterTime;
-                used[neighbor] = true;
+                used[neighbor.get()] = true;
                 LOG(DEBUG) << "Adding pixel: " << neighbor->column() << "," << neighbor->row() << " time "
                            << Units::display(neighbor->timestamp(), {"ns", "us", "s"});
             }
@@ -208,26 +208,6 @@ StatusCode Clustering4D::run(const std::shared_ptr<Clipboard>& clipboard) {
     LOG(DEBUG) << "Made " << deviceClusters.size() << " clusters for device " << m_detector->getName();
 
     return StatusCode::Success;
-}
-
-// Check if a pixel touches any of the pixels in a cluster
-bool Clustering4D::touching(Pixel* neighbor, Cluster* cluster) {
-
-    bool Touching = false;
-
-    for(auto pixel : cluster->pixels()) {
-        int row_distance = abs(pixel->row() - neighbor->row());
-        int col_distance = abs(pixel->column() - neighbor->column());
-
-        if(row_distance <= neighbor_radius_row_ && col_distance <= neighbor_radius_col_) {
-            if(row_distance > 1 || col_distance > 1) {
-                cluster->setSplit(true);
-            }
-            Touching = true;
-            break;
-        }
-    }
-    return Touching;
 }
 
 // Check if a pixel is close in time to the pixels of a cluster
