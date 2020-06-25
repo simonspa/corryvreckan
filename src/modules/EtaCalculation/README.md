@@ -1,8 +1,8 @@
 # EtaCalculation
-**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>), Morag Williams (<morag.williams@cern.ch>
+**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>), Morag Williams (<morag.williams@cern.ch>)  
 **Module Type**: *DETECTOR*  
 **Detector Type**: *all*  
-**Status**: Functional
+**Status**: Functional  
 
 ### Description
 This module performs a fit to obtain corrections for non-linear charge sharing, also know as the $`\eta`$-distribution. 
