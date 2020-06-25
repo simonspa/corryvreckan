@@ -28,36 +28,42 @@ EtaCalculation::EtaCalculation(Configuration& config, std::shared_ptr<Detector> 
 void EtaCalculation::initialize() {
 
     // Initialise histograms
-    pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
-    pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));
-    std::string mod_axes_x = "in-2pixel x_{cluster} [#mum];in-2pixel x_{track} [#mum];";
-    std::string mod_axes_y = "in-2pixel y_{cluster} [#mum];in-2pixel y_{track} [#mum];";
+    auto pitch_x = m_detector->getPitch().X();
+    auto pitch_y = m_detector->getPitch().Y();
+    std::string mod_axes_x = "in-2pixel x_{cluster} [mm];in-2pixel x_{track} [mm];";
+    std::string mod_axes_y = "in-2pixel y_{cluster} [mm];in-2pixel y_{track} [mm];";
 
     std::string title = "2D #eta distribution X;" + mod_axes_x + "No. entries";
     m_etaDistributionX = new TH2F("etaDistributionX",
                                   title.c_str(),
-                                  static_cast<int>(pitch_x * 2),
+                                  static_cast<int>(Units::convert(m_detector->getPitch().X(), "um") * 2),
                                   -pitch_x,
                                   pitch_x,
-                                  static_cast<int>(pitch_x * 2),
+                                  static_cast<int>(Units::convert(m_detector->getPitch().X(), "um") * 2),
                                   -pitch_x,
                                   pitch_x);
     title = "2D #eta distribution Y;" + mod_axes_y + "No. entries";
     m_etaDistributionY = new TH2F("etaDistributionY",
                                   title.c_str(),
-                                  static_cast<int>(pitch_y * 2),
+                                  static_cast<int>(Units::convert(m_detector->getPitch().Y(), "um") * 2),
                                   -pitch_y,
                                   pitch_y,
-                                  static_cast<int>(pitch_y * 2),
+                                  static_cast<int>(Units::convert(m_detector->getPitch().Y(), "um") * 2),
                                   -pitch_y,
                                   pitch_y);
 
     title = "#eta distribution X;" + mod_axes_x;
-    m_etaDistributionXprofile =
-        new TProfile("etaDistributionXprofile", title.c_str(), static_cast<int>(pitch_x * 2), -pitch_x, pitch_x);
+    m_etaDistributionXprofile = new TProfile("etaDistributionXprofile",
+                                             title.c_str(),
+                                             static_cast<int>(Units::convert(m_detector->getPitch().X(), "um") * 2),
+                                             -pitch_x,
+                                             pitch_x);
     title = "#eta distribution Y;" + mod_axes_x;
-    m_etaDistributionYprofile =
-        new TProfile("etaDistributionYprofile", title.c_str(), static_cast<int>(pitch_y * 2), -pitch_y, pitch_y);
+    m_etaDistributionYprofile = new TProfile("etaDistributionYprofile",
+                                             title.c_str(),
+                                             static_cast<int>(Units::convert(m_detector->getPitch().Y(), "um") * 2),
+                                             -pitch_y,
+                                             pitch_y);
 
     // Prepare fit functions - we need them for every detector as they might have different pitches
     m_etaFitX = new TF1("etaFormulaX", m_etaFormulaX.c_str(), -pitch_x, pitch_x);
@@ -78,9 +84,9 @@ void EtaCalculation::calculateEta(Track* track, Cluster* cluster) {
                 reference_col = pixel->column();
             }
         }
-        auto reference_X = pitch_x * (reference_col - 0.5 * m_detector->nPixels().X());
-        auto xmod_cluster = static_cast<double>(Units::convert(cluster->local().X(), "um")) - reference_X;
-        auto xmod_track = static_cast<double>(Units::convert(localIntercept.X(), "um")) - reference_X;
+        auto reference_X = m_detector->getPitch().X() * (reference_col - 0.5 * m_detector->nPixels().X());
+        auto xmod_cluster = cluster->local().X() - reference_X;
+        auto xmod_track = localIntercept.X() - reference_X;
         m_etaDistributionX->Fill(xmod_cluster, xmod_track);
         m_etaDistributionXprofile->Fill(xmod_cluster, xmod_track);
     }
@@ -91,9 +97,10 @@ void EtaCalculation::calculateEta(Track* track, Cluster* cluster) {
                 reference_row = pixel->row();
             }
         }
-        auto reference_Y = pitch_y * (reference_row - 0.5 * m_detector->nPixels().Y());
-        auto ymod_cluster = static_cast<double>(Units::convert(cluster->local().Y(), "um")) - reference_Y;
-        auto ymod_track = static_cast<double>(Units::convert(localIntercept.Y(), "um")) - reference_Y;
+        auto reference_Y = m_detector->getPitch().Y() * (reference_row - 0.5 * m_detector->nPixels().Y());
+        auto ymod_cluster = cluster->local().Y() - reference_Y;
+        auto ymod_track = localIntercept.Y() - reference_Y;
+
         m_etaDistributionY->Fill(ymod_cluster, ymod_track);
         m_etaDistributionYprofile->Fill(ymod_cluster, ymod_track);
     }
