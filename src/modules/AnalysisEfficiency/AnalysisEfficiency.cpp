@@ -253,25 +253,17 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
         auto xmod = static_cast<double>(Units::convert(inpixel.X(), "um"));
         auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
 
-        // Get the DUT clusters from the clipboard
-        auto clusters = clipboard->getData<Cluster>(m_detector->getName());
-        // Loop over all DUT clusters to find matches:
-        for(auto& cluster : clusters) {
-            LOG(DEBUG) << " - Looking at next DUT cluster";
-
-            auto associated_clusters = track->getAssociatedClusters(m_detector->getName());
-            if(std::find(associated_clusters.begin(), associated_clusters.end(), cluster.get()) !=
-               associated_clusters.end()) {
-                LOG(DEBUG) << "Found associated cluster " << (*cluster);
-                has_associated_cluster = true;
-                matched_tracks++;
-                auto clusterLocal = m_detector->globalToLocal(cluster->global());
-                hDistanceCluster_track->Fill(localIntercept.x() - clusterLocal.x(), localIntercept.y() - clusterLocal.y());
-                hGlobalEfficiencyMap_clustPos->Fill(cluster->global().x(), cluster->global().y(), has_associated_cluster);
-                hChipEfficiencyMap_clustPos->Fill(
-                    m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), has_associated_cluster);
-                break;
-            }
+        // Get the DUT clusters from the clipboard, that are assigned to the track
+        auto associated_clusters = track->getAssociatedClusters(m_detector->getName());
+        if(associated_clusters.size() > 0) {
+            auto cluster = track->getClosestCluster(m_detector->getName());
+            has_associated_cluster = true;
+            matched_tracks++;
+            auto clusterLocal = m_detector->globalToLocal(cluster->global());
+            hDistanceCluster_track->Fill(localIntercept.x() - clusterLocal.x(), localIntercept.y() - clusterLocal.y());
+            hGlobalEfficiencyMap_clustPos->Fill(cluster->global().x(), cluster->global().y(), has_associated_cluster);
+            hChipEfficiencyMap_clustPos->Fill(
+                m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), has_associated_cluster);
         }
 
         hGlobalEfficiencyMap_trackPos->Fill(globalIntercept.X(), globalIntercept.Y(), has_associated_cluster);
