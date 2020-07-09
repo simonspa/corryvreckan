@@ -1,12 +1,16 @@
 # EtaCalculation
-**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Maintainer**: Daniel Hynds (<daniel.hynds@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>), Morag Williams (<morag.williams@cern.ch>)  
 **Module Type**: *DETECTOR*  
 **Detector Type**: *all*  
-**Status**: Work in progress
+**Status**: Functional  
 
 ### Description
-This module performs a fit to obtain corrections for non-linear charge sharing, also know as the $`\eta`$-distribution. The distributions are calculated for two-pixel clusters of any detector in analysis by comparing the in-pixel track position and the calculated cluster center position. Histograms for all available detectors are filled for both X and Y coordinate.
-At the end of the run, fits to the recorded profiles are performed using the provided formulas. A printout of the resulting fit parameters is provided in the format read by the EtaCorrection module for convenience.
+This module performs a fit to obtain corrections for non-linear charge sharing, also know as the $`\eta`$-distribution. 
+The $`\eta`$-distribution is considered separately for the X and Y axes and is only calculated for clusters with a width of 2 in the respective axis.
+The position of the track intercept and the calculated centre of the associated cluster are compared relative to the 2-pixel width of the cluster, and plot in 2D and TProfile histograms.
+
+At the end of the run, fits to the recorded profiles are performed using the provided formulas. 
+A printout of the resulting fit parameters is provided in the format read by the EtaCorrection module for convenience.
 
 In order to measure the correct $`\eta`$-distribution, no additional $`\eta`$-correction should be applied before this calculation, i.e. by using the EtaCorrection module.
 
