@@ -282,6 +282,16 @@ void AnalysisDUT::initialize() {
                                    1000,
                                    -1000,
                                    +1000);
+
+    residualsTimeVsTot = new TH2F("residualsTimeVsTot",
+                                  "residualsTimeVsTot;time_{track} - time_{hit} [ns];seed pixel ToT [lsb];# entries",
+                                  20000,
+                                  -5000,
+                                  5000,
+                                  64,
+                                  0,
+                                  64);
+
     residualsTimeVsSignal = new TH2F("residualsTimeVsSignal",
                                      "residualsTimeVsSignal;cluster charge [e];time_{track}-time_{hit} [mm];# entries",
                                      20000,
@@ -459,6 +469,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             // Time residuals
             residualsTime->Fill(tdistance);
             residualsTimeVsTime->Fill(tdistance, track->timestamp());
+            residualsTimeVsTot->Fill(tdistance, assoc_cluster->getSeedPixel()->raw());
             residualsTimeVsSignal->Fill(tdistance, cluster_charge);
 
             clusterSizeAssoc->Fill(static_cast<double>(assoc_cluster->size()));

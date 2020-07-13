@@ -156,7 +156,7 @@ void EventLoaderTimepix3::initialize() {
     m_file_iterator = m_files.begin();
 
     // Calibration
-    pixelToT_beforecalibration = new TH1F("pixelToT_beforecalibration", "pixelToT_beforecalibration", 100, -0.5, 199.5);
+    pixelToT_beforecalibration = new TH1F("pixelToT", "pixelToT", 100, -0.5, 199.5);
 
     if(m_detector->isDUT() && config_.has("calibration_path") && config_.has("threshold")) {
         LOG(INFO) << "Applying calibration from " << calibrationPath;
@@ -210,7 +210,7 @@ void EventLoaderTimepix3::initialize() {
         applyCalibration = false;
     }
     // Make debugging plots
-    std::string title = m_detector->getName() + " Hit map;x [px];y [px];pixels";
+    std::string title = m_detector->getName() + " Hit map;x [px];y [px];# entries";
     hHitMap = new TH2F("hitMap",
                        title.c_str(),
                        m_detector->nPixels().X(),
