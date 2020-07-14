@@ -84,6 +84,12 @@ void EventLoaderEUDAQ2::initialize() {
 
     hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;entries", 20, -0.5, 19.5);
 
+    hEudaqeventsPerCorry = new TH1D(
+        "hEudaqeventsPerCorryEvent",
+        ("hEudaqeventsPerCorryEvent; number of events from " + m_detector->getName() + " per corry event; entries").c_str(),
+        50,
+        -.5,
+        49.5);
     // Create the following histograms only when detector is not auxiliary:
     if(!m_detector->isAuxiliary()) {
         title = "hitmap;column;row;# events";
@@ -356,7 +362,6 @@ PixelVector EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEve
     }
 
     auto plane = evt->GetPlane(static_cast<size_t>(plane_id));
-
     // Concatenate plane name according to naming convention: sensor_type + "_" + int
     auto plane_name = plane.Sensor() + "_" + std::to_string(plane.ID());
     auto detector_name = m_detector->getName();
@@ -367,6 +372,7 @@ PixelVector EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEve
 
     // Loop over all hits and add to pixels vector:
     for(unsigned int i = 0; i < plane.HitPixels(); i++) {
+
         auto col = static_cast<int>(plane.GetX(i));
         auto row = static_cast<int>(plane.GetY(i));
         auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
@@ -460,6 +466,7 @@ bool EventLoaderEUDAQ2::filter_detectors(std::shared_ptr<eudaq::StandardEvent> e
 }
 
 StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
+    size_t m_events = 0;
 
     PixelVector pixels;
 
@@ -491,6 +498,7 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
         current_position = is_within_event(clipboard, event_);
 
         if(current_position == Event::Position::DURING) {
+            m_events++;
             LOG(DEBUG) << "Is within current Corryvreckan event, storing data";
             // Store data on the clipboard
             auto new_pixels = get_pixel_data(event_, plane_id);
@@ -564,6 +572,7 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
         }
     }
 
+    hEudaqeventsPerCorry->Fill(m_events);
     // Store the full event data on the clipboard:
     clipboard->putData(pixels, m_detector->getName());
 
