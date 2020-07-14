@@ -572,7 +572,7 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
         }
     }
 
-    hEudaqeventsPerCorry->Fill(m_events);
+    hEudaqeventsPerCorry->Fill(static_cast<double>(m_events));
     // Store the full event data on the clipboard:
     clipboard->putData(pixels, m_detector->getName());
 
