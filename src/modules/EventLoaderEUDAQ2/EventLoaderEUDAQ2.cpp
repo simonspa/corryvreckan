@@ -82,14 +82,11 @@ void EventLoaderEUDAQ2::initialize() {
     title = "Corryvreckan event end times (on clipboard); Corryvreckan event duration [ms];# entries";
     hClipboardEventDuration = new TH1D("clipboardEventDuration", title.c_str(), 3e6, 0, 3e3);
 
-    hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;entries", 20, -0.5, 19.5);
+    hTriggersPerEvent =
+        new TH1D("hTriggersPerEvent", "Number of triggers per event;triggers per event;entries", 20, -0.5, 19.5);
 
-    hEudaqeventsPerCorry = new TH1D(
-        "hEudaqeventsPerCorryEvent",
-        ("hEudaqeventsPerCorryEvent; number of events from " + m_detector->getName() + " per corry event; entries").c_str(),
-        50,
-        -.5,
-        49.5);
+    title = " # events per corry event; number of events from " + m_detector->getName() + " per corry event;# entries";
+    hEudaqeventsPerCorry = new TH1D("hEudaqeventsPerCorryEvent", title.c_str(), 50, -.5, 49.5);
     // Create the following histograms only when detector is not auxiliary:
     if(!m_detector->isAuxiliary()) {
         title = "hitmap;column;row;# events";
