@@ -103,18 +103,18 @@ namespace corryvreckan {
          */
         bool filter_detectors(std::shared_ptr<eudaq::StandardEvent> evt, int& plane_id) const;
 
-        std::shared_ptr<Detector> m_detector;
-        std::string m_filename{};
-        bool m_get_time_residuals{};
-        bool m_get_tag_vectors{};
-        bool m_ignore_bore{};
-        bool m_inclusive;
-        double m_skip_time{};
-        Matrix<std::string> m_adjust_event_times;
-        int m_buffer_depth;
-        int m_shift_triggers;
+        std::shared_ptr<Detector> detector_;
+        std::string filename_{};
+        bool get_time_residuals_{};
+        bool get_tag_vectors_{};
+        bool ignore_bore_{};
+        bool inclusive_;
+        double skip_time_{};
+        Matrix<std::string> adjust_event_times_;
+        int buffer_depth_;
+        int shift_triggers_;
 
-        size_t m_hits = 0;
+        size_t hits_ = 0;
 
         // EUDAQ file reader instance to retrieve data from
         eudaq::FileReaderUP reader_;
