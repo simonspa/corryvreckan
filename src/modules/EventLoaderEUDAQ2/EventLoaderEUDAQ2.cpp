@@ -463,7 +463,7 @@ bool EventLoaderEUDAQ2::filter_detectors(std::shared_ptr<eudaq::StandardEvent> e
 }
 
 StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
-    size_t m_events = 0;
+    size_t num_eudaq_events_per_corry = 0;
 
     PixelVector pixels;
 
@@ -495,7 +495,7 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
         current_position = is_within_event(clipboard, event_);
 
         if(current_position == Event::Position::DURING) {
-            m_events++;
+            num_eudaq_events_per_corry++;
             LOG(DEBUG) << "Is within current Corryvreckan event, storing data";
             // Store data on the clipboard
             auto new_pixels = get_pixel_data(event_, plane_id);
@@ -569,7 +569,7 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
         }
     }
 
-    hEudaqeventsPerCorry->Fill(static_cast<double>(m_events));
+    hEudaqeventsPerCorry->Fill(static_cast<double>(num_eudaq_events_per_corry));
     // Store the full event data on the clipboard:
     clipboard->putData(pixels, detector_->getName());
 
