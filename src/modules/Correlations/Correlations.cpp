@@ -159,6 +159,11 @@ void Correlations::initialize() {
     title = m_detector->getName() + ": 2D correlation Y (global);y [mm];y_{ref} [mm];events";
     correlationY2D = new TH2F("correlationY_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);
 
+    title = m_detector->getName() + ": 2D cross-correlation X/Y (global);x [mm];y_{ref} [mm];events";
+    correlationXY2D = new TH2F("correlationXY_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);
+    title = m_detector->getName() + ": 2D cross-correlation Y/X (global);y [mm];x_{ref} [mm];events";
+    correlationYX2D = new TH2F("correlationYX_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);
+
     // Timing plots
     title = m_detector->getName() + ": event time;t [s];events";
     eventTimes = new TH1F("eventTimes", title.c_str(), 3000000, 0, 300);
@@ -223,7 +228,9 @@ StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
                 correlationY2Dlocal->Fill(cluster->row(), refCluster->row());
 
                 correlationXY->Fill(refCluster->global().y() - cluster->global().x());
+                correlationXY2D->Fill(refCluster->global().y(), cluster->global().x());
                 correlationYX->Fill(refCluster->global().x() - cluster->global().y());
+                correlationYX2D->Fill(refCluster->global().x(), cluster->global().y());
             }
 
             correlationTime->Fill(timeDifference); // time difference in ns

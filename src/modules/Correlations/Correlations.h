@@ -54,6 +54,8 @@ namespace corryvreckan {
         TH2F* correlationRowRow_px;
         TH2F* correlationX2D;
         TH2F* correlationY2D;
+        TH2F* correlationYX2D;
+        TH2F* correlationXY2D;
         TH1F* correlationTime;
         TH2F* correlationTimeOverTime;
         TH1F* correlationTime_px;
