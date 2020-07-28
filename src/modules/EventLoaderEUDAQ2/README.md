@@ -35,11 +35,11 @@ Tags stored in the EUDAQ2 event header are read, a conversion to a double value 
 This feature can e.g. be used to log temperatures of the devices during data taking, simply storing the temperature as event tags.
 
 ### Requirements
-This module requires an installation of [EUDAQ2](https://eudaq.github.io/). The installation path needs to be set to
+This module requires an installation of [EUDAQ2](https://eudaq.github.io/). The installation path needs to be passed to CMake when building Corryvreckan via
 ```bash
-export EUDAQ2PATH=/path/to/eudaq2
+cmake -Deudaq_DIR=/path/to/eudaq2_installation/cmake/
 ```
-when running CMake to find the library to link against and headers to include.
+to find the correct libraries to link against and headers to include.
 
 It is recommended to only build the necessary libraries of EUDAQ2 to avoid linking against unnecessary third-party libraries such as Qt5.
 This can be achieved e.g. by using the following CMake configuration for EUDAQ2:
