@@ -86,6 +86,21 @@ void Correlations::initialize() {
         name = "correlationYVsTime";
         correlationYVsTime = new TH2F(name.c_str(), title.c_str(), 600, 0, 3e3, 200, -10., 10.);
 
+        title = m_detector->getName() + "Reference pixel time stamp - pixel timestamp over time;t [s];t_{ref}-t [ns];events";
+        correlationTimeOverTime_px = new TH2F(
+            "correlationTimeOverTime_px", title.c_str(), 3e3, 0, 3e3, static_cast<int>(2. * timeCut), -1 * timeCut, timeCut);
+
+        title = m_detector->getName() + "Reference pixel time stamp - pixel time stamp over pixel raw value;"
+                                        "pixel raw value [lsb];t_{ref}-t [ns];events";
+        correlationTimeOverPixelRawValue_px = new TH2F("correlationTimeOverSeedPixelRawValue_px",
+                                                       title.c_str(),
+                                                       32,
+                                                       0,
+                                                       32,
+                                                       static_cast<int>(2. * timeCut),
+                                                       -1 * timeCut,
+                                                       timeCut);
+
         title = m_detector->getName() +
                 "Reference cluster time stamp - cluster time stamp over time;t [s];t_{ref}-t [ns];events";
         correlationTimeOverTime = new TH2F(
@@ -208,7 +223,10 @@ StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
             correlationRowCol_px->Fill(pixel->row(), refPixel->column());
             correlationRowRow_px->Fill(pixel->row(), refPixel->row());
 
-            correlationTime_px->Fill(static_cast<double>(Units::convert(refPixel->timestamp() - pixel->timestamp(), "ns")));
+            double timeDiff = refPixel->timestamp() - pixel->timestamp();
+            correlationTime_px->Fill(static_cast<double>(Units::convert(timeDiff, "ns")));
+            correlationTimeOverTime_px->Fill(static_cast<double>(Units::convert(pixel->timestamp(), "s")), timeDiff);
+            correlationTimeOverPixelRawValue_px->Fill(pixel->raw(), timeDiff);
         }
     }
 
