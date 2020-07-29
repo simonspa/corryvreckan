@@ -94,9 +94,9 @@ void Correlations::initialize() {
                                         "pixel raw value [lsb];t_{ref}-t [ns];events";
         correlationTimeOverSeedPixelRawValue = new TH2F("correlationTimeOverSeedPixelRawValue",
                                                         title.c_str(),
-                                                        3e3,
+                                                        32,
                                                         0,
-                                                        3e3,
+                                                        32,
                                                         static_cast<int>(2. * timeCut),
                                                         -1 * timeCut,
                                                         timeCut);
