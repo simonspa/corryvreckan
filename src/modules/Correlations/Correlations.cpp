@@ -90,6 +90,16 @@ void Correlations::initialize() {
                 "Reference cluster time stamp - cluster time stamp over time;t [s];t_{ref}-t [ns];events";
         correlationTimeOverTime = new TH2F(
             "correlationTimeOverTime", title.c_str(), 3e3, 0, 3e3, static_cast<int>(2. * timeCut), -1 * timeCut, timeCut);
+        title = m_detector->getName() + "Reference cluster time stamp - cluster time stamp over seed pixel raw value;seed "
+                                        "pixel raw value [lsb];t_{ref}-t [ns];events";
+        correlationTimeOverSeedPixelRawValue = new TH2F("correlationTimeOverSeedPixelRawValue",
+                                                        title.c_str(),
+                                                        3e3,
+                                                        0,
+                                                        3e3,
+                                                        static_cast<int>(2. * timeCut),
+                                                        -1 * timeCut,
+                                                        timeCut);
     }
 
     title = m_detector->getName() + "Reference pixel time stamp - pixel time stamp;t_{ref}-t [ns];events";
@@ -248,6 +258,7 @@ StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
                 // Time difference in ns
                 correlationTimeOverTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
                                               timeDifference);
+                correlationTimeOverSeedPixelRawValue->Fill(cluster->getSeedPixel()->raw(), timeDifference);
             }
             correlationTimeInt->Fill(static_cast<double>(timeDifferenceInt));
         }
