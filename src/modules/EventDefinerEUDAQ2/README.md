@@ -28,5 +28,10 @@ of the event realtive to the timestamp provided by `detector_event_time`
 ### Usage
 ```toml
 [EventDefinerEUDAQ2]
-
+detector_event_time = TLU
+detector_event_duration = MIMOSA
+file_timestamp = tlu_data.raw
+file_duration = mimosa_data.raw
+time_shift = 0
+shift_triggers = 0
 ```
