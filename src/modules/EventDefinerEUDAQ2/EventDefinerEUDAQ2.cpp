@@ -61,14 +61,6 @@ void EventDefinerEUDAQ2::initialize() {
                    << " '. Please verify that the path and file name are correct.";
         throw InvalidValueError(config_, "file_path", "Parsing error!");
     }
-
-    timestampTrig_ = -1;
-    durationTrig_ = 0;
-    triggerIDs_.resize(2, 0);
-    // Initialise member variables
-    eventNumber_ = 0;
-    time_prev_ = 0;
-    trig_prev_ = 0;
 }
 
 int EventDefinerEUDAQ2::get_next_event_with_det(eudaq::FileReaderUP& filereader,
@@ -77,12 +69,14 @@ int EventDefinerEUDAQ2::get_next_event_with_det(eudaq::FileReaderUP& filereader,
                                                 long double& end) {
     do {
         auto evt = filereader->GetNextEvent();
-        if(evt == nullptr)
-            return -5;
+        if(evt == nullptr) {
+            throw EndOfFile();
+        }
         std::vector<eudaq::EventSPC> events_ = evt->GetSubEvents();
-        if(events_.empty())
+        if(events_.empty()) {
             events_.push_back(evt);
-        for(auto e : events_) {
+        }
+        for(const auto& e : events_) {
             auto stdevt = eudaq::StandardEvent::MakeShared();
             if(!eudaq::StdEventConverter::Convert(e, stdevt, eudaq_config_)) {
                 LOG(ERROR) << "Failed to convert event";
@@ -90,18 +84,14 @@ int EventDefinerEUDAQ2::get_next_event_with_det(eudaq::FileReaderUP& filereader,
             }
             auto detector = stdevt->GetDetectorType();
             if(det == detector) {
-                begin = static_cast<double>(stdevt->GetTimeBegin());
-                begin = Units::get(begin, "ps");
-                end = static_cast<double>(stdevt->GetTimeEnd());
-                end = Units::get(end, "ps");
+                begin = Units::get(static_cast<double>(stdevt->GetTimeBegin()), "ps");
+                end = Units::get(static_cast<double>(stdevt->GetTimeEnd()), "ps");
                 // MIMOSA
                 if(det == "MIMOSA26") {
+                    // pivot magic - see readme
                     double piv = stdevt->GetPlane(0).PivotPixel() / 16.;
-                    begin =
-                        piv * (115.2 / 576) + timeshift_; // 100 seems to be the delay between trigger and good to go sign
-                    end = 230.4 - begin;
-                    begin = Units::get(begin, "us");
-                    end = Units::get(end, "us");
+                    begin = Units::get(static_cast<double>(piv * (115.2 / 576)), "us") + timeshift_;
+                    end = Units::get(230.4, "us") - begin;
                 }
                 return static_cast<int>(e->GetTriggerN());
             }
@@ -113,7 +103,8 @@ StatusCode EventDefinerEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) 
 
     // Loop over all detectors
     if(clipboard->isEventDefined()) {
-        LOG(ERROR) << "Event already defined - cannot crate a new event";
+        throw ModuleError(
+            "Event already defined - cannot crate a new event. This module needs to be placed before the first EventLoader");
     }
     // read events until we have a common tag:
     do {

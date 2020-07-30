@@ -28,6 +28,7 @@ namespace corryvreckan {
      * More detailed explanation of module
      */
     class EventDefinerEUDAQ2 : public Module {
+        class EndOfFile : public Exception {};
 
     public:
         /**
@@ -76,7 +77,7 @@ namespace corryvreckan {
         TH1F* timebetweenMimosaEvents_;
         TH1F* timebetweenTLUEvents_;
 
-        int timestampTrig_{};
+        int timestampTrig_{-1};
         int durationTrig_{};
         long double time_trig_start_{}, time_trig_stop_{}, time_before_{}, time_after_{};
 

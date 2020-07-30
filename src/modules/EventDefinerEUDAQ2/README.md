@@ -16,7 +16,7 @@ timestamp
 of the event realtive to the timestamp provided by `detector_event_time`
 - `file_timestamp`: Data file containing the `detector_event_time` data
 - `file_duration`: Data file containing the  `detector_event_duration` data
-- `time_shift`: Optional shift of the event begin/end point. Defaults to `0`
+- `time_shift`: Optional shift of the event begin/end point in ns. Defaults to `0`
 - `shift_triggers`: Shift the trigger ID of the
 `detector_event_time`. Defaults to `0`
 
