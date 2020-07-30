@@ -1,0 +1,11 @@
+# Define module and return the generated name as MODULE_NAME
+CORRYVRECKAN_GLOBAL_MODULE(MODULE_NAME)
+
+# Add source files to library
+FIND_PACKAGE(eudaq 2.4 REQUIRED)
+
+CORRYVRECKAN_MODULE_SOURCES(${MODULE_NAME} EventDefinerEUDAQ2.cpp)
+TARGET_LINK_LIBRARIES(${MODULE_NAME} ${EUDAQ2_LIBRARY} eudaq::core)
+
+# Provide standard install target
+CORRYVRECKAN_MODULE_INSTALL(${MODULE_NAME})
