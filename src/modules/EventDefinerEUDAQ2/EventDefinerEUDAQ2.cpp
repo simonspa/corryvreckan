@@ -20,27 +20,9 @@ EventDefinerEUDAQ2::EventDefinerEUDAQ2(Configuration& config, std::vector<std::s
     timestamp_ = config_.get<std::string>("file_timestamp");
     timeshift_ = config_.get<double>("time_shift");
     shift_triggers_ = config_.get<int>("shift_triggers");
-    // Prepare EUDAQ2 config object - copy from the EventLoader
-    eudaq::Configuration cfg;
-    // WARNING: the EUDAQ Configuration class is not very flexible and e.g. booleans have to be passed as 1 and 0.
-    auto configs = config_.getAll();
-    for(const auto& key : configs) {
-        LOG(DEBUG) << "Forwarding key \"" << key.first << " = " << key.second << "\" to EUDAQ converter";
-        cfg.Set(key.first, key.second);
-    }
-    // Converting the newly built configuration to a shared pointer of a const configuration object
-    // Unfortunbately EUDAQ does not provide appropriate member functions for their configuration class to avoid this dance
-    const eudaq::Configuration eu_cfg = cfg;
-    eudaq_config_ = std::make_shared<const eudaq::Configuration>(eu_cfg);
 }
 
 void EventDefinerEUDAQ2::initialize() {
-
-    std::vector<std::string> det;
-    for(auto& detector : get_detectors()) {
-        det.push_back(detector->getName());
-    }
-
     timebetweenMimosaEvents_ =
         new TH1F("htimebetweenTimes", "time between two mimosa frames; time /us; #entries", 1000, -0.5, 995.5);
     timebetweenTLUEvents_ =
@@ -78,7 +60,7 @@ int EventDefinerEUDAQ2::get_next_event_with_det(eudaq::FileReaderUP& filereader,
         }
         for(const auto& e : events_) {
             auto stdevt = eudaq::StandardEvent::MakeShared();
-            if(!eudaq::StdEventConverter::Convert(e, stdevt, eudaq_config_)) {
+            if(!eudaq::StdEventConverter::Convert(e, stdevt, nullptr)) {
                 LOG(ERROR) << "Failed to convert event";
                 continue;
             }
@@ -90,7 +72,7 @@ int EventDefinerEUDAQ2::get_next_event_with_det(eudaq::FileReaderUP& filereader,
                 if(det == "MIMOSA26") {
                     // pivot magic - see readme
                     double piv = stdevt->GetPlane(0).PivotPixel() / 16.;
-                    begin = Units::get(static_cast<double>(piv * (115.2 / 576)), "us") + timeshift_;
+                    begin = Units::get(piv * (115.2 / 576), "us") + timeshift_;
                     end = Units::get(230.4, "us") - begin;
                 }
                 return static_cast<int>(e->GetTriggerN());
@@ -108,8 +90,8 @@ StatusCode EventDefinerEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) 
     }
     // read events until we have a common tag:
     do {
-        LOG(DEBUG) << "Trigger of timestamp defining event: " << timestampTrig_
-                   << "\t Trigger of duration defining event: " << durationTrig_;
+        LOG(DEBUG) << "Trigger of timestamp defining event: " << timestampTrig_ << std::endl
+                   << " Trigger of duration defining event: " << durationTrig_;
         if(timestampTrig_ < durationTrig_) {
             timestampTrig_ =
                 get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_) + shift_triggers_;
@@ -130,7 +112,7 @@ StatusCode EventDefinerEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) 
                            << Units::display(evtEnd, {"us", "ns"}) << ", length "
                            << Units::display(evtEnd - evtstart, {"us", "ns"});
             } else {
-                LOG(WARNING) << "inverted time structure";
+                LOG(WARNING) << "Current trigger time smaller than previous: " << time_trig << " vs " << time_prev_;
             }
             timestampTrig_ =
                 get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_) + shift_triggers_;
@@ -145,15 +127,8 @@ StatusCode EventDefinerEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) 
         }
 
     } while(!clipboard->isEventDefined());
-
-    // Increment event counter
-    eventNumber_++;
-
     // Return value telling analysis to keep running
     return StatusCode::Success;
 }
 
-void EventDefinerEUDAQ2::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
-
-    LOG(DEBUG) << "Analysed " << eventNumber_ << " events";
-}
+void EventDefinerEUDAQ2::finalize(const std::shared_ptr<ReadonlyClipboard>&) {}

@@ -54,32 +54,25 @@ namespace corryvreckan {
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
-        int eventNumber_{};
         std::vector<uint32_t> triggerIDs_{};
         long double timeshift_{};
-        long double time_prev_{};
-        long double trig_prev_{};
         int shift_triggers_{};
         // EUDAQ2 readers for all required files
         eudaq::FileReaderUP readerTime_;
         eudaq::FileReaderUP readerDuration_;
-        // Currently processed decoded EUDAQ StandardEvents:
-        // std::vector<std::shared_ptr<eudaq::StandardEvent>> events_;
-        // EUDAQ configuration to be passed to the decoder instance
-        eudaq::ConfigurationSPC eudaq_config_;
-
         // Detector defining the event time
         std::string detector_time_;
         // Detector defining the event duration
         std::string detector_duration_;
         // input data files
         std::string timestamp_, duration_;
+
         TH1F* timebetweenMimosaEvents_;
         TH1F* timebetweenTLUEvents_;
 
         int timestampTrig_{-1};
         int durationTrig_{};
-        long double time_trig_start_{}, time_trig_stop_{}, time_before_{}, time_after_{};
+        long double time_prev_{}, trig_prev_{}, time_trig_start_{}, time_trig_stop_{}, time_before_{}, time_after_{};
 
         /**
          * @brief get_next_event_with_det
