@@ -48,11 +48,6 @@ namespace corryvreckan {
          */
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
-        /**
-         * @brief [Finalise module]
-         */
-        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
-
     private:
         std::vector<uint32_t> triggerIDs_{};
         long double timeshift_{};
