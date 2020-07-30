@@ -233,8 +233,10 @@ StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             double timeDiff = refPixel->timestamp() - pixel->timestamp();
             correlationTime_px->Fill(static_cast<double>(Units::convert(timeDiff, "ns")));
-            correlationTimeOverTime_px->Fill(static_cast<double>(Units::convert(pixel->timestamp(), "s")), timeDiff);
-            correlationTimeOverPixelRawValue_px->Fill(pixel->raw(), timeDiff);
+            if(m_corr_vs_time) {
+                correlationTimeOverTime_px->Fill(static_cast<double>(Units::convert(pixel->timestamp(), "s")), timeDiff);
+                correlationTimeOverPixelRawValue_px->Fill(pixel->raw(), timeDiff);
+            }
         }
     }
 
