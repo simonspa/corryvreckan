@@ -43,12 +43,16 @@ void EventDefinerEUDAQ2::initialize() {
                    << " '. Please verify that the path and file name are correct.";
         throw InvalidValueError(config_, "file_path", "Parsing error!");
     }
+    // get the first event each
+    timestampTrig_ =
+        get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_) + shift_triggers_;
+    durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
 }
 
-int EventDefinerEUDAQ2::get_next_event_with_det(eudaq::FileReaderUP& filereader,
-                                                std::string& det,
-                                                long double& begin,
-                                                long double& end) {
+unsigned EventDefinerEUDAQ2::get_next_event_with_det(eudaq::FileReaderUP& filereader,
+                                                     std::string& det,
+                                                     long double& begin,
+                                                     long double& end) {
     do {
         auto evt = filereader->GetNextEvent();
         if(evt == nullptr) {

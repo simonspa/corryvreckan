@@ -70,8 +70,7 @@ namespace corryvreckan {
         TH1F* timebetweenMimosaEvents_;
         TH1F* timebetweenTLUEvents_;
 
-        int timestampTrig_{-1};
-        int durationTrig_{};
+        unsigned timestampTrig_{}, durationTrig_{};
         long double time_prev_{}, trig_prev_{}, time_trig_start_{}, time_trig_stop_{}, time_before_{}, time_after_{};
 
         /**
@@ -82,7 +81,8 @@ namespace corryvreckan {
          * @param end: timestamp of end of event
          * @return
          */
-        int get_next_event_with_det(eudaq::FileReaderUP& filereader, std::string& det, long double& begin, long double& end);
+        unsigned
+        get_next_event_with_det(eudaq::FileReaderUP& filereader, std::string& det, long double& begin, long double& end);
     };
 
 } // namespace corryvreckan
