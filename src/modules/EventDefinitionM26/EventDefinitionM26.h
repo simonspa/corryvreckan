@@ -27,7 +27,7 @@ namespace corryvreckan {
      *
      * More detailed explanation of module
      */
-    class EventDefinerEUDAQ2 : public Module {
+    class EventDefinitionM26 : public Module {
         class EndOfFile : public Exception {};
 
     public:
@@ -36,7 +36,7 @@ namespace corryvreckan {
          * @param config Configuration object for this module as retrieved from the steering file
          * @param detectors Vector of pointers to the detectors
          */
-        EventDefinerEUDAQ2(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
+        EventDefinitionM26(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
 
         /**
          * @brief [Initialise this module]

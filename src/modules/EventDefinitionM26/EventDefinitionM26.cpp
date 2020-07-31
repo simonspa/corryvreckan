@@ -8,11 +8,11 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include "EventDefinerEUDAQ2.h"
+#include "EventDefinitionM26.h"
 
 using namespace corryvreckan;
 
-EventDefinerEUDAQ2::EventDefinerEUDAQ2(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
+EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
     detector_time_ = config_.get<std::string>("detector_event_time");
     detector_duration_ = config_.get<std::string>("detector_event_duration");
@@ -22,7 +22,7 @@ EventDefinerEUDAQ2::EventDefinerEUDAQ2(Configuration& config, std::vector<std::s
     shift_triggers_ = config_.get<int>("shift_triggers");
 }
 
-void EventDefinerEUDAQ2::initialize() {
+void EventDefinitionM26::initialize() {
     timebetweenMimosaEvents_ =
         new TH1F("htimebetweenTimes", "time between two mimosa frames; time /us; #entries", 1000, -0.5, 995.5);
     timebetweenTLUEvents_ =
@@ -49,7 +49,7 @@ void EventDefinerEUDAQ2::initialize() {
     durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
 }
 
-unsigned EventDefinerEUDAQ2::get_next_event_with_det(eudaq::FileReaderUP& filereader,
+unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filereader,
                                                      std::string& det,
                                                      long double& begin,
                                                      long double& end) {
@@ -85,7 +85,7 @@ unsigned EventDefinerEUDAQ2::get_next_event_with_det(eudaq::FileReaderUP& filere
 
     } while(true);
 }
-StatusCode EventDefinerEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
+StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Loop over all detectors
     if(clipboard->isEventDefined()) {
@@ -134,5 +134,3 @@ StatusCode EventDefinerEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) 
     // Return value telling analysis to keep running
     return StatusCode::Success;
 }
-
-void EventDefinerEUDAQ2::finalize(const std::shared_ptr<ReadonlyClipboard>&) {}
