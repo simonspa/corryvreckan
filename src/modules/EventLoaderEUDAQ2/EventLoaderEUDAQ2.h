@@ -167,6 +167,7 @@ namespace corryvreckan {
         TH2D* hPixelTriggerTimeResidualOverTime;
         TH1D* hTriggersPerEvent;
         TH1D* hEudaqeventsPerCorry;
+        TH2D* hHitsVersusEUDAQ2Frames;
 
         std::map<std::string, TProfile*> hTagValues;
     };
