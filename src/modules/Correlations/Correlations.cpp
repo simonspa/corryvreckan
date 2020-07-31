@@ -86,6 +86,14 @@ void Correlations::initialize() {
         name = "correlationYVsTime";
         correlationYVsTime = new TH2F(name.c_str(), title.c_str(), 600, 0, 3e3, 200, -10., 10.);
 
+        title = m_detector->getName() + " Cross-Correlation XY versus time;t [s];x_{ref}-y [mm];events";
+        name = "correlationXYVsTime";
+        correlationXYVsTime = new TH2F(name.c_str(), title.c_str(), 600, 0, 3e3, 200, -10., 10.);
+
+        title = m_detector->getName() + " Cross-Correlation YX versus time;t [s];y_{ref}-x [mm];events";
+        name = "correlationYXVsTime";
+        correlationYXVsTime = new TH2F(name.c_str(), title.c_str(), 600, 0, 3e3, 200, -10., 10.);
+
         title = m_detector->getName() +
                 "Reference cluster time stamp - cluster time stamp over time;t [s];t_{ref}-t [ns];events";
         correlationTimeOverTime = new TH2F(
@@ -244,6 +252,10 @@ StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
                                              refCluster->global().x() - cluster->global().x());
                     correlationYVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
                                              refCluster->global().y() - cluster->global().y());
+                    correlationXYVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                              refCluster->global().x() - cluster->global().y());
+                    correlationYXVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
+                                              refCluster->global().y() - cluster->global().x());
                 }
                 // Time difference in ns
                 correlationTimeOverTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
