@@ -481,6 +481,9 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
                 }
             } catch(EndOfFile&) {
                 return StatusCode::EndRun;
+            } catch(eudaq::DataInvalid& e) {
+                LOG(ERROR) << "EUDAQ2 reports invalid data: " << e.what() << std::endl << "Ending run.";
+                return StatusCode::EndRun;
             }
         }
 
