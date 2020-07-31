@@ -125,9 +125,6 @@ namespace corryvreckan {
         // Currently processed decoded EUDAQ StandardEvent:
         std::shared_ptr<eudaq::StandardEvent> event_;
 
-        // Currently processed decoded EUDAQ StandardEvent:
-        PixelVector prev_hits_;
-
         // custom comparator for time-sorted priority_queue
         struct CompareTimeGreater {
             bool operator()(const std::shared_ptr<eudaq::StandardEvent> a, const std::shared_ptr<eudaq::StandardEvent> b) {

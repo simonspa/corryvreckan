@@ -492,9 +492,6 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
             event_.reset();
             continue;
         }
-        // copy the stuff from the last frame
-        pixels.insert(pixels.end(), prev_hits_.begin(), prev_hits_.end());
-        prev_hits_.clear();
         // Check if this event is within the currently defined Corryvreckan event:
         current_position = is_within_event(clipboard, event_);
 
@@ -505,19 +502,10 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
             auto new_pixels = get_pixel_data(event_, plane_id);
             hits_ += new_pixels.size();
             pixels.insert(pixels.end(), new_pixels.begin(), new_pixels.end());
-            prev_hits_.insert(prev_hits_.end(), new_pixels.begin(), new_pixels.end());
         }
 
         // If this event was after the current event or if we have not enough information, stop reading:
         if(current_position == Event::Position::AFTER || current_position == Event::Position::UNKNOWN) {
-            if(detector_->getName() == "atlaspix_0") {
-                num_eudaq_events_per_corry++;
-                LOG(DEBUG) << "Is behind current Corryvreckan event but an atlaspix, storing data";
-                // Store data on the clipboard
-                auto new_pixels = get_pixel_data(event_, plane_id);
-                hits_ += new_pixels.size();
-                pixels.insert(pixels.end(), new_pixels.begin(), new_pixels.end());
-            }
             break;
         }
 
