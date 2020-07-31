@@ -13,8 +13,12 @@ out, which is not the case in the standard converter.
 Event definition example:
 If a triggerID has a TLU event from 425.000us to 425.025us (default
 25 ns events) and the pivot pixel-row is 512 the event will be defined as:
-begin = 125.012.5us-(512*(115.2/576))us
-end = begin++230us
+
+```
+begin = 125.012.5us - (512 * (115.2 / 576)) us
+end = begin + 230us
+```
+
 ### Parameters
 - `detector_event_time`: Specify the detector used to define the event
 timestamp
