@@ -1,7 +1,7 @@
 # EventDefinitionM26
-**Maintainer**: Lennart Huth (lennart.huth@desy.de)
+**Maintainer**: Lennart Huth (lennart.huth@desy.de)  
 **Module Type**: *GLOBAL*  
-**Status**: functional 
+**Status**: Functional 
 
 ### Description
 This global module allows to fully utilize the PIVOT pixel behaviour of the
