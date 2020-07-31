@@ -37,7 +37,8 @@ of the event relative to the timestamp provided by `detector_event_time`
 
 ### Usage
 ```toml
-[EventDefinerEUDAQ2]
+[EventDefinitionM26]
+
 detector_event_time = TLU
 detector_event_duration = MIMOSA
 file_timestamp = tlu_data.raw
