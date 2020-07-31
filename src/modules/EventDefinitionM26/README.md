@@ -19,7 +19,7 @@ end = begin++230us
 - `detector_event_time`: Specify the detector used to define the event
 timestamp
 - `detector_event_duration`: Specify detector used to define the begin and end
-of the event realtive to the timestamp provided by `detector_event_time`
+of the event relative to the timestamp provided by `detector_event_time`
 - `file_timestamp`: Data file containing the `detector_event_time` data
 - `file_duration`: Data file containing the  `detector_event_duration` data
 - `time_shift`: Optional shift of the event begin/end point. Defaults to `0`
