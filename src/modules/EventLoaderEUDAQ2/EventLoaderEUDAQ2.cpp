@@ -570,7 +570,9 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
         }
     }
 
-    // Store the full event data on the clipboard - HACK: only do so if there is one event -.-
+    // Store the full event data on the clipboard
+    hEudaqeventsPerCorry->Fill(static_cast<double>(num_eudaq_events_per_corry));
+    hHitsVersusEUDAQ2Frames->Fill(static_cast<double>(num_eudaq_events_per_corry), static_cast<double>(pixels.size()));
     clipboard->putData(pixels, detector_->getName());
 
     LOG(DEBUG) << "Finished Corryvreckan event";
