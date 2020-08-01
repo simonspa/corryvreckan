@@ -67,6 +67,8 @@ The decoder guarantees to
 * return the smallest possible granularity of data in time either as even or as sub-events within one event.
 * always return valid event timestamps. If the device does not have timestamps, it should return zero for the beginning of the event and have a valid trigger number set.
 * provide the detector type via the `GetDetectorType()` function in the decoded StandardEvent.
+* throw a `eudaq::DataInvalid()` exception in case invalid data is encountered which should end the processing of data.
+
 
 ### Configuring EUDAQ2 Event Converters
 
