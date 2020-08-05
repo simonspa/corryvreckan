@@ -35,10 +35,33 @@ DUTAssociation::DUTAssociation(Configuration& config, std::shared_ptr<Detector> 
 
     // spatial cut, relative (x * spatial_resolution) or absolute:
     spatialCut = corryvreckan::calculate_cut<XYVector>("spatial_cut", config_, m_detector);
+
+    isolationCut = spatialCut;
+
+    // isolation cut, read from config. If not available, use spatial_cut:
+    // if(config_.count({"isolation_cut_rel", "isolation_cut_abs"}) == 0) {
+    //     if(config_.has("spatial_cut_abs")) {
+    //         LOG(DEBUG) << "Setting isolation_cut to spatial_cut_abs";
+    //         config_.setDefault<XYVector>("isolation_cut_abs",config_.get<XYVector>("spatial_cut_abs"));
+    //     } else if(config_.has("spatial_cut_rel")) {
+    //         LOG(DEBUG) << "Setting isolation_cut to spatial_cut_rel";
+    //         config_.setDefault("isolation_cut_rel",config_.get<XYVector>("spatial_cut_rel"));
+    //     } else {
+    //         // config_.setDefault("isolation_cut_rel", config_.getDefault("spatial_cut_rel"));
+    //         LOG(DEBUG) << "Setting isolation cut to 3.0";
+    //         config_.setDefault("isolation_cut_rel", 3.0);
+    //     }
+    // } else if(config_.has("isolation_cut_abs")) {
+    //     isolationCut = corryvreckan::get<XYVector>("isolation_cut_abs", config_, m_detector);
+    // } else {
+    //     isolationCut = corryvreckan::get<XYVector>("isolation_cut_rel", config_, m_detector);
+    // }
+
     useClusterCentre = config_.get<bool>("use_cluster_centre");
 
     LOG(DEBUG) << "time_cut = " << Units::display(timeCut, {"ms", "us", "ns"});
     LOG(DEBUG) << "spatial_cut = " << Units::display(spatialCut, {"um", "mm"});
+    LOG(DEBUG) << "isolation_cut = " << Units::display(isolationCut, {"um", "mm"});
     LOG(DEBUG) << "use_cluster_centre = " << useClusterCentre;
 }
 
@@ -112,6 +135,37 @@ StatusCode DUTAssociation::run(const std::shared_ptr<Clipboard>& clipboard) {
     // Loop over all tracks
     for(auto& track : tracks) {
         LOG(TRACE) << "Processing track with model " << track->getType() << ", chi2 of " << track->getChi2();
+
+        // Track isolation:
+        // Loop over tracks again to check if their intercept is too close together:
+        bool found_close_track = false;
+        for(auto& tr : tracks) {
+            // don't compare to self:
+            if(tr == track) {
+                continue;
+            }
+
+            // Check if 2nd track intercept lies within ellipse defined by isolation cuts around 1st track intercept,
+            // following this example: https://www.geeksforgeeks.org/check-if-a-point-is-inside-outside-or-on-the-ellipse/
+            //
+            // ellipse defined by: x^2/a^2 + y^2/b^2 = 1: on ellipse,
+            //                                       > 1: outside,
+            //                                       < 1: inside
+            // Discard track if inside of ellipse:
+            auto distance = m_detector->getLocalIntercept(tr.get()) - m_detector->getLocalIntercept(track.get());
+            double norm = (distance.X() * distance.X()) / (spatialCut.x() * spatialCut.x()) +
+                          (distance.Y() * distance.Y()) / (spatialCut.y() * spatialCut.y());
+            if(norm < 1) {
+                LOG(DEBUG) << "Found close track.";
+                found_close_track = true;
+            }
+        }
+        // Don't use track if a close track was found:
+        if(found_close_track) {
+            discarded_tracks++;
+            continue;
+        }
+
         int assoc_cls_per_track = 0;
         auto min_distance = std::numeric_limits<double>::max();
 
@@ -220,6 +274,7 @@ StatusCode DUTAssociation::run(const std::shared_ptr<Clipboard>& clipboard) {
 
 void DUTAssociation::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     hCutHisto->Scale(1 / double(num_cluster));
+    LOG(INFO) << "Discarded " << discarded_tracks << " tracks due to isolation cut.";
     LOG(STATUS) << "In total, " << assoc_cluster_counter << " clusters are associated to " << track_w_assoc_cls
                 << " tracks.";
     LOG(INFO) << "Number of tracks with at least one associated cluster: " << track_w_assoc_cls;

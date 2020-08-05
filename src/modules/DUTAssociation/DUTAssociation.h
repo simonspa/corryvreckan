@@ -39,11 +39,13 @@ namespace corryvreckan {
         std::shared_ptr<Detector> m_detector;
         double timeCut;
         ROOT::Math::XYVector spatialCut;
+        ROOT::Math::XYVector isolationCut;
         bool useClusterCentre;
 
         TH1F* hCutHisto;
 
         int num_cluster = 0;
+        int discarded_tracks = 0;
         int assoc_cluster_counter = 0;
         int track_w_assoc_cls = 0;
 
