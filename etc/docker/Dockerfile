@@ -12,6 +12,7 @@ RUN source scl_source enable devtoolset-7 && \
     mkdir -p /opt/corryvreckan/build && \
     cd /opt/corryvreckan/build && \
     cmake3 -DBUILD_EventLoaderEUDAQ2=ON \
+           -Deudaq_DIR="/opt/eudaq2/cmake" \
            -DCMAKE_INSTALL_PREFIX=../ \
            -DCMAKE_MODULE_PATH="/usr/share/cmake3/Modules/;/usr/share/cmake/Modules/" \
           .. && \
