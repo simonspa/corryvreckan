@@ -1,0 +1,10 @@
+# exclude everything that is not relevant for Docker context
+*
+!3rdparty
+!cmake
+!CMakeLists.txt
+!doc
+!etc
+!LICENSE.md
+!src
+!testing
