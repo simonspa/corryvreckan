@@ -48,6 +48,7 @@ void EventDefinitionM26::initialize() {
     while((int(timestampTrig_) + shift_triggers_) < 0) {
         timestampTrig_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_);
     }
+    timestampTrig_ = static_cast<unsigned>(static_cast<int>(timestampTrig_) + shift_triggers_);
     durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
 }
 
@@ -81,7 +82,7 @@ unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filere
                     begin = Units::get(piv * (115.2 / 576), "us") + timeshift_;
                     end = Units::get(230.4, "us") - begin;
                 }
-                return static_cast<int>(e->GetTriggerN());
+                return e->GetTriggerN();
             }
         }
 
@@ -100,8 +101,9 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                    << " Trigger of duration defining event: " << durationTrig_;
         try {
             if(timestampTrig_ < durationTrig_) {
-                timestampTrig_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_) +
-                                 shift_triggers_;
+                timestampTrig_ = static_cast<unsigned>(static_cast<int>(get_next_event_with_det(
+                                                           readerTime_, detector_time_, time_trig_start_, time_trig_stop_)) +
+                                                       shift_triggers_);
                 timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
                 trig_prev_ = time_trig_start_;
             } else if(timestampTrig_ > durationTrig_) {
@@ -127,8 +129,9 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                 LOG(WARNING) << "Current trigger time smaller than previous: " << time_trig << " vs " << time_prev_;
             }
             try {
-                timestampTrig_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_) +
-                                 shift_triggers_;
+                timestampTrig_ = static_cast<unsigned>(static_cast<int>(get_next_event_with_det(
+                                                           readerTime_, detector_time_, time_trig_start_, time_trig_stop_)) +
+                                                       shift_triggers_);
                 timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
                 trig_prev_ = time_trig_start_;
                 durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
