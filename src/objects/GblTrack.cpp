@@ -35,19 +35,7 @@ void GblTrack::setVolumeScatter(double length) {
     use_volume_scatter_ = true;
 }
 
-void GblTrack::fit() {
-    LOG(DEBUG) << "Starting GBL fit";
-    isFitted_ = false;
-    residual_local_.clear();
-    residual_global_.clear();
-    kink_.clear();
-    corrections_.clear();
-    local_track_points_.clear();
-
-    // Fitting with less than 2 clusters is pointless
-    if(track_clusters_.size() < 2) {
-        throw TrackError(typeid(GblTrack), " attempting to fit a track with less than 2 clusters");
-    }
+void GblTrack::prepare_gblpoints() {
     // store the used clusters in a map for easy access:
     std::map<std::string, Cluster*> clusters;
     for(auto& c : track_clusters_) {
@@ -72,8 +60,6 @@ void GblTrack::fit() {
     if(use_volume_scatter_) {
         total_material += (planes_.back().getPosition() - planes_.front().getPosition()) / scattering_length_volume_;
     }
-
-    std::vector<GblPoint> points;
 
     // lambda to calculate the scattering theta, beta2 assumed to be one and the momentum in MeV
     auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
@@ -200,7 +186,7 @@ void GblTrack::fit() {
 
         double frac1 = 0.21, frac2 = 0.58;
         // special treatment of first point on trajectory
-        if(points.size() == 0) {
+        if(gblpoints_.size() == 0) {
             myjac = Matrix<double, 6, 6>::Identity();
             myjac(0, 0) = 1;
             // Adding volume scattering if requested
@@ -208,12 +194,12 @@ void GblTrack::fit() {
             myjac = jac(prevTan, toTarget, frac1 * dist);
             GblPoint pVolume(toGbl * myjac * toProteus);
             addScattertoGblPoint(pVolume, fabs(dist) / 2. / scattering_length_volume_);
-            points.push_back(pVolume);
+            gblpoints_.push_back(pVolume);
             // We have already rotated to the next local coordinate system
             myjac = jac(prevTan, Matrix4d::Identity(), frac2 * dist);
             GblPoint pVolume2(toGbl * myjac * toProteus);
             addScattertoGblPoint(pVolume2, fabs(dist) / 2. / scattering_length_volume_);
-            points.push_back(pVolume2);
+            gblpoints_.push_back(pVolume2);
             myjac = jac(prevTan, Matrix4d::Identity(), frac1 * dist);
         }
         auto transformedJac = toGbl * myjac * toProteus;
@@ -224,9 +210,9 @@ void GblTrack::fit() {
         }
         prevToGlobal = plane->getToGlobal();
         prevToLocal = plane->getToLocal();
-        points.push_back(point);
-        plane->setGblPointPosition(unsigned(points.size())); // gbl starts counting at 1
-        globalTrackPos =                                     // Constant switching between ROOT and EIGEN is really a pain...
+        gblpoints_.push_back(point);
+        plane->setGblPointPosition(unsigned(gblpoints_.size())); // gbl starts counting at 1
+        globalTrackPos = // Constant switching between ROOT and EIGEN is really a pain...
             plane->getToGlobal() *
             ROOT::Math::XYZPoint(localPosTrack(0), localPosTrack(1), localPosTrack(2)); // reference slope stays unchanged
     };
@@ -242,15 +228,32 @@ void GblTrack::fit() {
     // Case 1: We take the material into account which adds a scatterer left and right of each detetcor. The very first
     // and very last one are not relevant and therefore ignored
     // Case 2: Each plane is a scatter,volume ignored
-    if((points.size() != ((planes_.size() * 3) - 2) && use_volume_scatter_) ||
-       (points.size() != planes_.size() && !use_volume_scatter_)) {
+    if((gblpoints_.size() != ((planes_.size() * 3) - 2) && use_volume_scatter_) ||
+       (gblpoints_.size() != planes_.size() && !use_volume_scatter_)) {
         throw TrackError(typeid(GblTrack),
                          "Number of planes " + std::to_string(planes_.size()) +
-                             " doesn't match number of GBL points on trajectory " + std::to_string(points.size()));
+                             " doesn't match number of GBL points on trajectory " + std::to_string(gblpoints_.size()));
+    }
+}
+
+void GblTrack::fit() {
+
+    LOG(DEBUG) << "Starting GBL fit";
+    isFitted_ = false;
+    residual_local_.clear();
+    residual_global_.clear();
+    kink_.clear();
+    corrections_.clear();
+    local_track_points_.clear();
+
+    // Fitting with less than 2 clusters is pointless
+    if(track_clusters_.size() < 2) {
+        throw TrackError(typeid(GblTrack), " attempting to fit a track with less than 2 clusters");
     }
 
+    prepare_gblpoints();
     // perform fit
-    GblTrajectory traj(points, false); // false = no magnetic field
+    GblTrajectory traj(gblpoints_, false); // false = no magnetic field
     double lostWeight = 0;
     int ndf = 0;
     auto fitReturnValue = traj.fit(chi2_, ndf, lostWeight);

@@ -11,6 +11,7 @@
 #ifndef CORRYVRECKAN_GBLTRACK_H
 #define CORRYVRECKAN_GBLTRACK_H 1
 
+#include <GblPoint.h>
 #include "Track.hpp"
 
 namespace corryvreckan {
@@ -80,6 +81,16 @@ namespace corryvreckan {
          * @return Pointer to seedcluster of the GblTrack if set, nullptr otherwise
          */
         Cluster* get_seed_cluster() const;
+
+        /**
+         * Temporary storage for GblPoints prepared for the trajectory
+         */
+        std::vector<gbl::GblPoint> gblpoints_; //! transient value
+
+        /**
+         * @brief Helper function to populate the point trajectory
+         */
+        void prepare_gblpoints();
 
         /**
          * @brief get_position_outside_telescope
