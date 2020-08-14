@@ -96,14 +96,20 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
     do {
         LOG(DEBUG) << "Trigger of timestamp defining event: " << timestampTrig_ << std::endl
                    << " Trigger of duration defining event: " << durationTrig_;
-        if(timestampTrig_ < durationTrig_) {
-            timestampTrig_ =
-                get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_) + shift_triggers_;
-            timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
-            trig_prev_ = time_trig_start_;
-        } else if(timestampTrig_ > durationTrig_) {
-            durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
+        try {
+            if(timestampTrig_ < durationTrig_) {
+                timestampTrig_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_) +
+                                 shift_triggers_;
+                timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
+                trig_prev_ = time_trig_start_;
+            } else if(timestampTrig_ > durationTrig_) {
+                durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
+            }
+
+        } catch(EndOfFile&) {
+            return StatusCode::EndRun;
         }
+
         if(timestampTrig_ == durationTrig_) {
             auto time_trig = (time_trig_start_ + time_trig_stop_) / 2.;
             if(time_trig - time_prev_ > 0) {
