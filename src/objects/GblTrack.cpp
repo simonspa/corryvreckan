@@ -38,18 +38,6 @@ void GblTrack::setVolumeScatter(double length) {
 void GblTrack::add_plane(std::vector<Plane>::iterator& plane, double total_material) {
     // lambda to add plane (not the first one) and air scatterers
 
-    // lambda to calculate the scattering theta, beta2 assumed to be one and the momentum in MeV
-    auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
-        return (13.6 / momentum_ * sqrt(mbCurrent) * (1 + 0.038 * log(mbTotal)));
-    };
-
-    // extract the rotation from an ROOT::Math::Transfrom3D, store it  in 4x4 matrix to match proteus format
-    auto getRotation = [](Transform3D in) {
-        Matrix4d t = Matrix4d::Zero();
-        in.Rotation().GetRotationMatrix(t);
-        return t;
-    };
-
     auto prevToGlobal = planes_.front().getToGlobal();
     auto prevToLocal = planes_.front().getToLocal();
     auto globalTrackPos = get_seed_cluster()->global();
@@ -59,8 +47,14 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane, double total_mater
     Vector4d localTangent;
 
     // lambda to add a scatterer to a GBLPoint
-    auto addScattertoGblPoint = [&total_material, &scatteringTheta, &localTangent](GblPoint& point, double material) {
+    auto addScattertoGblPoint = [this, &total_material, &localTangent](GblPoint& point, double material) {
         Matrix<double, 2, 2> scatter;
+
+        // lambda to calculate the scattering theta, beta2 assumed to be one and the momentum in MeV
+        auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
+            return (13.6 / momentum_ * sqrt(mbCurrent) * (1 + 0.038 * log(mbTotal)));
+        };
+
         // This can only happen if someone messes up the tracking code. Simply renormalizing would shadow the mistake made at
         // a different position and therefore the used plane distances would be wrong.
         if(localTangent(2) != 1)
@@ -120,6 +114,13 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane, double total_mater
                    << localTangent[3] << ")" << std::endl
                    << "cluster global:\t " << p->getCluster()->global() << std::endl
                    << "cluster local:\t" << p->getCluster()->local();
+    };
+
+    // extract the rotation from an ROOT::Math::Transfrom3D, store it  in 4x4 matrix to match proteus format
+    auto getRotation = [](Transform3D in) {
+        Matrix4d t = Matrix4d::Zero();
+        in.Rotation().GetRotationMatrix(t);
+        return t;
     };
 
     // Mapping of parameters in proteus - I would like to get rid of these conversions once it works
