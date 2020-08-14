@@ -35,31 +35,8 @@ void GblTrack::setVolumeScatter(double length) {
     use_volume_scatter_ = true;
 }
 
-void GblTrack::prepare_gblpoints() {
-    // store the used clusters in a map for easy access:
-    std::map<std::string, Cluster*> clusters;
-    for(auto& c : track_clusters_) {
-        auto cluster = dynamic_cast<Cluster*>(c.GetObject());
-        clusters[cluster->detectorID()] = cluster;
-    }
-    // create a list of planes and sort it, also calculate the material budget:
-    double total_material = 0;
-    std::sort(planes_.begin(), planes_.end());
-    for(auto& l : planes_) {
-        total_material += l.getMaterialBudget();
-        if(clusters.count(l.getName()) == 1) {
-            l.setPosition(clusters.at(l.getName())->global().z());
-            l.setCluster(clusters.at(l.getName()));
-        }
-    }
-    // get the seedcluster for the fit - find the first plane with a cluster to use
-    set_seed_cluster(
-        std::find_if(planes_.begin(), planes_.end(), [](auto plane) { return plane.hasCluster(); })->getCluster());
-
-    // add volume scattering length - for now simply the distance between first and last plane
-    if(use_volume_scatter_) {
-        total_material += (planes_.back().getPosition() - planes_.front().getPosition()) / scattering_length_volume_;
-    }
+void GblTrack::add_plane(std::vector<Plane>::iterator& plane, double total_material) {
+    // lambda to add plane (not the first one) and air scatterers
 
     // lambda to calculate the scattering theta, beta2 assumed to be one and the momentum in MeV
     auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
@@ -145,83 +122,107 @@ void GblTrack::prepare_gblpoints() {
                    << "cluster local:\t" << p->getCluster()->local();
     };
 
-    // lambda to add plane (not the first one) and air scatterers
-    auto addPlane = [&](std::vector<Plane>::iterator& plane) {
-        // Mapping of parameters in proteus - I would like to get rid of these conversions once it works
-        // For now they will stay here as changing this will cause the jacobian setup to be more messy right now
-        Matrix<double, 5, 6> toGbl = Matrix<double, 5, 6>::Zero();
-        Matrix<double, 6, 5> toProteus = Matrix<double, 6, 5>::Zero();
-        toGbl(0, 5) = 1;
-        toGbl(1, 3) = 1;
-        toGbl(2, 4) = 1;
-        toGbl(3, 0) = 1;
-        toGbl(4, 1) = 1;
-        toProteus(0, 3) = 1;
-        toProteus(1, 4) = 1;
-        toProteus(3, 1) = 1;
-        toProteus(4, 2) = 1;
-        toProteus(5, 0) = 1;
-        auto tmp_local = plane->getToLocal() * globalTrackPos;
-        localPosTrack = Vector4d{tmp_local.x(), tmp_local.y(), tmp_local.z(), 1};
-        localTangent = getRotation(plane->getToLocal()) * globalTangent;
-        double dist = localPosTrack[2];
-        LOG(TRACE) << "Rotation: " << getRotation(plane->getToLocal());
-        LOG(TRACE) << "Local tan before normalization: " << localTangent;
-        LOG(TRACE) << "Distance: " << dist;
+    // Mapping of parameters in proteus - I would like to get rid of these conversions once it works
+    // For now they will stay here as changing this will cause the jacobian setup to be more messy right now
+    Matrix<double, 5, 6> toGbl = Matrix<double, 5, 6>::Zero();
+    Matrix<double, 6, 5> toProteus = Matrix<double, 6, 5>::Zero();
+    toGbl(0, 5) = 1;
+    toGbl(1, 3) = 1;
+    toGbl(2, 4) = 1;
+    toGbl(3, 0) = 1;
+    toGbl(4, 1) = 1;
+    toProteus(0, 3) = 1;
+    toProteus(1, 4) = 1;
+    toProteus(3, 1) = 1;
+    toProteus(4, 2) = 1;
+    toProteus(5, 0) = 1;
+    auto tmp_local = plane->getToLocal() * globalTrackPos;
+    localPosTrack = Vector4d{tmp_local.x(), tmp_local.y(), tmp_local.z(), 1};
+    localTangent = getRotation(plane->getToLocal()) * globalTangent;
+    double dist = localPosTrack[2];
+    LOG(TRACE) << "Rotation: " << getRotation(plane->getToLocal());
+    LOG(TRACE) << "Local tan before normalization: " << localTangent;
+    LOG(TRACE) << "Distance: " << dist;
 
-        localTangent /= localTangent.z();
-        localPosTrack -= dist * localTangent;
-        // add the local track pos for future reference - e.g. dut position:
-        local_track_points_[plane->getName()] = ROOT::Math::XYPoint(localPosTrack(0), localPosTrack(1));
+    localTangent /= localTangent.z();
+    localPosTrack -= dist * localTangent;
+    // add the local track pos for future reference - e.g. dut position:
+    local_track_points_[plane->getName()] = ROOT::Math::XYPoint(localPosTrack(0), localPosTrack(1));
 
-        Vector4d prevTan = getRotation(prevToLocal) * globalTangent;
-        Matrix4d toTarget = getRotation(plane->getToLocal()) * getRotation(prevToGlobal);
+    Vector4d prevTan = getRotation(prevToLocal) * globalTangent;
+    Matrix4d toTarget = getRotation(plane->getToLocal()) * getRotation(prevToGlobal);
 
-        auto myjac = jac(prevTan, toTarget, dist);
+    auto myjac = jac(prevTan, toTarget, dist);
 
-        // Layout if volume scattering active
-        // |        |        |       |
-        // |  frac1 | frac2  | frac1 |
-        // |        |        |       |
+    // Layout if volume scattering active
+    // |        |        |       |
+    // |  frac1 | frac2  | frac1 |
+    // |        |        |       |
 
-        double frac1 = 0.21, frac2 = 0.58;
-        // special treatment of first point on trajectory
-        if(gblpoints_.size() == 0) {
-            myjac = Matrix<double, 6, 6>::Identity();
-            myjac(0, 0) = 1;
-            // Adding volume scattering if requested
-        } else if(use_volume_scatter_) {
-            myjac = jac(prevTan, toTarget, frac1 * dist);
-            GblPoint pVolume(toGbl * myjac * toProteus);
-            addScattertoGblPoint(pVolume, fabs(dist) / 2. / scattering_length_volume_);
-            gblpoints_.push_back(pVolume);
-            // We have already rotated to the next local coordinate system
-            myjac = jac(prevTan, Matrix4d::Identity(), frac2 * dist);
-            GblPoint pVolume2(toGbl * myjac * toProteus);
-            addScattertoGblPoint(pVolume2, fabs(dist) / 2. / scattering_length_volume_);
-            gblpoints_.push_back(pVolume2);
-            myjac = jac(prevTan, Matrix4d::Identity(), frac1 * dist);
+    double frac1 = 0.21, frac2 = 0.58;
+    // special treatment of first point on trajectory
+    if(gblpoints_.size() == 0) {
+        myjac = Matrix<double, 6, 6>::Identity();
+        myjac(0, 0) = 1;
+        // Adding volume scattering if requested
+    } else if(use_volume_scatter_) {
+        myjac = jac(prevTan, toTarget, frac1 * dist);
+        GblPoint pVolume(toGbl * myjac * toProteus);
+        addScattertoGblPoint(pVolume, fabs(dist) / 2. / scattering_length_volume_);
+        gblpoints_.push_back(pVolume);
+        // We have already rotated to the next local coordinate system
+        myjac = jac(prevTan, Matrix4d::Identity(), frac2 * dist);
+        GblPoint pVolume2(toGbl * myjac * toProteus);
+        addScattertoGblPoint(pVolume2, fabs(dist) / 2. / scattering_length_volume_);
+        gblpoints_.push_back(pVolume2);
+        myjac = jac(prevTan, Matrix4d::Identity(), frac1 * dist);
+    }
+    auto transformedJac = toGbl * myjac * toProteus;
+    GblPoint point(transformedJac);
+    addScattertoGblPoint(point, plane->getMaterialBudget());
+    if(plane->hasCluster()) {
+        addMeasurementtoGblPoint(point, plane);
+    }
+    prevToGlobal = plane->getToGlobal();
+    prevToLocal = plane->getToLocal();
+    gblpoints_.push_back(point);
+    plane->setGblPointPosition(unsigned(gblpoints_.size())); // gbl starts counting at 1
+    globalTrackPos =                                         // Constant switching between ROOT and EIGEN is really a pain...
+        plane->getToGlobal() *
+        ROOT::Math::XYZPoint(localPosTrack(0), localPosTrack(1), localPosTrack(2)); // reference slope stays unchanged
+}
+
+void GblTrack::prepare_gblpoints() {
+
+    // store the used clusters in a map for easy access:
+    std::map<std::string, Cluster*> clusters;
+    for(auto& c : track_clusters_) {
+        auto cluster = dynamic_cast<Cluster*>(c.GetObject());
+        clusters[cluster->detectorID()] = cluster;
+    }
+    // create a list of planes and sort it, also calculate the material budget:
+    double total_material = 0;
+    std::sort(planes_.begin(), planes_.end());
+    for(auto& l : planes_) {
+        total_material += l.getMaterialBudget();
+        if(clusters.count(l.getName()) == 1) {
+            l.setPosition(clusters.at(l.getName())->global().z());
+            l.setCluster(clusters.at(l.getName()));
         }
-        auto transformedJac = toGbl * myjac * toProteus;
-        GblPoint point(transformedJac);
-        addScattertoGblPoint(point, plane->getMaterialBudget());
-        if(plane->hasCluster()) {
-            addMeasurementtoGblPoint(point, plane);
-        }
-        prevToGlobal = plane->getToGlobal();
-        prevToLocal = plane->getToLocal();
-        gblpoints_.push_back(point);
-        plane->setGblPointPosition(unsigned(gblpoints_.size())); // gbl starts counting at 1
-        globalTrackPos = // Constant switching between ROOT and EIGEN is really a pain...
-            plane->getToGlobal() *
-            ROOT::Math::XYZPoint(localPosTrack(0), localPosTrack(1), localPosTrack(2)); // reference slope stays unchanged
-    };
+    }
+    // get the seedcluster for the fit - find the first plane with a cluster to use
+    set_seed_cluster(std::find_if(planes_.begin(), planes_.end(), [](auto pl) { return pl.hasCluster(); })->getCluster());
+
+    // add volume scattering length - for now simply the distance between first and last plane
+    if(use_volume_scatter_) {
+        total_material += (planes_.back().getPosition() - planes_.front().getPosition()) / scattering_length_volume_;
+    }
 
     // First GblPoint
     std::vector<Plane>::iterator pl = planes_.begin();
     // add all other points
     for(; pl != planes_.end(); ++pl) {
-        addPlane(pl);
+        add_plane(pl, total_material);
     }
 
     // Make sure we missed nothing

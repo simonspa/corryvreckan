@@ -92,6 +92,8 @@ namespace corryvreckan {
          */
         void prepare_gblpoints();
 
+        void add_plane(std::vector<Plane>::iterator& plane, double total_material);
+
         /**
          * @brief get_position_outside_telescope
          * @param z Poisiton of requested point
