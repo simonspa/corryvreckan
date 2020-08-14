@@ -83,7 +83,7 @@ namespace corryvreckan {
         Cluster* get_seed_cluster() const;
 
         /**
-         * Temporary storage for GblPoints prepared for the trajectory
+         * Transient storage for GblPoints prepared for the trajectory
          */
         std::vector<gbl::GblPoint> gblpoints_; //! transient value
 

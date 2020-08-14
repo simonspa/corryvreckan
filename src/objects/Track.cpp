@@ -68,7 +68,7 @@ void Track::Plane::print(std::ostream& os) const {
     if(hasCluster()) {
         os << "cluster with global pos: " << getCluster()->global();
     } else {
-        os << "no clsuter";
+        os << "without cluster";
     }
 }
 
