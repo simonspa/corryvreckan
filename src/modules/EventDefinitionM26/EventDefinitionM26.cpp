@@ -44,8 +44,10 @@ void EventDefinitionM26::initialize() {
         throw InvalidValueError(config_, "file_path", "Parsing error!");
     }
     // get the first event each
-    timestampTrig_ =
-        get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_) + shift_triggers_;
+    timestampTrig_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_);
+    while((int(timestampTrig_) + shift_triggers_) < 0) {
+        timestampTrig_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_);
+    }
     durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
 }
 
@@ -55,7 +57,7 @@ unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filere
                                                      long double& end) {
     do {
         auto evt = filereader->GetNextEvent();
-        if(evt == nullptr) {
+        if(!evt) {
             throw EndOfFile();
         }
         std::vector<eudaq::EventSPC> events_ = evt->GetSubEvents();
@@ -124,12 +126,15 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
             } else {
                 LOG(WARNING) << "Current trigger time smaller than previous: " << time_trig << " vs " << time_prev_;
             }
-            timestampTrig_ =
-                get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_) + shift_triggers_;
-            timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
-            trig_prev_ = time_trig_start_;
-            durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
-
+            try {
+                timestampTrig_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_) +
+                                 shift_triggers_;
+                timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
+                trig_prev_ = time_trig_start_;
+                durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
+            } catch(EndOfFile&) {
+                return StatusCode::EndRun;
+            }
         } else if(timestampTrig_ > durationTrig_) {
             LOG(DEBUG) << "No TLU time stamp for trigger ID " << timestampTrig_;
         } else if(timestampTrig_ < durationTrig_) {
