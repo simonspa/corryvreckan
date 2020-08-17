@@ -188,8 +188,8 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane,
     prevToGlobal = plane->getToGlobal();
     prevToLocal = plane->getToLocal();
     gblpoints_.push_back(point);
-    plane->setGblPointPosition(unsigned(gblpoints_.size())); // gbl starts counting at 1
-    globalTrackPos =                                         // Constant switching between ROOT and EIGEN is really a pain...
+    plane_to_gblpoint_[plane->getName()] = unsigned(gblpoints_.size()); // gbl starts counting at 1
+    globalTrackPos = // Constant switching between ROOT and EIGEN is really a pain...
         plane->getToGlobal() *
         ROOT::Math::XYZPoint(localPosTrack(0), localPosTrack(1), localPosTrack(2)); // reference slope stays unchanged
 }
@@ -256,6 +256,7 @@ void GblTrack::fit() {
     residual_global_.clear();
     kink_.clear();
     local_track_points_.clear();
+    plane_to_gblpoint_.clear();
 
     // Fitting with less than 2 clusters is pointless
     if(track_clusters_.size() < 2) {
@@ -288,21 +289,16 @@ void GblTrack::fit() {
 
     for(auto plane : planes_) {
         auto name = plane.getName();
-        traj.getScatResults(
-            plane.getGblPointPosition(), numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
+        auto gbl_id = plane_to_gblpoint_[plane.getName()];
+        traj.getScatResults(gbl_id, numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
         // fixme: Kinks are in local coordinates and would be more reasonably in global
         kink_[name] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
-        traj.getResults(int(plane.getGblPointPosition()), localPar, localCov);
+        traj.getResults(static_cast<int>(gbl_id), localPar, localCov);
         local_fitted_track_points_[name] = ROOT::Math::XYZPoint(
             local_track_points_.at(name).x() + localPar(3), local_track_points_.at(name).y() + localPar(4), 0);
 
         if(plane.hasCluster()) {
-            traj.getMeasResults(plane.getGblPointPosition(),
-                                numData,
-                                gblResiduals,
-                                gblErrorsMeasurements,
-                                gblErrorsResiduals,
-                                gblDownWeights);
+            traj.getMeasResults(gbl_id, numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
             // to be consistent with previous residuals global ones here:
 
             auto corPos = plane.getToGlobal() * local_fitted_track_points_.at(name);

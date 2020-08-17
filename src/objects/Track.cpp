@@ -32,10 +32,6 @@ const std::string& Track::Plane::getName() const {
     return name_;
 }
 
-unsigned Track::Plane::getGblPointPosition() const {
-    return gbl_points_pos_;
-}
-
 Cluster* Track::Plane::getCluster() const {
     if(!cluster_.IsValid() || cluster_.GetObject() == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(Cluster));
@@ -53,10 +49,6 @@ Transform3D Track::Plane::getToGlobal() const {
 
 bool Track::Plane::operator<(const Plane& pl) const {
     return z_ < pl.z_;
-}
-
-void Track::Plane::setGblPointPosition(unsigned pos) {
-    gbl_points_pos_ = pos;
 }
 
 void Track::Plane::setCluster(const Cluster* cluster) {

@@ -245,7 +245,6 @@ namespace corryvreckan {
             bool hasCluster() const;
 
             const std::string& getName() const;
-            unsigned getGblPointPosition() const;
             Cluster* getCluster() const;
             Transform3D getToLocal() const;
             Transform3D getToGlobal() const;
@@ -253,7 +252,6 @@ namespace corryvreckan {
             // sorting overload
             bool operator<(const Plane& pl) const;
             // set elements that might be unknown at construction
-            void setGblPointPosition(unsigned pos);
             void setPosition(double z) { z_ = z; }
             void setCluster(const Cluster* cluster);
             void print(std::ostream& os) const;
@@ -262,7 +260,6 @@ namespace corryvreckan {
             double z_, x_x0_;
             std::string name_;
             TRef cluster_;
-            unsigned gbl_points_pos_{};
             Transform3D to_local_;
         };
 
