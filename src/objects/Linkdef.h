@@ -25,7 +25,7 @@
 #pragma link C++ class corryvreckan::Multiplet + ;
 #pragma link C++ class corryvreckan::MCParticle + ;
 #pragma link C++ class corryvreckan::Event + ;
-#pragma link C++ class corryvreckan::Plane + ;
+#pragma link C++ class corryvreckan::Track::Plane + ;
 
 // Vector of Object for internal storage
 #pragma link C++ class std::vector < corryvreckan::Object*> + ;

@@ -256,8 +256,11 @@ namespace corryvreckan {
             void setCluster(const Cluster* cluster);
             void print(std::ostream& os) const;
 
-        private:
-            double z_, x_x0_;
+            // ROOT I/O class definition - update version number when you change this class!
+            ClassDef(Plane, 1)
+
+                private : double z_,
+                          x_x0_;
             std::string name_;
             TRef cluster_;
             Transform3D to_local_;
