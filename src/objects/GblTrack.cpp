@@ -214,7 +214,8 @@ void GblTrack::prepare_gblpoints() {
         }
     }
     // get the seedcluster for the fit - find the first plane with a cluster to use
-    set_seed_cluster(std::find_if(planes_.begin(), planes_.end(), [](auto pl) { return pl.hasCluster(); })->getCluster());
+    set_seed_cluster(
+        std::find_if(planes_.begin(), planes_.end(), [](const auto& pl) { return pl.hasCluster(); })->getCluster());
 
     // add volume scattering length - for now simply the distance between first and last plane
     if(use_volume_scatter_) {
@@ -354,8 +355,8 @@ ROOT::Math::XYZPoint GblTrack::getState(const std::string& detectorID) const {
         throw TrackError(typeid(GblTrack), " does not have any entry for detector " + detectorID);
     }
     // The local track position can simply be transformed to global coordinates
-    auto p =
-        std::find_if(planes_.begin(), planes_.end(), [detectorID](auto plane) { return (plane.getName() == detectorID); });
+    auto p = std::find_if(
+        planes_.begin(), planes_.end(), [detectorID](const auto& plane) { return (plane.getName() == detectorID); });
 
     return (p->getToGlobal() * local_fitted_track_points_.at(detectorID));
 }
@@ -402,7 +403,7 @@ ROOT::Math::XYZVector GblTrack::getDirection(const std::string& detectorID) cons
 
     // searching for the next detector layer
     auto plane =
-        std::find_if(planes_.begin(), planes_.end(), [&detectorID](const Plane& p) { return p.getName() == detectorID; });
+        std::find_if(planes_.begin(), planes_.end(), [&detectorID](const auto& p) { return p.getName() == detectorID; });
     plane++;
     // If we are at the end we have no kink -> take the last two palbes
     if(plane == planes_.end()) {
