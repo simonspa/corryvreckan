@@ -22,6 +22,20 @@ using namespace corryvreckan;
 using namespace gbl;
 using namespace Eigen;
 
+// clang-format off
+Eigen::Matrix<double, 5, 6> GblTrack::toGbl = (Eigen::Matrix<double, 5, 6>() << 0., 0., 0., 0., 0., 1.,
+                                                                                0., 0., 0., 1., 0., 0.,
+                                                                                0., 0., 0., 0., 1., 0.,
+                                                                                1., 0., 0., 0., 0., 0.,
+                                                                                0., 1., 0., 0., 0., 0.).finished();
+Eigen::Matrix<double, 6, 5> GblTrack::toProt =(Eigen::Matrix<double, 6, 5>() << 0., 0., 0., 1., 0.,
+                                                                                0., 0., 0., 0., 1.,
+                                                                                0., 0., 0., 0., 0.,
+                                                                                0., 1., 0., 0., 0.,
+                                                                                0., 0., 1., 0., 0.,
+                                                                                1., 0., 0., 0., 0.).finished();
+// clang-format on
+
 ROOT::Math::XYPoint GblTrack::getKinkAt(const std::string& detectorID) const {
     if(kink_.count(detectorID) == 1) {
         return kink_.at(detectorID);
@@ -125,18 +139,6 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane, double total_mater
 
     // Mapping of parameters in proteus - I would like to get rid of these conversions once it works
     // For now they will stay here as changing this will cause the jacobian setup to be more messy right now
-    Matrix<double, 5, 6> toGbl = Matrix<double, 5, 6>::Zero();
-    Matrix<double, 6, 5> toProteus = Matrix<double, 6, 5>::Zero();
-    toGbl(0, 5) = 1;
-    toGbl(1, 3) = 1;
-    toGbl(2, 4) = 1;
-    toGbl(3, 0) = 1;
-    toGbl(4, 1) = 1;
-    toProteus(0, 3) = 1;
-    toProteus(1, 4) = 1;
-    toProteus(3, 1) = 1;
-    toProteus(4, 2) = 1;
-    toProteus(5, 0) = 1;
     auto tmp_local = plane->getToLocal() * globalTrackPos;
     localPosTrack = Vector4d{tmp_local.x(), tmp_local.y(), tmp_local.z(), 1};
     localTangent = getRotation(plane->getToLocal()) * globalTangent;
@@ -168,17 +170,17 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane, double total_mater
         // Adding volume scattering if requested
     } else if(use_volume_scatter_) {
         myjac = jac(prevTan, toTarget, frac1 * dist);
-        GblPoint pVolume(toGbl * myjac * toProteus);
+        GblPoint pVolume(toGbl * myjac * toProt);
         addScattertoGblPoint(pVolume, fabs(dist) / 2. / scattering_length_volume_);
         gblpoints_.push_back(pVolume);
         // We have already rotated to the next local coordinate system
         myjac = jac(prevTan, Matrix4d::Identity(), frac2 * dist);
-        GblPoint pVolume2(toGbl * myjac * toProteus);
+        GblPoint pVolume2(toGbl * myjac * toProt);
         addScattertoGblPoint(pVolume2, fabs(dist) / 2. / scattering_length_volume_);
         gblpoints_.push_back(pVolume2);
         myjac = jac(prevTan, Matrix4d::Identity(), frac1 * dist);
     }
-    auto transformedJac = toGbl * myjac * toProteus;
+    auto transformedJac = toGbl * myjac * toProt;
     GblPoint point(transformedJac);
     addScattertoGblPoint(point, plane->getMaterialBudget());
     if(plane->hasCluster()) {

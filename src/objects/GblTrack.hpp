@@ -70,6 +70,10 @@ namespace corryvreckan {
         void setVolumeScatter(double length) override;
 
     private:
+        // static Matrices to convert from proteus like numbering to eigen3 like numbering of space
+        static Eigen::Matrix<double, 5, 6> toGbl;
+        static Eigen::Matrix<double, 6, 5> toProt;
+
         /**
          * @brief Set seedcluster used for track fitting
          * @param Pointer to seedcluster of the GblTrack
