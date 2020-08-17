@@ -228,13 +228,6 @@ double Track::getMaterialBudget(const std::string& detectorID) const {
     return budget;
 }
 
-ROOT::Math::XYZPoint Track::getCorrection(const std::string& detectorID) const {
-    if(corrections_.count(detectorID) == 1)
-        return corrections_.at(detectorID);
-    else
-        throw TrackError(typeid(Track), " requested correction on non existing detector " + detectorID);
-}
-
 void Track::registerPlane(const std::string& name, double z, double x0, Transform3D g2l) {
     Plane p(name, z, x0, g2l);
     auto pl =

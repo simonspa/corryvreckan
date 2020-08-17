@@ -231,8 +231,6 @@ namespace corryvreckan {
          */
         double getMaterialBudget(const std::string& detectorID) const;
 
-        ROOT::Math::XYZPoint getCorrection(const std::string& detectorID) const;
-
         virtual void setVolumeScatter(double length) = 0;
 
         void registerPlane(const std::string& name, double z, double x0, Transform3D g2l);
@@ -274,7 +272,6 @@ namespace corryvreckan {
         std::vector<TRef> associated_clusters_;
         std::map<std::string, ROOT::Math::XYPoint> residual_local_;
         std::map<std::string, ROOT::Math::XYZPoint> residual_global_;
-        std::map<std::string, ROOT::Math::XYZPoint> corrections_{};
 
         std::vector<Plane> planes_;
 

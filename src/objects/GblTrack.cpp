@@ -248,7 +248,6 @@ void GblTrack::fit() {
     residual_local_.clear();
     residual_global_.clear();
     kink_.clear();
-    corrections_.clear();
     local_track_points_.clear();
 
     // Fitting with less than 2 clusters is pointless
@@ -287,10 +286,9 @@ void GblTrack::fit() {
         // fixme: Kinks are in local coordinates and would be more reasonably in global
         kink_[name] = ROOT::Math::XYPoint(gblResiduals(0), gblResiduals(1));
         traj.getResults(int(plane.getGblPointPosition()), localPar, localCov);
-        corrections_[name] = ROOT::Math::XYZPoint(localPar(3), localPar(4), 0);
-        local_fitted_track_points_[name] = ROOT::Math::XYZPoint(local_track_points_.at(name).x() + corrections_.at(name).x(),
-                                                                local_track_points_.at(name).y() + corrections_.at(name).y(),
-                                                                0);
+        local_fitted_track_points_[name] = ROOT::Math::XYZPoint(
+            local_track_points_.at(name).x() + localPar(3), local_track_points_.at(name).y() + localPar(4), 0);
+
         if(plane.hasCluster()) {
             traj.getMeasResults(plane.getGblPointPosition(),
                                 numData,
