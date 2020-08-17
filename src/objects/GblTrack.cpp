@@ -264,13 +264,36 @@ void GblTrack::fit() {
     }
 
     prepare_gblpoints();
+
     // perform fit
     GblTrajectory traj(gblpoints_, false); // false = no magnetic field
     double lostWeight = 0;
     int ndf = 0;
     auto fitReturnValue = traj.fit(chi2_, ndf, lostWeight);
     if(fitReturnValue != 0) { // Is this a good ieda? should we discard track candidates that fail?
-        LOG(DEBUG) << "GBL failed with return value " << fitReturnValue;
+        switch(fitReturnValue) {
+        case 1:
+            LOG(DEBUG) << "GBL fit failed: VMatrix is singular";
+            break;
+        case 2:
+            LOG(DEBUG) << "GBL fit failed: Bordered band matrix is singular";
+            break;
+        case 3:
+            LOG(DEBUG) << "GBL fit failed: Bordered band matrix is not positive definite";
+            break;
+        case 10:
+            LOG(DEBUG) << "GBL fit failed: Inner transformation matrix with invalid number of rows";
+            break;
+        case 11:
+            LOG(DEBUG) << "GBL fit failed: Inner transformation matrix with to few columns";
+            break;
+        case 12:
+            LOG(DEBUG) << "GBL fit failed: Inner transformation matrices with varying sizes";
+            break;
+        default:
+            LOG(DEBUG) << "GBL fit failed, unkown reason";
+            break;
+        }
         return;
     }
 
