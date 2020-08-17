@@ -68,8 +68,7 @@ unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filere
         for(const auto& e : events_) {
             auto stdevt = eudaq::StandardEvent::MakeShared();
 
-            SUPPRESS_STREAM(std::cout);
-            IFLOG(DEBUG) { RELEASE_STREAM(std::cout); }
+            IFNOTLOG(DEBUG) { SUPPRESS_STREAM(std::cout); }
             if(!eudaq::StdEventConverter::Convert(e, stdevt, nullptr)) {
                 LOG(ERROR) << "Failed to convert event";
                 continue;

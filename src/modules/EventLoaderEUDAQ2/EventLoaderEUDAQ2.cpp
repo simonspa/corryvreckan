@@ -232,8 +232,7 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
         if(get_tag_vectors_) {
             retrieve_event_tags(event);
         }
-        SUPPRESS_STREAM(std::cout);
-        IFLOG(DEBUG) { RELEASE_STREAM(std::cout); }
+        IFNOTLOG(DEBUG) { SUPPRESS_STREAM(std::cout); }
         decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, eudaq_config_);
         RELEASE_STREAM(std::cout); // We can always release the stream
         LOG(DEBUG) << event->GetDescription() << ": EventConverter returned " << (decoding_failed ? "false" : "true");
