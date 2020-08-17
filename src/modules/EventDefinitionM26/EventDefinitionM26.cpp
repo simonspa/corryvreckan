@@ -20,6 +20,8 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     timestamp_ = config_.get<std::string>("file_timestamp");
     timeshift_ = config_.get<double>("time_shift");
     shift_triggers_ = config_.get<int>("shift_triggers");
+    config_.setDefault<bool>("suppress_eudaq_messages", true);
+    suppress_eudaq_messages_ = config_.get<bool>("suppress_eudaq_messages");
 }
 
 void EventDefinitionM26::initialize() {
@@ -68,7 +70,9 @@ unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filere
         for(const auto& e : events_) {
             auto stdevt = eudaq::StandardEvent::MakeShared();
 
-            IFNOTLOG(DEBUG) { SUPPRESS_STREAM(std::cout); }
+            if(suppress_eudaq_messages_) {
+                IFNOTLOG(DEBUG) { SUPPRESS_STREAM(std::cout); }
+            }
             if(!eudaq::StdEventConverter::Convert(e, stdevt, nullptr)) {
                 LOG(ERROR) << "Failed to convert event";
                 continue;
