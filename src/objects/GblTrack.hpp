@@ -96,7 +96,11 @@ namespace corryvreckan {
          */
         void prepare_gblpoints();
 
-        void add_plane(std::vector<Plane>::iterator& plane, double total_material);
+        void add_plane(std::vector<Plane>::iterator& plane,
+                       Transform3D& prevToGlobal,
+                       Transform3D& prevToLocal,
+                       ROOT::Math::XYZPoint& globalTrackPos,
+                       double total_material);
 
         /**
          * @brief get_position_outside_telescope

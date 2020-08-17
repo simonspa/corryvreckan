@@ -49,13 +49,12 @@ void GblTrack::setVolumeScatter(double length) {
     use_volume_scatter_ = true;
 }
 
-void GblTrack::add_plane(std::vector<Plane>::iterator& plane, double total_material) {
+void GblTrack::add_plane(std::vector<Plane>::iterator& plane,
+                         Transform3D& prevToGlobal,
+                         Transform3D& prevToLocal,
+                         ROOT::Math::XYZPoint& globalTrackPos,
+                         double total_material) {
     // lambda to add plane (not the first one) and air scatterers
-
-    auto prevToGlobal = planes_.front().getToGlobal();
-    auto prevToLocal = planes_.front().getToLocal();
-    auto globalTrackPos = get_seed_cluster()->global();
-    globalTrackPos.SetZ(0);
     auto globalTangent = Vector4d(0, 0, 1, 0);
 
     // extract the rotation from an ROOT::Math::Transfrom3D, store it  in 4x4 matrix to match proteus format
@@ -84,12 +83,12 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane, double total_mater
     Matrix4d toTarget = getRotation(plane->getToLocal()) * getRotation(prevToGlobal);
 
     // lambda Jacobian from one scatter to the next
-    auto jac = [](const Vector4d& tangent, const Matrix4d& toTarget, double distance) {
+    auto jac = [](const Vector4d& tangent, const Matrix4d& target, double distance) {
         Matrix<double, 4, 3> R;
-        R.col(0) = toTarget.col(0);
-        R.col(1) = toTarget.col(1);
-        R.col(2) = toTarget.col(3);
-        Vector4d S = toTarget * tangent * (1 / tangent[2]);
+        R.col(0) = target.col(0);
+        R.col(1) = target.col(1);
+        R.col(2) = target.col(3);
+        Vector4d S = target * tangent * (1 / tangent[2]);
 
         Matrix<double, 3, 4> F = Matrix<double, 3, 4>::Zero();
         F(0, 0) = 1;
@@ -157,7 +156,7 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane, double total_mater
     GblPoint point(transformedJac);
     addScattertoGblPoint(point, plane->getMaterialBudget());
 
-    auto addMeasurementtoGblPoint = [&localTangent, &localPosTrack, &globalTrackPos, this](GblPoint& point,
+    auto addMeasurementtoGblPoint = [&localTangent, &localPosTrack, &globalTrackPos, this](GblPoint& pt,
                                                                                            std::vector<Plane>::iterator& p) {
         auto cluster = p->getCluster();
         Vector2d initialResidual;
@@ -167,7 +166,7 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane, double total_mater
         Matrix2d covv = Matrix2d::Identity();
         covv(0, 0) = 1. / cluster->errorX() / cluster->errorX();
         covv(1, 1) = 1. / cluster->errorY() / cluster->errorY();
-        point.addMeasurement(initialResidual, covv);
+        pt.addMeasurement(initialResidual, covv);
         initital_residual_[p->getName()] = ROOT::Math::XYPoint(initialResidual(0), initialResidual(1));
         LOG(TRACE) << "Plane:  " << p->getName() << std::endl
                    << "Global Res to fit: \t(" << (cluster->global() - planes_.begin()->getCluster()->global()) << ")"
@@ -224,11 +223,17 @@ void GblTrack::prepare_gblpoints() {
         total_material += (planes_.back().getPosition() - planes_.front().getPosition()) / scattering_length_volume_;
     }
 
+    // Prepare transformations for first plane:
+    auto prevToGlobal = planes_.front().getToGlobal();
+    auto prevToLocal = planes_.front().getToLocal();
+    auto globalTrackPos = get_seed_cluster()->global();
+    globalTrackPos.SetZ(0);
+
     // First GblPoint
     std::vector<Plane>::iterator pl = planes_.begin();
     // add all other points
     for(; pl != planes_.end(); ++pl) {
-        add_plane(pl, total_material);
+        add_plane(pl, prevToGlobal, prevToLocal, globalTrackPos, total_material);
     }
 
     // Make sure we missed nothing
