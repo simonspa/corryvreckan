@@ -239,7 +239,26 @@ namespace corryvreckan {
         public:
             Plane() = default;
             Plane(std::string name, double z, double x_x0, Transform3D to_local);
-            virtual ~Plane(){};
+            /**
+             * @brief Required virtual destructor
+             */
+            virtual ~Plane() = default;
+
+            /// @{
+            /**
+             * @brief Use default copy behaviour
+             */
+            Plane(const Plane& rhs) = default;
+            Plane& operator=(const Plane& rhs) = default;
+            /// @}
+
+            /// @{
+            /**
+             * @brief Use default move behaviour
+             */
+            Plane(Plane&& rhs) = default;
+            Plane& operator=(Plane&& rhs) = default;
+            /// @}
 
             double getPosition() const;
             double getMaterialBudget() const;
