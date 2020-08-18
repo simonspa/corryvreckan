@@ -1,17 +1,37 @@
 \section{Objetcs}
 \label{sec:objects}
-\texttt{Corryvreckan::Objects} are used to transfer data from and to the clipboard as well as to store it to \textit{root} trees. 
+\texttt{Corryvreckan::Objects} are used to transfer data from and to the clipboard as well as to store it to \textit{root} \texttt{trees}. 
 \texttt{Objects} are inheriting from \texttt{ROOT::TObject} to auto create the \texttt{trees}. 
-Three base object types exist: Pixel, Cluster and Track
+Three base object types exist: \pixel, \cluster, \track.
+A \track contains several \cluster, which can be connected to a particles
+trajectory with different TrackModels.
+A \cluster is a collection of hits, that has an additional center of gravity
+which is used as cluster postion.
+
 In addition several specific TrackModel objects inheriting from Track and a Spidr-signal are implemented. 
 
 \subsection*{Pixel}
-A Pixel contains the basic information of a particle hit from a detector. A column, row position and a time-stamp in nanoseconds as well as a charge information and a raw information is stored. Not every detector can provide all information. If the time-stamp is not provided it should be set to zero. Charge is assumed to be in eV per default, but can be overwritten by using the raw information, which can, for example, be an ADC value or a ToT. If this is also not provided/unknown it should be set to 1. 
+A \pixel contains the basic information of a particle hit from a detector. A column, row position and a time-stamp in nanoseconds as well as a charge information and a raw information is stored. Not every detector can provide all information. If the time-stamp is not provided it should be set to zero. Charge is assumed to be in eV per default, but can be overwritten by using the raw information, which can, for example, be an ADC value or a ToT. If this is also not provided/unknown it should be set to 1. 
 
 \subsection*{Cluster}
-A cluster is a collection of Pixels and used in Tracks. Besides a 
+A \cluster is a collection of several \pixel. These \pixel are typically
+neigbhours in space and close in time, but can be also arbitraryly
+defined. Every \cluster has a center that is used in \track to reconstruct a trajectory.  
+
 \subsection{Track}
+A \track holds a collection of \cluster. Additionally, the track positions on
+each detector plane defined in the geometry. At any z-postion, the
+corresponding x/y postion can be requested after the track has been fitted
+with the models listed below:
+
 \subsection*{Straight-Line}
+A straight line track ignores the effect of multiple scattering and describes
+the particles path as a straight line. Hit uncertainties are taken into account.
 \subsection*{General Broken Lines}
+A General Broken Lines trajectory \cite{gbl} includes uncertainties from
+both, postion measurement and scattering, simultaniously and reconstructs the
+trajectory as a set of lines with kinks at the sensors planes. Scattering in
+the volume between two planes is approximated by thin virtual scattering
+layers close to the detector planes.
 \subsection*{Multiplet}
 
