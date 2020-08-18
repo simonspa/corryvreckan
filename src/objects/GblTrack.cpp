@@ -271,7 +271,7 @@ void GblTrack::fit() {
     int ndf = 0;
 
     // Let's not print GBL's internal messages:
-    SUPPRESS_STREAM(std::cout);
+    IFNOTLOG(DEBUG) { SUPPRESS_STREAM(std::cout); }
     auto fitReturnValue = traj.fit(chi2_, ndf, lostWeight);
     RELEASE_STREAM(std::cout);
     if(fitReturnValue != 0) { // Is this a good ieda? should we discard track candidates that fail?
