@@ -20,16 +20,13 @@ end = begin + 230us
 ```
 
 ### Parameters
-- `detector_event_time`: Specify the detector used to define the event
-timestamp
-- `detector_event_duration`: Specify detector used to define the begin and end
-of the event relative to the timestamp provided by `detector_event_time`
-- `file_timestamp`: Data file containing the `detector_event_time` data
-- `file_duration`: Data file containing the  `detector_event_duration` data
-- `time_shift`: Optional shift of the event begin/end point. Defaults to `0`
-- `shift_triggers`: Shift the trigger ID of the
-`detector_event_time`. Defaults to `0`
-
+* `detector_event_time`: Specify the detector used to define the event timestamp
+* `detector_event_duration`: Specify detector used to define the begin and end of the event relative to the timestamp provided by `detector_event_time`
+* `file_timestamp`: Data file containing the `detector_event_time` data
+* `file_duration`: Data file containing the  `detector_event_duration` data
+* `time_shift`: Optional shift of the event begin/end point. Defaults to `0`
+* `shift_triggers`: Shift the trigger ID of the `detector_event_time`. Defaults to `0`
+* `suppress_eudaq_messages`: Optional suppression of all eudaq converting messages. Defaults to `true` For `log_level=DEBUG` the messages are always displayed
 
 ### Plots produced
 * 1D histogram of time between trigger timestamps

@@ -20,6 +20,8 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     timestamp_ = config_.get<std::string>("file_timestamp");
     timeshift_ = config_.get<double>("time_shift");
     shift_triggers_ = config_.get<int>("shift_triggers");
+    config_.setDefault<bool>("suppress_eudaq_messages", true);
+    suppress_eudaq_messages_ = config_.get<bool>("suppress_eudaq_messages");
 }
 
 void EventDefinitionM26::initialize() {
@@ -44,8 +46,11 @@ void EventDefinitionM26::initialize() {
         throw InvalidValueError(config_, "file_path", "Parsing error!");
     }
     // get the first event each
-    timestampTrig_ =
-        get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_) + shift_triggers_;
+    timestampTrig_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_);
+    while((int(timestampTrig_) + shift_triggers_) < 0) {
+        timestampTrig_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_);
+    }
+    timestampTrig_ = static_cast<unsigned>(static_cast<int>(timestampTrig_) + shift_triggers_);
     durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
 }
 
@@ -55,7 +60,7 @@ unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filere
                                                      long double& end) {
     do {
         auto evt = filereader->GetNextEvent();
-        if(evt == nullptr) {
+        if(!evt) {
             throw EndOfFile();
         }
         std::vector<eudaq::EventSPC> events_ = evt->GetSubEvents();
@@ -64,10 +69,15 @@ unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filere
         }
         for(const auto& e : events_) {
             auto stdevt = eudaq::StandardEvent::MakeShared();
+
+            if(suppress_eudaq_messages_) {
+                IFNOTLOG(DEBUG) { SUPPRESS_STREAM(std::cout); }
+            }
             if(!eudaq::StdEventConverter::Convert(e, stdevt, nullptr)) {
                 LOG(ERROR) << "Failed to convert event";
                 continue;
             }
+            RELEASE_STREAM(std::cout);
             auto detector = stdevt->GetDetectorType();
             if(det == detector) {
                 begin = Units::get(static_cast<double>(stdevt->GetTimeBegin()), "ps");
@@ -79,7 +89,7 @@ unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filere
                     begin = Units::get(piv * (115.2 / 576), "us") + timeshift_;
                     end = Units::get(230.4, "us") - begin;
                 }
-                return static_cast<int>(e->GetTriggerN());
+                return e->GetTriggerN();
             }
         }
 
@@ -96,14 +106,21 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
     do {
         LOG(DEBUG) << "Trigger of timestamp defining event: " << timestampTrig_ << std::endl
                    << " Trigger of duration defining event: " << durationTrig_;
-        if(timestampTrig_ < durationTrig_) {
-            timestampTrig_ =
-                get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_) + shift_triggers_;
-            timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
-            trig_prev_ = time_trig_start_;
-        } else if(timestampTrig_ > durationTrig_) {
-            durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
+        try {
+            if(timestampTrig_ < durationTrig_) {
+                timestampTrig_ = static_cast<unsigned>(static_cast<int>(get_next_event_with_det(
+                                                           readerTime_, detector_time_, time_trig_start_, time_trig_stop_)) +
+                                                       shift_triggers_);
+                timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
+                trig_prev_ = time_trig_start_;
+            } else if(timestampTrig_ > durationTrig_) {
+                durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
+            }
+
+        } catch(EndOfFile&) {
+            return StatusCode::EndRun;
         }
+
         if(timestampTrig_ == durationTrig_) {
             auto time_trig = (time_trig_start_ + time_trig_stop_) / 2.;
             if(time_trig - time_prev_ > 0) {
@@ -118,12 +135,16 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
             } else {
                 LOG(WARNING) << "Current trigger time smaller than previous: " << time_trig << " vs " << time_prev_;
             }
-            timestampTrig_ =
-                get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_) + shift_triggers_;
-            timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
-            trig_prev_ = time_trig_start_;
-            durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
-
+            try {
+                timestampTrig_ = static_cast<unsigned>(static_cast<int>(get_next_event_with_det(
+                                                           readerTime_, detector_time_, time_trig_start_, time_trig_stop_)) +
+                                                       shift_triggers_);
+                timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
+                trig_prev_ = time_trig_start_;
+                durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
+            } catch(EndOfFile&) {
+                return StatusCode::EndRun;
+            }
         } else if(timestampTrig_ > durationTrig_) {
             LOG(DEBUG) << "No TLU time stamp for trigger ID " << timestampTrig_;
         } else if(timestampTrig_ < durationTrig_) {

@@ -243,6 +243,13 @@ namespace corryvreckan {
     if(corryvreckan::LogLevel::level <= corryvreckan::Log::getReportingLevel() && !corryvreckan::Log::getStreams().empty())
 
 /**
+ * @brief Execute a block only if the reporting level is low enough
+ * @param level The maximum log level to execute a block
+ */
+#define IFNOTLOG(level)                                                                                                     \
+    if(corryvreckan::LogLevel::level > corryvreckan::Log::getReportingLevel() && !corryvreckan::Log::getStreams().empty())
+
+/**
  * @brief Create a logging stream if the reporting level is high enough
  * @param level The log level of the stream
  */

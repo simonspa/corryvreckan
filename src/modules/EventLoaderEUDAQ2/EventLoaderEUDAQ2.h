@@ -108,7 +108,8 @@ namespace corryvreckan {
         bool get_time_residuals_{};
         bool get_tag_vectors_{};
         bool ignore_bore_{};
-        bool inclusive_;
+        bool inclusive_{};
+        bool suppress_eudaq_messages_{};
         double skip_time_{};
         Matrix<std::string> adjust_event_times_;
         int buffer_depth_;
