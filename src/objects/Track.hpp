@@ -239,6 +239,7 @@ namespace corryvreckan {
         public:
             Plane() = default;
             Plane(std::string name, double z, double x_x0, Transform3D to_local);
+            virtual ~Plane(){};
 
             double getPosition() const;
             double getMaterialBudget() const;
@@ -257,10 +258,10 @@ namespace corryvreckan {
             void print(std::ostream& os) const;
 
             // ROOT I/O class definition - update version number when you change this class!
-            ClassDef(Plane, 1)
+            ClassDef(Plane, 1);
 
-                private : double z_,
-                          x_x0_;
+        private:
+            double z_, x_x0_;
             std::string name_;
             TRef cluster_;
             Transform3D to_local_;
