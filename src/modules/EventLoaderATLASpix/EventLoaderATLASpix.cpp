@@ -321,8 +321,10 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
     // Check if current word is a pixel data:
     if(datain & 0x80000000) {
         // Do not return and decode pixel data before T0 arrived
-        if(!timestamps_cleared_) {
-            return true;
+        if(t0_seen_ == 0) {
+            return false;
+        } else if(t0_seen_ > 1) {
+            throw ModuleError("Detected 2nd T0 signal!");
         }
         // Structure: {1'b1, column_addr[5:0], row_addr[8:0], rise_timestamp[9:0], fall_timestamp[5:0]}
         // Extract pixel data
@@ -483,7 +485,7 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
             fpga_ts1_ = 0;
             fpga_ts2_ = 0;
             fpga_ts3_ = 0;
-            timestamps_cleared_ = true;
+            t0_seen_++;
         } else if(message_type == 0b00000000) {
 
             // Empty data - should not happen
