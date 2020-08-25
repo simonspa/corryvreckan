@@ -322,7 +322,7 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
     if(datain & 0x80000000) {
         // Do not return and decode pixel data before T0 arrived
         if(t0_seen_ == 0) {
-            return false;
+            return true;
         } else if(t0_seen_ > 1) {
             LOG(ERROR) << "Detected 2nd T0 signal. Finish the reconstruction and throw this event away!";
             eof_reached = true;
