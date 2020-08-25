@@ -324,7 +324,8 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
         if(t0_seen_ == 0) {
             return false;
         } else if(t0_seen_ > 1) {
-            throw ModuleError("Detected 2nd T0 signal!");
+            LOG(ERROR) << "Detected 2nd T0 signal!";
+            throw EndOfFile();
         }
         // Structure: {1'b1, column_addr[5:0], row_addr[8:0], rise_timestamp[9:0], fall_timestamp[5:0]}
         // Extract pixel data
