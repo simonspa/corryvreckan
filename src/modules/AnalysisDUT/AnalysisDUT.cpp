@@ -108,10 +108,10 @@ void AnalysisDUT::initialize() {
                  0.,
                  0.2);
 
-    residualsX1pix = new TH1F("residualsX1pix", "residualsX1pix;x_{track}-x_{hit} [mm];# entries", 400, -0.2, 0.2);
-    residualsY1pix = new TH1F("residualsY1pix", "residualsY1pix;y_{track}-y_{hit} [mm];# entries", 400, -0.2, 0.2);
-    residualsX2pix = new TH1F("residualsX2pix", "residualsX2pix;x_{track}-x_{hit} [mm];# entries", 400, -0.2, 0.2);
-    residualsY2pix = new TH1F("residualsY2pix", "residualsY2pix;y_{track}-y_{hit} [mm];# entries", 400, -0.2, 0.2);
+    residualsX1pix = new TH1F("residualsX1pix", "residualsX1pix;x_{track}-x_{hit} [mm];# entries", 800, -0.1, 0.1);
+    residualsY1pix = new TH1F("residualsY1pix", "residualsY1pix;y_{track}-y_{hit} [mm];# entries", 800, -0.1, 0.1);
+    residualsX2pix = new TH1F("residualsX2pix", "residualsX2pix;x_{track}-x_{hit} [mm];# entries", 800, -0.1, 0.1);
+    residualsY2pix = new TH1F("residualsY2pix", "residualsY2pix;y_{track}-y_{hit} [mm];# entries", 800, -0.1, 0.1);
 
     clusterChargeAssoc =
         new TH1F("clusterChargeAssociated", "clusterChargeAssociated;cluster charge [e];# entries", 10000, 0, 10000);
