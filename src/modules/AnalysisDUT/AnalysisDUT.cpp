@@ -31,7 +31,7 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
 void AnalysisDUT::initialize() {
 
     hClusterMapAssoc = new TH2F("clusterMapAssoc",
-                                "clusterMapAssoc; cluster col; cluster row",
+                                "Map of associated clusters; cluster col; cluster row",
                                 m_detector->nPixels().X(),
                                 -0.5,
                                 m_detector->nPixels().X() - 0.5,
@@ -39,7 +39,7 @@ void AnalysisDUT::initialize() {
                                 -0.5,
                                 m_detector->nPixels().Y() - 0.5);
     hClusterSizeMapAssoc = new TProfile2D("clusterSizeMapAssoc",
-                                          "clusterSizeMapAssoc; cluster size; #entries",
+                                          "Size map for associated clusters; cluster size; #entries",
                                           m_detector->nPixels().X(),
                                           -0.5,
                                           m_detector->nPixels().X() - 0.5,
@@ -49,7 +49,7 @@ void AnalysisDUT::initialize() {
                                           0,
                                           100);
     hClusterChargeMapAssoc = new TProfile2D("clusterChargeMapAssoc",
-                                            "clusterSizeChargeAssoc; cluster charge [e]; #entries",
+                                            "Charge map for associated clusters; cluster charge [e]; #entries",
                                             m_detector->nPixels().X(),
                                             -0.5,
                                             m_detector->nPixels().X() - 0.5,
@@ -60,13 +60,13 @@ void AnalysisDUT::initialize() {
                                             500);
 
     hTrackZPosDUT = new TH1F("globalTrackZPosOnDUT",
-                             "globalTrackZPosOnDUT; global z of track intersection [mm]; #entries ",
+                             "Global z-position of trak on the DUT; global z of track intersection [mm]; #entries ",
                              400,
                              m_detector->displacement().z() - 10,
                              m_detector->displacement().z() + 10);
     // Per-pixel histograms
     hHitMapAssoc = new TH2F("hitMapAssoc",
-                            "hitMapAssoc; hit column; hit row",
+                            "Hit map of assciated clusters; hit column; hit row",
                             m_detector->nPixels().X(),
                             -0.5,
                             m_detector->nPixels().X() - 0.5,
@@ -74,16 +74,17 @@ void AnalysisDUT::initialize() {
                             -0.5,
                             m_detector->nPixels().Y() - 0.5);
     hHitMapROI = new TH2F("hitMapROI",
-                          "hitMapROI; hit column; hit row",
+                          "Map of hits within the region-of-interest; hit column; hit row",
                           m_detector->nPixels().X(),
                           -0.5,
                           m_detector->nPixels().X() - 0.5,
                           m_detector->nPixels().Y(),
                           -0.5,
                           m_detector->nPixels().Y() - 0.5);
-    hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc", "pixelRawValueAssoc;pixel raw value;#entries", 1024, -0.5, 1023.5);
+    hPixelRawValueAssoc = new TH1F(
+        "pixelRawValueAssoc", "Charge distribution of associated pixels;pixel raw value;#entries", 1024, -0.5, 1023.5);
     hPixelRawValueMapAssoc = new TProfile2D("pixelRawValueMapAssoc",
-                                            "pixelRawValueMapAssoc;pixel raw values;# entries",
+                                            "Charge map of associated pixels;pixel raw values;# entries",
                                             m_detector->nPixels().X(),
                                             -0.5,
                                             m_detector->nPixels().X() - 0.5,
@@ -94,13 +95,14 @@ void AnalysisDUT::initialize() {
                                             255);
 
     associatedTracksVersusTime =
-        new TH1F("associatedTracksVersusTime", "associatedTracksVersusTime;time [s];# associated tracks", 300000, 0, 300);
-    residualsX = new TH1F("residualsX", "residualsX;x_{track}-x_{hit}  [mm];# entries", 800, -0.1, 0.1);
-    residualsY = new TH1F("residualsY", "residualsY;y_{track}-y_{hit}  [mm];# entries", 800, -0.1, 0.1);
-    residualsPos = new TH1F("residualsPos", "residualsPos;|pos_{track}-pos_{hit}|  [mm];# entries", 800, -0.1, 0.1);
+        new TH1F("associatedTracksVersusTime", "Associated tracks over time;time [s];# associated tracks", 300000, 0, 300);
+    residualsX = new TH1F("residualsX", "Resdiual in X;x_{track}-x_{hit}  [mm];# entries", 800, -0.1, 0.1);
+    residualsY = new TH1F("residualsY", "Residual in Y;y_{track}-y_{hit}  [mm];# entries", 800, -0.1, 0.1);
+    residualsPos = new TH1F(
+        "residualsPos", "Absolute distance between track and hit;|pos_{track}-pos_{hit}|  [mm];# entries", 800, -0.1, 0.1);
     residualsPosVsresidualsTime =
         new TH2F("residualsPosVsresidualsTime",
-                 "residualsPosVsresidualsTime;time_{track}-time_{hit} [ns];|pos_{track}-pos_{hit}| [mm];# entries",
+                 "Time vs. absolute position residuals;time_{track}-time_{hit} [ns];|pos_{track}-pos_{hit}| [mm];# entries",
                  20000,
                  -1000,
                  +1000,
@@ -108,20 +110,37 @@ void AnalysisDUT::initialize() {
                  0.,
                  0.2);
 
-    residualsX1pix = new TH1F("residualsX1pix", "residualsX1pix;x_{track}-x_{hit} [mm];# entries", 800, -0.1, 0.1);
-    residualsY1pix = new TH1F("residualsY1pix", "residualsY1pix;y_{track}-y_{hit} [mm];# entries", 800, -0.1, 0.1);
-    residualsX2pix = new TH1F("residualsX2pix", "residualsX2pix;x_{track}-x_{hit} [mm];# entries", 800, -0.1, 0.1);
-    residualsY2pix = new TH1F("residualsY2pix", "residualsY2pix;y_{track}-y_{hit} [mm];# entries", 800, -0.1, 0.1);
+    residualsX1pix =
+        new TH1F("residualsX1pix", "Residual for 1-pixel clusters in X;x_{track}-x_{hit} [mm];# entries", 800, -0.1, 0.1);
+    residualsY1pix =
+        new TH1F("residualsY1pix", "Residual for 1-pixel clusters in Y;y_{track}-y_{hit} [mm];# entries", 800, -0.1, 0.1);
+    residualsX2pix =
+        new TH1F("residualsX2pix", "Residual for 2-pixel clusters in X;x_{track}-x_{hit} [mm];# entries", 800, -0.1, 0.1);
+    residualsY2pix =
+        new TH1F("residualsY2pix", "Residual for 2-pixel clusters in Y;y_{track}-y_{hit} [mm];# entries", 800, -0.1, 0.1);
 
-    clusterChargeAssoc =
-        new TH1F("clusterChargeAssociated", "clusterChargeAssociated;cluster charge [e];# entries", 10000, 0, 10000);
-    clusterSizeAssoc = new TH1F("clusterSizeAssociated", "clusterSizeAssociated;cluster size; # entries", 30, -0.5, 29.5);
-    clusterSizeAssocNorm = new TH1F(
-        "clusterSizeAssociatedNormalized", "clusterSizeAssociatedNormalized;cluster size normalized;#entries", 30, 0, 30);
-    clusterWidthRowAssoc =
-        new TH1F("clusterWidthRowAssociated", "clusterWidthRowAssociated;cluster size row; # entries", 30, -0.5, 29.5);
-    clusterWidthColAssoc =
-        new TH1F("clusterWidthColAssociated", "clusterWidthColAssociated;cluster size col; # entries", 30, -0.5, 29.5);
+    clusterChargeAssoc = new TH1F("clusterChargeAssociated",
+                                  "Charge distribution of associated clusters;cluster charge [e];# entries",
+                                  10000,
+                                  0,
+                                  10000);
+    clusterSizeAssoc = new TH1F(
+        "clusterSizeAssociated", "Size distribution of associated clusters;cluster size; # entries", 30, -0.5, 29.5);
+    clusterSizeAssocNorm = new TH1F("clusterSizeAssociatedNormalized",
+                                    "Normalized size distribution of associated clusters;cluster size normalized;#entries",
+                                    30,
+                                    0,
+                                    30);
+    clusterWidthRowAssoc = new TH1F("clusterWidthRowAssociated",
+                                    "Height distribution of associated clusters (rows);cluster size row; # entries",
+                                    30,
+                                    -0.5,
+                                    29.5);
+    clusterWidthColAssoc = new TH1F("clusterWidthColAssociated",
+                                    "Width distribution of associated clusters (columns);cluster size col; # entries",
+                                    30,
+                                    -0.5,
+                                    29.5);
 
     // In-pixel studies:
     auto pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
@@ -136,7 +155,7 @@ void AnalysisDUT::initialize() {
     hCutHisto->GetXaxis()->SetBinLabel(3, "Close to masked pixel");
     hCutHisto->GetXaxis()->SetBinLabel(4, "Close to frame begin/end");
 
-    title = "DUT x resolution;" + mod_axes + "MAD(#Deltax) [#mum]";
+    title = "Resolution in X;" + mod_axes + "MAD(#Deltax) [#mum]";
     rmsxvsxmym = new TProfile2D("rmsxvsxmym",
                                 title.c_str(),
                                 static_cast<int>(pitch_x),
@@ -146,7 +165,7 @@ void AnalysisDUT::initialize() {
                                 -pitch_y / 2.,
                                 pitch_y / 2.);
 
-    title = "DUT y resolution;" + mod_axes + "MAD(#Deltay) [#mum]";
+    title = "Resolution in Y;" + mod_axes + "MAD(#Deltay) [#mum]";
     rmsyvsxmym = new TProfile2D("rmsyvsxmym",
                                 title.c_str(),
                                 static_cast<int>(pitch_x),
@@ -156,7 +175,7 @@ void AnalysisDUT::initialize() {
                                 -pitch_y / 2.,
                                 pitch_y / 2.);
 
-    title = "DUT resolution;" + mod_axes + "MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
+    title = "Resolution;" + mod_axes + "MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
     rmsxyvsxmym = new TProfile2D("rmsxyvsxmym",
                                  title.c_str(),
                                  static_cast<int>(pitch_x),
@@ -166,7 +185,7 @@ void AnalysisDUT::initialize() {
                                  -pitch_y / 2.,
                                  pitch_y / 2.);
 
-    title = "DUT cluster charge map;" + mod_axes + "<cluster charge> [ke]";
+    title = "Mean cluster charge map;" + mod_axes + "<cluster charge> [ke]";
     qvsxmym = new TProfile2D("qvsxmym",
                              title.c_str(),
                              static_cast<int>(pitch_x),
@@ -178,7 +197,7 @@ void AnalysisDUT::initialize() {
                              0,
                              250);
 
-    title = "DUT cluster charge map, Moyal approx;" + mod_axes + "cluster charge MPV [ke]";
+    title = "Most probable cluster charge map, Moyal approx.;" + mod_axes + "cluster charge MPV [ke]";
     qMoyalvsxmym = new TProfile2D("qMoyalvsxmym",
                                   title.c_str(),
                                   static_cast<int>(pitch_x),
@@ -190,7 +209,7 @@ void AnalysisDUT::initialize() {
                                   0,
                                   250);
 
-    title = "DUT seed pixel charge map;" + mod_axes + "<seed pixel charge> [ke]";
+    title = "Seed pixel charge map;" + mod_axes + "<seed pixel charge> [ke]";
     pxqvsxmym = new TProfile2D("pxqvsxmym",
                                title.c_str(),
                                static_cast<int>(pitch_x),
@@ -202,7 +221,7 @@ void AnalysisDUT::initialize() {
                                0,
                                250);
 
-    title = "DUT cluster size map;" + mod_axes + "<pixels/cluster>";
+    title = "Mean cluster size map;" + mod_axes + "<pixels/cluster>";
     npxvsxmym = new TProfile2D("npxvsxmym",
                                title.c_str(),
                                static_cast<int>(pitch_x),
@@ -214,7 +233,7 @@ void AnalysisDUT::initialize() {
                                0,
                                4.5);
 
-    title = "DUT 1-pixel cluster map;" + mod_axes + "clusters";
+    title = "1-pixel cluster map;" + mod_axes + "clusters";
     npx1vsxmym = new TH2F("npx1vsxmym",
                           title.c_str(),
                           static_cast<int>(pitch_x),
@@ -224,7 +243,7 @@ void AnalysisDUT::initialize() {
                           -pitch_y / 2.,
                           pitch_y / 2.);
 
-    title = "DUT 2-pixel cluster map;" + mod_axes + "clusters";
+    title = "2-pixel cluster map;" + mod_axes + "clusters";
     npx2vsxmym = new TH2F("npx2vsxmym",
                           title.c_str(),
                           static_cast<int>(pitch_x),
@@ -234,7 +253,7 @@ void AnalysisDUT::initialize() {
                           -pitch_y / 2.,
                           pitch_y / 2.);
 
-    title = "DUT 3-pixel cluster map;" + mod_axes + "clusters";
+    title = "3-pixel cluster map;" + mod_axes + "clusters";
     npx3vsxmym = new TH2F("npx3vsxmym",
                           title.c_str(),
                           static_cast<int>(pitch_x),
@@ -244,7 +263,7 @@ void AnalysisDUT::initialize() {
                           -pitch_y / 2.,
                           pitch_y / 2.);
 
-    title = "DUT 4-pixel cluster map;" + mod_axes + "clusters";
+    title = "4-pixel cluster map;" + mod_axes + "clusters";
     npx4vsxmym = new TH2F("npx4vsxmym",
                           title.c_str(),
                           static_cast<int>(pitch_x),
@@ -254,19 +273,25 @@ void AnalysisDUT::initialize() {
                           -pitch_y / 2.,
                           pitch_y / 2.);
 
-    residualsTime = new TH1F("residualsTime", "residualsTime;time_{track}-time_{hit} [ns];#entries", 20000, -1000, +1000);
+    residualsTime = new TH1F("residualsTime", "Time residual;time_{track}-time_{hit} [ns];#entries", 20000, -1000, +1000);
 
     hTrackCorrelationX =
-        new TH1F("hTrackCorrelationX", "hTrackCorrelationX;x_{track}-x_{hit} [mm];# entries", 4000, -10., 10.);
+        new TH1F("hTrackCorrelationX", "Track residual X, all clusters;x_{track}-x_{hit} [mm];# entries", 4000, -10., 10.);
     hTrackCorrelationY =
-        new TH1F("hTrackCorrelationY", "hTrackCorrelationY;y_{track}-y_{hit} [mm];# entries", 4000, -10., 10.);
-    hTrackCorrelationPos =
-        new TH1F("hTrackCorrelationPos", "hTrackCorrelationPos;|pos_{track}-pos_{hit}| [mm];# entries", 2100, -1., 10.);
-    hTrackCorrelationTime = new TH1F(
-        "hTrackCorrelationTime", "hTrackCorrelationTime;time_{track}-time_{hit} [ns];# entries", 20000, -5000, 5000);
+        new TH1F("hTrackCorrelationY", "Track residual Y, all clusters;y_{track}-y_{hit} [mm];# entries", 4000, -10., 10.);
+    hTrackCorrelationPos = new TH1F("hTrackCorrelationPos",
+                                    "Track residual (absolute), all clusters;|pos_{track}-pos_{hit}| [mm];# entries",
+                                    2100,
+                                    -1.,
+                                    10.);
+    hTrackCorrelationTime = new TH1F("hTrackCorrelationTime",
+                                     "Track time residual, all clusters;time_{track}-time_{hit} [ns];# entries",
+                                     20000,
+                                     -5000,
+                                     5000);
     hTrackCorrelationPosVsCorrelationTime =
         new TH2F("hTrackCorrelationPosVsCorrelationTime",
-                 "hTrackCorrelationPosVsCorrelationTime;time_{track}-time_{hit} [ns];|pos_{track}-pos_{hit}| [mm];# entries",
+                 "Track time vs. distance residual;time_{track}-time_{hit} [ns];|pos_{track}-pos_{hit}| [mm];# entries",
                  20000,
                  -5000,
                  5000,
@@ -275,7 +300,7 @@ void AnalysisDUT::initialize() {
                  10.);
 
     residualsTimeVsTime = new TH2F("residualsTimeVsTime",
-                                   "residualsTimeVsTime;time [ns];time_{track}-time_{hit} [mm];# entries",
+                                   "Time residual vs. time;time [ns];time_{track}-time_{hit} [mm];# entries",
                                    20000,
                                    0,
                                    200,
@@ -283,44 +308,47 @@ void AnalysisDUT::initialize() {
                                    -1000,
                                    +1000);
 
-    residualsTimeVsTot = new TH2F("residualsTimeVsTot",
-                                  "residualsTimeVsTot;time_{track} - time_{hit} [ns];seed pixel ToT [lsb];# entries",
-                                  20000,
-                                  -5000,
-                                  5000,
-                                  64,
-                                  0,
-                                  64);
+    residualsTimeVsTot =
+        new TH2F("residualsTimeVsTot",
+                 "Time residual vs. pixel charge;time_{track} - time_{hit} [ns];seed pixel ToT [lsb];# entries",
+                 20000,
+                 -5000,
+                 5000,
+                 64,
+                 0,
+                 64);
 
-    residualsTimeVsSignal = new TH2F("residualsTimeVsSignal",
-                                     "residualsTimeVsSignal;cluster charge [e];time_{track}-time_{hit} [mm];# entries",
-                                     20000,
-                                     0,
-                                     100000,
-                                     1000,
-                                     -1000,
-                                     +1000);
+    residualsTimeVsSignal =
+        new TH2F("residualsTimeVsSignal",
+                 "Time residual vs. cluster charge;cluster charge [e];time_{track}-time_{hit} [mm];# entries",
+                 20000,
+                 0,
+                 100000,
+                 1000,
+                 -1000,
+                 +1000);
 
     hAssociatedTracksGlobalPosition =
         new TH2F("hAssociatedTracksGlobalPosition",
-                 "hAssociatedTracksGlobalPosition;global intercept x [mm];global intercept y [mm]",
+                 "Map of associated track positions (global);global intercept x [mm];global intercept y [mm]",
                  200,
                  -10,
                  10,
                  200,
                  -10,
                  10);
-    hAssociatedTracksLocalPosition = new TH2F("hAssociatedTracksLocalPosition",
-                                              "hAssociatedTracksLocalPosition;local intercept x [px];local intercept y [px]",
-                                              10 * m_detector->nPixels().X(),
-                                              -0.5,
-                                              m_detector->nPixels().X() - 0.5,
-                                              10 * m_detector->nPixels().Y(),
-                                              -0.5,
-                                              m_detector->nPixels().Y() - 0.5);
+    hAssociatedTracksLocalPosition =
+        new TH2F("hAssociatedTracksLocalPosition",
+                 "Map of associated track positions (local);local intercept x [px];local intercept y [px]",
+                 10 * m_detector->nPixels().X(),
+                 -0.5,
+                 m_detector->nPixels().X() - 0.5,
+                 10 * m_detector->nPixels().Y(),
+                 -0.5,
+                 m_detector->nPixels().Y() - 0.5);
     hUnassociatedTracksGlobalPosition =
         new TH2F("hUnassociatedTracksGlobalPosition",
-                 "hUnassociatedTracksGlobalPosition; global intercept x [mm]; global intercept y [mm]",
+                 "Map of not associated track positions (global); global intercept x [mm]; global intercept y [mm]",
                  200,
                  -10,
                  10,
