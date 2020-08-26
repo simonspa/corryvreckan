@@ -73,10 +73,17 @@ unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filere
             if(suppress_eudaq_messages_) {
                 IFNOTLOG(DEBUG) { SUPPRESS_STREAM(std::cout); }
             }
-            if(!eudaq::StdEventConverter::Convert(e, stdevt, nullptr)) {
-                LOG(ERROR) << "Failed to convert event";
-                continue;
+
+            try {
+                if(!eudaq::StdEventConverter::Convert(e, stdevt, nullptr)) {
+                    continue;
+                }
+            } catch(...) {
+                // Also release stream in case of exceptions
+                RELEASE_STREAM(std::cout);
+                throw;
             }
+
             RELEASE_STREAM(std::cout);
             auto detector = stdevt->GetDetectorType();
             if(det == detector) {
