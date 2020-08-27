@@ -295,7 +295,7 @@ void GblTrack::fit() {
             LOG(DEBUG) << "GBL fit failed: Inner transformation matrices with varying sizes";
             break;
         default:
-            LOG(DEBUG) << "GBL fit failed, unkown reason";
+            LOG(DEBUG) << "GBL fit failed, unknown reason";
             break;
         }
         return;
