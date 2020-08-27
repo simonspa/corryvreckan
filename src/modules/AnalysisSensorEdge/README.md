@@ -2,7 +2,7 @@
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
 **Module Type**: *DUT*  
 **Detector Type**: *all*  
-**Status**: Immature
+**Status**: Functional
 
 ### Description
 This module produces in-pixel efficiency plots for the sensor edges, particularly interesting for active edge sensors.
