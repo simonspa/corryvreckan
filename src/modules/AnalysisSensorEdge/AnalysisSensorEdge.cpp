@@ -49,6 +49,26 @@ void AnalysisSensorEdge::initialize() {
             " Pixel efficiency map (last row);in-pixel x_{track} [#mum];in-pixel y_{track} #mum;efficiency";
     efficiencyLastRow =
         new TProfile2D("efficiencyLastRow", title.c_str(), nx, -px / 2., px / 2., ny, -py / 2., py / 2., 0, 1);
+
+    title = "Position of tracks used;x [px];y [px];tracks";
+    trackPositionsUsed = new TH2D("trackPositionsUsed",
+                                  title.c_str(),
+                                  m_detector->nPixels().X(),
+                                  -0.5,
+                                  m_detector->nPixels().X() - 0.5,
+                                  m_detector->nPixels().Y(),
+                                  -0.5,
+                                  m_detector->nPixels().Y() - 0.5);
+
+    title = "Position of tracks unused;x [px];y [px];tracks";
+    trackPositionsUnused = new TH2D("trackPositionsUnused",
+                                    title.c_str(),
+                                    m_detector->nPixels().X(),
+                                    -0.5,
+                                    m_detector->nPixels().X() - 0.5,
+                                    m_detector->nPixels().Y(),
+                                    -0.5,
+                                    m_detector->nPixels().Y() - 0.5);
 }
 
 StatusCode AnalysisSensorEdge::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -94,21 +114,37 @@ StatusCode AnalysisSensorEdge::run(const std::shared_ptr<Clipboard>& clipboard) 
         bool has_associated_cluster = (associated_clusters.size() > 0);
 
         // Get the pixel index we're talking about:
-        int column = std::round(m_detector->getColumn(localIntercept));
-        int row = std::round(m_detector->getRow(localIntercept));
+        int column = static_cast<int>(std::round(m_detector->getColumn(localIntercept)));
+        int row = static_cast<int>(std::round(m_detector->getRow(localIntercept)));
 
+        LOG(DEBUG) << "Track impact at pixel (" << column << ", " << row << ")" << std::endl
+                   << " - (" << m_detector->getColumn(localIntercept) << ", " << m_detector->getRow(localIntercept) << ")";
+
+        bool edge = false;
         // Fill left and right edge histograms:
         if(column == 0) {
             efficiencyFirstCol->Fill(xmod, ymod, has_associated_cluster);
+            edge = true;
         } else if(column == (m_detector->nPixels().x() - 1)) {
             efficiencyLastCol->Fill(xmod, ymod, has_associated_cluster);
+            edge = true;
         }
 
         // Fill top and bottom edge histograms:
         if(row == 0) {
             efficiencyFirstRow->Fill(xmod, ymod, has_associated_cluster);
+            edge = true;
         } else if(row == (m_detector->nPixels().y() - 1)) {
-            efficiencyLastCol->Fill(xmod, ymod, has_associated_cluster);
+            efficiencyLastRow->Fill(xmod, ymod, has_associated_cluster);
+            edge = true;
+        }
+
+        // Mark track impact position for reference
+        if(edge) {
+            LOG(INFO) << "Impact on edge at pixel (" << column << ", " << row << ")";
+            trackPositionsUsed->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
+        } else {
+            trackPositionsUnused->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
         }
     }
 

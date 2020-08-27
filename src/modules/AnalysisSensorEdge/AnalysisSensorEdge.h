@@ -8,7 +8,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include "TProfile2D.h"
+#include <TH2D.h>
+#include <TProfile2D.h>
 
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
@@ -49,6 +50,8 @@ namespace corryvreckan {
         TProfile2D* efficiencyLastCol;
         TProfile2D* efficiencyFirstRow;
         TProfile2D* efficiencyLastRow;
+
+        TH2D *trackPositionsUsed, *trackPositionsUnused;
     };
 
 } // namespace corryvreckan
