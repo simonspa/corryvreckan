@@ -85,7 +85,7 @@ StatusCode AnalysisSensorEdge::run(const std::shared_ptr<Clipboard>& clipboard) 
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
         LOG(TRACE) << " Checking if track is outside DUT area";
-        if(!m_detector->hasIntercept(track.get(), 1)) {
+        if(!m_detector->hasIntercept(track.get())) {
             LOG(DEBUG) << " - track outside DUT area: " << localIntercept;
             continue;
         }
