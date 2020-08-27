@@ -51,6 +51,9 @@ namespace corryvreckan {
         TProfile2D* efficiencyFirstRow;
         TProfile2D* efficiencyLastRow;
 
+        // Combine all four edges by flipping and rotating:
+        TProfile2D* efficiencyEdges;
+
         TH2D *trackPositionsUsed, *trackPositionsUnused;
     };
 

@@ -50,6 +50,11 @@ void AnalysisSensorEdge::initialize() {
     efficiencyLastRow =
         new TProfile2D("efficiencyLastRow", title.c_str(), nx, -px / 2., px / 2., ny, -py / 2., py / 2., 0, 1);
 
+    title =
+        m_detector->getName() +
+        " Pixel efficiency map (all edges, edge to the left);in-pixel x_{track} [#mum];in-pixel y_{track} #mum;efficiency";
+    efficiencyEdges = new TProfile2D("efficiencyEdges", title.c_str(), nx, -px / 2., px / 2., ny, -py / 2., py / 2., 0, 1);
+
     title = "Position of tracks used;x [px];y [px];tracks";
     trackPositionsUsed = new TH2D("trackPositionsUsed",
                                   title.c_str(),
@@ -124,18 +129,26 @@ StatusCode AnalysisSensorEdge::run(const std::shared_ptr<Clipboard>& clipboard) 
         // Fill left and right edge histograms:
         if(column == 0) {
             efficiencyFirstCol->Fill(xmod, ymod, has_associated_cluster);
+            // All-edge plot uses FirstColumn as reference orientation
+            efficiencyEdges->Fill(xmod, ymod, has_associated_cluster);
             edge = true;
         } else if(column == (m_detector->nPixels().x() - 1)) {
             efficiencyLastCol->Fill(xmod, ymod, has_associated_cluster);
+            // All-edge plot needs flipping of the x-coordinate to get edge to the left:
+            efficiencyEdges->Fill(m_detector->getPitch().x() - xmod, ymod, has_associated_cluster);
             edge = true;
         }
 
         // Fill top and bottom edge histograms:
         if(row == 0) {
             efficiencyFirstRow->Fill(xmod, ymod, has_associated_cluster);
+            // All-edge plot needs rotation by 90deg to get edge to the left:
+            efficiencyEdges->Fill(ymod, xmod, has_associated_cluster);
             edge = true;
         } else if(row == (m_detector->nPixels().y() - 1)) {
             efficiencyLastRow->Fill(xmod, ymod, has_associated_cluster);
+            // All-edge plot needs rotation by 90deg and flipping of y-axis to get edge to the left:
+            efficiencyEdges->Fill(m_detector->getPitch().y() - ymod, xmod, has_associated_cluster);
             edge = true;
         }
 
