@@ -32,10 +32,6 @@ const std::string& Track::Plane::getName() const {
     return name_;
 }
 
-unsigned Track::Plane::getGblPointPosition() const {
-    return gbl_points_pos_;
-}
-
 Cluster* Track::Plane::getCluster() const {
     if(!cluster_.IsValid() || cluster_.GetObject() == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(Cluster));
@@ -55,10 +51,6 @@ bool Track::Plane::operator<(const Plane& pl) const {
     return z_ < pl.z_;
 }
 
-void Track::Plane::setGblPointPosition(unsigned pos) {
-    gbl_points_pos_ = pos;
-}
-
 void Track::Plane::setCluster(const Cluster* cluster) {
     cluster_ = const_cast<Cluster*>(cluster);
 }
@@ -68,7 +60,7 @@ void Track::Plane::print(std::ostream& os) const {
     if(hasCluster()) {
         os << "cluster with global pos: " << getCluster()->global();
     } else {
-        os << "no clsuter";
+        os << "without cluster";
     }
 }
 
@@ -226,13 +218,6 @@ double Track::getMaterialBudget(const std::string& detectorID) const {
                       return plane.getName() == detectorID;
                   })->getMaterialBudget();
     return budget;
-}
-
-ROOT::Math::XYZPoint Track::getCorrection(const std::string& detectorID) const {
-    if(corrections_.count(detectorID) == 1)
-        return corrections_.at(detectorID);
-    else
-        throw TrackError(typeid(Track), " requested correction on non existing detector " + detectorID);
 }
 
 void Track::registerPlane(const std::string& name, double z, double x0, Transform3D g2l) {
