@@ -346,7 +346,7 @@ void GblTrack::fit() {
 ROOT::Math::XYZPoint GblTrack::getIntercept(double z) const {
     // find the detector with largest z-positon <= z, assumes detectors sorted by z position
     std::string layer = "";
-    LOG(DEBUG) << "Requesting intercept at: " << z;
+    LOG(TRACE) << "Requesting intercept at: " << z;
     bool found = false;
 
     if(!isFitted_) {
@@ -376,7 +376,7 @@ ROOT::Math::XYZPoint GblTrack::getIntercept(double z) const {
 ROOT::Math::XYZPoint GblTrack::getState(const std::string& detectorID) const {
     // The track state is given in global coordinates and represents intersect of track and detetcor plane.
     // Let's check first if the data is fitted and all components are there
-    LOG(DEBUG) << "Requesting state at: " << detectorID;
+    LOG(TRACE) << "Requesting state at: " << detectorID;
     if(!isFitted_)
         throw TrackError(typeid(GblTrack), " has no defined state for " + detectorID + " before fitting");
     if(local_fitted_track_points_.count(detectorID) != 1) {
@@ -427,7 +427,7 @@ ROOT::Math::XYZVector GblTrack::getDirection(const std::string& detectorID) cons
     // Defining the direction following the particle results in the direction
     // being defined from the requested plane onwards to the next one
     ROOT::Math::XYZPoint point = getState(detectorID);
-    LOG(DEBUG) << "Requesting direction at: " << detectorID;
+    LOG(TRACE) << "Requesting direction at: " << detectorID;
 
     // searching for the next detector layer
     auto plane =
