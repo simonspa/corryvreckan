@@ -16,7 +16,10 @@ AnalysisSensorEdge::AnalysisSensorEdge(Configuration& config, std::shared_ptr<De
     : Module(config, detector), m_detector(detector) {
 
     config_.setDefault<double>("inpixel_bin_size", Units::get<double>(1.0, "um"));
-    m_inpixelBinSize = config_.get<double>("inpixel_bin_size");
+    config_.setDefault<bool>("exclude_corners", true);
+
+    inpixel_bin_size_ = config_.get<double>("inpixel_bin_size");
+    exclude_corners_ = config_.get<bool>("exclude_corners");
 }
 
 void AnalysisSensorEdge::initialize() {
@@ -24,8 +27,8 @@ void AnalysisSensorEdge::initialize() {
     auto px = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
     auto py = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));
 
-    auto nx = static_cast<int>(std::ceil(m_detector->getPitch().X() / m_inpixelBinSize));
-    auto ny = static_cast<int>(std::ceil(m_detector->getPitch().Y() / m_inpixelBinSize));
+    auto nx = static_cast<int>(std::ceil(m_detector->getPitch().X() / inpixel_bin_size_));
+    auto ny = static_cast<int>(std::ceil(m_detector->getPitch().Y() / inpixel_bin_size_));
     if(nx > 1e4 || ny > 1e4) {
         throw InvalidValueError(config_, "inpixel_bin_size", "Too many bins for in-pixel histograms.");
     }
@@ -121,35 +124,19 @@ StatusCode AnalysisSensorEdge::run(const std::shared_ptr<Clipboard>& clipboard) 
         // Get the pixel index we're talking about:
         int column = static_cast<int>(std::round(m_detector->getColumn(localIntercept)));
         int row = static_cast<int>(std::round(m_detector->getRow(localIntercept)));
-
         LOG(DEBUG) << "Track impact at pixel (" << column << ", " << row << ")" << std::endl
                    << " - (" << m_detector->getColumn(localIntercept) << ", " << m_detector->getRow(localIntercept) << ")";
 
-        bool edge = false;
-        // Fill left and right edge histograms:
-        if(column == 0) {
-            efficiencyFirstCol->Fill(xmod, ymod, has_associated_cluster);
-            // All-edge plot uses FirstColumn as reference orientation
-            efficiencyEdges->Fill(xmod, ymod, has_associated_cluster);
-            edge = true;
-        } else if(column == (m_detector->nPixels().x() - 1)) {
-            efficiencyLastCol->Fill(xmod, ymod, has_associated_cluster);
-            // All-edge plot needs flipping of the x-coordinate to get edge to the left:
-            efficiencyEdges->Fill(m_detector->getPitch().x() - xmod, ymod, has_associated_cluster);
-            edge = true;
-        }
+        // Check if we point to an edge
+        bool left = (column == 0);
+        bool right = (column == (m_detector->nPixels().x() - 1));
+        bool bottom = (row == 0);
+        bool top = (row == (m_detector->nPixels().y() - 1));
+        bool edge = (left || right || bottom || top);
 
-        // Fill top and bottom edge histograms:
-        if(row == 0) {
-            efficiencyFirstRow->Fill(xmod, ymod, has_associated_cluster);
-            // All-edge plot needs rotation by 90deg to get edge to the left:
-            efficiencyEdges->Fill(ymod, xmod, has_associated_cluster);
-            edge = true;
-        } else if(row == (m_detector->nPixels().y() - 1)) {
-            efficiencyLastRow->Fill(xmod, ymod, has_associated_cluster);
-            // All-edge plot needs rotation by 90deg and flipping of y-axis to get edge to the left:
-            efficiencyEdges->Fill(m_detector->getPitch().y() - ymod, xmod, has_associated_cluster);
-            edge = true;
+        // Exclude corner pixels:
+        if(exclude_corners_ && (left || right) && (bottom || top)) {
+            edge = false;
         }
 
         // Mark track impact position for reference
@@ -158,6 +145,28 @@ StatusCode AnalysisSensorEdge::run(const std::shared_ptr<Clipboard>& clipboard) 
             trackPositionsUsed->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
         } else {
             trackPositionsUnused->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
+        }
+
+        // Fill left and right edge histograms:
+        if(left) {
+            efficiencyFirstCol->Fill(xmod, ymod, has_associated_cluster);
+            // All-edge plot uses FirstColumn as reference orientation
+            efficiencyEdges->Fill(xmod, ymod, has_associated_cluster);
+        } else if(right) {
+            efficiencyLastCol->Fill(xmod, ymod, has_associated_cluster);
+            // All-edge plot needs flipping of the x-coordinate to get edge to the left:
+            efficiencyEdges->Fill(m_detector->getPitch().x() - xmod, ymod, has_associated_cluster);
+        }
+
+        // Fill top and bottom edge histograms:
+        if(bottom) {
+            efficiencyFirstRow->Fill(xmod, ymod, has_associated_cluster);
+            // All-edge plot needs rotation by 90deg to get edge to the left:
+            efficiencyEdges->Fill(ymod, xmod, has_associated_cluster);
+        } else if(top) {
+            efficiencyLastRow->Fill(xmod, ymod, has_associated_cluster);
+            // All-edge plot needs rotation by 90deg and flipping of y-axis to get edge to the left:
+            efficiencyEdges->Fill(m_detector->getPitch().y() - ymod, xmod, has_associated_cluster);
         }
     }
 

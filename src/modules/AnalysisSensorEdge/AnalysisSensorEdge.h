@@ -43,7 +43,8 @@ namespace corryvreckan {
     private:
         std::shared_ptr<Detector> m_detector;
 
-        double m_inpixelBinSize;
+        double inpixel_bin_size_;
+        bool exclude_corners_;
 
         // The four edges
         TProfile2D* efficiencyFirstCol;

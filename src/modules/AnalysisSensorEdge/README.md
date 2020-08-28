@@ -15,6 +15,7 @@ This means, the pixel cell from the last column is mirrored horizontally, the ce
 
 ### Parameters
 * `inpixel_bin_size`: Parameter to set the bin size of the in-pixel 2D efficiency histogram. This should be given in units of distance and the same value is used in both axes. Defaults to `1.0um`.
+* `exclude_corners`: Switch to include or exclude the corner pixels from the calculations. Since they have a different layout than edge pixels, they can alter the result. Defaults to `true`.
 
 ### Plots produced
 For the DUT, the following plots are produced:
