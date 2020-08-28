@@ -64,6 +64,7 @@ namespace corryvreckan {
         TH2F* correlationYVsTime;
         TH2F* correlationXYVsTime;
         TH2F* correlationYXVsTime;
+        TH2F* correlationSeedPixelRawVsTimeDiff;
 
         // Parameters which can be set by user
         double timeCut;
