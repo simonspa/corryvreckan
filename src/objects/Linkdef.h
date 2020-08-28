@@ -6,6 +6,7 @@
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
+#pragma link C++ nestedclasses;
 
 // Missing ROOT objects
 #pragma link C++ class ROOT::Math::Cartesian2D < unsigned int> + ;
@@ -24,7 +25,7 @@
 #pragma link C++ class corryvreckan::Multiplet + ;
 #pragma link C++ class corryvreckan::MCParticle + ;
 #pragma link C++ class corryvreckan::Event + ;
-#pragma link C++ class corryvreckan::Plane + ;
+#pragma link C++ class corryvreckan::Track::Plane + ;
 
 // Vector of Object for internal storage
 #pragma link C++ class std::vector < corryvreckan::Object*> + ;

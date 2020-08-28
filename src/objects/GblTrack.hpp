@@ -11,6 +11,7 @@
 #ifndef CORRYVRECKAN_GBLTRACK_H
 #define CORRYVRECKAN_GBLTRACK_H 1
 
+#include <GblPoint.h>
 #include "Track.hpp"
 
 namespace corryvreckan {
@@ -69,6 +70,10 @@ namespace corryvreckan {
         void setVolumeScatter(double length) override;
 
     private:
+        // static Matrices to convert from proteus like numbering to eigen3 like numbering of space
+        static Eigen::Matrix<double, 5, 6> toGbl;
+        static Eigen::Matrix<double, 6, 5> toProt;
+
         /**
          * @brief Set seedcluster used for track fitting
          * @param Pointer to seedcluster of the GblTrack
@@ -80,6 +85,22 @@ namespace corryvreckan {
          * @return Pointer to seedcluster of the GblTrack if set, nullptr otherwise
          */
         Cluster* get_seed_cluster() const;
+
+        /**
+         * Transient storage for GblPoints prepared for the trajectory
+         */
+        std::vector<gbl::GblPoint> gblpoints_; //! transient value
+
+        /**
+         * @brief Helper function to populate the point trajectory
+         */
+        void prepare_gblpoints();
+
+        void add_plane(std::vector<Plane>::iterator& plane,
+                       Transform3D& prevToGlobal,
+                       Transform3D& prevToLocal,
+                       ROOT::Math::XYZPoint& globalTrackPos,
+                       double total_material);
 
         /**
          * @brief get_position_outside_telescope
@@ -97,6 +118,8 @@ namespace corryvreckan {
         std::map<std::string, ROOT::Math::XYZPoint> local_fitted_track_points_{};
         std::map<std::string, ROOT::Math::XYPoint> initital_residual_{};
         std::map<std::string, ROOT::Math::XYPoint> kink_{};
+        std::map<std::string, unsigned int> plane_to_gblpoint_{};
+
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(GblTrack, 5);
     };
