@@ -290,14 +290,14 @@ StatusCode EventLoaderATLASpix::run(const std::shared_ptr<Clipboard>& clipboard)
     // Put the data on the clipboard
     clipboard->putData(pixels, m_detector->getName());
 
-    if(pixels.empty()) {
-        LOG(DEBUG) << "Returning <NoData> status, no hits found.";
-        return StatusCode::NoData;
-    }
-
     if(sorted_pixels_.empty() && eof_reached) {
         LOG(DEBUG) << "Reached EOF";
         return StatusCode::EndRun;
+    }
+
+    if(pixels.empty()) {
+        LOG(DEBUG) << "Returning <NoData> status, no hits found.";
+        return StatusCode::NoData;
     }
 
     // Return value telling analysis to keep running
