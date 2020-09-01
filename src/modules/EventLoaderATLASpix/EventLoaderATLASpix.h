@@ -76,7 +76,7 @@ namespace corryvreckan {
         unsigned long long fpga_ts3_ = 0;
         bool new_ts1_ = false;
         bool new_ts2_ = false;
-        bool timestamps_cleared_ = false;
+        size_t t0_seen_ = 0;
         bool eof_reached = false;
 
         // int ts1Range;

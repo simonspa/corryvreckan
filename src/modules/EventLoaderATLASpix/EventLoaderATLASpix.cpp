@@ -290,14 +290,14 @@ StatusCode EventLoaderATLASpix::run(const std::shared_ptr<Clipboard>& clipboard)
     // Put the data on the clipboard
     clipboard->putData(pixels, m_detector->getName());
 
-    if(pixels.empty()) {
-        LOG(DEBUG) << "Returning <NoData> status, no hits found.";
-        return StatusCode::NoData;
-    }
-
     if(sorted_pixels_.empty() && eof_reached) {
         LOG(DEBUG) << "Reached EOF";
         return StatusCode::EndRun;
+    }
+
+    if(pixels.empty()) {
+        LOG(DEBUG) << "Returning <NoData> status, no hits found.";
+        return StatusCode::NoData;
     }
 
     // Return value telling analysis to keep running
@@ -321,8 +321,12 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
     // Check if current word is a pixel data:
     if(datain & 0x80000000) {
         // Do not return and decode pixel data before T0 arrived
-        if(!timestamps_cleared_) {
+        if(t0_seen_ == 0) {
             return true;
+        } else if(t0_seen_ > 1) {
+            LOG(ERROR) << "Detected 2nd T0 signal. Finish the reconstruction and throw this event away!";
+            eof_reached = true;
+            return false;
         }
         // Structure: {1'b1, column_addr[5:0], row_addr[8:0], rise_timestamp[9:0], fall_timestamp[5:0]}
         // Extract pixel data
@@ -483,7 +487,7 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
             fpga_ts1_ = 0;
             fpga_ts2_ = 0;
             fpga_ts3_ = 0;
-            timestamps_cleared_ = true;
+            t0_seen_++;
         } else if(message_type == 0b00000000) {
 
             // Empty data - should not happen
