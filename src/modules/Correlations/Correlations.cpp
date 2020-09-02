@@ -186,11 +186,6 @@ void Correlations::initialize() {
     title = m_detector->getName() + ": 2D cross-correlation Y/X (global);y [mm];x_{ref} [mm];events";
     correlationYX2D = new TH2F("correlationYX_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);
 
-    title = m_detector->getName() +
-            ": seed pixel raw-value vs. time difference;ts_{ref} - ts [ns];seed pixel raw value [lsb];events";
-    correlationSeedPixelRawVsTimeDiff =
-        new TH2F("correlationSeedPixelRawVsTimeDiff", title.c_str(), 20000, -5000, 5000, 64, -0.5, 63.5);
-
     title = m_detector->getName() + "Reference pixel time stamp - pixel time stamp over pixel raw value;"
                                     "pixel raw value [lsb];t_{ref}-t [ns];events";
     correlationTimeOverPixelRawValue_px = new TH2F("correlationTimeOverSeedPixelRawValue_px",
@@ -274,8 +269,6 @@ StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
                 correlationXY2D->Fill(refCluster->global().y(), cluster->global().x());
                 correlationYX->Fill(refCluster->global().x() - cluster->global().y());
                 correlationYX2D->Fill(refCluster->global().x(), cluster->global().y());
-
-                correlationSeedPixelRawVsTimeDiff->Fill(timeDifference, cluster->getSeedPixel()->raw());
             }
 
             correlationTime->Fill(timeDifference); // time difference in ns
