@@ -291,6 +291,7 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
         } else if(trigger_position == Event::Position::UNKNOWN) {
             LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " within Corryvreckan event range but not registered";
         } else {
+            // Redefine EUDAQ2 event begin and end to trigger timestamp (both were zero):
             evt->SetTimeBegin(static_cast<uint64_t>(clipboard->getEvent()->getTriggerTime(evt->GetTriggerN()) * 1000));
             evt->SetTimeEnd(static_cast<uint64_t>(clipboard->getEvent()->getTriggerTime(evt->GetTriggerN()) * 1000));
             LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " found in Corryvreckan event";
@@ -389,7 +390,10 @@ PixelVector EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEve
 
         double ts;
         if(plane.GetTimestamp(i) == 0) {
-            // If the plane timestamp is not defined, we place all pixels in the center of the EUDAQ2 event:
+            // If the plane timestamp is not defined, we place all pixels in the center of the EUDAQ2 event.
+            // Note: If the EUDAQ2 event has zero timestamps (time begin/end == 0), then the event times are
+            // redefined to time begin/end == trigger timestamp in get_trigger_position (see above), i.e. in
+            // that case, all pixel timestamp will be set to the corresponding trigger timestamp.
             ts = static_cast<double>(evt->GetTimeBegin() + evt->GetTimeEnd()) / 2 / 1000 + detector_->timeOffset();
         } else {
             ts = static_cast<double>(plane.GetTimestamp(i)) / 1000 + detector_->timeOffset();

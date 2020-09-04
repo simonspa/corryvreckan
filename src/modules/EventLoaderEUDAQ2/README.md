@@ -27,7 +27,8 @@ If later, the pointer to this event is kept and it continues with the next detec
 
 Data from detectors with both triggered readout and without timestamps are matched against trigger IDs stored in the currently defined Corryvreckan event.
 
-If no timestamp is available for the individual pixels, the pixel timestamp is set as the centre of the EUDAQ2 event.
+If no timestamp is available for the individual pixels, but the EUDAQ2 event has non-zero event times (e.g. event begin = shutter open and event end = shutter close), then the pixel timestamp is set to the center of the EUDAQ2 event.
+If no timestamp is available for the individual pixels and the EUDAQ2 event has zero timestamps (event begin = end = 0), then the event times are redefined to begin/end = trigger timestamp, i.e. in this case, the pixel timestamp will be set to the corresponding trigger timestamp.
 
 If no detector is capable of defining events, the `[Metronome]` module needs to be used.
 
