@@ -19,7 +19,8 @@ For each device the following plots are produced:
 
 * 2D histograms:
     * Hitmaps on pixel and cluster-level
-    * Time correlation over time
+    * Time correlation over time (on cluster and pixel level)
+    * Time correlation over raw value (both on cluster and pixel level)
     * Correlations in X/Y, columns/columns, columns/rows, rows/rows and rows/columns in local coordinates
     * Correlations in X and Y in global coordinates
 
