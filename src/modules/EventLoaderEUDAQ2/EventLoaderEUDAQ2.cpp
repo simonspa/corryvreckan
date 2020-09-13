@@ -38,6 +38,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
 
     // Set EUDAQ log level to desired value:
     EUDAQ_LOG_LEVEL(config_.get<std::string>("eudaq_loglevel"));
+    LOG(INFO) << "Setting EUDAQ2 log level to \"" << config_.get<std::string>("eudaq_loglevel") << "\"";
 
     // Prepare EUDAQ2 config object
     eudaq::Configuration cfg;
