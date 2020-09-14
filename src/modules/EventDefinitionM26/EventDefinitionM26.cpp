@@ -20,7 +20,6 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     timestamp_ = config_.get<std::string>("file_timestamp");
     timeshift_ = config_.get<double>("time_shift");
     shift_triggers_ = config_.get<int>("shift_triggers");
-    config_.setDefault<bool>("suppress_eudaq_messages", true);
     config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
 
     // Set EUDAQ log level to desired value:
