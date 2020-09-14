@@ -23,7 +23,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     config_.setDefault<int>("buffer_depth", 0);
     config_.setDefault<int>("shift_triggers", 0);
     config_.setDefault<bool>("inclusive", true);
-    config_.setDefault<bool>("suppress_eudaq_messages", true);
+    config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
 
     filename_ = config_.getPath("file_name", true);
     get_time_residuals_ = config_.get<bool>("get_time_residuals");
@@ -35,7 +35,10 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     buffer_depth_ = config_.get<int>("buffer_depth");
     shift_triggers_ = config_.get<int>("shift_triggers");
     inclusive_ = config_.get<bool>("inclusive");
-    suppress_eudaq_messages_ = config_.get<bool>("suppress_eudaq_messages");
+
+    // Set EUDAQ log level to desired value:
+    EUDAQ_LOG_LEVEL(config_.get<std::string>("eudaq_loglevel"));
+    LOG(INFO) << "Setting EUDAQ2 log level to \"" << config_.get<std::string>("eudaq_loglevel") << "\"";
 
     // Prepare EUDAQ2 config object
     eudaq::Configuration cfg;
@@ -234,17 +237,9 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
         if(get_tag_vectors_) {
             retrieve_event_tags(event);
         }
-        if(suppress_eudaq_messages_) {
-            IFNOTLOG(DEBUG) { SUPPRESS_STREAM(std::cout); }
-        }
-        try {
-            decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, eudaq_config_);
-        } catch(...) {
-            // Also release stream in case of exceptions
-            RELEASE_STREAM(std::cout);
-            throw;
-        }
-        RELEASE_STREAM(std::cout);
+
+        decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, eudaq_config_);
+
         LOG(DEBUG) << event->GetDescription() << ": EventConverter returned " << (decoding_failed ? "false" : "true");
     } while(decoding_failed);
     return stdevt;
