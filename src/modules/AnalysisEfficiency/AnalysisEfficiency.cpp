@@ -101,7 +101,12 @@ void AnalysisEfficiency::initialize() {
                                                    1.5 * m_detector->getSize().Y(),
                                                    0,
                                                    1);
-    hDistanceCluster_track = new TH2D("distanceTrack_Hit",
+    hDistanceCluster = new TH1D("distanceTrackHit",
+                                "distance between track and hit; | #vec{track} - #vec{dut} | [mm]",
+                                static_cast<int>(std::sqrt(m_detector->getPitch().x() * m_detector->getPitch().y())),
+                                0,
+                                std::sqrt(m_detector->getPitch().x() * m_detector->getPitch().y()));
+    hDistanceCluster_track = new TH2D("distanceTrackHit2D",
                                       "distance between track and hit; track_x - dut_x [mm]; track_y - dut_y [mm] ",
                                       150,
                                       -1.5 * m_detector->getPitch().x(),
@@ -272,7 +277,12 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
             has_associated_cluster = true;
             matched_tracks++;
             auto clusterLocal = m_detector->globalToLocal(cluster->global());
-            hDistanceCluster_track->Fill(localIntercept.x() - clusterLocal.x(), localIntercept.y() - clusterLocal.y());
+
+            auto distance =
+                ROOT::Math::XYZVector(localIntercept.x() - clusterLocal.x(), localIntercept.y() - clusterLocal.y(), 0);
+            hDistanceCluster_track->Fill(distance.X(), distance.Y());
+            hDistanceCluster->Fill(std::sqrt(distance.Mag2()));
+
             hGlobalEfficiencyMap_clustPos->Fill(cluster->global().x(), cluster->global().y(), has_associated_cluster);
             hChipEfficiencyMap_clustPos->Fill(
                 m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), has_associated_cluster);
