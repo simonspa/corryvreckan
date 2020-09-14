@@ -35,9 +35,12 @@ For the DUT, the following plots are produced:
   * Histograms of time difference of the matched and non-matched track time to the previous track
   * Histograms of the row and column difference of the matched and non-matched track time to the previous track
   * Histograms of the time difference of a matched (non-matched) cluster to a previous hit (not matter if noise or track)
+  * Distribution of cluster-track distances
+
 * Other:
   * Value of total efficiency as `TEfficiency` including (asymmetric) error bars
-  * Value of total efficiency as `TName` so it can be read off easily by eye from the root file
+  * Efficiency as function of column and row
+
 
 ### Usage
 ```toml
