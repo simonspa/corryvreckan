@@ -54,7 +54,10 @@ void AnalysisEfficiency::initialize() {
                                                   pitch_y / 2.,
                                                   0,
                                                   1);
-    title = m_detector->getName() + " Chip efficiency map;x [px];y [px];efficiency";
+    efficiencyPixel = new TEfficiency(
+        "efficiencyPixel", title.c_str(), nbins_x, -pitch_x / 2., pitch_x / 2., nbins_y, -pitch_y / 2., pitch_y / 2.);
+
+    title = m_detector->getName() + " Chip efficiency map;x [px];y [px];#epsilon";
     hChipEfficiencyMap_trackPos = new TProfile2D("chipEfficiencyMap_trackPos",
                                                  title.c_str(),
                                                  m_detector->nPixels().X(),
@@ -106,9 +109,18 @@ void AnalysisEfficiency::initialize() {
                                       150,
                                       -1.5 * m_detector->getPitch().y(),
                                       1.5 * m_detector->getPitch().y());
-    eTotalEfficiency =
-        new TEfficiency("eTotalEfficiency", "totalEfficiency; axis has no meaning; total chip efficiency", 1, 0, 1);
-    totalEfficiency = new TNamed("totalEffiency", "totalEffiency");
+    eTotalEfficiency = new TEfficiency("eTotalEfficiency", "totalEfficiency;;#epsilon", 1, 0, 1);
+
+    efficiencyColumns = new TEfficiency("efficiencyColumns",
+                                        "Efficiency vs. column number; column; #epsilon",
+                                        m_detector->nPixels().X(),
+                                        -0.5,
+                                        m_detector->nPixels().X() - 0.5);
+    efficiencyRows = new TEfficiency("efficiencyRows",
+                                     "Efficiency vs. row number; row; #epsilon",
+                                     m_detector->nPixels().Y(),
+                                     -0.5,
+                                     m_detector->nPixels().Y() - 0.5);
 
     hTrackTimeToPrevHit_matched =
         new TH1D("trackTimeToPrevHit_matched", "trackTimeToPrevHit_matched;time to prev hit [us];# events", 1e6, 0, 1e6);
@@ -269,10 +281,14 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
         hGlobalEfficiencyMap_trackPos->Fill(globalIntercept.X(), globalIntercept.Y(), has_associated_cluster);
         hChipEfficiencyMap_trackPos->Fill(
             m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept), has_associated_cluster);
+
         // For pixels, only look at the ROI:
         if(is_within_roi) {
             hPixelEfficiencyMap_trackPos->Fill(xmod, ymod, has_associated_cluster);
+            efficiencyPixel->Fill(has_associated_cluster, xmod, ymod);
             eTotalEfficiency->Fill(has_associated_cluster, 0); // use 0th bin for total efficiency
+            efficiencyColumns->Fill(has_associated_cluster, m_detector->getColumn(localIntercept));
+            efficiencyRows->Fill(has_associated_cluster, m_detector->getRow(localIntercept));
         }
 
         auto intercept_col = static_cast<size_t>(m_detector->getColumn(localIntercept));
@@ -341,9 +357,6 @@ void AnalysisEfficiency::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     double totalEff = 100 * static_cast<double>(matched_tracks) / (total_tracks > 0 ? total_tracks : 1);
     LOG(STATUS) << "Total efficiency of detector " << m_detector->getName() << ": " << totalEff << "%, measured with "
                 << matched_tracks << "/" << total_tracks << " matched/total tracks";
-
-    totalEfficiency->SetName((to_string(totalEff) + " %").c_str());
-    totalEfficiency->Write();
 
     for(int icol = 1; icol < m_detector->nPixels().X() + 1; icol++) {
         for(int irow = 1; irow < m_detector->nPixels().Y() + 1; irow++) {
