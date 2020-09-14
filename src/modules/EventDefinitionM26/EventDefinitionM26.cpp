@@ -21,7 +21,12 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     timeshift_ = config_.get<double>("time_shift");
     shift_triggers_ = config_.get<int>("shift_triggers");
     config_.setDefault<bool>("suppress_eudaq_messages", true);
+    config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
     suppress_eudaq_messages_ = config_.get<bool>("suppress_eudaq_messages");
+
+    // Set EUDAQ log level to desired value:
+    EUDAQ_LOG_LEVEL(config_.get<std::string>("eudaq_loglevel"));
+    LOG(INFO) << "Setting EUDAQ2 log level to \"" << config_.get<std::string>("eudaq_loglevel") << "\"";
 }
 
 void EventDefinitionM26::initialize() {
@@ -69,22 +74,6 @@ unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filere
         }
         for(const auto& e : events_) {
             auto stdevt = eudaq::StandardEvent::MakeShared();
-
-            if(suppress_eudaq_messages_) {
-                IFNOTLOG(DEBUG) { SUPPRESS_STREAM(std::cout); }
-            }
-
-            try {
-                if(!eudaq::StdEventConverter::Convert(e, stdevt, nullptr)) {
-                    continue;
-                }
-            } catch(...) {
-                // Also release stream in case of exceptions
-                RELEASE_STREAM(std::cout);
-                throw;
-            }
-
-            RELEASE_STREAM(std::cout);
             auto detector = stdevt->GetDetectorType();
             if(det == detector) {
                 begin = Units::get(static_cast<double>(stdevt->GetTimeBegin()), "ps");

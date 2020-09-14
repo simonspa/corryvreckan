@@ -26,7 +26,7 @@ end = begin + 230us
 * `file_duration`: Data file containing the  `detector_event_duration` data
 * `time_shift`: Optional shift of the event begin/end point. Defaults to `0`
 * `shift_triggers`: Shift the trigger ID of the `detector_event_time`. Defaults to `0`
-* `suppress_eudaq_messages`: Optional suppression of all eudaq converting messages. Defaults to `true` For `log_level=DEBUG` the messages are always displayed
+* `eudaq_loglevel`: Verbosity level of the EUDAQ logger instance of the converter module. Possible options are, in decreasing severity, `USER`, `ERROR`, `WARN`, `INFO`, `EXTRA` and `DEBUG`. The default level is `ERROR`.
 
 ### Plots produced
 * 1D histogram of time between trigger timestamps
