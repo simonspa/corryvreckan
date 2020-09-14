@@ -52,7 +52,6 @@ namespace corryvreckan {
         std::vector<uint32_t> triggerIDs_{};
         long double timeshift_{};
         int shift_triggers_{};
-        bool suppress_eudaq_messages_{};
 
         // EUDAQ2 readers for all required files
         eudaq::FileReaderUP readerTime_;

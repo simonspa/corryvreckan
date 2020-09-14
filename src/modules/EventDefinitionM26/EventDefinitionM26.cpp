@@ -22,7 +22,6 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     shift_triggers_ = config_.get<int>("shift_triggers");
     config_.setDefault<bool>("suppress_eudaq_messages", true);
     config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
-    suppress_eudaq_messages_ = config_.get<bool>("suppress_eudaq_messages");
 
     // Set EUDAQ log level to desired value:
     EUDAQ_LOG_LEVEL(config_.get<std::string>("eudaq_loglevel"));
