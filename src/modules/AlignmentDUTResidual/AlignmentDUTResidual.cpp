@@ -186,11 +186,12 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
             double residualX = intercept.X() - position.X();
             double residualY = intercept.Y() - position.Y();
 
-            double error = associatedCluster->error();
+            double errorX = associatedCluster->errorX();
+            double errorY = associatedCluster->errorY();
             LOG(TRACE) << "- track has intercept (" << intercept.X() << "," << intercept.Y() << ")";
             LOG(DEBUG) << "- cluster has position (" << position.X() << "," << position.Y() << ")";
 
-            double deltachi2 = ((residualX * residualX + residualY * residualY) / (error * error));
+            double deltachi2 = (residualX * residualX) / (errorX * errorX) + (residualY * residualY) / (errorY * errorY);
             LOG(TRACE) << "- delta chi2 = " << deltachi2;
             // Add the new residual2
             result += deltachi2;
