@@ -233,12 +233,12 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
             continue;
         }
 
+        decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, eudaq_config_);
+
         // Read and store tag information:
         if(get_tag_vectors_) {
-            retrieve_event_tags(event);
+            retrieve_event_tags(stdevt);
         }
-
-        decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, eudaq_config_);
 
         LOG(DEBUG) << event->GetDescription() << ": EventConverter returned " << (decoding_failed ? "false" : "true");
     } while(decoding_failed);
