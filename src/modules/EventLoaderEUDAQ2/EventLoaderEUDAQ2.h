@@ -169,7 +169,8 @@ namespace corryvreckan {
         TH1D* hEudaqeventsPerCorry;
         TH2D* hHitsVersusEUDAQ2Frames;
 
-        std::map<std::string, TProfile*> hTagValues;
+        std::map<std::string, TH1D*> hTagValues;
+        std::map<std::string, TProfile*> hTagValuesVsEventN;
     };
 
 } // namespace corryvreckan
