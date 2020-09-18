@@ -3,7 +3,7 @@ CORRYVRECKAN_ENABLE_DEFAULT(OFF)
 # Define module and return the generated name as MODULE_NAME
 CORRYVRECKAN_GLOBAL_MODULE(MODULE_NAME)
 
-FIND_PACKAGE(EUDAQ QUIET)
+FIND_PACKAGE(EUDAQ1 QUIET)
 IF(NOT EUDAQ_FOUND)
     MESSAGE(FATAL_ERROR "Could not find EUDAQ 1.7, make sure to set the path to your installation using\n"
     "$ export EUDAQPATH=/your/path/to/EUDAQ")
