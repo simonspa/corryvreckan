@@ -54,8 +54,6 @@ void AnalysisEfficiency::initialize() {
                                                   pitch_y / 2.,
                                                   0,
                                                   1);
-    efficiencyPixel = new TEfficiency(
-        "efficiencyPixel", title.c_str(), nbins_x, -pitch_x / 2., pitch_x / 2., nbins_y, -pitch_y / 2., pitch_y / 2.);
 
     title = m_detector->getName() + " Chip efficiency map;x [px];y [px];#epsilon";
     hChipEfficiencyMap_trackPos = new TProfile2D("chipEfficiencyMap_trackPos",
@@ -295,7 +293,6 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
         // For pixels, only look at the ROI:
         if(is_within_roi) {
             hPixelEfficiencyMap_trackPos->Fill(xmod, ymod, has_associated_cluster);
-            efficiencyPixel->Fill(has_associated_cluster, xmod, ymod);
             eTotalEfficiency->Fill(has_associated_cluster, 0); // use 0th bin for total efficiency
             efficiencyColumns->Fill(has_associated_cluster, m_detector->getColumn(localIntercept));
             efficiencyRows->Fill(has_associated_cluster, m_detector->getRow(localIntercept));

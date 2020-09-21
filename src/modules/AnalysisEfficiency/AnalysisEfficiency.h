@@ -54,7 +54,6 @@ namespace corryvreckan {
         TEfficiency* eTotalEfficiency;
         TEfficiency* efficiencyColumns;
         TEfficiency* efficiencyRows;
-        TEfficiency* efficiencyPixel;
 
         TH1D* hDistanceCluster;
         TH1D* hTimeDiffPrevTrack_assocCluster;
