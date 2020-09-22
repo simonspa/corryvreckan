@@ -52,8 +52,10 @@ namespace corryvreckan {
         TProfile2D* hGlobalEfficiencyMap_clustPos;
 
         TEfficiency* eTotalEfficiency;
-        TNamed* totalEfficiency;
+        TEfficiency* efficiencyColumns;
+        TEfficiency* efficiencyRows;
 
+        TH1D* hDistanceCluster;
         TH1D* hTimeDiffPrevTrack_assocCluster;
         TH1D* hTimeDiffPrevTrack_noAssocCluster;
         TH1D* hRowDiffPrevTrack_assocCluster;

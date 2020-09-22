@@ -43,7 +43,7 @@ void AnalysisEfficiency::initialize() {
         throw InvalidValueError(config_, "inpixel_bin_size", "Too many bins for in-pixel histograms.");
     }
     std::string title =
-        m_detector->getName() + " Pixel efficiency map;in-pixel x_{track} [#mum];in-pixel y_{track} #mum;efficiency";
+        m_detector->getName() + " Pixel efficiency map;in-pixel x_{track} [#mum];in-pixel y_{track} #mum;#epsilon";
     hPixelEfficiencyMap_trackPos = new TProfile2D("pixelEfficiencyMap_trackPos",
                                                   title.c_str(),
                                                   nbins_x,
@@ -54,7 +54,8 @@ void AnalysisEfficiency::initialize() {
                                                   pitch_y / 2.,
                                                   0,
                                                   1);
-    title = m_detector->getName() + " Chip efficiency map;x [px];y [px];efficiency";
+
+    title = m_detector->getName() + " Chip efficiency map;x [px];y [px];#epsilon";
     hChipEfficiencyMap_trackPos = new TProfile2D("chipEfficiencyMap_trackPos",
                                                  title.c_str(),
                                                  m_detector->nPixels().X(),
@@ -65,7 +66,7 @@ void AnalysisEfficiency::initialize() {
                                                  m_detector->nPixels().Y() - 0.5,
                                                  0,
                                                  1);
-    title = m_detector->getName() + " Global efficiency map;x [mm];y [mm];efficiency";
+    title = m_detector->getName() + " Global efficiency map;x [mm];y [mm];#epsilon";
     hGlobalEfficiencyMap_trackPos = new TProfile2D("globalEfficiencyMap_trackPos",
                                                    title.c_str(),
                                                    300,
@@ -76,7 +77,7 @@ void AnalysisEfficiency::initialize() {
                                                    1.5 * m_detector->getSize().Y(),
                                                    0,
                                                    1);
-    title = m_detector->getName() + " Chip efficiency map;x [px];y [px];efficiency";
+    title = m_detector->getName() + " Chip efficiency map;x [px];y [px];#epsilon";
     hChipEfficiencyMap_clustPos = new TProfile2D("chipEfficiencyMap_clustPos",
                                                  title.c_str(),
                                                  m_detector->nPixels().X(),
@@ -87,7 +88,7 @@ void AnalysisEfficiency::initialize() {
                                                  m_detector->nPixels().Y() - 0.5,
                                                  0,
                                                  1);
-    title = m_detector->getName() + " Global efficiency map;x [mm];y [mm];efficiency";
+    title = m_detector->getName() + " Global efficiency map;x [mm];y [mm];#epsilon";
     hGlobalEfficiencyMap_clustPos = new TProfile2D("globalEfficiencyMap_clustPos",
                                                    title.c_str(),
                                                    300,
@@ -98,7 +99,12 @@ void AnalysisEfficiency::initialize() {
                                                    1.5 * m_detector->getSize().Y(),
                                                    0,
                                                    1);
-    hDistanceCluster_track = new TH2D("distanceTrack_Hit",
+    hDistanceCluster = new TH1D("distanceTrackHit",
+                                "distance between track and hit; | #vec{track} - #vec{dut} | [mm]",
+                                static_cast<int>(std::sqrt(m_detector->getPitch().x() * m_detector->getPitch().y())),
+                                0,
+                                std::sqrt(m_detector->getPitch().x() * m_detector->getPitch().y()));
+    hDistanceCluster_track = new TH2D("distanceTrackHit2D",
                                       "distance between track and hit; track_x - dut_x [mm]; track_y - dut_y [mm] ",
                                       150,
                                       -1.5 * m_detector->getPitch().x(),
@@ -106,9 +112,18 @@ void AnalysisEfficiency::initialize() {
                                       150,
                                       -1.5 * m_detector->getPitch().y(),
                                       1.5 * m_detector->getPitch().y());
-    eTotalEfficiency =
-        new TEfficiency("eTotalEfficiency", "totalEfficiency; axis has no meaning; total chip efficiency", 1, 0, 1);
-    totalEfficiency = new TNamed("totalEffiency", "totalEffiency");
+    eTotalEfficiency = new TEfficiency("eTotalEfficiency", "totalEfficiency;;#epsilon", 1, 0, 1);
+
+    efficiencyColumns = new TEfficiency("efficiencyColumns",
+                                        "Efficiency vs. column number; column; #epsilon",
+                                        m_detector->nPixels().X(),
+                                        -0.5,
+                                        m_detector->nPixels().X() - 0.5);
+    efficiencyRows = new TEfficiency("efficiencyRows",
+                                     "Efficiency vs. row number; row; #epsilon",
+                                     m_detector->nPixels().Y(),
+                                     -0.5,
+                                     m_detector->nPixels().Y() - 0.5);
 
     hTrackTimeToPrevHit_matched =
         new TH1D("trackTimeToPrevHit_matched", "trackTimeToPrevHit_matched;time to prev hit [us];# events", 1e6, 0, 1e6);
@@ -260,7 +275,12 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
             has_associated_cluster = true;
             matched_tracks++;
             auto clusterLocal = m_detector->globalToLocal(cluster->global());
-            hDistanceCluster_track->Fill(localIntercept.x() - clusterLocal.x(), localIntercept.y() - clusterLocal.y());
+
+            auto distance =
+                ROOT::Math::XYZVector(localIntercept.x() - clusterLocal.x(), localIntercept.y() - clusterLocal.y(), 0);
+            hDistanceCluster_track->Fill(distance.X(), distance.Y());
+            hDistanceCluster->Fill(std::sqrt(distance.Mag2()));
+
             hGlobalEfficiencyMap_clustPos->Fill(cluster->global().x(), cluster->global().y(), has_associated_cluster);
             hChipEfficiencyMap_clustPos->Fill(
                 m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal), has_associated_cluster);
@@ -269,10 +289,13 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
         hGlobalEfficiencyMap_trackPos->Fill(globalIntercept.X(), globalIntercept.Y(), has_associated_cluster);
         hChipEfficiencyMap_trackPos->Fill(
             m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept), has_associated_cluster);
+
         // For pixels, only look at the ROI:
         if(is_within_roi) {
             hPixelEfficiencyMap_trackPos->Fill(xmod, ymod, has_associated_cluster);
             eTotalEfficiency->Fill(has_associated_cluster, 0); // use 0th bin for total efficiency
+            efficiencyColumns->Fill(has_associated_cluster, m_detector->getColumn(localIntercept));
+            efficiencyRows->Fill(has_associated_cluster, m_detector->getRow(localIntercept));
         }
 
         auto intercept_col = static_cast<size_t>(m_detector->getColumn(localIntercept));
@@ -341,9 +364,6 @@ void AnalysisEfficiency::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     double totalEff = 100 * static_cast<double>(matched_tracks) / (total_tracks > 0 ? total_tracks : 1);
     LOG(STATUS) << "Total efficiency of detector " << m_detector->getName() << ": " << totalEff << "%, measured with "
                 << matched_tracks << "/" << total_tracks << " matched/total tracks";
-
-    totalEfficiency->SetName((to_string(totalEff) + " %").c_str());
-    totalEfficiency->Write();
 
     for(int icol = 1; icol < m_detector->nPixels().X() + 1; icol++) {
         for(int irow = 1; irow < m_detector->nPixels().Y() + 1; irow++) {
