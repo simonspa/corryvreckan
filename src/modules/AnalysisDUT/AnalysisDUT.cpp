@@ -507,8 +507,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             clusterSizeAssoc->Fill(static_cast<double>(assoc_cluster->size()));
             clusterSizeAssocNorm->Fill(static_cast<double>(assoc_cluster->size()));
-            clusterWidthRowAssoc->Fill(assoc_cluster->rowWidth());
-            clusterWidthColAssoc->Fill(assoc_cluster->columnWidth());
+            clusterWidthRowAssoc->Fill(static_cast<double>(assoc_cluster->rowWidth()));
+            clusterWidthColAssoc->Fill(static_cast<double>(assoc_cluster->columnWidth()));
 
             // Fill in-pixel plots: (all as function of track position within pixel cell)
             qvsxmym->Fill(xmod, ymod, cluster_charge);                     // cluster charge profile
