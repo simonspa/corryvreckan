@@ -75,9 +75,11 @@ void PixelDetector::SetPostionAndOrientation(const Configuration& config) {
     m_displacement = config.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
     m_orientation = config.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
     m_orientation_mode = config.get<std::string>("orientation_mode", "xyz");
-    if(m_orientation_mode != "xyz" && m_orientation_mode != "zyx") {
-        throw InvalidValueError(config, "orientation_mode", "Invalid detector orientation mode");
+
+    if(m_orientation_mode != "xyz" && m_orientation_mode != "zyx" && m_orientation_mode != "zxz") {
+        throw InvalidValueError(config, "orientation_mode", "orientation_mode should be either 'zyx', xyz' or 'zxz'");
     }
+
     LOG(TRACE) << "  Position:    " << Units::display(m_displacement, {"mm", "um"});
     LOG(TRACE) << "  Orientation: " << Units::display(m_orientation, {"deg"}) << " (" << m_orientation_mode << ")";
 }
@@ -160,10 +162,7 @@ void PixelDetector::initialise() {
         // First angle given in the configuration file is around z, second around x, last around z:
         rotations = EulerAngles(m_orientation.x(), m_orientation.y(), m_orientation.z());
     } else {
-        LOG(ERROR) << "orientation_mode should be either 'zyx', xyz' or 'zxz'";
-        // FIXME: To through exception, initialise needs to be changed to "initialise(const Configuration& config)"
-        // throw InvalidValueError(
-        //     config, "orientation_mode", "orientation_mode should be either 'zyx', xyz' or 'zxz'");
+        throw InvalidSettingError(this, "orientation_mode", "orientation_mode should be either 'zyx', xyz' or 'zxz'");
     }
 
     m_localToGlobal = Transform3D(rotations, translations);
