@@ -485,12 +485,17 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             residualsPos->Fill(posDiff);
             residualsPosVsresidualsTime->Fill(tdistance, posDiff);
 
-            if(assoc_cluster->size() == 1) {
+            if(assoc_cluster->columnWidth() == 1) {
                 residualsX1pix->Fill(xdistance);
+            }
+            if(assoc_cluster->rowWidth() == 1) {
                 residualsY1pix->Fill(ydistance);
             }
-            if(assoc_cluster->size() == 2) {
+
+            if(assoc_cluster->columnWidth() == 2) {
                 residualsX2pix->Fill(xdistance);
+            }
+            if(assoc_cluster->rowWidth() == 2) {
                 residualsY2pix->Fill(ydistance);
             }
 
