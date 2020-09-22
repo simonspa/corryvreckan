@@ -120,11 +120,11 @@ StatusCode TreeWriterDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
         // x size
         LOG(DEBUG) << "Gets column width = " << cluster->columnWidth();
-        v_clusterSizeX.push_back(cluster->columnWidth());
+        v_clusterSizeX.push_back(static_cast<double>(cluster->columnWidth()));
 
         // y size
         LOG(DEBUG) << "Gets row width = " << cluster->rowWidth();
-        v_clusterSizeY.push_back(cluster->rowWidth());
+        v_clusterSizeY.push_back(static_cast<double>(cluster->rowWidth()));
 
         // eventID
         v_clusterEventID.push_back(eventID);

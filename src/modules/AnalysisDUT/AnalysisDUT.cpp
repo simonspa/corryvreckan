@@ -485,12 +485,17 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             residualsPos->Fill(posDiff);
             residualsPosVsresidualsTime->Fill(tdistance, posDiff);
 
-            if(assoc_cluster->size() == 1) {
+            if(assoc_cluster->columnWidth() == 1) {
                 residualsX1pix->Fill(xdistance);
+            }
+            if(assoc_cluster->rowWidth() == 1) {
                 residualsY1pix->Fill(ydistance);
             }
-            if(assoc_cluster->size() == 2) {
+
+            if(assoc_cluster->columnWidth() == 2) {
                 residualsX2pix->Fill(xdistance);
+            }
+            if(assoc_cluster->rowWidth() == 2) {
                 residualsY2pix->Fill(ydistance);
             }
 
@@ -502,8 +507,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             clusterSizeAssoc->Fill(static_cast<double>(assoc_cluster->size()));
             clusterSizeAssocNorm->Fill(static_cast<double>(assoc_cluster->size()));
-            clusterWidthRowAssoc->Fill(assoc_cluster->rowWidth());
-            clusterWidthColAssoc->Fill(assoc_cluster->columnWidth());
+            clusterWidthRowAssoc->Fill(static_cast<double>(assoc_cluster->rowWidth()));
+            clusterWidthColAssoc->Fill(static_cast<double>(assoc_cluster->columnWidth()));
 
             // Fill in-pixel plots: (all as function of track position within pixel cell)
             qvsxmym->Fill(xmod, ymod, cluster_charge);                     // cluster charge profile

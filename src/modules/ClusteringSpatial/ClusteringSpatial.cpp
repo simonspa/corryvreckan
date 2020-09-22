@@ -170,8 +170,8 @@ StatusCode ClusteringSpatial::run(const std::shared_ptr<Clipboard>& clipboard) {
         // Fill cluster histograms
         clusterSize->Fill(static_cast<double>(cluster->size()));
 
-        clusterWidthRow->Fill(cluster->rowWidth());
-        clusterWidthColumn->Fill(cluster->columnWidth());
+        clusterWidthRow->Fill(static_cast<double>(cluster->rowWidth()));
+        clusterWidthColumn->Fill(static_cast<double>(cluster->columnWidth()));
         clusterCharge->Fill(cluster->charge());
         clusterSeedCharge->Fill(cluster->getSeedPixel()->charge());
         clusterPositionGlobal->Fill(cluster->global().x(), cluster->global().y());
