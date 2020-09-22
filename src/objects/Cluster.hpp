@@ -60,8 +60,8 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint local() const { return m_local; }
 
         size_t size() const { return m_pixels.size(); }
-        double columnWidth() const { return m_columnWidth; }
-        double rowWidth() const { return m_rowWidth; }
+        size_t columnWidth() const { return m_columnWidth; }
+        size_t rowWidth() const { return m_rowWidth; }
         std::vector<const Pixel*> pixels() const;
 
         /**
@@ -97,8 +97,8 @@ namespace corryvreckan {
         double m_row;
         double m_charge;
         ROOT::Math::XYVector m_error;
-        double m_columnWidth;
-        double m_rowWidth;
+        size_t m_columnWidth;
+        size_t m_rowWidth;
         bool m_split;
 
         ROOT::Math::XYZPoint m_local;
