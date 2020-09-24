@@ -24,8 +24,8 @@ AlignmentDUTResidual::AlignmentDUTResidual(Configuration& config, std::shared_pt
 
     config_.setDefault<size_t>("iterations", 3);
     config_.setDefault<bool>("prune_tracks", false);
-    config_.setDefault<bool>("align_position", true);
-    config_.setDefault<bool>("align_orientation", true);
+    config_.setDefault<std::string>("align_position", "xy");
+    config_.setDefault<std::string>("align_orientation", "xyz");
     config_.setDefault<size_t>("max_associated_clusters", 1);
     config_.setDefault<double>("max_track_chi2ndof", 10.);
 
