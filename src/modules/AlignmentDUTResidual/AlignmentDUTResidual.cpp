@@ -31,15 +31,26 @@ AlignmentDUTResidual::AlignmentDUTResidual(Configuration& config, std::shared_pt
 
     nIterations = config_.get<size_t>("iterations");
     m_pruneTracks = config_.get<bool>("prune_tracks");
-    m_alignPosition = config_.get<bool>("align_position");
-    if(m_alignPosition) {
-        LOG(INFO) << "Aligning positions";
-    }
+    m_alignPosition = config_.get<std::string>("align_position");
+    m_alignOrientation = config_.get<std::string>("align_orientation");
 
-    m_alignOrientation = config_.get<bool>("align_orientation");
-    if(m_alignOrientation) {
-        LOG(INFO) << "Aligning orientations";
+    std::transform(m_alignPosition.begin(), m_alignPosition.end(), m_alignPosition.begin(), ::tolower);
+    std::transform(m_alignOrientation.begin(), m_alignOrientation.end(), m_alignOrientation.begin(), ::tolower);
+
+    if( m_alignPosition.empty()) {
+        LOG(INFO) << "Do not aligning positions";
     }
+	else {
+        LOG(INFO) << "Aligning positions"<< m_alignPosition;
+	}
+
+    if( m_alignOrientation.empty()) {
+        LOG(INFO) << "Do not aligning orientation";
+    }
+	else {
+        LOG(INFO) << "Aligning orientation"<< m_alignOrientation;
+	}
+
 
     m_maxAssocClusters = config_.get<size_t>("max_associated_clusters");
     m_maxTrackChi2 = config_.get<double>("max_track_chi2ndof");
@@ -254,26 +265,40 @@ void AlignmentDUTResidual::finalize(const std::shared_ptr<ReadonlyClipboard>& cl
                 << Units::display(m_detector->rotation(), {"deg"});
 
     // Add the parameters to the fitter (z displacement not allowed to move!)
-    if(m_alignPosition) {
+    if( m_alignPosition.find('x') != std::string::npos ) {
         residualFitter->SetParameter(0, (name + "_displacementX").c_str(), m_detector->displacement().X(), 0.01, -50, 50);
+	}
+	else {
+	  residualFitter->SetParameter(0, (name + "_displacementX").c_str(), m_detector->displacement().X(), 0, -50, 50);
+	}
+    if( m_alignPosition.find('y') != std::string::npos ) {
         residualFitter->SetParameter(1, (name + "_displacementY").c_str(), m_detector->displacement().Y(), 0.01, -50, 50);
-    } else {
-        residualFitter->SetParameter(0, (name + "_displacementX").c_str(), m_detector->displacement().X(), 0, -50, 50);
-        residualFitter->SetParameter(1, (name + "_displacementY").c_str(), m_detector->displacement().Y(), 0, -50, 50);
-    }
+	}
+	else { 
+	  residualFitter->SetParameter(1, (name + "_displacementY").c_str(), m_detector->displacement().Y(), 0, -50, 50);
+	}
 
     // Z is never changed:
     residualFitter->SetParameter(2, (name + "_displacementZ").c_str(), m_detector->displacement().Z(), 0, -10, 500);
 
-    if(m_alignOrientation) {
+    if( m_alignOrientation.find('x') != std::string::npos ) {
         residualFitter->SetParameter(3, (name + "_rotationX").c_str(), m_detector->rotation().X(), 0.001, -6.30, 6.30);
+	}
+	else {
+	  residualFitter->SetParameter(3, (name + "_rotationX").c_str(), m_detector->rotation().X(), 0, -6.30, 6.30);
+	}
+    if( m_alignOrientation.find('y') != std::string::npos ){ 
         residualFitter->SetParameter(4, (name + "_rotationY").c_str(), m_detector->rotation().Y(), 0.001, -6.30, 6.30);
+	}
+	else {
+	  residualFitter->SetParameter(4, (name + "_rotationY").c_str(), m_detector->rotation().Y(), 0, -6.30, 6.30);
+	}
+    if( m_alignOrientation.find('z') != std::string::npos ) {
         residualFitter->SetParameter(5, (name + "_rotationZ").c_str(), m_detector->rotation().Z(), 0.001, -6.30, 6.30);
-    } else {
-        residualFitter->SetParameter(3, (name + "_rotationX").c_str(), m_detector->rotation().X(), 0, -6.30, 6.30);
-        residualFitter->SetParameter(4, (name + "_rotationY").c_str(), m_detector->rotation().Y(), 0, -6.30, 6.30);
-        residualFitter->SetParameter(5, (name + "_rotationZ").c_str(), m_detector->rotation().Z(), 0, -6.30, 6.30);
-    }
+	}
+	else {
+	  residualFitter->SetParameter(5, (name + "_rotationZ").c_str(), m_detector->rotation().Z(), 0, -6.30, 6.30);
+	}
 
     for(size_t iteration = 0; iteration < nIterations; iteration++) {
 
