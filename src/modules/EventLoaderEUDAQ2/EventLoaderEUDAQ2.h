@@ -106,7 +106,8 @@ namespace corryvreckan {
         std::shared_ptr<Detector> detector_;
         std::string filename_{};
         bool get_time_residuals_{};
-        bool get_tag_vectors_{};
+        bool get_tag_histograms_{};
+        bool get_tag_profiles_{};
         bool ignore_bore_{};
         bool inclusive_{};
         double skip_time_{};
@@ -169,7 +170,8 @@ namespace corryvreckan {
         TH1D* hEudaqeventsPerCorry;
         TH2D* hHitsVersusEUDAQ2Frames;
 
-        std::map<std::string, TProfile*> hTagValues;
+        std::map<std::string, TH1D*> tagHist;
+        std::map<std::string, TProfile*> tagProfile;
     };
 
 } // namespace corryvreckan

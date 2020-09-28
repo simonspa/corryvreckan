@@ -16,8 +16,12 @@ using namespace corryvreckan;
 EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(detector) {
 
+    // Backwards compatibility: also allow get_tag_vectors to be used for get_tag_profiles
+    config_.setAlias("get_tag_profiles", "get_tag_vectors", true);
+
     config_.setDefault<bool>("get_time_residuals", false);
-    config_.setDefault<bool>("get_tag_vectors", false);
+    config_.setDefault<bool>("get_tag_histograms", false);
+    config_.setDefault<bool>("get_tag_profiles", false);
     config_.setDefault<bool>("ignore_bore", true);
     config_.setDefault<double>("skip_time", 0.);
     config_.setDefault<int>("buffer_depth", 0);
@@ -28,7 +32,8 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     filename_ = config_.getPath("file_name", true);
     get_time_residuals_ = config_.get<bool>("get_time_residuals");
 
-    get_tag_vectors_ = config_.get<bool>("get_tag_vectors");
+    get_tag_histograms_ = config_.get<bool>("get_tag_histograms");
+    get_tag_profiles_ = config_.get<bool>("get_tag_profiles");
     ignore_bore_ = config_.get<bool>("ignore_bore");
     skip_time_ = config_.get<double>("skip_time");
     adjust_event_times_ = config_.getMatrix<std::string>("adjust_event_times", {});
@@ -233,12 +238,12 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
             continue;
         }
 
-        // Read and store tag information:
-        if(get_tag_vectors_) {
-            retrieve_event_tags(event);
-        }
-
         decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, eudaq_config_);
+
+        // Read and store tag information:
+        if(get_tag_histograms_ || get_tag_profiles_) {
+            retrieve_event_tags(stdevt);
+        }
 
         LOG(DEBUG) << event->GetDescription() << ": EventConverter returned " << (decoding_failed ? "false" : "true");
     } while(decoding_failed);
@@ -254,12 +259,22 @@ void EventLoaderEUDAQ2::retrieve_event_tags(const eudaq::EventSPC evt) {
             double value = std::stod(tag_pair.second);
 
             // Check if histogram exists already, if not: create it
-            if(hTagValues.find(tag_pair.first) == hTagValues.end()) {
-                std::string histName = "hTagValues_" + tag_pair.first;
-                std::string histTitle = "tag_" + tag_pair.first + ";event / 1000;tag value";
-                hTagValues[tag_pair.first] = new TProfile(histName.c_str(), histTitle.c_str(), 2e5, 0, 100);
+            if(get_tag_histograms_) {
+                if(tagHist.find(tag_pair.first) == tagHist.end()) {
+                    std::string name = "tagHist_" + tag_pair.first;
+                    std::string title = tag_pair.first + ";tag value;# entries";
+                    tagHist[tag_pair.first] = new TH1D(name.c_str(), title.c_str(), 1024, -512.5, 511.5);
+                }
+                tagHist[tag_pair.first]->Fill(value);
             }
-            hTagValues[tag_pair.first]->Fill(evt->GetEventN() / 1000, value, 1);
+            if(get_tag_profiles_) {
+                if(tagProfile.find(tag_pair.first) == tagProfile.end()) {
+                    std::string name = "tagProfile_" + tag_pair.first;
+                    std::string title = "tag_" + tag_pair.first + ";event / 1000;tag value";
+                    tagProfile[tag_pair.first] = new TProfile(name.c_str(), title.c_str(), 4e5, 0, 100);
+                }
+                tagProfile[tag_pair.first]->Fill(evt->GetEventN() / 1000, value, 1);
+            }
         } catch(std::exception& e) {
         }
     }

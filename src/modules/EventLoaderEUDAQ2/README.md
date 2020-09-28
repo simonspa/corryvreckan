@@ -32,7 +32,7 @@ If no timestamp is available for the individual pixels and the EUDAQ2 event has 
 
 If no detector is capable of defining events, the `[Metronome]` module needs to be used.
 
-Tags stored in the EUDAQ2 event header are read, a conversion to a double value is attempted and, if successful, a profile with the value over the number of events in the respective run is automatically allocated and filled.
+If `get_tag_histograms` or `get_tag_profiles` is used, the tags stored in the EUDAQ2 event header are read, a conversion to a double value is attempted and, if successful, a histogram and/or profile with the value over the number of events in the respective run is automatically allocated and filled.
 This feature can e.g. be used to log temperatures of the devices during data taking, simply storing the temperature as event tags.
 
 ### Requirements
@@ -86,7 +86,8 @@ In addition, the calibration file of the detector specified in the geometry conf
 * `inclusive`: Boolean parameter to select whether new data should be compared to the existing Corryvreckan event in inclusive or exclusive mode. The inclusive interpretation will allow new data to be added to the event as soon as there is some overlap between the data time frame and the existing event, i.e. as soon as the end of the time frame is later than the event start or as soon as the time frame start is before the event end. In the exclusive mode, the frame will only be added to the existing event if its start and end are both within the defined event.
 * `skip_time`: Time that can be skipped at the start of a run. All hits with earlier timestamps are discarded. Default is `0ms`.
 * `get_time_residuals`: Boolean to change if time residual plots should be created. Default value is `false`.
-* `get_tag_vectors`: Boolean to enable creation of EUDAQ2 event tag histograms. Default value is `false`.
+* `get_tag_histograms`: Boolean to enable creation of EUDAQ2 event tag histograms. Default value is `false`.
+* `get_tag_profiles`: Boolean to enable creation of EUDAQ2 event tag profiles over event number. Default value is `false`.
 * `ignore_bore`: Boolean to completely ignore the Begin-of-Run event (BORE) from EUDAQ2. Default value is `true`.
 * `adjust_event_times`: Matrix that allows the user to shift the event start/end of all different types of EUDAQ events before comparison to any other Corryvreckan data. The first entry of each row specifies the data type, the second is the offset which is added to the event start and the third entry is the offset added to the event end. A usage example is shown below, double brackets are required if only one entry is provided.
 * `buffer_depth`: Depth of buffer in which EUDAQ2 `StandardEvents` are timesorted. This algorithm only works for `StandardEvents` with well-defined timestamps. Setting it to `0` disables timesorting. Default is `0`.
