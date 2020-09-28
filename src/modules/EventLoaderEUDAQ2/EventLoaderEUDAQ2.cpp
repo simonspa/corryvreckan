@@ -16,6 +16,9 @@ using namespace corryvreckan;
 EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(detector) {
 
+    // Backwards compatibility: also allow get_tag_vectors to be used for get_tag_profiles
+    config_.setAlias("get_tag_profiles", "get_tag_vectors", true);
+
     config_.setDefault<bool>("get_time_residuals", false);
     config_.setDefault<bool>("get_tag_histograms", false);
     config_.setDefault<bool>("get_tag_profiles", false);
