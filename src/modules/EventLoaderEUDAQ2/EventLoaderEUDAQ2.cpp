@@ -259,7 +259,7 @@ void EventLoaderEUDAQ2::retrieve_event_tags(const eudaq::EventSPC evt) {
             double value = std::stod(tag_pair.second);
 
             // Check if histogram exists already, if not: create it
-            if(get_tag_histograms_){
+            if(get_tag_histograms_) {
                 if(tagHist.find(tag_pair.first) == tagHist.end()) {
                     std::string name = "tagHist_" + tag_pair.first;
                     std::string title = tag_pair.first + ";tag value;# entries";
@@ -267,7 +267,7 @@ void EventLoaderEUDAQ2::retrieve_event_tags(const eudaq::EventSPC evt) {
                 }
                 tagHist[tag_pair.first]->Fill(value);
             }
-            if(get_tag_profiles_){
+            if(get_tag_profiles_) {
                 if(tagProfile.find(tag_pair.first) == tagProfile.end()) {
                     std::string name = "tagProfile_" + tag_pair.first;
                     std::string title = "tag_" + tag_pair.first + ";event / 1000;tag value";
