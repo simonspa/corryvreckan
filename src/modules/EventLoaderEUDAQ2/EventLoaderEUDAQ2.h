@@ -106,7 +106,8 @@ namespace corryvreckan {
         std::shared_ptr<Detector> detector_;
         std::string filename_{};
         bool get_time_residuals_{};
-        bool get_tag_vectors_{};
+        bool get_tag_histograms_{};
+        bool get_tag_profiles_{};
         bool ignore_bore_{};
         bool inclusive_{};
         double skip_time_{};
