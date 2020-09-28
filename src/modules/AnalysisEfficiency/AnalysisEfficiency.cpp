@@ -251,12 +251,14 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
             LOG(DEBUG) << " - track close to end of readout frame: "
                        << Units::display(fabs(track->timestamp() - event->end()), {"us", "ns"}) << " at "
                        << Units::display(track->timestamp(), {"us"});
+            n_frameedge++;
             continue;
         } else if(fabs(track->timestamp() - event->start()) < m_timeCutFrameEdge) {
             // Early edge - eventStart points to the beginning of the frame
             LOG(DEBUG) << " - track close to start of readout frame: "
                        << Units::display(fabs(track->timestamp() - event->start()), {"us", "ns"}) << " at "
                        << Units::display(track->timestamp(), {"us"});
+            n_frameedge++;
             continue;
         }
 
@@ -359,6 +361,7 @@ void AnalysisEfficiency::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
                 << "* track outside ROI         -" << n_roi << std::endl
                 << "* track outside DUT         -" << n_dut << std::endl
                 << "* track close to masked px  -" << n_masked << std::endl
+                << "* track close to frame edge -" << n_frameedge << std::endl
                 << "Accepted tracks:            " << total_tracks;
 
     double totalEff = 100 * static_cast<double>(matched_tracks) / (total_tracks > 0 ? total_tracks : 1);
