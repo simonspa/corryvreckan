@@ -9,6 +9,7 @@ EUDET type telescopes based on the NI MIMOSA26 readout. The event begin and
 end are defined based on the  pivot pixel provided in the MIMOSA data
 stream. Currently the module assumes that the full two data frames are read
 out, which is not the case in the standard converter.
+This sounds like the eudaq2 converter and this module are not compatible...?!
 
 Event definition example:
 If a triggerID has a TLU event from 425.000us to 425.025us (default
@@ -20,8 +21,8 @@ end = begin + 230us
 ```
 
 ### Parameters
-* `detector_event_time`: Specify the detector used to define the event timestamp
-* `detector_event_duration`: Specify detector used to define the begin and end of the event relative to the timestamp provided by `detector_event_time`
+* `detector_event_time`: Specify the detector type used to define the event timestamp
+* `detector_event_duration`: Specify detector type used to define the begin and end of the event relative to the timestamp provided by `detector_event_time`
 * `file_timestamp`: Data file containing the `detector_event_time` data
 * `file_duration`: Data file containing the  `detector_event_duration` data
 * `time_shift`: Optional shift of the event begin/end point. Defaults to `0`
