@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Definition of module EventCreatorEUDAQ2
+ * @brief Definition of module EventDefinitionM26
  *
  * @copyright Copyright (c) 2020 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
