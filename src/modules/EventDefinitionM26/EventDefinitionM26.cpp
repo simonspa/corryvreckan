@@ -64,15 +64,19 @@ unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filere
     do {
         auto evt = filereader->GetNextEvent();
         if(!evt) {
+            LOG(DEBUG) << "Reached end-of-file.";
             throw EndOfFile();
         }
         std::vector<eudaq::EventSPC> events_ = evt->GetSubEvents();
         if(events_.empty()) {
+            LOG(DEBUG) << "Pushing event back.";
             events_.push_back(evt);
         }
         for(const auto& e : events_) {
             auto stdevt = eudaq::StandardEvent::MakeShared();
+            // here the standard event is still empty!
             auto detector = stdevt->GetDetectorType();
+            LOG(DEBUG) << "det = " << det << ", detector = " << detector;
             if(det == detector) {
                 begin = Units::get(static_cast<double>(stdevt->GetTimeBegin()), "ps");
                 end = Units::get(static_cast<double>(stdevt->GetTimeEnd()), "ps");
