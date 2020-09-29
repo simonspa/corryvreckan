@@ -74,7 +74,9 @@ unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filere
         }
         for(const auto& e : events_) {
             auto stdevt = eudaq::StandardEvent::MakeShared();
-            // here the standard event is still empty!
+            if(!eudaq::StdEventConverter::Convert(e, stdevt, nullptr)) {
+                continue;
+            }
             auto detector = stdevt->GetDetectorType();
             LOG(DEBUG) << "det = " << det << ", detector = " << detector;
             if(det == detector) {
