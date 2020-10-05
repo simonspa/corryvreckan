@@ -1,15 +1,15 @@
 # EventDefinitionM26
 **Maintainer**: Lennart Huth (lennart.huth@desy.de)  
 **Module Type**: *GLOBAL*  
-**Status**: Functional 
+**Status**: Functional
 
 ### Description
 This global module allows to fully utilize the PIVOT pixel behaviour of the
 EUDET type telescopes based on the NI MIMOSA26 readout. The event begin and
 end are defined based on the  pivot pixel provided in the MIMOSA data
-stream. Currently the module assumes that the full two data frames are read
+stream. Currently, the module assumes that the full two data frames are read
 out, which is not the case in the standard converter.
-This sounds like the eudaq2 converter and this module are not compatible...?!
+However, the converter only returns all pixels after the pivot pixel of the first frame and those before the pivot pixel of the second frame.
 
 Event definition example:
 If a triggerID has a TLU event from 425.000us to 425.025us (default
