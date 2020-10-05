@@ -14,6 +14,11 @@ using namespace corryvreckan;
 
 EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
+
+    config_.setDefault<int>("time_shift", 0);
+    config_.setDefault<int>("shift_triggers", 0);
+    config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
+
     detector_time_ = config_.get<std::string>("detector_event_time");
     detector_duration_ = config_.get<std::string>("detector_event_duration");
     duration_ = config_.get<std::string>("file_duration");
