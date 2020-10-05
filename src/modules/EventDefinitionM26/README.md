@@ -27,7 +27,8 @@ end = begin + 230us
 * `file_duration`: Data file containing the  `detector_event_duration` data
 * `time_shift`: Optional shift of the event begin/end point. Defaults to `0`
 * `shift_triggers`: Shift the trigger ID of the `detector_event_time`. Defaults to `0`
-* `eudaq_loglevel`: Verbosity level of the EUDAQ logger instance of the converter module. Possible options are, in decreasing severity, `USER`, `ERROR`, `WARN`, `INFO`, `EXTRA` and `DEBUG`. The default level is `ERROR`.
+* `eudaq_loglevel`: Verbosity level of the EUDAQ logger instance of the converter module. Possible options are, in decreasing severity, `USER`, `ERROR`, `WARN`, `INFO`, `EXTRA` and `DEBUG`. The default level is `ERROR`. Please note that the EUDAQ verbosity can only be changed globally, i.e. when using instances of `EventLoaderEUDAQ2` below this module, the last occurrence will determine the (global) value of this parameter.
+
 
 ### Plots produced
 * 1D histogram of time between trigger timestamps
