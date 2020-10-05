@@ -79,6 +79,9 @@ namespace corryvreckan {
          */
         unsigned
         get_next_event_with_det(eudaq::FileReaderUP& filereader, std::string& det, long double& begin, long double& end);
+
+        // EUDAQ configuration to be passed to the decoder instance
+        eudaq::ConfigurationSPC eudaq_config_;
     };
 
 } // namespace corryvreckan

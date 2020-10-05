@@ -25,6 +25,22 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     // Set EUDAQ log level to desired value:
     EUDAQ_LOG_LEVEL(config_.get<std::string>("eudaq_loglevel"));
     LOG(INFO) << "Setting EUDAQ2 log level to \"" << config_.get<std::string>("eudaq_loglevel") << "\"";
+
+    // Prepare EUDAQ2 config object
+    eudaq::Configuration cfg;
+
+    // Forward all settings to EUDAQ
+    // WARNING: the EUDAQ Configuration class is not very flexible and e.g. booleans have to be passed as 1 and 0.
+    auto configs = config_.getAll();
+    for(const auto& key : configs) {
+        LOG(DEBUG) << "Forwarding key \"" << key.first << " = " << key.second << "\" to EUDAQ converter";
+        cfg.Set(key.first, key.second);
+    }
+
+    // Converting the newly built configuration to a shared pointer of a const configuration object
+    // Unfortunbately EUDAQ does not provide appropriate member functions for their configuration class to avoid this dance
+    const eudaq::Configuration eu_cfg = cfg;
+    eudaq_config_ = std::make_shared<const eudaq::Configuration>(eu_cfg);
 }
 
 void EventDefinitionM26::initialize() {
@@ -74,9 +90,10 @@ unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filere
         }
         for(const auto& e : events_) {
             auto stdevt = eudaq::StandardEvent::MakeShared();
-            if(!eudaq::StdEventConverter::Convert(e, stdevt, nullptr)) {
+            if(!eudaq::StdEventConverter::Convert(e, stdevt, eudaq_config_)) {
                 continue;
             }
+
             auto detector = stdevt->GetDetectorType();
             LOG(DEBUG) << "det = " << det << ", detector = " << detector;
             if(det == detector) {
