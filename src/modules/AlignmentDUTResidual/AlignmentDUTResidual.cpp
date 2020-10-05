@@ -44,15 +44,11 @@ AlignmentDUTResidual::AlignmentDUTResidual(Configuration& config, std::shared_pt
         m_alignOrientation_axes.begin(), m_alignOrientation_axes.end(), m_alignOrientation_axes.begin(), ::tolower);
 
     if(m_alignPosition) {
-        LOG(INFO) << "Do not aligning positions";
-    } else {
         LOG(INFO) << "Aligning positions";
     }
 
     if(m_alignOrientation) {
-        LOG(INFO) << "Do not aligning orientation";
-    } else {
-        LOG(INFO) << "Aligning orientation";
+        LOG(INFO) << "Aligning orientations";
     }
 
     m_maxAssocClusters = config_.get<size_t>("max_associated_clusters");
