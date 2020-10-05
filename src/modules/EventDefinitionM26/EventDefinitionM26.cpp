@@ -104,12 +104,17 @@ unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filere
             if(det == detector) {
                 begin = Units::get(static_cast<double>(stdevt->GetTimeBegin()), "ps");
                 end = Units::get(static_cast<double>(stdevt->GetTimeEnd()), "ps");
+                LOG(DEBUG) << "Set begin/end, begin: " << Units::display(begin, "ns")
+                           << ", end: " << Units::display(end, "ns");
                 // MIMOSA
                 if(det == "MIMOSA26") {
                     // pivot magic - see readme
                     double piv = stdevt->GetPlane(0).PivotPixel() / 16.;
                     begin = Units::get(piv * (115.2 / 576), "us") + timeshift_;
                     end = Units::get(230.4, "us") - begin;
+                    LOG(DEBUG) << "Pivot magic, begin: " << Units::display(begin, "ns")
+                               << ", end: " << Units::display(end, "ns")
+                               << ", diff = " << Units::display(end - begin, {"ns", "us"});
                 }
                 return e->GetTriggerN();
             }
