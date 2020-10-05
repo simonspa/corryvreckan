@@ -155,12 +155,14 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
             if(time_trig - time_prev_ > 0) {
                 timebetweenMimosaEvents_->Fill(static_cast<double>(Units::convert(time_trig - time_prev_, "us")));
                 time_prev_ = time_trig;
-                long double evtstart = time_trig - time_before_;
+                long double evtStart = time_trig - time_before_;
                 long double evtEnd = time_trig + time_after_;
-                clipboard->putEvent(std::make_shared<Event>(evtstart, evtEnd));
-                LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(evtstart, {"us", "ns"}) << " - "
+                LOG(DEBUG) << "before/after/duration = " << Units::display(time_before_,"us") << ", " << Units::display(time_after_,"us") << ", " << Units::display(time_after_ - time_before_,"us");
+                LOG(DEBUG) << "evtStart/evtEnd/duration = " << Units::display(evtStart,"us") << ", " << Units::display(evtEnd,"us") << ", " << Units::display(evtEnd - evtStart,"us");
+                clipboard->putEvent(std::make_shared<Event>(evtStart, evtEnd));
+                LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(evtStart, {"us", "ns"}) << " - "
                            << Units::display(evtEnd, {"us", "ns"}) << ", length "
-                           << Units::display(evtEnd - evtstart, {"us", "ns"});
+                           << Units::display(evtEnd - evtStart, {"us", "ns"});
             } else {
                 LOG(WARNING) << "Current trigger time smaller than previous: " << time_trig << " vs " << time_prev_;
             }
