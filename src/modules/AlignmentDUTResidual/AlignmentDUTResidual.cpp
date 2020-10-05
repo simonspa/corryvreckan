@@ -264,12 +264,12 @@ void AlignmentDUTResidual::finalize(const std::shared_ptr<ReadonlyClipboard>& cl
                 << Units::display(m_detector->rotation(), {"deg"});
 
     // Add the parameters to the fitter (z displacement not allowed to move!)
-    if(m_alignPosition_axes.find('x') != std::string::npos) {
+    if(m_alignPosition && m_alignPosition_axes.find('x') != std::string::npos) {
         residualFitter->SetParameter(0, (name + "_displacementX").c_str(), m_detector->displacement().X(), 0.01, -50, 50);
     } else {
         residualFitter->SetParameter(0, (name + "_displacementX").c_str(), m_detector->displacement().X(), 0, -50, 50);
     }
-    if(m_alignPosition_axes.find('y') != std::string::npos) {
+    if(m_alignPosition && m_alignPosition_axes.find('y') != std::string::npos) {
         residualFitter->SetParameter(1, (name + "_displacementY").c_str(), m_detector->displacement().Y(), 0.01, -50, 50);
     } else {
         residualFitter->SetParameter(1, (name + "_displacementY").c_str(), m_detector->displacement().Y(), 0, -50, 50);
@@ -278,17 +278,17 @@ void AlignmentDUTResidual::finalize(const std::shared_ptr<ReadonlyClipboard>& cl
     // Z is never changed:
     residualFitter->SetParameter(2, (name + "_displacementZ").c_str(), m_detector->displacement().Z(), 0, -10, 500);
 
-    if(m_alignOrientation_axes.find('x') != std::string::npos) {
+    if(m_alignOrientation && m_alignOrientation_axes.find('x') != std::string::npos) {
         residualFitter->SetParameter(3, (name + "_rotationX").c_str(), m_detector->rotation().X(), 0.001, -6.30, 6.30);
     } else {
         residualFitter->SetParameter(3, (name + "_rotationX").c_str(), m_detector->rotation().X(), 0, -6.30, 6.30);
     }
-    if(m_alignOrientation_axes.find('y') != std::string::npos) {
+    if(m_alignOrientation && m_alignOrientation_axes.find('y') != std::string::npos) {
         residualFitter->SetParameter(4, (name + "_rotationY").c_str(), m_detector->rotation().Y(), 0.001, -6.30, 6.30);
     } else {
         residualFitter->SetParameter(4, (name + "_rotationY").c_str(), m_detector->rotation().Y(), 0, -6.30, 6.30);
     }
-    if(m_alignOrientation_axes.find('z') != std::string::npos) {
+    if(m_alignOrientation && m_alignOrientation_axes.find('z') != std::string::npos) {
         residualFitter->SetParameter(5, (name + "_rotationZ").c_str(), m_detector->rotation().Z(), 0.001, -6.30, 6.30);
     } else {
         residualFitter->SetParameter(5, (name + "_rotationZ").c_str(), m_detector->rotation().Z(), 0, -6.30, 6.30);
