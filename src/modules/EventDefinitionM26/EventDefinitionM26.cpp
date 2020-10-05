@@ -69,13 +69,13 @@ void EventDefinitionM26::initialize() {
                    << " '. Please verify that the path and file name are correct.";
         throw InvalidValueError(config_, "file_path", "Parsing error!");
     }
-    // get the first event each
-    timestampTrig_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_);
-    while((int(timestampTrig_) + shift_triggers_) < 0) {
-        timestampTrig_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_);
+    // get the first event each // this cannot catch EndOfFile -> unsafe!
+    triggerTLU_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_);
+    while((int(triggerTLU_) + shift_triggers_) < 0) {
+        triggerTLU_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_);
     }
-    timestampTrig_ = static_cast<unsigned>(static_cast<int>(timestampTrig_) + shift_triggers_);
-    durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
+    triggerTLU_ = static_cast<unsigned>(static_cast<int>(triggerTLU_) + shift_triggers_);
+    triggerM26_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
 }
 
 unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filereader,
@@ -121,29 +121,31 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
 
     // Loop over all detectors
     if(clipboard->isEventDefined()) {
-        throw ModuleError(
-            "Event already defined - cannot crate a new event. This module needs to be placed before the first EventLoader");
+        throw ModuleError("Event already defined - cannot create a new event. This module needs to be placed before the "
+                          "first EventLoader");
     }
     // read events until we have a common tag:
     do {
-        LOG(DEBUG) << "Trigger of timestamp defining event: " << timestampTrig_ << std::endl
-                   << " Trigger of duration defining event: " << durationTrig_;
+        LOG(DEBUG) << "Trigger of timestamp defining event: " << triggerTLU_ << std::endl
+                   << " Trigger of duration defining event: " << triggerM26_;
         try {
-            if(timestampTrig_ < durationTrig_) {
-                timestampTrig_ = static_cast<unsigned>(static_cast<int>(get_next_event_with_det(
-                                                           readerTime_, detector_time_, time_trig_start_, time_trig_stop_)) +
-                                                       shift_triggers_);
+            if(triggerTLU_ < triggerM26_) {
+                LOG(DEBUG) << "trigger of timestamp detector smaller than duration detector, get next timestamp trigger";
+                triggerTLU_ = static_cast<unsigned>(static_cast<int>(get_next_event_with_det(
+                                                        readerTime_, detector_time_, time_trig_start_, time_trig_stop_)) +
+                                                    shift_triggers_);
                 timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
                 trig_prev_ = time_trig_start_;
-            } else if(timestampTrig_ > durationTrig_) {
-                durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
+            } else if(triggerTLU_ > triggerM26_) {
+                LOG(DEBUG) << "trigger of duration detector smaller than timestamp detector, get next duration trigger";
+                triggerM26_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
             }
 
         } catch(EndOfFile&) {
             return StatusCode::EndRun;
         }
 
-        if(timestampTrig_ == durationTrig_) {
+        if(triggerTLU_ == triggerM26_) {
             auto time_trig = (time_trig_start_ + time_trig_stop_) / 2.;
             if(time_trig - time_prev_ > 0) {
                 timebetweenMimosaEvents_->Fill(static_cast<double>(Units::convert(time_trig - time_prev_, "us")));
@@ -158,19 +160,19 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                 LOG(WARNING) << "Current trigger time smaller than previous: " << time_trig << " vs " << time_prev_;
             }
             try {
-                timestampTrig_ = static_cast<unsigned>(static_cast<int>(get_next_event_with_det(
-                                                           readerTime_, detector_time_, time_trig_start_, time_trig_stop_)) +
-                                                       shift_triggers_);
+                triggerTLU_ = static_cast<unsigned>(static_cast<int>(get_next_event_with_det(
+                                                        readerTime_, detector_time_, time_trig_start_, time_trig_stop_)) +
+                                                    shift_triggers_);
                 timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
                 trig_prev_ = time_trig_start_;
-                durationTrig_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
+                triggerM26_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
             } catch(EndOfFile&) {
                 return StatusCode::EndRun;
             }
-        } else if(timestampTrig_ > durationTrig_) {
-            LOG(DEBUG) << "No TLU time stamp for trigger ID " << timestampTrig_;
-        } else if(timestampTrig_ < durationTrig_) {
-            LOG(DEBUG) << "No Mimosa data for trigger ID " << durationTrig_;
+        } else if(triggerTLU_ > triggerM26_) {
+            LOG(DEBUG) << "No TLU time stamp for trigger ID " << triggerTLU_;
+        } else if(triggerTLU_ < triggerM26_) {
+            LOG(DEBUG) << "No Mimosa data for trigger ID " << triggerM26_;
         }
 
     } while(!clipboard->isEventDefined());
