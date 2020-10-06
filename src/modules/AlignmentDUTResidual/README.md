@@ -11,7 +11,7 @@ This module uses tracks for alignment. The module moves the detector it is insta
 
 ### Parameters
 * `iterations`: Number of times the chosen alignment method is to be iterated. Default value is `3`.
-* `align_position`: Boolean to select whether to align the X and Y displacements of the detector or not. Note that the Z displacement is never aligned. The default value is `true`.
+* `align_position`: Boolean to select whether to align the translational displacements of the detector or not. Note that the Z displacement is never aligned. Specify the axes using `align_position_axes`. The default value is `true`.
 * `align_orientation`: Boolean to select whether to align the rotations of the detector under consideration or not. Specify the axes using `align_orientation_axes`. The default value is `true`.
 * `align_position_axes`: Define for which axes to perform translational alignment. The default value is `xy`, which means both X and Y displacements of the detector will be aligned.
 * `align_orientation_axes`: Define for which axes to perform rotational alignment if `align_orientation = true`. The default value is `xyz`, which means that rotations around X, Y and Z axis will be aligned.
