@@ -13,6 +13,8 @@ This module uses tracks for alignment. The module moves the detector it is insta
 * `iterations`: Number of times the chosen alignment method is to be iterated. Default value is `3`.
 * `align_position`: Boolean to select whether to align the X and Y displacements of the detector or not. Note that the Z displacement is never aligned. The default value is `true`.
 * `align_orientation`: Boolean to select whether to align the three rotations of the detector under consideration or not. The default value is `true`.
+* `align_position_axes`: Define which axes to align. The default value is `xy`, which means both X and Y displacements of the detector will be aligned.
+* `align_orientation_axes`: Define which axes to align. The default value is `xyz`, which means all X, Y and Z displacements of the detector will be aligned.
 * `prune_tracks`: Boolean to set if tracks with a number of associated clusters > `max_associated_clusters` or with a track chi^2 > `max_track_chi2ndof` should be excluded from use in the alignment. The number of discarded tracks is written to the terminal. Default is `false`.
 * `max_associated_clusters`: Maximum number of associated clusters per track allowed when `prune_tracks = true` for the track to be used in the alignment. Default value is `1`.
 * `max_track_chi2ndof`: Maximum track chi^2 value allowed when `prune_tracks = true` for the track to be used in the alignment. Default value is `10.0`.
