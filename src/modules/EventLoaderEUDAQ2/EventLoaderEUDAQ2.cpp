@@ -365,7 +365,7 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
             auto trigger_id = static_cast<uint32_t>(static_cast<int>(evt->GetTriggerN()) + shift_triggers_);
             // Store potential trigger numbers, assign to center of event:
             clipboard->getEvent()->addTrigger(trigger_id, event_timestamp);
-            LOG(DEBUG) << "Stored trigger ID " << evt->GetTriggerN() << " at "
+            LOG(DEBUG) << "Stored trigger ID " << trigger_id << " at "
                        << Units::display(event_timestamp, {"us", "ns"});
         }
     }
@@ -558,6 +558,9 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     auto event = clipboard->getEvent();
     hTriggersPerEvent->Fill(static_cast<double>(event->triggerList().size()));
+    if(event->triggerList().size() == 0) {
+        LOG(WARNING) << "Triggers on clipboard event: " << event->triggerList().size();
+    }
     LOG(DEBUG) << "Triggers on clipboard event: " << event->triggerList().size();
     for(auto& trigger : event->triggerList()) {
         LOG(DEBUG) << "\t ID: " << trigger.first << ", time: " << Units::display(trigger.second, "us");
