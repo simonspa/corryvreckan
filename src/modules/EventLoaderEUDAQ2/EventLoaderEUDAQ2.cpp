@@ -347,7 +347,10 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
                    << Units::display(event_end - event_start, {"us", "ns"});
         clipboard->putEvent(std::make_shared<Event>(event_start, event_end));
     } else {
-        LOG(DEBUG) << "Corryvreckan event found on clipboard.";
+        LOG(DEBUG) << "Corryvreckan event found on clipboard: "
+                   << Units::display(clipboard->getEvent()->start(), {"us", "ns"}) << " - "
+                   << Units::display(clipboard->getEvent()->end(), {"us", "ns"})
+                   << ", length: " << Units::display(clipboard->getEvent()->duration(), {"us", "ns"});
     }
 
     // Get position of this time frame with respect to the defined event:
@@ -365,8 +368,7 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
             auto trigger_id = static_cast<uint32_t>(static_cast<int>(evt->GetTriggerN()) + shift_triggers_);
             // Store potential trigger numbers, assign to center of event:
             clipboard->getEvent()->addTrigger(trigger_id, event_timestamp);
-            LOG(DEBUG) << "Stored trigger ID " << trigger_id << " at "
-                       << Units::display(event_timestamp, {"us", "ns"});
+            LOG(DEBUG) << "Stored trigger ID " << trigger_id << " at " << Units::display(event_timestamp, {"us", "ns"});
         }
     }
 
