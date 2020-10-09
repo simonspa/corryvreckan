@@ -18,6 +18,7 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     config_.setDefault<int>("time_shift", 0);
     config_.setDefault<int>("shift_triggers", 0);
     config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
+    config_.setDefault<double>("response_time_m26", Units::get<double>(0, "us"));
 
     detector_time_ = config_.get<std::string>("detector_event_time");
     detector_duration_ = config_.get<std::string>("detector_event_duration");
@@ -25,6 +26,7 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     timestamp_ = config_.get<std::string>("file_timestamp");
     timeshift_ = config_.get<double>("time_shift");
     shift_triggers_ = config_.get<int>("shift_triggers");
+    response_time_m26_ = config_.get<double>("response_time_m26");
     config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
 
     // Set EUDAQ log level to desired value:
@@ -151,7 +153,7 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
         }
 
         if(triggerTLU_ == triggerM26_) {
-            auto time_trig = (time_trig_start_ + time_trig_stop_) / 2.;
+            auto time_trig = time_trig_start_ - response_time_m26_;
             if(time_trig - time_prev_ > 0) {
                 timebetweenMimosaEvents_->Fill(static_cast<double>(Units::convert(time_trig - time_prev_, "us")));
                 time_prev_ = time_trig;
