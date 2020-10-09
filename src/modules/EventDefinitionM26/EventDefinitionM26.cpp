@@ -85,14 +85,15 @@ unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filere
                                                      long double& begin,
                                                      long double& end) {
     do {
+        LOG(DEBUG) << "Get next event.";
         auto evt = filereader->GetNextEvent();
         if(!evt) {
             LOG(DEBUG) << "Reached end-of-file.";
             throw EndOfFile();
         }
+        LOG(DEBUG) << "Get subevents.";
         std::vector<eudaq::EventSPC> events_ = evt->GetSubEvents();
         if(events_.empty()) {
-            LOG(DEBUG) << "Pushing event back.";
             events_.push_back(evt);
         }
         for(const auto& e : events_) {
@@ -106,17 +107,17 @@ unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filere
             if(det == detector) {
                 begin = Units::get(static_cast<double>(stdevt->GetTimeBegin()), "ps");
                 end = Units::get(static_cast<double>(stdevt->GetTimeEnd()), "ps");
-                LOG(DEBUG) << "Set begin/end, begin: " << Units::display(begin, "ns")
-                           << ", end: " << Units::display(end, "ns");
+                LOG(DEBUG) << "Set begin/end, begin: " << Units::display(begin, {"ns", "us"})
+                           << ", end: " << Units::display(end, {"ns", "us"});
                 // MIMOSA
                 if(det == "MIMOSA26") {
                     // pivot magic - see readme
                     double piv = stdevt->GetPlane(0).PivotPixel() / 16.;
                     begin = Units::get(piv * (115.2 / 576), "us") + timeshift_;
                     end = Units::get(230.4, "us") - begin;
-                    LOG(DEBUG) << "Pivot magic, begin: " << Units::display(begin, "ns")
-                               << ", end: " << Units::display(end, "ns")
-                               << ", diff = " << Units::display(end - begin, {"ns", "us"});
+                    LOG(DEBUG) << "Pivot magic, begin: " << Units::display(begin, {"ns", "us", "ms"})
+                               << ", end: " << Units::display(end, {"ns", "us", "ms"})
+                               << ", duration = " << Units::display(begin + end, {"ns", "us"});
                 }
                 return e->GetTriggerN();
             }
@@ -133,18 +134,18 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
     }
     // read events until we have a common tag:
     do {
-        LOG(DEBUG) << "Trigger of timestamp defining event: " << triggerTLU_ << std::endl
-                   << " Trigger of duration defining event: " << triggerM26_;
+        LOG(DEBUG) << "TLU trigger defining event: " << triggerTLU_ << std::endl
+                   << "Mimosa26 trigger defining event: " << triggerM26_;
         try {
             if(triggerTLU_ < triggerM26_) {
-                LOG(DEBUG) << "trigger of timestamp detector smaller than duration detector, get next timestamp trigger";
+                LOG(DEBUG) << "TLU trigger smaller than Mimosa26 trigger, get next TLU trigger";
                 triggerTLU_ = static_cast<unsigned>(static_cast<int>(get_next_event_with_det(
                                                         readerTime_, detector_time_, time_trig_start_, time_trig_stop_)) +
                                                     shift_triggers_);
                 timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
                 trig_prev_ = time_trig_start_;
             } else if(triggerTLU_ > triggerM26_) {
-                LOG(DEBUG) << "trigger of duration detector smaller than timestamp detector, get next duration trigger";
+                LOG(DEBUG) << "Mimosa26 trigger smaller than TLU trigger, get next Mimosa26 trigger";
                 triggerM26_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
             }
 
@@ -155,12 +156,16 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
         if(triggerTLU_ == triggerM26_) {
             auto time_trig = time_trig_start_ - response_time_m26_;
             if(time_trig - time_prev_ > 0) {
+                // if(time_trig_start_ - time_trig_stop_prev_ > 0) {
                 timebetweenMimosaEvents_->Fill(static_cast<double>(Units::convert(time_trig - time_prev_, "us")));
                 time_prev_ = time_trig;
                 long double evtStart = time_trig - time_before_;
                 long double evtEnd = time_trig + time_after_;
-                LOG(DEBUG) << "before/after/duration = " << Units::display(time_before_,"us") << ", " << Units::display(time_after_,"us") << ", " << Units::display(time_after_ - time_before_,"us");
-                LOG(DEBUG) << "evtStart/evtEnd/duration = " << Units::display(evtStart,"us") << ", " << Units::display(evtEnd,"us") << ", " << Units::display(evtEnd - evtStart,"us");
+                // evtEnd_prev_ = evtEnd;
+                LOG(DEBUG) << "before/after/duration = " << Units::display(time_before_, "us") << ", "
+                           << Units::display(time_after_, "us") << ", " << Units::display(time_after_ + time_before_, "us");
+                LOG(DEBUG) << "evtStart/evtEnd/duration = " << Units::display(evtStart, "us") << ", "
+                           << Units::display(evtEnd, "us") << ", " << Units::display(evtEnd - evtStart, "us");
                 clipboard->putEvent(std::make_shared<Event>(evtStart, evtEnd));
                 LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(evtStart, {"us", "ns"}) << " - "
                            << Units::display(evtEnd, {"us", "ns"}) << ", length "
