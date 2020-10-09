@@ -71,13 +71,6 @@ void EventDefinitionM26::initialize() {
                    << " '. Please verify that the path and file name are correct.";
         throw InvalidValueError(config_, "file_path", "Parsing error!");
     }
-    // get the first event each // this cannot catch EndOfFile -> unsafe!
-    triggerTLU_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_);
-    while((int(triggerTLU_) + shift_triggers_) < 0) {
-        triggerTLU_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_);
-    }
-    triggerTLU_ = static_cast<unsigned>(static_cast<int>(triggerTLU_) + shift_triggers_);
-    triggerM26_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
 }
 
 unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filereader,
@@ -134,9 +127,14 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
     }
     // read events until we have a common tag:
     do {
-        LOG(DEBUG) << "TLU trigger defining event: " << triggerTLU_ << std::endl
-                   << "Mimosa26 trigger defining event: " << triggerM26_;
         try {
+            triggerTLU_ = static_cast<unsigned>(
+                static_cast<int>(get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_)) +
+                shift_triggers_);
+            timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
+            trig_prev_ = time_trig_start_;
+            triggerM26_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
+
             if(triggerTLU_ < triggerM26_) {
                 LOG(DEBUG) << "TLU trigger smaller than Mimosa26 trigger, get next TLU trigger";
                 triggerTLU_ = static_cast<unsigned>(static_cast<int>(get_next_event_with_det(
@@ -152,6 +150,9 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
         } catch(EndOfFile&) {
             return StatusCode::EndRun;
         }
+
+        LOG(DEBUG) << "TLU trigger defining event: " << triggerTLU_ << std::endl
+                   << "Mimosa26 trigger defining event: " << triggerM26_;
 
         if(triggerTLU_ == triggerM26_) {
             auto time_trig = time_trig_start_ - response_time_m26_;
@@ -173,16 +174,7 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
             } else {
                 LOG(WARNING) << "Current trigger time smaller than previous: " << time_trig << " vs " << time_prev_;
             }
-            try {
-                triggerTLU_ = static_cast<unsigned>(static_cast<int>(get_next_event_with_det(
-                                                        readerTime_, detector_time_, time_trig_start_, time_trig_stop_)) +
-                                                    shift_triggers_);
-                timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
-                trig_prev_ = time_trig_start_;
-                triggerM26_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
-            } catch(EndOfFile&) {
-                return StatusCode::EndRun;
-            }
+
         } else if(triggerTLU_ > triggerM26_) {
             LOG(DEBUG) << "No TLU time stamp for trigger ID " << triggerTLU_;
         } else if(triggerTLU_ < triggerM26_) {
