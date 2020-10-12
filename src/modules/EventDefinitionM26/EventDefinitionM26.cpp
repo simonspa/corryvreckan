@@ -165,10 +165,10 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
             if(time_trig - time_prev_ > 0) {
                 // if(time_trig_start_ - time_trig_stop_prev_ > 0) {
                 timebetweenMimosaEvents_->Fill(static_cast<double>(Units::convert(time_trig - time_prev_, "us")));
-                time_prev_ = time_trig;
                 long double evtStart = time_trig - time_before_;
                 long double evtEnd = time_trig + time_after_;
-                // evtEnd_prev_ = evtEnd;
+                LOG(DEBUG) << "time to previous trigger = " << Units::display(time_trig - time_prev_, "us");
+                time_prev_ = time_trig;
                 LOG(DEBUG) << "before/after/duration = " << Units::display(time_before_, "us") << ", "
                            << Units::display(time_after_, "us") << ", " << Units::display(time_after_ + time_before_, "us");
                 LOG(DEBUG) << "evtStart/evtEnd/duration = " << Units::display(evtStart, "us") << ", "
