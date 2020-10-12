@@ -67,6 +67,8 @@ namespace corryvreckan {
 
         TH1F* timebetweenMimosaEvents_;
         TH1F* timebetweenTLUEvents_;
+        TH1F* timeBeforeTrigger_;
+        TH1F* timeAfterTrigger_;
         TH1D* hClipboardEventStart;
         TH1D* hClipboardEventStart_long;
 

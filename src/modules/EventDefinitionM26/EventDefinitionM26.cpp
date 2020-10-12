@@ -59,6 +59,9 @@ void EventDefinitionM26::initialize() {
     timebetweenTLUEvents_ =
         new TH1F("htimebetweenTrigger", "time between two triggers frames; time /us; #entries", 1000, -0.5, 995.5);
 
+    timeBeforeTrigger_ = new TH1F("timeBeforeTrigger", "time in frame before trigger; time /us; #entries", 2320, -231, 1);
+    timeAfterTrigger_ = new TH1F("timeAfterTrigger", "time in frame after trigger; time /us; #entries", 2320, -1, 231);
+
     std::string title = "Corryvreckan event start times (placed on clipboard); Corryvreckan event start time [ms];# entries";
     hClipboardEventStart = new TH1D("clipboardEventStart", title.c_str(), 3e6, 0, 3e3);
 
@@ -169,6 +172,8 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
             if(time_trig - time_prev_ > 0) {
                 // if(time_trig_start_ - time_trig_stop_prev_ > 0) {
                 timebetweenMimosaEvents_->Fill(static_cast<double>(Units::convert(time_trig - time_prev_, "us")));
+                timeBeforeTrigger_->Fill(static_cast<double>(Units::convert(-1.0 * time_before_, "us")));
+                timeAfterTrigger_->Fill(static_cast<double>(Units::convert(time_after_, "us")));
                 long double evtStart = time_trig - time_before_;
                 long double evtEnd = time_trig + time_after_;
 
