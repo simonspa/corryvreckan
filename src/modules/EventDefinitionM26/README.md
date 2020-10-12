@@ -21,10 +21,9 @@ end = begin + 230us
 ```
 
 ### Parameters
-* `detector_event_time`: Specify the detector type used to define the event timestamp
-* `detector_event_duration`: Specify detector type used to define the begin and end of the event relative to the timestamp provided by `detector_event_time`
+* `detector_event_time`: Specify the detector type used to define the event timestamp.
 * `file_timestamp`: Data file containing the `detector_event_time` data
-* `file_duration`: Data file containing the  `detector_event_duration` data
+* `file_m26`: Data file containing the  `MIMOSA26` data used to define the extend of the event.
 * `time_shift`: Optional shift of the event begin/end point. Defaults to `0`
 * `shift_triggers`: Shift the trigger ID of the `detector_event_time`. Defaults to `0`
 * `skip_time`: Time that can be skipped at the start of a run. All events with earlier timestamps are discarded. Default is `0ms`.
@@ -38,11 +37,9 @@ end = begin + 230us
 ### Usage
 ```toml
 [EventDefinitionM26]
-
 detector_event_time = TLU
-detector_event_duration = MIMOSA
 file_timestamp = tlu_data.raw
 file_duration = mimosa_data.raw
 time_shift = 0
-shift_triggers = 0
+shift_triggers = -1
 ```
