@@ -139,15 +139,19 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                           "first EventLoader");
     }
     // read events until we have a common tag:
-    do {
-        try {
-            triggerTLU_ = static_cast<unsigned>(
-                static_cast<int>(get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_)) +
-                shift_triggers_);
+    try {
+        triggerTLU_ = static_cast<unsigned>(
+            static_cast<int>(get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_)) +
+            shift_triggers_);
             timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
             trig_prev_ = time_trig_start_;
             triggerM26_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
+    } catch(EndOfFile&) {
+        return StatusCode::EndRun;
+    }
 
+    do {
+        try {
             if(triggerTLU_ < triggerM26_) {
                 LOG(DEBUG) << "TLU trigger smaller than Mimosa26 trigger, get next TLU trigger";
                 triggerTLU_ = static_cast<unsigned>(static_cast<int>(get_next_event_with_det(
