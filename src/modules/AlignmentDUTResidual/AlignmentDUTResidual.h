@@ -62,6 +62,8 @@ namespace corryvreckan {
         bool m_pruneTracks;
         bool m_alignPosition;
         bool m_alignOrientation;
+        std::string m_alignPosition_axes;
+        std::string m_alignOrientation_axes;
         size_t m_maxAssocClusters;
         double m_maxTrackChi2;
 
