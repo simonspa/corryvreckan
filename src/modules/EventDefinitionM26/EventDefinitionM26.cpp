@@ -182,7 +182,7 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                 long double evtEnd = time_trig + time_after_;
 
                 if(evtStart < skip_time_) {
-                    LOG(ERROR) << "Event start before requested skip time: " << Units::display(evtStart, {"us", "ns"})
+                    LOG(DEBUG) << "Event start before requested skip time: " << Units::display(evtStart, {"us", "ns"})
                                << " < " << Units::display(skip_time_, {"us", "ns"});
                     continue;
                 }
