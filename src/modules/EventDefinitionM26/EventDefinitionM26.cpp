@@ -22,7 +22,6 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     config_.setDefault<double>("skip_time", 0.);
 
     detector_time_ = config_.get<std::string>("detector_event_time");
-    detector_duration_ = config_.get<std::string>("detector_event_duration");
     duration_ = config_.get<std::string>("file_duration");
     timestamp_ = config_.get<std::string>("file_timestamp");
     timeshift_ = config_.get<double>("time_shift");
@@ -142,9 +141,9 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
         triggerTLU_ = static_cast<unsigned>(
             static_cast<int>(get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_)) +
             shift_triggers_);
-            timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
-            trig_prev_ = time_trig_start_;
-            triggerM26_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
+        timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
+        trig_prev_ = time_trig_start_;
+        triggerM26_ = get_next_event_with_det(readerDuration_, "MIMOSA26", time_before_, time_after_);
     } catch(EndOfFile&) {
         return StatusCode::EndRun;
     }
@@ -160,7 +159,7 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                 trig_prev_ = time_trig_start_;
             } else if(triggerTLU_ > triggerM26_) {
                 LOG(DEBUG) << "Mimosa26 trigger smaller than TLU trigger, get next Mimosa26 trigger";
-                triggerM26_ = get_next_event_with_det(readerDuration_, detector_duration_, time_before_, time_after_);
+                triggerM26_ = get_next_event_with_det(readerDuration_, "MIMOSA26", time_before_, time_after_);
             }
 
         } catch(EndOfFile&) {

@@ -58,9 +58,8 @@ namespace corryvreckan {
         eudaq::FileReaderUP readerTime_;
         eudaq::FileReaderUP readerDuration_;
         // Detector defining the event time
+        // Note: detector defining duration of event is always "MIMOSA26"
         std::string detector_time_;
-        // Detector defining the event duration
-        std::string detector_duration_;
         // input data files
         std::string timestamp_, duration_;
 
