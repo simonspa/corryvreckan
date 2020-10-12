@@ -174,7 +174,6 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
         if(triggerTLU_ == triggerM26_) {
             auto time_trig = time_trig_start_ - response_time_m26_;
             if(time_trig - time_prev_ > 0) {
-                // if(time_trig_start_ - time_trig_stop_prev_ > 0) {
                 timebetweenMimosaEvents_->Fill(static_cast<double>(Units::convert(time_trig - time_prev_, "us")));
                 timeBeforeTrigger_->Fill(static_cast<double>(Units::convert(-1.0 * time_before_, "us")));
                 timeAfterTrigger_->Fill(static_cast<double>(Units::convert(time_after_, "us")));
