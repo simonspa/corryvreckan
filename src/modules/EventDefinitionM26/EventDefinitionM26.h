@@ -53,6 +53,7 @@ namespace corryvreckan {
         long double timeshift_{};
         int shift_triggers_{};
         double response_time_m26_{};
+        double skip_time_{};
 
         // EUDAQ2 readers for all required files
         eudaq::FileReaderUP readerTime_;
