@@ -49,6 +49,9 @@ namespace corryvreckan {
 
         TH1F *residualsX1pix, *residualsY1pix;
         TH1F *residualsX2pix, *residualsY2pix;
+        TH1F *residualsX3pix, *residualsY3pix;
+        TH1F *residualsX4pix, *residualsY4pix;
+        TH1F *residualsXatLeast5pix, *residualsYatLeast5pix;
 
         TH1F* clusterChargeAssoc;
         TH1F* clusterSizeAssoc;

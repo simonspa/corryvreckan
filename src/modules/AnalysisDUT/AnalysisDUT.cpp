@@ -118,6 +118,18 @@ void AnalysisDUT::initialize() {
         new TH1F("residualsX2pix", "Residual for 2-pixel clusters in X;x_{track}-x_{hit} [mm];# entries", 800, -0.1, 0.1);
     residualsY2pix =
         new TH1F("residualsY2pix", "Residual for 2-pixel clusters in Y;y_{track}-y_{hit} [mm];# entries", 800, -0.1, 0.1);
+    residualsX3pix =
+        new TH1F("residualsX3pix", "Residual for 3-pixel clusters in X;x_{track}-x_{hit} [mm];# entries", 800, -0.1, 0.1);
+    residualsY3pix =
+        new TH1F("residualsY3pix", "Residual for 3-pixel clusters in Y;y_{track}-y_{hit} [mm];# entries", 800, -0.1, 0.1);
+    residualsX4pix =
+        new TH1F("residualsX4pix", "Residual for 4-pixel clusters in X;x_{track}-x_{hit} [mm];# entries", 800, -0.1, 0.1);
+    residualsY4pix =
+        new TH1F("residualsY4pix", "Residual for 4-pixel clusters in Y;y_{track}-y_{hit} [mm];# entries", 800, -0.1, 0.1);
+    residualsXatLeast5pix = new TH1F(
+        "residualsXatLeast5pix", "Residual for >= 5-pixel clusters in X;x_{track}-x_{hit} [mm];# entries", 800, -0.1, 0.1);
+    residualsYatLeast5pix = new TH1F(
+        "residualsYatLeast5pix", "Residual for >= 5-pixel clusters in Y;y_{track}-y_{hit} [mm];# entries", 800, -0.1, 0.1);
 
     clusterChargeAssoc = new TH1F("clusterChargeAssociated",
                                   "Charge distribution of associated clusters;cluster charge [e];# entries",
@@ -331,9 +343,9 @@ void AnalysisDUT::initialize() {
     hAssociatedTracksGlobalPosition =
         new TH2F("hAssociatedTracksGlobalPosition",
                  "Map of associated track positions (global);global intercept x [mm];global intercept y [mm]",
-                 200,
-                 -10,
-                 10,
+                 400,
+                 -20,
+                 20,
                  200,
                  -10,
                  10);
@@ -497,6 +509,27 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             }
             if(assoc_cluster->rowWidth() == 2) {
                 residualsY2pix->Fill(ydistance);
+            }
+
+            if(assoc_cluster->columnWidth() == 3) {
+                residualsX3pix->Fill(xdistance);
+            }
+            if(assoc_cluster->rowWidth() == 3) {
+                residualsY3pix->Fill(ydistance);
+            }
+
+            if(assoc_cluster->columnWidth() == 4) {
+                residualsX4pix->Fill(xdistance);
+            }
+            if(assoc_cluster->rowWidth() == 4) {
+                residualsY4pix->Fill(ydistance);
+            }
+
+            if(assoc_cluster->columnWidth() >= 5) {
+                residualsXatLeast5pix->Fill(xdistance);
+            }
+            if(assoc_cluster->rowWidth() >= 5) {
+                residualsYatLeast5pix->Fill(ydistance);
             }
 
             // Time residuals
