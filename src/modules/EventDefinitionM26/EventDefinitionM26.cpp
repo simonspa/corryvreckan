@@ -56,6 +56,12 @@ void EventDefinitionM26::initialize() {
     timebetweenTLUEvents_ =
         new TH1F("htimebetweenTrigger", "time between two triggers frames; time /us; #entries", 1000, -0.5, 995.5);
 
+    std::string title = "Corryvreckan event start times (placed on clipboard); Corryvreckan event start time [ms];# entries";
+    hClipboardEventStart = new TH1D("clipboardEventStart", title.c_str(), 3e6, 0, 3e3);
+
+    title = "Corryvreckan event start times (placed on clipboard); Corryvreckan event start time [s];# entries";
+    hClipboardEventStart_long = new TH1D("clipboardEventStart_long", title.c_str(), 3e6, 0, 3e3);
+
     // open the input file with the eudaq reader
     try {
         readerDuration_ = eudaq::Factory<eudaq::FileReader>::MakeUnique(eudaq::str2hash("native"), duration_);
@@ -171,6 +177,8 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                 LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(evtStart, {"us", "ns"}) << " - "
                            << Units::display(evtEnd, {"us", "ns"}) << ", length "
                            << Units::display(evtEnd - evtStart, {"us", "ns"});
+                hClipboardEventStart->Fill(static_cast<double>(Units::convert(evtStart, "us")));
+                hClipboardEventStart_long->Fill(static_cast<double>(Units::convert(evtStart, "s")));
             } else {
                 LOG(WARNING) << "Current trigger time smaller than previous: " << time_trig << " vs " << time_prev_;
             }
