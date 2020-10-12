@@ -45,7 +45,7 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     }
 
     // Converting the newly built configuration to a shared pointer of a const configuration object
-    // Unfortunbately EUDAQ does not provide appropriate member functions for their configuration class to avoid this dance
+    // Unfortunately, EUDAQ does not provide appropriate member functions for their configuration class to avoid this dance
     const eudaq::Configuration eu_cfg = cfg;
     eudaq_config_ = std::make_shared<const eudaq::Configuration>(eu_cfg);
 }
