@@ -77,13 +77,15 @@ namespace corryvreckan {
         /**
          * @brief get_next_event_with_det
          * @param filereader: eudaq::FileReader
-         * @param det: detetcor name to search for in data
+         * @param det: detector name to search for in data
          * @param begin: timestamp of begin of event
          * @param end: timestamp of end of event
          * @return
          */
-        unsigned
-        get_next_event_with_det(eudaq::FileReaderUP& filereader, std::string& det, long double& begin, long double& end);
+        unsigned get_next_event_with_det(eudaq::FileReaderUP& filereader,
+                                         const std::string& det,
+                                         long double& begin,
+                                         long double& end);
 
         // EUDAQ configuration to be passed to the decoder instance
         eudaq::ConfigurationSPC eudaq_config_;

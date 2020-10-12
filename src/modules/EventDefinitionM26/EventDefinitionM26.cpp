@@ -84,7 +84,7 @@ void EventDefinitionM26::initialize() {
 }
 
 unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filereader,
-                                                     std::string& det,
+                                                     const std::string& det,
                                                      long double& begin,
                                                      long double& end) {
     do {
