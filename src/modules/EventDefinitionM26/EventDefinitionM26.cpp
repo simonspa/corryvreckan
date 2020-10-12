@@ -109,6 +109,7 @@ unsigned EventDefinitionM26::get_next_event_with_det(eudaq::FileReaderUP& filere
             if(det == detector) {
                 begin = Units::get(static_cast<double>(stdevt->GetTimeBegin()), "ps");
                 end = Units::get(static_cast<double>(stdevt->GetTimeEnd()), "ps");
+
                 LOG(DEBUG) << "Set begin/end, begin: " << Units::display(begin, {"ns", "us"})
                            << ", end: " << Units::display(end, {"ns", "us"});
                 // MIMOSA
@@ -187,7 +188,7 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                 LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(evtStart, {"us", "ns"}) << " - "
                            << Units::display(evtEnd, {"us", "ns"}) << ", length "
                            << Units::display(evtEnd - evtStart, {"us", "ns"});
-                hClipboardEventStart->Fill(static_cast<double>(Units::convert(evtStart, "us")));
+                hClipboardEventStart->Fill(static_cast<double>(Units::convert(evtStart, "ms")));
                 hClipboardEventStart_long->Fill(static_cast<double>(Units::convert(evtStart, "s")));
             } else {
                 LOG(WARNING) << "Current trigger time smaller than previous: " << time_trig << " vs " << time_prev_;
