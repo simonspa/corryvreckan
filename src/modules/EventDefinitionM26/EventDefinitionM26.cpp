@@ -27,7 +27,6 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     timestamp_ = config_.get<std::string>("file_timestamp");
     timeshift_ = config_.get<double>("time_shift");
     shift_triggers_ = config_.get<int>("shift_triggers");
-    response_time_m26_ = config_.get<double>("response_time_m26");
     skip_time_ = config_.get<double>("skip_time");
 
     config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
@@ -172,7 +171,7 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                    << "Mimosa26 trigger defining event: " << triggerM26_;
 
         if(triggerTLU_ == triggerM26_) {
-            auto time_trig = time_trig_start_ - response_time_m26_;
+            auto time_trig = time_trig_start_;
             if(time_trig - time_prev_ > 0) {
                 timebetweenMimosaEvents_->Fill(static_cast<double>(Units::convert(time_trig - time_prev_, "us")));
                 timeBeforeTrigger_->Fill(static_cast<double>(Units::convert(-1.0 * time_before_, "us")));
