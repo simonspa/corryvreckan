@@ -80,13 +80,13 @@ void EventLoaderEUDAQ2::initialize() {
     title = ";EUDAQ event start time[s];# entries";
     hEudaqEventStart_long = new TH1D("eudaqEventStart_long", title.c_str(), 3e6, 0, 3e3);
 
-    title = "Corryvreckan event start times (on clipboard); Corryvreckan event start time [ms];# entries";
+    title = "Corryvreckan event start times (placed on clipboard); Corryvreckan event start time [ms];# entries";
     hClipboardEventStart = new TH1D("clipboardEventStart", title.c_str(), 3e6, 0, 3e3);
 
-    title = "Corryvreckan event start times (on clipboard); Corryvreckan event start time [s];# entries";
+    title = "Corryvreckan event start times (placed on clipboard); Corryvreckan event start time [s];# entries";
     hClipboardEventStart_long = new TH1D("clipboardEventStart_long", title.c_str(), 3e6, 0, 3e3);
 
-    title = "Corryvreckan event end times (on clipboard); Corryvreckan event end time [ms];# entries";
+    title = "Corryvreckan event end times (placed on clipboard); Corryvreckan event end time [ms];# entries";
     hClipboardEventEnd = new TH1D("clipboardEventEnd", title.c_str(), 3e6, 0, 3e3);
 
     title = "Corryvreckan event end times (on clipboard); Corryvreckan event duration [ms];# entries";
@@ -346,6 +346,11 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
                    << Units::display(event_end, {"us", "ns"}) << ", length "
                    << Units::display(event_end - event_start, {"us", "ns"});
         clipboard->putEvent(std::make_shared<Event>(event_start, event_end));
+        hClipboardEventStart->Fill(static_cast<double>(Units::convert(event_start, "ms")));
+        hClipboardEventStart_long->Fill(static_cast<double>(Units::convert(event_start, "s")));
+        hClipboardEventEnd->Fill(static_cast<double>(Units::convert(event_end, "ms")));
+        hClipboardEventDuration->Fill(
+            static_cast<double>(Units::convert(clipboard->getEvent()->end() - clipboard->getEvent()->start(), "ms")));
     } else {
         LOG(DEBUG) << "Corryvreckan event found on clipboard: "
                    << Units::display(clipboard->getEvent()->start(), {"us", "ns"}) << " - "
@@ -546,13 +551,6 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
         // Converting EUDAQ2 picoseconds into Corryvreckan nanoseconds:
         hEudaqEventStart->Fill(static_cast<double>(event_->GetTimeBegin()) / 1e9);       // here convert from ps to ms
         hEudaqEventStart_long->Fill(static_cast<double>(event_->GetTimeBegin()) / 1e12); // here convert from ps to seconds
-        if(clipboard->isEventDefined()) {
-            hClipboardEventStart->Fill(static_cast<double>(Units::convert(clipboard->getEvent()->start(), "ms")));
-            hClipboardEventStart_long->Fill(static_cast<double>(Units::convert(clipboard->getEvent()->start(), "s")));
-            hClipboardEventEnd->Fill(static_cast<double>(Units::convert(clipboard->getEvent()->end(), "ms")));
-            hClipboardEventDuration->Fill(
-                static_cast<double>(Units::convert(clipboard->getEvent()->end() - clipboard->getEvent()->start(), "ms")));
-        }
 
         // Reset this shared event pointer to get a new event from the stack:
         event_.reset();
@@ -565,7 +563,7 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
     }
     LOG(DEBUG) << "Triggers on clipboard event: " << event->triggerList().size();
     for(auto& trigger : event->triggerList()) {
-        LOG(DEBUG) << "\t ID: " << trigger.first << ", time: " << Units::display(trigger.second, "us");
+        LOG(DEBUG) << "\t ID: " << trigger.first << ", time: " << std::fixed << Units::display(trigger.second, "us");
     }
 
     // histogram only exists for non-auxiliary detectors:
