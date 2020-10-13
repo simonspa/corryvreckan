@@ -38,6 +38,9 @@ end = begin + 230us
 * `skip_time`: Time that can be skipped at the start of a run. All events with earlier timestamps are discarded. Default is `0ms`.
 * `eudaq_loglevel`: Verbosity level of the EUDAQ logger instance of the converter module. Possible options are, in decreasing severity, `USER`, `ERROR`, `WARN`, `INFO`, `EXTRA` and `DEBUG`. The default level is `ERROR`. Please note that the EUDAQ verbosity can only be changed globally, i.e. when using instances of `EventLoaderEUDAQ2` below this module, the last occurrence will determine the (global) value of this parameter.
 
+In addition, parameters can be forwarded to the EUDAQ2 event converters.
+Please refer to the README of the `EventLoaderEUDAQ2` for more details.
+
 
 ### Plots produced
 * 1D histogram of time between trigger timestamps
