@@ -9,11 +9,20 @@ EUDET type telescopes based on the NI MIMOSA26 readout. The event begin and
 end are defined based on the  pivot pixel provided in the MIMOSA data
 stream. Currently, the module assumes that the full two data frames are read
 out, which is not the case in the standard converter.
-However, the converter only returns all pixels after the pivot pixel of the first frame and those before the pivot pixel of the second frame.
+However, the converter only returns all pixels after the pivot pixel of the
+first frame and those before the pivot pixel of the second frame.
 
 Event definition example:
 If a triggerID has a TLU event from 425.000us to 425.025us (default
 25 ns events) and the pivot pixel-row is 512 the event will be defined as:
+
+Please note: In about 1 permille of the cases, zero triggers per event are
+observed, which should in principle not be possible.
+Presumably, the reason is a delay between an incoming trigger signal and the
+moment when the pivot pixel is defined.
+This causes that in about 1 permille of the cases, the "time before" and
+"time after" a trigger spanning the event is not set correctly when the
+pivot pixel is close to its roll-over.
 
 ```
 begin = 125.012.5us - (512 * (115.2 / 576)) us
