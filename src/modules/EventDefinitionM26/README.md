@@ -1,5 +1,5 @@
 # EventDefinitionM26
-**Maintainer**: Lennart Huth (lennart.huth@desy.de)  
+**Maintainer**: Lennart Huth (lennart.huth@desy.de), Jens Kroeger (jens.kroeger@cern.ch)  
 **Module Type**: *GLOBAL*  
 **Status**: Functional
 
