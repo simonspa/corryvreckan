@@ -70,7 +70,7 @@ namespace corryvreckan {
         TH1D* hClipboardEventStart;
         TH1D* hClipboardEventStart_long;
 
-        unsigned triggerTLU_{999}, triggerM26_{999}; // not nice, find better solution here!!!
+        unsigned triggerTLU_{}, triggerM26_{};
         long double time_prev_{}, trig_prev_{}, time_trig_start_{}, time_trig_stop_{}, time_before_{}, time_after_{};
         long double time_trig_stop_prev_{};
 
