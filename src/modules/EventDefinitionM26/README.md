@@ -24,7 +24,7 @@ This causes that in about 1 permille of the cases, the "time before" and
 "time after" a trigger spanning the event is not set correctly when the
 pivot pixel is close to its roll-over.
 
-```
+```math
 begin = 125.012.5us - (512 * (115.2 / 576)) us
 end = begin + 230us
 ```
