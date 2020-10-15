@@ -558,9 +558,6 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     auto event = clipboard->getEvent();
     hTriggersPerEvent->Fill(static_cast<double>(event->triggerList().size()));
-    if(event->triggerList().size() == 0) {
-        LOG(WARNING) << "Triggers on clipboard event: " << event->triggerList().size();
-    }
     LOG(DEBUG) << "Triggers on clipboard event: " << event->triggerList().size();
     for(auto& trigger : event->triggerList()) {
         LOG(DEBUG) << "\t ID: " << trigger.first << ", time: " << Units::display(trigger.second, "us");
