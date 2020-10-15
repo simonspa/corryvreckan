@@ -16,7 +16,7 @@ Event definition example:
 If a triggerID has a TLU event from 425.000us to 425.025us (default
 25 ns events) and the pivot pixel-row is 512 the event will be defined as:
 
-Please note: In about 1 permille of the cases, zero triggers per event are
+It should be noted that in about 1 permille of the cases, zero triggers per event are
 observed, which should in principle not be possible.
 Presumably, the reason is a delay between an incoming trigger signal and the
 moment when the pivot pixel is defined.
