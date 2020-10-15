@@ -563,7 +563,7 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
     }
     LOG(DEBUG) << "Triggers on clipboard event: " << event->triggerList().size();
     for(auto& trigger : event->triggerList()) {
-        LOG(DEBUG) << "\t ID: " << trigger.first << ", time: " << std::fixed << Units::display(trigger.second, "us");
+        LOG(DEBUG) << "\t ID: " << trigger.first << ", time: " << Units::display(trigger.second, "us");
     }
 
     // histogram only exists for non-auxiliary detectors:
