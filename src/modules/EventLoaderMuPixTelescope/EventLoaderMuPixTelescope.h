@@ -31,12 +31,13 @@ namespace corryvreckan {
          * @param config Configuration object for this module as retrieved from the steering file
          * @param detectors Vector of pointers to the detectors
          */
-        EventLoaderMuPixTelescope(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
+        EventLoaderMuPixTelescope(Configuration& config, std::shared_ptr<Detector> detector);
 
         /**
          * @brief [Initialise this module]
          */
         void initialize() override;
+        void finalize(const std::shared_ptr<ReadonlyClipboard>&) override;
 
         /**
          * @brief [Run the function of this module]
@@ -44,12 +45,19 @@ namespace corryvreckan {
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
     private:
+        void fillBuffer();
+        uint m_tag{};
+        int m_type{};
+        int m_removed{};
+        bool m_eof{false};
+        std::shared_ptr<Detector> m_detector;
+        PixelVector m_pixelbuffer{};
         std::string m_inputDirectory;
         bool m_isSorted;
         bool m_ts2IsGray;
         int m_runNumber;
-        mudaq::BlockFile* m_blockFile;
-        mudaq::TelescopeFrame m_tf;
+        BlockFile* m_blockFile;
+        TelescopeFrame m_tf;
 
         // Histograms
         TH2F* hHitMap;

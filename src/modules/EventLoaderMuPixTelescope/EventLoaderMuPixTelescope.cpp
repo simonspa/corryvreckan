@@ -15,10 +15,9 @@
 #include "objects/Track.hpp"
 
 using namespace corryvreckan;
-// using namespace std;
 
-EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(config, std::move(detectors)), m_blockFile(nullptr) {
+EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std::shared_ptr<Detector> detector)
+    : Module(config, detector), m_removed(0), m_detector(detector), m_blockFile(nullptr) {
 
     config_.setDefault<bool>("is_sorted", false);
     config_.setDefault<bool>("ts2_is_gray", false);
@@ -32,21 +31,29 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
 
 void EventLoaderMuPixTelescope::initialize() {
 
-    for(auto& detector : get_detectors()) {
-        LOG(DEBUG) << "Initialise for detector " + detector->getName();
-    }
-
     // Need to check if the files do exist
     DIR* directory = opendir(m_inputDirectory.c_str());
     if(directory == nullptr) {
         LOG(ERROR) << "Directory " << m_inputDirectory << " does not exist";
         return;
     }
+    if(m_detector->getName() == "mp10_0")
+        m_tag = 0x0;
+    else if(m_detector->getName() == "mp10_1")
+        m_tag = 0x4;
+    else if(m_detector->getName() == "mp10_2")
+        m_tag = 0x8;
+    else if(m_detector->getName() == "mp10_3")
+        m_tag = 0xC;
+
+    m_type = 107;
+    if(m_detector->getName() == "mp10_1")
+        m_type = 2027;
     // check the entries and if the correct file exists continue - seems to be inefficient
     dirent* entry;
     bool foundFile = false;
     while((entry = readdir(directory))) {
-        if(entry->d_name == string("telescope_run_001020_mergedFrames.blck")) {
+        if(entry->d_name == string("telescope_run_000015.blck")) {
             foundFile = true;
             break;
         }
@@ -58,7 +65,7 @@ void EventLoaderMuPixTelescope::initialize() {
         LOG(INFO) << "File found" << endl;
     string file = (m_inputDirectory + "/" + entry->d_name);
     LOG(INFO) << "reading " << file;
-    m_blockFile = new mudaq::BlockFile(file);
+    m_blockFile = new BlockFile(file);
     if(!m_blockFile->open_read()) {
         LOG(ERROR) << "File cannot be read" << endl;
         return;
@@ -69,57 +76,67 @@ void EventLoaderMuPixTelescope::initialize() {
     hTimeStamp = new TH1F("pixelTS", "pixelTS; TS in clock cycles; ", 1024, -0.5, 1023.5);
 }
 
+void EventLoaderMuPixTelescope::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
+    LOG(INFO) << "Removed " << m_removed << " hits that could not be properly sorted";
+}
+
 StatusCode EventLoaderMuPixTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
 
-    // Loop over all detectors
-    vector<string> detectors;
-    for(auto& detector : get_detectors()) {
-        // Get the detector name
-        std::string detectorName = detector->getName();
-        detectors.push_back(detectorName);
-        LOG(DEBUG) << "Detector with name " << detectorName;
+    // refill the buffer
+    if(!m_eof)
+        fillBuffer();
+    // std::cout << clipboard->getEvent()->start() << "\t" << clipboard->getEvent()->end()<<std::endl;
+    PixelVector hits;
+    while((m_pixelbuffer.front()->timestamp() < clipboard->getEvent()->start())) {
+        LOG(DEBUG) << " Old hit found: " << m_pixelbuffer.front()->timestamp();
+        m_removed++;
+        m_pixelbuffer.erase(m_pixelbuffer.begin());
     }
-    map<string, PixelVector> dataContainers;
-    mudaq::TelescopeFrame tf;
-    double frame_start = std::numeric_limits<double>::max();
-    double frame_end = std::numeric_limits<double>::min();
+    while(m_pixelbuffer.size() && (m_pixelbuffer.front()->timestamp() < clipboard->getEvent()->end()) &&
+          (m_pixelbuffer.front()->timestamp() > clipboard->getEvent()->start())) {
+        //       m_pixelbuffer.front()->print(LOG(DEBUG));
+        hits.push_back(m_pixelbuffer.front());
+        m_pixelbuffer.erase(m_pixelbuffer.begin());
+    };
 
-    if(!m_blockFile->read_next(tf))
-        return StatusCode::EndRun;
-    else {
-        LOG(DEBUG) << "Found " << tf.num_hits() << " in event";
-        for(uint i = 0; i < tf.num_hits(); ++i) {
-            mudaq::RawHit h = tf.get_hit(i);
-            if(h.tag() == 0x4)
-                h = tf.get_hit(i, 66);
-            double px_timestamp = 8 * static_cast<double>(((tf.timestamp() >> 2) & 0xFFFFF700) + h.timestamp_raw());
-            auto p = std::make_shared<Pixel>(detectors.at(h.tag() / 4), h.column(), h.row(), 0, 0, px_timestamp);
-
-            // Select earliest and latest pixel:
-            frame_start = (px_timestamp < frame_start ? px_timestamp : frame_start);
-            frame_end = (px_timestamp > frame_end ? px_timestamp : frame_end);
-
-            dataContainers[detectors.at(h.tag() / 4)].push_back(p);
-            hHitMap->Fill(h.column(), h.row());
-            hTimeStamp->Fill(h.timestamp_raw());
-        }
-    }
-
-    for(auto d : detectors) {
-        if(!dataContainers.count(d))
-            continue;
-        try {
-            clipboard->putData(dataContainers[d], d);
-        } catch(ModuleError& e) {
-            LOG(ERROR) << "Unknown detector ";
-        }
-    }
-
-    // Store current frame time and the length of the event:
-    LOG(DEBUG) << "Frame with " << tf.num_hits() << " hits, time: " << Units::display(frame_start, {"ns", "us", "s"})
-               << ", length: " << Units::display((frame_end - frame_start), {"ns", "us", "s"});
-    clipboard->putEvent(std::make_shared<Event>(frame_start, frame_end));
-
+    if(hits.size() > 0)
+        clipboard->putData(hits, m_detector->getName());
     // Return value telling analysis to keep running
+    if(m_pixelbuffer.size() == 0)
+        return StatusCode::EndRun;
     return StatusCode::Success;
+}
+
+void EventLoaderMuPixTelescope::fillBuffer() {
+    TelescopeFrame tf;
+    while(m_pixelbuffer.size() < 100) {
+        if(m_blockFile->read_next(tf)) {
+            // no hits in data
+            if(tf.num_hits() == 0)
+                continue;
+
+            RawHit h = tf.get_hit(0);
+            // wrong tag
+            if((h.tag() & uint(~0x3)) != m_tag)
+                continue;
+            for(uint i = 0; i < tf.num_hits(); ++i) {
+                h = tf.get_hit(i, m_type);
+                // move ts to ns
+                double px_timestamp = 8 * static_cast<double>(((tf.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw());
+                m_pixelbuffer.emplace_back(
+                    std::make_shared<Pixel>(m_detector->getName(), h.column(), h.row(), 0, 0, px_timestamp));
+                // fill hit data
+                hHitMap->Fill(h.column(), h.row());
+                hTimeStamp->Fill(h.timestamp_raw());
+            }
+        } else {
+            m_eof = true;
+            break;
+        }
+    }
+    // sort the hits by timestamp
+    auto _sort = [](std::shared_ptr<Pixel> const a, std::shared_ptr<Pixel> const b) {
+        return a->timestamp() < b->timestamp();
+    };
+    std::sort(m_pixelbuffer.begin(), m_pixelbuffer.end(), _sort);
 }
