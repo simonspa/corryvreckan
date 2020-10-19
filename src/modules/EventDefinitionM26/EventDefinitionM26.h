@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Definition of module EventCreatorEUDAQ2
+ * @brief Definition of module EventDefinitionM26
  *
  * @copyright Copyright (c) 2020 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
@@ -52,33 +52,43 @@ namespace corryvreckan {
         std::vector<uint32_t> triggerIDs_{};
         long double timeshift_{};
         int shift_triggers_{};
+        double skip_time_{};
 
         // EUDAQ2 readers for all required files
         eudaq::FileReaderUP readerTime_;
         eudaq::FileReaderUP readerDuration_;
         // Detector defining the event time
+        // Note: detector defining duration of event is always "MIMOSA26"
         std::string detector_time_;
-        // Detector defining the event duration
-        std::string detector_duration_;
         // input data files
         std::string timestamp_, duration_;
 
         TH1F* timebetweenMimosaEvents_;
         TH1F* timebetweenTLUEvents_;
+        TH1F* timeBeforeTrigger_;
+        TH1F* timeAfterTrigger_;
+        TH1D* hClipboardEventStart;
+        TH1D* hClipboardEventStart_long;
 
-        unsigned timestampTrig_{}, durationTrig_{};
+        unsigned triggerTLU_{}, triggerM26_{};
         long double time_prev_{}, trig_prev_{}, time_trig_start_{}, time_trig_stop_{}, time_before_{}, time_after_{};
+        long double time_trig_stop_prev_{};
 
         /**
          * @brief get_next_event_with_det
          * @param filereader: eudaq::FileReader
-         * @param det: detetcor name to search for in data
+         * @param det: detector name to search for in data
          * @param begin: timestamp of begin of event
          * @param end: timestamp of end of event
          * @return
          */
-        unsigned
-        get_next_event_with_det(eudaq::FileReaderUP& filereader, std::string& det, long double& begin, long double& end);
+        unsigned get_next_event_with_det(const eudaq::FileReaderUP& filereader,
+                                         const std::string& det,
+                                         long double& begin,
+                                         long double& end);
+
+        // EUDAQ configuration to be passed to the decoder instance
+        eudaq::ConfigurationSPC eudaq_config_;
     };
 
 } // namespace corryvreckan
