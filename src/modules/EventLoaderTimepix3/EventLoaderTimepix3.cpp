@@ -96,9 +96,8 @@ void EventLoaderTimepix3::initialize() {
 
     // Check that we have files for this detector and sort them correctly:
     if(detector_files.empty()) {
-        LOG(ERROR) << "No data file found for detector " << m_detector->getName() << " in input directory " << std::endl
-                   << m_inputDirectory;
-        return;
+        throw ModuleError("No data file found for detector " + m_detector->getName() + " in input directory " +
+                          m_inputDirectory);
     }
 
     // Initialise null values for later

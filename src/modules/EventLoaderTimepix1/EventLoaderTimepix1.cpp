@@ -52,8 +52,7 @@ void EventLoaderTimepix1::initialize() {
     // Open the directory
     DIR* directory = opendir(m_inputDirectory.c_str());
     if(directory == nullptr) {
-        LOG(ERROR) << "Directory " << m_inputDirectory << " does not exist";
-        return;
+        throw ModuleError("Directory " + m_inputDirectory + " does not exist");
     }
     dirent* entry;
 
@@ -70,6 +69,10 @@ void EventLoaderTimepix1::initialize() {
             m_inputFilenames.push_back(m_inputDirectory + "/" + filename);
             LOG(DEBUG) << "Added file: " << filename;
         }
+    }
+
+    if(m_inputFilenames.empty()) {
+        throw ModuleError("Could not find any data files in directory " + m_inputDirectory);
     }
 
     // Now sort the list of filenames by time (included in the title) from

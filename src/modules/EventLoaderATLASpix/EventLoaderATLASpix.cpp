@@ -59,8 +59,7 @@ void EventLoaderATLASpix::initialize() {
     // Open the root directory
     DIR* directory = opendir(m_inputDirectory.c_str());
     if(directory == nullptr) {
-        LOG(ERROR) << "Directory " << m_inputDirectory << " does not exist";
-        return;
+        throw ModuleError("Directory " + m_inputDirectory + " does not exist");
     }
     dirent* entry;
 
@@ -75,10 +74,9 @@ void EventLoaderATLASpix::initialize() {
 
     // If no data was loaded, give a warning
     if(m_filename.length() == 0) {
-        LOG(WARNING) << "No data file was found for ATLASpix in " << m_inputDirectory;
-    } else {
-        LOG(STATUS) << "Opened data file for ATLASpix: (dbg)" << m_filename;
+        throw ModuleError("No data file was found for ATLASpix in " + m_inputDirectory);
     }
+    LOG(STATUS) << "Opened data file for ATLASpix: (dbg)" << m_filename;
 
     // Open the binary data file for later
     m_file.open(m_filename.c_str(), ios::in | ios::binary);

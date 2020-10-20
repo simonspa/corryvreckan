@@ -43,8 +43,9 @@ void EventLoaderCLICpix::initialize() {
     }
 
     // If no data was loaded, give a warning
-    if(m_filename.length() == 0)
-        LOG(WARNING) << "No data file was found for CLICpix in " << inputDirectory;
+    if(m_filename.length() == 0) {
+        throw ModuleError("No data file was found for CLICpix in " + inputDirectory);
+    }
 
     // Open the data file for later
     m_file.open(m_filename.c_str());

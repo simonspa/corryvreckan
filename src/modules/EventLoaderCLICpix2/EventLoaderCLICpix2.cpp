@@ -63,7 +63,7 @@ void EventLoaderCLICpix2::initialize() {
     matrix_config = clicpix2_utils::readMatrix(m_matrix);
     // If no data was loaded, give a warning
     if(m_filename.empty()) {
-        LOG(WARNING) << "No data file was found for CLICpix2 in " << inputDirectory;
+        throw ModuleError("No data file was found for CLICpix2 in " + inputDirectory);
     }
 
     // Open the data file for later
