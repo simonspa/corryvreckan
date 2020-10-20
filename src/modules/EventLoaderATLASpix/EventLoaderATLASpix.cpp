@@ -72,7 +72,7 @@ void EventLoaderATLASpix::initialize() {
         }
     }
 
-    // If no data was loaded, give a warning
+    // If no data was loaded, throw an exception
     if(m_filename.length() == 0) {
         throw ModuleError("No data file was found for ATLASpix in " + m_inputDirectory);
     }
