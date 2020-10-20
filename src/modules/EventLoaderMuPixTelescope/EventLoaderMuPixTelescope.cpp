@@ -52,15 +52,19 @@ void EventLoaderMuPixTelescope::initialize() {
     // check the entries and if the correct file exists continue - seems to be inefficient
     dirent* entry;
     bool foundFile = false;
+    std::stringstream ss;
+    ss << std::setw(6) << std::setfill('0') << m_runNumber;
+    std::string s = ss.str();
+    std::string fileName = "telescope_run_" + s + ".blck";
     while((entry = readdir(directory))) {
-        if(entry->d_name == string("telescope_run_000015.blck")) {
+        if(entry->d_name == fileName) {
             foundFile = true;
             break;
         }
     }
     if(!foundFile) {
         LOG(ERROR) << "Requested run not existing ";
-        return;
+        throw MissingDataError("Cannot open data file");
     } else
         LOG(INFO) << "File found" << endl;
     string file = (m_inputDirectory + "/" + entry->d_name);
