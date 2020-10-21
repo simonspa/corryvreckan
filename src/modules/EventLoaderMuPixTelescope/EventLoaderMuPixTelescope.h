@@ -12,6 +12,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <iostream>
+#include <queue>
 #include "core/module/Module.hpp"
 
 #include "blockfile.hpp"
@@ -49,9 +50,16 @@ namespace corryvreckan {
         uint m_tag{};
         int m_type{};
         int m_removed{};
+        int m_buffer_depth{};
         bool m_eof{false};
         std::shared_ptr<Detector> m_detector;
-        PixelVector m_pixelbuffer{};
+        struct CompareTimeGreater {
+            bool operator()(const std::shared_ptr<Pixel> a, const std::shared_ptr<Pixel> b) {
+                return a->timestamp() > b->timestamp();
+            }
+        };
+        // Buffer of timesorted pixel hits: (need to use greater here!)
+        std::priority_queue<std::shared_ptr<Pixel>, PixelVector, CompareTimeGreater> m_pixelbuffer;
         std::string m_inputDirectory;
         bool m_isSorted;
         bool m_ts2IsGray;
