@@ -136,7 +136,7 @@ int EventLoaderMuPixTelescope::typeString_to_typeID(string typeString) {
     else if(typeString == "mupix9")
         return MP10_SORTED_TS2;
     else if(typeString == "mupix10")
-        return MP10_SORTED_TS2;
+        return MP10_UNSORTED_GS1_GS2;
     else if(typeString == "run2020v1")
         return R20V1_UNSORTED_GS1_GS2_GS3;
     else if(typeString == "run2020v2")
