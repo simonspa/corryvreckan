@@ -62,6 +62,7 @@ The following authors, in alphabetical order, have contributed to Corryvreckan:
 * Andreas Matthias Nürnberg, KIT, @nurnberg
 * Florian Pitters, HEPHY, @fpipper
 * Tomas Vanat, CERN, @tvanat
+* Jin Zhang, DESY, @jinz
 
 ## Contributing
 All types of contributions, being it minor and major, are very welcome. Please refer to our [contribution guidelines](CONTRIBUTING.md) for a description on how to get started.
