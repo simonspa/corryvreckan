@@ -46,12 +46,14 @@ namespace corryvreckan {
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
     private:
+        int typeString_to_typeID(string typeString);
         void fillBuffer();
         uint m_tag{};
         int m_type{};
         int m_removed{};
         int m_buffer_depth{};
         bool m_eof{false};
+        std::string m_input_file{};
         std::shared_ptr<Detector> m_detector;
         struct CompareTimeGreater {
             bool operator()(const std::shared_ptr<Pixel> a, const std::shared_ptr<Pixel> b) {
