@@ -93,7 +93,7 @@ void EventLoaderMuPixTelescope::finalize(const std::shared_ptr<ReadonlyClipboard
 StatusCode EventLoaderMuPixTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     PixelVector hits;
-    // if the data is on fpga sorted - the structure is completly different and no buffering of hits is required
+    // if the data is on fpga sorted - the structure is completley different and no buffering of hits is required
     if(m_isSorted) {
         if(!m_blockFile->read_next(m_tf)) {
             return StatusCode::EndRun;
