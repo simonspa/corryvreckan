@@ -51,8 +51,11 @@ namespace corryvreckan {
         uint m_tag{};
         int m_type{};
         int m_removed{};
-        int m_buffer_depth{};
+        uint64_t m_ts_prev{0};
+        bool start{false};
+        unsigned m_buffer_depth{};
         bool m_eof{false};
+        double m_timeOffset{};
         std::string m_input_file{};
         std::shared_ptr<Detector> m_detector;
         struct CompareTimeGreater {

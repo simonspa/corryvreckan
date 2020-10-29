@@ -21,12 +21,13 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
 
     config_.setDefault<bool>("is_sorted", false);
     config_.setDefault<bool>("ts2_is_gray", false);
-    config_.setDefault<int>("buffer_depth", 1000);
-
+    config_.setDefault<unsigned>("buffer_depth", 1000);
+    config_.setDefault<double>("time_offset", 0.0);
     m_inputDirectory = config_.getPath("input_directory");
     m_runNumber = config_.get<int>("Run");
-    m_buffer_depth = config.get<int>("buffer_depth");
+    m_buffer_depth = config.get<unsigned>("buffer_depth");
     m_isSorted = config_.get<bool>("is_sorted");
+    m_timeOffset = config_.get<double>("time_offset");
     m_ts2IsGray = config_.get<bool>("ts2_is_gray");
     if(config_.has("input_file"))
         m_input_file = config_.get<string>("input_file");
@@ -91,10 +92,33 @@ void EventLoaderMuPixTelescope::finalize(const std::shared_ptr<ReadonlyClipboard
 
 StatusCode EventLoaderMuPixTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
 
-    // refill the buffer
+    PixelVector hits;
+    // if the data is on fpga sorted - the structure is completly different and no buffering of hits is required
+    if(m_isSorted) {
+        if(!m_blockFile->read_next(m_tf)) {
+            return StatusCode::EndRun;
+        }
+        for(uint i = 0; i < m_tf.num_hits(); ++i) {
+            RawHit h = m_tf.get_hit(i, m_type);
+            if(((h.tag() & uint(~0x3)) == m_tag))
+                continue;
+            // move ts to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time yet, assuming
+            // 10bit ts
+            double px_timestamp = 8 * static_cast<double>(((m_tf.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw());
+            // setting tot and charge to zero here - needs to be improved
+            hits.push_back(std::make_shared<Pixel>(m_detector->getName(), h.column(), h.row(), 0, 0, px_timestamp));
+        }
+        // If no event is defined create one
+        if(clipboard->getEvent() == nullptr) {
+            //            frames have a length of 128 ts, each 8ns, int division cuts of lowest bits
+            double begin = int(hits.front()->timestamp()) / 1024;
+            clipboard->putEvent(std::make_shared<Event>(double(begin * 1024), double((begin + 1) * 1024)));
+        }
+        return StatusCode::Success;
+    }
+    // else sort the data and refill the buffer
     if(!m_eof)
         fillBuffer();
-    PixelVector hits;
     while(true) {
         if(m_pixelbuffer.size() == 0)
             break;
@@ -116,7 +140,7 @@ StatusCode EventLoaderMuPixTelescope::run(const std::shared_ptr<Clipboard>& clip
         } else {
             break;
         }
-        if(signed(m_pixelbuffer.size()) < m_buffer_depth)
+        if(m_pixelbuffer.size() < m_buffer_depth)
             fillBuffer();
     }
     if(hits.size() > 0)
@@ -160,23 +184,31 @@ int EventLoaderMuPixTelescope::typeString_to_typeID(string typeString) {
 }
 
 void EventLoaderMuPixTelescope::fillBuffer() {
+
     // here we need to check quite a number of cases
-    TelescopeFrame tf;
     while(m_pixelbuffer.size() < unsigned(m_buffer_depth)) {
-        if(m_blockFile->read_next(tf)) {
+        if(m_blockFile->read_next(m_tf)) {
+            if(m_tf.timestamp() < m_ts_prev) {
+                start = true;
+            }
+            m_ts_prev = m_tf.timestamp();
+            if(!start)
+                continue;
             // no hits in data - can only happen if the zero suppression is switched off
-            if(tf.num_hits() == 0)
+            if(m_tf.num_hits() == 0)
                 continue;
             // need to determine the sensor layer that is identified by the tag
-            RawHit h = tf.get_hit(0);
+            RawHit h = m_tf.get_hit(0);
             // tag does not match - continue reading if data is not sorted
-            if(((h.tag() & uint(~0x3)) != m_tag) && !m_isSorted)
+            if(((h.tag() & uint(~0x3)) != m_tag))
                 continue;
             // all hits in one frame are from the same sensor. Copy them
-            for(uint i = 0; i < tf.num_hits(); ++i) {
-                h = tf.get_hit(i, m_type);
-                // move ts to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time yet
-                double px_timestamp = 8 * static_cast<double>(((tf.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw());
+            for(uint i = 0; i < m_tf.num_hits(); ++i) {
+                h = m_tf.get_hit(i, m_type);
+                // move ts to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time yet,
+                // assuming 10bit ts
+                double px_timestamp =
+                    8 * static_cast<double>(((m_tf.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw()) - m_timeOffset;
                 // setting tot and charge to zero here - needs to be improved
                 m_pixelbuffer.push(std::make_shared<Pixel>(m_detector->getName(), h.column(), h.row(), 0, 0, px_timestamp));
             }
