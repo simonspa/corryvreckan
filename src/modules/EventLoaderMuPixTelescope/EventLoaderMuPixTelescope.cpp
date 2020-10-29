@@ -190,6 +190,7 @@ void EventLoaderMuPixTelescope::fillBuffer() {
         if(m_blockFile->read_next(m_tf)) {
             if(m_tf.timestamp() < m_ts_prev) {
                 start = true;
+                LOG(INFO) << "Found data reset ts before: " << m_ts_prev << " and ts now " << m_tf.timestamp();
             }
             m_ts_prev = m_tf.timestamp();
             if(!start)
