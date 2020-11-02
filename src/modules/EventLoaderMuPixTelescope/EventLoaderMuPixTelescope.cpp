@@ -87,36 +87,41 @@ void EventLoaderMuPixTelescope::initialize() {
 }
 
 void EventLoaderMuPixTelescope::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
-    LOG(INFO) << "Removed " << m_removed << " hits that could not be properly sorted";
+    LOG(INFO) << "Removed " << m_removed
+              << " hits that did not fit in an event. For Telescope data this means that there is a very late hit in the "
+                 "data -> a larger buffer size might help";
 }
 
 StatusCode EventLoaderMuPixTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
+    return (m_isSorted ? read_sorted(clipboard) : read_plane(clipboard));
+}
 
+StatusCode EventLoaderMuPixTelescope::read_sorted(const std::shared_ptr<Clipboard>& clipboard) {
     PixelVector hits;
-    // if the data is on fpga sorted - the structure is completley different and no buffering of hits is required
-    if(m_isSorted) {
-        if(!m_blockFile->read_next(m_tf)) {
-            return StatusCode::EndRun;
-        }
-        for(uint i = 0; i < m_tf.num_hits(); ++i) {
-            RawHit h = m_tf.get_hit(i, m_type);
-            if(((h.tag() & uint(~0x3)) == m_tag))
-                continue;
-            // move ts to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time yet, assuming
-            // 10bit ts
-            double px_timestamp = 8 * static_cast<double>(((m_tf.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw());
-            // setting tot and charge to zero here - needs to be improved
-            hits.push_back(std::make_shared<Pixel>(m_detector->getName(), h.column(), h.row(), 0, 0, px_timestamp));
-        }
-        // If no event is defined create one
-        if(clipboard->getEvent() == nullptr) {
-            //            frames have a length of 128 ts, each 8ns, int division cuts of lowest bits
-            double begin = int(hits.front()->timestamp()) / 1024;
-            clipboard->putEvent(std::make_shared<Event>(double(begin * 1024), double((begin + 1) * 1024)));
-        }
-        return StatusCode::Success;
+    if(!m_blockFile->read_next(m_tf)) {
+        return StatusCode::EndRun;
     }
-    // else sort the data and refill the buffer
+    for(uint i = 0; i < m_tf.num_hits(); ++i) {
+        RawHit h = m_tf.get_hit(i, m_type);
+        if(((h.tag() & uint(~0x3)) == m_tag))
+            continue;
+        // move ts to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time yet, assuming
+        // 10bit ts
+        double px_timestamp = 8 * static_cast<double>(((m_tf.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw());
+        // setting tot and charge to zero here - needs to be improved
+        hits.push_back(std::make_shared<Pixel>(m_detector->getName(), h.column(), h.row(), 0, 0, px_timestamp));
+    }
+    // If no event is defined create one
+    if(clipboard->getEvent() == nullptr) {
+        //            frames have a length of 128 ts, each 8ns, int division cuts of lowest bits
+        int begin = int(hits.front()->timestamp()) / 1024;
+        clipboard->putEvent(std::make_shared<Event>(double(begin * 1024), double((begin + 1) * 1024)));
+    }
+    return StatusCode::Success;
+}
+
+StatusCode EventLoaderMuPixTelescope::read_plane(const std::shared_ptr<Clipboard>& clipboard) {
+    PixelVector hits;
     if(!m_eof)
         fillBuffer();
     while(true) {
@@ -186,7 +191,7 @@ int EventLoaderMuPixTelescope::typeString_to_typeID(string typeString) {
 void EventLoaderMuPixTelescope::fillBuffer() {
 
     // here we need to check quite a number of cases
-    while(m_pixelbuffer.size() < unsigned(m_buffer_depth)) {
+    while(m_pixelbuffer.size() < m_buffer_depth) {
         if(m_blockFile->read_next(m_tf)) {
             if(m_tf.timestamp() < m_ts_prev) {
                 start = true;
