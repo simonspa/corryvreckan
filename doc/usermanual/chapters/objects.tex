@@ -25,17 +25,17 @@ each detector plane defined in the geometry are provided. At any z-postion, the
 corresponding x/y position can be requested after the track has been fitted
 with the track models listed below:
 
-\subsection*{Straight-Line}
+\subsubsection*{Straight-Line}
 A straight line track ignores the effect of multiple scattering and describes
 the particles path as a straight line. Hit uncertainties are taken into account.
 The $\chi^2$ is defined by the resolution weighted sum of residuals.
-\subsection*{General Broken Lines}
+\subsubsection*{General Broken Lines}
 A General Broken Lines trajectory \cite{gbl} includes uncertainties from
 both, position measurement and scattering, simultaneously and reconstructs the
 trajectory as a set of lines with kinks at the sensors planes. Scattering in
 the volume between two planes is approximated by thin virtual scattering
 layers close to the detector planes. 
 
-\subsection*{Multiplet}
+\subsubsection*{Multiplet}
 Multiplets describe the typical scenario for scattering based imaging: An upstream and downstream arm are defined, individually fitted with one of the above track models.
-Both tracks are propagated to a user defined position and both, the plane distance as well as the change in direction (scattering kink) are calculated.
+Both tracks are  extrapolated to a user defined `z`-position in between and both, the transverse distance of the tracks at the matching position as well as the change in direction (scattering kink) are calculated.
