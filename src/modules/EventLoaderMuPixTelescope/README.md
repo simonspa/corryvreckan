@@ -31,7 +31,7 @@ any other event definition (`EventLoaderEUDAQ2` `EventDefinitionM26`) can be use
 
 ### Parameters
 * `input_directory`: Defines the input file. No default
-* `Run`: 6 digit Run number, with leading zeros beeing automatically added, to open the data file with the standart format `telescope_run_RUN.blck`
+* `Run`: 6 digit Run number, with leading zeros being automatically added, to open the data file with the standard format `telescope_run_RUN.blck`
 * `input_file`: Overwrite  the default file created based on the `Run`. No default.
 * `is_sorted`: Defines if data recorded is on FPGA timestamp sorted. Defaults to `false`
 * `ts2_is_gray`: Defines if the timestamp is gray encoded or not. Defaults to
