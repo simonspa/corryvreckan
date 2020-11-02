@@ -117,6 +117,8 @@ StatusCode EventLoaderMuPixTelescope::read_sorted(const std::shared_ptr<Clipboar
         int begin = int(hits.front()->timestamp()) / 1024;
         clipboard->putEvent(std::make_shared<Event>(double(begin * 1024), double((begin + 1) * 1024)));
     }
+    if(hits.size() > 0)
+        clipboard->putData(hits, m_detector->getName());
     return StatusCode::Success;
 }
 
