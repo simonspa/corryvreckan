@@ -29,6 +29,8 @@ void Metronome::initialize() {
     // Set initial values for the start and stop time of the first event:
     m_eventStart = config_.get<double>("skip_time", 0.);
     m_eventEnd = m_eventStart + m_eventLength;
+
+    m_triggers = config_.get<uint32_t>("skip_triggers", 0ul);
 }
 
 StatusCode Metronome::run(const std::shared_ptr<Clipboard>& clipboard) {
