@@ -195,7 +195,7 @@ void EventLoaderMuPixTelescope::fillBuffer() {
     // here we need to check quite a number of cases
     while(m_pixelbuffer.size() < m_buffer_depth) {
         if(m_blockFile->read_next(m_tf)) {
-            if(m_tf.timestamp() < m_ts_prev) {
+	  /*   if(m_tf.timestamp() < m_ts_prev) {
                 start = true;
                 LOG(INFO) << "Found data reset ts before: " << m_ts_prev << " and ts now " << m_tf.timestamp();
             }
@@ -205,12 +205,16 @@ void EventLoaderMuPixTelescope::fillBuffer() {
             // no hits in data - can only happen if the zero suppression is switched off
             if(m_tf.num_hits() == 0)
                 continue;
-            // need to determine the sensor layer that is identified by the tag
+	  */
+	  // need to determine the sensor layer that is identified by the tag
             RawHit h = m_tf.get_hit(0);
             // tag does not match - continue reading if data is not sorted
             if(((h.tag() & uint(~0x3)) != m_tag))
-                continue;
-            // all hits in one frame are from the same sensor. Copy them
+	      {
+		//	std::cout <<"found correct frame: " << m_tag<<std::endl;
+		  continue;
+		}
+		// all hits in one frame are from the same sensor. Copy them
             for(uint i = 0; i < m_tf.num_hits(); ++i) {
                 h = m_tf.get_hit(i, m_type);
                 // move ts to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time yet,
