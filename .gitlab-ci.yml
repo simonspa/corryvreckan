@@ -226,20 +226,19 @@ cmp:usermanual:
 # Packaging of Binary Tarballs #
 ################################
 
-pkg:slc6-gcc:
+
+.pack:
     stage: packaging
     tags:
         - docker
-    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     only:
-        - tags
-        - schedules
-    dependencies:
-        - cmp:slc6-gcc
-    script:
+        - tags@corryvreckan/corryvreckan
+        - schedules@corryvreckan/corryvreckan
+    before_script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
+    script:
         - mkdir -p public/releases
         - cd build
         - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
@@ -250,29 +249,20 @@ pkg:slc6-gcc:
             - public
         expire_in: 24 hour
 
+pkg:slc6-gcc:
+    extends: .pack
+    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
+    needs:
+        - job: cmp:slc6-gcc
+          artifacts: true
+
 pkg:cc7-gcc:
-    stage: packaging
-    tags:
-        - docker
+    extends: .pack
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    only:
-        - tags
-        - schedules
-    dependencies:
-        - cmp:cc7-gcc
-    script:
-        - export COMPILER_TYPE="gcc"
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
-        - mkdir -p public/releases
-        - cd build
-        - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
-        - ninja package
-        - mv *.tar.gz ../public/releases
-    artifacts:
-        paths:
-            - public
-        expire_in: 24 hour
+    needs:
+        - job: cmp:cc7-gcc
+          artifacts: true
+
 
 ########################
 # Automatic Deployment #
