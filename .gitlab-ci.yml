@@ -183,34 +183,36 @@ fmt:codespell:
 # Documentation Compilation #
 #############################
 
-# Compile Doxygen reference
-cmp:doxygen:
+.doc:
     stage: documentation
+    needs: []
+    dependencies: []
     tags:
         - docker
+    artifacts:
+        paths:
+            - public
+        expire_in: 24 hour
+
+# Compile Doxygen reference
+cmp:doxygen:
+    extends: .doc
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    dependencies: []
-    script:
+    before_script:
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
+    script:
         - mkdir -p public/usermanual
         - mkdir build
         - cd build
         - cmake -DBUILD_DOCS_ONLY=ON ..
         - make reference
         - mv reference/html ../public/reference
-    artifacts:
-        paths:
-            - public
-        expire_in: 24 hour
 
 # Compile LaTeX user manual:
 cmp:usermanual:
-    stage: documentation
-    tags:
-      - docker
+    extends: .doc
     image: gitlab-registry.cern.ch/clicdp/publications/templates/custom_ci_worker:fedora-latex-latest
-    dependencies: []
     script:
         - mkdir -p public/usermanual
         - mkdir build
@@ -218,10 +220,7 @@ cmp:usermanual:
         - cmake -DBUILD_DOCS_ONLY=ON ..
         - make pdf
         - mv usermanual/corryvreckan-manual.pdf ../public/usermanual
-    artifacts:
-        paths:
-          - public
-        expire_in: 24 hour
+
 
 ################################
 # Packaging of Binary Tarballs #
