@@ -14,15 +14,14 @@ stages:
 # Compilation targets #
 #######################
 
-cmp:slc6-gcc:
+
+# Hidden key to define the default compile job:
+.compile:
     stage: compilation
+    needs: []
     tags:
         - docker
-    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     script:
-        - export COMPILER_TYPE="gcc"
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
@@ -33,33 +32,26 @@ cmp:slc6-gcc:
             - build
             - bin
             - lib
-        expire_in: 3 hour
+        expire_in: 24 hour
+
+cmp:slc6-gcc:
+    extends: .compile
+    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
+    before_script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 cmp:cc7-gcc:
-    stage: compilation
-    tags:
-        - docker
+    extends: .compile
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    script:
+    before_script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
-        - mkdir build
-        - cd build
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja -k0
-        - ninja install
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 3 hour
 
 cmp:cc7-docker:
-    stage: compilation
-    tags:
-        - docker
+    extends: .compile
     image:
         name: gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-deps
         entrypoint: [""]
@@ -71,51 +63,27 @@ cmp:cc7-docker:
         - cmake3 -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_EventLoaderEUDAQ2=ON -DBUILD_EventDefinitionM26=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -Deudaq_DIR=/opt/eudaq2/cmake ..
         - make
         - make install
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 3 hour
 
 cmp:cc7-llvm:
-    stage: compilation
-    tags:
-        - docker
+    extends: .compile
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    script:
+    before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab/ci/init_x86_64.sh
-        - mkdir build
-        - cd build
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja -k0
-        - ninja install
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 3 hour
 
 cmp:mac1015-clang:
-    stage: compilation
+    extends: .compile
     tags:
         - mac
-    script:
+    before_script:
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
+    script:
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DCMAKE_USE_RELATIVE_PATHS=TRUE -DEigen3_DIR=$Eigen3_DIR ..
         - ninja -k0
         - ninja install
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 3 hour
 
 ##############
 # Unit tests #
