@@ -131,47 +131,51 @@ tst:sim:
         - mkdir -p ../testing/data
         - ctest -R test_sim --output-on-failure -j1
 
+
 ############################
 # Format and Lint Checking #
 ############################
 
-fmt:centos7-llvm-format:
+# Hidden key to define the basis for linting and formatting:
+.format:
     stage: formatting
     tags:
         - docker
-    dependencies:
-        - cmp:cc7-llvm
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    script:
+    before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab/ci/init_x86_64.sh
+
+fmt:centos7-llvm-format:
+    extends: .format
+    needs: []
+    dependencies: []
+    script:
+        - mkdir -p build
         - cd build/
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja check-format
 
 fmt:cc7-llvm-lint:
-    stage: formatting
-    tags:
-        - docker
-    dependencies:
-        - cmp:cc7-llvm
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    extends: .format
+    needs: []
+    dependencies: []
     script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab/ci/init_x86_64.sh
+        - mkdir -p build
         - cd build/
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja check-lint
 
 fmt:codespell:
-    stage: formatting
-    tags:
-        - docker
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    extends: .format
+    needs: []
     dependencies: []
-    script:
+    before_script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab/ci/init_x86_64.sh
         - export PATH=~/.local/bin:$PATH
         - pip install --trusted-host=pypi.org --user codespell
+    script:
         - codespell --ignore-words .gitlab/ci/codespell_ignored_words.txt --quiet-level 2 --skip ".git,.gitlab,cmake,3rdparty,*.svg"
 
 
