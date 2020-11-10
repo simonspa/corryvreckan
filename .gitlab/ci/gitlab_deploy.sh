@@ -17,7 +17,7 @@ if [[ $clicdp_status == *"(stratum0 / S3)"* ]]; then
   cd /home/cvclicdp/
 
   # Extract artifact tars
-  echo "Extracting artifact tarballs"
+  echo "Extract artifact tarballs"
   for filename in $1/*.tar.gz; do
     echo " - $filename"
 
@@ -73,7 +73,7 @@ if [[ $clicdp_status == *"(stratum0 / S3)"* ]]; then
 else
   (>&2 echo "#################################")
   (>&2 echo "### CVMFS Transaction ongoing ###")
-  (>&2 echo "####### Deploy cancelled  #######")
+  (>&2 echo "######## Deploy cancelled #######")
   (>&2 echo "#################################")
   exit 1
 fi
