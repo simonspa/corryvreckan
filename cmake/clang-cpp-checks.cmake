@@ -1,6 +1,6 @@
 # Additional targets to perform clang-format/clang-tidy/cppcheck
 
-# Check if the git hooks are installed and upt-to-date:
+# Check if the git hooks are installed and up-to-date:
 IF(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
     SET(HOOK_MISSING OFF)
     SET(HOOK_OUTDATED OFF)
