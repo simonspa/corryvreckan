@@ -102,34 +102,44 @@ cmp:mac1015-clang:
         entrypoint: [""]
     before_script:
         - source scl_source enable devtoolset-7 || echo " "
+    after_script:
+        - ./.gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl corry-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+    artifacts:
+        when: always
+        expire_in: 1 day
+        name: "corry-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}"
+        paths:
+            - corry-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+        reports:
+            junit: corry-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
 
 tst:tracking:
     extends: .test
     script:
         - cd build/
         - mkdir -p ../testing/data
-        - ctest -R test_tracking --output-on-failure -j1
+        - ctest -R test_tracking --no-compress-output --test-action Test -j1
 
 tst:align:
     extends: .test
     script:
         - cd build/
         - mkdir -p ../testing/data
-        - ctest -R test_align --output-on-failure -j1
+        - ctest -R test_align --no-compress-output --test-action Test -j1
 
 tst:io:
     extends: .test
     script:
         - cd build/
         - mkdir -p ../testing/data
-        - ctest -R test_io --output-on-failure -j1
+        - ctest -R test_io --no-compress-output --test-action Test -j1
 
 tst:sim:
     extends: .test
     script:
         - cd build/
         - mkdir -p ../testing/data
-        - ctest -R test_sim --output-on-failure -j1
+        - ctest -R test_sim --no-compress-output --test-action Test -j1
 
 
 ############################
