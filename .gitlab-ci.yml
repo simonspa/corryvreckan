@@ -278,7 +278,7 @@ deploy-documentation:
         GIT_STRATEGY: none
     # Only run for new tags:
     only:
-        - tags
+        - tags@corryvreckan/corryvreckan
     dependencies:
         - cmp:usermanual
         - cmp:doxygen
@@ -298,8 +298,8 @@ deploy-eos:
         GIT_STRATEGY: none
     # Only run for new tags:
     only:
-        - tags
-        - schedules # Only execute this on scheduled "nightly" pipelines
+        - tags@corryvreckan/corryvreckan
+        - schedules@corryvreckan/corryvreckan
     dependencies:
         - pkg:cc7-gcc
         - pkg:slc6-gcc
@@ -319,8 +319,8 @@ deploy-cvmfs:
     tags:
         - cvmfs-deploy
     only:
-        - tags
-        - schedules # Only execute this on scheduled "nightly" pipelines
+        - tags@corryvreckan/corryvreckan
+        - schedules@corryvreckan/corryvreckan
     script:
         - ./.gitlab/ci/download_artifacts.py $API_TOKEN $CI_PROJECT_ID $CI_PIPELINE_ID
         - export RUNNER_LOCATION=$(pwd)
@@ -335,7 +335,7 @@ deploy-docker-latest:
         - docker-image-build
     dependencies: []
     only:
-        - schedules # Only execute this on scheduled "nightly" pipelines
+        - schedules@corryvreckan/corryvreckan
     script:
         - "echo" # unused but this line is required by GitLab CI
     variables:
@@ -347,7 +347,7 @@ deploy-docker-tag:
         - docker-image-build
     dependencies: []
     only:
-        - tags
+        - tags@corryvreckan/corryvreckan
     script:
         - "echo" # unused but this line is required by GitLab CI
     variables:
