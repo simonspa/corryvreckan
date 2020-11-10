@@ -85,6 +85,7 @@ cmp:mac1015-clang:
         - ninja -k0
         - ninja install
 
+
 ##############
 # Unit tests #
 ##############
@@ -93,8 +94,9 @@ cmp:mac1015-clang:
     stage: testing
     tags:
         - docker
-    dependencies:
-        - cmp:cc7-docker
+    needs:
+        - job: cmp:cc7-docker
+          artifacts: true
     image:
         name: gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-deps
         entrypoint: [""]
