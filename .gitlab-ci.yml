@@ -56,7 +56,7 @@ cmp:cc7-docker:
         name: gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-deps
         entrypoint: [""]
     before_script:
-        - source scl_source enable devtoolset-7 || echo " "
+        - source scl_source enable devtoolset-8 || echo " "
     script:
         - mkdir build
         - cd build
@@ -101,7 +101,7 @@ cmp:mac1015-clang:
         name: gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-deps
         entrypoint: [""]
     before_script:
-        - source scl_source enable devtoolset-7 || echo " "
+        - source scl_source enable devtoolset-8 || echo " "
     after_script:
         - ./.gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl corry-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
     artifacts:
