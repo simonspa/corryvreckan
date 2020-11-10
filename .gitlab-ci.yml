@@ -21,8 +21,8 @@ cmp:slc6-gcc:
     image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
@@ -42,8 +42,8 @@ cmp:cc7-gcc:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
@@ -85,7 +85,7 @@ cmp:cc7-llvm:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab/ci/init_x86_64.sh
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
@@ -103,8 +103,8 @@ cmp:mac1015-clang:
     tags:
         - mac
     script:
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DCMAKE_USE_RELATIVE_PATHS=TRUE -DEigen3_DIR=$Eigen3_DIR ..
@@ -174,7 +174,7 @@ fmt:centos7-llvm-format:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab/ci/init_x86_64.sh
         - cd build/
         - ninja check-format
 
@@ -187,7 +187,7 @@ fmt:cc7-llvm-lint:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab/ci/init_x86_64.sh
         - cd build/
         - ninja check-lint
 
@@ -199,10 +199,10 @@ fmt:codespell:
     dependencies: []
     script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab/ci/init_x86_64.sh
         - export PATH=~/.local/bin:$PATH
         - pip install --trusted-host=pypi.org --user codespell
-        - codespell --ignore-words .gitlab-ci.d/codespell_ignored_words.txt --quiet-level 2 --skip ".git,.gitlab,cmake,3rdparty,*.svg"
+        - codespell --ignore-words .gitlab/ci/codespell_ignored_words.txt --quiet-level 2 --skip ".git,.gitlab,cmake,3rdparty,*.svg"
 
 
 #############################
@@ -217,8 +217,8 @@ cmp:doxygen:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     dependencies: []
     script:
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
         - mkdir -p public/usermanual
         - mkdir build
         - cd build
@@ -265,8 +265,8 @@ pkg:slc6-gcc:
         - cmp:slc6-gcc
     script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
         - mkdir -p public/releases
         - cd build
         - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
@@ -289,8 +289,8 @@ pkg:cc7-gcc:
         - cmp:cc7-gcc
     script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
         - mkdir -p public/releases
         - cd build
         - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
@@ -359,10 +359,10 @@ deploy-cvmfs:
         - tags
         - schedules # Only execute this on scheduled "nightly" pipelines
     script:
-        - ./.gitlab-ci.d/download_artifacts.py $API_TOKEN $CI_PROJECT_ID $CI_PIPELINE_ID
+        - ./.gitlab/ci/download_artifacts.py $API_TOKEN $CI_PROJECT_ID $CI_PIPELINE_ID
         - export RUNNER_LOCATION=$(pwd)
         - if [ -z ${CI_COMMIT_TAG} ]; then export BUILD_PATH='latest'; else export BUILD_PATH=${CI_COMMIT_TAG}; fi
-        - sudo -u cvclicdp -i $RUNNER_LOCATION/.gitlab-ci.d/gitlab_deploy.sh $RUNNER_LOCATION $BUILD_PATH
+        - sudo -u cvclicdp -i $RUNNER_LOCATION/.gitlab/ci/gitlab_deploy.sh $RUNNER_LOCATION $BUILD_PATH
         - rm -f corryvreckan-*.tar.gz
     retry: 1
 
