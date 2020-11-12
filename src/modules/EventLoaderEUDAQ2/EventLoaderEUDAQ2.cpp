@@ -213,7 +213,7 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
             LOG(TRACE) << "Reading new EUDAQ event from file";
             auto new_event = reader_->GetNextEvent();
             if(!new_event) {
-                //LOG(DEBUG) << "Reached EOF";
+                LOG(DEBUG) << "Reached EOF";
                 throw EndOfFile();
             }
             // Build buffer from all sub-events:
@@ -225,7 +225,7 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
         }
         LOG(TRACE) << "Buffer contains " << events_.size() << " (sub-) events:";
         for(auto& evt : events_) {
-            LOG(TRACE) << "  (sub-) event of type " << evt->GetDescription(); 
+            LOG(TRACE) << "  (sub-) event of type " << evt->GetDescription();
         }
 
         // Retrieve first and remove from buffer:
@@ -281,6 +281,8 @@ void EventLoaderEUDAQ2::retrieve_event_tags(const eudaq::EventSPC evt) {
 }
 Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboard>& clipboard,
                                                    std::shared_ptr<eudaq::StandardEvent> evt) const {
+    // Potentially shift the trigger IDs if requested
+    auto trigger_after_shift = static_cast<uint32_t>(static_cast<int>(evt->GetTriggerN()) + shift_triggers_);  
 
     // Check if this event has timestamps available:
     if(evt->GetTimeBegin() == 0 && evt->GetTimeEnd() == 0) {
@@ -293,15 +295,14 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
         }
 
         // Get position of this time frame with respect to the defined event:
-        // Shift triggers among all devices with in the same event if requested. 
-        auto trigger_after_shift = static_cast<uint32_t>(static_cast<int>(evt->GetTriggerN()) + shift_triggers_); 
+        // Shift trigger ID of this device with respect to the IDs stored in the Corryrveckan Event. 
         auto trigger_position = clipboard->getEvent()->getTriggerPosition(trigger_after_shift); 
         if(trigger_position == Event::Position::BEFORE) {
             LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " before triggers registered in Corryvreckan event";
-            LOG(DEBUG) << "Shifted Trigger " << trigger_after_shift << " before triggers registered in Corryvreckan event"; 
+            LOG(DEBUG) << "Shifted Trigger ID " << trigger_after_shift << " before triggers registered in Corryvreckan event"; 
         } else if(trigger_position == Event::Position::AFTER) {
             LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " after triggers registered in Corryvreckan event";
-            LOG(DEBUG) << "Shifted Trigger " << trigger_after_shift << " after triggers registered in Corryvreckan event"; 
+            LOG(DEBUG) << "Shifted Trigger ID " << trigger_after_shift << " after triggers registered in Corryvreckan event"; 
         } else if(trigger_position == Event::Position::UNKNOWN) {
             LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " within Corryvreckan event range but not registered";
             LOG(DEBUG) << "Shifted Trigger ID " << trigger_after_shift << " within Corryvreckan event range but not registered"; 
@@ -310,7 +311,6 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
             evt->SetTimeBegin(static_cast<uint64_t>(clipboard->getEvent()->getTriggerTime(trigger_after_shift) * 1000));
             evt->SetTimeEnd(static_cast<uint64_t>(clipboard->getEvent()->getTriggerTime(trigger_after_shift) * 1000)); 
 
-            LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " found in Corryvreckan event";
             LOG(DEBUG) << "Shifted Trigger ID " << trigger_after_shift << " found in Corryvreckan event"; 
         }
         return trigger_position;
@@ -376,11 +376,9 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
     } else {
         // check if event has valid trigger ID (flag = 0x10):
         if(evt->IsFlagTrigger()) {
-            // Potentially shift the trigger IDs if requested
-            auto trigger_id = static_cast<uint32_t>(static_cast<int>(evt->GetTriggerN()) + shift_triggers_);
             // Store potential trigger numbers, assign to center of event:
-            clipboard->getEvent()->addTrigger(trigger_id, event_timestamp);
-            LOG(DEBUG) << "Stored trigger ID " << trigger_id << " at " << Units::display(event_timestamp, {"us", "ns"}); 
+            clipboard->getEvent()->addTrigger(trigger_after_shift, event_timestamp);
+            LOG(DEBUG) << "Stored trigger ID " << trigger_after_shift << " at " << Units::display(event_timestamp, {"us", "ns"}); 
         }
     }
 
