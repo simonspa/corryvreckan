@@ -51,8 +51,10 @@ namespace corryvreckan {
         int typeString_to_typeID(string typeString);
         void fillBuffer();
         uint m_tag{};
+        double prev_event_end{};
         int m_type{};
-        int m_removed{};
+        int m_eventNo{};
+        int m_removed{}, m_stored{};
         uint64_t m_ts_prev{0};
         bool start{false};
         unsigned m_buffer_depth{};
