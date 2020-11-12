@@ -23,6 +23,7 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
     config_.setDefault<bool>("ts2_is_gray", false);
     config_.setDefault<unsigned>("buffer_depth", 1000);
     config_.setDefault<double>("time_offset", 0.0);
+
     m_inputDirectory = config_.getPath("input_directory");
     m_runNumber = config_.get<int>("Run");
     m_buffer_depth = config.get<unsigned>("buffer_depth");
@@ -42,7 +43,7 @@ void EventLoaderMuPixTelescope::initialize() {
     m_tag = uint(stoi(tag, nullptr, 16));
     LOG(DEBUG) << m_detector->getName() << " is using the fpga link tag " << hex << m_tag;
     m_type = typeString_to_typeID(m_detector->getType());
-
+    LOG(INFO) << "Detector " << m_detector->getType() << "is assigned to type id " << m_type;
     std::stringstream ss;
     ss << std::setw(6) << std::setfill('0') << m_runNumber;
     std::string s = ss.str();
@@ -87,12 +88,13 @@ void EventLoaderMuPixTelescope::initialize() {
 }
 
 void EventLoaderMuPixTelescope::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
-    LOG(INFO) << "Removed " << m_removed
-              << " hits that did not fit in an event. For Telescope data this means that there is a very late hit in the "
+    LOG(INFO) << "Recorded hits: " << m_stored << " Removed " << m_removed
+              << " hits that did not fit in an event. For unsorted data this means that there is a very late hit in the "
                  "data -> a larger buffer size might help";
 }
 
 StatusCode EventLoaderMuPixTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
+    m_eventNo++;
     return (m_isSorted ? read_sorted(clipboard) : read_plane(clipboard));
 }
 
@@ -131,13 +133,21 @@ StatusCode EventLoaderMuPixTelescope::read_plane(const std::shared_ptr<Clipboard
             break;
         auto pixel = m_pixelbuffer.top();
         if((pixel->timestamp() < clipboard->getEvent()->start())) {
-            LOG(DEBUG) << " Old hit found: " << pixel->timestamp();
+            LOG(DEBUG) << " Old hit found: " << Units::convert(pixel->timestamp(), "us") << " vs prev end (" << m_eventNo - 1
+                       << ")\t" << Units::convert(prev_event_end, "us") << " and current start \t"
+                       << Units::convert(clipboard->getEvent()->start(), "us")
+                       << " and duration: " << clipboard->getEvent()->duration()
+                       << "and num triggers: " << clipboard->getEvent()->triggerList().size();
             m_removed++;
             m_pixelbuffer.pop(); // remove top element
             continue;
         }
         if(m_pixelbuffer.size() && (pixel->timestamp() < clipboard->getEvent()->end()) &&
            (pixel->timestamp() > clipboard->getEvent()->start())) {
+            LOG(DEBUG) << " Adding pixel hit: " << Units::convert(pixel->timestamp(), "us") << " vs prev end ("
+                       << m_eventNo - 1 << ")\t" << Units::convert(prev_event_end, "us") << " and current start \t"
+                       << Units::convert(clipboard->getEvent()->start(), "us")
+                       << " and duration: " << clipboard->getEvent()->duration();
             hits.push_back(pixel);
             hHitMap->Fill(pixel.get()->column(), pixel.get()->row());
             hPixelToT->Fill(pixel.get()->raw());
@@ -152,10 +162,11 @@ StatusCode EventLoaderMuPixTelescope::read_plane(const std::shared_ptr<Clipboard
     }
     if(hits.size() > 0)
         clipboard->putData(hits, m_detector->getName());
+    m_stored += hits.size();
     // Return value telling analysis to keep running
     if(m_pixelbuffer.size() == 0)
         return StatusCode::EndRun;
-
+    prev_event_end = clipboard->getEvent()->end();
     return StatusCode::Success;
 }
 
@@ -195,13 +206,13 @@ void EventLoaderMuPixTelescope::fillBuffer() {
     // here we need to check quite a number of cases
     while(m_pixelbuffer.size() < m_buffer_depth) {
         if(m_blockFile->read_next(m_tf)) {
-            if(m_tf.timestamp() < m_ts_prev) {
-                start = true;
-                LOG(INFO) << "Found data reset ts before: " << m_ts_prev << " and ts now " << m_tf.timestamp();
-            }
-            m_ts_prev = m_tf.timestamp();
-            if(!start)
-                continue;
+            //            if(m_tf.timestamp() < m_ts_prev) {
+            //                start = true;
+            //                LOG(INFO) << "Found data reset ts before: " << m_ts_prev << " and ts now " << m_tf.timestamp();
+            //            }
+            //            m_ts_prev = m_tf.timestamp();
+            //            if(!start)
+            //                continue;
             // no hits in data - can only happen if the zero suppression is switched off
             if(m_tf.num_hits() == 0)
                 continue;
@@ -217,6 +228,7 @@ void EventLoaderMuPixTelescope::fillBuffer() {
                 // assuming 10bit ts
                 double px_timestamp =
                     8 * static_cast<double>(((m_tf.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw()) - m_timeOffset;
+                LOG(TRACE) << "Pixel timestamp " << px_timestamp;
                 // setting tot and charge to zero here - needs to be improved
                 m_pixelbuffer.push(std::make_shared<Pixel>(m_detector->getName(), h.column(), h.row(), 0, 0, px_timestamp));
             }
