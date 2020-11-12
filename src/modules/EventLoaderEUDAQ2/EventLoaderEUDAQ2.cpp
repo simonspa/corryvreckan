@@ -213,7 +213,6 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
             LOG(TRACE) << "Reading new EUDAQ event from file";
             auto new_event = reader_->GetNextEvent();
             if(!new_event) {
-                LOG(WARNING) << events_.size() << "Reached EOF";//debug1
                 //LOG(DEBUG) << "Reached EOF";
                 throw EndOfFile();
             }
@@ -225,10 +224,8 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
             }
         }
         LOG(TRACE) << "Buffer contains " << events_.size() << " (sub-) events:";
-        //LOG(WARNING) << "Buffer contains " << events_.size() << " (sub-) events:";//debug2
         for(auto& evt : events_) {
-            LOG(TRACE) << "  (sub-) event of type " << evt->GetDescription();//debug3 
-            //LOG(WARNING) << "  (sub-) event of type " << evt->GetDescription();
+            LOG(TRACE) << "  (sub-) event of type " << evt->GetDescription(); 
         }
 
         // Retrieve first and remove from buffer:
