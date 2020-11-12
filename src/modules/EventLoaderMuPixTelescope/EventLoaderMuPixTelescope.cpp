@@ -216,8 +216,8 @@ void EventLoaderMuPixTelescope::fillBuffer() {
             //                continue;
 
             // no hits in data - can only happen if the zero suppression is switched off
-            //if(m_tf.num_hits() == 0)
-          //      continue;
+            if(m_tf.num_hits() == 0)
+                continue;
 
 	  // need to determine the sensor layer that is identified by the tag
             RawHit h = m_tf.get_hit(0);
