@@ -213,7 +213,8 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
             LOG(TRACE) << "Reading new EUDAQ event from file";
             auto new_event = reader_->GetNextEvent();
             if(!new_event) {
-                LOG(DEBUG) << "Reached EOF";
+                LOG(WARNING) << events_.size() << "Reached EOF";//debug1
+                //LOG(DEBUG) << "Reached EOF";
                 throw EndOfFile();
             }
             // Build buffer from all sub-events:
@@ -224,8 +225,10 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
             }
         }
         LOG(TRACE) << "Buffer contains " << events_.size() << " (sub-) events:";
+        //LOG(WARNING) << "Buffer contains " << events_.size() << " (sub-) events:";//debug2
         for(auto& evt : events_) {
-            LOG(TRACE) << "  (sub-) event of type " << evt->GetDescription();
+            LOG(TRACE) << "  (sub-) event of type " << evt->GetDescription();//debug3 
+            //LOG(WARNING) << "  (sub-) event of type " << evt->GetDescription();
         }
 
         // Retrieve first and remove from buffer:
@@ -293,18 +296,25 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
         }
 
         // Get position of this time frame with respect to the defined event:
-        auto trigger_position = clipboard->getEvent()->getTriggerPosition(evt->GetTriggerN());
+        // Shift triggers among all devices with in the same event if requested. 
+        auto trigger_after_shift = static_cast<uint32_t>(static_cast<int>(evt->GetTriggerN()) + shift_triggers_); 
+        auto trigger_position = clipboard->getEvent()->getTriggerPosition(trigger_after_shift); 
         if(trigger_position == Event::Position::BEFORE) {
             LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " before triggers registered in Corryvreckan event";
+            LOG(DEBUG) << "Shifted Trigger " << trigger_after_shift << " before triggers registered in Corryvreckan event"; 
         } else if(trigger_position == Event::Position::AFTER) {
             LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " after triggers registered in Corryvreckan event";
+            LOG(DEBUG) << "Shifted Trigger " << trigger_after_shift << " after triggers registered in Corryvreckan event"; 
         } else if(trigger_position == Event::Position::UNKNOWN) {
             LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " within Corryvreckan event range but not registered";
+            LOG(DEBUG) << "Shifted Trigger ID " << trigger_after_shift << " within Corryvreckan event range but not registered"; 
         } else {
             // Redefine EUDAQ2 event begin and end to trigger timestamp (both were zero):
-            evt->SetTimeBegin(static_cast<uint64_t>(clipboard->getEvent()->getTriggerTime(evt->GetTriggerN()) * 1000));
-            evt->SetTimeEnd(static_cast<uint64_t>(clipboard->getEvent()->getTriggerTime(evt->GetTriggerN()) * 1000));
+            evt->SetTimeBegin(static_cast<uint64_t>(clipboard->getEvent()->getTriggerTime(trigger_after_shift) * 1000));
+            evt->SetTimeEnd(static_cast<uint64_t>(clipboard->getEvent()->getTriggerTime(trigger_after_shift) * 1000)); 
+
             LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " found in Corryvreckan event";
+            LOG(DEBUG) << "Shifted Trigger ID " << trigger_after_shift << " found in Corryvreckan event"; 
         }
         return trigger_position;
     }
@@ -373,7 +383,7 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
             auto trigger_id = static_cast<uint32_t>(static_cast<int>(evt->GetTriggerN()) + shift_triggers_);
             // Store potential trigger numbers, assign to center of event:
             clipboard->getEvent()->addTrigger(trigger_id, event_timestamp);
-            LOG(DEBUG) << "Stored trigger ID " << trigger_id << " at " << Units::display(event_timestamp, {"us", "ns"});
+            LOG(DEBUG) << "Stored trigger ID " << trigger_id << " at " << Units::display(event_timestamp, {"us", "ns"}); 
         }
     }
 
