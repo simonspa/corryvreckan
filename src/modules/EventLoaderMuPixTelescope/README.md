@@ -37,7 +37,7 @@ This module requires a installation of the mupix8_daq package that is used by th
 * `Run`: 6 digit Run number, with leading zeros being automatically added, to open the data file with the standard format `telescope_run_RUN.blck`
 * `input_file`: Overwrite  the default file created based on the `Run`. No default.
 * `is_sorted`: Defines if data recorded is on FPGA timestamp sorted. Defaults to `false`
-* `time_offset`: Substract an offset to correct for the expected delay between
+* `time_offset`: Subtract an offset to correct for the expected delay between
 issuing the synchronoues reset and receiving it. Only used if
 `is_sorted==false`. Defaults to `0`
 * `input_file`: Overwrite the input filename if the filename has a non-default
