@@ -49,14 +49,13 @@ namespace corryvreckan {
     private:
         StatusCode read_sorted(const std::shared_ptr<Clipboard>& clipboard);
         StatusCode read_unsorted(const std::shared_ptr<Clipboard>& clipboard);
-        int typeString_to_typeID(string typeString);
         void fillBuffer();
         uint tag_{};
         double prev_event_end_{};
         int type_{};
         int eventNo_{};
-        int counterHits_{};
-        int removed_{}, stored_{};
+        long unsigned counterHits_{};
+        long unsigned removed_{}, stored_{};
         uint64_t ts_prev_{0};
         unsigned buffer_depth_{};
         bool eof_{false};
@@ -85,6 +84,7 @@ namespace corryvreckan {
         TH1F* hitsPerkEvent;
         TH2F* hdiscardedHitmap;
         TH2F* hHitMap;
+        static std::map<std::string, int> typeString_to_typeID;
     };
 
 } // namespace corryvreckan

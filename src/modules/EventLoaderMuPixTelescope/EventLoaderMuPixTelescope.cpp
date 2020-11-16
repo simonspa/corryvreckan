@@ -32,7 +32,6 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
     ts2IsGray_ = config_.get<bool>("ts2_is_gray");
     if(config_.has("input_file"))
         input_file_ = config_.get<string>("input_file");
-    // We need to check for the config files in case of scans... TBI
 }
 
 void EventLoaderMuPixTelescope::initialize() {
@@ -42,7 +41,10 @@ void EventLoaderMuPixTelescope::initialize() {
         tag = tag.substr(tag.find("_") + 1);
     tag_ = uint(stoi(tag, nullptr, 16));
     LOG(DEBUG) << detector_->getName() << " is using the fpga link tag " << hex << tag_;
-    type_ = typeString_to_typeID(detector_->getType());
+    if(typeString_to_typeID.find(detector_->getType()) == typeString_to_typeID.end()) {
+        throw KeyValueParseError("tag " + std::to_string(tag_), "Sensor tag not supported");
+    }
+    type_ = typeString_to_typeID.at(detector_->getType());
     LOG(INFO) << "Detector " << detector_->getType() << "is assigned to type id " << type_;
     std::stringstream ss;
     ss << std::setw(6) << std::setfill('0') << runNumber_;
@@ -98,9 +100,10 @@ void EventLoaderMuPixTelescope::initialize() {
 }
 
 void EventLoaderMuPixTelescope::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
-    LOG(INFO) << "Recorded hits: " << stored_ << " Removed " << removed_
-              << " hits that did not fit in an event. For unsorted data this means that there is a very late hit in the "
-                 "data -> a larger buffer size might help";
+    LOG(INFO) << "Number of hits put to clipboard: " << stored_
+              << " and number of removed (not fitting in an event) hits: " << removed_;
+    if(!isSorted_)
+        LOG(INFO) << "Increasing the buffer depth mirght reduce this number.";
 }
 
 StatusCode EventLoaderMuPixTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -108,11 +111,11 @@ StatusCode EventLoaderMuPixTelescope::run(const std::shared_ptr<Clipboard>& clip
     pixels_.clear();
     // get the hits
     StatusCode result = (isSorted_ ? read_sorted(clipboard) : read_unsorted(clipboard));
-    hHitsEvent->Fill(pixels_.size());
+    hHitsEvent->Fill(double(pixels_.size()));
     counterHits_ += pixels_.size();
     if(eventNo_ % 1000 == 0) {
         int point = eventNo_ / 1000;
-        hitsPerkEvent->Fill(point, counterHits_);
+        hitsPerkEvent->Fill(point, double(counterHits_));
         counterHits_ = 0;
     }
     if(pixels_.size() > 0)
@@ -188,37 +191,6 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
     return StatusCode::Success;
 }
 
-int EventLoaderMuPixTelescope::typeString_to_typeID(string typeString) {
-    // This stuff is required to take large number of different hardware conversions into account...
-    // Might be replaced if a better way is implemented on the DAQ side
-    if(typeString == "mupix8")
-        return MP8_SORTED_TS2;
-    else if(typeString == "mupix9")
-        return MP10_SORTED_TS2;
-    else if(typeString == "mupix10")
-        return MP10_UNSORTED_GS1_GS2;
-    else if(typeString == "run2020v1")
-        return R20V1_UNSORTED_GS1_GS2_GS3;
-    else if(typeString == "run2020v2")
-        return R20V2_UNSORTED_GS1_GS2_GS3;
-    else if(typeString == "run2020v3")
-        return R20V3_UNSORTED_GS1_GS2_GS3;
-    else if(typeString == "run2020v4")
-        return R20V4_UNSORTED_GS1_GS2_GS3;
-    else if(typeString == "run2020v5")
-        return R20V5_UNSORTED_GS1_GS2_GS3;
-    else if(typeString == "run2020v6")
-        return R20V6_UNSORTED_GS1_GS2_GS3;
-    else if(typeString == "run2020v7")
-        return R20V7_UNSORTED_GS1_GS2_GS3;
-    else if(typeString == "run2020v8")
-        return R20V8_UNSORTED_GS1_GS2_GS3;
-    else if(typeString == "run2020v9")
-        return R20V9_UNSORTED_GS1_GS2_GS3;
-    else
-        throw InvalidModuleActionException(typeString + " is an invalid mupix styled sensor");
-}
-
 void EventLoaderMuPixTelescope::fillBuffer() {
 
     // here we need to check quite a number of cases
@@ -251,3 +223,15 @@ void EventLoaderMuPixTelescope::fillBuffer() {
         }
     }
 }
+std::map<std::string, int> EventLoaderMuPixTelescope::typeString_to_typeID = {{"mupix8", MP8_SORTED_TS2},
+                                                                              {"mupix9", MP10_SORTED_TS2},
+                                                                              {"mupix10", MP10_UNSORTED_GS1_GS2},
+                                                                              {"run2020v1", R20V1_UNSORTED_GS1_GS2_GS3},
+                                                                              {"run2020v2", R20V2_UNSORTED_GS1_GS2_GS3},
+                                                                              {"run2020v3", R20V3_UNSORTED_GS1_GS2_GS3},
+                                                                              {"run2020v4", R20V4_UNSORTED_GS1_GS2_GS3},
+                                                                              {"run2020v5", R20V5_UNSORTED_GS1_GS2_GS3},
+                                                                              {"run2020v6", R20V6_UNSORTED_GS1_GS2_GS3},
+                                                                              {"run2020v7", R20V7_UNSORTED_GS1_GS2_GS3},
+                                                                              {"run2020v8", R20V8_UNSORTED_GS1_GS2_GS3},
+                                                                              {"run2020v9", R20V9_UNSORTED_GS1_GS2_GS3}};
