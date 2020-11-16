@@ -29,7 +29,6 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
     buffer_depth_ = config.get<unsigned>("buffer_depth");
     isSorted_ = config_.get<bool>("is_sorted");
     timeOffset_ = config_.get<double>("time_offset");
-    ts2IsGray_ = config_.get<bool>("ts2_is_gray");
     if(config_.has("input_file"))
         input_file_ = config_.get<string>("input_file");
 }

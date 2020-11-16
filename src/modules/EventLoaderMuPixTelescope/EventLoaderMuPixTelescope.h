@@ -72,7 +72,6 @@ namespace corryvreckan {
         PixelVector pixels_{};
         std::string inputDirectory_;
         bool isSorted_;
-        bool ts2IsGray_;
         int runNumber_;
         BlockFile* blockFile_;
         TelescopeFrame tf_;
