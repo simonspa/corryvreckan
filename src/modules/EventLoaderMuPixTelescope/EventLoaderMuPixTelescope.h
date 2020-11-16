@@ -8,13 +8,14 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include <TCanvas.h>
+//#include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <iostream>
 #include <queue>
 #include "core/module/Module.hpp"
 
+// mupix telescope includes
 #include "blockfile.hpp"
 #include "telescope_frame.hpp"
 
@@ -47,13 +48,14 @@ namespace corryvreckan {
 
     private:
         StatusCode read_sorted(const std::shared_ptr<Clipboard>& clipboard);
-        StatusCode read_plane(const std::shared_ptr<Clipboard>& clipboard);
+        StatusCode read_unsorted(const std::shared_ptr<Clipboard>& clipboard);
         int typeString_to_typeID(string typeString);
         void fillBuffer();
         uint m_tag{};
         double prev_event_end{};
         int m_type{};
         int m_eventNo{};
+        int m_counterHits{};
         int m_removed{}, m_stored{};
         uint64_t m_ts_prev{0};
         bool start{false};
@@ -69,6 +71,7 @@ namespace corryvreckan {
         };
         // Buffer of timesorted pixel hits: (need to use greater here!)
         std::priority_queue<std::shared_ptr<Pixel>, PixelVector, CompareTimeGreater> m_pixelbuffer;
+        PixelVector m_pixels{};
         std::string m_inputDirectory;
         bool m_isSorted;
         bool m_ts2IsGray;
@@ -77,9 +80,12 @@ namespace corryvreckan {
         TelescopeFrame m_tf;
 
         // Histograms
-        TH2F* hHitMap;
         TH1F* hPixelToT;
         TH1F* hTimeStamp;
+        TH1F* hHitsEvent;
+        TH1F* hitsPerkEvent;
+        TH2F* discardedHitmap;
+        TH2F* hHitMap;
     };
 
 } // namespace corryvreckan

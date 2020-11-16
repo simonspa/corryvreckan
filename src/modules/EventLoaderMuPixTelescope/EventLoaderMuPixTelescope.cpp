@@ -83,8 +83,18 @@ void EventLoaderMuPixTelescope::initialize() {
                        m_detector->nPixels().y(),
                        -.05,
                        m_detector->nPixels().y() - .5);
+    discardedHitmap = new TH2F("discardedhitMap",
+                               "hitMap of out of event hits; column; row",
+                               m_detector->nPixels().x(),
+                               -.05,
+                               m_detector->nPixels().x() - .5,
+                               m_detector->nPixels().y(),
+                               -.05,
+                               m_detector->nPixels().y() - .5);
     hPixelToT = new TH1F("pixelToT", "pixelToT; ToT in TS2 clock cycles.; ", 64, -0.5, 63.5);
     hTimeStamp = new TH1F("pixelTS", "pixelTS; TS in clock cycles; ", 1024, -0.5, 1023.5);
+    hHitsEvent = new TH1F("hHitsEvent", "hHitsEvent; # hits per event; ", 300, -.5, 299.5);
+    hitsPerkEvent = new TH1F("hHitsPerkEvent", "hitsper1kevents; corry events /1k; hits per 1k events", 1000, -.5, 999.5);
 }
 
 void EventLoaderMuPixTelescope::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
@@ -95,7 +105,20 @@ void EventLoaderMuPixTelescope::finalize(const std::shared_ptr<ReadonlyClipboard
 
 StatusCode EventLoaderMuPixTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
     m_eventNo++;
-    return (m_isSorted ? read_sorted(clipboard) : read_plane(clipboard));
+    m_pixels.clear();
+    // get the hits
+    StatusCode result = (m_isSorted ? read_sorted(clipboard) : read_unsorted(clipboard));
+    hHitsEvent->Fill(m_pixels.size());
+    m_counterHits += m_pixels.size();
+    if(m_eventNo % 1000 == 0) {
+        int point = m_eventNo / 1000;
+        hitsPerkEvent->Fill(point, m_counterHits);
+        m_counterHits = 0;
+    }
+    if(m_pixels.size() > 0)
+        clipboard->putData(m_pixels, m_detector->getName());
+    m_stored += m_pixels.size();
+    return result;
 }
 
 StatusCode EventLoaderMuPixTelescope::read_sorted(const std::shared_ptr<Clipboard>& clipboard) {
@@ -111,21 +134,18 @@ StatusCode EventLoaderMuPixTelescope::read_sorted(const std::shared_ptr<Clipboar
         // 10bit ts
         double px_timestamp = 8 * static_cast<double>(((m_tf.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw());
         // setting tot and charge to zero here - needs to be improved
-        hits.push_back(std::make_shared<Pixel>(m_detector->getName(), h.column(), h.row(), 0, 0, px_timestamp));
+        m_pixels.push_back(std::make_shared<Pixel>(m_detector->getName(), h.column(), h.row(), 0, 0, px_timestamp));
     }
     // If no event is defined create one
     if(clipboard->getEvent() == nullptr) {
         //            frames have a length of 128 ts, each 8ns, int division cuts of lowest bits
-        int begin = int(hits.front()->timestamp()) / 1024;
+        int begin = int(m_pixels.front()->timestamp()) / 1024;
         clipboard->putEvent(std::make_shared<Event>(double(begin * 1024), double((begin + 1) * 1024)));
     }
-    if(hits.size() > 0)
-        clipboard->putData(hits, m_detector->getName());
     return StatusCode::Success;
 }
 
-StatusCode EventLoaderMuPixTelescope::read_plane(const std::shared_ptr<Clipboard>& clipboard) {
-    PixelVector hits;
+StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipboard>& clipboard) {
     if(!m_eof)
         fillBuffer();
     while(true) {
@@ -139,6 +159,7 @@ StatusCode EventLoaderMuPixTelescope::read_plane(const std::shared_ptr<Clipboard
                        << " and duration: " << clipboard->getEvent()->duration()
                        << "and num triggers: " << clipboard->getEvent()->triggerList().size();
             m_removed++;
+            discardedHitmap->Fill(pixel->column(), pixel->row());
             m_pixelbuffer.pop(); // remove top element
             continue;
         }
@@ -148,7 +169,7 @@ StatusCode EventLoaderMuPixTelescope::read_plane(const std::shared_ptr<Clipboard
                        << m_eventNo - 1 << ")\t" << Units::convert(prev_event_end, "us") << " and current start \t"
                        << Units::convert(clipboard->getEvent()->start(), "us")
                        << " and duration: " << clipboard->getEvent()->duration();
-            hits.push_back(pixel);
+            m_pixels.push_back(pixel);
             hHitMap->Fill(pixel.get()->column(), pixel.get()->row());
             hPixelToT->Fill(pixel.get()->raw());
             // igitt
@@ -157,15 +178,12 @@ StatusCode EventLoaderMuPixTelescope::read_plane(const std::shared_ptr<Clipboard
         } else {
             break;
         }
-        if(m_pixelbuffer.size() < m_buffer_depth)
-            fillBuffer();
     }
-    if(hits.size() > 0)
-        clipboard->putData(hits, m_detector->getName());
-    m_stored += hits.size();
+    if(m_pixelbuffer.size() < m_buffer_depth)
+        fillBuffer();
     // Return value telling analysis to keep running
     if(m_pixelbuffer.size() == 0)
-        return StatusCode::EndRun;
+        return StatusCode::NoData;
     prev_event_end = clipboard->getEvent()->end();
     return StatusCode::Success;
 }
@@ -206,28 +224,17 @@ void EventLoaderMuPixTelescope::fillBuffer() {
     // here we need to check quite a number of cases
     while(m_pixelbuffer.size() < m_buffer_depth) {
         if(m_blockFile->read_next(m_tf)) {
-
-            //            if(m_tf.timestamp() < m_ts_prev) {
-            //                start = true;
-            //                LOG(INFO) << "Found data reset ts before: " << m_ts_prev << " and ts now " << m_tf.timestamp();
-            //            }
-            //            m_ts_prev = m_tf.timestamp();
-            //            if(!start)
-            //                continue;
-
-            // no hits in data - can only happen if the zero suppression is switched off
-            if(m_tf.num_hits() == 0)
+            // no hits in data - can only happen if the zero suppression is switched off, skip the event
+            if(m_tf.num_hits() == 0) {
                 continue;
-
-	  // need to determine the sensor layer that is identified by the tag
+            }
+            // need to determine the sensor layer that is identified by the tag
             RawHit h = m_tf.get_hit(0);
             // tag does not match - continue reading if data is not sorted
-            if(((h.tag() & uint(~0x3)) != m_tag))
-	      {
-		//	std::cout <<"found correct frame: " << m_tag<<std::endl;
-		  continue;
-		}
-		// all hits in one frame are from the same sensor. Copy them
+            if(((h.tag() & uint(~0x3)) != m_tag)) {
+                continue;
+            }
+            // all hits in one frame are from the same sensor. Copy them
             for(uint i = 0; i < m_tf.num_hits(); ++i) {
                 h = m_tf.get_hit(i, m_type);
                 // move ts to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time yet,
