@@ -1,16 +1,25 @@
 # Additional targets to perform clang-format/clang-tidy/cppcheck
 
-# Check if the git pre-commit hook for formatting is installed:
+# Check if the git hooks are installed and up-to-date:
 IF(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
-    SET(HOOK_SRC "${CMAKE_SOURCE_DIR}/etc/git-hooks/pre-commit-clang-format-hook")
-    SET(HOOK_DST "${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit-clang-format")
-    IF(NOT EXISTS ${HOOK_DST})
-        MESSAGE(WARNING "Git hooks are not installed - consider installing them via ${CMAKE_SOURCE_DIR}/etc/git-hooks/install-hooks.sh")
-    ELSE()
-        EXECUTE_PROCESS(COMMAND "cmake" "-E" "compare_files" ${HOOK_SRC} ${HOOK_DST} RESULT_VARIABLE HOOKS_DIFFER)
-        IF(${HOOKS_DIFFER})
-            MESSAGE(WARNING "Git hooks are outdated - consider updating them via ${CMAKE_SOURCE_DIR}/etc/git-hooks/install-hooks.sh")
+    SET(HOOK_MISSING OFF)
+    SET(HOOK_OUTDATED OFF)
+    FOREACH(HOOK pre-commit-clang-format pre-push-tag-version)
+        SET(HOOK_SRC "${CMAKE_SOURCE_DIR}/etc/git-hooks/${HOOK}-hook")
+        SET(HOOK_DST "${CMAKE_SOURCE_DIR}/.git/hooks/${HOOK}")
+        IF(NOT EXISTS ${HOOK_DST})
+            SET(HOOK_MISSING ON)
+        ELSE()
+            EXECUTE_PROCESS(COMMAND "cmake" "-E" "compare_files" ${HOOK_SRC} ${HOOK_DST} RESULT_VARIABLE HOOKS_DIFFER)
+            IF(${HOOKS_DIFFER})
+                SET(HOOK_OUTDATED ON)
+            ENDIF()
         ENDIF()
+    ENDFOREACH()
+    IF(${HOOK_MISSING})
+        MESSAGE(WARNING "Git hooks are not installed - consider installing them via ${CMAKE_SOURCE_DIR}/etc/git-hooks/install-hooks.sh")
+    ELSEIF(${HOOK_OUTDATED})
+        MESSAGE(WARNING "Git hooks are outdated - consider updating them via ${CMAKE_SOURCE_DIR}/etc/git-hooks/install-hooks.sh")
     ENDIF()
 ENDIF()
 
@@ -21,14 +30,15 @@ IF(NOT CHECK_CXX_SOURCE_FILES)
 ENDIF()
 
 # Adding clang-format check and formatter if found
-FIND_PROGRAM(CLANG_FORMAT NAMES "clang-format-8" "clang-format")
+FIND_PROGRAM(CLANG_FORMAT NAMES "clang-format-${CLANG_FORMAT_VERSION}" "clang-format")
 IF(CLANG_FORMAT)
     EXEC_PROGRAM(${CLANG_FORMAT} ${CMAKE_CURRENT_SOURCE_DIR} ARGS --version OUTPUT_VARIABLE CLANG_VERSION)
-    STRING(REGEX REPLACE ".*([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" CLANG_MAJOR_VERSION ${CLANG_VERSION})
+    STRING(REGEX REPLACE ".* ([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" CLANG_MAJOR_VERSION ${CLANG_VERSION})
 
-    # We currently require version 8 - which is not available on OSX...
+    # Let's treat macOS differently because they don't have up-to-date versions
     IF(${CLANG_MAJOR_VERSION} EQUAL ${CLANG_FORMAT_VERSION} OR DEFINED ${APPLE})
-        IF(DEFINED ${APPLE})
+        # On macOS we might have the right version - or not..
+        IF(NOT ${CLANG_MAJOR_VERSION} EQUAL ${CLANG_FORMAT_VERSION})
             MESSAGE(WARNING "Found ${CLANG_FORMAT} version ${CLANG_MAJOR_VERSION}, this might lead to incompatible formatting")
         ELSE()
             MESSAGE(STATUS "Found ${CLANG_FORMAT} version ${CLANG_FORMAT_VERSION}, adding formatting targets")
@@ -72,7 +82,7 @@ IF(${CMAKE_CXX_STANDARD})
     SET(CXX_STD ${CMAKE_CXX_STANDARD})
 ENDIF()
 
-FIND_PROGRAM(CLANG_TIDY NAMES "clang-tidy-8" "clang-tidy")
+FIND_PROGRAM(CLANG_TIDY NAMES "clang-tidy-${CLANG_TIDY_VERSION}" "clang-tidy")
 # Enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # If debug build enabled do automatic clang tidy
@@ -84,11 +94,11 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # FIXME Make finding this program more portable
     GET_FILENAME_COMPONENT(CLANG_TIDY ${CLANG_TIDY} REALPATH)
     GET_FILENAME_COMPONENT(CLANG_DIR ${CLANG_TIDY} DIRECTORY)
-    FIND_PROGRAM(RUN_CLANG_TIDY NAMES "run-clang-tidy.py" "run-clang-tidy-4.0.py" HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
+    FIND_PROGRAM(RUN_CLANG_TIDY NAMES "run-clang-tidy.py" "run-clang-tidy-${CLANG_FORMAT_VERSION}.py" HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
         MESSAGE(STATUS "Found ${CLANG_TIDY}, adding linting targets")
-        # write a .clang-tidy file in the binary dir to disable checks for created files
-        FILE(WRITE ${CMAKE_BINARY_DIR}/.clang-tidy "\n---\nChecks: '-*,llvm-twine-local'\n...\n")
+	# write a .clang-tidy file in the binary dir to disable checks for created files
+	FILE(WRITE ${CMAKE_BINARY_DIR}/.clang-tidy "\n---\nChecks: '-*,llvm-twine-local'\n...\n")
 
         # Set export commands on
         SET (CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -119,7 +129,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     ENDIF()
 ELSE()
     IF(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        MESSAGE(STATUS "Could NOT find clang-tidy")
+        MESSAGE(STATUS "Could NOT find clang-tidy version ${CLANG_FORMAT_VERSION}")
     ELSE()
         MESSAGE(STATUS "Could NOT check for clang-tidy, wrong compiler: ${CMAKE_CXX_COMPILER_ID}")
     ENDIF()

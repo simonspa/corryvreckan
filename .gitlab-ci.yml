@@ -14,15 +14,14 @@ stages:
 # Compilation targets #
 #######################
 
-cmp:slc6-gcc:
+
+# Hidden key to define the default compile job:
+.compile:
     stage: compilation
+    needs: []
     tags:
         - docker
-    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     script:
-        - export COMPILER_TYPE="gcc"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
@@ -33,89 +32,59 @@ cmp:slc6-gcc:
             - build
             - bin
             - lib
-        expire_in: 3 hour
+        expire_in: 24 hour
+
+cmp:slc6-gcc:
+    extends: .compile
+    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
+    before_script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 cmp:cc7-gcc:
-    stage: compilation
-    tags:
-        - docker
+    extends: .compile
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    script:
+    before_script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
-        - mkdir build
-        - cd build
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja -k0
-        - ninja install
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 3 hour
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 cmp:cc7-docker:
-    stage: compilation
-    tags:
-        - docker
+    extends: .compile
     image:
         name: gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-deps
         entrypoint: [""]
     before_script:
-        - source scl_source enable devtoolset-7 || echo " "
+        - source scl_source enable devtoolset-8 || echo " "
     script:
         - mkdir build
         - cd build
         - cmake3 -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_EventLoaderEUDAQ2=ON -DBUILD_EventDefinitionM26=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -Deudaq_DIR=/opt/eudaq2/cmake ..
         - make
         - make install
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 3 hour
 
 cmp:cc7-llvm:
-    stage: compilation
-    tags:
-        - docker
+    extends: .compile
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    script:
+    before_script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - mkdir build
-        - cd build
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja -k0
-        - ninja install
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 3 hour
+        - source .gitlab/ci/init_x86_64.sh
 
 cmp:mac1015-clang:
-    stage: compilation
+    extends: .compile
     tags:
         - mac
+    before_script:
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
     script:
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DCMAKE_USE_RELATIVE_PATHS=TRUE -DEigen3_DIR=$Eigen3_DIR ..
         - ninja -k0
         - ninja install
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 3 hour
+
 
 ##############
 # Unit tests #
@@ -125,118 +94,135 @@ cmp:mac1015-clang:
     stage: testing
     tags:
         - docker
-    dependencies:
-        - cmp:cc7-docker
+    needs:
+        - job: cmp:cc7-docker
+          artifacts: true
     image:
         name: gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-deps
         entrypoint: [""]
     before_script:
-        - source scl_source enable devtoolset-7 || echo " "
+        - source scl_source enable devtoolset-8 || echo " "
+    after_script:
+        - ./.gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl corry-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+    artifacts:
+        when: always
+        expire_in: 1 day
+        name: "corry-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}"
+        paths:
+            - corry-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+        reports:
+            junit: corry-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
 
 tst:tracking:
     extends: .test
     script:
         - cd build/
         - mkdir -p ../testing/data
-        - ctest -R test_tracking --output-on-failure -j1
+        - ctest -R test_tracking --no-compress-output --test-action Test -j1
 
 tst:align:
     extends: .test
     script:
         - cd build/
         - mkdir -p ../testing/data
-        - ctest -R test_align --output-on-failure -j1
+        - ctest -R test_align --no-compress-output --test-action Test -j1
 
 tst:io:
     extends: .test
     script:
         - cd build/
         - mkdir -p ../testing/data
-        - ctest -R test_io --output-on-failure -j1
+        - ctest -R test_io --no-compress-output --test-action Test -j1
 
 tst:sim:
     extends: .test
     script:
         - cd build/
         - mkdir -p ../testing/data
-        - ctest -R test_sim --output-on-failure -j1
+        - ctest -R test_sim --no-compress-output --test-action Test -j1
+
 
 ############################
 # Format and Lint Checking #
 ############################
 
-fmt:centos7-llvm-format:
+# Hidden key to define the basis for linting and formatting:
+.format:
     stage: formatting
     tags:
         - docker
-    dependencies:
-        - cmp:cc7-llvm
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    script:
+    before_script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab/ci/init_x86_64.sh
+
+fmt:centos7-llvm-format:
+    extends: .format
+    needs: []
+    dependencies: []
+    script:
+        - mkdir -p build
         - cd build/
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja check-format
 
 fmt:cc7-llvm-lint:
-    stage: formatting
-    tags:
-        - docker
-    dependencies:
-        - cmp:cc7-llvm
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    extends: .format
+    needs: []
+    dependencies: []
     script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
+        - mkdir -p build
         - cd build/
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja check-lint
 
 fmt:codespell:
-    stage: formatting
-    tags:
-        - docker
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    extends: .format
+    needs: []
     dependencies: []
-    script:
+    before_script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab/ci/init_x86_64.sh
         - export PATH=~/.local/bin:$PATH
         - pip install --trusted-host=pypi.org --user codespell
-        - codespell --ignore-words .gitlab-ci.d/codespell_ignored_words.txt --quiet-level 2 --skip ".git,.gitlab,cmake,3rdparty,*.svg"
+    script:
+        - codespell --ignore-words .gitlab/ci/codespell_ignored_words.txt --quiet-level 2 --skip ".git,.gitlab,cmake,3rdparty,*.svg"
 
 
 #############################
 # Documentation Compilation #
 #############################
 
-# Compile Doxygen reference
-cmp:doxygen:
+.doc:
     stage: documentation
+    needs: []
+    dependencies: []
     tags:
         - docker
+    artifacts:
+        paths:
+            - public
+        expire_in: 24 hour
+
+# Compile Doxygen reference
+cmp:doxygen:
+    extends: .doc
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    dependencies: []
+    before_script:
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
     script:
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
         - mkdir -p public/usermanual
         - mkdir build
         - cd build
         - cmake -DBUILD_DOCS_ONLY=ON ..
         - make reference
         - mv reference/html ../public/reference
-    artifacts:
-        paths:
-            - public
-        expire_in: 24 hour
 
 # Compile LaTeX user manual:
 cmp:usermanual:
-    stage: documentation
-    tags:
-      - docker
+    extends: .doc
     image: gitlab-registry.cern.ch/clicdp/publications/templates/custom_ci_worker:fedora-latex-latest
-    dependencies: []
     script:
         - mkdir -p public/usermanual
         - mkdir build
@@ -244,29 +230,25 @@ cmp:usermanual:
         - cmake -DBUILD_DOCS_ONLY=ON ..
         - make pdf
         - mv usermanual/corryvreckan-manual.pdf ../public/usermanual
-    artifacts:
-        paths:
-          - public
-        expire_in: 24 hour
+
 
 ################################
 # Packaging of Binary Tarballs #
 ################################
 
-pkg:slc6-gcc:
+
+.pack:
     stage: packaging
     tags:
         - docker
-    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     only:
-        - tags
-        - schedules
-    dependencies:
-        - cmp:slc6-gcc
-    script:
+        - tags@corryvreckan/corryvreckan
+        - schedules@corryvreckan/corryvreckan
+    before_script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
+    script:
         - mkdir -p public/releases
         - cd build
         - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
@@ -277,29 +259,20 @@ pkg:slc6-gcc:
             - public
         expire_in: 24 hour
 
+pkg:slc6-gcc:
+    extends: .pack
+    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
+    needs:
+        - job: cmp:slc6-gcc
+          artifacts: true
+
 pkg:cc7-gcc:
-    stage: packaging
-    tags:
-        - docker
+    extends: .pack
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    only:
-        - tags
-        - schedules
-    dependencies:
-        - cmp:cc7-gcc
-    script:
-        - export COMPILER_TYPE="gcc"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
-        - mkdir -p public/releases
-        - cd build
-        - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
-        - ninja package
-        - mv *.tar.gz ../public/releases
-    artifacts:
-        paths:
-            - public
-        expire_in: 24 hour
+    needs:
+        - job: cmp:cc7-gcc
+          artifacts: true
+
 
 ########################
 # Automatic Deployment #
@@ -315,7 +288,7 @@ deploy-documentation:
         GIT_STRATEGY: none
     # Only run for new tags:
     only:
-        - tags
+        - tags@corryvreckan/corryvreckan
     dependencies:
         - cmp:usermanual
         - cmp:doxygen
@@ -335,8 +308,8 @@ deploy-eos:
         GIT_STRATEGY: none
     # Only run for new tags:
     only:
-        - tags
-        - schedules # Only execute this on scheduled "nightly" pipelines
+        - tags@corryvreckan/corryvreckan
+        - schedules@corryvreckan/corryvreckan
     dependencies:
         - pkg:cc7-gcc
         - pkg:slc6-gcc
@@ -356,13 +329,13 @@ deploy-cvmfs:
     tags:
         - cvmfs-deploy
     only:
-        - tags
-        - schedules # Only execute this on scheduled "nightly" pipelines
+        - tags@corryvreckan/corryvreckan
+        - schedules@corryvreckan/corryvreckan
     script:
-        - ./.gitlab-ci.d/download_artifacts.py $API_TOKEN $CI_PROJECT_ID $CI_PIPELINE_ID
+        - ./.gitlab/ci/download_artifacts.py $API_TOKEN $CI_PROJECT_ID $CI_PIPELINE_ID
         - export RUNNER_LOCATION=$(pwd)
         - if [ -z ${CI_COMMIT_TAG} ]; then export BUILD_PATH='latest'; else export BUILD_PATH=${CI_COMMIT_TAG}; fi
-        - sudo -u cvclicdp -i $RUNNER_LOCATION/.gitlab-ci.d/gitlab_deploy.sh $RUNNER_LOCATION $BUILD_PATH
+        - sudo -u cvclicdp -i $RUNNER_LOCATION/.gitlab/ci/gitlab_deploy.sh $RUNNER_LOCATION $BUILD_PATH
         - rm -f corryvreckan-*.tar.gz
     retry: 1
 
@@ -372,7 +345,7 @@ deploy-docker-latest:
         - docker-image-build
     dependencies: []
     only:
-        - schedules # Only execute this on scheduled "nightly" pipelines
+        - schedules@corryvreckan/corryvreckan
     script:
         - "echo" # unused but this line is required by GitLab CI
     variables:
@@ -384,7 +357,7 @@ deploy-docker-tag:
         - docker-image-build
     dependencies: []
     only:
-        - tags
+        - tags@corryvreckan/corryvreckan
     script:
         - "echo" # unused but this line is required by GitLab CI
     variables:

@@ -39,11 +39,7 @@ fi
 
 
 # Determine which LCG version to use
-if [ "$(uname)" == "Darwin" ]; then
-    DEFAULT_LCG="LCG_97python3"
-else
-    DEFAULT_LCG="LCG_96b"
-fi
+DEFAULT_LCG="LCG_98python3"
 
 if [ -z ${CORRY_LCG_VERSION} ]; then
     echo "No explicit LCG version set, using ${DEFAULT_LCG}."
@@ -61,14 +57,18 @@ if [ -z ${COMPILER_TYPE} ]; then
     fi
 fi
 if [ ${COMPILER_TYPE} == "gcc" ]; then
-    COMPILER_VERSION="gcc8"
+    if [ ${OS} == "slc6" ]; then
+        COMPILER_VERSION="gcc8"
+    else
+        COMPILER_VERSION="gcc10"
+    fi
     echo "Compiler type set to GCC, version ${COMPILER_VERSION}."
 fi
 if [ ${COMPILER_TYPE} == "llvm" ]; then
     if [ "$(uname)" == "Darwin" ]; then
         COMPILER_VERSION="clang110"
     else
-        COMPILER_VERSION="clang8"
+        COMPILER_VERSION="clang10"
     fi
     echo "Compiler type set to LLVM, version ${COMPILER_VERSION}."
 fi
