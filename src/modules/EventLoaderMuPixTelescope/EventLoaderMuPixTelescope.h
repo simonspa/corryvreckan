@@ -51,40 +51,39 @@ namespace corryvreckan {
         StatusCode read_unsorted(const std::shared_ptr<Clipboard>& clipboard);
         int typeString_to_typeID(string typeString);
         void fillBuffer();
-        uint m_tag{};
-        double prev_event_end{};
-        int m_type{};
-        int m_eventNo{};
-        int m_counterHits{};
-        int m_removed{}, m_stored{};
-        uint64_t m_ts_prev{0};
-        bool start{false};
-        unsigned m_buffer_depth{};
-        bool m_eof{false};
-        double m_timeOffset{};
-        std::string m_input_file{};
-        std::shared_ptr<Detector> m_detector;
+        uint tag_{};
+        double prev_event_end_{};
+        int type_{};
+        int eventNo_{};
+        int counterHits_{};
+        int removed_{}, stored_{};
+        uint64_t ts_prev_{0};
+        unsigned buffer_depth_{};
+        bool eof_{false};
+        double timeOffset_{};
+        std::string input_file_{};
+        std::shared_ptr<Detector> detector_;
         struct CompareTimeGreater {
             bool operator()(const std::shared_ptr<Pixel>& a, const std::shared_ptr<Pixel>& b) {
                 return a->timestamp() > b->timestamp();
             }
         };
         // Buffer of timesorted pixel hits: (need to use greater here!)
-        std::priority_queue<std::shared_ptr<Pixel>, PixelVector, CompareTimeGreater> m_pixelbuffer;
-        PixelVector m_pixels{};
-        std::string m_inputDirectory;
-        bool m_isSorted;
-        bool m_ts2IsGray;
-        int m_runNumber;
-        BlockFile* m_blockFile;
-        TelescopeFrame m_tf;
+        std::priority_queue<std::shared_ptr<Pixel>, PixelVector, CompareTimeGreater> pixelbuffer_;
+        PixelVector pixels_{};
+        std::string inputDirectory_;
+        bool isSorted_;
+        bool ts2IsGray_;
+        int runNumber_;
+        BlockFile* blockFile_;
+        TelescopeFrame tf_;
 
         // Histograms
         TH1F* hPixelToT;
         TH1F* hTimeStamp;
         TH1F* hHitsEvent;
         TH1F* hitsPerkEvent;
-        TH2F* discardedHitmap;
+        TH2F* hdiscardedHitmap;
         TH2F* hHitMap;
     };
 
