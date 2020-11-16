@@ -9,10 +9,12 @@ trajectory with different TrackModels.
 A \cluster is a collection of hits, that has an additional center of gravity
 which is used as cluster position.
 
-In addition several specific TrackModel objects inheriting from Track and a Spidr-signal are provided. 
+In addition several specific TrackModel objects inheriting from Track and a
+Spidr-signal are provided. The latter is required to read in data from the
+SPIDR timepix3 readout system and described in \cit{spidr}. 
 
 \subsection{Pixel}
-A \pixel contains the basic information of a particle hit from a detector. A column, row position and a time-stamp in nanoseconds as well as a charge information and a raw information is stored. Not every detector can provide all information. If the time-stamp is not provided it should be set to zero. Charge is assumed to be in eV per default, but can be overwritten by using the raw information, which can, for example, be an ADC value or a ToT. If this is also not provided/unknown it should be set to 1. The
+A \pixel contains the basic information of a particle hit from a detector. A column, row position and a time-stamp in nanoseconds as well as a charge information and a raw information is stored. Not every detector can provide all information. If the time-stamp is not provided it should be set to zero. Charge is assumed to be in eV per default, but can be overwritten by using the raw information, which can, for example, be an ADC value or a ToT. If this is also not provided/unknown it should be set to 1. 
 
 \subsection{Cluster}
 A \cluster is a collection of several \pixel. These \pixel are typically
@@ -23,7 +25,8 @@ defined. Every \cluster has a center that is used in \track to reconstruct a tra
 A \track holds a collection of \cluster. Additionally, the track positions on
 each detector plane defined in the geometry are provided. At any z-position, the
 corresponding x/y position can be requested after the track has been fitted
-with the track models listed below:
+with the track models listed below. After fitting, each track model also holds
+a $\chi^2$ defining the quality of the fitted trajectory.
 
 \subsubsection*{Straight-Line}
 A straight line track ignores the effect of multiple scattering and describes
