@@ -8,7 +8,7 @@ ENV PATH="/opt/corryvreckan/bin:${PATH}"
 WORKDIR "/data"
 
 # Compile Corryvreckan
-RUN source scl_source enable devtoolset-7 && \
+RUN source scl_source enable devtoolset-8 && \
     mkdir -p /opt/corryvreckan/build && \
     cd /opt/corryvreckan/build && \
     cmake3 -DBUILD_EventLoaderEUDAQ2=ON \

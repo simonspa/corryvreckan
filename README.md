@@ -3,6 +3,8 @@
 # Corryvreckan
 ### The Maelstrom for Your Test Beam Data
 
+For more details about the project please have a look at the website at https://cern.ch/corryvreckan.
+
 [![build status](https://gitlab.cern.ch/simonspa/corryvreckan/badges/master/build.svg)](https://gitlab.cern.ch/simonspa/corryvreckan/commits/master)
 
 ## Dependencies
@@ -53,6 +55,7 @@ The following authors, in alphabetical order, have contributed to Corryvreckan:
 
 * Matthew Daniel Buckland, University of Liverpool, @mbucklan
 * Manuel Colocci, CERN, @mcolocci
+* Chun Cheng, DESY, @chengc
 * Dominik Dannheim, CERN, @dannheim
 * Katharina Dort, University of Giessen/CERN, @kdort
 * Alexander Ferk, CERN, @aferk
