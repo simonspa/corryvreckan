@@ -25,12 +25,17 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
     config_.setDefault<double>("time_offset", 0.0);
 
     inputDirectory_ = config_.getPath("input_directory");
-    runNumber_ = config_.get<int>("Run");
+    runNumber_ = config_.get<int>("run");
     buffer_depth_ = config.get<unsigned>("buffer_depth");
     isSorted_ = config_.get<bool>("is_sorted");
     timeOffset_ = config_.get<double>("time_offset");
-    if(config_.has("input_file"))
+    if(config.count({"run", "input_file"}) > 1) {
+        throw InvalidCombinationError(config, {"run", "input_file"}, "run and input_file are mutually exclusive.");
+    } else if(config_.has("input_file")) {
         input_file_ = config_.get<string>("input_file");
+    } else {
+        runNumber_ = config_.get<int>("run");
+    }
 }
 
 void EventLoaderMuPixTelescope::initialize() {
@@ -132,8 +137,8 @@ StatusCode EventLoaderMuPixTelescope::read_sorted(const std::shared_ptr<Clipboar
         RawHit h = tf_.get_hit(i, type_);
         if(((h.tag() & uint(~0x3)) == tag_))
             continue;
-        // move ts to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time yet, assuming
-        // 10bit ts
+        // Convert time stamp to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time yet,
+        // assuming 10bit ts
         double px_timestamp = 8 * static_cast<double>(((tf_.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw());
         // setting tot and charge to zero here - needs to be improved
         pixels_.push_back(std::make_shared<Pixel>(detector_->getName(), h.column(), h.row(), 0, 0, px_timestamp));
@@ -208,8 +213,8 @@ void EventLoaderMuPixTelescope::fillBuffer() {
             // all hits in one frame are from the same sensor. Copy them
             for(uint i = 0; i < tf_.num_hits(); ++i) {
                 h = tf_.get_hit(i, type_);
-                // move ts to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time yet,
-                // assuming 10bit ts
+                // convert timestamp to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time
+                // yet, assuming 10bit ts
                 double px_timestamp =
                     8 * static_cast<double>(((tf_.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw()) - timeOffset_;
                 LOG(TRACE) << "Pixel timestamp " << px_timestamp;
