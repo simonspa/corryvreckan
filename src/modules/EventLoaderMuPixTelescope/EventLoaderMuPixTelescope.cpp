@@ -25,7 +25,6 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
     config_.setDefault<double>("time_offset", 0.0);
 
     inputDirectory_ = config_.getPath("input_directory");
-    runNumber_ = config_.get<int>("run");
     buffer_depth_ = config.get<unsigned>("buffer_depth");
     isSorted_ = config_.get<bool>("is_sorted");
     timeOffset_ = config_.get<double>("time_offset");
@@ -51,12 +50,11 @@ void EventLoaderMuPixTelescope::initialize() {
     type_ = typeString_to_typeID.at(detector_->getType());
     LOG(INFO) << "Detector " << detector_->getType() << "is assigned to type id " << type_;
     std::stringstream ss;
-    ss << std::setw(6) << std::setfill('0') << runNumber_;
-    std::string s = ss.str();
-    std::string fileName = "telescope_run_" + s + ".blck";
-    // overwrite default file name in case of more exotic naming scheme
-    if(input_file_.size() > 0)
-        fileName = input_file_;
+    if(input_file_.size() == 0) {
+        ss << std::setw(6) << std::setfill('0') << runNumber_;
+        std::string s = ss.str();
+        input_file_ = "telescope_run_" + s + ".blck";
+    }
 
     // check the if folder and file do exist
     dirent* entry;
@@ -66,20 +64,20 @@ void EventLoaderMuPixTelescope::initialize() {
         throw MissingDataError("Cannot open directory: " + inputDirectory_);
     }
     while((entry = readdir(directory))) {
-        if(entry->d_name == fileName) {
+        if(entry->d_name == input_file_) {
             foundFile = true;
             break;
         }
     }
     if(!foundFile) {
-        throw MissingDataError("Cannot open data file: " + fileName);
+        throw MissingDataError("Cannot open data file: " + input_file_);
     } else
         LOG(INFO) << "File found" << endl;
     string file = (inputDirectory_ + "/" + entry->d_name);
     LOG(INFO) << "reading " << file;
     blockFile_ = new BlockFile(file);
     if(!blockFile_->open_read()) {
-        throw MissingDataError("Cannot read data file: " + fileName);
+        throw MissingDataError("Cannot read data file: " + input_file_);
     }
     hHitMap = new TH2F("hitMap",
                        "hitMap; column; row",
