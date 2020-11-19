@@ -13,15 +13,17 @@ The `EventLoaderMuPixTelescope` supports a list of sensors:
 * all Run2020 sensor
 * (additional/ older sensors can be added on request)
 
-The detector name in the geometry file is used to determine the tag:
+The detector name in the geometry file is used to determine the tag, that is
+used to identify the sensor in the datastream:
 
 [mydetetcor_TAG]
 
-Everything behin the first `_` is used as tag, if none found the tag is assumed to be the detector name.
+Everything behind the first `_` is used as tag, if none found the tag is assumed to be the detector name.
 The correct type is given by the `type` in the geometry.
 It is assumed that the timestamp has 10bit and runs at a frequency of 125 MHz (8ns bins)
 
-Eventdefinition for the `EventLoaderMuPixTelescope`:
+### Eventdefinition for the `EventLoaderMuPixTelescope`:
+
 * Sorted telescope data: The loader can define its own events as the full
 information of all systems is stored in an telescope event.
 * Unsorted telescope data: External event definition is required. This has to
@@ -35,14 +37,14 @@ This module requires a installation of the mupix8_daq package that is used by th
 ### Parameters
 * `input_directory`: Defines the input file. No default
 * `Run`: 6 digit Run number, with leading zeros being automatically added, to open the data file with the standard format `telescope_run_RUN.blck`
-* `input_file`: Overwrite  the default file created based on the `Run`. No default.
 * `is_sorted`: Defines if data recorded is on FPGA timestamp sorted. Defaults to `false`
 * `time_offset`: Subtract an offset to correct for the expected delay between
-issuing the synchronoues reset and receiving it. Only used if
-`is_sorted==false`. Defaults to `0`
-* `input_file`: Overwrite the input filename if the filename has a non-default
-structure. Inactive if not given.
-
+issuing the synchronous reset and receiving it. Only used if
+`is_sorted=false`. Defaults to `0`
+* `input_file`: Overwrite the input filename if the filename is not in the
+standard format `telescope_run_RUN.blck`. Inactive if not given.
+* `buffer_depth`: Depth of the pixel buffer that is used to sort the hits with
+respect to time. Defaults to `1000`
 ### Plots produced
 
 For all detectors, the following plots are produced:
@@ -52,7 +54,7 @@ For all detectors, the following plots are produced:
 * 1D histogram of the pixel timestamps
 * 1D histogram of the pixel ToT - currently not filled
 * 1D histogram of number of pixels per event
-* 1D histogram with the number of pixels aeveraged over 1k events as function of event number
+* 1D histogram with the number of pixels averaged over 1k events as function of event number
 
 ### Usage
 ```toml

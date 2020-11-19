@@ -8,7 +8,6 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-//#include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <iostream>

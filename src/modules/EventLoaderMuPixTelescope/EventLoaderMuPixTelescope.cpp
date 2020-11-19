@@ -102,7 +102,7 @@ void EventLoaderMuPixTelescope::finalize(const std::shared_ptr<ReadonlyClipboard
     LOG(INFO) << "Number of hits put to clipboard: " << stored_
               << " and number of removed (not fitting in an event) hits: " << removed_;
     if(!isSorted_)
-        LOG(INFO) << "Increasing the buffer depth mirght reduce this number.";
+        LOG(INFO) << "Increasing the buffer depth might reduce this number.";
 }
 
 StatusCode EventLoaderMuPixTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -140,7 +140,7 @@ StatusCode EventLoaderMuPixTelescope::read_sorted(const std::shared_ptr<Clipboar
     }
     // If no event is defined create one
     if(clipboard->getEvent() == nullptr) {
-        //            frames have a length of 128 ts, each 8ns, int division cuts of lowest bits
+        // The readout FPGA creates frames with a length of 128 time stamps, each 8ns. The int division cuts of lowest bits
         int begin = int(pixels_.front()->timestamp()) / 1024;
         clipboard->putEvent(std::make_shared<Event>(double(begin * 1024), double((begin + 1) * 1024)));
     }
@@ -157,9 +157,9 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
         if((pixel->timestamp() < clipboard->getEvent()->start())) {
             LOG(DEBUG) << " Old hit found: " << Units::convert(pixel->timestamp(), "us") << " vs prev end (" << eventNo_ - 1
                        << ")\t" << Units::convert(prev_event_end_, "us") << " and current start \t"
-                       << Units::convert(clipboard->getEvent()->start(), "us")
+                       << Units::display(clipboard->getEvent()->start(), "us")
                        << " and duration: " << clipboard->getEvent()->duration()
-                       << "and num triggers: " << clipboard->getEvent()->triggerList().size();
+                       << "and number of triggers: " << clipboard->getEvent()->triggerList().size();
             removed_++;
             hdiscardedHitmap->Fill(pixel->column(), pixel->row());
             pixelbuffer_.pop(); // remove top element
@@ -169,12 +169,12 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
            (pixel->timestamp() > clipboard->getEvent()->start())) {
             LOG(DEBUG) << " Adding pixel hit: " << Units::convert(pixel->timestamp(), "us") << " vs prev end ("
                        << eventNo_ - 1 << ")\t" << Units::convert(prev_event_end_, "us") << " and current start \t"
-                       << Units::convert(clipboard->getEvent()->start(), "us")
-                       << " and duration: " << clipboard->getEvent()->duration();
+                       << Units::display(clipboard->getEvent()->start(), "us")
+                       << " and duration: " << Units::display(clipboard->getEvent()->duration(), "us");
             pixels_.push_back(pixel);
             hHitMap->Fill(pixel.get()->column(), pixel.get()->row());
             hPixelToT->Fill(pixel.get()->raw());
-            // igitt
+            // display the 10 bit timestamp distribution
             hTimeStamp->Fill(fmod((pixel.get()->timestamp() / 8.), pow(2, 10)));
             pixelbuffer_.pop();
         } else {
