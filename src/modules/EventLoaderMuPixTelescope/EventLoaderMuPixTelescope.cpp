@@ -110,24 +110,6 @@ void EventLoaderMuPixTelescope::finalize(const std::shared_ptr<ReadonlyClipboard
         LOG(INFO) << "Increasing the buffer depth might reduce this number.";
 }
 
-StatusCode EventLoaderMuPixTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
-    eventNo_++;
-    pixels_.clear();
-    // get the hits
-    StatusCode result = (isSorted_ ? read_sorted(clipboard) : read_unsorted(clipboard));
-    hHitsEvent->Fill(double(pixels_.size()));
-    counterHits_ += pixels_.size();
-    if(eventNo_ % 1000 == 0) {
-        int point = eventNo_ / 1000;
-        hitsPerkEvent->Fill(point, double(counterHits_));
-        counterHits_ = 0;
-    }
-    if(pixels_.size() > 0)
-        clipboard->putData(pixels_, detector_->getName());
-    stored_ += pixels_.size();
-    return result;
-}
-
 StatusCode EventLoaderMuPixTelescope::read_sorted(const std::shared_ptr<Clipboard>& clipboard) {
     PixelVector hits;
     if(!blockFile_->read_next(tf_)) {
@@ -160,8 +142,8 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
             break;
         auto pixel = pixelbuffer_.top();
         if((pixel->timestamp() < clipboard->getEvent()->start())) {
-            LOG(DEBUG) << " Old hit found: " << Units::convert(pixel->timestamp(), "us") << " vs prev end (" << eventNo_ - 1
-                       << ")\t" << Units::convert(prev_event_end_, "us") << " and current start \t"
+            LOG(DEBUG) << " Old hit found: " << Units::display(pixel->timestamp(), "us") << " vs prev end (" << eventNo_ - 1
+                       << ")\t" << Units::display(prev_event_end_, "us") << " and current start \t"
                        << Units::display(clipboard->getEvent()->start(), "us")
                        << " and duration: " << clipboard->getEvent()->duration()
                        << "and number of triggers: " << clipboard->getEvent()->triggerList().size();
@@ -172,8 +154,8 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
         }
         if(pixelbuffer_.size() && (pixel->timestamp() < clipboard->getEvent()->end()) &&
            (pixel->timestamp() > clipboard->getEvent()->start())) {
-            LOG(DEBUG) << " Adding pixel hit: " << Units::convert(pixel->timestamp(), "us") << " vs prev end ("
-                       << eventNo_ - 1 << ")\t" << Units::convert(prev_event_end_, "us") << " and current start \t"
+            LOG(DEBUG) << " Adding pixel hit: " << Units::display(pixel->timestamp(), "us") << " vs prev end ("
+                       << eventNo_ - 1 << ")\t" << Units::display(prev_event_end_, "us") << " and current start \t"
                        << Units::display(clipboard->getEvent()->start(), "us")
                        << " and duration: " << Units::display(clipboard->getEvent()->duration(), "us");
             pixels_.push_back(pixel);
@@ -239,3 +221,21 @@ std::map<std::string, int> EventLoaderMuPixTelescope::typeString_to_typeID = {{"
                                                                               {"run2020v7", R20V7_UNSORTED_GS1_GS2_GS3},
                                                                               {"run2020v8", R20V8_UNSORTED_GS1_GS2_GS3},
                                                                               {"run2020v9", R20V9_UNSORTED_GS1_GS2_GS3}};
+
+StatusCode EventLoaderMuPixTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
+    eventNo_++;
+    pixels_.clear();
+    // get the hits
+    StatusCode result = (isSorted_ ? read_sorted(clipboard) : read_unsorted(clipboard));
+    hHitsEvent->Fill(double(pixels_.size()));
+    counterHits_ += pixels_.size();
+    if(eventNo_ % 1000 == 0) {
+        int point = eventNo_ / 1000;
+        hitsPerkEvent->Fill(point, double(counterHits_));
+        counterHits_ = 0;
+    }
+    if(pixels_.size() > 0)
+        clipboard->putData(pixels_, detector_->getName());
+    stored_ += pixels_.size();
+    return result;
+}

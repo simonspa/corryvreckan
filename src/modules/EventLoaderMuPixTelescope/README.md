@@ -21,7 +21,7 @@ Everything behind the first `_` is used as tag, if none found the tag is assumed
 The correct type is given by the `type` in the geometry.
 It is assumed that the timestamp has 10bit and runs at a frequency of 125 MHz (8ns bins)
 
-### Eventdefinition:
+### Event definition:
 
 * Sorted telescope data: The loader can define its own events as the full
 information of all systems is stored in an telescope event.
@@ -35,13 +35,14 @@ This module requires a installation of the mupix8_daq package that is used by th
 
 ### Parameters
 * `input_directory`: Defines the input file. No default.
-* `run`: 6 digit run number, with leading zeros being automatically added, to open the data file with the standard format `telescope_run_RUN.blck`.
+* `run`: 6 digit run number, with leading zeros being automatically added, to
+open the data file with the standard format `telescope_run_RUN.blck`.`run` and
+`input_file` are mutually exclusive.
 * `is_sorted`: Defines if data recorded is on FPGA timestamp sorted. Defaults to `false`.
 * `time_offset`: Subtract an offset to correct for the expected delay between
 issuing the synchronous reset and receiving it. Only used if
 `is_sorted=false`. Defaults to `0`.
-* `input_file`: Overwrite the input filename if the filename is not in the
-standard format `telescope_run_RUN.blck`. Inactive if not given.
+* `input_file`: Filename of the input file. `run` and `input_file` are mutually exclusive.
 * `buffer_depth`: Depth of the pixel buffer that is used to sort the hits with
 respect to time. Defaults to `1000`.
 ### Plots produced
