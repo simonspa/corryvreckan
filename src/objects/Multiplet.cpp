@@ -33,7 +33,7 @@ ROOT::Math::XYPoint Multiplet::getKinkAt(const std::string&) const {
 
 void Multiplet::calculateChi2() {
 
-    chi2_ = m_upstream->getChi2() + m_downstream->getChi2() + sqrt(m_offsetAtScatterer.Dot(m_offsetAtScatterer));
+    chi2_ = m_upstream->getChi2() + m_downstream->getChi2();
     ndof_ = m_upstream->getNdof() + m_downstream->getNdof();
     chi2ndof_ = chi2_ / ndof_;
 }
