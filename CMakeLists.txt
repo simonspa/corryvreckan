@@ -5,7 +5,7 @@ IF(COMMAND CMAKE_POLICY)
   CMAKE_POLICY(SET CMP0048 NEW) # set project version
   IF(${CMAKE_VERSION} VERSION_GREATER "3.13")  
     CMAKE_POLICY(SET CMP0077 NEW) # allow overwriting options with normal variables
-  ENDIF(${CMAKE_VERSION} VERSION_GREATER)
+  ENDIF()
 ENDIF(COMMAND CMAKE_POLICY)
 
 # Set default version
