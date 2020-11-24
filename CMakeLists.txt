@@ -3,6 +3,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.4.3 FATAL_ERROR)
 IF(COMMAND CMAKE_POLICY)
   CMAKE_POLICY(SET CMP0003 NEW) # change linker path search behaviour
   CMAKE_POLICY(SET CMP0048 NEW) # set project version
+  CMAKE_POLICY(SET CMP0077 NEW) # allow overwriting options with normal variables
 ENDIF(COMMAND CMAKE_POLICY)
 
 # Set default version
