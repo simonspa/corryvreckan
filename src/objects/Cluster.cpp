@@ -23,10 +23,6 @@ void Cluster::addPixel(const Pixel* pixel) {
 
     // Take split clusters into account correctly, e.g.
     // (1,10),(1,12) should have a row width = 3
-    //
-    // map.begin() returns iterator to first element
-    // map.rbegin() returns iterator to first element from the back
-    // map.end() would return a "past-the-end element" -> cannot be used here
     m_columnWidth = static_cast<size_t>(1 + m_columnHits.begin()->first - m_columnHits.rbegin()->first);
     m_rowWidth = static_cast<size_t>(1 + m_rowHits.rbegin()->first - m_rowHits.begin()->first);
 }
