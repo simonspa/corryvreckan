@@ -27,8 +27,8 @@ void Cluster::addPixel(const Pixel* pixel) {
     // map.begin() returns iterator to first element
     // map.rbegin() returns iterator to first element from the back
     // map.end() would return a "past-the-end element" -> cannot be used here
-    m_columnWidth = 1 + m_columnHits.begin()->first - m_columnHits.rbegin()->first;
-    m_rowWidth = 1 + m_rowHits.begin()->first - m_rowHits.rbegin()->first;
+    m_columnWidth = static_cast<size_t>(1 + m_columnHits.begin()->first - m_columnHits.rbegin()->first);
+    m_rowWidth = static_cast<size_t>(1 + m_rowHits.rbegin()->first - m_rowHits.begin()->first);
 }
 
 double Cluster::error() const {
