@@ -18,14 +18,17 @@ Cluster::Cluster() : m_columnWidth(0.), m_rowWidth(0.), m_split(false) {}
 void Cluster::addPixel(const Pixel* pixel) {
     m_pixels.push_back(const_cast<Pixel*>(pixel)); // NOLINT
 
-    if(m_columnHits.count(pixel->column()) == 0) {
-        m_columnWidth++;
-    }
-    if(m_rowHits.count(pixel->row()) == 0) {
-        m_rowWidth++;
-    }
     m_columnHits[pixel->column()] = true;
     m_rowHits[pixel->row()] = true;
+
+    // Take split clusters into account correctly, e.g.
+    // (1,10),(1,12) should have a row width = 3
+    //
+    // map.begin() returns iterator to first element
+    // map.rbegin() returns iterator to first element from the back
+    // map.end() would return a "past-the-end element" -> cannot be used here
+    m_columnWidth = 1 + m_columnHits.begin()->first - m_columnHits.rbegin()->first;
+    m_rowWidth = 1 + m_rowHits.begin()->first - m_rowHits.rbegin()->first;
 }
 
 double Cluster::error() const {
