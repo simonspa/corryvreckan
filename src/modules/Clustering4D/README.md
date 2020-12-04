@@ -12,7 +12,7 @@ Also, if one pixel of a cluster has charge zero, the arithmetic mean is calculat
 Thus, the  arithmetic mean is safer.
 
 Split clusters can be recovered using a larger search radius for neighboring pixels.
-Their width is defined as the maximum extend in column/row direction, i.e. a cluster of pixels (1,10), (1,12) would have a column width of 1 and a row width of 3.
+Their width is defined as the maximum extent in column/row direction, i.e. a cluster of pixels (1,10), (1,12) would have a column width of 1 and a row width of 3.
 
 ### Parameters
 * `time_cut_rel`: Number of standard deviations the `time_resolution` of the detector plane will be multiplied by. This value is then used as the maximum time difference allowed between pixels for association to a cluster. By default, a relative time cut is applied. Absolute and relative time cuts are mutually exclusive. Defaults to `3.0`.
