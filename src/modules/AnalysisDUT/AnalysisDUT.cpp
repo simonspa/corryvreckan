@@ -96,7 +96,7 @@ void AnalysisDUT::initialize() {
 
     associatedTracksVersusTime =
         new TH1F("associatedTracksVersusTime", "Associated tracks over time;time [s];# associated tracks", 300000, 0, 300);
-    residualsX = new TH1F("residualsX", "Resdiual in X;x_{track}-x_{hit}  [mm];# entries", 800, -0.1, 0.1);
+    residualsX = new TH1F("residualsX", "Residual in X;x_{track}-x_{hit}  [mm];# entries", 800, -0.1, 0.1);
     residualsY = new TH1F("residualsY", "Residual in Y;y_{track}-y_{hit}  [mm];# entries", 800, -0.1, 0.1);
     residualsPos = new TH1F(
         "residualsPos", "Absolute distance between track and hit;|pos_{track}-pos_{hit}|  [mm];# entries", 800, -0.1, 0.1);
