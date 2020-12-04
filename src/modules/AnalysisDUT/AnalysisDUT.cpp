@@ -367,6 +367,10 @@ void AnalysisDUT::initialize() {
                  200,
                  -10,
                  10);
+    raw_fpga_vs_chip = new TH2F("raw_fpga_vs_chip","fpga vs chip clock;chip clock;fpga clock",              1024,0,1023,2048,0,2047);
+    raw_fpga_vs_chip_up = new TH2F("raw_fpga_vs_chip_up","fpga vs chip clock;chip clock;fpga clock",    1024,0,1023,2048,0,2047);
+    raw_fpga_vs_chip_down = new TH2F("raw_fpga_vs_chip_down","fpga vs chip clock;chip clock;fpga clock",    1024,0,1023,2048,0,2047);
+    raw_fpga_vs_chip_norm = new TH2F("raw_fpga_vs_chip_norm","fpga vs chip clock;chip clock;fpga clock",    1024,0,1023,2048,0,2047);
 }
 
 StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -534,6 +538,22 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             // Time residuals
             residualsTime->Fill(tdistance);
+            for(auto& pixel : assoc_cluster->pixels()) {
+                int fpga_part=(pixel->raw()>>12)&0x3FF;
+                int chip_part=pixel->raw()&0x3FF;
+                raw_fpga_vs_chip->Fill(chip_part,(pixel->raw()>>12)&0x7FF);
+                if(track->timestamp()-pixel->timestamp()>7000){
+                    raw_fpga_vs_chip_up->Fill(chip_part,(pixel->raw()>>12)&0x7FF);
+                    LOG(DEBUG)<<"up time "<<std::hex<<fpga_part<<" "<< chip_part<<std::dec<<"  "<<fpga_part-chip_part;
+                }else if(track->timestamp()-pixel->timestamp()<-7000){
+                    raw_fpga_vs_chip_down->Fill(chip_part,(pixel->raw()>>12)&0x7FF);
+                    LOG(DEBUG)<<"down time "<<std::hex<<fpga_part<<" "<< chip_part<<std::dec<<"  "<<fpga_part-chip_part;
+                }else{
+                    raw_fpga_vs_chip_norm->Fill(chip_part,(pixel->raw()>>12)&0x7FF);
+                    LOG(DEBUG)<<"in time "<<std::hex<<fpga_part<<" "<< chip_part<<std::dec<<"  "<<fpga_part-chip_part;
+                }
+                
+            }
             residualsTimeVsTime->Fill(tdistance, track->timestamp());
             residualsTimeVsTot->Fill(tdistance, assoc_cluster->getSeedPixel()->raw());
             residualsTimeVsSignal->Fill(tdistance, cluster_charge);

@@ -46,8 +46,8 @@ void EventLoaderMuPixTelescope::initialize() {
     if(typeString_to_typeID.find(detector_->getType()) == typeString_to_typeID.end()) {
         throw KeyValueParseError("tag " + std::to_string(tag_), "Sensor tag not supported");
     }
-    //take the offset from the geometry file
-    timeOffset_= detector_->timeOffset();
+    // take the offset from the geometry file
+    timeOffset_ = detector_->timeOffset();
     type_ = typeString_to_typeID.at(detector_->getType());
     LOG(INFO) << "Detector " << detector_->getType() << "is assigned to type id " << type_;
     std::stringstream ss;
@@ -100,9 +100,12 @@ void EventLoaderMuPixTelescope::initialize() {
     hTimeStamp = new TH1F("pixelTS", "pixelTS; TS in clock cycles; ", 1024, -0.5, 1023.5);
     hHitsEvent = new TH1F("hHitsEvent", "hHitsEvent; # hits per event; ", 300, -.5, 299.5);
     hitsPerkEvent = new TH1F("hHitsPerkEvent", "hitsper1kevents; corry events /1k; hits per 1k events", 1000, -.5, 999.5);
-    raw_fpga_vs_chip = new TH2F("raw_fpga_vs_chip","fpga vs chip clock;chip clock;fpga clock",              1024,0,1023,2048,0,2047);
-    raw_fpga_vs_chip_corrected = new TH2F("raw_fpga_vs_chip_corrected","fpga vs chip clock;chip clock;fpga clock",    1024,0,1023,2048,0,2047);
-    chip_delay = new TH1F("chip_delay", "Delay of chip events wrt. telescope frame;fpga clock@ chip clock 0;#events",2048,-1023,1023);
+    raw_fpga_vs_chip =
+        new TH2F("raw_fpga_vs_chip", "fpga vs chip clock;chip clock;fpga clock", 1024, 0, 1023, 2048, 0, 2047);
+    raw_fpga_vs_chip_corrected =
+        new TH2F("raw_fpga_vs_chip_corrected", "fpga vs chip clock;chip clock;fpga clock", 1024, 0, 1023, 2048, 0, 2047);
+    chip_delay = new TH1F(
+        "chip_delay", "Delay of chip events wrt. telescope frame;fpga clock@ chip clock 0;#events", 2048, -1023, 1023);
 }
 
 void EventLoaderMuPixTelescope::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
@@ -180,8 +183,9 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
 }
 
 void EventLoaderMuPixTelescope::fillBuffer() {
-    long unsigned int temp_fpga_time=0;
-    unsigned int raw_time=0;
+    long unsigned int temp_fpga_time = 0;
+    unsigned int raw_time = 0;
+    unsigned int overlap_fpga = 0;
     // here we need to check quite a number of cases
     while(pixelbuffer_.size() < buffer_depth_) {
         if(blockFile_->read_next(tf_)) {
@@ -198,28 +202,29 @@ void EventLoaderMuPixTelescope::fillBuffer() {
             // all hits in one frame are from the same sensor. Copy them
             for(uint i = 0; i < tf_.num_hits(); ++i) {
                 h = tf_.get_hit(i, type_);
-                
-                //this assumes a few things:
-                //time from fpga is using a 500MHz clock (4 times the clock used for the hit timestamp
-                temp_fpga_time = (tf_.timestamp() >> 2)  ;
-                //just take 10 bits from the hit timestamp
-                raw_time=h.timestamp_raw()&0x3FF;
-                //get the fpga time +1bit just for plots
-                raw_fpga_vs_chip->Fill(raw_time,static_cast<double>(temp_fpga_time&0x7FF));
-                chip_delay->Fill(static_cast<double>((temp_fpga_time&0x3FF)-raw_time ));
-                //if the chip timestamp is smaller than the fpga we have a bit flip on the 11th bit
-                if((temp_fpga_time&0x3FF)<raw_time){
-                    temp_fpga_time-=1024;
-                }
-                raw_fpga_vs_chip_corrected->Fill(raw_time,static_cast<double>(temp_fpga_time&0x7FF));
-                
+
+                // this assumes a few things:
+                // time from fpga is using a 500MHz clock (4 times the clock used for the hit timestamp
+                temp_fpga_time = (tf_.timestamp() >> 2);
+                // just take 10 bits from the hit timestamp
+                raw_time = h.timestamp_raw() & 0x3FF;
+                // get the fpga time +1bit just for plots
+                raw_fpga_vs_chip->Fill(raw_time, static_cast<double>(temp_fpga_time & 0x7FF));
+                chip_delay->Fill(static_cast<double>((temp_fpga_time & 0x3FF) - raw_time));
+                // if the chip timestamp is smaller than the fpga we have a bit flip on the 11th bit
+                // if((temp_fpga_time&0x3FF)<raw_time){
+                // temp_fpga_time-=1024;
+                //}
+                raw_fpga_vs_chip_corrected->Fill(raw_time, static_cast<double>(temp_fpga_time & 0x7FF));
+
                 // convert timestamp to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time
                 // yet, assuming 10bit ts
-                double px_timestamp =
-                    8 * static_cast<double>((temp_fpga_time & 0xFFFFFFFFFFC00) + raw_time) - timeOffset_;
+                double px_timestamp = 8 * static_cast<double>((temp_fpga_time & 0xFFFFFFFFFFC00) + raw_time) - timeOffset_;
                 LOG(TRACE) << "Pixel timestamp " << px_timestamp;
+                overlap_fpga = (overlap_fpga << 12) + raw_time;
                 // setting tot and charge to zero here - needs to be improved
-                pixelbuffer_.push(std::make_shared<Pixel>(detector_->getName(), h.column(), h.row(), 0, 0, px_timestamp));
+                pixelbuffer_.push(
+                    std::make_shared<Pixel>(detector_->getName(), h.column(), h.row(), overlap_fpga, 0, px_timestamp));
             }
         } else {
             eof_ = true;
