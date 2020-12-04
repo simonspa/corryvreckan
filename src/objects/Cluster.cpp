@@ -18,14 +18,13 @@ Cluster::Cluster() : m_columnWidth(0.), m_rowWidth(0.), m_split(false) {}
 void Cluster::addPixel(const Pixel* pixel) {
     m_pixels.push_back(const_cast<Pixel*>(pixel)); // NOLINT
 
-    if(m_columnHits.count(pixel->column()) == 0) {
-        m_columnWidth++;
-    }
-    if(m_rowHits.count(pixel->row()) == 0) {
-        m_rowWidth++;
-    }
     m_columnHits[pixel->column()] = true;
     m_rowHits[pixel->row()] = true;
+
+    // Take split clusters into account correctly, e.g.
+    // (1,10),(1,12) should have a row width = 3
+    m_columnWidth = static_cast<size_t>(1 + m_columnHits.begin()->first - m_columnHits.rbegin()->first);
+    m_rowWidth = static_cast<size_t>(1 + m_rowHits.rbegin()->first - m_rowHits.begin()->first);
 }
 
 double Cluster::error() const {
