@@ -142,6 +142,8 @@ StatusCode EventLoaderMuPixTelescope::read_sorted(const std::shared_ptr<Clipboar
 StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipboard>& clipboard) {
     if(!eof_)
         fillBuffer();
+    else
+        return StatusCode::EndRun;
     while(true) {
         if(pixelbuffer_.size() == 0)
             break;
@@ -177,7 +179,7 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
         fillBuffer();
     // Return value telling analysis to keep running
     if(pixelbuffer_.size() == 0)
-        return StatusCode::EndRun;
+        return StatusCode::NoData;
     prev_event_end_ = clipboard->getEvent()->end();
     return StatusCode::Success;
 }
@@ -212,19 +214,17 @@ void EventLoaderMuPixTelescope::fillBuffer() {
                 raw_fpga_vs_chip->Fill(raw_time, static_cast<double>(temp_fpga_time & 0x7FF));
                 chip_delay->Fill(static_cast<double>((temp_fpga_time & 0x3FF) - raw_time));
                 // if the chip timestamp is smaller than the fpga we have a bit flip on the 11th bit
-                // if((temp_fpga_time&0x3FF)<raw_time){
-                // temp_fpga_time-=1024;
-                //}
+                if((temp_fpga_time & 0x3FF) < raw_time) {
+                    temp_fpga_time -= 1024;
+                }
                 raw_fpga_vs_chip_corrected->Fill(raw_time, static_cast<double>(temp_fpga_time & 0x7FF));
 
                 // convert timestamp to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time
                 // yet, assuming 10bit ts
                 double px_timestamp = 8 * static_cast<double>((temp_fpga_time & 0xFFFFFFFFFFC00) + raw_time) - timeOffset_;
                 LOG(TRACE) << "Pixel timestamp " << px_timestamp;
-                overlap_fpga = (overlap_fpga << 12) + raw_time;
                 // setting tot and charge to zero here - needs to be improved
-                pixelbuffer_.push(
-                    std::make_shared<Pixel>(detector_->getName(), h.column(), h.row(), overlap_fpga, 0, px_timestamp));
+                pixelbuffer_.push(std::make_shared<Pixel>(detector_->getName(), h.column(), h.row(), 0, 0, px_timestamp));
             }
         } else {
             eof_ = true;

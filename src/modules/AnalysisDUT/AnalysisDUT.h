@@ -76,11 +76,6 @@ namespace corryvreckan {
         TH2F* residualsTimeVsTot;
         TH2F* residualsTimeVsTime;
         TH2F* residualsTimeVsSignal;
-        TH2F* raw_fpga_vs_chip;
-        TH2F* raw_fpga_vs_chip_norm; 
-        TH2F* raw_fpga_vs_chip_up;
-        TH2F* raw_fpga_vs_chip_down;
-
         TH2F* hAssociatedTracksGlobalPosition;
         TH2F* hAssociatedTracksLocalPosition;
         TH2F* hUnassociatedTracksGlobalPosition;
