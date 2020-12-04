@@ -181,7 +181,7 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
 
 void EventLoaderMuPixTelescope::fillBuffer() {
     long unsigned int temp_fpga_time=0;
-    int raw_time=0;
+    unsigned int raw_time=0;
     // here we need to check quite a number of cases
     while(pixelbuffer_.size() < buffer_depth_) {
         if(blockFile_->read_next(tf_)) {
@@ -205,13 +205,13 @@ void EventLoaderMuPixTelescope::fillBuffer() {
                 //just take 10 bits from the hit timestamp
                 raw_time=h.timestamp_raw()&0x3FF;
                 //get the fpga time +1bit just for plots
-                raw_fpga_vs_chip->Fill(raw_time,temp_fpga_time&0x7FF);
-                chip_delay->Fill((temp_fpga_time&0x3FF)-raw_time );
+                raw_fpga_vs_chip->Fill(raw_time,static_cast<double>(temp_fpga_time&0x7FF));
+                chip_delay->Fill(static_cast<double>((temp_fpga_time&0x3FF)-raw_time ));
                 //if the chip timestamp is smaller than the fpga we have a bit flip on the 11th bit
                 if((temp_fpga_time&0x3FF)<raw_time){
                     temp_fpga_time-=1024;
                 }
-                raw_fpga_vs_chip_corrected->Fill(raw_time,temp_fpga_time&0x7FF);
+                raw_fpga_vs_chip_corrected->Fill(raw_time,static_cast<double>(temp_fpga_time&0x7FF));
                 
                 // convert timestamp to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time
                 // yet, assuming 10bit ts
