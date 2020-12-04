@@ -1,7 +1,7 @@
 FROM gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-base:latest
 MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 
-ENV ROOT6_VERSION 6.20.04
+ENV ROOT6_VERSION 6.22.02
 
 # Add layer for ROOT6
 ENV ROOTSYS="/opt/root6"
@@ -11,7 +11,7 @@ ENV LIBPATH="$ROOTSYS/lib:$LIBPATH"
 ENV PYTHONPATH="$ROOTSYS/lib:$PYTHONPATH"
 ENV CMAKE_PREFIX_PATH="$ROOTSYS:$CMAKE_PREFIX_PATH"
 
-RUN source scl_source enable devtoolset-7 && \
+RUN source scl_source enable devtoolset-8 && \
     mkdir -p ${ROOTSYS}/{src,build} && \
     curl -o ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz \
             https://root.cern.ch/download/root_v${ROOT6_VERSION}.source.tar.gz && \
@@ -37,7 +37,7 @@ ENV PEARY_VERSION v0.9.13
 
 # Add layer for Caribou Peary
 ENV PEARYPATH="/opt/peary"
-RUN source scl_source enable devtoolset-7 && \
+RUN source scl_source enable devtoolset-8 && \
     mkdir -p ${PEARYPATH}/{src,build} && \
     curl -L -o ${PEARYPATH}/peary-${PEARY_VERSION}.zip \
             https://gitlab.cern.ch/Caribou/peary/-/archive/${PEARY_VERSION}/peary-${PEARY_VERSION}.zip && \
@@ -52,11 +52,11 @@ RUN source scl_source enable devtoolset-7 && \
     rm -rf ${PEARYPATH}/{src,build}
 
 
-ENV EUDAQ2_VERSION 2.4.2
+ENV EUDAQ2_VERSION 2.4.4
 
 # Add layer for EUDAQ2
 ENV EUDAQ2PATH="/opt/eudaq2"
-RUN source scl_source enable devtoolset-7 && \
+RUN source scl_source enable devtoolset-8 && \
     mkdir -p ${EUDAQ2PATH}/{src,build} && \
     curl -L -o ${EUDAQ2PATH}/eudaq2.${EUDAQ2_VERSION}.zip \
             https://github.com/eudaq/eudaq/archive/v${EUDAQ2_VERSION}.zip && \
@@ -73,5 +73,4 @@ RUN source scl_source enable devtoolset-7 && \
            ../src/eudaq-${EUDAQ2_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
-    cp ${EUDAQ2PATH}/build/eudaqTarget* ${EUDAQ2PATH}/cmake/ && \
     rm -rf ${EUDAQ2PATH}/{src,build}

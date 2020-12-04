@@ -3,6 +3,9 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.4.3 FATAL_ERROR)
 IF(COMMAND CMAKE_POLICY)
   CMAKE_POLICY(SET CMP0003 NEW) # change linker path search behaviour
   CMAKE_POLICY(SET CMP0048 NEW) # set project version
+  IF(${CMAKE_VERSION} VERSION_GREATER "3.13")  
+    CMAKE_POLICY(SET CMP0077 NEW) # allow overwriting options with normal variables
+  ENDIF()
 ENDIF(COMMAND CMAKE_POLICY)
 
 # Set default version
@@ -173,7 +176,9 @@ ADD_RUNTIME_DEP(thisroot.sh)
 ###################################
 
 # Set the clang-format version required by the CI for correct formatting:
-SET(CLANG_FORMAT_VERSION "8")
+SET(CLANG_FORMAT_VERSION "10")
+# Set the clang-tidy version of the linter required by the CI:
+SET(CLANG_TIDY_VERSION "10")
 
 # Set the source files to clang-format (FIXME: determine this better)
 FILE(GLOB_RECURSE
