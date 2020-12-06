@@ -82,6 +82,9 @@ namespace corryvreckan {
         TH1F* hitsPerkEvent;
         TH2F* hdiscardedHitmap;
         TH2F* hHitMap;
+        TH2F* raw_fpga_vs_chip;
+        TH2F* raw_fpga_vs_chip_corrected;
+        TH1F* chip_delay;
         static std::map<std::string, int> typeString_to_typeID;
     };
 

@@ -76,7 +76,6 @@ namespace corryvreckan {
         TH2F* residualsTimeVsTot;
         TH2F* residualsTimeVsTime;
         TH2F* residualsTimeVsSignal;
-
         TH2F* hAssociatedTracksGlobalPosition;
         TH2F* hAssociatedTracksLocalPosition;
         TH2F* hUnassociatedTracksGlobalPosition;
