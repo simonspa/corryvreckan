@@ -23,7 +23,7 @@ void Cluster::addPixel(const Pixel* pixel) {
 
     // Take split clusters into account correctly, e.g.
     // (1,10),(1,12) should have a row width = 3
-    m_columnWidth = static_cast<size_t>(1 + m_columnHits.begin()->first - m_columnHits.rbegin()->first);
+    m_columnWidth = static_cast<size_t>(1 + m_columnHits.rbegin()->first - m_columnHits.begin()->first);
     m_rowWidth = static_cast<size_t>(1 + m_rowHits.rbegin()->first - m_rowHits.begin()->first);
 }
 
