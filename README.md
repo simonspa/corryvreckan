@@ -64,6 +64,7 @@ The following authors, in alphabetical order, have contributed to Corryvreckan:
 * Daniel Hynds, Nikhef, @dhynds
 * Magnus Mager, CERN, @mmager
 * Andreas Matthias Nürnberg, KIT, @nurnberg
+* Ryunosuke O'Neil, University of Edinburgh, @roneil
 * Klaas Padeken, Bonn, HISKP, @padeken
 * Florian Pitters, HEPHY, @fpipper
 * Tomas Vanat, CERN, @tvanat

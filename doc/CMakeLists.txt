@@ -26,6 +26,14 @@ FIND_PACKAGE(LATEX)
 # Only add target if we have LaTeX
 IF(LATEX_COMPILER)
     MESSAGE(STATUS "Found LaTeX compiler.")
+
+    find_program(IMAGEMAGICK NAMES magick convert)
+    IF (NOT IMAGEMAGICK)
+        # stop processing / don't add documentation targets
+        MESSAGE(WARNING "ImageMagick is not found, but is required by UseLATEX.cmake!")
+        RETURN()
+    ENDIF()
+
     SET(LATEX_COMPILER_FLAGS "-shell-escape" "-interaction nonstopmode" "-halt-on-error" "-file-line-error" CACHE STRING "Flags passed to latex.")
     INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LATEX.cmake)
 
