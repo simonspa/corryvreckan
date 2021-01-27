@@ -15,15 +15,19 @@ using namespace corryvreckan;
 EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
 
+    config_.setAlias("file_duration", "file_m26", true);
+
     config_.setDefault<int>("time_shift", 0);
     config_.setDefault<int>("shift_triggers", 0);
     config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
-    config_.setDefault<double>("response_time_m26", Units::get<double>(0, "us"));
     config_.setDefault<double>("skip_time", 0.);
 
     detector_time_ = config_.get<std::string>("detector_event_time");
-    duration_ = config_.get<std::string>("file_duration");
-    timestamp_ = config_.get<std::string>("file_timestamp");
+    // Convert to lower case before string comparison to avoid errors by the user:
+    std::transform(detector_time_.begin(), detector_time_.end(), detector_time_.begin(), ::tolower);
+
+    timestamp_ = config_.getPath("file_timestamp");
+    duration_ = config_.getPath("file_duration");
     timeshift_ = config_.get<double>("time_shift");
     shift_triggers_ = config_.get<int>("shift_triggers");
     skip_time_ = config_.get<double>("skip_time");
@@ -106,6 +110,9 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
             }
 
             auto detector = stdevt->GetDetectorType();
+            // Convert to lower case before string comparison to avoid errors by the user:
+            std::transform(detector.begin(), detector.end(), detector.begin(), ::tolower);
+
             LOG(DEBUG) << "det = " << det << ", detector = " << detector;
             if(det == detector) {
                 begin = Units::get(static_cast<double>(stdevt->GetTimeBegin()), "ps");
@@ -114,7 +121,7 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
                 LOG(DEBUG) << "Set begin/end, begin: " << Units::display(begin, {"ns", "us"})
                            << ", end: " << Units::display(end, {"ns", "us"});
                 // MIMOSA
-                if(det == "MIMOSA26") {
+                if(det == "mimosa26") {
                     // pivot magic - see readme
                     double piv = stdevt->GetPlane(0).PivotPixel() / 16.;
                     begin = Units::get(piv * (115.2 / 576), "us") + timeshift_;
@@ -143,7 +150,7 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
             shift_triggers_);
         timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
         trig_prev_ = time_trig_start_;
-        triggerM26_ = get_next_event_with_det(readerDuration_, "MIMOSA26", time_before_, time_after_);
+        triggerM26_ = get_next_event_with_det(readerDuration_, "mimosa26", time_before_, time_after_);
     } catch(EndOfFile&) {
         return StatusCode::EndRun;
     }
@@ -159,7 +166,7 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                 trig_prev_ = time_trig_start_;
             } else if(triggerTLU_ > triggerM26_) {
                 LOG(DEBUG) << "Mimosa26 trigger smaller than TLU trigger, get next Mimosa26 trigger";
-                triggerM26_ = get_next_event_with_det(readerDuration_, "MIMOSA26", time_before_, time_after_);
+                triggerM26_ = get_next_event_with_det(readerDuration_, "mimosa26", time_before_, time_after_);
             }
 
         } catch(EndOfFile&) {
