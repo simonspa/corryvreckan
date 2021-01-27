@@ -15,6 +15,8 @@ using namespace corryvreckan;
 EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
 
+    config_.setAlias("file_duration", "file_m26", true);
+
     config_.setDefault<int>("time_shift", 0);
     config_.setDefault<int>("shift_triggers", 0);
     config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
