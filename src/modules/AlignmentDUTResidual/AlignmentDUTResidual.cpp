@@ -232,6 +232,13 @@ void AlignmentDUTResidual::finalize(const std::shared_ptr<ReadonlyClipboard>& cl
     arglist[0] = 1000;  // number of function calls
     arglist[1] = 0.001; // tolerance
 
+    // Store the alignment shifts per detector:
+    std::vector<double> shiftsX;
+    std::vector<double> shiftsY;
+    std::vector<double> rotX;
+    std::vector<double> rotY;
+    std::vector<double> rotZ;
+
     AlignmentDUTResidual::globalDetector = m_detector;
     auto name = m_detector->getName();
 
@@ -307,6 +314,19 @@ void AlignmentDUTResidual::finalize(const std::shared_ptr<ReadonlyClipboard>& cl
             XYZPoint(residualFitter->GetParameter(0), residualFitter->GetParameter(1), residualFitter->GetParameter(2)));
         m_detector->rotation(
             XYZVector(residualFitter->GetParameter(3), residualFitter->GetParameter(4), residualFitter->GetParameter(5)));
+		m_detector->update();
+
+            // Store corrections:
+            shiftsX.push_back(
+                static_cast<double>(Units::convert(m_detector->displacement().X() - old_position.X(), "um")));
+            shiftsY.push_back(
+                static_cast<double>(Units::convert(m_detector->displacement().Y() - old_position.Y(), "um")));
+            rotX.push_back(
+                static_cast<double>(Units::convert(m_detector->rotation().X() - old_orientation.X(), "deg")));
+            rotY.push_back(
+                static_cast<double>(Units::convert(m_detector->rotation().Y() - old_orientation.Y(), "deg")));
+            rotZ.push_back(
+                static_cast<double>(Units::convert(m_detector->rotation().Z() - old_orientation.Z(), "deg")));
 
         LOG(INFO) << m_detector->getName() << "/" << iteration << " dT"
                   << Units::display(m_detector->displacement() - old_position, {"mm", "um"}) << " dR"
@@ -316,6 +336,44 @@ void AlignmentDUTResidual::finalize(const std::shared_ptr<ReadonlyClipboard>& cl
     LOG(STATUS) << m_detector->getName() << " new alignment: " << std::endl
                 << "T" << Units::display(m_detector->displacement(), {"mm", "um"}) << " R"
                 << Units::display(m_detector->rotation(), {"deg"});
+
+        std::vector<double> iterations(nIterations);
+        std::iota(std::begin(iterations), std::end(iterations), 0);
+
+        std::string graph_name = "alignment_correction_displacementX_" + m_detector->getName();
+        align_correction_shiftX = new TGraph(
+            static_cast<int>(shiftsX.size()), &iterations[0], &shiftsX[0]);
+        align_correction_shiftX->GetXaxis()->SetTitle("# iteration");
+        align_correction_shiftX->GetYaxis()->SetTitle("correction [#mum]");
+        align_correction_shiftX->Write(graph_name.c_str());
+
+        graph_name = "alignment_correction_displacementY_" + m_detector->getName();
+        align_correction_shiftY = new TGraph(
+            static_cast<int>(shiftsY.size()), &iterations[0], &shiftsY[0]);
+        align_correction_shiftY->GetXaxis()->SetTitle("# iteration");
+        align_correction_shiftY->GetYaxis()->SetTitle("correction [#mum]");
+        align_correction_shiftY->Write(graph_name.c_str());
+
+        graph_name = "alignment_correction_rotationX_" + m_detector->getName();
+        align_correction_rotX = new TGraph(
+            static_cast<int>(rotX.size()), &iterations[0], &rotX[0]);
+        align_correction_rotX->GetXaxis()->SetTitle("# iteration");
+        align_correction_rotX->GetYaxis()->SetTitle("correction [#mum]");
+        align_correction_rotX->Write(graph_name.c_str());
+
+        graph_name = "alignment_correction_rotationY_" + m_detector->getName();
+        align_correction_rotY = new TGraph(
+            static_cast<int>(rotY.size()), &iterations[0], &rotY[0]);
+        align_correction_rotY->GetXaxis()->SetTitle("# iteration");
+        align_correction_rotY->GetYaxis()->SetTitle("correction [#mum]");
+        align_correction_rotY->Write(graph_name.c_str());
+
+        graph_name = "alignment_correction_rotationZ_" + m_detector->getName();
+        align_correction_rotZ = new TGraph(
+            static_cast<int>(rotZ.size()), &iterations[0], &rotZ[0]);
+        align_correction_rotZ->GetXaxis()->SetTitle("# iteration");
+        align_correction_rotZ->GetYaxis()->SetTitle("correction [#mum]");
+        align_correction_rotZ->Write(graph_name.c_str());
 
     // Clean up local track storage
     AlignmentDUTResidual::globalTracks.clear();
