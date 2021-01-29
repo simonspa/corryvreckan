@@ -24,6 +24,8 @@ For the DUT, the following plots are produced:
 
 * Residuals in X and Y (calculated in local coordinates)
 * Profile plot of residual in X vs. X, X vs. Y, Y vs. X and Y vs. Y position
+* Graphs of the translational shifts along the X/Y-axis vs. the iteration number
+* Graphs of the rotational shifts along the X/Y/Z-axis vs. the iteration number
 
 ### Usage
 ```toml

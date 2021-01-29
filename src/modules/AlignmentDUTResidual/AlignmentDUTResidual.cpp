@@ -317,7 +317,7 @@ void AlignmentDUTResidual::finalize(const std::shared_ptr<ReadonlyClipboard>& cl
 		m_detector->update();
 
             // Store corrections:
-            shiftsX.push_back(
+           shiftsX.push_back(
                 static_cast<double>(Units::convert(m_detector->displacement().X() - old_position.X(), "um")));
             shiftsY.push_back(
                 static_cast<double>(Units::convert(m_detector->displacement().Y() - old_position.Y(), "um")));
