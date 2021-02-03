@@ -20,6 +20,7 @@
 #include <TProfile.h>
 
 #include "core/module/Module.hpp"
+#include "core/utils/ThreadPool.hpp"
 #include "objects/Cluster.hpp"
 #include "objects/Track.hpp"
 
@@ -48,6 +49,7 @@ namespace corryvreckan {
         static TrackVector globalTracks;
         static std::shared_ptr<Detector> globalDetector;
         static int detNum;
+        static ThreadPool* thread_pool;
 
         size_t nIterations;
         bool m_pruneTracks;
