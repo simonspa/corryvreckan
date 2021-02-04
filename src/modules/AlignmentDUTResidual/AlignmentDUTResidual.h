@@ -9,6 +9,7 @@
  */
 
 #include <TCanvas.h>
+#include <TGraph.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <iostream>
@@ -74,6 +75,11 @@ namespace corryvreckan {
         TProfile* profile_dY_Y;
         TProfile* profile_dX_X;
         TProfile* profile_dX_Y;
+        TGraph* align_correction_shiftX;
+        TGraph* align_correction_shiftY;
+        TGraph* align_correction_rotX;
+        TGraph* align_correction_rotY;
+        TGraph* align_correction_rotZ;
     };
 
 } // namespace corryvreckan

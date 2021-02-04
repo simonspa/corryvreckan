@@ -36,8 +36,9 @@ ROOT::Math::XYPoint StraightLineTrack::getKinkAt(const std::string&) const {
 void StraightLineTrack::calculateChi2() {
 
     // Get the number of clusters
-
-    ndof_ = static_cast<double>(track_clusters_.size()) - 2.;
+    // We do have a 2-dimensional offset(x_0,y_0) and slope (dx,dy). Each hit provides two measurements.
+    // ndof_ = 2*num_planes - 4 = 2 * (num_planes -2)
+    ndof_ = (static_cast<double>(track_clusters_.size()) - 2.) * 2.;
     chi2_ = 0.;
     chi2ndof_ = 0.;
 

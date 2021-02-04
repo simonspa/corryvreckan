@@ -1,0 +1,51 @@
+\section{Objects}
+\label{sec:objects}
+\texttt{Corryvreckan::Objects} are used to transfer data from and to the clipboard as well as to store it to \textit{root trees}. 
+\texttt{Objects} are inheriting from \texttt{ROOT::TObject} to automatically create the \texttt{trees} structure required to write and read the objects. 
+Dedicated modules, see \ref{sec:module_files} are provided to write/read objects.
+Three base object types exist within \corry : \pixel, \cluster, \track.
+A \track contains several \cluster, which can be connected to a particles
+trajectory with different TrackModels.
+A \cluster is a collection of hits, that has an additional center of gravity
+which is used as cluster position.
+
+In addition several specific TrackModel objects inheriting from Track and a
+Spidr-signal are provided. The latter is required to read in data from the
+SPIDR timepix3 readout system and described in \cite{vanderHeijden:2275140}. 
+
+\subsection{Pixel}
+A \pixel contains the basic information of a particle hit from a detector. A column, row position and a time-stamp in nanoseconds as well as a charge information and a raw information is stored. Not every detector can provide all information. If the time-stamp is not provided it should be set to zero. Charge is assumed to be in eV per default, but can be overwritten by using the raw information, which can, for example, be an ADC value or a ToT. If this is also not provided/unknown it should be set to 1. 
+
+\subsection{Cluster}
+A \cluster is a collection of several \pixel. These \pixel are typically
+neighbors in space and close in time, but can be also arbitrary
+defined. Every \cluster has a center that is used in \track to reconstruct a trajectory.  
+
+\subsection{Track}
+A \track holds a collection of \cluster. Additionally, the track positions on
+each detector plane defined in the geometry are provided. At any z-position, the
+corresponding x/y position can be requested after the track has been fitted
+with the track models listed below. After fitting, each track model also holds
+a $\chi^2$ defining the quality of the fitted trajectory.
+
+\subsubsection*{Straight-Line}
+A straight line track ignores the effect of multiple scattering and describes
+the particles path as a straight line. Hit uncertainties are taken into account.
+The $\chi^2$ is defined by the resolution weighted sum of residuals $r_p$ in global coordinates:
+\begin{equation}
+\chi^2 =  \sum_{p=0}^{N} {\frac{r_{p_x}}{\sigma_{p_x}}}^{2} + {\frac{r_{p_y}}{\sigma_{p_y}}}^{2}
+\end{equation}
+
+\subsubsection*{General Broken Lines}
+A General Broken Lines trajectory \cite{Kleinwort:2012np} includes uncertainties from
+both, position measurement and scattering, simultaneously and reconstructs the
+trajectory as a set of lines with kinks at the sensors planes. Scattering in
+the volume between two planes is approximated by thin virtual scattering
+layers close to the detector planes. 
+
+\subsubsection*{Multiplet}
+Multiplets  split the reference systems in two parts: An upstream and downstream, individually fitted with one of the above track models.
+Both tracks are  extrapolated to a user defined `z`-position in between and both, the transverse distance of the tracks ($\bold{d}$ )at the matching position as well as the change in direction (scattering kink) are calculated. The  $\chi^2$ is defined as:
+\begin{equation}
+	\chi^2 = {\chi^2}_{up} + {\chi^2}_{down} + \sqrt{\bold{d}\cdot\bold{d}} 
+\end{equation}

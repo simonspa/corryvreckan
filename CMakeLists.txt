@@ -3,10 +3,13 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.4.3 FATAL_ERROR)
 IF(COMMAND CMAKE_POLICY)
   CMAKE_POLICY(SET CMP0003 NEW) # change linker path search behaviour
   CMAKE_POLICY(SET CMP0048 NEW) # set project version
+  IF(${CMAKE_VERSION} VERSION_GREATER "3.13")
+    CMAKE_POLICY(SET CMP0077 NEW) # allow overwriting options with normal variables
+  ENDIF()
 ENDIF(COMMAND CMAKE_POLICY)
 
 # Set default version
-SET(CORRYVRECKAN_VERSION "v1.0")
+SET(CORRYVRECKAN_VERSION "v2.0")
 
 # Set default build type
 IF(NOT CMAKE_BUILD_TYPE)
@@ -91,7 +94,7 @@ INCLUDE("cmake/corryvreckan.cmake")
 #########################################
 
 # Set standard build flags
-SET(COMPILER_FLAGS -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion -Wuseless-cast -Wctor-dtor-privacy -Wzero-as-null-pointer-constant -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wswitch-default -Wundef -Wshadow -Wformat-security -Wdeprecated -fdiagnostics-color=auto -Wheader-hygiene)
+SET(COMPILER_FLAGS -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion -Wuseless-cast -Wctor-dtor-privacy -Wzero-as-null-pointer-constant -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wswitch-default -Wundef -Wshadow -Wformat-security -Wdeprecated -fdiagnostics-color=auto)
 
 INCLUDE("cmake/compiler-flag-checks.cmake")
 

@@ -54,7 +54,9 @@ Corryvreckan has been developed and is maintained by
 The following authors, in alphabetical order, have contributed to Corryvreckan:
 
 * Matthew Daniel Buckland, University of Liverpool, @mbucklan
+* Carsten Daniel Burgard, DESY, @cburgard
 * Manuel Colocci, CERN, @mcolocci
+* Nicolò Jacazio, CERN, @njacazio
 * Chun Cheng, DESY, @chengc
 * Dominik Dannheim, CERN, @dannheim
 * Katharina Dort, University of Giessen/CERN, @kdort
@@ -63,6 +65,8 @@ The following authors, in alphabetical order, have contributed to Corryvreckan:
 * Daniel Hynds, Nikhef, @dhynds
 * Magnus Mager, CERN, @mmager
 * Andreas Matthias Nürnberg, KIT, @nurnberg
+* Ryunosuke O'Neil, University of Edinburgh, @roneil
+* Klaas Padeken, Bonn, HISKP, @padeken
 * Florian Pitters, HEPHY, @fpipper
 * Tomas Vanat, CERN, @tvanat
 * Jin Zhang, DESY, @jinz

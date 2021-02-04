@@ -5,8 +5,8 @@
 FIND_PACKAGE(Doxygen)
 
 IF(DOXYGEN_FOUND)
-    CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/doc/reference/Doxyfile.in ${CMAKE_BINARY_DIR}/reference/Doxyfile @ONLY)
-    ADD_CUSTOM_TARGET(reference
+    CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/doc/reference/Doxyfile.in ${CMAKE_BINARY_DIR}/reference/Doxyfile @ONLY)
+    ADD_CUSTOM_TARGET(${CMAKE_PROJECT_NAME}-reference
         ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/reference/Doxyfile
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/reference
         COMMENT "Generating API documentation with Doxygen"
@@ -26,8 +26,16 @@ FIND_PACKAGE(LATEX)
 # Only add target if we have LaTeX
 IF(LATEX_COMPILER)
     MESSAGE(STATUS "Found LaTeX compiler.")
+
+    find_program(IMAGEMAGICK NAMES magick convert)
+    IF (NOT IMAGEMAGICK)
+        # stop processing / don't add documentation targets
+        MESSAGE(WARNING "ImageMagick is not found, but is required by UseLATEX.cmake!")
+        RETURN()
+    ENDIF()
+
     SET(LATEX_COMPILER_FLAGS "-shell-escape" "-interaction nonstopmode" "-halt-on-error" "-file-line-error" CACHE STRING "Flags passed to latex.")
-    INCLUDE(${CMAKE_SOURCE_DIR}/cmake/LATEX.cmake)
+    INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LATEX.cmake)
 
     SET(HTLATEX_COMPILER_TEX4HT_FLAGS "usermanual/html/corryvreckan,charset=utf-8" CACHE STRING "Flags passed to Tex4HT" FORCE)
     SET(HTLATEX_COMPILER_TEX4HT_POSTPROCESSOR_FLAGS "-utf8 -cunihtf" CACHE STRING "Flags passed to the postprocessor of Tex4HT" FORCE)
@@ -38,10 +46,10 @@ IF(LATEX_COMPILER)
     )
 
     # Check for pandoc for markdown conversion
-    INCLUDE(${CMAKE_SOURCE_DIR}/cmake/PANDOC.cmake)
+    INCLUDE(${PROJECT_SOURCE_DIR}/cmake/PANDOC.cmake)
     IF(PANDOC_EXECUTABLE)
         # Loop through all modules and fetch their README
-        SET(module_dir ${CMAKE_SOURCE_DIR}/src/modules)
+        SET(module_dir ${PROJECT_SOURCE_DIR}/src/modules)
         FILE(GLOB subdirs RELATIVE ${module_dir} ${module_dir}/*)
         FOREACH(subdir ${subdirs})
             IF(EXISTS ${module_dir}/${subdir}/README.md AND NOT ${subdir} STREQUAL "Dummy")
@@ -65,7 +73,7 @@ IF(LATEX_COMPILER)
 
             ADD_PANDOC_DOCUMENT(
                 ${CMAKE_BINARY_DIR}/usermanual/md/${readme_parent_dir}/${readme_dir_name}.tex
-                SOURCES              ${CMAKE_SOURCE_DIR}/${doc_readme_file}
+                SOURCES              ${PROJECT_SOURCE_DIR}/${doc_readme_file}
                 PRODUCT_DIRECTORY    usermanual/md/${readme_parent_dir}/
                 PANDOC_DIRECTIVES    -t latex --listings --biblatex
                 NO_EXPORT_PRODUCT
@@ -127,7 +135,7 @@ IF(LATEX_COMPILER)
             usermanual/chapters/testing.tex
             usermanual/chapters/tools.tex
             usermanual/config.tex
-
+	    usermanual/chapters/objects.tex
             CONFIGURE
             usermanual/config.tex
             EXCLUDE_FROM_ALL
