@@ -69,6 +69,15 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     // Unfortunbately EUDAQ does not provide appropriate member functions for their configuration class to avoid this dance
     const eudaq::Configuration eu_cfg = cfg;
     eudaq_config_ = std::make_shared<const eudaq::Configuration>(eu_cfg);
+
+    // Shift trigger ID of this device with respect to the IDs stored in the Corryrveckan Event
+    // Note: shift_triggers should have positive integer
+    if(shift_triggers_ < 0) {
+        throw InvalidValueError(
+            config_,
+            "shift_triggers",
+            "Trigger shift needs to be a positive value.");
+        }
 }
 
 void EventLoaderEUDAQ2::initialize() {
