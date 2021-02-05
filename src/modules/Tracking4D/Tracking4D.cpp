@@ -71,7 +71,7 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
     }
 
     // print a warning if beam energy < 1 GeV
-    if(momentum_< Units::get<double>(1, "GeV")){
+    if(momentum_ < Units::get<double>(1, "GeV")) {
         LOG(WARNING) << "Beam energy is less than 1 GeV";
     }
 }
