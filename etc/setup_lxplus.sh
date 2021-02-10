@@ -7,7 +7,7 @@ fi
 ABSOLUTE_PATH=`dirname $(readlink -f ${BASH_SOURCE[0]})`
 
 # Load default configuration
-source $ABSOLUTE_PATH/../.gitlab-ci.d/init_x86_64.sh
+source $ABSOLUTE_PATH/../.gitlab/ci/init_x86_64.sh
 
 # Check if corry executable exists
 if [ -f "$ABSOLUTE_PATH/../bin/corry" ]; then
@@ -17,6 +17,6 @@ if [ -f "$ABSOLUTE_PATH/../bin/corry" ]; then
 else
     echo "Could not find corry executable. Please complete the installation by executing:"
     echo "$ mkdir build && cd build"
-    echo "$ cmake .."
+    echo "$ cmake3 .."
     echo "$ make install -j <number_of_cores>"
 fi
