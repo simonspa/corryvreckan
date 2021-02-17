@@ -79,6 +79,7 @@ if [ -z ${BUILD_TYPE} ]; then
 fi
 
 # General variables
+COMPILER_VERSION="clang8"
 SFTREPO=/cvmfs/sft.cern.ch
 export BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
 
