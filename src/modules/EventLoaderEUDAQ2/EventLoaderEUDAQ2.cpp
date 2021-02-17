@@ -71,13 +71,10 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     eudaq_config_ = std::make_shared<const eudaq::Configuration>(eu_cfg);
 
     // Shift trigger ID of this device with respect to the IDs stored in the Corryrveckan Event
-    // Note: shift_triggers should have positive integer
+    // Note: Require shift_triggers >= 0
     if(shift_triggers_ < 0) {
-        throw InvalidValueError(
-            config_,
-            "shift_triggers",
-            "Trigger shift needs to be a positive value.");
-        }
+        throw InvalidValueError(config_, "shift_triggers", "Trigger shift needs to be a positive (or zero).");
+    }
 }
 
 void EventLoaderEUDAQ2::initialize() {
@@ -304,18 +301,19 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
         }
 
         // Get position of this time frame with respect to the defined event:
-        // Shift trigger ID of this device with respect to the IDs stored in the Corryrveckan Event.
+        // Shift trigger ID of this device with respect to the IDs stored in the Corryrveckan event.
         auto trigger_position = clipboard->getEvent()->getTriggerPosition(trigger_after_shift);
         if(trigger_position == Event::Position::BEFORE) {
             LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " before triggers registered in Corryvreckan event";
-            LOG(DEBUG) << "Shifted Trigger ID " << trigger_after_shift
+            LOG(DEBUG) << "(Shifted) Trigger ID " << trigger_after_shift
                        << " before triggers registered in Corryvreckan event";
         } else if(trigger_position == Event::Position::AFTER) {
             LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " after triggers registered in Corryvreckan event";
-            LOG(DEBUG) << "Shifted Trigger ID " << trigger_after_shift << " after triggers registered in Corryvreckan event";
+            LOG(DEBUG) << "(Shifted) Trigger ID " << trigger_after_shift
+                       << " after triggers registered in Corryvreckan event";
         } else if(trigger_position == Event::Position::UNKNOWN) {
             LOG(DEBUG) << "Trigger ID " << evt->GetTriggerN() << " within Corryvreckan event range but not registered";
-            LOG(DEBUG) << "Shifted Trigger ID " << trigger_after_shift
+            LOG(DEBUG) << "(Shifted) Trigger ID " << trigger_after_shift
                        << " within Corryvreckan event range but not registered";
         } else {
             // Redefine EUDAQ2 event begin and end to trigger timestamp (both were zero):
