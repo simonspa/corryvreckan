@@ -71,7 +71,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     eudaq_config_ = std::make_shared<const eudaq::Configuration>(eu_cfg);
 
     // Shift trigger ID of this device with respect to the IDs stored in the Corryrveckan Event
-    // Note: shift_triggers should have positive integer
+    // Note: Require shift_triggers >= 0
     if(shift_triggers_ < 0) {
         throw InvalidValueError(
             config_,
