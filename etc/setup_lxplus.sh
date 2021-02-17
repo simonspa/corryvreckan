@@ -17,6 +17,6 @@ if [ -f "$ABSOLUTE_PATH/../bin/corry" ]; then
 else
     echo "Could not find corry executable. Please complete the installation by executing:"
     echo "$ mkdir build && cd build"
-    echo "$ cmake .."
+    echo "$ cmake3 .."
     echo "$ make install -j <number_of_cores>"
 fi
