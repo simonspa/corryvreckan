@@ -69,6 +69,11 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
         LOG_ONCE(WARNING) << "Taking volume scattering effects into account is still WIP and causes the GBL to fail - these "
                              "tracks are rejected";
     }
+
+    // print a warning if beam energy < 1 GeV
+    if(momentum_ < Units::get<double>(1, "GeV")) {
+        LOG(WARNING) << "Beam energy is less than 1 GeV";
+    }
 }
 
 void Tracking4D::initialize() {
