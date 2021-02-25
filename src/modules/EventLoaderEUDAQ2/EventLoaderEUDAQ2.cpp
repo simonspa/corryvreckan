@@ -558,8 +558,11 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
         }
 
         // If this event was after the current event or if we have not enough information, stop reading:
-        if(current_position == Event::Position::AFTER || current_position == Event::Position::UNKNOWN) {
+        if(current_position == Event::Position::AFTER) {
             break;
+        } else if(current_position == Event::Position::UNKNOWN) {
+	  event_.reset();  
+	  break;
         }
 
         // Do not fill if current_position == Event::Position::AFTER to avoid double-counting!
