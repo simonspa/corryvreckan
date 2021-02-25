@@ -561,8 +561,8 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
         if(current_position == Event::Position::AFTER) {
             break;
         } else if(current_position == Event::Position::UNKNOWN) {
-	  event_.reset();  
-	  break;
+            event_.reset();
+            break;
         }
 
         // Do not fill if current_position == Event::Position::AFTER to avoid double-counting!
