@@ -382,7 +382,7 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
     } else if(position == Event::Position::AFTER) {
         LOG(DEBUG) << "Event end after Corryvreckan event: " << Units::display(event_end, {"us", "ns"}) << " > "
                    << Units::display(clipboard->getEvent()->end(), {"us", "ns"});
-    } else {
+    } else if(position == Event::Position::DURING) {
         // check if event has valid trigger ID (flag = 0x10):
         if(evt->IsFlagTrigger()) {
             // Store potential trigger numbers, assign to center of event:
