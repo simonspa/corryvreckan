@@ -71,6 +71,23 @@ The following authors, in alphabetical order, have contributed to Corryvreckan:
 * Tomas Vanat, CERN, @tvanat
 * Jin Zhang, DESY, @jinz
 
+## Citations
+The reference paper of Corryvreckan describing the framework and providing an example for a test beam data reconstruction has been published in the *Journal of Instrumentation*.
+The paper is published with open access and can be obtained from here:
+
+https://doi.org/10.1088/1748-0221/16/03/P03008
+
+Please cite this paper when publishing your work using Corryvreckan as:
+
+> D. Dannheim et al., “Corryvreckan: a modular 4D track reconstruction and analysis software for test beam data”, J. Instr. 16 (2021) P03008, doi:10.1088/1748-0221/16/03/P03008, arXiv:2011.12730
+
+A preprint version is available on [arxiv.org](https://arxiv.org/abs/2011.12730).
+
+In addition, the software can be cited using the [versioned Zenodo record](https://doi.org/10.5281/zenodo.4384170) or the current version as:
+
+>  M. Williams, J. Kröger, L. Huth, P. Schütze, S. Spannagel. (2020, December 22). Corryvreckan - A Modular 4D Track Reconstruction and Analysis Software for Test Beam Data
+> (Version 2.0). Zenodo. http://doi.org/10.5281/zenodo.4384186
+
 ## Contributing
 All types of contributions, being it minor and major, are very welcome. Please refer to our [contribution guidelines](CONTRIBUTING.md) for a description on how to get started.
 
