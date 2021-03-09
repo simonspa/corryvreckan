@@ -109,12 +109,12 @@ if [ "$type" != 1 ]; then
     # Change header file
     command="sed ${opt} \
     -e 's/param detectors.*/param detector Pointer to the detector for this module instance/g' \
-    -e 's/std::vector<Detector\*> detectors/Detector\* detector/g' \
+    -e 's/std::vector<std::shared_ptr<Detector>> detectors/std::shared_ptr<Detector> detector/g' \
     $MODDIR/$MODNAME/${MODNAME}.h"
     eval $command
     # Change implementation file
     command="sed ${opt} \
-    -e 's/std::vector<Detector\*> detectors/Detector\* detector/g' \
+    -e 's/std::vector<std::shared_ptr<Detector>> detectors/std::shared_ptr<Detector> detector/g' \
     -e 's/move(detectors)/move\(detector\)/g' \
     $MODDIR/$MODNAME/${MODNAME}.cpp"
     eval $command
