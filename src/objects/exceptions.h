@@ -110,6 +110,20 @@ namespace corryvreckan {
         }
     };
 
+    class InvalidEventError : public ObjectError {
+    public:
+        /**
+         * @brief InvalidEventError
+         * @param source
+         */
+
+        explicit InvalidEventError(const std::type_info& source, const std::string msg = "") {
+            error_message_ += " Event Object ";
+            error_message_ += corryvreckan::demangle((source.name()));
+            error_message_ += " invalid: ";
+            error_message_ += msg;
+        }
+    };
 } // namespace corryvreckan
 
 #endif /* CORRYVRECKAN_OBJECT_EXCEPTIONS_H */

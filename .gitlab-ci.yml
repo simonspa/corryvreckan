@@ -50,6 +50,14 @@ cmp:cc7-gcc:
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
 
+# Ensure that our LXPLUS setup script is functional:
+cmp:lxplus-gcc:
+    extends: .compile
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    before_script:
+        - export COMPILER_TYPE="gcc"
+        - source etc/setup_lxplus.sh
+
 cmp:cc7-docker:
     extends: .compile
     image:

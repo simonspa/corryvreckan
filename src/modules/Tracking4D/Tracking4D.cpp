@@ -69,6 +69,11 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
         LOG_ONCE(WARNING) << "Taking volume scattering effects into account is still WIP and causes the GBL to fail - these "
                              "tracks are rejected";
     }
+
+    // print a warning if beam energy < 1 GeV
+    if(momentum_ < Units::get<double>(1, "GeV")) {
+        LOG(WARNING) << "Beam energy is less than 1 GeV";
+    }
 }
 
 void Tracking4D::initialize() {
@@ -149,10 +154,9 @@ void Tracking4D::initialize() {
         residualsXwidth2_global[detectorID] = new TH1F("GlobalResidualsXwidth2", title.c_str(), 500, -0.1, 0.1);
         title = detectorID + "global  Residual X, cluster column width  3;x-x_{track} [mm];events";
         residualsXwidth3_global[detectorID] = new TH1F("GlobalResidualsXwidth3", title.c_str(), 500, -0.1, 0.1);
-        title = detectorID + "global  Residual Y;y-y_{track} [mm];events";
         title = detectorID + " Pull X;x-x_{track}/resolution;events";
         pullX_global[detectorID] = new TH1F("GlobalpullX", title.c_str(), 500, -5, 5);
-
+        title = detectorID + "global  Residual Y;y-y_{track} [mm];events";
         residualsY_global[detectorID] = new TH1F("GlobalResidualsY", title.c_str(), 500, -0.1, 0.1);
         title = detectorID + "global  Residual Y, cluster row width 1;y-y_{track} [mm];events";
         residualsYwidth1_global[detectorID] = new TH1F("GlobalResidualsYwidth1", title.c_str(), 500, -0.1, 0.1);
