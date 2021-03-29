@@ -23,16 +23,18 @@ Correlations::Correlations(Configuration& config, std::shared_ptr<Detector> dete
 
     config_.setDefault<bool>("do_time_cut", false);
     config_.setDefault<bool>("correlation_vs_time", false);
+    config_.setDefault<double>("time_binning", Units::get<double>(1, "ns"));
 
     if(config_.count({"time_cut_rel", "time_cut_abs"}) == 0) {
         config_.setDefault("time_cut_rel", 3.0);
     }
 
     // timing cut, relative (x * time_resolution) or absolute:
-    timeCut = corryvreckan::calculate_cut<double>("time_cut", config_, m_detector);
+    time_cut_ = corryvreckan::calculate_cut<double>("time_cut", config_, m_detector);
     do_time_cut_ = config_.get<bool>("do_time_cut");
 
-    m_corr_vs_time = config_.get<bool>("correlation_vs_time");
+    corr_vs_time_ = config_.get<bool>("correlation_vs_time");
+    time_binning_ = config_.get<double>("time_binning");
 }
 
 void Correlations::initialize() {
@@ -75,9 +77,10 @@ void Correlations::initialize() {
 
     // time correlation plot range should cover length of events. nanosecond binning.
     title = m_detector->getName() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [ns];events";
-    correlationTime = new TH1F("correlationTime", title.c_str(), static_cast<int>(2. * timeCut), -1 * timeCut, timeCut);
+    correlationTime = new TH1F(
+        "correlationTime", title.c_str(), static_cast<int>(2. * time_cut_ / time_binning_), -1 * time_cut_, time_cut_);
 
-    if(m_corr_vs_time) {
+    if(corr_vs_time_) {
         title = m_detector->getName() + " Correlation X versus time;t [s];x_{ref}-x [mm];events";
         std::string name = "correlationXVsTime";
         correlationXVsTime = new TH2F(name.c_str(), title.c_str(), 600, 0, 3e3, 200, -10., 10.);
@@ -87,8 +90,14 @@ void Correlations::initialize() {
         correlationYVsTime = new TH2F(name.c_str(), title.c_str(), 600, 0, 3e3, 200, -10., 10.);
 
         title = m_detector->getName() + "Reference pixel time stamp - pixel timestamp over time;t [s];t_{ref}-t [ns];events";
-        correlationTimeOverTime_px = new TH2F(
-            "correlationTimeOverTime_px", title.c_str(), 3e3, 0, 3e3, static_cast<int>(2. * timeCut), -1 * timeCut, timeCut);
+        correlationTimeOverTime_px = new TH2F("correlationTimeOverTime_px",
+                                              title.c_str(),
+                                              3e3,
+                                              0,
+                                              3e3,
+                                              static_cast<int>(2. * time_cut_ / time_binning_),
+                                              -1 * time_cut_,
+                                              time_cut_);
 
         title = m_detector->getName() + " Cross-Correlation XY versus time;t [s];x_{ref}-y [mm];events";
         name = "correlationXYVsTime";
@@ -100,8 +109,14 @@ void Correlations::initialize() {
 
         title = m_detector->getName() +
                 "Reference cluster time stamp - cluster time stamp over time;t [s];t_{ref}-t [ns];events";
-        correlationTimeOverTime = new TH2F(
-            "correlationTimeOverTime", title.c_str(), 3e3, 0, 3e3, static_cast<int>(2. * timeCut), -1 * timeCut, timeCut);
+        correlationTimeOverTime = new TH2F("correlationTimeOverTime",
+                                           title.c_str(),
+                                           3e3,
+                                           0,
+                                           3e3,
+                                           static_cast<int>(2. * time_cut_ / time_binning_),
+                                           -1 * time_cut_,
+                                           time_cut_);
         title = m_detector->getName() + "Reference cluster time stamp - cluster time stamp over seed pixel raw value;seed "
                                         "pixel raw value [lsb];t_{ref}-t [ns];events";
         correlationTimeOverSeedPixelRawValue = new TH2F("correlationTimeOverSeedPixelRawValue",
@@ -109,14 +124,14 @@ void Correlations::initialize() {
                                                         32,
                                                         0,
                                                         32,
-                                                        static_cast<int>(2. * timeCut),
-                                                        -1 * timeCut,
-                                                        timeCut);
+                                                        static_cast<int>(2. * time_cut_ / time_binning_),
+                                                        -1 * time_cut_,
+                                                        time_cut_);
     }
 
     title = m_detector->getName() + "Reference pixel time stamp - pixel time stamp;t_{ref}-t [ns];events";
-    correlationTime_px =
-        new TH1F("correlationTime_px", title.c_str(), static_cast<int>(2. * timeCut), -1 * timeCut, timeCut);
+    correlationTime_px = new TH1F(
+        "correlationTime_px", title.c_str(), static_cast<int>(2. * time_cut_ / time_binning_), -1 * time_cut_, time_cut_);
     title = m_detector->getName() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [1/40MHz];events";
     correlationTimeInt = new TH1F("correlationTimeInt", title.c_str(), 8000, -40000.5, 39999.5);
 
@@ -193,9 +208,9 @@ void Correlations::initialize() {
                                                    32,
                                                    0,
                                                    32,
-                                                   static_cast<int>(2. * timeCut),
-                                                   -1 * timeCut,
-                                                   timeCut);
+                                                   static_cast<int>(2. * time_cut_ / time_binning_),
+                                                   -1 * time_cut_,
+                                                   time_cut_);
 
     // Timing plots
     title = m_detector->getName() + ": event time;t [s];events";
@@ -233,7 +248,7 @@ StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             double timeDiff = refPixel->timestamp() - pixel->timestamp();
             correlationTime_px->Fill(static_cast<double>(Units::convert(timeDiff, "ns")));
-            if(m_corr_vs_time) {
+            if(corr_vs_time_) {
                 correlationTimeOverTime_px->Fill(static_cast<double>(Units::convert(pixel->timestamp(), "s")), timeDiff);
                 correlationTimeOverPixelRawValue_px->Fill(pixel->raw(), timeDiff);
             }
@@ -256,7 +271,7 @@ StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
             long long int timeDifferenceInt = static_cast<long long int>(timeDifference / 25);
 
             // Correlation plots
-            if(abs(timeDifference) < timeCut || !do_time_cut_) {
+            if(abs(timeDifference) < time_cut_ || !do_time_cut_) {
                 correlationX->Fill(refCluster->global().x() - cluster->global().x());
                 correlationX2D->Fill(cluster->global().x(), refCluster->global().x());
                 correlationX2Dlocal->Fill(cluster->column(), refCluster->column());
@@ -276,8 +291,8 @@ StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
                        << ", Time ref. cluster: " << Units::display(refCluster->timestamp(), {"ns", "us"})
                        << ", Time cluster: " << Units::display(cluster->timestamp(), {"ns", "us"});
 
-            if(m_corr_vs_time) {
-                if(abs(timeDifference) < timeCut || !do_time_cut_) {
+            if(corr_vs_time_) {
+                if(abs(timeDifference) < time_cut_ || !do_time_cut_) {
                     correlationXVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
                                              refCluster->global().x() - cluster->global().x());
                     correlationYVsTime->Fill(static_cast<double>(Units::convert(cluster->timestamp(), "s")),
