@@ -42,13 +42,13 @@ void AnalysisTelescope::initialize() {
             title = detector->getName() + " Telescope resolution Y;y_{track}-y_{MC} [mm];events";
             telescopeResolutionY[detector->getName()] = new TH1F("telescopeResolutionY", title.c_str(), 600, -0.2, 0.2);
         } else {
-            std::string title = detector->getName() + " Biased residual X (local);x_{track}-x_{cluster} [mm];events";
+            std::string title = detector->getName() + " Biased residual X (local);x_{track}-x_{seed} [mm];events";
             telescopeResidualsLocalX[detector->getName()] = new TH1F("residualX_local", title.c_str(), 400, -0.2, 0.2);
-            title = detector->getName() + " Biased residual Y (local);y_{track}-y_{cluster} [mm];events";
+            title = detector->getName() + " Biased residual Y (local);y_{track}-y_{seed} [mm];events";
             telescopeResidualsLocalY[detector->getName()] = new TH1F("residualY_local", title.c_str(), 400, -0.2, 0.2);
-            title = detector->getName() + " Biased residual X (global);x_{track}-x_{cluster} [mm];events";
+            title = detector->getName() + " Biased residual X (global);x_{track}-x_{seed} [mm];events";
             telescopeResidualsX[detector->getName()] = new TH1F("residualX_global", title.c_str(), 400, -0.2, 0.2);
-            title = detector->getName() + " Biased residual Y (global);y_{track}-y_{cluster} [mm];events";
+            title = detector->getName() + " Biased residual Y (global);y_{track}-y_{seed} [mm];events";
             telescopeResidualsY[detector->getName()] = new TH1F("residualY_global", title.c_str(), 400, -0.2, 0.2);
 
             title = detector->getName() + " Biased MC residual X (local);x_{track}-x_{MC} [mm];events";
@@ -60,31 +60,44 @@ void AnalysisTelescope::initialize() {
             title = detector->getName() + " Biased MC residual Y (global);y_{track}-y_{MC} [mm];events";
             telescopeMCresidualsY[detector->getName()] = new TH1F("residualY_MC_global", title.c_str(), 400, -0.2, 0.2);
 
-            title =
-                detector->getName() +
-                " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels w/o seed); pixel charge [e];events";
-            pxTimeMinusClsTime[detector->getName()] =
-                new TH1F("pxTimeMinusClsTime", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625);
-            title =
-                detector->getName() +
-                " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels w/o seed); pixel charge [e];events";
-            pxTimeMinusClsTime_vs_pxCharge[detector->getName()] = new TH2F(
-                "pxTimeMinusClsTime_vs_pxCharge", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625, 256, -0.5, 255.5);
-            title =
-                detector->getName() +
-                " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels w/o seed); pixel charge [e];events";
-            pxTimeMinusClsTime_vs_pxCharge_2px[detector->getName()] = new TH2F(
-                "pxTimeMinusClsTime_vs_pxCharge_2px", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625, 256, -0.5, 255.5);
-            title =
-                detector->getName() +
-                " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels w/o seed); pixel charge [e];events";
-            pxTimeMinusClsTime_vs_pxCharge_3px[detector->getName()] = new TH2F(
-                "pxTimeMinusClsTime_vs_pxCharge_3px", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625, 256, -0.5, 255.5);
-            title =
-                detector->getName() +
-                " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels w/o seed); pixel charge [e];events";
-            pxTimeMinusClsTime_vs_pxCharge_4px[detector->getName()] = new TH2F(
-                "pxTimeMinusClsTime_vs_pxCharge_4px", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625, 256, -0.5, 255.5);
+            title = detector->getName() +
+                    " pixel - seed timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [e];events";
+            pxTimeMinusSeedTime[detector->getName()] =
+                new TH1F("pxTimeMinusSeedTime", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625);
+            title = detector->getName() +
+                    " pixel - seed timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [e];events";
+            pxTimeMinusSeedTime_vs_pxCharge[detector->getName()] = new TH2F(
+                "pxTimeMinusSeedTime_vs_pxCharge", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625, 256, -0.5, 255.5);
+            title = detector->getName() +
+                    " pixel - seed timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [e];events";
+            pxTimeMinusSeedTime_vs_pxCharge_2px[detector->getName()] = new TH2F("pxTimeMinusSeedTime_vs_pxCharge_2px",
+                                                                                title.c_str(),
+                                                                                1000,
+                                                                                -99.5 * 1.5625,
+                                                                                900.5 * 1.5625,
+                                                                                256,
+                                                                                -0.5,
+                                                                                255.5);
+            title = detector->getName() +
+                    " pixel - seed timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [e];events";
+            pxTimeMinusSeedTime_vs_pxCharge_3px[detector->getName()] = new TH2F("pxTimeMinusSeedTime_vs_pxCharge_3px",
+                                                                                title.c_str(),
+                                                                                1000,
+                                                                                -99.5 * 1.5625,
+                                                                                900.5 * 1.5625,
+                                                                                256,
+                                                                                -0.5,
+                                                                                255.5);
+            title = detector->getName() +
+                    " pixel - seed timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [e];events";
+            pxTimeMinusSeedTime_vs_pxCharge_4px[detector->getName()] = new TH2F("pxTimeMinusSeedTime_vs_pxCharge_4px",
+                                                                                title.c_str(),
+                                                                                1000,
+                                                                                -99.5 * 1.5625,
+                                                                                900.5 * 1.5625,
+                                                                                256,
+                                                                                -0.5,
+                                                                                255.5);
         }
 
         directory->cd();
@@ -143,18 +156,18 @@ StatusCode AnalysisTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
                     if(px == cluster->getSeedPixel()) {
                         continue; // don't fill this histogram for seed pixel!
                     }
-                    pxTimeMinusClsTime[name]->Fill(
+                    pxTimeMinusSeedTime[name]->Fill(
                         static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")));
-                    pxTimeMinusClsTime_vs_pxCharge[name]->Fill(
+                    pxTimeMinusSeedTime_vs_pxCharge[name]->Fill(
                         static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")), px->charge());
                     if(cluster->size() == 2) {
-                        pxTimeMinusClsTime_vs_pxCharge_2px[name]->Fill(
+                        pxTimeMinusSeedTime_vs_pxCharge_2px[name]->Fill(
                             static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")), px->charge());
                     } else if(cluster->size() == 3) {
-                        pxTimeMinusClsTime_vs_pxCharge_3px[name]->Fill(
+                        pxTimeMinusSeedTime_vs_pxCharge_3px[name]->Fill(
                             static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")), px->charge());
                     } else if(cluster->size() == 4) {
-                        pxTimeMinusClsTime_vs_pxCharge_4px[name]->Fill(
+                        pxTimeMinusSeedTime_vs_pxCharge_4px[name]->Fill(
                             static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")), px->charge());
                     }
                 }

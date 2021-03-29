@@ -49,11 +49,11 @@ namespace corryvreckan {
         std::map<std::string, TH1F*> telescopeResolutionX;
         std::map<std::string, TH1F*> telescopeResolutionY;
 
-        std::map<std::string, TH1F*> pxTimeMinusClsTime;
-        std::map<std::string, TH2F*> pxTimeMinusClsTime_vs_pxCharge;
-        std::map<std::string, TH2F*> pxTimeMinusClsTime_vs_pxCharge_2px;
-        std::map<std::string, TH2F*> pxTimeMinusClsTime_vs_pxCharge_3px;
-        std::map<std::string, TH2F*> pxTimeMinusClsTime_vs_pxCharge_4px;
+        std::map<std::string, TH1F*> pxTimeMinusSeedTime;
+        std::map<std::string, TH2F*> pxTimeMinusSeedTime_vs_pxCharge;
+        std::map<std::string, TH2F*> pxTimeMinusSeedTime_vs_pxCharge_2px;
+        std::map<std::string, TH2F*> pxTimeMinusSeedTime_vs_pxCharge_3px;
+        std::map<std::string, TH2F*> pxTimeMinusSeedTime_vs_pxCharge_4px;
 
         // Parameters
         double chi2ndofCut;
