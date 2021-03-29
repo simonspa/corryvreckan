@@ -13,6 +13,7 @@ No plots are produced for `aux` devices.
 * `time_cut_rel`: Number of standard deviations the `time_resolution` of the detector plane will be multiplied by. This value is then used as the maximum time difference for cluster correlation if `do_time_cut = true`. A relative time cut is applied by default when `do_time_cut = true`. Absolute and relative time cuts are mutually exclusive. Defaults to `3.0`.
 * `time_cut_abs`: Specifies an absolute value for the maximum time difference allowed for cluster correlation if `do_time_cut = true`. Absolute and relative time cuts are mutually exclusive. No default value.
 * `correlation_vs_time`: Enable plotting of spatial and time correlation as a function of time. Default value is `false` because of the time required to fill the histogram with many bins.
+* `time_binning`: Specifies the binning of the time correlations plots. Defaults to `1ns`.
 
 ### Plots produced
 For each device the following plots are produced:

@@ -69,9 +69,10 @@ namespace corryvreckan {
         TH2F* correlationYXVsTime;
 
         // Parameters which can be set by user
-        double timeCut;
+        double time_cut_;
         bool do_time_cut_;
-        bool m_corr_vs_time;
+        bool corr_vs_time_;
+        double time_binning_;
     };
 } // namespace corryvreckan
 #endif // CORRELATIONS_H
