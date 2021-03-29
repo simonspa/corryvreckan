@@ -53,6 +53,12 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     // Unfortunately, EUDAQ does not provide appropriate member functions for their configuration class to avoid this dance
     const eudaq::Configuration eu_cfg = cfg;
     eudaq_config_ = std::make_shared<const eudaq::Configuration>(eu_cfg);
+
+    // Shift trigger ID of this device with respect to the IDs stored in the Corryrveckan Event
+    // Note: Require shift_triggers >= 0
+    if(shift_triggers_ < 0) {
+        throw InvalidValueError(config_, "shift_triggers", "Trigger shift needs to be positive (or zero).");
+    }
 }
 
 void EventDefinitionM26::initialize() {
@@ -150,12 +156,13 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
     }
     // read events until we have a common tag:
     try {
-        triggerTLU_ = static_cast<unsigned>(
-            static_cast<int>(get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_)) +
-            shift_triggers_);
+        triggerTLU_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_);
+        ;
         timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
         trig_prev_ = time_trig_start_;
-        triggerM26_ = get_next_event_with_det(readerDuration_, "mimosa26", time_before_, time_after_);
+        triggerM26_ = static_cast<unsigned>(
+            static_cast<int>(get_next_event_with_det(readerDuration_, "mimosa26", time_before_, time_after_)) +
+            shift_triggers_);
     } catch(EndOfFile&) {
         return StatusCode::EndRun;
     }
@@ -164,14 +171,14 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
         try {
             if(triggerTLU_ < triggerM26_) {
                 LOG(DEBUG) << "TLU trigger smaller than Mimosa26 trigger, get next TLU trigger";
-                triggerTLU_ = static_cast<unsigned>(static_cast<int>(get_next_event_with_det(
-                                                        readerTime_, detector_time_, time_trig_start_, time_trig_stop_)) +
-                                                    shift_triggers_);
+                triggerTLU_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_);
                 timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
                 trig_prev_ = time_trig_start_;
             } else if(triggerTLU_ > triggerM26_) {
                 LOG(DEBUG) << "Mimosa26 trigger smaller than TLU trigger, get next Mimosa26 trigger";
-                triggerM26_ = get_next_event_with_det(readerDuration_, "mimosa26", time_before_, time_after_);
+                triggerM26_ = static_cast<unsigned>(
+                    static_cast<int>(get_next_event_with_det(readerDuration_, "mimosa26", time_before_, time_after_)) +
+                    shift_triggers_);
             }
 
         } catch(EndOfFile&) {
