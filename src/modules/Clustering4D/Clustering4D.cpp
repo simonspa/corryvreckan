@@ -84,9 +84,24 @@ void Clustering4D::initialize() {
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
     title = m_detector->getName() + " Cluster multiplicity;clusters;events";
     clusterMultiplicity = new TH1F("clusterMultiplicity", title.c_str(), 50, -0.5, 49.5);
+    title = m_detector->getName() + " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels w/o seed);events";
+    pxTimeMinusClsTime = new TH1F("pxTimeMinusClsTime", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625);
     title = m_detector->getName() +
-            " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels from cluster (if clusterSize>1));events";
-    pixelTimeMinusClusterTime = new TH1F("pixelTimeMinusClusterTime", title.c_str(), 1000, -0.5, 999.5);
+            " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels w/o seed); pixel charge [e];events";
+    pxTimeMinusClsTime_vs_pxCharge =
+        new TH2F("pxTimeMinusClsTime_vs_pxCharge", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625, 256, -0.5, 255.5);
+    title = m_detector->getName() +
+            " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels w/o seed); pixel charge [e];events";
+    pxTimeMinusClsTime_vs_pxCharge_2px = new TH2F(
+        "pxTimeMinusClsTime_vs_pxCharge_2px", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625, 256, -0.5, 255.5);
+    title = m_detector->getName() +
+            " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels w/o seed); pixel charge [e];events";
+    pxTimeMinusClsTime_vs_pxCharge_3px = new TH2F(
+        "pxTimeMinusClsTime_vs_pxCharge_3px", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625, 256, -0.5, 255.5);
+    title = m_detector->getName() +
+            " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels w/o seed); pixel charge [e];events";
+    pxTimeMinusClsTime_vs_pxCharge_4px = new TH2F(
+        "pxTimeMinusClsTime_vs_pxCharge_4px", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625, 256, -0.5, 255.5);
 
     // Get resolution in time of detector and calculate time cut to be applied
     LOG(DEBUG) << "Time cut to be applied for " << m_detector->getName() << " is "
@@ -193,8 +208,22 @@ StatusCode Clustering4D::run(const std::shared_ptr<Clipboard>& clipboard) {
         // to check that cluster timestamp = earliest pixel timestamp
         if(cluster->size() > 1) {
             for(auto& px : cluster->pixels()) {
-                pixelTimeMinusClusterTime->Fill(
-                    static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")));
+                if(px == cluster->getSeedPixel()) {
+                    continue; // don't fill this histogram for seed pixel!
+                }
+                pxTimeMinusClsTime->Fill(static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")));
+                pxTimeMinusClsTime_vs_pxCharge->Fill(
+                    static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")), px->charge());
+                if(cluster->size() == 2) {
+                    pxTimeMinusClsTime_vs_pxCharge_2px->Fill(
+                        static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")), px->charge());
+                } else if(cluster->size() == 3) {
+                    pxTimeMinusClsTime_vs_pxCharge_3px->Fill(
+                        static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")), px->charge());
+                } else if(cluster->size() == 4) {
+                    pxTimeMinusClsTime_vs_pxCharge_4px->Fill(
+                        static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")), px->charge());
+                }
             }
         }
 
