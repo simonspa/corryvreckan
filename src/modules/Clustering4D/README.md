@@ -31,7 +31,7 @@ For each detector the following plots are produced:
 * 2D cluster positions in global coordinates
 * Cluster times
 * Cluster multiplicity
-* Histogram with time difference of pixel time and cluster time for all pixels in a cluster
+* Time difference between seed pixel and other pixels in a cluster for different cluster sizes and vs. the pixel charge
 
 ### Usage
 ```toml
