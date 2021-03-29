@@ -183,7 +183,14 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
 
         if(triggerTLU_ == triggerM26_) {
             auto time_trig = time_trig_start_;
+
             if(time_trig - time_prev_ > 0) {
+                // M26 frames need to have a distance of at least one frame length!
+                if(time_trig - time_prev_ < 115000) {
+                    throw ModuleError("M26 triggers too close together to fit M26 frame, dt = " +
+                                      Units::display(time_trig - time_prev_, "us"));
+                }
+
                 timebetweenMimosaEvents_->Fill(static_cast<double>(Units::convert(time_trig - time_prev_, "us")));
                 timeBeforeTrigger_->Fill(static_cast<double>(Units::convert(-1.0 * time_before_, "us")));
                 timeAfterTrigger_->Fill(static_cast<double>(Units::convert(time_after_, "us")));
