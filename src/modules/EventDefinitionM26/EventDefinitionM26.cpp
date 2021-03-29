@@ -194,8 +194,10 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
             if(time_trig - time_prev_ > 0) {
                 // M26 frames need to have a distance of at least one frame length!
                 if(time_trig - time_prev_ < 115000) {
-                    throw ModuleError("M26 triggers too close together to fit M26 frame, dt = " +
-                                      Units::display(time_trig - time_prev_, "us"));
+                    LOG(ERROR) << "M26 triggers too close together to fit M26 frame, dt = " +
+                                      Units::display(time_trig - time_prev_, "us")
+                               << std::endl
+                               << "Check if a shift of trigger IDs is required.";
                 }
 
                 timebetweenMimosaEvents_->Fill(static_cast<double>(Units::convert(time_trig - time_prev_, "us")));
