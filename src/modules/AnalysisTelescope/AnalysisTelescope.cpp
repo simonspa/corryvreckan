@@ -59,6 +59,32 @@ void AnalysisTelescope::initialize() {
             telescopeMCresidualsX[detector->getName()] = new TH1F("residualX_MC_global", title.c_str(), 400, -0.2, 0.2);
             title = detector->getName() + " Biased MC residual Y (global);y_{track}-y_{MC} [mm];events";
             telescopeMCresidualsY[detector->getName()] = new TH1F("residualY_MC_global", title.c_str(), 400, -0.2, 0.2);
+
+            title =
+                detector->getName() +
+                " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels w/o seed); pixel charge [e];events";
+            pxTimeMinusClsTime[detector->getName()] =
+                new TH1F("pxTimeMinusClsTime", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625);
+            title =
+                detector->getName() +
+                " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels w/o seed); pixel charge [e];events";
+            pxTimeMinusClsTime_vs_pxCharge[detector->getName()] = new TH2F(
+                "pxTimeMinusClsTime_vs_pxCharge", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625, 256, -0.5, 255.5);
+            title =
+                detector->getName() +
+                " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels w/o seed); pixel charge [e];events";
+            pxTimeMinusClsTime_vs_pxCharge_2px[detector->getName()] = new TH2F(
+                "pxTimeMinusClsTime_vs_pxCharge_2px", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625, 256, -0.5, 255.5);
+            title =
+                detector->getName() +
+                " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels w/o seed); pixel charge [e];events";
+            pxTimeMinusClsTime_vs_pxCharge_3px[detector->getName()] = new TH2F(
+                "pxTimeMinusClsTime_vs_pxCharge_3px", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625, 256, -0.5, 255.5);
+            title =
+                detector->getName() +
+                " pixel - cluster timestamp;ts_{pixel} - ts_{cluster} [ns] (all pixels w/o seed); pixel charge [e];events";
+            pxTimeMinusClsTime_vs_pxCharge_4px[detector->getName()] = new TH2F(
+                "pxTimeMinusClsTime_vs_pxCharge_4px", title.c_str(), 1000, -99.5 * 1.5625, 900.5 * 1.5625, 256, -0.5, 255.5);
         }
 
         directory->cd();
@@ -111,6 +137,28 @@ StatusCode AnalysisTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
             telescopeResidualsLocalY[name]->Fill(cluster->local().y() - interceptLocal.Y());
             telescopeResidualsX[name]->Fill(cluster->global().x() - intercept.X());
             telescopeResidualsY[name]->Fill(cluster->global().y() - intercept.Y());
+
+            if(cluster->size() > 1) {
+                for(auto& px : cluster->pixels()) {
+                    if(px == cluster->getSeedPixel()) {
+                        continue; // don't fill this histogram for seed pixel!
+                    }
+                    pxTimeMinusClsTime[name]->Fill(
+                        static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")));
+                    pxTimeMinusClsTime_vs_pxCharge[name]->Fill(
+                        static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")), px->charge());
+                    if(cluster->size() == 2) {
+                        pxTimeMinusClsTime_vs_pxCharge_2px[name]->Fill(
+                            static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")), px->charge());
+                    } else if(cluster->size() == 3) {
+                        pxTimeMinusClsTime_vs_pxCharge_3px[name]->Fill(
+                            static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")), px->charge());
+                    } else if(cluster->size() == 4) {
+                        pxTimeMinusClsTime_vs_pxCharge_4px[name]->Fill(
+                            static_cast<double>(Units::convert(px->timestamp() - cluster->timestamp(), "ns")), px->charge());
+                    }
+                }
+            }
 
             // Get the MC particles from the clipboard
             auto mcParticles = clipboard->getData<MCParticle>(name);
