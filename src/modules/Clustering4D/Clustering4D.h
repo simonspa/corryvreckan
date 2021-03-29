@@ -52,11 +52,11 @@ namespace corryvreckan {
         TH2F* clusterPositionLocal;
         TH1F* clusterTimes;
         TH1F* clusterMultiplicity;
-        TH1F* pxTimeMinusClsTime;
-        TH2F* pxTimeMinusClsTime_vs_pxCharge;
-        TH2F* pxTimeMinusClsTime_vs_pxCharge_2px;
-        TH2F* pxTimeMinusClsTime_vs_pxCharge_3px;
-        TH2F* pxTimeMinusClsTime_vs_pxCharge_4px;
+        TH1F* pxTimeMinusSeedTime;
+        TH2F* pxTimeMinusSeedTime_vs_pxCharge;
+        TH2F* pxTimeMinusSeedTime_vs_pxCharge_2px;
+        TH2F* pxTimeMinusSeedTime_vs_pxCharge_3px;
+        TH2F* pxTimeMinusSeedTime_vs_pxCharge_4px;
 
         double time_cut_;
         int neighbor_radius_row_;
