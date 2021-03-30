@@ -37,7 +37,7 @@ namespace corryvreckan {
         std::shared_ptr<Detector> m_detector;
 
         // Histograms
-        TH2F *hClusterMapAssoc, *hHitMapAssoc, *hHitMapROI;
+        TH2F *hClusterMapAssoc, *hHitMapAssoc;
         TProfile2D *hClusterSizeMapAssoc, *hClusterChargeMapAssoc;
 
         TH1F* hPixelRawValueAssoc;

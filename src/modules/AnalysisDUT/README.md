@@ -19,7 +19,7 @@ For the DUT, the following plots are produced:
 
 * 2D histograms:
     * Maps of the position, size, and charge/raw value of associated clusters
-    * Maps of all pixels of associated clusters and those within the region-of-interest
+    * Maps of all pixels of associated clusters
     * Maps of the in-pixel efficiencies in local/global coordinates
     * Maps of matched/non-matched track positions
 * 1D histograms:
