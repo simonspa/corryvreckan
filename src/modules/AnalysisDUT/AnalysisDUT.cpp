@@ -66,25 +66,29 @@ void AnalysisDUT::initialize() {
                              m_detector->displacement().z() + 10);
     // Per-pixel histograms
     hHitMapAssoc = new TH2F("hitMapAssoc",
-                            "Hit map of associated clusters; hit column; hit row",
+                            "Hit map of pixels from associated clusters; hit column; hit row",
                             m_detector->nPixels().X(),
                             -0.5,
                             m_detector->nPixels().X() - 0.5,
                             m_detector->nPixels().Y(),
                             -0.5,
                             m_detector->nPixels().Y() - 0.5);
-    hHitMapROI = new TH2F("hitMapROI",
-                          "Map of hits within the region-of-interest; hit column; hit row",
-                          m_detector->nPixels().X(),
-                          -0.5,
-                          m_detector->nPixels().X() - 0.5,
-                          m_detector->nPixels().Y(),
-                          -0.5,
-                          m_detector->nPixels().Y() - 0.5);
-    hPixelRawValueAssoc = new TH1F(
-        "pixelRawValueAssoc", "Charge distribution of associated pixels;pixel raw value;#entries", 1024, -0.5, 1023.5);
+    hHitMapBeforeROI =
+        new TH2F("hitMapROI",
+                 "Hit map of pixels from associated clusters before applying the region-of-interest; hit column; hit row",
+                 m_detector->nPixels().X(),
+                 -0.5,
+                 m_detector->nPixels().X() - 0.5,
+                 m_detector->nPixels().Y(),
+                 -0.5,
+                 m_detector->nPixels().Y() - 0.5);
+    hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc",
+                                   "Charge distribution of pixels from associated clusters;pixel raw value;#entries",
+                                   1024,
+                                   -0.5,
+                                   1023.5);
     hPixelRawValueMapAssoc = new TProfile2D("pixelRawValueMapAssoc",
-                                            "Charge map of associated pixels;pixel raw values;# entries",
+                                            "Charge map of pixels from associated clusters;pixel raw values;# entries",
                                             m_detector->nPixels().X(),
                                             -0.5,
                                             m_detector->nPixels().X() - 0.5,
