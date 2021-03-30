@@ -12,6 +12,7 @@
 #define AnalysisTelescope_H 1
 
 #include <TH1F.h>
+#include <TH2F.h>
 #include <iostream>
 #include "core/module/Module.hpp"
 #include "objects/MCParticle.hpp"
@@ -47,6 +48,12 @@ namespace corryvreckan {
         // Histograms at the position of the DUT
         std::map<std::string, TH1F*> telescopeResolutionX;
         std::map<std::string, TH1F*> telescopeResolutionY;
+
+        std::map<std::string, TH1F*> pxTimeMinusSeedTime;
+        std::map<std::string, TH2F*> pxTimeMinusSeedTime_vs_pxCharge;
+        std::map<std::string, TH2F*> pxTimeMinusSeedTime_vs_pxCharge_2px;
+        std::map<std::string, TH2F*> pxTimeMinusSeedTime_vs_pxCharge_3px;
+        std::map<std::string, TH2F*> pxTimeMinusSeedTime_vs_pxCharge_4px;
 
         // Parameters
         double chi2ndofCut;

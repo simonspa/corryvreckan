@@ -19,8 +19,9 @@ For the DUT, the following plots are produced:
 
 For each detector participating in tracking, the following plots are produced:
 
-* Biased local and global track residuals, in X and Y;
-* Local and global residuals with track and Monte Carlo particle, in X and Y;
+* Biased local and global track residuals, in X and Y
+* Local and global residuals with track and Monte Carlo particle, in X and Y
+* Time difference between seed pixel and other pixels in a cluster for different cluster sizes and vs. the pixel charge
 
 ### Usage
 ```toml
