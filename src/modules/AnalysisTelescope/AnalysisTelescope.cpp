@@ -42,13 +42,13 @@ void AnalysisTelescope::initialize() {
             title = detector->getName() + " Telescope resolution Y;y_{track}-y_{MC} [mm];events";
             telescopeResolutionY[detector->getName()] = new TH1F("telescopeResolutionY", title.c_str(), 600, -0.2, 0.2);
         } else {
-            std::string title = detector->getName() + " Biased residual X (local);x_{track}-x_{seed} [mm];events";
+            std::string title = detector->getName() + " Biased residual X (local);x_{track}-x_{cluster} [mm];events";
             telescopeResidualsLocalX[detector->getName()] = new TH1F("residualX_local", title.c_str(), 400, -0.2, 0.2);
-            title = detector->getName() + " Biased residual Y (local);y_{track}-y_{seed} [mm];events";
+            title = detector->getName() + " Biased residual Y (local);y_{track}-y_{cluster} [mm];events";
             telescopeResidualsLocalY[detector->getName()] = new TH1F("residualY_local", title.c_str(), 400, -0.2, 0.2);
-            title = detector->getName() + " Biased residual X (global);x_{track}-x_{seed} [mm];events";
+            title = detector->getName() + " Biased residual X (global);x_{track}-x_{cluster} [mm];events";
             telescopeResidualsX[detector->getName()] = new TH1F("residualX_global", title.c_str(), 400, -0.2, 0.2);
-            title = detector->getName() + " Biased residual Y (global);y_{track}-y_{seed} [mm];events";
+            title = detector->getName() + " Biased residual Y (global);y_{track}-y_{cluster} [mm];events";
             telescopeResidualsY[detector->getName()] = new TH1F("residualY_global", title.c_str(), 400, -0.2, 0.2);
 
             title = detector->getName() + " Biased MC residual X (local);x_{track}-x_{MC} [mm];events";
