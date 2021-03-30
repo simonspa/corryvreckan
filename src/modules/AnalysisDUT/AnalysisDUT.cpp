@@ -73,15 +73,6 @@ void AnalysisDUT::initialize() {
                             m_detector->nPixels().Y(),
                             -0.5,
                             m_detector->nPixels().Y() - 0.5);
-    hHitMapBeforeROI =
-        new TH2F("hitMapROI",
-                 "Hit map of pixels from associated clusters before applying the region-of-interest; hit column; hit row",
-                 m_detector->nPixels().X(),
-                 -0.5,
-                 m_detector->nPixels().X() - 0.5,
-                 m_detector->nPixels().Y(),
-                 -0.5,
-                 m_detector->nPixels().Y() - 0.5);
     hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc",
                                    "Charge distribution of pixels from associated clusters;pixel raw value;#entries",
                                    1024,
