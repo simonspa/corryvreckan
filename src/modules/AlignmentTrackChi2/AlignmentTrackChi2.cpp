@@ -95,6 +95,8 @@ StatusCode AlignmentTrackChi2::run(const std::shared_ptr<Clipboard>& clipboard) 
 // it would do nothing!
 void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, Double_t* par, Int_t) {
 
+    static size_t fitIterations = 0;
+    static string detName = "";
     LOG(DEBUG) << AlignmentTrackChi2::globalDetector->displacement() << "' " << globalDetector->rotation();
     // Pick up new alignment conditions
     AlignmentTrackChi2::globalDetector->displacement(
@@ -132,7 +134,11 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
                              AlignmentTrackChi2::globalDetector->materialBudget(),
                              AlignmentTrackChi2::globalDetector->toLocal());
         LOG(DEBUG) << "Updated transformations for detector " << AlignmentTrackChi2::globalDetector->getName();
-
+	if(detName != AlignmentTrackChi2::globalDetector->getName()){
+	  detName = AlignmentTrackChi2::globalDetector->getName();
+	  fitIterations = 0;
+	}
+	  
         track->fit();
 
         // Add the new chi2
@@ -148,10 +154,10 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
     for(auto& result_future : result_futures) {
         result += result_future.get();
         LOG_PROGRESS(INFO, "t") << "Re-fitting tracks: " << tracks_done << " of " << result_futures.size() << ", "
-                                << (100 * tracks_done / result_futures.size()) << "%";
+                                << (100 * tracks_done / result_futures.size()) << " %,  in MINUIT  iteration: "<< fitIterations;
         tracks_done++;
     }
-
+    fitIterations++;
     AlignmentTrackChi2::thread_pool->wait();
 }
 
