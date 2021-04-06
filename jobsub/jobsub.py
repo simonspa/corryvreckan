@@ -98,13 +98,13 @@ def loadparamsfromcsv(csvfilename, runs):
         def rewind(self):
             self.f.seek(0)
             self.linecount = 0
-        def next(self):
-            line = next(self.f)
+        def __next__(self):
+            line = self.f.__next__()
             self.linecount += 1
-            while line.startswith(bytes(self.commentstring, encoding='utf-8')) or not line.strip(): # test if line commented or empty
-                line = next(self.f)
+            while line.startswith(self.commentstring) or not line.strip(): # test if line commented or empty
+                line = self.f.__next__()
                 self.linecount += 1
-            return line
+            return str(line)
         def __iter__(self):
             return self
 
@@ -117,7 +117,7 @@ def loadparamsfromcsv(csvfilename, runs):
         exit(1)
     try:
         log.debug("Opening csv file '"+csvfilename+"'.")
-        csvfile = open(csvfilename, 'rb')
+        csvfile = open(csvfilename, 'rt')
         filteredfile = CommentedFile(csvfile)
 
         try:
@@ -125,19 +125,16 @@ def loadparamsfromcsv(csvfilename, runs):
             sample = ""
             try:
                 while (len(sample)<1024):
-                    sample += str(next(filteredfile))
+                    sample += filteredfile.__next__()
             except StopIteration:
                 log.debug("End of csv file reached, sample limited to " + str(len(sample))+ " bytes")
             dialect = csv.Sniffer().sniff(sample) # test csv file format details
             dialect.escapechar = "\\"
             log.debug("Determined the CSV dialect as follows: delimiter=%s, doublequote=%s, escapechar=%s, lineterminator=%s, quotechar=%s , quoting=%s, skipinitialspace=%s", dialect.delimiter, dialect.doublequote, dialect.escapechar, list(ord(c) for c in dialect.lineterminator), dialect.quotechar, dialect.quoting, dialect.skipinitialspace)
             filteredfile.rewind() # back to beginning of file
-            reader = csv.DictReader(csvfile, dialect=dialect) # now process CSV file contents here and load them into memory
-            #next(reader) # python < 2.6 requires an actual read access before filling 'DictReader.fieldnames'
-
-            for row in reader:
-                print(row)
-
+            reader = csv.DictReader(filteredfile, dialect=dialect) # now process CSV file contents here and load them into memory
+            reader.__next__() # python requires an actual read access before filling 'DictReader.fieldnames'
+            
             log.debug("CSV file contains the header info: %s", reader.fieldnames)
             try:
                 reader.fieldnames = [field.lower() for field in reader.fieldnames] # convert to lower case keys to avoid confusion
@@ -153,7 +150,7 @@ def loadparamsfromcsv(csvfilename, runs):
             log.info("Successfully loaded csv file'"+csvfilename+"'.")
             # first: search through csv file to find corresponding runnumber entry line for every run
             filteredfile.rewind() # back to beginning of file
-            reader.next()   # .. and skip the header line
+            reader.__next__()   # .. and skip the header line
             missingRuns = list(runs) # list of runs to look for in csv file
 
             cnt = 0
