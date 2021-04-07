@@ -134,7 +134,7 @@ def loadparamsfromcsv(csvfilename, runs):
             filteredfile.rewind() # back to beginning of file
             reader = csv.DictReader(filteredfile, dialect=dialect) # now process CSV file contents here and load them into memory
             reader.__next__() # python requires an actual read access before filling 'DictReader.fieldnames'
-            
+
             log.debug("CSV file contains the header info: %s", reader.fieldnames)
             try:
                 reader.fieldnames = [field.lower() for field in reader.fieldnames] # convert to lower case keys to avoid confusion
@@ -315,7 +315,7 @@ def runCorryvreckan(filenamebase, jobtask, silent):
             log_file.close()
         rcode = p.returncode # get the return code
     except OSError as e:
-        log.critical("Problem with Corryvreckan execution: Command '%s' resulted in error #%s, %s", cmd, e.errno, e.strerror)
+        log.critical("Problem with Corryvreckan execution: Command '%s' resulted in error %s", cmd, e)
         exit(1)
     return rcode
 
@@ -358,7 +358,7 @@ def submitCondor(filenamebase, subfile, runnr):
         log.debug ("Executing: "+cmd)
         os.popen(cmd)
     except OSError as e:
-        log.critical("Problem with HTCondor submission: Command '%s' resulted in error #%s, %s", cmd, e.errno, e.strerror)
+        log.critical("Problem with HTCondor submission: Command '%s' resulted in error %s", cmd, e)
         exit(1)
     return 0
 
