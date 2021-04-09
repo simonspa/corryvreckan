@@ -130,6 +130,17 @@ void Correlations::initialize() {
                                                         static_cast<int>(2. * time_cut_ / time_binning_),
                                                         -1 * time_cut_ - time_binning_ / 2.,
                                                         time_cut_ - time_binning_ / 2.);
+
+        title = m_detector->getName() + "Reference pixel time stamp - pixel time stamp over pixel raw value;"
+                                        "pixel raw value [lsb];t_{ref}-t [ns];events";
+        correlationTimeOverPixelRawValue_px = new TH2F("correlationTimeOverSeedPixelRawValue_px",
+                                                       title.c_str(),
+                                                       32,
+                                                       -0.5,
+                                                       31.5,
+                                                       static_cast<int>(2. * time_cut_ / time_binning_),
+                                                       -1 * time_cut_ - time_binning_ / 2.,
+                                                       time_cut_ - time_binning_ / 2.);
     }
 
     title = m_detector->getName() + "Reference pixel time stamp - pixel time stamp;t_{ref}-t [ns];events";
@@ -206,17 +217,6 @@ void Correlations::initialize() {
     correlationXY2D = new TH2F("correlationXY_2D", title.c_str(), 100, -10.1, 9.9, 100, -10.1, 9.9);
     title = m_detector->getName() + ": 2D cross-correlation Y/X (global);y [mm];x_{ref} [mm];events";
     correlationYX2D = new TH2F("correlationYX_2D", title.c_str(), 100, -10.1, 9.9, 100, -10.1, 9.9);
-
-    title = m_detector->getName() + "Reference pixel time stamp - pixel time stamp over pixel raw value;"
-                                    "pixel raw value [lsb];t_{ref}-t [ns];events";
-    correlationTimeOverPixelRawValue_px = new TH2F("correlationTimeOverSeedPixelRawValue_px",
-                                                   title.c_str(),
-                                                   32,
-                                                   -0.5,
-                                                   31.5,
-                                                   static_cast<int>(2. * time_cut_ / time_binning_),
-                                                   -1 * time_cut_ - time_binning_ / 2.,
-                                                   time_cut_ - time_binning_ / 2.);
 
     // Timing plots
     title = m_detector->getName() + ": event time;t [s];events";
