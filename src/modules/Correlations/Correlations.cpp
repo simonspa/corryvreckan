@@ -67,73 +67,79 @@ void Correlations::initialize() {
 
     // Correlation plots
     title = m_detector->getName() + ": correlation X;x_{ref}-x [mm];events";
-    correlationX = new TH1F("correlationX", title.c_str(), 1000, -10., 10.);
+    correlationX = new TH1F("correlationX", title.c_str(), 1000, -10.01, 9.99);
     title = m_detector->getName() + ": correlation Y;y_{ref}-y [mm];events";
-    correlationY = new TH1F("correlationY", title.c_str(), 1000, -10., 10.);
+    correlationY = new TH1F("correlationY", title.c_str(), 1000, -10.01, 9.99);
     title = m_detector->getName() + ": correlation XY;y_{ref}-x [mm];events";
-    correlationXY = new TH1F("correlationXY", title.c_str(), 1000, -10., 10.);
+    correlationXY = new TH1F("correlationXY", title.c_str(), 1000, -10.01, 9.99);
     title = m_detector->getName() + ": correlation YX;x_{ref}-y [mm];events";
-    correlationYX = new TH1F("correlationYX", title.c_str(), 1000, -10., 10.);
+    correlationYX = new TH1F("correlationYX", title.c_str(), 1000, -10.01, 9.99);
 
     // time correlation plot range should cover length of events. nanosecond binning.
     title = m_detector->getName() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [ns];events";
-    correlationTime = new TH1F(
-        "correlationTime", title.c_str(), static_cast<int>(2. * time_cut_ / time_binning_), -1 * time_cut_, time_cut_);
+    correlationTime = new TH1F("correlationTime",
+                               title.c_str(),
+                               static_cast<int>(2. * time_cut_ / time_binning_),
+                               -1 * time_cut_ - time_binning_ / 2.,
+                               time_cut_ - time_binning_ / 2.);
 
     if(corr_vs_time_) {
         title = m_detector->getName() + " Correlation X versus time;t [s];x_{ref}-x [mm];events";
         std::string name = "correlationXVsTime";
-        correlationXVsTime = new TH2F(name.c_str(), title.c_str(), 600, 0, 3e3, 200, -10., 10.);
+        correlationXVsTime = new TH2F(name.c_str(), title.c_str(), 600, -2.5, 3e3 - 2.5, 200, -10.05, 9.95);
 
         title = m_detector->getName() + " Correlation Y versus time;t [s];y_{ref}-y [mm];events";
         name = "correlationYVsTime";
-        correlationYVsTime = new TH2F(name.c_str(), title.c_str(), 600, 0, 3e3, 200, -10., 10.);
+        correlationYVsTime = new TH2F(name.c_str(), title.c_str(), 600, -2.5, 3e3 - 2.5, 200, -10.05, 9.95);
 
         title = m_detector->getName() + "Reference pixel time stamp - pixel timestamp over time;t [s];t_{ref}-t [ns];events";
         correlationTimeOverTime_px = new TH2F("correlationTimeOverTime_px",
                                               title.c_str(),
                                               3e3,
-                                              0,
-                                              3e3,
+                                              -0.5,
+                                              3e3 - 0.5,
                                               static_cast<int>(2. * time_cut_ / time_binning_),
-                                              -1 * time_cut_,
-                                              time_cut_);
+                                              -1 * time_cut_ - time_binning_ / 2.,
+                                              time_cut_ - time_binning_ / 2.);
 
         title = m_detector->getName() + " Cross-Correlation XY versus time;t [s];x_{ref}-y [mm];events";
         name = "correlationXYVsTime";
-        correlationXYVsTime = new TH2F(name.c_str(), title.c_str(), 600, 0, 3e3, 200, -10., 10.);
+        correlationXYVsTime = new TH2F(name.c_str(), title.c_str(), 600, -2.5, 3e3 - 2.5, 200, -10.05, 9.95);
 
         title = m_detector->getName() + " Cross-Correlation YX versus time;t [s];y_{ref}-x [mm];events";
         name = "correlationYXVsTime";
-        correlationYXVsTime = new TH2F(name.c_str(), title.c_str(), 600, 0, 3e3, 200, -10., 10.);
+        correlationYXVsTime = new TH2F(name.c_str(), title.c_str(), 600, -2.5, 3e3 - 2.5, 200, -10.05, 9.95);
 
         title = m_detector->getName() +
                 "Reference cluster time stamp - cluster time stamp over time;t [s];t_{ref}-t [ns];events";
         correlationTimeOverTime = new TH2F("correlationTimeOverTime",
                                            title.c_str(),
                                            3e3,
-                                           0,
-                                           3e3,
+                                           -0.5,
+                                           3e3 - 0.5,
                                            static_cast<int>(2. * time_cut_ / time_binning_),
-                                           -1 * time_cut_,
-                                           time_cut_);
+                                           -1 * time_cut_ - time_binning_ / 2.,
+                                           time_cut_ - time_binning_ / 2.);
         title = m_detector->getName() + "Reference cluster time stamp - cluster time stamp over seed pixel raw value;seed "
                                         "pixel raw value [lsb];t_{ref}-t [ns];events";
         correlationTimeOverSeedPixelRawValue = new TH2F("correlationTimeOverSeedPixelRawValue",
                                                         title.c_str(),
                                                         32,
-                                                        0,
-                                                        32,
+                                                        -0.5,
+                                                        31.5,
                                                         static_cast<int>(2. * time_cut_ / time_binning_),
-                                                        -1 * time_cut_,
-                                                        time_cut_);
+                                                        -1 * time_cut_ - time_binning_ / 2.,
+                                                        time_cut_ - time_binning_ / 2.);
     }
 
     title = m_detector->getName() + "Reference pixel time stamp - pixel time stamp;t_{ref}-t [ns];events";
-    correlationTime_px = new TH1F(
-        "correlationTime_px", title.c_str(), static_cast<int>(2. * time_cut_ / time_binning_), -1 * time_cut_, time_cut_);
+    correlationTime_px = new TH1F("correlationTime_px",
+                                  title.c_str(),
+                                  static_cast<int>(2. * time_cut_ / time_binning_),
+                                  -1 * time_cut_ - time_binning_ / 2.,
+                                  time_cut_ - time_binning_ / 2.);
     title = m_detector->getName() + "Reference cluster time stamp - cluster time stamp;t_{ref}-t [1/40MHz];events";
-    correlationTimeInt = new TH1F("correlationTimeInt", title.c_str(), 8000, -40000.5, 39999.5);
+    correlationTimeInt = new TH1F("correlationTimeInt", title.c_str(), 8000, -40005, 39995);
 
     // 2D correlation plots (pixel-by-pixel, local coordinates):
     title = m_detector->getName() + ": 2D correlation X (local);x [px];x_{ref} [px];events";
@@ -192,29 +198,29 @@ void Correlations::initialize() {
                                     reference->nPixels().Y() - 0.5);
 
     title = m_detector->getName() + ": 2D correlation X (global);x [mm];x_{ref} [mm];events";
-    correlationX2D = new TH2F("correlationX_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);
+    correlationX2D = new TH2F("correlationX_2D", title.c_str(), 100, -10.1, 9.9, 100, -10.1, 9.9);
     title = m_detector->getName() + ": 2D correlation Y (global);y [mm];y_{ref} [mm];events";
-    correlationY2D = new TH2F("correlationY_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);
+    correlationY2D = new TH2F("correlationY_2D", title.c_str(), 100, -10.1, 9.9, 100, -10.1, 9.9);
 
     title = m_detector->getName() + ": 2D cross-correlation X/Y (global);x [mm];y_{ref} [mm];events";
-    correlationXY2D = new TH2F("correlationXY_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);
+    correlationXY2D = new TH2F("correlationXY_2D", title.c_str(), 100, -10.1, 9.9, 100, -10.1, 9.9);
     title = m_detector->getName() + ": 2D cross-correlation Y/X (global);y [mm];x_{ref} [mm];events";
-    correlationYX2D = new TH2F("correlationYX_2D", title.c_str(), 100, -10., 10., 100, -10., 10.);
+    correlationYX2D = new TH2F("correlationYX_2D", title.c_str(), 100, -10.1, 9.9, 100, -10.1, 9.9);
 
     title = m_detector->getName() + "Reference pixel time stamp - pixel time stamp over pixel raw value;"
                                     "pixel raw value [lsb];t_{ref}-t [ns];events";
     correlationTimeOverPixelRawValue_px = new TH2F("correlationTimeOverSeedPixelRawValue_px",
                                                    title.c_str(),
                                                    32,
-                                                   0,
-                                                   32,
+                                                   -0.5,
+                                                   31.5,
                                                    static_cast<int>(2. * time_cut_ / time_binning_),
-                                                   -1 * time_cut_,
-                                                   time_cut_);
+                                                   -1 * time_cut_ - time_binning_ / 2.,
+                                                   time_cut_ - time_binning_ / 2.);
 
     // Timing plots
     title = m_detector->getName() + ": event time;t [s];events";
-    eventTimes = new TH1F("eventTimes", title.c_str(), 3000000, 0, 300);
+    eventTimes = new TH1F("eventTimes", title.c_str(), 3000000, -1e-5, 300 - 1e-5);
 }
 
 StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
