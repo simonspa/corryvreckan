@@ -80,9 +80,6 @@ $ git clone https://gitlab.cern.ch/corryvreckan/corryvreckan.git
 $ cd corryvreckan
 \end{verbatim}
 
-For an installation on \command{lxplus}, the environment variables need to be set by running \dir{source etc/setup_lxplus.sh} before proceeding with the installation as described below.
-The same script needs to be sourced any time after logging back into \command{lxplus} in order for the \command{corry} executable to be added to the \parameter{PATH} variable.
-
 \subsection{Configuration via CMake}
 \label{sec:cmake_config}
 \corry uses the CMake build system to configure, build, and install the core framework as well as all modules.
@@ -159,3 +156,10 @@ Now the library paths should work for command line compilation as well as from t
 $ cmake -DCMAKE_C_COMPILER=$(which clang) -DCMAKE_CXX_COMPILER=$(which clang++)  -DBUILD_EventLoaderEUDAQ=ON ..
 \end{verbatim}
 Note that for XCode12 CMake 3.18.x is required on Intel Macs (otherwise compilation target defaults to ARM64).
+
+\subsection{LXPLUS}
+For an installation on \command{lxplus}, the environment variables need to be set by running \dir{source etc/setup_lxplus.sh} before proceeding with the installation as described below.
+The same script needs to be sourced any time after logging back into \command{lxplus} in order for the \command{corry} executable to be added to the \parameter{PATH} variable.
+
+If external dependencies such as EUDAQ2 are required, the installaton is a bit more tricky.
+Refer to the Troubleshooting section~\cite{corry-website-troubleshooting} of the project website~\cite{corry-website} for a step-by-step solution.
