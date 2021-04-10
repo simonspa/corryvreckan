@@ -148,12 +148,14 @@ $ sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 \end{verbatim}
 \item Create symlinks for the missing includes
 \begin{verbatim}
-$ sudo ln -s /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/* /usr/local/include/
+$ sudo ln -s /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/* \
+             /usr/local/include/
 \end{verbatim}
 \end{itemize}
 Now the library paths should work for command line compilation as well as from the Xcode IDE. As in the workflow above, CMake can be invoked from the build folder with several arguments, e.g. for use with EUDAQ:
 \begin{verbatim}
-$ cmake -DCMAKE_C_COMPILER=$(which clang) -DCMAKE_CXX_COMPILER=$(which clang++)  -DBUILD_EventLoaderEUDAQ=ON ..
+$ cmake -DCMAKE_C_COMPILER=$(which clang) -DCMAKE_CXX_COMPILER=$(which clang++) \
+        -DBUILD_EventLoaderEUDAQ=ON ..
 \end{verbatim}
 Note that for XCode12 CMake 3.18.x is required on Intel Macs (otherwise compilation target defaults to ARM64).
 
