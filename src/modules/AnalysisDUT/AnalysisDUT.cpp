@@ -22,10 +22,14 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
     config_.setDefault<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
     config_.setDefault<double>("chi2ndof_cut", 3.);
     config_.setDefault<bool>("use_closest_cluster", true);
+    config_.setDefault<bool>("n_time_bins", 20000);
+    config_.setDefault<bool>("time_binning", Units::get<double>(0.1, "ns"));
 
     m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge");
     chi2ndofCut = config_.get<double>("chi2ndof_cut");
     useClosestCluster = config_.get<bool>("use_closest_cluster");
+    nTimeBins = config_.get<double>("n_time_bins");
+    timeBinning = config_.get<double>("time_binning");
 }
 
 void AnalysisDUT::initialize() {
@@ -98,9 +102,9 @@ void AnalysisDUT::initialize() {
     residualsPosVsresidualsTime =
         new TH2F("residualsPosVsresidualsTime",
                  "Time vs. absolute position residuals;time_{track}-time_{hit} [ns];|pos_{track}-pos_{hit}| [mm];# entries",
-                 20000,
-                 -1000,
-                 +1000,
+                 nTimeBins,
+                 -nTimeBins / 2. * timeBinning - timeBinning / 2.,
+                 nTimeBins / 2. * timeBinning - timeBinning / 2.,
                  800,
                  0.,
                  0.2);
@@ -280,7 +284,11 @@ void AnalysisDUT::initialize() {
                           -pitch_y / 2.,
                           pitch_y / 2.);
 
-    residualsTime = new TH1F("residualsTime", "Time residual;time_{track}-time_{hit} [ns];#entries", 20000, -1000, +1000);
+    residualsTime = new TH1F("residualsTime",
+                             "Time residual;time_{track}-time_{hit} [ns];#entries",
+                             nTimeBins,
+                             -nTimeBins / 2. * timeBinning - timeBinning / 2.,
+                             nTimeBins / 2. * timeBinning - timeBinning / 2.);
 
     hTrackCorrelationX =
         new TH1F("hTrackCorrelationX", "Track residual X, all clusters;x_{track}-x_{hit} [mm];# entries", 4000, -10., 10.);
@@ -311,19 +319,18 @@ void AnalysisDUT::initialize() {
                                    20000,
                                    0,
                                    200,
-                                   1000,
-                                   -1000,
-                                   +1000);
-
+                                   nTimeBins,
+                                   -nTimeBins / 2. * timeBinning - timeBinning / 2.,
+                                   nTimeBins / 2. * timeBinning - timeBinning / 2.);
     residualsTimeVsTot =
         new TH2F("residualsTimeVsTot",
                  "Time residual vs. pixel charge;time_{track} - time_{hit} [ns];seed pixel ToT [lsb];# entries",
-                 20000,
-                 -5000,
-                 5000,
-                 64,
-                 0,
-                 64);
+                 nTimeBins,
+                 -nTimeBins / 2. * timeBinning - timeBinning / 2.,
+                 nTimeBins / 2. * timeBinning - timeBinning / 2.,
+                 1000,
+                 -0.5,
+                 999.5);
 
     residualsTimeVsSignal =
         new TH2F("residualsTimeVsSignal",
@@ -331,9 +338,9 @@ void AnalysisDUT::initialize() {
                  20000,
                  0,
                  100000,
-                 1000,
-                 -1000,
-                 +1000);
+                 nTimeBins,
+                 -nTimeBins / 2. * timeBinning - timeBinning / 2.,
+                 nTimeBins / 2. * timeBinning - timeBinning / 2.);
 
     hAssociatedTracksGlobalPosition =
         new TH2F("hAssociatedTracksGlobalPosition",
