@@ -536,7 +536,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             // Time residuals
             residualsTime->Fill(tdistance);
-            residualsTimeVsTime->Fill(tdistance, track->timestamp());
+            residualsTimeVsTime->Fill(track->timestamp(), tdistance);
             residualsTimeVsTot->Fill(tdistance, assoc_cluster->getSeedPixel()->raw());
             residualsTimeVsSignal->Fill(tdistance, cluster_charge);
 
