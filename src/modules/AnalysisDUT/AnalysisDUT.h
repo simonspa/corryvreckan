@@ -83,6 +83,8 @@ namespace corryvreckan {
         double m_timeCutFrameEdge;
         double chi2ndofCut;
         bool useClosestCluster;
+        double nTimeBins;
+        double timeBinning;
         int num_tracks;
     };
 } // namespace corryvreckan
