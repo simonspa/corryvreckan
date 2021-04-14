@@ -43,7 +43,7 @@ void AnalysisDUT::initialize() {
                                 -0.5,
                                 m_detector->nPixels().Y() - 0.5);
     hClusterSizeMapAssoc = new TProfile2D("clusterSizeMapAssoc",
-                                          "Size map for associated clusters; cluster size; #entries",
+                                          "Size map for associated clusters;cluster col;cluster row;#entries",
                                           m_detector->nPixels().X(),
                                           -0.5,
                                           m_detector->nPixels().X() - 0.5,
