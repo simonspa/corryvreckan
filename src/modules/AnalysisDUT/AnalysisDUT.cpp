@@ -137,11 +137,12 @@ void AnalysisDUT::initialize() {
                                   10000);
     clusterSizeAssoc = new TH1F(
         "clusterSizeAssociated", "Size distribution of associated clusters;cluster size; # entries", 30, -0.5, 29.5);
-    clusterSizeAssocNorm = new TH1F("clusterSizeAssociatedNormalized",
-                                    "Normalized size distribution of associated clusters;cluster size normalized;#entries",
-                                    30,
-                                    0,
-                                    30);
+    clusterSizeAssocNorm =
+        new TH1F("clusterSizeAssociatedNormalized",
+                 "Normalized size distribution of associated clusters;cluster size;# entries (normalized)",
+                 30,
+                 0,
+                 30);
     clusterWidthRowAssoc = new TH1F("clusterWidthRowAssociated",
                                     "Height distribution of associated clusters (rows);cluster size row; # entries",
                                     30,
