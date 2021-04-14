@@ -335,12 +335,12 @@ void AnalysisDUT::initialize() {
     residualsTimeVsSignal =
         new TH2F("residualsTimeVsSignal",
                  "Time residual vs. cluster charge;cluster charge [e];time_{track}-time_{hit} [mm];# entries",
-                 20000,
-                 0,
-                 100000,
                  nTimeBins,
                  -nTimeBins / 2. * timeBinning - timeBinning / 2.,
-                 nTimeBins / 2. * timeBinning - timeBinning / 2.);
+                 nTimeBins / 2. * timeBinning - timeBinning / 2.,
+                 20000,
+                 0,
+                 100000);
 
     hAssociatedTracksGlobalPosition =
         new TH2F("hAssociatedTracksGlobalPosition",
