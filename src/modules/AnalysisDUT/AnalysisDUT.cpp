@@ -332,6 +332,25 @@ void AnalysisDUT::initialize() {
                  -0.5,
                  999.5);
 
+    residualsTimeVsCol =
+        new TH2F("residualsTimeVsCol",
+                 "Time residual vs. pixel charge;time_{track} - time_{hit} [ns];seed pixel column;# entries",
+                 nTimeBins,
+                 -nTimeBins / 2. * timeBinning - timeBinning / 2.,
+                 nTimeBins / 2. * timeBinning - timeBinning / 2.,
+                 m_detector->nPixels().X(),
+                 -0.5,
+                 m_detector->nPixels().X() - 0.5);
+
+    residualsTimeVsRow = new TH2F("residualsTimeVsRow",
+                                  "Time residual vs. pixel charge;time_{track} - time_{hit} [ns];seed pixel row;# entries",
+                                  nTimeBins,
+                                  -nTimeBins / 2. * timeBinning - timeBinning / 2.,
+                                  nTimeBins / 2. * timeBinning - timeBinning / 2.,
+                                  m_detector->nPixels().X(),
+                                  -0.5,
+                                  m_detector->nPixels().X() - 0.5);
+
     residualsTimeVsSignal =
         new TH2F("residualsTimeVsSignal",
                  "Time residual vs. cluster charge;cluster charge [e];time_{track}-time_{hit} [mm];# entries",
@@ -538,6 +557,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             residualsTime->Fill(tdistance);
             residualsTimeVsTime->Fill(static_cast<double>(Units::convert(track->timestamp(), "s")), tdistance);
             residualsTimeVsTot->Fill(tdistance, assoc_cluster->getSeedPixel()->raw());
+            residualsTimeVsCol->Fill(tdistance, assoc_cluster->getSeedPixel()->column());
+            residualsTimeVsRow->Fill(tdistance, assoc_cluster->getSeedPixel()->row());
             residualsTimeVsSignal->Fill(tdistance, cluster_charge);
 
             clusterSizeAssoc->Fill(static_cast<double>(assoc_cluster->size()));
