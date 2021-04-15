@@ -135,6 +135,12 @@ void AnalysisDUT::initialize() {
                                   10000,
                                   0,
                                   10000);
+    clusterSeedChargeAssoc =
+        new TH1F("clusterSeedChargeAssociated",
+                 "Charge distribution of seed pixels for associated clusters;seed pixel charge [e];# entries",
+                 10000,
+                 0,
+                 10000);
     clusterSizeAssoc = new TH1F(
         "clusterSizeAssociated", "Size distribution of associated clusters;cluster size; # entries", 30, -0.5, 29.5);
     clusterSizeAssocNorm =
@@ -502,6 +508,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             // clusterChargeAssoc->Fill(normalized_charge);
             clusterChargeAssoc->Fill(cluster_charge);
+            clusterSeedChargeAssoc->Fill(assoc_cluster->getSeedPixel()->charge());
             hClusterChargeMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row(), cluster_charge);
 
             // Fill per-pixel histograms
