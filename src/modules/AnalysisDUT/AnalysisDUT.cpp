@@ -541,8 +541,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             clusterChargeAssoc->Fill(cluster_charge);
             clusterSeedChargeAssoc->Fill(assoc_cluster->getSeedPixel()->charge());
             hClusterChargeMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row(), cluster_charge);
-            hClusterSizevsColAssoc->Fill(assoc_cluster->column(), cluster_charge);
-            hClusterSizevsRowAssoc->Fill(assoc_cluster->row(), cluster_charge);
+            hClusterChargevsColAssoc->Fill(assoc_cluster->column(), cluster_charge);
+            hClusterChargevsRowAssoc->Fill(assoc_cluster->row(), cluster_charge);
 
             // Fill per-pixel histograms
             for(auto& pixel : assoc_cluster->pixels()) {
