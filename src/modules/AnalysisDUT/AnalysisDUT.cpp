@@ -52,6 +52,20 @@ void AnalysisDUT::initialize() {
                                           m_detector->nPixels().Y() - 0.5,
                                           0,
                                           100);
+    hClusterSizevsColAssoc = new TProfile("clusterSizevsColAssoc",
+                                          "cluster size vs. column for assoc clusters;cluster row;mean cluster size",
+                                          m_detector->nPixels().X(),
+                                          -0.5,
+                                          m_detector->nPixels().X() - 0.5,
+                                          0,
+                                          100);
+    hClusterSizevsRowAssoc = new TProfile("clusterSizevsRowAssoc",
+                                          "cluster size vs. row for assoc clusters;luster row;mean cluster size",
+                                          m_detector->nPixels().X(),
+                                          -0.5,
+                                          m_detector->nPixels().X() - 0.5,
+                                          0,
+                                          100);
     hClusterChargeMapAssoc = new TProfile2D("clusterChargeMapAssoc",
                                             "Charge map for associated clusters; cluster charge [e]; #entries",
                                             m_detector->nPixels().X(),
@@ -62,6 +76,21 @@ void AnalysisDUT::initialize() {
                                             m_detector->nPixels().Y() - 0.5,
                                             0,
                                             500);
+    hClusterChargevsColAssoc =
+        new TProfile("clusterChargevsColAssoc",
+                     "cluster charge vs. column for assoc clusters;cluster row;mean cluster charge [e]",
+                     m_detector->nPixels().X(),
+                     -0.5,
+                     m_detector->nPixels().X() - 0.5,
+                     0,
+                     100);
+    hClusterChargevsRowAssoc = new TProfile("clusterChargevsRowAssoc",
+                                            "cluster charge vs. row for assoc clusters;luster row;mean cluster charge [e]",
+                                            m_detector->nPixels().X(),
+                                            -0.5,
+                                            m_detector->nPixels().X() - 0.5,
+                                            0,
+                                            100);
 
     hTrackZPosDUT = new TH1F("globalTrackZPosOnDUT",
                              "Global z-position of track on the DUT; global z of track intersection [mm]; #entries ",
@@ -499,6 +528,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             hClusterMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row());
             hClusterSizeMapAssoc->Fill(
                 assoc_cluster->column(), assoc_cluster->row(), static_cast<double>(assoc_cluster->size()));
+            hClusterSizevsColAssoc->Fill(assoc_cluster->column(), static_cast<double>(assoc_cluster->size()));
+            hClusterSizevsRowAssoc->Fill(assoc_cluster->row(), static_cast<double>(assoc_cluster->size()));
 
             // Cluster charge normalized to path length in sensor:
             double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
@@ -510,6 +541,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             clusterChargeAssoc->Fill(cluster_charge);
             clusterSeedChargeAssoc->Fill(assoc_cluster->getSeedPixel()->charge());
             hClusterChargeMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row(), cluster_charge);
+            hClusterSizevsColAssoc->Fill(assoc_cluster->column(), cluster_charge);
+            hClusterSizevsRowAssoc->Fill(assoc_cluster->row(), cluster_charge);
 
             // Fill per-pixel histograms
             for(auto& pixel : assoc_cluster->pixels()) {
