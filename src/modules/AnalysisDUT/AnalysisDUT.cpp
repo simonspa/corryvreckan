@@ -52,15 +52,15 @@ void AnalysisDUT::initialize() {
                                           m_detector->nPixels().Y() - 0.5,
                                           0,
                                           100);
-    hClusterSizevsColAssoc = new TProfile("clusterSizevsColAssoc",
+    hClusterSizeVsColAssoc = new TProfile("clusterSizeVsColAssoc",
                                           "cluster size vs. column for assoc clusters;cluster row;mean cluster size",
                                           m_detector->nPixels().X(),
                                           -0.5,
                                           m_detector->nPixels().X() - 0.5,
                                           0,
                                           100);
-    hClusterSizevsRowAssoc = new TProfile("clusterSizevsRowAssoc",
-                                          "cluster size vs. row for assoc clusters;luster row;mean cluster size",
+    hClusterSizeVsRowAssoc = new TProfile("clusterSizeVsRowAssoc",
+                                          "cluster size vs. row for assoc clusters;cluster row;mean cluster size",
                                           m_detector->nPixels().Y(),
                                           -0.5,
                                           m_detector->nPixels().Y() - 0.5,
@@ -76,21 +76,38 @@ void AnalysisDUT::initialize() {
                                             m_detector->nPixels().Y() - 0.5,
                                             0,
                                             500);
-    hClusterChargevsColAssoc =
-        new TProfile("clusterChargevsColAssoc",
+    hClusterChargeVsColAssoc =
+        new TProfile("clusterChargeVsColAssoc",
                      "cluster charge vs. column for assoc clusters;cluster row;mean cluster charge [e]",
                      m_detector->nPixels().X(),
                      -0.5,
                      m_detector->nPixels().X() - 0.5,
                      0,
                      100);
-    hClusterChargevsRowAssoc = new TProfile("clusterChargevsRowAssoc",
+    hClusterChargeVsRowAssoc = new TProfile("clusterChargeVsRowAssoc",
                                             "cluster charge vs. row for assoc clusters;cluster row;mean cluster charge [e]",
                                             m_detector->nPixels().Y(),
                                             -0.5,
                                             m_detector->nPixels().Y() - 0.5,
                                             0,
                                             100);
+
+    hSeedChargeVsColAssoc =
+        new TProfile("seedChargeVsColAssoc",
+                     "seed pixel charge vs. column for assoc clusters;cluster row;mean seed pixel charge [e]",
+                     m_detector->nPixels().X(),
+                     -0.5,
+                     m_detector->nPixels().X() - 0.5,
+                     0,
+                     100);
+    hSeedChargeVsRowAssoc =
+        new TProfile("seedChargeVsRowAssoc",
+                     "seed pixel charge vs. row for assoc clusters;cluster row;mean seed pixel charge [e]",
+                     m_detector->nPixels().Y(),
+                     -0.5,
+                     m_detector->nPixels().Y() - 0.5,
+                     0,
+                     100);
 
     hTrackZPosDUT = new TH1F("globalTrackZPosOnDUT",
                              "Global z-position of track on the DUT; global z of track intersection [mm]; #entries ",
@@ -164,12 +181,11 @@ void AnalysisDUT::initialize() {
                                   10000,
                                   0,
                                   10000);
-    clusterSeedChargeAssoc =
-        new TH1F("clusterSeedChargeAssociated",
-                 "Charge distribution of seed pixels for associated clusters;seed pixel charge [e];# entries",
-                 10000,
-                 0,
-                 10000);
+    seedChargeAssoc = new TH1F("seedChargeAssociated",
+                               "Charge distribution of seed pixels for associated clusters;seed pixel charge [e];# entries",
+                               10000,
+                               0,
+                               10000);
     clusterSizeAssoc = new TH1F(
         "clusterSizeAssociated", "Size distribution of associated clusters;cluster size; # entries", 30, -0.5, 29.5);
     clusterSizeAssocNorm =
@@ -528,8 +544,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             hClusterMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row());
             hClusterSizeMapAssoc->Fill(
                 assoc_cluster->column(), assoc_cluster->row(), static_cast<double>(assoc_cluster->size()));
-            hClusterSizevsColAssoc->Fill(assoc_cluster->column(), static_cast<double>(assoc_cluster->size()));
-            hClusterSizevsRowAssoc->Fill(assoc_cluster->row(), static_cast<double>(assoc_cluster->size()));
+            hClusterSizeVsColAssoc->Fill(assoc_cluster->column(), static_cast<double>(assoc_cluster->size()));
+            hClusterSizeVsRowAssoc->Fill(assoc_cluster->row(), static_cast<double>(assoc_cluster->size()));
 
             // Cluster charge normalized to path length in sensor:
             double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
@@ -539,10 +555,12 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             // clusterChargeAssoc->Fill(normalized_charge);
             clusterChargeAssoc->Fill(cluster_charge);
-            clusterSeedChargeAssoc->Fill(assoc_cluster->getSeedPixel()->charge());
+            seedChargeAssoc->Fill(assoc_cluster->getSeedPixel()->charge());
             hClusterChargeMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row(), cluster_charge);
-            hClusterChargevsColAssoc->Fill(assoc_cluster->column(), cluster_charge);
-            hClusterChargevsRowAssoc->Fill(assoc_cluster->row(), cluster_charge);
+            hClusterChargeVsColAssoc->Fill(assoc_cluster->column(), cluster_charge);
+            hClusterChargeVsRowAssoc->Fill(assoc_cluster->row(), cluster_charge);
+            hSeedChargeVsColAssoc->Fill(assoc_cluster->column(), assoc_cluster->getSeedPixel()->charge());
+            hSeedChargeVsRowAssoc->Fill(assoc_cluster->row(), assoc_cluster->getSeedPixel()->charge());
 
             // Fill per-pixel histograms
             for(auto& pixel : assoc_cluster->pixels()) {
