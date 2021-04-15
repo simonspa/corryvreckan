@@ -14,6 +14,7 @@
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TProfile.h>
 #include <TProfile2D.h>
 #include <iostream>
 #include "core/module/Module.hpp"
@@ -39,8 +40,9 @@ namespace corryvreckan {
         // Histograms
         TH2F *hClusterMapAssoc, *hHitMapAssoc;
         TProfile2D *hClusterSizeMapAssoc, *hClusterChargeMapAssoc;
-        TProfile *hClusterSizevsColAssoc, *hClusterSizevsRowAssoc;
-        TProfile *hClusterChargevsColAssoc, *hClusterChargevsRowAssoc;
+        TProfile *hClusterSizeVsColAssoc, *hClusterSizeVsRowAssoc;
+        TProfile *hClusterChargeVsColAssoc, *hClusterChargeVsRowAssoc;
+        TProfile *hSeedChargeVsColAssoc, *hSeedChargeVsRowAssoc;
 
         TH1F* hPixelRawValueAssoc;
         TProfile2D* hPixelRawValueMapAssoc;
@@ -56,7 +58,7 @@ namespace corryvreckan {
         TH1F *residualsXatLeast5pix, *residualsYatLeast5pix;
 
         TH1F* clusterChargeAssoc;
-        TH1F* clusterSeedChargeAssoc;
+        TH1F* seedChargeAssoc;
         TH1F* clusterSizeAssoc;
         TH1F* clusterSizeAssocNorm;
         TH1F* clusterWidthRowAssoc;
