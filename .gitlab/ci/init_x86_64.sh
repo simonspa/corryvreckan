@@ -1,20 +1,24 @@
 #!/bin/bash
 
 # Determine which OS you are using
-if [ "$(uname)" == "Linux" ]; then
-    if [ "$( cat /etc/*-release | grep Scientific )" ]; then
-        OS=slc6
-    elif [ "$( cat /etc/*-release | grep CentOS )" ]; then
+if [ "$(uname)" = "Linux" ]; then
+    if [ "$( cat /etc/*-release | grep "CentOS Linux 7" )" ]; then
+        echo "Detected CentOS Linux 7"
         OS=centos7
+    elif [ "$( cat /etc/*-release | grep "CentOS Linux 8" )" ]; then
+        echo "Detected CentOS Linux 8"
+        OS=centos8
     else
         echo "Cannot detect OS, falling back to CentOS7"
         OS=centos7
     fi
-elif [ "$(uname)" == "Darwin" ]; then
-    if [ $(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}') == "10.15" ]; then
+elif [ "$(uname)" = "Darwin" ]; then
+    MACOS_MAJOR=$(sw_vers -productVersion | awk -F '.' '{print $1}')
+    MACOS_MINOR=$(sw_vers -productVersion | awk -F '.' '{print $2}')
+    if [ $MACOS_MAJOR = "11" ] || [ "${MACOS_MAJOR}.${MACOS_MINOR}" = "10.15" ]; then
         OS=mac1015
     else
-        echo "Bootstrap only works on macOS Catalina (10.15)"
+        echo "Unsupported version of macOS ${MACOS_MAJOR}.${MACOS_MINOR}"
         exit 1
     fi
 else
@@ -23,32 +27,37 @@ else
 fi
 
 # Determine is you have CVMFS installed
-if [ ! -d "/cvmfs" ]; then
-    echo "No CVMFS detected, please install it."
+CVMFS_MOUNT=""
+if [ "$OS" = mac1015 ]; then
+    CVMFS_MOUNT="/Users/Shared"
+fi
+
+if [ ! -d "${CVMFS_MOUNT}/cvmfs" ]; then
+    echo "No CVMFS detected, please install it. Looking at ${CVMFS_MOUNT}/cvmfs"
     exit 1
 fi
 
-if [ ! -d "/cvmfs/sft.cern.ch" ]; then
+if [ ! -d "${CVMFS_MOUNT}/cvmfs/sft.cern.ch" ]; then
     echo "No SFT CVMFS repository detected, please make sure it is available."
     exit 1
 fi
-if [ ! -d "/cvmfs/geant4.cern.ch" ]; then
+if [ ! -d "${CVMFS_MOUNT}/cvmfs/geant4.cern.ch" ]; then
     echo "No Geant4 CVMFS repository detected, please make sure it is available."
     exit 1
 fi
 
 
 # Determine which LCG version to use
-DEFAULT_LCG="LCG_98python3"
+DEFAULT_LCG="LCG_99"
 
-if [ -z ${CORRY_LCG_VERSION} ]; then
+if [ -z ${ALLPIX_LCG_VERSION} ]; then
     echo "No explicit LCG version set, using ${DEFAULT_LCG}."
-    CORRY_LCG_VERSION=${DEFAULT_LCG}
+    ALLPIX_LCG_VERSION=${DEFAULT_LCG}
 fi
 
 # Determine which compiler to use
 if [ -z ${COMPILER_TYPE} ]; then
-    if [ "$(uname)" == "Darwin" ]; then
+    if [ "$(uname)" = "Darwin" ]; then
         COMPILER_TYPE="llvm"
         echo "No compiler type set, falling back to AppleClang."
     else
@@ -56,17 +65,13 @@ if [ -z ${COMPILER_TYPE} ]; then
         COMPILER_TYPE="gcc"
     fi
 fi
-if [ ${COMPILER_TYPE} == "gcc" ]; then
-    if [ ${OS} == "slc6" ]; then
-        COMPILER_VERSION="gcc8"
-    else
-        COMPILER_VERSION="gcc10"
-    fi
+if [ ${COMPILER_TYPE} = "gcc" ]; then
+    COMPILER_VERSION="gcc10"
     echo "Compiler type set to GCC, version ${COMPILER_VERSION}."
 fi
-if [ ${COMPILER_TYPE} == "llvm" ]; then
-    if [ "$(uname)" == "Darwin" ]; then
-        COMPILER_VERSION="clang110"
+if [ ${COMPILER_TYPE} = "llvm" ]; then
+    if [ "$(uname)" = "Darwin" ]; then
+        COMPILER_VERSION="clang120"
     else
         COMPILER_VERSION="clang10"
     fi
@@ -79,15 +84,19 @@ if [ -z ${BUILD_TYPE} ]; then
 fi
 
 # General variables
-SFTREPO=/cvmfs/sft.cern.ch
+SFTREPO=${CVMFS_MOUNT}/cvmfs/sft.cern.ch
 export BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
 
 #--------------------------------------------------------------------------------
-#     Source full LCG view
+#     Source dependencies
 #--------------------------------------------------------------------------------
 
-export LCG_VIEW=${SFTREPO}/lcg/views/${CORRY_LCG_VERSION}/${BUILD_FLAVOUR}/setup.sh
+export LCG_VIEW=${SFTREPO}/lcg/views/${ALLPIX_LCG_VERSION}/${BUILD_FLAVOUR}/setup.sh
 source ${LCG_VIEW} || echo "yes"
 
-# Fix LCIO path for LCG_96, cmake configs are not properly placed:
-export LCIO_DIR=$(dirname $(dirname $(readlink $(which lcio_event_counter))))
+if [ -n "${CI}" ] && [ "$(uname)" = "Darwin" ]; then
+    source $ROOTSYS/bin/thisroot.sh
+    cd $G4INSTALL/bin/
+    source geant4.sh
+    cd -
+fi
