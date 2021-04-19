@@ -34,9 +34,9 @@ stages:
             - lib
         expire_in: 24 hour
 
-cmp:slc6-gcc:
+cmp:cc8-gcc:
     extends: .compile
-    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
+    image: gitlab-registry.cern.ch/sft/docker/centos8:latest
     before_script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab/ci/init_x86_64.sh
@@ -267,11 +267,11 @@ cmp:usermanual:
             - public
         expire_in: 24 hour
 
-pkg:slc6-gcc:
+pkg:cc8-gcc:
     extends: .pack
-    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
+    image: gitlab-registry.cern.ch/sft/docker/centos8:latest
     needs:
-        - job: cmp:slc6-gcc
+        - job: cmp:cc8-gcc
           artifacts: true
 
 pkg:cc7-gcc:
@@ -279,6 +279,14 @@ pkg:cc7-gcc:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     needs:
         - job: cmp:cc7-gcc
+          artifacts: true
+
+pkg:mac1015-clang:
+    extends: .pack
+    tags:
+        - mac
+    needs:
+        - job: cmp:mac1015-clang
           artifacts: true
 
 
@@ -320,7 +328,8 @@ deploy-eos:
         - schedules@corryvreckan/corryvreckan
     dependencies:
         - pkg:cc7-gcc
-        - pkg:slc6-gcc
+        - pkg:cc8-gcc
+        - pkg:mac1015-clang
     # Docker image with tools to deploy to EOS
     image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
     script:
@@ -333,7 +342,8 @@ deploy-cvmfs:
     stage: deployment
     dependencies:
         - pkg:cc7-gcc
-        - pkg:slc6-gcc
+        - pkg:cc8-gcc
+        - pkg:mac1015-clang
     tags:
         - cvmfs-deploy
     only:
