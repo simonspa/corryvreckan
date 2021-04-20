@@ -288,6 +288,10 @@ pkg:mac1015-clang:
     needs:
         - job: cmp:mac1015-clang
           artifacts: true
+    before_script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab/ci/init_x86_64.sh
+
 
 
 ########################
