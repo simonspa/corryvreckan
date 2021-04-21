@@ -129,6 +129,11 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
                     LOG(DEBUG) << "Pivot magic, begin: " << Units::display(begin, {"ns", "us", "ms"})
                                << ", end: " << Units::display(end, {"ns", "us", "ms"})
                                << ", duration = " << Units::display(begin + end, {"ns", "us"});
+                } else if(det == "tlu" && begin < Units::convert(skip_time_, "ps")) {
+
+                    LOG(TRACE) << "Event time below skip time: " << Units::display(begin, {"ns", "us", "ms", "s"}) << "vs. "
+                               << Units::display(skip_time_, {"ns", "us", "ms", "s"});
+                    continue;
                 }
                 return e->GetTriggerN();
             }
