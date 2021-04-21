@@ -31,8 +31,7 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     timeshift_ = config_.get<double>("time_shift");
     shift_triggers_ = config_.get<int>("shift_triggers");
     skip_time_ = config_.get<double>("skip_time");
-
-    config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
+    skip_time_ps_ = Units::convert(skip_time_, "ps") config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
 
     // Set EUDAQ log level to desired value:
     EUDAQ_LOG_LEVEL(config_.get<std::string>("eudaq_loglevel"));
@@ -129,7 +128,7 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
                     LOG(DEBUG) << "Pivot magic, begin: " << Units::display(begin, {"ns", "us", "ms"})
                                << ", end: " << Units::display(end, {"ns", "us", "ms"})
                                << ", duration = " << Units::display(begin + end, {"ns", "us"});
-                } else if(det == "tlu" && begin < Units::convert(skip_time_, "ps")) {
+                } else if(det == "tlu" && begin < skip_time_ps_) {
 
                     LOG(TRACE) << "Event time below skip time: " << Units::display(begin, {"ns", "us", "ms", "s"}) << "vs. "
                                << Units::display(skip_time_, {"ns", "us", "ms", "s"});
