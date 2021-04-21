@@ -31,7 +31,8 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     timeshift_ = config_.get<double>("time_shift");
     shift_triggers_ = config_.get<int>("shift_triggers");
     skip_time_ = config_.get<double>("skip_time");
-    skip_time_ps_ = Units::convert(skip_time_, "ps") config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
+    skip_time_ps_ = Units::convert(skip_time_, "ps");
+    config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
 
     // Set EUDAQ log level to desired value:
     EUDAQ_LOG_LEVEL(config_.get<std::string>("eudaq_loglevel"));
