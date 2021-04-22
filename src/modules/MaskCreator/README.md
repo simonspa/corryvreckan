@@ -25,10 +25,6 @@ No masks are applied in this module as this is done by the respective event load
 * `rate_max`: Maximum rate, defaults to `1`. Only used in `localdensity` mode.
 * `mask_dead_pixels`: If `true`, the module will search for pixels without any recorded hits and add them to the mask file. Default is `false`.
 
-If true the cluster with the smallest distance to the track is used
-if a track has more than one associated cluster. If false, loop over all associated clusters.
-Defaults to true.
-
 ### Plots produced
 For each detector the following plots are produced:
 
