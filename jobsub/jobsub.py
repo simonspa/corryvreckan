@@ -265,22 +265,22 @@ def runCorryvreckan(filenamebase, jobtask, silent):
                 try:
                     line = qout.get_nowait() # or q.get(timeout=.1)
                     if not silent:
-                        if "WARNING" in line.strip():
+                        if 'WARNING'.encode() in line.strip():
                             log.warning(line.strip())
-                        elif "ERROR" in line.strip():
+                        elif b'ERROR' in line.strip():
                             log.error(line.strip())
-                        elif "FATAL" in line.strip():
+                        elif b'FATAL' in line.strip():
                             log.critical(line.strip())
                         else:
                             log.info(line.strip())
-                    log_file.write(line)
+                    log_file.write(str(line,'utf-8'))
                 except Empty:
                     pass
 
                 try:
                     line = qerr.get_nowait() # or q.get(timeout=.1)
                     log.error(line.strip())
-                    log_file.write(line)
+                    log_file.write(str(line,'utf-8'))
                 except Empty:
                     sleep(0.005) # sleep for 5 ms to avoid excessive CPU load
 
@@ -301,14 +301,14 @@ def runCorryvreckan(filenamebase, jobtask, silent):
                             log.critical(line.strip())
                         else:
                             log.info(line.strip())
-                    log_file.write(line)
+                    log_file.write(str(line,'utf-8'))
                 except Empty:
                     pass
 
                 try:
                     line = qerr.get_nowait() # or q.get(timeout=.1)
                     log.error(line.strip())
-                    log_file.write(line)
+                    log_file.write(str(line,'utf-8'))
                 except Empty:
                     pass
         finally:
