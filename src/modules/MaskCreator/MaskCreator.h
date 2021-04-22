@@ -50,7 +50,7 @@ namespace corryvreckan {
 
         // Finds pixels that did not receive any hits (dead or disabled pixels during tuning)
         void deadPixelFinder();
-        
+
         // Write out mask files for all detectors]
         void writeMaskFiles();
 

@@ -23,7 +23,7 @@ MaskCreator::MaskCreator(Configuration& config, std::shared_ptr<Detector> detect
     config_.setDefault<double>("density_bandwidth", 2.);
     config_.setDefault<double>("sigma_above_avg_max", 5.);
     config_.setDefault<double>("rate_max", 1.);
-    config_.setDefault<bool>("mask_dead_pixels",false);
+    config_.setDefault<bool>("mask_dead_pixels", false);
 
     m_method = config_.get<std::string>("method");
     m_frequency = config_.get<double>("frequency_cut");
@@ -134,7 +134,7 @@ void MaskCreator::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
         // Use global frequency filter to detect noisy pixels:
         globalFrequencyFilter();
     }
-    if (m_maskDeadPixels){
+    if(m_maskDeadPixels) {
         LOG(INFO) << "Masking dead pixels";
         // Mask dead pixels:
         deadPixelFinder();
@@ -231,18 +231,16 @@ void MaskCreator::deadPixelFinder() {
     for(int col = 0; col < m_detector->nPixels().X(); col++) {
         for(int row = 0; row < m_detector->nPixels().Y(); row++) {
             if(!m_detector->masked(col, row) && m_occupancy->GetBinContent(col + 1, row + 1) == 0) {
-              LOG(DEBUG) << "Masking dead pixel " << col << "," << row << " on detector " << m_detector->getName();
-              maskmap->Fill(col, row);
-              new_masked++;
-
+                LOG(DEBUG) << "Masking dead pixel " << col << "," << row << " on detector " << m_detector->getName();
+                maskmap->Fill(col, row);
+                new_masked++;
             }
         }
     }
 
     LOG(INFO) << "Detector " << m_detector->getName() << ":";
-              LOG(INFO) << "  total masked pixels:   " << maskmap->GetEntries();
-              LOG(INFO) << "  of which newly masked: " << new_masked;
-
+    LOG(INFO) << "  total masked pixels:   " << maskmap->GetEntries();
+    LOG(INFO) << "  of which newly masked: " << new_masked;
 }
 
 void MaskCreator::writeMaskFiles() {
