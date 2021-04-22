@@ -265,7 +265,7 @@ def runCorryvreckan(filenamebase, jobtask, silent):
                 try:
                     line = qout.get_nowait() # or q.get(timeout=.1)
                     if not silent:
-                        if 'WARNING'.encode() in line.strip():
+                        if b'WARNING' in line.strip():
                             log.warning(line.strip())
                         elif b'ERROR' in line.strip():
                             log.error(line.strip())
