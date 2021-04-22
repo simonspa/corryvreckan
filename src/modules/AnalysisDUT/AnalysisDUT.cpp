@@ -53,7 +53,7 @@ void AnalysisDUT::initialize() {
                                           0,
                                           100);
     hClusterSizeVsColAssoc = new TProfile("clusterSizeVsColAssoc",
-                                          "cluster size vs. column for assoc clusters;cluster row;mean cluster size",
+                                          "cluster size vs. column for assoc clusters;cluster column;mean cluster size",
                                           m_detector->nPixels().X(),
                                           -0.5,
                                           m_detector->nPixels().X() - 0.5,
