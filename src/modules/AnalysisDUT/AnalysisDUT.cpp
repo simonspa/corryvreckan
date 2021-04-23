@@ -440,6 +440,48 @@ void AnalysisDUT::initialize() {
                  200,
                  -10,
                  10);
+
+    pxTimeMinusSeedTime = new TH1F("pxTimeMinusSeedTime",
+                                   "pixel - seed pixel timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns];events",
+                                   n_timebins_,
+                                   -(n_timebins_ + 1) / 2. * time_binning_,
+                                   (n_timebins_ - 1) / 2. * time_binning_);
+    pxTimeMinusSeedTime_vs_pxCharge =
+        new TH2F("pxTimeMinusSeedTime_vs_pxCharge",
+                 "pixel - seed pixel timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [e];events",
+                 n_timebins_,
+                 -(n_timebins_ + 1) / 2. * time_binning_,
+                 (n_timebins_ - 1) / 2. * time_binning_,
+                 256,
+                 -0.5,
+                 255.5);
+    pxTimeMinusSeedTime_vs_pxCharge_2px =
+        new TH2F("pxTimeMinusSeedTime_vs_pxCharge_2px",
+                 "pixel - seed pixel timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [e];events",
+                 n_timebins_,
+                 -(n_timebins_ + 1) / 2. * time_binning_,
+                 (n_timebins_ - 1) / 2. * time_binning_,
+                 256,
+                 -0.5,
+                 255.5);
+    pxTimeMinusSeedTime_vs_pxCharge_3px =
+        new TH2F("pxTimeMinusSeedTime_vs_pxCharge_3px",
+                 "pixel - seed pixel timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [e];events",
+                 n_timebins_,
+                 -(n_timebins_ + 1) / 2. * time_binning_,
+                 (n_timebins_ - 1) / 2. * time_binning_,
+                 256,
+                 -0.5,
+                 255.5);
+    pxTimeMinusSeedTime_vs_pxCharge_4px =
+        new TH2F("pxTimeMinusSeedTime_vs_pxCharge_4px",
+                 "pixel - seed pixel timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [e];events",
+                 n_timebins_,
+                 -(n_timebins_ + 1) / 2. * time_binning_,
+                 (n_timebins_ - 1) / 2. * time_binning_,
+                 256,
+                 -0.5,
+                 255.5);
 }
 
 StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -631,6 +673,33 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             // mean charge of cluster seed
             pxqvsxmym->Fill(xmod, ymod, assoc_cluster->getSeedPixel()->charge());
+
+            if(assoc_cluster->size() > 1) {
+                for(auto& px : assoc_cluster->pixels()) {
+                    if(px == assoc_cluster->getSeedPixel()) {
+                        continue; // don't fill this histogram for seed pixel!
+                    }
+                    pxTimeMinusSeedTime->Fill(
+                        static_cast<double>(Units::convert(px->timestamp() - assoc_cluster->timestamp(), "ns")));
+                    pxTimeMinusSeedTime_vs_pxCharge->Fill(
+                        static_cast<double>(Units::convert(px->timestamp() - assoc_cluster->timestamp(), "ns")),
+                        px->charge());
+
+                    if(assoc_cluster->size() == 2) {
+                        pxTimeMinusSeedTime_vs_pxCharge_2px->Fill(
+                            static_cast<double>(Units::convert(px->timestamp() - assoc_cluster->timestamp(), "ns")),
+                            px->charge());
+                    } else if(assoc_cluster->size() == 3) {
+                        pxTimeMinusSeedTime_vs_pxCharge_3px->Fill(
+                            static_cast<double>(Units::convert(px->timestamp() - assoc_cluster->timestamp(), "ns")),
+                            px->charge());
+                    } else if(assoc_cluster->size() == 4) {
+                        pxTimeMinusSeedTime_vs_pxCharge_4px->Fill(
+                            static_cast<double>(Units::convert(px->timestamp() - assoc_cluster->timestamp(), "ns")),
+                            px->charge());
+                    }
+                }
+            }
 
             // mean cluster size
             npxvsxmym->Fill(xmod, ymod, static_cast<double>(assoc_cluster->size()));
