@@ -157,7 +157,6 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
     // read events until we have a common tag:
     try {
         triggerTLU_ = get_next_event_with_det(readerTime_, detector_time_, time_trig_start_, time_trig_stop_);
-        ;
         timebetweenTLUEvents_->Fill(static_cast<double>(Units::convert(time_trig_start_ - trig_prev_, "us")));
         trig_prev_ = time_trig_start_;
         triggerM26_ = static_cast<unsigned>(
