@@ -93,25 +93,6 @@ namespace corryvreckan {
         TH2F* pxTimeMinusSeedTime_vs_pxCharge_3px;
         TH2F* pxTimeMinusSeedTime_vs_pxCharge_4px;
 
-        TH2F* pxTimeMinusSeedTime_vs_pxCharge_2px_up;
-        TH2F* pxTimeMinusSeedTime_vs_pxCharge_2px_down;
-        TH2F* pxTimeMinusSeedTime_vs_pxCharge_2px_left;
-        TH2F* pxTimeMinusSeedTime_vs_pxCharge_2px_right;
-        TH2F* pxTimeMinusSeedTime_vs_pxCharge_2px_upleft;
-        TH2F* pxTimeMinusSeedTime_vs_pxCharge_2px_upright;
-        TH2F* pxTimeMinusSeedTime_vs_pxCharge_2px_downleft;
-        TH2F* pxTimeMinusSeedTime_vs_pxCharge_2px_downright;
-
-        TProfile2D* hMap_pxTimeMinusSeedTime_trackPos;
-        TProfile2D* hMap_pxTimeMinusSeedTime_clsPos;
-        TProfile2D* hMap_pxTimeMinusSeedTime_clsPos_evenOddCol;
-        TProfile2D* hMap_pxTimeMinusSeedTime_clsPos_2px;
-        TProfile2D* hMap_pxTimeMinusSeedTime_clsPos_2px_evenOddCol;
-        TProfile2D* hMap_pxTimeMinusSeedTime_clsPos_2px_smallDeltaT;
-        TProfile2D* hMap_pxTimeMinusSeedTime_clsPos_2px_largeDeltaT;
-
-        TProfile2D* hMapLargeClusters;
-
         // Member variables
         double time_cut_frameedge_;
         double chi2_ndof_cut_;
