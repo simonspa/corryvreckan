@@ -149,8 +149,8 @@ void AnalysisDUT::initialize() {
         new TH2F("residualsPosVsresidualsTime",
                  "Time vs. absolute position residuals;time_{track}-time_{hit} [ns];|pos_{track}-pos_{hit}| [mm];# entries",
                  n_timebins_,
-                 -n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
-                 n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
+                 -(n_timebins_ + 1) / 2. * time_binning_,
+                 (n_timebins_ - 1) / 2. * time_binning_,
                  800,
                  0.,
                  0.2);
@@ -339,8 +339,8 @@ void AnalysisDUT::initialize() {
     residualsTime = new TH1F("residualsTime",
                              "Time residual;time_{track}-time_{hit} [ns];#entries",
                              n_timebins_,
-                             -n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
-                             n_timebins_ / 2. * time_binning_ - time_binning_ / 2.);
+                             -(n_timebins_ + 1) / 2. * time_binning_,
+                             (n_timebins_ - 1) / 2. * time_binning_);
 
     hTrackCorrelationX =
         new TH1F("hTrackCorrelationX", "Track residual X, all clusters;x_{track}-x_{hit} [mm];# entries", 4000, -10., 10.);
@@ -372,14 +372,14 @@ void AnalysisDUT::initialize() {
                                    0,
                                    200,
                                    n_timebins_,
-                                   -n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
-                                   n_timebins_ / 2. * time_binning_ - time_binning_ / 2.);
+                                   -(n_timebins_ + 1) / 2. * time_binning_,
+                                   (n_timebins_ - 1) / 2. * time_binning_);
     residualsTimeVsTot =
         new TH2F("residualsTimeVsTot",
                  "Time residual vs. pixel charge;time_{track} - time_{hit} [ns];seed pixel ToT [lsb];# entries",
                  n_timebins_,
-                 -n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
-                 n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
+                 -(n_timebins_ + 1) / 2. * time_binning_,
+                 (n_timebins_ - 1) / 2. * time_binning_,
                  1000,
                  -0.5,
                  999.5);
@@ -388,8 +388,8 @@ void AnalysisDUT::initialize() {
         new TH2F("residualsTimeVsCol",
                  "Time residual vs. pixel charge;time_{track} - time_{hit} [ns];seed pixel column;# entries",
                  n_timebins_,
-                 -n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
-                 n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
+                 -(n_timebins_ + 1) / 2. * time_binning_,
+                 (n_timebins_ - 1) / 2. * time_binning_,
                  m_detector->nPixels().X(),
                  -0.5,
                  m_detector->nPixels().X() - 0.5);
@@ -397,8 +397,8 @@ void AnalysisDUT::initialize() {
     residualsTimeVsRow = new TH2F("residualsTimeVsRow",
                                   "Time residual vs. pixel charge;time_{track} - time_{hit} [ns];seed pixel row;# entries",
                                   n_timebins_,
-                                  -n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
-                                  n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
+                                  -(n_timebins_ + 1) / 2. * time_binning_,
+                                  (n_timebins_ - 1) / 2. * time_binning_,
                                   m_detector->nPixels().X(),
                                   -0.5,
                                   m_detector->nPixels().X() - 0.5);
@@ -407,8 +407,8 @@ void AnalysisDUT::initialize() {
         new TH2F("residualsTimeVsSignal",
                  "Time residual vs. cluster charge;cluster charge [e];time_{track}-time_{hit} [mm];# entries",
                  n_timebins_,
-                 -n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
-                 n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
+                 -(n_timebins_ + 1) / 2. * time_binning_,
+                 (n_timebins_ - 1) / 2. * time_binning_,
                  20000,
                  0,
                  100000);
