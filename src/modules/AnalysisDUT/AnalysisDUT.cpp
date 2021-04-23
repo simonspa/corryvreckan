@@ -43,7 +43,7 @@ void AnalysisDUT::initialize() {
                                 -0.5,
                                 m_detector->nPixels().Y() - 0.5);
     hClusterSizeMapAssoc = new TProfile2D("clusterSizeMapAssoc",
-                                          "Size map for associated clusters;cluster col;cluster row;#entries",
+                                          "Size map for associated clusters;cluster column;cluster row;#entries",
                                           m_detector->nPixels().X(),
                                           -0.5,
                                           m_detector->nPixels().X() - 0.5,
@@ -78,7 +78,7 @@ void AnalysisDUT::initialize() {
                                             500);
     hClusterChargeVsColAssoc =
         new TProfile("clusterChargeVsColAssoc",
-                     "cluster charge vs. column for assoc clusters;cluster row;mean cluster charge [e]",
+                     "cluster charge vs. column for assoc clusters;cluster column;mean cluster charge [e]",
                      m_detector->nPixels().X(),
                      -0.5,
                      m_detector->nPixels().X() - 0.5,
@@ -94,7 +94,7 @@ void AnalysisDUT::initialize() {
 
     hSeedChargeVsColAssoc =
         new TProfile("seedChargeVsColAssoc",
-                     "seed pixel charge vs. column for assoc clusters;cluster row;mean seed pixel charge [e]",
+                     "seed pixel charge vs. column for assoc clusters;cluster column;mean seed pixel charge [e]",
                      m_detector->nPixels().X(),
                      -0.5,
                      m_detector->nPixels().X() - 0.5,
