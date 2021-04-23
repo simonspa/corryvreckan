@@ -14,6 +14,7 @@
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TProfile.h>
 #include <TProfile2D.h>
 #include <iostream>
 #include "core/module/Module.hpp"
@@ -39,6 +40,9 @@ namespace corryvreckan {
         // Histograms
         TH2F *hClusterMapAssoc, *hHitMapAssoc;
         TProfile2D *hClusterSizeMapAssoc, *hClusterChargeMapAssoc;
+        TProfile *hClusterSizeVsColAssoc, *hClusterSizeVsRowAssoc;
+        TProfile *hClusterChargeVsColAssoc, *hClusterChargeVsRowAssoc;
+        TProfile *hSeedChargeVsColAssoc, *hSeedChargeVsRowAssoc;
 
         TH1F* hPixelRawValueAssoc;
         TProfile2D* hPixelRawValueMapAssoc;
@@ -54,6 +58,7 @@ namespace corryvreckan {
         TH1F *residualsXatLeast5pix, *residualsYatLeast5pix;
 
         TH1F* clusterChargeAssoc;
+        TH1F* seedChargeAssoc;
         TH1F* clusterSizeAssoc;
         TH1F* clusterSizeAssocNorm;
         TH1F* clusterWidthRowAssoc;
@@ -74,16 +79,27 @@ namespace corryvreckan {
         TH1F* hTrackZPosDUT;
         TH1F* residualsTime;
         TH2F* residualsTimeVsTot;
+        TH2F* residualsTimeVsCol;
+        TH2F* residualsTimeVsRow;
         TH2F* residualsTimeVsTime;
         TH2F* residualsTimeVsSignal;
         TH2F* hAssociatedTracksGlobalPosition;
         TH2F* hAssociatedTracksLocalPosition;
         TH2F* hUnassociatedTracksGlobalPosition;
+
+        TH1F* pxTimeMinusSeedTime;
+        TH2F* pxTimeMinusSeedTime_vs_pxCharge;
+        TH2F* pxTimeMinusSeedTime_vs_pxCharge_2px;
+        TH2F* pxTimeMinusSeedTime_vs_pxCharge_3px;
+        TH2F* pxTimeMinusSeedTime_vs_pxCharge_4px;
+
         // Member variables
-        double m_timeCutFrameEdge;
-        double chi2ndofCut;
-        bool useClosestCluster;
-        int num_tracks;
+        double time_cut_frameedge_;
+        double chi2_ndof_cut_;
+        bool use_closest_cluster_;
+        int n_timebins_;
+        double time_binning_;
+        int num_tracks_;
     };
 } // namespace corryvreckan
 

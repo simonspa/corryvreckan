@@ -12,6 +12,8 @@ If a region of interest (ROI) is defined for the detector under investigation, o
 * `time_cut_frameedge`: Parameter to discard telescope tracks at the frame edges (start and end of the current CLICpix2 frame). Defaults to `20ns`.
 * `chi2ndof_cut`: Acceptance criterion for the maximum telescope tracks chi2/ndf, defaults to a value of `3`.
 * `use_closest_cluster`: If `true` the cluster with the smallest distance to the track is used if a track has more than one associated cluster. If `false`, loop over all associated clusters. Defaults to `true`.
+* `n_time_bins`: Number of bins in the time residual histograms. Defaults to `20000`.
+* `time_binning`: Bin width in the time residual histograms. Defaults to `0.1ns`.
 
 ### Plots produced
 
@@ -26,6 +28,7 @@ For the DUT, the following plots are produced:
     * Histograms of the cluster size of associated clusters in X/Y
     * Histogram of the charge/raw values of associated clusters
     * Various histograms for track residuals for different cluster sizes
+    * Histograms of pixel timestamp minus seed pixel timestamp for different cluster sizes
 
 ### Usage
 ```toml
