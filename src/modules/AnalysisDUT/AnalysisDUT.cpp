@@ -22,8 +22,8 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
     config_.setDefault<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
     config_.setDefault<double>("chi2ndof_cut", 3.);
     config_.setDefault<bool>("use_closest_cluster", true);
-    config_.setDefault<bool>("n_time_bins", 20000);
-    config_.setDefault<bool>("time_binning", Units::get<double>(0.1, "ns"));
+    config_.setDefault<int>("n_time_bins", 20000);
+    config_.setDefault<double>("time_binning", Units::get<double>(0.1, "ns"));
 
     m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge");
     chi2ndofCut = config_.get<double>("chi2ndof_cut");
