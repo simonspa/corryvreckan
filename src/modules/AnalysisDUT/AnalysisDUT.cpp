@@ -679,23 +679,27 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
                     if(px == assoc_cluster->getSeedPixel()) {
                         continue; // don't fill this histogram for seed pixel!
                     }
-                    pxTimeMinusSeedTime->Fill(
-                        static_cast<double>(Units::convert(px->timestamp() - assoc_cluster->timestamp(), "ns")));
+                    pxTimeMinusSeedTime->Fill(static_cast<double>(
+                        Units::convert(px->timestamp() - assoc_cluster->getSeedPixel()->timestamp(), "ns")));
                     pxTimeMinusSeedTime_vs_pxCharge->Fill(
-                        static_cast<double>(Units::convert(px->timestamp() - assoc_cluster->timestamp(), "ns")),
+                        static_cast<double>(
+                            Units::convert(px->timestamp() - assoc_cluster->getSeedPixel()->timestamp(), "ns")),
                         px->charge());
 
                     if(assoc_cluster->size() == 2) {
                         pxTimeMinusSeedTime_vs_pxCharge_2px->Fill(
-                            static_cast<double>(Units::convert(px->timestamp() - assoc_cluster->timestamp(), "ns")),
+                            static_cast<double>(
+                                Units::convert(px->timestamp() - assoc_cluster->getSeedPixel()->timestamp(), "ns")),
                             px->charge());
                     } else if(assoc_cluster->size() == 3) {
                         pxTimeMinusSeedTime_vs_pxCharge_3px->Fill(
-                            static_cast<double>(Units::convert(px->timestamp() - assoc_cluster->timestamp(), "ns")),
+                            static_cast<double>(
+                                Units::convert(px->timestamp() - assoc_cluster->getSeedPixel()->timestamp(), "ns")),
                             px->charge());
                     } else if(assoc_cluster->size() == 4) {
                         pxTimeMinusSeedTime_vs_pxCharge_4px->Fill(
-                            static_cast<double>(Units::convert(px->timestamp() - assoc_cluster->timestamp(), "ns")),
+                            static_cast<double>(
+                                Units::convert(px->timestamp() - assoc_cluster->getSeedPixel()->timestamp(), "ns")),
                             px->charge());
                     }
                 }
