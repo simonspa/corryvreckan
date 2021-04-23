@@ -113,12 +113,12 @@ namespace corryvreckan {
         TProfile2D* hMapLargeClusters;
 
         // Member variables
-        double m_timeCutFrameEdge;
-        double chi2ndofCut;
-        bool useClosestCluster;
-        int nTimeBins;
-        double timeBinning;
-        int num_tracks;
+        double time_cut_frameedge_;
+        double chi2_ndof_cut_;
+        bool use_closest_cluster_;
+        int n_timebins_;
+        double time_binning_;
+        int num_tracks_;
     };
 } // namespace corryvreckan
 

@@ -25,11 +25,11 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
     config_.setDefault<int>("n_time_bins", 20000);
     config_.setDefault<double>("time_binning", Units::get<double>(0.1, "ns"));
 
-    m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge");
-    chi2ndofCut = config_.get<double>("chi2ndof_cut");
-    useClosestCluster = config_.get<bool>("use_closest_cluster");
-    nTimeBins = config_.get<int>("n_time_bins");
-    timeBinning = config_.get<double>("time_binning");
+    time_cut_frameedge_ = config_.get<double>("time_cut_frameedge");
+    chi2_ndof_cut_ = config_.get<double>("chi2ndof_cut");
+    use_closest_cluster_ = config_.get<bool>("use_closest_cluster");
+    n_timebins_ = config_.get<int>("n_time_bins");
+    time_binning_ = config_.get<double>("time_binning");
 }
 
 void AnalysisDUT::initialize() {
@@ -148,9 +148,9 @@ void AnalysisDUT::initialize() {
     residualsPosVsresidualsTime =
         new TH2F("residualsPosVsresidualsTime",
                  "Time vs. absolute position residuals;time_{track}-time_{hit} [ns];|pos_{track}-pos_{hit}| [mm];# entries",
-                 nTimeBins,
-                 -nTimeBins / 2. * timeBinning - timeBinning / 2.,
-                 nTimeBins / 2. * timeBinning - timeBinning / 2.,
+                 n_timebins_,
+                 -n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
+                 n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
                  800,
                  0.,
                  0.2);
@@ -338,9 +338,9 @@ void AnalysisDUT::initialize() {
 
     residualsTime = new TH1F("residualsTime",
                              "Time residual;time_{track}-time_{hit} [ns];#entries",
-                             nTimeBins,
-                             -nTimeBins / 2. * timeBinning - timeBinning / 2.,
-                             nTimeBins / 2. * timeBinning - timeBinning / 2.);
+                             n_timebins_,
+                             -n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
+                             n_timebins_ / 2. * time_binning_ - time_binning_ / 2.);
 
     hTrackCorrelationX =
         new TH1F("hTrackCorrelationX", "Track residual X, all clusters;x_{track}-x_{hit} [mm];# entries", 4000, -10., 10.);
@@ -371,15 +371,15 @@ void AnalysisDUT::initialize() {
                                    20000,
                                    0,
                                    200,
-                                   nTimeBins,
-                                   -nTimeBins / 2. * timeBinning - timeBinning / 2.,
-                                   nTimeBins / 2. * timeBinning - timeBinning / 2.);
+                                   n_timebins_,
+                                   -n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
+                                   n_timebins_ / 2. * time_binning_ - time_binning_ / 2.);
     residualsTimeVsTot =
         new TH2F("residualsTimeVsTot",
                  "Time residual vs. pixel charge;time_{track} - time_{hit} [ns];seed pixel ToT [lsb];# entries",
-                 nTimeBins,
-                 -nTimeBins / 2. * timeBinning - timeBinning / 2.,
-                 nTimeBins / 2. * timeBinning - timeBinning / 2.,
+                 n_timebins_,
+                 -n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
+                 n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
                  1000,
                  -0.5,
                  999.5);
@@ -387,18 +387,18 @@ void AnalysisDUT::initialize() {
     residualsTimeVsCol =
         new TH2F("residualsTimeVsCol",
                  "Time residual vs. pixel charge;time_{track} - time_{hit} [ns];seed pixel column;# entries",
-                 nTimeBins,
-                 -nTimeBins / 2. * timeBinning - timeBinning / 2.,
-                 nTimeBins / 2. * timeBinning - timeBinning / 2.,
+                 n_timebins_,
+                 -n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
+                 n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
                  m_detector->nPixels().X(),
                  -0.5,
                  m_detector->nPixels().X() - 0.5);
 
     residualsTimeVsRow = new TH2F("residualsTimeVsRow",
                                   "Time residual vs. pixel charge;time_{track} - time_{hit} [ns];seed pixel row;# entries",
-                                  nTimeBins,
-                                  -nTimeBins / 2. * timeBinning - timeBinning / 2.,
-                                  nTimeBins / 2. * timeBinning - timeBinning / 2.,
+                                  n_timebins_,
+                                  -n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
+                                  n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
                                   m_detector->nPixels().X(),
                                   -0.5,
                                   m_detector->nPixels().X() - 0.5);
@@ -406,9 +406,9 @@ void AnalysisDUT::initialize() {
     residualsTimeVsSignal =
         new TH2F("residualsTimeVsSignal",
                  "Time residual vs. cluster charge;cluster charge [e];time_{track}-time_{hit} [mm];# entries",
-                 nTimeBins,
-                 -nTimeBins / 2. * timeBinning - timeBinning / 2.,
-                 nTimeBins / 2. * timeBinning - timeBinning / 2.,
+                 n_timebins_,
+                 -n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
+                 n_timebins_ / 2. * time_binning_ - time_binning_ / 2.,
                  20000,
                  0,
                  100000);
@@ -454,10 +454,10 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         LOG(DEBUG) << "Looking at next track";
 
         // Cut on the chi2/ndof
-        if(track->getChi2ndof() > chi2ndofCut) {
+        if(track->getChi2ndof() > chi2_ndof_cut_) {
             LOG(DEBUG) << " - track discarded due to Chi2/ndof";
             hCutHisto->Fill(1);
-            num_tracks++;
+            num_tracks_++;
             continue;
         }
 
@@ -468,7 +468,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         if(!m_detector->hasIntercept(track.get(), 0.5)) {
             LOG(DEBUG) << " - track outside DUT area";
             hCutHisto->Fill(2);
-            num_tracks++;
+            num_tracks_++;
             continue;
         }
 
@@ -481,7 +481,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         if(m_detector->hitMasked(track.get(), 1.)) {
             LOG(DEBUG) << " - track close to masked pixel";
             hCutHisto->Fill(3);
-            num_tracks++;
+            num_tracks_++;
             continue;
         }
 
@@ -489,21 +489,21 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         auto event = clipboard->getEvent();
 
         // Discard tracks which are very close to the frame edges
-        if(fabs(track->timestamp() - event->end()) < m_timeCutFrameEdge) {
+        if(fabs(track->timestamp() - event->end()) < time_cut_frameedge_) {
             // Late edge - eventEnd points to the end of the frame`
             LOG(DEBUG) << " - track close to end of readout frame: "
                        << Units::display(fabs(track->timestamp() - event->end()), {"us", "ns"}) << " at "
                        << Units::display(track->timestamp(), {"us"});
             hCutHisto->Fill(4);
-            num_tracks++;
+            num_tracks_++;
             continue;
-        } else if(fabs(track->timestamp() - event->start()) < m_timeCutFrameEdge) {
+        } else if(fabs(track->timestamp() - event->start()) < time_cut_frameedge_) {
             // Early edge - eventStart points to the beginning of the frame
             LOG(DEBUG) << " - track close to start of readout frame: "
                        << Units::display(fabs(track->timestamp() - event->start()), {"us", "ns"}) << " at "
                        << Units::display(track->timestamp(), {"us"});
             hCutHisto->Fill(4);
-            num_tracks++;
+            num_tracks_++;
             continue;
         }
 
@@ -517,7 +517,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             LOG(DEBUG) << " - Looking at next associated DUT cluster";
 
             // if closest cluster should be used continue if current associated cluster is not the closest one
-            if(useClosestCluster && track->getClosestCluster(m_detector->getName()) != assoc_cluster) {
+            if(use_closest_cluster_ && track->getClosestCluster(m_detector->getName()) != assoc_cluster) {
                 continue;
             }
             has_associated_cluster = true;
@@ -654,13 +654,13 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         if(!has_associated_cluster) {
             hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
         }
-        num_tracks++;
+        num_tracks_++;
     }
     // Return value telling analysis to keep running
     return StatusCode::Success;
 }
 
 void AnalysisDUT::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
-    hCutHisto->Scale(1 / double(num_tracks));
+    hCutHisto->Scale(1 / double(num_tracks_));
     clusterSizeAssocNorm->Scale(1 / clusterSizeAssoc->Integral());
 }
