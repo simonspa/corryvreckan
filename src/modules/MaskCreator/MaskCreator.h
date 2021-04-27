@@ -48,6 +48,9 @@ namespace corryvreckan {
 
         void globalFrequencyFilter();
 
+        // Finds pixels that did not receive any hits (dead or disabled pixels during tuning)
+        void deadPixelFinder();
+
         // Write out mask files for all detectors]
         void writeMaskFiles();
 
@@ -65,6 +68,7 @@ namespace corryvreckan {
         int m_bandwidthCol, m_bandwidthRow;
         double m_sigmaMax, m_rateMax;
         int m_numEvents, binsOccupancy;
+        bool m_maskDeadPixels;
 
         static inline void fillDist(const TH2D* values, TH1D* dist);
     };

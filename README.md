@@ -62,6 +62,7 @@ The following authors, in alphabetical order, have contributed to Corryvreckan:
 * Katharina Dort, University of Giessen/CERN, @kdort
 * Alexander Ferk, CERN, @aferk
 * Adrian Fiergolski, CERN, @afiergol
+* Sejla Hadzic, MPP, @sehadzic
 * Daniel Hynds, Nikhef, @dhynds
 * Magnus Mager, CERN, @mmager
 * Andreas Matthias Nürnberg, KIT, @nurnberg
