@@ -66,6 +66,22 @@ void AnalysisDUT::initialize() {
                                           m_detector->nPixels().Y() - 0.5,
                                           0,
                                           100);
+    hClusterWidthColVsRowAssoc =
+        new TProfile("clusterWidthColVsRowAssoc",
+                     "cluster column width vs. row for assoc clusters;cluster row;mean cluster column width",
+                     m_detector->nPixels().Y(),
+                     -0.5,
+                     m_detector->nPixels().Y() - 0.5,
+                     0,
+                     100);
+    hClusterWidthRowVsRowAssoc =
+        new TProfile("clusterWidthRowVsRowAssoc",
+                     "cluster row width vs. row for assoc clusters;cluster row;mean cluster row width",
+                     m_detector->nPixels().Y(),
+                     -0.5,
+                     m_detector->nPixels().Y() - 0.5,
+                     0,
+                     100);
     hClusterChargeMapAssoc = new TProfile2D("clusterChargeMapAssoc",
                                             "Charge map for associated clusters; cluster charge [e]; #entries",
                                             m_detector->nPixels().X(),
@@ -588,6 +604,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
                 assoc_cluster->column(), assoc_cluster->row(), static_cast<double>(assoc_cluster->size()));
             hClusterSizeVsColAssoc->Fill(assoc_cluster->column(), static_cast<double>(assoc_cluster->size()));
             hClusterSizeVsRowAssoc->Fill(assoc_cluster->row(), static_cast<double>(assoc_cluster->size()));
+            hClusterWidthColVsRowAssoc->Fill(assoc_cluster->row(), static_cast<double>(assoc_cluster->columnWidth()));
+            hClusterWidthRowVsRowAssoc->Fill(assoc_cluster->row(), static_cast<double>(assoc_cluster->rowWidth()));
 
             // Cluster charge normalized to path length in sensor:
             double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
