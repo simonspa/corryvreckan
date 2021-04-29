@@ -17,8 +17,7 @@ namespace corryvreckan {
     }
 
     template <typename T> void Clipboard::removeData(std::shared_ptr<T> object, const std::string& key) {
-        auto data = get_data<T>(data_, key);
-        remove_data(std::move(data), std::move(object));
+        remove_data(data_, std::vector<std::shared_ptr<T>>{std::move(object)}, key);
     }
 
     template <typename T> void Clipboard::removeData(std::vector<std::shared_ptr<T>>& objects, const std::string& key) {
@@ -109,21 +108,20 @@ namespace corryvreckan {
     }
 
     template <typename T>
-    void Clipboard::remove_data(std::vector<std::shared_ptr<T>>& data, const std::shared_ptr<T>& object) {
-        auto object_iterator = data.find(object);
-        if(object_iterator != data.end()) {
-            data.erase(object_iterator);
-        }
-    }
-
-    template <typename T>
     void Clipboard::remove_data(ClipboardData& storage_element,
                                 const std::vector<std::shared_ptr<T>>& objects,
                                 const std::string& key) {
+
         // Try to get existing objects:
-        auto data = get_data<T>(storage_element, key);
+        if(storage_element.count(typeid(T)) == 0 || storage_element.at(typeid(T)).count(key) == 0) {
+            return;
+        }
+        auto data = std::static_pointer_cast<std::vector<std::shared_ptr<T>>>(storage_element.at(typeid(T)).at(key));
         for(const auto& object : objects) {
-            remove_data<T>(data, object, key);
+            auto object_iterator = std::find(data->begin(), data->end(), object);
+            if(object_iterator != data->end()) {
+                data->erase(object_iterator);
+            }
         }
     }
 

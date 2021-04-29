@@ -178,13 +178,6 @@ namespace corryvreckan {
                       bool append = false);
 
         /**
-         * Helper to remove a single object from the clipboard
-         * @param data   Existing data the object should be removed from
-         * @param object Object to be removed
-         */
-        template <typename T> void remove_data(std::vector<std::shared_ptr<T>>& data, const std::shared_ptr<T>& object);
-
-        /**
          * Helper to remove a set of objects from the clipboard
          * @param  storage_element Storage element concerned
          * @param  objects         Objects to be removed
