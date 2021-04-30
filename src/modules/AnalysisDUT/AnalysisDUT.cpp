@@ -124,6 +124,22 @@ void AnalysisDUT::initialize() {
                      m_detector->nPixels().Y() - 0.5,
                      0,
                      100);
+    hClusterChargeVsRowAssoc_2D = new TH2F("hClusterChargeVsRowAssoc_2D",
+                                           "cluster charge distribution vs. cluster row; cluster row; cluster ToT [lsb]",
+                                           m_detector->nPixels().Y(),
+                                           -0.5,
+                                           m_detector->nPixels().Y() - 0.5,
+                                           64,
+                                           -0.5,
+                                           63.5);
+    hSeedChargeVsRowAssoc_2D = new TH2F("hSeedChargeVsRowAssoc_2D",
+                                        "seed charge distribution vs. cluster row; cluster row; seed pixel ToT [lsb]",
+                                        m_detector->nPixels().Y(),
+                                        -0.5,
+                                        m_detector->nPixels().Y() - 0.5,
+                                        64,
+                                        -0.5,
+                                        63.5);
 
     hTrackZPosDUT = new TH1F("globalTrackZPosOnDUT",
                              "Global z-position of track on the DUT; global z of track intersection [mm]; #entries ",
@@ -621,6 +637,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             hClusterChargeVsRowAssoc->Fill(assoc_cluster->row(), cluster_charge);
             hSeedChargeVsColAssoc->Fill(assoc_cluster->column(), assoc_cluster->getSeedPixel()->charge());
             hSeedChargeVsRowAssoc->Fill(assoc_cluster->row(), assoc_cluster->getSeedPixel()->charge());
+            hClusterChargeVsRowAssoc_2D->Fill(assoc_cluster->row(), cluster_charge);
+            hSeedChargeVsRowAssoc_2D->Fill(assoc_cluster->row(), assoc_cluster->getSeedPixel()->charge());
 
             // Fill per-pixel histograms
             for(auto& pixel : assoc_cluster->pixels()) {
