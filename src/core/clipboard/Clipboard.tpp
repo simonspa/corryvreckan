@@ -16,6 +16,14 @@ namespace corryvreckan {
         put_data(data_, std::move(objects), key);
     }
 
+    template <typename T> void Clipboard::removeData(std::shared_ptr<T> object, const std::string& key) {
+        remove_data(data_, std::vector<std::shared_ptr<T>>{std::move(object)}, key);
+    }
+
+    template <typename T> void Clipboard::removeData(std::vector<std::shared_ptr<T>>& objects, const std::string& key) {
+        remove_data(data_, std::move(objects), key);
+    }
+
     template <typename T> std::vector<std::shared_ptr<T>>& Clipboard::getData(const std::string& key) const {
         return get_data<T>(data_, key);
     }
@@ -95,6 +103,24 @@ namespace corryvreckan {
             } else {
                 LOG(WARNING) << "Dataset of type " << corryvreckan::demangle(typeid(T).name())
                              << " already exists for key \"" << key << "\", ignoring new data";
+            }
+        }
+    }
+
+    template <typename T>
+    void Clipboard::remove_data(ClipboardData& storage_element,
+                                const std::vector<std::shared_ptr<T>>& objects,
+                                const std::string& key) {
+
+        // Try to get existing objects:
+        if(storage_element.count(typeid(T)) == 0 || storage_element.at(typeid(T)).count(key) == 0) {
+            return;
+        }
+        auto data = std::static_pointer_cast<std::vector<std::shared_ptr<T>>>(storage_element.at(typeid(T)).at(key));
+        for(const auto& object : objects) {
+            auto object_iterator = std::find(data->begin(), data->end(), object);
+            if(object_iterator != data->end()) {
+                data->erase(object_iterator);
             }
         }
     }

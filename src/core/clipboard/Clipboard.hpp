@@ -85,6 +85,20 @@ namespace corryvreckan {
         template <typename T> std::vector<std::shared_ptr<T>>& getData(const std::string& key = "") const;
 
         /**
+         * @brief Method to remove an existing object from the clipboard
+         * @param object  Shared pointer of the object to be removed
+         * @param key     Identifying key for the set this object belongs to. Defaults to empty key
+         */
+        template <typename T> void removeData(std::shared_ptr<T> object, const std::string& key = "");
+
+        /**
+         * @brief Method to remove existing objects from the clipboard
+         * @param object  List of objects to be removed
+         * @param key     Identifying key for the set these objects belongs to. Defaults to empty key
+         */
+        template <typename T> void removeData(std::vector<std::shared_ptr<T>>& objects, const std::string& key = "");
+
+        /**
          * @brief Method to count the number of objects of a given type on the clipboard
          * @param key Identifying key of objects to be counted. An empty key will count all objects available.
          */
@@ -150,11 +164,28 @@ namespace corryvreckan {
          */
         void clear();
 
+        /**
+         * Helper to put new data onto clipboard
+         * @param storage_element The storage element of the clipboard to store data in
+         * @param objects         Data to be stored
+         * @param key             Key under which data will be stored
+         * @param append          Flag whether data should be appended to existing key or not
+         */
         template <typename T>
         void put_data(ClipboardData& storage_element,
                       std::vector<std::shared_ptr<T>> objects,
                       const std::string& key,
                       bool append = false);
+
+        /**
+         * Helper to remove a set of objects from the clipboard
+         * @param  storage_element Storage element concerned
+         * @param  objects         Objects to be removed
+         * @param  key             Key under which objects should be searched
+         */
+        template <typename T>
+        void
+        remove_data(ClipboardData& storage_element, const std::vector<std::shared_ptr<T>>& objects, const std::string& key);
 
         // Container for data, list of all data held
         ClipboardData data_;
