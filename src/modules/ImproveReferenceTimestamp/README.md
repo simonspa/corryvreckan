@@ -5,7 +5,7 @@
 
 ### Description
 Replaces the existing track timestamp (set in the tracking module) by the closest trigger timestamp. For this, a trigger timestamp has to be saved as SPIDR signal during data taking.
-If no suitable trigger is found for a track, the track timestamp is set to `-1ns`.
+If no suitable trigger is found for a track, the track is removed from the clipboard and thus not available any further.
 
 ### Parameters
 * `signal_source`: Determines which detector plane carries the trigger signals. Only relevant for method 0. Default value is `"W0013_G02"`.
