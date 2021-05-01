@@ -30,7 +30,8 @@ void ImproveReferenceTimestamp::initialize() {
     // Initialise member variables
     m_eventNumber = 0;
     m_improvedTriggers = 0;
-    m_noTriggerFound = 0;
+    m_noTriggerOnClipboard = 0;
+    m_noTriggerInWindow = 0;
 
     hTriggersPerEvent = new TH1D("hTriggersPerEvent", "hTriggersPerEvent;triggers per event;# entries", 20, -0.5, 19.5);
     hTracksPerEvent = new TH1D("hTracksPerEvent", "hTracksPerEvent;tracks per event;# entries", 20, -0.5, 19.5);
@@ -70,9 +71,9 @@ StatusCode ImproveReferenceTimestamp::run(const std::shared_ptr<Clipboard>& clip
         // Find trigger timestamp closest in time
         double diff = std::numeric_limits<double>::max();
         if(!trigger_times.size()) {
-            // set to non-sense timestamp because we cannot delete from clipboard
-            track->setTimestamp(-1);
-            m_noTriggerFound++;
+            LOG(DEBUG) << "No triggers, removing track.";
+            clipboard->removeData(track);
+            m_noTriggerOnClipboard++;
         } else {
             for(auto& trigger_time : trigger_times) {
 
@@ -87,11 +88,13 @@ StatusCode ImproveReferenceTimestamp::run(const std::shared_ptr<Clipboard>& clip
                 }
             }
             if(diff < m_searchWindow) {
+                LOG(DEBUG) << "Found trigger within search window, improving track timestamp.";
                 track->setTimestamp(improved_time);
                 m_improvedTriggers++;
             } else {
-                track->setTimestamp(-1);
-                m_noTriggerFound++;
+                LOG(DEBUG) << "No trigger within search window, removing track.";
+                clipboard->removeData(track);
+                m_noTriggerInWindow++;
             }
         }
     }
@@ -107,5 +110,6 @@ StatusCode ImproveReferenceTimestamp::run(const std::shared_ptr<Clipboard>& clip
 void ImproveReferenceTimestamp::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(STATUS) << "Analysed " << m_eventNumber << " events, improved track timestamps: " << m_improvedTriggers
-                << ", no trigger found: " << m_noTriggerFound;
+                << ", no trigger on clipboard: " << m_noTriggerOnClipboard
+                << ", no trigger in search window: " << m_noTriggerInWindow;
 }

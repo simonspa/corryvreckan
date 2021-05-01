@@ -42,7 +42,8 @@ namespace corryvreckan {
 
         // Member variables
         int m_eventNumber;
-        int m_noTriggerFound;
+        int m_noTriggerOnClipboard;
+        int m_noTriggerInWindow;
         int m_improvedTriggers;
         std::string m_source;
         double m_triggerLatency;
