@@ -36,18 +36,18 @@ namespace corryvreckan {
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
-        // Histograms for several devices
-        std::map<std::string, TH2F*> plotPerDevice;
-
-        // Single histograms
-        TH1F* singlePlot;
+        TH1D* hTriggersPerEvent;
+        TH1D* hTracksPerEvent;
+        TH1D* hTrackTriggerTimeCorrelation;
 
         // Member variables
         int m_eventNumber;
-        int m_method;
-        bool m_stop;
+        int m_noTriggerOnClipboard;
+        int m_noTriggerInWindow;
+        int m_improvedTriggers;
         std::string m_source;
         double m_triggerLatency;
+        double m_searchWindow;
     };
 } // namespace corryvreckan
 #endif // ImproveReferenceTimestamp_H

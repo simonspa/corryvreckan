@@ -1,20 +1,28 @@
 # ImproveReferenceTimestamp
-**Maintainer**: Florian Pitters (<florian.pitters@cern.ch>)  
+**Maintainer**: Florian Pitters (<florian.pitters@cern.ch>), Jens Kroeger (<jens.kroeger@cern.ch>)  
 **Module Type**: *GLOBAL*  
-**Status**: Work in progress
+**Status**: Working
 
 ### Description
-Replaces the existing reference timestamp (earliest hit on reference plane) by either the trigger timestamp (method 0) or the average track timestamp (method 1). For method 0 to work, a trigger timestamp has to be saved as SPIDR signal during data taking.
+Replaces the existing track timestamp (set in the tracking module) by the closest trigger timestamp. For this, a trigger timestamp has to be saved as SPIDR signal during data taking.
+If no suitable trigger is found for a track, the track is removed from the clipboard and thus not available any further.
 
 ### Parameters
-* `improvement_method`: Determines which method to use. Trigger timestamp is 0, average track timestamp is 1. Default value is `1`.
 * `signal_source`: Determines which detector plane carries the trigger signals. Only relevant for method 0. Default value is `"W0013_G02"`.
 * `trigger_latency`: Adds a latency to the trigger timestamp to shift time histograms. Default value is `0`.
+* `search_window`: Time window to search for SPIDR trigger signals around the track timestamp. Default value is `200ns`.
+
+### Plots produced
+
+The following plots are produced:
+
+* number of triggers per event
+* number of tracks per event
+* time correlation between track and trigger timestamps
 
 ### Usage
 ```toml
 [ImproveReferenceTimestamp]
-improvement_method = 0
 signal_source = "W0013_G02"
 trigger_latency = 20ns
 ```
