@@ -33,6 +33,38 @@ void EventLoaderEUDAQ::initialize() {
     } catch(...) {
         throw ModuleError("Unable to read input file \"" + m_filename + "\"");
     }
+
+    // Loop over all planes
+    for(auto& detector : get_detectors()) {
+        auto detectorID = detector->getName();
+
+        // Do not created plots for auxiliary detectors:
+        if(detector->isAuxiliary()) {
+            continue;
+        }
+
+        TDirectory* directory = getROOTDirectory();
+        TDirectory* local_directory = directory->mkdir(detectorID.c_str());
+        if(local_directory == nullptr) {
+            throw RuntimeError("Cannot create or access local ROOT directory for module " + this->getUniqueName());
+        }
+        local_directory->cd();
+
+        // Create a histogram for each detector for the bunch crossing time of the LV1 trigger (BCID), 1bc = 25ns
+        std::string title = detectorID + ": LV1 distribution; [bc]; events";
+        lv1[detectorID] = new TH1F("LV1 distribution", title.c_str(), 32, -0.5, 31.5);
+
+        // Create a hitmap for each detector
+        title = detectorID + ": hitmap;x [px];y [px];events";
+        hitmap[detectorID] = new TH2F("hitmap",
+                                      title.c_str(),
+                                      detector->nPixels().X(),
+                                      -0.5,
+                                      detector->nPixels().X() - 0.5,
+                                      detector->nPixels().Y(),
+                                      -0.5,
+                                      detector->nPixels().Y() - 0.5);
+    }
 }
 
 StatusCode EventLoaderEUDAQ::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -78,28 +110,42 @@ StatusCode EventLoaderEUDAQ::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             // Make a new container for the data
             PixelVector deviceData;
-            for(unsigned int ipix = 0; ipix < plane.HitPixels(); ++ipix) {
-                auto col = static_cast<int>(plane.GetX(ipix));
-                auto row = static_cast<int>(plane.GetY(ipix));
+            for(unsigned int frame = 0; frame < plane.NumFrames(); ++frame) {
+                for(unsigned int ipix = 0; ipix < plane.HitPixels(frame); ++ipix) {
+                    auto col = static_cast<int>(plane.GetX(ipix, frame));
+                    auto row = static_cast<int>(plane.GetY(ipix, frame));
 
-                if(col >= detector->nPixels().X() || row >= detector->nPixels().Y()) {
-                    LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix with size "
-                                 << detector->nPixels();
+                    if(col >= detector->nPixels().X() || row >= detector->nPixels().Y()) {
+                        LOG(WARNING) << "Pixel address " << col << ", " << row << " is outside of pixel matrix with size "
+                                     << detector->nPixels();
+                    }
+
+                    // Check if this pixel is masked
+                    if(detector->masked(col, row)) {
+                        LOG(TRACE) << "Detector " << detectorID << ": pixel " << col << "," << row << " masked";
+                        continue;
+                    }
+
+                    // when calibration is not available, set charge = tot, timestamp not available -> set to 0
+                    auto pixel = std::make_shared<Pixel>(
+                        // column, row and ToT information and the corresponding bunch crossing time of the LV1 trigger
+                        // (BCID)
+                        detectorID,
+                        col,
+                        row,
+                        static_cast<int>(plane.GetPixel(ipix, frame)),
+                        plane.GetPixel(ipix, frame),
+                        frame);
+
+                    // Fill the lv1 information
+                    lv1[detectorID]->Fill(frame);
+
+                    // Fill the hitmap
+                    hitmap[detectorID]->Fill(pixel->column(), pixel->row());
+                    // Pixel gets timestamp of trigger assigned
+                    pixel->timestamp(timestamp);
+                    deviceData.push_back(pixel);
                 }
-
-                // Check if this pixel is masked
-                if(detector->masked(col, row)) {
-                    LOG(TRACE) << "Detector " << detectorID << ": pixel " << col << "," << row << " masked";
-                    continue;
-                }
-
-                // when calibration is not available, set charge = tot, timestamp not available -> set to 0
-                auto pixel = std::make_shared<Pixel>(
-                    detectorID, col, row, static_cast<int>(plane.GetPixel(ipix)), plane.GetPixel(ipix), 0.);
-
-                // Pixel gets timestamp of trigger assigned:
-                pixel->timestamp(timestamp);
-                deviceData.push_back(pixel);
             }
 
             // Store on clipboard

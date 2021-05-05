@@ -25,3 +25,9 @@ for CMake to find the library link against and headers to include.
 file_name = "rawdata/eudaq/run020808.raw"
 long_detector_id = true
 ```
+
+### Plots produced
+For each detector the following plots are produced:
+
+* 1D histograms for bunch crossing time of the LV1 trigger (BCID)
+* 2D hitmaps on pixel-leveL
