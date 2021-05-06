@@ -50,12 +50,8 @@ void EventLoaderEUDAQ::initialize() {
         }
         local_directory->cd();
 
-        // Create a histogram for each detector for the bunch crossing time of the LV1 trigger (BCID), 1bc = 25ns
-        std::string title = detectorID + ": LV1 distribution; [bc]; events";
-        lv1[detectorID] = new TH1F("LV1 distribution", title.c_str(), 32, -0.5, 31.5);
-
         // Create a hitmap for each detector
-        title = detectorID + ": hitmap;x [px];y [px];events";
+        std::string title = detectorID + ": hitmap;x [px];y [px];events";
         hitmap[detectorID] = new TH2F("hitmap",
                                       title.c_str(),
                                       detector->nPixels().X(),
@@ -137,12 +133,9 @@ StatusCode EventLoaderEUDAQ::run(const std::shared_ptr<Clipboard>& clipboard) {
                         plane.GetPixel(ipix, frame),
                         frame);
 
-                    // Fill the lv1 information
-                    lv1[detectorID]->Fill(frame);
-
                     // Fill the hitmap
                     hitmap[detectorID]->Fill(pixel->column(), pixel->row());
-                    // Pixel gets timestamp of trigger assigned
+                    // Pixel gets timestamp of trigger assigned:
                     pixel->timestamp(timestamp);
                     deviceData.push_back(pixel);
                 }

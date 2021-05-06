@@ -42,8 +42,6 @@ namespace corryvreckan {
         std::string m_filename{};
         bool m_longID;
 
-        // Bunch crossing time of the LV1 trigger (BCID) histogram
-        std::map<std::string, TH1F*> lv1;
         std::map<std::string, TH2F*> hitmap;
     };
 } // namespace corryvreckan
