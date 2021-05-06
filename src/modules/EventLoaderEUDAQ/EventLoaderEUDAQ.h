@@ -11,6 +11,9 @@
 #ifndef EventLoaderEUDAQ_H
 #define EventLoaderEUDAQ_H 1
 
+#include <TCanvas.h>
+#include <TH1F.h>
+#include <TH2F.h>
 #include <iostream>
 #include "core/module/Module.hpp"
 #include "eudaq/FileReader.hh"
@@ -38,6 +41,8 @@ namespace corryvreckan {
         // Member variables
         std::string m_filename{};
         bool m_longID;
+
+        std::map<std::string, TH2F*> hitmap;
     };
 } // namespace corryvreckan
 #endif // EventLoaderEUDAQ_H
