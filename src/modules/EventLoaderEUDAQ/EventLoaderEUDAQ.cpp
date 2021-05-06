@@ -34,33 +34,33 @@ void EventLoaderEUDAQ::initialize() {
         throw ModuleError("Unable to read input file \"" + m_filename + "\"");
     }
 
-// Loop over all planes
-for(auto& detector : get_detectors()) {
-    auto detectorID = detector->getName();
+    // Loop over all planes
+    for(auto& detector : get_detectors()) {
+        auto detectorID = detector->getName();
 
-    // Do not created plots for auxiliary detectors:
-    if(detector->isAuxiliary()) {
-        continue;
+        // Do not created plots for auxiliary detectors:
+        if(detector->isAuxiliary()) {
+            continue;
+        }
+
+        TDirectory* directory = getROOTDirectory();
+        TDirectory* local_directory = directory->mkdir(detectorID.c_str());
+        if(local_directory == nullptr) {
+            throw RuntimeError("Cannot create or access local ROOT directory for module " + this->getUniqueName());
+        }
+        local_directory->cd();
+
+        // Create a hitmap for each detector
+        std::string title = detectorID + ": hitmap;x [px];y [px];events";
+        hitmap[detectorID] = new TH2F("hitmap",
+                                      title.c_str(),
+                                      detector->nPixels().X(),
+                                      -0.5,
+                                      detector->nPixels().X() - 0.5,
+                                      detector->nPixels().Y(),
+                                      -0.5,
+                                      detector->nPixels().Y() - 0.5);
     }
-
-    TDirectory* directory = getROOTDirectory();
-    TDirectory* local_directory = directory->mkdir(detectorID.c_str());
-    if(local_directory == nullptr) {
-        throw RuntimeError("Cannot create or access local ROOT directory for module " + this->getUniqueName());
-    }
-    local_directory->cd();
-
-    // Create a hitmap for each detector
-    std::string title = detectorID + ": hitmap;x [px];y [px];events";
-    hitmap[detectorID] = new TH2F ("hitmap", title.c_str(),
-                                            detector->nPixels().X(),
-                                            -0.5,
-                                            detector->nPixels().X() - 0.5,
-                                            detector->nPixels().Y(),
-                                            -0.5,
-                                            detector->nPixels().Y() - 0.5);
-}
-
 }
 StatusCode EventLoaderEUDAQ::run(const std::shared_ptr<Clipboard>& clipboard) {
 
@@ -128,7 +128,7 @@ StatusCode EventLoaderEUDAQ::run(const std::shared_ptr<Clipboard>& clipboard) {
                 pixel->timestamp(timestamp);
                 deviceData.push_back(pixel);
 
-                //Fill the hitmap
+                // Fill the hitmap
                 hitmap[detectorID]->Fill(pixel->column(), pixel->row());
             }
 
