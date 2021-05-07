@@ -24,11 +24,13 @@ For the DUT, the following plots are produced:
     * Maps of all pixels of associated clusters
     * Maps of the in-pixel efficiencies in local/global coordinates
     * Maps of matched/non-matched track positions
+    * Maps of cluster/seed charge vs. row
 * 1D histograms:
     * Histograms of the cluster size of associated clusters in X/Y
     * Histogram of the charge/raw values of associated clusters
     * Various histograms for track residuals for different cluster sizes
     * Histograms of pixel timestamp minus seed pixel timestamp for different cluster sizes
+    * Profiles of cluster charge vs. column/row
 
 ### Usage
 ```toml
