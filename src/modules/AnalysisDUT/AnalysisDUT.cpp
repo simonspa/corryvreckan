@@ -610,16 +610,20 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             ROOT::Math::XYZPoint intercept = track->getIntercept(assoc_cluster->global().z());
             double xdistance = intercept.X() - assoc_cluster->global().x();
             double ydistance = intercept.Y() - assoc_cluster->global().y();
+            double xdistance_um = xdistance * 1000.;
+            double ydistance_um = xdistance * 1000.;
+
             double xabsdistance = fabs(xdistance);
             double yabsdistance = fabs(ydistance);
             double tdistance = track->timestamp() - assoc_cluster->timestamp();
             double posDiff =
                 sqrt((intercept.X() - assoc_cluster->global().x()) * (intercept.X() - assoc_cluster->global().x()) +
                      (intercept.Y() - assoc_cluster->global().y()) * (intercept.Y() - assoc_cluster->global().y()));
+            double posDiff_um = posDiff * 1000.;
 
             // Correlation plots
-            hTrackCorrelationX->Fill(static_cast<double>(Units::convert(xdistance, "mm")));
-            hTrackCorrelationY->Fill(static_cast<double>(Units::convert(ydistance, "mm")));
+            hTrackCorrelationX->Fill(xdistance);
+            hTrackCorrelationY->Fill(ydistance);
             hTrackCorrelationTime->Fill(tdistance);
             hTrackCorrelationPos->Fill(posDiff);
             hTrackCorrelationPosVsCorrelationTime->Fill(track->timestamp() - assoc_cluster->timestamp(), posDiff);
@@ -659,44 +663,44 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             associatedTracksVersusTime->Fill(static_cast<double>(Units::convert(track->timestamp(), "s")));
 
             // Residuals
-            residualsX->Fill(static_cast<double>(Units::convert(xdistance, "um")));
-            residualsY->Fill(static_cast<double>(Units::convert(ydistance, "um")));
-            residualsPos->Fill(static_cast<double>(Units::convert(posDiff, "um")));
-            residualsPosVsresidualsTime->Fill(tdistance, static_cast<double>(Units::convert(posDiff, "um")));
+            residualsX->Fill(xdistance_um);
+            residualsY->Fill(ydistance_um);
+            residualsPos->Fill(posDiff_um);
+            residualsPosVsresidualsTime->Fill(tdistance, posDiff_um);
 
             if(assoc_cluster->columnWidth() == 1) {
-                residualsX1pix->Fill(static_cast<double>(Units::convert(xdistance, "um")));
+                residualsX1pix->Fill(xdistance_um);
             }
             if(assoc_cluster->rowWidth() == 1) {
-                residualsY1pix->Fill(static_cast<double>(Units::convert(ydistance, "um")));
+                residualsY1pix->Fill(ydistance_um);
             }
 
             if(assoc_cluster->columnWidth() == 2) {
-                residualsX2pix->Fill(static_cast<double>(Units::convert(xdistance, "um")));
+                residualsX2pix->Fill(xdistance_um);
             }
             if(assoc_cluster->rowWidth() == 2) {
-                residualsY2pix->Fill(static_cast<double>(Units::convert(ydistance, "um")));
+                residualsY2pix->Fill(ydistance_um);
             }
 
             if(assoc_cluster->columnWidth() == 3) {
-                residualsX3pix->Fill(static_cast<double>(Units::convert(xdistance, "um")));
+                residualsX3pix->Fill(xdistance_um);
             }
             if(assoc_cluster->rowWidth() == 3) {
-                residualsY3pix->Fill(static_cast<double>(Units::convert(ydistance, "um")));
+                residualsY3pix->Fill(ydistance_um);
             }
 
             if(assoc_cluster->columnWidth() == 4) {
-                residualsX4pix->Fill(static_cast<double>(Units::convert(xdistance, "um")));
+                residualsX4pix->Fill(xdistance_um);
             }
             if(assoc_cluster->rowWidth() == 4) {
-                residualsY4pix->Fill(static_cast<double>(Units::convert(ydistance, "um")));
+                residualsY4pix->Fill(ydistance_um);
             }
 
             if(assoc_cluster->columnWidth() >= 5) {
-                residualsXatLeast5pix->Fill(static_cast<double>(Units::convert(xdistance, "um")));
+                residualsXatLeast5pix->Fill(xdistance_um);
             }
             if(assoc_cluster->rowWidth() >= 5) {
-                residualsYatLeast5pix->Fill(static_cast<double>(Units::convert(ydistance, "um")));
+                residualsYatLeast5pix->Fill(ydistance_um);
             }
 
             // Time residuals
