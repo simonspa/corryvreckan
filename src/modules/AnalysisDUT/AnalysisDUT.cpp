@@ -187,8 +187,8 @@ void AnalysisDUT::initialize() {
         -(n_timebins_ + 1) / 2. * time_binning_,
         (n_timebins_ - 1) / 2. * time_binning_,
         800,
-        0.,
-        0.2);
+        -0.25,
+        199.75);
 
     residualsX1pix = new TH1F(
         "residualsX1pix", "Residual for 1-pixel clusters in X;x_{track}-x_{hit} [#mum];# entries", 4000, -500.5, 499.5);
@@ -247,8 +247,8 @@ void AnalysisDUT::initialize() {
                                     29.5);
 
     // In-pixel studies:
-    auto pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
-    auto pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));
+    auto pitch_x = m_detector->getPitch().X() * 1000.; // convert mm -> um
+    auto pitch_y = m_detector->getPitch().Y() * 1000.; // convert mm -> um
     std::string mod_axes = "in-pixel x_{track} [#mum];in-pixel y_{track} [#mum];";
 
     // cut flow histogram
@@ -592,8 +592,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
         // Calculate in-pixel position of track in microns
         auto inpixel = m_detector->inPixel(localIntercept);
-        auto xmod = static_cast<double>(Units::convert(inpixel.X(), "um"));
-        auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
+        auto xmod = inpixel.X() * 1000.; // convert mm -> um
+        auto ymod = inpixel.Y() * 1000.; // convert mm -> um
 
         // Loop over all associated DUT clusters:
         for(auto assoc_cluster : track->getAssociatedClusters(m_detector->getName())) {
@@ -660,7 +660,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
                 hPixelRawValueMapAssoc->Fill(pixel->column(), pixel->row(), pixel->raw());
             }
 
-            associatedTracksVersusTime->Fill(static_cast<double>(Units::convert(track->timestamp(), "s")));
+            associatedTracksVersusTime->Fill(track->timestamp() / 1e9); // convert ns -> s
 
             // Residuals
             residualsX->Fill(xdistance_um);
@@ -705,7 +705,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             // Time residuals
             residualsTime->Fill(tdistance);
-            residualsTimeVsTime->Fill(static_cast<double>(Units::convert(track->timestamp(), "s")), tdistance);
+            residualsTimeVsTime->Fill(track->timestamp() / 1e9, tdistance); // convert ns -> s
             residualsTimeVsTot->Fill(tdistance, assoc_cluster->getSeedPixel()->raw());
             residualsTimeVsCol->Fill(tdistance, assoc_cluster->getSeedPixel()->column());
             residualsTimeVsRow->Fill(tdistance, assoc_cluster->getSeedPixel()->row());
