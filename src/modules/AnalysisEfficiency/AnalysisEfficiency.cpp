@@ -321,6 +321,8 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
             n_requiredet++;
             continue;
         }
+
+        // Count this as reference track:
         total_tracks++;
 
         // Calculate in-pixel position of track in microns
