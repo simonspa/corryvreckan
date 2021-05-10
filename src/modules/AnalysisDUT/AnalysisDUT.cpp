@@ -66,6 +66,22 @@ void AnalysisDUT::initialize() {
                                           m_detector->nPixels().Y() - 0.5,
                                           0,
                                           100);
+    hClusterWidthColVsRowAssoc =
+        new TProfile("clusterWidthColVsRowAssoc",
+                     "cluster column width vs. row for assoc clusters;cluster row;mean cluster column width",
+                     m_detector->nPixels().Y(),
+                     -0.5,
+                     m_detector->nPixels().Y() - 0.5,
+                     0,
+                     100);
+    hClusterWidthRowVsRowAssoc =
+        new TProfile("clusterWidthRowVsRowAssoc",
+                     "cluster row width vs. row for assoc clusters;cluster row;mean cluster row width",
+                     m_detector->nPixels().Y(),
+                     -0.5,
+                     m_detector->nPixels().Y() - 0.5,
+                     0,
+                     100);
     hClusterChargeMapAssoc = new TProfile2D("clusterChargeMapAssoc",
                                             "Charge map for associated clusters; cluster charge [e]; #entries",
                                             m_detector->nPixels().X(),
@@ -108,6 +124,22 @@ void AnalysisDUT::initialize() {
                      m_detector->nPixels().Y() - 0.5,
                      0,
                      100);
+    hClusterChargeVsRowAssoc_2D = new TH2F("hClusterChargeVsRowAssoc_2D",
+                                           "cluster charge distribution vs. cluster row; cluster row; cluster ToT [lsb]",
+                                           m_detector->nPixels().Y(),
+                                           -0.5,
+                                           m_detector->nPixels().Y() - 0.5,
+                                           64,
+                                           -0.5,
+                                           63.5);
+    hSeedChargeVsRowAssoc_2D = new TH2F("hSeedChargeVsRowAssoc_2D",
+                                        "seed charge distribution vs. cluster row; cluster row; seed pixel ToT [lsb]",
+                                        m_detector->nPixels().Y(),
+                                        -0.5,
+                                        m_detector->nPixels().Y() - 0.5,
+                                        64,
+                                        -0.5,
+                                        63.5);
 
     hTrackZPosDUT = new TH1F("globalTrackZPosOnDUT",
                              "Global z-position of track on the DUT; global z of track intersection [mm]; #entries ",
@@ -141,40 +173,49 @@ void AnalysisDUT::initialize() {
 
     associatedTracksVersusTime =
         new TH1F("associatedTracksVersusTime", "Associated tracks over time;time [s];# associated tracks", 300000, 0, 300);
-    residualsX = new TH1F("residualsX", "Residual in X;x_{track}-x_{hit}  [mm];# entries", 800, -0.1, 0.1);
-    residualsY = new TH1F("residualsY", "Residual in Y;y_{track}-y_{hit}  [mm];# entries", 800, -0.1, 0.1);
-    residualsPos = new TH1F(
-        "residualsPos", "Absolute distance between track and hit;|pos_{track}-pos_{hit}|  [mm];# entries", 800, -0.1, 0.1);
-    residualsPosVsresidualsTime =
-        new TH2F("residualsPosVsresidualsTime",
-                 "Time vs. absolute position residuals;time_{track}-time_{hit} [ns];|pos_{track}-pos_{hit}| [mm];# entries",
-                 n_timebins_,
-                 -(n_timebins_ + 1) / 2. * time_binning_,
-                 (n_timebins_ - 1) / 2. * time_binning_,
-                 800,
-                 0.,
-                 0.2);
+    residualsX = new TH1F("residualsX", "Residual in X;x_{track}-x_{hit}  [#mum];# entries", 4000, -500.5, 499.5);
+    residualsY = new TH1F("residualsY", "Residual in Y;y_{track}-y_{hit}  [#mum];# entries", 4000, -500.5, 499.5);
+    residualsPos = new TH1F("residualsPos",
+                            "Absolute distance between track and hit;|pos_{track}-pos_{hit}|  [#mum];# entries",
+                            4000,
+                            -500.5,
+                            499.5);
+    residualsPosVsresidualsTime = new TH2F(
+        "residualsPosVsresidualsTime",
+        "Time vs. absolute position residuals;time_{track}-time_{hit} [ns];|pos_{track}-pos_{hit}| [#mum];# entries",
+        n_timebins_,
+        -(n_timebins_ + 1) / 2. * time_binning_,
+        (n_timebins_ - 1) / 2. * time_binning_,
+        800,
+        -0.25,
+        199.75);
 
-    residualsX1pix =
-        new TH1F("residualsX1pix", "Residual for 1-pixel clusters in X;x_{track}-x_{hit} [mm];# entries", 800, -0.1, 0.1);
-    residualsY1pix =
-        new TH1F("residualsY1pix", "Residual for 1-pixel clusters in Y;y_{track}-y_{hit} [mm];# entries", 800, -0.1, 0.1);
-    residualsX2pix =
-        new TH1F("residualsX2pix", "Residual for 2-pixel clusters in X;x_{track}-x_{hit} [mm];# entries", 800, -0.1, 0.1);
-    residualsY2pix =
-        new TH1F("residualsY2pix", "Residual for 2-pixel clusters in Y;y_{track}-y_{hit} [mm];# entries", 800, -0.1, 0.1);
-    residualsX3pix =
-        new TH1F("residualsX3pix", "Residual for 3-pixel clusters in X;x_{track}-x_{hit} [mm];# entries", 800, -0.1, 0.1);
-    residualsY3pix =
-        new TH1F("residualsY3pix", "Residual for 3-pixel clusters in Y;y_{track}-y_{hit} [mm];# entries", 800, -0.1, 0.1);
-    residualsX4pix =
-        new TH1F("residualsX4pix", "Residual for 4-pixel clusters in X;x_{track}-x_{hit} [mm];# entries", 800, -0.1, 0.1);
-    residualsY4pix =
-        new TH1F("residualsY4pix", "Residual for 4-pixel clusters in Y;y_{track}-y_{hit} [mm];# entries", 800, -0.1, 0.1);
-    residualsXatLeast5pix = new TH1F(
-        "residualsXatLeast5pix", "Residual for >= 5-pixel clusters in X;x_{track}-x_{hit} [mm];# entries", 800, -0.1, 0.1);
-    residualsYatLeast5pix = new TH1F(
-        "residualsYatLeast5pix", "Residual for >= 5-pixel clusters in Y;y_{track}-y_{hit} [mm];# entries", 800, -0.1, 0.1);
+    residualsX1pix = new TH1F(
+        "residualsX1pix", "Residual for 1-pixel clusters in X;x_{track}-x_{hit} [#mum];# entries", 4000, -500.5, 499.5);
+    residualsY1pix = new TH1F(
+        "residualsY1pix", "Residual for 1-pixel clusters in Y;y_{track}-y_{hit} [#mum];# entries", 4000, -500.5, 499.5);
+    residualsX2pix = new TH1F(
+        "residualsX2pix", "Residual for 2-pixel clusters in X;x_{track}-x_{hit} [#mum];# entries", 4000, -500.5, 499.5);
+    residualsY2pix = new TH1F(
+        "residualsY2pix", "Residual for 2-pixel clusters in Y;y_{track}-y_{hit} [#mum];# entries", 4000, -500.5, 499.5);
+    residualsX3pix = new TH1F(
+        "residualsX3pix", "Residual for 3-pixel clusters in X;x_{track}-x_{hit} [#mum];# entries", 4000, -500.5, 499.5);
+    residualsY3pix = new TH1F(
+        "residualsY3pix", "Residual for 3-pixel clusters in Y;y_{track}-y_{hit} [#mum];# entries", 4000, -500.5, 499.5);
+    residualsX4pix = new TH1F(
+        "residualsX4pix", "Residual for 4-pixel clusters in X;x_{track}-x_{hit} [#mum];# entries", 4000, -500.5, 499.5);
+    residualsY4pix = new TH1F(
+        "residualsY4pix", "Residual for 4-pixel clusters in Y;y_{track}-y_{hit} [#mum];# entries", 4000, -500.5, 499.5);
+    residualsXatLeast5pix = new TH1F("residualsXatLeast5pix",
+                                     "Residual for >= 5-pixel clusters in X;x_{track}-x_{hit} [#mum];# entries",
+                                     4000,
+                                     -500.5,
+                                     499.5);
+    residualsYatLeast5pix = new TH1F("residualsYatLeast5pix",
+                                     "Residual for >= 5-pixel clusters in Y;y_{track}-y_{hit} [#mum];# entries",
+                                     4000,
+                                     -500.5,
+                                     499.5);
 
     clusterChargeAssoc = new TH1F("clusterChargeAssociated",
                                   "Charge distribution of associated clusters;cluster charge [e];# entries",
@@ -206,8 +247,8 @@ void AnalysisDUT::initialize() {
                                     29.5);
 
     // In-pixel studies:
-    auto pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
-    auto pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));
+    auto pitch_x = m_detector->getPitch().X() * 1000.; // convert mm -> um
+    auto pitch_y = m_detector->getPitch().Y() * 1000.; // convert mm -> um
     std::string mod_axes = "in-pixel x_{track} [#mum];in-pixel y_{track} [#mum];";
 
     // cut flow histogram
@@ -551,8 +592,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
         // Calculate in-pixel position of track in microns
         auto inpixel = m_detector->inPixel(localIntercept);
-        auto xmod = static_cast<double>(Units::convert(inpixel.X(), "um"));
-        auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
+        auto xmod = inpixel.X() * 1000.; // convert mm -> um
+        auto ymod = inpixel.Y() * 1000.; // convert mm -> um
 
         // Loop over all associated DUT clusters:
         for(auto assoc_cluster : track->getAssociatedClusters(m_detector->getName())) {
@@ -569,12 +610,16 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             ROOT::Math::XYZPoint intercept = track->getIntercept(assoc_cluster->global().z());
             double xdistance = intercept.X() - assoc_cluster->global().x();
             double ydistance = intercept.Y() - assoc_cluster->global().y();
+            double xdistance_um = xdistance * 1000.;
+            double ydistance_um = xdistance * 1000.;
+
             double xabsdistance = fabs(xdistance);
             double yabsdistance = fabs(ydistance);
             double tdistance = track->timestamp() - assoc_cluster->timestamp();
             double posDiff =
                 sqrt((intercept.X() - assoc_cluster->global().x()) * (intercept.X() - assoc_cluster->global().x()) +
                      (intercept.Y() - assoc_cluster->global().y()) * (intercept.Y() - assoc_cluster->global().y()));
+            double posDiff_um = posDiff * 1000.;
 
             // Correlation plots
             hTrackCorrelationX->Fill(xdistance);
@@ -588,6 +633,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
                 assoc_cluster->column(), assoc_cluster->row(), static_cast<double>(assoc_cluster->size()));
             hClusterSizeVsColAssoc->Fill(assoc_cluster->column(), static_cast<double>(assoc_cluster->size()));
             hClusterSizeVsRowAssoc->Fill(assoc_cluster->row(), static_cast<double>(assoc_cluster->size()));
+            hClusterWidthColVsRowAssoc->Fill(assoc_cluster->row(), static_cast<double>(assoc_cluster->columnWidth()));
+            hClusterWidthRowVsRowAssoc->Fill(assoc_cluster->row(), static_cast<double>(assoc_cluster->rowWidth()));
 
             // Cluster charge normalized to path length in sensor:
             double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
@@ -603,6 +650,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             hClusterChargeVsRowAssoc->Fill(assoc_cluster->row(), cluster_charge);
             hSeedChargeVsColAssoc->Fill(assoc_cluster->column(), assoc_cluster->getSeedPixel()->charge());
             hSeedChargeVsRowAssoc->Fill(assoc_cluster->row(), assoc_cluster->getSeedPixel()->charge());
+            hClusterChargeVsRowAssoc_2D->Fill(assoc_cluster->row(), cluster_charge);
+            hSeedChargeVsRowAssoc_2D->Fill(assoc_cluster->row(), assoc_cluster->getSeedPixel()->charge());
 
             // Fill per-pixel histograms
             for(auto& pixel : assoc_cluster->pixels()) {
@@ -611,52 +660,52 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
                 hPixelRawValueMapAssoc->Fill(pixel->column(), pixel->row(), pixel->raw());
             }
 
-            associatedTracksVersusTime->Fill(static_cast<double>(Units::convert(track->timestamp(), "s")));
+            associatedTracksVersusTime->Fill(track->timestamp() / 1e9); // convert ns -> s
 
             // Residuals
-            residualsX->Fill(xdistance);
-            residualsY->Fill(ydistance);
-            residualsPos->Fill(posDiff);
-            residualsPosVsresidualsTime->Fill(tdistance, posDiff);
+            residualsX->Fill(xdistance_um);
+            residualsY->Fill(ydistance_um);
+            residualsPos->Fill(posDiff_um);
+            residualsPosVsresidualsTime->Fill(tdistance, posDiff_um);
 
             if(assoc_cluster->columnWidth() == 1) {
-                residualsX1pix->Fill(xdistance);
+                residualsX1pix->Fill(xdistance_um);
             }
             if(assoc_cluster->rowWidth() == 1) {
-                residualsY1pix->Fill(ydistance);
+                residualsY1pix->Fill(ydistance_um);
             }
 
             if(assoc_cluster->columnWidth() == 2) {
-                residualsX2pix->Fill(xdistance);
+                residualsX2pix->Fill(xdistance_um);
             }
             if(assoc_cluster->rowWidth() == 2) {
-                residualsY2pix->Fill(ydistance);
+                residualsY2pix->Fill(ydistance_um);
             }
 
             if(assoc_cluster->columnWidth() == 3) {
-                residualsX3pix->Fill(xdistance);
+                residualsX3pix->Fill(xdistance_um);
             }
             if(assoc_cluster->rowWidth() == 3) {
-                residualsY3pix->Fill(ydistance);
+                residualsY3pix->Fill(ydistance_um);
             }
 
             if(assoc_cluster->columnWidth() == 4) {
-                residualsX4pix->Fill(xdistance);
+                residualsX4pix->Fill(xdistance_um);
             }
             if(assoc_cluster->rowWidth() == 4) {
-                residualsY4pix->Fill(ydistance);
+                residualsY4pix->Fill(ydistance_um);
             }
 
             if(assoc_cluster->columnWidth() >= 5) {
-                residualsXatLeast5pix->Fill(xdistance);
+                residualsXatLeast5pix->Fill(xdistance_um);
             }
             if(assoc_cluster->rowWidth() >= 5) {
-                residualsYatLeast5pix->Fill(ydistance);
+                residualsYatLeast5pix->Fill(ydistance_um);
             }
 
             // Time residuals
             residualsTime->Fill(tdistance);
-            residualsTimeVsTime->Fill(static_cast<double>(Units::convert(track->timestamp(), "s")), tdistance);
+            residualsTimeVsTime->Fill(track->timestamp() / 1e9, tdistance); // convert ns -> s
             residualsTimeVsTot->Fill(tdistance, assoc_cluster->getSeedPixel()->raw());
             residualsTimeVsCol->Fill(tdistance, assoc_cluster->getSeedPixel()->column());
             residualsTimeVsRow->Fill(tdistance, assoc_cluster->getSeedPixel()->row());

@@ -41,8 +41,11 @@ namespace corryvreckan {
         TH2F *hClusterMapAssoc, *hHitMapAssoc;
         TProfile2D *hClusterSizeMapAssoc, *hClusterChargeMapAssoc;
         TProfile *hClusterSizeVsColAssoc, *hClusterSizeVsRowAssoc;
+        TProfile *hClusterWidthColVsRowAssoc, *hClusterWidthRowVsRowAssoc;
         TProfile *hClusterChargeVsColAssoc, *hClusterChargeVsRowAssoc;
         TProfile *hSeedChargeVsColAssoc, *hSeedChargeVsRowAssoc;
+
+        TH2F *hClusterChargeVsRowAssoc_2D, *hSeedChargeVsRowAssoc_2D;
 
         TH1F* hPixelRawValueAssoc;
         TProfile2D* hPixelRawValueMapAssoc;
