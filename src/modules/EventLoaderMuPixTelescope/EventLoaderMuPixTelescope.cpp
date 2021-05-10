@@ -16,14 +16,13 @@
 #include "objects/Track.hpp"
 using namespace corryvreckan;
 
-EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std::shared_ptr<Detector> detector)
-    : Module(config, detector), removed_(0), detector_(detector), blockFile_(nullptr) {
+EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std::vector<std::shared_ptr<Detector> > detectors)
+    : Module(config, detectors), blockFile_(nullptr) {
 
     config_.setDefault<bool>("is_sorted", false);
     config_.setDefault<bool>("ts2_is_gray", false);
     config_.setDefault<unsigned>("buffer_depth", 1000);
     config_.setDefault<double>("time_offset", 0.0);
-
     inputDirectory_ = config_.getPath("input_directory");
     buffer_depth_ = config.get<unsigned>("buffer_depth");
     isSorted_ = config_.get<bool>("is_sorted");
@@ -34,22 +33,33 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
     } else {
         runNumber_ = config_.get<int>("run");
     }
+    // find the corresponding detetctors:
+    for(auto d : detectors){
+        if(typeString_to_typeID.find(d->getType()) != typeString_to_typeID.end()) {
+            detectors_.push_back(d);
+        }
+    }
 }
 
 void EventLoaderMuPixTelescope::initialize() {
-    // extract the tag from the detetcor name
-    string tag = detector_->getName();
-    if(tag.find("_") < tag.length())
-        tag = tag.substr(tag.find("_") + 1);
-    tag_ = uint(stoi(tag, nullptr, 16));
-    LOG(DEBUG) << detector_->getName() << " is using the fpga link tag " << hex << tag_;
-    if(typeString_to_typeID.find(detector_->getType()) == typeString_to_typeID.end()) {
-        throw KeyValueParseError("tag " + std::to_string(tag_), "Sensor tag not supported");
+    // extract the tag from each detetcor name
+    for(auto detector : detectors_)
+    {
+        string tag = detector->getName();
+        if(tag.find("_") < tag.length())
+            tag = tag.substr(tag.find("_") + 1);
+        uint tag_ = uint(stoi(tag, nullptr, 16));
+        LOG(DEBUG) << detector->getName() << " is using the fpga link tag " << hex << tag_;
+        if(typeString_to_typeID.find(detector->getType()) == typeString_to_typeID.end()) {
+            throw KeyValueParseError("tag " + std::to_string(tag_), "Sensor tag not supported");
+        }
+        removed_[tag] = 0;
+        stored_[tag] = 0;
+        // take the offset from the geometry file
+        timeOffset_[tag_] = detector->timeOffset();
+        types_[tag_] = typeString_to_typeID.at(detector->getType());
+        LOG(INFO) << "Detector " << detector->getType() << "is assigned to type id " << types_.at(tag_);
     }
-    // take the offset from the geometry file
-    timeOffset_ = detector_->timeOffset();
-    type_ = typeString_to_typeID.at(detector_->getType());
-    LOG(INFO) << "Detector " << detector_->getType() << "is assigned to type id " << type_;
     std::stringstream ss;
     if(input_file_.size() == 0) {
         ss << std::setw(6) << std::setfill('0') << runNumber_;
@@ -80,37 +90,59 @@ void EventLoaderMuPixTelescope::initialize() {
     if(!blockFile_->open_read()) {
         throw MissingDataError("Cannot read data file: " + input_file_);
     }
-    hHitMap = new TH2F("hitMap",
-                       "hitMap; column; row",
-                       detector_->nPixels().x(),
-                       -.05,
-                       detector_->nPixels().x() - .5,
-                       detector_->nPixels().y(),
-                       -.05,
-                       detector_->nPixels().y() - .5);
-    hdiscardedHitmap = new TH2F("discardedhitMap",
-                                "hitMap of out of event hits; column; row",
-                                detector_->nPixels().x(),
-                                -.05,
-                                detector_->nPixels().x() - .5,
-                                detector_->nPixels().y(),
-                                -.05,
-                                detector_->nPixels().y() - .5);
-    hPixelToT = new TH1F("pixelToT", "pixelToT; ToT in TS2 clock cycles.; ", 64, -0.5, 63.5);
-    hTimeStamp = new TH1F("pixelTS", "pixelTS; TS in clock cycles; ", 1024, -0.5, 1023.5);
-    hHitsEvent = new TH1F("hHitsEvent", "hHitsEvent; # hits per event; ", 300, -.5, 299.5);
-    hitsPerkEvent = new TH1F("hHitsPerkEvent", "hitsper1kevents; corry events /1k; hits per 1k events", 1000, -.5, 999.5);
-    raw_fpga_vs_chip =
-        new TH2F("raw_fpga_vs_chip", "fpga vs chip clock;chip clock;fpga clock", 1024, 0, 1023, 2048, 0, 2047);
-    raw_fpga_vs_chip_corrected =
-        new TH2F("raw_fpga_vs_chip_corrected", "fpga vs chip clock;chip clock;fpga clock", 1024, 0, 1023, 2048, 0, 2047);
-    chip_delay = new TH1F(
-        "chip_delay", "Delay of chip events wrt. telescope frame;fpga clock@ chip clock 0;#events", 2048, -1023, 1023);
+
+    // create the histograms for all sensor
+    for(auto & detector : detectors_){
+        auto name = detector->getName();
+        TDirectory* directory = getROOTDirectory();
+        TDirectory* local_directory = directory->mkdir(name.c_str());
+
+        if(local_directory == nullptr) {
+            throw RuntimeError("Cannot create or access local ROOT directory for module " + this->getUniqueName());
+        }
+        local_directory->cd();
+        std::string title = name+"_hitMap; column; row";
+        hHitMap[name] = new TH2F("hitMap",
+                           title.c_str(),
+                           detector->nPixels().x(),
+                           -.05,
+                           detector->nPixels().x() - .5,
+                           detector->nPixels().y(),
+                           -.05,
+                           detector->nPixels().y() - .5);
+        title = name+"hitMap of out of event hits; column; row";
+        hdiscardedHitmap[name] = new TH2F("discardedhitMap",
+                                    title.c_str(),
+                                    detector->nPixels().x(),
+                                    -.05,
+                                    detector->nPixels().x() - .5,
+                                    detector->nPixels().y(),
+                                    -.05,
+                                    detector->nPixels().y() - .5);
+        title = name+"pixelToT; ToT in TS2 clock cycles.;";
+        hPixelToT[name] = new TH1F("pixelToT",title.c_str(), 64, -0.5, 63.5);
+        title = name+"pixelTS; TS in clock cycles; ";
+        hTimeStamp[name] = new TH1F("pixelTS", title.c_str(), 1024, -0.5, 1023.5);
+        title = name+"hHitsEvent; # hits per event; ";
+        hHitsEvent[name] = new TH1F("hHitsEvent", title.c_str(), 300, -.5, 299.5);
+        title = name+"hitsper1kevents; corry events /1k; hits per 1k events";
+        hitsPerkEvent[name] = new TH1F("hHitsPerkEvent", title.c_str(), 1000, -.5, 999.5);
+        title = name+ "fpga vs chip clock;chip clock;fpga clock";
+        raw_fpga_vs_chip[name] =
+                new TH2F("raw_fpga_vs_chip", title.c_str(), 1024, 0, 1023, 2048, 0, 2047);
+        title = name+"fpga vs chip clock;chip clock;fpga clock";
+        raw_fpga_vs_chip_corrected[name] =
+                new TH2F("raw_fpga_vs_chip_corrected", title.c_str(), 1024, 0, 1023, 2048, 0, 2047);
+        title = name+"Delay of chip events wrt. telescope frame;fpga clock@ chip clock 0;#events";
+        chip_delay[name] = new TH1F(
+                    "chip_delay", title.c_str(), 2048, -1023, 1023);
+    }
 }
 
 void EventLoaderMuPixTelescope::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
-    LOG(INFO) << "Number of hits put to clipboard: " << stored_
-              << " and number of removed (not fitting in an event) hits: " << removed_;
+
+    for(auto d : detectors_) LOG(INFO) << "Number of hits put to clipboard: " << stored_.at(d->getName())
+              << " and number of removed (not fitting in an event) hits: " << removed_.at(d->getName());
     if(!isSorted_)
         LOG(INFO) << "Increasing the buffer depth might reduce this number.";
 }
@@ -121,14 +153,14 @@ StatusCode EventLoaderMuPixTelescope::read_sorted(const std::shared_ptr<Clipboar
         return StatusCode::EndRun;
     }
     for(uint i = 0; i < tf_.num_hits(); ++i) {
-        RawHit h = tf_.get_hit(i, type_);
-        if(((h.tag() & uint(~0x3)) == tag_))
-            continue;
+        RawHit h = tf_.get_hit(i);
+        auto tag = h.tag() &uint(~0x3);
+        h = tf_.get_hit(i,tag);
         // Convert time stamp to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time yet,
         // assuming 10bit ts
         double px_timestamp = 8 * static_cast<double>(((tf_.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw());
         // setting tot and charge to zero here - needs to be improved
-        pixels_.push_back(std::make_shared<Pixel>(detector_->getName(), h.column(), h.row(), 0, 0, px_timestamp));
+        pixels_[tag].push_back(std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), 0, 0, px_timestamp));
     }
     // If no event is defined create one
     if(clipboard->getEvent() == nullptr) {
@@ -160,7 +192,7 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
             continue;
         }
         if(pixelbuffer_.size() && (pixel->timestamp() < clipboard->getEvent()->end()) &&
-           (pixel->timestamp() > clipboard->getEvent()->start())) {
+                (pixel->timestamp() > clipboard->getEvent()->start())) {
             LOG(DEBUG) << " Adding pixel hit: " << Units::display(pixel->timestamp(), "us") << " vs prev end ("
                        << eventNo_ - 1 << ")\t" << Units::display(prev_event_end_, "us") << " and current start \t"
                        << Units::display(clipboard->getEvent()->start(), "us")
