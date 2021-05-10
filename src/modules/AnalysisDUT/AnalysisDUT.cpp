@@ -611,7 +611,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             double xdistance = intercept.X() - assoc_cluster->global().x();
             double ydistance = intercept.Y() - assoc_cluster->global().y();
             double xdistance_um = xdistance * 1000.;
-            double ydistance_um = xdistance * 1000.;
+            double ydistance_um = ydistance * 1000.;
 
             double xabsdistance = fabs(xdistance);
             double yabsdistance = fabs(ydistance);
