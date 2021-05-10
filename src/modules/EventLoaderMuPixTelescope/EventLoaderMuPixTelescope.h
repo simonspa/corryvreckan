@@ -8,6 +8,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#ifndef EVENTLOADERMUPIXTELESCOPE_H
+#define EVENTLOADERMUPIXTELESCOPE_H 1
 #include <TH1F.h>
 #include <TH2F.h>
 #include <iostream>
@@ -33,6 +35,7 @@ namespace corryvreckan {
          * @param detectors Vector of pointers to the detectors
          */
         EventLoaderMuPixTelescope(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
+        ~EventLoaderMuPixTelescope() {}
 
         /**
          * @brief [Initialise this module]
@@ -49,16 +52,17 @@ namespace corryvreckan {
         StatusCode read_sorted(const std::shared_ptr<Clipboard>& clipboard);
         StatusCode read_unsorted(const std::shared_ptr<Clipboard>& clipboard);
         void fillBuffer();
-        vector<uint> tags_{};
+        std::vector<uint> tags_{};
         double prev_event_end_{};
         std::map<uint, int> types_{};
         int eventNo_{};
-        std::map<std::string, long unsigned> counterHits_{};
-        std::map<std::string, long unsigned> removed_{}, stored_{};
+        std::map<uint, long unsigned> counterHits_{};
+        std::map<uint, long unsigned> removed_{}, stored_{};
         uint64_t ts_prev_{0};
         unsigned buffer_depth_{};
         bool eof_{false};
         std::map<uint, double> timeOffset_{};
+        std::map<uint, std::string> names_{};
         std::string input_file_{};
         std::vector<std::shared_ptr<Detector>> detectors_;
         struct CompareTimeGreater {
@@ -67,8 +71,8 @@ namespace corryvreckan {
             }
         };
         // Buffer of timesorted pixel hits: (need to use greater here!)
-        std::map<std::string, std::priority_queue<std::shared_ptr<Pixel>, PixelVector, CompareTimeGreater>> pixelbuffers_;
-        std::vector<PixelVector> pixels_{};
+        std::map<uint, std::priority_queue<std::shared_ptr<Pixel>, PixelVector, CompareTimeGreater>> pixelbuffers_;
+        std::map<uint, PixelVector> pixels_{};
         std::string inputDirectory_;
         bool isSorted_;
         int runNumber_;
@@ -89,3 +93,4 @@ namespace corryvreckan {
     };
 
 } // namespace corryvreckan
+#endif //EVENTLOADERMUPIXTELESCOPE_H
