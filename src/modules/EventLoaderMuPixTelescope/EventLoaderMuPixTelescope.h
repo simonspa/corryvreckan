@@ -32,7 +32,7 @@ namespace corryvreckan {
          * @param config Configuration object for this module as retrieved from the steering file
          * @param detectors Vector of pointers to the detectors
          */
-        EventLoaderMuPixTelescope(Configuration& config, std::shared_ptr<Detector> detector);
+        EventLoaderMuPixTelescope(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
 
         /**
          * @brief [Initialise this module]
@@ -49,26 +49,26 @@ namespace corryvreckan {
         StatusCode read_sorted(const std::shared_ptr<Clipboard>& clipboard);
         StatusCode read_unsorted(const std::shared_ptr<Clipboard>& clipboard);
         void fillBuffer();
-        uint tag_{};
+        vector<uint> tags_{};
         double prev_event_end_{};
-        int type_{};
+        std::map<uint, int> types_{};
         int eventNo_{};
-        long unsigned counterHits_{};
-        long unsigned removed_{}, stored_{};
+        std::map<std::string, long unsigned> counterHits_{};
+        std::map<std::string, long unsigned> removed_{}, stored_{};
         uint64_t ts_prev_{0};
         unsigned buffer_depth_{};
         bool eof_{false};
-        double timeOffset_{};
+        std::map<uint, double> timeOffset_{};
         std::string input_file_{};
-        std::shared_ptr<Detector> detector_;
+        std::vector<std::shared_ptr<Detector>> detectors_;
         struct CompareTimeGreater {
             bool operator()(const std::shared_ptr<Pixel>& a, const std::shared_ptr<Pixel>& b) {
                 return a->timestamp() > b->timestamp();
             }
         };
         // Buffer of timesorted pixel hits: (need to use greater here!)
-        std::priority_queue<std::shared_ptr<Pixel>, PixelVector, CompareTimeGreater> pixelbuffer_;
-        PixelVector pixels_{};
+        std::map<std::string, std::priority_queue<std::shared_ptr<Pixel>, PixelVector, CompareTimeGreater>> pixelbuffers_;
+        std::vector<PixelVector> pixels_{};
         std::string inputDirectory_;
         bool isSorted_;
         int runNumber_;
@@ -76,15 +76,15 @@ namespace corryvreckan {
         TelescopeFrame tf_;
 
         // Histograms
-        TH1F* hPixelToT;
-        TH1F* hTimeStamp;
-        TH1F* hHitsEvent;
-        TH1F* hitsPerkEvent;
-        TH2F* hdiscardedHitmap;
-        TH2F* hHitMap;
-        TH2F* raw_fpga_vs_chip;
-        TH2F* raw_fpga_vs_chip_corrected;
-        TH1F* chip_delay;
+        std::map<std::string, TH1F*>  hPixelToT;
+        std::map<std::string, TH1F*>  hTimeStamp;
+        std::map<std::string, TH1F*>  hHitsEvent;
+        std::map<std::string, TH1F*>  hitsPerkEvent;
+        std::map<std::string, TH2F*>  hdiscardedHitmap;
+        std::map<std::string, TH2F*> hHitMap;
+        std::map<std::string, TH2F*> raw_fpga_vs_chip;
+        std::map<std::string, TH2F*> raw_fpga_vs_chip_corrected;
+        std::map<std::string, TH1F*> chip_delay;
         static std::map<std::string, int> typeString_to_typeID;
     };
 
