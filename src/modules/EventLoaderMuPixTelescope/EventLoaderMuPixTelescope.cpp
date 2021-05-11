@@ -62,12 +62,16 @@ void EventLoaderMuPixTelescope::initialize() {
 
         removed_[tag_] = 0;
         stored_[tag_] = 0;
+        counterHits_[tag_] = 0;
         // take the offset from the geometry file
         timeOffset_[tag_] = detector->timeOffset();
         types_[tag_] = typeString_to_typeID.at(detector->getType());
         LOG(INFO) << "Detector " << detector->getType() << "is assigned to type id " << types_.at(tag_);
         names_[tag_] = detector->getName();
+        pixelbuffers_[tag_]; // create an empy map entry
+        pixels_[tag_];
     }
+
     std::stringstream ss;
     if(input_file_.size() == 0) {
         ss << std::setw(6) << std::setfill('0') << runNumber_;
@@ -91,7 +95,7 @@ void EventLoaderMuPixTelescope::initialize() {
     if(!foundFile) {
         throw MissingDataError("Cannot open data file: " + input_file_);
     } else
-        LOG(INFO) << "File found" << endl;
+        LOG(INFO) << "File "<< input_file_ <<" found";
     string file = (inputDirectory_ + "/" + entry->d_name);
     LOG(INFO) << "reading " << file;
     blockFile_ = new BlockFile(file);
@@ -111,22 +115,22 @@ void EventLoaderMuPixTelescope::initialize() {
         local_directory->cd();
         std::string title = name+"_hitMap; column; row";
         hHitMap[name] = new TH2F("hitMap",
-                           title.c_str(),
-                           detector->nPixels().x(),
-                           -.05,
-                           detector->nPixels().x() - .5,
-                           detector->nPixels().y(),
-                           -.05,
-                           detector->nPixels().y() - .5);
+                                 title.c_str(),
+                                 detector->nPixels().x(),
+                                 -.05,
+                                 detector->nPixels().x() - .5,
+                                 detector->nPixels().y(),
+                                 -.05,
+                                 detector->nPixels().y() - .5);
         title = name+"hitMap of out of event hits; column; row";
         hdiscardedHitmap[name] = new TH2F("discardedhitMap",
-                                    title.c_str(),
-                                    detector->nPixels().x(),
-                                    -.05,
-                                    detector->nPixels().x() - .5,
-                                    detector->nPixels().y(),
-                                    -.05,
-                                    detector->nPixels().y() - .5);
+                                          title.c_str(),
+                                          detector->nPixels().x(),
+                                          -.05,
+                                          detector->nPixels().x() - .5,
+                                          detector->nPixels().y(),
+                                          -.05,
+                                          detector->nPixels().y() - .5);
         title = name+"pixelToT; ToT in TS2 clock cycles.;";
         hPixelToT[name] = new TH1F("pixelToT",title.c_str(), 64, -0.5, 63.5);
         title = name+"pixelTS; TS in clock cycles; ";
@@ -149,8 +153,8 @@ void EventLoaderMuPixTelescope::initialize() {
 
 void EventLoaderMuPixTelescope::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
-    for(auto d : tags_) LOG(INFO) << "Number of hits put to clipboard: " << stored_.at(d)
-              << " and number of removed (not fitting in an event) hits: " << removed_.at(d);
+    for(auto d : tags_) LOG(INFO) << names_.at(d) <<": Number of hits put to clipboard: " << stored_.at(d)
+                                  << " and number of removed (not fitting in an event) hits: " << removed_.at(d);
     if(!isSorted_)
         LOG(INFO) << "Increasing the buffer depth might reduce this number.";
 }
@@ -167,7 +171,7 @@ StatusCode EventLoaderMuPixTelescope::read_sorted(const std::shared_ptr<Clipboar
         {
             throw RuntimeError("Unknown pixel tag read in data: "+to_string(tag));
         }
-        h = tf_.get_hit(i,tag);
+        h = tf_.get_hit(i,types_.at(tag));
         // Convert time stamp to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time yet,
         // assuming 10bit ts
         double px_timestamp = 8 * static_cast<double>(((tf_.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw());
@@ -186,52 +190,57 @@ StatusCode EventLoaderMuPixTelescope::read_sorted(const std::shared_ptr<Clipboar
 StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipboard>& clipboard) {
     if(!eof_)
         fillBuffer();
-    else
-        return StatusCode::EndRun;
-    while(true) {
-        for(auto t : tags_){
-        if(pixelbuffers_.at(t).size() == 0)
-            break;
-        auto pixel = pixelbuffers_.at(t).top();
-        if((pixel->timestamp() < clipboard->getEvent()->start())) {
-            LOG(DEBUG) << " Old hit found: " << Units::display(pixel->timestamp(), "us") << " vs prev end (" << eventNo_ - 1
-                       << ")\t" << Units::display(prev_event_end_, "us") << " and current start \t"
-                       << Units::display(clipboard->getEvent()->start(), "us")
-                       << " and duration: " << clipboard->getEvent()->duration()
-                       << "and number of triggers: " << clipboard->getEvent()->triggerList().size();
-            removed_.at(t)++;
-            hdiscardedHitmap.at(names_.at(t))->Fill(pixel->column(), pixel->row());
-            pixelbuffers_.at(t).pop(); // remove top element
-            continue;
+    for(auto t : tags_){
+        while(true) {
+            if(pixelbuffers_.at(t).size() == 0)
+                break;
+            auto pixel = pixelbuffers_.at(t).top();
+            if((pixel->timestamp() < clipboard->getEvent()->start())) {
+                LOG(DEBUG) << " Old hit found: " << Units::display(pixel->timestamp(), "us") << " vs prev end (" << eventNo_ - 1
+                           << ")\t" << Units::display(prev_event_end_, "us") << " and current start \t"
+                           << Units::display(clipboard->getEvent()->start(), "us")
+                           << " and duration: " << clipboard->getEvent()->duration()
+                           << "and number of triggers: " << clipboard->getEvent()->triggerList().size();
+                removed_.at(t)++;
+                hdiscardedHitmap.at(names_.at(t))->Fill(pixel->column(), pixel->row());
+                pixelbuffers_.at(t).pop(); // remove top element
+                continue;
+            }
+            if(pixelbuffers_.at(t).size() && (pixel->timestamp() < clipboard->getEvent()->end()) &&
+                    (pixel->timestamp() > clipboard->getEvent()->start())) {
+                LOG(DEBUG) << " Adding pixel hit: " << Units::display(pixel->timestamp(), "us") << " vs prev end ("
+                           << eventNo_ - 1 << ")\t" << Units::display(prev_event_end_, "us") << " and current start \t"
+                           << Units::display(clipboard->getEvent()->start(), "us")
+                           << " and duration: " << Units::display(clipboard->getEvent()->duration(), "us");
+                pixels_.at(t).push_back(pixel);
+                hHitMap.at(names_.at(t))->Fill(pixel.get()->column(), pixel.get()->row());
+                hPixelToT.at(names_.at(t))->Fill(pixel.get()->raw());
+                // display the 10 bit timestamp distribution
+                hTimeStamp.at(names_.at(t))->Fill(fmod((pixel.get()->timestamp() / 8.), pow(2, 10)));
+                pixelbuffers_.at(t).pop(); // remove top element
+            } else {
+                break;
+            }
+
+
+            if(!eof_)
+                fillBuffer();
+
         }
-        if(pixelbuffers_.size() && (pixel->timestamp() < clipboard->getEvent()->end()) &&
-                (pixel->timestamp() > clipboard->getEvent()->start())) {
-            LOG(DEBUG) << " Adding pixel hit: " << Units::display(pixel->timestamp(), "us") << " vs prev end ("
-                       << eventNo_ - 1 << ")\t" << Units::display(prev_event_end_, "us") << " and current start \t"
-                       << Units::display(clipboard->getEvent()->start(), "us")
-                       << " and duration: " << Units::display(clipboard->getEvent()->duration(), "us");
-            pixels_.at(t).push_back(pixel);
-            hHitMap.at(names_.at(t))->Fill(pixel.get()->column(), pixel.get()->row());
-            hPixelToT.at(names_.at(t))->Fill(pixel.get()->raw());
-            // display the 10 bit timestamp distribution
-            hTimeStamp.at(names_.at(t))->Fill(fmod((pixel.get()->timestamp() / 8.), pow(2, 10)));
-            pixelbuffers_.at(t).pop();
-        } else {
-            break;
-        }
-
-
-    fillBuffer();
-    // Return value telling analysis to keep running
-
     }
     prev_event_end_ = clipboard->getEvent()->end();
-    bool noData = true;
-    for (auto p : pixelbuffers_){
-        if(p.second.size() > 0)
+    // Return value telling analysis to keep running
+    for (auto t : tags_){
+        if(pixels_.at(t).size() > 0)
             return StatusCode::Success;
-        }
     }
+    bool data_in_buffer = false;
+    for (auto t : tags_){
+        if(pixelbuffers_.at(t).size() > 0)
+                data_in_buffer = true;
+    }
+    if(!data_in_buffer)
+        return StatusCode::EndRun;
     return StatusCode::DeadTime;
 }
 
@@ -257,7 +266,8 @@ void EventLoaderMuPixTelescope::fillBuffer() {
             }
             // all hits in one frame are from the same sensor. Copy them
             for(uint i = 0; i < tf_.num_hits(); ++i) {
-                h = tf_.get_hit(i, tag);
+                h = tf_.get_hit(i, types_.at(tag));
+                LOG(TRACE) <<"Filling buffer with "<< h;
 
                 // this assumes a few things:
                 // time from fpga is using a 500MHz clock (4 times the clock used for the hit timestamp
@@ -281,11 +291,14 @@ void EventLoaderMuPixTelescope::fillBuffer() {
                 pixelbuffers_.at(tag).push(std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), 0, 0, px_timestamp));
             }
             buffers_full = true;
-        for(auto p : pixelbuffers_){
-            if(p.second.size() < buffer_depth_)
-                buffers_full = false;
-        }
+            for(auto t : tags_){
+                if(pixelbuffers_.at(t).size() < buffer_depth_)
+                    buffers_full = false;
+            }
         } else {
+            LOG(INFO) <<"Reached eof";
+            for(auto t : tags_)
+                LOG(INFO) <<"Hits buffered in " << names_.at(t) <<": "<< pixelbuffers_.at(t).size();
             eof_ = true;
             break;
         }
@@ -306,20 +319,22 @@ std::map<std::string, int> EventLoaderMuPixTelescope::typeString_to_typeID = {{"
 
 StatusCode EventLoaderMuPixTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
     eventNo_++;
-    pixels_.clear();
+    for(auto t : tags_)
+        pixels_.at(t).clear();
     // get the hits
     StatusCode result = (isSorted_ ? read_sorted(clipboard) : read_unsorted(clipboard));
     for(auto t : tags_){
-    hHitsEvent.at(names_.at(t))->Fill(double(pixels_.size()));
-    counterHits_.at(t) += pixels_.size();
-    if(eventNo_ % 1000 == 0) {
-        int point = eventNo_ / 1000;
-        hitsPerkEvent.at(names_.at(t))->Fill(point, double(counterHits_.at(t)));
-        counterHits_.at(t) = 0;
-    }
-    if(pixels_.size() > 0)
-        clipboard->putData(pixels_.at(t), names_.at(t));
-    stored_.at(t) += pixels_.size();
+        hHitsEvent.at(names_.at(t))->Fill(double(pixels_.at(t).size()));
+        counterHits_.at(t) += pixels_.at(t).size();
+        if(eventNo_ % 1000 == 0) {
+            int point = eventNo_ / 1000;
+            hitsPerkEvent.at(names_.at(t))->Fill(point, double(counterHits_.at(t)));
+            counterHits_.at(t) = 0;
+        }
+
+        if(pixels_.at(t).size() > 0)
+            clipboard->putData(pixels_.at(t), names_.at(t));
+        stored_.at(t) += pixels_.at(t).size();
     }
     return result;
 }
