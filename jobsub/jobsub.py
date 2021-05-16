@@ -231,14 +231,21 @@ def runCorryvreckan(filenamebase, jobtask, silent):
     # https://gitlab.cern.ch/corryvreckan/corryvreckan/-/issues/146#note_4465941
     async def read_stream_and_display(stream, display):
         """Read from stream line by line until EOF, display, and capture the lines."""
-        output = []
         while True:
             line = await stream.readline()
             if not line:
                 break
-            output.append(line)
-            display(line) # assume it doesn't block
-        return b''.join(output)
+
+            if not silent:
+                if b'WARNING' in line.strip():
+                    log.warning(line.strip())
+                elif b'ERROR' in line.strip():
+                    log.error(line.strip())
+                elif b'FATAL' in line.strip():
+                    log.critical(line.strip())
+                else:
+                    log.info(line.strip())
+            log_file.write(str(line,'utf-8'))
 
     async def read_and_display(cmd):
         """Capture cmd's stdout, stderr while displaying them as they arrive (line by line)."""
@@ -248,7 +255,8 @@ def runCorryvreckan(filenamebase, jobtask, silent):
 
         # read child's stdout/stderr concurrently (capture and display)
         try:
-            stdout, stderr = await asyncio.gather(
+            # stdout, stderr = await asyncio.gather(
+            await asyncio.gather(
                 read_stream_and_display(process.stdout, sys.stdout.buffer.write),
                 read_stream_and_display(process.stderr, sys.stderr.buffer.write))
         except Exception:
@@ -257,7 +265,7 @@ def runCorryvreckan(filenamebase, jobtask, silent):
         finally:
             # wait for the process to exit
             rc = await process.wait()
-        return rc, stdout, stderr
+        return rc
 
     cmd = cmd+" -c "+filenamebase+".conf"
     rcode = None # the return code that will be set by a later subprocess method
@@ -269,7 +277,7 @@ def runCorryvreckan(filenamebase, jobtask, silent):
 
         # run process
         loop = asyncio.get_event_loop()
-        rcode, *output = loop.run_until_complete(read_and_display(cmd))
+        rcode = loop.run_until_complete(read_and_display(cmd))
 
         # close log file
         loop.close()
