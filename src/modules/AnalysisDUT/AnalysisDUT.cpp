@@ -31,9 +31,7 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
     use_closest_cluster_ = config_.get<bool>("use_closest_cluster");
     n_timebins_ = config_.get<int>("n_time_bins");
     time_binning_ = config_.get<double>("time_binning");
-    if(config_.has("correlations")) {
-        correlations_ = config_.get<bool>("correlations");
-    }
+    correlations_ = config_.get<bool>("correlations");
 }
 
 void AnalysisDUT::initialize() {
