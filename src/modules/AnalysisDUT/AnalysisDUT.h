@@ -38,6 +38,10 @@ namespace corryvreckan {
         std::shared_ptr<Detector> m_detector;
 
         // Histograms
+        TH1F* hTrackCorrelationX;
+        TH1F* hTrackCorrelationY;
+        TH1F* hTrackCorrelationTime;
+
         TH2F *hClusterMapAssoc, *hHitMapAssoc;
         TProfile2D *hClusterSizeMapAssoc, *hClusterChargeMapAssoc;
         TProfile *hClusterSizeVsColAssoc, *hClusterSizeVsRowAssoc;
@@ -74,11 +78,6 @@ namespace corryvreckan {
         TProfile2D* npxvsxmym;
         TH2F *npx1vsxmym, *npx2vsxmym, *npx3vsxmym, *npx4vsxmym;
 
-        TH1F* hTrackCorrelationX;
-        TH1F* hTrackCorrelationY;
-        TH1F* hTrackCorrelationPos;
-        TH2F* hTrackCorrelationPosVsCorrelationTime;
-        TH1F* hTrackCorrelationTime;
         TH1F* hTrackZPosDUT;
         TH1F* residualsTime;
         TH2F* residualsTimeVsTot;
@@ -102,6 +101,7 @@ namespace corryvreckan {
         bool use_closest_cluster_;
         int n_timebins_;
         double time_binning_;
+        bool get_correlations_;
         int num_tracks_;
     };
 } // namespace corryvreckan
