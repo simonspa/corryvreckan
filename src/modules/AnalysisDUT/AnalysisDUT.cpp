@@ -40,9 +40,9 @@ void AnalysisDUT::initialize() {
 
     if(get_correlations_) {
         hTrackCorrelationX = new TH1F(
-            "hTrackCorrelationX", "Track residual X, all clusters;x_{track}-x_{hit} [mm];# entries", 10000, -5.005, 4.995);
+            "hTrackCorrelationX", "Track residual X, all clusters;x_{track}-x_{hit} [#mum];# entries", 8000, -1000.5, 999.5);
         hTrackCorrelationY = new TH1F(
-            "hTrackCorrelationY", "Track residual Y, all clusters;y_{track}-y_{hit} [mm];# entries", 10000, -5.005, 4.995);
+            "hTrackCorrelationY", "Track residual Y, all clusters;y_{track}-y_{hit} [#mum];# entries", 8000, -1000.5, 999.5);
         hTrackCorrelationTime = new TH1F("hTrackCorrelationTime",
                                          "Track time residual, all clusters;time_{track}-time_{hit} [ns];# entries",
                                          n_timebins_,
@@ -531,10 +531,10 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         if(get_correlations_) {
             auto clusters = clipboard->getData<Cluster>(m_detector->getName());
             for(auto& cls : clusters) {
-                double xdistance = (globalIntercept.X() - cls->global().x());
-                double ydistance = (globalIntercept.Y() - cls->global().y());
-                hTrackCorrelationX->Fill(xdistance);
-                hTrackCorrelationY->Fill(ydistance);
+                double xdistance_um = (globalIntercept.X() - cls->global().x()) * 1000.;
+                double ydistance_um = (globalIntercept.Y() - cls->global().y()) * 1000.;
+                hTrackCorrelationX->Fill(xdistance_um);
+                hTrackCorrelationY->Fill(ydistance_um);
                 hTrackCorrelationTime->Fill(track->timestamp() - cls->timestamp());
             }
         }
