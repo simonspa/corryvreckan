@@ -101,7 +101,7 @@ namespace corryvreckan {
         bool use_closest_cluster_;
         int n_timebins_;
         double time_binning_;
-        bool get_correlations_;
+        bool correlations_;
         int num_tracks_;
     };
 } // namespace corryvreckan

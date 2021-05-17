@@ -24,21 +24,21 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
     config_.setDefault<bool>("use_closest_cluster", true);
     config_.setDefault<int>("n_time_bins", 20000);
     config_.setDefault<double>("time_binning", Units::get<double>(0.1, "ns"));
-    config_.setDefault<bool>("get_correlations", false);
+    config_.setDefault<bool>("correlations", false);
 
     time_cut_frameedge_ = config_.get<double>("time_cut_frameedge");
     chi2_ndof_cut_ = config_.get<double>("chi2ndof_cut");
     use_closest_cluster_ = config_.get<bool>("use_closest_cluster");
     n_timebins_ = config_.get<int>("n_time_bins");
     time_binning_ = config_.get<double>("time_binning");
-    if(config_.has("get_correlations")) {
-        get_correlations_ = config_.get<bool>("get_correlations");
+    if(config_.has("correlations")) {
+        correlations_ = config_.get<bool>("correlations");
     }
 }
 
 void AnalysisDUT::initialize() {
 
-    if(get_correlations_) {
+    if(correlations_) {
         hTrackCorrelationX = new TH1F(
             "hTrackCorrelationX", "Track residual X, all clusters;x_{track}-x_{hit} [#mum];# entries", 8000, -1000.5, 999.5);
         hTrackCorrelationY = new TH1F(
@@ -528,7 +528,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
         // Fill correlation plots before applying any cuts:
-        if(get_correlations_) {
+        if(correlations_) {
             auto clusters = clipboard->getData<Cluster>(m_detector->getName());
             for(auto& cls : clusters) {
                 double xdistance_um = (globalIntercept.X() - cls->global().x()) * 1000.;
