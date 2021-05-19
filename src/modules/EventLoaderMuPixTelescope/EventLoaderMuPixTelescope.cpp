@@ -64,7 +64,7 @@ void EventLoaderMuPixTelescope::initialize() {
         types_[tag_] = typeString_to_typeID.at(detector->getType());
         LOG(INFO) << "Detector " << detector->getType() << "is assigned to type id " << types_.at(tag_);
         names_[tag_] = detector->getName();
-        pixelbuffers_[tag_]; // create an empy map entry
+        pixelbuffers_[tag_]; // create an empty map entry
         pixels_[tag_];
     }
 
