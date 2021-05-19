@@ -27,7 +27,7 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration& config, std::shared_ptr<De
     m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge");
     m_chi2ndofCut = config_.get<double>("chi2ndof_cut");
     m_inpixelBinSize = config_.get<double>("inpixel_bin_size");
-    require_detectors_ = config_.getArray<std::string>("require_detectors", {});
+    require_associated_cluster_on_ = config_.getArray<std::string>("require_associated_cluster_on", {});
 }
 
 void AnalysisEfficiency::initialize() {
@@ -308,17 +308,17 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
         }
 
         // check if track has an associated cluster on required detector(s):
-        auto foundRequiredDetector = [this](Track* t) {
-            for(auto& requireDet : require_detectors_) {
-                if(!requireDet.empty() && t->getAssociatedClusters(requireDet).size() == 0) {
-                    LOG(DEBUG) << "No cluster from required detector " << requireDet << " on the track.";
+        auto foundRequiredAssocCluster = [this](Track* t) {
+            for(auto& requireAssocCluster : require_associated_cluster_on_) {
+                if(!requireAssocCluster.empty() && t->getAssociatedClusters(requireAssocCluster).size() == 0) {
+                    LOG(DEBUG) << "No associated cluster from required detector " << requireAssocCluster << " on the track.";
                     return false;
                 }
             }
             return true;
         };
-        if(!foundRequiredDetector(track.get())) {
-            n_requiredet++;
+        if(!foundRequiredAssocCluster(track.get())) {
+            n_requirecluster++;
             continue;
         }
 
@@ -436,7 +436,7 @@ void AnalysisEfficiency::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
                 << "* track outside DUT         -" << n_dut << std::endl
                 << "* track close to masked px  -" << n_masked << std::endl
                 << "* track close to frame edge -" << n_frameedge << std::endl
-                << "* track without an associated cluster on required detector - " << n_requiredet << std::endl
+                << "* track without an associated cluster on required detector - " << n_requirecluster << std::endl
                 << "Accepted tracks:            " << total_tracks;
 
     double totalEff = 100 * static_cast<double>(matched_tracks) / (total_tracks > 0 ? total_tracks : 1);
