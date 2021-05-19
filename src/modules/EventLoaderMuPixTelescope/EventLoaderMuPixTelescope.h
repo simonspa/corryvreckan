@@ -80,11 +80,11 @@ namespace corryvreckan {
         TelescopeFrame tf_;
 
         // Histograms
-        std::map<std::string, TH1F*>  hPixelToT;
-        std::map<std::string, TH1F*>  hTimeStamp;
-        std::map<std::string, TH1F*>  hHitsEvent;
-        std::map<std::string, TH1F*>  hitsPerkEvent;
-        std::map<std::string, TH2F*>  hdiscardedHitmap;
+        std::map<std::string, TH1F*> hPixelToT;
+        std::map<std::string, TH1F*> hTimeStamp;
+        std::map<std::string, TH1F*> hHitsEvent;
+        std::map<std::string, TH1F*> hitsPerkEvent;
+        std::map<std::string, TH2F*> hdiscardedHitmap;
         std::map<std::string, TH2F*> hHitMap;
         std::map<std::string, TH2F*> raw_fpga_vs_chip;
         std::map<std::string, TH2F*> raw_fpga_vs_chip_corrected;
@@ -93,4 +93,4 @@ namespace corryvreckan {
     };
 
 } // namespace corryvreckan
-#endif //EVENTLOADERMUPIXTELESCOPE_H
+#endif // EVENTLOADERMUPIXTELESCOPE_H
