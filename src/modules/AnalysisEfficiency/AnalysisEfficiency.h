@@ -82,7 +82,8 @@ namespace corryvreckan {
         double last_track_timestamp = 0;
         double last_track_col = 0.;
         double last_track_row = 0.;
-        double n_track = 0, n_chi2 = 0, n_dut = 0, n_roi = 0, n_masked = 0, n_frameedge = 0;
+        double n_track = 0, n_chi2 = 0, n_dut = 0, n_roi = 0, n_masked = 0, n_frameedge = 0, n_requirecluster = 0;
+        std::vector<std::string> require_associated_cluster_on_;
 
         Matrix<double> prev_hit_ts; // matrix containing previous hit timestamp for every pixel
     };
