@@ -30,7 +30,7 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration& config, std::shared_ptr<De
     m_chi2ndofCut = config_.get<double>("chi2ndof_cut");
     m_inpixelBinSize = config_.get<double>("inpixel_bin_size");
     m_inpixelEdgeCut = config_.get<double>("inpixelEdge_cut");
-	m_maskedPixelDistanceCut = config_.get<double>("maskedPixelDistance_cut");
+    m_maskedPixelDistanceCut = config_.get<int>("maskedPixelDistance_cut");
 }
 
 void AnalysisEfficiency::initialize() {
@@ -38,8 +38,11 @@ void AnalysisEfficiency::initialize() {
     hPixelEfficiency = new TH1D(
         "hPixelEfficiency", "hPixelEfficiency; single pixel efficiency; # entries", 201, 0, 1.005); // get 0.5%-wide bins
 
-    hPixelEfficiencyMatrix = new TH1D(
-        "hPixelEfficiencyMatrix", "hPixelEfficiencyMatrix; single pixel efficiency; # entries", 201, 0, 1.005); // get 0.5%-wide bins
+    hPixelEfficiencyMatrix = new TH1D("hPixelEfficiencyMatrix",
+                                      "hPixelEfficiencyMatrix; single pixel efficiency; # entries",
+                                      201,
+                                      0,
+                                      1.005); // get 0.5%-wide bins
 
     auto pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
     auto pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));
@@ -92,17 +95,17 @@ void AnalysisEfficiency::initialize() {
 
     title = m_detector->getName() + " Pixel efficiency matrix;x [px];y [px];#epsilon";
     hPixelEfficiencyMatrix_TProfile = new TProfile2D("hPixelEfficiencyMatrix",
-                                                          title.c_str(),
-                                                          m_detector->nPixels().X(),
-                                                          -0.5,
-                                                          m_detector->nPixels().X() - 0.5,
-                                                          m_detector->nPixels().Y(),
-                                                          -0.5,
-                                                          m_detector->nPixels().Y() - 0.5,
-                                                          0,
-                                                          1);
-    
-	title = m_detector->getName() + " Global efficiency map;x [mm];y [mm];#epsilon";
+                                                     title.c_str(),
+                                                     m_detector->nPixels().X(),
+                                                     -0.5,
+                                                     m_detector->nPixels().X() - 0.5,
+                                                     m_detector->nPixels().Y(),
+                                                     -0.5,
+                                                     m_detector->nPixels().Y() - 0.5,
+                                                     0,
+                                                     1);
+
+    title = m_detector->getName() + " Global efficiency map;x [mm];y [mm];#epsilon";
     hGlobalEfficiencyMap_trackPos_TProfile = new TProfile2D("globalEfficiencyMap_trackPos_TProfile",
                                                             title.c_str(),
                                                             300,
@@ -339,12 +342,13 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
             auto cluster = track->getClosestCluster(m_detector->getName());
             has_associated_cluster = true;
             matched_tracks++;
-			auto pixels = cluster->pixels();
-			for(auto& pixel : pixels) {
-				if((pixel->column() == static_cast<int>(m_detector->getColumn(localIntercept)) && pixel->row() == static_cast<int>(m_detector->getRow(localIntercept))) && 
-				  (55 - abs(xmod*2) < m_inpixelEdgeCut || 55 - abs(ymod*2) < m_inpixelEdgeCut) )
-							hPixelEfficiencyMatrix_TProfile->Fill(pixel->column(), pixel->row(), 1);
-			}
+            auto pixels = cluster->pixels();
+            for(auto& pixel : pixels) {
+                if((pixel->column() == static_cast<int>(m_detector->getColumn(localIntercept)) &&
+                    pixel->row() == static_cast<int>(m_detector->getRow(localIntercept))) &&
+                   (55 - abs(xmod * 2) < m_inpixelEdgeCut || 55 - abs(ymod * 2) < m_inpixelEdgeCut))
+                    hPixelEfficiencyMatrix_TProfile->Fill(pixel->column(), pixel->row(), 1);
+            }
 
             auto clusterLocal = m_detector->globalToLocal(cluster->global());
 
@@ -363,8 +367,9 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
                 has_associated_cluster, m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal));
         }
 
-		if(!has_associated_cluster && (55 - abs(xmod*2) < m_inpixelEdgeCut || 55 - abs(ymod*2) < m_inpixelEdgeCut)) 
-					hPixelEfficiencyMatrix_TProfile->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept), 0);
+        if(!has_associated_cluster && (55 - abs(xmod * 2) < m_inpixelEdgeCut || 55 - abs(ymod * 2) < m_inpixelEdgeCut))
+            hPixelEfficiencyMatrix_TProfile->Fill(
+                m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept), 0);
 
         hGlobalEfficiencyMap_trackPos_TProfile->Fill(globalIntercept.X(), globalIntercept.Y(), has_associated_cluster);
         hGlobalEfficiencyMap_trackPos->Fill(has_associated_cluster, globalIntercept.X(), globalIntercept.Y());
