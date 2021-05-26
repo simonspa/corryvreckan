@@ -44,10 +44,12 @@ namespace corryvreckan {
         std::shared_ptr<Detector> m_detector;
 
         TH1D* hPixelEfficiency;
+        TH1D* hPixelEfficiencyMatrix;
 
         // Profile version
         TProfile2D* hPixelEfficiencyMap_trackPos_TProfile;
         TProfile2D* hChipEfficiencyMap_trackPos_TProfile;
+        TProfile2D* hPixelEfficiencyMatrix_TProfile;
         TProfile2D* hGlobalEfficiencyMap_trackPos_TProfile;
         TProfile2D* hChipEfficiencyMap_clustPos_TProfile;
         TProfile2D* hGlobalEfficiencyMap_clustPos_TProfile;
@@ -75,15 +77,15 @@ namespace corryvreckan {
         TH2D* hPosDiffPrevTrack_assocCluster;
         TH2D* hPosDiffPrevTrack_noAssocCluster;
         TH2D* hDistanceCluster_track;
-        double m_chi2ndofCut, m_timeCutFrameEdge, m_inpixelBinSize;
+        double m_chi2ndofCut, m_timeCutFrameEdge, m_inpixelBinSize, m_inpixelEdgeCut;
+		int m_maskedPixelDistanceCut;
         int total_tracks = 0;
         int matched_tracks = 0;
 
         double last_track_timestamp = 0;
         double last_track_col = 0.;
         double last_track_row = 0.;
-        double n_track = 0, n_chi2 = 0, n_dut = 0, n_roi = 0, n_masked = 0, n_frameedge = 0, n_requirecluster = 0;
-        std::vector<std::string> require_associated_cluster_on_;
+        double n_track = 0, n_chi2 = 0, n_dut = 0, n_roi = 0, n_masked = 0, n_frameedge = 0;
 
         Matrix<double> prev_hit_ts; // matrix containing previous hit timestamp for every pixel
     };
