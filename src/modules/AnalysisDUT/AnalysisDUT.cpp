@@ -25,6 +25,7 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
     config_.setDefault<int>("n_time_bins", 20000);
     config_.setDefault<double>("time_binning", Units::get<double>(0.1, "ns"));
     config_.setDefault<bool>("correlations", false);
+    config_.setDefault<bool>("correlations_after_cuts", false);
 
     time_cut_frameedge_ = config_.get<double>("time_cut_frameedge");
     chi2_ndof_cut_ = config_.get<double>("chi2ndof_cut");
@@ -32,6 +33,7 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
     n_timebins_ = config_.get<int>("n_time_bins");
     time_binning_ = config_.get<double>("time_binning");
     correlations_ = config_.get<bool>("correlations");
+    correlations_after_cuts_ = config_.get<bool>("correlations_after_cuts");
 }
 
 void AnalysisDUT::initialize() {
@@ -526,7 +528,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
         // Fill correlation plots before applying any cuts:
-        if(correlations_) {
+        if(correlations_ && !correlations_after_cuts_) {
             auto clusters = clipboard->getData<Cluster>(m_detector->getName());
             for(auto& cls : clusters) {
                 double xdistance_um = (globalIntercept.X() - cls->global().x()) * 1000.;
@@ -550,7 +552,6 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         }
 
         // Check if it intercepts the DUT
-
         if(!m_detector->hasIntercept(track.get(), 0.5)) {
             LOG(DEBUG) << " - track outside DUT area";
             hCutHisto->Fill(2);
@@ -569,6 +570,18 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             hCutHisto->Fill(3);
             num_tracks_++;
             continue;
+        }
+
+        // Fill correlation plots after applying cuts:
+        if(correlations_ && correlations_after_cuts_) {
+            auto clusters = clipboard->getData<Cluster>(m_detector->getName());
+            for(auto& cls : clusters) {
+                double xdistance_um = (globalIntercept.X() - cls->global().x()) * 1000.;
+                double ydistance_um = (globalIntercept.Y() - cls->global().y()) * 1000.;
+                hTrackCorrelationX->Fill(xdistance_um);
+                hTrackCorrelationY->Fill(ydistance_um);
+                hTrackCorrelationTime->Fill(track->timestamp() - cls->timestamp());
+            }
         }
 
         // Get the event:

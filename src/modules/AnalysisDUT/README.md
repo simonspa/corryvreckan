@@ -15,6 +15,7 @@ If a region of interest (ROI) is defined for the detector under investigation, o
 * `n_time_bins`: Number of bins in the time residual and correlation histograms. Defaults to `20000`.
 * `time_binning`: Bin width in the time residual and correlation histograms. Defaults to `0.1ns`.
 * `correlations`: If `true`, correlation plots between all tracks and all clusters on the DUT (i.e. associated + non-associated) are created. Defaults to `false`.
+* `correlations_after_cuts`: If `false`, correlation plots between all tracks and all clusters on the DUT (i.e. associated + non-associated) are filled before applying any of the above selection cuts to tracks, if `true` after applying the cuts.
 
 ### Plots produced
 
