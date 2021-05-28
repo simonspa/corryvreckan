@@ -12,13 +12,15 @@
 
 using namespace corryvreckan;
 
-AnalysisTracks::AnalysisTracks(Configuration config, std::vector<std::shared_ptr<Detector>> detectors)
+AnalysisTracks::AnalysisTracks(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {}
 
-void AnalysisTracks::initialise() {
+void AnalysisTracks::initialize() {
 
     std::string title;
     for(auto& detector : get_detectors()) {
+        if(detector->isAuxiliary())
+            continue;
         LOG(DEBUG) << "Initialise for detector " + detector->getName();
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detector->getName().c_str());
@@ -40,7 +42,7 @@ void AnalysisTracks::initialise() {
     eventNumber_ = 0;
 }
 
-StatusCode AnalysisTracks::run(std::shared_ptr<Clipboard> clipboard) {
+StatusCode AnalysisTracks::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Loop over all detectors
     for(auto& detector : get_detectors()) {
@@ -57,6 +59,8 @@ StatusCode AnalysisTracks::run(std::shared_ptr<Clipboard> clipboard) {
         return StatusCode::Success;
     std::map<std::string, uint> clusters;
     for(auto d : get_detectors()) {
+        if(d->isAuxiliary())
+            continue;
         clusters[d->getName()] = clipboard->getData<Cluster>(d->getName()).size();
         clusters_vs_tracks_.at(d->getName())->Fill(tracks.size(), clusters.at(d->getName()));
     }
@@ -65,6 +69,8 @@ StatusCode AnalysisTracks::run(std::shared_ptr<Clipboard> clipboard) {
     std::map<std::string, std::vector<XYZPoint>> intersects; // local coordinates
     for(auto& track : tracks) {
         for(auto d : get_detectors()) {
+            if(d->isAuxiliary())
+                continue;
             intersects[d->getName()].push_back(d->globalToLocal(track->getState(d->getName())));
             if(d->isDUT() || track->getClusterFromDetector(d->getName()) == nullptr)
                 continue;
@@ -93,7 +99,7 @@ StatusCode AnalysisTracks::run(std::shared_ptr<Clipboard> clipboard) {
     return StatusCode::Success;
 }
 
-void AnalysisTracks::finalise() {
+void AnalysisTracks::finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) {
 
     LOG(DEBUG) << "Analysed " << eventNumber_ << " events";
 }

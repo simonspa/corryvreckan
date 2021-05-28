@@ -7,7 +7,8 @@
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
-
+#ifndef ANALYSISTRACKS_H
+#define ANALYSISTRACKS_H 1
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -31,22 +32,22 @@ namespace corryvreckan {
          * @param config Configuration object for this module as retrieved from the steering file
          * @param detectors Vector of pointers to the detectors
          */
-        AnalysisTracks(Configuration config, std::vector<std::shared_ptr<Detector>> detectors);
-
+        AnalysisTracks(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
+        ~AnalysisTracks() {}
         /**
          * @brief [Initialise this module]
          */
-        void initialise();
+        void initialize() override;
 
         /**
          * @brief [Run the function of this module]
          */
-        StatusCode run(std::shared_ptr<Clipboard> clipboard);
+        StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
         /**
          * @brief [Finalise module]
          */
-        void finalise();
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
         int eventNumber_;
@@ -58,3 +59,4 @@ namespace corryvreckan {
     };
 
 } // namespace corryvreckan
+#endif // ANALYSISTRACKS_H
