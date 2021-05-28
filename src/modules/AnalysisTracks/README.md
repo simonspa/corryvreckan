@@ -1,21 +1,20 @@
 # AnalysisTracks
 **Maintainer**: Lennart Huth (lennart.huth@desy.de)
 **Module Type**: *GLOBAL*  
-**Status**: Immature
+**Status**: Work in progress
 
 ### Description
-This is a demonstrator module only, taking data every detector on the clipboard and plots the pixel hit positions.
-It serves as template to create new modules.
+Check the recontructed tracks for track distances, double usage of clusters, etc
 
 ### Parameters
 No parameters are used from the configuration file.
 
 ### Plots produced
-* Histogram of event numbers
-
 For each detector the following plots are produced:
 
-* 2D histogram of pixel hit positions
+* 2D histogram of number of tracks versus clusters
+* 1D histogram of absolute distance between tracks
+* 1D histogram of number of times a cluster is used in a track
 
 ### Usage
 ```toml
