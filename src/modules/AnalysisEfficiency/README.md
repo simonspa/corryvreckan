@@ -19,7 +19,7 @@ More information can be found in the ROOT `TEfficiency` class reference, section
 * `time_cut_frameedge`: Parameter to discard telescope tracks at the frame edges (start and end of the current event window). Defaults to `20ns`.
 * `chi2ndof_cut`: Acceptance criterion for telescope tracks, defaults to a value of `3`.
 * `inpixel_bin_size`: Parameter to set the bin size of the in-pixel 2D efficiency histogram. This should be given in units of distance and the same value is used in both axes. Defaults to `1.0um`.
-* `inpixelEdge_cut`: Parameter to exclude tracks going within a cut-distance to the pixel edge. Defaults to `0` (no track cut).
+* `inpixelEdge_cut`: Parameter to exclude tracks going within a cut-distance (in `um`) to the pixel edge. Defaults to `5um`.
 * `maskedPixelDistance_cut`: Distance (in pixels) to exclude tracks passing close to masked pixel. Defaults to `1`.
 * `require_associated_cluster_on`: Names of detectors which are required to have an associated cluster to the telescope tracks. Detectors listed here must be marked as `role = DUT` in the detector configuration file. Only tracks satisfying this requirement are accepted for the efficiency measurement. If empty, no detector is required. Default is empty.
 
@@ -30,6 +30,7 @@ For the DUT, the following plots are produced:
 * 2D histograms:
   * 2D Map of in-pixel efficiency
   * 2D Maps of chip efficiency in local and global coordinates, filled at the position of the track intercept point or at the position of the associated cluster center
+  * 2D Map of pixel efficiency, filled at the associated cluster pixel level, constrained to tracks passing through a ROI (defined by `inpixelEdge_cut`) of the given pixel.
   * 2D Maps of the position difference of a track with and without associated cluster to the previous track
   * 2D Map of the distance between track intersection and associated cluster
 
