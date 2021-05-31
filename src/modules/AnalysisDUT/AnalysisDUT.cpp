@@ -25,29 +25,58 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
     config_.setDefault<int>("n_time_bins", 20000);
     config_.setDefault<double>("time_binning", Units::get<double>(0.1, "ns"));
     config_.setDefault<bool>("correlations", false);
-    config_.setDefault<bool>("correlations_after_cuts", false);
 
+    if(config_.has("cluster_charge_cut")) {
+        cluster_charge_cut_ = config_.get<double>("cluster_charge_cut");
+    }
     time_cut_frameedge_ = config_.get<double>("time_cut_frameedge");
     chi2_ndof_cut_ = config_.get<double>("chi2ndof_cut");
     use_closest_cluster_ = config_.get<bool>("use_closest_cluster");
     n_timebins_ = config_.get<int>("n_time_bins");
     time_binning_ = config_.get<double>("time_binning");
     correlations_ = config_.get<bool>("correlations");
-    correlations_after_cuts_ = config_.get<bool>("correlations_after_cuts");
 }
 
 void AnalysisDUT::initialize() {
 
     if(correlations_) {
-        hTrackCorrelationX = new TH1F(
-            "hTrackCorrelationX", "Track residual X, all clusters;x_{track}-x_{hit} [#mum];# entries", 8000, -1000.5, 999.5);
-        hTrackCorrelationY = new TH1F(
-            "hTrackCorrelationY", "Track residual Y, all clusters;y_{track}-y_{hit} [#mum];# entries", 8000, -1000.5, 999.5);
-        hTrackCorrelationTime = new TH1F("hTrackCorrelationTime",
-                                         "Track time residual, all clusters;time_{track}-time_{hit} [ns];# entries",
-                                         n_timebins_,
-                                         -(n_timebins_ + 1) / 2. * time_binning_,
-                                         (n_timebins_ - 1) / 2. * time_binning_);
+        trackCorrelationX_beforeCuts =
+            new TH1F("trackCorrelationX_beforeCuts",
+                     "Track residual X (tracks before cuts), all clusters;x_{track}-x_{hit} [#mum];# entries",
+                     8000,
+                     -1000.5,
+                     999.5);
+        trackCorrelationY_beforeCuts =
+            new TH1F("trackCorrelationY_beforeCuts",
+                     "Track residual Y (tracks before cuts), all clusters;y_{track}-y_{hit} [#mum];# entries",
+                     8000,
+                     -1000.5,
+                     999.5);
+        trackCorrelationTime_beforeCuts =
+            new TH1F("trackCorrelationTime_beforeCuts",
+                     "Track time residual (tracks before cuts), all clusters;time_{track}-time_{hit} [ns];# entries",
+                     n_timebins_,
+                     -(n_timebins_ + 1) / 2. * time_binning_,
+                     (n_timebins_ - 1) / 2. * time_binning_);
+
+        trackCorrelationX_afterCuts =
+            new TH1F("trackCorrelationX_afterCuts",
+                     "Track residual X (tracks after cuts), all clusters;x_{track}-x_{hit} [#mum];# entries",
+                     8000,
+                     -1000.5,
+                     999.5);
+        trackCorrelationY_afterCuts =
+            new TH1F("trackCorrelationY_afterCuts",
+                     "Track residual Y (tracks after cuts), all clusters;y_{track}-y_{hit} [#mum];# entries",
+                     8000,
+                     -1000.5,
+                     999.5);
+        trackCorrelationTime_afterCuts =
+            new TH1F("trackCorrelationTime_afterCuts",
+                     "Track time residual (tracks after cuts), all clusters;time_{track}-time_{hit} [ns];# entries",
+                     n_timebins_,
+                     -(n_timebins_ + 1) / 2. * time_binning_,
+                     (n_timebins_ - 1) / 2. * time_binning_);
     }
 
     hClusterMapAssoc = new TH2F("clusterMapAssoc",
@@ -527,15 +556,15 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         auto globalIntercept = m_detector->getIntercept(track.get());
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
-        // Fill correlation plots before applying any cuts:
-        if(correlations_ && !correlations_after_cuts_) {
+        // Fill correlation plots BEFORE applying any cuts:
+        if(correlations_) {
             auto clusters = clipboard->getData<Cluster>(m_detector->getName());
             for(auto& cls : clusters) {
                 double xdistance_um = (globalIntercept.X() - cls->global().x()) * 1000.;
                 double ydistance_um = (globalIntercept.Y() - cls->global().y()) * 1000.;
-                hTrackCorrelationX->Fill(xdistance_um);
-                hTrackCorrelationY->Fill(ydistance_um);
-                hTrackCorrelationTime->Fill(track->timestamp() - cls->timestamp());
+                trackCorrelationX_beforeCuts->Fill(xdistance_um);
+                trackCorrelationY_beforeCuts->Fill(ydistance_um);
+                trackCorrelationTime_beforeCuts->Fill(track->timestamp() - cls->timestamp());
             }
         }
 
@@ -573,14 +602,14 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         }
 
         // Fill correlation plots after applying cuts:
-        if(correlations_ && correlations_after_cuts_) {
+        if(correlations_) {
             auto clusters = clipboard->getData<Cluster>(m_detector->getName());
             for(auto& cls : clusters) {
                 double xdistance_um = (globalIntercept.X() - cls->global().x()) * 1000.;
                 double ydistance_um = (globalIntercept.Y() - cls->global().y()) * 1000.;
-                hTrackCorrelationX->Fill(xdistance_um);
-                hTrackCorrelationY->Fill(ydistance_um);
-                hTrackCorrelationTime->Fill(track->timestamp() - cls->timestamp());
+                trackCorrelationX_afterCuts->Fill(xdistance_um);
+                trackCorrelationY_afterCuts->Fill(ydistance_um);
+                trackCorrelationTime_afterCuts->Fill(track->timestamp() - cls->timestamp());
             }
         }
 
