@@ -26,9 +26,6 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
     config_.setDefault<double>("time_binning", Units::get<double>(0.1, "ns"));
     config_.setDefault<bool>("correlations", false);
 
-    if(config_.has("cluster_charge_cut")) {
-        cluster_charge_cut_ = config_.get<double>("cluster_charge_cut");
-    }
     time_cut_frameedge_ = config_.get<double>("time_cut_frameedge");
     chi2_ndof_cut_ = config_.get<double>("chi2ndof_cut");
     use_closest_cluster_ = config_.get<bool>("use_closest_cluster");
