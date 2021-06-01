@@ -40,7 +40,7 @@ For the DUT, the following plots are produced:
 
 * Other:
   * Value of total efficiency as `TEfficiency` including (asymmetric) error bars
-  * Efficiency as function of column and row
+  * Efficiency as function of column and row, and vs. time
 
 
 ### Usage
