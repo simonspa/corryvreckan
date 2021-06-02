@@ -34,7 +34,7 @@ For the DUT, the following plots are produced:
     * Various histograms of the pixel information: ToT, charge, ToA, TS1, TS2, TS1-bits, TS2-bits
     * Histograms of the pixel multiplicity, triggers per event, and pixels over time
     * Various timing histograms
-    * Histogram showing the frequency of different messages (like buffer overflow)
+    * Histogram showing the frequency of different messages (such as buffer overflow)
 
 ### Usage
 ```toml
