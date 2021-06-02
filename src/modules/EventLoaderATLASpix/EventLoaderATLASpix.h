@@ -63,8 +63,6 @@ namespace corryvreckan {
         std::priority_queue<std::shared_ptr<Pixel>, PixelVector, CompareTimeGreater> sorted_pixels_;
 
         std::shared_ptr<Detector> m_detector;
-        unsigned long long int m_oldtoa;
-        unsigned long long int m_overflowcounter;
         std::string m_filename;
         std::ifstream m_file;
 
@@ -82,6 +80,7 @@ namespace corryvreckan {
         // int ts1Range;
         int ts2Range;
 
+        TH1F* hMessages;
         TH2F* hHitMap;
         TH2F* hHitMap_highTot;
         TProfile2D* hHitMap_totWeighted;
