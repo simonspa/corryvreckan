@@ -73,6 +73,12 @@ namespace corryvreckan {
          * @return Seed pixel of the cluster
          */
         const Pixel* getSeedPixel() const;
+        /**
+         * @brief Retrieve the earliest pixel of the cluster.
+         *
+         * @return Earliest pixel of the cluster
+         */
+        const Pixel* getEarliestPixel() const;
 
         // Set cluster parameters
         void setColumn(double col) { m_column = col; }
@@ -108,7 +114,7 @@ namespace corryvreckan {
         std::map<int, bool> m_columnHits;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Cluster, 12)
+        ClassDefOverride(Cluster, 13)
     };
 
     // Vector type declaration

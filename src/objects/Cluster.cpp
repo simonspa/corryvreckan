@@ -68,22 +68,31 @@ const Pixel* Cluster::getSeedPixel() const {
                 seed = pxl;
             }
         }
-    } else { // return the earliest pixel:
-        double earliestTimestamp = std::numeric_limits<double>::max();
-        for(auto& px : m_pixels) {
-            auto pxl = dynamic_cast<Pixel*>(px.GetObject());
-            if(pxl == nullptr) {
-                throw MissingReferenceException(typeid(*this), typeid(Pixel));
-            }
+        return seed;
 
-            if(pxl->timestamp() < earliestTimestamp) {
-                earliestTimestamp = pxl->timestamp();
-                seed = pxl;
-            }
+    } else {
+        // return the earliest pixel:
+        return Cluster::getEarliestPixel();
+    }
+}
+
+const Pixel* Cluster::getEarliestPixel() const {
+    Pixel* earliest = nullptr;
+
+    double earliestTimestamp = std::numeric_limits<double>::max();
+    for(auto& px : m_pixels) {
+        auto pxl = dynamic_cast<Pixel*>(px.GetObject());
+        if(pxl == nullptr) {
+            throw MissingReferenceException(typeid(*this), typeid(Pixel));
+        }
+
+        if(pxl->timestamp() < earliestTimestamp) {
+            earliestTimestamp = pxl->timestamp();
+            earliest = pxl;
         }
     }
 
-    return seed;
+    return earliest;
 }
 
 void Cluster::print(std::ostream& out) const {
