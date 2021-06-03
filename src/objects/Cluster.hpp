@@ -67,14 +67,15 @@ namespace corryvreckan {
         /**
          * @brief Retrieve the seed pixel of the cluster.
          *
-         * The seed pixel is defined as the one with the highest charge. In case all pixels have zero charge, return the
-         * pixel with the earliest timestamp..
+         * The seed pixel is defined as the one with the highest charge. In case all pixels have the same charge return a
+         * random pixel.
          *
          * @return Seed pixel of the cluster
          */
         const Pixel* getSeedPixel() const;
         /**
-         * @brief Retrieve the earliest pixel of the cluster.
+         * @brief Retrieve the earliest pixel of the cluster.  In case all pixels have the same timstamp return a random
+         * pixel.
          *
          * @return Earliest pixel of the cluster
          */
