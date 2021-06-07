@@ -51,7 +51,7 @@ std::vector<const Pixel*> Cluster::pixels() const {
 const Pixel* Cluster::getSeedPixel() const {
     Pixel* seed = nullptr;
 
-    double maxcharge = -1;
+    double maxcharge = -std::numeric_limits<double>::max();
     // loop overall pixels and find the one with the largest charge:
     for(auto& px : m_pixels) {
         auto pxl = dynamic_cast<Pixel*>(px.GetObject());
