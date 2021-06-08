@@ -30,7 +30,7 @@ For the DUT, the following plots are produced:
 * 2D histograms:
   * 2D Map of in-pixel efficiency
   * 2D Maps of chip efficiency in local and global coordinates, filled at the position of the track intercept point or at the position of the associated cluster center
-  * 2D Map of pixels efficiency, for the full matrix, filled at the pixel (of the associated cluster) for which the track goes through, constrained to an inpixel-ROI defined by `inpixel_cut_edge`.
+  * 2D Map of pixel efficiency, for the full matrix, filled at the pixel (of the associated cluster) through which the track goes, constrained to an inpixel-ROI defined by `inpixel_cut_edge`.
   * 2D Maps of the position difference of a track with and without associated cluster to the previous track
   * 2D Map of the distance between track intersection and associated cluster
 
