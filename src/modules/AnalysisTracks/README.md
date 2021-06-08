@@ -4,7 +4,7 @@
 **Status**: Work in progress
 
 ### Description
-Check the recontructed tracks for track distances, double usage of clusters, etc
+Check the reconstructed tracks for track distances, double usage of clusters, etc
 
 ### Parameters
 No parameters are used from the configuration file.
@@ -21,3 +21,4 @@ For each detector the following plots are produced:
 [AnalysisTracks]
 
 ```
+

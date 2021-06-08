@@ -29,7 +29,7 @@ void AnalysisTracks::initialize() {
             throw RuntimeError("Cannot create or access local ROOT directory for module " + this->getUniqueName());
         }
         local_directory->cd();
-        title = "Disance between tracks ; distance [mm]; entries";
+        title = "Distance between tracks ; distance [mm]; entries";
         _distance_between_tracks_[detector->getName().c_str()] = new TH1F("distance_tracks", title.c_str(), 1000, 0, 10);
         title = "Tracks with same hits ; # tracks with same hit; entries";
         _tracks_per_hit_[detector->getName().c_str()] = new TH1F("number_tracks_with same hit", title.c_str(), 15, 0, 15);
