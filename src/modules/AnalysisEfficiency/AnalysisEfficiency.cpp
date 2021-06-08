@@ -23,7 +23,7 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration& config, std::shared_ptr<De
     config_.setDefault<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
     config_.setDefault<double>("chi2ndof_cut", 3.);
     config_.setDefault<double>("inpixel_bin_size", Units::get<double>(1.0, "um"));
-    config_.setDefault<double>("inpixelEdge_cut", 5.);
+    config_.setDefault<double>("inpixelEdge_cut", Units::get<double>(5.,"um");
     config_.setDefault<double>("maskedPixelDistance_cut", 1.);
 
     m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge");
