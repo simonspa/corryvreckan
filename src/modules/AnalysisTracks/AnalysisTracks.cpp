@@ -35,7 +35,7 @@ void AnalysisTracks::initialize() {
         _tracks_per_hit_[detector->getName().c_str()] = new TH1F("number_tracks_with same hit", title.c_str(), 15, 0, 15);
         title = "Cluster vs tracks ; # tracks; #clusters";
         clusters_vs_tracks_[detector->getName().c_str()] =
-            new TH2F("distance_tracks", title.c_str(), 25, 0, 25, 200, 0, 200);
+            new TH2F("clusters_vs_tracks", title.c_str(), 25, 0, 25, 200, 0, 200);
     }
 
     // Initialise member variables
