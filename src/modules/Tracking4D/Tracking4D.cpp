@@ -32,6 +32,7 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
     config_.setDefault<double>("volume_radiation_length", Units::get<double>(304.2, "m"));
     config_.setDefault<bool>("volume_scattering", false);
     config_.setDefault<bool>("reject_by_roi", false);
+    config_.setDefault<bool>("uinque_cluster_usage", false);
 
     if(config_.count({"time_cut_rel", "time_cut_abs"}) == 0) {
         config_.setDefault("time_cut_rel", 3.0);
@@ -62,6 +63,7 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
     volume_radiation_length_ = config_.get<double>("volume_radiation_length");
     use_volume_scatterer_ = config_.get<bool>("volume_scattering");
     reject_by_ROI_ = config_.get<bool>("reject_by_roi");
+    uinque_cluster_usage_ = config_.get<bool>("uinque_cluster_usage");
 
     // print a warning if volumeScatterer are used as this causes fit failures
     // that are still not understood
