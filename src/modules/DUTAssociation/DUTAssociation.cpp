@@ -31,15 +31,15 @@ DUTAssociation::DUTAssociation(Configuration& config, std::shared_ptr<Detector> 
     }
 
     // timing cut, relative (x * time_resolution) or absolute:
-    timeCut = corryvreckan::calculate_cut<double>("time_cut", config_, m_detector);
+    time_cut_ = corryvreckan::calculate_cut<double>("time_cut", config_, m_detector);
 
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    spatialCut = corryvreckan::calculate_cut<XYVector>("spatial_cut", config_, m_detector);
-    useClusterCentre = config_.get<bool>("use_cluster_centre");
+    spatial_cut_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", config_, m_detector);
+    use_cluster_centre_ = config_.get<bool>("use_cluster_centre");
 
-    LOG(DEBUG) << "time_cut = " << Units::display(timeCut, {"ms", "us", "ns"});
-    LOG(DEBUG) << "spatial_cut = " << Units::display(spatialCut, {"um", "mm"});
-    LOG(DEBUG) << "use_cluster_centre = " << useClusterCentre;
+    LOG(DEBUG) << "time_cut = " << Units::display(time_cut_, {"ms", "us", "ns"});
+    LOG(DEBUG) << "spatial_cut = " << Units::display(spatial_cut_, {"um", "mm"});
+    LOG(DEBUG) << "use_cluster_centre = " << use_cluster_centre_;
 }
 
 void DUTAssociation::initialize() {
@@ -99,7 +99,7 @@ void DUTAssociation::initialize() {
     // Nr of associated clusters per track
     title = m_detector->getName() + ": number of associated clusters per track;associated clusters;events";
     hNoAssocCls = new TH1F("no_assoc_cls", title.c_str(), 10, -0.5, 9.5);
-    LOG(DEBUG) << "DUT association time cut = " << Units::display(timeCut, {"ms", "ns"});
+    LOG(DEBUG) << "DUT association time cut = " << Units::display(time_cut_, {"ms", "ns"});
 }
 
 StatusCode DUTAssociation::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -165,8 +165,8 @@ StatusCode DUTAssociation::run(const std::shared_ptr<Clipboard>& clipboard) {
             }
 
             // Check if the cluster is close in space (either use cluster centre of closest pixel to track)
-            auto xdistance = (useClusterCentre ? xdistance_centre : xdistance_nearest);
-            auto ydistance = (useClusterCentre ? ydistance_centre : ydistance_nearest);
+            auto xdistance = (use_cluster_centre_ ? xdistance_centre : xdistance_nearest);
+            auto ydistance = (use_cluster_centre_ ? ydistance_centre : ydistance_nearest);
             auto distance = sqrt(xdistance * xdistance + ydistance * ydistance);
             // Check if track-cluster distance lies within ellipse defined by spatial cuts, following this example:
             // https://www.geeksforgeeks.org/check-if-a-point-is-inside-outside-or-on-the-ellipse/
@@ -175,8 +175,8 @@ StatusCode DUTAssociation::run(const std::shared_ptr<Clipboard>& clipboard) {
             //                                       > 1: outside,
             //                                       < 1: inside
             // Discard track if outside of ellipse:
-            auto norm = (xdistance * xdistance) / (spatialCut.x() * spatialCut.x()) +
-                        (ydistance * ydistance) / (spatialCut.y() * spatialCut.y());
+            auto norm = (xdistance * xdistance) / (spatial_cut_.x() * spatial_cut_.x()) +
+                        (ydistance * ydistance) / (spatial_cut_.y() * spatial_cut_.y());
             if(norm > 1) {
                 LOG(DEBUG) << "Discarding DUT cluster with distance (" << Units::display(std::abs(xdistance), {"um", "mm"})
                            << "," << Units::display(std::abs(ydistance), {"um", "mm"}) << ")"
@@ -187,7 +187,7 @@ StatusCode DUTAssociation::run(const std::shared_ptr<Clipboard>& clipboard) {
             }
 
             // Check if the cluster is close in time
-            if(std::abs(cluster->timestamp() - track->timestamp()) > timeCut) {
+            if(std::abs(cluster->timestamp() - track->timestamp()) > time_cut_) {
                 LOG(DEBUG) << "Discarding DUT cluster with time difference "
                            << Units::display(std::abs(cluster->timestamp() - track->timestamp()), {"ms", "s"});
                 hCutHisto->Fill(2);

@@ -37,9 +37,9 @@ namespace corryvreckan {
 
     private:
         std::shared_ptr<Detector> m_detector;
-        double timeCut;
-        ROOT::Math::XYVector spatialCut;
-        bool useClusterCentre;
+        double time_cut_;
+        ROOT::Math::XYVector spatial_cut_;
+        bool use_cluster_centre_;
 
         TH1F* hCutHisto;
 
