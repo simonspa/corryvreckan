@@ -404,70 +404,6 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
                 LOG_N(WARNING, 100) << "Rejected a track due to failure in fitting";
                 continue;
             }
-            // Fill histograms
-            trackChi2->Fill(track->getChi2());
-            clustersPerTrack->Fill(static_cast<double>(track->getNClusters()));
-            trackChi2ndof->Fill(track->getChi2ndof());
-            if(!(track_model_ == "gbl")) {
-                trackAngleX->Fill(atan(track->getDirection(track->getClusters().front()->detectorID()).X()));
-                trackAngleY->Fill(atan(track->getDirection(track->getClusters().front()->detectorID()).Y()));
-            }
-            // Make residuals
-            auto trackClusters = track->getClusters();
-            for(auto& trackCluster : trackClusters) {
-                string detectorID = trackCluster->detectorID();
-                ROOT::Math::XYZPoint globalRes = track->getGlobalResidual(detectorID);
-                ROOT::Math::XYPoint localRes = track->getLocalResidual(detectorID);
-
-                residualsX_local[detectorID]->Fill(localRes.X());
-                residualsX_global[detectorID]->Fill(globalRes.X());
-
-                pullX_local[detectorID]->Fill(localRes.x() / track->getClusterFromDetector(detectorID)->errorX());
-                pullX_global[detectorID]->Fill(globalRes.x() / track->getClusterFromDetector(detectorID)->errorX());
-
-                pullY_local[detectorID]->Fill(localRes.Y() / track->getClusterFromDetector(detectorID)->errorY());
-                pullY_global[detectorID]->Fill(globalRes.Y() / track->getClusterFromDetector(detectorID)->errorY());
-
-                if(trackCluster->columnWidth() == 1) {
-                    residualsXwidth1_local[detectorID]->Fill(localRes.X());
-                    residualsXwidth1_global[detectorID]->Fill(globalRes.X());
-                } else if(trackCluster->columnWidth() == 2) {
-                    residualsXwidth2_local[detectorID]->Fill(localRes.X());
-                    residualsXwidth2_global[detectorID]->Fill(globalRes.X());
-                } else if(trackCluster->columnWidth() == 3) {
-                    residualsXwidth3_local[detectorID]->Fill(localRes.X());
-                    residualsXwidth3_global[detectorID]->Fill(globalRes.X());
-                }
-
-                residualsY_local[detectorID]->Fill(localRes.Y());
-                residualsY_global[detectorID]->Fill(globalRes.Y());
-                if(trackCluster->rowWidth() == 1) {
-                    residualsYwidth1_local[detectorID]->Fill(localRes.Y());
-                    residualsYwidth1_global[detectorID]->Fill(globalRes.Y());
-                } else if(trackCluster->rowWidth() == 2) {
-                    residualsYwidth2_local[detectorID]->Fill(localRes.Y());
-                    residualsYwidth2_global[detectorID]->Fill(globalRes.Y());
-                } else if(trackCluster->rowWidth() == 3) {
-                    residualsYwidth3_local[detectorID]->Fill(localRes.Y());
-                    residualsYwidth3_global[detectorID]->Fill(globalRes.Y());
-                }
-                residualsZ_global[detectorID]->Fill(globalRes.Z());
-            }
-
-            for(auto& detector : get_detectors()) {
-                if(detector->isAuxiliary()) {
-                    continue;
-                }
-                auto det = detector->getName();
-                if(!kinkX.count(det)) {
-                    LOG(WARNING) << "Skipping writing kinks due to missing init of histograms for  " << det;
-                    continue;
-                }
-
-                XYPoint kink = track->getKinkAt(det);
-                kinkX.at(det)->Fill(kink.x());
-                kinkY.at(det)->Fill(kink.y());
-            }
 
             if(timestamp_from_.empty()) {
                 // Improve the track timestamp by taking the average of all planes
@@ -485,12 +421,111 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
         }
     }
 
-    tracksPerEvent->Fill(static_cast<double>(tracks.size()));
-
+    auto duplicated_hit = [this](const Track* a, const Track* b) {
+        for(auto d : get_detectors()) {
+            if(a->getClusterFromDetector(d->getName()) == b->getClusterFromDetector(d->getName()) &&
+               !(b->getClusterFromDetector(d->getName()) == nullptr)) {
+                LOG(DEBUG) << "Duplicated hit on " << d->getName() << ": rejecting track";
+                return true;
+            }
+            //            else LOG(WARNING) << a->getClusterFromDetector(d->getName()) <<", " <<
+            //            b->getClusterFromDetector(d->getName());
+        }
+        return false;
+    };
     // Save the tracks on the clipboard
     if(tracks.size() > 0) {
+
+        // if requested ensure unique usage of clusters
+        if(uinque_cluster_usage_ && tracks.size() > 1) {
+            // sort by chi2:
+            LOG_ONCE(WARNING) << "Rejecting tracks with smae hits";
+            std::sort(tracks.begin(), tracks.end(), [](const shared_ptr<Track> a, const shared_ptr<Track> b) {
+                return (a->getChi2() / a->getNdof()) < (b->getChi2() / b->getNdof());
+            });
+            // remove tracks with hit that is used twice
+            auto track1 = tracks.begin();
+            while(track1 != tracks.end()) {
+                auto track2 = track1 + 1;
+                while(track2 != tracks.end()) {
+                    // if hit is used twice delete the track
+                    if(duplicated_hit(track2->get(), track1->get())) {
+                        track2 = tracks.erase(track2);
+                    } else {
+                        track2++;
+                    }
+                }
+                track1++;
+            }
+        }
         clipboard->putData(tracks);
     }
+    for(auto track : tracks) {
+        trackChi2->Fill(track->getChi2());
+        clustersPerTrack->Fill(static_cast<double>(track->getNClusters()));
+        trackChi2ndof->Fill(track->getChi2ndof());
+        if(!(track_model_ == "gbl")) {
+            trackAngleX->Fill(atan(track->getDirection(track->getClusters().front()->detectorID()).X()));
+            trackAngleY->Fill(atan(track->getDirection(track->getClusters().front()->detectorID()).Y()));
+        }
+        // Make residuals
+        auto trackClusters = track->getClusters();
+        for(auto& trackCluster : trackClusters) {
+            string detectorID = trackCluster->detectorID();
+            ROOT::Math::XYZPoint globalRes = track->getGlobalResidual(detectorID);
+            ROOT::Math::XYPoint localRes = track->getLocalResidual(detectorID);
+
+            residualsX_local[detectorID]->Fill(localRes.X());
+            residualsX_global[detectorID]->Fill(globalRes.X());
+
+            pullX_local[detectorID]->Fill(localRes.x() / track->getClusterFromDetector(detectorID)->errorX());
+            pullX_global[detectorID]->Fill(globalRes.x() / track->getClusterFromDetector(detectorID)->errorX());
+
+            pullY_local[detectorID]->Fill(localRes.Y() / track->getClusterFromDetector(detectorID)->errorY());
+            pullY_global[detectorID]->Fill(globalRes.Y() / track->getClusterFromDetector(detectorID)->errorY());
+
+            if(trackCluster->columnWidth() == 1) {
+                residualsXwidth1_local[detectorID]->Fill(localRes.X());
+                residualsXwidth1_global[detectorID]->Fill(globalRes.X());
+            } else if(trackCluster->columnWidth() == 2) {
+                residualsXwidth2_local[detectorID]->Fill(localRes.X());
+                residualsXwidth2_global[detectorID]->Fill(globalRes.X());
+            } else if(trackCluster->columnWidth() == 3) {
+                residualsXwidth3_local[detectorID]->Fill(localRes.X());
+                residualsXwidth3_global[detectorID]->Fill(globalRes.X());
+            }
+
+            residualsY_local[detectorID]->Fill(localRes.Y());
+            residualsY_global[detectorID]->Fill(globalRes.Y());
+            if(trackCluster->rowWidth() == 1) {
+                residualsYwidth1_local[detectorID]->Fill(localRes.Y());
+                residualsYwidth1_global[detectorID]->Fill(globalRes.Y());
+            } else if(trackCluster->rowWidth() == 2) {
+                residualsYwidth2_local[detectorID]->Fill(localRes.Y());
+                residualsYwidth2_global[detectorID]->Fill(globalRes.Y());
+            } else if(trackCluster->rowWidth() == 3) {
+                residualsYwidth3_local[detectorID]->Fill(localRes.Y());
+                residualsYwidth3_global[detectorID]->Fill(globalRes.Y());
+            }
+            residualsZ_global[detectorID]->Fill(globalRes.Z());
+        }
+
+        for(auto& detector : get_detectors()) {
+            if(detector->isAuxiliary()) {
+                continue;
+            }
+            auto det = detector->getName();
+            if(!kinkX.count(det)) {
+                LOG(WARNING) << "Skipping writing kinks due to missing init of histograms for  " << det;
+                continue;
+            }
+
+            XYPoint kink = track->getKinkAt(det);
+            kinkX.at(det)->Fill(kink.x());
+            kinkY.at(det)->Fill(kink.y());
+        }
+    }
+    tracksPerEvent->Fill(static_cast<double>(tracks.size()));
 
     LOG(DEBUG) << "End of event";
     return StatusCode::Success;
