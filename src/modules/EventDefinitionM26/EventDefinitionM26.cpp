@@ -120,17 +120,14 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
 
             LOG(DEBUG) << "det = " << det << ", detector = " << detector;
             if(det == detector) {
-                begin = Units::get(static_cast<double>(stdevt->GetTimeBegin()), "ps");
-                end = Units::get(static_cast<double>(stdevt->GetTimeEnd()), "ps");
-
-                LOG(DEBUG) << "Set begin/end, begin: " << Units::display(begin, {"ns", "us"})
-                           << ", end: " << Units::display(end, {"ns", "us"});
                 // MIMOSA
                 if(det == "mimosa26") {
                     // pivot magic - see readme
                     double piv = stdevt->GetPlane(0).PivotPixel() / 16.;
                     begin = Units::get(piv * (115.2 / 576), "us") + timeshift_;
-                    end = Units::get(230.4, "us") - begin;
+
+                    // end should be after second frame, sharp (variable durationn, not variable end)
+                    end = Units::get(115.2, "us");
                     LOG(DEBUG) << "Pivot magic, begin: " << Units::display(begin, {"ns", "us", "ms"})
                                << ", end: " << Units::display(end, {"ns", "us", "ms"})
                                << ", duration = " << Units::display(begin + end, {"ns", "us"});
@@ -139,6 +136,12 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
                     LOG(TRACE) << "Event time below skip time: " << Units::display(begin, {"ns", "us", "ms", "s"}) << "vs. "
                                << Units::display(skip_time_, {"ns", "us", "ms", "s"});
                     continue;
+                } else {
+                    begin = Units::get(static_cast<double>(stdevt->GetTimeBegin()), "ps");
+                    end = Units::get(static_cast<double>(stdevt->GetTimeEnd()), "ps");
+
+                    LOG(DEBUG) << "Set begin/end, begin: " << Units::display(begin, {"ns", "us"})
+                               << ", end: " << Units::display(end, {"ns", "us"});
                 }
                 return e->GetTriggerN();
             }
