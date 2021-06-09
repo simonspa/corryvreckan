@@ -65,6 +65,7 @@ void EventDefinitionM26::initialize() {
         new TH1F("htimebetweenTimes", "time between two mimosa frames; time /us; #entries", 1000, -0.5, 995.5);
     timebetweenTLUEvents_ =
         new TH1F("htimebetweenTrigger", "time between two triggers frames; time /us; #entries", 1000, -0.5, 995.5);
+    eventDuration_ = new TH1F("hduration", "Event duration as defined on clipboard; time /us; #entries", 1000, 0., 230.4);
 
     timeBeforeTrigger_ = new TH1F("timeBeforeTrigger", "time in frame before trigger; time /us; #entries", 2320, -231, 1);
     timeAfterTrigger_ = new TH1F("timeAfterTrigger", "time in frame after trigger; time /us; #entries", 2320, -1, 231);
@@ -219,10 +220,13 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                            << Units::display(time_after_, "us") << ", " << Units::display(time_after_ + time_before_, "us");
                 LOG(DEBUG) << "evtStart/evtEnd/duration = " << Units::display(evtStart, "us") << ", "
                            << Units::display(evtEnd, "us") << ", " << Units::display(evtEnd - evtStart, "us");
-                clipboard->putEvent(std::make_shared<Event>(evtStart, evtEnd));
+
+                auto event = std::make_shared<Event>(evtStart, evtEnd);
+                clipboard->putEvent(event);
                 LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(evtStart, {"us", "ns"}) << " - "
                            << Units::display(evtEnd, {"us", "ns"}) << ", length "
                            << Units::display(evtEnd - evtStart, {"us", "ns"});
+                eventDuration_->Fill(static_cast<double>(Units::convert(event->duration(), "us")));
                 hClipboardEventStart->Fill(static_cast<double>(Units::convert(evtStart, "ms")));
                 hClipboardEventStart_long->Fill(static_cast<double>(Units::convert(evtStart, "s")));
             } else {
