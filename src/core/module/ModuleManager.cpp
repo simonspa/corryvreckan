@@ -750,6 +750,34 @@ void ModuleManager::finalizeAll() {
         LOG(STATUS) << "Wrote updated detector configuration to " << path;
     }
 
+    // Check for unused configuration keys:
+    auto unused_keys = global_config.getUnusedKeys();
+    if(!unused_keys.empty()) {
+        std::stringstream st;
+        st << "Unused configuration keys in global section:";
+        for(auto& key : unused_keys) {
+            st << std::endl << key;
+        }
+        LOG(WARNING) << st.str();
+    }
+    for(auto& config : conf_manager_->getInstanceConfigurations()) {
+        auto unique_name = config.getName();
+        auto identifier = config.get<std::string>("identifier");
+        if(!identifier.empty()) {
+            unique_name += ":";
+            unique_name += identifier;
+        }
+        auto cfg_unused_keys = config.getUnusedKeys();
+        if(!cfg_unused_keys.empty()) {
+            std::stringstream st;
+            st << "Unused configuration keys in section " << unique_name << ":";
+            for(auto& key : cfg_unused_keys) {
+                st << std::endl << key;
+            }
+            LOG(WARNING) << st.str();
+        }
+    }
+
     // Check the timing for all events
     timing();
 }
