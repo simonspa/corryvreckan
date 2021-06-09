@@ -132,8 +132,11 @@ bool ConfigManager::loadDetectorOptions(const std::vector<std::string>& options)
         detector_option_parser.parseOption(option);
     }
 
+    if(detector_configs_.empty()) {
+        parse_detectors();
+    }
+
     // Apply detector options
-    parse_detectors();
     for(auto& config : detector_configs_) {
         optionsApplied = detector_option_parser.applyOptions(config.getName(), config) || optionsApplied;
     }
@@ -151,7 +154,9 @@ std::list<Configuration>& ConfigManager::getModuleConfigurations() {
  * The list of detector configurations is read from the configuration defined in 'detector_file'
  */
 std::list<Configuration>& ConfigManager::getDetectorConfigurations() {
-    parse_detectors();
+    if(detector_configs_.empty()) {
+        parse_detectors();
+    }
     return detector_configs_;
 }
 
