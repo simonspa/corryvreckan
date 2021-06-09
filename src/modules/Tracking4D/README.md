@@ -25,7 +25,7 @@ The DUT plane can be excluded from the track finding.
 * `volume_scattering`: Select if volume scattering will be taken into account - defaults to false
 * `volume_radiation_length`: Define the radiation length of the volume around the telescope. Defaults to dry air with a radiation length of`304.2 m`
 * `reject_by_roi`: If true, tracks intercepting any detector outside its ROI will be rejected. Defaults to `false`.
-* `uinque_cluster_usage`: Only use a cluster for one track - in the case of multiple assignments, the track with the best chi2/ndof is kept. Defaults to `false`
+* `unique_cluster_usage`: Only use a cluster for one track - in the case of multiple assignments, the track with the best chi2/ndof is kept. Defaults to `false`
 
 ### Plots produced
 
