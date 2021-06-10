@@ -23,6 +23,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     config_.setDefault<bool>("get_tag_histograms", false);
     config_.setDefault<bool>("get_tag_profiles", false);
     config_.setDefault<bool>("ignore_bore", true);
+    config_.setDefault<bool>("veto_triggers", false);
     config_.setDefault<double>("skip_time", 0.);
     config_.setDefault<int>("buffer_depth", 0);
     config_.setDefault<int>("shift_triggers", 0);
@@ -35,6 +36,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     get_tag_histograms_ = config_.get<bool>("get_tag_histograms");
     get_tag_profiles_ = config_.get<bool>("get_tag_profiles");
     ignore_bore_ = config_.get<bool>("ignore_bore");
+    veto_triggers_ = config_.get<bool>("veto_triggers");
     skip_time_ = config_.get<double>("skip_time");
     adjust_event_times_ = config_.getMatrix<std::string>("adjust_event_times", {});
     buffer_depth_ = config_.get<int>("buffer_depth");
@@ -385,10 +387,15 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
     } else if(position == Event::Position::DURING) {
         // check if event has valid trigger ID (flag = 0x10):
         if(evt->IsFlagTrigger()) {
-            // Store potential trigger numbers, assign to center of event:
-            clipboard->getEvent()->addTrigger(trigger_after_shift, event_timestamp);
-            LOG(DEBUG) << "Stored trigger ID " << trigger_after_shift << " at "
-                       << Units::display(event_timestamp, {"us", "ns"});
+            if(veto_triggers_ && !clipboard->getEvent()->triggerList().empty()) {
+                LOG(DEBUG) << "Not storing trigger ID " << trigger_after_shift
+                           << " because of existing trigger and veto flag";
+            } else {
+                // Store potential trigger numbers, assign to center of event:
+                clipboard->getEvent()->addTrigger(trigger_after_shift, event_timestamp);
+                LOG(DEBUG) << "Stored trigger ID " << trigger_after_shift << " at "
+                           << Units::display(event_timestamp, {"us", "ns"});
+            }
         }
     }
 
