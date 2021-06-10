@@ -91,7 +91,7 @@ In addition, the calibration file of the detector specified in the geometry conf
 * `get_tag_histograms`: Boolean to enable creation of EUDAQ2 event tag histograms. Default value is `false`.
 * `get_tag_profiles`: Boolean to enable creation of EUDAQ2 event tag profiles over event number. Default value is `false`.
 * `ignore_bore`: Boolean to completely ignore the Begin-of-Run event (BORE) from EUDAQ2. Default value is `true`.
-* `veto_triggers`: Flag to signal that no further triggers should be added to events that already have one or mor triggers defined. Defaults to `false`.
+* `veto_triggers`: Flag to signal that no further triggers should be added to events that already have one or more triggers defined. Defaults to `false`.
 * `adjust_event_times`: Matrix that allows the user to shift the event start/end of all different types of EUDAQ events before comparison to any other Corryvreckan data. The first entry of each row specifies the data type, the second is the offset which is added to the event start and the third entry is the offset added to the event end. A usage example is shown below, double brackets are required if only one entry is provided.
 * `buffer_depth`: Depth of buffer in which EUDAQ2 `StandardEvents` are timesorted. This algorithm only works for `StandardEvents` with well-defined timestamps. Setting it to `0` disables timesorting. Default is `0`.
 * `shift_triggers`: Shift trigger ID of this device with respect to the IDs stored in the Corryrveckan Event. This allows to correct trigger ID offsets between different devices such as the TLU and MIMOSA26. Note that if using the module `EventDefinitionM26` the same value for `shift_triggers` needs to be passed in both cases. Defaults to `0`.
