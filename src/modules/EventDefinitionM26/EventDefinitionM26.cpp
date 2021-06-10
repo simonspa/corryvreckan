@@ -125,7 +125,7 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
                 if(det == "mimosa26") {
                     // pivot magic - see readme
                     double piv = stdevt->GetPlane(0).PivotPixel() / 16.;
-                    begin = Units::get(piv * (115.2 / 576), "us") + timeshift_;
+                    begin = Units::get((576 - piv) * (115.2 / 576), "us") + timeshift_;
 
                     // end should be after second frame, sharp (variable durationn, not variable end)
                     end = Units::get(115.2, "us");
