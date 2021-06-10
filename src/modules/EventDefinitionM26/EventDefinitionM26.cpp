@@ -65,7 +65,8 @@ void EventDefinitionM26::initialize() {
         new TH1F("htimebetweenTimes", "time between two mimosa frames; time /us; #entries", 1000, -0.5, 995.5);
     timebetweenTLUEvents_ =
         new TH1F("htimebetweenTrigger", "time between two triggers frames; time /us; #entries", 1000, -0.5, 995.5);
-    eventDuration_ = new TH1F("hduration", "Event duration as defined on clipboard; time /us; #entries", 1000, 0., 230.4);
+    eventDuration_ =
+        new TH1F("durationCorryEvent", "Event duration as defined on clipboard; time [#mus]; #entries", 1000, 115.2, 230.4);
 
     timeBeforeTrigger_ = new TH1F("timeBeforeTrigger", "time in frame before trigger; time /us; #entries", 2320, -231, 1);
     timeAfterTrigger_ = new TH1F("timeAfterTrigger", "time in frame after trigger; time /us; #entries", 2320, -1, 231);
