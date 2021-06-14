@@ -21,6 +21,8 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     config_.setDefault<int>("shift_triggers", 0);
     config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
     config_.setDefault<double>("skip_time", 0.);
+    config_.setDefault<double>("add_begin",0.);
+    config_.setDefault<double>("add_end",0.);
 
     detector_time_ = config_.get<std::string>("detector_event_time");
     // Convert to lower case before string comparison to avoid errors by the user:
@@ -31,8 +33,11 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     timeshift_ = config_.get<double>("time_shift");
     shift_triggers_ = config_.get<int>("shift_triggers");
     skip_time_ = config_.get<double>("skip_time");
-    config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
+    add_begin_ = config_.get<double>("add_begin");
+    add_end_ = config_.get<double>("add_end");
 
+    config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
+    LOG(WARNING) << " seting shift to " << Units::get(timeshift_,"us");
     // Set EUDAQ log level to desired value:
     EUDAQ_LOG_LEVEL(config_.get<std::string>("eudaq_loglevel"));
     LOG(INFO) << "Setting EUDAQ2 log level to \"" << config_.get<std::string>("eudaq_loglevel") << "\"";
@@ -77,6 +82,7 @@ void EventDefinitionM26::initialize() {
     title = "Corryvreckan event start times (placed on clipboard); Corryvreckan event start time [s];# entries";
     hClipboardEventStart_long = new TH1D("clipboardEventStart_long", title.c_str(), 3e6, 0, 3e3);
 
+    pivotPixel_ = new TH1F("pivot_pixel","pivot pixel; pivot; entires",580,-.5,579.5);
     // open the input file with the eudaq reader
     try {
         readerDuration_ = eudaq::Factory<eudaq::FileReader>::MakeUnique(eudaq::str2hash("native"), duration_);
@@ -126,10 +132,14 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
                 if(det == "mimosa26") {
                     // pivot magic - see readme
                     double piv = stdevt->GetPlane(0).PivotPixel() / 16.;
-                    begin = Units::get((576 - piv) * (115.2 / 576), "us") + timeshift_;
+		    pivotPixel_->Fill(piv);
+		    begin = Units::get(piv * (115.2 / 576), "us") + timeshift_+add_begin_;
+		    if(begin>Units::get(115.2,"us"))
+		      begin -=Units::get(115.2,"us");
+		    //begin = Units::get((576 - piv) * (115.2 / 576), "us") + timeshift_;
 
                     // end should be after second frame, sharp (variable durationn, not variable end)
-                    end = Units::get(115.2, "us");
+                    end = Units::get(230.4, "us")-begin+add_begin_+add_end_;
                     LOG(DEBUG) << "Pivot magic, begin: " << Units::display(begin, {"ns", "us", "ms"})
                                << ", end: " << Units::display(end, {"ns", "us", "ms"})
                                << ", duration = " << Units::display(begin + end, {"ns", "us"});
@@ -208,7 +218,9 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                 timeAfterTrigger_->Fill(static_cast<double>(Units::convert(time_after_, "us")));
                 long double evtStart = time_trig - time_before_;
                 long double evtEnd = time_trig + time_after_;
-
+		LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(evtStart, {"us", "ns"}) << " - "
+                           << Units::display(evtEnd, {"us", "ns"}) << ", length "
+                           << Units::display(evtEnd - evtStart, {"us", "ns"});
                 if(evtStart < skip_time_) {
                     LOG(DEBUG) << "Event start before requested skip time: " << Units::display(evtStart, {"us", "ns"})
                                << " < " << Units::display(skip_time_, {"us", "ns"});
