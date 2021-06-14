@@ -224,7 +224,8 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                 if(evtStart < skip_time_) {
                     LOG(DEBUG) << "Event start before requested skip time: " << Units::display(evtStart, {"us", "ns"})
                                << " < " << Units::display(skip_time_, {"us", "ns"});
-                    continue;
+                     triggerTLU_--;
+		     continue;
                 }
 
                 LOG(DEBUG) << "time to previous trigger = " << Units::display(time_trig - time_prev_, "us");
