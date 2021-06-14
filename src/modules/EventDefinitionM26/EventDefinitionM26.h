@@ -54,8 +54,9 @@ namespace corryvreckan {
         int shift_triggers_{};
         double skip_time_{};
         double add_begin_{};
-	double add_end_{};
-	// EUDAQ2 readers for all required files
+        double add_end_{};
+        int plane_pivot_{};
+        // EUDAQ2 readers for all required files
         eudaq::FileReaderUP readerTime_;
         eudaq::FileReaderUP readerDuration_;
         // Detector defining the event time
@@ -70,9 +71,9 @@ namespace corryvreckan {
         TH1F* timeBeforeTrigger_;
         TH1F* timeAfterTrigger_;
         TH1F* pivotPixel_;
-	TH1D* hClipboardEventStart;
+        TH1D* hClipboardEventStart;
         TH1D* hClipboardEventStart_long;
-      
+
         unsigned triggerTLU_{}, triggerM26_{};
         long double time_prev_{}, trig_prev_{}, time_trig_start_{}, time_trig_stop_{}, time_before_{}, time_after_{};
         long double time_trig_stop_prev_{};
