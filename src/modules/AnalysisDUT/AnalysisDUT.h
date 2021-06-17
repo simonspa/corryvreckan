@@ -74,6 +74,7 @@ namespace corryvreckan {
 
         TProfile2D *rmsxvsxmym, *rmsyvsxmym, *rmsxyvsxmym;
         TProfile2D *qvsxmym, *qMoyalvsxmym, *pxqvsxmym;
+        TProfile2D *qvsxmym_1px, *qvsxmym_2px, *qvsxmym_3px, *qvsxmym_4px;
         TProfile2D* npxvsxmym;
         TH2F *npx1vsxmym, *npx2vsxmym, *npx3vsxmym, *npx4vsxmym;
 
