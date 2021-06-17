@@ -283,8 +283,8 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
 
-    auto pitch_x = static_cast<double>(Units::convert(m_detector->getPitch().X(), "um"));
-    auto pitch_y = static_cast<double>(Units::convert(m_detector->getPitch().Y(), "um"));
+    auto pitch_x = m_detector->getPitch().X();
+    auto pitch_y = m_detector->getPitch().Y();
 
     // Loop over all tracks
     for(auto& track : tracks) {
