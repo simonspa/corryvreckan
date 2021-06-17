@@ -480,8 +480,11 @@ void AnalysisEfficiency::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
                 << "Accepted tracks:            " << total_tracks;
 
     double totalEff = 100 * static_cast<double>(matched_tracks) / (total_tracks > 0 ? total_tracks : 1);
-    LOG(STATUS) << "Total efficiency of detector " << m_detector->getName() << ": " << totalEff << "%, measured with "
-                << matched_tracks << "/" << total_tracks << " matched/total tracks";
+    double lowerEffError = totalEff - 100 * (TEfficiency::ClopperPearson(total_tracks, matched_tracks, 0.683, false));
+    double upperEffError = 100 * (TEfficiency::ClopperPearson(total_tracks, matched_tracks, 0.683, true)) - totalEff;
+    LOG(STATUS) << "Total efficiency of detector " << m_detector->getName() << ": " << totalEff << "(+" << upperEffError
+                << " -" << lowerEffError << ")%, measured with " << matched_tracks << "/" << total_tracks
+                << " matched/total tracks";
 
     for(int icol = 1; icol < m_detector->nPixels().X() + 1; icol++) {
         for(int irow = 1; irow < m_detector->nPixels().Y() + 1; irow++) {
