@@ -371,7 +371,7 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
         auto xmod = inpixel.X();
         auto ymod = inpixel.Y();
         auto xmod_um = xmod * 1000.; // mm->um (for plotting)
-        auto ymod_um = xmod * 1000.; // mm->um (for plotting)
+        auto ymod_um = ymod * 1000.; // mm->um (for plotting)
 
         bool isWithinInPixelROI =
             (pitch_x - abs(xmod * 2) > m_inpixelEdgeCut.x() && pitch_y - abs(ymod * 2) > m_inpixelEdgeCut.y());
