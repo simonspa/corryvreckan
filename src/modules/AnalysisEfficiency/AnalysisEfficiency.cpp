@@ -74,6 +74,19 @@ void AnalysisEfficiency::initialize() {
                                                    -pitch_y / 2.,
                                                    pitch_y / 2.);
 
+    title = m_detector->getName() +
+            " Pixel efficiency map (in-pixel ROI);in-pixel x_{track} [#mum];in-pixel y_{track} #mum;#epsilon";
+    hPixelEfficiencyMap_inPixelROI_trackPos_TProfile = new TProfile2D("pixelEfficiencyMap_inPixelROI_trackPos_TProfile",
+                                                                      title.c_str(),
+                                                                      nbins_x,
+                                                                      -pitch_x / 2.,
+                                                                      pitch_x / 2.,
+                                                                      nbins_y,
+                                                                      -pitch_y / 2.,
+                                                                      pitch_y / 2.,
+                                                                      0,
+                                                                      1);
+
     title = m_detector->getName() + " Chip efficiency map;x [px];y [px];#epsilon";
     hChipEfficiencyMap_trackPos_TProfile = new TProfile2D("chipEfficiencyMap_trackPos_TProfile",
                                                           title.c_str(),
@@ -180,6 +193,8 @@ void AnalysisEfficiency::initialize() {
                                       -1.5 * m_detector->getPitch().y(),
                                       1.5 * m_detector->getPitch().y());
     eTotalEfficiency = new TEfficiency("eTotalEfficiency", "totalEfficiency;;#epsilon", 1, 0, 1);
+    eTotalEfficiency_inPixelROI = new TEfficiency(
+        "eTotalEfficiency_inPixelROI", "eTotalEfficiency_inPixelROI;;#epsilon (within in-pixel ROI)", 1, 0, 1);
 
     efficiencyColumns = new TEfficiency("efficiencyColumns",
                                         "Efficiency vs. column number; column; #epsilon",
@@ -411,6 +426,11 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
             efficiencyColumns->Fill(has_associated_cluster, m_detector->getColumn(localIntercept));
             efficiencyRows->Fill(has_associated_cluster, m_detector->getRow(localIntercept));
             efficiencyVsTime->Fill(has_associated_cluster, track->timestamp() / 1e9); // convert nanoseconds to seconds
+
+            if(isWithinInPixelROI) {
+                hPixelEfficiencyMap_inPixelROI_trackPos_TProfile->Fill(xmod, ymod, has_associated_cluster);
+                eTotalEfficiency_inPixelROI->Fill(has_associated_cluster, 0); // use 0th bin for total efficiency
+            }
         }
 
         auto intercept_col = static_cast<size_t>(m_detector->getColumn(localIntercept));
