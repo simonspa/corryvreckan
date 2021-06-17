@@ -386,8 +386,10 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
             for(auto& pixel : pixels) {
                 if((pixel->column() == static_cast<int>(m_detector->getColumn(localIntercept)) &&
                     pixel->row() == static_cast<int>(m_detector->getRow(localIntercept))) &&
-                   isWithinInPixelROI)
+                   isWithinInPixelROI) {
                     hPixelEfficiencyMatrix_TProfile->Fill(pixel->column(), pixel->row(), 1);
+                    break; // There cannot be a second pixel within the cluster through which the track goes.
+                }
             }
 
             auto clusterLocal = m_detector->globalToLocal(cluster->global());
