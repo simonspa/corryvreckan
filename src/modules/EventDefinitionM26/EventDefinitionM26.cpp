@@ -24,6 +24,9 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     config_.setDefault<double>("add_begin", 0.);
     config_.setDefault<double>("add_end", 0.);
     config_.setDefault<int>("plane_pivot", 0.);
+    config_.setDefault<int>("pivot_min", 0.);
+    config_.setDefault<int>("pivot_max", 576.);
+
     detector_time_ = config_.get<std::string>("detector_event_time");
     // Convert to lower case before string comparison to avoid errors by the user:
     std::transform(detector_time_.begin(), detector_time_.end(), detector_time_.begin(), ::tolower);
@@ -35,9 +38,13 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     skip_time_ = config_.get<double>("skip_time");
     add_begin_ = config_.get<double>("add_begin");
     add_end_ = config_.get<double>("add_end");
-    plane_pivot_ = config.get<int>("plane_pivot");
+    plane_pivot_ = config_.get<int>("plane_pivot");
+    pivot_min_ = config_.get<int>("pivot_min");
+    pivot_max_ = config_.get<int>("pivot_max");
+
     config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
-    LOG(WARNING) << " seting shift to " << Units::get(timeshift_, "us");
+    LOG(WARNING) << " seting shift to " << Units::get(timeshift_, "us") << ": accepting pivots from  " << pivot_min_
+                 << " to " << pivot_max_;
     // Set EUDAQ log level to desired value:
     EUDAQ_LOG_LEVEL(config_.get<std::string>("eudaq_loglevel"));
     LOG(INFO) << "Setting EUDAQ2 log level to \"" << config_.get<std::string>("eudaq_loglevel") << "\"";
@@ -132,6 +139,11 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
                 if(det == "mimosa26") {
                     // pivot magic - see readme
                     double piv = stdevt->GetPlane(0).PivotPixel() / 16.;
+                    // we can here discard events with `bad` pivot-pixels
+                    if(piv > pivot_max_ || piv < pivot_min_) {
+                        LOG(DEBUG) << "Skipping mimosa event with pivot " << piv;
+                        continue;
+                    }
                     pivotPixel_->Fill(piv);
                     begin = Units::get(piv * (115.2 / 576), "us") + timeshift_ + add_begin_;
                     if(begin > Units::get(115.2, "us"))

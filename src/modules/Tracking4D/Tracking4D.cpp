@@ -98,7 +98,7 @@ void Tracking4D::initialize() {
     title = "Track time with respect to first trigger;track time - trigger;events";
     trackTimeTrigger = new TH1F("trackTimeTrigger", title.c_str(), 1000, -230.4, 230.4);
     title = "Track time with respect to first trigger vs. track chi2;track time - trigger;track #chi^{2};events";
-    trackTimeTriggerChi2 = new TH2F("trackTimeTriggerChi2", title.c_str(), 1000, -230.4, 230.4,15,0,15);
+    trackTimeTriggerChi2 = new TH2F("trackTimeTriggerChi2", title.c_str(), 1000, -230.4, 230.4, 15, 0, 15);
 
     // Loop over all planes
     for(auto& detector : get_detectors()) {
@@ -465,14 +465,15 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
         clipboard->putData(tracks);
     }
     for(auto track : tracks) {
-      // Fill track time within event (relative to event start)
-      auto event = clipboard->getEvent();
-      trackTime->Fill(Units::convert(track->timestamp() - event->start(), "us"));
-      auto triggers = event->triggerList();
-      if(!triggers.empty()) {
-	trackTimeTrigger->Fill(Units::convert(track->timestamp() - triggers.begin()->second, "us"));
-	trackTimeTriggerChi2->Fill(Units::convert(track->timestamp() - triggers.begin()->second, "us"), track->getChi2ndof());
-      }
+        // Fill track time within event (relative to event start)
+        auto event = clipboard->getEvent();
+        trackTime->Fill(Units::convert(track->timestamp() - event->start(), "us"));
+        auto triggers = event->triggerList();
+        if(!triggers.empty()) {
+            trackTimeTrigger->Fill(Units::convert(track->timestamp() - triggers.begin()->second, "us"));
+            trackTimeTriggerChi2->Fill(Units::convert(track->timestamp() - triggers.begin()->second, "us"),
+                                       track->getChi2ndof());
+        }
 
         trackChi2->Fill(track->getChi2());
         clustersPerTrack->Fill(static_cast<double>(track->getNClusters()));

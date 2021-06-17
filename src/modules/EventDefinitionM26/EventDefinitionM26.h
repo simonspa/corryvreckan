@@ -56,6 +56,8 @@ namespace corryvreckan {
         double add_begin_{};
         double add_end_{};
         int plane_pivot_{};
+        int pivot_min_{};
+        int pivot_max_{};
         // EUDAQ2 readers for all required files
         eudaq::FileReaderUP readerTime_;
         eudaq::FileReaderUP readerDuration_;
