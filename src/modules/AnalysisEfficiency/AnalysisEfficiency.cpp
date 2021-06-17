@@ -368,11 +368,13 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
 
         // Calculate in-pixel position of track in microns
         auto inpixel = m_detector->inPixel(localIntercept);
-        auto xmod = static_cast<double>(Units::convert(inpixel.X(), "um"));
-        auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
+        auto xmod = inpixel.X();
+        auto ymod = inpixel.Y();
+        auto xmod_um = xmod * 1000.; // mm->um (for plotting)
+        auto ymod_um = xmod * 1000.; // mm->um (for plotting)
 
-        bool isWithinInPixelROI = (pitch_x - abs(xmod * 2) > m_inpixelEdgeCut * 1000 &&
-                                   pitch_y - abs(ymod * 2) > m_inpixelEdgeCut * 1000); // mm -> um
+        bool isWithinInPixelROI =
+            (pitch_x - abs(xmod * 2) > m_inpixelEdgeCut.x() && pitch_y - abs(ymod * 2) > m_inpixelEdgeCut.y());
 
         // Get the DUT clusters from the clipboard, that are assigned to the track
         auto associated_clusters = track->getAssociatedClusters(m_detector->getName());
