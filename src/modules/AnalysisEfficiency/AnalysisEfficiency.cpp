@@ -23,14 +23,14 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration& config, std::shared_ptr<De
     config_.setDefault<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
     config_.setDefault<double>("chi2ndof_cut", 3.);
     config_.setDefault<double>("inpixel_bin_size", Units::get<double>(1.0, "um"));
-    config_.setDefault<double>("inpixel_cut_edge", Units::get<double>(5., "um"));
+    config_.setDefault<XYVector>("inpixel_cut_edge", {Units::get(5.0, "um"), Units::get(5.0, "um")});
     config_.setDefault<double>("masked_pixel_distance_cut", 1.);
 
     m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge");
     m_chi2ndofCut = config_.get<double>("chi2ndof_cut");
     m_inpixelBinSize = config_.get<double>("inpixel_bin_size");
     require_associated_cluster_on_ = config_.getArray<std::string>("require_associated_cluster_on", {});
-    m_inpixelEdgeCut = config_.get<double>("inpixel_cut_edge");
+    m_inpixelEdgeCut = config_.get<XYVector>("inpixel_cut_edge");
     m_maskedPixelDistanceCut = config_.get<int>("masked_pixel_distance_cut");
 }
 
@@ -422,15 +422,15 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
 
         // For pixels, only look at the ROI:
         if(is_within_roi) {
-            hPixelEfficiencyMap_trackPos_TProfile->Fill(xmod, ymod, has_associated_cluster);
-            hPixelEfficiencyMap_trackPos->Fill(has_associated_cluster, xmod, ymod);
+            hPixelEfficiencyMap_trackPos_TProfile->Fill(xmod_um, ymod_um, has_associated_cluster);
+            hPixelEfficiencyMap_trackPos->Fill(has_associated_cluster, xmod_um, ymod_um);
             eTotalEfficiency->Fill(has_associated_cluster, 0); // use 0th bin for total efficiency
             efficiencyColumns->Fill(has_associated_cluster, m_detector->getColumn(localIntercept));
             efficiencyRows->Fill(has_associated_cluster, m_detector->getRow(localIntercept));
             efficiencyVsTime->Fill(has_associated_cluster, track->timestamp() / 1e9); // convert nanoseconds to seconds
 
             if(isWithinInPixelROI) {
-                hPixelEfficiencyMap_inPixelROI_trackPos_TProfile->Fill(xmod, ymod, has_associated_cluster);
+                hPixelEfficiencyMap_inPixelROI_trackPos_TProfile->Fill(xmod_um, ymod_um, has_associated_cluster);
                 eTotalEfficiency_inPixelROI->Fill(has_associated_cluster, 0); // use 0th bin for total efficiency
             }
         }

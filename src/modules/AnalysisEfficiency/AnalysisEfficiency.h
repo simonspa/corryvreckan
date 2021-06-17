@@ -80,7 +80,8 @@ namespace corryvreckan {
         TH2D* hPosDiffPrevTrack_assocCluster;
         TH2D* hPosDiffPrevTrack_noAssocCluster;
         TH2D* hDistanceCluster_track;
-        double m_chi2ndofCut, m_timeCutFrameEdge, m_inpixelBinSize, m_inpixelEdgeCut;
+        double m_chi2ndofCut, m_timeCutFrameEdge, m_inpixelBinSize;
+        XYVector m_inpixelEdgeCut;
         int m_maskedPixelDistanceCut = 1;
         int total_tracks = 0;
         int matched_tracks = 0;
