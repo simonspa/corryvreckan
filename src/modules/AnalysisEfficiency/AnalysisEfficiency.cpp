@@ -356,6 +356,9 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
         auto xmod = static_cast<double>(Units::convert(inpixel.X(), "um"));
         auto ymod = static_cast<double>(Units::convert(inpixel.Y(), "um"));
 
+        bool isWithinInPixelROI = (pitch_x - abs(xmod * 2) > m_inpixelEdgeCut * 1000 &&
+                                   pitch_y - abs(ymod * 2) > m_inpixelEdgeCut * 1000); // mm -> um
+
         // Get the DUT clusters from the clipboard, that are assigned to the track
         auto associated_clusters = track->getAssociatedClusters(m_detector->getName());
         if(associated_clusters.size() > 0) {
@@ -366,7 +369,7 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
             for(auto& pixel : pixels) {
                 if((pixel->column() == static_cast<int>(m_detector->getColumn(localIntercept)) &&
                     pixel->row() == static_cast<int>(m_detector->getRow(localIntercept))) &&
-                   (pitch_x - abs(xmod * 2) < m_inpixelEdgeCut || pitch_y - abs(ymod * 2) < m_inpixelEdgeCut))
+                   isWithinInPixelROI)
                     hPixelEfficiencyMatrix_TProfile->Fill(pixel->column(), pixel->row(), 1);
             }
 
@@ -387,10 +390,10 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
                 has_associated_cluster, m_detector->getColumn(clusterLocal), m_detector->getRow(clusterLocal));
         }
 
-        if(!has_associated_cluster &&
-           (pitch_x - abs(xmod * 2) < m_inpixelEdgeCut || pitch_y - abs(ymod * 2) < m_inpixelEdgeCut))
+        if(!has_associated_cluster && isWithinInPixelROI) {
             hPixelEfficiencyMatrix_TProfile->Fill(
                 m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept), 0);
+        }
 
         hGlobalEfficiencyMap_trackPos_TProfile->Fill(globalIntercept.X(), globalIntercept.Y(), has_associated_cluster);
         hGlobalEfficiencyMap_trackPos->Fill(has_associated_cluster, globalIntercept.X(), globalIntercept.Y());
