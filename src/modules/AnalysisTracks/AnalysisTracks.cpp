@@ -19,8 +19,9 @@ void AnalysisTracks::initialize() {
 
     std::string title;
     for(auto& detector : get_detectors()) {
-        if(detector->isAuxiliary())
+        if(detector->isAuxiliary()) {
             continue;
+        }
         LOG(DEBUG) << "Initialise for detector " + detector->getName();
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detector->getName().c_str());
@@ -40,21 +41,14 @@ void AnalysisTracks::initialize() {
 }
 
 StatusCode AnalysisTracks::run(const std::shared_ptr<Clipboard>& clipboard) {
-
-    // Loop over all detectors
-    for(auto& detector : get_detectors()) {
-        // Get the detector name
-        std::string detectorName = detector->getName();
-        LOG(DEBUG) << "Detector with name " << detectorName;
-    }
-
     auto tracks = clipboard->getData<Track>();
-    if(!tracks.size())
+    if(!tracks.size()) {
         return StatusCode::Success;
-
+    }
     for(auto d : get_detectors()) {
-        if(d->isAuxiliary())
+        if(d->isAuxiliary()) {
             continue;
+        }
         clusters_vs_tracks_.at(d->getName())
             ->Fill(static_cast<double>(tracks.size()),
                    static_cast<double>(clipboard->getData<Cluster>(d->getName()).size()));
@@ -64,11 +58,13 @@ StatusCode AnalysisTracks::run(const std::shared_ptr<Clipboard>& clipboard) {
     std::map<std::string, std::vector<XYZPoint>> intersects; // local coordinates
     for(auto& track : tracks) {
         for(auto d : get_detectors()) {
-            if(d->isAuxiliary())
+            if(d->isAuxiliary()) {
                 continue;
+            }
             intersects[d->getName()].push_back(d->globalToLocal(track->getState(d->getName())));
-            if(d->isDUT() || track->getClusterFromDetector(d->getName()) == nullptr)
+            if(d->isDUT() || track->getClusterFromDetector(d->getName()) == nullptr) {
                 continue;
+            }
             auto c = track->getClusterFromDetector(d->getName());
             track_clusters[d->getName()][std::make_pair<double, double>(c->column(), c->row())] += 1;
         }
