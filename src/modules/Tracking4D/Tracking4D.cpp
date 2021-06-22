@@ -32,7 +32,7 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
     config_.setDefault<double>("volume_radiation_length", Units::get<double>(304.2, "m"));
     config_.setDefault<bool>("volume_scattering", false);
     config_.setDefault<bool>("reject_by_roi", false);
-    config_.setDefault<bool>("uinque_cluster_usage", false);
+    config_.setDefault<bool>("unique_cluster_usage", false);
 
     if(config_.count({"time_cut_rel", "time_cut_abs"}) == 0) {
         config_.setDefault("time_cut_rel", 3.0);
@@ -63,7 +63,7 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
     volume_radiation_length_ = config_.get<double>("volume_radiation_length");
     use_volume_scatterer_ = config_.get<bool>("volume_scattering");
     reject_by_ROI_ = config_.get<bool>("reject_by_roi");
-    uinque_cluster_usage_ = config_.get<bool>("uinque_cluster_usage");
+    unique_cluster_usage_ = config_.get<bool>("unique_cluster_usage");
 
     // print a warning if volumeScatterer are used as this causes fit failures
     // that are still not understood
@@ -428,8 +428,6 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
                 LOG(DEBUG) << "Duplicated hit on " << d->getName() << ": rejecting track";
                 return true;
             }
-            //            else LOG(WARNING) << a->getClusterFromDetector(d->getName()) <<", " <<
-            //            b->getClusterFromDetector(d->getName());
         }
         return false;
     };
@@ -437,9 +435,9 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
     if(tracks.size() > 0) {
 
         // if requested ensure unique usage of clusters
-        if(uinque_cluster_usage_ && tracks.size() > 1) {
+        if(unique_cluster_usage_ && tracks.size() > 1) {
             // sort by chi2:
-            LOG_ONCE(WARNING) << "Rejecting tracks with smae hits";
+            LOG_ONCE(WARNING) << "Rejecting tracks with same hits";
             std::sort(tracks.begin(), tracks.end(), [](const shared_ptr<Track> a, const shared_ptr<Track> b) {
                 return (a->getChi2() / a->getNdof()) < (b->getChi2() / b->getNdof());
             });

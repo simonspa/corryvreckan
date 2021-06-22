@@ -74,7 +74,7 @@ namespace corryvreckan {
         bool exclude_DUT_;
         bool use_volume_scatterer_;
         bool reject_by_ROI_;
-        bool uinque_cluster_usage_;
+        bool unique_cluster_usage_;
         std::vector<std::string> require_detectors_;
         std::map<std::shared_ptr<Detector>, double> time_cuts_;
         std::map<std::shared_ptr<Detector>, XYVector> spatial_cuts_;

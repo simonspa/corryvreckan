@@ -37,15 +37,43 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
 void AnalysisDUT::initialize() {
 
     if(correlations_) {
-        hTrackCorrelationX = new TH1F(
-            "hTrackCorrelationX", "Track residual X, all clusters;x_{track}-x_{hit} [#mum];# entries", 8000, -1000.5, 999.5);
-        hTrackCorrelationY = new TH1F(
-            "hTrackCorrelationY", "Track residual Y, all clusters;y_{track}-y_{hit} [#mum];# entries", 8000, -1000.5, 999.5);
-        hTrackCorrelationTime = new TH1F("hTrackCorrelationTime",
-                                         "Track time residual, all clusters;time_{track}-time_{hit} [ns];# entries",
-                                         n_timebins_,
-                                         -(n_timebins_ + 1) / 2. * time_binning_,
-                                         (n_timebins_ - 1) / 2. * time_binning_);
+        trackCorrelationX_beforeCuts =
+            new TH1F("trackCorrelationX_beforeCuts",
+                     "Track residual X (tracks before cuts), all clusters;x_{track}-x_{hit} [#mum];# entries",
+                     8000,
+                     -1000.5,
+                     999.5);
+        trackCorrelationY_beforeCuts =
+            new TH1F("trackCorrelationY_beforeCuts",
+                     "Track residual Y (tracks before cuts), all clusters;y_{track}-y_{hit} [#mum];# entries",
+                     8000,
+                     -1000.5,
+                     999.5);
+        trackCorrelationTime_beforeCuts =
+            new TH1F("trackCorrelationTime_beforeCuts",
+                     "Track time residual (tracks before cuts), all clusters;time_{track}-time_{hit} [ns];# entries",
+                     n_timebins_,
+                     -(n_timebins_ + 1) / 2. * time_binning_,
+                     (n_timebins_ - 1) / 2. * time_binning_);
+
+        trackCorrelationX_afterCuts =
+            new TH1F("trackCorrelationX_afterCuts",
+                     "Track residual X (tracks after cuts), all clusters;x_{track}-x_{hit} [#mum];# entries",
+                     8000,
+                     -1000.5,
+                     999.5);
+        trackCorrelationY_afterCuts =
+            new TH1F("trackCorrelationY_afterCuts",
+                     "Track residual Y (tracks after cuts), all clusters;y_{track}-y_{hit} [#mum];# entries",
+                     8000,
+                     -1000.5,
+                     999.5);
+        trackCorrelationTime_afterCuts =
+            new TH1F("trackCorrelationTime_afterCuts",
+                     "Track time residual (tracks after cuts), all clusters;time_{track}-time_{hit} [ns];# entries",
+                     n_timebins_,
+                     -(n_timebins_ + 1) / 2. * time_binning_,
+                     (n_timebins_ - 1) / 2. * time_binning_);
     }
 
     hClusterMapAssoc = new TH2F("clusterMapAssoc",
@@ -391,6 +419,54 @@ void AnalysisDUT::initialize() {
                           -pitch_y / 2.,
                           pitch_y / 2.);
 
+    title = "Mean cluster charge map (1-pixel);" + mod_axes + "<cluster charge> [ke]";
+    qvsxmym_1px = new TProfile2D("qvsxmym_1px",
+                                 title.c_str(),
+                                 static_cast<int>(pitch_x),
+                                 -pitch_x / 2.,
+                                 pitch_x / 2.,
+                                 static_cast<int>(pitch_y),
+                                 -pitch_y / 2.,
+                                 pitch_y / 2.,
+                                 0,
+                                 250);
+
+    title = "Mean cluster charge map (2-pixel);" + mod_axes + "<cluster charge> [ke]";
+    qvsxmym_2px = new TProfile2D("qvsxmym_2px",
+                                 title.c_str(),
+                                 static_cast<int>(pitch_x),
+                                 -pitch_x / 2.,
+                                 pitch_x / 2.,
+                                 static_cast<int>(pitch_y),
+                                 -pitch_y / 2.,
+                                 pitch_y / 2.,
+                                 0,
+                                 250);
+
+    title = "Mean cluster charge map (3-pixel);" + mod_axes + "<cluster charge> [ke]";
+    qvsxmym_3px = new TProfile2D("qvsxmym_3px",
+                                 title.c_str(),
+                                 static_cast<int>(pitch_x),
+                                 -pitch_x / 2.,
+                                 pitch_x / 2.,
+                                 static_cast<int>(pitch_y),
+                                 -pitch_y / 2.,
+                                 pitch_y / 2.,
+                                 0,
+                                 250);
+
+    title = "Mean cluster charge map (4-pixel);" + mod_axes + "<cluster charge> [ke]";
+    qvsxmym_4px = new TProfile2D("qvsxmym_4px",
+                                 title.c_str(),
+                                 static_cast<int>(pitch_x),
+                                 -pitch_x / 2.,
+                                 pitch_x / 2.,
+                                 static_cast<int>(pitch_y),
+                                 -pitch_y / 2.,
+                                 pitch_y / 2.,
+                                 0,
+                                 250);
+
     residualsTime = new TH1F("residualsTime",
                              "Time residual;time_{track}-time_{hit} [ns];#entries",
                              n_timebins_,
@@ -525,15 +601,15 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         auto globalIntercept = m_detector->getIntercept(track.get());
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
-        // Fill correlation plots before applying any cuts:
+        // Fill correlation plots BEFORE applying any cuts:
         if(correlations_) {
             auto clusters = clipboard->getData<Cluster>(m_detector->getName());
             for(auto& cls : clusters) {
                 double xdistance_um = (globalIntercept.X() - cls->global().x()) * 1000.;
                 double ydistance_um = (globalIntercept.Y() - cls->global().y()) * 1000.;
-                hTrackCorrelationX->Fill(xdistance_um);
-                hTrackCorrelationY->Fill(ydistance_um);
-                hTrackCorrelationTime->Fill(track->timestamp() - cls->timestamp());
+                trackCorrelationX_beforeCuts->Fill(xdistance_um);
+                trackCorrelationY_beforeCuts->Fill(ydistance_um);
+                trackCorrelationTime_beforeCuts->Fill(track->timestamp() - cls->timestamp());
             }
         }
 
@@ -550,7 +626,6 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         }
 
         // Check if it intercepts the DUT
-
         if(!m_detector->hasIntercept(track.get(), 0.5)) {
             LOG(DEBUG) << " - track outside DUT area";
             hCutHisto->Fill(2);
@@ -569,6 +644,18 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             hCutHisto->Fill(3);
             num_tracks_++;
             continue;
+        }
+
+        // Fill correlation plots after applying cuts:
+        if(correlations_) {
+            auto clusters = clipboard->getData<Cluster>(m_detector->getName());
+            for(auto& cls : clusters) {
+                double xdistance_um = (globalIntercept.X() - cls->global().x()) * 1000.;
+                double ydistance_um = (globalIntercept.Y() - cls->global().y()) * 1000.;
+                trackCorrelationX_afterCuts->Fill(xdistance_um);
+                trackCorrelationY_afterCuts->Fill(ydistance_um);
+                trackCorrelationTime_afterCuts->Fill(track->timestamp() - cls->timestamp());
+            }
         }
 
         // Get the event:
@@ -595,8 +682,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
         // Calculate in-pixel position of track in microns
         auto inpixel = m_detector->inPixel(localIntercept);
-        auto xmod = inpixel.X() * 1000.; // convert mm -> um
-        auto ymod = inpixel.Y() * 1000.; // convert mm -> um
+        auto xmod_um = inpixel.X() * 1000.; // convert mm -> um
+        auto ymod_um = inpixel.Y() * 1000.; // convert mm -> um
 
         // Loop over all associated DUT clusters:
         for(auto assoc_cluster : track->getAssociatedClusters(m_detector->getName())) {
@@ -713,11 +800,11 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             clusterWidthColAssoc->Fill(static_cast<double>(assoc_cluster->columnWidth()));
 
             // Fill in-pixel plots: (all as function of track position within pixel cell)
-            qvsxmym->Fill(xmod, ymod, cluster_charge);                     // cluster charge profile
-            qMoyalvsxmym->Fill(xmod, ymod, exp(-normalized_charge / 3.5)); // norm. cluster charge profile
+            qvsxmym->Fill(xmod_um, ymod_um, cluster_charge);                     // cluster charge profile
+            qMoyalvsxmym->Fill(xmod_um, ymod_um, exp(-normalized_charge / 3.5)); // norm. cluster charge profile
 
             // mean charge of cluster seed
-            pxqvsxmym->Fill(xmod, ymod, assoc_cluster->getSeedPixel()->charge());
+            pxqvsxmym->Fill(xmod_um, ymod_um, assoc_cluster->getSeedPixel()->charge());
 
             if(assoc_cluster->size() > 1) {
                 for(auto& px : assoc_cluster->pixels()) {
@@ -751,20 +838,28 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             }
 
             // mean cluster size
-            npxvsxmym->Fill(xmod, ymod, static_cast<double>(assoc_cluster->size()));
-            if(assoc_cluster->size() == 1)
-                npx1vsxmym->Fill(xmod, ymod);
-            if(assoc_cluster->size() == 2)
-                npx2vsxmym->Fill(xmod, ymod);
-            if(assoc_cluster->size() == 3)
-                npx3vsxmym->Fill(xmod, ymod);
-            if(assoc_cluster->size() == 4)
-                npx4vsxmym->Fill(xmod, ymod);
+            npxvsxmym->Fill(xmod_um, ymod_um, static_cast<double>(assoc_cluster->size()));
+            if(assoc_cluster->size() == 1) {
+                npx1vsxmym->Fill(xmod_um, ymod_um);
+                qvsxmym_1px->Fill(xmod_um, ymod_um, cluster_charge);
+            }
+            if(assoc_cluster->size() == 2) {
+                npx2vsxmym->Fill(xmod_um, ymod_um);
+                qvsxmym_2px->Fill(xmod_um, ymod_um, cluster_charge);
+            }
+            if(assoc_cluster->size() == 3) {
+                npx3vsxmym->Fill(xmod_um, ymod_um);
+                qvsxmym_3px->Fill(xmod_um, ymod_um, cluster_charge);
+            }
+            if(assoc_cluster->size() == 4) {
+                npx4vsxmym->Fill(xmod_um, ymod_um);
+                qvsxmym_4px->Fill(xmod_um, ymod_um, cluster_charge);
+            }
 
             // residual MAD x, y, combined (sqrt(x*x + y*y))
-            rmsxvsxmym->Fill(xmod, ymod, xabsdistance);
-            rmsyvsxmym->Fill(xmod, ymod, yabsdistance);
-            rmsxyvsxmym->Fill(xmod, ymod, fabs(sqrt(xdistance * xdistance + ydistance * ydistance)));
+            rmsxvsxmym->Fill(xmod_um, ymod_um, xabsdistance);
+            rmsyvsxmym->Fill(xmod_um, ymod_um, yabsdistance);
+            rmsxyvsxmym->Fill(xmod_um, ymod_um, fabs(sqrt(xdistance * xdistance + ydistance * ydistance)));
 
             hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
             hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));

@@ -82,6 +82,14 @@ void EventLoaderATLASpix::initialize() {
     m_file.open(m_filename.c_str(), ios::in | ios::binary);
     LOG(DEBUG) << "Opening file " << m_filename;
 
+    std::string title = m_detector->getName() + ": number of different messages;message type;# events";
+    hMessages = new TH1F("hMessages", title.c_str(), 5, 1, 6);
+    hMessages->GetXaxis()->SetBinLabel(1, "UNKNOWN_MESSAGE");
+    hMessages->GetXaxis()->SetBinLabel(2, "BUFFER_OVERFLOW");
+    hMessages->GetXaxis()->SetBinLabel(3, "SERDES_LOCK_ESTABLISHED");
+    hMessages->GetXaxis()->SetBinLabel(4, "SERDES_LOCK_LOST");
+    hMessages->GetXaxis()->SetBinLabel(5, "WEIRD_DATA");
+
     // Make histograms for debugging
     hHitMap = new TH2F("hitMap",
                        "hitMap; pixel column; pixel row; # events",
@@ -174,8 +182,6 @@ void EventLoaderATLASpix::initialize() {
 
     LOG(INFO) << "Using clock cycle length of " << m_clockCycle << " ns." << std::endl;
 
-    m_oldtoa = 0;
-    m_overflowcounter = 0;
     eof_reached = false;
 }
 
@@ -497,26 +503,32 @@ bool EventLoaderATLASpix::read_caribou_data() { // return false when reaching eo
             // Unknown message identifier
             if(message_type & 0b11110010) {
                 LOG(DEBUG) << "UNKNOWN_MESSAGE";
+                hMessages->Fill(1);
             } else {
                 // Buffer for chip data overflow (data that came after this word were lost)
                 if((message_type & 0b11110011) == 0b00000001) {
                     LOG(DEBUG) << "BUFFER_OVERFLOW";
+                    hMessages->Fill(2);
                 }
                 // SERDES lock established (after reset or after lock lost)
                 if((message_type & 0b11111110) == 0b00001000) {
                     LOG(DEBUG) << "SERDES_LOCK_ESTABLISHED";
+                    hMessages->Fill(3);
                 }
                 // SERDES lock lost (data might be nonsense, including up to 2 previous messages)
                 else if((message_type & 0b11111110) == 0b00001100) {
                     LOG(DEBUG) << "SERDES_LOCK_LOST";
+                    hMessages->Fill(4);
                 }
                 // Unexpected data came from the chip or there was a checksum error.
                 else if((message_type & 0b11111110) == 0b00000100) {
                     LOG(DEBUG) << "WEIRD_DATA";
+                    hMessages->Fill(5);
                 }
                 // Unknown message identifier
                 else {
                     LOG(DEBUG) << "UNKNOWN_MESSAGE";
+                    hMessages->Fill(1);
                 }
             }
         }

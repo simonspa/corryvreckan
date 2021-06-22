@@ -19,6 +19,8 @@ More information can be found in the ROOT `TEfficiency` class reference, section
 * `time_cut_frameedge`: Parameter to discard telescope tracks at the frame edges (start and end of the current event window). Defaults to `20ns`.
 * `chi2ndof_cut`: Acceptance criterion for telescope tracks, defaults to a value of `3`.
 * `inpixel_bin_size`: Parameter to set the bin size of the in-pixel 2D efficiency histogram. This should be given in units of distance and the same value is used in both axes. Defaults to `1.0um`.
+* `inpixel_cut_edge`: Parameter to exclude tracks going within a cut-distance to the pixel edge. Effectively defines an in-pixel ROI. Defaults to `5um`.
+* `masked_pixel_distance_cut`: Distance (in pixels) to exclude tracks passing close to masked pixel. Defaults to `1`.
 * `require_associated_cluster_on`: Names of detectors which are required to have an associated cluster to the telescope tracks. Detectors listed here must be marked as `role = DUT` in the detector configuration file. Only tracks satisfying this requirement are accepted for the efficiency measurement. If empty, no detector is required. Default is empty.
 
 ### Plots produced
@@ -26,8 +28,9 @@ More information can be found in the ROOT `TEfficiency` class reference, section
 For the DUT, the following plots are produced:
 
 * 2D histograms:
-  * 2D Map of in-pixel efficiency
+  * 2D Map of in-pixel efficiency and in-pixel efficiency within in-pixel ROI
   * 2D Maps of chip efficiency in local and global coordinates, filled at the position of the track intercept point or at the position of the associated cluster center
+  * 2D Map of pixel efficiency, for the full matrix, filled at the pixel (of the associated cluster) through which the track goes, constrained to an in-pixel ROI defined by `inpixel_cut_edge`.
   * 2D Maps of the position difference of a track with and without associated cluster to the previous track
   * 2D Map of the distance between track intersection and associated cluster
 
@@ -39,8 +42,8 @@ For the DUT, the following plots are produced:
   * Distribution of cluster-track distances
 
 * Other:
-  * Value of total efficiency as `TEfficiency` including (asymmetric) error bars
-  * Efficiency as function of column and row
+  * Value of total efficiency as `TEfficiency` including (asymmetric) error bars (total and restricted to in-pixel ROI)
+  * Efficiency as function of column and row, and vs. time
 
 
 ### Usage
