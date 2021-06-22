@@ -55,7 +55,8 @@ StatusCode AnalysisTracks::run(const std::shared_ptr<Clipboard>& clipboard) {
     for(auto d : get_detectors()) {
         if(d->isAuxiliary())
             continue;
-        clusters_vs_tracks_.at(d->getName())->Fill(tracks.size(), clipboard->getData<Cluster>(d->getName()).size());
+        clusters_vs_tracks_.at(d->getName())
+            ->Fill(tracks.size(), static_cast<double>(clipboard->getData<Cluster>(d->getName()).size()));
     }
     // Loop over all tracks and get clusters assigned to tracks as well as the intersections
     std::map<std::string, std::map<std::pair<double, double>, int>> track_clusters;
