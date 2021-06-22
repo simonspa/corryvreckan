@@ -37,9 +37,6 @@ void AnalysisTracks::initialize() {
         clusters_vs_tracks_[detector->getName().c_str()] =
             new TH2F("clusters_vs_tracks", title.c_str(), 25, 0, 25, 200, 0, 200);
     }
-
-    // Initialise member variables
-    eventNumber_ = 0;
 }
 
 StatusCode AnalysisTracks::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -50,9 +47,6 @@ StatusCode AnalysisTracks::run(const std::shared_ptr<Clipboard>& clipboard) {
         std::string detectorName = detector->getName();
         LOG(DEBUG) << "Detector with name " << detectorName;
     }
-
-    // Increment event counter
-    eventNumber_++;
 
     auto tracks = clipboard->getData<Track>();
     if(!tracks.size())
@@ -97,9 +91,4 @@ StatusCode AnalysisTracks::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Return value telling analysis to keep running
     return StatusCode::Success;
-}
-
-void AnalysisTracks::finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) {
-
-    LOG(DEBUG) << "Analysed " << eventNumber_ << " events";
 }
