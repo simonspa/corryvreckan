@@ -28,7 +28,7 @@ FUNCTION(ESCAPE_REGEX INP OUTPUT)
     # Escape possible regex patterns in the expected output:
     STRING(REPLACE "#PASS " "" _TMP_STR "${INP}")
     STRING(REPLACE "#FAIL " "" _TMP_STR "${_TMP_STR}")
-    STRING(REGEX REPLACE "([][+.*()^])" "\\\\\\1" _TMP_STR "${_TMP_STR}")
+    STRING(REGEX REPLACE "([][+-.*()^])" "\\\\\\1" _TMP_STR "${_TMP_STR}")
     SET(${OUTPUT} "${_TMP_STR}" PARENT_SCOPE)
 ENDFUNCTION()
 
