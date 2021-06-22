@@ -51,12 +51,11 @@ StatusCode AnalysisTracks::run(const std::shared_ptr<Clipboard>& clipboard) {
     auto tracks = clipboard->getData<Track>();
     if(!tracks.size())
         return StatusCode::Success;
-    std::map<std::string, uint> clusters;
+
     for(auto d : get_detectors()) {
         if(d->isAuxiliary())
             continue;
-        clusters[d->getName()] = clipboard->getData<Cluster>(d->getName()).size();
-        clusters_vs_tracks_.at(d->getName())->Fill(tracks.size(), clusters.at(d->getName()));
+        clusters_vs_tracks_.at(d->getName())->Fill(tracks.size(), clipboard->getData<Cluster>(d->getName()).size());
     }
     // Loop over all tracks and get clusters assigned to tracks as well as the intersections
     std::map<std::string, std::map<std::pair<double, double>, int>> track_clusters;
@@ -73,7 +72,9 @@ StatusCode AnalysisTracks::run(const std::shared_ptr<Clipboard>& clipboard) {
         }
     }
     // Now fill the histos
-    for(auto const& [key, val] : intersects) {
+    for(auto const& intersect : intersects) {
+        auto key = intersect.first;
+        auto val = intersect.second;
         for(uint i = 0; i < val.size(); ++i) {
             auto j = i + 1;
             while(j < val.size()) {
@@ -83,9 +84,10 @@ StatusCode AnalysisTracks::run(const std::shared_ptr<Clipboard>& clipboard) {
             }
         }
     }
-    for(auto const& [key, val] : track_clusters) {
-        for(auto const& [k, v] : val) {
-            _tracks_per_hit_.at(key)->Fill(v);
+    for(auto const& track_cluster : track_clusters) {
+        auto key = track_cluster.first;
+        for(auto const& v : track_cluster.second) {
+            _tracks_per_hit_.at(key)->Fill(v.second);
         }
     }
 
