@@ -1,10 +1,13 @@
 # AnalysisTracks
 **Maintainer**: Lennart Huth (lennart.huth@desy.de)
 **Module Type**: *GLOBAL*  
-**Status**: Work in progress
+**Status**: Functional
 
 ### Description
-Check the reconstructed tracks for track distances, double usage of clusters, etc
+Study reconstructed tracks in each event by calculating the distance between
+tracks in an event. In addition cluster assignments to multiple tracks is
+plotted. Finally the number of tracks is correlated with the number of tracks
+reconstructed.
 
 ### Parameters
 No parameters are used from the configuration file.
