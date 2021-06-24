@@ -419,6 +419,54 @@ void AnalysisDUT::initialize() {
                           -pitch_y / 2.,
                           pitch_y / 2.);
 
+    title = "Mean cluster charge map (1-pixel);" + mod_axes + "<cluster charge> [ke]";
+    qvsxmym_1px = new TProfile2D("qvsxmym_1px",
+                                 title.c_str(),
+                                 static_cast<int>(pitch_x),
+                                 -pitch_x / 2.,
+                                 pitch_x / 2.,
+                                 static_cast<int>(pitch_y),
+                                 -pitch_y / 2.,
+                                 pitch_y / 2.,
+                                 0,
+                                 250);
+
+    title = "Mean cluster charge map (2-pixel);" + mod_axes + "<cluster charge> [ke]";
+    qvsxmym_2px = new TProfile2D("qvsxmym_2px",
+                                 title.c_str(),
+                                 static_cast<int>(pitch_x),
+                                 -pitch_x / 2.,
+                                 pitch_x / 2.,
+                                 static_cast<int>(pitch_y),
+                                 -pitch_y / 2.,
+                                 pitch_y / 2.,
+                                 0,
+                                 250);
+
+    title = "Mean cluster charge map (3-pixel);" + mod_axes + "<cluster charge> [ke]";
+    qvsxmym_3px = new TProfile2D("qvsxmym_3px",
+                                 title.c_str(),
+                                 static_cast<int>(pitch_x),
+                                 -pitch_x / 2.,
+                                 pitch_x / 2.,
+                                 static_cast<int>(pitch_y),
+                                 -pitch_y / 2.,
+                                 pitch_y / 2.,
+                                 0,
+                                 250);
+
+    title = "Mean cluster charge map (4-pixel);" + mod_axes + "<cluster charge> [ke]";
+    qvsxmym_4px = new TProfile2D("qvsxmym_4px",
+                                 title.c_str(),
+                                 static_cast<int>(pitch_x),
+                                 -pitch_x / 2.,
+                                 pitch_x / 2.,
+                                 static_cast<int>(pitch_y),
+                                 -pitch_y / 2.,
+                                 pitch_y / 2.,
+                                 0,
+                                 250);
+
     residualsTime = new TH1F("residualsTime",
                              "Time residual;time_{track}-time_{hit} [ns];#entries",
                              n_timebins_,
@@ -634,8 +682,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
         // Calculate in-pixel position of track in microns
         auto inpixel = m_detector->inPixel(localIntercept);
-        auto xmod = inpixel.X() * 1000.; // convert mm -> um
-        auto ymod = inpixel.Y() * 1000.; // convert mm -> um
+        auto xmod_um = inpixel.X() * 1000.; // convert mm -> um
+        auto ymod_um = inpixel.Y() * 1000.; // convert mm -> um
 
         // Loop over all associated DUT clusters:
         for(auto assoc_cluster : track->getAssociatedClusters(m_detector->getName())) {
@@ -752,11 +800,11 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             clusterWidthColAssoc->Fill(static_cast<double>(assoc_cluster->columnWidth()));
 
             // Fill in-pixel plots: (all as function of track position within pixel cell)
-            qvsxmym->Fill(xmod, ymod, cluster_charge);                     // cluster charge profile
-            qMoyalvsxmym->Fill(xmod, ymod, exp(-normalized_charge / 3.5)); // norm. cluster charge profile
+            qvsxmym->Fill(xmod_um, ymod_um, cluster_charge);                     // cluster charge profile
+            qMoyalvsxmym->Fill(xmod_um, ymod_um, exp(-normalized_charge / 3.5)); // norm. cluster charge profile
 
             // mean charge of cluster seed
-            pxqvsxmym->Fill(xmod, ymod, assoc_cluster->getSeedPixel()->charge());
+            pxqvsxmym->Fill(xmod_um, ymod_um, assoc_cluster->getSeedPixel()->charge());
 
             if(assoc_cluster->size() > 1) {
                 for(auto& px : assoc_cluster->pixels()) {
@@ -790,20 +838,28 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             }
 
             // mean cluster size
-            npxvsxmym->Fill(xmod, ymod, static_cast<double>(assoc_cluster->size()));
-            if(assoc_cluster->size() == 1)
-                npx1vsxmym->Fill(xmod, ymod);
-            if(assoc_cluster->size() == 2)
-                npx2vsxmym->Fill(xmod, ymod);
-            if(assoc_cluster->size() == 3)
-                npx3vsxmym->Fill(xmod, ymod);
-            if(assoc_cluster->size() == 4)
-                npx4vsxmym->Fill(xmod, ymod);
+            npxvsxmym->Fill(xmod_um, ymod_um, static_cast<double>(assoc_cluster->size()));
+            if(assoc_cluster->size() == 1) {
+                npx1vsxmym->Fill(xmod_um, ymod_um);
+                qvsxmym_1px->Fill(xmod_um, ymod_um, cluster_charge);
+            }
+            if(assoc_cluster->size() == 2) {
+                npx2vsxmym->Fill(xmod_um, ymod_um);
+                qvsxmym_2px->Fill(xmod_um, ymod_um, cluster_charge);
+            }
+            if(assoc_cluster->size() == 3) {
+                npx3vsxmym->Fill(xmod_um, ymod_um);
+                qvsxmym_3px->Fill(xmod_um, ymod_um, cluster_charge);
+            }
+            if(assoc_cluster->size() == 4) {
+                npx4vsxmym->Fill(xmod_um, ymod_um);
+                qvsxmym_4px->Fill(xmod_um, ymod_um, cluster_charge);
+            }
 
             // residual MAD x, y, combined (sqrt(x*x + y*y))
-            rmsxvsxmym->Fill(xmod, ymod, xabsdistance);
-            rmsyvsxmym->Fill(xmod, ymod, yabsdistance);
-            rmsxyvsxmym->Fill(xmod, ymod, fabs(sqrt(xdistance * xdistance + ydistance * ydistance)));
+            rmsxvsxmym->Fill(xmod_um, ymod_um, xabsdistance);
+            rmsyvsxmym->Fill(xmod_um, ymod_um, yabsdistance);
+            rmsxyvsxmym->Fill(xmod_um, ymod_um, fabs(sqrt(xdistance * xdistance + ydistance * ydistance)));
 
             hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
             hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));

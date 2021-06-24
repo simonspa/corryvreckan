@@ -48,6 +48,7 @@ namespace corryvreckan {
 
         // Profile version
         TProfile2D* hPixelEfficiencyMap_trackPos_TProfile;
+        TProfile2D* hPixelEfficiencyMap_inPixelROI_trackPos_TProfile;
         TProfile2D* hChipEfficiencyMap_trackPos_TProfile;
         TProfile2D* hPixelEfficiencyMatrix_TProfile;
         TProfile2D* hGlobalEfficiencyMap_trackPos_TProfile;
@@ -61,6 +62,7 @@ namespace corryvreckan {
         TEfficiency* hGlobalEfficiencyMap_clustPos;
 
         TEfficiency* eTotalEfficiency;
+        TEfficiency* eTotalEfficiency_inPixelROI;
         TEfficiency* efficiencyColumns;
         TEfficiency* efficiencyRows;
         TEfficiency* efficiencyVsTime;
@@ -78,7 +80,8 @@ namespace corryvreckan {
         TH2D* hPosDiffPrevTrack_assocCluster;
         TH2D* hPosDiffPrevTrack_noAssocCluster;
         TH2D* hDistanceCluster_track;
-        double m_chi2ndofCut, m_timeCutFrameEdge, m_inpixelBinSize, m_inpixelEdgeCut;
+        double m_chi2ndofCut, m_timeCutFrameEdge, m_inpixelBinSize;
+        XYVector m_inpixelEdgeCut;
         int m_maskedPixelDistanceCut = 1;
         int total_tracks = 0;
         int matched_tracks = 0;
