@@ -261,6 +261,36 @@ void AnalysisEfficiency::initialize() {
     auto nCols = static_cast<size_t>(m_detector->nPixels().X());
     std::vector<double> v_row(nRows, 0.); // create vector will zeros of length <nRows>
     prev_hit_ts.assign(nCols, v_row);     // use vector v_row to construct matrix
+
+    // pivot study:
+    TDirectory* directory = getROOTDirectory();
+    TDirectory* local_directory = directory->mkdir("pivot_study");
+    local_directory->cd();
+    for(uint piv = 0; piv < 57; ++piv) {
+
+        std::string pivstring = std::to_string(piv) + "_eTotalEfficiency";
+        auto _eTotalEfficiency = new TEfficiency(pivstring.c_str(), "totalEfficiency;;#epsilon", 1, 0, 1);
+        pivstring = std::to_string(piv) + "_efficiencyColumns";
+        auto _efficiencyColumns = new TEfficiency(pivstring.c_str(),
+                                                  "Efficiency vs. column number; column; #epsilon",
+                                                  m_detector->nPixels().X(),
+                                                  -0.5,
+                                                  m_detector->nPixels().X() - 0.5);
+        pivstring = std::to_string(piv) + "_efficiencyRows";
+        auto _efficiencyRows = new TEfficiency(pivstring.c_str(),
+                                               "Efficiency vs. row number; row; #epsilon",
+                                               m_detector->nPixels().Y(),
+                                               -0.5,
+                                               m_detector->nPixels().Y() - 0.5);
+        pivstring = std::to_string(piv) + "_efficiencyVsTime";
+        auto _efficiencyVsTime =
+            new TEfficiency(pivstring.c_str(), "Efficiency vs. time; time [s]; #epsilon", 3000, 0, 3000);
+
+        pivot_eTotalEfficiency[int(piv)] = _eTotalEfficiency;
+        pivot_efficiencyColumns[int(piv)] = _efficiencyColumns;
+        pivot_efficiencyRows[int(piv)] = _efficiencyRows;
+        pivot_efficiencyVsTime[int(piv)] = _efficiencyVsTime;
+    }
 }
 
 StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -408,6 +438,12 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
             efficiencyColumns->Fill(has_associated_cluster, m_detector->getColumn(localIntercept));
             efficiencyRows->Fill(has_associated_cluster, m_detector->getRow(localIntercept));
             efficiencyVsTime->Fill(has_associated_cluster, track->timestamp() / 1e9); // convert nanoseconds to seconds
+            int piv = track.get()->getClusters().front()->getSeedPixel()->raw() / 10;
+            pivot_eTotalEfficiency.at(piv)->Fill(has_associated_cluster, 0); // use 0th bin for total efficiency
+            pivot_efficiencyColumns.at(piv)->Fill(has_associated_cluster, m_detector->getColumn(localIntercept));
+            pivot_efficiencyVsTime.at(piv)->Fill(has_associated_cluster,
+                                                 track->timestamp() / 1e9); // convert nanoseconds to seconds
+            pivot_efficiencyRows.at(piv)->Fill(has_associated_cluster, m_detector->getRow(localIntercept));
         }
 
         auto intercept_col = static_cast<size_t>(m_detector->getColumn(localIntercept));

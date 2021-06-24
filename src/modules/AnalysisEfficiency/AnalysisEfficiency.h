@@ -65,6 +65,13 @@ namespace corryvreckan {
         TEfficiency* efficiencyRows;
         TEfficiency* efficiencyVsTime;
 
+        // maps to store selected pivot ranges
+
+        std::map<int, TEfficiency*> pivot_eTotalEfficiency;
+        std::map<int, TEfficiency*> pivot_efficiencyColumns;
+        std::map<int, TEfficiency*> pivot_efficiencyRows;
+        std::map<int, TEfficiency*> pivot_efficiencyVsTime;
+
         TH1D* hDistanceCluster;
         TH1D* hTimeDiffPrevTrack_assocCluster;
         TH1D* hTimeDiffPrevTrack_noAssocCluster;

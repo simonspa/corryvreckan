@@ -434,6 +434,8 @@ PixelVector EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEve
             // redefined to time begin/end == trigger timestamp in get_trigger_position (see above), i.e. in
             // that case, all pixel timestamp will be set to the corresponding trigger timestamp.
             ts = static_cast<double>(evt->GetTimeBegin() + evt->GetTimeEnd()) / 2 / 1000 + detector_->timeOffset();
+            // FIXMe - not to be put to master
+            raw = static_cast<int>(plane.PivotPixel() / 16);
         } else {
             ts = static_cast<double>(plane.GetTimestamp(i)) / 1000 + detector_->timeOffset();
         }

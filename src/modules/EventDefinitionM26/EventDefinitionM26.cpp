@@ -146,6 +146,8 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
                     }
                     pivotPixel_->Fill(piv);
                     begin = Units::get(piv * (115.2 / 576), "us") + timeshift_ + add_begin_;
+
+                    // never shift more than a full frame
                     if(begin > Units::get(115.2, "us"))
                         begin -= Units::get(115.2, "us");
                     // begin = Units::get((576 - piv) * (115.2 / 576), "us") + timeshift_;
