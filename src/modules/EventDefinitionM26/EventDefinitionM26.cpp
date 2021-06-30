@@ -78,7 +78,7 @@ void EventDefinitionM26::initialize() {
     timebetweenTLUEvents_ =
         new TH1F("htimebetweenTrigger", "time between two triggers frames; time /us; #entries", 1000, -0.5, 995.5);
     eventDuration_ =
-        new TH1F("durationCorryEvent", "Event duration as defined on clipboard; time [#mus]; #entries", 1000, 115.2, 230.4);
+        new TH1F("durationCorryEvent", "Event duration as defined on clipboard; time [#mus]; #entries", 240, 115.2, 360.4);
 
     timeBeforeTrigger_ = new TH1F("timeBeforeTrigger", "time in frame before trigger; time /us; #entries", 2320, -231, 1);
     timeAfterTrigger_ = new TH1F("timeAfterTrigger", "time in frame after trigger; time /us; #entries", 2320, -1, 231);
@@ -104,6 +104,26 @@ void EventDefinitionM26::initialize() {
         LOG(ERROR) << "eudaq::FileReader could not read the input file ' " << timestamp_
                    << " '. Please verify that the path and file name are correct.";
         throw InvalidValueError(config_, "file_path", "Parsing error!");
+    }
+
+    // pivot pixel etc plots
+    title = "pivot vs next time; pivot; start(i+1) - end(i) / #mus";
+    _pivot_vs_next_event = new TH2F("pivotVsdistToNextEVENT", title.c_str(), 576, 0, 576, 1010, -10, 1000);
+    title = "pivot vs privious time; pivot; start(i) - end(i-1) / #mus";
+    _pivot_vs_priv_event = new TH2F("pivotVsdistToPreviousEVENT", title.c_str(), 576, 0, 576, 1010, -10, 1000);
+    title = "pivot vs next time; pivot; trig(i+1) - trig (i) #mus";
+    _pivot_vs_next_dtrigger = new TH2F("pivotVsdistToNextTRIGGER", title.c_str(), 576, 0, 576, 1000, -10, 1000);
+    title = "pivot vs privious time; pivot;  trig(i) - trig (i-1) #mus";
+    _pivot_vs_priv_dtrigger = new TH2F("pivotVsdistToPreviousTRIGGER", title.c_str(), 576, 0, 576, 1010, -10, 1000);
+}
+
+void EventDefinitionM26::finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) {
+    for(uint i = 1; i < _pivots.size() - 1; ++i) {
+        _pivot_vs_next_event->Fill(_pivots.at(i), Units::convert(_starts.at(i + 1) - _ends.at(i), "us"));
+        _pivot_vs_priv_event->Fill(_pivots.at(i), Units::convert(_starts.at(i) - _ends.at(i - 1), "us"));
+
+        _pivot_vs_next_dtrigger->Fill(_pivots.at(i), Units::convert(_triggers.at(i + 1) - _triggers.at(i), "us"));
+        _pivot_vs_priv_dtrigger->Fill(_pivots.at(i), Units::convert(_triggers.at(i) - _triggers.at(i - 1), "us"));
     }
 }
 
@@ -144,13 +164,14 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
                         LOG(DEBUG) << "Skipping mimosa event with pivot " << piv;
                         continue;
                     }
+                    _pivotCurrent = piv;
                     pivotPixel_->Fill(piv);
-                    begin = Units::get(piv * (115.2 / 576), "us") + timeshift_ + add_begin_;
+                    // begin = Units::get((576 - piv) * (115.2 / 576), "us") + timeshift_;
+                    begin = /*Units::get(229,"us");//*/ Units::get(piv * (115.2 / 576), "us") + timeshift_ + add_begin_;
 
                     // never shift more than a full frame
                     if(begin > Units::get(115.2, "us"))
                         begin -= Units::get(115.2, "us");
-                    // begin = Units::get((576 - piv) * (115.2 / 576), "us") + timeshift_;
 
                     // end should be after second frame, sharp (variable durationn, not variable end)
                     end = Units::get(230.4, "us") - begin + add_begin_ + add_end_;
@@ -249,16 +270,30 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                 LOG(DEBUG) << "evtStart/evtEnd/duration = " << Units::display(evtStart, "us") << ", "
                            << Units::display(evtEnd, "us") << ", " << Units::display(evtEnd - evtStart, "us");
 
-                auto event = std::make_shared<Event>(evtStart, evtEnd);
-                clipboard->putEvent(event);
-                LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(evtStart, {"us", "ns"}) << " - "
-                           << Units::display(evtEnd, {"us", "ns"}) << ", length "
-                           << Units::display(evtEnd - evtStart, {"us", "ns"});
-                eventDuration_->Fill(static_cast<double>(Units::convert(event->duration(), "us")));
-                hClipboardEventStart->Fill(static_cast<double>(Units::convert(evtStart, "ms")));
-                hClipboardEventStart_long->Fill(static_cast<double>(Units::convert(evtStart, "s")));
+                _starts.push_back(evtStart);
+                _ends.push_back(evtEnd);
+                _pivots.push_back(_pivotCurrent);
+                _triggers.push_back(time_trig);
+
+                // make the event longer if possible - requires a buffering of 1 event
+                if(_oldEvent.first != 0) {
+                    //_oldEvent.second = (Units::convert(evtStart-_oldEvent.second,"us")>=115.2) ?
+                    //_oldEvent.second+115.2*1000 : _oldEvent.second;
+                    auto event = std::make_shared<Event>(_oldEvent.first, _oldEvent.second);
+                    clipboard->putEvent(event);
+                    LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(evtStart, {"us", "ns"}) << " - "
+                               << Units::display(evtEnd, {"us", "ns"}) << ", length "
+                               << Units::display(_oldEvent.second - _oldEvent.first, {"us", "ns"});
+                    eventDuration_->Fill(static_cast<double>(Units::convert(event->duration(), "us")));
+                    hClipboardEventStart->Fill(static_cast<double>(Units::convert(evtStart, "ms")));
+                    hClipboardEventStart_long->Fill(static_cast<double>(Units::convert(evtStart, "s")));
+                } else {
+                    triggerTLU_--;
+                }
+                _oldEvent = std::make_pair(evtStart, evtEnd);
+
             } else {
-                LOG(WARNING) << "Current trigger time smaller than previous: " << time_trig << " vs " << time_prev_;
+                LOG(ERROR) << "Current trigger time smaller than previous: " << time_trig << " vs " << time_prev_;
             }
 
         } else if(triggerTLU_ > triggerM26_) {

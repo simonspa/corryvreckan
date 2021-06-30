@@ -42,6 +42,7 @@ namespace corryvreckan {
          * @brief [Initialise this module]
          */
         void initialize() override;
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
         /**
          * @brief [Run the function of this module]
@@ -49,6 +50,11 @@ namespace corryvreckan {
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
     private:
+        std::vector<long double> _starts{};
+        std::vector<long double> _ends{};
+        std::vector<long double> _pivots{};
+        std::vector<long double> _triggers{};
+        long double _pivotCurrent;
         std::vector<uint32_t> triggerIDs_{};
         long double timeshift_{};
         int shift_triggers_{};
@@ -66,6 +72,13 @@ namespace corryvreckan {
         std::string detector_time_;
         // input data files
         std::string timestamp_, duration_;
+
+        std::pair<long double, long double> _oldEvent{};
+        // HIER WEITER MIT DEN PLOTS, FUELLEN UND RANGES DEFINIEREN
+        TH2F* _pivot_vs_next_dtrigger;
+        TH2F* _pivot_vs_priv_dtrigger;
+        TH2F* _pivot_vs_next_event;
+        TH2F* _pivot_vs_priv_event;
 
         TH1F* timebetweenMimosaEvents_;
         TH1F* timebetweenTLUEvents_;

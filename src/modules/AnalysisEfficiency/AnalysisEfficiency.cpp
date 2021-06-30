@@ -278,10 +278,11 @@ void AnalysisEfficiency::initialize() {
     prev_hit_ts.assign(nCols, v_row);     // use vector v_row to construct matrix
 
     // pivot study:
+    pivot_vs_delta_t = new TH2D("pivot_vs_delta_t", "piv vs time in event: pivot; delta_t", 577, 0, 577, 350, 0, 350);
     TDirectory* directory = getROOTDirectory();
     TDirectory* local_directory = directory->mkdir("pivot_study");
     local_directory->cd();
-    for(uint piv = 0; piv < 57; ++piv) {
+    for(uint piv = 0; piv < 58; ++piv) {
 
         std::string pivstring = std::to_string(piv) + "_eTotalEfficiency";
         auto _eTotalEfficiency = new TEfficiency(pivstring.c_str(), "totalEfficiency;;#epsilon", 1, 0, 1);
@@ -300,11 +301,13 @@ void AnalysisEfficiency::initialize() {
         pivstring = std::to_string(piv) + "_efficiencyVsTime";
         auto _efficiencyVsTime =
             new TEfficiency(pivstring.c_str(), "Efficiency vs. time; time [s]; #epsilon", 3000, 0, 3000);
-
+        pivstring = std::to_string(piv) + "_timepix3time";
+        auto delta_t = new TH1D(pivstring.c_str(), "TPX3 time relativ to event start; delta t / #mus;", 350, 0, 350);
         pivot_eTotalEfficiency[int(piv)] = _eTotalEfficiency;
         pivot_efficiencyColumns[int(piv)] = _efficiencyColumns;
         pivot_efficiencyRows[int(piv)] = _efficiencyRows;
         pivot_efficiencyVsTime[int(piv)] = _efficiencyVsTime;
+        pivot_tpx3_event[int(piv)] = delta_t;
     }
 }
 
@@ -461,6 +464,12 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
             efficiencyRows->Fill(has_associated_cluster, m_detector->getRow(localIntercept));
             efficiencyVsTime->Fill(has_associated_cluster, track->timestamp() / 1e9); // convert nanoseconds to seconds
             int piv = track.get()->getClusters().front()->getSeedPixel()->raw() / 10;
+            auto start = clipboard->getEvent()->start();
+            if(has_associated_cluster) {
+                pivot_tpx3_event.at(piv)->Fill(Units::convert(associated_clusters.front()->timestamp() - start, "us"));
+                pivot_vs_delta_t->Fill(track.get()->getClusters().front()->getSeedPixel()->raw(),
+                                       Units::convert(associated_clusters.front()->timestamp() - start, "us"));
+            }
             pivot_eTotalEfficiency.at(piv)->Fill(has_associated_cluster, 0); // use 0th bin for total efficiency
             pivot_efficiencyColumns.at(piv)->Fill(has_associated_cluster, m_detector->getColumn(localIntercept));
             pivot_efficiencyVsTime.at(piv)->Fill(has_associated_cluster,
