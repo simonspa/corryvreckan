@@ -1,25 +1,25 @@
 # EventDefinitionM26
 **Maintainer**: Lennart Huth (lennart.huth@desy.de), Jens Kroeger (jens.kroeger@cern.ch)
 **Module Type**: *GLOBAL*
-**Status**: Functional
+**Status**: Advanced
 
 ### Description
 This global module allows to fully utilize the PIVOT pixel behaviour of the
-EUDET type telescopes based on the NI MIMOSA26 readout. The event begin and
-end are defined based on the  pivot pixel provided in the MIMOSA data
-stream. Currently, the module assumes that the full two data frames are read
-out, which is not the case in the standard converter.
-However, the converter only returns all pixels after the pivot pixel of the
-first frame and those before the pivot pixel of the second frame.
+EUDET type telescopes based on the NI MIMOSA26 readout. The MIMOSA DAQ stores two full rolling shutter frames.
+The first frame corresponds to the frame where the trigger has been received. To store also particle hits at a position in front of the shutter, also the next frame is stored.
+Note that the default NI-converter only returns pixels after the pivot in the first frame and in front of the pivot in the second frame. 
 
-Event definition example:
+The event begin and
+end are defined based on the  pivot pixel provided in the MIMOSA data
+stream.
+
 For a triggerID that has a TLU event from 425.000us to 425.025us (default
-25 ns events) 
+25 ns events), the trigger timestamp is defined as the middle of the event:
+ t_trig = (425us+425.025us)/2
  and the pivot pixel-row is p the event will be defined as:
 
 ```
-\math
-begin = 425.0125 us - (p * (115.2 / 576)) us
+begin = t_trig - (p * (115.2 / 576)) us
 end = begin + 230us
 
 ```
