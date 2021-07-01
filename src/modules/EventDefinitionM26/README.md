@@ -18,7 +18,7 @@ For a triggerID that has a TLU event from 425.000us to 425.025us (default
  t_trig = (425us+425.025us)/2
  and the pivot pixel-row is p the event will be defined as:
 
-```math"
+```math
 begin = t_{trig} - (p * (115.2 / 576)) \mu s \\
 end = begin + 230 \mu s
 
