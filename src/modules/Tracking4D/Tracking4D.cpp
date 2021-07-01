@@ -101,6 +101,7 @@ void Tracking4D::initialize() {
     trackTimeTrigger = new TH1F("trackTimeTrigger", title.c_str(), 1000, -230.4, 230.4);
     title = "Track time with respect to first trigger vs. track chi2;track time - trigger;track #chi^{2};events";
     trackTimeTriggerChi2 = new TH2F("trackTimeTriggerChi2", title.c_str(), 1000, -230.4, 230.4, 15, 0, 15);
+    tracksVsTime = new TH1F("tracksVsTime", "Number of tracks vs. time; time [s]; # entries", 3e6, 0, 3e3);
 
     // Loop over all planes
     for(auto& detector : get_regular_detectors(true)) {
@@ -542,6 +543,7 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
         trackChi2->Fill(track->getChi2());
         clustersPerTrack->Fill(static_cast<double>(track->getNClusters()));
         trackChi2ndof->Fill(track->getChi2ndof());
+        tracksVsTime->Fill(track->timestamp() / 1.0e9);
         if(!(track_model_ == "gbl")) {
             trackAngleX->Fill(atan(track->getDirection(track->getClusters().front()->detectorID()).X()));
             trackAngleY->Fill(atan(track->getDirection(track->getClusters().front()->detectorID()).Y()));

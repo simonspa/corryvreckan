@@ -45,6 +45,7 @@ namespace corryvreckan {
         TH1F* tracksPerEvent;
         TH1F* trackAngleX;
         TH1F* trackAngleY;
+        TH1F* tracksVsTime;
         std::map<std::string, TH1F*> residualsX_local;
         std::map<std::string, TH1F*> residualsXwidth1_local;
         std::map<std::string, TH1F*> residualsXwidth2_local;
