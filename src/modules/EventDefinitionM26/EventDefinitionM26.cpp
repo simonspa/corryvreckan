@@ -199,7 +199,7 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                                << std::endl
                                << "Check if a shift of trigger IDs is required.";
                 }
-                // If we strech the event over three frames and add a trigger, we need a larger distance
+                // If we stretch the event over three frames and add a trigger, we need a larger distance
                 if((time_trig - time_prev_ < 345600) && add_trigger_) {
                     triggerTLU_--;
                     LOG(DEBUG)
@@ -231,7 +231,7 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
 
                 clipboard->putEvent(std::make_shared<Event>(evtStart, evtEnd));
                 if(add_trigger_) {
-                    clipboard->getEvent()->addTrigger(triggerTLU_, time_trig);
+                    clipboard->getEvent()->addTrigger(triggerTLU_, static_cast<double>(time_trig));
                 }
                 LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(evtStart, {"us", "ns"}) << " - "
                            << Units::display(evtEnd, {"us", "ns"}) << ", length "
