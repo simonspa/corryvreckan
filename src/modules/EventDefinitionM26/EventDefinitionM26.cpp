@@ -19,7 +19,6 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
 
     config_.setDefault<int>("time_shift", 0);
     config_.setDefault<int>("shift_triggers", 0);
-    config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
     config_.setDefault<double>("skip_time", 0.);
     config_.setDefault<bool>("add_trigger", false);
     config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
