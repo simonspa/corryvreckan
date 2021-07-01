@@ -18,9 +18,9 @@ For a triggerID that has a TLU event from 425.000us to 425.025us (default
  t_trig = (425us+425.025us)/2
  and the pivot pixel-row is p the event will be defined as:
 
-```
-begin = t_trig - (p * (115.2 / 576)) us
-end = begin + 230us
+```math"
+begin = t_{trig} - (p * (115.2 / 576)) \mu s \\
+end = begin + 230 \mu s
 
 ```
 
@@ -41,7 +41,7 @@ pivot pixel is close to its roll-over.
 * `shift_triggers`: Shift the trigger ID of the `detector_event_time`. This allows to correct trigger ID offsets between different devices such as the TLU and MIMOSA26. Note that if using the module `EventLoaderEUDAQ2` the same value for `shift_triggers` needs to be passed in both cases. Defaults to `0`.
 * `skip_time`: Time that can be skipped at the start of a run. All events with earlier timestamps are discarded. Default is `0ms`.
 * `eudaq_loglevel`: Verbosity level of the EUDAQ logger instance of the converter module. Possible options are, in decreasing severity, `USER`, `ERROR`, `WARN`, `INFO`, `EXTRA` and `DEBUG`. The default level is `ERROR`. Please note that the EUDAQ verbosity can only be changed globally, i.e. when using instances of `EventLoaderEUDAQ2` below this module, the last occurrence will determine the (global) value of this parameter.
-* `add_trigger`: Option to directly add the trigger of the TLU to the event. If this option is selected, the  event length is defined to be 3*115.2us - with 115.2us before the trigger timestamp and 230.4us after it. Defaults to `false`
+* `add_trigger`: Option to directly add the trigger of the TLU to the event. If this option is selected, the  event length is defined to be 3*115.2us - with 115.2us before the trigger timestamp and 230.4us after it. Note that no `EventLoaderEUDAQ2` for the TLU is required if this option is activated.  Defaults to `false`
 In addition, parameters can be forwarded to the EUDAQ2 event converters.
 Please refer to the README of the `EventLoaderEUDAQ2` for more details.
 
