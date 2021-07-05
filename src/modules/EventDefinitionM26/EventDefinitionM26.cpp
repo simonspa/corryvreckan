@@ -167,11 +167,12 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
                     _pivotCurrent = piv;
                     pivotPixel_->Fill(piv);
                     // begin = Units::get((576 - piv) * (115.2 / 576), "us") + timeshift_;
-                    begin = /*Units::get(229,"us");//*/ Units::get(piv * (115.2 / 576), "us") + timeshift_ + add_begin_;
+                    begin = /*Units::get(229,"us");//*/
+                        /* Units::get(piv * (115.2 / 576), "us") + timeshift_ + add_begin_ +*/ Units::get(115.2, "us");
 
                     // never shift more than a full frame
-                    if(begin > Units::get(115.2, "us"))
-                        begin -= Units::get(115.2, "us");
+                    //                    if(begin > Units::get(115.2, "us"))
+                    //                        begin -= Units::get(115.2, "us");
 
                     // end should be after second frame, sharp (variable durationn, not variable end)
                     end = Units::get(230.4, "us") - begin + add_begin_ + add_end_;
@@ -198,7 +199,6 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
 }
 StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) {
 
-    // Loop over all detectors
     if(clipboard->isEventDefined()) {
         throw ModuleError("Event already defined - cannot create a new event. This module needs to be placed before the "
                           "first EventLoader");
@@ -241,7 +241,7 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
 
             if(time_trig - time_prev_ > 0) {
                 // M26 frames need to have a distance of at least one frame length!
-                if(time_trig - time_prev_ < 115000) {
+                if(time_trig - time_prev_ < 115200) {
                     LOG(ERROR) << "M26 triggers too close together to fit M26 frame, dt = " +
                                       Units::display(time_trig - time_prev_, "us")
                                << std::endl
