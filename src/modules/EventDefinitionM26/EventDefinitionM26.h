@@ -56,6 +56,8 @@ namespace corryvreckan {
         std::vector<long double> _triggers{};
         long double _pivotCurrent;
         std::vector<uint32_t> triggerIDs_{};
+
+        bool add_trigger_{};
         long double timeshift_{};
         int shift_triggers_{};
         double skip_time_{};

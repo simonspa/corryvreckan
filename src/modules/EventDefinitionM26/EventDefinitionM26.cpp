@@ -19,13 +19,14 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
 
     config_.setDefault<int>("time_shift", 0);
     config_.setDefault<int>("shift_triggers", 0);
-    config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
     config_.setDefault<double>("skip_time", 0.);
     config_.setDefault<double>("add_begin", 0.);
     config_.setDefault<double>("add_end", 0.);
     config_.setDefault<int>("plane_pivot", 0.);
     config_.setDefault<int>("pivot_min", 0.);
     config_.setDefault<int>("pivot_max", 576.);
+    config_.setDefault<bool>("add_trigger", false);
+    config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
 
     detector_time_ = config_.get<std::string>("detector_event_time");
     // Convert to lower case before string comparison to avoid errors by the user:
@@ -42,9 +43,9 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     pivot_min_ = config_.get<int>("pivot_min");
     pivot_max_ = config_.get<int>("pivot_max");
 
-    config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
     LOG(WARNING) << " seting shift to " << Units::get(timeshift_, "us") << ": accepting pivots from  " << pivot_min_
                  << " to " << pivot_max_;
+    add_trigger_ = config_.get<bool>("add_trigger");
     // Set EUDAQ log level to desired value:
     EUDAQ_LOG_LEVEL(config_.get<std::string>("eudaq_loglevel"));
     LOG(INFO) << "Setting EUDAQ2 log level to \"" << config_.get<std::string>("eudaq_loglevel") << "\"";
@@ -241,13 +242,23 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
 
             if(time_trig - time_prev_ > 0) {
                 // M26 frames need to have a distance of at least one frame length!
-                if(time_trig - time_prev_ < 115200) {
+                if(time_trig - time_prev_ < 115200 && (!add_trigger_)) {
                     LOG(ERROR) << "M26 triggers too close together to fit M26 frame, dt = " +
                                       Units::display(time_trig - time_prev_, "us")
                                << std::endl
                                << "Check if a shift of trigger IDs is required.";
                 }
-
+                // If we stretch the event over three frames and add a trigger, we need a larger distance
+                if((time_trig - time_prev_ < 345600) && add_trigger_) {
+                    triggerTLU_--;
+                    LOG(DEBUG)
+                        << "Skipping event that would overlap previous event, since bool add_triggers_ is set to true";
+                    continue;
+                }
+                if(add_trigger_) {
+                    time_before_ = Units::get(115.2, "us");
+                    time_after_ = Units::get(230.4, "us");
+                }
                 timebetweenMimosaEvents_->Fill(static_cast<double>(Units::convert(time_trig - time_prev_, "us")));
                 timeBeforeTrigger_->Fill(static_cast<double>(Units::convert(-1.0 * time_before_, "us")));
                 timeAfterTrigger_->Fill(static_cast<double>(Units::convert(time_after_, "us")));
@@ -274,24 +285,17 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                 _ends.push_back(evtEnd);
                 _pivots.push_back(_pivotCurrent);
                 _triggers.push_back(time_trig);
-
-                // make the event longer if possible - requires a buffering of 1 event
-                if(_oldEvent.first != 0) {
-                    //_oldEvent.second = (Units::convert(evtStart-_oldEvent.second,"us")>=115.2) ?
-                    //_oldEvent.second+115.2*1000 : _oldEvent.second;
-                    auto event = std::make_shared<Event>(_oldEvent.first, _oldEvent.second);
-                    clipboard->putEvent(event);
-                    LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(evtStart, {"us", "ns"}) << " - "
-                               << Units::display(evtEnd, {"us", "ns"}) << ", length "
-                               << Units::display(_oldEvent.second - _oldEvent.first, {"us", "ns"});
-                    eventDuration_->Fill(static_cast<double>(Units::convert(event->duration(), "us")));
-                    hClipboardEventStart->Fill(static_cast<double>(Units::convert(evtStart, "ms")));
-                    hClipboardEventStart_long->Fill(static_cast<double>(Units::convert(evtStart, "s")));
-                } else {
-                    triggerTLU_--;
+                auto event = std::make_shared<Event>(evtStart, evtEnd);
+                clipboard->putEvent(event);
+                if(add_trigger_) {
+                    clipboard->getEvent()->addTrigger(triggerTLU_, static_cast<double>(time_trig));
                 }
-                _oldEvent = std::make_pair(evtStart, evtEnd);
-
+                LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(evtStart, {"us", "ns"}) << " - "
+                           << Units::display(evtEnd, {"us", "ns"}) << ", length "
+                           << Units::display(evtEnd - evtStart, {"us", "ns"});
+                eventDuration_->Fill(static_cast<double>(Units::convert(event->duration(), "us")));
+                hClipboardEventStart->Fill(static_cast<double>(Units::convert(evtStart, "ms")));
+                hClipboardEventStart_long->Fill(static_cast<double>(Units::convert(evtStart, "s")));
             } else {
                 LOG(ERROR) << "Current trigger time smaller than previous: " << time_trig << " vs " << time_prev_;
             }
