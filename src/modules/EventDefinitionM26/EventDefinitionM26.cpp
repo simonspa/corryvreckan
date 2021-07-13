@@ -126,6 +126,7 @@ void EventDefinitionM26::finalize(const std::shared_ptr<ReadonlyClipboard>& clip
         _pivot_vs_next_dtrigger->Fill(_pivots.at(i), Units::convert(_triggers.at(i + 1) - _triggers.at(i), "us"));
         _pivot_vs_priv_dtrigger->Fill(_pivots.at(i), Units::convert(_triggers.at(i) - _triggers.at(i - 1), "us"));
     }
+    LOG(INFO) << "We have to skip " << skipped_events_ << "events due to time cut criteria ";
 }
 
 unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& filereader,
@@ -157,6 +158,9 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
             LOG(DEBUG) << "det = " << det << ", detector = " << detector;
             if(det == detector) {
                 // MIMOSA
+                begin = Units::get(static_cast<double>(stdevt->GetTimeBegin()), "ps");
+                end = Units::get(static_cast<double>(stdevt->GetTimeEnd()), "ps");
+
                 if(det == "mimosa26") {
                     // pivot magic - see readme
                     double piv = stdevt->GetPlane(0).PivotPixel() / 16.;
@@ -168,8 +172,8 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
                     _pivotCurrent = piv;
                     pivotPixel_->Fill(piv);
                     // begin = Units::get((576 - piv) * (115.2 / 576), "us") + timeshift_;
-                    begin = /*Units::get(229,"us");//*/
-                        /* Units::get(piv * (115.2 / 576), "us") + timeshift_ + add_begin_ +*/ Units::get(115.2, "us");
+                    begin =                                                              /*Units::get(229,"us");//*/
+                        Units::get(piv * (115.2 / 576), "us") + timeshift_ + add_begin_; // Units::get(115.2, "us");
 
                     // never shift more than a full frame
                     //                    if(begin > Units::get(115.2, "us"))
@@ -184,10 +188,9 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
 
                     LOG(TRACE) << "Event time below skip time: " << Units::display(begin, {"ns", "us", "ms", "s"}) << "vs. "
                                << Units::display(skip_time_, {"ns", "us", "ms", "s"});
+
                     continue;
                 } else {
-                    begin = Units::get(static_cast<double>(stdevt->GetTimeBegin()), "ps");
-                    end = Units::get(static_cast<double>(stdevt->GetTimeEnd()), "ps");
 
                     LOG(DEBUG) << "Set begin/end, begin: " << Units::display(begin, {"ns", "us"})
                                << ", end: " << Units::display(end, {"ns", "us"});
@@ -242,22 +245,24 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
 
             if(time_trig - time_prev_ > 0) {
                 // M26 frames need to have a distance of at least one frame length!
-                if(time_trig - time_prev_ < 115200 && (!add_trigger_)) {
+                if(time_trig - time_prev_ < 115200 /* && (!add_trigger_)*/) {
                     LOG(ERROR) << "M26 triggers too close together to fit M26 frame, dt = " +
                                       Units::display(time_trig - time_prev_, "us")
                                << std::endl
                                << "Check if a shift of trigger IDs is required.";
                 }
                 // If we stretch the event over three frames and add a trigger, we need a larger distance
-                if((time_trig - time_prev_ < 345600) && add_trigger_) {
-                    triggerTLU_--;
-                    LOG(DEBUG)
-                        << "Skipping event that would overlap previous event, since bool add_triggers_ is set to true";
-                    continue;
-                }
+                //                if((time_trig - time_prev_ < 230400) && add_trigger_) {
+                //                    triggerTLU_--;
+                //                    skipped_events_++;
+                //                    LOG(DEBUG)
+                //                        << "Skipping event that would overlap previous event, since bool add_triggers_ is
+                //                        set to true";
+                //                    continue;
+                //                }
                 if(add_trigger_) {
                     time_before_ = Units::get(115.2, "us");
-                    time_after_ = Units::get(230.4, "us");
+                    time_after_ = Units::get(115.2, "us");
                 }
                 timebetweenMimosaEvents_->Fill(static_cast<double>(Units::convert(time_trig - time_prev_, "us")));
                 timeBeforeTrigger_->Fill(static_cast<double>(Units::convert(-1.0 * time_before_, "us")));
@@ -281,6 +286,13 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                 LOG(DEBUG) << "evtStart/evtEnd/duration = " << Units::display(evtStart, "us") << ", "
                            << Units::display(evtEnd, "us") << ", " << Units::display(evtEnd - evtStart, "us");
 
+                if(_ends.size() && evtStart < _ends.back()) {
+                    LOG(DEBUG) << "Overlapping event - will be skipped. prev end " << _ends.back() << " vs current start "
+                               << evtStart;
+                    triggerTLU_--;
+                    skipped_events_++;
+                    continue;
+                }
                 _starts.push_back(evtStart);
                 _ends.push_back(evtEnd);
                 _pivots.push_back(_pivotCurrent);

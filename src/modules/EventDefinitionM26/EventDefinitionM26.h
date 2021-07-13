@@ -54,6 +54,7 @@ namespace corryvreckan {
         std::vector<long double> _ends{};
         std::vector<long double> _pivots{};
         std::vector<long double> _triggers{};
+        int skipped_events_{};
         long double _pivotCurrent;
         std::vector<uint32_t> triggerIDs_{};
 

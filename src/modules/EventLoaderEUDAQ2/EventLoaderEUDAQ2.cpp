@@ -105,6 +105,9 @@ void EventLoaderEUDAQ2::initialize() {
 
     title = " # events per corry event; number of events from " + detector_->getName() + " per corry event;# entries";
     hEudaqeventsPerCorry = new TH1D("hEudaqeventsPerCorryEvent", title.c_str(), 50, -.5, 49.5);
+
+    title = " col vs pivot; pivot ; col";
+    ColVsPivot = new TH2D("hColVSPIVOT", title.c_str(), 580, 0, 580, 580, 0, 580);
     title = "number of hits in corry frame vs number of eudaq frames;eudaq frames;# hits";
     hHitsVersusEUDAQ2Frames = new TH2D("hHitsVersusEUDAQ2Frames", title.c_str(), 15, -.5, 14.5, 200, -0.5, 199.5);
     // Create the following histograms only when detector is not auxiliary:
@@ -425,6 +428,7 @@ PixelVector EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEve
 
         auto col = static_cast<int>(plane.GetX(i));
         auto row = static_cast<int>(plane.GetY(i));
+        ColVsPivot->Fill(plane.PivotPixel() / 16., row);
         auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
 
         double ts;
