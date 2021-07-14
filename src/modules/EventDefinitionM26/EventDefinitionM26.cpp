@@ -188,7 +188,19 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
 
         if(triggerTLU_ == triggerM26_) {
             auto time_trig = time_trig_start_;
+            if(add_trigger_) {
+                // version only too early frame
+                //                time_before_ = Units::get(10.2, "us");
+                time_after_ = time_after_ - Units::get(115.4, "us");
+                //    time_trig = time_trig - (1.-100/576.)*Units::get(115.2, "us");
+                // version all first frames
+                //                time_before_ = Units::get(115.4, "us");
+                //                time_after_ = Units::get(10.2,"us");
 
+                // version correct frames only - do nothing
+            }
+            long double evtStart = time_trig - time_before_;
+            long double evtEnd = time_trig + time_after_;
             if(time_trig - time_prev_ > 0) {
                 // M26 frames need to have a distance of at least one frame length!
                 if((time_trig - time_prev_ < 115000) && (!add_trigger_)) {
@@ -198,22 +210,17 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                                << std::endl
                                << "Check if a shift of trigger IDs is required.";
                 }
-                // If we stretch the event over three frames and add a trigger, we need a larger distance
-                if((time_trig - time_prev_ < 345600) && add_trigger_) {
+                // If we stretch the event over more than two frames we need to check if the
+                if((evtStart < time_trig_stop_prev_) && add_trigger_) {
                     triggerTLU_--;
                     LOG(DEBUG)
                         << "Skipping event that would overlap previous event, since bool add_triggers_ is set to true";
                     continue;
                 }
-                if(add_trigger_) {
-                    time_before_ = Units::get(115.2, "us");
-                    time_after_ = Units::get(230.4, "us");
-                }
+
                 timebetweenMimosaEvents_->Fill(static_cast<double>(Units::convert(time_trig - time_prev_, "us")));
                 timeBeforeTrigger_->Fill(static_cast<double>(Units::convert(-1.0 * time_before_, "us")));
                 timeAfterTrigger_->Fill(static_cast<double>(Units::convert(time_after_, "us")));
-                long double evtStart = time_trig - time_before_;
-                long double evtEnd = time_trig + time_after_;
 
                 if(evtStart < skip_time_) {
                     LOG(DEBUG) << "Event start before requested skip time: " << Units::display(evtStart, {"us", "ns"})
@@ -228,6 +235,7 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                 LOG(DEBUG) << "evtStart/evtEnd/duration = " << Units::display(evtStart, "us") << ", "
                            << Units::display(evtEnd, "us") << ", " << Units::display(evtEnd - evtStart, "us");
 
+                time_trig_stop_prev_ = evtEnd;
                 clipboard->putEvent(std::make_shared<Event>(evtStart, evtEnd));
                 if(add_trigger_) {
                     clipboard->getEvent()->addTrigger(triggerTLU_, static_cast<double>(time_trig));

@@ -418,8 +418,7 @@ PixelVector EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEve
 
         auto col = static_cast<int>(plane.GetX(i));
         auto row = static_cast<int>(plane.GetY(i));
-        auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
-
+        auto raw = static_cast<int>(plane.PivotPixel()); // generic pixel raw value (could be ToT, ADC, ...)
         double ts;
         if(plane.GetTimestamp(i) == 0) {
             // If the plane timestamp is not defined, we place all pixels in the center of the EUDAQ2 event.
