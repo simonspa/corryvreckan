@@ -77,6 +77,8 @@ namespace corryvreckan {
         TH1D* hTrackTimeToPrevHit_matched;
         TH1D* hTrackTimeToPrevHit_notmatched;
 
+        TH1D* piv_matched_;
+        TH1D* piv_not_matched_;
         TH2D* hPosDiffPrevTrack_assocCluster;
         TH2D* hPosDiffPrevTrack_noAssocCluster;
         TH2D* hDistanceCluster_track;

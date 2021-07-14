@@ -36,6 +36,8 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration& config, std::shared_ptr<De
 
 void AnalysisEfficiency::initialize() {
 
+    piv_matched_ = new TH1D("piv_matched", "piv of matched tracks", 580, -.5, 579.5);
+    piv_not_matched_ = new TH1D("piv_NOT_matched", "piv of unmatched tracks", 580, -.5, 579.5);
     hPixelEfficiency = new TH1D(
         "hPixelEfficiency", "hPixelEfficiency; single pixel efficiency; # entries", 201, 0, 1.005); // get 0.5%-wide bins
 
@@ -379,6 +381,7 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
         // Get the DUT clusters from the clipboard, that are assigned to the track
         auto associated_clusters = track->getAssociatedClusters(m_detector->getName());
         if(associated_clusters.size() > 0) {
+            piv_matched_->Fill(static_cast<double>(track->getClusters().front()->getSeedPixel()->raw()));
             auto cluster = track->getClosestCluster(m_detector->getName());
             has_associated_cluster = true;
             matched_tracks++;
@@ -410,6 +413,8 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
         }
 
         if(!has_associated_cluster && isWithinInPixelROI) {
+
+            piv_not_matched_->Fill(static_cast<double>(track->getClusters().front()->getSeedPixel()->raw()));
             hPixelEfficiencyMatrix_TProfile->Fill(
                 m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept), 0);
         }

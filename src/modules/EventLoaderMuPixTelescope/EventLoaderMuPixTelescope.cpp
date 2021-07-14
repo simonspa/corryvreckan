@@ -276,8 +276,8 @@ void EventLoaderMuPixTelescope::fillBuffer() {
 
                 // convert timestamp to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time
                 // yet, assuming 10bit ts
-                double px_timestamp =
-                    8 * static_cast<double>((temp_fpga_time & 0xFFFFFFFFFFC00) + raw_time) - timeOffset_.at(tag);
+                double px_timestamp = 8 / 115. * 125. * static_cast<double>((temp_fpga_time & 0xFFFFFFFFFFC00) + raw_time) -
+                                      timeOffset_.at(tag);
                 LOG(TRACE) << "Pixel timestamp " << px_timestamp;
                 // setting tot and charge to zero here - needs to be improved
                 pixelbuffers_.at(tag).push(std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), 0, 0, px_timestamp));
