@@ -42,6 +42,7 @@ namespace corryvreckan {
          * @brief [Initialise this module]
          */
         void initialize() override;
+        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
         /**
          * @brief [Run the function of this module]
@@ -49,12 +50,23 @@ namespace corryvreckan {
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
     private:
+        std::vector<long double> _starts{};
+        std::vector<long double> _ends{};
+        std::vector<long double> _pivots{};
+        std::vector<long double> _triggers{};
+        int skipped_events_{0};
+        long double _pivotCurrent;
         std::vector<uint32_t> triggerIDs_{};
-
+        bool switchStyle{false};
         bool add_trigger_{};
         long double timeshift_{};
         int shift_triggers_{};
         double skip_time_{};
+        double add_begin_{};
+        double add_end_{};
+        int plane_pivot_{};
+        int pivot_min_{};
+        int pivot_max_{};
         // EUDAQ2 readers for all required files
         eudaq::FileReaderUP readerTime_;
         eudaq::FileReaderUP readerDuration_;
@@ -64,10 +76,19 @@ namespace corryvreckan {
         // input data files
         std::string timestamp_, duration_;
 
+        std::pair<long double, long double> _oldEvent{};
+        // HIER WEITER MIT DEN PLOTS, FUELLEN UND RANGES DEFINIEREN
+        TH2F* _pivot_vs_next_dtrigger;
+        TH2F* _pivot_vs_priv_dtrigger;
+        TH2F* _pivot_vs_next_event;
+        TH2F* _pivot_vs_priv_event;
+
         TH1F* timebetweenMimosaEvents_;
         TH1F* timebetweenTLUEvents_;
+        TH1F* eventDuration_;
         TH1F* timeBeforeTrigger_;
         TH1F* timeAfterTrigger_;
+        TH1F* pivotPixel_;
         TH1D* hClipboardEventStart;
         TH1D* hClipboardEventStart_long;
 

@@ -23,6 +23,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     config_.setDefault<bool>("get_tag_histograms", false);
     config_.setDefault<bool>("get_tag_profiles", false);
     config_.setDefault<bool>("ignore_bore", true);
+    config_.setDefault<bool>("veto_triggers", false);
     config_.setDefault<double>("skip_time", 0.);
     config_.setDefault<int>("buffer_depth", 0);
     config_.setDefault<int>("shift_triggers", 0);
@@ -35,6 +36,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     get_tag_histograms_ = config_.get<bool>("get_tag_histograms");
     get_tag_profiles_ = config_.get<bool>("get_tag_profiles");
     ignore_bore_ = config_.get<bool>("ignore_bore");
+    veto_triggers_ = config_.get<bool>("veto_triggers");
     skip_time_ = config_.get<double>("skip_time");
     adjust_event_times_ = config_.getMatrix<std::string>("adjust_event_times", {});
     buffer_depth_ = config_.get<int>("buffer_depth");
@@ -103,6 +105,9 @@ void EventLoaderEUDAQ2::initialize() {
 
     title = " # events per corry event; number of events from " + detector_->getName() + " per corry event;# entries";
     hEudaqeventsPerCorry = new TH1D("hEudaqeventsPerCorryEvent", title.c_str(), 50, -.5, 49.5);
+
+    title = " col vs pivot; pivot ; col";
+    ColVsPivot = new TH2D("hColVSPIVOT", title.c_str(), 580, 0, 580, 580, 0, 580);
     title = "number of hits in corry frame vs number of eudaq frames;eudaq frames;# hits";
     hHitsVersusEUDAQ2Frames = new TH2D("hHitsVersusEUDAQ2Frames", title.c_str(), 15, -.5, 14.5, 200, -0.5, 199.5);
     // Create the following histograms only when detector is not auxiliary:
@@ -385,10 +390,15 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
     } else if(position == Event::Position::DURING) {
         // check if event has valid trigger ID (flag = 0x10):
         if(evt->IsFlagTrigger()) {
-            // Store potential trigger numbers, assign to center of event:
-            clipboard->getEvent()->addTrigger(trigger_after_shift, event_timestamp);
-            LOG(DEBUG) << "Stored trigger ID " << trigger_after_shift << " at "
-                       << Units::display(event_timestamp, {"us", "ns"});
+            if(veto_triggers_ && !clipboard->getEvent()->triggerList().empty()) {
+                LOG(DEBUG) << "Not storing trigger ID " << trigger_after_shift
+                           << " because of existing trigger and veto flag";
+            } else {
+                // Store potential trigger numbers, assign to center of event:
+                clipboard->getEvent()->addTrigger(trigger_after_shift, event_timestamp);
+                LOG(DEBUG) << "Stored trigger ID " << trigger_after_shift << " at "
+                           << Units::display(event_timestamp, {"us", "ns"});
+            }
         }
     }
 
@@ -418,7 +428,9 @@ PixelVector EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEve
 
         auto col = static_cast<int>(plane.GetX(i));
         auto row = static_cast<int>(plane.GetY(i));
-        auto raw = static_cast<int>(plane.PivotPixel()); // generic pixel raw value (could be ToT, ADC, ...)
+        ColVsPivot->Fill(plane.PivotPixel() / 16., row);
+        auto raw = static_cast<int>(plane.GetPixel(i)); // generic pixel raw value (could be ToT, ADC, ...)
+
         double ts;
         if(plane.GetTimestamp(i) == 0) {
             // If the plane timestamp is not defined, we place all pixels in the center of the EUDAQ2 event.
@@ -426,6 +438,8 @@ PixelVector EventLoaderEUDAQ2::get_pixel_data(std::shared_ptr<eudaq::StandardEve
             // redefined to time begin/end == trigger timestamp in get_trigger_position (see above), i.e. in
             // that case, all pixel timestamp will be set to the corresponding trigger timestamp.
             ts = static_cast<double>(evt->GetTimeBegin() + evt->GetTimeEnd()) / 2 / 1000 + detector_->timeOffset();
+            // FIXMe - not to be put to master
+            raw = static_cast<int>(plane.PivotPixel() / 16);
         } else {
             ts = static_cast<double>(plane.GetTimestamp(i)) / 1000 + detector_->timeOffset();
         }

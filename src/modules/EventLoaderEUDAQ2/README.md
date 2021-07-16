@@ -30,6 +30,8 @@ Data from detectors with both triggered readout and without timestamps are match
 If no timestamp is available for the individual pixels, but the EUDAQ2 event has non-zero event times (e.g. event begin = shutter open and event end = shutter close), then the pixel timestamp is set to the center of the EUDAQ2 event.
 If no timestamp is available for the individual pixels and the EUDAQ2 event has zero timestamps (event begin = end = 0), then the event times are redefined to begin/end = trigger timestamp, i.e. in this case, the pixel timestamp will be set to the corresponding trigger timestamp.
 
+Triggers from new data are added to the event if the data lies within the event range, unless the `veto_triggers` flag is set.
+
 If no detector is capable of defining events, the `[Metronome]` module needs to be used.
 
 If `get_tag_histograms` or `get_tag_profiles` is used, the tags stored in the EUDAQ2 event header are read, a conversion to a double value is attempted and, if successful, a histogram and/or profile with the value over the number of events in the respective run is automatically allocated and filled.
@@ -89,6 +91,7 @@ In addition, the calibration file of the detector specified in the geometry conf
 * `get_tag_histograms`: Boolean to enable creation of EUDAQ2 event tag histograms. Default value is `false`.
 * `get_tag_profiles`: Boolean to enable creation of EUDAQ2 event tag profiles over event number. Default value is `false`.
 * `ignore_bore`: Boolean to completely ignore the Begin-of-Run event (BORE) from EUDAQ2. Default value is `true`.
+* `veto_triggers`: Flag to signal that no further triggers should be added to events that already have one or more triggers defined. Defaults to `false`.
 * `adjust_event_times`: Matrix that allows the user to shift the event start/end of all different types of EUDAQ events before comparison to any other Corryvreckan data. The first entry of each row specifies the data type, the second is the offset which is added to the event start and the third entry is the offset added to the event end. A usage example is shown below, double brackets are required if only one entry is provided.
 * `buffer_depth`: Depth of buffer in which EUDAQ2 `StandardEvents` are timesorted. This algorithm only works for `StandardEvents` with well-defined timestamps. Setting it to `0` disables timesorting. Default is `0`.
 * `shift_triggers`: Shift trigger ID of this device with respect to the IDs stored in the Corryrveckan Event. This allows to correct trigger ID offsets between different devices such as the TLU and MIMOSA26. Note that if using the module `EventDefinitionM26` the same value for `shift_triggers` needs to be passed in both cases. Defaults to `0`.

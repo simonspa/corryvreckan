@@ -109,6 +109,7 @@ namespace corryvreckan {
         bool get_tag_histograms_{};
         bool get_tag_profiles_{};
         bool ignore_bore_{};
+        bool veto_triggers_{};
         bool inclusive_{};
         double skip_time_{};
         Matrix<std::string> adjust_event_times_;
@@ -169,6 +170,7 @@ namespace corryvreckan {
         TH1D* hTriggersPerEvent;
         TH1D* hEudaqeventsPerCorry;
         TH2D* hHitsVersusEUDAQ2Frames;
+        TH2D* ColVsPivot;
 
         std::map<std::string, TH1D*> tagHist;
         std::map<std::string, TProfile*> tagProfile;

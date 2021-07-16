@@ -111,6 +111,7 @@ StatusCode DUTAssociation::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Loop over all tracks
     for(auto& track : tracks) {
+        total_tracks_++;
         LOG(TRACE) << "Processing track with model " << track->getType() << ", chi2 of " << track->getChi2();
         int assoc_cls_per_track = 0;
         auto min_distance = std::numeric_limits<double>::max();
@@ -121,10 +122,10 @@ StatusCode DUTAssociation::run(const std::shared_ptr<Clipboard>& clipboard) {
             continue;
         }
 
+        // Check distance between track and cluster
+        auto interceptLocal = m_detector->getLocalIntercept(track.get());
         // Loop over all DUT clusters
         for(auto& cluster : clusters) {
-            // Check distance between track and cluster
-            auto interceptLocal = m_detector->getLocalIntercept(track.get());
 
             // distance of track to cluster centre
             double xdistance_centre = std::abs(interceptLocal.X() - cluster->local().x());
@@ -222,6 +223,7 @@ void DUTAssociation::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     hCutHisto->Scale(1 / double(num_cluster));
     LOG(STATUS) << "In total, " << assoc_cluster_counter << " clusters are associated to " << track_w_assoc_cls
                 << " tracks.";
-    LOG(INFO) << "Number of tracks with at least one associated cluster: " << track_w_assoc_cls;
+    LOG(INFO) << "Number of tracks with at least one associated cluster: " << track_w_assoc_cls
+              << " vs total number of tracks: " << total_tracks_;
     return;
 }
