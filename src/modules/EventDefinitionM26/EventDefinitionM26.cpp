@@ -45,7 +45,7 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     pivot_max_ = config_.get<int>("pivot_max");
     use_all_mimosa_hits_ = config_.get<bool>("use_all_mimosa_hits");
     pixelated_timing_layer_ = config_.get<bool>("pixelated_timing_layer");
-    LOG(WARNING) << " seting shift to " << Units::get(timeshift_, "us") << ": accepting pivots from  " << pivot_min_
+    LOG(WARNING) << " setting shift to " << Units::get(timeshift_, "us") << ": accepting pivots from  " << pivot_min_
                  << " to " << pivot_max_;
     add_trigger_ = config_.get<bool>("add_trigger");
     // Set EUDAQ log level to desired value:
@@ -92,7 +92,7 @@ void EventDefinitionM26::initialize() {
     title = "Corryvreckan event start times (placed on clipboard); Corryvreckan event start time [s];# entries";
     hClipboardEventStart_long = new TH1D("clipboardEventStart_long", title.c_str(), 3e6, 0, 3e3);
 
-    pivotPixel_ = new TH1F("pivot_pixel", "pivot pixel; pivot; entires", 580, -.5, 579.5);
+    pivotPixel_ = new TH1F("pivot_pixel", "pivot pixel; pivot; entries", 580, -.5, 579.5);
     // open the input file with the eudaq reader
     try {
         readerDuration_ = eudaq::Factory<eudaq::FileReader>::MakeUnique(eudaq::str2hash("native"), duration_);
@@ -112,7 +112,7 @@ void EventDefinitionM26::initialize() {
     // pivot pixel etc plots
     title = "pivot vs next time; pivot; start(i+1) - end(i) / #mus";
     _pivot_vs_next_event = new TH2F("pivotVsdistToNextEVENT", title.c_str(), 576, 0, 576, 1010, -10, 1000);
-    title = "pivot vs privious time; pivot; start(i) - end(i-1) / #mus";
+    title = "pivot vs previous time; pivot; start(i) - end(i-1) / #mus";
     _pivot_vs_priv_event = new TH2F("pivotVsdistToPreviousEVENT", title.c_str(), 576, 0, 576, 1010, -10, 1000);
     title = "pivot vs next time; pivot; trig(i+1) - trig (i) #mus";
     _pivot_vs_next_dtrigger = new TH2F("pivotVsdistToNextTRIGGER", title.c_str(), 576, 0, 576, 1000, -10, 1000);
@@ -244,7 +244,7 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                 time_before_ += add_begin_;
                 time_after_ -= add_begin_;
                 time_after_ += add_end_;
-                // If no timing layer is configured, we need to strech over all 3 frames
+                // If no timing layer is configured, we need to stretch over all 3 frames
             } else if(use_all_mimosa_hits_) {
                 time_before_ += framelength_;
             } else {

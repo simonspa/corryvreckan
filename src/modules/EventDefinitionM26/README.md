@@ -24,7 +24,7 @@ end = begin + 230 \mu s
 
 ```
 With an unknown probability the MIMOSA DAQ is not transmitting the correct two frames. Assuming frames t and t+1 are expected it can happen that frames t-1 and t are copied to disk.
-This causes an artificial inefficiency if the above method is used and no additional timing layer is available. To overcome this issue, the option `pixelated_timing_layer` is added. If set to false, this enlarges the frames to cover the full possible timestamp range. This redduces the available statistics by a rate depenend fraction (Typically 30-40%).
+This causes an artificial inefficiency if the above method is used and no additional timing layer is available. To overcome this issue, the option `pixelated_timing_layer` is added. If set to false, this enlarges the frames to cover the full possible timestamp range. This redduces the available statistics by a rate dependent fraction (Typically 30-40%).
 
 
 
@@ -46,7 +46,7 @@ pivot pixel is close to its roll-over.
 * `skip_time`: Time that can be skipped at the start of a run. All events with earlier timestamps are discarded. Default is `0ms`.
 * `eudaq_loglevel`: Verbosity level of the EUDAQ logger instance of the converter module. Possible options are, in decreasing severity, `USER`, `ERROR`, `WARN`, `INFO`, `EXTRA` and `DEBUG`. The default level is `ERROR`. Please note that the EUDAQ verbosity can only be changed globally, i.e. when using instances of `EventLoaderEUDAQ2` below this module, the last occurrence will determine the (global) value of this parameter.
 * `add_trigger`: Option to directly add the trigger of the TLU to the event. Note that no `EventLoaderEUDAQ2` for the TLU is required if this option is activated.  Defaults to `false`
-* `pixelated_timing_layer`: Define if an additional timing layer is beeing used. If so, the event length is defined as described in the text above. Defaults to `true`.
+* `pixelated_timing_layer`: Define if an additional timing layer is being used. If so, the event length is defined as described in the text above. Defaults to `true`.
 * `use_all_mimosa_hits`: Select if all hits in the two MIMOSA frames are used for analysis, or if pivot based selection is used in the converters. If set to `true`, a full frame of `math 115 \mu s` is added at to the `begin` defined above, for `false` it sets `math begin= 115\mu s`.  If`pixelated_timing_layer=true` this has no effect.  Should always be identical to `EventLoaderEUDAQ2` and defaults to `false`.
 
 

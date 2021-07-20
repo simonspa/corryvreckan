@@ -305,7 +305,7 @@ void AnalysisEfficiency::initialize() {
         auto _efficiencyVsTime =
             new TEfficiency(pivstring.c_str(), "Efficiency vs. time; time [s]; #epsilon", 3000, 0, 3000);
         pivstring = std::to_string(piv) + "_timepix3time";
-        auto delta_t = new TH1D(pivstring.c_str(), "TPX3 time relativ to event start; delta t / #mus;", 350, 0, 350);
+        auto delta_t = new TH1D(pivstring.c_str(), "TPX3 time relative to event start; delta t / #mus;", 350, 0, 350);
         pivot_eTotalEfficiency[int(piv)] = _eTotalEfficiency;
         pivot_efficiencyColumns[int(piv)] = _efficiencyColumns;
         pivot_efficiencyRows[int(piv)] = _efficiencyRows;
