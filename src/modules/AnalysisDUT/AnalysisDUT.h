@@ -97,6 +97,7 @@ namespace corryvreckan {
 
         // Member variables
         double time_cut_frameedge_;
+        double spatial_cut_sensoredge_;
         double chi2_ndof_cut_;
         bool use_closest_cluster_;
         int n_timebins_;
