@@ -122,14 +122,14 @@ void EventDefinitionM26::initialize() {
 
 void EventDefinitionM26::finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) {
     for(uint i = 1; i < _pivots.size() - 1; ++i) {
-        _pivot_vs_next_event->Fill(_pivots.at(i),
+        _pivot_vs_next_event->Fill(static_cast<double>(_pivots.at(i)),
                                    static_cast<double>(Units::convert(_starts.at(i + 1) - _ends.at(i), "us")));
-        _pivot_vs_priv_event->Fill(_pivots.at(i),
+        _pivot_vs_priv_event->Fill(static_cast<double>(_pivots.at(i)),
                                    static_cast<double>(Units::convert(_starts.at(i) - _ends.at(i - 1), "us")));
 
-        _pivot_vs_next_dtrigger->Fill(_pivots.at(i),
+        _pivot_vs_next_dtrigger->Fill(static_cast<double>(_pivots.at(i)),
                                       static_cast<double>(Units::convert(_triggers.at(i + 1) - _triggers.at(i), "us")));
-        _pivot_vs_priv_dtrigger->Fill(_pivots.at(i),
+        _pivot_vs_priv_dtrigger->Fill(static_cast<double>(_pivots.at(i)),
                                       static_cast<double>(Units::convert(_triggers.at(i) - _triggers.at(i - 1), "us")));
     }
     LOG(INFO) << "We have to skip " << skipped_events_ << "events due to time cut criteria ";
