@@ -11,6 +11,7 @@
 #include "EventDefinitionM26.h"
 
 using namespace corryvreckan;
+const double EventDefinitionM26::framelength_ = Units::get(115.2, "us");
 
 EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
@@ -172,7 +173,7 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
                     }
                     _pivotCurrent = piv;
                     pivotPixel_->Fill(piv);
-                    begin = Units::get(piv * (115.2 / 576), "us");
+                    begin = framelength_ * piv / 576.;
 
                     // end should be after second frame, sharp (variable durationn, not variable length)
                     end = Units::get(230.4, "us");
@@ -245,9 +246,9 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                 time_after_ += add_end_;
                 // If no timing layer is configured, we need to strech over all 3 frames
             } else if(use_all_mimosa_hits_) {
-                time_before_ += Units::get(115.2, "us");
+                time_before_ += framelength_;
             } else {
-                time_before_ = Units::get(115.2, "us");
+                time_before_ = framelength_;
             }
             time_trig = time_trig - timeshift_;
 
