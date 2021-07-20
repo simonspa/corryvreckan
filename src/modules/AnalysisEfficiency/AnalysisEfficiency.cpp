@@ -469,12 +469,13 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
             int piv = track.get()->getClusters().front()->getSeedPixel()->raw() / 10;
             auto start = clipboard->getEvent()->start();
             if(has_associated_cluster) {
-                pivot_tpx3_event.at(piv)->Fill(Units::convert(associated_clusters.front()->timestamp() - start, "us"));
+                pivot_tpx3_event.at(piv)->Fill(static_cast<double>(Units::convert(associated_clusters.front()->timestamp() - start, "us")_);
                 pivot_vs_delta_t_frame->Fill(track.get()->getClusters().front()->getSeedPixel()->raw(),
-                                             Units::convert(associated_clusters.front()->timestamp() - start, "us"));
+                                             static_cast<double>(Units::convert(associated_clusters.front()->timestamp() - start, "us")));
                 for(auto t : event->triggerList()) {
-                    pivot_vs_delta_t_trig->Fill(track.get()->getClusters().front()->getSeedPixel()->raw(),
-                                                Units::convert(associated_clusters.front()->timestamp() - t.second, "us"));
+                    pivot_vs_delta_t_trig->Fill(
+                        track.get()->getClusters().front()->getSeedPixel()->raw(),
+                        static_cast<double>(Units::convert(associated_clusters.front()->timestamp() - t.second, "us")));
                 }
             }
             pivot_eTotalEfficiency.at(piv)->Fill(has_associated_cluster, 0); // use 0th bin for total efficiency
