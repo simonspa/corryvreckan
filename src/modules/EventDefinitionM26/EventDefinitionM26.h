@@ -57,14 +57,14 @@ namespace corryvreckan {
         int skipped_events_{};
         long double _pivotCurrent;
         std::vector<uint32_t> triggerIDs_{};
-
+        bool pixelated_timing_layer_{};
+        bool use_all_mimosa_hits_{};
         bool add_trigger_{};
         long double timeshift_{};
         int shift_triggers_{};
         double skip_time_{};
         double add_begin_{};
         double add_end_{};
-        int plane_pivot_{};
         int pivot_min_{};
         int pivot_max_{};
         // EUDAQ2 readers for all required files
