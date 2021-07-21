@@ -34,6 +34,7 @@ ADD_LIBRARY(CorryvreckanCore SHARED
     config/OptionParser.cpp
     module/Module.cpp
     module/ModuleManager.cpp
+    utils/ThreadPool.cpp
 )
 
 # Link the dependencies
