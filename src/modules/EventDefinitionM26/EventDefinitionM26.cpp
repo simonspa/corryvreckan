@@ -120,7 +120,7 @@ void EventDefinitionM26::initialize() {
     _pivot_vs_priv_dtrigger = new TH2F("pivotVsdistToPreviousTRIGGER", title.c_str(), 576, 0, 576, 1010, -10, 1000);
 }
 
-void EventDefinitionM26::finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) {
+void EventDefinitionM26::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     for(uint i = 1; i < _pivots.size() - 1; ++i) {
         _pivot_vs_next_event->Fill(static_cast<double>(_pivots.at(i)),
                                    static_cast<double>(Units::convert(_starts.at(i + 1) - _ends.at(i), "us")));

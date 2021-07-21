@@ -467,12 +467,13 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
     for(auto track : tracks) {
         // Fill track time within event (relative to event start)
         auto event = clipboard->getEvent();
-        trackTime->Fill(Units::convert(track->timestamp() - event->start(), "us"));
+        trackTime->Fill(static_cast<double>(Units::convert(track->timestamp() - event->start(), "us")));
         auto triggers = event->triggerList();
         if(!triggers.empty()) {
-            trackTimeTrigger->Fill(Units::convert(track->timestamp() - triggers.begin()->second, "us"));
-            trackTimeTriggerChi2->Fill(Units::convert(track->timestamp() - triggers.begin()->second, "us"),
-                                       track->getChi2ndof());
+            trackTimeTrigger->Fill(static_cast<double>(Units::convert(track->timestamp() - triggers.begin()->second, "us")));
+            trackTimeTriggerChi2->Fill(
+                static_cast<double>(Units::convert(track->timestamp() - triggers.begin()->second, "us")),
+                track->getChi2ndof());
         }
 
         trackChi2->Fill(track->getChi2());

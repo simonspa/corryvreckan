@@ -42,7 +42,7 @@ namespace corryvreckan {
          * @brief [Initialise this module]
          */
         void initialize() override;
-        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
+        void finalize(const std::shared_ptr<ReadonlyClipboard>&) override;
 
         /**
          * @brief [Run the function of this module]
