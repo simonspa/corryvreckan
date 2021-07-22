@@ -116,7 +116,7 @@ void EventDefinitionM26::initialize() {
     _pivot_vs_priv_event = new TH2F("pivotVsdistToPreviousEVENT", title.c_str(), 576, 0, 576, 1010, -10, 1000);
     title = "pivot vs next time; pivot; trig(i+1) - trig (i) #mus";
     _pivot_vs_next_dtrigger = new TH2F("pivotVsdistToNextTRIGGER", title.c_str(), 576, 0, 576, 1000, -10, 1000);
-    title = "pivot vs privious time; pivot;  trig(i) - trig (i-1) #mus";
+    title = "pivot vs previous time; pivot;  trig(i) - trig (i-1) #mus";
     _pivot_vs_priv_dtrigger = new TH2F("pivotVsdistToPreviousTRIGGER", title.c_str(), 576, 0, 576, 1010, -10, 1000);
 }
 
