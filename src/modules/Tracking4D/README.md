@@ -26,6 +26,7 @@ The DUT plane can be excluded from the track finding.
 * `volume_radiation_length`: Define the radiation length of the volume around the telescope. Defaults to dry air with a radiation length of`304.2 m`
 * `reject_by_roi`: If true, tracks intercepting any detector outside its ROI will be rejected. Defaults to `false`.
 * `unique_cluster_usage`: Only use a cluster for one track - in the case of multiple assignments, the track with the best chi2/ndof is kept. Defaults to `false`
+* `max_plot_chi2`: Option to define the maximum chi2 in plots for chi2 and chi2/ndof - with an ill-aligned telescope, this is necessary for an initial alignment step. Defaults to `50.0`
 
 ### Plots produced
 
