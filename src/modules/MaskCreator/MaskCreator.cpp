@@ -264,8 +264,9 @@ void MaskCreator::writeMaskFiles() {
         }
     }
     LOG(STATUS) << m_detector->getName() << " mask written to:  " << std::endl << maskfile_path;
-    if(m_writeNewConfig)
+    if(m_writeNewConfig) {
         m_detector->maskFile(maskfile_path);
+    }
 }
 
 double MaskCreator::estimateDensityAtPosition(const TH2D* values, int i, int j, int bwi, int bwj) {

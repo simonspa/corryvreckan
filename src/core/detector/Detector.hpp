@@ -369,7 +369,7 @@ namespace corryvreckan {
 
         // List of masked channels
         std::map<int, bool> m_masked;
-        std::string m_maskfile;
+        std::string m_maskfile, m_maskfile_name;
     };
 } // namespace corryvreckan
 
