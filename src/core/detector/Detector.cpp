@@ -117,8 +117,8 @@ bool Detector::isAuxiliary() const {
     return static_cast<bool>(m_role & DetectorRole::AUXILIARY);
 }
 
-// Functions to set and check channel masking
-void Detector::set_mask_file(std::string file) {
+// Function to set the channel maskfile
+void Detector::maskFile(std::string file) {
     m_maskfile = file;
 }
 

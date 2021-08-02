@@ -209,6 +209,12 @@ namespace corryvreckan {
         std::string calibrationFile() const { return m_calibrationfile; }
 
         /**
+         * @brief Set the file with pixel mask information
+         * @param file New mask file name
+         */
+        void maskFile(std::string file);
+
+        /**
          * @brief Get path of the file with pixel mask information
          * @return Path of the pixel mask file
          */
@@ -340,8 +346,6 @@ namespace corryvreckan {
         // Different in Pixel/Strip Detector
         virtual void configure_pos_and_orientation(Configuration& config) const = 0;
 
-        // Functions to set and check channel masking
-        void set_mask_file(std::string file);
         virtual void process_mask_file() = 0;
 
         // Detector information
@@ -366,7 +370,6 @@ namespace corryvreckan {
         // List of masked channels
         std::map<int, bool> m_masked;
         std::string m_maskfile;
-        std::string m_maskfile_name;
     };
 } // namespace corryvreckan
 

@@ -24,6 +24,7 @@ MaskCreator::MaskCreator(Configuration& config, std::shared_ptr<Detector> detect
     config_.setDefault<double>("sigma_above_avg_max", 5.);
     config_.setDefault<double>("rate_max", 1.);
     config_.setDefault<bool>("mask_dead_pixels", false);
+    config_.setDefault<bool>("write_new_config", false);
 
     m_method = config_.get<std::string>("method");
     m_frequency = config_.get<double>("frequency_cut");
@@ -32,6 +33,7 @@ MaskCreator::MaskCreator(Configuration& config, std::shared_ptr<Detector> detect
     m_sigmaMax = config_.get<double>("sigma_above_avg_max");
     m_rateMax = config_.get<double>("rate_max");
     m_maskDeadPixels = config_.get<bool>("mask_dead_pixels");
+    m_writeNewConfig = config_.get<bool>("write_new_config");
 }
 
 void MaskCreator::initialize() {
@@ -262,6 +264,8 @@ void MaskCreator::writeMaskFiles() {
         }
     }
     LOG(STATUS) << m_detector->getName() << " mask written to:  " << std::endl << maskfile_path;
+    if(m_writeNewConfig)
+        m_detector->maskFile(maskfile_path);
 }
 
 double MaskCreator::estimateDensityAtPosition(const TH2D* values, int i, int j, int bwi, int bwj) {

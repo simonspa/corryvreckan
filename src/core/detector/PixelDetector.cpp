@@ -62,10 +62,9 @@ void PixelDetector::build_axes(const Configuration& config) {
     m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
 
     if(config.has("mask_file")) {
-        m_maskfile_name = config.get<std::string>("mask_file");
         std::string mask_file = config.getPath("mask_file", true);
         LOG(DEBUG) << "Adding mask to detector \"" << config.getName() << "\", reading from " << mask_file;
-        set_mask_file(mask_file);
+        maskFile(mask_file);
         process_mask_file();
     }
 }
@@ -191,8 +190,8 @@ void PixelDetector::configure_detector(Configuration& config) const {
     config.set("spatial_resolution", m_spatial_resolution, {"um"});
 
     // Pixel mask file:
-    if(!m_maskfile_name.empty()) {
-        config.set("mask_file", m_maskfile_name);
+    if(!m_maskfile.empty()) {
+        config.set("mask_file", m_maskfile);
     }
 
     // Region-of-interest:
