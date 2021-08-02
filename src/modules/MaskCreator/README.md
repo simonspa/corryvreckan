@@ -24,6 +24,7 @@ No masks are applied in this module as this is done by the respective event load
 * `sigma_above_avg_max`: Cut for noisy pixels, number of standard deviations above average, defaults to `5`. Only used in `localdensity` mode.
 * `rate_max`: Maximum rate, defaults to `1`. Only used in `localdensity` mode.
 * `mask_dead_pixels`: If `true`, the module will search for pixels without any recorded hits and add them to the mask file. Default is `false`.
+* `write_new_config`: If `true` and the detector config did not previously hold a mask file, then the new mask file is added to the outgoing config. Default is `false`.
 
 ### Plots produced
 For each detector the following plots are produced:
