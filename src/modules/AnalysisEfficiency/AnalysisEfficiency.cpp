@@ -276,42 +276,6 @@ void AnalysisEfficiency::initialize() {
     auto nCols = static_cast<size_t>(m_detector->nPixels().X());
     std::vector<double> v_row(nRows, 0.); // create vector will zeros of length <nRows>
     prev_hit_ts.assign(nCols, v_row);     // use vector v_row to construct matrix
-
-    // pivot study:
-    pivot_vs_delta_t_frame = new TH2D(
-        "pivot_vs_delta_t_frame", "piv vs time in event; pivot;  hit - start of frame / #mus", 577, 0, 577, 350, 0, 350);
-    pivot_vs_delta_t_trig =
-        new TH2D("pivot_vs_delta_t_trige", "piv vs time in event; pivot; hit - trigger / #mus", 577, 0, 577, 700, -350, 350);
-    TDirectory* directory = getROOTDirectory();
-    TDirectory* local_directory = directory->mkdir("pivot_study");
-    local_directory->cd();
-    for(uint piv = 0; piv < 58; ++piv) {
-
-        std::string pivstring = std::to_string(piv) + "_eTotalEfficiency";
-        auto _eTotalEfficiency = new TEfficiency(pivstring.c_str(), "totalEfficiency;;#epsilon", 1, 0, 1);
-        pivstring = std::to_string(piv) + "_efficiencyColumns";
-        auto _efficiencyColumns = new TEfficiency(pivstring.c_str(),
-                                                  "Efficiency vs. column number; column; #epsilon",
-                                                  m_detector->nPixels().X(),
-                                                  -0.5,
-                                                  m_detector->nPixels().X() - 0.5);
-        pivstring = std::to_string(piv) + "_efficiencyRows";
-        auto _efficiencyRows = new TEfficiency(pivstring.c_str(),
-                                               "Efficiency vs. row number; row; #epsilon",
-                                               m_detector->nPixels().Y(),
-                                               -0.5,
-                                               m_detector->nPixels().Y() - 0.5);
-        pivstring = std::to_string(piv) + "_efficiencyVsTime";
-        auto _efficiencyVsTime =
-            new TEfficiency(pivstring.c_str(), "Efficiency vs. time; time [s]; #epsilon", 3000, 0, 3000);
-        pivstring = std::to_string(piv) + "_timepix3time";
-        auto delta_t = new TH1D(pivstring.c_str(), "TPX3 time relative to event start; delta t / #mus;", 350, 0, 350);
-        pivot_eTotalEfficiency[int(piv)] = _eTotalEfficiency;
-        pivot_efficiencyColumns[int(piv)] = _efficiencyColumns;
-        pivot_efficiencyRows[int(piv)] = _efficiencyRows;
-        pivot_efficiencyVsTime[int(piv)] = _efficiencyVsTime;
-        pivot_tpx3_event[int(piv)] = delta_t;
-    }
 }
 
 StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -466,25 +430,6 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
             efficiencyColumns->Fill(has_associated_cluster, m_detector->getColumn(localIntercept));
             efficiencyRows->Fill(has_associated_cluster, m_detector->getRow(localIntercept));
             efficiencyVsTime->Fill(has_associated_cluster, track->timestamp() / 1e9); // convert nanoseconds to seconds
-            int piv = track.get()->getClusters().front()->getSeedPixel()->raw() / 10;
-            auto start = clipboard->getEvent()->start();
-            if(has_associated_cluster) {
-                pivot_tpx3_event.at(piv)->Fill(
-                    static_cast<double>(Units::convert(associated_clusters.front()->timestamp() - start, "us")));
-                pivot_vs_delta_t_frame->Fill(
-                    track.get()->getClusters().front()->getSeedPixel()->raw(),
-                    static_cast<double>(Units::convert(associated_clusters.front()->timestamp() - start, "us")));
-                for(auto t : event->triggerList()) {
-                    pivot_vs_delta_t_trig->Fill(
-                        track.get()->getClusters().front()->getSeedPixel()->raw(),
-                        static_cast<double>(Units::convert(associated_clusters.front()->timestamp() - t.second, "us")));
-                }
-            }
-            pivot_eTotalEfficiency.at(piv)->Fill(has_associated_cluster, 0); // use 0th bin for total efficiency
-            pivot_efficiencyColumns.at(piv)->Fill(has_associated_cluster, m_detector->getColumn(localIntercept));
-            pivot_efficiencyVsTime.at(piv)->Fill(has_associated_cluster,
-                                                 track->timestamp() / 1e9); // convert nanoseconds to seconds
-            pivot_efficiencyRows.at(piv)->Fill(has_associated_cluster, m_detector->getRow(localIntercept));
             if(isWithinInPixelROI) {
                 hPixelEfficiencyMap_inPixelROI_trackPos_TProfile->Fill(xmod_um, ymod_um, has_associated_cluster);
                 eTotalEfficiency_inPixelROI->Fill(has_associated_cluster, 0); // use 0th bin for total efficiency
