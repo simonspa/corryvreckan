@@ -50,12 +50,7 @@ namespace corryvreckan {
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
     private:
-        std::vector<long double> _starts{};
-        std::vector<long double> _ends{};
-        std::vector<long double> _pivots{};
-        std::vector<long double> _triggers{};
         int skipped_events_{};
-        long double _pivotCurrent;
         std::vector<uint32_t> triggerIDs_{};
         bool pixelated_timing_layer_{};
         bool use_all_mimosa_hits_{};
