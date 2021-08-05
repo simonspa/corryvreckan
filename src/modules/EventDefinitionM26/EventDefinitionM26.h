@@ -77,11 +77,6 @@ namespace corryvreckan {
         std::string timestamp_, duration_;
 
         std::pair<long double, long double> _oldEvent{};
-        // HIER WEITER MIT DEN PLOTS, FUELLEN UND RANGES DEFINIEREN
-        TH2F* _pivot_vs_next_dtrigger;
-        TH2F* _pivot_vs_priv_dtrigger;
-        TH2F* _pivot_vs_next_event;
-        TH2F* _pivot_vs_priv_event;
 
         TH1F* timebetweenMimosaEvents_;
         TH1F* timebetweenTLUEvents_;

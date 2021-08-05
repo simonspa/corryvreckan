@@ -108,30 +108,9 @@ void EventDefinitionM26::initialize() {
                    << " '. Please verify that the path and file name are correct.";
         throw InvalidValueError(config_, "file_path", "Parsing error!");
     }
-
-    // pivot pixel etc plots
-    title = "pivot vs next time; pivot; start(i+1) - end(i) / #mus";
-    _pivot_vs_next_event = new TH2F("pivotVsdistToNextEVENT", title.c_str(), 576, 0, 576, 1010, -10, 1000);
-    title = "pivot vs previous time; pivot; start(i) - end(i-1) / #mus";
-    _pivot_vs_priv_event = new TH2F("pivotVsdistToPreviousEVENT", title.c_str(), 576, 0, 576, 1010, -10, 1000);
-    title = "pivot vs next time; pivot; trig(i+1) - trig (i) #mus";
-    _pivot_vs_next_dtrigger = new TH2F("pivotVsdistToNextTRIGGER", title.c_str(), 576, 0, 576, 1000, -10, 1000);
-    title = "pivot vs previous time; pivot;  trig(i) - trig (i-1) #mus";
-    _pivot_vs_priv_dtrigger = new TH2F("pivotVsdistToPreviousTRIGGER", title.c_str(), 576, 0, 576, 1010, -10, 1000);
 }
 
 void EventDefinitionM26::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
-    for(uint i = 1; i < _pivots.size() - 1; ++i) {
-        _pivot_vs_next_event->Fill(static_cast<double>(_pivots.at(i)),
-                                   static_cast<double>(Units::convert(_starts.at(i + 1) - _ends.at(i), "us")));
-        _pivot_vs_priv_event->Fill(static_cast<double>(_pivots.at(i)),
-                                   static_cast<double>(Units::convert(_starts.at(i) - _ends.at(i - 1), "us")));
-
-        _pivot_vs_next_dtrigger->Fill(static_cast<double>(_pivots.at(i)),
-                                      static_cast<double>(Units::convert(_triggers.at(i + 1) - _triggers.at(i), "us")));
-        _pivot_vs_priv_dtrigger->Fill(static_cast<double>(_pivots.at(i)),
-                                      static_cast<double>(Units::convert(_triggers.at(i) - _triggers.at(i - 1), "us")));
-    }
     LOG(INFO) << "We have to skip " << skipped_events_ << "events due to time cut criteria ";
 }
 
@@ -175,7 +154,6 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
                         LOG(DEBUG) << "Skipping mimosa event with pivot " << piv;
                         continue;
                     }
-                    _pivotCurrent = piv;
                     pivotPixel_->Fill(piv);
                     begin = framelength_ * piv / 576.;
 
@@ -302,10 +280,6 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
             time_trig_stop_prev_ = evtEnd;
             auto event = std::make_shared<Event>(evtBegin, evtEnd);
             clipboard->putEvent(event);
-            _starts.push_back(evtBegin);
-            _ends.push_back(evtEnd);
-            _pivots.push_back(_pivotCurrent);
-            _triggers.push_back(time_trig);
             if(add_trigger_) {
                 clipboard->getEvent()->addTrigger(triggerTLU_, static_cast<double>(time_trig));
             }
