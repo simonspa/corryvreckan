@@ -72,6 +72,7 @@ namespace corryvreckan {
         std::map<std::string, TH1F*> kinkY;
         // Cuts for tracking
         double momentum_;
+        double max_plot_chi2_;
         double volume_radiation_length_;
         size_t min_hits_on_track_;
         bool exclude_DUT_;

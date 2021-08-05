@@ -50,6 +50,7 @@ namespace corryvreckan {
         double max_correlation_rms;
         double damping_factor;
         double timeCut;
+        double range_abs;
         std::string method;
         int fit_range_rel;
     };
