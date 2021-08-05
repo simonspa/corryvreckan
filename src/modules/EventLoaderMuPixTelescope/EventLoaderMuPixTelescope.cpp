@@ -233,7 +233,7 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
     }
     if(!data_in_buffer)
         return StatusCode::EndRun;
-    return StatusCode::DeadTime;
+    return StatusCode::NoData;
 }
 
 void EventLoaderMuPixTelescope::fillBuffer() {
