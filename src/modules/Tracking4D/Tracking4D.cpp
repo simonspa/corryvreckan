@@ -29,6 +29,7 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
     config_.setDefault<bool>("exclude_dut", true);
     config_.setDefault<std::string>("track_model", "straightline");
     config_.setDefault<double>("momentum", Units::get<double>(5, "GeV"));
+    config_.setDefault<double>("max_plot_chi2", 50.0);
     config_.setDefault<double>("volume_radiation_length", Units::get<double>(304.2, "m"));
     config_.setDefault<bool>("volume_scattering", false);
     config_.setDefault<bool>("reject_by_roi", false);
@@ -60,6 +61,7 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
 
     track_model_ = config_.get<std::string>("track_model");
     momentum_ = config_.get<double>("momentum");
+    max_plot_chi2_ = config_.get<double>("max_plot_chi2");
     volume_radiation_length_ = config_.get<double>("volume_radiation_length");
     use_volume_scatterer_ = config_.get<bool>("volume_scattering");
     reject_by_ROI_ = config_.get<bool>("reject_by_roi");
@@ -82,9 +84,9 @@ void Tracking4D::initialize() {
 
     // Set up histograms
     std::string title = "Track #chi^{2};#chi^{2};events";
-    trackChi2 = new TH1F("trackChi2", title.c_str(), 300, 0, 150);
+    trackChi2 = new TH1F("trackChi2", title.c_str(), 300, 0, 3 * max_plot_chi2_);
     title = "Track #chi^{2}/ndof;#chi^{2}/ndof;events";
-    trackChi2ndof = new TH1F("trackChi2ndof", title.c_str(), 500, 0, 50);
+    trackChi2ndof = new TH1F("trackChi2ndof", title.c_str(), 500, 0, max_plot_chi2_);
     title = "Clusters per track;clusters;tracks";
     clustersPerTrack = new TH1F("clustersPerTrack", title.c_str(), 10, -0.5, 9.5);
     title = "Track multiplicity;tracks;events";

@@ -68,7 +68,7 @@ namespace corryvreckan {
         int m_bandwidthCol, m_bandwidthRow;
         double m_sigmaMax, m_rateMax;
         int m_numEvents, binsOccupancy;
-        bool m_maskDeadPixels;
+        bool m_maskDeadPixels, m_writeNewConfig;
 
         static inline void fillDist(const TH2D* values, TH1D* dist);
     };
