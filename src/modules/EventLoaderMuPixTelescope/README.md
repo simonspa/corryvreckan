@@ -45,6 +45,7 @@ issuing the synchronous reset and receiving it. Only used if
 * `input_file`: Filename of the input file. `run` and `input_file` are mutually exclusive.
 * `buffer_depth`: Depth of the pixel buffer that is used to sort the hits with
 respect to time. Defaults to `1000`.
+* `reference_frequency`: Defines the reference frequency of the FPGA in MHz - defaults to `125`.
 ### Plots produced
 
 For all detectors, the following plots are produced:

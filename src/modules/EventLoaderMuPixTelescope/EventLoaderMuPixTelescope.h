@@ -76,6 +76,7 @@ namespace corryvreckan {
         std::string inputDirectory_;
         bool isSorted_;
         int runNumber_;
+        double refFrequency_;
         BlockFile* blockFile_;
         TelescopeFrame tf_;
 

@@ -20,6 +20,7 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
     : Module(config, detector), m_detector(detector) {
 
     config_.setDefault<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
+    config_.setDefault<double>("spatial_cut_sensoredge", 0.5);
     config_.setDefault<double>("chi2ndof_cut", 3.);
     config_.setDefault<bool>("use_closest_cluster", true);
     config_.setDefault<int>("n_time_bins", 20000);
@@ -27,6 +28,7 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
     config_.setDefault<bool>("correlations", false);
 
     time_cut_frameedge_ = config_.get<double>("time_cut_frameedge");
+    spatial_cut_sensoredge_ = config_.get<double>("spatial_cut_sensoredge");
     chi2_ndof_cut_ = config_.get<double>("chi2ndof_cut");
     use_closest_cluster_ = config_.get<bool>("use_closest_cluster");
     n_timebins_ = config_.get<int>("n_time_bins");
@@ -626,7 +628,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         }
 
         // Check if it intercepts the DUT
-        if(!m_detector->hasIntercept(track.get(), 0.5)) {
+        if(!m_detector->hasIntercept(track.get(), spatial_cut_sensoredge_)) {
             LOG(DEBUG) << " - track outside DUT area";
             hCutHisto->Fill(2);
             num_tracks_++;
