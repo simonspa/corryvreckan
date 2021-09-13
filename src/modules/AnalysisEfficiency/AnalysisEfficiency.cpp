@@ -108,7 +108,7 @@ void AnalysisEfficiency::initialize() {
                                                   m_detector->nPixels().Y() - 0.5);
 
     title = m_detector->getName() + " Pixel efficiency matrix;x [px];y [px];#epsilon";
-    hPixelEfficiencyMatrix_TProfile = new TProfile2D("hPixelEfficiencyMatrix",
+    hPixelEfficiencyMatrix_TProfile = new TProfile2D("hPixelEfficiencyMatrixTProfile",
                                                      title.c_str(),
                                                      m_detector->nPixels().X(),
                                                      -0.5,
