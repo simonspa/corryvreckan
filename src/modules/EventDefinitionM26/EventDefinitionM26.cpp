@@ -11,7 +11,6 @@
 #include "EventDefinitionM26.h"
 
 using namespace corryvreckan;
-const double EventDefinitionM26::framelength_ = Units::get(115.2, "us");
 
 EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
@@ -73,6 +72,9 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     if(shift_triggers_ < 0) {
         throw InvalidValueError(config_, "shift_triggers", "Trigger shift needs to be positive (or zero).");
     }
+    // define the framelength once, since unit conversions are slow
+    framelength_ = Units::get(115.2, "us");
+    ;
 }
 
 void EventDefinitionM26::initialize() {

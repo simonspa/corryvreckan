@@ -86,7 +86,7 @@ namespace corryvreckan {
         unsigned triggerTLU_{}, triggerM26_{};
         long double time_prev_{}, trig_prev_{}, time_trig_start_{}, time_trig_stop_{}, time_before_{}, time_after_{};
         long double time_trig_stop_prev_{};
-
+        double framelength_{};
         /**
          * @brief get_next_event_with_det
          * @param filereader: eudaq::FileReader
