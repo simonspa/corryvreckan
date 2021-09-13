@@ -113,7 +113,7 @@ void EventDefinitionM26::initialize() {
 }
 
 void EventDefinitionM26::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
-    LOG(INFO) << "We have to skip " << skipped_events_ << "events due to time cut criteria ";
+    LOG(INFO) << "We have to skip " << skipped_events_ << "events which have an overlap with the previous events.";
 }
 
 unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& filereader,
