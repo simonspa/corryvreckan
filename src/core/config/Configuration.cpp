@@ -21,16 +21,16 @@
 using namespace corryvreckan;
 
 Configuration::AccessMarker::AccessMarker(const Configuration::AccessMarker& rhs) {
-    for(const auto& [key, value] : rhs.markers_) {
-        registerMarker(key);
-        markers_.at(key).store(value.load());
+    for(const auto& key : rhs.markers_) {
+        registerMarker(key.first);
+        markers_.at(key.first).store(key.second.load());
     }
 }
 
 Configuration::AccessMarker& Configuration::AccessMarker::operator=(const Configuration::AccessMarker& rhs) {
-    for(const auto& [key, value] : rhs.markers_) {
-        registerMarker(key);
-        markers_.at(key).store(value.load());
+    for(const auto& key : rhs.markers_) {
+        registerMarker(key.first);
+        markers_.at(key.first).store(key.second.load());
     }
     return *this;
 }
