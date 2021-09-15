@@ -85,7 +85,7 @@ StatusCode AlignmentDUTResidual::run(const std::shared_ptr<Clipboard>& clipboard
     // Make a local copy and store it
     for(auto& track : tracks) {
         auto associated_clusters = track->getAssociatedClusters(m_detector->getName());
-        // Do not put tracks without clusters on the DUT to the persistant storage
+        // Do not put tracks without clusters on the DUT to the persistent storage
         if(associated_clusters.size() == 0) {
             LOG(TRACE) << "Discarding track for DUT alignment since no cluster associated";
             continue;
