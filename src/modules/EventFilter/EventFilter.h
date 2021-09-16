@@ -49,11 +49,11 @@ namespace corryvreckan {
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
-        unsigned maxNumberTracks_{};
-        unsigned minNumberTracks_{};
-        unsigned minHitsPerReference_{};
-        unsigned maxHitsPerReference_{};
-        // counter of discarded hits
+        long unsigned maxNumberTracks_{};
+        long unsigned minNumberTracks_{};
+        long unsigned minClustersPerReference_{};
+        long unsigned maxClustersPerReference_{};
+        // counter of discarded events
         int eventsSkipped_{};
         int eventsTotal_{};
     };
