@@ -10,8 +10,8 @@ Currently, events can be skipped based on the number of tracks and clusters per 
 ### Parameters
 *`minTracks`: Minimum number of tracks to continue analysing event. Defaults to `0`.
 *`maxTracks`: Maximum number of tracks to continue analysing event. Defaults to `10`.
-*`minCluster_per_plane`: Minimum number of clusters on each plane to continue analysing event. Planes of type `DUT` and `auxiliary` are excluded in this cut. Defaults to `0`.
-*`maxCluster_per_plane`: Maximum number of clusters on each plane to continue analysing event. Planes of type `DUT` and `auxiliary` are excluded in this cut. Defaults to `100`.
+*`minClusters_per_plane`: Minimum number of clusters on each plane to continue analysing event. Planes of type `DUT` and `auxiliary` are excluded in this cut. Defaults to `0`.
+*`maxClusters_per_plane`: Maximum number of clusters on each plane to continue analysing event. Planes of type `DUT` and `auxiliary` are excluded in this cut. Defaults to `100`.
 ### Plots produced
 None
 ### Usage
@@ -19,6 +19,6 @@ None
 [EventFilter]
 mimTracks = 0
 maxTracks = 10
-minCluster_per_plane = 0
-maxCluster_per_plane = 100
+minClusters_per_plane = 0
+maxClusters_per_plane = 100
 ```
