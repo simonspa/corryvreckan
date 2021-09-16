@@ -1,7 +1,7 @@
 # EventFilter
 **Maintainer**: Lennart Huth (lennart.huth@desy.de)
 **Module Type**: *GLOBAL*
-**Status**: Work in progess
+**Status**: Work in progress
 
 ### Description
 This module allows for a filtering of events based on the number of tracks/clsuters on the clipboard.
