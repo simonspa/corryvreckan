@@ -8,14 +8,14 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include "EventFilter.h"
+#include "FilterEvents.h"
 
 using namespace corryvreckan;
 
-EventFilter::EventFilter(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
+FilterEvents::FilterEvents(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {}
 
-void EventFilter::initialize() {
+void FilterEvents::initialize() {
 
     config_.setDefault<unsigned>("minTracks", 0);
     config_.setDefault<unsigned>("maxTracks", 100);
@@ -28,7 +28,7 @@ void EventFilter::initialize() {
     maxClustersPerReference_ = config_.get<unsigned>("maxClusters_per_plane");
 }
 
-StatusCode EventFilter::run(const std::shared_ptr<Clipboard>& clipboard) {
+StatusCode FilterEvents::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     eventsTotal_++;
     auto numTracks = clipboard->getData<Track>().size();
@@ -65,7 +65,7 @@ StatusCode EventFilter::run(const std::shared_ptr<Clipboard>& clipboard) {
     return StatusCode::Success;
 }
 
-void EventFilter::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
+void FilterEvents::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(STATUS) << "Skipped " << eventsSkipped_ << " events of " << eventsTotal_;
 }

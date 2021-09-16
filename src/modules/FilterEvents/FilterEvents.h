@@ -1,13 +1,14 @@
 /**
  * @file
- * @brief Definition of module EventFilter
+ * @brief Definition of module FILTEREVENTS
  *
  * @copyright Copyright (c) 2020 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
-
+#ifndef FILTEREVENTS_H
+#define FILTEREVENTS_H
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -23,7 +24,7 @@ namespace corryvreckan {
      *
      * More detailed explanation of module
      */
-    class EventFilter : public Module {
+    class FilterEvents : public Module {
 
     public:
         /**
@@ -31,7 +32,7 @@ namespace corryvreckan {
          * @param config Configuration object for this module as retrieved from the steering file
          * @param detectors Vector of pointers to the detectors
          */
-        EventFilter(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
+        FilterEvents(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
 
         /**
          * @brief [Initialise this module]
@@ -59,3 +60,4 @@ namespace corryvreckan {
     };
 
 } // namespace corryvreckan
+#endif // FILTEREVENTS.H
