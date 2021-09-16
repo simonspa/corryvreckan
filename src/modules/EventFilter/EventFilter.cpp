@@ -19,19 +19,19 @@ void EventFilter::initialize() {
 
     config_.setDefault<unsigned>("minTracks", 0);
     config_.setDefault<unsigned>("maxTracks", 100);
-    config_.setDefault<unsigned>("minHits_per_plane", 0);
-    config_.setDefault<unsigned>("maxHits_per_plane", 100);
+    config_.setDefault<unsigned>("minClusters_per_plane", 0);
+    config_.setDefault<unsigned>("maxClusters_per_plane", 100);
 
     minNumberTracks_ = config_.get<unsigned>("minTracks");
     maxNumberTracks_ = config_.get<unsigned>("maxTracks");
-    minHitsPerReference_ = config_.get<unsigned>("minHits_per_plane");
-    maxHitsPerReference_ = config_.get<unsigned>("maxHits_per_plane");
+    minClustersPerReference_ = config_.get<unsigned>("minClusters_per_plane");
+    maxClustersPerReference_ = config_.get<unsigned>("maxClusters_per_plane");
 }
 
 StatusCode EventFilter::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     eventsTotal_++;
-    unsigned numTracks = clipboard->getData<Track>().size();
+    auto numTracks = clipboard->getData<Track>().size();
     if(numTracks > maxNumberTracks_) {
         eventsSkipped_++;
         LOG(TRACE) << "Number of tracks above maximum";
@@ -48,21 +48,20 @@ StatusCode EventFilter::run(const std::shared_ptr<Clipboard>& clipboard) {
         if(detector->isAuxiliary() || detector->isDUT()) {
             continue;
         }
-        // else check if desired number of hits
         std::string det = detector->getName();
-        unsigned numClusters = clipboard->getData<Cluster>(det).size();
-        if(numClusters > maxHitsPerReference_) {
+        // Check if number of Clusters on plane is within acceptance
+        auto numClusters = clipboard->getData<Cluster>(det).size();
+        if(numClusters > maxClustersPerReference_) {
             eventsSkipped_++;
-            LOG(TRACE) << "Number of hits on above maximum";
+            LOG(TRACE) << "Number of Clusters on above maximum";
             return StatusCode::DeadTime;
         }
-        if(numClusters < minHitsPerReference_) {
+        if(numClusters < minClustersPerReference_) {
             eventsSkipped_++;
-            LOG(TRACE) << "Number of hits on below minimum";
+            LOG(TRACE) << "Number of Clusters on below minimum";
             return StatusCode::DeadTime;
         }
     }
-    // Return value telling analysis to keep running
     return StatusCode::Success;
 }
 
