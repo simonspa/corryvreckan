@@ -1,4 +1,4 @@
-# EventFilter
+# FilterEvents
 **Maintainer**: Lennart Huth (lennart.huth@desy.de)
 **Module Type**: *GLOBAL*
 **Status**: Work in progress
@@ -16,7 +16,7 @@ Currently, events can be skipped based on the number of tracks and clusters per 
 None
 ### Usage
 ```toml
-[EventFilter]
+[FilterEvents]
 mimTracks = 0
 maxTracks = 10
 minClusters_per_plane = 0
