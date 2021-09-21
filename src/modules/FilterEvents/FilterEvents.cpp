@@ -22,10 +22,10 @@ void FilterEvents::initialize() {
     config_.setDefault<unsigned>("minClusters_per_plane", 0);
     config_.setDefault<unsigned>("maxClusters_per_plane", 100);
 
-    minNumberTracks_ = config_.get<unsigned>("minTracks");
-    maxNumberTracks_ = config_.get<unsigned>("maxTracks");
-    minClustersPerReference_ = config_.get<unsigned>("minClusters_per_plane");
-    maxClustersPerReference_ = config_.get<unsigned>("maxClusters_per_plane");
+    min_number_tracks_ = config_.get<unsigned>("minTracks");
+    max_number_tracks_ = config_.get<unsigned>("maxTracks");
+    min_clusters_per_reference_ = config_.get<unsigned>("minClusters_per_plane");
+    max_clusters_per_reference_ = config_.get<unsigned>("maxClusters_per_plane");
 
     hFilter_ = new TH1F("FilteredEvents", "Events filtered;events", 6, 0.5, 6.5);
     hFilter_->GetXaxis()->SetBinLabel(1, "Events");
@@ -54,14 +54,12 @@ void FilterEvents::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 }
 
 bool FilterEvents::filter_tracks(const std::shared_ptr<Clipboard>& clipboard) {
-    auto numTracks = clipboard->getData<Track>().size();
-    if(numTracks > maxNumberTracks_) {
-        eventsSkipped_++;
+    auto num_tracks = clipboard->getData<Track>().size();
+    if(num_tracks > max_number_tracks_) {
         hFilter_->Fill(2); // too many tracks
         LOG(TRACE) << "Number of tracks above maximum";
         return true;
-    } else if(numTracks < minNumberTracks_) {
-        eventsSkipped_++;
+    } else if(num_tracks < min_number_tracks_) {
         hFilter_->Fill(3); //  too few tracks
         LOG(TRACE) << "Number of tracks below minimum";
         return true;
@@ -78,15 +76,13 @@ bool FilterEvents::filter_cluster(const std::shared_ptr<Clipboard>& clipboard) {
         }
         std::string det = detector->getName();
         // Check if number of Clusters on plane is within acceptance
-        auto numClusters = clipboard->getData<Cluster>(det).size();
-        if(numClusters > maxClustersPerReference_) {
-            eventsSkipped_++;
+        auto num_clusters = clipboard->getData<Cluster>(det).size();
+        if(num_clusters > max_clusters_per_reference_) {
             hFilter_->Fill(4); //  too many clusters
             LOG(TRACE) << "Number of Clusters on above maximum";
             return true;
         }
-        if(numClusters < minClustersPerReference_) {
-            eventsSkipped_++;
+        if(num_clusters < min_clusters_per_reference_) {
             hFilter_->Fill(5); //  too few clusters
             LOG(TRACE) << "Number of Clusters on below minimum";
             return true;

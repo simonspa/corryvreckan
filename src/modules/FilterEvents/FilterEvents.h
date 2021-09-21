@@ -53,13 +53,10 @@ namespace corryvreckan {
         // Histogram with filters applied
         TH1F* hFilter_;
 
-        long unsigned maxNumberTracks_{};
-        long unsigned minNumberTracks_{};
-        long unsigned minClustersPerReference_{};
-        long unsigned maxClustersPerReference_{};
-        // counter of discarded events
-        int eventsSkipped_{};
-        int eventsTotal_{};
+        long unsigned max_number_tracks_{};
+        long unsigned min_number_tracks_{};
+        long unsigned min_clusters_per_reference_{};
+        long unsigned max_clusters_per_reference_{};
 
         /**
          * @brief Function to filter events based on the number of tracks
