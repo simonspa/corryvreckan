@@ -17,15 +17,15 @@ FilterEvents::FilterEvents(Configuration& config, std::vector<std::shared_ptr<De
 
 void FilterEvents::initialize() {
 
-    config_.setDefault<unsigned>("minTracks", 0);
-    config_.setDefault<unsigned>("maxTracks", 100);
-    config_.setDefault<unsigned>("minClusters_per_plane", 0);
-    config_.setDefault<unsigned>("maxClusters_per_plane", 100);
+    config_.setDefault<unsigned>("min_tracks", 0);
+    config_.setDefault<unsigned>("max_tracks", 100);
+    config_.setDefault<unsigned>("min_clusters_per_plane", 0);
+    config_.setDefault<unsigned>("maxC_custers_per_plane", 100);
 
-    min_number_tracks_ = config_.get<unsigned>("minTracks");
-    max_number_tracks_ = config_.get<unsigned>("maxTracks");
-    min_clusters_per_reference_ = config_.get<unsigned>("minClusters_per_plane");
-    max_clusters_per_reference_ = config_.get<unsigned>("maxClusters_per_plane");
+    min_number_tracks_ = config_.get<unsigned>("min_tracks");
+    max_number_tracks_ = config_.get<unsigned>("max_tacks");
+    min_clusters_per_reference_ = config_.get<unsigned>("min_clusters_per_plane");
+    max_clusters_per_reference_ = config_.get<unsigned>("max_clusters_per_plane");
 
     hFilter_ = new TH1F("FilteredEvents", "Events filtered;events", 6, 0.5, 6.5);
     hFilter_->GetXaxis()->SetBinLabel(1, "Events");
