@@ -50,6 +50,9 @@ namespace corryvreckan {
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
+        // Histogram with filters applied
+        TH1F* hFilter_;
+
         long unsigned maxNumberTracks_{};
         long unsigned minNumberTracks_{};
         long unsigned minClustersPerReference_{};
@@ -57,6 +60,20 @@ namespace corryvreckan {
         // counter of discarded events
         int eventsSkipped_{};
         int eventsTotal_{};
+
+        /**
+         * @brief Function to filter events based on the number of tracks
+         * @param clipboard with the current event
+         * @return true if number of tracks is within sopecified range, false otherwise
+         */
+        bool filter_tracks(const std::shared_ptr<Clipboard>& clipboard);
+
+        /**
+         * @brief Function to filter events based on the number of clusters on each reerence plane
+         * @param clipboard with the current event
+         * @return true if number of clusters on one plane is within sopecified range, false otherwise
+         */
+        bool filter_cluster(const std::shared_ptr<Clipboard>& clipboard);
     };
 
 } // namespace corryvreckan

@@ -13,7 +13,9 @@ Currently, events can be skipped based on the number of tracks and clusters per 
 *`minClusters_per_plane`: Minimum number of clusters on each plane to continue analysing event. Planes of type `DUT` and `auxiliary` are excluded in this cut. Defaults to `0`.
 *`maxClusters_per_plane`: Maximum number of clusters on each plane to continue analysing event. Planes of type `DUT` and `auxiliary` are excluded in this cut. Defaults to `100`.
 ### Plots produced
-None
+*1D histogram of the events filtered by a certain parameter and the total
+number of filtered events.
+
 ### Usage
 ```toml
 [FilterEvents]
