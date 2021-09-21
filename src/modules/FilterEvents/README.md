@@ -5,7 +5,7 @@
 
 ### Description
 This module allows for a filtering of events based on the number of tracks/clsuters on the clipboard.
-Currently, events can be skipped based on the number of tracks and clusters per plane. The accepted cluster range is defined for all planes, that are not a `DUT` or a `Auxiliary`. It is planned to also allow for more specific cuts on individual detectors.
+Currently, events can be skipped based on the number of tracks and clusters per plane. The accepted cluster range is defined for all planes, that are not a `DUT` or a `Auxiliary`.
 
 ### Parameters
 *`min_tracks`: Minimum number of tracks to continue analysing event. Defaults to `0`.
@@ -19,8 +19,8 @@ number of filtered events.
 ### Usage
 ```toml
 [FilterEvents]
-mimTracks = 0
-maxTracks = 10
-minClusters_per_plane = 0
-maxClusters_per_plane = 100
+min_tracks = 0
+max_tracks = 10
+minC_custers_per_plane = 0
+maxC_custers_per_plane = 100
 ```
