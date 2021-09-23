@@ -42,6 +42,7 @@ namespace corryvreckan {
          * @brief [Initialise this module]
          */
         void initialize() override;
+        void finalize(const std::shared_ptr<ReadonlyClipboard>&) override;
 
         /**
          * @brief [Run the function of this module]
@@ -49,12 +50,18 @@ namespace corryvreckan {
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
     private:
+        int skipped_events_{};
         std::vector<uint32_t> triggerIDs_{};
-
+        bool pixelated_timing_layer_{};
+        bool use_all_mimosa_hits_{};
         bool add_trigger_{};
         long double timeshift_{};
         int shift_triggers_{};
         double skip_time_{};
+        double add_begin_{};
+        double add_end_{};
+        int pivot_min_{};
+        int pivot_max_{};
         // EUDAQ2 readers for all required files
         eudaq::FileReaderUP readerTime_;
         eudaq::FileReaderUP readerDuration_;
@@ -64,17 +71,21 @@ namespace corryvreckan {
         // input data files
         std::string timestamp_, duration_;
 
+        std::pair<long double, long double> _oldEvent{};
+
         TH1F* timebetweenMimosaEvents_;
         TH1F* timebetweenTLUEvents_;
+        TH1F* eventDuration_;
         TH1F* timeBeforeTrigger_;
         TH1F* timeAfterTrigger_;
+        TH1F* pivotPixel_;
         TH1D* hClipboardEventStart;
         TH1D* hClipboardEventStart_long;
 
         unsigned triggerTLU_{}, triggerM26_{};
         long double time_prev_{}, trig_prev_{}, time_trig_start_{}, time_trig_stop_{}, time_before_{}, time_after_{};
         long double time_trig_stop_prev_{};
-
+        double framelength_{};
         /**
          * @brief get_next_event_with_det
          * @param filereader: eudaq::FileReader

@@ -105,6 +105,7 @@ void EventLoaderEUDAQ2::initialize() {
 
     title = " # events per corry event; number of events from " + detector_->getName() + " per corry event;# entries";
     hEudaqeventsPerCorry = new TH1D("hEudaqeventsPerCorryEvent", title.c_str(), 50, -.5, 49.5);
+
     title = "number of hits in corry frame vs number of eudaq frames;eudaq frames;# hits";
     hHitsVersusEUDAQ2Frames = new TH2D("hHitsVersusEUDAQ2Frames", title.c_str(), 15, -.5, 14.5, 200, -0.5, 199.5);
     // Create the following histograms only when detector is not auxiliary:

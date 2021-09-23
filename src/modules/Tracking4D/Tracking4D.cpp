@@ -95,6 +95,12 @@ void Tracking4D::initialize() {
     trackAngleX = new TH1F("trackAngleX", title.c_str(), 2000, -0.01, 0.01);
     title = "Track angle Y;angle_{y} [rad];events";
     trackAngleY = new TH1F("trackAngleY", title.c_str(), 2000, -0.01, 0.01);
+    title = "Track time within event;track time - event start;events";
+    trackTime = new TH1F("trackTime", title.c_str(), 1000, 0, 460.8);
+    title = "Track time with respect to first trigger;track time - trigger;events";
+    trackTimeTrigger = new TH1F("trackTimeTrigger", title.c_str(), 1000, -230.4, 230.4);
+    title = "Track time with respect to first trigger vs. track chi2;track time - trigger;track #chi^{2};events";
+    trackTimeTriggerChi2 = new TH2F("trackTimeTriggerChi2", title.c_str(), 1000, -230.4, 230.4, 15, 0, 15);
 
     // Loop over all planes
     for(auto& detector : get_detectors()) {
@@ -477,6 +483,17 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
         clipboard->putData(tracks);
     }
     for(auto track : tracks) {
+        // Fill track time within event (relative to event start)
+        auto event = clipboard->getEvent();
+        trackTime->Fill(static_cast<double>(Units::convert(track->timestamp() - event->start(), "us")));
+        auto triggers = event->triggerList();
+        if(!triggers.empty()) {
+            trackTimeTrigger->Fill(static_cast<double>(Units::convert(track->timestamp() - triggers.begin()->second, "us")));
+            trackTimeTriggerChi2->Fill(
+                static_cast<double>(Units::convert(track->timestamp() - triggers.begin()->second, "us")),
+                track->getChi2ndof());
+        }
+
         trackChi2->Fill(track->getChi2());
         clustersPerTrack->Fill(static_cast<double>(track->getNClusters()));
         trackChi2ndof->Fill(track->getChi2ndof());

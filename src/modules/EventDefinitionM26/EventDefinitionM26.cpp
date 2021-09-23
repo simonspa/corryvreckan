@@ -20,9 +20,15 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     config_.setDefault<int>("time_shift", 0);
     config_.setDefault<int>("shift_triggers", 0);
     config_.setDefault<double>("skip_time", 0.);
+    config_.setDefault<double>("add_begin", 0.);
+    config_.setDefault<double>("add_end", 0.);
+    config_.setDefault<int>("plane_pivot", 0.);
+    config_.setDefault<int>("pivot_min", 0.);
+    config_.setDefault<int>("pivot_max", 576.);
     config_.setDefault<bool>("add_trigger", false);
+    config_.setDefault<bool>("use_all_mimosa_hits", false);
     config_.setDefault<std::string>("eudaq_loglevel", "ERROR");
-
+    config_.setDefault<bool>("pixelated_timing_layer", true);
     detector_time_ = config_.get<std::string>("detector_event_time");
     // Convert to lower case before string comparison to avoid errors by the user:
     std::transform(detector_time_.begin(), detector_time_.end(), detector_time_.begin(), ::tolower);
@@ -32,6 +38,14 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     timeshift_ = config_.get<double>("time_shift");
     shift_triggers_ = config_.get<int>("shift_triggers");
     skip_time_ = config_.get<double>("skip_time");
+    add_begin_ = config_.get<double>("add_begin");
+    add_end_ = config_.get<double>("add_end");
+    pivot_min_ = config_.get<int>("pivot_min");
+    pivot_max_ = config_.get<int>("pivot_max");
+    use_all_mimosa_hits_ = config_.get<bool>("use_all_mimosa_hits");
+    pixelated_timing_layer_ = config_.get<bool>("pixelated_timing_layer");
+    LOG(WARNING) << " setting shift to " << Units::get(timeshift_, "us") << ": accepting pivots from  " << pivot_min_
+                 << " to " << pivot_max_;
     add_trigger_ = config_.get<bool>("add_trigger");
     // Set EUDAQ log level to desired value:
     EUDAQ_LOG_LEVEL(config_.get<std::string>("eudaq_loglevel"));
@@ -58,6 +72,9 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     if(shift_triggers_ < 0) {
         throw InvalidValueError(config_, "shift_triggers", "Trigger shift needs to be positive (or zero).");
     }
+    // define the framelength once, since unit conversions are slow
+    framelength_ = Units::get(115.2, "us");
+    ;
 }
 
 void EventDefinitionM26::initialize() {
@@ -65,6 +82,8 @@ void EventDefinitionM26::initialize() {
         new TH1F("htimebetweenTimes", "time between two mimosa frames; time /us; #entries", 1000, -0.5, 995.5);
     timebetweenTLUEvents_ =
         new TH1F("htimebetweenTrigger", "time between two triggers frames; time /us; #entries", 1000, -0.5, 995.5);
+    eventDuration_ =
+        new TH1F("durationCorryEvent", "Event duration as defined on clipboard; time [#mus]; #entries", 240, 115.2, 360.4);
 
     timeBeforeTrigger_ = new TH1F("timeBeforeTrigger", "time in frame before trigger; time /us; #entries", 2320, -231, 1);
     timeAfterTrigger_ = new TH1F("timeAfterTrigger", "time in frame after trigger; time /us; #entries", 2320, -1, 231);
@@ -75,6 +94,7 @@ void EventDefinitionM26::initialize() {
     title = "Corryvreckan event start times (placed on clipboard); Corryvreckan event start time [s];# entries";
     hClipboardEventStart_long = new TH1D("clipboardEventStart_long", title.c_str(), 3e6, 0, 3e3);
 
+    pivotPixel_ = new TH1F("pivot_pixel", "pivot pixel; pivot; entries", 580, -.5, 579.5);
     // open the input file with the eudaq reader
     try {
         readerDuration_ = eudaq::Factory<eudaq::FileReader>::MakeUnique(eudaq::str2hash("native"), duration_);
@@ -90,6 +110,10 @@ void EventDefinitionM26::initialize() {
                    << " '. Please verify that the path and file name are correct.";
         throw InvalidValueError(config_, "file_path", "Parsing error!");
     }
+}
+
+void EventDefinitionM26::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
+    LOG(INFO) << "We have to skip " << skipped_events_ << "events which have an overlap with the previous events.";
 }
 
 unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& filereader,
@@ -120,17 +144,23 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
 
             LOG(DEBUG) << "det = " << det << ", detector = " << detector;
             if(det == detector) {
+                // MIMOSA
                 begin = Units::get(static_cast<double>(stdevt->GetTimeBegin()), "ps");
                 end = Units::get(static_cast<double>(stdevt->GetTimeEnd()), "ps");
 
-                LOG(DEBUG) << "Set begin/end, begin: " << Units::display(begin, {"ns", "us"})
-                           << ", end: " << Units::display(end, {"ns", "us"});
-                // MIMOSA
                 if(det == "mimosa26") {
                     // pivot magic - see readme
                     double piv = stdevt->GetPlane(0).PivotPixel() / 16.;
-                    begin = Units::get(piv * (115.2 / 576), "us") + timeshift_;
-                    end = Units::get(230.4, "us") - begin;
+                    // we can here discard events with `bad` pivot-pixels
+                    if(piv > pivot_max_ || piv < pivot_min_) {
+                        LOG(DEBUG) << "Skipping mimosa event with pivot " << piv;
+                        continue;
+                    }
+                    pivotPixel_->Fill(piv);
+                    begin = framelength_ * piv / 576.;
+
+                    // end should be after second frame, sharp (variable durationn, not variable length)
+                    end = Units::get(230.4, "us");
                     LOG(DEBUG) << "Pivot magic, begin: " << Units::display(begin, {"ns", "us", "ms"})
                                << ", end: " << Units::display(end, {"ns", "us", "ms"})
                                << ", duration = " << Units::display(begin + end, {"ns", "us"});
@@ -138,7 +168,12 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
 
                     LOG(TRACE) << "Event time below skip time: " << Units::display(begin, {"ns", "us", "ms", "s"}) << "vs. "
                                << Units::display(skip_time_, {"ns", "us", "ms", "s"});
+
                     continue;
+                } else {
+
+                    LOG(DEBUG) << "Set begin/end, begin: " << Units::display(begin, {"ns", "us"})
+                               << ", end: " << Units::display(end, {"ns", "us"});
                 }
                 return e->GetTriggerN();
             }
@@ -148,7 +183,6 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
 }
 StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) {
 
-    // Loop over all detectors
     if(clipboard->isEventDefined()) {
         throw ModuleError("Event already defined - cannot create a new event. This module needs to be placed before the "
                           "first EventLoader");
@@ -188,58 +222,72 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
 
         if(triggerTLU_ == triggerM26_) {
             auto time_trig = time_trig_start_;
-
-            if(time_trig - time_prev_ > 0) {
-                // M26 frames need to have a distance of at least one frame length!
-                if((time_trig - time_prev_ < 115000) && (!add_trigger_)) {
-
-                    LOG(ERROR) << "M26 triggers too close together to fit M26 frame, dt = " +
-                                      Units::display(time_trig - time_prev_, "us")
-                               << std::endl
-                               << "Check if a shift of trigger IDs is required.";
-                }
-                // If we stretch the event over three frames and add a trigger, we need a larger distance
-                if((time_trig - time_prev_ < 345600) && add_trigger_) {
-                    triggerTLU_--;
-                    LOG(DEBUG)
-                        << "Skipping event that would overlap previous event, since bool add_triggers_ is set to true";
-                    continue;
-                }
-                if(add_trigger_) {
-                    time_before_ = Units::get(115.2, "us");
-                    time_after_ = Units::get(230.4, "us");
-                }
-                timebetweenMimosaEvents_->Fill(static_cast<double>(Units::convert(time_trig - time_prev_, "us")));
-                timeBeforeTrigger_->Fill(static_cast<double>(Units::convert(-1.0 * time_before_, "us")));
-                timeAfterTrigger_->Fill(static_cast<double>(Units::convert(time_after_, "us")));
-                long double evtStart = time_trig - time_before_;
-                long double evtEnd = time_trig + time_after_;
-
-                if(evtStart < skip_time_) {
-                    LOG(DEBUG) << "Event start before requested skip time: " << Units::display(evtStart, {"us", "ns"})
-                               << " < " << Units::display(skip_time_, {"us", "ns"});
-                    continue;
-                }
-
-                LOG(DEBUG) << "time to previous trigger = " << Units::display(time_trig - time_prev_, "us");
-                time_prev_ = time_trig;
-                LOG(DEBUG) << "before/after/duration = " << Units::display(time_before_, "us") << ", "
-                           << Units::display(time_after_, "us") << ", " << Units::display(time_after_ + time_before_, "us");
-                LOG(DEBUG) << "evtStart/evtEnd/duration = " << Units::display(evtStart, "us") << ", "
-                           << Units::display(evtEnd, "us") << ", " << Units::display(evtEnd - evtStart, "us");
-
-                clipboard->putEvent(std::make_shared<Event>(evtStart, evtEnd));
-                if(add_trigger_) {
-                    clipboard->getEvent()->addTrigger(triggerTLU_, static_cast<double>(time_trig));
-                }
-                LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(evtStart, {"us", "ns"}) << " - "
-                           << Units::display(evtEnd, {"us", "ns"}) << ", length "
-                           << Units::display(evtEnd - evtStart, {"us", "ns"});
-                hClipboardEventStart->Fill(static_cast<double>(Units::convert(evtStart, "ms")));
-                hClipboardEventStart_long->Fill(static_cast<double>(Units::convert(evtStart, "s")));
+            // we only need to apply the shifts once we have a matching event:
+            // Artificially enlarge the events if a timing layer is provided
+            if(pixelated_timing_layer_) {
+                time_before_ += add_begin_;
+                time_after_ -= add_begin_;
+                time_after_ += add_end_;
+                // If no timing layer is configured, we need to stretch over all 3 frames
+            } else if(use_all_mimosa_hits_) {
+                time_before_ += framelength_;
             } else {
-                LOG(WARNING) << "Current trigger time smaller than previous: " << time_trig << " vs " << time_prev_;
+                time_before_ = framelength_;
             }
+            time_trig = time_trig - timeshift_;
+
+            // Define the begin and end of the event
+            long double evtBegin = time_trig - time_before_;
+            long double evtEnd = time_trig + time_after_;
+
+            // Skip events while requested
+            if(evtBegin < skip_time_) {
+                LOG(DEBUG) << "Event start before requested skip time: " << Units::display(evtBegin, {"us", "ns"}) << " < "
+                           << Units::display(skip_time_, {"us", "ns"});
+                triggerTLU_--;
+                continue;
+            }
+
+            // An earlier trigger ts points towards an error during data taking. Skip this event.
+            if(time_trig - time_prev_ < 0) {
+                LOG(ERROR) << "Current trigger time smaller than previous: " << time_trig << " vs " << time_prev_
+                           << ". Skipping Event";
+                triggerTLU_--;
+                continue;
+            }
+            // M26 frames should never overlap. A bug in the DAQ causes a readout of the wrong frames occasionally
+            if(evtBegin < time_trig_stop_prev_) {
+                triggerTLU_--;
+                LOG(DEBUG) << "Skipping event that would overlap previous event: start current: " << evtBegin
+                           << " vs end previous: " << time_trig_stop_prev_;
+                skipped_events_++;
+                continue;
+            }
+
+            timebetweenMimosaEvents_->Fill(static_cast<double>(Units::convert(time_trig - time_prev_, "us")));
+            timeBeforeTrigger_->Fill(static_cast<double>(Units::convert(-1.0 * time_before_, "us")));
+            timeAfterTrigger_->Fill(static_cast<double>(Units::convert(time_after_, "us")));
+
+            LOG(DEBUG) << "Defining Corryvreckan event: " << Units::display(evtBegin, {"us", "ns"}) << " - "
+                       << Units::display(evtEnd, {"us", "ns"}) << ", length "
+                       << Units::display(evtEnd - evtBegin, {"us", "ns"});
+
+            LOG(DEBUG) << "time to previous trigger = " << Units::display(time_trig - time_prev_, "us");
+            time_prev_ = time_trig;
+            LOG(DEBUG) << "before/after/duration = " << Units::display(time_before_, "us") << ", "
+                       << Units::display(time_after_, "us") << ", " << Units::display(time_after_ + time_before_, "us");
+            LOG(DEBUG) << "evtBegin/evtEnd/duration = " << Units::display(evtBegin, "us") << ", "
+                       << Units::display(evtEnd, "us") << ", " << Units::display(evtEnd - evtBegin, "us");
+
+            time_trig_stop_prev_ = evtEnd;
+            auto event = std::make_shared<Event>(evtBegin, evtEnd);
+            clipboard->putEvent(event);
+            if(add_trigger_) {
+                clipboard->getEvent()->addTrigger(triggerTLU_, static_cast<double>(time_trig));
+            }
+            eventDuration_->Fill(static_cast<double>(Units::convert(event->duration(), "us")));
+            hClipboardEventStart->Fill(static_cast<double>(Units::convert(evtBegin, "ms")));
+            hClipboardEventStart_long->Fill(static_cast<double>(Units::convert(evtBegin, "s")));
 
         } else if(triggerTLU_ > triggerM26_) {
             LOG(DEBUG) << "No TLU time stamp for trigger ID " << triggerTLU_;
