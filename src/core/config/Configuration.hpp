@@ -10,6 +10,7 @@
 #ifndef CORRYVRECKAN_CONFIGURATION_H
 #define CORRYVRECKAN_CONFIGURATION_H
 
+#include <atomic>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -31,6 +32,58 @@ namespace corryvreckan {
      * the library of \ref StringConversions.
      */
     class Configuration {
+
+        /**
+         * @brief Helper class to keep track of key access
+         *
+         * This class holds all configuration keys in a map together with an atomic boolean marking whether they have been
+         * accessed already. This allows to find out whick keys have not been accessed at all. This wrapper allows to use
+         * atomics for non-locking access but requires to register all keys beforehand.
+         */
+        class AccessMarker {
+        public:
+            /**
+             * Default constructor
+             */
+            AccessMarker() = default;
+
+            /**
+             * @brief Explicit copy constructor to allow copying of the map keys
+             */
+            AccessMarker(const AccessMarker& rhs);
+
+            /**
+             * @brief Explicit copy assignment operator to allow copying of the map keys
+             */
+            AccessMarker& operator=(const AccessMarker& rhs);
+
+            /**
+             * @brief Method to register a key for a new access marker
+             * @param key Key of the marker
+             * @warning This operation is not thread-safe
+             */
+            void registerMarker(const std::string& key);
+
+            /**
+             * @brief Method to mark existing marker as accessed/used.
+             * @param key Key of the marker
+             * @note This is an atomic operation and thread-safe.
+             * @throws std::out_of_range if the key has not been registered beforehand
+             */
+            void markUsed(const std::string& key) { markers_.at(key).store(true); };
+
+            /**
+             * @brief Method to retrieve access status of an existing marker.
+             * @param key Key of the marker
+             * @note This is an atomic operation and thread-safe.
+             * @throws std::out_of_range if the key has not been registered beforehand
+             */
+            bool isUsed(const std::string& key) { return markers_.at(key).load(); }
+
+        private:
+            std::map<std::string, std::atomic<bool>> markers_;
+        };
+
     public:
         /**
          * @brief Construct a configuration object
@@ -153,8 +206,9 @@ namespace corryvreckan {
          * @brief Set value for a key in a given type
          * @param key Key to set value of
          * @param val Value to assign to the key
+         * @param mark_used Flag whether key should be marked as "used" directly
          */
-        template <typename T> void set(const std::string& key, const T& val);
+        template <typename T> void set(const std::string& key, const T& val, bool mark_used = false);
 
         /**
          * @brief Store value for a key in a given type, including units
@@ -168,9 +222,10 @@ namespace corryvreckan {
          * @brief Set list of values for a key in a given type
          * @param key Key to set values of
          * @param val List of values to assign to the key
+         * @param mark_used Flag whether key should be marked as "used" directly
          */
         // TODO [doc] Provide second template parameter to specify the vector type to return it in
-        template <typename T> void setArray(const std::string& key, const std::vector<T>& val);
+        template <typename T> void setArray(const std::string& key, const std::vector<T>& val, bool mark_used = false);
 
         /**
          * @brief Set matrix of values for a key in a given type
@@ -211,6 +266,7 @@ namespace corryvreckan {
          * @param new_key New alias to be created
          * @param old_key Key the alias is created for
          * @param warn Optionally print a warning message to notify of deprecation
+         * @note This marks the old key as "used" automatically
          */
         void setAlias(const std::string& new_key, const std::string& old_key, bool warn = false);
 
@@ -245,7 +301,15 @@ namespace corryvreckan {
          * @return List of all key value pairs
          */
         // FIXME Better name for this function
-        std::vector<std::pair<std::string, std::string>> getAll();
+        std::vector<std::pair<std::string, std::string>> getAll() const;
+
+        /**
+         * @brief Obtain all keys which have not been accessed yet
+         *
+         * This method returns all keys from the configuration object which have not yet been accessed, Default values as
+         * well as aliases are marked as used automatically and are therefore never returned.
+         */
+        std::vector<std::string> getUnusedKeys() const;
 
     private:
         /**
@@ -275,6 +339,7 @@ namespace corryvreckan {
 
         using ConfigMap = std::map<std::string, std::string>;
         ConfigMap config_;
+        mutable AccessMarker used_keys_;
     };
 } // namespace corryvreckan
 

@@ -42,7 +42,7 @@ namespace corryvreckan {
          * @brief [Initialise this module]
          */
         void initialize() override;
-        void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
+        void finalize(const std::shared_ptr<ReadonlyClipboard>&) override;
 
         /**
          * @brief [Run the function of this module]
@@ -50,12 +50,7 @@ namespace corryvreckan {
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
     private:
-        std::vector<long double> _starts{};
-        std::vector<long double> _ends{};
-        std::vector<long double> _pivots{};
-        std::vector<long double> _triggers{};
-        int skipped_events_{0};
-        long double _pivotCurrent;
+        int skipped_events_{};
         std::vector<uint32_t> triggerIDs_{};
         bool pixelated_timing_layer_{};
         bool use_all_mimosa_hits_{};
@@ -77,11 +72,6 @@ namespace corryvreckan {
         std::string timestamp_, duration_;
 
         std::pair<long double, long double> _oldEvent{};
-        // HIER WEITER MIT DEN PLOTS, FUELLEN UND RANGES DEFINIEREN
-        TH2F* _pivot_vs_next_dtrigger;
-        TH2F* _pivot_vs_priv_dtrigger;
-        TH2F* _pivot_vs_next_event;
-        TH2F* _pivot_vs_priv_event;
 
         TH1F* timebetweenMimosaEvents_;
         TH1F* timebetweenTLUEvents_;
@@ -95,7 +85,7 @@ namespace corryvreckan {
         unsigned triggerTLU_{}, triggerM26_{};
         long double time_prev_{}, trig_prev_{}, time_trig_start_{}, time_trig_stop_{}, time_before_{}, time_after_{};
         long double time_trig_stop_prev_{};
-
+        double framelength_{};
         /**
          * @brief get_next_event_with_det
          * @param filereader: eudaq::FileReader

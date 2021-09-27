@@ -20,6 +20,25 @@
 
 using namespace corryvreckan;
 
+Configuration::AccessMarker::AccessMarker(const Configuration::AccessMarker& rhs) {
+    for(const auto& key : rhs.markers_) {
+        registerMarker(key.first);
+        markers_.at(key.first).store(key.second.load());
+    }
+}
+
+Configuration::AccessMarker& Configuration::AccessMarker::operator=(const Configuration::AccessMarker& rhs) {
+    for(const auto& key : rhs.markers_) {
+        registerMarker(key.first);
+        markers_.at(key.first).store(key.second.load());
+    }
+    return *this;
+}
+
+void Configuration::AccessMarker::registerMarker(const std::string& key) {
+    markers_.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple());
+}
+
 Configuration::Configuration(std::string name, std::string path) : name_(std::move(name)), path_(std::move(path)) {}
 
 bool Configuration::has(const std::string& key) const {
@@ -32,7 +51,7 @@ unsigned int Configuration::count(std::initializer_list<std::string> keys) const
     }
 
     unsigned int found = 0;
-    for(auto& key : keys) {
+    for(const auto& key : keys) {
         if(has(key)) {
             found++;
         }
@@ -50,6 +69,7 @@ std::string Configuration::getFilePath() const {
 std::string Configuration::getText(const std::string& key) const {
     try {
         // NOTE: returning literally including ""
+        used_keys_.markUsed(key);
         return config_.at(key);
     } catch(std::out_of_range& e) {
         throw MissingKeyError(key, getName());
@@ -117,10 +137,11 @@ std::string Configuration::path_to_absolute(std::string path, bool canonicalize_
 
 void Configuration::setText(const std::string& key, const std::string& val) {
     config_[key] = val;
+    used_keys_.registerMarker(key);
 }
 
 /**
- *  The alias is only used if new key does not exist but old key does
+ *  The alias is only used if new key does not exist but old key does. The old key is automatically marked as used.
  */
 void Configuration::setAlias(const std::string& new_key, const std::string& old_key, bool warn) {
     if(!has(old_key) || has(new_key)) {
@@ -128,6 +149,8 @@ void Configuration::setAlias(const std::string& new_key, const std::string& old_
     }
     try {
         config_[new_key] = config_.at(old_key);
+        used_keys_.registerMarker(new_key);
+        used_keys_.markUsed(old_key);
     } catch(std::out_of_range& e) {
         throw MissingKeyError(old_key, getName());
     }
@@ -153,17 +176,31 @@ void Configuration::merge(const Configuration& other) {
     }
 }
 
-std::vector<std::pair<std::string, std::string>> Configuration::getAll() {
+std::vector<std::pair<std::string, std::string>> Configuration::getAll() const {
     std::vector<std::pair<std::string, std::string>> result;
 
     // Loop over all configuration keys
-    for(auto& key_value : config_) {
+    for(const auto& key_value : config_) {
         // Skip internal keys starting with an underscore
         if(!key_value.first.empty() && key_value.first.front() == '_') {
             continue;
         }
 
         result.emplace_back(key_value);
+    }
+
+    return result;
+}
+
+std::vector<std::string> Configuration::getUnusedKeys() const {
+    std::vector<std::string> result;
+
+    // Loop over all configuration keys, excluding internal ones
+    for(const auto& key_value : getAll()) {
+        // Add those to result that have not been accessed:
+        if(!used_keys_.isUsed(key_value.first)) {
+            result.emplace_back(key_value.first);
+        }
     }
 
     return result;
