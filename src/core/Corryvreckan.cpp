@@ -109,7 +109,7 @@ void Corryvreckan::load() {
 
     // Put welcome message and set version
     LOG(STATUS) << "Welcome to Corryvreckan " << CORRYVRECKAN_PROJECT_VERSION;
-    global_config.set<std::string>("version", CORRYVRECKAN_PROJECT_VERSION);
+    global_config.set<std::string>("version", CORRYVRECKAN_PROJECT_VERSION, true);
 
     // Get output directory
     std::string directory = gSystem->pwd();
