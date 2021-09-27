@@ -186,10 +186,10 @@ void PixelDetector::configure_detector(Configuration& config) const {
     config.set("number_of_pixels", m_nPixels);
 
     // Size of the pixels
-    config.set("pixel_pitch", m_pitch, {"um"});
+    config.set("pixel_pitch", m_pitch, {{"um"}});
 
     // Intrinsic resolution:
-    config.set("spatial_resolution", m_spatial_resolution, {"um"});
+    config.set("spatial_resolution", m_spatial_resolution, {{"um"}});
 
     // Pixel mask file:
     if(!m_maskfile.empty()) {
@@ -207,7 +207,7 @@ void PixelDetector::configure_detector(Configuration& config) const {
 void PixelDetector::configure_pos_and_orientation(Configuration& config) const {
     config.set("position", m_displacement, {"um", "mm"});
     config.set("orientation_mode", m_orientation_mode);
-    config.set("orientation", m_orientation, {"deg"});
+    config.set("orientation", m_orientation, {{"deg"}});
 }
 
 // Function to get global intercept with a track

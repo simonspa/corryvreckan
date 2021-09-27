@@ -44,7 +44,11 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     pivot_max_ = config_.get<int>("pivot_max");
     use_all_mimosa_hits_ = config_.get<bool>("use_all_mimosa_hits");
     pixelated_timing_layer_ = config_.get<bool>("pixelated_timing_layer");
+<<<<<<< HEAD
     LOG(WARNING) << " seting shift to " << Units::get(timeshift_, "us") << ": accepting pivots from  " << pivot_min_
+=======
+    LOG(WARNING) << " setting shift to " << Units::get(timeshift_, "us") << ": accepting pivots from  " << pivot_min_
+>>>>>>> upstream/master
                  << " to " << pivot_max_;
     add_trigger_ = config_.get<bool>("add_trigger");
     // Set EUDAQ log level to desired value:
@@ -72,6 +76,9 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     if(shift_triggers_ < 0) {
         throw InvalidValueError(config_, "shift_triggers", "Trigger shift needs to be positive (or zero).");
     }
+    // define the framelength once, since unit conversions are slow
+    framelength_ = Units::get(115.2, "us");
+    ;
 }
 
 void EventDefinitionM26::initialize() {
@@ -91,7 +98,7 @@ void EventDefinitionM26::initialize() {
     title = "Corryvreckan event start times (placed on clipboard); Corryvreckan event start time [s];# entries";
     hClipboardEventStart_long = new TH1D("clipboardEventStart_long", title.c_str(), 3e6, 0, 3e3);
 
-    pivotPixel_ = new TH1F("pivot_pixel", "pivot pixel; pivot; entires", 580, -.5, 579.5);
+    pivotPixel_ = new TH1F("pivot_pixel", "pivot pixel; pivot; entries", 580, -.5, 579.5);
     // open the input file with the eudaq reader
     try {
         readerDuration_ = eudaq::Factory<eudaq::FileReader>::MakeUnique(eudaq::str2hash("native"), duration_);
@@ -107,27 +114,10 @@ void EventDefinitionM26::initialize() {
                    << " '. Please verify that the path and file name are correct.";
         throw InvalidValueError(config_, "file_path", "Parsing error!");
     }
-
-    // pivot pixel etc plots
-    title = "pivot vs next time; pivot; start(i+1) - end(i) / #mus";
-    _pivot_vs_next_event = new TH2F("pivotVsdistToNextEVENT", title.c_str(), 576, 0, 576, 1010, -10, 1000);
-    title = "pivot vs privious time; pivot; start(i) - end(i-1) / #mus";
-    _pivot_vs_priv_event = new TH2F("pivotVsdistToPreviousEVENT", title.c_str(), 576, 0, 576, 1010, -10, 1000);
-    title = "pivot vs next time; pivot; trig(i+1) - trig (i) #mus";
-    _pivot_vs_next_dtrigger = new TH2F("pivotVsdistToNextTRIGGER", title.c_str(), 576, 0, 576, 1000, -10, 1000);
-    title = "pivot vs privious time; pivot;  trig(i) - trig (i-1) #mus";
-    _pivot_vs_priv_dtrigger = new TH2F("pivotVsdistToPreviousTRIGGER", title.c_str(), 576, 0, 576, 1010, -10, 1000);
 }
 
-void EventDefinitionM26::finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) {
-    for(uint i = 1; i < _pivots.size() - 1; ++i) {
-        _pivot_vs_next_event->Fill(_pivots.at(i), Units::convert(_starts.at(i + 1) - _ends.at(i), "us"));
-        _pivot_vs_priv_event->Fill(_pivots.at(i), Units::convert(_starts.at(i) - _ends.at(i - 1), "us"));
-
-        _pivot_vs_next_dtrigger->Fill(_pivots.at(i), Units::convert(_triggers.at(i + 1) - _triggers.at(i), "us"));
-        _pivot_vs_priv_dtrigger->Fill(_pivots.at(i), Units::convert(_triggers.at(i) - _triggers.at(i - 1), "us"));
-    }
-    LOG(INFO) << "We have to skip " << skipped_events_ << "events due to time cut criteria ";
+void EventDefinitionM26::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
+    LOG(INFO) << "We have to skip " << skipped_events_ << "events which have an overlap with the previous events.";
 }
 
 unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& filereader,
@@ -170,9 +160,8 @@ unsigned EventDefinitionM26::get_next_event_with_det(const eudaq::FileReaderUP& 
                         LOG(DEBUG) << "Skipping mimosa event with pivot " << piv;
                         continue;
                     }
-                    _pivotCurrent = piv;
                     pivotPixel_->Fill(piv);
-                    begin = Units::get(piv * (115.2 / 576), "us");
+                    begin = framelength_ * piv / 576.;
 
                     // end should be after second frame, sharp (variable durationn, not variable length)
                     end = Units::get(230.4, "us");
@@ -243,11 +232,11 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
                 time_before_ += add_begin_;
                 time_after_ -= add_begin_;
                 time_after_ += add_end_;
-                // If no timing layer is configured, we need to strech over all 3 frames
+                // If no timing layer is configured, we need to stretch over all 3 frames
             } else if(use_all_mimosa_hits_) {
-                time_before_ += Units::get(115.2, "us");
+                time_before_ += framelength_;
             } else {
-                time_before_ = Units::get(115.2, "us");
+                time_before_ = framelength_;
             }
             time_trig = time_trig - timeshift_;
 
@@ -297,10 +286,7 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
             time_trig_stop_prev_ = evtEnd;
             auto event = std::make_shared<Event>(evtBegin, evtEnd);
             clipboard->putEvent(event);
-            _starts.push_back(evtBegin);
-            _ends.push_back(evtEnd);
-            _pivots.push_back(_pivotCurrent);
-            _triggers.push_back(time_trig);
+
             if(add_trigger_) {
                 clipboard->getEvent()->addTrigger(triggerTLU_, static_cast<double>(time_trig));
             }

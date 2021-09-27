@@ -16,6 +16,7 @@ namespace corryvreckan {
     template <typename T> T Configuration::get(const std::string& key) const {
         try {
             auto node = parse_value(config_.at(key));
+            used_keys_.markUsed(key);
             try {
                 return corryvreckan::from_string<T>(node->value);
             } catch(std::invalid_argument& e) {
@@ -48,6 +49,7 @@ namespace corryvreckan {
     template <typename T> std::vector<T> Configuration::getArray(const std::string& key) const {
         try {
             std::string str = config_.at(key);
+            used_keys_.markUsed(key);
 
             std::vector<T> array;
             auto node = parse_value(str);
@@ -86,6 +88,7 @@ namespace corryvreckan {
     template <typename T> Matrix<T> Configuration::getMatrix(const std::string& key) const {
         try {
             std::string str = config_.at(key);
+            used_keys_.markUsed(key);
 
             Matrix<T> matrix;
             auto node = parse_value(str);
@@ -126,8 +129,12 @@ namespace corryvreckan {
         return def;
     }
 
-    template <typename T> void Configuration::set(const std::string& key, const T& val) {
+    template <typename T> void Configuration::set(const std::string& key, const T& val, bool mark_used) {
         config_[key] = corryvreckan::to_string(val);
+        used_keys_.registerMarker(key);
+        if(mark_used) {
+            used_keys_.markUsed(key);
+        }
     }
 
     template <typename T>
@@ -141,9 +148,10 @@ namespace corryvreckan {
         }
         ret_str.pop_back();
         config_[key] = ret_str;
+        used_keys_.registerMarker(key);
     }
 
-    template <typename T> void Configuration::setArray(const std::string& key, const std::vector<T>& val) {
+    template <typename T> void Configuration::setArray(const std::string& key, const std::vector<T>& val, bool mark_used) {
         // NOTE: not the most elegant way to support arrays
         std::string str;
         for(T el : val) {
@@ -152,6 +160,10 @@ namespace corryvreckan {
         }
         str.pop_back();
         config_[key] = str;
+        used_keys_.registerMarker(key);
+        if(mark_used) {
+            used_keys_.markUsed(key);
+        }
     }
 
     template <typename T> void Configuration::setMatrix(const std::string& key, const Matrix<T>& val) {
