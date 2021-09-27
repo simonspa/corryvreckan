@@ -20,10 +20,10 @@ void FilterEvents::initialize() {
     config_.setDefault<unsigned>("min_tracks", 0);
     config_.setDefault<unsigned>("max_tracks", 100);
     config_.setDefault<unsigned>("min_clusters_per_plane", 0);
-    config_.setDefault<unsigned>("maxC_custers_per_plane", 100);
+    config_.setDefault<unsigned>("max_custers_per_plane", 100);
 
     min_number_tracks_ = config_.get<unsigned>("min_tracks");
-    max_number_tracks_ = config_.get<unsigned>("max_tacks");
+    max_number_tracks_ = config_.get<unsigned>("max_tracks");
     min_clusters_per_reference_ = config_.get<unsigned>("min_clusters_per_plane");
     max_clusters_per_reference_ = config_.get<unsigned>("max_clusters_per_plane");
 
