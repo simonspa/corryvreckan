@@ -105,8 +105,8 @@ void EventLoaderMuPixTelescope::initialize() {
     // create the histograms for all sensor
     for(auto& detector : detectors_) {
         auto name = detector->getName();
-        TDirectory* directory = getROOTDirectory();
-        TDirectory* local_directory = directory->mkdir(name.c_str());
+        TDirectory* dir = getROOTDirectory();
+        TDirectory* local_directory = dir->mkdir(name.c_str());
 
         if(local_directory == nullptr) {
             throw RuntimeError("Cannot create or access local ROOT directory for module " + this->getUniqueName());
@@ -243,7 +243,6 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
 void EventLoaderMuPixTelescope::fillBuffer() {
     long unsigned int temp_fpga_time = 0;
     unsigned int raw_time = 0;
-    unsigned int overlap_fpga = 0;
     // here we need to check quite a number of cases
     bool buffers_full = false;
     while(!buffers_full) {
@@ -255,7 +254,7 @@ void EventLoaderMuPixTelescope::fillBuffer() {
             // need to determine the sensor layer that is identified by the tag
             RawHit h = tf_.get_hit(0);
             // tag does not match - continue reading if data is not sorted
-            uint tag = h.tag() & (~0x3);
+            uint tag = h.tag() & static_cast<uint>(~0x3);
             if(names_.count(tag) != 1) {
                 throw RuntimeError("Unknown pixel tag read in data: " + to_string(tag));
             }
