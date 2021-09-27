@@ -20,7 +20,7 @@ void FilterEvents::initialize() {
     config_.setDefault<unsigned>("min_tracks", 0);
     config_.setDefault<unsigned>("max_tracks", 100);
     config_.setDefault<unsigned>("min_clusters_per_plane", 0);
-    config_.setDefault<unsigned>("max_custers_per_plane", 100);
+    config_.setDefault<unsigned>("max_clusters_per_plane", 100);
 
     min_number_tracks_ = config_.get<unsigned>("min_tracks");
     max_number_tracks_ = config_.get<unsigned>("max_tracks");
@@ -50,7 +50,7 @@ StatusCode FilterEvents::run(const std::shared_ptr<Clipboard>& clipboard) {
 
 void FilterEvents::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
-    LOG(STATUS) << "Skipped " << hFilter_->GetBinContent(1) << " events of " << hFilter_->GetBinContent(6);
+    LOG(STATUS) << "Skipped " << hFilter_->GetBinContent(1) << " events. Events passed " << hFilter_->GetBinContent(6);
 }
 
 bool FilterEvents::filter_tracks(const std::shared_ptr<Clipboard>& clipboard) {
