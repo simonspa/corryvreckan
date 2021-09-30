@@ -14,6 +14,7 @@ INCLUDE_DIRECTORIES(SYSTEM ${EUDAQ_INCLUDE_DIR})
 # Add source files to library
 CORRYVRECKAN_MODULE_SOURCES(${MODULE_NAME}
     EventLoaderEUDAQ.cpp
+    SequentialReader.cpp
 )
 
 # Add EUDAQ libraries

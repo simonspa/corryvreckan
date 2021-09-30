@@ -11,15 +11,16 @@
 #ifndef EventLoaderEUDAQ_H
 #define EventLoaderEUDAQ_H 1
 
-#include <TCanvas.h>
-#include <TH1F.h>
-#include <TH2F.h>
-#include <iostream>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "core/module/Module.hpp"
-#include "eudaq/FileReader.hh"
-#include "objects/Cluster.hpp"
-#include "objects/Pixel.hpp"
-#include "objects/Track.hpp"
+
+#include "SequentialReader.h"
+
+class TH2F;
 
 namespace corryvreckan {
     /** @ingroup Modules
@@ -35,11 +36,11 @@ namespace corryvreckan {
         void initialize() override;
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
-        // EUDAQ file reader instance:
-        eudaq::FileReader* reader;
+        // EUDAQ-based file reader instance:
+        std::unique_ptr<SequentialReader> reader;
 
         // Member variables
-        std::string m_filename{};
+        std::vector<std::string> m_filenames{};
         bool m_longID;
 
         std::map<std::string, TH2F*> hitmap;
