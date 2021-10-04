@@ -23,8 +23,10 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
     config_.setDefault<bool>("ts2_is_gray", false);
     config_.setDefault<unsigned>("buffer_depth", 1000);
     config_.setDefault<double>("time_offset", 0.0);
-    config_.setDefault<double>("reference_frequency", 125);
+    config_.setDefault<double>("reference_frequency", 125.);
+    config_.setDefault<double>("ToT_frequency", 125.);
 
+    ref_tot_frequency_ = config_.get<double>("ToT_frequency");
     refFrequency_ = config_.get<double>("reference_frequency");
     inputDirectory_ = config_.getPath("input_directory");
     buffer_depth_ = config.get<unsigned>("buffer_depth");
@@ -173,8 +175,11 @@ StatusCode EventLoaderMuPixTelescope::read_sorted(const std::shared_ptr<Clipboar
         // assuming 10bit ts
         double px_timestamp =
             8 / refFrequency_ * 125. * static_cast<double>(((tf_.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw());
+        double tot_timestamp =
+            8 / refFrequency_ * 125. * static_cast<double>(((tf_.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw());
+        double tot = (tot_timestamp - px_timestamp > 0) ? (px_timestamp - tot_timestamp) : 0;
         // setting tot and charge to zero here - needs to be improved
-        pixels_[tag].push_back(std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), 0, 0, px_timestamp));
+        pixels_[tag].push_back(std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), tot, tot, px_timestamp));
     }
     // If no event is defined create one
     if(clipboard->getEvent() == nullptr) {
@@ -284,7 +289,11 @@ void EventLoaderMuPixTelescope::fillBuffer() {
                     timeOffset_.at(tag);
                 LOG(TRACE) << "Pixel timestamp " << px_timestamp;
                 // setting tot and charge to zero here - needs to be improved
-                pixelbuffers_.at(tag).push(std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), 0, 0, px_timestamp));
+                double tot_timestamp = 8 / refFrequency_ * 125. *
+                                       static_cast<double>(((tf_.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw());
+                double tot = (tot_timestamp - px_timestamp > 0) ? (px_timestamp - tot_timestamp) : 0;
+                pixelbuffers_.at(tag).push(
+                    std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), tot, tot, px_timestamp));
             }
             buffers_full = true;
             for(auto t : tags_) {
