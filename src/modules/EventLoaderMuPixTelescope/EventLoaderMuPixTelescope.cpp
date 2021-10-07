@@ -23,8 +23,10 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
     config_.setDefault<bool>("ts2_is_gray", false);
     config_.setDefault<unsigned>("buffer_depth", 1000);
     config_.setDefault<double>("time_offset", 0.0);
-    config_.setDefault<double>("reference_frequency", 125);
+    config_.setDefault<double>("reference_frequency", 125.);
+    config_.setDefault<uint>("bitshift_tot", 7);
 
+    bitshift_tot_ = config_.get<uint>("bitshift_tot");
     refFrequency_ = config_.get<double>("reference_frequency");
     inputDirectory_ = config_.getPath("input_directory");
     buffer_depth_ = config.get<unsigned>("buffer_depth");
@@ -168,13 +170,7 @@ StatusCode EventLoaderMuPixTelescope::read_sorted(const std::shared_ptr<Clipboar
         if(names_.count(tag) != 1) {
             throw RuntimeError("Unknown pixel tag read in data: " + to_string(tag));
         }
-        h = tf_.get_hit(i, types_.at(tag));
-        // Convert time stamp to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time yet,
-        // assuming 10bit ts
-        double px_timestamp =
-            8 / refFrequency_ * 125. * static_cast<double>(((tf_.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw());
-        // setting tot and charge to zero here - needs to be improved
-        pixels_[tag].push_back(std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), 0, 0, px_timestamp));
+        pixels_[tag].push_back(read_hit(h, tag));
     }
     // If no event is defined create one
     if(clipboard->getEvent() == nullptr) {
@@ -240,6 +236,30 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
     return StatusCode::NoData;
 }
 
+shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint tag) {
+    // Convert time stamp to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time yet,
+    // assuming 10bit ts
+    // we have two time stamps sampled. on falling an rising edge:
+    uint16_t time = 0x0;
+    if(h.get_ts2() == uint16_t(-1)) {
+        time = h.timestamp_raw() << 1;
+    } else if(h.timestamp_raw() < h.get_ts2()) {
+        time = h.timestamp_raw() << 1;
+
+    } else if(h.timestamp_raw() > h.get_ts2()) {
+        LOG(TRACE) << "TS2 smaller";
+        time = (h.timestamp_raw() << 1);
+    } else {
+        time = (h.timestamp_raw() << 1) + 0x1;
+    }
+    double px_timestamp = 4 / refFrequency_ * 125. * static_cast<double>(((tf_.timestamp() >> 1) & 0xFFFFFFFFFF800) + time);
+    double tot_timestamp = 8 / refFrequency_ * 125. *
+                           static_cast<double>(((tf_.timestamp() >> 2) & (0xFFFFFFFFFFC00 << bitshift_tot_)) +
+                                               (static_cast<uint32_t>(h.tot()) << bitshift_tot_));
+    double tot = (tot_timestamp - px_timestamp > 0) ? (px_timestamp - tot_timestamp) : 0;
+    return std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), tot, tot, px_timestamp);
+}
+
 void EventLoaderMuPixTelescope::fillBuffer() {
     long unsigned int temp_fpga_time = 0;
     unsigned int raw_time = 0;
@@ -277,14 +297,7 @@ void EventLoaderMuPixTelescope::fillBuffer() {
                 }
                 raw_fpga_vs_chip_corrected.at(names_.at(tag))->Fill(raw_time, static_cast<double>(temp_fpga_time & 0x7FF));
 
-                // convert timestamp to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time
-                // yet, assuming 10bit ts
-                double px_timestamp =
-                    8 / refFrequency_ * 125. * static_cast<double>((temp_fpga_time & 0xFFFFFFFFFFC00) + raw_time) -
-                    timeOffset_.at(tag);
-                LOG(TRACE) << "Pixel timestamp " << px_timestamp;
-                // setting tot and charge to zero here - needs to be improved
-                pixelbuffers_.at(tag).push(std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), 0, 0, px_timestamp));
+                pixelbuffers_.at(tag).push(read_hit(h, tag));
             }
             buffers_full = true;
             for(auto t : tags_) {

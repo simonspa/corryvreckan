@@ -51,6 +51,8 @@ namespace corryvreckan {
     private:
         StatusCode read_sorted(const std::shared_ptr<Clipboard>& clipboard);
         StatusCode read_unsorted(const std::shared_ptr<Clipboard>& clipboard);
+
+        shared_ptr<Pixel> read_hit(const RawHit& h, uint tag);
         void fillBuffer();
         std::vector<uint> tags_{};
         double prev_event_end_{};
@@ -77,6 +79,7 @@ namespace corryvreckan {
         bool isSorted_;
         int runNumber_;
         double refFrequency_;
+        uint bitshift_tot_;
         BlockFile* blockFile_;
         TelescopeFrame tf_;
 
