@@ -140,6 +140,29 @@ namespace corryvreckan {
         std::map<uint32_t, double> triggerList() const;
 
         /**
+         * @brief Retrieve list with all tags know to the event
+         * @return Map of tag keys with their corresponding values
+         */
+        std::map<std::string, std::string> tagList() const;
+
+        /**
+         * @brief Add a new tag to this event
+         * @param tag_key Key of the tag to be added
+         * @param tag_value Value of the tag to be added
+         *
+         * Add Key/value tags to the event.
+         **/
+        void addTag(std::string tag_key, std::string tag_value);
+
+        /**
+         * @brief Retrieve tag value from this event
+         * @param tag_key Key of the tag to be added
+         *
+         * Get value of tag to the event.
+         **/
+        std::string getTag(std::string tag_key);
+
+        /**
          * @brief Print an ASCII representation of Pixel to the given stream
          * @param out Stream to print to
          */
@@ -152,8 +175,11 @@ namespace corryvreckan {
         // List with all triggers known to the event, containing the trigger ID and its timestamp
         std::map<uint32_t, double> trigger_list_{};
 
+        // List with arbitrary key/value tags supplementing the event
+        std::map<std::string, std::string> tags_{};
+
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Event, 6)
+        ClassDefOverride(Event, 7)
     };
 } // namespace corryvreckan
 
