@@ -563,6 +563,13 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
             auto new_pixels = get_pixel_data(event_, plane_id);
             hits_ += new_pixels.size();
             pixels.insert(pixels.end(), new_pixels.begin(), new_pixels.end());
+
+            auto tags = event_->GetTags();
+            auto corryevent = clipboard->getEvent();
+            for(auto tag : tags) {
+                corryevent->addTag(tag.first, tag.second);
+                // LOG(DEBUG) << "Adding tag " << tag.first << " -> " << tag.second;
+            }
         }
 
         // If this event was after the current event or if we have not enough information, stop reading:
@@ -587,6 +594,11 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
     LOG(DEBUG) << "Triggers on clipboard event: " << event->triggerList().size();
     for(auto& trigger : event->triggerList()) {
         LOG(DEBUG) << "\t ID: " << trigger.first << ", time: " << Units::display(trigger.second, "us");
+    }
+    
+    LOG(DEBUG) << "Tags on clipboard event: " << event->tagList().size();
+    for(auto& tag : event->tagList()) {
+        LOG(DEBUG) << "\t Key: " << tag.first << " -> " << tag.second;
     }
 
     // histogram only exists for non-auxiliary detectors:
