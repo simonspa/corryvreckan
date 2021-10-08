@@ -108,7 +108,7 @@ void AnalysisDUT::initialize() {
                                 -0.5,
                                 m_detector->nPixels().Y() - 0.5);
     hClusterSizeMapAssoc = new TProfile2D("clusterSizeMapAssoc",
-                                          "Size map for associated clusters;cluster column;cluster row;#entries",
+                                          "Size map for associated clusters;cluster column;cluster row;# entries",
                                           m_detector->nPixels().X(),
                                           -0.5,
                                           m_detector->nPixels().X() - 0.5,
@@ -148,7 +148,7 @@ void AnalysisDUT::initialize() {
                      0,
                      100);
     hClusterChargeMapAssoc = new TProfile2D("clusterChargeMapAssoc",
-                                            "Charge map for associated clusters; cluster charge [e]; #entries",
+                                            "Charge map for associated clusters; cluster column; cluster row;cluster charge [a.u.]",
                                             m_detector->nPixels().X(),
                                             -0.5,
                                             m_detector->nPixels().X() - 0.5,
@@ -160,14 +160,14 @@ void AnalysisDUT::initialize() {
 
     hClusterChargeVsColAssoc =
         new TProfile("clusterChargeVsColAssoc",
-                     "cluster charge vs. column for assoc clusters;cluster column;mean cluster charge [e]",
+                     "cluster charge vs. column for assoc clusters;cluster column;mean cluster charge [a.u.]",
                      m_detector->nPixels().X(),
                      -0.5,
                      m_detector->nPixels().X() - 0.5,
 		     0.0,
 		     charge_histo_range_ ); 
     hClusterChargeVsRowAssoc = new TProfile("clusterChargeVsRowAssoc",
-                                            "cluster charge vs. row for assoc clusters;cluster row;mean cluster charge [e]",
+                                            "cluster charge vs. row for assoc clusters;cluster row;mean cluster charge [a.u.]",
                                             m_detector->nPixels().Y(),
                                             -0.5,
                                             m_detector->nPixels().Y() - 0.5,
@@ -176,7 +176,7 @@ void AnalysisDUT::initialize() {
 
     hSeedChargeVsColAssoc =
         new TProfile("seedChargeVsColAssoc",
-                     "seed pixel charge vs. column for assoc clusters;cluster column;mean seed pixel charge [e]",
+                     "seed pixel charge vs. column for assoc clusters;cluster column;mean seed pixel charge [a.u.]",
                      m_detector->nPixels().X(),
                      -0.5,
                      m_detector->nPixels().X() - 0.5,
@@ -184,14 +184,14 @@ void AnalysisDUT::initialize() {
 		     charge_histo_range_ ); 
     hSeedChargeVsRowAssoc =
         new TProfile("seedChargeVsRowAssoc",
-                     "seed pixel charge vs. row for assoc clusters;cluster row;mean seed pixel charge [e]",
+                     "seed pixel charge vs. row for assoc clusters;cluster row;mean seed pixel charge [a.u.]",
                      m_detector->nPixels().Y(),
                      -0.5,
                      m_detector->nPixels().Y() - 0.5,
 		     0.0,
 		     charge_histo_range_); 
     hClusterChargeVsRowAssoc_2D = new TH2F("hClusterChargeVsRowAssoc_2D",
-                                           "cluster charge distribution vs. cluster row; cluster row; cluster ToT [lsb]",
+                                           "cluster charge vs. cluster row; cluster row; cluster charge [a.u.]",
                                            m_detector->nPixels().Y(),
                                            -0.5,
                                            m_detector->nPixels().Y() - 0.5,
@@ -199,7 +199,7 @@ void AnalysisDUT::initialize() {
 					   0.0,
 					   charge_histo_range_ );
     hSeedChargeVsRowAssoc_2D = new TH2F("hSeedChargeVsRowAssoc_2D",
-                                        "seed charge distribution vs. cluster row; cluster row; seed pixel ToT [lsb]",
+                                        "seed charge vs. cluster row; cluster row; seed pixel charge [a.u.]",
                                         m_detector->nPixels().Y(),
                                         -0.5,
                                         m_detector->nPixels().Y() - 0.5,
@@ -208,7 +208,7 @@ void AnalysisDUT::initialize() {
 					charge_histo_range_);
 
     hTrackZPosDUT = new TH1F("globalTrackZPosOnDUT",
-                             "Global z-position of track on the DUT; global z of track intersection [mm]; #entries ",
+                             "Global z-position of track on the DUT; global z of track intersection [mm]; # entries ",
                              400,
                              m_detector->displacement().z() - 10,
                              m_detector->displacement().z() + 10);
@@ -222,7 +222,7 @@ void AnalysisDUT::initialize() {
                             -0.5,
                             m_detector->nPixels().Y() - 0.5);
     hPixelRawValueAssoc = new TH1F("pixelRawValueAssoc",
-                                   "Charge distribution of pixels from associated clusters;pixel raw value;#entries",
+                                   "Charge distribution of pixels from associated clusters;pixel raw value;# entries",
 				   n_chargebins_,
 				   0.0,
 				   raw_histo_range_ );
@@ -248,7 +248,7 @@ void AnalysisDUT::initialize() {
                             499.5);
     residualsPosVsresidualsTime = new TH2F(
         "residualsPosVsresidualsTime",
-        "Time vs. absolute position residuals;time_{track}-time_{hit} [ns];|pos_{track}-pos_{hit}| [#mum];# entries",
+        "Absolute position residuals vs. time;time_{track}-time_{hit} [ns];|pos_{track}-pos_{hit}| [#mum];# entries",
         n_timebins_,
         -(n_timebins_ + 1) / 2. * time_binning_,
         (n_timebins_ - 1) / 2. * time_binning_,
@@ -284,12 +284,12 @@ void AnalysisDUT::initialize() {
                                      499.5);
 
     clusterChargeAssoc = new TH1F("clusterChargeAssociated",
-                                  "Charge distribution of associated clusters;cluster charge [e];# entries",
+                                  "Charge distribution of associated clusters;cluster charge [a.u.];# entries",
 				  n_chargebins_,
 				  0.0,
 				  charge_histo_range_ );
     seedChargeAssoc = new TH1F("seedChargeAssociated",
-                               "Charge distribution of seed pixels for associated clusters;seed pixel charge [e];# entries",
+                               "Charge distribution of seed pixels for associated clusters;seed pixel charge [a.u.];# entries",
 			       n_chargebins_,
 			       0.0,
 			       charge_histo_range_ );
@@ -355,7 +355,7 @@ void AnalysisDUT::initialize() {
                                  -pitch_y / 2.,
                                  pitch_y / 2.);
 
-    title = "Mean cluster charge map;" + mod_axes + "<cluster charge> [ke]";
+    title = "Mean cluster charge map;" + mod_axes + "<cluster charge> [a.u.]";
     qvsxmym = new TProfile2D("qvsxmym",
                              title.c_str(),
                              static_cast<int>(pitch_x),
@@ -367,7 +367,7 @@ void AnalysisDUT::initialize() {
 			     0.0,
 			     charge_histo_range_ ); 
 
-    title = "Most probable cluster charge map, Moyal approx.;" + mod_axes + "cluster charge MPV [ke]";
+    title = "Most probable cluster charge map, Moyal approx.;" + mod_axes + "cluster charge MPV [a.u.]";
     qMoyalvsxmym = new TProfile2D("qMoyalvsxmym",
                                   title.c_str(),
                                   static_cast<int>(pitch_x),
@@ -379,7 +379,7 @@ void AnalysisDUT::initialize() {
 				  0.0,
 				  charge_histo_range_ ); 
 
-    title = "Seed pixel charge map;" + mod_axes + "<seed pixel charge> [ke]";
+    title = "Seed pixel charge map;" + mod_axes + "<seed pixel charge> [a.u.]";
     pxqvsxmym = new TProfile2D("pxqvsxmym",
                                title.c_str(),
                                static_cast<int>(pitch_x),
@@ -443,7 +443,7 @@ void AnalysisDUT::initialize() {
                           -pitch_y / 2.,
                           pitch_y / 2.);
 
-    title = "Mean cluster charge map (1-pixel);" + mod_axes + "<cluster charge> [ke]";
+    title = "Mean cluster charge map (1-pixel);" + mod_axes + "<cluster charge> [a.u.]";
     qvsxmym_1px = new TProfile2D("qvsxmym_1px",
                                  title.c_str(),
                                  static_cast<int>(pitch_x),
@@ -455,7 +455,7 @@ void AnalysisDUT::initialize() {
 				 0.0,
 				 charge_histo_range_ ); 
 
-    title = "Mean cluster charge map (2-pixel);" + mod_axes + "<cluster charge> [ke]";
+    title = "Mean cluster charge map (2-pixel);" + mod_axes + "<cluster charge> [a.u.]";
     qvsxmym_2px = new TProfile2D("qvsxmym_2px",
                                  title.c_str(),
                                  static_cast<int>(pitch_x),
@@ -467,7 +467,7 @@ void AnalysisDUT::initialize() {
 				 0.0,
 				 charge_histo_range_ ); 
 
-    title = "Mean cluster charge map (3-pixel);" + mod_axes + "<cluster charge> [ke]";
+    title = "Mean cluster charge map (3-pixel);" + mod_axes + "<cluster charge> [a.u.]";
     qvsxmym_3px = new TProfile2D("qvsxmym_3px",
                                  title.c_str(),
                                  static_cast<int>(pitch_x),
@@ -479,7 +479,7 @@ void AnalysisDUT::initialize() {
 				 0.0,
 				 charge_histo_range_ ); 
 
-    title = "Mean cluster charge map (4-pixel);" + mod_axes + "<cluster charge> [ke]";
+    title = "Mean cluster charge map (4-pixel);" + mod_axes + "<cluster charge> [a.u.]";
     qvsxmym_4px = new TProfile2D("qvsxmym_4px",
                                  title.c_str(),
                                  static_cast<int>(pitch_x),
@@ -492,7 +492,7 @@ void AnalysisDUT::initialize() {
 				 charge_histo_range_ ); 
 
     residualsTime = new TH1F("residualsTime",
-                             "Time residual;time_{track}-time_{hit} [ns];#entries",
+                             "Time residual;time_{track}-time_{hit} [ns];# entries",
                              n_timebins_,
                              -(n_timebins_ + 1) / 2. * time_binning_,
                              (n_timebins_ - 1) / 2. * time_binning_);
@@ -507,7 +507,7 @@ void AnalysisDUT::initialize() {
                                    (n_timebins_ - 1) / 2. * time_binning_);
     residualsTimeVsTot =
         new TH2F("residualsTimeVsTot",
-                 "Time residual vs. pixel charge;time_{track} - time_{hit} [ns];seed pixel ToT [lsb];# entries",
+                 "Pixel charge vs. time residual;time_{track} - time_{hit} [ns];seed pixel raw value;# entries",
                  n_timebins_,
                  -(n_timebins_ + 1) / 2. * time_binning_,
                  (n_timebins_ - 1) / 2. * time_binning_,
@@ -517,7 +517,7 @@ void AnalysisDUT::initialize() {
 
     residualsTimeVsCol =
         new TH2F("residualsTimeVsCol",
-                 "Time residual vs. pixel charge;time_{track} - time_{hit} [ns];seed pixel column;# entries",
+                 "Seed pixel column vs. time residual;time_{track} - time_{hit} [ns];seed pixel column;# entries",
                  n_timebins_,
                  -(n_timebins_ + 1) / 2. * time_binning_,
                  (n_timebins_ - 1) / 2. * time_binning_,
@@ -526,7 +526,7 @@ void AnalysisDUT::initialize() {
                  m_detector->nPixels().X() - 0.5);
 
     residualsTimeVsRow = new TH2F("residualsTimeVsRow",
-                                  "Time residual vs. pixel charge;time_{track} - time_{hit} [ns];seed pixel row;# entries",
+                                  "Seed pixel row vs. time residual;time_{track} - time_{hit} [ns];seed pixel row;# entries",
                                   n_timebins_,
                                   -(n_timebins_ + 1) / 2. * time_binning_,
                                   (n_timebins_ - 1) / 2. * time_binning_,
@@ -536,7 +536,7 @@ void AnalysisDUT::initialize() {
 
     residualsTimeVsSignal =
         new TH2F("residualsTimeVsSignal",
-                 "Time residual vs. cluster charge;cluster charge [e];time_{track}-time_{hit} [mm];# entries",
+                 "Cluster charge vs. time residual;time_{track}-time_{hit} [mm];cluster charge [a.u.];# entries",
                  n_timebins_,
                  -(n_timebins_ + 1) / 2. * time_binning_,
                  (n_timebins_ - 1) / 2. * time_binning_,
@@ -573,13 +573,13 @@ void AnalysisDUT::initialize() {
                  10);
 
     pxTimeMinusSeedTime = new TH1F("pxTimeMinusSeedTime",
-                                   "pixel - seed pixel timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns];events",
+                                   "pixel - seed pixel timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns];# entries",
                                    n_timebins_,
                                    -(n_timebins_ + 1) / 2. * time_binning_,
                                    (n_timebins_ - 1) / 2. * time_binning_);
     pxTimeMinusSeedTime_vs_pxCharge =
         new TH2F("pxTimeMinusSeedTime_vs_pxCharge",
-                 "pixel - seed pixel timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [e];events",
+                 "pixel - seed pixel timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [a.u.];# entries",
                  n_timebins_,
                  -(n_timebins_ + 1) / 2. * time_binning_,
                  (n_timebins_ - 1) / 2. * time_binning_,
@@ -588,7 +588,7 @@ void AnalysisDUT::initialize() {
 		 charge_histo_range_ );
     pxTimeMinusSeedTime_vs_pxCharge_2px =
         new TH2F("pxTimeMinusSeedTime_vs_pxCharge_2px",
-                 "pixel - seed pixel timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [e];events",
+                 "pixel - seed pixel timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [a.u.];# entries",
                  n_timebins_,
                  -(n_timebins_ + 1) / 2. * time_binning_,
                  (n_timebins_ - 1) / 2. * time_binning_,
@@ -597,7 +597,7 @@ void AnalysisDUT::initialize() {
 		 charge_histo_range_ );
     pxTimeMinusSeedTime_vs_pxCharge_3px =
         new TH2F("pxTimeMinusSeedTime_vs_pxCharge_3px",
-                 "pixel - seed pixel timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [e];events",
+                 "pixel - seed pixel timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [a.u.];# entries",
                  n_timebins_,
                  -(n_timebins_ + 1) / 2. * time_binning_,
                  (n_timebins_ - 1) / 2. * time_binning_,
@@ -606,7 +606,7 @@ void AnalysisDUT::initialize() {
 		 charge_histo_range_ );
     pxTimeMinusSeedTime_vs_pxCharge_4px =
         new TH2F("pxTimeMinusSeedTime_vs_pxCharge_4px",
-                 "pixel - seed pixel timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [e];events",
+                 "pixel - seed pixel timestamp (all pixels w/o seed);ts_{pixel} - ts_{seed} [ns]; pixel charge [a.u.];# entries",
                  n_timebins_,
                  -(n_timebins_ + 1) / 2. * time_binning_,
                  (n_timebins_ - 1) / 2. * time_binning_,
