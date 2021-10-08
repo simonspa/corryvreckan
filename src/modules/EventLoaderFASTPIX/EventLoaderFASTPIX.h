@@ -61,6 +61,7 @@ namespace corryvreckan {
 
         int m_eventNumber;
         size_t m_triggerNumber;
+        size_t m_lostTriggers;
         double m_prevTriggerTime;
         double m_prevScopeTriggerTime;
         uint16_t m_blockSize;
@@ -77,6 +78,8 @@ namespace corryvreckan {
         std::vector<double> m_triggerNumbers;
         std::vector<double> m_triggerTimestamps;
         std::vector<double> m_triggerScopeTimestamps;
+        std::vector<double> m_triggerScopeTimestampsCorrected;
+
         TGraph* trigger_graph;
         TGraph* trigger_scope_graph;
         TGraph* trigger_dt_ratio;
