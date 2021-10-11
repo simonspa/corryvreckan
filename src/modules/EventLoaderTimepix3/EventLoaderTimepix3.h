@@ -76,6 +76,8 @@ namespace corryvreckan {
 
         unsigned long long int m_prevTime;
         bool m_shutterOpen;
+        int m_prevTriggerNumber;
+        int m_triggerOverflowCounter;
     };
 } // namespace corryvreckan
 #endif // TIMEPIX3EVENTLOADER_H

@@ -105,6 +105,8 @@ void EventLoaderTimepix3::initialize() {
     m_clearedHeader = false;
     m_syncTimeTDC = 0;
     m_TDCoverflowCounter = 0;
+    m_prevTriggerNumber = 0;
+    m_triggerOverflowCounter = 0;
 
     // Sort all files by extracting the "serial number" from the file name while ignoring the timestamp:
     std::sort(detector_files.begin(), detector_files.end(), [](std::string a, std::string b) {
@@ -498,7 +500,12 @@ bool EventLoaderTimepix3::loadData(const std::shared_ptr<Clipboard>& clipboard,
                 unsigned int stamp = (pixdata & 0x1E0) >> 5;
                 long long int timestamp_raw = static_cast<long long int>(pixdata & 0xFFFFFFFFE00) >> 9;
                 long long int timestamp = 0;
-                // int triggerNumber = ((pixdata & 0xFFF00000000000) >> 44);
+                int triggerNumber = ((pixdata & 0xFFF00000000000) >> 44);
+
+                if(triggerNumber < m_prevTriggerNumber) {
+                    m_triggerOverflowCounter++;
+                }
+
                 int intermediate = (pixdata & 0x1F);
                 if(intermediate != 0)
                     continue;
@@ -512,7 +519,11 @@ bool EventLoaderTimepix3::loadData(const std::shared_ptr<Clipboard>& clipboard,
 
                 double triggerTime =
                     (static_cast<double>(timestamp) + static_cast<double>(stamp) / 12) / (8. * 0.04); // 320 MHz clock
-                auto triggerSignal = std::make_shared<SpidrSignal>("trigger", triggerTime);
+
+                int triggerID = triggerNumber + (m_triggerOverflowCounter<<12);
+                m_prevTriggerNumber = triggerNumber;
+                
+                auto triggerSignal = std::make_shared<SpidrSignal>("trigger", triggerTime, triggerID);
                 spidrData.push_back(triggerSignal);
             }
         }
