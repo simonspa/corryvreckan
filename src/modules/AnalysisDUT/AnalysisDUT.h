@@ -102,6 +102,10 @@ namespace corryvreckan {
         bool use_closest_cluster_;
         int n_timebins_;
         double time_binning_;
+        int n_chargebins_;
+        double charge_histo_range_;
+        int n_rawbins_;
+        double raw_histo_range_;
         bool correlations_;
         int num_tracks_;
     };
