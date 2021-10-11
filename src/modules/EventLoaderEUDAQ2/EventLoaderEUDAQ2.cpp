@@ -564,12 +564,9 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
             hits_ += new_pixels.size();
             pixels.insert(pixels.end(), new_pixels.begin(), new_pixels.end());
 
-            auto tags = event_->GetTags();
-            auto corryevent = clipboard->getEvent();
-            for(auto tag : tags) {
-                corryevent->addTag(tag.first, tag.second);
-                // LOG(DEBUG) << "Adding tag " << tag.first << " -> " << tag.second;
-            }
+            // Add eudaq tags to the event
+            auto eudaq_tags = event_->GetTags();
+            clipboard->getEvent()->addTags(eudaq_tags);
         }
 
         // If this event was after the current event or if we have not enough information, stop reading:
