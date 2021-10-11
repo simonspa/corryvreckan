@@ -595,7 +595,7 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
     for(auto& trigger : event->triggerList()) {
         LOG(DEBUG) << "\t ID: " << trigger.first << ", time: " << Units::display(trigger.second, "us");
     }
-    
+
     LOG(DEBUG) << "Tags on clipboard event: " << event->tagList().size();
     for(auto& tag : event->tagList()) {
         LOG(DEBUG) << "\t Key: " << tag.first << " -> " << tag.second;

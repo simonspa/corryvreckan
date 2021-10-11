@@ -52,7 +52,6 @@ std::string Event::getTag(std::string tag_key) {
     return tags_[tag_key];
 }
 
-
 Event::Position Event::getTimestampPosition(double timestamp) const {
     if(timestamp < start()) {
         return Position::BEFORE;
