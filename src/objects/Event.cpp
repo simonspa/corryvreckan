@@ -44,6 +44,10 @@ std::map<std::string, std::string> Event::tagList() const {
     return tags_;
 }
 
+void Event::addTags(std::map<std::string, std::string> tags) {
+    tags_.insert(tags.begin(), tags.end());
+}
+
 void Event::addTag(std::string tag_key, std::string tag_value) {
     tags_.emplace(tag_key, tag_value);
 }

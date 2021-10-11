@@ -146,18 +146,26 @@ namespace corryvreckan {
         std::map<std::string, std::string> tagList() const;
 
         /**
+         * @brief Bulk-add a new tags to this event
+         *
+         * @param tags Map of tags to be added
+         * Add Key/value tags to the event.
+         **/
+        void addTags(std::map<std::string, std::string> tags);
+
+        /**
          * @brief Add a new tag to this event
+         *
          * @param tag_key Key of the tag to be added
          * @param tag_value Value of the tag to be added
-         *
          * Add Key/value tags to the event.
          **/
         void addTag(std::string tag_key, std::string tag_value);
 
         /**
          * @brief Retrieve tag value from this event
-         * @param tag_key Key of the tag to be added
          *
+         * @param tag_key Key of the tag to be read
          * Get value of tag to the event.
          **/
         std::string getTag(std::string tag_key);
