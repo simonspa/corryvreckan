@@ -80,9 +80,13 @@ void EventLoaderFASTPIX::initialize() {
     m_prevTriggerTime = 0;
     m_prevScopeTriggerTime = 0;
     m_lostTriggers = 0;
+    m_discardedEvents = 0;
 
     m_spidr_t0 = 0;
     m_scope_t0 = 0;
+
+    m_triggerSync = false;
+    m_timeScaler = 0.99993;
 
     m_inputFile.read(reinterpret_cast<char*>(&m_blockSize), sizeof m_blockSize);
 }
@@ -94,99 +98,148 @@ void EventLoaderFASTPIX::initialize() {
 // number of pixels / event
 // column, row, ToT [xN]
 
-bool EventLoaderFASTPIX::loadData(const std::shared_ptr<Clipboard>& clipboard, PixelVector &deviceData, double spidr_timestamp) {
+bool EventLoaderFASTPIX::loadEvent(const std::shared_ptr<Clipboard>& clipboard, PixelVector &deviceData, double spidr_timestamp) {
     std::string detectorID = m_detector->getName();
 
     uint16_t event_size;
     double event_timestamp, seed_time, cfd_time;
 
-    bool done = false;
-    do {
-        m_inputFile.read(reinterpret_cast<char*>(&event_timestamp), sizeof event_timestamp);
-        m_inputFile.read(reinterpret_cast<char*>(&seed_time), sizeof seed_time);
-        m_inputFile.read(reinterpret_cast<char*>(&cfd_time), sizeof cfd_time);
-        m_inputFile.read(reinterpret_cast<char*>(&event_size), sizeof event_size);
+    m_inputFile.read(reinterpret_cast<char*>(&event_timestamp), sizeof event_timestamp);
+    m_inputFile.read(reinterpret_cast<char*>(&seed_time), sizeof seed_time);
+    m_inputFile.read(reinterpret_cast<char*>(&cfd_time), sizeof cfd_time);
+    m_inputFile.read(reinterpret_cast<char*>(&event_size), sizeof event_size);
 
-        event_timestamp *= 1e9;
-        m_triggerScopeTimestamps.emplace_back(event_timestamp-m_scope_t0);
+    for(uint16_t i = 0; i < event_size; i++) {
+        uint16_t col, row;
+        double tot;
 
-        LOG(DEBUG) << "Event timestamp " << event_timestamp << " Seed time " << seed_time << " CFD time " << cfd_time << " event size " << event_size;
-        LOG(DEBUG) << "Spidr timestamp " << spidr_timestamp << " Spidr t0 "<< m_spidr_t0;
+        m_inputFile.read(reinterpret_cast<char*>(&col), sizeof col);
+        m_inputFile.read(reinterpret_cast<char*>(&row), sizeof row);
+        m_inputFile.read(reinterpret_cast<char*>(&tot), sizeof tot);
 
-        double dt_scope = event_timestamp - m_prevScopeTriggerTime;
-        double dt_spidr = spidr_timestamp - m_prevTriggerTime;
+        LOG(DEBUG) << "Column " << col << " row " << row << " ToT " << tot;
 
-        LOG(DEBUG) << "dt scope: " << dt_scope;
-        LOG(DEBUG) << "dt spidr: " << dt_spidr;
-        LOG(DEBUG) << "dt_spidr/dt_scope: " << dt_spidr/dt_scope;
+        int idx = row*16+col+1;
+        hitmap->SetBinContent(idx, hitmap->GetBinContent(idx)+1);
 
-        if((dt_spidr/dt_scope > 1.0005 || dt_spidr/dt_scope < 0.9995) && (m_triggerNumber % m_blockSize != 0)) {
-            LOG(DEBUG) << "Mismatch between SPIDR and oscilloscope timestamps. Discarding FASTPIX event. (Lost trigger?)";
-            m_inputFile.seekg(event_size * (sizeof(uint16_t) + sizeof(uint16_t) + sizeof(double)), std::ios_base::cur);
-            m_lostTriggers++;
+        auto pixel = std::make_shared<Pixel>(detectorID, col, row, static_cast<int>(tot), tot, spidr_timestamp);
+        deviceData.push_back(pixel);
+    }
 
-            if(dt_scope > dt_spidr) {
-                LOG(DEBUG) << "???";
-                for(;;);
-            }
-        } else {
-            for(uint16_t i = 0; i < event_size; i++) {
-                uint16_t col, row;
-                double tot;
+    m_triggerNumber++;
 
-                m_inputFile.read(reinterpret_cast<char*>(&col), sizeof col);
-                m_inputFile.read(reinterpret_cast<char*>(&row), sizeof row);
-                m_inputFile.read(reinterpret_cast<char*>(&tot), sizeof tot);
-
-                LOG(DEBUG) << "Column " << col << " row " << row << " ToT " << tot;
-
-                int idx = row*16+col+1;
-                hitmap->SetBinContent(idx, hitmap->GetBinContent(idx)+1);
-
-                m_debugFile << "Pixel " << idx << " col " << col << " row " << row << " tot " << tot << " timestamp " << event_timestamp << '\n';
-
-                auto pixel = std::make_shared<Pixel>(detectorID, col, row, static_cast<int>(tot), tot, event_timestamp);
-                deviceData.push_back(pixel);
-            }
-            m_prevScopeTriggerTime = event_timestamp;
-            m_triggerScopeTimestampsCorrected.emplace_back(event_timestamp-m_scope_t0);
-            done = true;
-        }
-    } while(!done);
+    //re-sync oscilloscope and SPIDR triggers at start of every data block
+    if(m_triggerNumber % m_blockSize == 0) {
+        m_triggerSync = false;
+    }
 
     return !deviceData.empty();
+}
+
+double EventLoaderFASTPIX::getRawTimestamp() {
+    double timestamp;
+
+    m_inputFile.read(reinterpret_cast<char*>(&timestamp), sizeof timestamp);
+    m_inputFile.seekg(-sizeof timestamp, std::ios_base::cur);
+
+    return timestamp * 1e9;
+}
+
+double EventLoaderFASTPIX::getTimestamp() {
+    double timestamp = getRawTimestamp();
+
+    return (timestamp - m_scope_t0) * m_timeScaler + m_spidr_t0;
 }
 
 StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     auto reference = get_reference();
     auto referenceSpidrSignals = clipboard->getData<SpidrSignal>(reference->getName());
-    auto referencePixels = clipboard->getData<Pixel>(reference->getName());
+    auto event = clipboard->getEvent();
 
-    PixelVector deviceData;
+    size_t spidr_index = 0;
 
-    if(m_triggerNumber % m_blockSize == 0 && referenceSpidrSignals.size() > 0 ) {
-        m_spidr_t0 = referenceSpidrSignals[0]->timestamp();
+    for(;;) {
+        PixelVector deviceData;
+        double timestamp = getTimestamp();
+        auto position = event->getTimestampPosition(timestamp);
+
+        if(m_triggerSync) {
+            if(spidr_index < referenceSpidrSignals.size()) { // match events by trigger number
+                loadEvent(clipboard, deviceData, referenceSpidrSignals[spidr_index]->timestamp());
+                if(referenceSpidrSignals[spidr_index]->trigger() == m_triggerNumber + 1) {
+                    spidr_index++;
+                    LOG(INFO) << "Loading event for trigger " << m_triggerNumber + 1;
+
+                    // re-sync timestamps after each event
+                    m_spidr_t0 = referenceSpidrSignals[spidr_index]->timestamp();
+                    m_scope_t0 = getRawTimestamp();
+
+                    if(!deviceData.empty()) {
+                        clipboard->putData(deviceData, m_detector->getName());
+                    }
+                } else {
+                    LOG(INFO) << "Expected SPIDR trigger " << m_triggerNumber + 1 << " but got trigger " << referenceSpidrSignals[spidr_index]->trigger() << ". Previous Fastpix event assigned to wrong event?";
+                    LOG(INFO) << "Discarding Fastpix event";
+                    LOG(INFO) << "Timestamp " << Units::display(timestamp, {"s", "us", "ns"});
+                    LOG(INFO) << "Raw timestamp " << Units::display(getRawTimestamp(), {"s", "us", "ns"});
+                    LOG(INFO) << "SPIDR timestamp " << Units::display(referenceSpidrSignals[spidr_index]->timestamp(), {"s", "us", "ns"});
+                    LOG(INFO) << "Event " << Units::display(event->start(), {"s", "us", "ns"}) << " " << Units::display(event->end(), {"s", "us", "ns"}); 
+                    m_discardedEvents++;
+                    for(;;);
+                }
+            } else { // no more SPIDR triggers in current event. Try matching timestamps instead
+                if(position == Event::Position::DURING) {
+                    LOG(INFO) << "Loading event for trigger " << m_triggerNumber + 1 << " without matching SPIDR trigger";
+                    LOG(INFO) << "Timestamp " << Units::display(timestamp, {"s", "us", "ns"});
+                    LOG(INFO) << "Raw timestamp " << Units::display(getRawTimestamp(), {"s", "us", "ns"});
+                    LOG(INFO) << "Event " << Units::display(event->start(), {"s", "us", "ns"}) << " " << Units::display(event->end(), {"s", "us", "ns"}); 
+                    loadEvent(clipboard, deviceData, timestamp);
+                
+                    if(!deviceData.empty()) {
+                        clipboard->putData(deviceData, m_detector->getName());
+                    }
+                } else if(position == Event::Position::BEFORE) {
+                    LOG(INFO) << "Event for trigger " << m_triggerNumber + 1 << " without matching SPIDR trigger or timestamp";
+                    LOG(INFO) << "Discarding Fastpix event";
+                    loadEvent(clipboard, deviceData, timestamp);
+                    m_discardedEvents++;
+                } else if(position == Event::Position::AFTER) {
+                    break;
+                }
+            }
+
+        } else { // wait for event with SPIDR trigger
+            if(spidr_index < referenceSpidrSignals.size()) {
+                if(referenceSpidrSignals[spidr_index]->trigger() == m_triggerNumber + 1) {
+                    LOG(INFO) << "Synchronising events for trigger " << m_triggerNumber + 1;
+                    LOG(INFO) << "Timestamp " << Units::display(timestamp, {"s", "us", "ns"});
+                    LOG(INFO) << "Raw timestamp " << Units::display(getRawTimestamp(), {"s", "us", "ns"});
+                    LOG(INFO) << "SPIDR timestamp " << Units::display(referenceSpidrSignals[spidr_index]->timestamp(), {"s", "us", "ns"});
+                    LOG(INFO) << "Event " << Units::display(event->start(), {"s", "us", "ns"}) << " " << Units::display(event->end(), {"s", "us", "ns"}); 
+                    loadEvent(clipboard, deviceData, referenceSpidrSignals[spidr_index]->timestamp());
+
+                    m_spidr_t0 = referenceSpidrSignals[spidr_index]->timestamp();
+                    m_scope_t0 = getRawTimestamp();
+                    m_triggerSync = true;
+
+                    if(!deviceData.empty()) {
+                        clipboard->putData(deviceData, m_detector->getName());
+                    }
+                } else {
+                    LOG(INFO) << "Expected SPIDR trigger " << m_triggerNumber + 1 << " but got trigger " << referenceSpidrSignals[spidr_index]->trigger();
+                    LOG(INFO) << "Discarding Fastpix event";
+                    loadEvent(clipboard, deviceData, timestamp);
+                    m_discardedEvents++;
+                }
+                
+                spidr_index++;
+            } else {
+                break;
+            }
+        }
     }
 
-    for(auto& refSpidrSignal : referenceSpidrSignals){
-        //LOG(DEBUG) << reference->getName();
-        //LOG(DEBUG) << refSpidrSignal->type();
-        LOG(DEBUG) << "Loading data for event " << m_eventNumber << " trigger " << m_triggerNumber << " delta t " << (refSpidrSignal->timestamp() - m_prevTriggerTime);
-
-        loadData(clipboard, deviceData, refSpidrSignal->timestamp() - m_spidr_t0);
-
-        m_prevTriggerTime = refSpidrSignal->timestamp() - m_spidr_t0;
-
-        m_triggerTimestamps.emplace_back(m_prevTriggerTime);
-        m_triggerNumbers.emplace_back(m_triggerNumber);
-
-        m_triggerNumber++;
-    }
-
-    if(!deviceData.empty()) {
-        clipboard->putData(deviceData, m_detector->getName());
-    }
 
     // Increment event counter
     m_eventNumber++;

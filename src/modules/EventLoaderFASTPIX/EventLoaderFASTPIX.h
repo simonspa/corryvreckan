@@ -51,9 +51,13 @@ namespace corryvreckan {
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
-        bool loadData(const std::shared_ptr<Clipboard>& clipboard, PixelVector &deviceData, double spidr_timestamp);
+        bool loadEvent(const std::shared_ptr<Clipboard>& clipboard, PixelVector &deviceData, double spidr_timestamp);
+        double getRawTimestamp();
+        double getTimestamp();
 
         std::shared_ptr<Detector> m_detector;
+
+        bool m_triggerSync;
 
         TH2Poly* hitmap;
         TH1F* test;
@@ -62,6 +66,10 @@ namespace corryvreckan {
         int m_eventNumber;
         size_t m_triggerNumber;
         size_t m_lostTriggers;
+        size_t m_discardedEvents;
+        double m_timeScaler;
+
+
         double m_prevTriggerTime;
         double m_prevScopeTriggerTime;
         uint16_t m_blockSize;

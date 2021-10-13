@@ -20,6 +20,7 @@
 #include "TH2D.h"
 #include "TNamed.h"
 #include "TProfile2D.h"
+#include "objects/SpidrSignal.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules
@@ -45,6 +46,9 @@ namespace corryvreckan {
 
         TH1D* hPixelEfficiency;
         TH1D* hPixelEfficiencyMatrix;
+
+	// For Fastpix efficiency
+        TProfile2D* hPixelTimeStampEff;
 
         // Profile version
         TProfile2D* hPixelEfficiencyMap_trackPos_TProfile;

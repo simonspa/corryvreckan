@@ -14,6 +14,7 @@
 #include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
 
+
 using namespace corryvreckan;
 
 AnalysisEfficiency::AnalysisEfficiency(Configuration& config, std::shared_ptr<Detector> detector)
@@ -35,6 +36,9 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration& config, std::shared_ptr<De
 }
 
 void AnalysisEfficiency::initialize() {
+
+    // get the reference detector:
+    std::shared_ptr<Detector> reference = get_reference();
 
     hPixelEfficiency = new TH1D(
         "hPixelEfficiency", "hPixelEfficiency; single pixel efficiency; # entries", 201, 0, 1.005); // get 0.5%-wide bins
@@ -65,14 +69,27 @@ void AnalysisEfficiency::initialize() {
                                                            pitch_y / 2.,
                                                            0,
                                                            1);
-    hPixelEfficiencyMap_trackPos = new TEfficiency("pixelEfficiencyMap_trackPos",
-                                                   title.c_str(),
-                                                   nbins_x,
-                                                   -pitch_x / 2.,
-                                                   pitch_x / 2.,
-                                                   nbins_y,
-                                                   -pitch_y / 2.,
-                                                   pitch_y / 2.);
+    hPixelTimeStampEff = new TProfile2D("hPixelTimeStampEff",
+                                                 	 title.c_str(),
+							  m_detector->nPixels().X(),
+                                                 	  -0.5,
+                                                  	  m_detector->nPixels().X() - 0.5,
+                                                          m_detector->nPixels().Y(),
+                                                          -0.5,
+                                                          m_detector->nPixels().Y() - 0.5,
+                                                          0,
+                                                          1);
+
+    hPixelEfficiencyMap_trackPos_TProfile = new TProfile2D("pixelEfficiencyMap_trackPos_TProfile",
+                                                           title.c_str(),
+                                                           nbins_x,
+                                                           -pitch_x / 2.,
+                                                           pitch_x / 2.,
+                                                           nbins_y,
+                                                           -pitch_y / 2.,
+                                                           pitch_y / 2.,
+                                                           0,
+                                                           1);
 
     title = m_detector->getName() +
             " Pixel efficiency map (in-pixel ROI);in-pixel x_{track} [#mum];in-pixel y_{track} #mum;#epsilon";
@@ -108,7 +125,7 @@ void AnalysisEfficiency::initialize() {
                                                   m_detector->nPixels().Y() - 0.5);
 
     title = m_detector->getName() + " Pixel efficiency matrix;x [px];y [px];#epsilon";
-    hPixelEfficiencyMatrix_TProfile = new TProfile2D("hPixelEfficiencyMatrixTProfile",
+    hPixelEfficiencyMatrix_TProfile = new TProfile2D("hPixelEfficiencyMatrix",
                                                      title.c_str(),
                                                      m_detector->nPixels().X(),
                                                      -0.5,
@@ -280,6 +297,10 @@ void AnalysisEfficiency::initialize() {
 
 StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) {
 
+ // Get pixels/clusters from reference detector
+    auto reference = get_reference();
+    auto referenceSpidrSignals = clipboard->getData<SpidrSignal>(reference->getName());
+
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
 
@@ -421,24 +442,38 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
             m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept), has_associated_cluster);
         hChipEfficiencyMap_trackPos->Fill(
             has_associated_cluster, m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
+	
+	//if(referenceSpidrSignals.size() == 0){
+	if(referenceSpidrSignals.empty()){
+		hPixelTimeStampEff->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept), 0);
+	}else{
+		hPixelTimeStampEff->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept), 1);	
+	}
+	
+	//hPixelTimeStampEff->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept), 1);
+	//LOG(INFO) << "intercept: " << m_detector->getColumn(localIntercept) << " ," << m_detector->getRow(localIntercept);
 
         // For pixels, only look at the ROI:
+	/*
         if(is_within_roi) {
+	    LOG(DEBUG) << "Within ROI";
             hPixelEfficiencyMap_trackPos_TProfile->Fill(xmod_um, ymod_um, has_associated_cluster);
             hPixelEfficiencyMap_trackPos->Fill(has_associated_cluster, xmod_um, ymod_um);
             eTotalEfficiency->Fill(has_associated_cluster, 0); // use 0th bin for total efficiency
             efficiencyColumns->Fill(has_associated_cluster, m_detector->getColumn(localIntercept));
             efficiencyRows->Fill(has_associated_cluster, m_detector->getRow(localIntercept));
             efficiencyVsTime->Fill(has_associated_cluster, track->timestamp() / 1e9); // convert nanoseconds to seconds
+
             if(isWithinInPixelROI) {
+	    	LOG(DEBUG) << "Within pixel ROI";
                 hPixelEfficiencyMap_inPixelROI_trackPos_TProfile->Fill(xmod_um, ymod_um, has_associated_cluster);
                 eTotalEfficiency_inPixelROI->Fill(has_associated_cluster, 0); // use 0th bin for total efficiency
             }
         }
-
+	*/
         auto intercept_col = static_cast<size_t>(m_detector->getColumn(localIntercept));
         auto intercept_row = static_cast<size_t>(m_detector->getRow(localIntercept));
-
+	LOG(DEBUG) << "Checking assoc clusters";
         if(has_associated_cluster) {
             hTimeDiffPrevTrack_assocCluster->Fill(
                 static_cast<double>(Units::convert(track->timestamp() - last_track_timestamp, "us")));
@@ -479,6 +514,7 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
 
     // Before going to the next event, loop over all pixels (all hits incl. noise)
     // and fill matrix with timestamps of previous pixels.
+    LOG(DEBUG) << "Loop over all pixels";
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());
     if(pixels.empty()) {
         LOG(DEBUG) << "Detector " << m_detector->getName() << " does not have any pixels on the clipboard";

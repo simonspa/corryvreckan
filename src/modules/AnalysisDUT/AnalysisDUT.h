@@ -18,6 +18,7 @@
 #include <TProfile2D.h>
 #include <iostream>
 #include "core/module/Module.hpp"
+#include "objects/SpidrSignal.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules
@@ -86,6 +87,7 @@ namespace corryvreckan {
         TH2F* residualsTimeVsTime;
         TH2F* residualsTimeVsSignal;
         TH2F* hAssociatedTracksGlobalPosition;
+	TH2F* hAssociatedTracksGlobalPositionTDCTrigger;
         TH2F* hAssociatedTracksLocalPosition;
         TH2F* hUnassociatedTracksGlobalPosition;
 

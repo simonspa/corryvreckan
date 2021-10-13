@@ -531,6 +531,17 @@ void AnalysisDUT::initialize() {
                  200,
                  -10,
                  10);
+
+    hAssociatedTracksGlobalPositionTDCTrigger =
+        new TH2F("hAssociatedTracksGlobalPositionTDCTrigger",
+                 "Map of associated track positions (global);global intercept x [mm];global intercept y [mm]",
+                 400,
+                 -20,
+                 20,
+                 200,
+                 -10,
+                 10);
+
     hAssociatedTracksLocalPosition =
         new TH2F("hAssociatedTracksLocalPosition",
                  "Map of associated track positions (local);local intercept x [px];local intercept y [px]",
@@ -594,6 +605,11 @@ void AnalysisDUT::initialize() {
 }
 
 StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
+
+
+    // get the TDC trigger
+    std::shared_ptr<Detector> reference = get_reference();
+    auto referenceSpidrSignals = clipboard->getData<SpidrSignal>(reference->getName());
 
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
@@ -862,6 +878,10 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             rmsxvsxmym->Fill(xmod_um, ymod_um, xabsdistance);
             rmsyvsxmym->Fill(xmod_um, ymod_um, yabsdistance);
             rmsxyvsxmym->Fill(xmod_um, ymod_um, fabs(sqrt(xdistance * xdistance + ydistance * ydistance)));
+
+	    for(auto& refSpidrSignal : referenceSpidrSignals){
+            	hAssociatedTracksGlobalPositionTDCTrigger->Fill(globalIntercept.X(), globalIntercept.Y());
+	    }
 
             hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
             hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
