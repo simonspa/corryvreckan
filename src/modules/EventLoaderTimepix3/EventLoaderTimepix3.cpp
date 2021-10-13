@@ -502,23 +502,40 @@ bool EventLoaderTimepix3::loadData(const std::shared_ptr<Clipboard>& clipboard,
                 long long int timestamp = 0;
                 int triggerNumber = ((pixdata & 0xFFF00000000000) >> 44);
 
+                int intermediate = (pixdata & 0x1F);
+                if(intermediate != 0) {
+                    continue;
+                }
+
                 if(triggerNumber < m_prevTriggerNumber) {
                     m_triggerOverflowCounter++;
                 }
 
-                int intermediate = (pixdata & 0x1F);
-                if(intermediate != 0)
-                    continue;
+                int tmp_overflowCounter = m_TDCoverflowCounter;
 
                 // if jump back in time is larger than 1 sec, overflow detected...
                 if((m_syncTimeTDC - timestamp_raw) > 0x1312d000) {
-                    m_TDCoverflowCounter++;
+                    tmp_overflowCounter++;
                 }
-                m_syncTimeTDC = timestamp_raw;
+
                 timestamp = timestamp_raw + (static_cast<long long int>(m_TDCoverflowCounter) << 35);
 
                 double triggerTime =
                     (static_cast<double>(timestamp) + static_cast<double>(stamp) / 12) / (8. * 0.04); // 320 MHz clock
+
+                auto position = event->getTimestampPosition(triggerTime);
+
+                if(position == Event::Position::AFTER) {
+                    LOG(DEBUG) << "Stopping processing event, trigger is after "
+                                "event window ("
+                            << Units::display(triggerTime, {"s", "us", "ns"}) << " > "
+                            << Units::display(event->end(), {"s", "us", "ns"}) << ")";
+                    (*m_file_iterator)->seekg(-1 * static_cast<int>(sizeof(pixdata)), std::ios_base::cur);
+                    break;
+                }
+
+                m_syncTimeTDC = timestamp_raw;
+                m_TDCoverflowCounter = tmp_overflowCounter;
 
                 int triggerID = triggerNumber + (m_triggerOverflowCounter<<12);
                 m_prevTriggerNumber = triggerNumber;
