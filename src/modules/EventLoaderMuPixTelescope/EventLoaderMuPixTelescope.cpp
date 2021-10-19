@@ -25,7 +25,9 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
     config_.setDefault<double>("time_offset", 0.0);
     config_.setDefault<double>("reference_frequency", 125.);
     config_.setDefault<uint>("bitshift_tot", 7);
+    config_.setDefault<bool>("use_both_timestamps", true);
 
+    use_both_timestamps_ = config_.get<bool>("use_both_timestamps");
     bitshift_tot_ = config_.get<uint>("bitshift_tot");
     refFrequency_ = config_.get<double>("reference_frequency");
     inputDirectory_ = config_.getPath("input_directory");
@@ -237,22 +239,20 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
 }
 
 shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint tag) {
-    // Convert time stamp to ns - i'd like to do this already on the mupix8_DAQ side, but have not found the time yet,
-    // assuming 10bit ts
-    // we have two time stamps sampled. on falling an rising edge:
-    uint16_t time = 0x0;
-    if(h.get_ts2() == uint16_t(-1)) {
-        time = h.timestamp_raw() << 1;
-    } else if(h.timestamp_raw() < h.get_ts2()) {
-        time = h.timestamp_raw() << 1;
 
+    uint16_t time = 0x0;
+    // TS can be sampled on both edges - keep this optional
+    if((h.get_ts2() == uint16_t(-1)) || (!use_both_timestamps_)) {
+        time = h.timestamp_raw() << 1;
     } else if(h.timestamp_raw() > h.get_ts2()) {
-        LOG(TRACE) << "TS2 smaller";
         time = (h.timestamp_raw() << 1);
     } else {
         time = (h.timestamp_raw() << 1) + 0x1;
     }
+
     double px_timestamp = 4 / refFrequency_ * 125. * static_cast<double>(((tf_.timestamp() >> 1) & 0xFFFFFFFFFF800) + time);
+
+    // store the ToT information if reasonable
     double tot_timestamp = 8 / refFrequency_ * 125. *
                            static_cast<double>(((tf_.timestamp() >> 2) & (0xFFFFFFFFFFC00 << bitshift_tot_)) +
                                                (static_cast<uint32_t>(h.tot()) << bitshift_tot_));

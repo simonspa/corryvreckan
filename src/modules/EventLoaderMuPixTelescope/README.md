@@ -46,6 +46,9 @@ issuing the synchronous reset and receiving it. Only used if
 * `buffer_depth`: Depth of the pixel buffer that is used to sort the hits with
 respect to time. Defaults to `1000`.
 * `reference_frequency`: Defines the reference frequency of the FPGA in MHz - defaults to `125`.
+*`use_both_timestamps`: Decide if the the timestamps sampled on positive and
+negative edge are used. This doubles the effective timestamp
+frequency. Defaults to `true`.
 ### Plots produced
 
 For all detectors, the following plots are produced:
