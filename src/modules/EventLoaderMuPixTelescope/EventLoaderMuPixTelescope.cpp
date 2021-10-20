@@ -188,8 +188,8 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
         fillBuffer();
     for(auto t : tags_) {
         while(true) {
-            if(pixelbuffers_.at(t).size() == 0)
-                break;
+            if(pixelbuffers_.at(t).size() == 0 && !eof_)
+                fillBuffer();
             auto pixel = pixelbuffers_.at(t).top();
             if((pixel->timestamp() < clipboard->getEvent()->start())) {
                 LOG(DEBUG) << " Old hit found: " << Units::display(pixel->timestamp(), "us") << " vs prev end ("
