@@ -19,16 +19,21 @@ EventLoaderFASTPIX::EventLoaderFASTPIX(Configuration& config, std::shared_ptr<De
     : Module(config, detector), m_detector(detector) {
 
     m_inputFile.open(config_.getPath("input_file"), std::ifstream::binary);
-    m_debugFile.open("debug.txt");
+
+    m_timeScaler = config_.get("time_scaler", 0.999994);
 }
 
-void Honeycomb(TH2Poly *h, Double_t xstart, Double_t ystart, Double_t a, Int_t k, Int_t s) {
+void Honeycomb(TH2Poly *h, Double_t xstart, Double_t ystart, Int_t k, Int_t s);
+
+// Adapted from ROOT Honeycomb function
+void Honeycomb(TH2Poly *h, Double_t xstart, Double_t ystart, Int_t k, Int_t s) {
    // Add the bins
    Double_t sc = 1/1.5;
 
    Double_t x[6], y[6];
    Double_t xloop, yloop, xtemp;
-   xloop = xstart; yloop = ystart + sc*a/2.0;
+   ystart *= sc;
+   xloop = xstart; yloop = ystart + sc/2.0;
    for (int sCounter = 0; sCounter < s; sCounter++) {
       xtemp = xloop; // Resets the temp variable
 
@@ -37,26 +42,26 @@ void Honeycomb(TH2Poly *h, Double_t xstart, Double_t ystart, Double_t a, Int_t k
          x[0] = xtemp;
          y[0] = yloop;
          x[1] = x[0];
-         y[1] = y[0] + a*sc;
-         x[2] = x[1] + a/2.0;
-         y[2] = y[1] + a*sc/2.0;
-         x[3] = x[2] + a/2.0;
+         y[1] = y[0] + sc;
+         x[2] = x[1] + 1/2.0;
+         y[2] = y[1] + sc/2.0;
+         x[3] = x[2] + 1/2.0;
          y[3] = y[1];
          x[4] = x[3];
          y[4] = y[0];
          x[5] = x[2];
-         y[5] = y[4] - a*sc/2.0;
+         y[5] = y[4] - sc/2.0;
 
          h->AddBin(6, x, y);
 
          // Go right
-         xtemp += a;
+         xtemp += 1;
       }
 
       // Increment the starting position
-      if (sCounter%2 == 0) xloop += a/2.0;
-      else                 xloop -= a/2.0;
-      yloop += 1.5*a*sc;
+      if (sCounter%2 == 0) xloop += 1/2.0;
+      else                 xloop -= 1/2.0;
+      yloop += 1.5*sc;
    }
 }
 
@@ -69,24 +74,21 @@ void EventLoaderFASTPIX::initialize() {
     hitmap = new TH2Poly();
     hitmap->SetName("hitmap");
     hitmap->SetTitle("hitmap");
-    Honeycomb(hitmap,0.5,0.5/1.5,1,16,4);
+    Honeycomb(hitmap,0.5,0.5,16,4);
 
-    test = new TH1F("hPixelEfficiency", "hPixelEfficiency; single pixel efficiency; # entries", 201, 0, 1.005);
-    trigger_delta = new TH1F("hTriggerDelta", "hPixelEfficiency; single pixel efficiency; # entries", 1001, 0, 1000);
 
     // Initialise member variables
     m_eventNumber = 0;
     m_triggerNumber = 0;
     m_prevTriggerTime = 0;
     m_prevScopeTriggerTime = 0;
-    m_lostTriggers = 0;
+    m_missingTriggers = 0;
     m_discardedEvents = 0;
 
     m_spidr_t0 = 0;
     m_scope_t0 = 0;
 
     m_triggerSync = false;
-    m_timeScaler = 0.99993;
 
     m_inputFile.read(reinterpret_cast<char*>(&m_blockSize), sizeof m_blockSize);
 }
@@ -98,11 +100,13 @@ void EventLoaderFASTPIX::initialize() {
 // number of pixels / event
 // column, row, ToT [xN]
 
-bool EventLoaderFASTPIX::loadEvent(const std::shared_ptr<Clipboard>& clipboard, PixelVector &deviceData, double spidr_timestamp) {
+bool EventLoaderFASTPIX::loadEvent(PixelVector &deviceData, double spidr_timestamp) {
     std::string detectorID = m_detector->getName();
 
     uint16_t event_size;
     double event_timestamp, seed_time, cfd_time;
+
+    m_prevEvent = m_inputFile.tellg();
 
     m_inputFile.read(reinterpret_cast<char*>(&event_timestamp), sizeof event_timestamp);
     m_inputFile.read(reinterpret_cast<char*>(&seed_time), sizeof seed_time);
@@ -122,9 +126,12 @@ bool EventLoaderFASTPIX::loadEvent(const std::shared_ptr<Clipboard>& clipboard, 
         int idx = row*16+col+1;
         hitmap->SetBinContent(idx, hitmap->GetBinContent(idx)+1);
 
-        auto pixel = std::make_shared<Pixel>(detectorID, col, row, static_cast<int>(tot), tot, spidr_timestamp);
+        auto pixel = std::make_shared<Pixel>(detectorID, col, row, static_cast<int>(tot), tot, spidr_timestamp + m_detector->timeOffset());
         deviceData.push_back(pixel);
     }
+
+    m_scopeTriggerNumbers.emplace_back(m_triggerNumber+1);
+    m_scopeTriggerTimestamps.emplace_back(spidr_timestamp);
 
     m_triggerNumber++;
 
@@ -140,7 +147,7 @@ double EventLoaderFASTPIX::getRawTimestamp() {
     double timestamp;
 
     m_inputFile.read(reinterpret_cast<char*>(&timestamp), sizeof timestamp);
-    m_inputFile.seekg(-sizeof timestamp, std::ios_base::cur);
+    m_inputFile.seekg(-static_cast<int>(sizeof timestamp), std::ios_base::cur);
 
     return timestamp * 1e9;
 }
@@ -157,79 +164,94 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
     auto referenceSpidrSignals = clipboard->getData<SpidrSignal>(reference->getName());
     auto event = clipboard->getEvent();
 
+    for(const auto &spidr : referenceSpidrSignals) {
+        m_spidrTriggerNumbers.emplace_back(spidr->trigger());
+        m_spidrTriggerTimestamps.emplace_back(spidr->timestamp());
+    }
+
     size_t spidr_index = 0;
 
+    PixelVector deviceData;
+    PixelVector discardData;
+
     for(;;) {
-        PixelVector deviceData;
+        // triggers are aligned to SPIDR timestamps. Time offsets are only added to pixel timestamps?
         double timestamp = getTimestamp();
         auto position = event->getTimestampPosition(timestamp);
 
         if(m_triggerSync) {
             if(spidr_index < referenceSpidrSignals.size()) { // match events by trigger number
-                loadEvent(clipboard, deviceData, referenceSpidrSignals[spidr_index]->timestamp());
-                if(referenceSpidrSignals[spidr_index]->trigger() == m_triggerNumber + 1) {
-                    spidr_index++;
-                    LOG(INFO) << "Loading event for trigger " << m_triggerNumber + 1;
+                if(referenceSpidrSignals[spidr_index]->trigger() == m_triggerNumber + 1) { // trigger numbers match
+                    LOG(DEBUG) << "Loading event for trigger " << m_triggerNumber + 1;
 
                     // re-sync timestamps after each event
                     m_spidr_t0 = referenceSpidrSignals[spidr_index]->timestamp();
                     m_scope_t0 = getRawTimestamp();
 
-                    if(!deviceData.empty()) {
-                        clipboard->putData(deviceData, m_detector->getName());
-                    }
-                } else {
-                    LOG(INFO) << "Expected SPIDR trigger " << m_triggerNumber + 1 << " but got trigger " << referenceSpidrSignals[spidr_index]->trigger() << ". Previous Fastpix event assigned to wrong event?";
+                    m_ratioTriggerNumbers.emplace_back(m_triggerNumber+1);
+                    m_dtRatio.emplace_back((m_spidr_t0 - m_prevTriggerTime) / (m_scope_t0 - m_prevScopeTriggerTime));
+
+                    m_prevScopeTriggerTime = m_scope_t0;
+                    m_prevTriggerTime = m_spidr_t0;
+
+                    loadEvent(deviceData, referenceSpidrSignals[spidr_index]->timestamp());
+
+                    spidr_index++;
+                } else if(referenceSpidrSignals[spidr_index]->trigger() > m_triggerNumber + 1) { // SPIDR trigger is after Fastpix trigger (should not happen). discard Fastpix data.
+                    LOG(INFO) << "Expected SPIDR trigger " << m_triggerNumber + 1 << " but got trigger " << referenceSpidrSignals[spidr_index]->trigger() << ".";
                     LOG(INFO) << "Discarding Fastpix event";
-                    LOG(INFO) << "Timestamp " << Units::display(timestamp, {"s", "us", "ns"});
-                    LOG(INFO) << "Raw timestamp " << Units::display(getRawTimestamp(), {"s", "us", "ns"});
-                    LOG(INFO) << "SPIDR timestamp " << Units::display(referenceSpidrSignals[spidr_index]->timestamp(), {"s", "us", "ns"});
-                    LOG(INFO) << "Event " << Units::display(event->start(), {"s", "us", "ns"}) << " " << Units::display(event->end(), {"s", "us", "ns"}); 
                     m_discardedEvents++;
-                    for(;;);
+
+                    loadEvent(discardData, referenceSpidrSignals[spidr_index]->timestamp());
+                } else { // SPIDR trigger is before Fastpix trigger. Previous Fastpix trigger was assigned to wrong event?
+                    LOG(INFO) << "Expected SPIDR trigger " << m_triggerNumber + 1 << " but got trigger " << referenceSpidrSignals[spidr_index]->trigger() << ". Previous Fastpix event assigned to wrong event?";
+                    m_discardedEvents++;
+
+                    if(referenceSpidrSignals[spidr_index]->trigger() == m_triggerNumber) { // SPIDR trigger belongs to previous Fastpix trigger
+                        LOG(INFO) << "Rewinding Fastpix trigger";
+                        m_triggerNumber--;
+                        m_inputFile.seekg(m_prevEvent, std::ios_base::beg);
+
+                        loadEvent(deviceData, referenceSpidrSignals[spidr_index]->timestamp());
+                    } else {
+                        LOG(INFO) << "Discarding SPIDR trigger";
+                    }
+
+                    spidr_index++;
                 }
             } else { // no more SPIDR triggers in current event. Try matching timestamps instead
-                if(position == Event::Position::DURING) {
+                if(position == Event::Position::DURING) { // Fastpix trigger belongs to this events
                     LOG(INFO) << "Loading event for trigger " << m_triggerNumber + 1 << " without matching SPIDR trigger";
-                    LOG(INFO) << "Timestamp " << Units::display(timestamp, {"s", "us", "ns"});
-                    LOG(INFO) << "Raw timestamp " << Units::display(getRawTimestamp(), {"s", "us", "ns"});
-                    LOG(INFO) << "Event " << Units::display(event->start(), {"s", "us", "ns"}) << " " << Units::display(event->end(), {"s", "us", "ns"}); 
-                    loadEvent(clipboard, deviceData, timestamp);
-                
-                    if(!deviceData.empty()) {
-                        clipboard->putData(deviceData, m_detector->getName());
-                    }
-                } else if(position == Event::Position::BEFORE) {
+                    loadEvent(deviceData, timestamp);
+
+                } else if(position == Event::Position::BEFORE) { // Fastpix trigger belongs to an earlier event (should not happen)
                     LOG(INFO) << "Event for trigger " << m_triggerNumber + 1 << " without matching SPIDR trigger or timestamp";
                     LOG(INFO) << "Discarding Fastpix event";
-                    loadEvent(clipboard, deviceData, timestamp);
+                    loadEvent(discardData, timestamp);
                     m_discardedEvents++;
-                } else if(position == Event::Position::AFTER) {
+                } else if(position == Event::Position::AFTER) { // Fastpix trigger belongs to a later event. Stop processing.
                     break;
                 }
             }
 
-        } else { // wait for event with SPIDR trigger
+        } else { // wait for event with SPIDR trigger to synchronise timestamps
             if(spidr_index < referenceSpidrSignals.size()) {
                 if(referenceSpidrSignals[spidr_index]->trigger() == m_triggerNumber + 1) {
                     LOG(INFO) << "Synchronising events for trigger " << m_triggerNumber + 1;
-                    LOG(INFO) << "Timestamp " << Units::display(timestamp, {"s", "us", "ns"});
-                    LOG(INFO) << "Raw timestamp " << Units::display(getRawTimestamp(), {"s", "us", "ns"});
-                    LOG(INFO) << "SPIDR timestamp " << Units::display(referenceSpidrSignals[spidr_index]->timestamp(), {"s", "us", "ns"});
-                    LOG(INFO) << "Event " << Units::display(event->start(), {"s", "us", "ns"}) << " " << Units::display(event->end(), {"s", "us", "ns"}); 
-                    loadEvent(clipboard, deviceData, referenceSpidrSignals[spidr_index]->timestamp());
 
                     m_spidr_t0 = referenceSpidrSignals[spidr_index]->timestamp();
                     m_scope_t0 = getRawTimestamp();
+                    m_prevScopeTriggerTime = m_scope_t0;
+                    m_prevTriggerTime = m_spidr_t0;
+
                     m_triggerSync = true;
 
-                    if(!deviceData.empty()) {
-                        clipboard->putData(deviceData, m_detector->getName());
-                    }
+                    loadEvent(deviceData, referenceSpidrSignals[spidr_index]->timestamp());
+
                 } else {
-                    LOG(INFO) << "Expected SPIDR trigger " << m_triggerNumber + 1 << " but got trigger " << referenceSpidrSignals[spidr_index]->trigger();
+                    LOG(INFO) << "Expected SPIDR trigger " << m_triggerNumber + 1 << " but got trigger " << referenceSpidrSignals[spidr_index]->trigger() << " and triggers are not yet in sync";
                     LOG(INFO) << "Discarding Fastpix event";
-                    loadEvent(clipboard, deviceData, timestamp);
+                    loadEvent(discardData, timestamp);
                     m_discardedEvents++;
                 }
                 
@@ -240,52 +262,40 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
         }
     }
 
+    if(!deviceData.empty()) {
+        clipboard->putData(deviceData, m_detector->getName());
+    }
 
     // Increment event counter
     m_eventNumber++;
 
-    // Return value telling analysis to keep running
-    return StatusCode::Success;
+    if(m_triggerNumber % m_blockSize == 0) {
+        // Oscilloscope is copying data or might join the run a few seconds late
+        return StatusCode::DeadTime;
+    } else {
+        // Return value telling analysis to keep running
+        return StatusCode::Success;
+    }
 }
 
 void EventLoaderFASTPIX::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     hitmap->Write();
 
-    trigger_graph = new TGraph(m_triggerTimestamps.size(), &m_triggerTimestamps[0], &m_triggerNumbers[0]);
-    trigger_graph->GetXaxis()->SetTitle("trigger timestamp");
-    trigger_graph->GetYaxis()->SetTitle("trigger number");
-    trigger_graph->Write("trigger");
+    TGraph scope_trigger_graph(static_cast<int>(m_scopeTriggerTimestamps.size()), &m_scopeTriggerTimestamps[0], &m_scopeTriggerNumbers[0]);
+    scope_trigger_graph.Write("scope_triggers");
 
-    trigger_scope_graph = new TGraph(m_triggerScopeTimestamps.size(), &m_triggerScopeTimestamps[0], &m_triggerNumbers[0]);
-    trigger_scope_graph->GetXaxis()->SetTitle("trigger timestamp");
-    trigger_scope_graph->GetYaxis()->SetTitle("trigger number");
-    trigger_scope_graph->Write("trigger_scope");
+    TGraph spidr_trigger_graph(static_cast<int>(m_spidrTriggerTimestamps.size()), &m_spidrTriggerTimestamps[0], &m_spidrTriggerNumbers[0]);
+    spidr_trigger_graph.Write("spidr_triggers");
 
-    TGraph *trigger_scope_graph_corrected = new TGraph(m_triggerScopeTimestampsCorrected.size(), &m_triggerScopeTimestampsCorrected[0], &m_triggerNumbers[0]);
-    trigger_scope_graph_corrected->GetXaxis()->SetTitle("trigger timestamp");
-    trigger_scope_graph_corrected->GetYaxis()->SetTitle("trigger number");
-    trigger_scope_graph_corrected->Write("trigger_scope_corrected");
+    TMultiGraph trigger_graph;
+    trigger_graph.Add(&scope_trigger_graph);
+    trigger_graph.Add(&spidr_trigger_graph);
+    trigger_graph.Write("triggers");
 
-    TMultiGraph *mg = new TMultiGraph();
-    mg->Add(trigger_graph);
-    mg->Add(trigger_scope_graph);
-    mg->Add(trigger_scope_graph_corrected);
-    mg->Write("triggers");
+    TGraph dt_ratio(static_cast<int>(m_ratioTriggerNumbers.size()), &m_ratioTriggerNumbers[0], &m_dtRatio[0]);
+    dt_ratio.Write("trigger_dt_ratio");
 
-    std::vector<double> dt_ratio;
-
-    for(size_t i = 1; i < m_triggerNumbers.size(); i++) {
-        double dt_spidr = m_triggerTimestamps[i] - m_triggerTimestamps[i-1];
-        double dt_scope = m_triggerScopeTimestamps[i] - m_triggerScopeTimestamps[i-1];
-
-        dt_ratio.emplace_back(dt_spidr/dt_scope);
-    }
-
-    trigger_dt_ratio = new TGraph(dt_ratio.size(), &m_triggerNumbers[1], &dt_ratio[0]);
-    trigger_dt_ratio->GetXaxis()->SetTitle("trigger number");
-    trigger_dt_ratio->GetYaxis()->SetTitle("trigger dt_spidr/dt_scope");
-    trigger_dt_ratio->Write("trigger_dt_ratio");
-
-    LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
-    LOG(DEBUG) << "Lost " << m_lostTriggers << " triggers";
+    LOG(INFO) << "Analysed " << m_eventNumber << " events";
+    LOG(INFO) << "Discarded " << m_discardedEvents << " events";
+    LOG(INFO) << "Missing " << m_missingTriggers << " triggers";
 }

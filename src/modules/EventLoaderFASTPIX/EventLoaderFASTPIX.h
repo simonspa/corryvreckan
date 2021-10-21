@@ -51,7 +51,7 @@ namespace corryvreckan {
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
-        bool loadEvent(const std::shared_ptr<Clipboard>& clipboard, PixelVector &deviceData, double spidr_timestamp);
+        bool loadEvent(PixelVector &deviceData, double spidr_timestamp);
         double getRawTimestamp();
         double getTimestamp();
 
@@ -60,15 +60,14 @@ namespace corryvreckan {
         bool m_triggerSync;
 
         TH2Poly* hitmap;
-        TH1F* test;
-        TH1F* trigger_delta;
 
         int m_eventNumber;
         size_t m_triggerNumber;
-        size_t m_lostTriggers;
+        size_t m_missingTriggers;
         size_t m_discardedEvents;
         double m_timeScaler;
 
+        std::streampos m_prevEvent;
 
         double m_prevTriggerTime;
         double m_prevScopeTriggerTime;
@@ -77,20 +76,15 @@ namespace corryvreckan {
         double m_spidr_t0;
         double m_scope_t0;
 
-        size_t m_filled;
-
-        //std::string m_inputFile;
         std::ifstream m_inputFile;
-        std::ofstream m_debugFile;
 
-        std::vector<double> m_triggerNumbers;
-        std::vector<double> m_triggerTimestamps;
-        std::vector<double> m_triggerScopeTimestamps;
-        std::vector<double> m_triggerScopeTimestampsCorrected;
+        std::vector<double> m_scopeTriggerNumbers;
+        std::vector<double> m_scopeTriggerTimestamps;
+        std::vector<double> m_spidrTriggerNumbers;
+        std::vector<double> m_spidrTriggerTimestamps;
 
-        TGraph* trigger_graph;
-        TGraph* trigger_scope_graph;
-        TGraph* trigger_dt_ratio;
+        std::vector<double> m_ratioTriggerNumbers;
+        std::vector<double> m_dtRatio;
     };
 
 } // namespace corryvreckan
