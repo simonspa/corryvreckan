@@ -507,8 +507,10 @@ bool EventLoaderTimepix3::loadData(const std::shared_ptr<Clipboard>& clipboard,
                     continue;
                 }
 
+                int tmp_triggerOverflowCounter = m_triggerOverflowCounter;
+
                 if(triggerNumber < m_prevTriggerNumber) {
-                    m_triggerOverflowCounter++;
+                    tmp_triggerOverflowCounter++;
                 }
 
                 int tmp_overflowCounter = m_TDCoverflowCounter;
@@ -518,7 +520,7 @@ bool EventLoaderTimepix3::loadData(const std::shared_ptr<Clipboard>& clipboard,
                     tmp_overflowCounter++;
                 }
 
-                timestamp = timestamp_raw + (static_cast<long long int>(m_TDCoverflowCounter) << 35);
+                timestamp = timestamp_raw + (static_cast<long long int>(tmp_overflowCounter) << 35);
 
                 double triggerTime =
                     (static_cast<double>(timestamp) + static_cast<double>(stamp) / 12) / (8. * 0.04); // 320 MHz clock
@@ -537,8 +539,9 @@ bool EventLoaderTimepix3::loadData(const std::shared_ptr<Clipboard>& clipboard,
                 m_syncTimeTDC = timestamp_raw;
                 m_TDCoverflowCounter = tmp_overflowCounter;
 
-                int triggerID = triggerNumber + (m_triggerOverflowCounter<<12);
+                int triggerID = triggerNumber + (tmp_triggerOverflowCounter<<12);
                 m_prevTriggerNumber = triggerNumber;
+                m_triggerOverflowCounter = tmp_triggerOverflowCounter;
                 
                 auto triggerSignal = std::make_shared<SpidrSignal>("trigger", triggerTime, triggerID);
                 spidrData.push_back(triggerSignal);
