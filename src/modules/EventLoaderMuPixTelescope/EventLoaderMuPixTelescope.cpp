@@ -250,10 +250,8 @@ shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint tag,
         time = ((0x3FF & h.timestamp_raw()) << 1) + 0x1;
     }
 
-    // double px_timestamp = 4 / refFrequency_ * 125. * static_cast<double>(((tf_.timestamp() >> 1) & 0xFFFFFFFFFF800) +
-    // time);
     double px_timestamp =
-        8 * static_cast<double>(((corrected_fpgaTime >> 2) & 0xFFFFFFFFFFC00) + (0x3FF & h.timestamp_raw())) -
+        4 / refFrequency_ * 125. * static_cast<double>(((corrected_fpgaTime >> 1) & 0xFFFFFFFFFF800) + time) -
         static_cast<double>(timeOffset_.at(tag));
 
     // store the ToT information if reasonable
@@ -261,7 +259,7 @@ shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint tag,
                            static_cast<double>(((corrected_fpgaTime >> 2) & (0xFFFFFFFFFFC00 << bitshift_tot_)) +
                                                (static_cast<uint32_t>(h.tot()) << bitshift_tot_));
     double tot = (tot_timestamp - px_timestamp > 0) ? (px_timestamp - tot_timestamp) : 0;
-    return std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), 0, 0, px_timestamp);
+    return std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), tot, tot, px_timestamp);
 }
 
 void EventLoaderMuPixTelescope::fillBuffer() {
