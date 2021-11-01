@@ -172,7 +172,7 @@ StatusCode EventLoaderMuPixTelescope::read_sorted(const std::shared_ptr<Clipboar
         if(names_.count(tag) != 1) {
             throw RuntimeError("Unknown pixel tag read in data: " + to_string(tag));
         }
-        pixels_[tag].push_back(read_hit(h, tag));
+        pixels_[tag].push_back(read_hit(h, tag, tf_.timestamp()));
     }
     // If no event is defined create one
     if(clipboard->getEvent() == nullptr) {
@@ -238,7 +238,7 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
     return StatusCode::NoData;
 }
 
-shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint tag) {
+shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint tag, uint corrected_fpgaTime) {
 
     uint16_t time = 0x0;
     // TS can be sampled on both edges - keep this optional
@@ -252,18 +252,20 @@ shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint tag)
 
     // double px_timestamp = 4 / refFrequency_ * 125. * static_cast<double>(((tf_.timestamp() >> 1) & 0xFFFFFFFFFF800) +
     // time);
-    double px_timestamp = 8 * static_cast<double>(((tf_.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw());
+    double px_timestamp =
+        8 * static_cast<double>(((corrected_fpgaTime >> 2) & 0xFFFFFFFFFFC00) + (0x3FF & h.timestamp_raw())) -
+        static_cast<double>(timeOffset_.at(tag));
 
     // store the ToT information if reasonable
     double tot_timestamp = 8 / refFrequency_ * 125. *
-                           static_cast<double>(((tf_.timestamp() >> 2) & (0xFFFFFFFFFFC00 << bitshift_tot_)) +
+                           static_cast<double>(((corrected_fpgaTime >> 2) & (0xFFFFFFFFFFC00 << bitshift_tot_)) +
                                                (static_cast<uint32_t>(h.tot()) << bitshift_tot_));
     double tot = (tot_timestamp - px_timestamp > 0) ? (px_timestamp - tot_timestamp) : 0;
-    return std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), tot, tot, px_timestamp);
+    return std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), 0, 0, px_timestamp);
 }
 
 void EventLoaderMuPixTelescope::fillBuffer() {
-    long unsigned int temp_fpga_time = 0;
+    long unsigned int corrected_fpgaTime = 0;
     unsigned int raw_time = 0;
     // here we need to check quite a number of cases
     bool buffers_full = false;
@@ -287,19 +289,20 @@ void EventLoaderMuPixTelescope::fillBuffer() {
 
                 // this assumes a few things:
                 // time from fpga is using a 500MHz clock (4 times the clock used for the hit timestamp
-                temp_fpga_time = (tf_.timestamp() >> 2);
+                corrected_fpgaTime = (tf_.timestamp() >> 2);
                 // just take 10 bits from the hit timestamp
                 raw_time = h.timestamp_raw() & 0x3FF;
                 // get the fpga time +1bit just for plots
-                raw_fpga_vs_chip.at(names_.at(tag))->Fill(raw_time, static_cast<double>(temp_fpga_time & 0x7FF));
-                chip_delay.at(names_.at(tag))->Fill(static_cast<double>((temp_fpga_time & 0x3FF) - raw_time));
+                raw_fpga_vs_chip.at(names_.at(tag))->Fill(raw_time, static_cast<double>(corrected_fpgaTime & 0x7FF));
+                chip_delay.at(names_.at(tag))->Fill(static_cast<double>((corrected_fpgaTime & 0x3FF) - raw_time));
                 // if the chip timestamp is smaller than the fpga we have a bit flip on the 11th bit
-                if((temp_fpga_time & 0x3FF) < raw_time) {
-                    temp_fpga_time -= 1024;
+                if((corrected_fpgaTime & 0x3FF) < raw_time) {
+                    corrected_fpgaTime -= 1024;
                 }
-                raw_fpga_vs_chip_corrected.at(names_.at(tag))->Fill(raw_time, static_cast<double>(temp_fpga_time & 0x7FF));
+                raw_fpga_vs_chip_corrected.at(names_.at(tag))
+                    ->Fill(raw_time, static_cast<double>(corrected_fpgaTime & 0x7FF));
 
-                pixelbuffers_.at(tag).push(read_hit(h, tag));
+                pixelbuffers_.at(tag).push(read_hit(h, tag, corrected_fpgaTime));
             }
             buffers_full = true;
             for(auto t : tags_) {
