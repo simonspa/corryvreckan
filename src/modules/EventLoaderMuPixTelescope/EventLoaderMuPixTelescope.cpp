@@ -243,14 +243,16 @@ shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint tag)
     uint16_t time = 0x0;
     // TS can be sampled on both edges - keep this optional
     if((h.get_ts2() == uint16_t(-1)) || (!use_both_timestamps_)) {
-        time = h.timestamp_raw() << 1;
+        time = (0x3FF & h.timestamp_raw()) << 1;
     } else if(h.timestamp_raw() > h.get_ts2()) {
-        time = (h.timestamp_raw() << 1);
+        time = ((0x3FF & h.timestamp_raw()) << 1);
     } else {
-        time = (h.timestamp_raw() << 1) + 0x1;
+        time = ((0x3FF & h.timestamp_raw()) << 1) + 0x1;
     }
 
-    double px_timestamp = 4 / refFrequency_ * 125. * static_cast<double>(((tf_.timestamp() >> 1) & 0xFFFFFFFFFF800) + time);
+    // double px_timestamp = 4 / refFrequency_ * 125. * static_cast<double>(((tf_.timestamp() >> 1) & 0xFFFFFFFFFF800) +
+    // time);
+    double px_timestamp = 8 * static_cast<double>(((tf_.timestamp() >> 2) & 0xFFFFFFFFFFC00) + h.timestamp_raw());
 
     // store the ToT information if reasonable
     double tot_timestamp = 8 / refFrequency_ * 125. *
