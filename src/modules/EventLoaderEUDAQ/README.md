@@ -18,7 +18,7 @@ export EUDAQPATH=/path/to/eudaq
 for CMake to find the library link against and headers to include.
 
 ### Parameters
-* `file_names`: File name(s) of the EUDAQ raw data file(s). At least one file is mandatory.
+* `file_name`: File name(s) of the EUDAQ raw data file(s). At least one file is mandatory.
 * `long_detector_id`: Boolean switch to configure using the long or short detector ID in Corryvreckan, defaults to `true`.
 
 ### Usage

@@ -25,7 +25,7 @@ EventLoaderEUDAQ::EventLoaderEUDAQ(Configuration& config, std::vector<std::share
 
     config_.setDefault<bool>("long_detector_id", true);
 
-    m_filenames = config_.getPathArray("file_names", true);
+    m_filenames = config_.getPathArray("file_name", true);
     m_longID = config_.get<bool>("long_detector_id");
 }
 
