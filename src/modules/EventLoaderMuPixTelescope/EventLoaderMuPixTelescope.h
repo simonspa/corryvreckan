@@ -52,7 +52,7 @@ namespace corryvreckan {
         StatusCode read_sorted(const std::shared_ptr<Clipboard>& clipboard);
         StatusCode read_unsorted(const std::shared_ptr<Clipboard>& clipboard);
 
-        shared_ptr<Pixel> read_hit(const RawHit& h, uint tag, uint corrected_fpgaTime);
+        shared_ptr<Pixel> read_hit(const RawHit& h, uint tag, unsigned long corrected_fpgaTime);
         void fillBuffer();
         std::vector<uint> tags_{};
         double prev_event_end_{};

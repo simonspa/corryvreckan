@@ -175,7 +175,7 @@ StatusCode EventLoaderMuPixTelescope::read_sorted(const std::shared_ptr<Clipboar
         pixels_[tag].push_back(read_hit(h, tag, tf_.timestamp()));
     }
     // If no event is defined create one
-    if(clipboard->getEvent() == nullptr) {
+    if(!clipboard->isEventDefined()) {
         // The readout FPGA creates frames with a length of 128 time stamps, each 8ns. The int division cuts of lowest bits
         int begin = int(pixels_.begin()->second.front()->timestamp()) / 1024;
         clipboard->putEvent(std::make_shared<Event>(double(begin * 1024), double((begin + 1) * 1024)));
@@ -186,12 +186,33 @@ StatusCode EventLoaderMuPixTelescope::read_sorted(const std::shared_ptr<Clipboar
 StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipboard>& clipboard) {
     if(!eof_)
         fillBuffer();
+
+    // check if an event is defined - if not we make one
+    if(!clipboard->isEventDefined()) {
+        auto minTS = 1e40;
+        for(auto t : tags_) {
+            if((pixelbuffers_.at(t).size() > 0) && (minTS > pixelbuffers_.at(t).top()->timestamp()))
+                minTS = pixelbuffers_.at(t).top()->timestamp();
+        }
+        LOG(DEBUG) << "Defining Event around " << minTS;
+
+        minTS = minTS - (static_cast<int>(minTS) % 8192);
+        clipboard->putEvent(std::make_shared<Event>(minTS, minTS + 8192));
+        LOG(DEBUG) << clipboard->getEvent()->start() << "\t" << clipboard->getEvent()->end();
+    } else {
+        LOG(TRACE) << "Event is defined";
+    }
+
     for(auto t : tags_) {
         while(true) {
             if(pixelbuffers_.at(t).size() == 0 && !eof_)
                 fillBuffer();
+            if(pixelbuffers_.at(t).size() == 0) {
+                LOG(DEBUG) << "Buffer " << t << " empty";
+                return StatusCode::EndRun;
+            }
             auto pixel = pixelbuffers_.at(t).top();
-            if((pixel->timestamp() < clipboard->getEvent()->start())) {
+            if(pixelbuffers_.at(t).size() && (pixel->timestamp() < clipboard->getEvent()->start())) {
                 LOG(DEBUG) << " Old hit found: " << Units::display(pixel->timestamp(), "us") << " vs prev end ("
                            << eventNo_ - 1 << ")\t" << Units::display(prev_event_end_, "us") << " and current start \t"
                            << Units::display(clipboard->getEvent()->start(), "us")
@@ -201,9 +222,8 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
                 hdiscardedHitmap.at(names_.at(t))->Fill(pixel->column(), pixel->row());
                 pixelbuffers_.at(t).pop(); // remove top element
                 continue;
-            }
-            if(pixelbuffers_.at(t).size() && (pixel->timestamp() < clipboard->getEvent()->end()) &&
-               (pixel->timestamp() > clipboard->getEvent()->start())) {
+            } else if(pixelbuffers_.at(t).size() && (pixel->timestamp() < clipboard->getEvent()->end()) &&
+                      (pixel->timestamp() > clipboard->getEvent()->start())) {
                 LOG(DEBUG) << " Adding pixel hit: " << Units::display(pixel->timestamp(), "us") << " vs prev end ("
                            << eventNo_ - 1 << ")\t" << Units::display(prev_event_end_, "us") << " and current start \t"
                            << Units::display(clipboard->getEvent()->start(), "us")
@@ -238,7 +258,7 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
     return StatusCode::NoData;
 }
 
-shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint tag, uint corrected_fpgaTime) {
+shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint tag, long unsigned int corrected_fpgaTime) {
 
     uint16_t time = 0x0;
     // TS can be sampled on both edges - keep this optional
@@ -267,6 +287,15 @@ void EventLoaderMuPixTelescope::fillBuffer() {
     unsigned int raw_time = 0;
     // here we need to check quite a number of cases
     bool buffers_full = false;
+    // do not fill the buffer if it is already full anyways
+    for(auto t : tags_) {
+        if(pixelbuffers_.at(t).size() < buffer_depth_)
+            buffers_full = false;
+    }
+    if(buffers_full) {
+        LOG(DEBUG) << "Buffer still fully filled";
+        return;
+    }
     while(!buffers_full) {
         if(blockFile_->read_next(tf_)) {
             // no hits in data - can only happen if the zero suppression is switched off, skip the event
@@ -276,7 +305,7 @@ void EventLoaderMuPixTelescope::fillBuffer() {
             // need to determine the sensor layer that is identified by the tag
             RawHit h = tf_.get_hit(0);
             // tag does not match - continue reading if data is not sorted
-            uint tag = h.tag() & static_cast<uint>(~0x3);
+            uint tag = h.tag() & (~0x3);
             if(names_.count(tag) != 1) {
                 throw RuntimeError("Unknown pixel tag read in data: " + to_string(tag));
             }
@@ -300,7 +329,7 @@ void EventLoaderMuPixTelescope::fillBuffer() {
                 raw_fpga_vs_chip_corrected.at(names_.at(tag))
                     ->Fill(raw_time, static_cast<double>(corrected_fpgaTime & 0x7FF));
 
-                pixelbuffers_.at(tag).push(read_hit(h, tag, corrected_fpgaTime));
+                pixelbuffers_.at(tag).push(read_hit(h, tag, (corrected_fpgaTime * 4)));
             }
             buffers_full = true;
             for(auto t : tags_) {
