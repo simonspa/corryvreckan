@@ -57,6 +57,7 @@ The following authors, in alphabetical order, have contributed to Corryvreckan:
 * Carsten Daniel Burgard, DESY, @cburgard
 * Manuel Colocci, CERN, @mcolocci
 * Jens Dopke, STFC RAL, @jdopke
+* Jordi Duarte-Campderros, IFCA, @duarte
 * Nicolò Jacazio, CERN, @njacazio
 * Chun Cheng, DESY, @chengc
 * Dominik Dannheim, CERN, @dannheim
