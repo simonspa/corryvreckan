@@ -78,6 +78,7 @@ namespace gbl {
         BorderedBandMatrix();
         virtual ~BorderedBandMatrix();
         void resize(unsigned int nSize, unsigned int nBorder = 1, unsigned int nBand = 5);
+        void setZero();
         void solveAndInvertBorderedBand(const VVector& aRightHandSide, VVector& aSolution);
         void addBlockMatrix(double aWeight, const std::vector<unsigned int>* anIndex, const std::vector<double>* aVector);
         void addBlockMatrix(double aWeight, unsigned int nSimple, unsigned int* anIndex, double* aVector);
@@ -100,5 +101,5 @@ namespace gbl {
         VMatrix invertBand();
         VMatrix bandOfAVAT(const VMatrix& anArray, const VSymMatrix& aSymArray) const;
     };
-}
+} // namespace gbl
 #endif /* BORDEREDBANDMATRIX_H_ */

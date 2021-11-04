@@ -52,6 +52,9 @@ namespace gbl {
         theVec.resize(nRows * nCols);
     }
 
+    /// Set content to 0.
+    void VMatrix::setZero() { std::fill(theVec.begin(), theVec.end(), 0.); }
+
     /// Get transposed matrix.
     /**
      * \return Transposed matrix.
@@ -164,6 +167,9 @@ namespace gbl {
         theVec.resize((nRows * nRows + nRows) / 2);
     }
 
+    /// Set content to 0.
+    void VSymMatrix::setZero() { std::fill(theVec.begin(), theVec.end(), 0.); }
+
     /// Get number of rows (= number of colums).
     /**
      * \return Number of rows.
@@ -242,6 +248,9 @@ namespace gbl {
         numRows = nRows;
         theVec.resize(nRows);
     }
+
+    /// Set content to 0.
+    void VVector::setZero() { std::fill(theVec.begin(), theVec.end(), 0.); }
 
     /// Get part of vector.
     /**
@@ -424,4 +433,4 @@ namespace gbl {
         }
         return nrank;
     }
-}
+} // namespace gbl
