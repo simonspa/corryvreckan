@@ -13,7 +13,7 @@
  *
  *
  *  \copyright
- *  Copyright (c) 2011 - 2018 Deutsches Elektronen-Synchroton,
+ *  Copyright (c) 2011 - 2021 Deutsches Elektronen-Synchroton,
  *  Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY \n\n
  *  This library is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Library General Public License as
@@ -84,10 +84,9 @@ namespace gbl {
          * \tparam Measurements   Residuals vector
          * \tparam Precision   Precision matrix or vector (with diagonal)
          * \param [in] aPointsAndTransList List containing pairs with list of points and transformation (at inner (first)
-         * point)
-         * \param [in] extDerivatives Derivatives of external measurements vs external parameters
-         * \param [in] extMeasurements External measurements (residuals)
-         * \param [in] extPrecisions Precision of external measurements (matrix)
+         * point) \param [in] extDerivatives Derivatives of external measurements vs external parameters \param [in]
+         * extMeasurements External measurements (residuals) \param [in] extPrecisions Precision of external measurements
+         * (matrix)
          */
         template <typename Derivatives,
                   typename Measurements,
@@ -101,17 +100,15 @@ namespace gbl {
         /// Create new composed trajectory from list of points and transformations with independent external measurements.
         /**
          * Composed of curved trajectories in space. The (diagonal) precision matrix for the external measurements is
-         * specified as vector
-         * (containing the diagonal).
+         * specified as vector (containing the diagonal).
          *
          * \tparam Derivatives  External derivatives
          * \tparam Measurements   Residuals vector
          * \tparam Precision   Precision matrix or vector (with diagonal)
          * \param [in] aPointsAndTransList List containing pairs with list of points and transformation (at inner (first)
-         * point)
-         * \param [in] extDerivatives Derivatives of external measurements vs external parameters
-         * \param [in] extMeasurements External measurements (residuals)
-         * \param [in] extPrecisions Precision of external measurements (vector with diagonal)
+         * point) \param [in] extDerivatives Derivatives of external measurements vs external parameters \param [in]
+         * extMeasurements External measurements (residuals) \param [in] extPrecisions Precision of external measurements
+         * (vector with diagonal)
          */
         template <typename Derivatives,
                   typename Measurements,
@@ -150,6 +147,10 @@ namespace gbl {
                                     Eigen::VectorXd& aMeasErrors,
                                     Eigen::VectorXd& aResErrors,
                                     Eigen::VectorXd& aDownWeights);
+        unsigned int getMeasResults(unsigned int aLabel,
+                                    unsigned int& numData,
+                                    Eigen::VectorXd& aResiduals,
+                                    Eigen::VectorXd& aMeasErrors);
         unsigned int getScatResults(unsigned int aLabel,
                                     unsigned int& numData,
                                     Eigen::VectorXd& aResiduals,
@@ -188,7 +189,7 @@ namespace gbl {
         unsigned int numOffsets;              ///< Number of (points with) offsets on trajectory
         unsigned int numInnerTransformations; ///< Number of inner transformations to external parameters
         unsigned int numInnerTransOffsets; ///< Number of (points with) offsets affected by inner transformations to external
-                                           ///parameters
+                                           ///< parameters
         unsigned int numCurvature;         ///< Number of curvature parameters (0 or 1) or external parameters
         unsigned int numParameters;        ///< Number of fit parameters
         unsigned int numLocals;            ///< Total number of (additional) local parameters
@@ -206,7 +207,7 @@ namespace gbl {
         Eigen::MatrixXd externalSeed;                 ///< Precision (inverse covariance matrix) of external seed
         // composed trajectory
         std::vector<Eigen::MatrixXd> innerTransformations; ///< Transformations at innermost points of composed trajectory
-                                                           ///(from common external parameters)
+                                                           ///< (from common external parameters)
         std::vector<Eigen::MatrixXd> innerTransDer;        ///< Derivatives at innermost points of composed trajectory
         std::vector<std::array<unsigned int, 5>> innerTransLab; ///< Labels at innermost points of composed trajectory
         Eigen::MatrixXd externalDerivatives;  ///< Derivatives for external measurements of composed trajectory
@@ -231,7 +232,8 @@ namespace gbl {
         void predict();
         double downWeight(unsigned int aMethod);
         void getResAndErr(
-            unsigned int aData, bool used, double& aResidual, double& aMeadsError, double& aResError, double& aDownWeight);
+            unsigned int aData, bool used, double& aResidual, double& aMeasError, double& aResError, double& aDownWeight);
+        void getResAndErr(unsigned int aData, double& aResidual, double& aMeasError);
     };
 
     template <typename Seed>
@@ -338,5 +340,6 @@ namespace gbl {
                                                            : innerTransformations[0].cols() + numInnerTransformations;
         construct(); // construct (composed) trajectory
     }
-}
+
+} // namespace gbl
 #endif /* GBLTRAJECTORY_H_ */

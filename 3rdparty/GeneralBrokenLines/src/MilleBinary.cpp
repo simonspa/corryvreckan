@@ -11,7 +11,7 @@
  *  \author Claus Kleinwort, DESY, 2011 (Claus.Kleinwort@desy.de)
  *
  *  \copyright
- *  Copyright (c) 2011 - 2017 Deutsches Elektronen-Synchroton,
+ *  Copyright (c) 2011 - 2020 Deutsches Elektronen-Synchroton,
  *  Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY \n\n
  *  This library is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Library General Public License as
@@ -36,11 +36,12 @@ namespace gbl {
     /**
      * \param [in] fileName File name
      * \param [in] doublePrec Flag for storage as double values
+     * \param [in] keepZeros Flag for keeping global derivatives with value zero
      * \param [in] aSize Buffer size
      */
-    MilleBinary::MilleBinary(const std::string& fileName, bool doublePrec, unsigned int aSize)
+    MilleBinary::MilleBinary(const std::string& fileName, bool doublePrec, bool keepZeros, unsigned int aSize)
         : binaryFile(fileName.c_str(), std::ios::binary | std::ios::out), intBuffer(), floatBuffer(), doubleBuffer(),
-          doublePrecision(doublePrec) {
+          doublePrecision(doublePrec), globalDerKeepZeros(keepZeros) {
 
         intBuffer.reserve(aSize);
         intBuffer.push_back(0); // first word is error counter
@@ -85,7 +86,7 @@ namespace gbl {
             intBuffer.push_back(0);
             doubleBuffer.push_back(aErr);
             for(unsigned int i = 0; i < labGlobal.size(); ++i) {
-                if(derGlobal[i]) {
+                if(derGlobal[i] or globalDerKeepZeros) {
                     intBuffer.push_back(labGlobal[i]);
                     doubleBuffer.push_back(derGlobal[i]);
                 }
@@ -101,7 +102,7 @@ namespace gbl {
             intBuffer.push_back(0);
             floatBuffer.push_back(aErr);
             for(unsigned int i = 0; i < labGlobal.size(); ++i) {
-                if(derGlobal[i]) {
+                if(derGlobal[i] or globalDerKeepZeros) {
                     intBuffer.push_back(labGlobal[i]);
                     floatBuffer.push_back(derGlobal[i]);
                 }
@@ -126,4 +127,4 @@ namespace gbl {
         else
             floatBuffer.resize(1);
     }
-}
+} // namespace gbl
