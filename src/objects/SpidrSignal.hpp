@@ -22,7 +22,8 @@ namespace corryvreckan {
         // Constructors and destructors
         SpidrSignal(){};
         SpidrSignal(std::string type, double timestamp) : Object(timestamp), m_type(type){};
-        SpidrSignal(std::string type, double timestamp, size_t trigger) : Object(timestamp), m_type(type), m_triggerNumber(trigger) {};
+        SpidrSignal(std::string type, double timestamp, size_t trigger)
+            : Object(timestamp), m_type(type), m_triggerNumber(trigger){};
 
         /**
          * @brief Static member function to obtain base class for storage on the clipboard.

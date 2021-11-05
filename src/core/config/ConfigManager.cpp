@@ -101,7 +101,7 @@ bool ConfigManager::loadModuleOptions(const std::vector<std::string>& options) {
     bool optionsApplied = false;
 
     // Parse the options
-    for(auto& option : options) {
+    for(const auto& option : options) {
         module_option_parser_.parseOption(option);
     }
 
@@ -128,7 +128,7 @@ bool ConfigManager::loadDetectorOptions(const std::vector<std::string>& options)
     OptionParser detector_option_parser;
 
     // Parse the options
-    for(auto& option : options) {
+    for(const auto& option : options) {
         detector_option_parser.parseOption(option);
     }
 
@@ -157,7 +157,6 @@ std::list<Configuration>& ConfigManager::getDetectorConfigurations() {
     if(detector_configs_.empty()) {
         parse_detectors();
     }
-
     return detector_configs_;
 }
 

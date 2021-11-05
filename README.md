@@ -55,8 +55,10 @@ The following authors, in alphabetical order, have contributed to Corryvreckan:
 
 * Matthew Daniel Buckland, University of Liverpool, @mbucklan
 * Carsten Daniel Burgard, DESY, @cburgard
+* Eric Buschmann, CERN, @ebuschma
 * Manuel Colocci, CERN, @mcolocci
 * Jens Dopke, STFC RAL, @jdopke
+* Jordi Duarte-Campderros, IFCA, @duarte
 * Nicolò Jacazio, CERN, @njacazio
 * Chun Cheng, DESY, @chengc
 * Dominik Dannheim, CERN, @dannheim
@@ -104,4 +106,4 @@ This project strongly profits from the developments done for the [Allpix Squared
 
 The LaTeX and Pandoc CMake modules used by Corryvreckan are licensed under the BSD 3-Clause License.
 
-The General Broken Lines library for track fitting is distributed under the terms of the GNU General Public License version 2. The license can be found [here](3rdparty/GeneralBrokenLines/COPYING.LIB), the original source code is available from [here](www.terascale.de/wiki/generalbrokenlines/).
+The General Broken Lines library for track fitting is distributed under the terms of the GNU General Public License version 2. The license can be found [here](3rdparty/GeneralBrokenLines/COPYING.LIB), the original source code is available from [here](https://gitlab.desy.de/claus.kleinwort/general-broken-lines/).

@@ -54,6 +54,13 @@ namespace gbl {
         theBand.resize((nBand + 1), numCol);
     }
 
+    /// Set content to 0.
+    void BorderedBandMatrix::setZero() {
+        theBorder.setZero();
+        theMixed.setZero();
+        theBand.setZero();
+    }
+
     /// Add symmetric block matrix.
     /**
      * Add (extended) block matrix defined by 'aVector * aWeight * aVector.T'
@@ -381,4 +388,5 @@ namespace gbl {
         }
         return aBand;
     }
-}
+
+} // namespace gbl
