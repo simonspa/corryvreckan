@@ -73,6 +73,7 @@ void AnalysisEfficiency::initialize() {
                                                    nbins_y,
                                                    -pitch_y / 2.,
                                                    pitch_y / 2.);
+    hPixelEfficiencyMap_trackPos->SetDirectory(this->getROOTDirectory());
 
     title = m_detector->getName() +
             " Pixel efficiency map (in-pixel ROI);in-pixel x_{track} [#mum];in-pixel y_{track} #mum;#epsilon";
