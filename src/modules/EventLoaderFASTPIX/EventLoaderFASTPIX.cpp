@@ -197,9 +197,9 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
                     loadEvent(deviceData, referenceSpidrSignals[spidr_index]->timestamp());
 
                     spidr_index++;
-                } else if(referenceSpidrSignals[spidr_index]->trigger() > m_triggerNumber + 1) { // SPIDR trigger is after Fastpix trigger (should not happen). discard Fastpix data.
-                    LOG(INFO) << "Expected SPIDR trigger " << m_triggerNumber + 1 << " but got trigger " << referenceSpidrSignals[spidr_index]->trigger() << ".";
-                    LOG(INFO) << "Discarding Fastpix event";
+                } else if(referenceSpidrSignals[spidr_index]->trigger() > m_triggerNumber + 1) { // SPIDR trigger is after Fastpix trigger (no earlier event with matching timestamp?). discard Fastpix data.
+                    LOG(DEBUG) << "Expected SPIDR trigger " << m_triggerNumber + 1 << " but got trigger " << referenceSpidrSignals[spidr_index]->trigger() << ".";
+                    LOG(DEBUG) << "Discarding Fastpix event";
                     m_discardedEvents++;
 
                     loadEvent(discardData, referenceSpidrSignals[spidr_index]->timestamp());
@@ -224,7 +224,7 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
                     LOG(INFO) << "Loading event for trigger " << m_triggerNumber + 1 << " without matching SPIDR trigger";
                     loadEvent(deviceData, timestamp);
 
-                } else if(position == Event::Position::BEFORE) { // Fastpix trigger belongs to an earlier event (should not happen)
+                } else if(position == Event::Position::BEFORE) { // Fastpix trigger belongs to an earlier event (no earlier event with matching timestamp?)
                     LOG(INFO) << "Event for trigger " << m_triggerNumber + 1 << " without matching SPIDR trigger or timestamp";
                     LOG(INFO) << "Discarding Fastpix event";
                     loadEvent(discardData, timestamp);
@@ -248,11 +248,18 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
 
                     loadEvent(deviceData, referenceSpidrSignals[spidr_index]->timestamp());
 
+                } else if(referenceSpidrSignals[spidr_index]->trigger() < m_triggerNumber + 1) {
+                    LOG(DEBUG) << "Expected SPIDR trigger " << m_triggerNumber + 1 << " but got trigger " << referenceSpidrSignals[spidr_index]->trigger() << " and triggers are not yet in sync";
+                    LOG(DEBUG) << "Skipping SPIDR trigger";
                 } else {
-                    LOG(INFO) << "Expected SPIDR trigger " << m_triggerNumber + 1 << " but got trigger " << referenceSpidrSignals[spidr_index]->trigger() << " and triggers are not yet in sync";
-                    LOG(INFO) << "Discarding Fastpix event";
-                    loadEvent(discardData, timestamp);
-                    m_discardedEvents++;
+                    LOG(DEBUG) << "Expected SPIDR trigger " << m_triggerNumber + 1 << " but got trigger " << referenceSpidrSignals[spidr_index]->trigger() << " and triggers are not yet in sync";
+                    size_t discard = referenceSpidrSignals[spidr_index]->trigger() - (m_triggerNumber + 1);
+                    LOG(DEBUG) << "Discarding " << discard << " Fastpix events";
+                    for(size_t i = 0; i < discard; i++) {
+                        loadEvent(discardData, timestamp);
+                    }
+                    m_discardedEvents+=discard;
+                    continue;
                 }
                 
                 spidr_index++;
