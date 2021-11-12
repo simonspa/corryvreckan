@@ -49,8 +49,21 @@ namespace corryvreckan {
         template <typename T> size_t countPersistentObjects(const std::string& key = "") const;
 
     protected:
+        /**
+         * @brief Method to retrieve data from a clipboard storage element depending on the template type
+         * @param storage_element  Clipboard storage element to retrieve data from
+         * @param key              Data key to search for
+         * @return Vector of shared pointers to the data blocks found or empty vector if none were found
+         */
         template <typename T>
         std::vector<std::shared_ptr<T>>& get_data(const ClipboardData& storage_element, const std::string& key) const;
+
+        /**
+         * @brief Count the number of objects of a given type and key on a storage element
+         * @param storage_element  Clipboard storage element to retrieve data from
+         * @param key              Data key to search for
+         * @return Number of objects of given type and key found on the storage element
+         */
         template <typename T> size_t count_objects(const ClipboardData& storage_element, const std::string& key) const;
 
         // Persistent clipboard storage
