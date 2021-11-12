@@ -1,9 +1,21 @@
-FROM gitlab-registry.cern.ch/corryvreckan/corryvreckan/corryvreckan-base:latest
+FROM ubuntu:latest
 MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 
-ENV ROOT6_VERSION 6.22.02
+SHELL ["/bin/bash", "-c"]
+
+# Install basic build requirements
+RUN apt-get update && apt-get install -y curl cmake g++ gcc binutils
+
+# Install ROOT dependencies
+RUN apt-get update && apt-get install -y dpkg-dev libx11-dev libxpm-dev libxft-dev libxext-dev libssl-dev python3 python3-dev python3-pip python3-tk python-is-python3
+
+# Install helpful Python packages
+RUN pip3 install --upgrade pip && \
+    pip3 install numpy matplotlib scipy pandas
 
 # Add layer for ROOT6
+ENV ROOT6_VERSION 6.24.06
+
 ENV ROOTSYS="/opt/root6"
 ENV PATH="$ROOTSYS/bin:$PATH"
 ENV LD_LIBRARY_PATH="$ROOTSYS/lib:$LD_LIBRARY_PATH"
@@ -11,29 +23,42 @@ ENV LIBPATH="$ROOTSYS/lib:$LIBPATH"
 ENV PYTHONPATH="$ROOTSYS/lib:$PYTHONPATH"
 ENV CMAKE_PREFIX_PATH="$ROOTSYS:$CMAKE_PREFIX_PATH"
 
-RUN source scl_source enable devtoolset-8 && \
-    mkdir -p ${ROOTSYS}/{src,build} && \
+RUN mkdir -p ${ROOTSYS}/{src,build} && \
     curl -o ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz \
             https://root.cern.ch/download/root_v${ROOT6_VERSION}.source.tar.gz && \
     tar zxf ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz -C ${ROOTSYS}/src && \
     rm -f ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz && \
     cd ${ROOTSYS}/build && \
-    cmake3 -Dcxx11=ON \
-           -Dgdml=ON \
+    cmake -Dgdml=ON \
            -Dgenvector=ON \
            -Dmathmore=ON \
            -Dminuit2=ON \
            -Dthread=ON \
            -Dx11=OFF \
            -Dopengl=OFF \
+           -Dtmva=OFF -Dtmva-cpu=OFF -Dtmva-pymva=OFF \
+           -Dhttp=OFF \
+           -Dwebgui=OFF \
+           -Droot7=OFF \
+           -Dfftw3=OFF \
+           -Dfitsio=OFF \
+           -Dclad=OFF \
+           -Dspectrum=OFF \
+           -Dvdt=OFF \
+           -Dxrootd=OFF \
+           -Droofit=OFF \
+           -Ddataframe=OFF \
+           -Dpython3=ON \
+           -DPYTHON_EXECUTABLE=/usr/bin/python3 \
            -DCMAKE_INSTALL_PREFIX=../ \
+           -DCMAKE_CXX_STANDARD=17 \
            ../src/root-${ROOT6_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
     rm -rf ${ROOTSYS}/{src,build}
 
 
-ENV PEARY_VERSION v0.9.13
+ENV PEARY_VERSION v0.10.0
 
 # Add layer for Caribou Peary
 ENV PEARYPATH="/opt/peary"
@@ -44,15 +69,15 @@ RUN source scl_source enable devtoolset-8 && \
     unzip ${PEARYPATH}/peary-${PEARY_VERSION}.zip -d ${PEARYPATH}/src && \
     rm -f ${PEARYPATH}/peary-${PEARY_VERSION}.zip && \
     cd ${PEARYPATH}/build && \
-    cmake3 -DINTERFACE_EMULATION=ON \
-           -DINSTALL_PREFIX=../ \
-           ../src/peary-${PEARY_VERSION} && \
+    cmake -DINTERFACE_EMULATION=ON \
+          -DINSTALL_PREFIX=../ \
+          ../src/peary-${PEARY_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
     rm -rf ${PEARYPATH}/{src,build}
 
 
-ENV EUDAQ2_VERSION 2.4.4
+ENV EUDAQ2_VERSION 2.4.7
 
 # Add layer for EUDAQ2
 ENV EUDAQ2PATH="/opt/eudaq2"
@@ -63,14 +88,17 @@ RUN source scl_source enable devtoolset-8 && \
     unzip ${EUDAQ2PATH}/eudaq2.${EUDAQ2_VERSION}.zip -d ${EUDAQ2PATH}/src && \
     rm -f ${EUDAQ2PATH}/eudaq2.${EUDAQ2_VERSION}.zip && \
     cd ${EUDAQ2PATH}/build && \
-    cmake3 -DEUDAQ_BUILD_EXECUTABLE=OFF \
-           -DEUDAQ_BUILD_GUI=OFF \
-           -DUSER_CARIBOU_BUILD=ON \
-           -DUSER_EUDET_BUILD=ON \
-           -DUSER_TLU_BUILD=ON \
-           -DEUDAQ_INSTALL_PREFIX=../ \
-	   -DCMAKE_PREFIX_PATH=${PEARYPATH}/share/cmake/Modules/ \
+    cmake -DEUDAQ_BUILD_EXECUTABLE=OFF \
+          -DEUDAQ_BUILD_GUI=OFF \
+          -DUSER_CARIBOU_BUILD=ON \
+          -DUSER_EUDET_BUILD=ON \
+          -DUSER_TLU_BUILD=ON \
+          -DEUDAQ_INSTALL_PREFIX=../ \
+          -DCMAKE_PREFIX_PATH=${PEARYPATH}/share/cmake/Modules/ \
            ../src/eudaq-${EUDAQ2_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
     rm -rf ${EUDAQ2PATH}/{src,build}
+
+
+CMD ["bash"]
