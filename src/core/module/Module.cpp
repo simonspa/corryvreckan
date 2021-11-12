@@ -19,6 +19,12 @@ Module::~Module() {}
 Module::Module(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : config_(config), m_detectors(std::move(detectors)) {}
 
+StatusCode Module::run(const std::shared_ptr<Clipboard>&) {
+    return StatusCode::Success;
+}
+
+void Module::finalize(const std::shared_ptr<ReadonlyClipboard>&) {}
+
 /**
  * @throws InvalidModuleActionException If this method is called from the constructor
  *

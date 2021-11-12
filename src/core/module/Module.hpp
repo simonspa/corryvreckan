@@ -108,7 +108,7 @@ namespace corryvreckan {
          *
          * Does nothing if not overloaded.
          */
-        virtual StatusCode run(const std::shared_ptr<Clipboard>&) { return StatusCode::Success; }
+        virtual StatusCode run(const std::shared_ptr<Clipboard>& clipboard);
 
         /**
          * @brief Finalise the module after the event sequence
@@ -116,7 +116,7 @@ namespace corryvreckan {
          *
          * Does nothing if not overloaded.
          */
-        virtual void finalize(const std::shared_ptr<ReadonlyClipboard>&){};
+        virtual void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard);
 
         /**
          * @brief Get the config manager object to allow to read the global and other module configurations

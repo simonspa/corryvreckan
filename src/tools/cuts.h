@@ -18,15 +18,15 @@
 
 namespace corryvreckan {
 
+    template <typename T> inline T get_resolution(const std::string&, const std::shared_ptr<Detector>&) {
+        throw ConfigurationError();
+    }
     /**
      * Helper method to obtain the relevant resolution from the detector
      * @param  n Name of the cut, used for cross-checking type and name
      * @param  d Shared pointer to the detector object
      * @return   Relevant resolution for the given detector
      */
-    template <typename T> inline T get_resolution(const std::string&, const std::shared_ptr<Detector>&) {
-        throw ConfigurationError();
-    }
     template <> inline double get_resolution<double>(const std::string& n, const std::shared_ptr<Detector>& d) {
         if(n.find("time") == std::string::npos) {
             throw ConfigurationError();
