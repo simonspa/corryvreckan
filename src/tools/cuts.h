@@ -73,7 +73,7 @@ namespace corryvreckan {
      * which one is provided, and throws an exception if both are specified. No default.
      * @param  name        Name of the cut parameter. Is automatically extended by "_abs" or "_rel" when reading
      * @param  config      Configuration object to query for cut settings
-     * @param  detector    Detectors for which the cuts should be calculated
+     * @param  detectors   Detectors for which the cuts should be calculated
      * @return             Map of cut object with absolute measures, the detector is used as key
      */
     template <typename T>

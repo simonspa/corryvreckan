@@ -113,6 +113,7 @@ namespace corryvreckan {
         /**
          * @brief Finalise the module after the event sequence
          * @note Useful to have before destruction to allow for raising exceptions
+         * @param clipboard Read-only clipboard containing data collected over the run in permanent storage
          *
          * Does nothing if not overloaded.
          */
@@ -192,7 +193,7 @@ namespace corryvreckan {
 
         /**
          * @brief Set the link to the config manager
-         * @param conf_manager ConfigManager holding all relevant configurations
+         * @param config ConfigManager holding all relevant configurations
          */
         void set_config_manager(ConfigManager* config);
         ConfigManager* conf_manager_{nullptr};

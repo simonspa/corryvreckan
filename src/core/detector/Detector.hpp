@@ -126,28 +126,28 @@ namespace corryvreckan {
         /**
          * @brief Get the total size of the active matrix, i.e. pitch * number of pixels in both dimensions
          * @return 2D vector with the dimensions of the pixle matrix in X and Y
-         * @to do: this is designed for PixelDetector, find a proper interface for other Detector type
+         * @todo: this is designed for PixelDetector, find a proper interface for other Detector type
          */
         virtual XYVector getSize() const = 0;
 
         /**
          * @brief Get pitch of a single pixel
          * @return Pitch of a pixel
-         * @to do: this is designed for PixelDetector, find a proper interface for other Detector type
+         * @todo: this is designed for PixelDetector, find a proper interface for other Detector type
          */
         virtual XYVector getPitch() const = 0;
 
         /**
          * @brief Get intrinsic spatial resolution of the detector
          * @return Intrinsic spatial resolution in X and Y
-         * @to do: this is designed for PixelDetector, find a proper interface for other Detector type
+         * @todo: this is designed for PixelDetector, find a proper interface for other Detector type
          */
         virtual XYVector getSpatialResolution() const = 0;
 
         /**
          * @brief Get number of pixels in x and y
          * @return Number of two dimensional pixels
-         * @to do: this is designed for PixelDetector, find a proper interface for other Detector type
+         * @todo: this is designed for PixelDetector, find a proper interface for other Detector type
          */
         virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const = 0;
 
@@ -224,7 +224,7 @@ namespace corryvreckan {
          * @brief Mark a detector channel as masked
          * @param chX X coordinate of the pixel to be masked
          * @param chY Y coordinate of the pixel to be masked
-         * @to do: This is designed for PixelDetector, the parameters can be different with other type of Detector
+         * @todo: This is designed for PixelDetector, the parameters can be different with other type of Detector
          */
         virtual void maskChannel(int chX, int chY) = 0;
 
@@ -233,7 +233,7 @@ namespace corryvreckan {
          * @param chX X coordinate of the pixel to check
          * @param chY Y coordinate of the pixel to check
          * @return    Mask status of the pixel in question
-         * @to do: This is designed for PixelDetector, the parameters can be different with other type of Detector
+         * @todo: This is designed for PixelDetector, the parameters can be different with other type of Detector
          */
         virtual bool masked(int chX, int chY) const = 0;
 

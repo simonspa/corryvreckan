@@ -93,7 +93,7 @@ namespace corryvreckan {
 
         /**
          * @brief Method to remove existing objects from the clipboard
-         * @param object  List of objects to be removed
+         * @param objects List of objects to be removed
          * @param key     Identifying key for the set these objects belongs to. Defaults to empty key
          */
         template <typename T> void removeData(std::vector<std::shared_ptr<T>>& objects, const std::string& key = "");
@@ -113,13 +113,13 @@ namespace corryvreckan {
         /**
          * @brief Store the event object
          * @param event The event object to be stored
-         * @thorws InvalidDataError in case an event exist already
+         * @throws InvalidDataError in case an event exist already
          */
         void putEvent(std::shared_ptr<Event> event);
 
         /**
          * @brief Retrieve the event object
-         * @returnShared pointer to the event
+         * @return Shared pointer to the event
          * @throws MissingDataError in case no event is available.
          */
         std::shared_ptr<Event> getEvent() const;
