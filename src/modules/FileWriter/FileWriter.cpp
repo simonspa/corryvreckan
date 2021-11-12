@@ -17,7 +17,6 @@
 #include <TBranchElement.h>
 #include <TClass.h>
 
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
 
@@ -40,8 +39,7 @@ FileWriter::~FileWriter() {
 void FileWriter::initialize() {
     // Create output file
     config_.setDefault<std::string>("file_name", "data");
-    output_file_name_ =
-        createOutputFile(corryvreckan::add_file_extension(config_.get<std::string>("file_name"), "root"), true);
+    output_file_name_ = createOutputFile(config_.get<std::string>("file_name"), "root", true);
     output_file_ = std::make_unique<TFile>(output_file_name_.c_str(), "RECREATE");
     output_file_->cd();
 
