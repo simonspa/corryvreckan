@@ -10,6 +10,7 @@
 #include "OptionParser.hpp"
 
 #include "ConfigReader.hpp"
+#include "core/utils/log.h"
 
 using namespace corryvreckan;
 
@@ -21,9 +22,7 @@ using namespace corryvreckan;
  */
 void OptionParser::parseOption(std::string line) {
     line = corryvreckan::trim(line);
-    auto key_value = ConfigReader::parseKeyValue(line);
-    auto key = key_value.first;
-    auto value = key_value.second;
+    auto [key, value] = ConfigReader::parseKeyValue(line);
 
     auto dot_pos = key.find('.');
     if(dot_pos == std::string::npos) {
@@ -38,8 +37,9 @@ void OptionParser::parseOption(std::string line) {
 }
 
 bool OptionParser::applyGlobalOptions(Configuration& config) {
-    for(auto& key_value : global_options_) {
-        config.setText(key_value.first, key_value.second);
+    for(auto& [key, value] : global_options_) {
+        LOG(INFO) << "Setting provided option " << key << '=' << value;
+        config.setText(key, value);
     }
     return !global_options_.empty();
 }
@@ -49,8 +49,9 @@ bool OptionParser::applyOptions(const std::string& identifier, Configuration& co
         return false;
     }
 
-    for(auto& key_value : identifier_options_[identifier]) {
-        config.setText(key_value.first, key_value.second);
+    for(auto& [key, value] : identifier_options_[identifier]) {
+        LOG(INFO) << "Setting provided option " << key << '=' << value << " for " << identifier;
+        config.setText(key, value);
     }
     return true;
 }
