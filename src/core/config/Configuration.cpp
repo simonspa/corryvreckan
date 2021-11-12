@@ -10,27 +10,27 @@
 #include "Configuration.hpp"
 
 #include <cassert>
+#include <filesystem>
 #include <ostream>
 #include <stdexcept>
 #include <string>
 
-#include "core/utils/file.h"
+#include "core/config/exceptions.h"
 #include "core/utils/log.h"
-#include "exceptions.h"
 
 using namespace corryvreckan;
 
 Configuration::AccessMarker::AccessMarker(const Configuration::AccessMarker& rhs) {
-    for(const auto& key : rhs.markers_) {
-        registerMarker(key.first);
-        markers_.at(key.first).store(key.second.load());
+    for(const auto& [key, value] : rhs.markers_) {
+        registerMarker(key);
+        markers_.at(key).store(value.load());
     }
 }
 
 Configuration::AccessMarker& Configuration::AccessMarker::operator=(const Configuration::AccessMarker& rhs) {
-    for(const auto& key : rhs.markers_) {
-        registerMarker(key.first);
-        markers_.at(key.first).store(key.second.load());
+    for(const auto& [key, value] : rhs.markers_) {
+        registerMarker(key);
+        markers_.at(key).store(value.load());
     }
     return *this;
 }
@@ -98,6 +98,19 @@ std::string Configuration::getPath(const std::string& key, bool check_exists) co
 /**
  * @throws InvalidValueError If the path did not exists while the check_exists parameter is given
  *
+ * For a relative path the absolute path of the configuration file is prepended. Absolute paths are not changed.
+ */
+std::string
+Configuration::getPathWithExtension(const std::string& key, const std::string& extension, bool check_exists) const {
+    try {
+        return path_to_absolute(std::filesystem::path(get<std::string>(key)).replace_extension(extension), check_exists);
+    } catch(std::invalid_argument& e) {
+        throw InvalidValueError(*this, key, e.what());
+    }
+}
+/**
+ * @throws InvalidValueError If the path did not exists while the check_exists parameter is given
+ *
  * For all relative paths the absolute path of the configuration file is preprended. Absolute paths are not changed.
  */
 // TODO [doc] Document canonicalizing behaviour
@@ -130,7 +143,11 @@ std::string Configuration::path_to_absolute(std::string path, bool canonicalize_
     // Normalize path only if we have to check if it exists
     // NOTE: This throws an error if the path does not exist
     if(canonicalize_path) {
-        path = corryvreckan::get_canonical_path(path);
+        try {
+            path = std::filesystem::canonical(path);
+        } catch(std::filesystem::filesystem_error&) {
+            throw std::invalid_argument("path " + path + " not found");
+        }
     }
     return path;
 }
@@ -168,10 +185,10 @@ unsigned int Configuration::countSettings() const {
  * All keys that are already defined earlier in this configuration are not changed.
  */
 void Configuration::merge(const Configuration& other) {
-    for(auto config_pair : other.config_) {
+    for(const auto& [key, value] : other.config_) {
         // Only merge values that do not yet exist
-        if(!has(config_pair.first)) {
-            setText(config_pair.first, config_pair.second);
+        if(!has(key)) {
+            setText(key, value);
         }
     }
 }
@@ -219,8 +236,7 @@ std::unique_ptr<Configuration::parse_node> Configuration::parse_value(std::strin
     }
 
     // Initialize variables for non-zero levels
-    size_t beg = 1, lst = 1;
-    int in_dpt = 0;
+    size_t beg = 1, lst = 1, in_dpt = 0;
     bool in_dpt_chg = false;
 
     // Implicitly add pair of brackets on zero level

@@ -15,12 +15,12 @@
 
 // Local include files
 #include "ModuleManager.hpp"
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "exceptions.h"
 
 #include <chrono>
 #include <dlfcn.h>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 
@@ -100,14 +100,14 @@ void ModuleManager::load_modules() {
     // (Re)create the main ROOT file
     global_config.setAlias("histogram_file", "histogramFile");
     auto path = std::string(gSystem->pwd()) + "/" + global_config.get<std::string>("histogram_file", "histograms");
-    path = corryvreckan::add_file_extension(path, "root");
+    path = std::filesystem::path(path).replace_extension("root");
 
-    if(corryvreckan::path_is_file(path)) {
+    if(std::filesystem::is_regular_file(path)) {
         if(global_config.get<bool>("deny_overwrite", false)) {
             throw RuntimeError("Overwriting of existing main ROOT file " + path + " denied");
         }
         LOG(WARNING) << "Main ROOT file " << path << " exists and will be overwritten.";
-        corryvreckan::remove_file(path);
+        std::filesystem::remove(path);
     }
     m_histogramFile = std::make_unique<TFile>(path.c_str(), "RECREATE");
     if(m_histogramFile->IsZombie()) {
@@ -728,12 +728,12 @@ void ModuleManager::finalizeAll() {
     if(global_config.has("detectors_file_updated")) {
         std::string path = global_config.getPath("detectors_file_updated");
         // Check if the file exists
-        if(corryvreckan::path_is_file(path)) {
+        if(std::filesystem::is_regular_file(path)) {
             if(global_config.get<bool>("deny_overwrite", false)) {
                 throw RuntimeError("Overwriting of existing detectors file " + path + " denied");
             }
             LOG(WARNING) << "Detectors file " << path << " exists and will be overwritten.";
-            corryvreckan::remove_file(path);
+            std::filesystem::remove(path);
         }
 
         std::ofstream file(path);

@@ -98,15 +98,27 @@ SET(COMPILER_FLAGS -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion
 
 INCLUDE("cmake/compiler-flag-checks.cmake")
 
-# Check for C++17 and require C++17 if available else fallback to C++14 (should currently be sufficient)
-CHECK_CXX_COMPILER_FLAG(-std=c++17 SUPPORT_STD_CXX17)
-IF(SUPPORT_STD_CXX17)
-    SET(CMAKE_CXX_STANDARD 17)
-ELSE()
-    SET(CMAKE_CXX_STANDARD 14)
+# Use CCache if available
+FIND_PROGRAM(CCACHE_FOUND ccache)
+IF(CCACHE_FOUND)
+    MESSAGE(STATUS "Using Ccache: ${CCACHE_FOUND}")
+    SET(CMAKE_CXX_COMPILER_LAUNCHER
+        "${CCACHE_FOUND}"
+        CACHE PATH "CCache program" FORCE)
 ENDIF()
+
+# Require C++17
+CHECK_CXX_COMPILER_FLAG(-std=c++17 SUPPORT_STD_CXX17)
+IF(NOT SUPPORT_STD_CXX17)
+    MESSAGE(FATAL_ERROR "Compiler does not support required standard C++17")
+ENDIF()
+
+SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
+
+# Check if compiler version supports all features:
+INCLUDE("cmake/compiler-version-checks.cmake")
 
 # Set some debug flags
 # FIXME: not using the flag checker now because it wrongly rejects a sanitizer flag..
@@ -136,10 +148,8 @@ IF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[7z].*")
     IF(NOT SUPPORT_STD_CXX17)
         MESSAGE(FATAL_ERROR "ROOT was built with C++17 support but current compiler doesn't support it")
     ENDIF()
-ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[14y].*")
-    SET(CMAKE_CXX_STANDARD 14)
 ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+.*")
-    MESSAGE(FATAL_ERROR "ROOT was built with an unsupported C++ version: ${ROOT_CXX_FLAGS}")
+    MESSAGE(FATAL_ERROR "ROOT was built with an unsupported C++ version, C++17 is required: ${ROOT_CXX_FLAGS}")
 ELSE()
     MESSAGE(FATAL_ERROR "Could not deduce ROOT's C++ version from build flags: ${ROOT_CXX_FLAGS}")
 ENDIF()
