@@ -29,6 +29,7 @@ namespace corryvreckan {
     /**
      * @ingroup StringConversions
      * @brief Enable support to convert string directly to ROOT 3D displacement vector while fetching configuration parameter
+     * @param str String to convert to displacement vector
      */
     template <typename T>
     inline ROOT::Math::DisplacementVector3D<T> from_string_impl(std::string str,
@@ -42,6 +43,7 @@ namespace corryvreckan {
     /**
      * @ingroup StringConversions
      * @brief Enable support to convert ROOT 3D displacement vector to string for storage in the configuration
+     * @param vec Displacement vector to convert to string representation
      */
     template <typename T> inline std::string to_string_impl(const ROOT::Math::DisplacementVector3D<T>& vec, empty_tag) {
         std::string res;
@@ -56,6 +58,7 @@ namespace corryvreckan {
     /**
      * @ingroup StringConversions
      * @brief Enable support to convert string directly to ROOT 2D displacement vector while fetching configuration parameter
+     * @param str String to convert to displacement vector
      */
     template <typename T>
     inline ROOT::Math::DisplacementVector2D<T> from_string_impl(std::string str,
@@ -69,6 +72,7 @@ namespace corryvreckan {
     /**
      * @ingroup StringConversions
      * @brief Enable support to convert ROOT 2D displacement vector to string for storage in the configuration
+     * @param vec Displacement vector to convert to string representation
      */
     template <typename T> inline std::string to_string_impl(const ROOT::Math::DisplacementVector2D<T>& vec, empty_tag) {
         std::string res;
@@ -81,6 +85,7 @@ namespace corryvreckan {
     /**
      * @ingroup StringConversions
      * @brief Enable support to convert string directly to ROOT 3D position vector while fetching configuration parameter
+     * @param str String to convert to position vector
      */
     template <typename T>
     inline ROOT::Math::PositionVector3D<T> from_string_impl(std::string str, type_tag<ROOT::Math::PositionVector3D<T>>) {
@@ -93,6 +98,7 @@ namespace corryvreckan {
     /**
      * @ingroup StringConversions
      * @brief Enable support to convert ROOT 3D position vector to string for storage in the configuration
+     * @param vec Position vector to convert to string representation
      */
     template <typename T> inline std::string to_string_impl(const ROOT::Math::PositionVector3D<T>& vec, empty_tag) {
         return to_string_impl(static_cast<ROOT::Math::DisplacementVector3D<T>>(vec), empty_tag());
@@ -101,6 +107,7 @@ namespace corryvreckan {
     /**
      * @ingroup StringConversions
      * @brief Enable support to convert string directly to ROOT 2D position vector while fetching configuration parameter
+     * @param str String to convert to position vector
      */
     template <typename T>
     inline ROOT::Math::PositionVector2D<T> from_string_impl(std::string str, type_tag<ROOT::Math::PositionVector2D<T>>) {
@@ -113,6 +120,7 @@ namespace corryvreckan {
     /**
      * @ingroup StringConversions
      * @brief Enable support to convert ROOT 2D position vector to string for storage in the configuration
+     * @param vec Position vector to convert to string representation
      */
     template <typename T> inline std::string to_string_impl(const ROOT::Math::PositionVector2D<T>& vec, empty_tag) {
         return to_string_impl(static_cast<ROOT::Math::DisplacementVector2D<T>>(vec), empty_tag());
