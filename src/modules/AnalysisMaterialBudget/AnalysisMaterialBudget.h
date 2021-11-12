@@ -65,8 +65,8 @@ namespace corryvreckan {
         /**
          * @brief Method re-calculating the average absolute deviation from 0 for the scattering distribution of a given
          * image cell
-         * @param Cell ID in x
-         * @param Cell ID in y
+         * @param cell_x Cell ID in x
+         * @param cell_y Cell ID in y
          */
         double get_aad(int cell_x, int cell_y);
     };

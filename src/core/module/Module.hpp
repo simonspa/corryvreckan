@@ -108,15 +108,16 @@ namespace corryvreckan {
          *
          * Does nothing if not overloaded.
          */
-        virtual StatusCode run(const std::shared_ptr<Clipboard>&) { return StatusCode::Success; }
+        virtual StatusCode run(const std::shared_ptr<Clipboard>& clipboard);
 
         /**
          * @brief Finalise the module after the event sequence
          * @note Useful to have before destruction to allow for raising exceptions
+         * @param clipboard Read-only clipboard containing data collected over the run in permanent storage
          *
          * Does nothing if not overloaded.
          */
-        virtual void finalize(const std::shared_ptr<ReadonlyClipboard>&){};
+        virtual void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard);
 
         /**
          * @brief Get the config manager object to allow to read the global and other module configurations
@@ -192,7 +193,7 @@ namespace corryvreckan {
 
         /**
          * @brief Set the link to the config manager
-         * @param conf_manager ConfigManager holding all relevant configurations
+         * @param config ConfigManager holding all relevant configurations
          */
         void set_config_manager(ConfigManager* config);
         ConfigManager* conf_manager_{nullptr};
