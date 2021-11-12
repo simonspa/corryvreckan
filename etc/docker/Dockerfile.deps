@@ -58,12 +58,14 @@ RUN mkdir -p ${ROOTSYS}/{src,build} && \
     rm -rf ${ROOTSYS}/{src,build}
 
 
+# Install Peary dependencies
+RUN apt-get update && apt-get install -y unzip libreadline-dev
+
 ENV PEARY_VERSION v0.10.0
 
 # Add layer for Caribou Peary
 ENV PEARYPATH="/opt/peary"
-RUN source scl_source enable devtoolset-8 && \
-    mkdir -p ${PEARYPATH}/{src,build} && \
+RUN mkdir -p ${PEARYPATH}/{src,build} && \
     curl -L -o ${PEARYPATH}/peary-${PEARY_VERSION}.zip \
             https://gitlab.cern.ch/Caribou/peary/-/archive/${PEARY_VERSION}/peary-${PEARY_VERSION}.zip && \
     unzip ${PEARYPATH}/peary-${PEARY_VERSION}.zip -d ${PEARYPATH}/src && \
@@ -81,8 +83,7 @@ ENV EUDAQ2_VERSION 2.4.7
 
 # Add layer for EUDAQ2
 ENV EUDAQ2PATH="/opt/eudaq2"
-RUN source scl_source enable devtoolset-8 && \
-    mkdir -p ${EUDAQ2PATH}/{src,build} && \
+RUN mkdir -p ${EUDAQ2PATH}/{src,build} && \
     curl -L -o ${EUDAQ2PATH}/eudaq2.${EUDAQ2_VERSION}.zip \
             https://github.com/eudaq/eudaq/archive/v${EUDAQ2_VERSION}.zip && \
     unzip ${EUDAQ2PATH}/eudaq2.${EUDAQ2_VERSION}.zip -d ${EUDAQ2PATH}/src && \
@@ -100,5 +101,7 @@ RUN source scl_source enable devtoolset-8 && \
     make install && \
     rm -rf ${EUDAQ2PATH}/{src,build}
 
+# Install Corryvreckan dependencies
+RUN apt-get install -y libeigen3-dev python3-lxml
 
 CMD ["bash"]
