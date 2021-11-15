@@ -60,6 +60,9 @@ namespace corryvreckan {
         bool m_triggerSync;
 
         TH2Poly* hitmap;
+        TH1F* seed_tot_inner;
+        TH1F* seed_tot_outer;
+        TH1F* pixels_per_event;
 
         int m_eventNumber;
         size_t m_triggerNumber;

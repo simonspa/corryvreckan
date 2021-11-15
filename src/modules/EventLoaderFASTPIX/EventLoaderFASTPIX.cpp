@@ -76,6 +76,9 @@ void EventLoaderFASTPIX::initialize() {
     hitmap->SetTitle("hitmap");
     Honeycomb(hitmap,0.5,0.5,16,4);
 
+    seed_tot_inner = new TH1F("seed_tot_inner", "ToT inner seed pixels", 350, 0, 351);
+    seed_tot_outer = new TH1F("seed_tot_outer", "ToT outer seed pixels", 350, 0, 351);
+    pixels_per_event = new TH1F("pixels_per_event", "Pixels per event", 10, 0, 11);
 
     // Initialise member variables
     m_eventNumber = 0;
@@ -95,38 +98,47 @@ void EventLoaderFASTPIX::initialize() {
 
 // number of events / block
 // event timestamp
-// seed time
-// cfd time
 // number of pixels / event
-// column, row, ToT [xN]
+// pixel ID, ToT, px timestamp [xN]
 
 bool EventLoaderFASTPIX::loadEvent(PixelVector &deviceData, double spidr_timestamp) {
     std::string detectorID = m_detector->getName();
 
     uint16_t event_size;
-    double event_timestamp, seed_time, cfd_time;
+    double event_timestamp;
 
     m_prevEvent = m_inputFile.tellg();
 
     m_inputFile.read(reinterpret_cast<char*>(&event_timestamp), sizeof event_timestamp);
-    m_inputFile.read(reinterpret_cast<char*>(&seed_time), sizeof seed_time);
-    m_inputFile.read(reinterpret_cast<char*>(&cfd_time), sizeof cfd_time);
     m_inputFile.read(reinterpret_cast<char*>(&event_size), sizeof event_size);
 
+    LOG(DEBUG) << "Event timestamp: " << event_timestamp;
+    LOG(DEBUG) << "Event size: " << event_size;
+    LOG(DEBUG) << "Previous event: " << m_prevEvent;
+
+    pixels_per_event->Fill(event_size);
+
     for(uint16_t i = 0; i < event_size; i++) {
-        uint16_t col, row;
-        double tot;
+        uint16_t idx;
+        double tot, px_timestamp;
 
-        m_inputFile.read(reinterpret_cast<char*>(&col), sizeof col);
-        m_inputFile.read(reinterpret_cast<char*>(&row), sizeof row);
+        m_inputFile.read(reinterpret_cast<char*>(&idx), sizeof idx);
         m_inputFile.read(reinterpret_cast<char*>(&tot), sizeof tot);
+        m_inputFile.read(reinterpret_cast<char*>(&px_timestamp), sizeof px_timestamp);
 
-        LOG(DEBUG) << "Column " << col << " row " << row << " ToT " << tot;
+        hitmap->SetBinContent(idx+1, hitmap->GetBinContent(idx+1)+1);
+        int row = idx / 16;
+        int col = idx % 16;
 
-        int idx = row*16+col+1;
-        hitmap->SetBinContent(idx, hitmap->GetBinContent(idx)+1);
+        if(i == 0) {
+            if(col == 0 || col == 15 || row == 0 || row == 3) {
+                seed_tot_outer->Fill(tot);
+            } else {
+                seed_tot_inner->Fill(tot);
+            }
+        }
 
-        auto pixel = std::make_shared<Pixel>(detectorID, col, row, static_cast<int>(tot), tot, spidr_timestamp + m_detector->timeOffset());
+        auto pixel = std::make_shared<Pixel>(detectorID, col, row, static_cast<int>(tot), tot, spidr_timestamp + px_timestamp + m_detector->timeOffset());
         deviceData.push_back(pixel);
     }
 
@@ -176,6 +188,7 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
 
     for(;;) {
         // triggers are aligned to SPIDR timestamps. Time offsets are only added to pixel timestamps?
+        LOG(DEBUG) << "Raw timestamp: " << getRawTimestamp();
         double timestamp = getTimestamp();
         auto position = event->getTimestampPosition(timestamp);
 
