@@ -145,7 +145,8 @@ TrackingMultiplet::TrackingMultiplet(Configuration& config, std::vector<std::sha
 
     scatterer_matching_cut_ = config_.get<double>("scatterer_matching_cut");
 
-    isolation_cut_ = config_.get<double>("isolation_cut", scatterer_matching_cut_ * 2.);
+    config_.setDefault<double>("isolation_cut", scatterer_matching_cut_ * 2.);
+    isolation_cut_ = config_.get<double>("isolation_cut");
 
     track_model_ = config_.get<std::string>("track_model", "straightline");
     if(track_model_ != "gbl") {
