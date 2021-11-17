@@ -18,8 +18,6 @@ using namespace corryvreckan;
 TrackingMultiplet::TrackingMultiplet(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
 
-    config_.setDefault<double>("isolation_cut", scatterer_matching_cut_ * 2.);
-
     if(config_.count({"time_cut_rel", "time_cut_abs"}) == 0) {
         config_.setDefault("time_cut_rel", 3.0);
     }
@@ -147,6 +145,7 @@ TrackingMultiplet::TrackingMultiplet(Configuration& config, std::vector<std::sha
 
     scatterer_matching_cut_ = config_.get<double>("scatterer_matching_cut");
 
+    config_.setDefault<double>("isolation_cut", scatterer_matching_cut_ * 2.);
     isolation_cut_ = config_.get<double>("isolation_cut");
 
     track_model_ = config_.get<std::string>("track_model", "straightline");
