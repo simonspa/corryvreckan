@@ -36,6 +36,7 @@ namespace corryvreckan {
         DUT = 0x2,       ///< Detector used as device under test
         AUXILIARY = 0x4, ///< Auxiliary device which should not participate in regular reconstruction but might provide
                          /// additional information
+        PASSIVE = 0x5,   ///< Passive device which only acts as scatterer. This is ignored for detector modules
     };
 
     inline constexpr DetectorRole operator&(DetectorRole x, DetectorRole y) {
@@ -116,6 +117,12 @@ namespace corryvreckan {
          * @return Auxiliary status
          */
         bool isAuxiliary() const;
+
+        /**
+         * @brief Obtain role of this detector
+         * @return Detector role
+         */
+        DetectorRole getRole() const;
 
         /**
          * @brief Retrieve configuration object from detector, containing all (potentially updated) parameters
