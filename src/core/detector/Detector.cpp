@@ -25,20 +25,10 @@ using namespace corryvreckan;
 Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
 
     // Role of this detector:
-    auto roles = config.getArray<std::string>("role", std::vector<std::string>{"none"});
+    auto roles = config.getArray<DetectorRole>("role", {DetectorRole::NONE});
     for(auto& role : roles) {
-        std::transform(role.begin(), role.end(), role.begin(), ::tolower);
-        if(role == "none") {
-            m_role |= DetectorRole::NONE;
-        } else if(role == "reference" || role == "ref") {
-            m_role |= DetectorRole::REFERENCE;
-        } else if(role == "dut") {
-            m_role |= DetectorRole::DUT;
-        } else if(role == "auxiliary" || role == "aux") {
-            m_role |= DetectorRole::AUXILIARY;
-        } else {
-            throw InvalidValueError(config, "role", "Detector role does not exist.");
-        }
+        LOG(ERROR) << "Adding role " << corryvreckan::to_string(role);
+        m_role |= role;
     }
 
     // Auxiliary devices cannot hold other roles:
