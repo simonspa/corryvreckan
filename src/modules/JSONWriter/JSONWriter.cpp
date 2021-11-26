@@ -17,10 +17,6 @@ JSONWriter::JSONWriter(Configuration& config, std::vector<std::shared_ptr<Detect
 
 void JSONWriter::initialize() {
 
-    for(auto& detector : get_detectors()) {
-        LOG(DEBUG) << "Initialise for detector " + detector->getName();
-    }
-
     // Create output file
     config_.setDefault<std::string>("file_name", "data");
     output_file_name_ = createOutputFile(config_.get<std::string>("file_name"), "json", true);

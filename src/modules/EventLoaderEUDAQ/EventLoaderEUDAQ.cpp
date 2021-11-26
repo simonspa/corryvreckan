@@ -42,13 +42,8 @@ void EventLoaderEUDAQ::initialize() {
     }
 
     // Loop over all planes
-    for(auto& detector : get_detectors()) {
+    for(auto& detector : get_regular_detectors(true)) {
         auto detectorID = detector->getName();
-
-        // Do not created plots for auxiliary detectors:
-        if(detector->isAuxiliary()) {
-            continue;
-        }
 
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detectorID.c_str());

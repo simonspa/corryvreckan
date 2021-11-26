@@ -28,7 +28,7 @@ void AnalysisTelescope::initialize() {
 
     // Initialise biased telescope residuals per telescope device and telescope resolution plots (using MCparticles) at the
     // position of the DUTs
-    for(auto& detector : get_detectors()) {
+    for(auto& detector : get_regular_detectors(true)) {
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detector->getName().c_str());
         if(local_directory == nullptr) {
@@ -135,7 +135,7 @@ StatusCode AnalysisTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
 
         // Loop over clusters of the track:
         for(auto& cluster : track->getClusters()) {
-            auto detector = get_detector(cluster->detectorID());
+            auto detector = this->get_detector(cluster->detectorID());
             if(detector == nullptr || detector->isDUT()) {
                 continue;
             }
@@ -189,11 +189,7 @@ StatusCode AnalysisTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
         }
 
         // Calculate telescope resolution at DUT
-        for(auto& detector : get_detectors()) {
-            if(!detector->isDUT()) {
-                continue;
-            }
-
+        for(auto& detector : get_regular_detectors(false)) {
             // Get the MC particles from the clipboard
             auto mcParticles = clipboard->getData<MCParticle>(detector->getName());
             if(mcParticles.empty()) {

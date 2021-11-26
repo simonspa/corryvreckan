@@ -230,10 +230,7 @@ void OnlineMonitor::AddPlots(std::string canvas_name,
 
             } else {
                 LOG(DEBUG) << "Adding plot " << name << " for all DUTs.";
-                for(auto& detector : get_detectors()) {
-                    if(!detector->isDUT()) {
-                        continue;
-                    }
+                for(auto& detector : get_duts()) {
                     AddHisto(canvas_name,
                              std::regex_replace(name, std::regex("%DUT%"), detector->getName()),
                              plot.back(),
@@ -259,6 +256,10 @@ void OnlineMonitor::AddPlots(std::string canvas_name,
 
                     // Ignore DUTs if configured that way:
                     if(ignoreDut && detector->isDUT()) {
+                        continue;
+                    }
+
+                    if(detector->getRole == DetectorRole::PASSIVE) {
                         continue;
                     }
 
