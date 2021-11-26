@@ -741,10 +741,11 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             has_associated_cluster = true;
 
             hTrackZPosDUT->Fill(track->getState(m_detector->getName()).z());
-            // Check distance between track and cluster
-            ROOT::Math::XYZPoint intercept = track->getIntercept(assoc_cluster->global().z());
-            double xdistance = intercept.X() - assoc_cluster->global().x();
-            double ydistance = intercept.Y() - assoc_cluster->global().y();
+
+            // Check distance between track and cluster in local coordinates
+            ROOT::Math::XYZPoint intercept = m_detector->getLocalIntercept(track.get());
+            double xdistance = intercept.X() - assoc_cluster->local().x();
+            double ydistance = intercept.Y() - assoc_cluster->local().y();
             double xdistance_um = xdistance * 1000.;
             double ydistance_um = ydistance * 1000.;
 
