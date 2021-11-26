@@ -31,12 +31,12 @@ namespace corryvreckan {
      * @brief Role of the detector
      */
     enum class DetectorRole : int {
-        NONE = 0x0,      ///< No specific detector role
-        REFERENCE = 0x1, ///< Reference detector
-        DUT = 0x2,       ///< Detector used as device under test
-        AUXILIARY = 0x4, ///< Auxiliary device which should not participate in regular reconstruction but might provide
-                         /// additional information
-        PASSIVE = 0x5,   ///< Passive device which only acts as scatterer. This is ignored for detector modules
+        NONE = 0x0,           ///< No specific detector role
+        REFERENCE = (1 << 0), ///< Reference detector
+        DUT = (1 << 1),       ///< Detector used as device under test
+        AUXILIARY = (1 << 2), ///< Auxiliary device which should not participate in regular reconstruction but might provide
+                              /// additional information
+        PASSIVE = (1 << 3),   ///< Passive device which only acts as scatterer. This is ignored for detector modules
     };
 
     inline constexpr DetectorRole operator&(DetectorRole x, DetectorRole y) {
@@ -119,10 +119,17 @@ namespace corryvreckan {
         bool isAuxiliary() const;
 
         /**
-         * @brief Obtain role of this detector
-         * @return Detector role
+         * @brief Obtain roles assigned to this detector
+         * @return List of detector roles
          */
-        DetectorRole getRole() const;
+        DetectorRole getRoles() const;
+
+        /**
+         * @brief Check if this detector has a certain role assigned
+         * @param  role Role to be checked for
+         * @return True if detector holds this role
+         */
+        bool hasRole(DetectorRole role) const;
 
         /**
          * @brief Retrieve configuration object from detector, containing all (potentially updated) parameters

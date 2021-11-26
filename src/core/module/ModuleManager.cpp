@@ -432,7 +432,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
             std::transform(detectortype.begin(), detectortype.end(), detectortype.begin(), ::tolower);
 
             // Skip all detectors marked as passive
-            if(det->getRole() == DetectorRole::PASSIVE) {
+            if(det->hasRole(DetectorRole::PASSIVE)) {
                 continue;
             }
 

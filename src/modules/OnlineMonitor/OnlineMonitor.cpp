@@ -259,7 +259,7 @@ void OnlineMonitor::AddPlots(std::string canvas_name,
                         continue;
                     }
 
-                    if(detector->getRole == DetectorRole::PASSIVE) {
+                    if(detector->hasRole(DetectorRole::PASSIVE)) {
                         continue;
                     }
 
