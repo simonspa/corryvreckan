@@ -431,6 +431,11 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
             auto detectortype = det->getType();
             std::transform(detectortype.begin(), detectortype.end(), detectortype.begin(), ::tolower);
 
+            // Skip all detectors marked as passive
+            if(det->getRole() == DetectorRole::PASSIVE) {
+                continue;
+            }
+
             // Skip all that were already added by name
             if(module_names.find(det->getName()) != module_names.end()) {
                 continue;
