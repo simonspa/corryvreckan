@@ -105,6 +105,17 @@ std::string Module::createOutputFile(const std::string& path, const std::string&
     return file;
 }
 
+std::vector<std::shared_ptr<Detector>> Module::get_regular_detectors(bool include_duts) const {
+    std::vector<std::shared_ptr<Detector>> detectors;
+    for(const auto& det : m_detectors) {
+        auto role = det->getRole();
+        if(role == DetectorRole::NONE || role == DetectorRole::REFERENCE || (include_duts && role == DetectorRole::DUT)) {
+            detectors.push_back(det);
+        }
+    }
+    return detectors;
+};
+
 /**
  * @throws InvalidModuleActionException If this method is called from the constructor or destructor
  * @warning Cannot be used from the constructor, because the instantiation logic has not finished yet

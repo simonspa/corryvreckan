@@ -147,10 +147,28 @@ namespace corryvreckan {
         std::vector<std::shared_ptr<Detector>> get_detectors() const { return m_detectors; };
 
         /**
+         * @brief Get list of all regular detectors this module acts on.
+         * Regular detectors are those with \ref DetectorRole set to either NONE or REFERENCE. With the parameter, also those
+         * with role DUT can be added.
+         * @param include_duts Also include detectors with role DUT in the list
+         * @return List of all detectors for this module without special role
+         */
+        std::vector<std::shared_ptr<Detector>> get_regular_detectors(bool include_duts) const;
+
+        /**
          * @brief Get the number of detectors this module takes care of
          * @return Number of detectors to act on
          */
         std::size_t num_detectors() const { return m_detectors.size(); };
+
+        /**
+         * @brief Get the number of regular detectors this module takes care of
+         * Regular detectors are those with \ref DetectorRole set to either NONE or REFERENCE. With the parameter, also those
+         * with role DUT can be added.
+         * @param include_duts Also include detectors with role DUT in the list
+         * @return Number of regular detectors to act on
+         */
+        std::size_t num_regular_detectors(bool include_duts) const { return get_regular_detectors(include_duts).size(); };
 
         /**
          * @brief Get a specific detector, identified by its name
