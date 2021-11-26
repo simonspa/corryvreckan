@@ -168,6 +168,9 @@ CORRYVRECKAN_SETUP_EIGEN_TARGETS()
 
 ADD_SUBDIRECTORY(3rdparty/GeneralBrokenLines)
 
+# Include third-party libraries as system headers:
+INCLUDE_DIRECTORIES(SYSTEM 3rdparty)
+
 # Set the dependencies
 SET(CORRYVRECKAN_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
 SET(CORRYVRECKAN_DEPS_LIBRARIES Eigen3::Eigen ROOT::Core ROOT::GenVector ROOT::Geom ROOT::RIO ROOT::Hist ROOT::Minuit ROOT::Minuit2 GBL)
