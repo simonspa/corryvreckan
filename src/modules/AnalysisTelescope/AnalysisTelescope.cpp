@@ -188,8 +188,8 @@ StatusCode AnalysisTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
             telescopeMCresidualsY[name]->Fill(interceptLocal.Y() + detector->getSize().Y() / 2 - particlePosition.Y());
         }
 
-        // Calculate telescope resolution at DUT
-        for(auto& detector : get_regular_detectors(false)) {
+        // Calculate telescope resolution at DUTs
+        for(auto& detector : get_duts()) {
             // Get the MC particles from the clipboard
             auto mcParticles = clipboard->getData<MCParticle>(detector->getName());
             if(mcParticles.empty()) {
