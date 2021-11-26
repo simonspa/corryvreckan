@@ -26,7 +26,7 @@ MaskCreator::MaskCreator(Configuration& config, std::shared_ptr<Detector> detect
     config_.setDefault<bool>("mask_dead_pixels", false);
     config_.setDefault<bool>("write_new_config", false);
 
-    m_method = config_.get<std::string>("method");
+    m_method = config_.get<MaskingMethod>("method");
     m_frequency = config_.get<double>("frequency_cut");
     binsOccupancy = config_.get<int>("bins_occupancy");
     bandwidth = config_.get<double>("density_bandwidth");
@@ -64,7 +64,7 @@ void MaskCreator::initialize() {
                            -0.5,
                            m_detector->nPixels().Y() - 0.5);
 
-    if(m_method == "localdensity") {
+    if(m_method == MaskingMethod::LOCALDENSITY) {
         title = m_detector->getName() + " Occupancy distance;x [px];y [px]";
         m_occupancyDist = new TH1D("occupancy_dist", title.c_str(), binsOccupancy, 0, 1);
 
@@ -127,11 +127,11 @@ StatusCode MaskCreator::run(const std::shared_ptr<Clipboard>& clipboard) {
 
 void MaskCreator::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
-    if(m_method == "localdensity") {
+    if(m_method == MaskingMethod::LOCALDENSITY) {
         LOG(INFO) << "Using local density estimator";
         // Reject noisy pixels based on local density estimator:
         localDensityEstimator();
-    } else {
+    } else if(m_method == MaskingMethod::FREQUENCY) {
         LOG(INFO) << "Using global frequency filter";
         // Use global frequency filter to detect noisy pixels:
         globalFrequencyFilter();
