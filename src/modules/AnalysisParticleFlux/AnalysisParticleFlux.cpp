@@ -44,12 +44,12 @@ void AnalysisParticleFlux::initialize() {
 
     // Initialise histograms
     m_azimuthHistogram = new TH1F("azimuth",
-                                  "Azimuthal distribution of tracks;#varphi [rad];# entries",
+                                  "Azimuthal distribution of tracks;#varphi [rad];# tracks",
                                   m_azimuthGranularity,
                                   m_azimuthLow,
                                   m_azimuthHigh);
     m_zenithHistogram = new TH1F("zenith",
-                                 "Zenith angle distribution of tracks;#vartheta [rad];# entries",
+                                 "Zenith angle distribution of tracks;#vartheta [rad];# tracks",
                                  m_zenithGranularity,
                                  m_zenithLow,
                                  m_zenithHigh);
