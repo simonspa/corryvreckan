@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implementation of module ParticleFlux
+ * @brief Implementation of module AnalysisAnalysisParticleFlux
  *
  * @copyright Copyright (c) 2021 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
@@ -8,11 +8,11 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include "ParticleFlux.h"
+#include "AnalysisParticleFlux.h"
 
 using namespace corryvreckan;
 
-ParticleFlux::ParticleFlux(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
+AnalysisParticleFlux::AnalysisParticleFlux(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
 
     // Setting config defaults
@@ -40,7 +40,7 @@ ParticleFlux::ParticleFlux(Configuration& config, std::vector<std::shared_ptr<De
     m_zenithHigh = config_.get<double>("zenithHigh");
 }
 
-void ParticleFlux::initialize() {
+void AnalysisParticleFlux::initialize() {
 
     // Initialise histograms
     m_azimuthHistogram = new TH1F("azimuth",
@@ -70,7 +70,7 @@ void ParticleFlux::initialize() {
 /**
  * @brief [Calculate zenith and azimuth, fill histograms]
  */
-void ParticleFlux::calculateAngles(Track* track) {
+void AnalysisParticleFlux::calculateAngles(Track* track) {
     ROOT::Math::XYZVector track_direction = track->getDirection(m_trackIntercept);
     double phi = track_direction.Phi();
     double theta = track_direction.theta();
@@ -79,7 +79,7 @@ void ParticleFlux::calculateAngles(Track* track) {
     m_combinedHistogram->Fill(phi, theta);
 }
 
-StatusCode ParticleFlux::run(const std::shared_ptr<Clipboard>& clipboard) {
+StatusCode AnalysisParticleFlux::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Loop over all tracks, calculate all angles and fill histograms
     auto tracks = clipboard->getData<Track>();
@@ -95,7 +95,7 @@ StatusCode ParticleFlux::run(const std::shared_ptr<Clipboard>& clipboard) {
     return StatusCode::Success;
 }
 
-void ParticleFlux::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
+void AnalysisParticleFlux::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
     LOG(INFO) << "Analysed " << m_numberOfTracks << " tracks";

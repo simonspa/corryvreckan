@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Definition of module ParticleFlux
+ * @brief Definition of module AnalysisParticleFlux
  *
  * @copyright Copyright (c) 2021 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
@@ -8,8 +8,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef ParticleFlux_H
-#define ParticleFlux_H 1
+#ifndef AnalysisParticleFlux_H
+#define AnalysisParticleFlux_H 1
 
 #include <TCanvas.h>
 #include <TH1F.h>
@@ -26,7 +26,7 @@ namespace corryvreckan {
      *
      * More detailed explanation of module
      */
-    class ParticleFlux : public Module {
+    class AnalysisParticleFlux : public Module {
 
     public:
         /**
@@ -34,7 +34,7 @@ namespace corryvreckan {
          * @param config Configuration object for this module as retrieved from the steering file
          * @param detectors Vector of pointers to the detectors
          */
-        ParticleFlux(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
+        AnalysisParticleFlux(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
 
         /**
          * @brief [Initialise this module]
@@ -75,4 +75,4 @@ namespace corryvreckan {
     };
 
 } // namespace corryvreckan
-#endif // ParticleFlux_H
+#endif // AnalysisParticleFlux_H

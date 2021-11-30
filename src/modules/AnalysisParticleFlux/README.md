@@ -1,4 +1,4 @@
-# ParticleFlux   
+# AnalysisParticleFlux   
 **Maintainer**: Maximilian Felix Caspar (<maximilian.caspar@desy.de>)   
 **Module Type**: *GLOBAL*   
 **Status**: Experimental   
