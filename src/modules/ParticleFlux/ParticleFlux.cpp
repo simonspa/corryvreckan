@@ -17,12 +17,12 @@ ParticleFlux::ParticleFlux(Configuration& config, std::vector<std::shared_ptr<De
 
     // Setting config defaults
     // Azimuthal histogram
-    config_.setDefault<double>("azimuth_low", Units::get<double>(0, "degree"));
-    config_.setDefault<double>("azimuth_high", Units::get<double>(360, "degree"));
+    config_.setDefault<double>("azimuth_low", Units::get<double>(0, "deg"));
+    config_.setDefault<double>("azimuth_high", Units::get<double>(360, "deg"));
     config_.setDefault<int>("azimuth_granularity", 36);
     // Zenith histogram
-    config_.setDefault<double>("zenith_low", Units::get<double>(0, "degree"));
-    config_.setDefault<double>("zenith_high", Units::get<double>(90, "degree"));
+    config_.setDefault<double>("zenith_low", Units::get<double>(0, "deg"));
+    config_.setDefault<double>("zenith_high", Units::get<double>(90, "deg"));
     config_.setDefault<int>("zenith_granularity", 9);
 
     // Read configuration settings
@@ -38,9 +38,25 @@ ParticleFlux::ParticleFlux(Configuration& config, std::vector<std::shared_ptr<De
 
 void ParticleFlux::initialize() {
 
-    for(auto& detector : get_detectors()) {
-        LOG(DEBUG) << "Initialise for detector " + detector->getName();
-    }
+    // Initialise histograms
+    m_azimuth_histogram = new TH1F("azimuth",
+                                   "Azimuthal distribution of tracks;#varphi [rad];# entries",
+                                   m_azimuth_granularity,
+                                   m_azimuth_low,
+                                   m_azimuth_high);
+    m_zenith_histogram = new TH1F("zenith",
+                                  "Zenith angle distribution of tracks;#vartheta [rad];# entries",
+                                  m_zenith_granularity,
+                                  m_zenith_low,
+                                  m_zenith_high);
+    m_combined_histogram = new TH2F("zenith_vs_azimuth",
+                                    "Zenith angle vs azimuth;#varphi [rad];#vartheta [rad]",
+                                    m_azimuth_granularity,
+                                    m_azimuth_low,
+                                    m_azimuth_high,
+                                    m_zenith_granularity,
+                                    m_zenith_low,
+                                    m_zenith_high);
 
     // Initialise member variables
     m_eventNumber = 0;
