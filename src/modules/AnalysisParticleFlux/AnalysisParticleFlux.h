@@ -14,6 +14,7 @@
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <cmath>
 #include <iostream>
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
@@ -72,6 +73,7 @@ namespace corryvreckan {
         TH2F* m_combinedHistogram;
 
         void calculateAngles(Track* track);
+        double solidAngle(double& zenithLow, double& zenithHigh, double& azimuthLow, double& azimuthHigh);
     };
 
 } // namespace corryvreckan

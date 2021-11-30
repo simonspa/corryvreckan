@@ -78,6 +78,12 @@ void AnalysisParticleFlux::calculateAngles(Track* track) {
     m_zenithHistogram->Fill(theta);
     m_combinedHistogram->Fill(phi, theta);
 }
+/**
+ * @brief [Get solid angle for given bin (inputs in rad)]
+ */
+double AnalysisParticleFlux::solidAngle(double& zenithLow, double& zenithHigh, double& azimuthLow, double& azimuthHigh) {
+    return (azimuthHigh - azimuthLow) * (std::cos(zenithLow) - std::cos(zenithHigh));
+}
 
 StatusCode AnalysisParticleFlux::run(const std::shared_ptr<Clipboard>& clipboard) {
 
@@ -99,4 +105,6 @@ void AnalysisParticleFlux::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
     LOG(INFO) << "Analysed " << m_numberOfTracks << " tracks";
+    LOG(INFO) << "Got " << m_numberOfTracks / solidAngle(m_zenithLow, m_zenithHigh, m_azimuthLow, m_zenithHigh)
+              << " Tracks / sr in the ROI";
 }
