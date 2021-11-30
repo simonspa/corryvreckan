@@ -1,6 +1,10 @@
 /**
  * @file
+<<<<<<< HEAD:src/modules/AnalysisParticleFlux/AnalysisParticleFlux.cpp
  * @brief Implementation of module AnalysisParticleFlux
+=======
+ * @brief Implementation of module AnalysisAnalysisParticleFlux
+>>>>>>> 723262fb9042cbbac925fc9e2dc3559681c9034b:src/modules/ParticleFlux/ParticleFlux.cpp
  *
  * @copyright Copyright (c) 2021 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
