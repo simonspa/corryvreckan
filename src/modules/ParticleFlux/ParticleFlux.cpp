@@ -17,58 +17,75 @@ ParticleFlux::ParticleFlux(Configuration& config, std::vector<std::shared_ptr<De
 
     // Setting config defaults
     // Azimuthal histogram
-    config_.setDefault<double>("azimuth_low", Units::get<double>(0, "deg"));
-    config_.setDefault<double>("azimuth_high", Units::get<double>(360, "deg"));
-    config_.setDefault<int>("azimuth_granularity", 36);
+    config_.setDefault<double>("azimuthLow", Units::get<double>(0, "deg"));
+    config_.setDefault<double>("azimuthHigh", Units::get<double>(360, "deg"));
+    config_.setDefault<int>("azimuthGranularity", 36);
     // Zenith histogram
-    config_.setDefault<double>("zenith_low", Units::get<double>(0, "deg"));
-    config_.setDefault<double>("zenith_high", Units::get<double>(90, "deg"));
-    config_.setDefault<int>("zenith_granularity", 9);
+    config_.setDefault<double>("zenithLow", Units::get<double>(0, "deg"));
+    config_.setDefault<double>("zenithHigh", Units::get<double>(90, "deg"));
+    config_.setDefault<int>("zenithGranularity", 9);
+    // Track intercept
+    config_.setDefault<double>("track_intercept", 0.0);
 
     // Read configuration settings
+    // Track intercept
+    m_trackIntercept = config_.get<double>("track_intercept");
     // Granularities
-    m_azimuth_granularity = config_.get<int>("azimuth_granularity");
-    m_zenith_granularity = config_.get<int>("zenith_granularity");
+    m_azimuthGranularity = config_.get<int>("azimuthGranularity");
+    m_zenithGranularity = config_.get<int>("zenithGranularity");
     // Histogram bounds
-    m_azimuth_low = config_.get<float>("azimuth_low");
-    m_azimuth_high = config_.get<float>("azimuth_high");
-    m_zenith_low = config_.get<float>("zenith_low");
-    m_zenith_high = config_.get<float>("zenith_high");
+    m_azimuthLow = config_.get<double>("azimuthLow");
+    m_azimuthHigh = config_.get<double>("azimuthHigh");
+    m_zenithLow = config_.get<double>("zenithLow");
+    m_zenithHigh = config_.get<double>("zenithHigh");
 }
 
 void ParticleFlux::initialize() {
 
     // Initialise histograms
-    m_azimuth_histogram = new TH1F("azimuth",
-                                   "Azimuthal distribution of tracks;#varphi [rad];# entries",
-                                   m_azimuth_granularity,
-                                   m_azimuth_low,
-                                   m_azimuth_high);
-    m_zenith_histogram = new TH1F("zenith",
-                                  "Zenith angle distribution of tracks;#vartheta [rad];# entries",
-                                  m_zenith_granularity,
-                                  m_zenith_low,
-                                  m_zenith_high);
-    m_combined_histogram = new TH2F("zenith_vs_azimuth",
-                                    "Zenith angle vs azimuth;#varphi [rad];#vartheta [rad]",
-                                    m_azimuth_granularity,
-                                    m_azimuth_low,
-                                    m_azimuth_high,
-                                    m_zenith_granularity,
-                                    m_zenith_low,
-                                    m_zenith_high);
+    m_azimuthHistogram = new TH1F("azimuth",
+                                  "Azimuthal distribution of tracks;#varphi [rad];# entries",
+                                  m_azimuthGranularity,
+                                  m_azimuthLow,
+                                  m_azimuthHigh);
+    m_zenithHistogram = new TH1F("zenith",
+                                 "Zenith angle distribution of tracks;#vartheta [rad];# entries",
+                                 m_zenithGranularity,
+                                 m_zenithLow,
+                                 m_zenithHigh);
+    m_combinedHistogram = new TH2F("zenith_vs_azimuth",
+                                   "Zenith angle vs azimuth;#varphi [rad];#vartheta [rad]",
+                                   m_azimuthGranularity,
+                                   m_azimuthLow,
+                                   m_azimuthHigh,
+                                   m_zenithGranularity,
+                                   m_zenithLow,
+                                   m_zenithHigh);
 
     // Initialise member variables
     m_eventNumber = 0;
+    m_numberOfTracks = 0;
 }
 
-StatusCode ParticleFlux::run(const std::shared_ptr<Clipboard>&) {
+/**
+ * @brief [Calculate zenith and azimuth, fill histograms]
+ */
+void ParticleFlux::calculateAngles(Track* track) {
+    ROOT::Math::XYZVector track_direction = track->getDirection(m_trackIntercept);
+    double phi = track_direction.Phi();
+    double theta = track_direction.theta();
+    m_azimuthHistogram->Fill(phi);
+    m_zenithHistogram->Fill(theta);
+    m_combinedHistogram->Fill(phi, theta);
+}
 
-    // Loop over all detectors
-    for(auto& detector : get_detectors()) {
-        // Get the detector name
-        std::string detectorName = detector->getName();
-        LOG(DEBUG) << "Detector with name " << detectorName;
+StatusCode ParticleFlux::run(const std::shared_ptr<Clipboard>& clipboard) {
+
+    // Loop over all tracks, calculate all angles and fill histograms
+    auto tracks = clipboard->getData<Track>();
+    for(auto& track : tracks) {
+        calculateAngles(track.get());
+        m_numberOfTracks++;
     }
 
     // Increment event counter
@@ -81,4 +98,5 @@ StatusCode ParticleFlux::run(const std::shared_ptr<Clipboard>&) {
 void ParticleFlux::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
+    LOG(INFO) << "Analysed " << m_numberOfTracks << " tracks";
 }
