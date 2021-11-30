@@ -1,8 +1,8 @@
 /**
  * @file
- * @brief Implementation of module Particle Flux
+ * @brief Implementation of module ParticleFlux
  *
- * @copyright Copyright (c) 2017-2021 CERN and the Corryvreckan authors.
+ * @copyright Copyright (c) 2021 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -11,27 +11,31 @@
 #include "ParticleFlux.h"
 
 using namespace corryvreckan;
-using namespace std;
 
-ParticleFlux::ParticleFlux(Configuration& config, std::shared_ptr<Detector> detector)
-    : Module(config, detector), m_detector(detector) {
-
-    // TODO: Initialize the config and get values
-}
+ParticleFlux::ParticleFlux(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
+    : Module(config, std::move(detectors)) {}
 
 void ParticleFlux::initialize() {
 
-    // TODO: Initialise histograms
+    for(auto& detector : get_detectors()) {
+        LOG(DEBUG) << "Initialise for detector " + detector->getName();
+    }
+
+    // Initialise member variables
+    m_eventNumber = 0;
 }
 
-StatusCode ParticleFlux::run(const std::shared_ptr<Clipboard>& clipboard) {
+StatusCode ParticleFlux::run(const std::shared_ptr<Clipboard>&) {
 
-    // Loop over all tracks, calculate all angles and fill histograms
-    auto tracks = clipboard->getData<Track>();
-    for(auto& track : tracks) {
-
-        // TODO: Calculate the angles
+    // Loop over all detectors
+    for(auto& detector : get_detectors()) {
+        // Get the detector name
+        std::string detectorName = detector->getName();
+        LOG(DEBUG) << "Detector with name " << detectorName;
     }
+
+    // Increment event counter
+    m_eventNumber++;
 
     // Return value telling analysis to keep running
     return StatusCode::Success;
@@ -39,7 +43,5 @@ StatusCode ParticleFlux::run(const std::shared_ptr<Clipboard>& clipboard) {
 
 void ParticleFlux::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
-    std::stringstream config;
-    // TODO: Fill stringstream with the module output
-    LOG(INFO) << "\"ParticleFlux\":" << config.str();
+    LOG(DEBUG) << "Analysed " << m_eventNumber << " events";
 }
