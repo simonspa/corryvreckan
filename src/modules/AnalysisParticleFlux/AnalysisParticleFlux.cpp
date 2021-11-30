@@ -72,7 +72,7 @@ void AnalysisParticleFlux::initialize() {
  */
 void AnalysisParticleFlux::calculateAngles(Track* track) {
     ROOT::Math::XYZVector track_direction = track->getDirection(m_trackIntercept);
-    double phi = track_direction.Phi();
+    double phi = track_direction.Phi() + ROOT::Math::Pi();
     double theta = track_direction.theta();
     m_azimuthHistogram->Fill(phi);
     m_zenithHistogram->Fill(theta);
