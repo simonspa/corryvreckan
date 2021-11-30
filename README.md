@@ -56,6 +56,7 @@ The following authors, in alphabetical order, have contributed to Corryvreckan:
 * Matthew Daniel Buckland, University of Liverpool, @mbucklan
 * Carsten Daniel Burgard, DESY, @cburgard
 * Eric Buschmann, CERN, @ebuschma
+* Maximilian Felix Caspar, DESY, @mcaspar
 * Manuel Colocci, CERN, @mcolocci
 * Jens Dopke, STFC RAL, @jdopke
 * Jordi Duarte-Campderros, IFCA, @duarte
