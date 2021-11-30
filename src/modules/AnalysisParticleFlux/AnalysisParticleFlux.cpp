@@ -25,11 +25,11 @@ AnalysisParticleFlux::AnalysisParticleFlux(Configuration& config, std::vector<st
     config_.setDefault<double>("zenithHigh", Units::get<double>(90, "deg"));
     config_.setDefault<int>("zenithGranularity", 9);
     // Track intercept
-    config_.setDefault<double>("track_intercept", 0.0);
+    config_.setDefault<double>("trackIntercept", 0.0);
 
     // Read configuration settings
     // Track intercept
-    m_trackIntercept = config_.get<double>("track_intercept");
+    m_trackIntercept = config_.get<double>("trackIntercept");
     // Granularities
     m_azimuthGranularity = config_.get<int>("azimuthGranularity");
     m_zenithGranularity = config_.get<int>("zenithGranularity");
