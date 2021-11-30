@@ -61,16 +61,16 @@ namespace corryvreckan {
         int m_azimuthGranularity;
         double m_azimuthLow;
         double m_azimuthHigh;
-        TH1F* m_azimuthHistogram;
+        TH1D* m_azimuthHistogram;
 
         // Zenith histogram
         int m_zenithGranularity;
         double m_zenithLow;
         double m_zenithHigh;
-        TH1F* m_zenithHistogram;
+        TH1D* m_zenithHistogram;
 
         // Combined histogram
-        TH2F* m_combinedHistogram;
+        TH2D* m_combinedHistogram;
 
         void calculateAngles(Track* track);
         double solidAngle(double& zenithLow, double& zenithHigh, double& azimuthLow, double& azimuthHigh);

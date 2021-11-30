@@ -43,17 +43,17 @@ AnalysisParticleFlux::AnalysisParticleFlux(Configuration& config, std::vector<st
 void AnalysisParticleFlux::initialize() {
 
     // Initialise histograms
-    m_azimuthHistogram = new TH1F("azimuth",
+    m_azimuthHistogram = new TH1D("azimuth",
                                   "Azimuthal distribution of tracks;#varphi [rad];# tracks",
                                   m_azimuthGranularity,
                                   m_azimuthLow,
                                   m_azimuthHigh);
-    m_zenithHistogram = new TH1F("zenith",
+    m_zenithHistogram = new TH1D("zenith",
                                  "Zenith angle distribution of tracks;#vartheta [rad];# tracks",
                                  m_zenithGranularity,
                                  m_zenithLow,
                                  m_zenithHigh);
-    m_combinedHistogram = new TH2F("zenith_vs_azimuth",
+    m_combinedHistogram = new TH2D("zenith_vs_azimuth",
                                    "Zenith angle vs azimuth;#varphi [rad];#vartheta [rad]",
                                    m_azimuthGranularity,
                                    m_azimuthLow,
