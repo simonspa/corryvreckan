@@ -53,6 +53,14 @@ namespace corryvreckan {
 
     private:
         int m_eventNumber;
+        // Azimuthal histogram
+        int m_azimuth_granularity;
+        double m_azimuth_low;
+        double m_azimuth_high;
+        // Zenith histogram
+        int m_zenith_granularity;
+        double m_zenith_low;
+        double m_zenith_high;
     };
 
 } // namespace corryvreckan

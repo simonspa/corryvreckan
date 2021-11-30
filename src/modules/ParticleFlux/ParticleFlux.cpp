@@ -13,7 +13,28 @@
 using namespace corryvreckan;
 
 ParticleFlux::ParticleFlux(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
-    : Module(config, std::move(detectors)) {}
+    : Module(config, std::move(detectors)) {
+
+    // Setting config defaults
+    // Azimuthal histogram
+    config_.setDefault<double>("azimuth_low", Units::get<double>(0, "degree"));
+    config_.setDefault<double>("azimuth_high", Units::get<double>(360, "degree"));
+    config_.setDefault<int>("azimuth_granularity", 36);
+    // Zenith histogram
+    config_.setDefault<double>("zenith_low", Units::get<double>(0, "degree"));
+    config_.setDefault<double>("zenith_high", Units::get<double>(90, "degree"));
+    config_.setDefault<int>("zenith_granularity", 9);
+
+    // Read configuration settings
+    // Granularities
+    m_azimuth_granularity = config_.get<int>("azimuth_granularity");
+    m_zenith_granularity = config_.get<int>("zenith_granularity");
+    // Histogram bounds
+    m_azimuth_low = config_.get<float>("azimuth_low");
+    m_azimuth_high = config_.get<float>("azimuth_high");
+    m_zenith_low = config_.get<float>("zenith_low");
+    m_zenith_high = config_.get<float>("zenith_high");
+}
 
 void ParticleFlux::initialize() {
 
