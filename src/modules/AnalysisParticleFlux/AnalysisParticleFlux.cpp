@@ -26,6 +26,8 @@ AnalysisParticleFlux::AnalysisParticleFlux(Configuration& config, std::vector<st
     config_.setDefault<int>("zenithGranularity", 9);
     // Track intercept
     config_.setDefault<double>("trackIntercept", 0.0);
+    // Angle unit
+    config_.setDefault<std::string>("angleUnit", "deg");
 
     // Read configuration settings
     // Track intercept
@@ -38,33 +40,51 @@ AnalysisParticleFlux::AnalysisParticleFlux(Configuration& config, std::vector<st
     m_azimuthHigh = config_.get<double>("azimuthHigh");
     m_zenithLow = config_.get<double>("zenithLow");
     m_zenithHigh = config_.get<double>("zenithHigh");
+    // Handle angle unit conversion
+    m_angleUnit = config_.get<std::string>("angleUnit");
+    if(m_angleUnit == "deg") {
+        m_angleConversion = 180.0 / ROOT::Math::Pi();
+        m_angleUnit = "#circ";
+    } else if(m_angleUnit == "rad") {
+        m_angleConversion = 1.0;
+    } else if(m_angleUnit == "mrad") {
+        m_angleConversion = 1000.0;
+    } else {
+        ModuleError("angleUnit can only be \"deg\", \"rad\" or \"mrad\"");
+    }
 }
 
 void AnalysisParticleFlux::initialize() {
 
     // Initialise histograms
     m_azimuthHistogram = new TH1D("azimuth",
-                                  "Azimuthal distribution of tracks;#varphi [rad];# tracks",
+                                  ("Azimuthal distribution of tracks;#varphi [" + m_angleUnit + "];# tracks").c_str(),
                                   m_azimuthGranularity,
-                                  m_azimuthLow,
-                                  m_azimuthHigh);
+                                  m_azimuthLow * m_angleConversion,
+                                  m_azimuthHigh * m_angleConversion);
     m_zenithHistogram = new TH1D("zenith",
-                                 "Zenith angle distribution of tracks;#vartheta [rad];# tracks",
+                                 ("Zenith angle distribution of tracks;#vartheta [" + m_angleUnit + "];# tracks").c_str(),
                                  m_zenithGranularity,
-                                 m_zenithLow,
-                                 m_zenithHigh);
-    m_combinedHistogram = new TH2D("zenith_vs_azimuth",
-                                   "Zenith angle vs azimuth;#varphi [rad];#vartheta [rad]",
-                                   m_azimuthGranularity,
-                                   m_azimuthLow,
-                                   m_azimuthHigh,
-                                   m_zenithGranularity,
-                                   m_zenithLow,
-                                   m_zenithHigh);
+                                 m_zenithLow * m_angleConversion,
+                                 m_zenithHigh * m_angleConversion);
+    m_combinedHistogram =
+        new TH2D("zenith_vs_azimuth",
+                 ("Zenith angle vs azimuth;#varphi [" + m_angleUnit + "];#vartheta [" + m_angleUnit + "]").c_str(),
+                 m_azimuthGranularity,
+                 m_azimuthLow * m_angleConversion,
+                 m_azimuthHigh * m_angleConversion,
+                 m_zenithGranularity,
+                 m_zenithLow * m_angleConversion,
+                 m_zenithHigh * m_angleConversion);
 
     // Initialise member variables
     m_eventNumber = 0;
     m_numberOfTracks = 0;
+
+    // Initialise flux histograms
+    m_azimuthFlux = static_cast<TH1D*>(m_azimuthHistogram->Clone());
+    m_zenithFlux = static_cast<TH1D*>(m_zenithHistogram->Clone());
+    m_combinedFlux = static_cast<TH2D*>(m_combinedHistogram->Clone());
 }
 
 /**
@@ -72,8 +92,8 @@ void AnalysisParticleFlux::initialize() {
  */
 void AnalysisParticleFlux::calculateAngles(Track* track) {
     ROOT::Math::XYZVector track_direction = track->getDirection(m_trackIntercept);
-    double phi = track_direction.Phi() + ROOT::Math::Pi();
-    double theta = track_direction.theta();
+    double phi = (track_direction.Phi() + ROOT::Math::Pi()) * m_angleConversion;
+    double theta = track_direction.theta() * m_angleConversion;
     m_azimuthHistogram->Fill(phi);
     m_zenithHistogram->Fill(theta);
     m_combinedHistogram->Fill(phi, theta);

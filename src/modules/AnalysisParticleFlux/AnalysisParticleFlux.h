@@ -17,8 +17,6 @@
 #include <cmath>
 #include <iostream>
 #include "core/module/Module.hpp"
-#include "objects/Cluster.hpp"
-#include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
 
 namespace corryvreckan {
@@ -56,6 +54,8 @@ namespace corryvreckan {
         int m_eventNumber;
         int m_numberOfTracks;
         double m_trackIntercept;
+        double m_angleConversion;
+        std::string m_angleUnit;
 
         // Azimuthal histogram
         int m_azimuthGranularity;
@@ -71,6 +71,11 @@ namespace corryvreckan {
 
         // Combined histogram
         TH2D* m_combinedHistogram;
+
+        // Flux histograms
+        TH1D* m_azimuthFlux;
+        TH1D* m_zenithFlux;
+        TH2D* m_combinedFlux;
 
         void calculateAngles(Track* track);
         double solidAngle(double& zenithLow, double& zenithHigh, double& azimuthLow, double& azimuthHigh);
