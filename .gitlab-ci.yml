@@ -249,6 +249,7 @@ cmp:usermanual:
         - schedules@corryvreckan/corryvreckan
     before_script:
         - export COMPILER_TYPE="gcc"
+        - export CCACHE_DIR=`pwd`/ccache
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
     script:
