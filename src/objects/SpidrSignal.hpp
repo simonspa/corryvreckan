@@ -40,13 +40,14 @@ namespace corryvreckan {
         std::string type() const { return m_type; }
         size_t trigger() const { return m_triggerNumber; }
 
-    protected:
-        // Member variables
-        std::string m_type;
-        size_t m_triggerNumber;
+        void loadHistory() override{};
+        void petrifyHistory() override{};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(SpidrSignal, 4)
+        ClassDefOverride(SpidrSignal, 4) protected :
+            // Member variables
+            std::string m_type;
+        size_t m_triggerNumber;
     };
 
     // Vector type declaration
