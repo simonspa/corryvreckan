@@ -10,9 +10,12 @@
 #ifndef ANALYSISTRACKS_H
 #define ANALYSISTRACKS_H 1
 #include <TCanvas.h>
+#include <TDirectory.h>
 #include <TH1F.h>
 #include <TH2F.h>
+
 #include <iostream>
+
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
 #include "objects/Pixel.hpp"
