@@ -51,9 +51,10 @@ namespace corryvreckan {
         void petrifyHistory() override{};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(MCParticle, 3)
+        ClassDefOverride(MCParticle, 3);
 
-            private : int m_particle_id;
+    private:
+        int m_particle_id;
         ROOT::Math::XYZPoint m_local_start_point;
         ROOT::Math::XYZPoint m_local_end_point;
     };

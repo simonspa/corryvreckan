@@ -44,9 +44,11 @@ namespace corryvreckan {
         void petrifyHistory() override{};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(SpidrSignal, 4) protected :
-            // Member variables
-            std::string m_type;
+        ClassDefOverride(SpidrSignal, 4);
+
+    protected:
+        // Member variables
+        std::string m_type;
         size_t m_triggerNumber;
     };
 
