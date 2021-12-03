@@ -277,25 +277,30 @@ namespace corryvreckan {
             void print(std::ostream& os) const;
 
             // ROOT I/O class definition - update version number when you change this class!
-            ClassDef(Plane, 1);
+            ClassDef(Plane, 2);
+
+            void loadHistory();
+            void petrifyHistory();
 
         private:
             double z_, x_x0_;
             std::string name_;
-            TRef cluster_;
+            PointerWrapper<Cluster> cluster_;
             Transform3D to_local_;
         };
 
-    protected:
+        void loadHistory() override;
+        void petrifyHistory() override;
+
         Plane* get_plane(std::string detetorID);
-        std::vector<TRef> track_clusters_;
-        std::vector<TRef> associated_clusters_;
+        std::vector<PointerWrapper<Cluster>> track_clusters_;
+        std::vector<PointerWrapper<Cluster>> associated_clusters_;
         std::map<std::string, ROOT::Math::XYPoint> residual_local_;
         std::map<std::string, ROOT::Math::XYZPoint> residual_global_;
 
         std::vector<Plane> planes_;
 
-        std::map<std::string, TRef> closest_cluster_;
+        std::map<std::string, PointerWrapper<Cluster>> closest_cluster_;
         double chi2_;
         double ndof_;
         double chi2ndof_;
@@ -303,7 +308,7 @@ namespace corryvreckan {
         double momentum_{-1};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Track, 9)
+        ClassDefOverride(Track, 10)
     };
     // Vector type declaration
     using TrackVector = std::vector<std::shared_ptr<Track>>;

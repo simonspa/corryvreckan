@@ -40,7 +40,7 @@ void Multiplet::calculateChi2() {
 
 void Multiplet::calculateResiduals() {
     for(auto c : track_clusters_) {
-        auto cluster = dynamic_cast<Cluster*>(c.GetObject());
+        auto* cluster = c.get();
         residual_global_[cluster->detectorID()] = cluster->global() - getIntercept(cluster->global().z());
         if(get_plane(cluster->detectorID()) != nullptr)
             residual_local_[cluster->detectorID()] =

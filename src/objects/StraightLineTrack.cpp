@@ -56,7 +56,7 @@ void StraightLineTrack::calculateChi2() {
 
     // Loop over all clusters
     for(auto& cl : track_clusters_) {
-        auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
+        auto* cluster = cl.get();
         if(cluster == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
         }
@@ -74,7 +74,7 @@ void StraightLineTrack::calculateChi2() {
 
 void StraightLineTrack::calculateResiduals() {
     for(auto c : track_clusters_) {
-        auto cluster = dynamic_cast<Cluster*>(c.GetObject());
+        auto* cluster = c.get();
         // fixme: cluster->global.z() is only an approximation for the plane intersect. Can be fixed after !115
         residual_global_[cluster->detectorID()] = cluster->global() - getIntercept(cluster->global().z());
         if(get_plane(cluster->detectorID()) != nullptr) {
@@ -107,7 +107,7 @@ void StraightLineTrack::fit() {
 
     // Loop over all clusters and fill the matrices
     for(auto& cl : track_clusters_) {
-        auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
+        auto cluster = cl.get();
         if(cluster == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
         }

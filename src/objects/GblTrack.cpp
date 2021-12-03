@@ -201,7 +201,7 @@ void GblTrack::prepare_gblpoints() {
     // store the used clusters in a map for easy access:
     std::map<std::string, Cluster*> clusters;
     for(auto& c : track_clusters_) {
-        auto cluster = dynamic_cast<Cluster*>(c.GetObject());
+        auto* cluster = c.get();
         clusters[cluster->detectorID()] = cluster;
     }
     // create a list of planes and sort it, also calculate the material budget:
