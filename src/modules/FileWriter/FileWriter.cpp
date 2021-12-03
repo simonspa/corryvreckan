@@ -137,6 +137,7 @@ StatusCode FileWriter::run(const std::shared_ptr<Clipboard>& clipboard) {
 
                 // Fill the branch vector
                 for(auto& object : *objects) {
+                    object->petrifyHistory();
                     ++write_cnt_;
                     write_list_[index_tuple]->push_back(object.get());
                 }

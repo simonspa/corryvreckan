@@ -246,6 +246,11 @@ StatusCode FileReader::run(const std::shared_ptr<Clipboard>& clipboard) {
             continue;
         }
 
+        // Resolve history
+        for(auto& object : *objects) {
+            object->loadHistory();
+        }
+
         LOG(TRACE) << "- " << objects->size() << " " << corryvreckan::demangle(typeid(*first_object).name()) << ", detector "
                    << object_inf.detector;
         // Create the object vector and store it on the clipboard:
