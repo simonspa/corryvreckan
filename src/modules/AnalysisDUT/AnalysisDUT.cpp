@@ -615,6 +615,9 @@ void AnalysisDUT::initialize() {
         n_chargebins_,
         0.0,
         charge_histo_range_);
+
+
+    track_trackDistance = new TH2F("track_to_track_distance", "Local track to track distance;#Delta_x [#mum]; #Delta_y [#mum]",800,-1000,1000,800,-1000,1000);
 }
 
 StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -622,6 +625,19 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
 
+
+
+    // super ugly code - but hey its testbeam
+    for(auto& track1 : tracks) {
+      if(track1->getChi2ndof() > chi2_ndof_cut_)
+	continue;
+      auto inter1=m_detector->globalToLocal(m_detector->getIntercept(track1.get()));
+      for(auto& track2 : tracks) {                                                                                                                                                                                 if((track1==track2)  ||(track2->getChi2ndof() > chi2_ndof_cut_))
+	  continue;
+	auto inter2 = m_detector->globalToLocal(m_detector->getIntercept(track2.get()));
+	track_trackDistance->Fill(1000.*(inter1.x()-inter2.x()),1000.*(inter1.y()-inter2.y()));
+    }  
+    }
     // Loop over all tracks
     for(auto& track : tracks) {
         auto globalIntercept = m_detector->getIntercept(track.get());
