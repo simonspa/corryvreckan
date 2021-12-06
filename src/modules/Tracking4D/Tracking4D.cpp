@@ -124,9 +124,9 @@ void Tracking4D::initialize() {
         title = detectorID + " kinkY ;kink [rad];events";
         kinkY[detectorID] = new TH1F("kinkY", title.c_str(), 500, -0.01, -0.01);
         
-	local_intersects_[detectorID] = new TH2F("local_intersect","local intersect, col, row",255,0,255,255,0,255);
+	local_intersects_[detectorID] = new TH2F("local_intersect","local intersect, col, row",detector->nPixels().Y(),0,detector->nPixels().X(),detector->nPixels().Y(),0,detector->nPixels().Y());
 	//if(detector->isDUT()){
-	local_intersect_zoom_[detectorID] = new TH2F("local_intersecti_zoomed","local intersect, col, row",255,113,117,255,100,110);
+	local_intersect_zoom_[detectorID] = new TH2F("local_intersection_zoomed","local intersect, col, row",200,80,90,200,50,60);
 	//}
 	// Do not create plots for detectors not participating in the tracking:
         if(exclude_DUT_ && detector->isDUT()) {
