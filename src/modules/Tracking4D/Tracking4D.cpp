@@ -132,10 +132,9 @@ void Tracking4D::initialize() {
                                                  detector->nPixels().Y(),
                                                  0,
                                                  detector->nPixels().Y());
-        // if(detector->isDUT()){
         local_intersect_zoom_[detectorID] =
             new TH2F("local_intersection_zoomed", "local intersect, col, row", 200, 80, 90, 200, 50, 60);
-        //}
+
         // Do not create plots for detectors not participating in the tracking:
         if(exclude_DUT_ && detector->isDUT()) {
             continue;
@@ -520,13 +519,8 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
             ROOT::Math::XYZPoint globalRes = track->getGlobalResidual(detectorID);
             ROOT::Math::XYPoint localRes = track->getLocalResidual(detectorID);
 
-            // auto local = get_detector(detectorID)->getLocalIntercept(track.get());
-            // auto row =   get_detector(detectorID)->getRow(local);
-            // auto col =   get_detector(detectorID)->getColumn(local);
             residualsX_local[detectorID]->Fill(localRes.X());
             residualsX_global[detectorID]->Fill(globalRes.X());
-
-            // local_intersects_[detectorID]->Fill(col, row);
 
             pullX_local[detectorID]->Fill(localRes.x() / track->getClusterFromDetector(detectorID)->errorX());
             pullX_global[detectorID]->Fill(globalRes.x() / track->getClusterFromDetector(detectorID)->errorX());
@@ -564,17 +558,17 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
             if(detector->isAuxiliary()) {
                 continue;
             }
+
+            auto det = detector->getName();
+
             auto local = detector->getLocalIntercept(track.get());
             auto row = detector->getRow(local);
             auto col = detector->getColumn(local);
             LOG(TRACE) << "Local col/row intersect of track: " << col << "\t" << row;
-            local_intersect_zoom_[detector->getName()]->Fill(col, row);
-            local_intersects_[detector->getName()]->Fill(col, row);
+            local_intersect_zoom_[det]->Fill(col, row);
+            local_intersects_[det]->Fill(col, row);
+            local_intersect_zoom_[det]->Fill(col, row);
 
-            // if(detector->isDUT()){
-            local_intersect_zoom_[detector->getName()]->Fill(col, row);
-            //}
-            auto det = detector->getName();
             if(!kinkX.count(det)) {
                 LOG(WARNING) << "Skipping writing kinks due to missing init of histograms for  " << det;
                 continue;
