@@ -228,9 +228,9 @@ void Tracking4D::initialize() {
                                                               3 * detector->getPitch().Y(),
                                                               400,
                                                               -detector->getSize().X() / 1.5,
-                                                              detector->getSize().X() / 1.5)
+                                                              detector->getSize().X() / 1.5);
 
-            title = detectorID + "global  Residual Y, cluster row width 1;y-y_{track} [mm];events";
+        title = detectorID + "global  Residual Y, cluster row width 1;y-y_{track} [mm];events";
         residualsYwidth1_global[detectorID] = new TH1F(
             "GlobalResidualsYwidth1", title.c_str(), 500, -3 * detector->getPitch().Y(), 3 * detector->getPitch().Y());
         title = detectorID + "global  Residual Y, cluster row width 2;y-y_{track} [mm];events";
