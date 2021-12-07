@@ -124,6 +124,15 @@ void Tracking4D::initialize() {
         title = detectorID + " kinkY ;kink [rad];events";
         kinkY[detectorID] = new TH1F("kinkY", title.c_str(), 500, -0.01, -0.01);
 
+        local_intersects_[detectorID] = new TH2F("local_intersect",
+                                                 "local intersect, col, row",
+                                                 detector->nPixels().Y(),
+                                                 0,
+                                                 detector->nPixels().X(),
+                                                 detector->nPixels().Y(),
+                                                 0,
+                                                 detector->nPixels().Y());
+
         // Do not create plots for detectors not participating in the tracking:
         if(exclude_DUT_ && detector->isDUT()) {
             continue;
@@ -547,7 +556,15 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
             if(detector->isAuxiliary()) {
                 continue;
             }
+
             auto det = detector->getName();
+
+            auto local = detector->getLocalIntercept(track.get());
+            auto row = detector->getRow(local);
+            auto col = detector->getColumn(local);
+            LOG(TRACE) << "Local col/row intersect of track: " << col << "\t" << row;
+            local_intersects_[det]->Fill(col, row);
+
             if(!kinkX.count(det)) {
                 LOG(WARNING) << "Skipping writing kinks due to missing init of histograms for  " << det;
                 continue;

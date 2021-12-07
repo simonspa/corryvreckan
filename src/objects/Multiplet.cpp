@@ -75,8 +75,15 @@ ROOT::Math::XYZPoint Multiplet::getIntercept(double z) const {
 }
 
 ROOT::Math::XYZPoint Multiplet::getState(const std::string& detectorID) const {
-    return getClusterFromDetector(detectorID)->global().z() <= m_scattererPosition ? m_upstream->getState(detectorID)
-                                                                                   : m_downstream->getState(detectorID);
+    if(!isFitted_)
+        throw TrackError(typeid(*this), " not fitted");
+
+    auto* cluster = getClusterFromDetector(detectorID);
+    if(cluster == nullptr) {
+        throw TrackError(typeid(*this), " does not have any entry for detector " + detectorID);
+    }
+    return cluster->global().z() <= m_scattererPosition ? m_upstream->getState(detectorID)
+                                                        : m_downstream->getState(detectorID);
 }
 
 ROOT::Math::XYZVector Multiplet::getDirection(const std::string& detectorID) const {
