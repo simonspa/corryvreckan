@@ -27,7 +27,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     // Role of this detector:
     auto roles = config.getArray<DetectorRole>("role", {DetectorRole::NONE});
     for(auto& role : roles) {
-        LOG(ERROR) << "Adding role " << corryvreckan::to_string(role);
+        LOG(DEBUG) << "Adding role " << corryvreckan::to_string(role);
         m_role |= role;
     }
 
