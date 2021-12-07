@@ -16,15 +16,19 @@
     *  `zenith_high`: Upper bound of the zenith histogram. Defaults to `90 deg`.
     * `zenith_granularity`: Number of bins in $`\vartheta`$ which defaults to `9`.
 * `track_intercept`: Value of $`z`$ where the track angles are calculated. Defaults to `0.0` and does not affect the analysis for `straightline` tracks.
+* `angle_unit`:Angle unit of the output histograms. Can be either `deg`, `rad` or `mrad`. Defaults to `deg`.
 
 ### Plots produced
 The following plots are produced:
 
 * 2D histograms:
     * Zenith angle vs. azimuthal angle of tracks
+    * Zenith angle vs. azimuthal angle particle divided by bin solid angle
 * 1D histograms:
-    *  Histogram of the azimuth angle of tracks
+    * Histogram of the azimuth angle of tracks
     * Histogram of the zenith angle of tracks
+    * Histogram of the azimuth angle of tracks divided by bin solid angle
+    * Histogram of the zenith angle of tracks divided by bin solid angle
 
 ### Usage
 This module is intended to be used **after** the `Tracking4D` module:
