@@ -29,6 +29,9 @@ The following plots are produced:
     * Histogram of the zenith angle of tracks
     * Histogram of the azimuth angle of tracks divided by bin solid angle
     * Histogram of the zenith angle of tracks divided by bin solid angle
+* If there are 3 or more detectors:
+    * Zenith and azimuth dependend efficiencies for each detector
+    * 2D efficiency map (zenith vs. azimuth) for each detector
 
 ### Usage
 This module is intended to be used **after** the `Tracking4D` module:
