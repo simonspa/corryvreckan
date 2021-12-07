@@ -8,14 +8,14 @@
 
 ### Parameters
 * Parameters of the azimuthal angle histogram:
-    * `azimuthLow`: Lower bound of the azimuth histogram. Defaults to `0 deg`.
-    *  `azimuthHigh`: Upper bound of the azimuth histogram. Defaults to `360 deg`.
-    * `azimuthGranularity`: Number of bins in $`\varphi`$ which defaults to `36`.
+    * `azimuth_low`: Lower bound of the azimuth histogram. Defaults to `0 deg`.
+    *  `azimuth_high`: Upper bound of the azimuth histogram. Defaults to `360 deg`.
+    * `azimuth_granularity`: Number of bins in $`\varphi`$ which defaults to `36`.
 * Parameters of the zenith angle histogram:
-    * `zenithLow`: Lower bound of the zenith histogram. Defaults to `0 deg`.
-    *  `zenithHigh`: Upper bound of the zenith histogram. Defaults to `90 deg`.
-    * `zenithGranularity`: Number of bins in $`\vartheta`$ which defaults to `9`.
-* `trackIntercept`: Value of $`z`$ where the track angles are calculated. Defaults to `0.0` and does not affect the analysis for `straightline` tracks.
+    * `zenith_low`: Lower bound of the zenith histogram. Defaults to `0 deg`.
+    *  `zenith_high`: Upper bound of the zenith histogram. Defaults to `90 deg`.
+    * `zenith_granularity`: Number of bins in $`\vartheta`$ which defaults to `9`.
+* `track_intercept`: Value of $`z`$ where the track angles are calculated. Defaults to `0.0` and does not affect the analysis for `straightline` tracks.
 
 ### Plots produced
 The following plots are produced:

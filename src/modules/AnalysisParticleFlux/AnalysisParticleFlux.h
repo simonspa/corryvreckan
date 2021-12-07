@@ -51,31 +51,31 @@ namespace corryvreckan {
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
-        int m_eventNumber;
-        int m_numberOfTracks;
-        double m_trackIntercept;
-        double m_angleConversion;
-        std::string m_angleUnit;
+        int event_number_{0};
+        int number_of_tracks_{0};
+        double track_intercept_;
+        double angle_conversion_;
+        std::string angle_unit_;
 
         // Azimuthal histogram
-        int m_azimuthGranularity;
-        double m_azimuthLow;
-        double m_azimuthHigh;
-        TH1D* m_azimuthHistogram;
+        int azimuth_granularity_;
+        double azimuth_low_;
+        double azimuth_high_;
+        TH1D* azimuth_histogram_;
 
         // Zenith histogram
-        int m_zenithGranularity;
-        double m_zenithLow;
-        double m_zenithHigh;
-        TH1D* m_zenithHistogram;
+        int zenith_granularity_;
+        double zenith_low_;
+        double zenith_high_;
+        TH1D* zenith_histogram_;
 
         // Combined histogram
-        TH2D* m_combinedHistogram;
+        TH2D* combined_histogram_;
 
         // Flux histograms
-        TH1D* m_azimuthFlux;
-        TH1D* m_zenithFlux;
-        TH2D* m_combinedFlux;
+        TH1D* azimuth_flux_;
+        TH1D* zenith_flux_;
+        TH2D* combined_flux_;
 
         void calculateAngles(Track* track);
         double solidAngle(double zenithLow, double zenithHigh, double azimuthLow, double azimuthHigh);
