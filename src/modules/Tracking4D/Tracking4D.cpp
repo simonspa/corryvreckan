@@ -413,7 +413,7 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             if(reject_by_ROI_ && track->isFitted()) {
                 // check if the track is within ROI for all detectors
-                auto ds = get_regular_detectors(exclude_DUT_);
+                auto ds = get_regular_detectors(!exclude_DUT_);
                 auto out_of_roi =
                     std::find_if(ds.begin(), ds.end(), [track](const auto& d) { return !d->isWithinROI(track.get()); });
                 if(out_of_roi != ds.end()) {
@@ -446,7 +446,7 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
     }
 
     auto duplicated_hit = [this](const Track* a, const Track* b) {
-        for(auto d : get_regular_detectors(exclude_DUT_)) {
+        for(auto d : get_regular_detectors(!exclude_DUT_)) {
             if(a->getClusterFromDetector(d->getName()) == b->getClusterFromDetector(d->getName()) &&
                !(b->getClusterFromDetector(d->getName()) == nullptr)) {
                 LOG(DEBUG) << "Duplicated hit on " << d->getName() << ": rejecting track";

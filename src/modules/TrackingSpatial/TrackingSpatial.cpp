@@ -96,7 +96,7 @@ StatusCode TrackingSpatial::run(const std::shared_ptr<Clipboard>& clipboard) {
     // Loop over all detectors and get clusters
     double minZ = std::numeric_limits<double>::max();
     std::string seedPlane;
-    for(auto& detector : get_regular_detectors(excludeDUT)) {
+    for(auto& detector : get_regular_detectors(!excludeDUT)) {
         string detectorID = detector->getName();
 
         // Get the clusters
@@ -159,12 +159,6 @@ StatusCode TrackingSpatial::run(const std::shared_ptr<Clipboard>& clipboard) {
                 continue;
             }
 
-            // Check if the DUT should be excluded and obey:
-            if(excludeDUT && detector->isDUT()) {
-                LOG(TRACE) << "Exclude DUT.";
-                continue;
-            }
-
             // Get the closest neighbor
             LOG(DEBUG) << "Searching for nearest cluster on device " << detectorID;
             Cluster* closestCluster = trees[detectorID].getClosestSpaceNeighbor(cluster).get();
@@ -207,7 +201,7 @@ StatusCode TrackingSpatial::run(const std::shared_ptr<Clipboard>& clipboard) {
 
         if(rejectByROI && track->isFitted()) {
             // check if the track is within ROI for all detectors
-            auto ds = get_regular_detectors(excludeDUT);
+            auto ds = get_regular_detectors(!excludeDUT);
             auto out_of_roi =
                 std::find_if(ds.begin(), ds.end(), [track](const auto& d) { return !d->isWithinROI(track.get()); });
             if(out_of_roi != ds.end()) {
