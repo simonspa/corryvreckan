@@ -67,7 +67,7 @@ void TrackingSpatial::initialize() {
     trackAngleY = new TH1F("trackAngleY", title.c_str(), 2000, -0.01, 0.01);
 
     // Loop over all planes
-    for(auto& detector : get_regular_detectors(excludeDUT)) {
+    for(auto& detector : get_regular_detectors(!excludeDUT)) {
         auto detectorID = detector->getName();
 
         TDirectory* directory = getROOTDirectory();
