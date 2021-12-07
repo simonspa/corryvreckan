@@ -559,7 +559,8 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             residualsX_local[detectorID]->Fill(localRes.X());
             residualsX_global[detectorID]->Fill(globalRes.X());
-            residualsX_vs_position_global[detectorID]->Fill(globalRes.X(), trackCluster->global().x());
+            residualsX_vs_positionX_global[detectorID]->Fill(globalRes.X(), trackCluster->global().x());
+            residualsX_vs_positionY_global[detectorID]->Fill(globalRes.X(), trackCluster->global().y());
 
             pullX_local[detectorID]->Fill(localRes.x() / track->getClusterFromDetector(detectorID)->errorX());
             pullX_global[detectorID]->Fill(globalRes.x() / track->getClusterFromDetector(detectorID)->errorX());
@@ -580,7 +581,8 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             residualsY_local[detectorID]->Fill(localRes.Y());
             residualsY_global[detectorID]->Fill(globalRes.Y());
-            residualsY_vs_position_global[detectorID]->Fill(globalRes.Y(), trackCluster->global().y());
+            residualsY_vs_positionY_global[detectorID]->Fill(globalRes.Y(), trackCluster->global().y());
+            residualsY_vs_positionX_global[detectorID]->Fill(globalRes.Y(), trackCluster->global().x());
 
             if(trackCluster->rowWidth() == 1) {
                 residualsYwidth1_local[detectorID]->Fill(localRes.Y());
