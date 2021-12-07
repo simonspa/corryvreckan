@@ -76,6 +76,7 @@ void AnalysisParticleFlux::initialize() {
                  zenith_granularity_,
                  zenith_low_ * angle_conversion_,
                  zenith_high_ * angle_conversion_);
+    combined_histogram_->SetOption("COLZ");
 
     // Initialise flux histograms
     azimuth_flux_ = static_cast<TH1D*>(azimuth_histogram_->Clone());
