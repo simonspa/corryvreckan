@@ -311,8 +311,18 @@ StatusCode EventLoaderTimestamp::run(const std::shared_ptr<Clipboard>& clipboard
             clipboard->putEvent(event);
             sorted_signals_.pop();
         }
+        // refill buffer
+	fillBuffer();
+	if(!sorted_signals_.empty()){
+       		return StatusCode::Success;
+	} 
+	// Tell corry to stop if the buffer is empty since this is the last event
+	else {
+	    	LOG(INFO) << "No more spidr signals found - stopping run";
+    		return StatusCode::EndRun;
+	}
+
     }
-    return StatusCode::Success;
 }
 
 void EventLoaderTimestamp::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
