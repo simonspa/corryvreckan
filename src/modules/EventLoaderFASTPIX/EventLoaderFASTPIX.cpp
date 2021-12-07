@@ -76,9 +76,14 @@ void EventLoaderFASTPIX::initialize() {
     hitmap->SetTitle("hitmap");
     Honeycomb(hitmap,0.5,0.5,16,4);
 
-    seed_tot_inner = new TH1F("seed_tot_inner", "ToT inner seed pixels", 350, 0, 351);
-    seed_tot_outer = new TH1F("seed_tot_outer", "ToT outer seed pixels", 350, 0, 351);
-    pixels_per_event = new TH1F("pixels_per_event", "Pixels per event", 10, 0, 11);
+    seed_tot_inner = new TH1F("seed_tot_inner", "ToT inner seed pixels", 350, 0.5, 350.5);
+    seed_tot_outer = new TH1F("seed_tot_outer", "ToT outer seed pixels", 350, 0.5, 350.5);
+    pixels_per_event = new TH1F("pixels_per_event", "Pixels per event", 10, 0.5, 10.5);
+    pixel_timestamps = new TH1F("pixel_timestamps", "Pixel timestamps", 200, -0.5, 99.5);
+    pixel_distance = new TH1F("pixel_distance", "Distance to seed pixel", 20, -0.5, 19.5);
+    pixel_distance_row = new TH1F("pixel_distance_row", "Distance to seed pixel (row)", 20, -0.5, 19.5);
+    pixel_distance_col = new TH1F("pixel_distance_col", "Distance to seed pixel (column)", 20, -0.5, 19.5);
+    trigger_dt = new TH1F("trigger_dt", "", 1000, -0.5, 200.5);
 
     // Initialise member variables
     m_eventNumber = 0;
@@ -94,6 +99,10 @@ void EventLoaderFASTPIX::initialize() {
     m_triggerSync = false;
 
     m_inputFile.read(reinterpret_cast<char*>(&m_blockSize), sizeof m_blockSize);
+}
+
+size_t hex_distance(double x1, double y1, double x2, double y2) {
+    return static_cast<size_t>(std::abs(x1 - x2) + std::abs(y1 - y2) + std::abs(-x1 - y1 + x2 + y2)) / 2;
 }
 
 // number of events / block
@@ -118,6 +127,8 @@ bool EventLoaderFASTPIX::loadEvent(PixelVector &deviceData, double spidr_timesta
 
     pixels_per_event->Fill(event_size);
 
+    int seed_col, seed_row;
+
     for(uint16_t i = 0; i < event_size; i++) {
         uint16_t idx;
         double tot, px_timestamp;
@@ -127,16 +138,27 @@ bool EventLoaderFASTPIX::loadEvent(PixelVector &deviceData, double spidr_timesta
         m_inputFile.read(reinterpret_cast<char*>(&px_timestamp), sizeof px_timestamp);
 
         hitmap->SetBinContent(idx+1, hitmap->GetBinContent(idx+1)+1);
+        pixel_timestamps->Fill(px_timestamp);
+
         int row = idx / 16;
         int col = idx % 16;
 
         if(i == 0) {
+            seed_col = col;
+            seed_row = row;
+
             if(col == 0 || col == 15 || row == 0 || row == 3) {
                 seed_tot_outer->Fill(tot);
             } else {
                 seed_tot_inner->Fill(tot);
             }
+        } else {
+            pixel_distance->Fill(hex_distance(col, row, seed_col, seed_row));
+            pixel_distance_row->Fill(std::abs(row-seed_row));
+            pixel_distance_col->Fill(std::abs(col-seed_col));
         }
+
+        col = col - (row - (row&1)) / 2;
 
         auto pixel = std::make_shared<Pixel>(detectorID, col, row, static_cast<int>(tot), tot, spidr_timestamp + px_timestamp + m_detector->timeOffset());
         deviceData.push_back(pixel);
@@ -203,6 +225,7 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
 
                     m_ratioTriggerNumbers.emplace_back(m_triggerNumber+1);
                     m_dtRatio.emplace_back((m_spidr_t0 - m_prevTriggerTime) / (m_scope_t0 - m_prevScopeTriggerTime));
+                    trigger_dt->Fill((m_spidr_t0 - m_prevTriggerTime)/1000.0);
 
                     m_prevScopeTriggerTime = m_scope_t0;
                     m_prevTriggerTime = m_spidr_t0;

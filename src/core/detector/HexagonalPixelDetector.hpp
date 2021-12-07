@@ -6,8 +6,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef CORRYVRECKAN_PLANARDETECTOR_H
-#define CORRYVRECKAN_PLANARDETECTOR_H
+#ifndef CORRYVRECKAN_HEXAGONALDETECTOR_H
+#define CORRYVRECKAN_HEXAGONALDETECTOR_H
 
 #include <fstream>
 #include <map>
@@ -35,72 +35,23 @@ namespace corryvreckan {
      * Contains the PixelDetector with all its properties such as position and orientation, pitch, spatial resolution
      * etc.
      */
-    class PixelDetector : public Detector {
+    class HexagonalPixelDetector : public PixelDetector {
     public:
         /**
          * Delete default constructor
          */
-        PixelDetector() = delete;
+        HexagonalPixelDetector() = delete;
 
         /**
          * Default destructor
          */
-        ~PixelDetector() = default;
+        ~HexagonalPixelDetector() = default;
 
         /**
          * @brief Constructs a detector in the geometry
          * @param config Configuration object describing the detector
          */
-        PixelDetector(const Configuration& config);
-
-        /**
-         * @brief Set position and orientation from configuration file
-         */
-        void SetPostionAndOrientation(const Configuration& config);
-
-        /**
-         * @brief Update detector position in the world
-         * @param displacement Vector with three position coordinates
-         */
-        void displacement(XYZPoint displacement) override { m_displacement = displacement; }
-
-        /**
-         * @brief Get position in the world
-         * @return Global position in Cartesian coordinates
-         */
-        XYZPoint displacement() const override { return m_displacement; }
-
-        /**
-         * @brief Get orientation in the world
-         * @return Vector with three rotation angles
-         */
-        XYZVector rotation() const override { return m_orientation; }
-
-        /**
-         * @brief Update detector orientation in the world
-         * @param rotation Vector with three rotation angles
-         */
-        void rotation(XYZVector rotation) override { m_orientation = rotation; }
-
-        /**
-         * @brief Mark a detector channel as masked
-         * @param chX X coordinate of the pixel to be masked
-         * @param chY Y coordinate of the pixel to be masked
-         */
-        void maskChannel(int chX, int chY) override;
-
-        /**
-         * @brief Check if a detector channel is masked
-         * @param chX X coordinate of the pixel to check
-         * @param chY Y coordinate of the pixel to check
-         * @return    Mask status of the pixel in question
-         */
-        bool masked(int chX, int chY) const override;
-
-        // Function to get global intercept with a track
-        PositionVector3D<Cartesian3D<double>> getIntercept(const Track* track) const override;
-        // Function to get local intercept with a track
-        PositionVector3D<Cartesian3D<double>> getLocalIntercept(const Track* track) const override;
+        HexagonalPixelDetector(const Configuration& config);
 
         // Function to check if a track intercepts with a plane
         bool hasIntercept(const Track* track, double pixelTolerance = 0.) const override;
@@ -152,24 +103,6 @@ namespace corryvreckan {
         XYVector getSize() const override;
 
         /**
-         * @brief Get pitch of a single pixel
-         * @return Pitch of a pixel
-         */
-        XYVector getPitch() const override { return m_pitch; }
-
-        /**
-         * @brief Get intrinsic spatial resolution of the detector
-         * @return Intrinsic spatial resolution in X and Y
-         */
-        XYVector getSpatialResolution() const override { return m_spatial_resolution; }
-
-        /*
-         * @brief Get number of pixels in x and y
-         * @return Number of two dimensional pixels
-         */
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const override { return m_nPixels; }
-
-        /**
          * @brief Test whether one pixel touches the cluster
          * @return true if it fulfills the condition
          * @note users should define their specific clustering method in the detector class, for pixel detector, the default
@@ -178,39 +111,21 @@ namespace corryvreckan {
         virtual bool
         isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) override;
 
-    protected:
-        // Initialize coordinate transformations
-        void initialise() override;
+    private:
 
-        // Build axis, for devices which are not auxiliary
-        // Different in Pixel/Strip Detector
-        void build_axes(const Configuration& config) override;
+        // Transformations from axial coordinates to cartesian coordinates
+        const std::array<double, 4> transform_pointy_{std::sqrt(3.0), std::sqrt(3.0) / 2.0, 0.0, 3.0 / 2.0};
+        const std::array<double, 4> transform_flat_{3.0 / 2.0, 0.0, std::sqrt(3.0) / 2.0, std::sqrt(3.0)};
 
-        // Config detector, for devices which are not auxiliary
-        // Different in Pixel/Strip Detector
-        void configure_detector(Configuration& config) const override;
+        // Inverse transformations, going from cartesian coordinates to axial coordinates
+        const std::array<double, 4> inv_transform_pointy_{std::sqrt(3.0) / 3.0, -1.0 / 3.0, 0.0, 2.0 / 3.0};
+        const std::array<double, 4> inv_transform_flat_{2.0 / 3.0, 0.0, -1.0 / 3.0, std::sqrt(3.0) / 3.0};
 
-        // Config position, orientation, mode of detector
-        // Different in Pixel/Strip Detector
-        void configure_pos_and_orientation(Configuration& config) const override;
+        std::pair<int, int> round_to_nearest_hex(double x, double y) const;
+        size_t hex_distance(double x1, double y1, double x2, double y2) const;
 
-        // Functions to set and check channel masking
-        void process_mask_file() override;
 
-        // Seems to be used in other coordinate
-        inline static int isLeft(std::pair<int, int> pt0, std::pair<int, int> pt1, std::pair<int, int> pt2);
-        static int winding_number(std::pair<int, int> probe, std::vector<std::vector<int>> polygon);
-
-        // For planar detector
-        XYVector m_pitch{};
-        XYVector m_spatial_resolution{};
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> m_nPixels{};
-        std::vector<std::vector<int>> m_roi{};
-        // Displacement and rotation in x,y,z
-        ROOT::Math::XYZPoint m_displacement;
-        ROOT::Math::XYZVector m_orientation;
-        std::string m_orientation_mode;
     };
 } // namespace corryvreckan
 
-#endif // CORRYVRECKAN_DETECTOR_H
+#endif // CORRYVRECKAN_HEXAGONALDETECTOR_H

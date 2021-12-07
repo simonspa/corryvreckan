@@ -95,6 +95,93 @@ void AnalysisDUT::initialize() {
                      n_timebins_,
                      -(n_timebins_ + 1) / 2. * time_binning_,
                      (n_timebins_ - 1) / 2. * time_binning_);
+        
+        trackCorrelationXY_beforeCuts =
+            new TH2F("trackCorrelationXY_beforeCuts",
+                     "Track residual XY (tracks before cuts), all clusters;x_{track}-x_{hit} [#mum];y_{track}-y_{hit} [#mum]",
+                     100,
+                     -50.5,
+                     49.5,
+                     100,
+                     -50.5,
+                     49.5);
+        trackCorrelationXY_afterCuts =
+            new TH2F("trackCorrelationXY_afterCuts",
+                     "Track residual XY (tracks after cuts), all clusters;x_{track}-x_{hit} [#mum];y_{track}-y_{hit} [#mum]",
+                     100,
+                     -50.5,
+                     49.5,
+                     100,
+                     -50.5,
+                     49.5);
+        hitmapLocal =
+            new TH2F("hitmapLocal",
+                     "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                     200,
+                     -250.5,
+                     249.5,
+                     200,
+                     -250.5,
+                     249.5);
+        hitmapLocalIntercept =
+            new TH2F("hitmapLocalIntercept",
+                     "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                     200,
+                     -250.5,
+                     249.5,
+                     200,
+                     -250.5,
+                     249.5);
+        hitmapLocalNoIntercept =
+            new TH2F("hitmapLocalNoIntercept",
+                     "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                     200,
+                     -250.5,
+                     249.5,
+                     200,
+                     -250.5,
+                     249.5);
+        hitmapLocalTrigger =
+            new TH2F("hitmapLocalTrigger",
+                     "efficiency;x_{track} [#mum];y_{track} [#mum]",
+                     200,
+                     -250.5,
+                     249.5,
+                     200,
+                     -250.5,
+                     249.5);
+        hitmapLocalMask =
+            new TH2F("hitmapLocalMask",
+                     "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                     200,
+                     -250.5,
+                     249.5,
+                     200,
+                     -250.5,
+                     249.5);
+        hitmapLocalDeadtime =
+            new TH2F("hitmapLocalDeadtime",
+                     "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                     200,
+                     -250.5,
+                     249.5,
+                     200,
+                     -250.5,
+                     249.5);
+        hitmapLocalDeadtimeMask =
+            new TH2F("hitmapLocalDeadtimeMask",
+                     "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                     200,
+                     -250.5,
+                     249.5,
+                     200,
+                     -250.5,
+                     249.5);
+
+        for (int bin = 0; bin < hitmapLocalMask->GetNcells(); bin++) {
+            hitmapLocalMask->SetBinContent(bin, -1);
+            hitmapLocalDeadtimeMask->SetBinContent(bin, -1);
+        }
     }
 
     hClusterMapAssoc = new TH2F("clusterMapAssoc",
@@ -626,6 +713,8 @@ void AnalysisDUT::initialize() {
         n_chargebins_,
         0.0,
         charge_histo_range_);
+    
+    trigger_dt = new TH1F("trigger_dt", "", 100, -10.5, 9.5);
 }
 
 StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -643,6 +732,30 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         auto globalIntercept = m_detector->getIntercept(track.get());
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
+        hitmapLocal->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
+        if(m_detector->hasIntercept(track.get())) {
+            hitmapLocalIntercept->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
+        } else {
+            hitmapLocalNoIntercept->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
+        }
+
+        auto pixels = clipboard->getData<Pixel>(m_detector->getName());
+
+        if(!referenceSpidrSignals.empty() || !pixels.empty()) {
+            hitmapLocalTrigger->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
+        }
+
+        for(auto s : referenceSpidrSignals) {
+            trigger_dt->Fill((track->timestamp()-s->timestamp())/1000.0);
+        }
+
+        if(track->timestamp() - last_timestamp > 5000 ) {
+            hitmapLocalDeadtime->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
+            hitmapLocalDeadtimeMask->SetBinContent(hitmapLocalDeadtimeMask->FindBin(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0), 0);
+        }
+
+        hitmapLocalMask->SetBinContent(hitmapLocalMask->FindBin(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0), 0);
+
         // Fill correlation plots BEFORE applying any cuts:
         if(correlations_) {
             auto clusters = clipboard->getData<Cluster>(m_detector->getName());
@@ -651,6 +764,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
                 double ydistance_um = (globalIntercept.Y() - cls->global().y()) * 1000.;
                 trackCorrelationX_beforeCuts->Fill(xdistance_um);
                 trackCorrelationY_beforeCuts->Fill(ydistance_um);
+                trackCorrelationXY_beforeCuts->Fill(xdistance_um, ydistance_um);
                 trackCorrelationTime_beforeCuts->Fill(track->timestamp() - cls->timestamp());
             }
         }
@@ -696,6 +810,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
                 double ydistance_um = (globalIntercept.Y() - cls->global().y()) * 1000.;
                 trackCorrelationX_afterCuts->Fill(xdistance_um);
                 trackCorrelationY_afterCuts->Fill(ydistance_um);
+                trackCorrelationXY_afterCuts->Fill(xdistance_um, ydistance_um);
                 trackCorrelationTime_afterCuts->Fill(track->timestamp() - cls->timestamp());
             }
         }
@@ -915,6 +1030,20 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         }
         num_tracks_++;
     }
+
+    for(auto& refSpidrSignal : referenceSpidrSignals) {
+        if(last_timestamp < refSpidrSignal->timestamp()) {
+            last_timestamp = refSpidrSignal->timestamp();
+        }
+    }
+
+    auto pixels = clipboard->getData<Pixel>(m_detector->getName());
+    for(auto& pixel : pixels) {
+        if(last_timestamp < pixel->timestamp()) {
+            last_timestamp = pixel->timestamp();
+        }     
+    }
+
     // Return value telling analysis to keep running
     return StatusCode::Success;
 }
@@ -922,4 +1051,12 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 void AnalysisDUT::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     hCutHisto->Scale(1 / double(num_tracks_));
     clusterSizeAssocNorm->Scale(1 / clusterSizeAssoc->Integral());
+
+    TH2F *foo = static_cast<TH2F*>(hitmapLocalTrigger->Clone("efficiency"));
+    foo->Divide(hitmapLocal);
+    foo->Add(hitmapLocalMask);
+
+    foo = static_cast<TH2F*>(hitmapLocalTrigger->Clone("efficiency_deadtime"));
+    foo->Divide(hitmapLocalDeadtime);
+    foo->Add(hitmapLocalDeadtimeMask);
 }

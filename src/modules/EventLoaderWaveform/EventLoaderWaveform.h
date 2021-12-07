@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Definition of module EventLoaderFASTPIX
+ * @brief Definition of module EventLoaderWaveform
  *
  * @copyright Copyright (c) 2020 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
@@ -11,13 +11,12 @@
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TH2Poly.h>
-#include <TGraph.h>
 #include <iostream>
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
 #include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
+#include "DirectoryLoader.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules
@@ -25,7 +24,7 @@ namespace corryvreckan {
      *
      * More detailed explanation of module
      */
-    class EventLoaderFASTPIX : public Module {
+    class EventLoaderWaveform : public Module {
 
     public:
         /**
@@ -33,7 +32,7 @@ namespace corryvreckan {
          * @param config Configuration object for this module as retrieved from the steering file
          * @param detector Pointer to the detector for this module instance
          */
-        EventLoaderFASTPIX(Configuration& config, std::shared_ptr<Detector> detector);
+        EventLoaderWaveform(Configuration& config, std::shared_ptr<Detector> detector);
 
         /**
          * @brief [Initialise this module]
@@ -51,46 +50,15 @@ namespace corryvreckan {
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
-        bool loadEvent(PixelVector &deviceData, double spidr_timestamp);
-        double getRawTimestamp();
-        double getTimestamp();
-
         std::shared_ptr<Detector> m_detector;
 
-        bool m_triggerSync;
+        // configuration parameters:
+        std::string m_inputDirectory;
+        std::vector<std::string> m_channels;
 
-        TH2Poly *hitmap;
-        TH1F *seed_tot_inner;
-        TH1F *seed_tot_outer;
-        TH1F *pixels_per_event;
-        TH1F *pixel_timestamps;
-        TH1F *pixel_distance, *pixel_distance_row, *pixel_distance_col;
-        TH1F *trigger_dt;
+        std::unique_ptr<DirectoryLoader> m_loader;
 
         int m_eventNumber;
-        size_t m_triggerNumber;
-        size_t m_missingTriggers;
-        size_t m_discardedEvents;
-        double m_timeScaler;
-
-        std::streampos m_prevEvent;
-
-        double m_prevTriggerTime;
-        double m_prevScopeTriggerTime;
-        uint16_t m_blockSize;
-
-        double m_spidr_t0;
-        double m_scope_t0;
-
-        std::ifstream m_inputFile;
-
-        std::vector<double> m_scopeTriggerNumbers;
-        std::vector<double> m_scopeTriggerTimestamps;
-        std::vector<double> m_spidrTriggerNumbers;
-        std::vector<double> m_spidrTriggerTimestamps;
-
-        std::vector<double> m_ratioTriggerNumbers;
-        std::vector<double> m_dtRatio;
     };
 
 } // namespace corryvreckan

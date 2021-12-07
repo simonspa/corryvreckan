@@ -374,4 +374,5 @@ namespace corryvreckan {
 } // namespace corryvreckan
 
 #include "PixelDetector.hpp"
+//#include "HexagonalPixelDetector.hpp"
 #endif // CORRYVRECKAN_DETECTOR_H
