@@ -76,6 +76,11 @@ namespace corryvreckan {
         TH1D* zenith_flux_;
         TH2D* combined_flux_;
 
+        // Efficiency distributions
+        std::map<std::string, TH1D*> azimuth_efficiency_;
+        std::map<std::string, TH1D*> zenith_efficiency_;
+        std::map<std::string, TH2D*> combined_efficiency_;
+
         void calculateAngles(Track* track);
         double solidAngle(double zenithLow, double zenithHigh, double azimuthLow, double azimuthHigh) const;
     };

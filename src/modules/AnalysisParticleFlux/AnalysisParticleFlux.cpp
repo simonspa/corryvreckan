@@ -81,6 +81,33 @@ void AnalysisParticleFlux::initialize() {
     combined_flux_->SetNameTitle(
         "zenith_vs_azimuth_flux",
         ("Zenith angle vs azimuth angle flux;#varphi [" + label + "];#vartheta [" + label + "]").c_str());
+
+    auto detectors = get_detectors();
+    if(detectors.size() > 2) {
+        // We can only calculate efficiencies if there are more than 2 detector layers
+        for(auto& detector : detectors) {
+            auto detectorID = detector->getName();
+
+            TDirectory* directory = getROOTDirectory();
+            TDirectory* local_directory = directory->mkdir(detectorID.c_str());
+            local_directory->cd();
+
+            azimuth_efficiency_[detectorID] = static_cast<TH1D*>(azimuth_histogram_->Clone());
+            azimuth_efficiency_[detectorID]->SetNameTitle(
+                "azimuth_efficiency",
+                ("Azimuthal efficiency in " + detectorID + ";#varphi [" + label + "];# tracks").c_str());
+
+            zenith_efficiency_[detectorID] = static_cast<TH1D*>(zenith_histogram_->Clone());
+            zenith_efficiency_[detectorID]->SetNameTitle(
+                "zenith_efficiency", ("Zenith efficiency in " + detectorID + ";#vartheta [" + label + "];# tracks").c_str());
+
+            combined_efficiency_[detectorID] = static_cast<TH2D*>(combined_histogram_->Clone());
+            combined_efficiency_[detectorID]->SetNameTitle("zenith_vs_azimuth_efficiency",
+                                                           ("Zenith angle vs azimuth efficiency in " + detectorID +
+                                                            ";#varphi [" + label + "];#vartheta [" + label + "]")
+                                                               .c_str());
+        }
+    }
 }
 
 /**
