@@ -21,6 +21,12 @@
 #include "objects/Pixel.hpp"
 
 namespace corryvreckan {
+    enum class PrealignMethod {
+        MEAN = 0,
+        MAXIMUM,
+        GAUSS_FIT,
+    };
+
     /** @ingroup Modules
      */
     class Prealignment : public Module {
@@ -51,7 +57,7 @@ namespace corryvreckan {
         double damping_factor;
         double timeCut;
         double range_abs;
-        std::string method;
+        PrealignMethod method;
         int fit_range_rel;
     };
 } // namespace corryvreckan

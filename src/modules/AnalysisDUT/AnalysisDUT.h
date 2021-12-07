@@ -105,6 +105,7 @@ namespace corryvreckan {
         TH2F* pxTimeMinusSeedTime_vs_pxCharge_3px;
         TH2F* pxTimeMinusSeedTime_vs_pxCharge_4px;
 
+        TH2F* track_trackDistance;
         // Member variables
         double time_cut_frameedge_;
         double spatial_cut_sensoredge_;

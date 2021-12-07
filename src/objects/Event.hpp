@@ -100,8 +100,8 @@ namespace corryvreckan {
          * @brief Returns position of a timestamp relative to the current event
          *
          * This function allows to assess whether a timestamp lies before, during or after the defined event.
-         * @param  frame_start Timestamp to get position for
-         * @return             Position of the given timestamp with respect to the defined event.
+         * @param  timestamp Timestamp to get position for
+         * @return           Position of the given timestamp with respect to the defined event.
          */
         Position getTimestampPosition(double timestamp) const;
 

@@ -43,9 +43,9 @@ Tracking4D::Tracking4D(Configuration& config, std::vector<std::shared_ptr<Detect
     }
 
     // timing cut, relative (x * time_resolution) or absolute:
-    time_cuts_ = corryvreckan::calculate_cut<double>("time_cut", config_, get_detectors());
+    time_cuts_ = corryvreckan::calculate_cut<double>("time_cut", config_, get_regular_detectors(true));
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", config_, get_detectors());
+    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", config_, get_regular_detectors(true));
 
     min_hits_on_track_ = config_.get<size_t>("min_hits_on_track");
     exclude_DUT_ = config_.get<bool>("exclude_dut");
@@ -103,13 +103,8 @@ void Tracking4D::initialize() {
     trackTimeTriggerChi2 = new TH2F("trackTimeTriggerChi2", title.c_str(), 1000, -230.4, 230.4, 15, 0, 15);
 
     // Loop over all planes
-    for(auto& detector : get_detectors()) {
+    for(auto& detector : get_regular_detectors(true)) {
         auto detectorID = detector->getName();
-
-        // Do not created plots for auxiliary detectors:
-        if(detector->isAuxiliary()) {
-            continue;
-        }
 
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detectorID.c_str());
@@ -123,6 +118,15 @@ void Tracking4D::initialize() {
         kinkX[detectorID] = new TH1F("kinkX", title.c_str(), 500, -0.01, -0.01);
         title = detectorID + " kinkY ;kink [rad];events";
         kinkY[detectorID] = new TH1F("kinkY", title.c_str(), 500, -0.01, -0.01);
+
+        local_intersects_[detectorID] = new TH2F("local_intersect",
+                                                 "local intersect, col, row",
+                                                 detector->nPixels().Y(),
+                                                 0,
+                                                 detector->nPixels().X(),
+                                                 detector->nPixels().Y(),
+                                                 0,
+                                                 detector->nPixels().Y());
 
         // Do not create plots for detectors not participating in the tracking:
         if(exclude_DUT_ && detector->isDUT()) {
@@ -217,12 +221,7 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
     map<std::shared_ptr<Detector>, KDTree<Cluster>> trees;
 
     std::shared_ptr<Detector> reference_first, reference_last;
-    for(auto& detector : get_detectors()) {
-        if(exclude_DUT_ && detector->isDUT()) {
-            LOG(DEBUG) << "Skipping DUT plane.";
-            continue;
-        }
-
+    for(auto& detector : get_regular_detectors(!exclude_DUT_)) {
         // Get the clusters
         auto tempClusters = clipboard->getData<Cluster>(detector->getName());
         LOG(DEBUG) << "Detector " << detector->getName() << " has " << tempClusters.size() << " clusters on the clipboard";
@@ -285,6 +284,7 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             // Loop over each subsequent plane and look for a cluster within the timing cuts
             size_t detector_nr = 2;
+            // Get all detectors here to also include passive layers which might contribute to scattering
             for(auto& detector : get_detectors()) {
                 if(detector->isAuxiliary()) {
                     continue;
@@ -413,11 +413,11 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             if(reject_by_ROI_ && track->isFitted()) {
                 // check if the track is within ROI for all detectors
-                auto ds = get_detectors();
+                auto ds = get_regular_detectors(!exclude_DUT_);
                 auto out_of_roi =
                     std::find_if(ds.begin(), ds.end(), [track](const auto& d) { return !d->isWithinROI(track.get()); });
                 if(out_of_roi != ds.end()) {
-                    LOG(DEBUG) << "Rejecting track outside of ROI of detetctor " << out_of_roi->get()->getName();
+                    LOG(DEBUG) << "Rejecting track outside of ROI of detector " << out_of_roi->get()->getName();
                     continue;
                 }
             }
@@ -446,7 +446,7 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
     }
 
     auto duplicated_hit = [this](const Track* a, const Track* b) {
-        for(auto d : get_detectors()) {
+        for(auto d : get_regular_detectors(!exclude_DUT_)) {
             if(a->getClusterFromDetector(d->getName()) == b->getClusterFromDetector(d->getName()) &&
                !(b->getClusterFromDetector(d->getName()) == nullptr)) {
                 LOG(DEBUG) << "Duplicated hit on " << d->getName() << ": rejecting track";
@@ -543,11 +543,15 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
             residualsZ_global[detectorID]->Fill(globalRes.Z());
         }
 
-        for(auto& detector : get_detectors()) {
-            if(detector->isAuxiliary()) {
-                continue;
-            }
+        for(auto& detector : get_regular_detectors(true)) {
             auto det = detector->getName();
+
+            auto local = detector->getLocalIntercept(track.get());
+            auto row = detector->getRow(local);
+            auto col = detector->getColumn(local);
+            LOG(TRACE) << "Local col/row intersect of track: " << col << "\t" << row;
+            local_intersects_[det]->Fill(col, row);
+
             if(!kinkX.count(det)) {
                 LOG(WARNING) << "Skipping writing kinks due to missing init of histograms for  " << det;
                 continue;

@@ -37,31 +37,31 @@ namespace corryvreckan {
 
         /**
          * @brief Get the track position for a certain z position
-         * @param z position
+         * @param z Global z position
          * @return ROOT::Math::XYZPoint at z position
          */
         ROOT::Math::XYZPoint getIntercept(double z) const override;
 
         /**
          * @brief Get the track state at a detector
-         * @param name of detector
+         * @param detectorID Name of detector
          * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        ROOT::Math::XYZPoint getState(const std::string&) const override { return m_state; }
+        ROOT::Math::XYZPoint getState(const std::string& detectorID) const override;
 
         /**
          * @brief Get the track direction at a detector
-         * @param name of detector
+         * @param detectorID Name of detector
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
-        ROOT::Math::XYZVector getDirection(const std::string&) const override { return m_direction; }
+        ROOT::Math::XYZVector getDirection(const std::string& detectorID) const override;
 
         /**
          * @brief Get the track direction at any given z position
-         * @param global z position
+         * @param z Global z position
          * @return ROOT::Math::XYZPoint direction at z
          */
-        ROOT::Math::XYZVector getDirection(const double&) const override { return m_direction; }
+        ROOT::Math::XYZVector getDirection(const double& z) const override;
 
         ROOT::Math::XYPoint distance(const Cluster* cluster) const;
 

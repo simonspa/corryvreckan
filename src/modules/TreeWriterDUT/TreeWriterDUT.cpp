@@ -9,7 +9,6 @@
  */
 
 #include "TreeWriterDUT.h"
-#include "core/utils/file.h"
 
 #include <vector>
 
@@ -48,7 +47,7 @@ void TreeWriterDUT::initialize() {
     LOG(DEBUG) << "Initialised TreeWriterDUT";
 
     // Create output file and directories
-    auto path = createOutputFile(add_file_extension(m_fileName, "root"));
+    auto path = createOutputFile(m_fileName, "root");
     m_outputFile = new TFile(path.c_str(), "RECREATE");
     LOG(DEBUG) << "Made and moved to output file: " << path;
     gDirectory->Delete("tree;*");

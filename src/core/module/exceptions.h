@@ -65,6 +65,7 @@ namespace corryvreckan {
         /**
          * @brief Constructs error with the name of the problematic module
          * @param module Name of the module that cannot be instantiated
+         * @param message Reason why instantiation is not possible
          */
         explicit InvalidInstantiationError(const std::string& module, std::string message) {
             error_message_ = "The module " + module + " cannot be instantiated with this configuration: " + message;

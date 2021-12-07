@@ -33,6 +33,18 @@ ROOT::Math::XYPoint StraightLineTrack::getKinkAt(const std::string&) const {
     return ROOT::Math::XYPoint(0, 0);
 }
 
+ROOT::Math::XYZPoint StraightLineTrack::getState(const std::string&) const {
+    return m_state;
+}
+
+ROOT::Math::XYZVector StraightLineTrack::getDirection(const std::string&) const {
+    return m_direction;
+}
+
+ROOT::Math::XYZVector StraightLineTrack::getDirection(const double&) const {
+    return m_direction;
+}
+
 void StraightLineTrack::calculateChi2() {
 
     // Get the number of clusters

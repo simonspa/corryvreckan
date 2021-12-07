@@ -63,9 +63,9 @@ namespace corryvreckan {
     public:
         /**
          * @brief TrackError
-         * @param source
+         * @param source Type of the track
+         * @param msg Reason for the error
          */
-
         explicit TrackError(const std::type_info& source, const std::string msg = "") {
             error_message_ += " Track Object ";
             error_message_ += corryvreckan::demangle((source.name()));
@@ -114,9 +114,9 @@ namespace corryvreckan {
     public:
         /**
          * @brief InvalidEventError
-         * @param source
+         * @param source Type info of the event object
+         * @param msg    Reason for the invalid event
          */
-
         explicit InvalidEventError(const std::type_info& source, const std::string msg = "") {
             error_message_ += " Event Object ";
             error_message_ += corryvreckan::demangle((source.name()));

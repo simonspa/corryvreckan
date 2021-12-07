@@ -46,8 +46,7 @@ namespace corryvreckan {
 
     protected:
         /**
-         * @brief Internal constructor for exceptions setting the error message
-         * indirectly
+         * @brief Internal constructor for exceptions setting the error message indirectly
          */
         Exception() = default;
 
@@ -80,8 +79,7 @@ namespace corryvreckan {
      * @ingroup Exceptions
      * @brief Errors related to logical problems in the code structure
      *
-     * Problems that could also have been detected at compile time by specialized
-     * software
+     * Problems that could also have been detected at compile time by specialized software
      */
     class LogicError : public Exception {
         /**
@@ -92,8 +90,7 @@ namespace corryvreckan {
 
     protected:
         /**
-         * @brief Internal constructor for exceptions setting the error message
-         * indirectly
+         * @brief Internal constructor for exceptions setting the error message indirectly
          */
         LogicError() = default;
     };

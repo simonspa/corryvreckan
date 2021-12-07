@@ -715,6 +715,15 @@ void AnalysisDUT::initialize() {
         charge_histo_range_);
     
     trigger_dt = new TH1F("trigger_dt", "", 100, -10.5, 9.5);
+
+    track_trackDistance = new TH2F("track_to_track_distance",
+                                   "Local track to track distance;#Delta_x [#mum]; #Delta_y [#mum]",
+                                   800,
+                                   -1000,
+                                   1000,
+                                   800,
+                                   -1000,
+                                   1000);
 }
 
 StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -779,6 +788,16 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             hCutHisto->Fill(1);
             num_tracks_++;
             continue;
+        }
+
+        // Create track-to-track plot
+        for(auto& track2 : tracks) {
+            if((track == track2) || (track2->getChi2ndof() > chi2_ndof_cut_)) {
+                continue;
+            }
+            auto inter1 = m_detector->globalToLocal(m_detector->getIntercept(track.get()));
+            auto inter2 = m_detector->globalToLocal(m_detector->getIntercept(track2.get()));
+            track_trackDistance->Fill(1000. * (inter1.x() - inter2.x()), 1000. * (inter1.y() - inter2.y()));
         }
 
         // Check if it intercepts the DUT

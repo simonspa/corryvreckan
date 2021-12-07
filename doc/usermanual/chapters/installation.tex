@@ -9,7 +9,12 @@ This chapter contains details on the standard installation process and informati
 \section{Supported Operating Systems}
 \label{sec:os}
 \corry is designed to run without issues on either a recent Linux distribution or Mac OS\,X.
-Furthermore, the continuous integration of the project ensures correct building and functioning of the software framework on CentOS\,7 (with GCC and LLVM), SLC\,6 (with GCC only) and Mac OS Mojave (OS X 10.14, with AppleClang).
+Furthermore, the continuous integration of the project ensures correct building and functioning of the software framework on CentOS\,7 (with GCC and LLVM), CentOS\,8 (with GCC only), Ubuntu 20.04 LTS (Docker, GCC) and macOS 11.6, with AppleClang.
+
+\section{Supported Compilers}
+\label{sec:compilers}
+\corry relies on functionality from the {\CPP}17 standard and therefore requires a {\CPP}17-compliant compiler.
+This comprises for example GCC\,7+, LLVM/Clang\,4.0+ and AppleClang\,10.0+. A detailed list of supported compilers can be found at~\cite{cppcompilersupport}.
 
 \section{CMVFS}
 \label{sec:cvmfs_install}

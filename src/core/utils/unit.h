@@ -24,7 +24,7 @@ namespace corryvreckan {
 
     /**
      * @brief Static class to access units
-     * @see The list of framework units defined in \ref corryvreckan::add_units
+     * @see The list of framework units defined in \ref corryvreckan::Corryvreckan::add_units
      *
      * Units are short, unique and case-insensitive strings that indicate a
      * particular multiplication factor from the base
