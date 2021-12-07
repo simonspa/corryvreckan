@@ -104,7 +104,7 @@ void AnalysisParticleFlux::calculateAngles(Track* track) {
 /**
  * @brief [Get solid angle for given bin (inputs in rad)]
  */
-double AnalysisParticleFlux::solidAngle(double zenithLow, double zenithHigh, double azimuthLow, double azimuthHigh) {
+double AnalysisParticleFlux::solidAngle(double zenithLow, double zenithHigh, double azimuthLow, double azimuthHigh) const {
     return (azimuthHigh - azimuthLow) * (std::cos(zenithLow) - std::cos(zenithHigh));
 }
 

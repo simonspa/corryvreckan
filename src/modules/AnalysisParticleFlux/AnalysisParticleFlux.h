@@ -78,7 +78,7 @@ namespace corryvreckan {
         TH2D* combined_flux_;
 
         void calculateAngles(Track* track);
-        double solidAngle(double zenithLow, double zenithHigh, double azimuthLow, double azimuthHigh);
+        double solidAngle(double zenithLow, double zenithHigh, double azimuthLow, double azimuthHigh) const;
     };
 
 } // namespace corryvreckan
