@@ -72,7 +72,6 @@ namespace corryvreckan {
         std::map<std::string, TH1F*> kinkY;
 
         std::map<std::string, TH2F*> local_intersects_;
-        std::map<std::string, TH2F*> local_intersect_zoom_;
 
         // Cuts for tracking
         double momentum_;
