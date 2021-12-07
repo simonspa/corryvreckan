@@ -53,21 +53,21 @@ void AnalysisParticleFlux::initialize() {
     azimuth_histogram_ = new TH1D("azimuth",
                                   ("Azimuthal distribution of tracks;#varphi [" + label + "];# tracks").c_str(),
                                   azimuth_granularity_,
-                                  Units::convert(azimuth_low_, angle_unit_),
-                                  Units::convert(azimuth_high_, angle_unit_));
+                                  static_cast<double>(Units::convert(azimuth_low_, angle_unit_)),
+                                  static_cast<double>(Units::convert(azimuth_high_, angle_unit_)));
     zenith_histogram_ = new TH1D("zenith",
                                  ("Zenith angle distribution of tracks;#vartheta [" + label + "];# tracks").c_str(),
                                  zenith_granularity_,
-                                 Units::convert(zenith_low_, angle_unit_),
-                                 Units::convert(zenith_high_, angle_unit_));
+                                 static_cast<double>(Units::convert(zenith_low_, angle_unit_)),
+                                 static_cast<double>(Units::convert(zenith_high_, angle_unit_)));
     combined_histogram_ = new TH2D("zenith_vs_azimuth",
                                    ("Zenith angle vs azimuth;#varphi [" + label + "];#vartheta [" + label + "]").c_str(),
                                    azimuth_granularity_,
-                                   Units::convert(azimuth_low_, angle_unit_),
-                                   Units::convert(azimuth_high_, angle_unit_),
+                                   static_cast<double>(Units::convert(azimuth_low_, angle_unit_)),
+                                   static_cast<double>(Units::convert(azimuth_high_, angle_unit_)),
                                    zenith_granularity_,
-                                   Units::convert(zenith_low_, angle_unit_),
-                                   Units::convert(zenith_high_, angle_unit_));
+                                   static_cast<double>(Units::convert(zenith_low_, angle_unit_)),
+                                   static_cast<double>(Units::convert(zenith_high_, angle_unit_)));
     combined_histogram_->SetOption("COLZ");
 
     // Initialise flux histograms
@@ -88,8 +88,8 @@ void AnalysisParticleFlux::initialize() {
  */
 void AnalysisParticleFlux::calculateAngles(Track* track) {
     ROOT::Math::XYZVector track_direction = track->getDirection(track_intercept_);
-    double phi = Units::convert((track_direction.Phi() + ROOT::Math::Pi()), angle_unit_);
-    double theta = Units::convert(track_direction.theta(), angle_unit_);
+    double phi = static_cast<double>(Units::convert((track_direction.Phi() + ROOT::Math::Pi()), angle_unit_));
+    double theta = static_cast<double>(Units::convert(track_direction.theta(), angle_unit_));
     azimuth_histogram_->Fill(phi);
     zenith_histogram_->Fill(theta);
     combined_histogram_->Fill(phi, theta);
@@ -128,20 +128,23 @@ void AnalysisParticleFlux::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
             // Azimuth loop
             if(i == 0) {
                 // Fill azimuth flux histogram
-                int azimuth_bin_number = azimuth_histogram_->FindBin(Units::convert((j + 0.5) * azimuth_width, angle_unit_));
+                int azimuth_bin_number =
+                    azimuth_histogram_->FindBin(static_cast<double>(Units::convert((j + 0.5) * azimuth_width, angle_unit_)));
                 double azimuthTracks = azimuth_histogram_->GetBinContent(azimuth_bin_number);
                 double sA = solidAngle(zenith_low_, zenith_high_, j * azimuth_width, (j + 1) * azimuth_width);
                 azimuth_flux_->SetBinContent(azimuth_bin_number, azimuthTracks / sA);
             }
             // Fill combined flux histogram
-            int combined_bin_number = combined_histogram_->FindBin(Units::convert((j + 0.5) * azimuth_width, angle_unit_),
-                                                                   Units::convert((i + 0.5) * zenith_width, angle_unit_));
+            int combined_bin_number =
+                combined_histogram_->FindBin(static_cast<double>(Units::convert((j + 0.5) * azimuth_width, angle_unit_)),
+                                             static_cast<double>(Units::convert((i + 0.5) * zenith_width, angle_unit_)));
             double combined_tracks = combined_histogram_->GetBinContent(combined_bin_number);
             double sA = solidAngle(i * zenith_width, (i + 1) * zenith_width, j * azimuth_width, (j + 1) * azimuth_width);
             combined_flux_->SetBinContent(combined_bin_number, combined_tracks / sA);
         }
         // Fill zenith flux histogram
-        int zenith_bin_number = zenith_histogram_->FindBin(Units::convert((i + 0.5) * zenith_width, angle_unit_));
+        int zenith_bin_number =
+            zenith_histogram_->FindBin(static_cast<double>(Units::convert((i + 0.5) * zenith_width, angle_unit_)));
         double zenith_tracks = zenith_histogram_->GetBinContent(zenith_bin_number);
         double sA = solidAngle(i * zenith_width, (i + 1) * zenith_width, azimuth_low_, azimuth_high_);
         zenith_flux_->SetBinContent(zenith_bin_number, zenith_tracks / sA);
