@@ -135,7 +135,7 @@ void AnalysisParticleFlux::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     for(int i = 0; i < zenith_granularity_; i++) {
         // Zenith loop
         for(int j = 0; j < azimuth_granularity_; j++) {
-            // Azi_lut_h loop
+            // Azimuth loop
             if(i == 0) {
                 // Fill azimuth flux histogram
                 int azimuth_bin_number = azimuth_histogram_->FindBin((j + 0.5) * azimuth_width * angle_conversion_);
