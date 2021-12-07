@@ -19,7 +19,7 @@ AnalysisParticleFlux::AnalysisParticleFlux(Configuration& config, std::vector<st
     // Azimuthal histogram
     config_.setDefault<double>("azimuth_low", Units::get<double>(0, "deg"));
     config_.setDefault<double>("azimuth_high", Units::get<double>(360, "deg"));
-    config_.setDefault<int>("azimuth_granularity_", 36);
+    config_.setDefault<int>("azimuth_granularity", 36);
     // Zenith histogram
     config_.setDefault<double>("zenith_low", Units::get<double>(0, "deg"));
     config_.setDefault<double>("zenith_high", Units::get<double>(90, "deg"));
@@ -33,7 +33,7 @@ AnalysisParticleFlux::AnalysisParticleFlux(Configuration& config, std::vector<st
     // Track intercept
     track_intercept_ = config_.get<double>("track_intercept");
     // Granularities
-    azimuth_granularity_ = config_.get<int>("azimuth_granularity_");
+    azimuth_granularity_ = config_.get<int>("azimuth_granularity");
     zenith_granularity_ = config_.get<int>("zenith_granularity");
     // Histogram bounds
     azimuth_low_ = config_.get<double>("azimuth_low");
