@@ -54,8 +54,9 @@ namespace corryvreckan {
         int event_number_{0};
         int number_of_tracks_{0};
         double track_intercept_;
-        double angle_conversion_;
         std::string angle_unit_;
+        std::string angle_label_;
+        bool output_plots_in_degrees_;
 
         // Azimuthal histogram
         int azimuth_granularity_;
