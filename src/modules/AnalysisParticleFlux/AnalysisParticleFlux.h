@@ -51,11 +51,9 @@ namespace corryvreckan {
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
-        int event_number_{0};
         int number_of_tracks_{0};
         double track_intercept_;
         std::string angle_unit_;
-        std::string angle_label_;
         bool output_plots_in_degrees_;
 
         // Azimuthal histogram

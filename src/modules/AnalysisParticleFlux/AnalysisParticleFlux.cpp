@@ -42,50 +42,45 @@ AnalysisParticleFlux::AnalysisParticleFlux(Configuration& config, std::vector<st
     zenith_high_ = config_.get<double>("zenith_high");
     // Handle angle unit conversion
     output_plots_in_degrees_ = config_.get<bool>("output_plots_in_degrees");
-    if(output_plots_in_degrees_) {
-        angle_unit_ = "deg";
-        angle_label_ = "#circ";
-    } else {
-        angle_unit_ = "rad";
-        angle_label_ = "rad";
-    };
 }
 
 void AnalysisParticleFlux::initialize() {
 
+    std::string label = (output_plots_in_degrees_ ? "#circ" : "rad");
+    angle_unit_ = (output_plots_in_degrees_ ? "deg" : "rad");
+
     // Initialise histograms
     azimuth_histogram_ = new TH1D("azimuth",
-                                  ("Azimuthal distribution of tracks;#varphi [" + angle_label_ + "];# tracks").c_str(),
+                                  ("Azimuthal distribution of tracks;#varphi [" + label + "];# tracks").c_str(),
                                   azimuth_granularity_,
                                   Units::convert(azimuth_low_, angle_unit_),
                                   Units::convert(azimuth_high_, angle_unit_));
     zenith_histogram_ = new TH1D("zenith",
-                                 ("Zenith angle distribution of tracks;#vartheta [" + angle_label_ + "];# tracks").c_str(),
+                                 ("Zenith angle distribution of tracks;#vartheta [" + label + "];# tracks").c_str(),
                                  zenith_granularity_,
                                  Units::convert(zenith_low_, angle_unit_),
                                  Units::convert(zenith_high_, angle_unit_));
-    combined_histogram_ =
-        new TH2D("zenith_vs_azimuth",
-                 ("Zenith angle vs azimuth;#varphi [" + angle_label_ + "];#vartheta [" + angle_label_ + "]").c_str(),
-                 azimuth_granularity_,
-                 Units::convert(azimuth_low_, angle_unit_),
-                 Units::convert(azimuth_high_, angle_unit_),
-                 zenith_granularity_,
-                 Units::convert(zenith_low_, angle_unit_),
-                 Units::convert(zenith_high_, angle_unit_));
+    combined_histogram_ = new TH2D("zenith_vs_azimuth",
+                                   ("Zenith angle vs azimuth;#varphi [" + label + "];#vartheta [" + label + "]").c_str(),
+                                   azimuth_granularity_,
+                                   Units::convert(azimuth_low_, angle_unit_),
+                                   Units::convert(azimuth_high_, angle_unit_),
+                                   zenith_granularity_,
+                                   Units::convert(zenith_low_, angle_unit_),
+                                   Units::convert(zenith_high_, angle_unit_));
     combined_histogram_->SetOption("COLZ");
 
     // Initialise flux histograms
     azimuth_flux_ = static_cast<TH1D*>(azimuth_histogram_->Clone());
     azimuth_flux_->SetNameTitle("azimuth_flux",
-                                ("Azimuthal flux distribution;#varphi [" + angle_label_ + "];# tracks / sr").c_str());
+                                ("Azimuthal flux distribution;#varphi [" + label + "];# tracks / sr").c_str());
     zenith_flux_ = static_cast<TH1D*>(zenith_histogram_->Clone());
     zenith_flux_->SetNameTitle("zenith_flux",
-                               ("Zenith angle flux distribution;#vartheta [" + angle_label_ + "];# tracks / sr").c_str());
+                               ("Zenith angle flux distribution;#vartheta [" + label + "];# tracks / sr").c_str());
     combined_flux_ = static_cast<TH2D*>(combined_histogram_->Clone());
     combined_flux_->SetNameTitle(
         "zenith_vs_azimuth_flux",
-        ("Zenith angle vs azimuth angle flux;#varphi [" + angle_label_ + "];#vartheta [" + angle_label_ + "]").c_str());
+        ("Zenith angle vs azimuth angle flux;#varphi [" + label + "];#vartheta [" + label + "]").c_str());
 }
 
 /**
@@ -114,9 +109,6 @@ StatusCode AnalysisParticleFlux::run(const std::shared_ptr<Clipboard>& clipboard
         calculateAngles(track.get());
         number_of_tracks_++;
     }
-
-    // Increment event counter
-    event_number_++;
 
     // Return value telling analysis to keep running
     return StatusCode::Success;
