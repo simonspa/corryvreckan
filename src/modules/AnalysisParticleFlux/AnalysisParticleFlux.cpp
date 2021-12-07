@@ -144,11 +144,11 @@ void AnalysisParticleFlux::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
                 azimuth_flux_->SetBinContent(azimuth_bin_number, azimuthTracks / sA);
             }
             // Fill combined flux histogram
-            int combine_bin_number = combined_histogram_->FindBin((i + 0.5) * zenith_width * angle_conversion_,
-                                                                  (j + 0.5) * azimuth_width * angle_conversion_);
-            double combined_tracks = combined_histogram_->GetBinContent(combine_bin_number);
+            int combined_bin_number = combined_histogram_->FindBin((j + 0.5) * azimuth_width * angle_conversion_,
+                                                                   (i + 0.5) * zenith_width * angle_conversion_);
+            double combined_tracks = combined_histogram_->GetBinContent(combined_bin_number);
             double sA = solidAngle(i * zenith_width, (i + 1) * zenith_width, j * azimuth_width, (j + 1) * azimuth_width);
-            combined_flux_->SetBinContent(combine_bin_number, combined_tracks / sA);
+            combined_flux_->SetBinContent(combined_bin_number, combined_tracks / sA);
         }
         // Fill zenith flux histogram
         int zenith_bin_number = zenith_histogram_->FindBin((i + 0.5) * zenith_width * angle_conversion_);
