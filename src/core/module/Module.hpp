@@ -144,13 +144,31 @@ namespace corryvreckan {
          * @brief Get list of all detectors this module acts on
          * @return List of all detectors for this module
          */
-        std::vector<std::shared_ptr<Detector>> get_detectors() { return m_detectors; };
+        std::vector<std::shared_ptr<Detector>> get_detectors() const { return m_detectors; };
+
+        /**
+         * @brief Get list of all regular detectors this module acts on.
+         * Regular detectors are those with \ref DetectorRole set to either NONE or REFERENCE. With the parameter, also those
+         * with role DUT can be added.
+         * @param include_duts Also include detectors with role DUT in the list
+         * @return List of all detectors for this module without special role
+         */
+        std::vector<std::shared_ptr<Detector>> get_regular_detectors(bool include_duts) const;
 
         /**
          * @brief Get the number of detectors this module takes care of
          * @return Number of detectors to act on
          */
-        std::size_t num_detectors() { return m_detectors.size(); };
+        std::size_t num_detectors() const { return m_detectors.size(); };
+
+        /**
+         * @brief Get the number of regular detectors this module takes care of
+         * Regular detectors are those with \ref DetectorRole set to either NONE or REFERENCE. With the parameter, also those
+         * with role DUT can be added.
+         * @param include_duts Also include detectors with role DUT in the list
+         * @return Number of regular detectors to act on
+         */
+        std::size_t num_regular_detectors(bool include_duts) const { return get_regular_detectors(include_duts).size(); };
 
         /**
          * @brief Get a specific detector, identified by its name
@@ -158,26 +176,26 @@ namespace corryvreckan {
          * @return Pointer to the requested detector
          * @throws ModuleError if detector with given name is not found for this module
          */
-        std::shared_ptr<Detector> get_detector(std::string name);
+        std::shared_ptr<Detector> get_detector(const std::string& name) const;
 
         /**
          * @brief Get the reference detector for this setup
          * @return Pointer to the reference detector
          */
-        std::shared_ptr<Detector> get_reference();
+        std::shared_ptr<Detector> get_reference() const;
 
         /**
          * @brief Get list of dut detectors this module acts on
          * @return List of dut detectors for this module
          */
-        std::vector<std::shared_ptr<Detector>> get_duts();
+        std::vector<std::shared_ptr<Detector>> get_duts() const;
 
         /**
          * @brief Check if this module should act on a given detector
          * @param  name Name of the detector to check
          * @return True if detector is known to this module, false if detector is unknown.
          */
-        bool has_detector(std::string name);
+        bool has_detector(const std::string& name) const;
 
     private:
         /**

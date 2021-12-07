@@ -105,6 +105,17 @@ std::string Module::createOutputFile(const std::string& path, const std::string&
     return file;
 }
 
+std::vector<std::shared_ptr<Detector>> Module::get_regular_detectors(bool include_duts) const {
+    std::vector<std::shared_ptr<Detector>> detectors;
+    for(const auto& det : m_detectors) {
+        if(!det->hasRole(DetectorRole::PASSIVE) && !det->hasRole(DetectorRole::AUXILIARY) &&
+           (include_duts || !det->hasRole(DetectorRole::DUT))) {
+            detectors.push_back(det);
+        }
+    }
+    return detectors;
+}
+
 /**
  * @throws InvalidModuleActionException If this method is called from the constructor or destructor
  * @warning Cannot be used from the constructor, because the instantiation logic has not finished yet
@@ -123,7 +134,7 @@ void Module::set_ROOT_directory(TDirectory* directory) {
     directory_ = directory;
 }
 
-std::shared_ptr<Detector> Module::get_detector(std::string name) {
+std::shared_ptr<Detector> Module::get_detector(const std::string& name) const {
     auto it = find_if(
         m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->getName() == name; });
     if(it == m_detectors.end()) {
@@ -133,11 +144,11 @@ std::shared_ptr<Detector> Module::get_detector(std::string name) {
     return (*it);
 }
 
-std::shared_ptr<Detector> Module::get_reference() {
+std::shared_ptr<Detector> Module::get_reference() const {
     return m_reference;
 }
 
-std::vector<std::shared_ptr<Detector>> Module::get_duts() {
+std::vector<std::shared_ptr<Detector>> Module::get_duts() const {
     std::vector<std::shared_ptr<Detector>> duts;
     for_each(m_detectors.begin(), m_detectors.end(), [&duts](std::shared_ptr<Detector> obj) {
         if(obj->isDUT())
@@ -146,7 +157,7 @@ std::vector<std::shared_ptr<Detector>> Module::get_duts() {
     return duts;
 }
 
-bool Module::has_detector(std::string name) {
+bool Module::has_detector(const std::string& name) const {
     auto it = find_if(
         m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->getName() == name; });
     if(it == m_detectors.end()) {

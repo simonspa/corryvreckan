@@ -47,7 +47,7 @@ TrackingSpatial::TrackingSpatial(Configuration& config, std::vector<std::shared_
     rejectByROI = config_.get<bool>("reject_by_roi");
 
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", config_, get_detectors());
+    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", config_, get_regular_detectors(true));
 }
 
 void TrackingSpatial::initialize() {
@@ -67,18 +67,8 @@ void TrackingSpatial::initialize() {
     trackAngleY = new TH1F("trackAngleY", title.c_str(), 2000, -0.01, 0.01);
 
     // Loop over all planes
-    for(auto& detector : get_detectors()) {
+    for(auto& detector : get_regular_detectors(!excludeDUT)) {
         auto detectorID = detector->getName();
-
-        // Do not create plots for detectors not participating in the tracking:
-        if(excludeDUT && detector->isDUT()) {
-            continue;
-        }
-
-        // Do not created plots for auxiliary detectors:
-        if(detector->isAuxiliary()) {
-            continue;
-        }
 
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detectorID.c_str());
@@ -106,7 +96,7 @@ StatusCode TrackingSpatial::run(const std::shared_ptr<Clipboard>& clipboard) {
     // Loop over all detectors and get clusters
     double minZ = std::numeric_limits<double>::max();
     std::string seedPlane;
-    for(auto& detector : get_detectors()) {
+    for(auto& detector : get_regular_detectors(!excludeDUT)) {
         string detectorID = detector->getName();
 
         // Get the clusters
@@ -169,12 +159,6 @@ StatusCode TrackingSpatial::run(const std::shared_ptr<Clipboard>& clipboard) {
                 continue;
             }
 
-            // Check if the DUT should be excluded and obey:
-            if(excludeDUT && detector->isDUT()) {
-                LOG(TRACE) << "Exclude DUT.";
-                continue;
-            }
-
             // Get the closest neighbor
             LOG(DEBUG) << "Searching for nearest cluster on device " << detectorID;
             Cluster* closestCluster = trees[detectorID].getClosestSpaceNeighbor(cluster).get();
@@ -217,7 +201,7 @@ StatusCode TrackingSpatial::run(const std::shared_ptr<Clipboard>& clipboard) {
 
         if(rejectByROI && track->isFitted()) {
             // check if the track is within ROI for all detectors
-            auto ds = get_detectors();
+            auto ds = get_regular_detectors(!excludeDUT);
             auto out_of_roi =
                 std::find_if(ds.begin(), ds.end(), [track](const auto& d) { return !d->isWithinROI(track.get()); });
             if(out_of_roi != ds.end()) {

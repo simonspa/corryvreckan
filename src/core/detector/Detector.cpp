@@ -32,8 +32,12 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
     }
 
     // Auxiliary devices cannot hold other roles:
-    if(static_cast<bool>(m_role & DetectorRole::AUXILIARY) && m_role != DetectorRole::AUXILIARY) {
+    if(hasRole(DetectorRole::AUXILIARY) && m_role != DetectorRole::AUXILIARY) {
         throw InvalidValueError(config, "role", "Auxiliary devices cannot hold any other detector role");
+    }
+
+    if(hasRole(DetectorRole::PASSIVE) && m_role != DetectorRole::PASSIVE) {
+        throw InvalidValueError(config, "role", "Passive detector cannot hold any other role");
     }
 
     m_detectorName = config.getName();
@@ -105,6 +109,14 @@ bool Detector::isDUT() const {
 
 bool Detector::isAuxiliary() const {
     return static_cast<bool>(m_role & DetectorRole::AUXILIARY);
+}
+
+DetectorRole Detector::getRoles() const {
+    return m_role;
+}
+
+bool Detector::hasRole(DetectorRole role) const {
+    return static_cast<bool>(m_role & role);
 }
 
 // Function to set the channel maskfile

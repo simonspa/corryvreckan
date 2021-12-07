@@ -179,11 +179,11 @@ void AlignmentTrackChi2::finalize(const std::shared_ptr<ReadonlyClipboard>& clip
         LOG_PROGRESS(STATUS, "alignment_track") << "Alignment iteration " << (iteration + 1) << " of " << nIterations;
 
         int det = 0;
-        for(auto& detector : get_detectors()) {
+        for(auto& detector : get_regular_detectors(false)) {
             string detectorID = detector->getName();
 
             // Do not align the reference plane
-            if(detector->isReference() || detector->isDUT() || detector->isAuxiliary()) {
+            if(detector->isReference()) {
                 LOG(DEBUG) << "Skipping detector " << detector->getName();
                 continue;
             }
@@ -275,9 +275,9 @@ void AlignmentTrackChi2::finalize(const std::shared_ptr<ReadonlyClipboard>& clip
     LOG_PROGRESS(STATUS, "alignment_track") << "Alignment finished, " << nIterations << " iteration.";
 
     // Now list the new alignment parameters
-    for(auto& detector : get_detectors()) {
+    for(auto& detector : get_regular_detectors(false)) {
         // Do not align the reference plane
-        if(detector->isReference() || detector->isDUT() || detector->isAuxiliary()) {
+        if(detector->isReference()) {
             continue;
         }
 
