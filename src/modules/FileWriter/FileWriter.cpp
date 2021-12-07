@@ -60,6 +60,8 @@ void FileWriter::initialize() {
 }
 
 StatusCode FileWriter::run(const std::shared_ptr<Clipboard>& clipboard) {
+    // Acquire ROOT TProcessID resource lock and reset PIDs:
+    auto root_lock = root_process_lock();
 
     if(!clipboard->isEventDefined()) {
         ModuleError("No Clipboard event defined, cannot continue");
