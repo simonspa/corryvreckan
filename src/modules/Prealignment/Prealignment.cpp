@@ -22,7 +22,7 @@ Prealignment::Prealignment(Configuration& config, std::shared_ptr<Detector> dete
 
     config_.setDefault<double>("max_correlation_rms", Units::get<double>(6, "mm"));
     config_.setDefault<double>("damping_factor", 1.0);
-    config_.setDefault<std::string>("method", "mean");
+    config_.setDefault<PrealignMethod>("method", PrealignMethod::MEAN);
     config_.setDefault<int>("fit_range_rel", 500);
     config_.setDefault<double>("range_abs", Units::get<double>(10, "mm"));
 
@@ -36,8 +36,7 @@ Prealignment::Prealignment(Configuration& config, std::shared_ptr<Detector> dete
     max_correlation_rms = config_.get<double>("max_correlation_rms");
     damping_factor = config_.get<double>("damping_factor");
     range_abs = config_.get<double>("range_abs");
-    method = config_.get<std::string>("method");
-    std::transform(method.begin(), method.end(), method.begin(), ::tolower);
+    method = config_.get<PrealignMethod>("method");
     fit_range_rel = config_.get<int>("fit_range_rel");
 
     LOG(DEBUG) << "Setting max_correlation_rms to : " << max_correlation_rms;
@@ -135,8 +134,8 @@ void Prealignment::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
         double shift_X = 0.;
         double shift_Y = 0.;
 
-        LOG(INFO) << "Using prealignment method: " << method;
-        if(method == "gauss_fit") {
+        LOG(INFO) << "Using prealignment method: " << corryvreckan::to_string(method);
+        if(method == PrealignMethod::GAUSS_FIT) {
             int binMaxX = correlationX->GetMaximumBin();
             double fit_low_x =
                 correlationX->GetXaxis()->GetBinCenter(binMaxX) - m_detector->getSpatialResolution().x() * fit_range_rel;
@@ -158,16 +157,14 @@ void Prealignment::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
             correlationY->Fit("gaus", "Q", "", fit_low_y, fit_high_y);
             shift_X = correlationX->GetFunction("gaus")->GetParameter(1);
             shift_Y = correlationY->GetFunction("gaus")->GetParameter(1);
-        } else if(method == "mean") {
+        } else if(method == PrealignMethod::MEAN) {
             shift_X = correlationX->GetMean();
             shift_Y = correlationY->GetMean();
-        } else if(method == "maximum") {
+        } else if(method == PrealignMethod::MAXIMUM) {
             int binMaxX = correlationX->GetMaximumBin();
             shift_X = correlationX->GetXaxis()->GetBinCenter(binMaxX);
             int binMaxY = correlationY->GetMaximumBin();
             shift_Y = correlationY->GetXaxis()->GetBinCenter(binMaxY);
-        } else {
-            throw InvalidValueError(config_, "method", "Invalid prealignment method");
         }
 
         LOG(DEBUG) << "Shift (without damping factor)" << m_detector->getName()
