@@ -11,11 +11,9 @@
 #ifndef AnalysisParticleFlux_H
 #define AnalysisParticleFlux_H 1
 
-#include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <cmath>
-#include <iostream>
 #include "core/module/Module.hpp"
 #include "objects/Track.hpp"
 
