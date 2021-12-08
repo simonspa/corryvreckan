@@ -9,6 +9,8 @@
  */
 
 #include "EventLoaderWaveform.h"
+#include "objects/Waveform.hpp"
+#include "objects/SpidrSignal.hpp"
 
 using namespace corryvreckan;
 
@@ -16,7 +18,10 @@ EventLoaderWaveform::EventLoaderWaveform(Configuration& config, std::shared_ptr<
     : Module(config, detector), m_detector(detector) {
 
     m_inputDirectory = config_.getPath("input_directory");
-    m_channels = config_.getArray("channels");
+    //m_channels = m_detector->getConfiguration().getArray<std::string>("channels");
+    m_channels = config_.getArray<std::string>("channels");
+
+    LOG(DEBUG) << "Directory " << m_inputDirectory;
 }
 
 void EventLoaderWaveform::initialize() {
@@ -27,16 +32,44 @@ void EventLoaderWaveform::initialize() {
 
     // Initialise member variables
     m_eventNumber = 0;
-    m_loader = std::make_unique(m_inputDirectory, m_channels);
+    m_triggerNumber = 1;
+    m_loader = std::make_unique<DirectoryLoader>(m_inputDirectory, m_channels);
 }
 
-StatusCode EventLoaderWaveform::run(const std::shared_ptr<Clipboard>&) {
+StatusCode EventLoaderWaveform::run(const std::shared_ptr<Clipboard>& clipboard) {
 
-    // Loop over all detectors
-    for(auto& detector : get_detectors()) {
-        // Get the detector name
-        std::string detectorName = detector->getName();
-        LOG(DEBUG) << "Detector with name " << detectorName;
+    auto reference = get_reference();
+    auto referenceSpidrSignals = clipboard->getData<SpidrSignal>(reference->getName());
+
+    WaveformVector deviceData;
+
+    for(const auto &spidr : referenceSpidrSignals) {
+        if(spidr->trigger() == m_triggerNumber) {
+            auto waveform = m_loader->read();
+            m_triggerNumber++;
+
+            for(const auto &w : waveform) {
+                deviceData.emplace_back(std::make_shared<Waveform>("", spidr->timestamp(), spidr->trigger(), w));
+                LOG(DEBUG) << "Loading waveform for trigger " << spidr->trigger();
+            }
+        } else if(spidr->trigger() > m_triggerNumber) {
+            while(spidr->trigger() > m_triggerNumber) {
+                LOG(DEBUG) << "Skipping waveform for trigger " << m_triggerNumber; 
+                auto w = m_loader->read();
+                m_triggerNumber++;
+            }
+            auto waveform = m_loader->read();
+            m_triggerNumber++;
+
+            for(const auto &w : waveform) {
+                deviceData.emplace_back(std::make_shared<Waveform>("", spidr->timestamp(), spidr->trigger(), w));
+                LOG(DEBUG) << "Loading waveform for trigger " << spidr->trigger();
+            }
+        }
+    }
+
+    if(!deviceData.empty()) {
+        clipboard->putData(deviceData, m_detector->getName());
     }
 
     // Increment event counter

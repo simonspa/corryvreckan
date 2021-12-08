@@ -59,6 +59,7 @@ namespace corryvreckan {
         std::unique_ptr<DirectoryLoader> m_loader;
 
         int m_eventNumber;
+        size_t m_triggerNumber;
     };
 
 } // namespace corryvreckan

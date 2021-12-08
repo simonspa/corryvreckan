@@ -7,39 +7,37 @@
 #include <fstream>
 #include <cstdint>
 
-struct Waveform {
-  std::vector<double> waveform;
-  double x0, dx, timestamp;
-};
+#include "objects/Waveform.hpp"
 
-struct Param {
-  double x0, dx, y0, dy;
-};
+namespace corryvreckan {
+  class DirectoryLoader {
+    struct Param {
+      double x0, dx, y0, dy;
+    };
 
-class DirectoryLoader {
-  public:
-    DirectoryLoader(std::string&& dir, std::vector<std::string> channels);
+    public:
+      DirectoryLoader(const std::string& dir, std::vector<std::string> ch);
 
-    std::vector<Waveform> read(void);
-    size_t get_segments();
+      std::vector<Waveform::waveform_t> read(void);
+      size_t get_segments();
 
-    bool end(void);
+      bool end(void);
 
-  private:
-    void open_files(void);
-    Param read_preamble(std::filesystem::path&& file);
-    std::vector<Waveform> read_segment(size_t s);
-    double get_timestamp(size_t s);
+    private:
+      void open_files(void);
+      Param read_preamble(const std::filesystem::path& file);
+      std::vector<Waveform::waveform_t> read_segment(size_t s);
+      double get_timestamp(size_t s);
 
-    std::vector<std::string> channels;
-    std::vector<std::ifstream> files;
-    std::ifstream timestamps;
-    std::vector<Param> param;
+      std::filesystem::path path;
+      std::vector<std::string> channels;
+      std::vector<std::ifstream> files;
+      std::ifstream timestamps;
+      std::vector<Param> param;
 
-    size_t points, segments, segment, count;
-    bool _end = false;
-
-    std::filesystem::path path;
-};
+      size_t points, segments, segment, count;
+      bool _end = false;
+  };
+}
 
 #endif
