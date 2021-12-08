@@ -49,7 +49,7 @@ void AnalysisParticleFlux::initialize() {
     std::string label = (output_plots_in_degrees_ ? "#circ" : "rad");
     angle_unit_ = (output_plots_in_degrees_ ? "deg" : "rad");
 
-    // Initialise histograms
+    // Initialize histograms
     azimuth_histogram_ = new TH1D("azimuth",
                                   ("Azimuthal distribution of tracks;#varphi [" + label + "];# tracks").c_str(),
                                   azimuth_granularity_,
@@ -70,7 +70,7 @@ void AnalysisParticleFlux::initialize() {
                                    static_cast<double>(Units::convert(zenith_high_, angle_unit_)));
     combined_histogram_->SetOption("COLZ");
 
-    // Initialise flux histograms
+    // Initialize flux histograms
     azimuth_flux_ = static_cast<TH1D*>(azimuth_histogram_->Clone());
     azimuth_flux_->SetNameTitle("azimuth_flux",
                                 ("Azimuthal flux distribution;#varphi [" + label + "];# tracks / sr").c_str());
@@ -87,11 +87,11 @@ void AnalysisParticleFlux::initialize() {
         // We can only calculate efficiencies if there are more than 2 detector layers
         for(auto& detector : detectors) {
             auto detectorID = detector->getName();
-
+            // New directory for every detector
             TDirectory* directory = getROOTDirectory();
             TDirectory* local_directory = directory->mkdir(detectorID.c_str());
             local_directory->cd();
-
+            // Initializing histos
             azimuth_efficiency_[detectorID] = static_cast<TH1D*>(azimuth_histogram_->Clone());
             azimuth_efficiency_[detectorID]->SetNameTitle(
                 "azimuth_efficiency",
@@ -115,9 +115,11 @@ void AnalysisParticleFlux::initialize() {
  * @brief [Calculate zenith and azimuth, fill histograms]
  */
 void AnalysisParticleFlux::calculateAngles(Track* track) {
+    // Calculate angles
     ROOT::Math::XYZVector track_direction = track->getDirection(track_intercept_);
     double phi = static_cast<double>(Units::convert((track_direction.Phi() + ROOT::Math::Pi()), angle_unit_));
     double theta = static_cast<double>(Units::convert(track_direction.theta(), angle_unit_));
+    // Fill track histos
     azimuth_histogram_->Fill(phi);
     zenith_histogram_->Fill(theta);
     combined_histogram_->Fill(phi, theta);
@@ -127,6 +129,7 @@ void AnalysisParticleFlux::calculateAngles(Track* track) {
         for(auto& detector : detectors) {
             auto detectorID = detector->getName();
             if(track->hasDetector(detectorID)) {
+                // Fill tracks in efficiency histos
                 azimuth_efficiency_[detectorID]->Fill(phi);
                 zenith_efficiency_[detectorID]->Fill(theta);
                 combined_efficiency_[detectorID]->Fill(phi, theta);
@@ -135,7 +138,7 @@ void AnalysisParticleFlux::calculateAngles(Track* track) {
     };
 }
 /**
- * @brief [Get solid angle for given bin (inputs in rad)]
+ * @brief [Get solid angle for given bin (inputs in rad, output in sr)]
  */
 double AnalysisParticleFlux::solidAngle(double zenithLow, double zenithHigh, double azimuthLow, double azimuthHigh) const {
     return (azimuthHigh - azimuthLow) * (std::cos(zenithLow) - std::cos(zenithHigh));
