@@ -208,6 +208,9 @@ void AnalysisEfficiency::initialize() {
                                      m_detector->nPixels().Y() - 0.5);
     efficiencyVsTime = new TEfficiency("efficiencyVsTime", "Efficiency vs. time; time [s]; #epsilon", 3000, 0, 3000);
 
+    efficiencyVsTime->SetDirectory(this->getROOTDirectory());
+    efficiencyRows->SetDirectory(this->getROOTDirectory());
+    efficiencyColumns->SetDirectory(this->getROOTDirectory());
     hTrackTimeToPrevHit_matched =
         new TH1D("trackTimeToPrevHit_matched", "trackTimeToPrevHit_matched;time to prev hit [us];# events", 1e6, 0, 1e6);
     hTrackTimeToPrevHit_notmatched = new TH1D(
