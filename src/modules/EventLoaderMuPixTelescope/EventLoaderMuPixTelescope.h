@@ -94,7 +94,9 @@ namespace corryvreckan {
         std::map<std::string, TH2F*> raw_fpga_vs_chip;
         std::map<std::string, TH2F*> raw_fpga_vs_chip_corrected;
         std::map<std::string, TH1F*> chip_delay;
-        static std::map<std::string, int> typeString_to_typeID;
+        std::map<std::string, TH2F*> ts1_ts2;
+
+      static std::map<std::string, int> typeString_to_typeID;
     };
 
 } // namespace corryvreckan
