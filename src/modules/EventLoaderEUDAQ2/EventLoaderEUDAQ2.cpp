@@ -246,7 +246,17 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
         // Create new StandardEvent and attempt to decode the raw event
         auto decoded_event = eudaq::StandardEvent::MakeShared();
         if(eudaq::StdEventConverter::Convert(event, decoded_event, eudaq_config_)) {
-            // Decoding succedded, let's add it to the FIFO:
+            // Decoding succedded, let's add it to the FIFO with all its subevents:
+            for(const auto& subevent : decoded_event->GetSubEvents()) {
+                // Make sure this is a decoded event:
+                auto decoded_subevent = std::dynamic_pointer_cast<const eudaq::StandardEvent>(subevent);
+                if(decoded_subevent == nullptr) {
+                    continue;
+                }
+
+                // Remove const'ness - we might have to alter it later on:
+                events_decoded_.push(std::const_pointer_cast<eudaq::StandardEvent>(decoded_subevent));
+            }
             events_decoded_.push(decoded_event);
 
             // Read and store tag information:
