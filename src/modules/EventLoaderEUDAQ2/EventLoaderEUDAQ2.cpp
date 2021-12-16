@@ -211,7 +211,7 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_sorted_std_eve
 }
 
 std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
-    auto stdevt = eudaq::StandardEvent::MakeShared();
+    std::shared_ptr<eudaq::StandardEvent> stdevt;
     bool decoding_failed = true;
     do {
         // Create new StandardEvent
