@@ -283,8 +283,8 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
 
-    double pitch_x = m_detector->getPitch().X();
-    double pitch_y = m_detector->getPitch().Y();
+    auto pitch_x = m_detector->getPitch().X();
+    auto pitch_y = m_detector->getPitch().Y();
 
     // Loop over all tracks
     for(auto& track : tracks) {
@@ -368,10 +368,10 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
 
         // Calculate in-pixel position of track in microns
         auto inpixel = m_detector->inPixel(localIntercept);
-        double xmod = inpixel.X();
-        double ymod = inpixel.Y();
-        double xmod_um = xmod * 1000.; // mm->um (for plotting)
-        double ymod_um = ymod * 1000.; // mm->um (for plotting)
+        auto xmod = inpixel.X();
+        auto ymod = inpixel.Y();
+        auto xmod_um = xmod * 1000.; // mm->um (for plotting)
+        auto ymod_um = ymod * 1000.; // mm->um (for plotting)
 
         bool isWithinInPixelROI =
             (pitch_x - fabs(xmod * 2.) > m_inpixelEdgeCut.x()) && (pitch_y - fabs(ymod * 2.) > m_inpixelEdgeCut.y());
