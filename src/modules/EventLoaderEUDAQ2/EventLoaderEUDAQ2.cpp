@@ -211,13 +211,11 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_sorted_std_eve
 }
 
 std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
-    std::shared_ptr<eudaq::StandardEvent> stdevt;
-    bool decoding_failed = true;
-    do {
-        // Create new StandardEvent
-        stdevt = eudaq::StandardEvent::MakeShared();
 
-        // Check if we need a new full event or if we still have some in the cache:
+    // Check if we still have a decoded event in the cache or if we need to read and decode new ones:
+    while(events_decoded_.empty()) {
+
+        // Check if we need a new raw event or if we still have some in the cache:
         if(events_raw_.empty()) {
             LOG(TRACE) << "Reading new EUDAQ event from file";
             auto new_event = reader_->GetNextEvent();
@@ -245,15 +243,24 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
             continue;
         }
 
-        decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, eudaq_config_);
+        // Create new StandardEvent and attempt to decode the raw event
+        auto decoded_event = eudaq::StandardEvent::MakeShared();
+        if(eudaq::StdEventConverter::Convert(event, decoded_event, eudaq_config_)) {
+            // Decoding succedded, let's add it to the FIFO:
+            events_decoded_.push(decoded_event);
 
-        // Read and store tag information:
-        if(get_tag_histograms_ || get_tag_profiles_) {
-            retrieve_event_tags(stdevt);
+            // Read and store tag information:
+            if(get_tag_histograms_ || get_tag_profiles_) {
+                retrieve_event_tags(decoded_event);
+            }
+            LOG(DEBUG) << event->GetDescription() << ": decoding succeeded";
+        } else {
+            LOG(DEBUG) << event->GetDescription() << ": decoding failed";
         }
+    }
 
-        LOG(DEBUG) << event->GetDescription() << ": EventConverter returned " << (decoding_failed ? "false" : "true");
-    } while(decoding_failed);
+    auto stdevt = events_decoded_.front();
+    events_decoded_.pop();
     return stdevt;
 }
 

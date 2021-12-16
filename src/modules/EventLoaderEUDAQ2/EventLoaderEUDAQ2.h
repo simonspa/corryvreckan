@@ -124,6 +124,7 @@ namespace corryvreckan {
 
         // Buffer of undecoded EUDAQ events
         std::queue<eudaq::EventSPC> events_raw_;
+        std::queue<eudaq::StandardEventSP> events_decoded_;
 
         // Currently processed decoded EUDAQ StandardEvent:
         std::shared_ptr<eudaq::StandardEvent> event_;
