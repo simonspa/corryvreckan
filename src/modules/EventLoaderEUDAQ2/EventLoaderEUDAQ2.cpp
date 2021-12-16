@@ -251,6 +251,8 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
                 // Make sure this is a decoded event:
                 auto decoded_subevent = std::dynamic_pointer_cast<const eudaq::StandardEvent>(subevent);
                 if(decoded_subevent == nullptr) {
+                    LOG(WARNING) << "Decoded EUDAQ2 StandardEvent " << decoded_event->GetDescription()
+                                 << " contained undecoded subevent - discarded";
                     continue;
                 }
 
