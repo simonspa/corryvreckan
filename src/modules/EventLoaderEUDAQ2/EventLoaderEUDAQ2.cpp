@@ -218,7 +218,7 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
         stdevt = eudaq::StandardEvent::MakeShared();
 
         // Check if we need a new full event or if we still have some in the cache:
-        if(events_.empty()) {
+        if(events_raw_.empty()) {
             LOG(TRACE) << "Reading new EUDAQ event from file";
             auto new_event = reader_->GetNextEvent();
             if(!new_event) {
@@ -226,20 +226,18 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
                 throw EndOfFile();
             }
             // Build buffer from all sub-events:
-            events_ = new_event->GetSubEvents();
+            auto subevents = new_event->GetSubEvents();
+            events_raw_ = std::queue(std::deque(subevents.begin(), subevents.end()));
             // The main event might also contain data, so add it to the buffer:
-            if(events_.empty()) {
-                events_.push_back(new_event);
+            if(events_raw_.empty()) {
+                events_raw_.push(new_event);
             }
         }
-        LOG(TRACE) << "Buffer contains " << events_.size() << " (sub-) events:";
-        for(auto& evt : events_) {
-            LOG(TRACE) << "  (sub-) event of type " << evt->GetDescription();
-        }
+        LOG(TRACE) << "Buffer contains " << events_raw_.size() << " (sub-) events:";
 
-        // Retrieve first and remove from buffer:
-        auto event = events_.front();
-        events_.erase(events_.begin());
+        // Retrieve first and remove from raw event buffer:
+        auto event = events_raw_.front();
+        events_raw_.pop();
 
         // If this is a Begin-of-Run event and we should ignore it, please do so:
         if(event->IsBORE() && ignore_bore_) {
