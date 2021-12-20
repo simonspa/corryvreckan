@@ -60,6 +60,8 @@ void FileWriter::initialize() {
 }
 
 StatusCode FileWriter::run(const std::shared_ptr<Clipboard>& clipboard) {
+    // Acquire ROOT TProcessID resource lock and reset PIDs:
+    auto root_lock = root_process_lock();
 
     if(!clipboard->isEventDefined()) {
         ModuleError("No Clipboard event defined, cannot continue");
@@ -137,6 +139,7 @@ StatusCode FileWriter::run(const std::shared_ptr<Clipboard>& clipboard) {
 
                 // Fill the branch vector
                 for(auto& object : *objects) {
+                    object->petrifyHistory();
                     ++write_cnt_;
                     write_list_[index_tuple]->push_back(object.get());
                 }

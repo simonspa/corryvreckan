@@ -59,7 +59,7 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint global() const { return m_global; }
         ROOT::Math::XYZPoint local() const { return m_local; }
 
-        size_t size() const { return m_pixels.size(); }
+        size_t size() const { return pixels_.size(); }
         size_t columnWidth() const { return m_columnWidth; }
         size_t rowWidth() const { return m_rowWidth; }
         std::vector<const Pixel*> pixels() const;
@@ -97,9 +97,12 @@ namespace corryvreckan {
          */
         void print(std::ostream& out) const override;
 
+        void loadHistory() override;
+        void petrifyHistory() override;
+
     private:
         // Member variables
-        std::vector<TRef> m_pixels;
+        std::vector<PointerWrapper<Pixel>> pixels_;
         double m_column;
         double m_row;
         double m_charge;
@@ -115,7 +118,7 @@ namespace corryvreckan {
         std::map<int, bool> m_columnHits;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Cluster, 13)
+        ClassDefOverride(Cluster, 14)
     };
 
     // Vector type declaration

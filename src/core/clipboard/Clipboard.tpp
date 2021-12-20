@@ -10,6 +10,8 @@
 
 #include "exceptions.h"
 
+#include <algorithm>
+
 namespace corryvreckan {
 
     template <typename T> void Clipboard::putData(std::vector<std::shared_ptr<T>> objects, const std::string& key) {
