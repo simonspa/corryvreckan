@@ -10,6 +10,8 @@
 
 #include "AnalysisParticleFlux.h"
 
+#include <TDirectory.h>
+
 using namespace corryvreckan;
 
 AnalysisParticleFlux::AnalysisParticleFlux(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
