@@ -32,7 +32,7 @@ namespace corryvreckan {
         /**
          * @brief Constructor for this unique module
          * @param config Configuration object for this module as retrieved from the steering file
-         * @param detectors Vector of pointers to the detectors
+         * @param detector Shared pointer to detector of this module
          */
         EventLoaderMuPixTelescope(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
         ~EventLoaderMuPixTelescope() {}

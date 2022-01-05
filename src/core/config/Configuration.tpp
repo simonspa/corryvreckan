@@ -166,7 +166,7 @@ namespace corryvreckan {
         }
     }
 
-    template <typename T> void Configuration::setMatrix(const std::string& key, const Matrix<T>& val) {
+    template <typename T> void Configuration::setMatrix(const std::string& key, const Matrix<T>& val, bool mark_used) {
         // NOTE: not the most elegant way to support arrays
         if(val.empty()) {
             return;
@@ -185,23 +185,27 @@ namespace corryvreckan {
         str.pop_back();
         str += "]";
         config_[key] = str;
+        used_keys_.registerMarker(key);
+        if(mark_used) {
+            used_keys_.markUsed(key);
+        }
     }
 
     template <typename T> void Configuration::setDefault(const std::string& key, const T& val) {
         if(!has(key)) {
-            set<T>(key, val);
+            set<T>(key, val, true);
         }
     }
 
     template <typename T> void Configuration::setDefaultArray(const std::string& key, const std::vector<T>& val) {
         if(!has(key)) {
-            setArray<T>(key, val);
+            setArray<T>(key, val, true);
         }
     }
 
     template <typename T> void Configuration::setDefaultMatrix(const std::string& key, const Matrix<T>& val) {
         if(!has(key)) {
-            setMatrix<T>(key, val);
+            setMatrix<T>(key, val, true);
         }
     }
 } // namespace corryvreckan

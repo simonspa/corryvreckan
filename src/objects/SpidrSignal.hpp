@@ -22,6 +22,8 @@ namespace corryvreckan {
         // Constructors and destructors
         SpidrSignal(){};
         SpidrSignal(std::string type, double timestamp) : Object(timestamp), m_type(type){};
+        SpidrSignal(std::string type, double timestamp, size_t trigger)
+            : Object(timestamp), m_type(type), m_triggerNumber(trigger){};
 
         /**
          * @brief Static member function to obtain base class for storage on the clipboard.
@@ -36,13 +38,18 @@ namespace corryvreckan {
         // Set properties
         void type(std::string type) { m_type = type; }
         std::string type() const { return m_type; }
+        size_t trigger() const { return m_triggerNumber; }
+
+        void loadHistory() override{};
+        void petrifyHistory() override{};
+
+        // ROOT I/O class definition - update version number when you change this class!
+        ClassDefOverride(SpidrSignal, 4);
 
     protected:
         // Member variables
         std::string m_type;
-
-        // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(SpidrSignal, 3)
+        size_t m_triggerNumber;
     };
 
     // Vector type declaration

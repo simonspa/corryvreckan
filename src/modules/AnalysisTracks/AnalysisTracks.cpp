@@ -18,10 +18,7 @@ AnalysisTracks::AnalysisTracks(Configuration& config, std::vector<std::shared_pt
 void AnalysisTracks::initialize() {
 
     std::string title;
-    for(auto& detector : get_detectors()) {
-        if(detector->isAuxiliary()) {
-            continue;
-        }
+    for(auto& detector : get_regular_detectors(true)) {
         LOG(DEBUG) << "Initialise for detector " + detector->getName();
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detector->getName().c_str());
@@ -45,10 +42,7 @@ StatusCode AnalysisTracks::run(const std::shared_ptr<Clipboard>& clipboard) {
     if(!tracks.size()) {
         return StatusCode::Success;
     }
-    for(auto d : get_detectors()) {
-        if(d->isAuxiliary()) {
-            continue;
-        }
+    for(auto d : get_regular_detectors(true)) {
         clusters_vs_tracks_.at(d->getName())
             ->Fill(static_cast<double>(tracks.size()),
                    static_cast<double>(clipboard->getData<Cluster>(d->getName()).size()));
@@ -57,10 +51,7 @@ StatusCode AnalysisTracks::run(const std::shared_ptr<Clipboard>& clipboard) {
     std::map<std::string, std::map<std::pair<double, double>, int>> track_clusters;
     std::map<std::string, std::vector<XYZPoint>> intersects; // local coordinates
     for(auto& track : tracks) {
-        for(auto d : get_detectors()) {
-            if(d->isAuxiliary()) {
-                continue;
-            }
+        for(auto d : get_regular_detectors(true)) {
             intersects[d->getName()].push_back(d->globalToLocal(track->getState(d->getName())));
             if(d->isDUT() || track->getClusterFromDetector(d->getName()) == nullptr) {
                 continue;

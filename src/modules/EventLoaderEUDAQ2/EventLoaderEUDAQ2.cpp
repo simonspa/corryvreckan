@@ -211,14 +211,12 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_sorted_std_eve
 }
 
 std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
-    auto stdevt = eudaq::StandardEvent::MakeShared();
-    bool decoding_failed = true;
-    do {
-        // Create new StandardEvent
-        stdevt = eudaq::StandardEvent::MakeShared();
 
-        // Check if we need a new full event or if we still have some in the cache:
-        if(events_.empty()) {
+    // Check if we still have a decoded event in the cache or if we need to read and decode new ones:
+    while(events_decoded_.empty()) {
+
+        // Check if we need a new raw event or if we still have some in the cache:
+        if(events_raw_.empty()) {
             LOG(TRACE) << "Reading new EUDAQ event from file";
             auto new_event = reader_->GetNextEvent();
             if(!new_event) {
@@ -226,20 +224,18 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
                 throw EndOfFile();
             }
             // Build buffer from all sub-events:
-            events_ = new_event->GetSubEvents();
+            auto subevents = new_event->GetSubEvents();
+            events_raw_ = std::queue(std::deque(subevents.begin(), subevents.end()));
             // The main event might also contain data, so add it to the buffer:
-            if(events_.empty()) {
-                events_.push_back(new_event);
+            if(events_raw_.empty()) {
+                events_raw_.push(new_event);
             }
         }
-        LOG(TRACE) << "Buffer contains " << events_.size() << " (sub-) events:";
-        for(auto& evt : events_) {
-            LOG(TRACE) << "  (sub-) event of type " << evt->GetDescription();
-        }
+        LOG(TRACE) << "Buffer contains " << events_raw_.size() << " (sub-) events:";
 
-        // Retrieve first and remove from buffer:
-        auto event = events_.front();
-        events_.erase(events_.begin());
+        // Retrieve first and remove from raw event buffer:
+        auto event = events_raw_.front();
+        events_raw_.pop();
 
         // If this is a Begin-of-Run event and we should ignore it, please do so:
         if(event->IsBORE() && ignore_bore_) {
@@ -247,15 +243,36 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
             continue;
         }
 
-        decoding_failed = !eudaq::StdEventConverter::Convert(event, stdevt, eudaq_config_);
+        // Create new StandardEvent and attempt to decode the raw event
+        auto decoded_event = eudaq::StandardEvent::MakeShared();
+        if(eudaq::StdEventConverter::Convert(event, decoded_event, eudaq_config_)) {
+            // Decoding succeeded, let's add it to the FIFO with all its subevents:
+            for(const auto& subevent : decoded_event->GetSubEvents()) {
+                // Make sure this is a decoded event:
+                auto decoded_subevent = std::dynamic_pointer_cast<const eudaq::StandardEvent>(subevent);
+                if(decoded_subevent == nullptr) {
+                    LOG(WARNING) << "Decoded EUDAQ2 StandardEvent " << decoded_event->GetDescription()
+                                 << " contained undecoded subevent - discarded";
+                    continue;
+                }
 
-        // Read and store tag information:
-        if(get_tag_histograms_ || get_tag_profiles_) {
-            retrieve_event_tags(stdevt);
+                // Remove const'ness - we might have to alter it later on:
+                events_decoded_.push(std::const_pointer_cast<eudaq::StandardEvent>(decoded_subevent));
+            }
+            events_decoded_.push(decoded_event);
+
+            // Read and store tag information:
+            if(get_tag_histograms_ || get_tag_profiles_) {
+                retrieve_event_tags(decoded_event);
+            }
+            LOG(DEBUG) << event->GetDescription() << ": decoding succeeded";
+        } else {
+            LOG(DEBUG) << event->GetDescription() << ": decoding failed";
         }
+    }
 
-        LOG(DEBUG) << event->GetDescription() << ": EventConverter returned " << (decoding_failed ? "false" : "true");
-    } while(decoding_failed);
+    auto stdevt = events_decoded_.front();
+    events_decoded_.pop();
     return stdevt;
 }
 
@@ -563,6 +580,10 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
             auto new_pixels = get_pixel_data(event_, plane_id);
             hits_ += new_pixels.size();
             pixels.insert(pixels.end(), new_pixels.begin(), new_pixels.end());
+
+            // Add eudaq tags to the event
+            auto eudaq_tags = event_->GetTags();
+            clipboard->getEvent()->addTags(eudaq_tags);
         }
 
         // If this event was after the current event or if we have not enough information, stop reading:
@@ -587,6 +608,11 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
     LOG(DEBUG) << "Triggers on clipboard event: " << event->triggerList().size();
     for(auto& trigger : event->triggerList()) {
         LOG(DEBUG) << "\t ID: " << trigger.first << ", time: " << Units::display(trigger.second, "us");
+    }
+
+    LOG(DEBUG) << "Tags on clipboard event: " << event->tagList().size();
+    for(auto& tag : event->tagList()) {
+        LOG(DEBUG) << "\t Key: " << tag.first << " -> " << tag.second;
     }
 
     // histogram only exists for non-auxiliary detectors:

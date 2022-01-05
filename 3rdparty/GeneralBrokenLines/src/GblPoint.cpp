@@ -11,7 +11,7 @@
  *  \author Claus Kleinwort, DESY, 2011 (Claus.Kleinwort@desy.de)
  *
  *  \copyright
- *  Copyright (c) 2011 - 2017 Deutsches Elektronen-Synchroton,
+ *  Copyright (c) 2011 - 2021 Deutsches Elektronen-Synchroton,
  *  Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY \n\n
  *  This library is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Library General Public License as
@@ -37,10 +37,12 @@ namespace gbl {
     /**
      * Create point on (initial) trajectory. Needs transformation jacobian from previous point.
      * \param [in] aJacobian Transformation jacobian from previous point
+     * \param [in] numMeasReserve number of measurements to reserve (space for)
      */
-    GblPoint::GblPoint(const Matrix5d& aJacobian)
-        : theLabel(0), theOffset(0), p2pJacobian(aJacobian), measDim(0), measPrecMin(0.), transFlag(false),
-          measTransformation(), scatFlag(false), localDerivatives(), globalLabels(), globalDerivatives() {}
+    GblPoint::GblPoint(const Matrix5d& aJacobian, unsigned int numMeasReserve)
+        : theLabel(0), theOffset(0), p2pJacobian(aJacobian), scatFlag(false) {
+        theMeasurements.reserve(numMeasReserve);
+    }
 
 #ifdef GBL_EIGEN_SUPPORT_ROOT
     /// Create a point.
@@ -48,9 +50,7 @@ namespace gbl {
      * Create point on (initial) trajectory. Needs transformation jacobian from previous point.
      * \param [in] aJacobian Transformation jacobian from previous point
      */
-    GblPoint::GblPoint(const TMatrixD& aJacobian)
-        : theLabel(0), theOffset(0), measDim(0), measPrecMin(0.), transFlag(false), measTransformation(), scatFlag(false),
-          localDerivatives(), globalLabels(), globalDerivatives() {
+    GblPoint::GblPoint(const TMatrixD& aJacobian) : theLabel(0), theOffset(0), scatFlag(false) {
 
         for(unsigned int i = 0; i < 5; ++i) {
             for(unsigned int j = 0; j < 5; ++j) {
@@ -76,16 +76,7 @@ namespace gbl {
                                   const TVectorD& aResiduals,
                                   const TVectorD& aPrecision,
                                   double minPrecision) {
-        measDim = aResiduals.GetNrows();
-        measPrecMin = minPrecision;
-        unsigned int iOff = 5 - measDim;
-        for(unsigned int i = 0; i < measDim; ++i) {
-            measResiduals(iOff + i) = aResiduals[i];
-            measPrecision(iOff + i) = aPrecision[i];
-            for(unsigned int j = 0; j < measDim; ++j) {
-                measProjection(iOff + i, iOff + j) = aProjection(i, j);
-            }
-        }
+        theMeasurements.emplace_back(aProjection, aResiduals, aPrecision, minPrecision);
     }
 
     /// Add a measurement to a point.
@@ -102,26 +93,7 @@ namespace gbl {
                                   const TVectorD& aResiduals,
                                   const TMatrixDSym& aPrecision,
                                   double minPrecision) {
-        measDim = aResiduals.GetNrows();
-        measPrecMin = minPrecision;
-        TMatrixDSymEigen measEigen(aPrecision);
-        TMatrixD tmpTransformation(measDim, measDim);
-        tmpTransformation = measEigen.GetEigenVectors();
-        tmpTransformation.T();
-        transFlag = true;
-        TVectorD transResiduals = tmpTransformation * aResiduals;
-        TVectorD transPrecision = measEigen.GetEigenValues();
-        TMatrixD transProjection = tmpTransformation * aProjection;
-        measTransformation.resize(measDim, measDim);
-        unsigned int iOff = 5 - measDim;
-        for(unsigned int i = 0; i < measDim; ++i) {
-            measResiduals(iOff + i) = transResiduals[i];
-            measPrecision(iOff + i) = transPrecision[i];
-            for(unsigned int j = 0; j < measDim; ++j) {
-                measTransformation(i, j) = tmpTransformation(i, j);
-                measProjection(iOff + i, iOff + j) = transProjection(i, j);
-            }
-        }
+        theMeasurements.emplace_back(aProjection, aResiduals, aPrecision, minPrecision);
     }
 
     /// Add a measurement to a point.
@@ -133,14 +105,7 @@ namespace gbl {
      * \param [in] minPrecision Minimal precision to accept measurement
      */
     void GblPoint::addMeasurement(const TVectorD& aResiduals, const TVectorD& aPrecision, double minPrecision) {
-        measDim = aResiduals.GetNrows();
-        measPrecMin = minPrecision;
-        unsigned int iOff = 5 - measDim;
-        for(unsigned int i = 0; i < measDim; ++i) {
-            measResiduals(iOff + i) = aResiduals[i];
-            measPrecision(iOff + i) = aPrecision[i];
-        }
-        measProjection.setIdentity();
+        theMeasurements.emplace_back(aResiduals, aPrecision, minPrecision);
     }
 
     /// Add a measurement to a point.
@@ -153,65 +118,16 @@ namespace gbl {
      * \param [in] minPrecision Minimal precision to accept measurement
      */
     void GblPoint::addMeasurement(const TVectorD& aResiduals, const TMatrixDSym& aPrecision, double minPrecision) {
-        measDim = aResiduals.GetNrows();
-        measPrecMin = minPrecision;
-        TMatrixDSymEigen measEigen(aPrecision);
-        TMatrixD tmpTransformation(measDim, measDim);
-        tmpTransformation = measEigen.GetEigenVectors();
-        tmpTransformation.T();
-        transFlag = true;
-        TVectorD transResiduals = tmpTransformation * aResiduals;
-        TVectorD transPrecision = measEigen.GetEigenValues();
-        measTransformation.resize(measDim, measDim);
-        unsigned int iOff = 5 - measDim;
-        for(unsigned int i = 0; i < measDim; ++i) {
-            measResiduals(iOff + i) = transResiduals[i];
-            measPrecision(iOff + i) = transPrecision[i];
-            for(unsigned int j = 0; j < measDim; ++j) {
-                measTransformation(i, j) = tmpTransformation(i, j);
-                measProjection(iOff + i, iOff + j) = measTransformation(i, j);
-            }
-        }
+        theMeasurements.emplace_back(aResiduals, aPrecision, minPrecision);
     }
 #endif
 
-    /// Check for measurement at a point.
+    /// Check for measurements at a point.
     /**
-     * Get dimension of measurement (0 = none).
-     * \return measurement dimension
+     * Get number of measurement (0 = none).
+     * \return measurements size
      */
-    unsigned int GblPoint::hasMeasurement() const { return measDim; }
-
-    /// get precision cutoff.
-    /**
-     * \return minimal measurement precision (for usage)
-     */
-    double GblPoint::getMeasPrecMin() const { return measPrecMin; }
-
-    /// Retrieve measurement of a point.
-    /**
-     * \param [out] aProjection Projection from (diagonalized) measurement to local system
-     * \param [out] aResiduals Measurement residuals
-     * \param [out] aPrecision Measurement precision (diagonal)
-     */
-    void GblPoint::getMeasurement(Matrix5d& aProjection, Vector5d& aResiduals, Vector5d& aPrecision) const {
-        aProjection.bottomRightCorner(measDim, measDim) = measProjection.bottomRightCorner(measDim, measDim);
-        aResiduals.tail(measDim) = measResiduals.tail(measDim);
-        aPrecision.tail(measDim) = measPrecision.tail(measDim);
-    }
-
-    /// Get measurement transformation (from diagonalization).
-    /**
-     * \param [out] aTransformation Transformation matrix
-     */
-    void GblPoint::getMeasTransformation(MatrixXd& aTransformation) const {
-        aTransformation.resize(measDim, measDim);
-        if(transFlag) {
-            aTransformation = measTransformation;
-        } else {
-            aTransformation.setIdentity();
-        }
-    }
+    unsigned int GblPoint::numMeasurements() const { return theMeasurements.size(); }
 
 #ifdef GBL_EIGEN_SUPPORT_ROOT
     /// Add a (thin) scatterer to a point.
@@ -299,31 +215,10 @@ namespace gbl {
      * \param [in] aDerivatives Local derivatives (matrix)
      */
     void GblPoint::addLocals(const TMatrixD& aDerivatives) {
-        if(measDim) {
-            unsigned int numDer = aDerivatives.GetNcols();
-            localDerivatives.resize(measDim, numDer);
-            // convert from ROOT
-            MatrixXd tmpDerivatives(measDim, numDer);
-            for(unsigned int i = 0; i < measDim; ++i) {
-                for(unsigned int j = 0; j < numDer; ++j)
-                    tmpDerivatives(i, j) = aDerivatives(i, j);
-            }
-            if(transFlag) {
-                localDerivatives = measTransformation * tmpDerivatives;
-            } else {
-                localDerivatives = tmpDerivatives;
-            }
-        }
+        if(theMeasurements.size())
+            theMeasurements.back().addLocals(aDerivatives);
     }
-#endif
 
-    /// Retrieve number of local derivatives from a point.
-    unsigned int GblPoint::getNumLocals() const { return localDerivatives.cols(); }
-
-    /// Retrieve local derivatives from a point.
-    const MatrixXd& GblPoint::getLocalDerivatives() const { return localDerivatives; }
-
-#ifdef GBL_EIGEN_SUPPORT_ROOT
     /// Add global derivatives to a point.
     /**
      * Point needs to have a measurement.
@@ -331,56 +226,10 @@ namespace gbl {
      * \param [in] aDerivatives Global derivatives (matrix)
      */
     void GblPoint::addGlobals(const std::vector<int>& aLabels, const TMatrixD& aDerivatives) {
-        if(measDim) {
-            globalLabels = aLabels;
-            unsigned int numDer = aDerivatives.GetNcols();
-            globalDerivatives.resize(measDim, numDer);
-            // convert from ROOT
-            MatrixXd tmpDerivatives(measDim, numDer);
-            for(unsigned int i = 0; i < measDim; ++i) {
-                for(unsigned int j = 0; j < numDer; ++j)
-                    tmpDerivatives(i, j) = aDerivatives(i, j);
-            }
-            if(transFlag) {
-                globalDerivatives = measTransformation * tmpDerivatives;
-            } else {
-                globalDerivatives = tmpDerivatives;
-            }
-        }
+        if(theMeasurements.size())
+            theMeasurements.back().addGlobals(aLabels, aDerivatives);
     }
 #endif
-
-    /// Retrieve number of global derivatives from a point.
-    unsigned int GblPoint::getNumGlobals() const { return globalDerivatives.cols(); }
-
-    /// Retrieve global derivatives labels from a point.
-    /**
-     * \param [out] aLabels Global labels
-     */
-    void GblPoint::getGlobalLabels(std::vector<int>& aLabels) const { aLabels = globalLabels; }
-
-    /// Retrieve global derivatives from a point.
-    /**
-     * \param [out] aDerivatives  Global derivatives
-     */
-    void GblPoint::getGlobalDerivatives(MatrixXd& aDerivatives) const { aDerivatives = globalDerivatives; }
-
-    /// Retrieve global derivatives from a point for a single row.
-    /**
-     * \param [in] aRow  Row number
-     * \param [out] aLabels Global labels
-     * \param [out] aDerivatives  Global derivatives
-     */
-    void GblPoint::getGlobalLabelsAndDerivatives(unsigned int aRow,
-                                                 std::vector<int>& aLabels,
-                                                 std::vector<double>& aDerivatives) const {
-        aLabels.resize(globalDerivatives.cols());
-        aDerivatives.resize(globalDerivatives.cols());
-        for(unsigned int i = 0; i < globalDerivatives.cols(); ++i) {
-            aLabels[i] = globalLabels[i];
-            aDerivatives[i] = globalDerivatives(aRow, i);
-        }
-    }
 
     /// Define label of point (by GBLTrajectory constructor)
     /**
@@ -470,46 +319,27 @@ namespace gbl {
                 std::cout << ", offset " << theOffset;
             }
         }
-        if(measDim) {
-            std::cout << ", " << measDim << " measurements";
+        if(theMeasurements.size()) {
+            std::cout << ", " << theMeasurements.size() << " measurements";
+        }
+        std::vector<GblMeasurement>::const_iterator itMeas;
+        for(itMeas = theMeasurements.begin(); itMeas < theMeasurements.end(); ++itMeas) {
+            itMeas->printMeasurement(0);
         }
         if(scatFlag) {
             std::cout << ", scatterer";
         }
-        if(transFlag) {
-            std::cout << ", diagonalized";
-        }
-        if(localDerivatives.cols()) {
-            std::cout << ", " << localDerivatives.cols() << " local derivatives";
-        }
-        if(globalDerivatives.cols()) {
-            std::cout << ", " << globalDerivatives.cols() << " global derivatives";
-        }
+
         std::cout << std::endl;
         if(level > 0) {
-            IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
-            if(measDim) {
-                std::cout << "  Measurement" << std::endl;
-                std::cout << "   Projection: " << std::endl << measProjection.format(CleanFmt) << std::endl;
-                std::cout << "   Residuals: " << measResiduals.transpose().format(CleanFmt) << std::endl;
-                std::cout << "   Precision (min.: " << measPrecMin << "): " << measPrecision.transpose().format(CleanFmt)
-                          << std::endl;
+            for(itMeas = theMeasurements.begin(); itMeas < theMeasurements.end(); ++itMeas) {
+                itMeas->printMeasurement(level);
             }
+            IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
             if(scatFlag) {
                 std::cout << "  Scatterer" << std::endl;
                 std::cout << "   Residuals: " << scatResiduals.transpose().format(CleanFmt) << std::endl;
                 std::cout << "   Precision: " << scatPrecision.transpose().format(CleanFmt) << std::endl;
-            }
-            if(localDerivatives.cols()) {
-                std::cout << "  Local Derivatives:" << std::endl << localDerivatives.format(CleanFmt) << std::endl;
-            }
-            if(globalDerivatives.cols()) {
-                std::cout << "  Global Labels:";
-                for(unsigned int i = 0; i < globalLabels.size(); ++i) {
-                    std::cout << " " << globalLabels[i];
-                }
-                std::cout << std::endl;
-                std::cout << "  Global Derivatives:" << globalDerivatives.format(CleanFmt) << std::endl;
             }
             std::cout << "  Jacobian " << std::endl;
             std::cout << "   Point-to-point " << std::endl << p2pJacobian.format(CleanFmt) << std::endl;
@@ -519,4 +349,25 @@ namespace gbl {
             }
         }
     }
-}
+
+    /// Get GblMeasurement iterator for begin
+    std::vector<GblMeasurement>::iterator GblPoint::getMeasBegin() { return theMeasurements.begin(); }
+
+    /// Get GblMeasurement iterator for end
+    std::vector<GblMeasurement>::iterator GblPoint::getMeasEnd() { return theMeasurements.end(); }
+
+    /// Retrieve global derivatives from a measurement at a point for a single row.
+    /**
+     * \param [in] aMeas  Measurement number
+     * \param [in] aRow  Row number
+     * \param [out] aLabels Global labels
+     * \param [out] aDerivatives  Global derivatives
+     */
+    void GblPoint::getGlobalLabelsAndDerivatives(unsigned int aMeas,
+                                                 unsigned int aRow,
+                                                 std::vector<int>& aLabels,
+                                                 std::vector<double>& aDerivatives) const {
+        theMeasurements[aMeas].getGlobalLabelsAndDerivatives(aRow, aLabels, aDerivatives);
+    }
+
+} // namespace gbl

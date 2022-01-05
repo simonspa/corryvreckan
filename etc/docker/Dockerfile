@@ -8,14 +8,12 @@ ENV PATH="/opt/corryvreckan/bin:${PATH}"
 WORKDIR "/data"
 
 # Compile Corryvreckan
-RUN source scl_source enable devtoolset-8 && \
-    mkdir -p /opt/corryvreckan/build && \
+RUN mkdir -p /opt/corryvreckan/build && \
     cd /opt/corryvreckan/build && \
-    cmake3 -DBUILD_EventLoaderEUDAQ2=ON \
-           -Deudaq_DIR="/opt/eudaq2/cmake" \
-           -DCMAKE_INSTALL_PREFIX=../ \
-           -DCMAKE_MODULE_PATH="/usr/share/cmake3/Modules/;/usr/share/cmake/Modules/" \
-          .. && \
+    cmake -DBUILD_EventLoaderEUDAQ2=ON \
+          -Deudaq_DIR="/opt/eudaq2/cmake" \
+          -DCMAKE_INSTALL_PREFIX=../ \
+         .. && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
     rm -rf /opt/corryvreckan/build

@@ -7,7 +7,8 @@
  */
 
 #include "Module.hpp"
-#include "core/utils/file.h"
+
+#include <filesystem>
 
 using namespace corryvreckan;
 
@@ -18,6 +19,12 @@ Module::~Module() {}
 
 Module::Module(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : config_(config), m_detectors(std::move(detectors)) {}
+
+StatusCode Module::run(const std::shared_ptr<Clipboard>&) {
+    return StatusCode::Success;
+}
+
+void Module::finalize(const std::shared_ptr<ReadonlyClipboard>&) {}
 
 /**
  * @throws InvalidModuleActionException If this method is called from the constructor
@@ -48,7 +55,7 @@ ModuleIdentifier Module::get_identifier() const {
  * The output path is automatically created if it does not exists. The path is always accessible if this functions returns.
  * Obeys the "deny_overwrite" parameter of the module.
  */
-std::string Module::createOutputFile(const std::string& path, bool global) {
+std::string Module::createOutputFile(const std::string& path, const std::string& extension, bool global) {
     std::string file;
     if(global) {
         file = config_.get<std::string>("_global_dir", std::string());
@@ -63,21 +70,22 @@ std::string Module::createOutputFile(const std::string& path, bool global) {
 
     try {
         // Create all the required main directories
-        corryvreckan::create_directories(file);
+        std::filesystem::create_directories(file);
 
         // Add the file itself
         file += "/";
-        file += path;
+        file +=
+            (extension.empty() ? path : static_cast<std::string>(std::filesystem::path(path).replace_extension(extension)));
 
-        if(path_is_file(file)) {
+        if(std::filesystem::is_regular_file(file)) {
             auto global_overwrite = getConfigManager()->getGlobalConfiguration().get<bool>("deny_overwrite", false);
             if(config_.get<bool>("deny_overwrite", global_overwrite)) {
                 throw ModuleError("Overwriting of existing file " + file + " denied.");
             }
             LOG(WARNING) << "File " << file << " exists and will be overwritten.";
             try {
-                corryvreckan::remove_file(file);
-            } catch(std::invalid_argument& e) {
+                std::filesystem::remove(file);
+            } catch(std::filesystem::filesystem_error& e) {
                 throw ModuleError("Deleting file " + file + " failed: " + e.what());
             }
         }
@@ -89,12 +97,23 @@ std::string Module::createOutputFile(const std::string& path, bool global) {
         }
 
         // Convert the file to an absolute path
-        file = get_canonical_path(file);
+        file = std::filesystem::canonical(file);
     } catch(std::invalid_argument& e) {
         throw ModuleError("Path " + file + " cannot be created");
     }
 
     return file;
+}
+
+std::vector<std::shared_ptr<Detector>> Module::get_regular_detectors(bool include_duts) const {
+    std::vector<std::shared_ptr<Detector>> detectors;
+    for(const auto& det : m_detectors) {
+        if(!det->hasRole(DetectorRole::PASSIVE) && !det->hasRole(DetectorRole::AUXILIARY) &&
+           (include_duts || !det->hasRole(DetectorRole::DUT))) {
+            detectors.push_back(det);
+        }
+    }
+    return detectors;
 }
 
 /**
@@ -115,7 +134,7 @@ void Module::set_ROOT_directory(TDirectory* directory) {
     directory_ = directory;
 }
 
-std::shared_ptr<Detector> Module::get_detector(std::string name) {
+std::shared_ptr<Detector> Module::get_detector(const std::string& name) const {
     auto it = find_if(
         m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->getName() == name; });
     if(it == m_detectors.end()) {
@@ -125,11 +144,11 @@ std::shared_ptr<Detector> Module::get_detector(std::string name) {
     return (*it);
 }
 
-std::shared_ptr<Detector> Module::get_reference() {
+std::shared_ptr<Detector> Module::get_reference() const {
     return m_reference;
 }
 
-std::vector<std::shared_ptr<Detector>> Module::get_duts() {
+std::vector<std::shared_ptr<Detector>> Module::get_duts() const {
     std::vector<std::shared_ptr<Detector>> duts;
     for_each(m_detectors.begin(), m_detectors.end(), [&duts](std::shared_ptr<Detector> obj) {
         if(obj->isDUT())
@@ -138,7 +157,7 @@ std::vector<std::shared_ptr<Detector>> Module::get_duts() {
     return duts;
 }
 
-bool Module::has_detector(std::string name) {
+bool Module::has_detector(const std::string& name) const {
     auto it = find_if(
         m_detectors.begin(), m_detectors.end(), [&name](std::shared_ptr<Detector> obj) { return obj->getName() == name; });
     if(it == m_detectors.end()) {

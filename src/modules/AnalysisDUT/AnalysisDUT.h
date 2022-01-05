@@ -95,6 +95,7 @@ namespace corryvreckan {
         TH2F* pxTimeMinusSeedTime_vs_pxCharge_3px;
         TH2F* pxTimeMinusSeedTime_vs_pxCharge_4px;
 
+        TH2F* track_trackDistance;
         // Member variables
         double time_cut_frameedge_;
         double spatial_cut_sensoredge_;
@@ -102,6 +103,10 @@ namespace corryvreckan {
         bool use_closest_cluster_;
         int n_timebins_;
         double time_binning_;
+        int n_chargebins_;
+        double charge_histo_range_;
+        int n_rawbins_;
+        double raw_histo_range_;
         bool correlations_;
         int num_tracks_;
     };

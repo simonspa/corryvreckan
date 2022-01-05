@@ -46,6 +46,7 @@ namespace gbl {
         VVector(const VVector& aVector);
         virtual ~VVector();
         void resize(const unsigned int nRows);
+        void setZero();
         VVector getVec(unsigned int len, unsigned int start = 0) const;
         void putVec(const VVector& aVector, unsigned int start = 0);
         inline double& operator()(unsigned int i);
@@ -67,6 +68,7 @@ namespace gbl {
         VMatrix(const VMatrix& aMatrix);
         virtual ~VMatrix();
         void resize(const unsigned int nRows, const unsigned int nCols);
+        void setZero();
         VMatrix transpose() const;
         inline double& operator()(unsigned int i, unsigned int j);
         inline double operator()(unsigned int i, unsigned int j) const;
@@ -90,6 +92,7 @@ namespace gbl {
         VSymMatrix(const unsigned int nRows = 0);
         virtual ~VSymMatrix();
         void resize(const unsigned int nRows);
+        void setZero();
         unsigned int invert();
         inline double& operator()(unsigned int i, unsigned int j);
         inline double operator()(unsigned int i, unsigned int j) const;
@@ -125,5 +128,5 @@ namespace gbl {
     inline double VSymMatrix::operator()(unsigned int iRow, unsigned int iCol) const {
         return theVec[(iRow * iRow + iRow) / 2 + iCol]; // assuming iCol <= iRow
     }
-}
+} // namespace gbl
 #endif /* VMATRIX_H_ */

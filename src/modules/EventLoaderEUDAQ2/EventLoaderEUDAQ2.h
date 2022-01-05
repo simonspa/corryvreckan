@@ -13,6 +13,7 @@
  */
 
 #include <iostream>
+#include <queue>
 #include <vector>
 
 #include <TCanvas.h>
@@ -122,7 +123,8 @@ namespace corryvreckan {
         eudaq::FileReaderUP reader_;
 
         // Buffer of undecoded EUDAQ events
-        std::vector<eudaq::EventSPC> events_;
+        std::queue<eudaq::EventSPC> events_raw_;
+        std::queue<eudaq::StandardEventSP> events_decoded_;
 
         // Currently processed decoded EUDAQ StandardEvent:
         std::shared_ptr<eudaq::StandardEvent> event_;

@@ -18,8 +18,6 @@ using namespace corryvreckan;
 TrackingMultiplet::TrackingMultiplet(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
 
-    config_.setDefault<double>("isolation_cut", scatterer_matching_cut_ * 2.);
-
     if(config_.count({"time_cut_rel", "time_cut_abs"}) == 0) {
         config_.setDefault("time_cut_rel", 3.0);
     }
@@ -37,16 +35,13 @@ TrackingMultiplet::TrackingMultiplet(Configuration& config, std::vector<std::sha
     LOG(DEBUG) << "Set scatterer position: " << Units::display(scatterer_position_, {"mm", "m"});
 
     // timing cut, relative (x * time_resolution) or absolute:
-    time_cuts_ = corryvreckan::calculate_cut<double>("time_cut", config_, get_detectors());
+    time_cuts_ = corryvreckan::calculate_cut<double>("time_cut", config_, get_regular_detectors(true));
     // spatial cut, relative (x * spatial_resolution) or absolute:
-    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", config_, get_detectors());
+    spatial_cuts_ = corryvreckan::calculate_cut<XYVector>("spatial_cut", config_, get_regular_detectors(true));
 
     // Use detectors before and after scatterer as up- and downstream detectors
     std::vector<std::string> default_upstream_detectors, default_downstream_detectors;
-    for(auto& detector : get_detectors()) {
-        if(detector->isDUT() || detector->isAuxiliary()) {
-            continue;
-        }
+    for(auto& detector : get_regular_detectors(false)) {
         if(detector->displacement().Z() < scatterer_position_) {
             default_upstream_detectors.push_back(detector->getName());
         } else if(detector->displacement().Z() > scatterer_position_) {
@@ -147,6 +142,7 @@ TrackingMultiplet::TrackingMultiplet(Configuration& config, std::vector<std::sha
 
     scatterer_matching_cut_ = config_.get<double>("scatterer_matching_cut");
 
+    config_.setDefault<double>("isolation_cut", scatterer_matching_cut_ * 2.);
     isolation_cut_ = config_.get<double>("isolation_cut");
 
     track_model_ = config_.get<std::string>("track_model", "straightline");

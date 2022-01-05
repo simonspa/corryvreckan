@@ -11,12 +11,14 @@
 #include "Cluster.hpp"
 #include "exceptions.h"
 
+#include <algorithm>
+
 using namespace corryvreckan;
 
 Cluster::Cluster() : m_columnWidth(0.), m_rowWidth(0.), m_split(false) {}
 
 void Cluster::addPixel(const Pixel* pixel) {
-    m_pixels.push_back(const_cast<Pixel*>(pixel)); // NOLINT
+    pixels_.emplace_back(const_cast<Pixel*>(pixel)); // NOLINT
 
     m_columnHits[pixel->column()] = true;
     m_rowHits[pixel->row()] = true;
@@ -37,11 +39,12 @@ void Cluster::setSplit(bool split) {
 
 std::vector<const Pixel*> Cluster::pixels() const {
     std::vector<const Pixel*> pixelvec;
-    for(auto& px : m_pixels) {
-        if(!px.IsValid() || px.GetObject() == nullptr) {
+    for(const auto& pixel : pixels_) {
+        auto* pxl = pixel.get();
+        if(pxl == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Pixel));
         }
-        pixelvec.emplace_back(dynamic_cast<Pixel*>(px.GetObject()));
+        pixelvec.emplace_back(pxl);
     }
 
     // Return as a vector of pixels
@@ -53,8 +56,8 @@ const Pixel* Cluster::getSeedPixel() const {
 
     double maxcharge = std::numeric_limits<double>::lowest();
     // loop overall pixels and find the one with the largest charge:
-    for(auto& px : m_pixels) {
-        auto pxl = dynamic_cast<Pixel*>(px.GetObject());
+    for(const auto& pixel : pixels_) {
+        auto* pxl = pixel.get();
         if(pxl == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Pixel));
         }
@@ -71,8 +74,8 @@ const Pixel* Cluster::getEarliestPixel() const {
     Pixel* earliest = nullptr;
 
     double earliestTimestamp = std::numeric_limits<double>::max();
-    for(auto& px : m_pixels) {
-        auto pxl = dynamic_cast<Pixel*>(px.GetObject());
+    for(const auto& pixel : pixels_) {
+        auto* pxl = pixel.get();
         if(pxl == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Pixel));
         }
@@ -82,12 +85,18 @@ const Pixel* Cluster::getEarliestPixel() const {
             earliest = pxl;
         }
     }
-
     return earliest;
 }
 
 void Cluster::print(std::ostream& out) const {
     out << "Cluster " << this->m_local.x() << ", " << this->m_local.y() << ", " << this->m_global << ", " << this->m_charge
-        << ", " << this->m_split << ", " << this->m_pixels.size() << ", " << this->m_columnWidth << ", " << this->m_rowWidth
+        << ", " << this->m_split << ", " << this->pixels_.size() << ", " << this->m_columnWidth << ", " << this->m_rowWidth
         << ", " << this->timestamp();
+}
+
+void Cluster::loadHistory() {
+    std::for_each(pixels_.begin(), pixels_.end(), [](auto& n) { n.get(); });
+}
+void Cluster::petrifyHistory() {
+    std::for_each(pixels_.begin(), pixels_.end(), [](auto& n) { n.store(); });
 }

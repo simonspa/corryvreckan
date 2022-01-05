@@ -60,10 +60,7 @@ void AlignmentMillepede::initialize() {
 
     // Renumber the planes in Millepede, ignoring masked planes.
     unsigned int index = 0;
-    for(const auto& det : get_detectors()) {
-        if(det->isDUT() && m_excludeDUT) {
-            continue;
-        }
+    for(const auto& det : get_regular_detectors(!m_excludeDUT)) {
         m_millePlanes[det->getName()] = index;
         ++index;
     }
@@ -113,16 +110,7 @@ void AlignmentMillepede::finalize(const std::shared_ptr<ReadonlyClipboard>& clip
     LOG(INFO) << "Millepede alignment";
     auto alignmenttracks = clipboard->getPersistentData<Track>();
 
-    size_t nPlanes = num_detectors();
-    for(const auto& det : get_detectors()) {
-        if(det->isDUT() && m_excludeDUT) {
-            nPlanes--;
-        }
-        if(det->isAuxiliary()) {
-            LOG(INFO) << "Excluding auxiliary detector " << det->getName();
-            nPlanes--;
-        }
-    }
+    size_t nPlanes = num_regular_detectors(!m_excludeDUT);
     LOG(INFO) << "Aligning " << nPlanes << " planes";
     const size_t nParameters = 6 * nPlanes;
     for(unsigned int iteration = 0; iteration < m_nIterations; ++iteration) {
@@ -189,19 +177,13 @@ void AlignmentMillepede::setConstraints(const size_t nPlanes) {
 
     // Calculate the mean z-position.
     double avgz = 0.;
-    for(const auto& det : get_detectors()) {
-        if(det->isDUT() && m_excludeDUT) {
-            continue;
-        }
+    for(const auto& det : get_regular_detectors(!m_excludeDUT)) {
         avgz += det->displacement().Z();
     }
     avgz /= static_cast<double>(nPlanes);
     // Calculate the variance.
     double varz = 0.0;
-    for(const auto& det : get_detectors()) {
-        if(det->isDUT() && m_excludeDUT) {
-            continue;
-        }
+    for(const auto& det : get_regular_detectors(!m_excludeDUT)) {
         const double dz = det->displacement().Z() - avgz;
         varz += dz * dz;
     }
@@ -220,10 +202,7 @@ void AlignmentMillepede::setConstraints(const size_t nPlanes) {
     std::vector<double> sheary(nParameters, 0.);
 
     m_constraints.clear();
-    for(const auto& det : get_detectors()) {
-        if(det->isDUT() && m_excludeDUT) {
-            continue;
-        }
+    for(const auto& det : get_regular_detectors(!m_excludeDUT)) {
         const unsigned int i = m_millePlanes[det->getName()];
         const double sz = (det->displacement().Z() - avgz) / varz;
         ftx[i] = 1.0;
@@ -596,17 +575,9 @@ bool AlignmentMillepede::fitTrack(const std::vector<Equation>& equations,
 // Update the module positions and orientations.
 //=============================================================================
 void AlignmentMillepede::updateGeometry() {
-    auto nPlanes = num_detectors();
-    for(const auto& det : get_detectors()) {
-        if(det->isDUT() && m_excludeDUT) {
-            nPlanes--;
-        }
-    }
+    auto nPlanes = num_regular_detectors(!m_excludeDUT);
 
-    for(const auto& det : get_detectors()) {
-        if(det->isDUT() && m_excludeDUT) {
-            continue;
-        }
+    for(const auto& det : get_regular_detectors(!m_excludeDUT)) {
         auto plane = m_millePlanes[det->getName()];
 
         det->displacement(XYZPoint(det->displacement().X() + m_dparm[plane + 0 * nPlanes],

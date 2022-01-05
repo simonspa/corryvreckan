@@ -13,7 +13,7 @@
  *
  *
  *  \copyright
- *  Copyright (c) 2011 - 2016 Deutsches Elektronen-Synchroton,
+ *  Copyright (c) 2011 - 2021 Deutsches Elektronen-Synchroton,
  *  Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY \n\n
  *  This library is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Library General Public License as
@@ -57,10 +57,11 @@ namespace gbl {
     public:
         GblData(unsigned int aLabel,
                 dataBlockType aType,
-                double aMeas,
+                double aValue,
                 double aPrec,
                 unsigned int aTraj = 0,
-                unsigned int aPoint = 0);
+                unsigned int aPoint = 0,
+                unsigned int aMeas = 0);
         GblData(const GblData&) = default;
         GblData& operator=(const GblData&) = default;
         GblData(GblData&&) = default;
@@ -114,7 +115,6 @@ namespace gbl {
         void printData() const;
         unsigned int getLabel() const;
         dataBlockType getType() const;
-        unsigned int getNumSimple() const;
         void
         getLocalData(double& aValue, double& aWeight, unsigned int& numLocal, unsigned int*& indLocal, double*& derLocal);
         void getAllData(double& aValue,
@@ -124,6 +124,7 @@ namespace gbl {
                         double*& derLocal,
                         unsigned int& aTraj,
                         unsigned int& aPoint,
+                        unsigned int& aMeas,
                         unsigned int& aRow);
         void getResidual(double& aResidual,
                          double& aVariance,
@@ -131,6 +132,7 @@ namespace gbl {
                          unsigned int& numLocal,
                          unsigned int*& indLocal,
                          double*& derLocal);
+        void getResidual(double& aResidual, double& aVariance);
 
     private:
         unsigned int theLabel;      ///< Label (of corresponding point)
@@ -140,6 +142,7 @@ namespace gbl {
         double thePrecision;        ///< Precision (1/sigma**2)
         unsigned int theTrajectory; ///< Trajectory number
         unsigned int thePoint;      ///< Point number (on trajectory)
+        unsigned int theMeas;       ///< Measurement number (at point)
         unsigned int theDWMethod;   ///< Down-weighting method (0: None, 1: Tukey, 2: Huber, 3: Cauchy)
         double theDownWeight;       ///< Down-weighting factor (0-1)
         double thePrediction;       ///< Prediction from fit
@@ -262,6 +265,7 @@ namespace gbl {
             }
         }
     }
-}
+
+} // namespace gbl
 
 #endif /* GBLDATA_H_ */

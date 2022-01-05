@@ -15,10 +15,11 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
+#include "core/config/exceptions.h"
 #include "core/utils/text.h"
-#include "exceptions.h"
 
 namespace corryvreckan {
 
@@ -104,8 +105,8 @@ namespace corryvreckan {
         /**
          * @brief Allow moving the configuration
          */
-        Configuration(Configuration&&) noexcept = default;
-        Configuration& operator=(Configuration&&) noexcept = default;
+        Configuration(Configuration&&) noexcept = default; // NOLINT
+        Configuration& operator=(Configuration&&) = default;
         /// @}
 
         /**
@@ -193,6 +194,15 @@ namespace corryvreckan {
          * @return Absolute path to a file
          */
         std::string getPath(const std::string& key, bool check_exists = false) const;
+
+        /**
+         * @brief Get absolute path to file with paths relative to the configuration
+         * @param key Key to get path of
+         * @param extension File extension to be added to path if not present
+         * @param check_exists If the file should be checked for existence (if yes always returns a canonical path)
+         * @return Absolute path to a file
+         */
+        std::string getPathWithExtension(const std::string& key, const std::string& extension, bool check_exists) const;
         /**
          * @brief Get array of absolute paths to files with paths relative to the configuration
          * @param key Key to get path of
@@ -231,19 +241,22 @@ namespace corryvreckan {
          * @brief Set matrix of values for a key in a given type
          * @param key Key to set values of
          * @param val List of values to assign to the key
+         * @param mark_used Flag whether key should be marked as "used" directly
          */
-        template <typename T> void setMatrix(const std::string& key, const Matrix<T>& val);
+        template <typename T> void setMatrix(const std::string& key, const Matrix<T>& val, bool mark_used = false);
 
         /**
          * @brief Set default value for a key only if it is not defined yet
          * @param key Key to possible set value of
          * @param val Value to assign if the key is not defined yet
+         * @note This marks the default key as "used" automatically
          */
         template <typename T> void setDefault(const std::string& key, const T& val);
         /**
          * @brief Set default list of values for a key only if it is not defined yet
          * @param key Key to possible set values of
          * @param val List of values to assign to the key if the key is not defined yet
+         * @note This marks the default key as "used" automatically
          */
         template <typename T> void setDefaultArray(const std::string& key, const std::vector<T>& val);
 

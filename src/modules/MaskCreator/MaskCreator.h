@@ -18,6 +18,12 @@
 #include "objects/Pixel.hpp"
 
 namespace corryvreckan {
+
+    enum class MaskingMethod {
+        LOCALDENSITY = 0,
+        FREQUENCY,
+    };
+
     /** @ingroup Modules
      */
     class MaskCreator : public Module {
@@ -63,7 +69,7 @@ namespace corryvreckan {
 
         TH2F* maskmap;
 
-        std::string m_method;
+        MaskingMethod m_method;
         double m_frequency, bandwidth;
         int m_bandwidthCol, m_bandwidthRow;
         double m_sigmaMax, m_rateMax;

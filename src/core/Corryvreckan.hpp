@@ -35,7 +35,8 @@ namespace corryvreckan {
         /**
          * @brief Constructs Corryvreckan and initialize all managers
          * @param config_file_name Path of the main configuration file
-         * @param options List of extra configuration options
+         * @param module_options List of extra configuration options for module instances
+         * @param detector_options List of extra configuration options for detector instances
          */
         explicit Corryvreckan(std::string config_file_name,
                               const std::vector<std::string>& module_options = std::vector<std::string>(),

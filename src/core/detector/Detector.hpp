@@ -31,11 +31,12 @@ namespace corryvreckan {
      * @brief Role of the detector
      */
     enum class DetectorRole : int {
-        NONE = 0x0,      ///< No specific detector role
-        REFERENCE = 0x1, ///< Reference detector
-        DUT = 0x2,       ///< Detector used as device under test
-        AUXILIARY = 0x4, ///< Auxiliary device which should not participate in regular reconstruction but might provide
-                         /// additional information
+        NONE = 0x0,           ///< No specific detector role
+        REFERENCE = (1 << 0), ///< Reference detector
+        DUT = (1 << 1),       ///< Detector used as device under test
+        AUXILIARY = (1 << 2), ///< Auxiliary device which should not participate in regular reconstruction but might provide
+                              /// additional information
+        PASSIVE = (1 << 3),   ///< Passive device which only acts as scatterer. This is ignored for detector modules
     };
 
     inline constexpr DetectorRole operator&(DetectorRole x, DetectorRole y) {
@@ -118,6 +119,19 @@ namespace corryvreckan {
         bool isAuxiliary() const;
 
         /**
+         * @brief Obtain roles assigned to this detector
+         * @return List of detector roles
+         */
+        DetectorRole getRoles() const;
+
+        /**
+         * @brief Check if this detector has a certain role assigned
+         * @param  role Role to be checked for
+         * @return True if detector holds this role
+         */
+        bool hasRole(DetectorRole role) const;
+
+        /**
          * @brief Retrieve configuration object from detector, containing all (potentially updated) parameters
          * @return Configuration object for this detector
          */
@@ -126,28 +140,28 @@ namespace corryvreckan {
         /**
          * @brief Get the total size of the active matrix, i.e. pitch * number of pixels in both dimensions
          * @return 2D vector with the dimensions of the pixle matrix in X and Y
-         * @to do: this is designed for PixelDetector, find a proper interface for other Detector type
+         * @todo: this is designed for PixelDetector, find a proper interface for other Detector type
          */
         virtual XYVector getSize() const = 0;
 
         /**
          * @brief Get pitch of a single pixel
          * @return Pitch of a pixel
-         * @to do: this is designed for PixelDetector, find a proper interface for other Detector type
+         * @todo: this is designed for PixelDetector, find a proper interface for other Detector type
          */
         virtual XYVector getPitch() const = 0;
 
         /**
          * @brief Get intrinsic spatial resolution of the detector
          * @return Intrinsic spatial resolution in X and Y
-         * @to do: this is designed for PixelDetector, find a proper interface for other Detector type
+         * @todo: this is designed for PixelDetector, find a proper interface for other Detector type
          */
         virtual XYVector getSpatialResolution() const = 0;
 
         /**
          * @brief Get number of pixels in x and y
          * @return Number of two dimensional pixels
-         * @to do: this is designed for PixelDetector, find a proper interface for other Detector type
+         * @todo: this is designed for PixelDetector, find a proper interface for other Detector type
          */
         virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> nPixels() const = 0;
 
@@ -224,7 +238,7 @@ namespace corryvreckan {
          * @brief Mark a detector channel as masked
          * @param chX X coordinate of the pixel to be masked
          * @param chY Y coordinate of the pixel to be masked
-         * @to do: This is designed for PixelDetector, the parameters can be different with other type of Detector
+         * @todo: This is designed for PixelDetector, the parameters can be different with other type of Detector
          */
         virtual void maskChannel(int chX, int chY) = 0;
 
@@ -233,7 +247,7 @@ namespace corryvreckan {
          * @param chX X coordinate of the pixel to check
          * @param chY Y coordinate of the pixel to check
          * @return    Mask status of the pixel in question
-         * @to do: This is designed for PixelDetector, the parameters can be different with other type of Detector
+         * @todo: This is designed for PixelDetector, the parameters can be different with other type of Detector
          */
         virtual bool masked(int chX, int chY) const = 0;
 
