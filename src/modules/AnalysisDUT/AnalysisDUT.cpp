@@ -57,6 +57,8 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
 
 void AnalysisDUT::initialize() {
 
+    createGlobalResidualPlots();
+    createLocalResidualPlots();
     if(correlations_) {
         trackCorrelationX_beforeCuts =
             new TH1F("trackCorrelationX_beforeCuts",
@@ -239,49 +241,6 @@ void AnalysisDUT::initialize() {
 
     associatedTracksVersusTime =
         new TH1F("associatedTracksVersusTime", "Associated tracks over time;time [s];# associated tracks", 300000, 0, 300);
-    residualsX = new TH1F("residualsX", "Residual in X;x_{track}-x_{hit}  [#mum];# entries", 4000, -500.5, 499.5);
-    residualsY = new TH1F("residualsY", "Residual in Y;y_{track}-y_{hit}  [#mum];# entries", 4000, -500.5, 499.5);
-    residualsPos = new TH1F("residualsPos",
-                            "Absolute distance between track and hit;|pos_{track}-pos_{hit}|  [#mum];# entries",
-                            4000,
-                            -500.5,
-                            499.5);
-    residualsPosVsresidualsTime = new TH2F(
-        "residualsPosVsresidualsTime",
-        "Absolute position residuals vs. time;time_{track}-time_{hit} [ns];|pos_{track}-pos_{hit}| [#mum];# entries",
-        n_timebins_,
-        -(n_timebins_ + 1) / 2. * time_binning_,
-        (n_timebins_ - 1) / 2. * time_binning_,
-        800,
-        -0.25,
-        199.75);
-
-    residualsX1pix = new TH1F(
-        "residualsX1pix", "Residual for 1-pixel clusters in X;x_{track}-x_{hit} [#mum];# entries", 4000, -500.5, 499.5);
-    residualsY1pix = new TH1F(
-        "residualsY1pix", "Residual for 1-pixel clusters in Y;y_{track}-y_{hit} [#mum];# entries", 4000, -500.5, 499.5);
-    residualsX2pix = new TH1F(
-        "residualsX2pix", "Residual for 2-pixel clusters in X;x_{track}-x_{hit} [#mum];# entries", 4000, -500.5, 499.5);
-    residualsY2pix = new TH1F(
-        "residualsY2pix", "Residual for 2-pixel clusters in Y;y_{track}-y_{hit} [#mum];# entries", 4000, -500.5, 499.5);
-    residualsX3pix = new TH1F(
-        "residualsX3pix", "Residual for 3-pixel clusters in X;x_{track}-x_{hit} [#mum];# entries", 4000, -500.5, 499.5);
-    residualsY3pix = new TH1F(
-        "residualsY3pix", "Residual for 3-pixel clusters in Y;y_{track}-y_{hit} [#mum];# entries", 4000, -500.5, 499.5);
-    residualsX4pix = new TH1F(
-        "residualsX4pix", "Residual for 4-pixel clusters in X;x_{track}-x_{hit} [#mum];# entries", 4000, -500.5, 499.5);
-    residualsY4pix = new TH1F(
-        "residualsY4pix", "Residual for 4-pixel clusters in Y;y_{track}-y_{hit} [#mum];# entries", 4000, -500.5, 499.5);
-    residualsXatLeast5pix = new TH1F("residualsXatLeast5pix",
-                                     "Residual for >= 5-pixel clusters in X;x_{track}-x_{hit} [#mum];# entries",
-                                     4000,
-                                     -500.5,
-                                     499.5);
-    residualsYatLeast5pix = new TH1F("residualsYatLeast5pix",
-                                     "Residual for >= 5-pixel clusters in Y;y_{track}-y_{hit} [#mum];# entries",
-                                     4000,
-                                     -500.5,
-                                     499.5);
 
     clusterChargeAssoc = new TH1F("clusterChargeAssociated",
                                   "Charge distribution of associated clusters;cluster charge [a.u.];# entries",
@@ -792,44 +751,44 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             associatedTracksVersusTime->Fill(track->timestamp() / 1e9); // convert ns -> s
 
             // Residuals
-            residualsX->Fill(xdistance_um);
-            residualsY->Fill(ydistance_um);
-            residualsPos->Fill(posDiff_um);
-            residualsPosVsresidualsTime->Fill(tdistance, posDiff_um);
+            residualsX_local->Fill(xdistance_um);
+            residualsY_local->Fill(ydistance_um);
+            residualsPos_local->Fill(posDiff_um);
+            residualsPosVsresidualsTime_local->Fill(tdistance, posDiff_um);
 
             if(assoc_cluster->columnWidth() == 1) {
-                residualsX1pix->Fill(xdistance_um);
+                residualsX1pix_local->Fill(xdistance_um);
             }
             if(assoc_cluster->rowWidth() == 1) {
-                residualsY1pix->Fill(ydistance_um);
+                residualsY1pix_local->Fill(ydistance_um);
             }
 
             if(assoc_cluster->columnWidth() == 2) {
-                residualsX2pix->Fill(xdistance_um);
+                residualsX2pix_local->Fill(xdistance_um);
             }
             if(assoc_cluster->rowWidth() == 2) {
-                residualsY2pix->Fill(ydistance_um);
+                residualsY2pix_local->Fill(ydistance_um);
             }
 
             if(assoc_cluster->columnWidth() == 3) {
-                residualsX3pix->Fill(xdistance_um);
+                residualsX3pix_local->Fill(xdistance_um);
             }
             if(assoc_cluster->rowWidth() == 3) {
-                residualsY3pix->Fill(ydistance_um);
+                residualsY3pix_local->Fill(ydistance_um);
             }
 
             if(assoc_cluster->columnWidth() == 4) {
-                residualsX4pix->Fill(xdistance_um);
+                residualsX4pix_local->Fill(xdistance_um);
             }
             if(assoc_cluster->rowWidth() == 4) {
-                residualsY4pix->Fill(ydistance_um);
+                residualsY4pix_local->Fill(ydistance_um);
             }
 
             if(assoc_cluster->columnWidth() >= 5) {
-                residualsXatLeast5pix->Fill(xdistance_um);
+                residualsXatLeast5pix_local->Fill(xdistance_um);
             }
             if(assoc_cluster->rowWidth() >= 5) {
-                residualsYatLeast5pix->Fill(ydistance_um);
+                residualsYatLeast5pix_local->Fill(ydistance_um);
             }
 
             // Time residuals
@@ -922,4 +881,168 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 void AnalysisDUT::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     hCutHisto->Scale(1 / double(num_tracks_));
     clusterSizeAssocNorm->Scale(1 / clusterSizeAssoc->Integral());
+}
+
+void AnalysisDUT::createGlobalResidualPlots() {
+    TDirectory* directory = getROOTDirectory();
+    TDirectory* local_directory = directory->mkdir("global_residuals");
+    if(local_directory == nullptr) {
+        throw RuntimeError("Cannot create or access global ROOT directory for module " + this->getUniqueName());
+    }
+    local_directory->cd();
+
+    residualsX_global =
+        new TH1F("residualsX", "Residual in global X;x_{track}-x_{hit}  [#mum];# entries", 4000, -500.5, 499.5);
+    residualsY_global =
+        new TH1F("residualsY", "Residual in global Y;y_{track}-y_{hit}  [#mum];# entries", 4000, -500.5, 499.5);
+    residualsPos_global =
+        new TH1F("residualsPos",
+                 "Absolute distance between track and hit in global coordinates;|pos_{track}-pos_{hit}|  [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5);
+    residualsPosVsresidualsTime_global = new TH2F(
+        "residualsPosVsresidualsTime",
+        "Absolute global position residuals vs. time;time_{track}-time_{hit} [ns];|pos_{track}-pos_{hit}| [#mum];# entries",
+        n_timebins_,
+        -(n_timebins_ + 1) / 2. * time_binning_,
+        (n_timebins_ - 1) / 2. * time_binning_,
+        800,
+        -0.25,
+        199.75);
+
+    residualsX1pix_global = new TH1F("residualsX1pix",
+                                     "Residual for 1-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
+                                     4000,
+                                     -500.5,
+                                     499.5);
+    residualsY1pix_global = new TH1F("residualsY1pix",
+                                     "Residual for 1-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
+                                     4000,
+                                     -500.5,
+                                     499.5);
+    residualsX2pix_global = new TH1F("residualsX2pix",
+                                     "Residual for 2-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
+                                     4000,
+                                     -500.5,
+                                     499.5);
+    residualsY2pix_global = new TH1F("residualsY2pix",
+                                     "Residual for 2-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
+                                     4000,
+                                     -500.5,
+                                     499.5);
+    residualsX3pix_global = new TH1F("residualsX3pix",
+                                     "Residual for 3-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
+                                     4000,
+                                     -500.5,
+                                     499.5);
+    residualsY3pix_global = new TH1F("residualsY3pix",
+                                     "Residual for 3-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
+                                     4000,
+                                     -500.5,
+                                     499.5);
+    residualsX4pix_global = new TH1F("residualsX4pix",
+                                     "Residual for 4-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
+                                     4000,
+                                     -500.5,
+                                     499.5);
+    residualsY4pix_global = new TH1F("residualsY4pix",
+                                     "Residual for 4-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
+                                     4000,
+                                     -500.5,
+                                     499.5);
+    residualsXatLeast5pix_global =
+        new TH1F("residualsXatLeast5pix",
+                 "Residual for >= 5-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5);
+    residualsYatLeast5pix_global =
+        new TH1F("residualsYatLeast5pix",
+                 "Residual for >= 5-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5);
+    directory->cd();
+}
+
+void AnalysisDUT::createLocalResidualPlots() {
+    TDirectory* directory = getROOTDirectory();
+    TDirectory* local_directory = directory->mkdir("local_residuals");
+    if(local_directory == nullptr) {
+        throw RuntimeError("Cannot create or access local ROOT directory for module " + this->getUniqueName());
+    }
+    local_directory->cd();
+
+    residualsX_local =
+        new TH1F("residualsX", "Residual in local X;x_{track}-x_{hit}  [#mum];# entries", 4000, -500.5, 499.5);
+    residualsY_local =
+        new TH1F("residualsY", "Residual in local Y;y_{track}-y_{hit}  [#mum];# entries", 4000, -500.5, 499.5);
+    residualsPos_local =
+        new TH1F("residualsPos",
+                 "Absolute distance between track and hit in local coordinates;|pos_{track}-pos_{hit}|  [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5);
+    residualsPosVsresidualsTime_local = new TH2F(
+        "residualsPosVsresidualsTime",
+        "Absolute local position residuals vs. time;time_{track}-time_{hit} [ns];|pos_{track}-pos_{hit}| [#mum];# entries",
+        n_timebins_,
+        -(n_timebins_ + 1) / 2. * time_binning_,
+        (n_timebins_ - 1) / 2. * time_binning_,
+        800,
+        -0.25,
+        199.75);
+
+    residualsX1pix_local = new TH1F("residualsX1pix",
+                                    "Residual for 1-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
+                                    4000,
+                                    -500.5,
+                                    499.5);
+    residualsY1pix_local = new TH1F("residualsY1pix",
+                                    "Residual for 1-pixel clusters in local Y;y_{track}-y_{hit} [#mum];# entries",
+                                    4000,
+                                    -500.5,
+                                    499.5);
+    residualsX2pix_local = new TH1F("residualsX2pix",
+                                    "Residual for 2-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
+                                    4000,
+                                    -500.5,
+                                    499.5);
+    residualsY2pix_local = new TH1F("residualsY2pix",
+                                    "Residual for 2-pixel clusters in local Y;y_{track}-y_{hit} [#mum];# entries",
+                                    4000,
+                                    -500.5,
+                                    499.5);
+    residualsX3pix_local = new TH1F("residualsX3pix",
+                                    "Residual for 3-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
+                                    4000,
+                                    -500.5,
+                                    499.5);
+    residualsY3pix_local = new TH1F("residualsY3pix",
+                                    "Residual for 3-pixel clusters in local Y;y_{track}-y_{hit} [#mum];# entries",
+                                    4000,
+                                    -500.5,
+                                    499.5);
+    residualsX4pix_local = new TH1F("residualsX4pix",
+                                    "Residual for 4-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
+                                    4000,
+                                    -500.5,
+                                    499.5);
+    residualsY4pix_local = new TH1F("residualsY4pix",
+                                    "Residual for 4-pixel clusters in local Y;y_{track}-y_{hit} [#mum];# entries",
+                                    4000,
+                                    -500.5,
+                                    499.5);
+    residualsXatLeast5pix_local = new TH1F("residualsXatLeast5pix",
+                                           "Residual for >= 5-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
+                                           4000,
+                                           -500.5,
+                                           499.5);
+    residualsYatLeast5pix_local = new TH1F("residualsYatLeast5pix",
+                                           "Residual for >= 5-pixel clusters in local Y;y_{track}-y_{hit} [#mum];# entries",
+                                           4000,
+                                           -500.5,
+                                           499.5);
+    local_directory->cd();
 }
