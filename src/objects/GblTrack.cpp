@@ -3,7 +3,7 @@
  * @brief Implementation of GBL track object with rotations. The logic is inspired by the implementation in proteus (Kiehn,
  * Moritz et al., Proteus beam telescope reconstruction, doi:10.5281/zenodo.2579153)
  *
- * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * @copyright Copyright (c) 2017-2022 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
