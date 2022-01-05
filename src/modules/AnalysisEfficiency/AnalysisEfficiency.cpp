@@ -211,6 +211,7 @@ void AnalysisEfficiency::initialize() {
     efficiencyVsTime->SetDirectory(this->getROOTDirectory());
     efficiencyRows->SetDirectory(this->getROOTDirectory());
     efficiencyColumns->SetDirectory(this->getROOTDirectory());
+    eTotalEfficiency->SetDirectory(this->getROOTDirectory());
     hTrackTimeToPrevHit_matched =
         new TH1D("trackTimeToPrevHit_matched", "trackTimeToPrevHit_matched;time to prev hit [us];# events", 1e6, 0, 1e6);
     hTrackTimeToPrevHit_notmatched = new TH1D(
