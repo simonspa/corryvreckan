@@ -63,6 +63,7 @@ namespace corryvreckan {
         TH1F *residualsX3pix_local, *residualsY3pix_local;
         TH1F *residualsX4pix_local, *residualsY4pix_local;
         TH1F *residualsXatLeast5pix_local, *residualsYatLeast5pix_local;
+        std::vector<TH1F*> residualsXclusterColLocal, residualsYclusterRowLocal;
 
         // global
         TH2F* residualsPosVsresidualsTime_global;

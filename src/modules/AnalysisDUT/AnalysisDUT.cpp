@@ -755,41 +755,12 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             residualsY_local->Fill(ydistance_um);
             residualsPos_local->Fill(posDiff_um);
             residualsPosVsresidualsTime_local->Fill(tdistance, posDiff_um);
-
-            if(assoc_cluster->columnWidth() == 1) {
-                residualsX1pix_local->Fill(xdistance_um);
-            }
-            if(assoc_cluster->rowWidth() == 1) {
-                residualsY1pix_local->Fill(ydistance_um);
-            }
-
-            if(assoc_cluster->columnWidth() == 2) {
-                residualsX2pix_local->Fill(xdistance_um);
-            }
-            if(assoc_cluster->rowWidth() == 2) {
-                residualsY2pix_local->Fill(ydistance_um);
-            }
-
-            if(assoc_cluster->columnWidth() == 3) {
-                residualsX3pix_local->Fill(xdistance_um);
-            }
-            if(assoc_cluster->rowWidth() == 3) {
-                residualsY3pix_local->Fill(ydistance_um);
-            }
-
-            if(assoc_cluster->columnWidth() == 4) {
-                residualsX4pix_local->Fill(xdistance_um);
-            }
-            if(assoc_cluster->rowWidth() == 4) {
-                residualsY4pix_local->Fill(ydistance_um);
-            }
-
-            if(assoc_cluster->columnWidth() >= 5) {
-                residualsXatLeast5pix_local->Fill(xdistance_um);
-            }
-            if(assoc_cluster->rowWidth() >= 5) {
-                residualsYatLeast5pix_local->Fill(ydistance_um);
-            }
+            (assoc_cluster->columnWidth() < residualsXclusterColLocal.size() - 1)
+                ? residualsXclusterColLocal.at(assoc_cluster->columnWidth())->Fill(xdistance_um)
+                : residualsXclusterColLocal.back()->Fill(xdistance_um);
+            (assoc_cluster->rowWidth() < residualsYclusterRowLocal.size() - 1)
+                ? residualsYclusterRowLocal.at(assoc_cluster->rowWidth())->Fill(ydistance_um)
+                : residualsYclusterRowLocal.back()->Fill(ydistance_um);
 
             // Time residuals
             residualsTime->Fill(tdistance);
@@ -1004,6 +975,9 @@ void AnalysisDUT::createLocalResidualPlots() {
                                     4000,
                                     -500.5,
                                     499.5);
+
+    residualsXclusterColLocal.push_back(residualsX1pix_local);
+    residualsYclusterRowLocal.push_back(residualsY1pix_local);
     residualsX2pix_local = new TH1F("residualsX2pix",
                                     "Residual for 2-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
                                     4000,
@@ -1014,6 +988,8 @@ void AnalysisDUT::createLocalResidualPlots() {
                                     4000,
                                     -500.5,
                                     499.5);
+    residualsXclusterColLocal.push_back(residualsX2pix_local);
+    residualsYclusterRowLocal.push_back(residualsY2pix_local);
     residualsX3pix_local = new TH1F("residualsX3pix",
                                     "Residual for 3-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
                                     4000,
@@ -1024,6 +1000,9 @@ void AnalysisDUT::createLocalResidualPlots() {
                                     4000,
                                     -500.5,
                                     499.5);
+    residualsXclusterColLocal.push_back(residualsX3pix_local);
+    residualsYclusterRowLocal.push_back(residualsY3pix_local);
+
     residualsX4pix_local = new TH1F("residualsX4pix",
                                     "Residual for 4-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
                                     4000,
@@ -1034,6 +1013,9 @@ void AnalysisDUT::createLocalResidualPlots() {
                                     4000,
                                     -500.5,
                                     499.5);
+    residualsXclusterColLocal.push_back(residualsX4pix_local);
+    residualsYclusterRowLocal.push_back(residualsY4pix_local);
+
     residualsXatLeast5pix_local = new TH1F("residualsXatLeast5pix",
                                            "Residual for >= 5-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
                                            4000,
@@ -1044,5 +1026,8 @@ void AnalysisDUT::createLocalResidualPlots() {
                                            4000,
                                            -500.5,
                                            499.5);
+    residualsXclusterColLocal.push_back(residualsXatLeast5pix_local);
+    residualsYclusterRowLocal.push_back(residualsYatLeast5pix_local);
+
     local_directory->cd();
 }
