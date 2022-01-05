@@ -701,36 +701,16 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             hTrackZPosDUT->Fill(track->getState(m_detector->getName()).z());
 
-            // Check distance between track and cluster in local coordinates
-            ROOT::Math::XYZPoint intercept = m_detector->getLocalIntercept(track.get());
-            double xdistance = intercept.X() - assoc_cluster->local().x();
-            double ydistance = intercept.Y() - assoc_cluster->local().y();
-            double xdistance_um = xdistance * 1000.;
-            double ydistance_um = ydistance * 1000.;
+            // Fill per-pixel histograms
+            for(auto& pixel : assoc_cluster->pixels()) {
+                hHitMapAssoc->Fill(pixel->column(), pixel->row());
+                hPixelRawValueAssoc->Fill(pixel->raw());
+                hPixelRawValueMapAssoc->Fill(pixel->column(), pixel->row(), pixel->raw());
+            }
 
-            double xabsdistance = fabs(xdistance);
-            double yabsdistance = fabs(ydistance);
-            double tdistance = track->timestamp() - assoc_cluster->timestamp();
-            double posDiff =
-                sqrt((intercept.X() - assoc_cluster->global().x()) * (intercept.X() - assoc_cluster->global().x()) +
-                     (intercept.Y() - assoc_cluster->global().y()) * (intercept.Y() - assoc_cluster->global().y()));
-            double posDiff_um = posDiff * 1000.;
+            // Cluster and Charge Plots
 
-            hClusterMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row());
-            hClusterSizeMapAssoc->Fill(
-                assoc_cluster->column(), assoc_cluster->row(), static_cast<double>(assoc_cluster->size()));
-            hClusterSizeVsColAssoc->Fill(assoc_cluster->column(), static_cast<double>(assoc_cluster->size()));
-            hClusterSizeVsRowAssoc->Fill(assoc_cluster->row(), static_cast<double>(assoc_cluster->size()));
-            hClusterWidthColVsRowAssoc->Fill(assoc_cluster->row(), static_cast<double>(assoc_cluster->columnWidth()));
-            hClusterWidthRowVsRowAssoc->Fill(assoc_cluster->row(), static_cast<double>(assoc_cluster->rowWidth()));
-
-            // Cluster charge normalized to path length in sensor:
-            double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
-            // FIXME: what does this mean? To my understanding we have the correct charge here already...
             auto cluster_charge = assoc_cluster->charge();
-            auto normalized_charge = cluster_charge * norm;
-
-            // clusterChargeAssoc->Fill(normalized_charge);
             clusterChargeAssoc->Fill(cluster_charge);
             seedChargeAssoc->Fill(assoc_cluster->getSeedPixel()->charge());
             hClusterChargeMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row(), cluster_charge);
@@ -741,26 +721,91 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             hClusterChargeVsRowAssoc_2D->Fill(assoc_cluster->row(), cluster_charge);
             hSeedChargeVsRowAssoc_2D->Fill(assoc_cluster->row(), assoc_cluster->getSeedPixel()->charge());
 
-            // Fill per-pixel histograms
-            for(auto& pixel : assoc_cluster->pixels()) {
-                hHitMapAssoc->Fill(pixel->column(), pixel->row());
-                hPixelRawValueAssoc->Fill(pixel->raw());
-                hPixelRawValueMapAssoc->Fill(pixel->column(), pixel->row(), pixel->raw());
-            }
+            clusterSizeAssoc->Fill(static_cast<double>(assoc_cluster->size()));
+            clusterSizeAssocNorm->Fill(static_cast<double>(assoc_cluster->size()));
+            clusterWidthRowAssoc->Fill(static_cast<double>(assoc_cluster->rowWidth()));
+            clusterWidthColAssoc->Fill(static_cast<double>(assoc_cluster->columnWidth()));
+
+            hClusterMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row());
+            hClusterSizeMapAssoc->Fill(
+                assoc_cluster->column(), assoc_cluster->row(), static_cast<double>(assoc_cluster->size()));
+            hClusterSizeVsColAssoc->Fill(assoc_cluster->column(), static_cast<double>(assoc_cluster->size()));
+            hClusterSizeVsRowAssoc->Fill(assoc_cluster->row(), static_cast<double>(assoc_cluster->size()));
+            hClusterWidthColVsRowAssoc->Fill(assoc_cluster->row(), static_cast<double>(assoc_cluster->columnWidth()));
+            hClusterWidthRowVsRowAssoc->Fill(assoc_cluster->row(), static_cast<double>(assoc_cluster->rowWidth()));
 
             associatedTracksVersusTime->Fill(track->timestamp() / 1e9); // convert ns -> s
 
+            // Check distance between track and cluster in local coordinates
+            ROOT::Math::XYZPoint intercept = m_detector->getLocalIntercept(track.get());
+            double Localxdistance = intercept.X() - assoc_cluster->local().x();
+            double Localydistance = intercept.Y() - assoc_cluster->local().y();
+            double Localxdistance_um = Localxdistance * 1000.;
+            double Localydistance_um = Localydistance * 1000.;
+
+            double Localxabsdistance = fabs(Localxdistance);
+            double Localyabsdistance = fabs(Localydistance);
+            double tdistance = track->timestamp() - assoc_cluster->timestamp();
+            double LocalposDiff = sqrt(Localxdistance * Localxabsdistance + Localyabsdistance * Localyabsdistance);
+            double LocalposDiff_um = LocalposDiff * 1000.;
+
+            // Cluster charge normalized to path length in sensor:
+            double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
+            // FIXME: what does this mean? To my understanding we have the correct charge here already...
+            auto normalized_charge = cluster_charge * norm;
+
+            // clusterChargeAssoc->Fill(normalized_charge);
+
             // Residuals
-            residualsX_local->Fill(xdistance_um);
-            residualsY_local->Fill(ydistance_um);
-            residualsPos_local->Fill(posDiff_um);
-            residualsPosVsresidualsTime_local->Fill(tdistance, posDiff_um);
-            (assoc_cluster->columnWidth() < residualsXclusterColLocal.size() - 1)
-                ? residualsXclusterColLocal.at(assoc_cluster->columnWidth())->Fill(xdistance_um)
-                : residualsXclusterColLocal.back()->Fill(xdistance_um);
-            (assoc_cluster->rowWidth() < residualsYclusterRowLocal.size() - 1)
-                ? residualsYclusterRowLocal.at(assoc_cluster->rowWidth())->Fill(ydistance_um)
-                : residualsYclusterRowLocal.back()->Fill(ydistance_um);
+            residualsX_local->Fill(Localxdistance_um);
+            residualsY_local->Fill(Localydistance_um);
+            residualsPos_local->Fill(LocalposDiff_um);
+            residualsPosVsresidualsTime_local->Fill(tdistance, LocalposDiff_um);
+
+            // fill resolution depending on cluster size (max 4, everything higher in last plot)
+            (assoc_cluster->columnWidth() < residualsXclusterColLocal.size())
+                ? residualsXclusterColLocal.at(assoc_cluster->columnWidth() - 1)->Fill(Localxdistance_um)
+                : residualsXclusterColLocal.back()->Fill(Localxdistance_um);
+            (assoc_cluster->rowWidth() < residualsYclusterRowLocal.size())
+                ? residualsYclusterRowLocal.at(assoc_cluster->rowWidth() - 1)->Fill(Localydistance_um)
+                : residualsYclusterRowLocal.back()->Fill(Localydistance_um);
+
+            // Global residuals
+
+            ROOT::Math::XYZPoint Globalintercept = m_detector->getIntercept(track.get());
+            double Globalxdistance = Globalintercept.X() - assoc_cluster->global().x();
+            double Globalydistance = Globalintercept.Y() - assoc_cluster->global().y();
+            double Globalxdistance_um = Globalxdistance * 1000.;
+            double Globalydistance_um = Globalydistance * 1000.;
+            double Globalxabsdistance = fabs(Globalxdistance);
+            double Globalyabsdistance = fabs(Globalydistance);
+            double GlobalposDiff = sqrt(Globalxdistance * Globalxabsdistance + Globalyabsdistance * Globalyabsdistance);
+            double GlobalposDiff_um = GlobalposDiff * 1000.;
+
+            residualsX_global->Fill(Globalxdistance_um);
+            residualsY_global->Fill(Globalydistance_um);
+            residualsPos_global->Fill(GlobalposDiff_um);
+            residualsPosVsresidualsTime_global->Fill(tdistance, GlobalposDiff_um);
+
+            (assoc_cluster->columnWidth() < residualsXclusterColGlobal.size())
+                ? residualsXclusterColGlobal.at(assoc_cluster->columnWidth() - 1)->Fill(Globalxdistance_um)
+                : residualsXclusterColGlobal.back()->Fill(Globalxdistance_um);
+            (assoc_cluster->rowWidth() < residualsYclusterRowGlobal.size())
+                ? residualsYclusterRowGlobal.at(assoc_cluster->rowWidth() - 1)->Fill(Globalydistance_um)
+                : residualsYclusterRowGlobal.back()->Fill(Globalydistance_um);
+
+            (assoc_cluster->columnWidth() < residualsYclusterColGlobal.size())
+                ? residualsYclusterColGlobal.at(assoc_cluster->columnWidth() - 1)->Fill(Globalydistance_um)
+                : residualsYclusterColGlobal.back()->Fill(Globalydistance_um);
+            (assoc_cluster->rowWidth() < residualsXclusterRowGlobal.size())
+                ? residualsXclusterRowGlobal.at(assoc_cluster->rowWidth() - 1)->Fill(Globalxdistance_um)
+                : residualsXclusterRowGlobal.back()->Fill(Globalxdistance_um);
+
+            // residual MAD x, y, combined (sqrt(x*x + y*y))- this we also need as global and local? tricky
+            rmsxvsxmym->Fill(xmod_um, ymod_um, Localxabsdistance);
+            rmsyvsxmym->Fill(xmod_um, ymod_um, Localyabsdistance);
+            rmsxyvsxmym->Fill(
+                xmod_um, ymod_um, fabs(sqrt(Localxdistance * Localxdistance + Localydistance * Localydistance)));
 
             // Time residuals
             residualsTime->Fill(tdistance);
@@ -770,13 +815,9 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             residualsTimeVsRow->Fill(tdistance, assoc_cluster->getSeedPixel()->row());
             residualsTimeVsSignal->Fill(tdistance, cluster_charge);
 
-            clusterSizeAssoc->Fill(static_cast<double>(assoc_cluster->size()));
-            clusterSizeAssocNorm->Fill(static_cast<double>(assoc_cluster->size()));
-            clusterWidthRowAssoc->Fill(static_cast<double>(assoc_cluster->rowWidth()));
-            clusterWidthColAssoc->Fill(static_cast<double>(assoc_cluster->columnWidth()));
-
             // Fill in-pixel plots: (all as function of track position within pixel cell)
-            qvsxmym->Fill(xmod_um, ymod_um, cluster_charge);                     // cluster charge profile
+            qvsxmym->Fill(xmod_um, ymod_um, cluster_charge); // cluster charge profile
+            // FIXME: Any idea what that should be?
             qMoyalvsxmym->Fill(xmod_um, ymod_um, exp(-normalized_charge / 3.5)); // norm. cluster charge profile
 
             // mean charge of cluster seed
@@ -832,11 +873,6 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
                 qvsxmym_4px->Fill(xmod_um, ymod_um, cluster_charge);
             }
 
-            // residual MAD x, y, combined (sqrt(x*x + y*y))
-            rmsxvsxmym->Fill(xmod_um, ymod_um, xabsdistance);
-            rmsyvsxmym->Fill(xmod_um, ymod_um, yabsdistance);
-            rmsxyvsxmym->Fill(xmod_um, ymod_um, fabs(sqrt(xdistance * xdistance + ydistance * ydistance)));
-
             hAssociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
             hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
         }
@@ -882,58 +918,130 @@ void AnalysisDUT::createGlobalResidualPlots() {
         -0.25,
         199.75);
 
-    residualsX1pix_global = new TH1F("residualsX1pix",
-                                     "Residual for 1-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
-                                     4000,
-                                     -500.5,
-                                     499.5);
-    residualsY1pix_global = new TH1F("residualsY1pix",
-                                     "Residual for 1-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
-                                     4000,
-                                     -500.5,
-                                     499.5);
-    residualsX2pix_global = new TH1F("residualsX2pix",
-                                     "Residual for 2-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
-                                     4000,
-                                     -500.5,
-                                     499.5);
-    residualsY2pix_global = new TH1F("residualsY2pix",
-                                     "Residual for 2-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
-                                     4000,
-                                     -500.5,
-                                     499.5);
-    residualsX3pix_global = new TH1F("residualsX3pix",
-                                     "Residual for 3-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
-                                     4000,
-                                     -500.5,
-                                     499.5);
-    residualsY3pix_global = new TH1F("residualsY3pix",
-                                     "Residual for 3-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
-                                     4000,
-                                     -500.5,
-                                     499.5);
-    residualsX4pix_global = new TH1F("residualsX4pix",
-                                     "Residual for 4-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
-                                     4000,
-                                     -500.5,
-                                     499.5);
-    residualsY4pix_global = new TH1F("residualsY4pix",
-                                     "Residual for 4-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
-                                     4000,
-                                     -500.5,
-                                     499.5);
-    residualsXatLeast5pix_global =
-        new TH1F("residualsXatLeast5pix",
+    residualsXclusterColGlobal.push_back(
+        new TH1F("residualsX1pixCol",
+                 "Residual for 1-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsXclusterColGlobal.push_back(
+        new TH1F("residualsX2pixCol",
+                 "Residual for 2-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsXclusterColGlobal.push_back(
+        new TH1F("residualsX3pixCol",
+                 "Residual for 3-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsXclusterColGlobal.push_back(
+        new TH1F("residualsX4pixCol",
+                 "Residual for 4-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsXclusterColGlobal.push_back(
+        new TH1F("residualsXatLeast5pixCol",
                  "Residual for >= 5-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
                  4000,
                  -500.5,
-                 499.5);
-    residualsYatLeast5pix_global =
-        new TH1F("residualsYatLeast5pix",
+                 499.5));
+
+    residualsYclusterColGlobal.push_back(
+        new TH1F("residualsY1pixCol",
+                 "Residual for 1-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsYclusterColGlobal.push_back(
+        new TH1F("residualsY2pixCol",
+                 "Residual for 2-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsYclusterColGlobal.push_back(
+        new TH1F("residualsY3pixCol",
+                 "Residual for 3-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsYclusterColGlobal.push_back(
+        new TH1F("residualsY4pixCol",
+                 "Residual for 4-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsYclusterColGlobal.push_back(
+        new TH1F("residualsYatLeast5pixCol",
                  "Residual for >= 5-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
                  4000,
                  -500.5,
-                 499.5);
+                 499.5));
+
+    residualsXclusterRowGlobal.push_back(
+        new TH1F("residualsX1pixRow",
+                 "Residual for 1-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsXclusterRowGlobal.push_back(
+        new TH1F("residualsX2pixRow",
+                 "Residual for 2-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsXclusterRowGlobal.push_back(
+        new TH1F("residualsX3pixRow",
+                 "Residual for 3-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsXclusterRowGlobal.push_back(
+        new TH1F("residualsX4pixRow",
+                 "Residual for 4-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsXclusterRowGlobal.push_back(
+        new TH1F("residualsXatLeast5pixRow",
+                 "Residual for >= 5-pixel clusters in global X;x_{track}-x_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+
+    residualsYclusterRowGlobal.push_back(
+        new TH1F("residualsY1pixRow",
+                 "Residual for 1-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsYclusterRowGlobal.push_back(
+        new TH1F("residualsY2pixRow",
+                 "Residual for 2-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsYclusterRowGlobal.push_back(
+        new TH1F("residualsY3pixRow",
+                 "Residual for 3-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsYclusterRowGlobal.push_back(
+        new TH1F("residualsY4pixRow",
+                 "Residual for 4-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsYclusterRowGlobal.push_back(
+        new TH1F("residualsYatLeast5pixRow",
+                 "Residual for >= 5-pixel clusters in global Y;y_{track}-y_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+
     directory->cd();
 }
 
@@ -965,69 +1073,69 @@ void AnalysisDUT::createLocalResidualPlots() {
         -0.25,
         199.75);
 
-    residualsX1pix_local = new TH1F("residualsX1pix",
-                                    "Residual for 1-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
-                                    4000,
-                                    -500.5,
-                                    499.5);
-    residualsY1pix_local = new TH1F("residualsY1pix",
-                                    "Residual for 1-pixel clusters in local Y;y_{track}-y_{hit} [#mum];# entries",
-                                    4000,
-                                    -500.5,
-                                    499.5);
+    residualsXclusterColLocal.push_back(
+        new TH1F("residualsX1pix",
+                 "Residual for 1-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsYclusterRowLocal.push_back(
+        new TH1F("residualsY1pix",
+                 "Residual for 1-pixel clusters in local Y;y_{track}-y_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
 
-    residualsXclusterColLocal.push_back(residualsX1pix_local);
-    residualsYclusterRowLocal.push_back(residualsY1pix_local);
-    residualsX2pix_local = new TH1F("residualsX2pix",
-                                    "Residual for 2-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
-                                    4000,
-                                    -500.5,
-                                    499.5);
-    residualsY2pix_local = new TH1F("residualsY2pix",
-                                    "Residual for 2-pixel clusters in local Y;y_{track}-y_{hit} [#mum];# entries",
-                                    4000,
-                                    -500.5,
-                                    499.5);
-    residualsXclusterColLocal.push_back(residualsX2pix_local);
-    residualsYclusterRowLocal.push_back(residualsY2pix_local);
-    residualsX3pix_local = new TH1F("residualsX3pix",
-                                    "Residual for 3-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
-                                    4000,
-                                    -500.5,
-                                    499.5);
-    residualsY3pix_local = new TH1F("residualsY3pix",
-                                    "Residual for 3-pixel clusters in local Y;y_{track}-y_{hit} [#mum];# entries",
-                                    4000,
-                                    -500.5,
-                                    499.5);
-    residualsXclusterColLocal.push_back(residualsX3pix_local);
-    residualsYclusterRowLocal.push_back(residualsY3pix_local);
+    residualsXclusterColLocal.push_back(
+        new TH1F("residualsX2pix",
+                 "Residual for 2-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsYclusterRowLocal.push_back(
+        new TH1F("residualsY2pix",
+                 "Residual for 2-pixel clusters in local Y;y_{track}-y_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
 
-    residualsX4pix_local = new TH1F("residualsX4pix",
-                                    "Residual for 4-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
-                                    4000,
-                                    -500.5,
-                                    499.5);
-    residualsY4pix_local = new TH1F("residualsY4pix",
-                                    "Residual for 4-pixel clusters in local Y;y_{track}-y_{hit} [#mum];# entries",
-                                    4000,
-                                    -500.5,
-                                    499.5);
-    residualsXclusterColLocal.push_back(residualsX4pix_local);
-    residualsYclusterRowLocal.push_back(residualsY4pix_local);
+    residualsXclusterColLocal.push_back(
+        new TH1F("residualsX3pix",
+                 "Residual for 3-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsYclusterRowLocal.push_back(
+        new TH1F("residualsY3pix",
+                 "Residual for 3-pixel clusters in local Y;y_{track}-y_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
 
-    residualsXatLeast5pix_local = new TH1F("residualsXatLeast5pix",
-                                           "Residual for >= 5-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
-                                           4000,
-                                           -500.5,
-                                           499.5);
-    residualsYatLeast5pix_local = new TH1F("residualsYatLeast5pix",
-                                           "Residual for >= 5-pixel clusters in local Y;y_{track}-y_{hit} [#mum];# entries",
-                                           4000,
-                                           -500.5,
-                                           499.5);
-    residualsXclusterColLocal.push_back(residualsXatLeast5pix_local);
-    residualsYclusterRowLocal.push_back(residualsYatLeast5pix_local);
+    residualsXclusterColLocal.push_back(
+        new TH1F("residualsX4pix",
+                 "Residual for 4-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsYclusterRowLocal.push_back(
+        new TH1F("residualsY4pix",
+                 "Residual for 4-pixel clusters in local Y;y_{track}-y_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
 
-    local_directory->cd();
+    residualsXclusterColLocal.push_back(
+        new TH1F("residualsXatLeast5pix",
+                 "Residual for >= 5-pixel clusters in local X;x_{track}-x_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    residualsYclusterRowLocal.push_back(
+        new TH1F("residualsYatLeast5pix",
+                 "Residual for >= 5-pixel clusters in local Y;y_{track}-y_{hit} [#mum];# entries",
+                 4000,
+                 -500.5,
+                 499.5));
+    directory->cd();
 }

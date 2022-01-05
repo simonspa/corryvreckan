@@ -58,21 +58,13 @@ namespace corryvreckan {
         // local
         TH2F* residualsPosVsresidualsTime_local;
         TH1F *residualsX_local, *residualsY_local, *residualsPos_local;
-        TH1F *residualsX1pix_local, *residualsY1pix_local;
-        TH1F *residualsX2pix_local, *residualsY2pix_local;
-        TH1F *residualsX3pix_local, *residualsY3pix_local;
-        TH1F *residualsX4pix_local, *residualsY4pix_local;
-        TH1F *residualsXatLeast5pix_local, *residualsYatLeast5pix_local;
         std::vector<TH1F*> residualsXclusterColLocal, residualsYclusterRowLocal;
 
         // global
         TH2F* residualsPosVsresidualsTime_global;
         TH1F *residualsX_global, *residualsY_global, *residualsPos_global;
-        TH1F *residualsX1pix_global, *residualsY1pix_global;
-        TH1F *residualsX2pix_global, *residualsY2pix_global;
-        TH1F *residualsX3pix_global, *residualsY3pix_global;
-        TH1F *residualsX4pix_global, *residualsY4pix_global;
-        TH1F *residualsXatLeast5pix_global, *residualsYatLeast5pix_global;
+        std::vector<TH1F*> residualsXclusterColGlobal, residualsYclusterRowGlobal;
+        std::vector<TH1F*> residualsYclusterColGlobal, residualsXclusterRowGlobal;
 
         TH1F* clusterChargeAssoc;
         TH1F* seedChargeAssoc;
