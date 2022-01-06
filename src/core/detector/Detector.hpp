@@ -117,7 +117,11 @@ namespace corryvreckan {
          * @return Auxiliary status
          */
         bool isAuxiliary() const;
-
+        /**
+         * @brief Check whether detector is registered as Passive
+         * @return Passive status
+         */
+        bool isPassive() const;
         /**
          * @brief Obtain roles assigned to this detector
          * @return List of detector roles

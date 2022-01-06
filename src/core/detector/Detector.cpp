@@ -111,6 +111,10 @@ bool Detector::isAuxiliary() const {
     return static_cast<bool>(m_role & DetectorRole::AUXILIARY);
 }
 
+bool Detector::isPassive() const {
+    return static_cast<bool>(m_role & DetectorRole::PASSIVE);
+}
+
 DetectorRole Detector::getRoles() const {
     return m_role;
 }
