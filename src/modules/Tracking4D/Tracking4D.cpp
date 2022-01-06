@@ -303,6 +303,11 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
                     continue;
                 }
 
+                if(detector->isPassive()) {
+                    LOG(DEBUG) << "Skipping passive plane.";
+                    continue;
+                }
+
                 // Determine whether a track can still be assembled given the number of current hits and the number of
                 // detectors to come. Reduces computing time.
                 detector_nr++;
