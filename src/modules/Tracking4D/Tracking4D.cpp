@@ -211,7 +211,7 @@ void Tracking4D::initialize() {
         residualsY_global[detectorID] =
             new TH1F("GlobalResidualsY", title.c_str(), 500, -3 * detector->getPitch().Y(), 3 * detector->getPitch().Y());
 
-        title = detectorID + " global  Residual Y vs. cluster position Y;y-y_{track} [mm];y [mm]";
+        title = detectorID + " global  Residual Y vs. global position Y;y-y_{track} [mm];y [mm]";
         residualsY_vs_positionY_global[detectorID] = new TH2F("GlobalResidualsY_vs_GlobalPositionY",
                                                               title.c_str(),
                                                               500,
@@ -220,7 +220,7 @@ void Tracking4D::initialize() {
                                                               400,
                                                               -detector->getSize().Y() / 1.5,
                                                               detector->getSize().Y() / 1.5);
-        title = detectorID + " global  Residual Y vs. cluster position X;y-y_{track} [mm];x [mm]";
+        title = detectorID + " global  Residual Y vs. global position X;y-y_{track} [mm];x [mm]";
         residualsY_vs_positionX_global[detectorID] = new TH2F("GlobalResidualsY_vs_GlobalPositionX",
                                                               title.c_str(),
                                                               500,
