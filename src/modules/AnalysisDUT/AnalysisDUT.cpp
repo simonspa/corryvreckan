@@ -738,16 +738,16 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             // Check distance between track and cluster in local coordinates
             ROOT::Math::XYZPoint intercept = m_detector->getLocalIntercept(track.get());
-            double Localxdistance = intercept.X() - assoc_cluster->local().x();
-            double Localydistance = intercept.Y() - assoc_cluster->local().y();
-            double Localxdistance_um = Localxdistance * 1000.;
-            double Localydistance_um = Localydistance * 1000.;
+            double local_x_distance = intercept.X() - assoc_cluster->local().x();
+            double local_y_distance = intercept.Y() - assoc_cluster->local().y();
+            double local_x_distance_um = local_x_distance * 1000.;
+            double local_y_distance_um = local_y_distance * 1000.;
 
-            double Localxabsdistance = fabs(Localxdistance);
-            double Localyabsdistance = fabs(Localydistance);
-            double tdistance = track->timestamp() - assoc_cluster->timestamp();
-            double LocalposDiff = sqrt(Localxdistance * Localxabsdistance + Localyabsdistance * Localyabsdistance);
-            double LocalposDiff_um = LocalposDiff * 1000.;
+            double local_x_absdistance = fabs(local_x_distance);
+            double local_y_absdistance = fabs(local_y_distance);
+            double time_distance = track->timestamp() - assoc_cluster->timestamp();
+            double local_pos_diff = sqrt(local_x_distance * local_x_absdistance + local_y_absdistance * local_y_absdistance);
+            double local_pos_diff_um = local_pos_diff * 1000.;
 
             // Cluster charge normalized to path length in sensor:
             double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
@@ -757,67 +757,70 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             // clusterChargeAssoc->Fill(normalized_charge);
 
             // Residuals
-            residualsX_local->Fill(Localxdistance_um);
-            residualsY_local->Fill(Localydistance_um);
-            residualsPos_local->Fill(LocalposDiff_um);
-            residualsPosVsresidualsTime_local->Fill(tdistance, LocalposDiff_um);
+            residualsX_local->Fill(local_x_distance_um);
+            residualsY_local->Fill(local_y_distance_um);
+            residualsPos_local->Fill(local_pos_diff_um);
+            residualsPosVsresidualsTime_local->Fill(time_distance, local_pos_diff_um);
 
             // fill resolution depending on cluster size (max 4, everything higher in last plot)
             (assoc_cluster->columnWidth() < residualsXclusterColLocal.size())
-                ? residualsXclusterColLocal.at(assoc_cluster->columnWidth() - 1)->Fill(Localxdistance_um)
-                : residualsXclusterColLocal.back()->Fill(Localxdistance_um);
+                ? residualsXclusterColLocal.at(assoc_cluster->columnWidth() - 1)->Fill(local_x_distance_um)
+                : residualsXclusterColLocal.back()->Fill(local_x_distance_um);
             (assoc_cluster->rowWidth() < residualsYclusterRowLocal.size())
-                ? residualsYclusterRowLocal.at(assoc_cluster->rowWidth() - 1)->Fill(Localydistance_um)
-                : residualsYclusterRowLocal.back()->Fill(Localydistance_um);
+                ? residualsYclusterRowLocal.at(assoc_cluster->rowWidth() - 1)->Fill(local_y_distance_um)
+                : residualsYclusterRowLocal.back()->Fill(local_y_distance_um);
 
             // Global residuals
 
-            ROOT::Math::XYZPoint Globalintercept = m_detector->getIntercept(track.get());
-            double Globalxdistance = Globalintercept.X() - assoc_cluster->global().x();
-            double Globalydistance = Globalintercept.Y() - assoc_cluster->global().y();
-            double Globalxdistance_um = Globalxdistance * 1000.;
-            double Globalydistance_um = Globalydistance * 1000.;
-            double Globalxabsdistance = fabs(Globalxdistance);
-            double Globalyabsdistance = fabs(Globalydistance);
-            double GlobalposDiff = sqrt(Globalxdistance * Globalxabsdistance + Globalyabsdistance * Globalyabsdistance);
-            double GlobalposDiff_um = GlobalposDiff * 1000.;
+            ROOT::Math::XYZPoint global_lintercept = m_detector->getIntercept(track.get());
+            double global_x_distance = global_lintercept.X() - assoc_cluster->global().x();
+            double global_y_distance = global_lintercept.Y() - assoc_cluster->global().y();
+            double global_x_distance_um = global_x_distance * 1000.;
+            double global_y_distance_um = global_y_distance * 1000.;
+            double global_x_absdistance = fabs(global_x_distance);
+            double global_y_absdistance = fabs(global_y_distance);
+            double global_pos_diff =
+                sqrt(global_x_distance * global_x_absdistance + global_y_absdistance * global_y_absdistance);
+            double global_pos_diff_um = global_pos_diff * 1000.;
 
-            residualsX_global->Fill(Globalxdistance_um);
-            residualsY_global->Fill(Globalydistance_um);
-            residualsPos_global->Fill(GlobalposDiff_um);
-            residualsPosVsresidualsTime_global->Fill(tdistance, GlobalposDiff_um);
+            residualsX_global->Fill(global_x_distance_um);
+            residualsY_global->Fill(global_y_distance_um);
+            residualsPos_global->Fill(global_pos_diff_um);
+            residualsPosVsresidualsTime_global->Fill(time_distance, global_pos_diff_um);
 
             (assoc_cluster->columnWidth() < residualsXclusterColGlobal.size())
-                ? residualsXclusterColGlobal.at(assoc_cluster->columnWidth() - 1)->Fill(Globalxdistance_um)
-                : residualsXclusterColGlobal.back()->Fill(Globalxdistance_um);
+                ? residualsXclusterColGlobal.at(assoc_cluster->columnWidth() - 1)->Fill(global_x_distance_um)
+                : residualsXclusterColGlobal.back()->Fill(global_x_distance_um);
             (assoc_cluster->rowWidth() < residualsYclusterRowGlobal.size())
-                ? residualsYclusterRowGlobal.at(assoc_cluster->rowWidth() - 1)->Fill(Globalydistance_um)
-                : residualsYclusterRowGlobal.back()->Fill(Globalydistance_um);
+                ? residualsYclusterRowGlobal.at(assoc_cluster->rowWidth() - 1)->Fill(global_y_distance_um)
+                : residualsYclusterRowGlobal.back()->Fill(global_y_distance_um);
 
             (assoc_cluster->columnWidth() < residualsYclusterColGlobal.size())
-                ? residualsYclusterColGlobal.at(assoc_cluster->columnWidth() - 1)->Fill(Globalydistance_um)
-                : residualsYclusterColGlobal.back()->Fill(Globalydistance_um);
+                ? residualsYclusterColGlobal.at(assoc_cluster->columnWidth() - 1)->Fill(global_y_distance_um)
+                : residualsYclusterColGlobal.back()->Fill(global_y_distance_um);
             (assoc_cluster->rowWidth() < residualsXclusterRowGlobal.size())
-                ? residualsXclusterRowGlobal.at(assoc_cluster->rowWidth() - 1)->Fill(Globalxdistance_um)
-                : residualsXclusterRowGlobal.back()->Fill(Globalxdistance_um);
+                ? residualsXclusterRowGlobal.at(assoc_cluster->rowWidth() - 1)->Fill(global_x_distance_um)
+                : residualsXclusterRowGlobal.back()->Fill(global_x_distance_um);
 
             // residual MAD x, y, combined (sqrt(x*x + y*y))- this we also need as global and local? tricky
-            rmsxvsxmym->Fill(xmod_um, ymod_um, Localxabsdistance);
-            rmsyvsxmym->Fill(xmod_um, ymod_um, Localyabsdistance);
+            rmsxvsxmym->Fill(xmod_um, ymod_um, local_x_absdistance);
+            rmsyvsxmym->Fill(xmod_um, ymod_um, local_y_absdistance);
             rmsxyvsxmym->Fill(
-                xmod_um, ymod_um, fabs(sqrt(Localxdistance * Localxdistance + Localydistance * Localydistance)));
+                xmod_um, ymod_um, fabs(sqrt(local_x_distance * local_x_distance + local_y_distance * local_y_distance)));
 
             // Time residuals
-            residualsTime->Fill(tdistance);
-            residualsTimeVsTime->Fill(track->timestamp() / 1e9, tdistance); // convert ns -> s
-            residualsTimeVsTot->Fill(tdistance, assoc_cluster->getSeedPixel()->raw());
-            residualsTimeVsCol->Fill(tdistance, assoc_cluster->getSeedPixel()->column());
-            residualsTimeVsRow->Fill(tdistance, assoc_cluster->getSeedPixel()->row());
-            residualsTimeVsSignal->Fill(tdistance, cluster_charge);
+            residualsTime->Fill(time_distance);
+            residualsTimeVsTime->Fill(track->timestamp() / 1e9, time_distance); // convert ns -> s
+            residualsTimeVsTot->Fill(time_distance, assoc_cluster->getSeedPixel()->raw());
+            residualsTimeVsCol->Fill(time_distance, assoc_cluster->getSeedPixel()->column());
+            residualsTimeVsRow->Fill(time_distance, assoc_cluster->getSeedPixel()->row());
+            residualsTimeVsSignal->Fill(time_distance, cluster_charge);
 
             // Fill in-pixel plots: (all as function of track position within pixel cell)
             qvsxmym->Fill(xmod_um, ymod_um, cluster_charge); // cluster charge profile
-            // FIXME: Any idea what that should be?
+
+            // FIXME: Moyal distribution (https://reference.wolfram.com/language/ref/MoyalDistribution.html) of the cluster
+            // charge
             qMoyalvsxmym->Fill(xmod_um, ymod_um, exp(-normalized_charge / 3.5)); // norm. cluster charge profile
 
             // mean charge of cluster seed
