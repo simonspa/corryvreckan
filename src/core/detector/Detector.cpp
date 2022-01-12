@@ -1,6 +1,6 @@
 /** @file
  *  @brief Implementation of the detector model
- *  @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ *  @copyright Copyright (c) 2017-2022 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -113,6 +113,10 @@ bool Detector::isPassive() const {
 
 bool Detector::isAuxiliary() const {
     return static_cast<bool>(m_role & DetectorRole::AUXILIARY);
+}
+
+bool Detector::isPassive() const {
+    return static_cast<bool>(m_role & DetectorRole::PASSIVE);
 }
 
 DetectorRole Detector::getRoles() const {
