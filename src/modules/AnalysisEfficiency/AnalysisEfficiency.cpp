@@ -25,7 +25,7 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration& config, std::shared_ptr<De
     config_.setDefault<double>("inpixel_bin_size", Units::get<double>(1.0, "um"));
     config_.setDefault<XYVector>("inpixel_cut_edge", {Units::get(5.0, "um"), Units::get(5.0, "um")});
     config_.setDefault<double>("masked_pixel_distance_cut", 1.);
-    config_.setDefault<double>("spatial_cut_sensoredge", 0.5);
+    config_.setDefault<double>("spatial_cut_sensoredge", 1.);
 
     m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge");
     m_chi2ndofCut = config_.get<double>("chi2ndof_cut");
