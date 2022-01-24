@@ -37,7 +37,7 @@ namespace corryvreckan {
     public:
         /**
          * @brief Factory to dynamically create track objects
-         * @param The name of the track model which should be used
+         * @param trackModel The name of the track model which should be used
          * @return By param trackModel assigned track model to be used
          */
         static std::shared_ptr<Track> Factory(std::string trackModel);
@@ -64,18 +64,18 @@ namespace corryvreckan {
 
         /**
          * * @brief Add a cluster to the tack, which will be used in the fit
-         * * @param cluster to be added */
+         * * @param cluster Pointer to cluster to be added */
         void addCluster(const Cluster* cluster);
 
         /**
          * @brief Associate a cluster to a track, will not be part of the fit
-         * @param cluster to be added
+         * @param cluster Pointer to cluster to be added
          */
         void addAssociatedCluster(const Cluster* cluster);
 
         /**
          * @brief Set associated cluster with smallest distance to Track
-         * @param Pointer to Cluster cluster which has smallest distance to Track
+         * @param cluster Pointer to Cluster cluster which has smallest distance to Track
          */
         void setClosestCluster(const Cluster* cluster);
 
@@ -95,15 +95,15 @@ namespace corryvreckan {
 
         /**
          * @brief Print an ASCII representation of the Track to the given stream
-         * @param ostream to print to
+         * @param out Ostream to print to
          */
         void print(std::ostream& out) const override;
 
         /**
          * @brief Set the momentum of the particle
-         * @param momentum
+         * @param momentum Momentum of the particle
          */
-        void setParticleMomentum(double p);
+        void setParticleMomentum(double momentum);
 
         /**
          * @brief Get the chi2 of the track fit
@@ -137,7 +137,7 @@ namespace corryvreckan {
 
         /**
          * @brief Check if cluster is associated
-         * @param Pointer to the clusterto be checked
+         * @param cluster Pointer to the clusterto be checked
          * @return True if the cluster is associated to the track, false if not.
          */
         bool isAssociated(Cluster* cluster) const;
@@ -171,31 +171,31 @@ namespace corryvreckan {
 
         /**
          * @brief Get the track position for a certain z position
-         * @param z position
+         * @param z Global z position
          * @return ROOT::Math::XYZPoint at z position
          */
-        virtual ROOT::Math::XYZPoint getIntercept(double) const;
+        virtual ROOT::Math::XYZPoint getIntercept(double z) const;
 
         /**
          * @brief Get the track state at a detector
-         * @param name of detector
+         * @param detectorID Name of detector
          * @return ROOT::Math::XYZPoint state at detetcor layer
          */
-        virtual ROOT::Math::XYZPoint getState(const std::string&) const;
+        virtual ROOT::Math::XYZPoint getState(const std::string& detectorID) const;
 
         /**
          * @brief Get the track direction at a detector
-         * @param name of detector
+         * @param detectorID Name of detector
          * @return ROOT::Math::XYZPoint direction at detetcor layer
          */
-        virtual ROOT::Math::XYZVector getDirection(const std::string&) const;
+        virtual ROOT::Math::XYZVector getDirection(const std::string& detectorID) const;
 
         /**
          * @brief Get the track direction at any given z position
-         * @param global z position
+         * @param z Global z position
          * @return ROOT::Math::XYZPoint direction at z
          */
-        virtual ROOT::Math::XYZVector getDirection(const double&) const;
+        virtual ROOT::Math::XYZVector getDirection(const double& z) const;
 
         /**
          * @brief check if the fitting routine already has been called. Chi2 etc are not set before
@@ -277,25 +277,30 @@ namespace corryvreckan {
             void print(std::ostream& os) const;
 
             // ROOT I/O class definition - update version number when you change this class!
-            ClassDef(Plane, 1);
+            ClassDef(Plane, 2);
+
+            void loadHistory();
+            void petrifyHistory();
 
         private:
             double z_, x_x0_;
             std::string name_;
-            TRef cluster_;
+            PointerWrapper<Cluster> cluster_;
             Transform3D to_local_;
         };
 
-    protected:
+        void loadHistory() override;
+        void petrifyHistory() override;
+
         Plane* get_plane(std::string detetorID);
-        std::vector<TRef> track_clusters_;
-        std::vector<TRef> associated_clusters_;
+        std::vector<PointerWrapper<Cluster>> track_clusters_;
+        std::vector<PointerWrapper<Cluster>> associated_clusters_;
         std::map<std::string, ROOT::Math::XYPoint> residual_local_;
         std::map<std::string, ROOT::Math::XYZPoint> residual_global_;
 
         std::vector<Plane> planes_;
 
-        std::map<std::string, TRef> closest_cluster_;
+        std::map<std::string, PointerWrapper<Cluster>> closest_cluster_;
         double chi2_;
         double ndof_;
         double chi2ndof_;
@@ -303,7 +308,7 @@ namespace corryvreckan {
         double momentum_{-1};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Track, 9)
+        ClassDefOverride(Track, 10)
     };
     // Vector type declaration
     using TrackVector = std::vector<std::shared_ptr<Track>>;

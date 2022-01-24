@@ -32,7 +32,7 @@ namespace corryvreckan {
         /**
          * @brief Constructor for this unique module
          * @param config Configuration object for this module as retrieved from the steering file
-         * @param detectors Vector of pointers to the detectors
+         * @param detector Shared pointer to detector of this module
          */
         EventLoaderMuPixTelescope(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
         ~EventLoaderMuPixTelescope() {}
@@ -94,6 +94,8 @@ namespace corryvreckan {
         std::map<std::string, TH2F*> raw_fpga_vs_chip;
         std::map<std::string, TH2F*> raw_fpga_vs_chip_corrected;
         std::map<std::string, TH1F*> chip_delay;
+        std::map<std::string, TH2F*> ts1_ts2;
+
         static std::map<std::string, int> typeString_to_typeID;
     };
 

@@ -8,10 +8,14 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include "EventLoaderEUDAQ.h"
-#include "eudaq/PluginManager.hh"
-
 #include <algorithm>
+
+#include "TDirectory.h"
+#include "TH2F.h"
+
+#include "EventLoaderEUDAQ.h"
+
+#include "eudaq/PluginManager.hh"
 
 using namespace corryvreckan;
 using namespace std;
@@ -21,27 +25,25 @@ EventLoaderEUDAQ::EventLoaderEUDAQ(Configuration& config, std::vector<std::share
 
     config_.setDefault<bool>("long_detector_id", true);
 
-    m_filename = config_.getPath("file_name", true);
+    m_filenames = config_.getPathArray("file_name", true);
     m_longID = config_.get<bool>("long_detector_id");
 }
 
 void EventLoaderEUDAQ::initialize() {
 
-    // Create new file reader:
-    try {
-        reader = new eudaq::FileReader(m_filename, "");
-    } catch(...) {
-        throw ModuleError("Unable to read input file \"" + m_filename + "\"");
+    // Create files reader:
+    reader = std::make_unique<SequentialReader>();
+    for(const auto& file : m_filenames) {
+        try {
+            reader->addFile(file);
+        } catch(...) {
+            throw ModuleError("Unable to read input file \"" + file + "\"");
+        }
     }
 
     // Loop over all planes
-    for(auto& detector : get_detectors()) {
+    for(auto& detector : get_regular_detectors(true)) {
         auto detectorID = detector->getName();
-
-        // Do not created plots for auxiliary detectors:
-        if(detector->isAuxiliary()) {
-            continue;
-        }
 
         TDirectory* directory = getROOTDirectory();
         TDirectory* local_directory = directory->mkdir(detectorID.c_str());
@@ -65,7 +67,7 @@ void EventLoaderEUDAQ::initialize() {
 StatusCode EventLoaderEUDAQ::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Read next event from EUDAQ reader:
-    const eudaq::DetectorEvent& evt = reader->Event();
+    const eudaq::DetectorEvent& evt = reader->GetDetectorEvent();
     LOG(TRACE) << evt;
 
     // Convert timestamp to nanoseconds, using

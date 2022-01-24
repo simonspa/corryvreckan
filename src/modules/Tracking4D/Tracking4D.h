@@ -70,6 +70,9 @@ namespace corryvreckan {
 
         std::map<std::string, TH1F*> kinkX;
         std::map<std::string, TH1F*> kinkY;
+
+        std::map<std::string, TH2F*> local_intersects_;
+
         // Cuts for tracking
         double momentum_;
         double max_plot_chi2_;

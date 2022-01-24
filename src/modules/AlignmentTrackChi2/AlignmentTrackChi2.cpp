@@ -134,11 +134,11 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
                              AlignmentTrackChi2::globalDetector->materialBudget(),
                              AlignmentTrackChi2::globalDetector->toLocal());
         LOG(DEBUG) << "Updated transformations for detector " << AlignmentTrackChi2::globalDetector->getName();
-	if(detName != AlignmentTrackChi2::globalDetector->getName()){
-	  detName = AlignmentTrackChi2::globalDetector->getName();
-	  fitIterations = 0;
-	}
-	  
+        if(detName != AlignmentTrackChi2::globalDetector->getName()) {
+            detName = AlignmentTrackChi2::globalDetector->getName();
+            fitIterations = 0;
+        }
+
         track->fit();
 
         // Add the new chi2
@@ -154,7 +154,8 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
     for(auto& result_future : result_futures) {
         result += result_future.get();
         LOG_PROGRESS(INFO, "t") << "Re-fitting tracks: " << tracks_done << " of " << result_futures.size() << ", "
-                                << (100 * tracks_done / result_futures.size()) << " %,  in MINUIT  iteration: "<< fitIterations;
+                                << (100 * tracks_done / result_futures.size())
+                                << " %,  in MINUIT  iteration: " << fitIterations;
         tracks_done++;
     }
     fitIterations++;
@@ -212,11 +213,11 @@ void AlignmentTrackChi2::finalize(const std::shared_ptr<ReadonlyClipboard>& clip
         LOG_PROGRESS(STATUS, "alignment_track") << "Alignment iteration " << (iteration + 1) << " of " << nIterations;
 
         int det = 0;
-        for(auto& detector : get_detectors()) {
+        for(auto& detector : get_regular_detectors(false)) {
             string detectorID = detector->getName();
 
             // Do not align the reference plane
-            if(detector->isReference() || detector->isDUT() || detector->isAuxiliary()) {
+            if(detector->isReference()) {
                 LOG(DEBUG) << "Skipping detector " << detector->getName();
                 continue;
             }
@@ -308,9 +309,9 @@ void AlignmentTrackChi2::finalize(const std::shared_ptr<ReadonlyClipboard>& clip
     LOG_PROGRESS(STATUS, "alignment_track") << "Alignment finished, " << nIterations << " iteration.";
 
     // Now list the new alignment parameters
-    for(auto& detector : get_detectors()) {
+    for(auto& detector : get_regular_detectors(false)) {
         // Do not align the reference plane
-        if(detector->isReference() || detector->isDUT() || detector->isAuxiliary()) {
+        if(detector->isReference()) {
             continue;
         }
 

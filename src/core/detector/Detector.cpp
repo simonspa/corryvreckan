@@ -25,25 +25,19 @@ using namespace corryvreckan;
 Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
 
     // Role of this detector:
-    auto roles = config.getArray<std::string>("role", std::vector<std::string>{"none"});
+    auto roles = config.getArray<DetectorRole>("role", {DetectorRole::NONE});
     for(auto& role : roles) {
-        std::transform(role.begin(), role.end(), role.begin(), ::tolower);
-        if(role == "none") {
-            m_role |= DetectorRole::NONE;
-        } else if(role == "reference" || role == "ref") {
-            m_role |= DetectorRole::REFERENCE;
-        } else if(role == "dut") {
-            m_role |= DetectorRole::DUT;
-        } else if(role == "auxiliary" || role == "aux") {
-            m_role |= DetectorRole::AUXILIARY;
-        } else {
-            throw InvalidValueError(config, "role", "Detector role does not exist.");
-        }
+        LOG(DEBUG) << "Adding role " << corryvreckan::to_string(role);
+        m_role |= role;
     }
 
     // Auxiliary devices cannot hold other roles:
-    if(static_cast<bool>(m_role & DetectorRole::AUXILIARY) && m_role != DetectorRole::AUXILIARY) {
+    if(hasRole(DetectorRole::AUXILIARY) && m_role != DetectorRole::AUXILIARY) {
         throw InvalidValueError(config, "role", "Auxiliary devices cannot hold any other detector role");
+    }
+
+    if(hasRole(DetectorRole::PASSIVE) && m_role != DetectorRole::PASSIVE) {
+        throw InvalidValueError(config, "role", "Passive detector cannot hold any other role");
     }
 
     m_detectorName = config.getName();
@@ -113,8 +107,20 @@ bool Detector::isDUT() const {
     return static_cast<bool>(m_role & DetectorRole::DUT);
 }
 
+bool Detector::isPassive() const {
+    return static_cast<bool>(m_role & DetectorRole::PASSIVE);
+}
+
 bool Detector::isAuxiliary() const {
     return static_cast<bool>(m_role & DetectorRole::AUXILIARY);
+}
+
+DetectorRole Detector::getRoles() const {
+    return m_role;
+}
+
+bool Detector::hasRole(DetectorRole role) const {
+    return static_cast<bool>(m_role & role);
 }
 
 // Function to set the channel maskfile

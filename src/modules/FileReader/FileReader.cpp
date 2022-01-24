@@ -20,7 +20,6 @@
 #include <TProcessID.h>
 #include <TTree.h>
 
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
 
@@ -213,6 +212,8 @@ void FileReader::initialize() {
 }
 
 StatusCode FileReader::run(const std::shared_ptr<Clipboard>& clipboard) {
+    // Acquire ROOT TProcessID resource lock and reset PIDs:
+    auto root_lock = root_process_lock();
 
     if(clipboard->isEventDefined()) {
         ModuleError("Clipboard event already defined, cannot continue");
@@ -245,6 +246,11 @@ StatusCode FileReader::run(const std::shared_ptr<Clipboard>& clipboard) {
             LOG(INFO) << "Cannot create object with type " << corryvreckan::demangle(typeid(*first_object).name())
                       << " because it not registered for clipboard storage";
             continue;
+        }
+
+        // Resolve history
+        for(auto& object : *objects) {
+            object->loadHistory();
         }
 
         LOG(TRACE) << "- " << objects->size() << " " << corryvreckan::demangle(typeid(*first_object).name()) << ", detector "

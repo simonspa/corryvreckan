@@ -49,8 +49,21 @@ namespace corryvreckan {
         template <typename T> size_t countPersistentObjects(const std::string& key = "") const;
 
     protected:
+        /**
+         * @brief Method to retrieve data from a clipboard storage element depending on the template type
+         * @param storage_element  Clipboard storage element to retrieve data from
+         * @param key              Data key to search for
+         * @return Vector of shared pointers to the data blocks found or empty vector if none were found
+         */
         template <typename T>
         std::vector<std::shared_ptr<T>>& get_data(const ClipboardData& storage_element, const std::string& key) const;
+
+        /**
+         * @brief Count the number of objects of a given type and key on a storage element
+         * @param storage_element  Clipboard storage element to retrieve data from
+         * @param key              Data key to search for
+         * @return Number of objects of given type and key found on the storage element
+         */
         template <typename T> size_t count_objects(const ClipboardData& storage_element, const std::string& key) const;
 
         // Persistent clipboard storage
@@ -93,7 +106,7 @@ namespace corryvreckan {
 
         /**
          * @brief Method to remove existing objects from the clipboard
-         * @param object  List of objects to be removed
+         * @param objects List of objects to be removed
          * @param key     Identifying key for the set these objects belongs to. Defaults to empty key
          */
         template <typename T> void removeData(std::vector<std::shared_ptr<T>>& objects, const std::string& key = "");
@@ -113,13 +126,13 @@ namespace corryvreckan {
         /**
          * @brief Store the event object
          * @param event The event object to be stored
-         * @thorws InvalidDataError in case an event exist already
+         * @throws InvalidDataError in case an event exist already
          */
         void putEvent(std::shared_ptr<Event> event);
 
         /**
          * @brief Retrieve the event object
-         * @returnShared pointer to the event
+         * @return Shared pointer to the event
          * @throws MissingDataError in case no event is available.
          */
         std::shared_ptr<Event> getEvent() const;

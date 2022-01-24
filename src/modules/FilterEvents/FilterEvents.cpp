@@ -69,11 +69,7 @@ bool FilterEvents::filter_tracks(const std::shared_ptr<Clipboard>& clipboard) {
 
 bool FilterEvents::filter_cluster(const std::shared_ptr<Clipboard>& clipboard) {
     // Loop over all reference detectors
-    for(auto& detector : get_detectors()) {
-        // skip duts and auxiliary
-        if(detector->isAuxiliary() || detector->isDUT()) {
-            continue;
-        }
+    for(auto& detector : get_regular_detectors(false)) {
         std::string det = detector->getName();
         // Check if number of Clusters on plane is within acceptance
         auto num_clusters = clipboard->getData<Cluster>(det).size();

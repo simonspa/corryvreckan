@@ -14,6 +14,7 @@
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <queue>
 #include <stdio.h>
 #include "core/module/Module.hpp"
 #include "objects/Pixel.hpp"
@@ -49,6 +50,8 @@ namespace corryvreckan {
         TH2F* pixelTOAParameterT;
         TH1F* timeshiftPlot;
 
+        bool decodeNextWord();
+        void fillBuffer();
         bool loadData(const std::shared_ptr<Clipboard>& clipboard, PixelVector&, SpidrSignalVector&);
         void loadCalibration(std::string path, char delim, std::vector<std::vector<float>>& dat);
         void maskPixels(std::string);
@@ -67,6 +70,8 @@ namespace corryvreckan {
         std::vector<std::unique_ptr<std::ifstream>> m_files;
         std::vector<std::unique_ptr<std::ifstream>>::iterator m_file_iterator;
 
+        bool eof_reached;
+        size_t m_buffer_depth;
         unsigned long long int m_syncTime;
         bool m_clearedHeader;
         long long int m_syncTimeTDC;
@@ -76,6 +81,18 @@ namespace corryvreckan {
 
         unsigned long long int m_prevTime;
         bool m_shutterOpen;
+        int m_prevTriggerNumber;
+        int m_triggerOverflowCounter;
+
+        template <typename T> struct CompareTimeGreater {
+            bool operator()(const std::shared_ptr<T> a, const std::shared_ptr<T> b) {
+                return a->timestamp() > b->timestamp();
+            }
+        };
+
+        std::priority_queue<std::shared_ptr<Pixel>, PixelVector, CompareTimeGreater<Pixel>> sorted_pixels_;
+        std::priority_queue<std::shared_ptr<SpidrSignal>, SpidrSignalVector, CompareTimeGreater<SpidrSignal>>
+            sorted_signals_;
     };
 } // namespace corryvreckan
 #endif // TIMEPIX3EVENTLOADER_H

@@ -14,6 +14,8 @@
 #include "objects/Cluster.hpp"
 #include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
+
+#include "TDirectory.h"
 using namespace corryvreckan;
 
 EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
@@ -105,11 +107,11 @@ void EventLoaderMuPixTelescope::initialize() {
     if(!blockFile_->open_read()) {
         throw MissingDataError("Cannot read data file: " + input_file_);
     }
+    TDirectory* dir = getROOTDirectory();
 
     // create the histograms for all sensor
     for(auto& detector : detectors_) {
         auto name = detector->getName();
-        TDirectory* dir = getROOTDirectory();
         TDirectory* local_directory = dir->mkdir(name.c_str());
 
         if(local_directory == nullptr) {
@@ -147,6 +149,9 @@ void EventLoaderMuPixTelescope::initialize() {
         title = name + "fpga vs chip clock;chip clock;fpga clock";
         raw_fpga_vs_chip_corrected[name] =
             new TH2F("raw_fpga_vs_chip_corrected", title.c_str(), 1024, 0, 1023, 2048, 0, 2047);
+        title = "ts1_ts2";
+        ts1_ts2[name] = new TH2F("ts1_ts2", title.c_str(), 1024, 0, 1023, 1024, 0, 1023);
+
         title = name + "Delay of chip events wrt. telescope frame;fpga clock@ chip clock 0;#events";
         chip_delay[name] = new TH1F("chip_delay", title.c_str(), 2048, -1023, 1023);
     }
@@ -269,7 +274,7 @@ shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint tag,
     } else {
         time = ((0x3FF & h.timestamp_raw()) << 1) + 0x1;
     }
-
+    ts1_ts2["mp10_0"]->Fill(h.get_ts2(), h.timestamp_raw());
     double px_timestamp =
         4 / refFrequency_ * 125. * static_cast<double>(((corrected_fpgaTime >> 1) & 0xFFFFFFFFFF800) + time) -
         static_cast<double>(timeOffset_.at(tag));
@@ -278,7 +283,7 @@ shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint tag,
     double tot_timestamp = 8 / refFrequency_ * 125. *
                            static_cast<double>(((corrected_fpgaTime >> 2) & (0xFFFFFFFFFFC00 << bitshift_tot_)) +
                                                (static_cast<uint32_t>(h.tot()) << bitshift_tot_));
-    double tot = (tot_timestamp - px_timestamp > 0) ? (px_timestamp - tot_timestamp) : 0;
+    double tot = (tot_timestamp); // - px_timestamp > 0) ? (px_timestamp - tot_timestamp) : 0;
     return std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), tot, tot, px_timestamp);
 }
 

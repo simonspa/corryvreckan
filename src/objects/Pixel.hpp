@@ -108,6 +108,9 @@ namespace corryvreckan {
          */
         ClassDefOverride(Pixel, 7);
 
+        void loadHistory() override{};
+        void petrifyHistory() override{};
+
     private:
         // Member variables
         int m_column;

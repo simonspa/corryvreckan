@@ -17,7 +17,6 @@
 #include <TBranchElement.h>
 #include <TClass.h>
 
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
 
@@ -40,8 +39,7 @@ FileWriter::~FileWriter() {
 void FileWriter::initialize() {
     // Create output file
     config_.setDefault<std::string>("file_name", "data");
-    output_file_name_ =
-        createOutputFile(corryvreckan::add_file_extension(config_.get<std::string>("file_name"), "root"), true);
+    output_file_name_ = createOutputFile(config_.get<std::string>("file_name"), "root", true);
     output_file_ = std::make_unique<TFile>(output_file_name_.c_str(), "RECREATE");
     output_file_->cd();
 
@@ -62,6 +60,8 @@ void FileWriter::initialize() {
 }
 
 StatusCode FileWriter::run(const std::shared_ptr<Clipboard>& clipboard) {
+    // Acquire ROOT TProcessID resource lock and reset PIDs:
+    auto root_lock = root_process_lock();
 
     if(!clipboard->isEventDefined()) {
         ModuleError("No Clipboard event defined, cannot continue");
@@ -139,6 +139,7 @@ StatusCode FileWriter::run(const std::shared_ptr<Clipboard>& clipboard) {
 
                 // Fill the branch vector
                 for(auto& object : *objects) {
+                    object->petrifyHistory();
                     ++write_cnt_;
                     write_list_[index_tuple]->push_back(object.get());
                 }

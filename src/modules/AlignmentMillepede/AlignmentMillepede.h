@@ -32,6 +32,12 @@ namespace corryvreckan {
 
         void initialize() override;
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
+
+        /**
+         * @brief Collect tracks for alignment
+         * @param clipboard Pointer to the central clipboard to store and fetch information
+         * @return Status code of the event processing
+         */
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
 
         virtual void updateGeometry();

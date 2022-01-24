@@ -63,7 +63,7 @@ std::vector<std::string> Clipboard::listCollections() const {
         line += ": ";
         for(const auto& set : block.second) {
             std::shared_ptr<ObjectVector> collection = std::static_pointer_cast<ObjectVector>(set.second);
-            line += set.first + " (" + collection->size() + ") ";
+            line += set.first + " (" + std::to_string(collection->size()) + ") ";
         }
         line += "\n";
         collections.push_back(line);

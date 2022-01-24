@@ -11,14 +11,14 @@
 #include "ConfigManager.hpp"
 
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <string>
 #include <vector>
 
 #include "Configuration.hpp"
-#include "core/utils/file.h"
+#include "core/config/exceptions.h"
 #include "core/utils/log.h"
-#include "exceptions.h"
 
 using namespace corryvreckan;
 
@@ -30,12 +30,12 @@ ConfigManager::ConfigManager(std::string file_name,
                              std::initializer_list<std::string> ignore) {
     // Check if the file exists
     std::ifstream file(file_name);
-    if(!file) {
+    if(!file || !std::filesystem::is_regular_file(file_name)) {
         throw ConfigFileUnavailableError(file_name);
     }
 
     // Convert main file to absolute path
-    file_name = corryvreckan::get_canonical_path(file_name);
+    file_name = std::filesystem::canonical(file_name);
     LOG(TRACE) << "Reading main configuration";
 
     // Read the file

@@ -27,5 +27,11 @@
 #pragma link C++ class corryvreckan::Event + ;
 #pragma link C++ class corryvreckan::Track::Plane + ;
 
+#pragma link C++ class corryvreckan::Object::PointerWrapper < corryvreckan::Pixel> + ;
+#pragma link C++ class corryvreckan::Object::PointerWrapper < corryvreckan::Cluster> + ;
+
+#pragma link C++ class corryvreckan::Object::BaseWrapper < corryvreckan::Pixel> + ;
+#pragma link C++ class corryvreckan::Object::BaseWrapper < corryvreckan::Cluster> + ;
+
 // Vector of Object for internal storage
 #pragma link C++ class std::vector < corryvreckan::Object*> + ;

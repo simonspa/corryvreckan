@@ -191,11 +191,14 @@ StatusCode EventLoaderCLICpix2::run(const std::shared_ptr<Clipboard>& clipboard)
     // Pixel container, shutter information
     PixelVector pixels;
     long long int shutterStartTimeInt = 0, shutterStopTimeInt = 0;
-    double shutterStartTime, shutterStopTime;
+    double shutterStartTime = 0, shutterStopTime = 0;
     string datastring;
     int npixels = 0;
     bool shutterOpen = false;
     std::vector<uint32_t> rawData;
+
+    // Distinguish legacy data format and new data format where timestamps come in the same blocka s pixel data
+    bool legacy_format = false;
 
     // Read file and load data
     while(getline(m_file, datastring)) {
@@ -211,6 +214,7 @@ StatusCode EventLoaderCLICpix2::run(const std::shared_ptr<Clipboard>& clipboard)
         }
         // If there is a colon, then this is a timestamp
         else if(datastring.find(":") != string::npos) {
+            legacy_format = true;
             istringstream timestamp(datastring);
             char colon;
             int value;
@@ -230,10 +234,58 @@ StatusCode EventLoaderCLICpix2::run(const std::shared_ptr<Clipboard>& clipboard)
         }
     }
 
-    // Now set the event time so that the Timepix3 data is loaded correctly, unit is nanoseconds
-    // NOTE FPGA clock is always on 100MHz from CaR oscillator, same as chip
-    shutterStartTime = static_cast<double>(shutterStartTimeInt) / 0.1;
-    shutterStopTime = static_cast<double>(shutterStopTimeInt) / 0.1;
+    // Separate timestamps from pixel frame
+    LOG(DEBUG) << "Raw data vector length: " << rawData.size();
+    if(!legacy_format) {
+        LOG(DEBUG) << "New file format, trimming timestamp bits";
+
+        // Timestamps:
+        std::vector<uint32_t> ts_tmp;
+        auto ts_words = rawData.front();
+        rawData.erase(rawData.begin());
+
+        for(size_t i = 0; i < ts_words; i++) {
+            ts_tmp.push_back(rawData.front());
+            rawData.erase(rawData.begin());
+        }
+
+        bool msb = true;
+        uint64_t ts64;
+        std::vector<uint64_t> timestamps;
+        for(const auto& ts : ts_tmp) {
+            if(msb) {
+                ts64 = (static_cast<uint64_t>(ts & 0x7ffff) << 32);
+            } else {
+                timestamps.push_back(ts64 | ts);
+            }
+            msb = !msb;
+        }
+        LOG(DEBUG) << timestamps.size() << " timestamps retrieved";
+
+        // Select correct time stamps for shutter open and close
+        for(auto& timestamp : timestamps) {
+            LOG(DEBUG) << "TS " << std::hex << timestamp << std::dec;
+            auto signal_pattern = (timestamp >> 48) & 0x3F;
+            LOG(DEBUG) << "  signal pattern: " << signal_pattern;
+            LOG(DEBUG) << "  timestamp: " << (timestamp & 0xffffffffffff);
+            if(signal_pattern == 3) {
+                shutterStartTime = static_cast<double>(timestamp & 0xffffffffffff) / 0.1;
+                shutterOpen = true;
+            } else if((signal_pattern == 1 || signal_pattern == 0) && shutterOpen == true) {
+                shutterStopTime = static_cast<double>(timestamp & 0xffffffffffff) / 0.1;
+                shutterOpen = false;
+            }
+        }
+    } else {
+        LOG(DEBUG) << "Legacy file format";
+        // Now set the event time so that the Timepix3 data is loaded correctly, unit is nanoseconds
+        // NOTE FPGA clock is always on 100MHz from CaR oscillator, same as chip
+        shutterStartTime = static_cast<double>(shutterStartTimeInt) / 0.1;
+        shutterStopTime = static_cast<double>(shutterStopTimeInt) / 0.1;
+    }
+
+    LOG(DEBUG) << "Shutter opened at " << Units::display(shutterStartTime, {"ns", "us", "ms"});
+    LOG(DEBUG) << "Shutter closed at " << Units::display(shutterStopTime, {"ns", "us", "ms"});
 
     try {
         LOG(DEBUG) << "Decoding data frame...";

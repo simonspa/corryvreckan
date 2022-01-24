@@ -15,6 +15,10 @@ If a region of interest (ROI) is defined for the detector under investigation, o
 * `use_closest_cluster`: If `true` the cluster with the smallest distance to the track is used if a track has more than one associated cluster. If `false`, loop over all associated clusters. Defaults to `true`.
 * `n_time_bins`: Number of bins in the time residual and correlation histograms. Defaults to `20000`.
 * `time_binning`: Bin width in the time residual and correlation histograms. Defaults to `0.1ns`.
+* `n_charge_bins`: Number of bins for charge in histograms. Defaults to `1000`.
+* `charge_histo_range`: Axis range for charge axes in histograms. Defaults to `1000`.
+* `n_raw_bins`: Number of bins for pixel raw values in histograms. Defaults to n_charge_bins if not specified.
+* `raw_histo_range`: Axis range for pixel raw values axes in histograms. Defaults to charge_histo_range if not specified.
 * `correlations`: If `true`, correlation plots between all (before and after applying cuts) tracks and all clusters on the DUT (i.e. associated + non-associated) are created. Defaults to `false`.
 
 ### Plots produced
