@@ -27,6 +27,7 @@
 #pragma link C++ class corryvreckan::Event + ;
 #pragma link C++ class corryvreckan::Track::Plane + ;
 #pragma link C++ class corryvreckan::Waveform + ;
+#pragma link C++ class corryvreckan::Timestamp + ;
 
 // Vector of Object for internal storage
 #pragma link C++ class std::vector < corryvreckan::Object*> + ;
