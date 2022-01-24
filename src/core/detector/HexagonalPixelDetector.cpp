@@ -45,24 +45,11 @@ bool HexagonalPixelDetector::hasIntercept(const Track* track, double pixelTolera
 
     bool intercept = true;
 
-    /*if(row < pixelTolerance - 0.5 || row > (this->m_nPixels.Y() - pixelTolerance - 0.5) ||
-      column < pixelTolerance - 0.5 - row/2.0 || column > (this->m_nPixels.X() - pixelTolerance - 0.5 - row/2.0)
-     ) {
-        intercept = false;
-    }*/
-
     auto hex = round_to_nearest_hex(column, row);
 
-    if(hex.second < 0 || hex.second > this->m_nPixels.Y() || hex.first < 0 - hex.second/2 || hex.first > this->m_nPixels.X() - hex.second/2) {
+    if(hex.second < 0 || hex.second >= m_nPixels.Y() || hex.first + hex.second/2 < 0 || hex.first + hex.second/2 >= m_nPixels.X()) {
         intercept = false;
     }
-
-    // Check if the row and column are outside of the chip
-    // Chip reaches from -0.5 to nPixels-0.5
-    //bool intercept = true;
-    //if(row < pixelTolerance - 0.5 || row > (this->m_nPixels.Y() - pixelTolerance - 0.5) || column < pixelTolerance - 0.5 ||
-    //   column > (this->m_nPixels.X() - pixelTolerance - 0.5))
-    //    intercept = false;
 
     return intercept;
 }
@@ -94,10 +81,23 @@ bool HexagonalPixelDetector::hitMasked(const Track* track, int tolerance) const 
 
 // Functions to get row and column from local position
 double HexagonalPixelDetector::getRow(const PositionVector3D<Cartesian3D<double>> localPosition) const {
-    return localPosition.Y() / m_pitch.Y() + static_cast<double>(m_nPixels.Y() - 1) / 2.;
+    double x = localPosition.X() + 0.5 * (m_nPixels.X()+0.5) * m_pitch.X();
+    double y = localPosition.Y() + 0.5 * (3.0/4.0*m_nPixels.Y() + 1.0/4.0) * 2.0/std::sqrt(3) * m_pitch.X();
+
+    double column = (x - y/std::sqrt(3)) / m_pitch.X();
+    double row = (y * 2.0/std::sqrt(3)) / m_pitch.Y();
+
+    return row;
 }
+
 double HexagonalPixelDetector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosition) const {
-    return localPosition.X() / m_pitch.X() + static_cast<double>(m_nPixels.X() - 1) / 2.;
+    double x = localPosition.X() + 0.5 * (m_nPixels.X()+0.5) * m_pitch.X();
+    double y = localPosition.Y() + 0.5 * (3.0/4.0*m_nPixels.Y() + 1.0/4.0) * 2.0/std::sqrt(3) * m_pitch.X();
+
+    double column = (x - y/std::sqrt(3)) / m_pitch.X();
+    double row = (y * 2.0/std::sqrt(3)) / m_pitch.Y();
+
+    return column;
 }
 
 // Function to get local position from row and column
@@ -106,10 +106,6 @@ PositionVector3D<Cartesian3D<double>> HexagonalPixelDetector::getLocalPosition(d
     double matrix_x = (m_nPixels.X()+0.5) * m_pitch.X();
     double matrix_y = (3.0/4.0*m_nPixels.Y() + 1.0/4.0) * 2.0/std::sqrt(3) * m_pitch.X();
 
-    //return PositionVector3D<Cartesian3D<double>>((1.0 * column + 0.5 * row) * m_pitch.X() - ((m_nPixels.X()+0.5) * m_pitch.X())/2.0,
-    //                                             (0.0 * column + std::sqrt(3) * 0.5 * row) * m_pitch.Y() - (m_nPixels.Y()*2.0*m_pitch.Y()/std::sqrt(3))/2.0,
-    //                                             0.);
-
     return PositionVector3D<Cartesian3D<double>>((1.0 * column + 0.5 * row) * m_pitch.X() - matrix_x/2.0,
                                                  (0.0 * column + std::sqrt(3) * 0.5 * row) * m_pitch.Y() - matrix_y/2.0,
                                                  0.);
@@ -117,8 +113,10 @@ PositionVector3D<Cartesian3D<double>> HexagonalPixelDetector::getLocalPosition(d
 
 // Function to get in-pixel position
 ROOT::Math::XYVector HexagonalPixelDetector::inPixel(const double column, const double row) const {
-    // a pixel ranges from (col-0.5) to (col+0.5)
-    return XYVector(m_pitch.X() * (column - floor(column + 0.5)), m_pitch.Y() * (row - floor(row + 0.5)));
+    auto hex = round_to_nearest_hex(column, row);
+    double c = column - hex.first;
+    double r = row - hex.second;
+    return XYVector((1.0 * c + 0.5 * r) * m_pitch.X(), (0.0 * c + std::sqrt(3) * 0.5 * r) * m_pitch.Y());
 }
 
 ROOT::Math::XYVector HexagonalPixelDetector::inPixel(const PositionVector3D<Cartesian3D<double>> localPosition) const {
@@ -164,7 +162,10 @@ bool HexagonalPixelDetector::isWithinROI(Cluster* cluster) const {
 }
 
 XYVector HexagonalPixelDetector::getSize() const {
-    return XYVector(m_pitch.X() * m_nPixels.X(), m_pitch.Y() * m_nPixels.Y());
+    double matrix_x = (m_nPixels.X()+0.5) * m_pitch.X();
+    double matrix_y = (3.0/4.0*m_nPixels.Y() + 1.0/4.0) * 2.0/std::sqrt(3) * m_pitch.X();
+
+    return XYVector(matrix_x, matrix_y);
 }
 
 // Check if a pixel touches any of the pixels in a cluster
