@@ -73,17 +73,21 @@ void EventLoaderFASTPIX::initialize() {
 
     hitmap = new TH2Poly();
     hitmap->SetName("hitmap");
-    hitmap->SetTitle("hitmap");
+    hitmap->SetTitle("hitmap;Pixel x;Pixel y");
     Honeycomb(hitmap,0.5,0.5,16,4);
 
-    seed_tot_inner = new TH1F("seed_tot_inner", "ToT inner seed pixels", 350, 0.5, 350.5);
-    seed_tot_outer = new TH1F("seed_tot_outer", "ToT outer seed pixels", 350, 0.5, 350.5);
+    seed_tot_inner = new TH1F("seed_tot_inner", "ToT inner seed pixels;ToT [ns];## pixels", 350, 0.5, 350.5);
+    seed_tot_outer = new TH1F("seed_tot_outer", "ToT outer seed pixels;ToT [ns];## pixels", 350, 0.5, 350.5);
     pixels_per_event = new TH1F("pixels_per_event", "Pixels per event", 10, 0.5, 10.5);
     pixel_timestamps = new TH1F("pixel_timestamps", "Pixel timestamps", 200, -0.5, 99.5);
     pixel_distance = new TH1F("pixel_distance", "Distance to seed pixel", 20, -0.5, 19.5);
+    pixel_distance_min = new TH1F("pixel_distance_min", "Minimum distance to seed pixel", 20, -0.5, 19.5);
+    pixel_distance_max = new TH1F("pixel_distance_max", "Maximum distance to seed pixel", 20, -0.5, 19.5);
     pixel_distance_row = new TH1F("pixel_distance_row", "Distance to seed pixel (row)", 20, -0.5, 19.5);
     pixel_distance_col = new TH1F("pixel_distance_col", "Distance to seed pixel (column)", 20, -0.5, 19.5);
-    trigger_dt = new TH1F("trigger_dt", "", 1000, -0.5, 200.5);
+    trigger_dt = new TH1F("trigger_dt", "trigger_dt;[ns];count", 1000, -0.5, 200.5);
+
+//cluster charge;x_{track} [#mum];y_{track} [#mum]
 
     // Initialise member variables
     m_eventNumber = 0;
@@ -110,11 +114,12 @@ size_t hex_distance(double x1, double y1, double x2, double y2) {
 // number of pixels / event
 // pixel ID, ToT, px timestamp [xN]
 
-bool EventLoaderFASTPIX::loadEvent(PixelVector &deviceData, double spidr_timestamp) {
+bool EventLoaderFASTPIX::loadEvent(PixelVector &deviceData, TimestampVector &timestampData, double spidr_timestamp) {
     std::string detectorID = m_detector->getName();
 
     uint16_t event_size;
     double event_timestamp;
+    double seed_timestamp;
 
     m_prevEvent = m_inputFile.tellg();
 
@@ -146,6 +151,7 @@ bool EventLoaderFASTPIX::loadEvent(PixelVector &deviceData, double spidr_timesta
         if(i == 0) {
             seed_col = col;
             seed_row = row;
+            seed_timestamp = px_timestamp;
 
             if(col == 0 || col == 15 || row == 0 || row == 3) {
                 seed_tot_outer->Fill(tot);
@@ -163,6 +169,9 @@ bool EventLoaderFASTPIX::loadEvent(PixelVector &deviceData, double spidr_timesta
         auto pixel = std::make_shared<Pixel>(detectorID, col, row, static_cast<int>(tot), tot, spidr_timestamp + px_timestamp + m_detector->timeOffset());
         deviceData.push_back(pixel);
     }
+
+    auto timestamp = std::make_shared<Timestamp>(seed_timestamp);
+    timestampData.push_back(timestamp);
 
     m_scopeTriggerNumbers.emplace_back(m_triggerNumber+1);
     m_scopeTriggerTimestamps.emplace_back(spidr_timestamp);
@@ -208,6 +217,9 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
     PixelVector deviceData;
     PixelVector discardData;
 
+    TimestampVector timestampData;
+    TimestampVector discardTimestampData;
+
     for(;;) {
         // triggers are aligned to SPIDR timestamps. Time offsets are only added to pixel timestamps?
         LOG(DEBUG) << "Raw timestamp: " << getRawTimestamp();
@@ -230,7 +242,7 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
                     m_prevScopeTriggerTime = m_scope_t0;
                     m_prevTriggerTime = m_spidr_t0;
 
-                    loadEvent(deviceData, referenceSpidrSignals[spidr_index]->timestamp());
+                    loadEvent(deviceData, timestampData, referenceSpidrSignals[spidr_index]->timestamp());
 
                     spidr_index++;
                 } else if(referenceSpidrSignals[spidr_index]->trigger() > m_triggerNumber + 1) { // SPIDR trigger is after Fastpix trigger (no earlier event with matching timestamp?). discard Fastpix data.
@@ -238,7 +250,7 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
                     LOG(DEBUG) << "Discarding Fastpix event";
                     m_discardedEvents++;
 
-                    loadEvent(discardData, referenceSpidrSignals[spidr_index]->timestamp());
+                    loadEvent(discardData, discardTimestampData, referenceSpidrSignals[spidr_index]->timestamp());
                 } else { // SPIDR trigger is before Fastpix trigger. Previous Fastpix trigger was assigned to wrong event?
                     LOG(INFO) << "Expected SPIDR trigger " << m_triggerNumber + 1 << " but got trigger " << referenceSpidrSignals[spidr_index]->trigger() << ". Previous Fastpix event assigned to wrong event?";
                     m_discardedEvents++;
@@ -248,7 +260,7 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
                         m_triggerNumber--;
                         m_inputFile.seekg(m_prevEvent, std::ios_base::beg);
 
-                        loadEvent(deviceData, referenceSpidrSignals[spidr_index]->timestamp());
+                        loadEvent(deviceData, timestampData, referenceSpidrSignals[spidr_index]->timestamp());
                     } else {
                         LOG(INFO) << "Discarding SPIDR trigger";
                     }
@@ -258,12 +270,12 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
             } else { // no more SPIDR triggers in current event. Try matching timestamps instead
                 if(position == Event::Position::DURING) { // Fastpix trigger belongs to this events
                     LOG(INFO) << "Loading event for trigger " << m_triggerNumber + 1 << " without matching SPIDR trigger";
-                    loadEvent(deviceData, timestamp);
+                    loadEvent(deviceData, timestampData, timestamp);
 
                 } else if(position == Event::Position::BEFORE) { // Fastpix trigger belongs to an earlier event (no earlier event with matching timestamp?)
                     LOG(INFO) << "Event for trigger " << m_triggerNumber + 1 << " without matching SPIDR trigger or timestamp";
                     LOG(INFO) << "Discarding Fastpix event";
-                    loadEvent(discardData, timestamp);
+                    loadEvent(discardData, discardTimestampData, timestamp);
                     m_discardedEvents++;
                 } else if(position == Event::Position::AFTER) { // Fastpix trigger belongs to a later event. Stop processing.
                     break;
@@ -282,7 +294,7 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
 
                     m_triggerSync = true;
 
-                    loadEvent(deviceData, referenceSpidrSignals[spidr_index]->timestamp());
+                    loadEvent(deviceData, timestampData, referenceSpidrSignals[spidr_index]->timestamp());
 
                 } else if(referenceSpidrSignals[spidr_index]->trigger() < m_triggerNumber + 1) {
                     LOG(DEBUG) << "Expected SPIDR trigger " << m_triggerNumber + 1 << " but got trigger " << referenceSpidrSignals[spidr_index]->trigger() << " and triggers are not yet in sync";
@@ -292,7 +304,7 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
                     size_t discard = referenceSpidrSignals[spidr_index]->trigger() - (m_triggerNumber + 1);
                     LOG(DEBUG) << "Discarding " << discard << " Fastpix events";
                     for(size_t i = 0; i < discard; i++) {
-                        loadEvent(discardData, timestamp);
+                        loadEvent(discardData, discardTimestampData, timestamp);
                     }
                     m_discardedEvents+=discard;
                     continue;
@@ -307,6 +319,10 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
 
     if(!deviceData.empty()) {
         clipboard->putData(deviceData, m_detector->getName());
+    }
+
+    if(!timestampData.empty()) {
+        clipboard->putData(timestampData, m_detector->getName());
     }
 
     // Increment event counter
