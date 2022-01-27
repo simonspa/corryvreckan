@@ -274,7 +274,15 @@ void AnalysisEfficiency::initialize() {
                  2 * m_detector->nPixels().Y(),
                  -m_detector->nPixels().Y() - 0.5,
                  m_detector->nPixels().Y() - 0.5);
-
+    htimeRes_cluster_size =
+        new TH2D("timeDiff_hit-track_vs_clustersize",
+                 "Time difference between track and clusters vs cluster size; time difference [ns];cluster size [px]",
+                 1000,
+                 -499.5,
+                 500.5,
+                 6,
+                 -.5,
+                 5.5);
     // initialize matrix with hit timestamps to all 0:
     auto nRows = static_cast<size_t>(m_detector->nPixels().Y());
     auto nCols = static_cast<size_t>(m_detector->nPixels().X());
@@ -444,6 +452,10 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
         auto intercept_row = static_cast<size_t>(m_detector->getRow(localIntercept));
 
         if(has_associated_cluster) {
+            for(auto c : associated_clusters) {
+                htimeRes_cluster_size->Fill(track->timestamp() - c->timestamp(),
+                                            ((c->pixels().size() > 4) ? 5 : c->pixels().size()));
+            }
             hTimeDiffPrevTrack_assocCluster->Fill(
                 static_cast<double>(Units::convert(track->timestamp() - last_track_timestamp, "us")));
             hRowDiffPrevTrack_assocCluster->Fill(m_detector->getRow(localIntercept) - last_track_row);
