@@ -12,11 +12,14 @@
 #define CORRYVRECKAN_DUT_ANALYSIS_H
 
 #include <TCanvas.h>
+#include <TDirectory.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
+
 #include <iostream>
+
 #include "core/module/Module.hpp"
 
 namespace corryvreckan {
