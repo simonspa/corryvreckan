@@ -454,7 +454,7 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
         if(has_associated_cluster) {
             for(auto c : associated_clusters) {
                 htimeRes_cluster_size->Fill(track->timestamp() - c->timestamp(),
-                                            ((c->pixels().size() > 4) ? 5 : c->pixels().size()));
+                                            ((c->pixels().size() > 4) ? 5.0 : static_cast<double>(c->pixels().size())));
             }
             hTimeDiffPrevTrack_assocCluster->Fill(
                 static_cast<double>(Units::convert(track->timestamp() - last_track_timestamp, "us")));
