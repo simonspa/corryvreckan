@@ -12,12 +12,12 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <iostream>
+#include <queue>
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
 #include "objects/Pixel.hpp"
-#include "objects/Track.hpp"
-#include <queue>
 #include "objects/SpidrSignal.hpp"
+#include "objects/Track.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules
@@ -86,7 +86,6 @@ namespace corryvreckan {
 
         std::priority_queue<std::shared_ptr<SpidrSignal>, SpidrSignalVector, CompareTimeGreater<SpidrSignal>>
             sorted_signals_;
-
     };
 
 } // namespace corryvreckan

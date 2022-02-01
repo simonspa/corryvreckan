@@ -9,16 +9,16 @@
  */
 
 #include <TCanvas.h>
+#include <TGraph.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH2Poly.h>
-#include <TGraph.h>
 #include <iostream>
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
 #include "objects/Pixel.hpp"
-#include "objects/Track.hpp"
 #include "objects/Timestamp.hpp"
+#include "objects/Track.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules
@@ -52,7 +52,7 @@ namespace corryvreckan {
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
-        bool loadEvent(PixelVector &deviceData, TimestampVector &timestampData, double spidr_timestamp);
+        bool loadEvent(PixelVector& deviceData, TimestampVector& timestampData, double spidr_timestamp);
         double getRawTimestamp();
         double getTimestamp();
 
@@ -60,13 +60,13 @@ namespace corryvreckan {
 
         bool m_triggerSync;
 
-        TH2Poly *hitmap;
-        TH1F *seed_tot_inner;
-        TH1F *seed_tot_outer;
-        TH1F *pixels_per_event;
-        TH1F *pixel_timestamps;
+        TH2Poly* hitmap;
+        TH1F* seed_tot_inner;
+        TH1F* seed_tot_outer;
+        TH1F* pixels_per_event;
+        TH1F* pixel_timestamps;
         TH1F *pixel_distance, *pixel_distance_min, *pixel_distance_max, *pixel_distance_row, *pixel_distance_col;
-        TH1F *trigger_dt;
+        TH1F* trigger_dt;
 
         int m_eventNumber;
         size_t m_triggerNumber;

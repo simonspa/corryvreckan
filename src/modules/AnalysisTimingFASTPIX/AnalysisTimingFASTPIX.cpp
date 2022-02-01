@@ -9,123 +9,124 @@
  */
 
 #include "AnalysisTimingFASTPIX.h"
-#include "objects/Waveform.hpp"
 #include "objects/Timestamp.hpp"
+#include "objects/Waveform.hpp"
 
 using namespace corryvreckan;
 
-double mean(const std::vector<double> &v) {
-  double m = 0;
+double mean(const std::vector<double>& v) {
+    double m = 0;
 
-  for(double i : v) {
-    m += i;
-  }
-
-  return m / v.size();
-}
-
-double rms(const std::vector<double> &v) {
-  //double mean = std::accumulate(v.begin(), v.end(), 0)/v.size();
-
-  double m = mean(v);
-
-  /*double out = std::accumulate(v.begin(), v.end(), 0, [mean] (double a, double b) {
-    return a+(mean-b)*(mean-b);
-  });*/
-
-  double out = 0;
-
-  for(double i : v) {
-    out += (m-i)*(m-i);
-  }
-
-  return std::sqrt(out/v.size());
-}
-
-double rms997(const std::vector<double> &v) {
-  std::vector<double> sorted = v;
-  std::sort(sorted.begin(), sorted.end());
-
-  size_t idx_low = 0;
-  size_t idx_high = sorted.size()-1;
-  size_t points = sorted.size() *( 1.0 - 0.997);
-
-  double m = mean(sorted);
-
-  for(size_t i = 0; i < points; i++) {
-    if(std::abs(sorted[idx_low]-m) > std::abs(sorted[idx_high]-m)) {
-      idx_low++;
-    } else {
-      idx_high--;
+    for(double i : v) {
+        m += i;
     }
-  }
 
-  std::vector<double> out(sorted.begin()+idx_low, sorted.begin()+idx_high);
+    return m / v.size();
+}
 
-  return rms(out);
+double rms(const std::vector<double>& v) {
+    // double mean = std::accumulate(v.begin(), v.end(), 0)/v.size();
+
+    double m = mean(v);
+
+    /*double out = std::accumulate(v.begin(), v.end(), 0, [mean] (double a, double b) {
+      return a+(mean-b)*(mean-b);
+    });*/
+
+    double out = 0;
+
+    for(double i : v) {
+        out += (m - i) * (m - i);
+    }
+
+    return std::sqrt(out / v.size());
+}
+
+double rms997(const std::vector<double>& v) {
+    std::vector<double> sorted = v;
+    std::sort(sorted.begin(), sorted.end());
+
+    size_t idx_low = 0;
+    size_t idx_high = sorted.size() - 1;
+    size_t points = sorted.size() * (1.0 - 0.997);
+
+    double m = mean(sorted);
+
+    for(size_t i = 0; i < points; i++) {
+        if(std::abs(sorted[idx_low] - m) > std::abs(sorted[idx_high] - m)) {
+            idx_low++;
+        } else {
+            idx_high--;
+        }
+    }
+
+    std::vector<double> out(sorted.begin() + idx_low, sorted.begin() + idx_high);
+
+    return rms(out);
 }
 
 struct Cfd {
-  double e1, e2, min, cfd_pos;
+    double e1, e2, min, cfd_pos;
 };
 
-std::vector<Cfd> find_npeaks(const Waveform::waveform_t &w, double th, double frac) {
-  std::vector<size_t> redge;
-  std::vector<size_t> fedge;
+std::vector<Cfd> find_npeaks(const Waveform::waveform_t& w, double th, double frac) {
+    std::vector<size_t> redge;
+    std::vector<size_t> fedge;
 
-  for(size_t i = 0; i<w.waveform.size()-1; i++) {
-    if(w.waveform[i]<=th && w.waveform[i+1]>th) {
-      fedge.push_back(i);
+    for(size_t i = 0; i < w.waveform.size() - 1; i++) {
+        if(w.waveform[i] <= th && w.waveform[i + 1] > th) {
+            fedge.push_back(i);
+        }
+
+        if(w.waveform[i] >= th && w.waveform[i + 1] < th) {
+            redge.push_back(i);
+        }
     }
 
-    if(w.waveform[i]>=th && w.waveform[i+1]<th) {
-      redge.push_back(i);
+    std::vector<std::pair<size_t, size_t>> edges;
+
+    if(redge.size() != fedge.size()) { // FIXME
+        size_t size = std::min(redge.size(), fedge.size());
+        redge.resize(size);
+        fedge.resize(size);
     }
-  }
 
-  std::vector<std::pair<size_t, size_t>> edges;
-
-  if(redge.size() != fedge.size()) { // FIXME
-    size_t size = std::min(redge.size(), fedge.size());
-    redge.resize(size);
-    fedge.resize(size);
-  }
-
-  std::transform(redge.begin(),redge.end(), fedge.begin(), std::back_inserter(edges),
-    [](const auto a, const auto b) {
+    std::transform(redge.begin(), redge.end(), fedge.begin(), std::back_inserter(edges), [](const auto a, const auto b) {
         return std::make_pair(a, b);
     });
 
-  std::vector<Cfd> out;
-  
-  for(auto &i : edges) {
-    double min = w.waveform[i.first];
-    size_t min_pos = i.first;
+    std::vector<Cfd> out;
 
-    for(size_t j=i.first;j<=i.second;j++) {
-      if(w.waveform[j]<min) {
-        min = w.waveform[j];
-        min_pos = j;
-      }
+    for(auto& i : edges) {
+        double min = w.waveform[i.first];
+        size_t min_pos = i.first;
+
+        for(size_t j = i.first; j <= i.second; j++) {
+            if(w.waveform[j] < min) {
+                min = w.waveform[j];
+                min_pos = j;
+            }
+        }
+
+        size_t cfd_pos = i.first;
+
+        for(size_t j = i.first; j <= min_pos - 1; j++) {
+            if(w.waveform[j] >= min * frac && w.waveform[j + 1] < min * frac) {
+                cfd_pos = j;
+                break;
+            }
+        }
+
+        double e1 = w.x0 + w.dx * (i.first + (th - w.waveform[i.first]) / (w.waveform[i.first + 1] - w.waveform[i.first]));
+        double e2 =
+            w.x0 + w.dx * (i.second + (th - w.waveform[i.second]) / (w.waveform[i.second + 1] - w.waveform[i.second]));
+        double cfd =
+            w.x0 + w.dx * (cfd_pos + (min * frac - w.waveform[cfd_pos]) / (w.waveform[cfd_pos + 1] - w.waveform[cfd_pos]));
+
+        out.emplace_back(Cfd{e1, e2, min, cfd});
     }
 
-    size_t cfd_pos = i.first;
-
-    for(size_t j=i.first;j<=min_pos-1;j++) {
-      if(w.waveform[j]>=min*frac && w.waveform[j+1]<min*frac) {
-        cfd_pos = j;
-        break;
-      }
-    }
-    
-    double e1 = w.x0 + w.dx * (i.first + (th - w.waveform[i.first]) / ( w.waveform[i.first+1] - w.waveform[i.first]));
-    double e2 = w.x0 + w.dx * (i.second + (th - w.waveform[i.second]) / ( w.waveform[i.second+1] - w.waveform[i.second]));
-    double cfd = w.x0 + w.dx * (cfd_pos + (min*frac - w.waveform[cfd_pos]) / ( w.waveform[cfd_pos+1] - w.waveform[cfd_pos]));
-
-    out.emplace_back(Cfd{e1, e2, min, cfd});
-  }
-
-  return out;
+    return out;
 }
 
 AnalysisTimingFASTPIX::AnalysisTimingFASTPIX(Configuration& config, std::shared_ptr<Detector> detector)
@@ -142,75 +143,36 @@ void AnalysisTimingFASTPIX::initialize() {
     tree->Branch("tot", &tot_);
     tree->Branch("dt", &dt_);
 
-    //df = new ROOT::RDataFrame(*tree);
+    // df = new ROOT::RDataFrame(*tree);
 
-    timewalk2d = new TH2F("timewalk2d", "timewalk", 700, -0.5, 350.5,  200, -20, 0);
-    timewalk2d_inner = new TH2F("timewalk2d_inner", "timewalk", 700, -0.5, 350.5,  200, -20, 0);
-    timewalk2d_outer = new TH2F("timewalk2d_outer", "timewalk", 700, -0.5, 350.5,  200, -20, 0);
+    timewalk2d = new TH2F("timewalk2d", "timewalk", 700, -0.5, 350.5, 200, -20, 0);
+    timewalk2d_inner = new TH2F("timewalk2d_inner", "timewalk", 700, -0.5, 350.5, 200, -20, 0);
+    timewalk2d_outer = new TH2F("timewalk2d_outer", "timewalk", 700, -0.5, 350.5, 200, -20, 0);
 
     timewalk = new TH1F("timewalk", "timewalk", 1000, -50, 50);
     timewalk_inner = new TH1F("timewalk_inner", "timewalk", 1000, -50, 50);
     timewalk_outer = new TH1F("timewalk_outer", "timewalk", 1000, -50, 50);
 
     hitmapLocal =
-        new TH2F("hitmapLocal",
-                    "hitmap;x_{track} [#mum];y_{track} [#mum]",
-                    200,
-                    -250.5,
-                    249.5,
-                    200,
-                    -250.5,
-                    249.5);
+        new TH2F("hitmapLocal", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
 
     hitmapLocalInner =
-        new TH2F("hitmapLocalInner",
-                    "hitmap;x_{track} [#mum];y_{track} [#mum]",
-                    200,
-                    -250.5,
-                    249.5,
-                    200,
-                    -250.5,
-                    249.5);
+        new TH2F("hitmapLocalInner", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
 
     hitmapLocalOuter =
-        new TH2F("hitmapLocalOuter",
-                    "hitmap;x_{track} [#mum];y_{track} [#mum]",
-                    200,
-                    -250.5,
-                    249.5,
-                    200,
-                    -250.5,
-                    249.5);
+        new TH2F("hitmapLocalOuter", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
 
     hitmapLocalInnerCut =
-        new TH2F("hitmapLocalInnerCut",
-                    "hitmap;x_{track} [#mum];y_{track} [#mum]",
-                    200,
-                    -250.5,
-                    249.5,
-                    200,
-                    -250.5,
-                    249.5);
+        new TH2F("hitmapLocalInnerCut", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
 
     hitmapLocalOuterCut =
-        new TH2F("hitmapLocalOuterCut",
-                    "hitmap;x_{track} [#mum];y_{track} [#mum]",
-                    200,
-                    -250.5,
-                    249.5,
-                    200,
-                    -250.5,
-                    249.5);
+        new TH2F("hitmapLocalOuterCut", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
 
     hitmapLocalCut =
-        new TH2F("hitmapLocalCut",
-                    "hitmap;x_{track} [#mum];y_{track} [#mum]",
-                    200,
-                    -250.5,
-                    249.5,
-                    200,
-                    -250.5,
-                    249.5);
+        new TH2F("hitmapLocalCut", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
+
+    timewalkMap =
+        new TProfile2D("timewalkMap", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
 }
 
 StatusCode AnalysisTimingFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -219,7 +181,7 @@ StatusCode AnalysisTimingFASTPIX::run(const std::shared_ptr<Clipboard>& clipboar
     auto timestamps = clipboard->getData<Timestamp>(m_detector->getName());
     auto tracks = clipboard->getData<Track>();
 
-    //LOG(INFO) << waveforms.size() << ' ' << timestamps.size() << ' ' << tracks.size();
+    // LOG(INFO) << waveforms.size() << ' ' << timestamps.size() << ' ' << tracks.size();
 
     if(waveforms.size() == 1 && timestamps.size() == 1) {
         auto cfd = find_npeaks(waveforms[0]->waveform(), -0.15, 0.2);
@@ -242,7 +204,7 @@ StatusCode AnalysisTimingFASTPIX::run(const std::shared_ptr<Clipboard>& clipboar
                     int col = seed->column();
                     int row = seed->row();
 
-                    col = col + (row - (row&1)) / 2;
+                    col = col + (row - (row & 1)) / 2;
                     int idx = col + row * 16;
 
                     double tot = seed->charge();
@@ -259,9 +221,11 @@ StatusCode AnalysisTimingFASTPIX::run(const std::shared_ptr<Clipboard>& clipboar
                     auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
                     hitmapLocal->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
-                    if(tot>25 && tot < 40) {
-                      hitmapLocalCut->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
+                    if(tot > 25 && tot < 40) {
+                        hitmapLocalCut->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
                     }
+
+                    timewalkMap->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0, dt);
 
                     dt_hist.emplace_back(dt);
 
@@ -269,16 +233,16 @@ StatusCode AnalysisTimingFASTPIX::run(const std::shared_ptr<Clipboard>& clipboar
                         timewalk2d_outer->Fill(tot, dt);
                         timewalk_outer->Fill(dt);
                         hitmapLocalOuter->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
-                        if(tot>25 && tot < 40) {
-                          hitmapLocalOuterCut->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
+                        if(tot > 25 && tot < 40) {
+                            hitmapLocalOuterCut->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
                         }
                         dt_outer_hist.emplace_back(dt);
                     } else {
                         timewalk2d_inner->Fill(tot, dt);
                         timewalk_inner->Fill(dt);
                         hitmapLocalInner->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
-                        if(tot>25 && tot < 40) {
-                          hitmapLocalInnerCut->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
+                        if(tot > 25 && tot < 40) {
+                            hitmapLocalInnerCut->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
                         }
                         dt_inner_hist.emplace_back(dt);
                     }
@@ -286,8 +250,6 @@ StatusCode AnalysisTimingFASTPIX::run(const std::shared_ptr<Clipboard>& clipboar
             }
         }
     }
-
-
 
     // Return value telling analysis to keep running
     return StatusCode::Success;
@@ -311,4 +273,6 @@ void AnalysisTimingFASTPIX::finalize(const std::shared_ptr<ReadonlyClipboard>&) 
     LOG(INFO) << "RMS997 outer " << rms997(dt_outer_hist);
     LOG(INFO) << "RMS997 all " << rms997(dt_hist);
 
+    auto px = timewalk2d->ProfileX("timewalk2d_x");
+    auto py = timewalk2d->ProfileY("timewalk2d_y");
 }

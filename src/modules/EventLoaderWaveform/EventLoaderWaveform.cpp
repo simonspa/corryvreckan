@@ -9,8 +9,8 @@
  */
 
 #include "EventLoaderWaveform.h"
-#include "objects/Waveform.hpp"
 #include "objects/SpidrSignal.hpp"
+#include "objects/Waveform.hpp"
 
 using namespace corryvreckan;
 
@@ -18,7 +18,7 @@ EventLoaderWaveform::EventLoaderWaveform(Configuration& config, std::shared_ptr<
     : Module(config, detector), m_detector(detector) {
 
     m_inputDirectory = config_.getPath("input_directory");
-    //m_channels = m_detector->getConfiguration().getArray<std::string>("channels");
+    // m_channels = m_detector->getConfiguration().getArray<std::string>("channels");
     m_channels = config_.getArray<std::string>("channels");
 
     LOG(DEBUG) << "Directory " << m_inputDirectory;
@@ -43,25 +43,25 @@ StatusCode EventLoaderWaveform::run(const std::shared_ptr<Clipboard>& clipboard)
 
     WaveformVector deviceData;
 
-    for(const auto &spidr : referenceSpidrSignals) {
+    for(const auto& spidr : referenceSpidrSignals) {
         if(spidr->trigger() == m_triggerNumber) {
             auto waveform = m_loader->read();
             m_triggerNumber++;
 
-            for(const auto &w : waveform) {
+            for(const auto& w : waveform) {
                 deviceData.emplace_back(std::make_shared<Waveform>("", spidr->timestamp(), spidr->trigger(), w));
                 LOG(DEBUG) << "Loading waveform for trigger " << spidr->trigger();
             }
         } else if(spidr->trigger() > m_triggerNumber) {
             while(spidr->trigger() > m_triggerNumber) {
-                LOG(DEBUG) << "Skipping waveform for trigger " << m_triggerNumber; 
+                LOG(DEBUG) << "Skipping waveform for trigger " << m_triggerNumber;
                 auto w = m_loader->read();
                 m_triggerNumber++;
             }
             auto waveform = m_loader->read();
             m_triggerNumber++;
 
-            for(const auto &w : waveform) {
+            for(const auto& w : waveform) {
                 deviceData.emplace_back(std::make_shared<Waveform>("", spidr->timestamp(), spidr->trigger(), w));
                 LOG(DEBUG) << "Loading waveform for trigger " << spidr->trigger();
             }

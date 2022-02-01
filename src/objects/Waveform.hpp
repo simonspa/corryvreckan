@@ -22,8 +22,8 @@ namespace corryvreckan {
 
     public:
         struct waveform_t {
-        std::vector<double> waveform;
-        double x0, dx, timestamp;
+            std::vector<double> waveform;
+            double x0, dx, timestamp;
         };
 
         // Constructors and destructors

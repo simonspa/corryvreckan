@@ -12,11 +12,11 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <iostream>
+#include "DirectoryLoader.hpp"
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
 #include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
-#include "DirectoryLoader.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules

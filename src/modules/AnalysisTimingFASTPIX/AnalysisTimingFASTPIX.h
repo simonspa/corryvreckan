@@ -8,11 +8,12 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#include <ROOT/RDataFrame.hxx>
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TProfile2D.h>
 #include <TTree.h>
-#include <ROOT/RDataFrame.hxx>
 #include <iostream>
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
@@ -55,10 +56,12 @@ namespace corryvreckan {
         TH1F *timewalk, *timewalk_inner, *timewalk_outer;
         TH2F *hitmapLocal, *hitmapLocalInner, *hitmapLocalOuter;
         TH2F *hitmapLocalCut, *hitmapLocalInnerCut, *hitmapLocalOuterCut;
-        TTree *tree;
+        TTree* tree;
+
+        TProfile2D* timewalkMap;
 
         std::vector<double> dt_hist, dt_inner_hist, dt_outer_hist;
-    
+
         double chi2_ndof_cut_;
 
         int pixel_;

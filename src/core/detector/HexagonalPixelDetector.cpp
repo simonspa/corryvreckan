@@ -22,7 +22,13 @@
 using namespace ROOT::Math;
 using namespace corryvreckan;
 
-HexagonalPixelDetector::HexagonalPixelDetector(const Configuration& config) : PixelDetector(config) {}
+HexagonalPixelDetector::HexagonalPixelDetector(const Configuration& config) : PixelDetector(config) {
+    // pitch_y is not along the y axis but tilted by 30°
+    // only supports identical pitch values for now
+    if(m_pitch.X() != m_pitch.Y()) {
+        throw InvalidValueError(config, "pixel_pitch", "pitch_x != pitch_y is not supported");
+    }
+}
 
 // Function to check if a track intercepts with a plane
 bool HexagonalPixelDetector::hasIntercept(const Track* track, double pixelTolerance) const {
@@ -34,20 +40,21 @@ bool HexagonalPixelDetector::hasIntercept(const Track* track, double pixelTolera
     PositionVector3D<Cartesian3D<double>> localIntercept = this->m_globalToLocal * globalIntercept;
 
     // offset from center
-    //double x = localIntercept.X() + ((m_nPixels.X()+0.5) * m_pitch.X())/2.0;
-    //double y = localIntercept.Y() + (m_nPixels.Y()*2.0*m_pitch.Y()/std::sqrt(3))/2.0;
+    // double x = localIntercept.X() + ((m_nPixels.X()+0.5) * m_pitch.X())/2.0;
+    // double y = localIntercept.Y() + (m_nPixels.Y()*2.0*m_pitch.Y()/std::sqrt(3))/2.0;
 
-    double x = localIntercept.X() + 0.5 * (m_nPixels.X()+0.5) * m_pitch.X();
-    double y = localIntercept.Y() + 0.5 * (3.0/4.0*m_nPixels.Y() + 1.0/4.0) * 2.0/std::sqrt(3) * m_pitch.X();
+    double x = localIntercept.X() + 0.5 * (m_nPixels.X() + 0.5) * m_pitch.X();
+    double y = localIntercept.Y() + 0.5 * (3.0 / 4.0 * m_nPixels.Y() + 1.0 / 4.0) * 2.0 / std::sqrt(3) * m_pitch.X();
 
-    double column = (x - y/std::sqrt(3)) / m_pitch.X();
-    double row = (y * 2.0/std::sqrt(3)) / m_pitch.Y();
+    double column = (x - y / std::sqrt(3)) / m_pitch.X();
+    double row = (y * 2.0 / std::sqrt(3)) / m_pitch.Y();
 
     bool intercept = true;
 
     auto hex = round_to_nearest_hex(column, row);
 
-    if(hex.second < 0 || hex.second >= m_nPixels.Y() || hex.first + hex.second/2 < 0 || hex.first + hex.second/2 >= m_nPixels.X()) {
+    if(hex.second < 0 || hex.second >= m_nPixels.Y() || hex.first + hex.second / 2 < 0 ||
+       hex.first + hex.second / 2 >= m_nPixels.X()) {
         intercept = false;
     }
 
@@ -81,21 +88,21 @@ bool HexagonalPixelDetector::hitMasked(const Track* track, int tolerance) const 
 
 // Functions to get row and column from local position
 double HexagonalPixelDetector::getRow(const PositionVector3D<Cartesian3D<double>> localPosition) const {
-    double x = localPosition.X() + 0.5 * (m_nPixels.X()+0.5) * m_pitch.X();
-    double y = localPosition.Y() + 0.5 * (3.0/4.0*m_nPixels.Y() + 1.0/4.0) * 2.0/std::sqrt(3) * m_pitch.X();
+    double x = localPosition.X() + 0.5 * (m_nPixels.X() + 0.5) * m_pitch.X();
+    double y = localPosition.Y() + 0.5 * (3.0 / 4.0 * m_nPixels.Y() + 1.0 / 4.0) * 2.0 / std::sqrt(3) * m_pitch.X();
 
-    double column = (x - y/std::sqrt(3)) / m_pitch.X();
-    double row = (y * 2.0/std::sqrt(3)) / m_pitch.Y();
+    double column = (x - y / std::sqrt(3)) / m_pitch.X();
+    double row = (y * 2.0 / std::sqrt(3)) / m_pitch.Y();
 
     return row;
 }
 
 double HexagonalPixelDetector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosition) const {
-    double x = localPosition.X() + 0.5 * (m_nPixels.X()+0.5) * m_pitch.X();
-    double y = localPosition.Y() + 0.5 * (3.0/4.0*m_nPixels.Y() + 1.0/4.0) * 2.0/std::sqrt(3) * m_pitch.X();
+    double x = localPosition.X() + 0.5 * (m_nPixels.X() + 0.5) * m_pitch.X();
+    double y = localPosition.Y() + 0.5 * (3.0 / 4.0 * m_nPixels.Y() + 1.0 / 4.0) * 2.0 / std::sqrt(3) * m_pitch.X();
 
-    double column = (x - y/std::sqrt(3)) / m_pitch.X();
-    double row = (y * 2.0/std::sqrt(3)) / m_pitch.Y();
+    double column = (x - y / std::sqrt(3)) / m_pitch.X();
+    double row = (y * 2.0 / std::sqrt(3)) / m_pitch.Y();
 
     return column;
 }
@@ -103,11 +110,11 @@ double HexagonalPixelDetector::getColumn(const PositionVector3D<Cartesian3D<doub
 // Function to get local position from row and column
 PositionVector3D<Cartesian3D<double>> HexagonalPixelDetector::getLocalPosition(double column, double row) const {
 
-    double matrix_x = (m_nPixels.X()+0.5) * m_pitch.X();
-    double matrix_y = (3.0/4.0*m_nPixels.Y() + 1.0/4.0) * 2.0/std::sqrt(3) * m_pitch.X();
+    double matrix_x = (m_nPixels.X() + 0.5) * m_pitch.X();
+    double matrix_y = (3.0 / 4.0 * m_nPixels.Y() + 1.0 / 4.0) * 2.0 / std::sqrt(3) * m_pitch.X();
 
-    return PositionVector3D<Cartesian3D<double>>((1.0 * column + 0.5 * row) * m_pitch.X() - matrix_x/2.0,
-                                                 (0.0 * column + std::sqrt(3) * 0.5 * row) * m_pitch.Y() - matrix_y/2.0,
+    return PositionVector3D<Cartesian3D<double>>((1.0 * column + 0.5 * row) * m_pitch.X() - matrix_x / 2.0,
+                                                 (0.0 * column + std::sqrt(3) * 0.5 * row) * m_pitch.Y() - matrix_y / 2.0,
                                                  0.);
 }
 
@@ -162,26 +169,25 @@ bool HexagonalPixelDetector::isWithinROI(Cluster* cluster) const {
 }
 
 XYVector HexagonalPixelDetector::getSize() const {
-    double matrix_x = (m_nPixels.X()+0.5) * m_pitch.X();
-    double matrix_y = (3.0/4.0*m_nPixels.Y() + 1.0/4.0) * 2.0/std::sqrt(3) * m_pitch.X();
+    double matrix_x = (m_nPixels.X() + 0.5) * m_pitch.X();
+    double matrix_y = (3.0 / 4.0 * m_nPixels.Y() + 1.0 / 4.0) * 2.0 / std::sqrt(3) * m_pitch.X();
 
     return XYVector(matrix_x, matrix_y);
 }
 
 // Check if a pixel touches any of the pixels in a cluster
 bool HexagonalPixelDetector::isNeighbor(const std::shared_ptr<Pixel>& neighbor,
-                               const std::shared_ptr<Cluster>& cluster,
-                               const int neighbor_radius_row,
-                               const int neighbor_radius_col) {
+                                        const std::shared_ptr<Cluster>& cluster,
+                                        const int neighbor_radius_row,
+                                        const int neighbor_radius_col) {
     for(auto pixel : cluster->pixels()) {
         // fixme
-        if(hex_distance(pixel->row(), pixel->column(), neighbor->row(), neighbor->column()) <= 2 * neighbor_radius_col) {
+        if(hex_distance(pixel->row(), pixel->column(), neighbor->row(), neighbor->column()) <= neighbor_radius_col) {
             return true;
         }
     }
     return false;
 }
-
 
 // Rounding is more easy in cubic coordinates, so we need to reconstruct the third coordinate from the other two as z = - x -
 // y:

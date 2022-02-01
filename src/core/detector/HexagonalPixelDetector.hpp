@@ -112,7 +112,6 @@ namespace corryvreckan {
         isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) override;
 
     private:
-
         // Transformations from axial coordinates to cartesian coordinates
         const std::array<double, 4> transform_pointy_{std::sqrt(3.0), std::sqrt(3.0) / 2.0, 0.0, 3.0 / 2.0};
         const std::array<double, 4> transform_flat_{3.0 / 2.0, 0.0, std::sqrt(3.0) / 2.0, std::sqrt(3.0)};
@@ -123,8 +122,6 @@ namespace corryvreckan {
 
         std::pair<int, int> round_to_nearest_hex(double x, double y) const;
         size_t hex_distance(double x1, double y1, double x2, double y2) const;
-
-
     };
 } // namespace corryvreckan
 
