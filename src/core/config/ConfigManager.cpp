@@ -25,7 +25,7 @@ using namespace corryvreckan;
 /**
  * @throws ConfigFileUnavailableError If the main configuration file cannot be accessed
  */
-ConfigManager::ConfigManager(std::string file_name,
+ConfigManager::ConfigManager(std::filesystem::path file_name,
                              std::initializer_list<std::string> global,
                              std::initializer_list<std::string> ignore) {
     // Check if the file exists

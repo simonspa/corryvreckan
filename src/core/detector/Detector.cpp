@@ -125,7 +125,7 @@ bool Detector::hasRole(DetectorRole role) const {
 }
 
 // Function to set the channel maskfile
-void Detector::maskFile(std::string file) {
+void Detector::maskFile(std::filesystem::path file) {
     m_maskfile = file;
 }
 
