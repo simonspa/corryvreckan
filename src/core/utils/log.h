@@ -1,7 +1,8 @@
 /**
  * @file
  * @brief Provides a logger and macros for convenient access
- * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
+ *
+ * @copyright Copyright (c) 2016-2022 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -186,12 +187,6 @@ namespace corryvreckan {
         static std::string getSection();
 
     private:
-        /**
-         * @brief The number of exceptions that are uncaught
-         * @param cons If true: always return zero if amount of exceptions cannot be properly determined
-         * @return Number of uncaught exceptions
-         */
-        int get_uncaught_exceptions(bool cons);
         /**
          * @brief Get the current date as a printable string
          * @return Current date as a string
