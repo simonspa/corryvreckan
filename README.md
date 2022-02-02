@@ -76,6 +76,7 @@ The following authors, in alphabetical order, have contributed to Corryvreckan:
 * Tomas Vanat, CERN, @tvanat
 * Jin Zhang, DESY, @jinz
 * Younes Otarid, DESY, @yotarid
+* Pascal Becht, University of Heidelberg, @pbecht
 
 ## Citations
 The reference paper of Corryvreckan describing the framework and providing an example for a test beam data reconstruction has been published in the *Journal of Instrumentation*.
