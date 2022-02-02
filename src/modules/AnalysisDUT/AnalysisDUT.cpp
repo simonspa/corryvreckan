@@ -612,7 +612,12 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         LOG(DEBUG) << "Looking at next track";
 
         // Cut on the chi2/ndof
-        if(track->getChi2ndof() > chi2_ndof_cut_) {
+        double trackChi2ndof = track->getChi2ndof();
+        if(track->getNdof() == 0){ // check if Chi2/ndof is well defined
+            LOG(DEBUG) << " - track ndof = 0, skip cut on Chi2/ndof";
+            trackChi2ndof = 1;
+        }
+        if(trackChi2ndof > chi2_ndof_cut_) {
             LOG(DEBUG) << " - track discarded due to Chi2/ndof";
             hCutHisto->Fill(1);
             num_tracks_++;
@@ -621,7 +626,12 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
         // Create track-to-track plot
         for(auto& track2 : tracks) {
-            if((track == track2) || (track2->getChi2ndof() > chi2_ndof_cut_)) {
+            double track2Chi2ndof = track2->getChi2ndof();
+            if(track2->getNdof() == 0){ // check if Chi2/ndof is well defined
+                LOG(DEBUG) << " - track2 ndof = 0, skip cut on Chi2/ndof";
+                track2Chi2ndof = 1;
+            }
+            if((track == track2) || (track2Chi2ndof > chi2_ndof_cut_)) {
                 continue;
             }
             auto inter1 = m_detector->globalToLocal(m_detector->getIntercept(track.get()));
