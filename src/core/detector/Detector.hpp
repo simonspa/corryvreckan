@@ -224,7 +224,7 @@ namespace corryvreckan {
          * @note The data contained in the calibration file is detector-specific and is
          * not parsed. This is left to the individual modules decoding the detector data.
          */
-        std::string calibrationFile() const { return m_calibrationfile.value_or("none"); }
+        std::string calibrationFile() const { return m_calibrationfile.value_or(""); }
 
         /**
          * @brief Set the file with pixel mask information

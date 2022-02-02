@@ -68,7 +68,7 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
 
     if(config.has("calibration_file")) {
         m_calibrationfile = config.getPath("calibration_file", true);
-        LOG(DEBUG) << "Found calibration file for detector " << getName() << " at \"" << m_calibrationfile.value_or("none")
+        LOG(DEBUG) << "Found calibration file for detector " << getName() << " at \"" << m_calibrationfile.value_or("")
                    << "\"";
     }
 }
@@ -175,7 +175,7 @@ Configuration Detector::getConfiguration() const {
     }
 
     // add detector calibration file path, if set in the main configuration
-    if(this->calibrationFile() != "none") {
+    if(this->calibrationFile() != "") {
         config.set("calibration_file", this->calibrationFile());
     }
 
