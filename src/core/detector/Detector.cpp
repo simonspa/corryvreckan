@@ -149,6 +149,9 @@ Configuration Detector::getConfiguration() const {
     if(this->isAuxiliary()) {
         roles.push_back("auxiliary");
     }
+    if(this->isPassive()) {
+        roles.push_back("passive");
+    }
 
     if(!roles.empty()) {
         config.setArray("role", roles);
