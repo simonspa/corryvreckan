@@ -231,13 +231,13 @@ namespace corryvreckan {
          * @brief Set the file with pixel mask information
          * @param file New mask file name
          */
-        void maskFile(std::string file);
+        void maskFile(std::filesystem::path file);
 
         /**
          * @brief Get path of the file with pixel mask information
          * @return Path of the pixel mask file
          */
-        std::string maskFile() const { return m_maskfile; }
+        std::filesystem::path maskFile() const { return m_maskfile; }
 
         /**
          * @brief Mark a detector channel as masked
@@ -388,7 +388,7 @@ namespace corryvreckan {
 
         // List of masked channels
         std::map<int, bool> m_masked;
-        std::string m_maskfile, m_maskfile_name;
+        std::filesystem::path m_maskfile;
     };
 } // namespace corryvreckan
 

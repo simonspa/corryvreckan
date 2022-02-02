@@ -248,7 +248,7 @@ void MaskCreator::deadPixelFinder() {
 void MaskCreator::writeMaskFiles() {
 
     // Get the mask file from detector or use default name:
-    std::string maskfile_path = m_detector->maskFile();
+    auto maskfile_path = m_detector->maskFile();
     if(maskfile_path.empty()) {
         maskfile_path = createOutputFile("mask_" + m_detector->getName() + ".txt");
     }
