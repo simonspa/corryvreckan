@@ -9,6 +9,7 @@
 #ifndef CORRYVRECKAN_DETECTOR_H
 #define CORRYVRECKAN_DETECTOR_H
 
+#include <filesystem>
 #include <fstream>
 #include <map>
 #include <string>
@@ -224,7 +225,7 @@ namespace corryvreckan {
          * @note The data contained in the calibration file is detector-specific and is
          * not parsed. This is left to the individual modules decoding the detector data.
          */
-        std::string calibrationFile() const { return m_calibrationfile; }
+        std::filesystem::path calibrationFile() const { return m_calibrationfile; }
 
         /**
          * @brief Set the file with pixel mask information
@@ -383,7 +384,7 @@ namespace corryvreckan {
         PositionVector3D<Cartesian3D<double>> m_origin;
 
         // Path of calibration file
-        std::string m_calibrationfile;
+        std::filesystem::path m_calibrationfile;
 
         // List of masked channels
         std::map<int, bool> m_masked;
