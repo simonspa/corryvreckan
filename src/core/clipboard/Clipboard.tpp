@@ -82,7 +82,7 @@ namespace corryvreckan {
         }
 
         // Iterator for data type:
-        ClipboardData::iterator type = storage_element.begin();
+        auto type = storage_element.begin();
 
         /* If data type exists, returns iterator to offending key, if data type does not exist yet, creates new entry and
          * returns iterator to the newly created element.
