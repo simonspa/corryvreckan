@@ -14,9 +14,9 @@
 #include "exceptions.h"
 
 using namespace corryvreckan;
-Multiplet::Multiplet(std::shared_ptr<Track> upstream, std::shared_ptr<Track> downstream) : Track() {
-    m_upstream = upstream;
-    m_downstream = downstream;
+Multiplet::Multiplet(std::shared_ptr<Track> upstream, std::shared_ptr<Track> downstream) {
+    m_upstream = std::move(upstream);
+    m_downstream = std::move(downstream);
 
     // All clusters from up- and downstream should be referenced from this track:
     for(auto& cluster : m_upstream->getClusters()) {
@@ -39,12 +39,13 @@ void Multiplet::calculateChi2() {
 }
 
 void Multiplet::calculateResiduals() {
-    for(auto c : track_clusters_) {
+    for(const auto& c : track_clusters_) {
         auto* cluster = c.get();
         residual_global_[cluster->detectorID()] = cluster->global() - getIntercept(cluster->global().z());
-        if(get_plane(cluster->detectorID()) != nullptr)
+        if(get_plane(cluster->detectorID()) != nullptr) {
             residual_local_[cluster->detectorID()] =
                 cluster->local() - get_plane(cluster->detectorID())->getToLocal() * getIntercept(cluster->global().z());
+        }
     }
 }
 
@@ -75,8 +76,9 @@ ROOT::Math::XYZPoint Multiplet::getIntercept(double z) const {
 }
 
 ROOT::Math::XYZPoint Multiplet::getState(const std::string& detectorID) const {
-    if(!isFitted_)
+    if(!isFitted_) {
         throw TrackError(typeid(*this), " not fitted");
+    }
 
     auto* cluster = getClusterFromDetector(detectorID);
     if(cluster == nullptr) {

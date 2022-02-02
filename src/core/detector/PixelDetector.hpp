@@ -45,13 +45,13 @@ namespace corryvreckan {
         /**
          * Default destructor
          */
-        ~PixelDetector() = default;
+        ~PixelDetector() override = default;
 
         /**
          * @brief Constructs a detector in the geometry
          * @param config Configuration object describing the detector
          */
-        PixelDetector(const Configuration& config);
+        explicit PixelDetector(const Configuration& config);
 
         /**
          * @brief Set position and orientation from configuration file
@@ -175,8 +175,7 @@ namespace corryvreckan {
          * @note users should define their specific clustering method in the detector class, for pixel detector, the default
          * is 2D clustering
          */
-        virtual bool
-        isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) override;
+        bool isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) override;
 
     private:
         // Initialize coordinate transformations

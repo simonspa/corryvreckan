@@ -14,7 +14,7 @@
 using namespace corryvreckan;
 
 Track::Plane::Plane(std::string name, double z, double x_x0, Transform3D to_local)
-    : z_(z), x_x0_(x_x0), name_(name), to_local_(to_local) {}
+    : z_(z), x_x0_(x_x0), name_(std::move(name)), to_local_(to_local) {}
 
 double Track::Plane::getPosition() const {
     return z_;
@@ -81,7 +81,7 @@ void Track::addAssociatedCluster(const Cluster* cluster) {
 
 std::vector<Cluster*> Track::getClusters() const {
     std::vector<Cluster*> clustervec;
-    for(auto& cl : track_clusters_) {
+    for(const auto& cl : track_clusters_) {
         auto* cluster = cl.get();
         if(cluster == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
@@ -95,7 +95,7 @@ std::vector<Cluster*> Track::getClusters() const {
 
 std::vector<Cluster*> Track::getAssociatedClusters(const std::string& detectorID) const {
     std::vector<Cluster*> clustervec;
-    for(auto& cl : associated_clusters_) {
+    for(const auto& cl : associated_clusters_) {
         auto* cluster = cl.get();
         // Check if reference is valid:
         if(cluster == nullptr) {
@@ -159,7 +159,7 @@ void Track::setClosestCluster(const Cluster* cluster) {
 
 Cluster* Track::getClosestCluster(const std::string& id) const {
     auto cluster_it = closest_cluster_.find(id);
-    auto cluster = cluster_it->second.get();
+    auto* cluster = cluster_it->second.get();
     if(cluster_it != closest_cluster_.end() && cluster != nullptr) {
         return cluster;
     }
@@ -219,7 +219,7 @@ XYZPoint Track::getGlobalResidual(const std::string& detectorID) const {
 }
 
 double Track::getMaterialBudget(const std::string& detectorID) const {
-    auto budget = std::find_if(planes_.begin(), planes_.end(), [&detectorID](Plane plane) {
+    auto budget = std::find_if(planes_.begin(), planes_.end(), [&detectorID](const Plane& plane) {
                       return plane.getName() == detectorID;
                   })->getMaterialBudget();
     return budget;
@@ -239,12 +239,13 @@ void Track::registerPlane(const std::string& name, double z, double x0, Transfor
 Track::Plane* Track::get_plane(std::string detetorID) {
     auto plane =
         std::find_if(planes_.begin(), planes_.end(), [&detetorID](Plane const& p) { return p.getName() == detetorID; });
-    if(plane == planes_.end())
+    if(plane == planes_.end()) {
         return nullptr;
+    }
     return &(*plane);
 }
 
-std::shared_ptr<Track> corryvreckan::Track::Factory(std::string trackModel) {
+std::shared_ptr<Track> corryvreckan::Track::Factory(const std::string& trackModel) {
     if(trackModel == "straightline") {
         return std::make_shared<StraightLineTrack>();
     } else if(trackModel == "gbl") {

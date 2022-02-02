@@ -23,7 +23,7 @@ void Clipboard::putEvent(std::shared_ptr<Event> event) {
     if(event_) {
         throw InvalidDataError("Event already defined. Only one module can place an event definition");
     } else {
-        event_ = event;
+        event_ = std::move(event);
     }
 }
 
