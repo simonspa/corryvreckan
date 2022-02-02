@@ -2,7 +2,7 @@
  * @file
  * @brief Collection of string utilities
  *
- * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2016-2022 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -19,6 +19,7 @@
 #define CORRYVRECKAN_TEXT_H
 
 #include <cctype>
+#include <filesystem>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -72,6 +73,14 @@ namespace corryvreckan {
      * @throws std::invalid_argument If string without enclosing quotation marks, but more data after whitespace is found
      */
     std::string from_string_impl(std::string str, type_tag<std::string>);
+    /**
+     * @ingroup StringConversions
+     * @brief Conversion handler for filesystem paths
+     * @throws std::invalid_argument If no closing quotation mark as last character after an opening quotation mark
+     * @throws std::invalid_argument If string without enclosing quotation marks, but more data after whitespace is found
+     */
+    std::filesystem::path from_string_impl(std::string str, type_tag<std::filesystem::path>);
+
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for booleans
