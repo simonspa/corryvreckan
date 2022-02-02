@@ -73,7 +73,7 @@ void StraightLineTrack::calculateChi2() {
 }
 
 void StraightLineTrack::calculateResiduals() {
-    for(auto c : track_clusters_) {
+    for(const auto& c : track_clusters_) {
         auto* cluster = c.get();
         // fixme: cluster->global.z() is only an approximation for the plane intersect. Can be fixed after !115
         residual_global_[cluster->detectorID()] = cluster->global() - getIntercept(cluster->global().z());
@@ -107,7 +107,7 @@ void StraightLineTrack::fit() {
 
     // Loop over all clusters and fill the matrices
     for(auto& cl : track_clusters_) {
-        auto cluster = cl.get();
+        auto* cluster = cl.get();
         if(cluster == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
         }

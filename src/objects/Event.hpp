@@ -160,7 +160,7 @@ namespace corryvreckan {
          * @param tag_value Value of the tag to be added
          * Add Key/value tags to the event.
          **/
-        void addTag(std::string tag_key, std::string tag_value);
+        void addTag(const std::string& tag_key, const std::string& tag_value);
 
         /**
          * @brief Retrieve tag value from this event
@@ -168,7 +168,7 @@ namespace corryvreckan {
          * @param tag_key Key of the tag to be read
          * Get value of tag to the event.
          **/
-        std::string getTag(std::string tag_key);
+        std::string getTag(const std::string& tag_key);
 
         /**
          * @brief Print an ASCII representation of Pixel to the given stream

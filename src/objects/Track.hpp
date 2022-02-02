@@ -40,7 +40,7 @@ namespace corryvreckan {
          * @param trackModel The name of the track model which should be used
          * @return By param trackModel assigned track model to be used
          */
-        static std::shared_ptr<Track> Factory(std::string trackModel);
+        static std::shared_ptr<Track> Factory(const std::string& trackModel);
 
         /**
          * @brief Add a cluster to the tack, which will be used in the fit
