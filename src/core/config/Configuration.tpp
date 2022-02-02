@@ -154,7 +154,7 @@ namespace corryvreckan {
     template <typename T> void Configuration::setArray(const std::string& key, const std::vector<T>& val, bool mark_used) {
         // NOTE: not the most elegant way to support arrays
         std::string str;
-        for(const T& el : val) {
+        for(T el : val) { // NOLINT
             str += corryvreckan::to_string(el);
             str += ",";
         }
