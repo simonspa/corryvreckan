@@ -220,12 +220,12 @@ namespace corryvreckan {
 
         /**
          * @brief Get path of the file with calibration information
-         * @return Path of the calibration file
+         * @return Path of the calibration file.
          *
          * @note The data contained in the calibration file is detector-specific and is
          * not parsed. This is left to the individual modules decoding the detector data.
          */
-        std::filesystem::path calibrationFile() const { return m_calibrationfile; }
+        std::filesystem::path calibrationFile() const { return m_calibrationfile.value_or(""); }
 
         /**
          * @brief Set the file with pixel mask information
@@ -384,7 +384,7 @@ namespace corryvreckan {
         PositionVector3D<Cartesian3D<double>> m_origin;
 
         // Path of calibration file
-        std::filesystem::path m_calibrationfile;
+        std::optional<std::filesystem::path> m_calibrationfile;
 
         // List of masked channels
         std::map<int, bool> m_masked;
