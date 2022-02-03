@@ -220,12 +220,12 @@ namespace corryvreckan {
 
         /**
          * @brief Get path of the file with calibration information
-         * @return Path of the calibration file. "none", if no calibration file is specified.
+         * @return Path of the calibration file.
          *
          * @note The data contained in the calibration file is detector-specific and is
          * not parsed. This is left to the individual modules decoding the detector data.
          */
-         std::filesystem::path calibrationFile() const { return m_calibrationfile.value_or(""); }
+        std::filesystem::path calibrationFile() const { return m_calibrationfile.value_or(""); }
 
         /**
          * @brief Set the file with pixel mask information
