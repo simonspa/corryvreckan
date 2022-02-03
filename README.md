@@ -43,40 +43,45 @@ The main page of the reference can then be found at `reference/html/index.html` 
 
 ## Development of Corryvreckan
 
-Corryvreckan has been developed and is maintained by
+Corryvreckan is developed and maintained by
 
-* Morag Williams, University of Glasgow/CERN, @williamm
-* Jens Kroeger, University of Heidelberg/CERN, @jekroege
 * Lennart Huth, DESY, @lhuth
 * Paul Schütze, DESY, @pschutze
 * Simon Spannagel, DESY, @simonspa
 
-The following authors, in alphabetical order, have contributed to Corryvreckan:
+The following authors, in alphabetical order, have developed or contributed to Corryvreckan:
 
+* Pascal Becht, University of Heidelberg, @pbecht
 * Matthew Daniel Buckland, University of Liverpool, @mbucklan
 * Carsten Daniel Burgard, DESY, @cburgard
 * Eric Buschmann, CERN, @ebuschma
 * Maximilian Felix Caspar, DESY, @mcaspar
-* Manuel Colocci, CERN, @mcolocci
-* Jens Dopke, STFC RAL, @jdopke
-* Jordi Duarte-Campderros, IFCA, @duarte
-* Nicolò Jacazio, CERN, @njacazio
 * Chun Cheng, DESY, @chengc
+* Manuel Colocci, CERN, @mcolocci
 * Dominik Dannheim, CERN, @dannheim
+* Jens Dopke, STFC RAL, @jdopke
 * Katharina Dort, University of Giessen/CERN, @kdort
+* Jordi Duarte-Campderros, IFCA, @duarte
+* Finn Feindt, DESY, @ffeindt
 * Alexander Ferk, CERN, @aferk
 * Adrian Fiergolski, CERN, @afiergol
 * Sejla Hadzic, MPP, @sehadzic
+* Adrian Herkert, DESY, @adherker
 * Daniel Hynds, Nikhef, @dhynds
+* Nicolò Jacazio, CERN, @njacazio
+* Jens Kroeger, University of Heidelberg/CERN, @jekroege
 * Magnus Mager, CERN, @mmager
+* Keerthi Nakkalil, University Bonn/DESY, @nakkalil
 * Andreas Matthias Nürnberg, KIT, @nurnberg
 * Ryunosuke O'Neil, University of Edinburgh, @roneil
+* Younes Otarid, DESY, @yotarid
 * Klaas Padeken, Bonn, HISKP, @padeken
 * Florian Pitters, HEPHY, @fpipper
 * Tomas Vanat, CERN, @tvanat
+* Annika Vauth, University of Hamburg/DESY, @anvauth
+* Mateus Vicente Barreto Pinto, University Geneva, @mvicente
+* Morag Williams, University of Glasgow/CERN, @williamm
 * Jin Zhang, DESY, @jinz
-* Younes Otarid, DESY, @yotarid
-* Pascal Becht, University of Heidelberg, @pbecht
 
 ## Citations
 The reference paper of Corryvreckan describing the framework and providing an example for a test beam data reconstruction has been published in the *Journal of Instrumentation*.

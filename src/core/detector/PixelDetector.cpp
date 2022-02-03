@@ -249,8 +249,9 @@ bool PixelDetector::hasIntercept(const Track* track, double pixelTolerance) cons
     // Chip reaches from -0.5 to nPixels-0.5
     bool intercept = true;
     if(row < pixelTolerance - 0.5 || row > (this->m_nPixels.Y() - pixelTolerance - 0.5) || column < pixelTolerance - 0.5 ||
-       column > (this->m_nPixels.X() - pixelTolerance - 0.5))
+       column > (this->m_nPixels.X() - pixelTolerance - 0.5)) {
         intercept = false;
+    }
 
     return intercept;
 }
@@ -272,8 +273,9 @@ bool PixelDetector::hitMasked(const Track* track, int tolerance) const {
     bool hitmasked = false;
     for(int r = (row - tolerance); r <= (row + tolerance); r++) {
         for(int c = (column - tolerance); c <= (column + tolerance); c++) {
-            if(this->masked(c, r))
+            if(this->masked(c, r)) {
                 hitmasked = true;
+            }
         }
     }
 
@@ -413,7 +415,7 @@ bool PixelDetector::isNeighbor(const std::shared_ptr<Pixel>& neighbor,
                                const std::shared_ptr<Cluster>& cluster,
                                const int neighbor_radius_row,
                                const int neighbor_radius_col) {
-    for(auto pixel : cluster->pixels()) {
+    for(const auto* pixel : cluster->pixels()) {
         int row_distance = abs(pixel->row() - neighbor->row());
         int col_distance = abs(pixel->column() - neighbor->column());
 

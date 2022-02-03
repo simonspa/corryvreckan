@@ -80,7 +80,7 @@ namespace corryvreckan {
          * @brief Constructs a detector in the geometry
          * @param config Configuration object describing the detector
          */
-        Detector(const Configuration& config);
+        explicit Detector(const Configuration& config);
 
         /**
          * @brief Factory to dynamically create detectors
@@ -299,14 +299,14 @@ namespace corryvreckan {
          * @param  local Local coordinates in the reference frame of this detector
          * @return       Global coordinates
          */
-        XYZPoint localToGlobal(XYZPoint local) const { return m_localToGlobal * local; };
+        XYZPoint localToGlobal(const XYZPoint& local) const { return m_localToGlobal * local; };
 
         /**
          * @brief Transform global coordinates into detector-local coordinates
          * @param  global Global coordinates
          * @return        Local coordinates in the reference frame of this detector
          */
-        XYZPoint globalToLocal(XYZPoint global) const { return m_globalToLocal * global; };
+        XYZPoint globalToLocal(const XYZPoint& global) const { return m_globalToLocal * global; };
 
         /**
          * @brief Check whether given track is within the detector's region-of-interest

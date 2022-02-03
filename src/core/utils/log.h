@@ -1,7 +1,8 @@
 /**
  * @file
  * @brief Provides a logger and macros for convenient access
- * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
+ *
+ * @copyright Copyright (c) 2016-2022 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -187,12 +188,6 @@ namespace corryvreckan {
 
     private:
         /**
-         * @brief The number of exceptions that are uncaught
-         * @param cons If true: always return zero if amount of exceptions cannot be properly determined
-         * @return Number of uncaught exceptions
-         */
-        int get_uncaught_exceptions(bool cons);
-        /**
          * @brief Get the current date as a printable string
          * @return Current date as a string
          */
@@ -228,10 +223,10 @@ namespace corryvreckan {
 
     using Log = DefaultLogger;
 
+#ifndef __FILE_NAME__
 /**
  *  @brief Base name of the file without the directory
  */
-#ifndef __FILE_NAME__
 #define __FILE_NAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
 
@@ -282,7 +277,7 @@ namespace corryvreckan {
  * @param  Count Number of allowed counts
  * @return       Local counter variable
  */
-#define GENERATE_LOG_VAR(Count) thread_local size_t local___FUNCTION__##Count##__LINE__ = Count
+#define GENERATE_LOG_VAR(Count) static std::atomic<int> local___FUNCTION__##Count##__LINE__(Count)
 #define GET_LOG_VARIABLE(Count) local___FUNCTION__##Count##__LINE__
 
 /**
@@ -293,20 +288,29 @@ namespace corryvreckan {
  */
 #define LOG_N(level, max_log_count)                                                                                         \
     GENERATE_LOG_VAR(max_log_count);                                                                                        \
-    if(GET_LOG_VARIABLE(max_log_count) != 0 && GET_LOG_VARIABLE(max_log_count)-- != 0)                                      \
+    if(GET_LOG_VARIABLE(max_log_count) > 0)                                                                                 \
         if(corryvreckan::LogLevel::level <= corryvreckan::Log::getReportingLevel() &&                                       \
            !corryvreckan::Log::getStreams().empty())                                                                        \
     corryvreckan::Log().getStream(                                                                                          \
         corryvreckan::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)            \
-        << (GET_LOG_VARIABLE(max_log_count) == 0 ? "[further messages will be suppressed] " : "")
+        << std::string(--GET_LOG_VARIABLE(max_log_count) == 0 ? "[further messages suppressed] " : "")
 
     /**
-     * @brief Suppress an stream from writing any output
+     * @brief Suppress a stream from writing any output
      * @param stream The stream to suppress
      */
     // suppress a (logging) stream
     // TODO [doc] rewrite as a lowercase function in a namespace?
     inline void SUPPRESS_STREAM(std::ostream& stream) { stream.setstate(std::ios::failbit); }
+
+/**
+ * @brief Suppress a stream from writing output unless logging is below \ref corryvreckan::LogLevel
+ * @param  level  The log level of the stream
+ * @param  stream Stream to suppress
+ */
+#define SUPPRESS_STREAM_EXCEPT(level, stream)                                                                               \
+    IFLOG(level);                                                                                                           \
+    else SUPPRESS_STREAM(stream);
 
     /**
      * @brief Release an suppressed stream so it can write again
