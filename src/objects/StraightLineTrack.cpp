@@ -69,7 +69,7 @@ void StraightLineTrack::calculateChi2() {
     }
 
     // Store also the chi2/degrees of freedom
-    chi2ndof_ = (ndof_ <= 0.0) ? -1 : (chi2_ / ndof_);
+    chi2ndof_ = (ndof_ <= 0) ? -1 : (chi2_ / static_cast<double> (ndof_));
 }
 
 void StraightLineTrack::calculateResiduals() {
