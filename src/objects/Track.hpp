@@ -121,7 +121,7 @@ namespace corryvreckan {
          * @brief Get the ndof for the track fit
          * @return ndof
          */
-        double getNdof() const;
+        size_t getNdof() const;
 
         /**
          * @brief Get the clusters contained in the track fit
@@ -301,8 +301,8 @@ namespace corryvreckan {
         std::vector<Plane> planes_;
 
         std::map<std::string, PointerWrapper<Cluster>> closest_cluster_;
+        size_t ndof_;
         double chi2_;
-        double ndof_;
         double chi2ndof_;
         bool isFitted_{};
         double momentum_{-1};
