@@ -133,7 +133,7 @@ void ModuleManager::load_modules() {
             // If library is not loaded then try to load it first from the config
             // directories
             if(global_config.has("library_directories")) {
-                std::vector<std::string> lib_paths = global_config.getPathArray("library_directories", true);
+                auto lib_paths = global_config.getPathArray("library_directories", true);
                 for(auto& lib_path : lib_paths) {
                     std::string full_lib_path = lib_path;
                     full_lib_path += "/";

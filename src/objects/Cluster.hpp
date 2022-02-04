@@ -29,7 +29,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Cluster();
+        Cluster() = default;
 
         /**
          * @brief Static member function to obtain base class for storage on the clipboard.
@@ -85,11 +85,11 @@ namespace corryvreckan {
         void setColumn(double col) { m_column = col; }
         void setRow(double row) { m_row = row; }
         void setCharge(double charge) { m_charge = charge; }
-        void setClusterCentre(ROOT::Math::XYZPoint global) { m_global = global; }
-        void setClusterCentreLocal(ROOT::Math::XYZPoint local) { m_local = local; }
+        void setClusterCentre(ROOT::Math::XYZPoint global) { m_global = std::move(global); }
+        void setClusterCentreLocal(ROOT::Math::XYZPoint local) { m_local = std::move(local); }
         void setErrorX(double error) { m_error.SetX(error); }
         void setErrorY(double error) { m_error.SetY(error); }
-        void setError(ROOT::Math::XYVector error) { m_error = error; }
+        void setError(ROOT::Math::XYVector error) { m_error = std::move(error); }
 
         /**
          * @brief Print an ASCII representation of Cluster to the given stream
@@ -107,9 +107,9 @@ namespace corryvreckan {
         double m_row;
         double m_charge;
         ROOT::Math::XYVector m_error;
-        size_t m_columnWidth;
-        size_t m_rowWidth;
-        bool m_split;
+        size_t m_columnWidth{0};
+        size_t m_rowWidth{0};
+        bool m_split{false};
 
         ROOT::Math::XYZPoint m_local;
         ROOT::Math::XYZPoint m_global;

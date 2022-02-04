@@ -9,6 +9,8 @@
  */
 
 #include "MaskCreatorTimepix3.h"
+
+#include <filesystem>
 #include <fstream>
 #include <istream>
 
@@ -40,7 +42,7 @@ StatusCode MaskCreatorTimepix3::run(const std::shared_ptr<Clipboard>& clipboard)
 void MaskCreatorTimepix3::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     // Get the trimdac file
-    std::string trimdacfile = m_detector->maskFile();
+    auto trimdacfile = m_detector->maskFile();
 
     // Calculate what the mean number of hits was
     double meanHits = 0;
@@ -53,8 +55,9 @@ void MaskCreatorTimepix3::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     meanHits /= (256. * 256.);
 
     // Make the new file name
-    std::string newtrimdacfile = trimdacfile;
-    newtrimdacfile.replace(newtrimdacfile.end() - 4, newtrimdacfile.end(), "_masked.txt");
+    std::string newtrimdacfilestr = trimdacfile;
+    newtrimdacfilestr.replace(newtrimdacfilestr.end() - 4, newtrimdacfilestr.end(), "_masked.txt");
+    std::filesystem::path newtrimdacfile(newtrimdacfilestr);
 
     // Open the old mask file
     std::ifstream trimdacs;
@@ -62,7 +65,7 @@ void MaskCreatorTimepix3::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     // Open the new mask file for writing
     std::ofstream newtrimdacs;
-    newtrimdacs.open(newtrimdacfile.c_str());
+    newtrimdacs.open(newtrimdacfile);
 
     // Copy the header from the old to the new file
     std::string line;
@@ -96,11 +99,12 @@ void MaskCreatorTimepix3::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     // This is a bit of a fudge. If the old trimdac file was a software-generated file (with name CHIPID_trimdac_masked.txt)
     // then the new file will have an additional _masked in the name. In fact we want to replace the old file. So we now
     // check if this is the case, and move the new file where we want it
-    if(trimdacfile.find("trimdac_masked") != std::string::npos) {
-        int result = rename(newtrimdacfile.c_str(), trimdacfile.c_str());
-        if(result == 0)
-            LOG(INFO) << "Trimdac file " << trimdacfile << " updated";
-        if(result != 0)
+    if(trimdacfile.string().find("trimdac_masked") != std::string::npos) {
+        try {
+            std::filesystem::rename(newtrimdacfile, trimdacfile);
+        } catch(std::filesystem::filesystem_error&) {
             LOG(INFO) << "Could not update trimdac file " << trimdacfile;
+        }
+        LOG(INFO) << "Trimdac file " << trimdacfile << " updated";
     }
 }

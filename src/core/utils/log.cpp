@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of logger
  *
- * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -35,7 +35,7 @@ std::mutex DefaultLogger::write_mutex_;
  * The logger will save the number of uncaught exceptions during construction to compare that with the number of exceptions
  * during destruction later.
  */
-DefaultLogger::DefaultLogger() : exception_count_(get_uncaught_exceptions(true)) {}
+DefaultLogger::DefaultLogger() : exception_count_(std::uncaught_exceptions()) {}
 
 /**
  * The output is written to the streams as soon as the logger gets out-of-scope and destructed. The destructor checks
@@ -44,7 +44,7 @@ DefaultLogger::DefaultLogger() : exception_count_(get_uncaught_exceptions(true))
  */
 DefaultLogger::~DefaultLogger() {
     // Check if an exception is thrown while adding output to the stream
-    if(exception_count_ != get_uncaught_exceptions(false)) {
+    if(exception_count_ != std::uncaught_exceptions()) {
         return;
     }
 
@@ -116,7 +116,7 @@ DefaultLogger::~DefaultLogger() {
     }
 
     // Print output to streams
-    for(auto stream : get_streams()) {
+    for(auto* stream : get_streams()) {
         if(is_terminal(*stream)) {
             (*stream) << out;
         } else {
@@ -137,7 +137,7 @@ void DefaultLogger::finish() {
 
     if(!last_identifier_.empty()) {
         // Flush final line if necessary
-        for(auto stream : get_streams()) {
+        for(auto* stream : get_streams()) {
             (*stream) << std::endl;
             (*stream).flush();
         }
@@ -147,7 +147,7 @@ void DefaultLogger::finish() {
     last_message_ = "";
 
     // Enable cursor again if stream supports it
-    for(auto stream : get_streams()) {
+    for(auto* stream : get_streams()) {
         if(is_terminal(*stream)) {
             (*stream) << "\x1B[?25h";
             (*stream).flush();
@@ -385,7 +385,7 @@ std::string DefaultLogger::get_current_date() {
     return ss.str();
 }
 
-/*
+/**
  * It is impossible to know for sure a terminal has support for all extra terminal features, but every modern terminal has
  * this so we just assume it.
  */
@@ -399,22 +399,3 @@ bool DefaultLogger::is_terminal(std::ostream& stream) {
 
     return false;
 }
-
-/**
- * The number of uncaught exceptions can only be properly determined in C++17. In earlier versions it is only possible to
- * check if there is at least a single exception thrown and that function is used instead. This means a return value of zero
- * corresponds to no exception and one to at least one exception.
- */
-#if __cplusplus > 201402L
-int DefaultLogger::get_uncaught_exceptions(bool) {
-    // we can only do this fully correctly in C++17
-    return std::uncaught_exceptions();
-}
-#else
-int DefaultLogger::get_uncaught_exceptions(bool cons = false) {
-    if(cons) {
-        return 0;
-    }
-    return static_cast<int>(std::uncaught_exception());
-}
-#endif
