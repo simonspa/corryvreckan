@@ -26,7 +26,7 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
     config_.setDefault<unsigned>("buffer_depth", 1000);
     config_.setDefault<double>("time_offset", 0.0);
     config_.setDefault<double>("reference_frequency", 125.);
-    config_.setDefault<uint>("bitshift_tot", 7);
+    config_.setDefault<uint>("bitshift_tot", 9);
     config_.setDefault<bool>("use_both_timestamps", true);
 
     use_both_timestamps_ = config_.get<bool>("use_both_timestamps");
@@ -38,7 +38,7 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
     if(config.count({"run", "input_file"}) > 1) {
         throw InvalidCombinationError(config, {"run", "input_file"}, "run and input_file are mutually exclusive.");
     } else if(config_.has("input_file")) {
-        input_file_ = config_.get<string>("input_file");
+        input_file_ = config_.get<std::string>("input_file");
     } else {
         runNumber_ = config_.get<int>("run");
     }
@@ -55,12 +55,12 @@ void EventLoaderMuPixTelescope::initialize() {
             LOG(INFO) << "NOT Added detetctor:" << d->getName();
     }
     for(auto detector : detectors_) {
-        string tag = detector->getName();
+        std::string tag = detector->getName();
         if(tag.find("_") < tag.length())
             tag = tag.substr(tag.find("_") + 1);
         uint tag_ = uint(stoi(tag, nullptr, 16));
         tags_.push_back(tag_);
-        LOG(INFO) << detector->getName() << " is using the fpga link tag " << hex << tag_;
+        LOG(INFO) << detector->getName() << " is using the fpga link tag " << std::hex << tag_;
         if(typeString_to_typeID.find(detector->getType()) == typeString_to_typeID.end()) {
             throw KeyValueParseError("tag " + std::to_string(tag_), "Sensor tag not supported");
         }
@@ -98,10 +98,11 @@ void EventLoaderMuPixTelescope::initialize() {
         }
     }
     if(!foundFile) {
+
         throw MissingDataError("Cannot open data file: " + input_file_);
     } else
         LOG(INFO) << "File " << input_file_ << " found";
-    string file = (inputDirectory_ + "/" + entry->d_name);
+    std::string file = (inputDirectory_ + "/" + entry->d_name);
     LOG(INFO) << "reading " << file;
     blockFile_ = new BlockFile(file);
     if(!blockFile_->open_read()) {
@@ -136,10 +137,14 @@ void EventLoaderMuPixTelescope::initialize() {
                                           detector->nPixels().y(),
                                           -.05,
                                           detector->nPixels().y() - .5);
-        title = name + "pixelToT; ToT in TS2 clock cycles.;";
-        hPixelToT[name] = new TH1F("pixelToT", title.c_str(), 64, -0.5, 63.5);
+        title = name + "pixelToT; ToT / ns;";
+        hPixelToT[name] = new TH1F("pixelToT", title.c_str(), 2 * 2048, 10 * (-1024.5), 10 * 1023.5);
         title = name + "pixelTS; TS in clock cycles; ";
         hTimeStamp[name] = new TH1F("pixelTS", title.c_str(), 1024, -0.5, 1023.5);
+
+        title = name + "ts_ToT; TS ToT in clock cycles; ";
+        hts_ToT[name] = new TH1F("ts_ToT", title.c_str(), 1024, -0.5, 1023.5);
+
         title = name + "hHitsEvent; # hits per event; ";
         hHitsEvent[name] = new TH1F("hHitsEvent", title.c_str(), 300, -.5, 299.5);
         title = name + "hitsper1kevents; corry events /1k; hits per 1k events";
@@ -149,6 +154,9 @@ void EventLoaderMuPixTelescope::initialize() {
         title = name + "fpga vs chip clock;chip clock;fpga clock";
         raw_fpga_vs_chip_corrected[name] =
             new TH2F("raw_fpga_vs_chip_corrected", title.c_str(), 1024, 0, 1023, 2048, 0, 2047);
+
+        title = name + "ts tst tot;ts1;ts tot";
+        ts_TS1_ToT[name] = new TH2F("ts_ts1_tot", title.c_str(), 1024, 0, 1023, 2048, 0, 2047);
         title = "ts1_ts2";
         ts1_ts2[name] = new TH2F("ts1_ts2", title.c_str(), 1024, 0, 1023, 1024, 0, 1023);
 
@@ -235,7 +243,7 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
                            << " and duration: " << Units::display(clipboard->getEvent()->duration(), "us");
                 pixels_.at(t).push_back(pixel);
                 hHitMap.at(names_.at(t))->Fill(pixel.get()->column(), pixel.get()->row());
-                hPixelToT.at(names_.at(t))->Fill(pixel.get()->raw());
+                // hPixelToT.at(names_.at(t))->Fill(pixel.get()->raw());
                 // display the 10 bit timestamp distribution
                 hTimeStamp.at(names_.at(t))->Fill(fmod((pixel.get()->timestamp() / 8.), pow(2, 10)));
                 pixelbuffers_.at(t).pop(); // remove top element
@@ -256,14 +264,16 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
     bool data_in_buffer = false;
     for(auto t : tags_) {
         if(pixelbuffers_.at(t).size() > 0)
-            data_in_buffer = true;
+            std::map<std::string, TH1F*> ts_ToT;
+
+        data_in_buffer = true;
     }
     if(!data_in_buffer)
         return StatusCode::EndRun;
     return StatusCode::NoData;
 }
 
-shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint tag, long unsigned int corrected_fpgaTime) {
+std::shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint tag, long unsigned int corrected_fpgaTime) {
 
     uint16_t time = 0x0;
     // TS can be sampled on both edges - keep this optional
@@ -278,12 +288,34 @@ shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint tag,
     double px_timestamp =
         4 / refFrequency_ * 125. * static_cast<double>(((corrected_fpgaTime >> 1) & 0xFFFFFFFFFF800) + time) -
         static_cast<double>(timeOffset_.at(tag));
+    hts_ToT["mp10_0"]->Fill(static_cast<double>(h.tot_raw()));
 
     // store the ToT information if reasonable
     double tot_timestamp = 8 / refFrequency_ * 125. *
-                           static_cast<double>(((corrected_fpgaTime >> 2) & (0xFFFFFFFFFFC00 << bitshift_tot_)) +
-                                               (static_cast<uint32_t>(h.tot()) << bitshift_tot_));
-    double tot = (tot_timestamp); // - px_timestamp > 0) ? (px_timestamp - tot_timestamp) : 0;
+                           // fpga timestamp in 2ns -> go to 8ns, divide by4
+                           ((((corrected_fpgaTime / 4 / 9216) * 9216) + h.tot_raw() * 9));
+    //                           static_cast<double>(((static_cast<uint>((corrected_fpgaTime >>
+    //                           2))/(0x3FF*bitshift_tot_))*(0x3FF*bitshift_tot_) + // here we cannot shift, hence we need to
+    //                           multiply...
+
+    //                                               ((0x0000003FF & static_cast<uint32_t>(h.tot_raw())) * bitshift_tot_)));
+    ts_TS1_ToT["mp10_0"]->Fill(static_cast<double>((static_cast<uint>(px_timestamp / 8 / 9)) & 0x3FF),
+                               (static_cast<double>(static_cast<uint>(tot_timestamp / 8 / 9) & 0x3FF)));
+
+    double tot = tot_timestamp - px_timestamp; //+static_cast<double>(timeOffset_.at(tag));
+
+    if(tot < 0)
+        tot += 9216;
+
+    // std::cout << "ToT: " << std::hex << (corrected_fpgaTime >> 2) <<"\t" << (int(corrected_fpgaTime/4)%9216) << "\t" <<
+    // (((corrected_fpgaTime/4/9216)*9216)+h.tot_raw()*9) <<std::endl;
+
+    //    ts_TS1_ToT["mp10_0"]->Fill(static_cast<double>((static_cast<uint>(h.tot_raw())) & 0x3FF),(static_cast<double>(0x3FF
+    //    &static_cast<uint>(time**9))));
+
+    //    tot =
+    //    double(((((h.tot_raw()/*+1*/)*(8+1))-((h.timestamp_raw()*(0+1))%((uint64_t(-1)&(0x3ff+1))*(8+1))))+((uint64_t(-1)&(0x3ff+1))*(8+1)))%((uint64_t(-1)&(0x3ff+1))*(8+1)))*8.;
+    hPixelToT["mp10_0"]->Fill(tot);
     return std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), tot, tot, px_timestamp);
 }
 

@@ -52,7 +52,7 @@ namespace corryvreckan {
         StatusCode read_sorted(const std::shared_ptr<Clipboard>& clipboard);
         StatusCode read_unsorted(const std::shared_ptr<Clipboard>& clipboard);
 
-        shared_ptr<Pixel> read_hit(const RawHit& h, uint tag, unsigned long corrected_fpgaTime);
+        std::shared_ptr<Pixel> read_hit(const RawHit& h, uint tag, unsigned long corrected_fpgaTime);
         void fillBuffer();
         std::vector<uint> tags_{};
         double prev_event_end_{};
@@ -86,6 +86,8 @@ namespace corryvreckan {
 
         // Histograms
         std::map<std::string, TH1F*> hPixelToT;
+        std::map<std::string, TH1F*> hts_ToT;
+        std::map<std::string, TH2F*> ts_TS1_ToT;
         std::map<std::string, TH1F*> hTimeStamp;
         std::map<std::string, TH1F*> hHitsEvent;
         std::map<std::string, TH1F*> hitsPerkEvent;
