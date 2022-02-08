@@ -33,7 +33,7 @@ namespace corryvreckan {
          * @brief Construct an error for a missing data item
          * @param name Name of the missing item
          */
-        MissingDataError(const std::string& name) {
+        explicit MissingDataError(const std::string& name) {
             error_message_ = "No data with key '" + name + "' exists on the clipboard";
         }
     };
@@ -48,7 +48,7 @@ namespace corryvreckan {
          * @brief Construct an error for invalid data element
          * @param reason Reason why the data is invalid
          */
-        InvalidDataError(const std::string& reason) { error_message_ = "Data invalid: " + reason; }
+        explicit InvalidDataError(const std::string& reason) { error_message_ = "Data invalid: " + reason; }
     };
 } // namespace corryvreckan
 

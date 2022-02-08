@@ -25,6 +25,7 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration& config, std::shared_ptr<De
     config_.setDefault<double>("inpixel_bin_size", Units::get<double>(1.0, "um"));
     config_.setDefault<XYVector>("inpixel_cut_edge", {Units::get(5.0, "um"), Units::get(5.0, "um")});
     config_.setDefault<double>("masked_pixel_distance_cut", 1.);
+    config_.setDefault<double>("spatial_cut_sensoredge", 1.);
 
     m_timeCutFrameEdge = config_.get<double>("time_cut_frameedge");
     m_chi2ndofCut = config_.get<double>("chi2ndof_cut");
@@ -32,6 +33,7 @@ AnalysisEfficiency::AnalysisEfficiency(Configuration& config, std::shared_ptr<De
     require_associated_cluster_on_ = config_.getArray<std::string>("require_associated_cluster_on", {});
     m_inpixelEdgeCut = config_.get<XYVector>("inpixel_cut_edge");
     m_maskedPixelDistanceCut = config_.get<int>("masked_pixel_distance_cut");
+    spatial_cut_sensoredge = config_.get<double>("spatial_cut_sensoredge");
 }
 
 void AnalysisEfficiency::initialize() {
@@ -322,7 +324,7 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
         LOG(TRACE) << " Checking if track is outside DUT area";
-        if(!m_detector->hasIntercept(track.get(), 1)) {
+        if(!m_detector->hasIntercept(track.get(), spatial_cut_sensoredge)) {
             LOG(DEBUG) << " - track outside DUT area: " << localIntercept;
             n_dut++;
             continue;

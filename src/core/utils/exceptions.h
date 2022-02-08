@@ -69,8 +69,7 @@ namespace corryvreckan {
 
     protected:
         /**
-         * @brief Internal constructor for exceptions setting the error message
-         * indirectly
+         * @brief Internal constructor for exceptions setting the error message indirectly
          */
         RuntimeError() = default;
     };

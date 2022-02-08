@@ -48,11 +48,11 @@ void Event::addTags(std::map<std::string, std::string> tags) {
     tags_.insert(tags.begin(), tags.end());
 }
 
-void Event::addTag(std::string tag_key, std::string tag_value) {
+void Event::addTag(const std::string& tag_key, const std::string& tag_value) {
     tags_.emplace(tag_key, tag_value);
 }
 
-std::string Event::getTag(std::string tag_key) {
+std::string Event::getTag(const std::string& tag_key) {
     return tags_[tag_key];
 }
 
@@ -120,7 +120,7 @@ void Event::print(std::ostream& out) const {
     out << "End:   " << end();
     if(!trigger_list_.empty()) {
         out << std::endl << "Trigger list: ";
-        for(auto& trg : trigger_list_) {
+        for(const auto& trg : trigger_list_) {
             out << std::endl << trg.first << ": " << trg.second;
         }
     }

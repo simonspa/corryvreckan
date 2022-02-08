@@ -122,9 +122,10 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane,
 
         // This can only happen if someone messes up the tracking code. Simply renormalizing would shadow the mistake made at
         // a different position and therefore the used plane distances would be wrong.
-        if(localTangent(2) != 1)
+        if(localTangent(2) != 1) {
             throw TrackError(typeid(GblTrack),
                              "wrong normalization of local slope, should be 1 but is " + std::to_string(localTangent(2)));
+        }
         Vector2d localSlope(localTangent(0), localTangent(1));
         auto scale =
             1 / scatteringTheta(material * (1 + localSlope.squaredNorm()), total_material) / (1 + localSlope.squaredNorm());
@@ -136,7 +137,7 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane,
     };
 
     // special treatment of first point on trajectory
-    if(gblpoints_.size() == 0) {
+    if(gblpoints_.empty()) {
         myjac = Matrix<double, 6, 6>::Identity();
         myjac(0, 0) = 1;
         // Adding volume scattering if requested
@@ -158,7 +159,7 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane,
 
     auto addMeasurementtoGblPoint = [&localTangent, &localPosTrack, &globalTrackPos, this](GblPoint& pt,
                                                                                            std::vector<Plane>::iterator& p) {
-        auto cluster = p->getCluster();
+        auto* cluster = p->getCluster();
         Vector2d initialResidual;
         initialResidual(0) = cluster->local().x() - localPosTrack[0];
         initialResidual(1) = cluster->local().y() - localPosTrack[1];
@@ -230,7 +231,7 @@ void GblTrack::prepare_gblpoints() {
     globalTrackPos.SetZ(0);
 
     // First GblPoint
-    std::vector<Plane>::iterator pl = planes_.begin();
+    auto pl = planes_.begin();
     // add all other points
     for(; pl != planes_.end(); ++pl) {
         add_plane(pl, prevToGlobal, prevToLocal, globalTrackPos, total_material);
@@ -314,8 +315,8 @@ void GblTrack::fit() {
     VectorXd gblDownWeights(2);
     unsigned int numData = 2;
 
-    for(auto plane : planes_) {
-        auto name = plane.getName();
+    for(const auto& plane : planes_) {
+        const auto& name = plane.getName();
         auto gbl_id = plane_to_gblpoint_[plane.getName()];
         traj.getScatResults(gbl_id, numData, gblResiduals, gblErrorsMeasurements, gblErrorsResiduals, gblDownWeights);
         // fixme: Kinks are in local coordinates and would be more reasonably in global
@@ -345,7 +346,7 @@ void GblTrack::fit() {
 
 ROOT::Math::XYZPoint GblTrack::getIntercept(double z) const {
     // find the detector with largest z-positon <= z, assumes detectors sorted by z position
-    std::string layer = "";
+    std::string layer;
     LOG(TRACE) << "Requesting intercept at: " << z;
     bool found = false;
 
@@ -353,7 +354,7 @@ ROOT::Math::XYZPoint GblTrack::getIntercept(double z) const {
         throw TrackError(typeid(GblTrack), "An interception is requested before the track has been fitted");
     }
 
-    for(auto l : planes_) {
+    for(const auto& l : planes_) {
         if(l.getPosition() >= z) {
             found = true;
             break;
@@ -364,7 +365,7 @@ ROOT::Math::XYZPoint GblTrack::getIntercept(double z) const {
     // Most upstream plane has larger z (layer == "") -> asked for intercept in front of telescope
     // We do not find a plane with larger z (found == false) -> ased for intercept behind telescope
     // We have been asked to allow extrapolation outside the coverage
-    if(!found || layer == "") {
+    if(!found || layer.empty()) {
         LOG_N(DEBUG, 10)
             << "Requesting extrapolation outside the telescope coverage. Scattering at first/last plane set to zero";
         return get_position_outside_telescope(z);
@@ -377,8 +378,9 @@ ROOT::Math::XYZPoint GblTrack::getState(const std::string& detectorID) const {
     // The track state is given in global coordinates and represents intersect of track and detetcor plane.
     // Let's check first if the data is fitted and all components are there
     LOG(TRACE) << "Requesting state at: " << detectorID;
-    if(!isFitted_)
+    if(!isFitted_) {
         throw TrackError(typeid(GblTrack), " has no defined state for " + detectorID + " before fitting");
+    }
     if(local_fitted_track_points_.count(detectorID) != 1) {
         throw TrackError(typeid(GblTrack), " does not have any entry for detector " + detectorID);
     }

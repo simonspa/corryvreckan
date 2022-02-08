@@ -15,8 +15,6 @@
 
 using namespace corryvreckan;
 
-Cluster::Cluster() : m_columnWidth(0.), m_rowWidth(0.), m_split(false) {}
-
 void Cluster::addPixel(const Pixel* pixel) {
     pixels_.emplace_back(const_cast<Pixel*>(pixel)); // NOLINT
 

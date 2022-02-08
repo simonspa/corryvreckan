@@ -66,7 +66,7 @@ namespace corryvreckan {
          * @param source Type of the track
          * @param msg Reason for the error
          */
-        explicit TrackError(const std::type_info& source, const std::string msg = "") {
+        explicit TrackError(const std::type_info& source, const std::string& msg = "") {
             error_message_ += " Track Object ";
             error_message_ += corryvreckan::demangle((source.name()));
             error_message_ += msg;
@@ -75,14 +75,14 @@ namespace corryvreckan {
 
     class UnknownTrackModel : public TrackError {
     public:
-        explicit UnknownTrackModel(const std::type_info& source, std::string model) : TrackError(source) {
+        explicit UnknownTrackModel(const std::type_info& source, const std::string& model) : TrackError(source) {
             error_message_ += " is requesting non exiting track model ";
             error_message_ += model;
         }
     };
     class TrackModelChanged : public TrackError {
     public:
-        explicit TrackModelChanged(const std::type_info& source, std::string modelSet, std::string model)
+        explicit TrackModelChanged(const std::type_info& source, const std::string& modelSet, const std::string& model)
             : TrackError(source) {
             error_message_ += " is defined as ";
             error_message_ += model;
@@ -94,7 +94,7 @@ namespace corryvreckan {
 
     class TrackFitError : public TrackError {
     public:
-        explicit TrackFitError(const std::type_info& source, std::string error) : TrackError(source) {
+        explicit TrackFitError(const std::type_info& source, const std::string& error) : TrackError(source) {
             error_message_ += " fitting procedure fails with message: ";
             error_message_ += error;
         }
@@ -103,7 +103,7 @@ namespace corryvreckan {
     class RequestParameterBeforeFitError : public TrackError {
     public:
         template <typename T>
-        RequestParameterBeforeFitError(T* source, std::string requestedParameter) : TrackError(typeid(source)) {
+        RequestParameterBeforeFitError(T* source, const std::string& requestedParameter) : TrackError(typeid(source)) {
             error_message_ += "  request parameter \"";
             error_message_ += requestedParameter;
             error_message_ += "  \" before fitting";
@@ -117,7 +117,7 @@ namespace corryvreckan {
          * @param source Type info of the event object
          * @param msg    Reason for the invalid event
          */
-        explicit InvalidEventError(const std::type_info& source, const std::string msg = "") {
+        explicit InvalidEventError(const std::type_info& source, const std::string& msg = "") {
             error_message_ += " Event Object ";
             error_message_ += corryvreckan::demangle((source.name()));
             error_message_ += " invalid: ";

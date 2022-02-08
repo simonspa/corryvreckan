@@ -9,6 +9,7 @@
 #ifndef CORRYVRECKAN_DETECTOR_H
 #define CORRYVRECKAN_DETECTOR_H
 
+#include <filesystem>
 #include <fstream>
 #include <map>
 #include <string>
@@ -79,7 +80,7 @@ namespace corryvreckan {
          * @brief Constructs a detector in the geometry
          * @param config Configuration object describing the detector
          */
-        Detector(const Configuration& config);
+        explicit Detector(const Configuration& config);
 
         /**
          * @brief Factory to dynamically create detectors
@@ -225,24 +226,24 @@ namespace corryvreckan {
 
         /**
          * @brief Get path of the file with calibration information
-         * @return Path of the calibration file
+         * @return Path of the calibration file.
          *
          * @note The data contained in the calibration file is detector-specific and is
          * not parsed. This is left to the individual modules decoding the detector data.
          */
-        std::string calibrationFile() const { return m_calibrationfile; }
+        std::filesystem::path calibrationFile() const { return m_calibrationfile.value_or(""); }
 
         /**
          * @brief Set the file with pixel mask information
          * @param file New mask file name
          */
-        void maskFile(std::string file);
+        void maskFile(std::filesystem::path file);
 
         /**
          * @brief Get path of the file with pixel mask information
          * @return Path of the pixel mask file
          */
-        std::string maskFile() const { return m_maskfile; }
+        std::filesystem::path maskFile() const { return m_maskfile; }
 
         /**
          * @brief Mark a detector channel as masked
@@ -304,14 +305,14 @@ namespace corryvreckan {
          * @param  local Local coordinates in the reference frame of this detector
          * @return       Global coordinates
          */
-        XYZPoint localToGlobal(XYZPoint local) const { return m_localToGlobal * local; };
+        XYZPoint localToGlobal(const XYZPoint& local) const { return m_localToGlobal * local; };
 
         /**
          * @brief Transform global coordinates into detector-local coordinates
          * @param  global Global coordinates
          * @return        Local coordinates in the reference frame of this detector
          */
-        XYZPoint globalToLocal(XYZPoint global) const { return m_globalToLocal * global; };
+        XYZPoint globalToLocal(const XYZPoint& global) const { return m_globalToLocal * global; };
 
         /**
          * @brief Check whether given track is within the detector's region-of-interest
@@ -389,11 +390,11 @@ namespace corryvreckan {
         PositionVector3D<Cartesian3D<double>> m_origin;
 
         // Path of calibration file
-        std::string m_calibrationfile;
+        std::optional<std::filesystem::path> m_calibrationfile;
 
         // List of masked channels
         std::map<int, bool> m_masked;
-        std::string m_maskfile, m_maskfile_name;
+        std::filesystem::path m_maskfile;
     };
 } // namespace corryvreckan
 

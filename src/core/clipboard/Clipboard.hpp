@@ -23,7 +23,7 @@
 #include "objects/Object.hpp"
 
 namespace corryvreckan {
-    typedef std::map<std::type_index, std::map<std::string, std::shared_ptr<void>>> ClipboardData;
+    using ClipboardData = std::map<std::type_index, std::map<std::string, std::shared_ptr<void>>>;
 
     class ReadonlyClipboard {
     public:

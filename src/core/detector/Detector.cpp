@@ -68,13 +68,13 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
 
     if(config.has("calibration_file")) {
         m_calibrationfile = config.getPath("calibration_file", true);
-        LOG(DEBUG) << "Found calibration file for detector " << getName() << " at \"" << m_calibrationfile << "\"";
+        LOG(DEBUG) << "Found calibration file for detector " << getName() << " at " << m_calibrationfile.value_or("");
     }
 }
 
 std::shared_ptr<Detector> corryvreckan::Detector::factory(const Configuration& config) {
     // default coordinate is cartesian coordinate
-    std::string coordinates = config.get<std::string>("coordinates", "cartesian");
+    auto coordinates = config.get<std::string>("coordinates", "cartesian");
     std::transform(coordinates.begin(), coordinates.end(), coordinates.begin(), ::tolower);
     if(coordinates == "cartesian") {
         return std::make_shared<PixelDetector>(config);
@@ -128,8 +128,8 @@ bool Detector::hasRole(DetectorRole role) const {
 }
 
 // Function to set the channel maskfile
-void Detector::maskFile(std::string file) {
-    m_maskfile = file;
+void Detector::maskFile(std::filesystem::path file) {
+    m_maskfile = std::move(file);
 }
 
 // Function to update transforms (such as during alignment)
@@ -145,13 +145,16 @@ Configuration Detector::getConfiguration() const {
     // Store the role of the detector
     std::vector<std::string> roles;
     if(this->isDUT()) {
-        roles.push_back("dut");
+        roles.emplace_back("dut");
     }
     if(this->isReference()) {
-        roles.push_back("reference");
+        roles.emplace_back("reference");
     }
     if(this->isAuxiliary()) {
-        roles.push_back("auxiliary");
+        roles.emplace_back("auxiliary");
+    }
+    if(this->isPassive()) {
+        roles.push_back("passive");
     }
 
     if(!roles.empty()) {
@@ -175,6 +178,11 @@ Configuration Detector::getConfiguration() const {
     // only if detector is not auxiliary:
     if(!this->isAuxiliary()) {
         this->configure_detector(config);
+    }
+
+    // add detector calibration file path, if set in the main configuration
+    if(this->calibrationFile() != "") {
+        config.set("calibration_file", this->calibrationFile());
     }
 
     return config;

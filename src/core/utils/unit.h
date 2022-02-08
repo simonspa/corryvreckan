@@ -1,11 +1,10 @@
 /**
  * @file
  * @brief System to support units in the framework
- * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied
- * verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities
- * granted to it by virtue of its status as an
+ *
+ * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -26,12 +25,9 @@ namespace corryvreckan {
      * @brief Static class to access units
      * @see The list of framework units defined in \ref corryvreckan::Corryvreckan::add_units
      *
-     * Units are short, unique and case-insensitive strings that indicate a
-     * particular multiplication factor from the base
-     * unit in the framework. The unit system can convert external types to the
-     * system units and vise-versa for displaying
-     * purposes. Inside the framework only the defaults unit should be used, either
-     * directly or through a direct conversion.
+     * Units are short, unique and case-insensitive strings that indicate a particular multiplication factor from the base
+     * unit in the framework. The unit system can convert external types to the system units and vise-versa for displaying
+     * purposes. Inside the framework only the defaults unit should be used, either directly or through a direct conversion.
      */
     class Units {
     public:
@@ -49,6 +45,7 @@ namespace corryvreckan {
          * @brief Add a new unit to the system
          * @param str Identifier of the unit
          * @param value Multiplication factor from the base unit
+         * @throws std::invalid_argument if unit is already defined
          */
         static void add(std::string str, UnitType value);
 
@@ -80,18 +77,17 @@ namespace corryvreckan {
          * @brief Get value of a unit in the base units
          * @param str Name of the unit
          * @return Value in the base unit
-         * @warning Conversions should not be done with the result of this function.
-         * The \ref get(std::string) version should
-         *          be used for that purpose instead.
+         * @warning Conversions should not be done with the result of this function. The \ref Units::get(T, const
+         * std::string&) version should be used for that purpose instead.
          */
-        static UnitType get(std::string str);
+        static UnitType get(const std::string& str);
         /**
          * @brief Get input parameter in the base units
          * @param inp Value in a particular unit
          * @param str Name of that particular unit
          * @return Value in the base unit
          */
-        template <typename T> static T get(T inp, std::string str);
+        template <typename T> static T get(T inp, const std::string& str);
         /**
          * @brief Get input parameter in the inverse of the base units
          * @param inp Value in a particular unit
@@ -99,7 +95,7 @@ namespace corryvreckan {
          * @return Value in the base unit
          */
         // TODO [doc] This function should likely be removed
-        template <typename T> static T getInverse(T inp, std::string str);
+        template <typename T> static T getInverse(T inp, const std::string& str);
 
         /**
          * @brief Get base unit in the requested unit
@@ -117,7 +113,6 @@ namespace corryvreckan {
          * @param units Name of the possible output units
          * @return Value with best unit to be used for display
          */
-        // TODO [doc] Shall we change the name in something better here
         static std::string display(UnitType input, std::initializer_list<std::string> units);
         /**
          * @brief Return value in the requested unit for display
@@ -125,9 +120,7 @@ namespace corryvreckan {
          * @param unit Name of the output unit
          * @return Value with unit to be used for display
          */
-        // TODO [doc] Shall we change the name in something better here
         static std::string display(UnitType input, std::string unit);
-
         /**
          * @brief Return value for display in the best of all the provided units for all vector elements
          * @param input Vector of values in the base unit system
