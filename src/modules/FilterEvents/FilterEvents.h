@@ -75,8 +75,8 @@ namespace corryvreckan {
 
         /**
          * @brief Function to decode cut logic to be applied in tag filtering
-         * @param tag_value cut logic to be decoded
-         * @param tag_filter cut logic to be decoded
+         * @param tag_value to be checked
+         * @param tag_filter to be applied
          * @return true if number of clusters on one plane is within sopecified range, false otherwise
          */
         bool is_tag_filter_passed(const std::string& tag_value, const std::string& tag_filter);
