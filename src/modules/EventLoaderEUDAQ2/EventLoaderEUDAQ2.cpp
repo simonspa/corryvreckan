@@ -64,7 +64,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
         config_.has("calibration_file") ? config_.getPath("calibration_file", true) : detector_->calibrationFile();
     if(!calibration_file.empty()) {
         LOG(DEBUG) << "Forwarding detector calibration file: " << calibration_file;
-        cfg.Set("calibration_file", calibration_file);
+        cfg.Set("calibration_file", calibration_file.string());
     }
 
     // Converting the newly built configuration to a shared pointer of a const configuration object
