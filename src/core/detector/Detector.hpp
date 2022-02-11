@@ -114,12 +114,6 @@ namespace corryvreckan {
         bool isDUT() const;
 
         /**
-         * @brief Check whether detector is registered as Passive
-         * @return Passive status
-         */
-        bool isPassive() const;
-
-        /**
          * @brief Check whether detector is registered as auxiliary device and should not parttake in the reconstruction
          * @return Auxiliary status
          */

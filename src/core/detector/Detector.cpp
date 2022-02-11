@@ -107,10 +107,6 @@ bool Detector::isDUT() const {
     return static_cast<bool>(m_role & DetectorRole::DUT);
 }
 
-bool Detector::isPassive() const {
-    return static_cast<bool>(m_role & DetectorRole::PASSIVE);
-}
-
 bool Detector::isAuxiliary() const {
     return static_cast<bool>(m_role & DetectorRole::AUXILIARY);
 }
