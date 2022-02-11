@@ -134,11 +134,11 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
                              AlignmentTrackChi2::globalDetector->materialBudget(),
                              AlignmentTrackChi2::globalDetector->toLocal());
         LOG(DEBUG) << "Updated transformations for detector " << AlignmentTrackChi2::globalDetector->getName();
-	if(detName != AlignmentTrackChi2::globalDetector->getName()){
-	  detName = AlignmentTrackChi2::globalDetector->getName();
-	  fitIterations = 0;
-	}
-	  
+        if(detName != AlignmentTrackChi2::globalDetector->getName()) {
+            detName = AlignmentTrackChi2::globalDetector->getName();
+            fitIterations = 0;
+        }
+
         track->fit();
 
         // Add the new chi2
@@ -154,7 +154,8 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
     for(auto& result_future : result_futures) {
         result += result_future.get();
         LOG_PROGRESS(INFO, "t") << "Re-fitting tracks: " << tracks_done << " of " << result_futures.size() << ", "
-                                << (100 * tracks_done / result_futures.size()) << " %,  in MINUIT  iteration: "<< fitIterations;
+                                << (100 * tracks_done / result_futures.size())
+                                << " %,  in MINUIT  iteration: " << fitIterations;
         tracks_done++;
     }
     fitIterations++;
@@ -179,9 +180,11 @@ void AlignmentTrackChi2::finalize(const std::shared_ptr<ReadonlyClipboard>& clip
     AlignmentTrackChi2::globalTracks = clipboard->getPersistentData<Track>();
 
     // Create thread pool:
+    auto threads = std::max(std::thread::hardware_concurrency() - 1, 1u);
+    ThreadPool::registerThreadCount(threads);
     AlignmentTrackChi2::thread_pool =
-        new ThreadPool(std::max(std::thread::hardware_concurrency() - 1, 1u),
-                       std::max(std::thread::hardware_concurrency() - 1, 1u) * 1024,
+        new ThreadPool(threads,
+                       threads * 1024,
                        [log_level = corryvreckan::Log::getReportingLevel(), log_format = corryvreckan::Log::getFormat()]() {
                            // clang-format on
                            // Initialize the threads to the same log level and format as the master setting
