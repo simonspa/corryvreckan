@@ -243,6 +243,7 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
                            << " and duration: " << Units::display(clipboard->getEvent()->duration(), "us");
                 pixels_.at(t).push_back(pixel);
                 hHitMap.at(names_.at(t))->Fill(pixel.get()->column(), pixel.get()->row());
+                hPixelToT.at(names_.at(t))->Fill(pixel.get()->tot());
                 // hPixelToT.at(names_.at(t))->Fill(pixel.get()->raw());
                 // display the 10 bit timestamp distribution
                 hTimeStamp.at(names_.at(t))->Fill(fmod((pixel.get()->timestamp() / 8.), pow(2, 10)));
@@ -315,7 +316,6 @@ std::shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint
 
     //    tot =
     //    double(((((h.tot_raw()/*+1*/)*(8+1))-((h.timestamp_raw()*(0+1))%((uint64_t(-1)&(0x3ff+1))*(8+1))))+((uint64_t(-1)&(0x3ff+1))*(8+1)))%((uint64_t(-1)&(0x3ff+1))*(8+1)))*8.;
-    hPixelToT["mp10_0"]->Fill(tot);
     return std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), tot, tot, px_timestamp);
 }
 
