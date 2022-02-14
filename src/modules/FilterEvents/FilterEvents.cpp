@@ -96,15 +96,15 @@ bool FilterEvents::is_tag_filter_passed(const std::string& tag_value, const std:
     std::size_t close_bracket_pos = tag_filter.find("]");
     if((open_bracket_pos != std::string::npos) && (close_bracket_pos != std::string::npos)) {
         // found range brackets, now fetch range values
-        std::vector<std::string> range_values = corryvreckan::split<std::string>(
+        std::vector<double> range_values = corryvreckan::split<double>(
             tag_filter.substr(open_bracket_pos + 1, close_bracket_pos - open_bracket_pos - 1), ":");
         if(range_values.size() > 2) {
             throw std::invalid_argument("invalid key value : tag range should hold two values in brackets, separated by a "
                                         "semicolon. Check for extra semicolon");
         }
         double value = corryvreckan::from_string<double>(tag_value);
-        double min_value = corryvreckan::from_string<double>(range_values.at(0));
-        double max_value = corryvreckan::from_string<double>(range_values.at(1));
+        double min_value = range_values.at(0);
+        double max_value = range_values.at(1);
         if(value > max_value) {
             LOG(TRACE) << "Tag value above maximum";
             return false;
@@ -148,5 +148,5 @@ bool FilterEvents::filter_tags(const std::shared_ptr<Clipboard>& clipboard) {
             throw InvalidKeyError(tag_filter_key, config_.getName(), tag_filter_value, typeid(std::string), e.what());
         }
     }
-    return true;
+    return false;
 }
