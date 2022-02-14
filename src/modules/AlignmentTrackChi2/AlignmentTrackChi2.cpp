@@ -150,14 +150,11 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
         result_futures.push_back(AlignmentTrackChi2::thread_pool->submit(track_refit, track));
     }
 
-    unsigned int tracks_done = 0;
     for(auto& result_future : result_futures) {
         result += result_future.get();
-        LOG_PROGRESS(INFO, "t") << "Re-fitting tracks: " << tracks_done << " of " << result_futures.size() << ", "
-                                << (100 * tracks_done / result_futures.size())
-                                << " %,  in MINUIT  iteration: " << fitIterations;
-        tracks_done++;
     }
+
+    LOG_PROGRESS(INFO, "t") << "Refit of " << result_futures.size() << " track, MINUIT iteration " << fitIterations;
     fitIterations++;
     AlignmentTrackChi2::thread_pool->wait();
 }
