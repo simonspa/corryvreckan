@@ -52,6 +52,7 @@ Corryvreckan is developed and maintained by
 The following authors, in alphabetical order, have developed or contributed to Corryvreckan:
 
 * Pascal Becht, University of Heidelberg, @pbecht
+* Bogdan-Mihail Blidaru, University of Heidelberg, @mblidaru
 * Matthew Daniel Buckland, University of Liverpool, @mbucklan
 * Carsten Daniel Burgard, DESY, @cburgard
 * Eric Buschmann, CERN, @ebuschma
