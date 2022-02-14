@@ -191,7 +191,7 @@ void PixelDetector::configure_detector(Configuration& config) const {
 
     // Pixel mask file:
     if(!m_maskfile.empty()) {
-        config.set("mask_file", m_maskfile.filename());
+        config.set("mask_file", m_maskfile.string());
     }
 
     // Region-of-interest:
