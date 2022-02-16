@@ -35,7 +35,7 @@ void Multiplet::calculateChi2() {
 
     chi2_ = m_upstream->getChi2() + m_downstream->getChi2();
     ndof_ = m_upstream->getNdof() + m_downstream->getNdof();
-    chi2ndof_ = chi2_ / ndof_;
+    chi2ndof_ = (ndof_ <= 0) ? -1 : (chi2_ / static_cast<double>(ndof_));
 }
 
 void Multiplet::calculateResiduals() {

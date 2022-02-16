@@ -509,7 +509,8 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
             // sort by chi2:
             LOG_ONCE(WARNING) << "Rejecting tracks with same hits";
             std::sort(tracks.begin(), tracks.end(), [](const shared_ptr<Track> a, const shared_ptr<Track> b) {
-                return (a->getChi2() / a->getNdof()) < (b->getChi2() / b->getNdof());
+                return (a->getChi2() / static_cast<double>(a->getNdof())) <
+                       (b->getChi2() / static_cast<double>(b->getNdof()));
             });
             // remove tracks with hit that is used twice
             auto track1 = tracks.begin();
