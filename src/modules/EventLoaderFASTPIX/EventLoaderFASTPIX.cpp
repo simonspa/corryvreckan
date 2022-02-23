@@ -90,8 +90,6 @@ void EventLoaderFASTPIX::initialize() {
     pixel_distance_col = new TH1F("pixel_distance_col", "Distance to seed pixel (column)", 20, -0.5, 19.5);
     trigger_dt = new TH1F("trigger_dt", "trigger_dt;[ns];count", 1000, -0.5, 200.5);
 
-    // cluster charge;x_{track} [#mum];y_{track} [#mum]
-
     // Initialise member variables
     m_eventNumber = 0;
     m_triggerNumber = 0;
@@ -217,6 +215,7 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
     }
 
     size_t spidr_index = 0;
+    bool dead_time = false;
 
     PixelVector deviceData;
     PixelVector discardData;
@@ -278,9 +277,13 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
                     spidr_index++;
                 }
             } else { // no more SPIDR triggers in current event. Try matching timestamps instead
-                if(position == Event::Position::DURING) { // Fastpix trigger belongs to this events
-                    LOG(INFO) << "Loading event for trigger " << m_triggerNumber + 1 << " without matching SPIDR trigger";
-                    loadEvent(deviceData, timestampData, timestamp);
+                if(position == Event::Position::DURING) { // Fastpix trigger belongs to this event
+                    LOG(INFO) << "Event for trigger " << m_triggerNumber + 1 << " without matching SPIDR trigger";
+                    LOG(INFO) << "Discarding Fastpix event";
+                    loadEvent(discardData, discardTimestampData, timestamp);
+                    m_discardedEvents++;
+                    dead_time = true; // Current event is likely to be incomplete (lost data packets in SPIDR readout?)
+                                      // discard entire event to prevent issues with efficiency measurements
 
                 } else if(position == Event::Position::BEFORE) { // Fastpix trigger belongs to an earlier event (no earlier
                                                                  // event with matching timestamp?)
@@ -342,8 +345,8 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
     // Increment event counter
     m_eventNumber++;
 
-    if(m_triggerNumber % m_blockSize == 0) {
-        // Oscilloscope is copying data or might join the run a few seconds late
+    if(m_triggerNumber % m_blockSize == 0 || dead_time) {
+        // Oscilloscope is copying data or might join the run a few seconds late, or missing packets in SPIDR
         return StatusCode::DeadTime;
     } else {
         // Return value telling analysis to keep running

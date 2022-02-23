@@ -52,19 +52,29 @@ namespace corryvreckan {
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
-        TH2F *hitmapLocal, *hitmapLocalIntercept, *hitmapLocalNoIntercept, *hitmapLocalTrigger, *hitmapLocalTimecuts,
-            *hitmapLocalAssoc;
+        bool inRoi(PositionVector3D<Cartesian3D<double>>);
+
+        TH2F *hitmap, *hitmapIntercept, *hitmapNoIntercept, *hitmapTrigger, *hitmapTimecuts, *hitmapAssoc;
+        TH2F* hitmapTriggerAssoc;
+
         TProfile2D *clusterSizeMap, *clusterChargeMap, *seedChargeMap;
         TProfile2D *clusterSizeMap_inpix, *clusterChargeMap_inpix, *seedChargeMap_inpix;
         TProfile2D* clusterSizeMap_intercept;
         TProfile2Poly *clusterSizeMap_inpix3, *clusterChargeMap_inpix3, *seedChargeMap_inpix3;
+        TH2Poly* hitmapTriggerAssoc_inpix3;
 
         TH2Poly *hitmapTrigger_inpix3, *hitmapTimecuts_inpix3, *hitmapAssoc_inpix3;
 
+        TH1F *clusterSize, *clusterSizeROI;
+
         TH2F* binningIneff_inpix;
 
-        double chi2_ndof_cut_, time_cut_frameedge_, time_cut_deadtime_;
+        double chi2_ndof_cut_, time_cut_frameedge_, time_cut_deadtime_, time_cut_trigger_, time_cut_trigger_assoc_;
         bool use_closest_cluster_;
+
+        ROOT::Math::XYVector roi_min, roi_max;
+        double roi_margin_;
+        int triangle_bins_;
 
         double last_timestamp = 0;
 
