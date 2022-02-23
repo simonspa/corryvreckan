@@ -29,8 +29,8 @@ AnalysisFASTPIX::AnalysisFASTPIX(Configuration& config, std::shared_ptr<Detector
     roi_margin_ = config_.get<double>("roi_margin");
 
     auto size = m_detector->getSize();
-    double pitch = m_detector->getPitch().X();
-    double height = 2. / std::sqrt(3) * pitch;
+    pitch = m_detector->getPitch().X() * 1000.0;
+    height = 2. / std::sqrt(3) * pitch;
 
     // Cut off roi_margin pixels around edge of matrix
     config_.setDefault<ROOT::Math::XYVector>("roi_min",
@@ -94,14 +94,9 @@ template <typename T> void triangle_hist(double pitch, T* profile, size_t n) {
             }
         }
     }
-
-    LOG(INFO) << "Bins: " << n_bins;
 }
 
 void AnalysisFASTPIX::initialize() {
-    double pitch = m_detector->getPitch().X() * 1000.0;
-    double height = 2. / std::sqrt(3) * pitch;
-
     std::string mod_axes = "in-pixel x_{track} [#mum];in-pixel y_{track} [#mum];";
 
     hitmap = new TH2F("hitmap", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
@@ -171,15 +166,6 @@ void AnalysisFASTPIX::initialize() {
                                             -height / 2.0,
                                             height / 2.0);
 
-    binningIneff_inpix = new TH2F("binningIneff_inpix",
-                                  "binning;x_{track} [#mum];y_{track} [#mum]",
-                                  400,
-                                  -pitch / 2.0,
-                                  pitch / 2.0,
-                                  400,
-                                  -height / 2.0,
-                                  height / 2.0);
-
     title = "Mean cluster size map;" + mod_axes + "<pixels/cluster>";
     clusterSizeMap_inpix3 = new TProfile2Poly();
     clusterSizeMap_inpix3->SetName("clusterSizeMap_inpix3");
@@ -225,6 +211,47 @@ void AnalysisFASTPIX::initialize() {
 
 bool AnalysisFASTPIX::inRoi(PositionVector3D<Cartesian3D<double>> p) {
     return roi_min.X() <= p.X() && roi_min.Y() <= p.Y() && roi_max.X() >= p.X() && roi_max.Y() >= p.Y();
+}
+
+template <typename T> Int_t AnalysisFASTPIX::fillTriangle(T* hist, double x, double y, double val) {
+    double px = pitch / (static_cast<double>(2 * triangle_bins_ + 1) - 1);
+    double py = height / (static_cast<double>(4 * triangle_bins_ + 1) - 1);
+
+    int bin_x = static_cast<int>((x + pitch / 2.0) / px);
+    int bin_y = static_cast<int>((y + height / 2.0) / py);
+
+    x += pitch / 2.0;
+    y += height / 2.0;
+
+    // TODO: test for different n, add overflow bins
+    if((bin_x % 2 + bin_y % 2) % 2 == 0) {
+        if(py * (bin_y + 1 - (x / px - bin_x)) > y) {
+            bin_y--;
+        }
+    } else {
+        if(py * (bin_y + (x / px - bin_x)) > y) {
+            bin_y--;
+        }
+    }
+
+    int bin = bin_x * (4 * triangle_bins_ - 1) + bin_y + 1;
+    // hist->AddBinContent(bin, val); // Does not work for TH2Poly, TProfile2Poly
+    // hist->SetBinContent(bin, hist->GetBinContent(bin)+val); // Does not work for TProfile2Poly
+
+    // Calculate center of bin and fill manually...
+    double bx = bin_x * px + px / 2. - pitch / 2.0;
+    double by = bin_y * py + py - height / 2.0;
+
+    int i = hist->Fill(bx, by, val);
+
+    if(i < 0 && !std::is_same<T, TProfile2Poly>::value) {
+        LOG(INFO) << "Unbinned entry in " << hist->GetName() << " bin: " << i << " x: " << (x - pitch / 2.0)
+                  << " y: " << (y - height / 2.0) << " bx: " << bx << " by: " << by << " bin_x: " << bin_x
+                  << " bin_y: " << bin_y << " bin: " << bin;
+    }
+
+    return i;
+    // return bin;
 }
 
 StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -284,7 +311,7 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
         hitmapTimecuts->Fill(x_um, y_um);
 
         if(inRoi(localIntercept)) {
-            hitmapTimecuts_inpix3->Fill(xmod_um, ymod_um);
+            fillTriangle(hitmapTimecuts_inpix3, xmod_um, ymod_um);
         }
 
         // Tracks after timing cuts with SPIDR trigger in the same event
@@ -292,7 +319,7 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
             hitmapTrigger->Fill(x_um, y_um);
 
             if(inRoi(localIntercept)) {
-                hitmapTrigger_inpix3->Fill(xmod_um, ymod_um);
+                fillTriangle(hitmapTrigger_inpix3, xmod_um, ymod_um);
             }
         }
 
@@ -302,7 +329,7 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
                 hitmapTriggerAssoc->Fill(x_um, y_um);
 
                 if(inRoi(localIntercept)) {
-                    hitmapTriggerAssoc_inpix3->Fill(xmod_um, ymod_um);
+                    fillTriangle(hitmapTriggerAssoc_inpix3, xmod_um, ymod_um);
                 }
             }
         }
@@ -331,18 +358,13 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
                 clusterChargeMap_inpix->Fill(xmod_um, ymod_um, assoc_cluster->charge());
                 seedChargeMap_inpix->Fill(xmod_um, ymod_um, assoc_cluster->getSeedPixel()->charge());
 
-                clusterSizeMap_inpix3->Fill(xmod_um, ymod_um, static_cast<double>(assoc_cluster->size()));
-                clusterChargeMap_inpix3->Fill(xmod_um, ymod_um, assoc_cluster->charge());
-                seedChargeMap_inpix3->Fill(xmod_um, ymod_um, assoc_cluster->getSeedPixel()->charge());
+                fillTriangle(clusterSizeMap_inpix3, xmod_um, ymod_um, static_cast<double>(assoc_cluster->size()));
+                fillTriangle(clusterChargeMap_inpix3, xmod_um, ymod_um, assoc_cluster->charge());
+                fillTriangle(seedChargeMap_inpix3, xmod_um, ymod_um, assoc_cluster->getSeedPixel()->charge());
 
                 clusterSizeROI->Fill(static_cast<double>(assoc_cluster->size()));
 
-                int i = hitmapAssoc_inpix3->Fill(xmod_um, ymod_um);
-
-                if(i < 1) {
-                    LOG(INFO) << "bin: " << i << " x: " << xmod_um << " y: " << ymod_um;
-                    binningIneff_inpix->Fill(xmod_um, ymod_um);
-                }
+                int i = fillTriangle(hitmapAssoc_inpix3, xmod_um, ymod_um);
             }
         }
     }
@@ -397,6 +419,4 @@ void AnalysisFASTPIX::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     LOG(STATUS) << "Total efficiency of detector " << m_detector->getName() << ": " << totalEff << "(+" << upperEffError
                 << " -" << lowerEffError << ")%, measured with " << matched_tracks << "/" << total_tracks
                 << " matched/total tracks";
-
-    LOG(INFO) << "clusterSizeMap_inpix3 unbinned: " << clusterSizeMap_inpix3->GetBinEntries(-5);
 }

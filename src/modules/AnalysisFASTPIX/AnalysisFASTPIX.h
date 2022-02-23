@@ -54,6 +54,8 @@ namespace corryvreckan {
     private:
         bool inRoi(PositionVector3D<Cartesian3D<double>>);
 
+        template <typename T> Int_t fillTriangle(T* hist, double x, double y, double val = 1);
+
         TH2F *hitmap, *hitmapIntercept, *hitmapNoIntercept, *hitmapTrigger, *hitmapTimecuts, *hitmapAssoc;
         TH2F* hitmapTriggerAssoc;
 
@@ -77,6 +79,7 @@ namespace corryvreckan {
         int triangle_bins_;
 
         double last_timestamp = 0;
+        double pitch, height;
 
         std::shared_ptr<Detector> m_detector;
     };
