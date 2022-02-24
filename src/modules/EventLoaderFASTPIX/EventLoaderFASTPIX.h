@@ -52,7 +52,10 @@ namespace corryvreckan {
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
     private:
-        bool loadEvent(PixelVector& deviceData, TimestampVector& timestampData, double spidr_timestamp);
+        bool loadEvent(PixelVector& deviceData,
+                       TimestampVector& timestampData,
+                       std::map<std::string, std::string>& eventTags,
+                       double spidr_timestamp);
         double getRawTimestamp();
         double getTimestamp();
 
@@ -67,12 +70,17 @@ namespace corryvreckan {
         TH1F* pixel_timestamps;
         TH1F *pixel_distance, *pixel_distance_min, *pixel_distance_max, *pixel_distance_row, *pixel_distance_col;
         TH1F* trigger_dt;
+        TH1F *event_status, *missing_peaks;
+        TH2F* missing_peaks_vs_size;
 
         int m_eventNumber;
         size_t m_triggerNumber;
         size_t m_missingTriggers;
         size_t m_discardedEvents;
         double m_timeScaler;
+
+        size_t m_incompleteEvents;
+        size_t m_noiseEvents;
 
         std::streampos m_prevEvent;
 

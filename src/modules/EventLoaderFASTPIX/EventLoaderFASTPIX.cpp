@@ -90,6 +90,17 @@ void EventLoaderFASTPIX::initialize() {
     pixel_distance_col = new TH1F("pixel_distance_col", "Distance to seed pixel (column)", 20, -0.5, 19.5);
     trigger_dt = new TH1F("trigger_dt", "trigger_dt;[ns];count", 1000, -0.5, 200.5);
 
+    event_status = new TH1F("event_status", "event status", 5, -0.5, 4.5);
+    missing_peaks = new TH1F("missing_peaks", "missing peaks", 20, -0.5, 19.5);
+    missing_peaks_vs_size = new TH2F("missing_peaks_vs_size",
+                                     "Decoded pixels vs missing peaks;# decoded pixels;# missing peaks",
+                                     15,
+                                     -0.5,
+                                     14.5,
+                                     14,
+                                     0.5,
+                                     14.5);
+
     // Initialise member variables
     m_eventNumber = 0;
     m_triggerNumber = 0;
@@ -98,10 +109,21 @@ void EventLoaderFASTPIX::initialize() {
     m_missingTriggers = 0;
     m_discardedEvents = 0;
 
+    m_incompleteEvents = 0;
+    m_noiseEvents = 0;
+
     m_spidr_t0 = 0;
     m_scope_t0 = 0;
 
     m_triggerSync = false;
+
+    uint16_t version = 0;
+    m_inputFile.read(reinterpret_cast<char*>(&version), sizeof version);
+    LOG(INFO) << "Reading file format version " << version;
+
+    if(version != 0) {
+        throw ModuleError("Invalid file format version " + std::to_string(version));
+    }
 
     m_inputFile.read(reinterpret_cast<char*>(&m_blockSize), sizeof m_blockSize);
 }
@@ -110,28 +132,54 @@ size_t hex_distance(double x1, double y1, double x2, double y2) {
     return static_cast<size_t>(std::abs(x1 - x2) + std::abs(y1 - y2) + std::abs(-x1 - y1 + x2 + y2)) / 2;
 }
 
+// File format version
 // number of events / block
 // event timestamp
+// event flags & metadata
 // number of pixels / event
 // pixel ID, ToT, px timestamp [xN]
 
-bool EventLoaderFASTPIX::loadEvent(PixelVector& deviceData, TimestampVector& timestampData, double spidr_timestamp) {
+bool EventLoaderFASTPIX::loadEvent(PixelVector& deviceData,
+                                   TimestampVector& timestampData,
+                                   std::map<std::string, std::string>& eventTags,
+                                   double spidr_timestamp) {
     std::string detectorID = m_detector->getName();
 
     uint16_t event_size;
     double event_timestamp;
     double seed_timestamp;
+    uint16_t event_flags;
+    uint16_t event_meta;
 
     m_prevEvent = m_inputFile.tellg();
 
     m_inputFile.read(reinterpret_cast<char*>(&event_timestamp), sizeof event_timestamp);
+    m_inputFile.read(reinterpret_cast<char*>(&event_flags), sizeof event_flags);
+    m_inputFile.read(reinterpret_cast<char*>(&event_meta), sizeof event_meta);
     m_inputFile.read(reinterpret_cast<char*>(&event_size), sizeof event_size);
 
     LOG(DEBUG) << "Event timestamp: " << event_timestamp;
     LOG(DEBUG) << "Event size: " << event_size;
     LOG(DEBUG) << "Previous event: " << m_prevEvent;
 
+    eventTags.emplace("fp_event_flags", std::to_string(event_flags));
+    eventTags.emplace("fp_event_meta", std::to_string(event_meta));
+
     pixels_per_event->Fill(event_size);
+    event_status->Fill(event_flags);
+
+    if(event_meta > 0 && event_flags == 1) {
+        missing_peaks->Fill(event_meta);
+        missing_peaks_vs_size->Fill(event_size, event_meta);
+    }
+
+    if(event_flags == 1) {
+        m_incompleteEvents++;
+    }
+
+    if(event_flags == 2) {
+        m_noiseEvents++;
+    }
 
     int seed_col, seed_row;
 
@@ -223,6 +271,9 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
     TimestampVector timestampData;
     TimestampVector discardTimestampData;
 
+    std::map<std::string, std::string> eventTags;
+    std::map<std::string, std::string> discardTags;
+
     for(;;) {
         // triggers are aligned to SPIDR timestamps. Time offsets are only added to pixel timestamps?
         LOG(DEBUG) << "Raw timestamp: " << getRawTimestamp();
@@ -245,7 +296,7 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
                     m_prevScopeTriggerTime = m_scope_t0;
                     m_prevTriggerTime = m_spidr_t0;
 
-                    loadEvent(deviceData, timestampData, referenceSpidrSignals[spidr_index]->timestamp());
+                    loadEvent(deviceData, timestampData, eventTags, referenceSpidrSignals[spidr_index]->timestamp());
 
                     spidr_index++;
                 } else if(referenceSpidrSignals[spidr_index]->trigger() >
@@ -256,7 +307,8 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
                     LOG(DEBUG) << "Discarding Fastpix event";
                     m_discardedEvents++;
 
-                    loadEvent(discardData, discardTimestampData, referenceSpidrSignals[spidr_index]->timestamp());
+                    loadEvent(
+                        discardData, discardTimestampData, discardTags, referenceSpidrSignals[spidr_index]->timestamp());
                 } else { // SPIDR trigger is before Fastpix trigger. Previous Fastpix trigger was assigned to wrong event?
                     LOG(INFO) << "Expected SPIDR trigger " << m_triggerNumber + 1 << " but got trigger "
                               << referenceSpidrSignals[spidr_index]->trigger()
@@ -269,7 +321,7 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
                         m_triggerNumber--;
                         m_inputFile.seekg(m_prevEvent, std::ios_base::beg);
 
-                        loadEvent(deviceData, timestampData, referenceSpidrSignals[spidr_index]->timestamp());
+                        loadEvent(deviceData, timestampData, eventTags, referenceSpidrSignals[spidr_index]->timestamp());
                     } else {
                         LOG(INFO) << "Discarding SPIDR trigger";
                     }
@@ -280,7 +332,7 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
                 if(position == Event::Position::DURING) { // Fastpix trigger belongs to this event
                     LOG(INFO) << "Event for trigger " << m_triggerNumber + 1 << " without matching SPIDR trigger";
                     LOG(INFO) << "Discarding Fastpix event";
-                    loadEvent(discardData, discardTimestampData, timestamp);
+                    loadEvent(discardData, discardTimestampData, discardTags, timestamp);
                     m_discardedEvents++;
                     dead_time = true; // Current event is likely to be incomplete (lost data packets in SPIDR readout?)
                                       // discard entire event to prevent issues with efficiency measurements
@@ -290,7 +342,7 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
                     LOG(INFO) << "Event for trigger " << m_triggerNumber + 1
                               << " without matching SPIDR trigger or timestamp";
                     LOG(INFO) << "Discarding Fastpix event";
-                    loadEvent(discardData, discardTimestampData, timestamp);
+                    loadEvent(discardData, discardTimestampData, discardTags, timestamp);
                     m_discardedEvents++;
                 } else if(position == Event::Position::AFTER) { // Fastpix trigger belongs to a later event. Stop processing.
                     break;
@@ -309,7 +361,7 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
 
                     m_triggerSync = true;
 
-                    loadEvent(deviceData, timestampData, referenceSpidrSignals[spidr_index]->timestamp());
+                    loadEvent(deviceData, timestampData, eventTags, referenceSpidrSignals[spidr_index]->timestamp());
 
                 } else if(referenceSpidrSignals[spidr_index]->trigger() < m_triggerNumber + 1) {
                     LOG(DEBUG) << "Expected SPIDR trigger " << m_triggerNumber + 1 << " but got trigger "
@@ -321,7 +373,7 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
                     size_t discard = referenceSpidrSignals[spidr_index]->trigger() - (m_triggerNumber + 1);
                     LOG(DEBUG) << "Discarding " << discard << " Fastpix events";
                     for(size_t i = 0; i < discard; i++) {
-                        loadEvent(discardData, discardTimestampData, timestamp);
+                        loadEvent(discardData, discardTimestampData, discardTags, timestamp);
                     }
                     m_discardedEvents += discard;
                     continue;
@@ -340,6 +392,10 @@ StatusCode EventLoaderFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) 
 
     if(!timestampData.empty()) {
         clipboard->putData(timestampData, m_detector->getName());
+    }
+
+    if(!eventTags.empty()) {
+        event->addTags(eventTags);
     }
 
     // Increment event counter
@@ -376,4 +432,9 @@ void EventLoaderFASTPIX::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     LOG(INFO) << "Analysed " << m_eventNumber << " events";
     LOG(INFO) << "Discarded " << m_discardedEvents << " events";
     LOG(INFO) << "Missing " << m_missingTriggers << " triggers";
+
+    LOG(INFO) << "Complete events: "
+              << 100.0 * static_cast<double>((m_eventNumber - m_noiseEvents - m_incompleteEvents)) / m_eventNumber << "% "
+              << "Incomplete events: " << 100.0 * static_cast<double>(m_incompleteEvents) / m_eventNumber << "% "
+              << "Noise events: " << 100.0 * static_cast<double>(m_noiseEvents) / m_eventNumber << "%";
 }
