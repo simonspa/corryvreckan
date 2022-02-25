@@ -128,6 +128,8 @@ void AnalysisFASTPIX::initialize() {
     noAssocEventStatus = new TH1F("noAssocEventStatus", "event status;event status;count", 5, 0, 4);
     noAssocEventStatus->SetCanExtend(TH1::kAllAxes);
 
+    clusterCharge = new TH1F("clusterCharge", "cluster charge;charge [ToT];count", 500, -0.5, 499.5);
+    clusterChargeROI = new TH1F("clusterChargeROI", "cluster charge;charge [ToT];count", 500, -0.5, 499.5);
 
     clusterSize =
         new TH1F("clusterSize", "Cluster size (tracks after cuts), all tracks;cluster size;# entries", 20, -0.5, 19.5);
@@ -441,7 +443,7 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
                 fillTriangle(hitmapNoAssoc_inpix3, xmod_um, ymod_um);
                 auto tagList = event->tagList();
                 auto status = tagList.find("fp_event_flags");
-                const char* labels[] = {"Complete", "Incomplete", "Noise", "Missing"};
+                const char* labels[] = {"Complete", "Incomplete", "Incomplete (Noise)", "Missing"};
                 const char* label = labels[3];
 
                 if(status != tagList.end()) {
@@ -465,6 +467,7 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
             clusterChargeMap->Fill(x_um, y_um, assoc_cluster->charge());
             seedChargeMap->Fill(x_um, y_um, assoc_cluster->getSeedPixel()->charge());
             clusterSize->Fill(static_cast<double>(assoc_cluster->size()));
+            clusterCharge->Fill(assoc_cluster->charge());
 
             if(inRoi(localIntercept)) {
                 clusterSizeMap_intercept->Fill(x_um, y_um, static_cast<double>(assoc_cluster->size()));
@@ -478,6 +481,7 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
                 fillTriangle(seedChargeMap_inpix3, xmod_um, ymod_um, assoc_cluster->getSeedPixel()->charge());
 
                 clusterSizeROI->Fill(static_cast<double>(assoc_cluster->size()));
+                clusterChargeROI->Fill(assoc_cluster->charge());
             }
         }
     }
@@ -496,9 +500,8 @@ void printEfficiency(int total_tracks, int matched_tracks) {
     double totalEff = 100 * static_cast<double>(matched_tracks) / (total_tracks > 0 ? total_tracks : 1);
     double lowerEffError = totalEff - 100 * (TEfficiency::ClopperPearson(total_tracks, matched_tracks, 0.683, false));
     double upperEffError = 100 * (TEfficiency::ClopperPearson(total_tracks, matched_tracks, 0.683, true)) - totalEff;
-    LOG(STATUS) << "Efficiency: " << totalEff << "(+" << upperEffError
-                << " -" << lowerEffError << ")%, measured with " << matched_tracks << "/" << total_tracks
-                << " matched/total tracks";
+    LOG(STATUS) << "Efficiency: " << totalEff << "(+" << upperEffError << " -" << lowerEffError << ")%, measured with "
+                << matched_tracks << "/" << total_tracks << " matched/total tracks";
 }
 
 void AnalysisFASTPIX::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
@@ -521,11 +524,9 @@ void AnalysisFASTPIX::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     hitmapAssoc_inpix3->Write();
     hitmapNoAssoc_inpix3->Write();
 
-
     // Efficiency
 
-
-    TEfficiency efficiency(*hitmapTrigger, *hitmapTimecuts);
+    /*TEfficiency efficiency(*hitmapTrigger, *hitmapTimecuts);
     efficiency.SetName("efficiency");
     efficiency.Write();
 
@@ -555,8 +556,7 @@ void AnalysisFASTPIX::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
     TEfficiency efficiencyAssoc_inpix3(*hitmapDeadtime_inpix3, *hitmapAssoc_inpix3);
     efficiencyAssoc_inpix3.SetName("efficiencyAssoc_inpix3");
-    efficiencyAssoc_inpix3.Write();
-
+    efficiencyAssoc_inpix3.Write();*/
 
     printEfficiency(hitmapTimecuts_inpix3->Integral(), hitmapTrigger_inpix3->Integral());
     printEfficiency(hitmapDeadtime_inpix3->Integral(), hitmapDeadtimeTrigger_inpix3->Integral());
