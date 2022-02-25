@@ -55,7 +55,8 @@ namespace corryvreckan {
         bool loadEvent(PixelVector& deviceData,
                        TimestampVector& timestampData,
                        std::map<std::string, std::string>& eventTags,
-                       double spidr_timestamp);
+                       double spidr_timestamp,
+                       bool discard = false);
         double getRawTimestamp();
         double getTimestamp();
 
@@ -79,6 +80,7 @@ namespace corryvreckan {
         size_t m_discardedEvents;
         double m_timeScaler;
 
+        size_t m_loadedEvents;
         size_t m_incompleteEvents;
         size_t m_noiseEvents;
 
