@@ -56,20 +56,20 @@ namespace corryvreckan {
 
         template <typename T> Int_t fillTriangle(T* hist, double x, double y, double val = 1);
 
-        TH2F *hitmap, *hitmapIntercept, *hitmapNoIntercept, *hitmapTrigger, *hitmapTimecuts, *hitmapAssoc;
-        TH2F* hitmapTriggerAssoc;
+        TH2F *hitmap, *hitmapIntercept, *hitmapNoIntercept, *hitmapTrigger, *hitmapNoTrigger, *hitmapTimecuts, *hitmapAssoc;
+        TH2F *hitmapTriggerAssoc, *hitmapNoTriggerAssoc, *hitmapNoAssoc, *hitmapDeadtime, *hitmapDeadtimeTrigger,
+            *hitmapDeadtimeNoTrigger;
 
         TProfile2D *clusterSizeMap, *clusterChargeMap, *seedChargeMap;
         TProfile2D *clusterSizeMap_inpix, *clusterChargeMap_inpix, *seedChargeMap_inpix;
         TProfile2D* clusterSizeMap_intercept;
         TProfile2Poly *clusterSizeMap_inpix3, *clusterChargeMap_inpix3, *seedChargeMap_inpix3;
-        TH2Poly* hitmapTriggerAssoc_inpix3;
+        TH2Poly *hitmapTriggerAssoc_inpix3, *hitmapNoTriggerAssoc_inpix3, *hitmapNoAssoc_inpix3;
 
-        TH2Poly *hitmapTrigger_inpix3, *hitmapTimecuts_inpix3, *hitmapAssoc_inpix3;
+        TH2Poly *hitmapTrigger_inpix3, *hitmapTimecuts_inpix3, *hitmapAssoc_inpix3, *hitmapNoTrigger_inpix3;
+        TH2Poly *hitmapDeadtime_inpix3, *hitmapDeadtimeTrigger_inpix3, *hitmapDeadtimeNoTrigger_inpix3;
 
-        TH1F *clusterSize, *clusterSizeROI;
-
-        TH2F* binningIneff_inpix;
+        TH1F *clusterSize, *clusterSizeROI, *noAssocEventStatus;
 
         double chi2_ndof_cut_, time_cut_frameedge_, time_cut_deadtime_, time_cut_trigger_, time_cut_trigger_assoc_;
         bool use_closest_cluster_;
