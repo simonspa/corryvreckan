@@ -40,11 +40,11 @@ bool HexagonalPixelDetector::hasIntercept(const Track* track, double pixelTolera
     PositionVector3D<Cartesian3D<double>> localIntercept = this->m_globalToLocal * globalIntercept;
 
     // offset from center
-    // double x = localIntercept.X() + ((m_nPixels.X()+0.5) * m_pitch.X())/2.0;
-    // double y = localIntercept.Y() + (m_nPixels.Y()*2.0*m_pitch.Y()/std::sqrt(3))/2.0;
-
     double x = localIntercept.X() + 0.5 * (m_nPixels.X() + 0.5) * m_pitch.X();
     double y = localIntercept.Y() + 0.5 * (3.0 / 4.0 * m_nPixels.Y() + 1.0 / 4.0) * 2.0 / std::sqrt(3) * m_pitch.X();
+
+    x -= 0.5 * m_pitch.X();
+    y -= 0.5 * 2.0 / std::sqrt(3) * m_pitch.X();
 
     double column = (x - y / std::sqrt(3)) / m_pitch.X();
     double row = (y * 2.0 / std::sqrt(3)) / m_pitch.Y();
@@ -91,6 +91,9 @@ double HexagonalPixelDetector::getRow(const PositionVector3D<Cartesian3D<double>
     double x = localPosition.X() + 0.5 * (m_nPixels.X() + 0.5) * m_pitch.X();
     double y = localPosition.Y() + 0.5 * (3.0 / 4.0 * m_nPixels.Y() + 1.0 / 4.0) * 2.0 / std::sqrt(3) * m_pitch.X();
 
+    x -= 0.5 * m_pitch.X();
+    y -= 0.5 * 2.0 / std::sqrt(3) * m_pitch.X();
+
     double column = (x - y / std::sqrt(3)) / m_pitch.X();
     double row = (y * 2.0 / std::sqrt(3)) / m_pitch.Y();
 
@@ -100,6 +103,9 @@ double HexagonalPixelDetector::getRow(const PositionVector3D<Cartesian3D<double>
 double HexagonalPixelDetector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosition) const {
     double x = localPosition.X() + 0.5 * (m_nPixels.X() + 0.5) * m_pitch.X();
     double y = localPosition.Y() + 0.5 * (3.0 / 4.0 * m_nPixels.Y() + 1.0 / 4.0) * 2.0 / std::sqrt(3) * m_pitch.X();
+
+    x -= 0.5 * m_pitch.X();
+    y -= 0.5 * 2.0 / std::sqrt(3) * m_pitch.X();
 
     double column = (x - y / std::sqrt(3)) / m_pitch.X();
     double row = (y * 2.0 / std::sqrt(3)) / m_pitch.Y();
@@ -112,6 +118,10 @@ PositionVector3D<Cartesian3D<double>> HexagonalPixelDetector::getLocalPosition(d
 
     double matrix_x = (m_nPixels.X() + 0.5) * m_pitch.X();
     double matrix_y = (3.0 / 4.0 * m_nPixels.Y() + 1.0 / 4.0) * 2.0 / std::sqrt(3) * m_pitch.X();
+
+    // 1/2 pixel offset to properly center the matrix on 0,0
+    matrix_x -= m_pitch.X();
+    matrix_y -= 2.0 / std::sqrt(3) * m_pitch.X();
 
     return PositionVector3D<Cartesian3D<double>>((1.0 * column + 0.5 * row) * m_pitch.X() - matrix_x / 2.0,
                                                  (0.0 * column + std::sqrt(3) * 0.5 * row) * m_pitch.Y() - matrix_y / 2.0,
