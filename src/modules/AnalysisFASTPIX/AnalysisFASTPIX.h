@@ -72,7 +72,7 @@ namespace corryvreckan {
         TH1F *clusterSize, *clusterSizeROI, *noAssocEventStatus;
         TH1F *clusterCharge, *clusterChargeROI;
 
-        double chi2_ndof_cut_, time_cut_frameedge_, time_cut_deadtime_, time_cut_trigger_, time_cut_trigger_assoc_;
+        double chi2_ndof_cut_, time_cut_frameedge_, time_cut_deadtime_, time_cut_trigger_;
         bool use_closest_cluster_;
 
         ROOT::Math::XYVector roi_min, roi_max;

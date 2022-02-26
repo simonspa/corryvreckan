@@ -20,16 +20,15 @@ AnalysisFASTPIX::AnalysisFASTPIX(Configuration& config, std::shared_ptr<Detector
     config_.setDefault<double>("time_cut_frameedge", Units::get<double>(20, "ns"));
     config_.setDefault<double>("time_cut_deadtime", Units::get<double>(5, "us"));
     config_.setDefault<double>("time_cut_trigger", Units::get<double>(250, "ns"));
-    config_.setDefault<double>("time_cut_trigger_assoc", Units::get<double>(250, "ns"));
     config_.setDefault<double>("chi2ndof_cut", 3.);
-    config_.setDefault<double>("roi_margin", 0.75);
+    config_.setDefault<double>("roi_margin", 0.5);
     config_.setDefault<bool>("use_closest_cluster", true);
     config_.setDefault<int>("triangle_bins", 15);
 
     roi_margin_ = config_.get<double>("roi_margin");
 
     auto size = m_detector->getSize();
-    pitch = m_detector->getPitch().X() * 1000.0;
+    pitch = m_detector->getPitch().X();
     height = 2. / std::sqrt(3) * pitch;
 
     // Cut off roi_margin pixels around edge of matrix
@@ -38,10 +37,12 @@ AnalysisFASTPIX::AnalysisFASTPIX(Configuration& config, std::shared_ptr<Detector
     config_.setDefault<ROOT::Math::XYVector>("roi_max",
                                              {size.X() / 2. - pitch * roi_margin_, size.Y() / 2. - height * roi_margin_});
 
+    pitch *= 1000.0;
+    height *= 1000.0;
+
     time_cut_frameedge_ = config_.get<double>("time_cut_frameedge");
     time_cut_deadtime_ = config_.get<double>("time_cut_deadtime");
     time_cut_trigger_ = config_.get<double>("time_cut_trigger");
-    time_cut_trigger_assoc_ = config_.get<double>("time_cut_trigger_assoc");
     chi2_ndof_cut_ = config_.get<double>("chi2ndof_cut");
     use_closest_cluster_ = config_.get<bool>("use_closest_cluster");
     roi_min = config.get<ROOT::Math::XYVector>("roi_min");
@@ -405,11 +406,11 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
             }
         }
 
-        // Find tracks inside of time_cut_trigger_assoc time window around SPIDR trigger
+        // Find tracks inside of time_cut_trigger time window around SPIDR trigger
 
         bool triggerAssoc = false;
         for(auto& refSpidrSignal : referenceSpidrSignals) {
-            if(fabs(track->timestamp() - refSpidrSignal->timestamp()) < time_cut_trigger_assoc_) {
+            if(fabs(track->timestamp() - refSpidrSignal->timestamp()) < time_cut_trigger_) {
                 triggerAssoc = true;
             }
         }
