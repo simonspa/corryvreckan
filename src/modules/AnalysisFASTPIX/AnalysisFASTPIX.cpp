@@ -251,9 +251,6 @@ void AnalysisFASTPIX::initialize() {
     std::string title;
     title = "Mean cluster size map;" + mod_axes + "<pixels/cluster>";
 
-    clusterSizeMap_inpix = new TProfile2D(
-        "clusterSizeMap_inpix", title.c_str(), 40, -pitch / 2.0, pitch / 2.0, 40, -height / 2.0, height / 2.0);
-
     seedChargeMap = new TProfile2D("seedChargeMap",
                                    "seed charge;x_{track} [#mum];y_{track} [#mum]",
                                    bins_x,
@@ -262,15 +259,6 @@ void AnalysisFASTPIX::initialize() {
                                    bins_y,
                                    -h_height / 2.0,
                                    h_height / 2.0);
-
-    seedChargeMap_inpix = new TProfile2D("seedChargeMap_inpix",
-                                         "seed charge;x_{track} [#mum];y_{track} [#mum];seed charge [ToT]",
-                                         40,
-                                         -pitch / 2.0,
-                                         pitch / 2.0,
-                                         40,
-                                         -height / 2.0,
-                                         height / 2.0);
 
     clusterChargeMap = new TProfile2D("clusterChargeMap",
                                       "cluster charge;x_{track} [#mum];y_{track} [#mum]",
@@ -281,92 +269,83 @@ void AnalysisFASTPIX::initialize() {
                                       -h_height / 2.0,
                                       h_height / 2.0);
 
-    clusterChargeMap_inpix = new TProfile2D("clusterChargeMap_inpix",
-                                            "cluster charge;x_{track} [#mum];y_{track} [#mum];cluster charge [ToT]",
-                                            40,
-                                            -pitch / 2.0,
-                                            pitch / 2.0,
-                                            40,
-                                            -height / 2.0,
-                                            height / 2.0);
-
     title = "Mean cluster size map;" + mod_axes + "<pixels/cluster>";
-    clusterSizeMap_inpix3 = new TProfile2Poly();
-    clusterSizeMap_inpix3->SetName("clusterSizeMap_inpix3");
-    clusterSizeMap_inpix3->SetTitle(title.c_str());
-    triangle_hist(pitch, clusterSizeMap_inpix3, triangle_bins_);
+    clusterSizeMap_inpix = new TProfile2Poly();
+    clusterSizeMap_inpix->SetName("clusterSizeMap_inpix");
+    clusterSizeMap_inpix->SetTitle(title.c_str());
+    triangle_hist(pitch, clusterSizeMap_inpix, triangle_bins_);
 
     title = "Mean cluster charge map;" + mod_axes + "<cluster charge> [ToT]";
-    clusterChargeMap_inpix3 = new TProfile2Poly();
-    clusterChargeMap_inpix3->SetName("clusterChargeMap_inpix3");
-    clusterChargeMap_inpix3->SetTitle(title.c_str());
-    triangle_hist(pitch, clusterChargeMap_inpix3, triangle_bins_);
+    clusterChargeMap_inpix = new TProfile2Poly();
+    clusterChargeMap_inpix->SetName("clusterChargeMap_inpix");
+    clusterChargeMap_inpix->SetTitle(title.c_str());
+    triangle_hist(pitch, clusterChargeMap_inpix, triangle_bins_);
 
     title = "Mean seed charge map;" + mod_axes + "<seed charge> [ToT]";
-    seedChargeMap_inpix3 = new TProfile2Poly();
-    seedChargeMap_inpix3->SetName("seedChargeMap_inpix3");
-    seedChargeMap_inpix3->SetTitle(title.c_str());
-    triangle_hist(pitch, seedChargeMap_inpix3, triangle_bins_);
+    seedChargeMap_inpix = new TProfile2Poly();
+    seedChargeMap_inpix->SetName("seedChargeMap_inpix");
+    seedChargeMap_inpix->SetTitle(title.c_str());
+    triangle_hist(pitch, seedChargeMap_inpix, triangle_bins_);
 
     title = "hitmap;" + mod_axes;
-    hitmapTimecuts_inpix3 = new TH2Poly();
-    hitmapTimecuts_inpix3->SetName("hitmapTimecuts_inpix3");
-    hitmapTimecuts_inpix3->SetTitle(title.c_str());
-    triangle_hist(pitch, hitmapTimecuts_inpix3, triangle_bins_);
+    hitmapTimecuts_inpix = new TH2Poly();
+    hitmapTimecuts_inpix->SetName("hitmapTimecuts_inpix");
+    hitmapTimecuts_inpix->SetTitle(title.c_str());
+    triangle_hist(pitch, hitmapTimecuts_inpix, triangle_bins_);
 
     title = "hitmap;" + mod_axes;
-    hitmapTrigger_inpix3 = new TH2Poly();
-    hitmapTrigger_inpix3->SetName("hitmapTrigger_inpix3");
-    hitmapTrigger_inpix3->SetTitle(title.c_str());
-    triangle_hist(pitch, hitmapTrigger_inpix3, triangle_bins_);
+    hitmapTrigger_inpix = new TH2Poly();
+    hitmapTrigger_inpix->SetName("hitmapTrigger_inpix");
+    hitmapTrigger_inpix->SetTitle(title.c_str());
+    triangle_hist(pitch, hitmapTrigger_inpix, triangle_bins_);
 
     title = "hitmap;" + mod_axes;
-    hitmapNoTrigger_inpix3 = new TH2Poly();
-    hitmapNoTrigger_inpix3->SetName("hitmapNoTrigger_inpix3");
-    hitmapNoTrigger_inpix3->SetTitle(title.c_str());
-    triangle_hist(pitch, hitmapNoTrigger_inpix3, triangle_bins_);
+    hitmapNoTrigger_inpix = new TH2Poly();
+    hitmapNoTrigger_inpix->SetName("hitmapNoTrigger_inpix");
+    hitmapNoTrigger_inpix->SetTitle(title.c_str());
+    triangle_hist(pitch, hitmapNoTrigger_inpix, triangle_bins_);
 
     title = "hitmap;" + mod_axes;
-    hitmapDeadtime_inpix3 = new TH2Poly();
-    hitmapDeadtime_inpix3->SetName("hitmapDeadtime_inpix3");
-    hitmapDeadtime_inpix3->SetTitle(title.c_str());
-    triangle_hist(pitch, hitmapDeadtime_inpix3, triangle_bins_);
+    hitmapDeadtime_inpix = new TH2Poly();
+    hitmapDeadtime_inpix->SetName("hitmapDeadtime_inpix");
+    hitmapDeadtime_inpix->SetTitle(title.c_str());
+    triangle_hist(pitch, hitmapDeadtime_inpix, triangle_bins_);
 
     title = "hitmap;" + mod_axes;
-    hitmapDeadtimeTrigger_inpix3 = new TH2Poly();
-    hitmapDeadtimeTrigger_inpix3->SetName("hitmapDeadtimeTrigger_inpix3");
-    hitmapDeadtimeTrigger_inpix3->SetTitle(title.c_str());
-    triangle_hist(pitch, hitmapDeadtimeTrigger_inpix3, triangle_bins_);
+    hitmapDeadtimeTrigger_inpix = new TH2Poly();
+    hitmapDeadtimeTrigger_inpix->SetName("hitmapDeadtimeTrigger_inpix");
+    hitmapDeadtimeTrigger_inpix->SetTitle(title.c_str());
+    triangle_hist(pitch, hitmapDeadtimeTrigger_inpix, triangle_bins_);
 
     title = "hitmap;" + mod_axes;
-    hitmapDeadtimeNoTrigger_inpix3 = new TH2Poly();
-    hitmapDeadtimeNoTrigger_inpix3->SetName("hitmapDeadtimeNoTrigger_inpix3");
-    hitmapDeadtimeNoTrigger_inpix3->SetTitle(title.c_str());
-    triangle_hist(pitch, hitmapDeadtimeNoTrigger_inpix3, triangle_bins_);
+    hitmapDeadtimeNoTrigger_inpix = new TH2Poly();
+    hitmapDeadtimeNoTrigger_inpix->SetName("hitmapDeadtimeNoTrigger_inpix");
+    hitmapDeadtimeNoTrigger_inpix->SetTitle(title.c_str());
+    triangle_hist(pitch, hitmapDeadtimeNoTrigger_inpix, triangle_bins_);
 
     title = "hitmap;" + mod_axes;
-    hitmapTriggerAssoc_inpix3 = new TH2Poly();
-    hitmapTriggerAssoc_inpix3->SetName("hitmapTriggerAssoc_inpix3");
-    hitmapTriggerAssoc_inpix3->SetTitle(title.c_str());
-    triangle_hist(pitch, hitmapTriggerAssoc_inpix3, triangle_bins_);
+    hitmapTriggerAssoc_inpix = new TH2Poly();
+    hitmapTriggerAssoc_inpix->SetName("hitmapTriggerAssoc_inpix");
+    hitmapTriggerAssoc_inpix->SetTitle(title.c_str());
+    triangle_hist(pitch, hitmapTriggerAssoc_inpix, triangle_bins_);
 
     title = "hitmap;" + mod_axes;
-    hitmapNoTriggerAssoc_inpix3 = new TH2Poly();
-    hitmapNoTriggerAssoc_inpix3->SetName("hitmapNoTriggerAssoc_inpix3");
-    hitmapNoTriggerAssoc_inpix3->SetTitle(title.c_str());
-    triangle_hist(pitch, hitmapNoTriggerAssoc_inpix3, triangle_bins_);
+    hitmapNoTriggerAssoc_inpix = new TH2Poly();
+    hitmapNoTriggerAssoc_inpix->SetName("hitmapNoTriggerAssoc_inpix");
+    hitmapNoTriggerAssoc_inpix->SetTitle(title.c_str());
+    triangle_hist(pitch, hitmapNoTriggerAssoc_inpix, triangle_bins_);
 
     title = "hitmap;" + mod_axes;
-    hitmapAssoc_inpix3 = new TH2Poly();
-    hitmapAssoc_inpix3->SetName("hitmapAssoc_inpix3");
-    hitmapAssoc_inpix3->SetTitle(title.c_str());
-    triangle_hist(pitch, hitmapAssoc_inpix3, triangle_bins_);
+    hitmapAssoc_inpix = new TH2Poly();
+    hitmapAssoc_inpix->SetName("hitmapAssoc_inpix");
+    hitmapAssoc_inpix->SetTitle(title.c_str());
+    triangle_hist(pitch, hitmapAssoc_inpix, triangle_bins_);
 
     title = "hitmap;" + mod_axes;
-    hitmapNoAssoc_inpix3 = new TH2Poly();
-    hitmapNoAssoc_inpix3->SetName("hitmapNoAssoc_inpix3");
-    hitmapNoAssoc_inpix3->SetTitle(title.c_str());
-    triangle_hist(pitch, hitmapNoAssoc_inpix3, triangle_bins_);
+    hitmapNoAssoc_inpix = new TH2Poly();
+    hitmapNoAssoc_inpix->SetName("hitmapNoAssoc_inpix");
+    hitmapNoAssoc_inpix->SetTitle(title.c_str());
+    triangle_hist(pitch, hitmapNoAssoc_inpix, triangle_bins_);
 }
 
 bool AnalysisFASTPIX::inRoi(PositionVector3D<Cartesian3D<double>> p) {
@@ -462,7 +441,7 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
         hitmapTimecuts->Fill(x_um, y_um);
 
         if(inRoi(localIntercept)) {
-            fillTriangle(hitmapTimecuts_inpix3, xmod_um, ymod_um);
+            fillTriangle(hitmapTimecuts_inpix, xmod_um, ymod_um);
         }
 
         // Tracks after timing cuts with SPIDR trigger in the same event
@@ -470,13 +449,13 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
             hitmapTrigger->Fill(x_um, y_um);
 
             if(inRoi(localIntercept)) {
-                fillTriangle(hitmapTrigger_inpix3, xmod_um, ymod_um);
+                fillTriangle(hitmapTrigger_inpix, xmod_um, ymod_um);
             }
         } else {
             hitmapNoTrigger->Fill(x_um, y_um);
 
             if(inRoi(localIntercept)) {
-                fillTriangle(hitmapNoTrigger_inpix3, xmod_um, ymod_um);
+                fillTriangle(hitmapNoTrigger_inpix, xmod_um, ymod_um);
             }
         }
 
@@ -493,7 +472,7 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
         hitmapDeadtime->Fill(x_um, y_um);
 
         if(inRoi(localIntercept)) {
-            fillTriangle(hitmapDeadtime_inpix3, xmod_um, ymod_um);
+            fillTriangle(hitmapDeadtime_inpix, xmod_um, ymod_um);
         }
 
         // Tracks after deadtime cut with SPIDR trigger in the same event
@@ -501,13 +480,13 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
             hitmapDeadtimeTrigger->Fill(x_um, y_um);
 
             if(inRoi(localIntercept)) {
-                fillTriangle(hitmapDeadtimeTrigger_inpix3, xmod_um, ymod_um);
+                fillTriangle(hitmapDeadtimeTrigger_inpix, xmod_um, ymod_um);
             }
         } else {
             hitmapDeadtimeNoTrigger->Fill(x_um, y_um);
 
             if(inRoi(localIntercept)) {
-                fillTriangle(hitmapDeadtimeNoTrigger_inpix3, xmod_um, ymod_um);
+                fillTriangle(hitmapDeadtimeNoTrigger_inpix, xmod_um, ymod_um);
             }
         }
 
@@ -524,13 +503,13 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
             hitmapTriggerAssoc->Fill(x_um, y_um);
 
             if(inRoi(localIntercept)) {
-                fillTriangle(hitmapTriggerAssoc_inpix3, xmod_um, ymod_um);
+                fillTriangle(hitmapTriggerAssoc_inpix, xmod_um, ymod_um);
             }
         } else {
             hitmapNoTriggerAssoc->Fill(x_um, y_um);
 
             if(inRoi(localIntercept)) {
-                fillTriangle(hitmapNoTriggerAssoc_inpix3, xmod_um, ymod_um);
+                fillTriangle(hitmapNoTriggerAssoc_inpix, xmod_um, ymod_um);
             }
         }
 
@@ -541,12 +520,12 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
         if(!assoc_clusters.empty()) {
             hitmapAssoc->Fill(x_um, y_um);
             if(inRoi(localIntercept)) {
-                fillTriangle(hitmapAssoc_inpix3, xmod_um, ymod_um);
+                fillTriangle(hitmapAssoc_inpix, xmod_um, ymod_um);
             }
         } else {
             hitmapNoAssoc->Fill(x_um, y_um);
             if(inRoi(localIntercept)) {
-                fillTriangle(hitmapNoAssoc_inpix3, xmod_um, ymod_um);
+                fillTriangle(hitmapNoAssoc_inpix, xmod_um, ymod_um);
                 auto tagList = event->tagList();
                 auto status = tagList.find("fp_event_flags");
                 const char* labels[] = {"Complete", "Incomplete", "Incomplete (Noise)", "Missing"};
@@ -578,13 +557,9 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
             if(inRoi(localIntercept)) {
                 clusterSizeMapROI->Fill(x_um, y_um, static_cast<double>(assoc_cluster->size()));
 
-                clusterSizeMap_inpix->Fill(xmod_um, ymod_um, static_cast<double>(assoc_cluster->size()));
-                clusterChargeMap_inpix->Fill(xmod_um, ymod_um, assoc_cluster->charge());
-                seedChargeMap_inpix->Fill(xmod_um, ymod_um, assoc_cluster->getSeedPixel()->charge());
-
-                fillTriangle(clusterSizeMap_inpix3, xmod_um, ymod_um, static_cast<double>(assoc_cluster->size()));
-                fillTriangle(clusterChargeMap_inpix3, xmod_um, ymod_um, assoc_cluster->charge());
-                fillTriangle(seedChargeMap_inpix3, xmod_um, ymod_um, assoc_cluster->getSeedPixel()->charge());
+                fillTriangle(clusterSizeMap_inpix, xmod_um, ymod_um, static_cast<double>(assoc_cluster->size()));
+                fillTriangle(clusterChargeMap_inpix, xmod_um, ymod_um, assoc_cluster->charge());
+                fillTriangle(seedChargeMap_inpix, xmod_um, ymod_um, assoc_cluster->getSeedPixel()->charge());
 
                 clusterSizeROI->Fill(static_cast<double>(assoc_cluster->size()));
                 clusterChargeROI->Fill(assoc_cluster->charge());
@@ -611,24 +586,24 @@ void printEfficiency(int total_tracks, int matched_tracks) {
 }
 
 void AnalysisFASTPIX::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
-    clusterSizeMap_inpix3->Write();
-    clusterChargeMap_inpix3->Write();
-    seedChargeMap_inpix3->Write();
+    clusterSizeMap_inpix->Write();
+    clusterChargeMap_inpix->Write();
+    seedChargeMap_inpix->Write();
 
-    hitmapTimecuts_inpix3->Write();
+    hitmapTimecuts_inpix->Write();
 
-    hitmapTrigger_inpix3->Write();
-    hitmapNoTrigger_inpix3->Write();
+    hitmapTrigger_inpix->Write();
+    hitmapNoTrigger_inpix->Write();
 
-    hitmapDeadtime_inpix3->Write();
-    hitmapDeadtimeTrigger_inpix3->Write();
-    hitmapDeadtimeNoTrigger_inpix3->Write();
+    hitmapDeadtime_inpix->Write();
+    hitmapDeadtimeTrigger_inpix->Write();
+    hitmapDeadtimeNoTrigger_inpix->Write();
 
-    hitmapTriggerAssoc_inpix3->Write();
-    hitmapNoTriggerAssoc_inpix3->Write();
+    hitmapTriggerAssoc_inpix->Write();
+    hitmapNoTriggerAssoc_inpix->Write();
 
-    hitmapAssoc_inpix3->Write();
-    hitmapNoAssoc_inpix3->Write();
+    hitmapAssoc_inpix->Write();
+    hitmapNoAssoc_inpix->Write();
 
     // Efficiency
 
@@ -636,38 +611,38 @@ void AnalysisFASTPIX::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     efficiency.SetName("efficiency");
     efficiency.Write();
 
-    TEfficiency efficiency_inpix3(*hitmapTrigger_inpix3, *hitmapTimecuts_inpix3);
-    efficiency_inpix3.SetName("efficiency_inpix3");
-    efficiency_inpix3.Write();
+    TEfficiency efficiency_inpix(*hitmapTrigger_inpix, *hitmapTimecuts_inpix);
+    efficiency_inpix.SetName("efficiency_inpix");
+    efficiency_inpix.Write();
 
     TEfficiency efficiencyDeadtime(*hitmapDeadtime, *hitmapDeadtimeTrigger);
     efficiencyDeadtime.SetName("efficiencyDeadtime");
     efficiencyDeadtime.Write();
 
-    TEfficiency efficiencyDeadtime_inpix3(*hitmapDeadtime_inpix3, *hitmapDeadtimeTrigger_inpix3);
-    efficiencyDeadtime_inpix3.SetName("efficiencyDeadtime_inpix3");
-    efficiencyDeadtime_inpix3.Write();
+    TEfficiency efficiencyDeadtime_inpix(*hitmapDeadtime_inpix, *hitmapDeadtimeTrigger_inpix);
+    efficiencyDeadtime_inpix.SetName("efficiencyDeadtime_inpix");
+    efficiencyDeadtime_inpix.Write();
 
     TEfficiency efficiencyTriggerAssoc(*hitmapDeadtime, *hitmapTriggerAssoc);
     efficiencyTriggerAssoc.SetName("efficiencyTriggerAssoc");
     efficiencyTriggerAssoc.Write();
 
-    TEfficiency efficiencyTriggerAssoc_inpix3(*hitmapDeadtime_inpix3, *hitmapTriggerAssoc_inpix3);
-    efficiencyTriggerAssoc_inpix3.SetName("efficiencyTriggerAssoc_inpix3");
-    efficiencyTriggerAssoc_inpix3.Write();
+    TEfficiency efficiencyTriggerAssoc_inpix(*hitmapDeadtime_inpix, *hitmapTriggerAssoc_inpix);
+    efficiencyTriggerAssoc_inpix.SetName("efficiencyTriggerAssoc_inpix");
+    efficiencyTriggerAssoc_inpix.Write();
 
     TEfficiency efficiencyAssoc(*hitmapDeadtime, *hitmapAssoc);
     efficiencyAssoc.SetName("efficiencyAssoc");
     efficiencyAssoc.Write();
 
-    TEfficiency efficiencyAssoc_inpix3(*hitmapDeadtime_inpix3, *hitmapAssoc_inpix3);
-    efficiencyAssoc_inpix3.SetName("efficiencyAssoc_inpix3");
-    efficiencyAssoc_inpix3.Write();*/
+    TEfficiency efficiencyAssoc_inpix(*hitmapDeadtime_inpix, *hitmapAssoc_inpix);
+    efficiencyAssoc_inpix.SetName("efficiencyAssoc_inpix");
+    efficiencyAssoc_inpix.Write();*/
 
-    printEfficiency(static_cast<int>(hitmapTimecuts_inpix3->Integral()), static_cast<int>(hitmapTrigger_inpix3->Integral()));
-    printEfficiency(static_cast<int>(hitmapDeadtime_inpix3->Integral()),
-                    static_cast<int>(hitmapDeadtimeTrigger_inpix3->Integral()));
-    printEfficiency(static_cast<int>(hitmapDeadtime_inpix3->Integral()),
-                    static_cast<int>(hitmapTriggerAssoc_inpix3->Integral()));
-    printEfficiency(static_cast<int>(hitmapDeadtime_inpix3->Integral()), static_cast<int>(hitmapAssoc_inpix3->Integral()));
+    printEfficiency(static_cast<int>(hitmapTimecuts_inpix->Integral()), static_cast<int>(hitmapTrigger_inpix->Integral()));
+    printEfficiency(static_cast<int>(hitmapDeadtime_inpix->Integral()),
+                    static_cast<int>(hitmapDeadtimeTrigger_inpix->Integral()));
+    printEfficiency(static_cast<int>(hitmapDeadtime_inpix->Integral()),
+                    static_cast<int>(hitmapTriggerAssoc_inpix->Integral()));
+    printEfficiency(static_cast<int>(hitmapDeadtime_inpix->Integral()), static_cast<int>(hitmapAssoc_inpix->Integral()));
 }

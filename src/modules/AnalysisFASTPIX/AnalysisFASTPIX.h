@@ -61,13 +61,12 @@ namespace corryvreckan {
             *hitmapDeadtimeNoTrigger;
 
         TProfile2D *clusterSizeMap, *clusterChargeMap, *seedChargeMap;
-        TProfile2D *clusterSizeMap_inpix, *clusterChargeMap_inpix, *seedChargeMap_inpix;
         TProfile2D* clusterSizeMapROI;
-        TProfile2Poly *clusterSizeMap_inpix3, *clusterChargeMap_inpix3, *seedChargeMap_inpix3;
-        TH2Poly *hitmapTriggerAssoc_inpix3, *hitmapNoTriggerAssoc_inpix3, *hitmapNoAssoc_inpix3;
+        TProfile2Poly *clusterSizeMap_inpix, *clusterChargeMap_inpix, *seedChargeMap_inpix;
+        TH2Poly *hitmapTriggerAssoc_inpix, *hitmapNoTriggerAssoc_inpix, *hitmapNoAssoc_inpix;
 
-        TH2Poly *hitmapTrigger_inpix3, *hitmapTimecuts_inpix3, *hitmapAssoc_inpix3, *hitmapNoTrigger_inpix3;
-        TH2Poly *hitmapDeadtime_inpix3, *hitmapDeadtimeTrigger_inpix3, *hitmapDeadtimeNoTrigger_inpix3;
+        TH2Poly *hitmapTrigger_inpix, *hitmapTimecuts_inpix, *hitmapAssoc_inpix, *hitmapNoTrigger_inpix;
+        TH2Poly *hitmapDeadtime_inpix, *hitmapDeadtimeTrigger_inpix, *hitmapDeadtimeNoTrigger_inpix;
 
         TH1F *clusterSize, *clusterSizeROI, *noAssocEventStatus;
         TH1F *clusterCharge, *clusterChargeROI;
