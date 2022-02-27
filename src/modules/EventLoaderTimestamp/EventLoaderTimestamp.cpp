@@ -17,10 +17,12 @@ EventLoaderTimestamp::EventLoaderTimestamp(Configuration& config, std::shared_pt
     : Module(config, detector), m_detector(detector) {
 
     config_.setDefault<double>("event_length", Units::get<double>(10, "us"));
+    config_.setDefault<double>("time_offset", Units::get<double>(0, "ns"));
     config_.setDefault<size_t>("buffer_depth", 10);
 
     m_buffer_depth = config_.get<size_t>("buffer_depth");
     m_eventLength = config_.get<double>("event_length");
+    m_time_offset = config_.get<double>("time_offset");
 
     // Take input directory from global parameters
     m_inputDirectory = config_.getPath("input_directory");
@@ -257,7 +259,7 @@ bool EventLoaderTimestamp::decodeNextWord() {
             int triggerID = triggerNumber + (m_triggerOverflowCounter << 12);
             m_prevTriggerNumber = triggerNumber;
 
-            auto triggerSignal = std::make_shared<SpidrSignal>("trigger", triggerTime, triggerID);
+            auto triggerSignal = std::make_shared<SpidrSignal>("trigger", triggerTime + m_time_offset, triggerID);
             sorted_signals_.push(triggerSignal);
             LOG(DEBUG) << triggerID << ' ' << Units::display(triggerTime, {"s", "us", "ns"});
         }

@@ -78,6 +78,8 @@ namespace corryvreckan {
         int m_prevTriggerNumber;
         int m_triggerOverflowCounter;
 
+        double m_time_offset;
+
         template <typename T> struct CompareTimeGreater {
             bool operator()(const std::shared_ptr<T> a, const std::shared_ptr<T> b) {
                 return a->timestamp() > b->timestamp();

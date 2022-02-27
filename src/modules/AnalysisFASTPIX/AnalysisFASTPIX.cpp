@@ -402,13 +402,14 @@ template <typename T> Int_t AnalysisFASTPIX::fillTriangle(T* hist, double x, dou
 
 StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
 
+    auto event = clipboard->getEvent();
+
     // get the TDC trigger
-    std::shared_ptr<Detector> reference = get_reference();
-    auto referenceSpidrSignals = clipboard->getData<SpidrSignal>(reference->getName());
+    auto triggers = event->triggerList();
+    std::vector<std::pair<uint32_t, double>> referenceSpidrSignals(triggers.begin(), triggers.end());
 
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
-    auto event = clipboard->getEvent();
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());
 
     // Loop over all tracks
@@ -468,8 +469,8 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
 
         // Cut on oscilloscpe dead time in the current event and reject tracks in the specified time window after a trigger
         for(auto& refSpidrSignal : referenceSpidrSignals) {
-            if(track->timestamp() - refSpidrSignal->timestamp() > time_cut_trigger_ &&
-               track->timestamp() - refSpidrSignal->timestamp() < time_cut_deadtime_) {
+            if(track->timestamp() - refSpidrSignal.second > time_cut_trigger_ &&
+               track->timestamp() - refSpidrSignal.second < time_cut_deadtime_) {
 
                 continue;
             }
@@ -495,7 +496,7 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
             if(inRoi(localIntercept)) {
                 fillTriangle(hitmapDeadtimeNoTrigger_inpix, xmod_um, ymod_um);
                 for(auto& refSpidrSignal : referenceSpidrSignals) {
-                    inefficientDeadtimeDt->Fill(track->timestamp() - refSpidrSignal->timestamp());
+                    inefficientDeadtimeDt->Fill(track->timestamp() - refSpidrSignal.second);
                 }
             }
         }
@@ -504,7 +505,7 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
 
         bool triggerAssoc = false;
         for(auto& refSpidrSignal : referenceSpidrSignals) {
-            if(fabs(track->timestamp() - refSpidrSignal->timestamp()) < time_cut_trigger_) {
+            if(fabs(track->timestamp() - refSpidrSignal.second) < time_cut_trigger_) {
                 triggerAssoc = true;
             }
         }
@@ -521,7 +522,7 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
             if(inRoi(localIntercept)) {
                 fillTriangle(hitmapNoTriggerAssoc_inpix, xmod_um, ymod_um);
                 for(auto& refSpidrSignal : referenceSpidrSignals) {
-                    inefficientTriggerAssocDt->Fill(track->timestamp() - refSpidrSignal->timestamp());
+                    inefficientTriggerAssocDt->Fill(track->timestamp() - refSpidrSignal.second);
                 }
             }
         }
@@ -554,7 +555,7 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
                 noAssocEventStatus->Fill(label, 1);
 
                 for(auto& refSpidrSignal : referenceSpidrSignals) {
-                    inefficientAssocDt->Fill(track->timestamp() - refSpidrSignal->timestamp());
+                    inefficientAssocDt->Fill(track->timestamp() - refSpidrSignal.second);
                 }
             }
         }
@@ -586,8 +587,8 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Update with latest time stamp in case the oscilloscope dead time extends into the next event
     for(auto& refSpidrSignal : referenceSpidrSignals) {
-        if(last_timestamp < refSpidrSignal->timestamp()) {
-            last_timestamp = refSpidrSignal->timestamp();
+        if(last_timestamp < refSpidrSignal.second) {
+            last_timestamp = refSpidrSignal.second;
         }
     }
 
