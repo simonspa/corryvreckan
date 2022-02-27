@@ -68,8 +68,7 @@ namespace corryvreckan {
         TH2Poly *hitmapTrigger_inpix, *hitmapTimecuts_inpix, *hitmapAssoc_inpix, *hitmapNoTrigger_inpix;
         TH2Poly *hitmapDeadtime_inpix, *hitmapDeadtimeTrigger_inpix, *hitmapDeadtimeNoTrigger_inpix;
 
-        TH1F *clusterSize, *clusterSizeROI, *noAssocEventStatus, *inefficientAssocDt, *inefficientDeadtimeDt,
-            *inefficientTriggerAssocDt;
+        TH1F *clusterSize, *clusterSizeROI, *noAssocEventStatus, *inefficientAssocDt, *inefficientTriggerAssocDt;
         TH1F *clusterCharge, *clusterChargeROI;
 
         double chi2_ndof_cut_, time_cut_frameedge_, time_cut_deadtime_, time_cut_trigger_;

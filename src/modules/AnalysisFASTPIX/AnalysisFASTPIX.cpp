@@ -230,8 +230,6 @@ void AnalysisFASTPIX::initialize() {
     clusterSizeROI =
         new TH1F("clusterSizeROI", "Cluster size (tracks after cuts), tracks in ROI;cluster size;# entries", 20, -0.5, 19.5);
 
-    inefficientDeadtimeDt = new TH1F(
-        "inefficientDeadtimeDt", "Inefficient tracks in ROI;track time - trigger time [ns];# entries", 100, -5000, 5000);
     inefficientTriggerAssocDt = new TH1F(
         "inefficientTriggerAssocDt", "Inefficient tracks in ROI;track time - trigger time [ns];# entries", 100, -5000, 5000);
     inefficientAssocDt = new TH1F(
@@ -468,12 +466,17 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
         }
 
         // Cut on oscilloscpe dead time in the current event and reject tracks in the specified time window after a trigger
+        bool deadtime = false;
         for(auto& trigger : triggers) {
             if(track->timestamp() - trigger.second > time_cut_trigger_ &&
                track->timestamp() - trigger.second < time_cut_deadtime_) {
 
-                continue;
+                deadtime = true;
             }
+        }
+
+        if(deadtime) {
+            continue;
         }
 
         // Tracks after deadtime cut
@@ -495,9 +498,6 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             if(inRoi(localIntercept)) {
                 fillTriangle(hitmapDeadtimeNoTrigger_inpix, xmod_um, ymod_um);
-                for(auto& trigger : triggers) {
-                    inefficientDeadtimeDt->Fill(track->timestamp() - trigger.second);
-                }
             }
         }
 
