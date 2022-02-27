@@ -230,6 +230,13 @@ void AnalysisFASTPIX::initialize() {
     clusterSizeROI =
         new TH1F("clusterSizeROI", "Cluster size (tracks after cuts), tracks in ROI;cluster size;# entries", 20, -0.5, 19.5);
 
+    inefficientDeadtimeDt = new TH1F(
+        "inefficientDeadtimeDt", "Inefficient tracks in ROI;track time - trigger time [ns];# entries", 100, -5000, 5000);
+    inefficientTriggerAssocDt = new TH1F(
+        "inefficientTriggerAssocDt", "Inefficient tracks in ROI;track time - trigger time [ns];# entries", 100, -5000, 5000);
+    inefficientAssocDt = new TH1F(
+        "inefficientAssocDt", "Inefficient tracks in ROI;track time - trigger time [ns];# entries", 100, -5000, 5000);
+
     clusterSizeMap = new TProfile2D("clusterSizeMap",
                                     "Mean cluster size map;x_{track} [#mum];y_{track} [#mum];<pixels/cluster>",
                                     bins_x,
@@ -487,6 +494,9 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             if(inRoi(localIntercept)) {
                 fillTriangle(hitmapDeadtimeNoTrigger_inpix, xmod_um, ymod_um);
+                for(auto& refSpidrSignal : referenceSpidrSignals) {
+                    inefficientDeadtimeDt->Fill(track->timestamp() - refSpidrSignal->timestamp());
+                }
             }
         }
 
@@ -510,6 +520,9 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             if(inRoi(localIntercept)) {
                 fillTriangle(hitmapNoTriggerAssoc_inpix, xmod_um, ymod_um);
+                for(auto& refSpidrSignal : referenceSpidrSignals) {
+                    inefficientTriggerAssocDt->Fill(track->timestamp() - refSpidrSignal->timestamp());
+                }
             }
         }
 
@@ -539,6 +552,10 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
                 }
 
                 noAssocEventStatus->Fill(label, 1);
+
+                for(auto& refSpidrSignal : referenceSpidrSignals) {
+                    inefficientAssocDt->Fill(track->timestamp() - refSpidrSignal->timestamp());
+                }
             }
         }
 
