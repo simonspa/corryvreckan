@@ -24,6 +24,8 @@ AnalysisFASTPIX::AnalysisFASTPIX(Configuration& config, std::shared_ptr<Detector
     config_.setDefault<double>("roi_margin", 0.5);
     config_.setDefault<bool>("use_closest_cluster", true);
     config_.setDefault<int>("triangle_bins", 15);
+    config_.setDefault<double>("bin_size", Units::get<double>(2.5, "um"));
+    config_.setDefault<double>("hist_scale", 1.75);
 
     roi_margin_ = config_.get<double>("roi_margin");
 
@@ -37,6 +39,7 @@ AnalysisFASTPIX::AnalysisFASTPIX(Configuration& config, std::shared_ptr<Detector
     config_.setDefault<ROOT::Math::XYVector>("roi_max",
                                              {size.X() / 2. - pitch * roi_margin_, size.Y() / 2. - height * roi_margin_});
 
+    // Convert to um
     pitch *= 1000.0;
     height *= 1000.0;
 
@@ -48,6 +51,8 @@ AnalysisFASTPIX::AnalysisFASTPIX(Configuration& config, std::shared_ptr<Detector
     roi_min = config.get<ROOT::Math::XYVector>("roi_min");
     roi_max = config.get<ROOT::Math::XYVector>("roi_max");
     triangle_bins_ = config.get<int>("triangle_bins");
+    bin_size_ = config.get<double>("bin_size");
+    hist_scale_ = config.get<double>("hist_scale");
 }
 
 // Histogram consisting of regular triangles, covering a hexagon in 6*n² triangles
@@ -100,31 +105,119 @@ template <typename T> void triangle_hist(double pitch, T* profile, size_t n) {
 void AnalysisFASTPIX::initialize() {
     std::string mod_axes = "in-pixel x_{track} [#mum];in-pixel y_{track} [#mum];";
 
-    hitmap = new TH2F("hitmap", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
-    hitmapIntercept =
-        new TH2F("hitmapIntercept", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
-    hitmapNoIntercept =
-        new TH2F("hitmapNoIntercept", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
-    hitmapTimecuts =
-        new TH2F("hitmapTimecuts", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
-    hitmapTrigger =
-        new TH2F("hitmapTrigger", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
-    hitmapNoTrigger =
-        new TH2F("hitmapNoTrigger", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
-    hitmapDeadtime =
-        new TH2F("hitmapDeadime", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
-    hitmapDeadtimeTrigger =
-        new TH2F("hitmapDeadimeTrigger", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
-    hitmapDeadtimeNoTrigger = new TH2F(
-        "hitmapDeadimeNoTrigger", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
-    hitmapTriggerAssoc =
-        new TH2F("hitmapTriggerAssoc", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
-    hitmapNoTriggerAssoc =
-        new TH2F("hitmapNoTriggerAssoc", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
-    hitmapAssoc =
-        new TH2F("hitmapAssoc", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
-    hitmapNoAssoc =
-        new TH2F("hitmapNoAssoc", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
+    auto size = m_detector->getSize();
+
+    double h_width = size.X() * hist_scale_;
+    double h_height = size.Y() * hist_scale_;
+    int bins_x = h_width / bin_size_;
+    int bins_y = h_height / bin_size_;
+    h_width *= 1000.0;
+    h_height *= 1000.0;
+
+    hitmap = new TH2F("hitmap",
+                      "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                      bins_x,
+                      -h_width / 2.0,
+                      h_width / 2.0,
+                      bins_y,
+                      -h_height / 2.0,
+                      h_height / 2.0);
+    hitmapIntercept = new TH2F("hitmapIntercept",
+                               "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                               bins_x,
+                               -h_width / 2.0,
+                               h_width / 2.0,
+                               bins_y,
+                               -h_height / 2.0,
+                               h_height / 2.0);
+    hitmapNoIntercept = new TH2F("hitmapNoIntercept",
+                                 "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                                 bins_x,
+                                 -h_width / 2.0,
+                                 h_width / 2.0,
+                                 bins_y,
+                                 -h_height / 2.0,
+                                 h_height / 2.0);
+    hitmapTimecuts = new TH2F("hitmapTimecuts",
+                              "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                              bins_x,
+                              -h_width / 2.0,
+                              h_width / 2.0,
+                              bins_y,
+                              -h_height / 2.0,
+                              h_height / 2.0);
+    hitmapTrigger = new TH2F("hitmapTrigger",
+                             "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                             bins_x,
+                             -h_width / 2.0,
+                             h_width / 2.0,
+                             bins_y,
+                             -h_height / 2.0,
+                             h_height / 2.0);
+    hitmapNoTrigger = new TH2F("hitmapNoTrigger",
+                               "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                               bins_x,
+                               -h_width / 2.0,
+                               h_width / 2.0,
+                               bins_y,
+                               -h_height / 2.0,
+                               h_height / 2.0);
+    hitmapDeadtime = new TH2F("hitmapDeadime",
+                              "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                              bins_x,
+                              -h_width / 2.0,
+                              h_width / 2.0,
+                              bins_y,
+                              -h_height / 2.0,
+                              h_height / 2.0);
+    hitmapDeadtimeTrigger = new TH2F("hitmapDeadimeTrigger",
+                                     "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                                     bins_x,
+                                     -h_width / 2.0,
+                                     h_width / 2.0,
+                                     bins_y,
+                                     -h_height / 2.0,
+                                     h_height / 2.0);
+    hitmapDeadtimeNoTrigger = new TH2F("hitmapDeadimeNoTrigger",
+                                       "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                                       bins_x,
+                                       -h_width / 2.0,
+                                       h_width / 2.0,
+                                       bins_y,
+                                       -h_height / 2.0,
+                                       h_height / 2.0);
+    hitmapTriggerAssoc = new TH2F("hitmapTriggerAssoc",
+                                  "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                                  bins_x,
+                                  -h_width / 2.0,
+                                  h_width / 2.0,
+                                  bins_y,
+                                  -h_height / 2.0,
+                                  h_height / 2.0);
+    hitmapNoTriggerAssoc = new TH2F("hitmapNoTriggerAssoc",
+                                    "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                                    bins_x,
+                                    -h_width / 2.0,
+                                    h_width / 2.0,
+                                    bins_y,
+                                    -h_height / 2.0,
+                                    h_height / 2.0);
+    hitmapAssoc = new TH2F("hitmapAssoc",
+                           "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                           bins_x,
+                           -h_width / 2.0,
+                           h_width / 2.0,
+                           bins_y,
+                           -h_height / 2.0,
+                           h_height / 2.0);
+    hitmapNoAssoc = new TH2F("hitmapNoAssoc",
+                             "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                             bins_x,
+                             -h_width / 2.0,
+                             h_width / 2.0,
+                             bins_y,
+                             -h_height / 2.0,
+                             h_height / 2.0);
 
     noAssocEventStatus = new TH1F("noAssocEventStatus", "event status;event status;count", 5, 0, 4);
     noAssocEventStatus->SetCanExtend(TH1::kAllAxes);
@@ -139,21 +232,21 @@ void AnalysisFASTPIX::initialize() {
 
     clusterSizeMap = new TProfile2D("clusterSizeMap",
                                     "Mean cluster size map;x_{track} [#mum];y_{track} [#mum];<pixels/cluster>",
-                                    200,
-                                    -250.5,
-                                    249.5,
-                                    200,
-                                    -250.5,
-                                    249.5);
+                                    bins_x,
+                                    -h_width / 2.0,
+                                    h_width / 2.0,
+                                    bins_y,
+                                    -h_height / 2.0,
+                                    h_height / 2.0);
 
-    clusterSizeMap_intercept = new TProfile2D("clusterSizeMap_intercept",
-                                              "Mean cluster size map;x_{track} [#mum];y_{track} [#mum];<pixels/cluster>",
-                                              200,
-                                              -250.5,
-                                              249.5,
-                                              200,
-                                              -250.5,
-                                              249.5);
+    clusterSizeMapROI = new TProfile2D("clusterSizeMapROI",
+                                       "Mean cluster size map;x_{track} [#mum];y_{track} [#mum];<pixels/cluster>",
+                                       bins_x,
+                                       -h_width / 2.0,
+                                       h_width / 2.0,
+                                       bins_y,
+                                       -h_height / 2.0,
+                                       h_height / 2.0);
 
     std::string title;
     title = "Mean cluster size map;" + mod_axes + "<pixels/cluster>";
@@ -161,8 +254,14 @@ void AnalysisFASTPIX::initialize() {
     clusterSizeMap_inpix = new TProfile2D(
         "clusterSizeMap_inpix", title.c_str(), 40, -pitch / 2.0, pitch / 2.0, 40, -height / 2.0, height / 2.0);
 
-    seedChargeMap = new TProfile2D(
-        "seedChargeMap", "seed charge;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
+    seedChargeMap = new TProfile2D("seedChargeMap",
+                                   "seed charge;x_{track} [#mum];y_{track} [#mum]",
+                                   bins_x,
+                                   -h_width / 2.0,
+                                   h_width / 2.0,
+                                   bins_y,
+                                   -h_height / 2.0,
+                                   h_height / 2.0);
 
     seedChargeMap_inpix = new TProfile2D("seedChargeMap_inpix",
                                          "seed charge;x_{track} [#mum];y_{track} [#mum];seed charge [ToT]",
@@ -173,8 +272,14 @@ void AnalysisFASTPIX::initialize() {
                                          -height / 2.0,
                                          height / 2.0);
 
-    clusterChargeMap = new TProfile2D(
-        "clusterChargeMap", "cluster charge;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
+    clusterChargeMap = new TProfile2D("clusterChargeMap",
+                                      "cluster charge;x_{track} [#mum];y_{track} [#mum]",
+                                      bins_x,
+                                      -h_width / 2.0,
+                                      h_width / 2.0,
+                                      bins_y,
+                                      -h_height / 2.0,
+                                      h_height / 2.0);
 
     clusterChargeMap_inpix = new TProfile2D("clusterChargeMap_inpix",
                                             "cluster charge;x_{track} [#mum];y_{track} [#mum];cluster charge [ToT]",
@@ -471,7 +576,7 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
             clusterCharge->Fill(assoc_cluster->charge());
 
             if(inRoi(localIntercept)) {
-                clusterSizeMap_intercept->Fill(x_um, y_um, static_cast<double>(assoc_cluster->size()));
+                clusterSizeMapROI->Fill(x_um, y_um, static_cast<double>(assoc_cluster->size()));
 
                 clusterSizeMap_inpix->Fill(xmod_um, ymod_um, static_cast<double>(assoc_cluster->size()));
                 clusterChargeMap_inpix->Fill(xmod_um, ymod_um, assoc_cluster->charge());
@@ -559,8 +664,10 @@ void AnalysisFASTPIX::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     efficiencyAssoc_inpix3.SetName("efficiencyAssoc_inpix3");
     efficiencyAssoc_inpix3.Write();*/
 
-    printEfficiency(hitmapTimecuts_inpix3->Integral(), hitmapTrigger_inpix3->Integral());
-    printEfficiency(hitmapDeadtime_inpix3->Integral(), hitmapDeadtimeTrigger_inpix3->Integral());
-    printEfficiency(hitmapDeadtime_inpix3->Integral(), hitmapTriggerAssoc_inpix3->Integral());
-    printEfficiency(hitmapDeadtime_inpix3->Integral(), hitmapAssoc_inpix3->Integral());
+    printEfficiency(static_cast<int>(hitmapTimecuts_inpix3->Integral()), static_cast<int>(hitmapTrigger_inpix3->Integral()));
+    printEfficiency(static_cast<int>(hitmapDeadtime_inpix3->Integral()),
+                    static_cast<int>(hitmapDeadtimeTrigger_inpix3->Integral()));
+    printEfficiency(static_cast<int>(hitmapDeadtime_inpix3->Integral()),
+                    static_cast<int>(hitmapTriggerAssoc_inpix3->Integral()));
+    printEfficiency(static_cast<int>(hitmapDeadtime_inpix3->Integral()), static_cast<int>(hitmapAssoc_inpix3->Integral()));
 }

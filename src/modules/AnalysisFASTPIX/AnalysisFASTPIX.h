@@ -62,7 +62,7 @@ namespace corryvreckan {
 
         TProfile2D *clusterSizeMap, *clusterChargeMap, *seedChargeMap;
         TProfile2D *clusterSizeMap_inpix, *clusterChargeMap_inpix, *seedChargeMap_inpix;
-        TProfile2D* clusterSizeMap_intercept;
+        TProfile2D* clusterSizeMapROI;
         TProfile2Poly *clusterSizeMap_inpix3, *clusterChargeMap_inpix3, *seedChargeMap_inpix3;
         TH2Poly *hitmapTriggerAssoc_inpix3, *hitmapNoTriggerAssoc_inpix3, *hitmapNoAssoc_inpix3;
 
@@ -73,6 +73,7 @@ namespace corryvreckan {
         TH1F *clusterCharge, *clusterChargeROI;
 
         double chi2_ndof_cut_, time_cut_frameedge_, time_cut_deadtime_, time_cut_trigger_;
+        double bin_size_, hist_scale_;
         bool use_closest_cluster_;
 
         ROOT::Math::XYVector roi_min, roi_max;
