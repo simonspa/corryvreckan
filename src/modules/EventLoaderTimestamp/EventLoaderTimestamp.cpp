@@ -280,6 +280,7 @@ void EventLoaderTimestamp::fillBuffer() {
 }
 
 StatusCode EventLoaderTimestamp::run(const std::shared_ptr<Clipboard>& clipboard) {
+    std::shared_ptr<Event> event;
 
     fillBuffer();
 
@@ -287,7 +288,21 @@ StatusCode EventLoaderTimestamp::run(const std::shared_ptr<Clipboard>& clipboard
         auto signal = sorted_signals_.top();
 
         if(clipboard->isEventDefined()) {
-            auto event = clipboard->getEvent();
+            event = clipboard->getEvent();
+        } else {
+            event =
+                std::make_shared<Event>(signal->timestamp() - m_eventLength / 2, signal->timestamp() + m_eventLength / 2);
+            clipboard->putEvent(event);
+        }
+
+        for(;;) {
+            fillBuffer();
+
+            if(sorted_signals_.empty()) {
+                return StatusCode::EndRun;
+            }
+
+            signal = sorted_signals_.top();
 
             auto position = event->getTimestampPosition(signal->timestamp());
             if(position == Event::Position::AFTER) {
@@ -295,36 +310,22 @@ StatusCode EventLoaderTimestamp::run(const std::shared_ptr<Clipboard>& clipboard
                               "event window ("
                            << Units::display(signal->timestamp(), {"s", "us", "ns"}) << " > "
                            << Units::display(event->end(), {"s", "us", "ns"}) << ")";
+
+                return StatusCode::Success;
             } else if(position == Event::Position::BEFORE) {
                 LOG(TRACE) << "Skipping signal, is before event window ("
                            << Units::display(signal->timestamp(), {"s", "us", "ns"}) << " < "
                            << Units::display(event->start(), {"s", "us", "ns"}) << ")";
+
                 sorted_signals_.pop();
             } else {
                 event->addTrigger(static_cast<uint32_t>(signal->trigger()), signal->timestamp());
                 sorted_signals_.pop();
             }
-        } else {
-            auto event =
-                std::make_shared<Event>(signal->timestamp() - m_eventLength / 2, signal->timestamp() + m_eventLength / 2);
-            event->addTrigger(static_cast<uint32_t>(signal->trigger()), signal->timestamp());
-
-            // LOG(DEBUG) << signal->trigger();
-
-            clipboard->putEvent(event);
-            sorted_signals_.pop();
-        }
-        // refill buffer
-        fillBuffer();
-        if(!sorted_signals_.empty()) {
-            return StatusCode::Success;
-        }
-        // Tell corry to stop if the buffer is empty since this is the last event
-        else {
-            LOG(INFO) << "No more spidr signals found - stopping run";
-            return StatusCode::EndRun;
         }
     }
+
+    return StatusCode::EndRun;
 }
 
 void EventLoaderTimestamp::finalize(const std::shared_ptr<ReadonlyClipboard>&) {}
