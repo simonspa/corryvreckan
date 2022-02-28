@@ -57,8 +57,8 @@ namespace corryvreckan {
         template <typename T> Int_t fillTriangle(T* hist, double x, double y, double val = 1);
 
         TH2F *hitmap, *hitmapIntercept, *hitmapNoIntercept, *hitmapTrigger, *hitmapNoTrigger, *hitmapTimecuts, *hitmapAssoc;
-        TH2F *hitmapTriggerAssoc, *hitmapNoTriggerAssoc, *hitmapNoAssoc, *hitmapDeadtime, *hitmapDeadtimeTrigger,
-            *hitmapDeadtimeNoTrigger;
+        TH2F *hitmapTriggerAssoc, *hitmapNoTriggerAssoc, *hitmapNoAssoc, *hitmapNoAssocMissing, *hitmapDeadtime,
+            *hitmapDeadtimeTrigger, *hitmapDeadtimeNoTrigger;
 
         TProfile2D *clusterSizeMap, *clusterChargeMap, *seedChargeMap;
         TProfile2D* clusterSizeMapROI;
@@ -68,7 +68,8 @@ namespace corryvreckan {
         TH2Poly *hitmapTrigger_inpix, *hitmapTimecuts_inpix, *hitmapAssoc_inpix, *hitmapNoTrigger_inpix;
         TH2Poly *hitmapDeadtime_inpix, *hitmapDeadtimeTrigger_inpix, *hitmapDeadtimeNoTrigger_inpix;
 
-        TH1F *clusterSize, *clusterSizeROI, *noAssocEventStatus, *inefficientAssocDt, *inefficientTriggerAssocDt;
+        TH1F *clusterSize, *clusterSizeROI, *inefficientAssocEventStatus, *inefficientAssocDt, *inefficientTriggerAssocDt;
+        TH1F *inefficientAssocDist, *inefficientTriggerAssocTime;
         TH1F *clusterCharge, *clusterChargeROI;
 
         double chi2_ndof_cut_, time_cut_frameedge_, time_cut_deadtime_, time_cut_trigger_;
@@ -76,7 +77,8 @@ namespace corryvreckan {
         bool use_closest_cluster_;
 
         ROOT::Math::XYVector roi_min, roi_max;
-        double roi_margin_;
+        double roi_margin_x_;
+        double roi_margin_y_;
         int triangle_bins_;
 
         double last_timestamp = 0;

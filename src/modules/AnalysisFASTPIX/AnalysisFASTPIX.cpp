@@ -21,23 +21,25 @@ AnalysisFASTPIX::AnalysisFASTPIX(Configuration& config, std::shared_ptr<Detector
     config_.setDefault<double>("time_cut_deadtime", Units::get<double>(5, "us"));
     config_.setDefault<double>("time_cut_trigger", Units::get<double>(250, "ns"));
     config_.setDefault<double>("chi2ndof_cut", 3.);
-    config_.setDefault<double>("roi_margin", 0.5);
+    config_.setDefault<double>("roi_margin_x", 1.0);
+    config_.setDefault<double>("roi_margin_y", 0.5);
     config_.setDefault<bool>("use_closest_cluster", true);
     config_.setDefault<int>("triangle_bins", 15);
     config_.setDefault<double>("bin_size", Units::get<double>(2.5, "um"));
     config_.setDefault<double>("hist_scale", 1.75);
 
-    roi_margin_ = config_.get<double>("roi_margin");
+    roi_margin_x_ = config_.get<double>("roi_margin_x");
+    roi_margin_y_ = config_.get<double>("roi_margin_y");
 
     auto size = m_detector->getSize();
     pitch = m_detector->getPitch().X();
     height = 2. / std::sqrt(3) * pitch;
 
     // Cut off roi_margin pixels around edge of matrix
-    config_.setDefault<ROOT::Math::XYVector>("roi_min",
-                                             {-size.X() / 2. + pitch * roi_margin_, -size.Y() / 2. + height * roi_margin_});
-    config_.setDefault<ROOT::Math::XYVector>("roi_max",
-                                             {size.X() / 2. - pitch * roi_margin_, size.Y() / 2. - height * roi_margin_});
+    config_.setDefault<ROOT::Math::XYVector>(
+        "roi_min", {-size.X() / 2. + pitch * roi_margin_x_, -size.Y() / 2. + height * roi_margin_y_});
+    config_.setDefault<ROOT::Math::XYVector>(
+        "roi_max", {size.X() / 2. - pitch * roi_margin_x_, size.Y() / 2. - height * roi_margin_y_});
 
     // Convert to um
     pitch *= 1000.0;
@@ -109,8 +111,8 @@ void AnalysisFASTPIX::initialize() {
 
     double h_width = size.X() * hist_scale_;
     double h_height = size.Y() * hist_scale_;
-    int bins_x = h_width / bin_size_;
-    int bins_y = h_height / bin_size_;
+    int bins_x = static_cast<int>(h_width / bin_size_);
+    int bins_y = static_cast<int>(h_height / bin_size_);
     h_width *= 1000.0;
     h_height *= 1000.0;
 
@@ -162,7 +164,7 @@ void AnalysisFASTPIX::initialize() {
                                bins_y,
                                -h_height / 2.0,
                                h_height / 2.0);
-    hitmapDeadtime = new TH2F("hitmapDeadime",
+    hitmapDeadtime = new TH2F("hitmapDeadtime",
                               "hitmap;x_{track} [#mum];y_{track} [#mum]",
                               bins_x,
                               -h_width / 2.0,
@@ -170,7 +172,7 @@ void AnalysisFASTPIX::initialize() {
                               bins_y,
                               -h_height / 2.0,
                               h_height / 2.0);
-    hitmapDeadtimeTrigger = new TH2F("hitmapDeadimeTrigger",
+    hitmapDeadtimeTrigger = new TH2F("hitmapDeadtimeTrigger",
                                      "hitmap;x_{track} [#mum];y_{track} [#mum]",
                                      bins_x,
                                      -h_width / 2.0,
@@ -178,7 +180,7 @@ void AnalysisFASTPIX::initialize() {
                                      bins_y,
                                      -h_height / 2.0,
                                      h_height / 2.0);
-    hitmapDeadtimeNoTrigger = new TH2F("hitmapDeadimeNoTrigger",
+    hitmapDeadtimeNoTrigger = new TH2F("hitmapDeadtimeNoTrigger",
                                        "hitmap;x_{track} [#mum];y_{track} [#mum]",
                                        bins_x,
                                        -h_width / 2.0,
@@ -218,22 +220,38 @@ void AnalysisFASTPIX::initialize() {
                              bins_y,
                              -h_height / 2.0,
                              h_height / 2.0);
-
-    noAssocEventStatus = new TH1F("noAssocEventStatus", "event status;event status;count", 5, 0, 4);
-    noAssocEventStatus->SetCanExtend(TH1::kAllAxes);
+    hitmapNoAssocMissing = new TH2F("hitmapNoAssocMissing",
+                                    "hitmap;x_{track} [#mum];y_{track} [#mum]",
+                                    bins_x,
+                                    -h_width / 2.0,
+                                    h_width / 2.0,
+                                    bins_y,
+                                    -h_height / 2.0,
+                                    h_height / 2.0);
 
     clusterCharge = new TH1F("clusterCharge", "cluster charge;charge [ToT];count", 500, -0.5, 499.5);
     clusterChargeROI = new TH1F("clusterChargeROI", "cluster charge;charge [ToT];count", 500, -0.5, 499.5);
 
     clusterSize =
-        new TH1F("clusterSize", "Cluster size (tracks after cuts), all tracks;cluster size;# entries", 20, -0.5, 19.5);
+        new TH1F("clusterSize", "Cluster size (tracks after cuts), all tracks;cluster size;# entries", 19, 0.5, 19.5);
     clusterSizeROI =
-        new TH1F("clusterSizeROI", "Cluster size (tracks after cuts), tracks in ROI;cluster size;# entries", 20, -0.5, 19.5);
+        new TH1F("clusterSizeROI", "Cluster size (tracks after cuts), tracks in ROI;cluster size;# entries", 19, 0.5, 19.5);
 
+    inefficientTriggerAssocTime = new TH1F(
+        "inefficientTriggerAssocTime", "Inefficient tracks in ROI;track time - event start [ns];# entries", 100, 0, 10000);
     inefficientTriggerAssocDt = new TH1F(
         "inefficientTriggerAssocDt", "Inefficient tracks in ROI;track time - trigger time [ns];# entries", 100, -5000, 5000);
     inefficientAssocDt = new TH1F(
         "inefficientAssocDt", "Inefficient tracks in ROI;track time - trigger time [ns];# entries", 100, -5000, 5000);
+
+    inefficientAssocDist = new TH1F("inefficientAssocDist",
+                                    "Inefficient tracks in ROI;min track distance to DUT clusters [#mum];# entries",
+                                    200,
+                                    0,
+                                    200);
+
+    inefficientAssocEventStatus = new TH1F("inefficientAssocEventStatus", "event status;event status;count", 5, 0, 4);
+    inefficientAssocEventStatus->SetCanExtend(TH1::kAllAxes);
 
     clusterSizeMap = new TProfile2D("clusterSizeMap",
                                     "Mean cluster size map;x_{track} [#mum];y_{track} [#mum];<pixels/cluster>",
@@ -409,6 +427,7 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
     // Get the telescope tracks from the clipboard
     auto tracks = clipboard->getData<Track>();
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());
+    auto clusters = clipboard->getData<Cluster>(m_detector->getName());
 
     // Loop over all tracks
     for(auto& track : tracks) {
@@ -524,6 +543,8 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
                 for(auto& trigger : triggers) {
                     inefficientTriggerAssocDt->Fill(track->timestamp() - trigger.second);
                 }
+
+                inefficientTriggerAssocTime->Fill(track->timestamp() - event->start());
             }
         }
 
@@ -550,12 +571,32 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
                         label = labels[std::stoi(status->second)];
                     } catch(const std::invalid_argument&) {
                     }
+                } else {
+                    LOG(INFO) << "Missing hit!";
+                    hitmapNoAssocMissing->Fill(x_um, y_um);
                 }
 
-                noAssocEventStatus->Fill(label, 1);
+                inefficientAssocEventStatus->Fill(label, 1);
 
                 for(auto& trigger : triggers) {
                     inefficientAssocDt->Fill(track->timestamp() - trigger.second);
+                }
+
+                auto min_dist = std::numeric_limits<double>::infinity();
+
+                for(auto& cluster : clusters) {
+
+                    double xdist = std::fabs(localIntercept.X() - cluster->local().x());
+                    double ydist = std::fabs(localIntercept.Y() - cluster->local().y());
+                    double dist = std::sqrt(xdist * xdist + ydist * ydist);
+
+                    if(dist < min_dist) {
+                        min_dist = dist;
+                    }
+                }
+
+                if(min_dist < std::numeric_limits<double>::infinity()) {
+                    inefficientAssocDist->Fill(min_dist * 1000.0);
                 }
             }
         }
