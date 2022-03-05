@@ -16,10 +16,8 @@
 #include <TH2F.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
-#include <TEfficiency.h>
 #include <iostream>
 #include "core/module/Module.hpp"
-#include "objects/SpidrSignal.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules
@@ -42,13 +40,6 @@ namespace corryvreckan {
         // Histograms
         TH1F *trackCorrelationX_beforeCuts, *trackCorrelationY_beforeCuts, *trackCorrelationTime_beforeCuts;
         TH1F *trackCorrelationX_afterCuts, *trackCorrelationY_afterCuts, *trackCorrelationTime_afterCuts;
-        TH2F *trackCorrelationXY_beforeCuts, *trackCorrelationXY_afterCuts;
-        TH2F *hitmapLocalIntercept, *hitmapLocalNoIntercept;
-        TH2F *hitmapLocal, *hitmapLocalTrigger, *hitmapLocalMask;
-        TH2F *hitmapLocalDeadtime, *hitmapLocalDeadtimeMask;
-        TH1F *trigger_dt;
-
-        double last_timestamp = 0;
 
         TH2F *hClusterMapAssoc, *hHitMapAssoc;
         TProfile2D *hClusterSizeMapAssoc, *hClusterChargeMapAssoc;
@@ -95,7 +86,6 @@ namespace corryvreckan {
         TH2F* residualsTimeVsTime;
         TH2F* residualsTimeVsSignal;
         TH2F* hAssociatedTracksGlobalPosition;
-	TH2F* hAssociatedTracksGlobalPositionTDCTrigger;
         TH2F* hAssociatedTracksLocalPosition;
         TH2F* hUnassociatedTracksGlobalPosition;
 

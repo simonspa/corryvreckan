@@ -18,7 +18,6 @@
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
 #include "objects/Pixel.hpp"
-#include "objects/SpidrSignal.hpp"
 
 namespace corryvreckan {
     /** @ingroup Modules
@@ -61,8 +60,6 @@ namespace corryvreckan {
         TH2F* correlationTimeOverTime;
         TH2F* correlationTimeOverSeedPixelRawValue;
         TH1F* correlationTime_px;
-        TH1F* correlationTDCTime_px;
-	TH2F* correlationTDC_PixelPos;
         TH2F* correlationTimeOverTime_px;
         TH2F* correlationTimeOverPixelRawValue_px;
         TH1F* correlationTimeInt;

@@ -83,24 +83,6 @@ void Correlations::initialize() {
                                -1 * time_cut_ - time_binning_ / 2.,
                                time_cut_ - time_binning_ / 2.);
 
-    // TDC correlation plots
-    title = m_detector->getName() + "Pixel time stamp - TDC time stamp;t_{ref}-t_{tdc} [ns];events";
-    correlationTDCTime_px = new TH1F("correlationTDCTime_px",
-                               title.c_str(),
-                               static_cast<int>(2. * time_cut_ / time_binning_),
-                               -1 * time_cut_ - time_binning_ / 2.,
-                               time_cut_ - time_binning_ / 2.);
-
-    title = m_detector->getName() + "Pixel positions for events with TDC time stamp;x [px];y [px]";
-    correlationTDC_PixelPos = new TH2F("correlationTDC_PixelPos",
-				       title.c_str(),
-				       m_detector->nPixels().X(),
-				       -0.5,
-				       m_detector->nPixels().X() - 0.5,
-				       reference->nPixels().Y(),
-				       -0.5,
-				       reference->nPixels().Y() - 0.5);
-
     if(corr_vs_time_) {
         title = m_detector->getName() + " Correlation X versus time;t [s];x_{ref}-x [mm];events";
         std::string name = "correlationXVsTime";
@@ -262,7 +244,6 @@ StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
     auto reference = get_reference();
     auto referencePixels = clipboard->getData<Pixel>(reference->getName());
     auto referenceClusters = clipboard->getData<Cluster>(reference->getName());
-    auto referenceSpidrSignals = clipboard->getData<SpidrSignal>(reference->getName());
     for(auto& pixel : pixels) {
         // Loop over reference plane pixels:
         for(auto& refPixel : referencePixels) {
@@ -278,12 +259,6 @@ StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
                 correlationTimeOverPixelRawValue_px->Fill(pixel->raw(), timeDiff);
             }
         }
-
-	// Loop over TDC signals and fill TDC correlation plots
-	for(auto& refSpidrSignal : referenceSpidrSignals){
-	  correlationTDCTime_px->Fill(pixel->timestamp() - refSpidrSignal->timestamp());
-	  correlationTDC_PixelPos->Fill(pixel->column(), pixel->row());
-	}
     }
 
     for(auto& cluster : clusters) {
