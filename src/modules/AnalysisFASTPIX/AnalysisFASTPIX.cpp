@@ -27,6 +27,7 @@ AnalysisFASTPIX::AnalysisFASTPIX(Configuration& config, std::shared_ptr<Detector
     config_.setDefault<int>("triangle_bins", 15);
     config_.setDefault<double>("bin_size", Units::get<double>(2.5, "um"));
     config_.setDefault<double>("hist_scale", 1.75);
+    config_.setDefault<bool>("roi_inner", true);
 
     roi_margin_x_ = config_.get<double>("roi_margin_x");
     roi_margin_y_ = config_.get<double>("roi_margin_y");
@@ -55,6 +56,7 @@ AnalysisFASTPIX::AnalysisFASTPIX(Configuration& config, std::shared_ptr<Detector
     triangle_bins_ = config.get<int>("triangle_bins");
     bin_size_ = config.get<double>("bin_size");
     hist_scale_ = config.get<double>("hist_scale");
+    roi_inner_ = config.get<bool>("roi_inner");
 }
 
 // Histogram consisting of regular triangles, covering a hexagon in 6*n² triangles
@@ -244,11 +246,8 @@ void AnalysisFASTPIX::initialize() {
     inefficientAssocDt = new TH1F(
         "inefficientAssocDt", "Inefficient tracks in ROI;track time - trigger time [ns];# entries", 100, -5000, 5000);
 
-    inefficientAssocDist = new TH1F("inefficientAssocDist",
-                                    "Inefficient tracks in ROI;min track distance to DUT clusters [#mum];# entries",
-                                    200,
-                                    0,
-                                    200);
+    inefficientAssocDist =
+        new TH1F("inefficientAssocDist", "Inefficient tracks in ROI;min(|cluster-track|) [#mum];# entries", 200, 0, 200);
 
     inefficientAssocEventStatus = new TH1F("inefficientAssocEventStatus", "event status;event status;count", 5, 0, 4);
     inefficientAssocEventStatus->SetCanExtend(TH1::kAllAxes);
@@ -372,7 +371,16 @@ void AnalysisFASTPIX::initialize() {
 }
 
 bool AnalysisFASTPIX::inRoi(PositionVector3D<Cartesian3D<double>> p) {
-    return roi_min.X() <= p.X() && roi_min.Y() <= p.Y() && roi_max.X() >= p.X() && roi_max.Y() >= p.Y();
+    if(roi_inner_) {
+        int col = m_detector->getColumn(p);
+        int row = m_detector->getRow(p);
+
+        col = col + (row - (row & 1)) / 2;
+
+        return col > 0 && col < 15 && row > 0 && row < 3;
+    } else {
+        return roi_min.X() <= p.X() && roi_min.Y() <= p.Y() && roi_max.X() >= p.X() && roi_max.Y() >= p.Y();
+    }
 }
 
 template <typename T> Int_t AnalysisFASTPIX::fillTriangle(T* hist, double x, double y, double val) {
@@ -414,6 +422,21 @@ template <typename T> Int_t AnalysisFASTPIX::fillTriangle(T* hist, double x, dou
 
     return i;
     // return bin;
+}
+
+int AnalysisFASTPIX::getFlags(std::shared_ptr<Event> event, int trigger) {
+    auto tagList = event->tagList();
+    auto status = tagList.find(std::string("fp_flags:") + std::to_string(trigger));
+    int flags = 3;
+
+    if(status != tagList.end()) {
+        try {
+            flags = std::stoi(status->second);
+        } catch(const std::invalid_argument&) {
+        }
+    }
+
+    return flags;
 }
 
 StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -561,22 +584,21 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
             hitmapNoAssoc->Fill(x_um, y_um);
             if(inRoi(localIntercept)) {
                 fillTriangle(hitmapNoAssoc_inpix, xmod_um, ymod_um);
-                auto tagList = event->tagList();
-                auto status = tagList.find("fp_event_flags");
-                const char* labels[] = {"Complete", "Incomplete", "Incomplete (Noise)", "Missing"};
-                const char* label = labels[3];
 
-                if(status != tagList.end()) {
-                    try {
-                        label = labels[std::stoi(status->second)];
-                    } catch(const std::invalid_argument&) {
+                // Check decoder status for all triggers in event
+                // This might include efficient triggers if there is more than one in the event
+                for(auto& trigger : triggers) {
+                    const char* labels[] = {"Complete", "Incomplete", "Incomplete (Noise)", "Missing"};
+
+                    int flags = getFlags(event, trigger.first);
+
+                    if(flags == 3) {
+                        LOG(INFO) << "Missing hit!";
+                        hitmapNoAssocMissing->Fill(x_um, y_um);
                     }
-                } else {
-                    LOG(INFO) << "Missing hit!";
-                    hitmapNoAssocMissing->Fill(x_um, y_um);
-                }
 
-                inefficientAssocEventStatus->Fill(label, 1);
+                    inefficientAssocEventStatus->Fill(labels[flags], 1);
+                }
 
                 for(auto& trigger : triggers) {
                     inefficientAssocDt->Fill(track->timestamp() - trigger.second);
@@ -632,6 +654,8 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
             last_timestamp = trigger.second;
         }
     }
+
+    m_currentEvent++;
 
     return StatusCode::Success;
 }

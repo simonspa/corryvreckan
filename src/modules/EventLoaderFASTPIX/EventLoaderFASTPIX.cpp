@@ -79,8 +79,8 @@ void EventLoaderFASTPIX::initialize() {
     hitmap->SetTitle("hitmap;Pixel x;Pixel y");
     Honeycomb(hitmap, 0.5, 0.5, 16, 4);
 
-    seed_tot_inner = new TH1F("seed_tot_inner", "ToT inner seed pixels;ToT [ns];## pixels", 350, 0.5, 350.5);
-    seed_tot_outer = new TH1F("seed_tot_outer", "ToT outer seed pixels;ToT [ns];## pixels", 350, 0.5, 350.5);
+    seed_tot_inner = new TH1F("seed_tot_inner", "ToT inner seed pixels;ToT [ns];# pixels", 350, 0.5, 350.5);
+    seed_tot_outer = new TH1F("seed_tot_outer", "ToT outer seed pixels;ToT [ns];# pixels", 350, 0.5, 350.5);
     pixels_per_event = new TH1F("pixels_per_event", "Pixels per event", 10, 0.5, 10.5);
     pixel_timestamps = new TH1F("pixel_timestamps", "Pixel timestamps", 200, -0.5, 99.5);
     pixel_distance = new TH1F("pixel_distance", "Distance to seed pixel", 20, -0.5, 19.5);
@@ -88,7 +88,7 @@ void EventLoaderFASTPIX::initialize() {
     pixel_distance_max = new TH1F("pixel_distance_max", "Maximum distance to seed pixel", 20, -0.5, 19.5);
     pixel_distance_row = new TH1F("pixel_distance_row", "Distance to seed pixel (row)", 20, -0.5, 19.5);
     pixel_distance_col = new TH1F("pixel_distance_col", "Distance to seed pixel (column)", 20, -0.5, 19.5);
-    trigger_dt = new TH1F("trigger_dt", "trigger_dt;[#mus];count", 1000, -0.5, 200.5);
+    trigger_dt = new TH1F("trigger_dt", "trigger_dt;Trigger #Deltat [#mus];# entries", 1000, -0.5, 200.5);
 
     event_status = new TH1F("event_status", "event status", 5, -0.5, 4.5);
     missing_peaks = new TH1F("missing_peaks", "missing peaks", 20, -0.5, 19.5);
@@ -119,6 +119,11 @@ void EventLoaderFASTPIX::initialize() {
     m_triggerSync = false;
 
     uint16_t version = 0;
+
+    if(!m_inputFile) {
+        throw ModuleError("Could not open file");
+    }
+
     m_inputFile.read(reinterpret_cast<char*>(&version), sizeof version);
     LOG(INFO) << "Reading file format version " << version;
 
@@ -127,6 +132,10 @@ void EventLoaderFASTPIX::initialize() {
     }
 
     m_inputFile.read(reinterpret_cast<char*>(&m_blockSize), sizeof m_blockSize);
+
+    if(m_blockSize == 0) {
+        throw ModuleError("Invalid data block size");
+    }
 }
 
 size_t hex_distance(double x1, double y1, double x2, double y2) {
@@ -164,8 +173,8 @@ bool EventLoaderFASTPIX::loadEvent(PixelVector& deviceData,
     LOG(DEBUG) << "Event size: " << event_size;
     LOG(DEBUG) << "Previous event: " << m_prevEvent;
 
-    eventTags.emplace("fp_event_flags", std::to_string(event_flags));
-    eventTags.emplace("fp_event_meta", std::to_string(event_meta));
+    eventTags.emplace(std::string("fp_flags:") + std::to_string(m_triggerNumber + 1), std::to_string(event_flags));
+    eventTags.emplace(std::string("fp_meta:") + std::to_string(m_triggerNumber + 1), std::to_string(event_meta));
 
     if(!discard) {
         pixels_per_event->Fill(event_size);
