@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of config reader
- * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * @copyright Copyright (c) 2017-2022 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -22,7 +22,7 @@
 using namespace corryvreckan;
 
 ConfigReader::ConfigReader() = default;
-ConfigReader::ConfigReader(std::istream& stream, std::string file_name) : ConfigReader() {
+ConfigReader::ConfigReader(std::istream& stream, std::filesystem::path file_name) : ConfigReader() {
     add(stream, std::move(file_name));
 }
 
@@ -96,7 +96,7 @@ std::pair<std::string, std::string> ConfigReader::parseKeyValue(std::string line
  *
  * The configuration is immediately parsed and all of its configurations are available after the functions returns.
  */
-void ConfigReader::add(std::istream& stream, std::string file_name) {
+void ConfigReader::add(std::istream& stream, std::filesystem::path file_name) {
     LOG(TRACE) << "Parsing configuration file " << file_name;
 
     // Convert file name to absolute path (if given)

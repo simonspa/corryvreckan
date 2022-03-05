@@ -29,7 +29,7 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Cluster();
+        Cluster() = default;
 
         /**
          * @brief Static member function to obtain base class for storage on the clipboard.
@@ -59,7 +59,7 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint global() const { return m_global; }
         ROOT::Math::XYZPoint local() const { return m_local; }
 
-        size_t size() const { return m_pixels.size(); }
+        size_t size() const { return pixels_.size(); }
         size_t columnWidth() const { return m_columnWidth; }
         size_t rowWidth() const { return m_rowWidth; }
         std::vector<const Pixel*> pixels() const;
@@ -85,11 +85,11 @@ namespace corryvreckan {
         void setColumn(double col) { m_column = col; }
         void setRow(double row) { m_row = row; }
         void setCharge(double charge) { m_charge = charge; }
-        void setClusterCentre(ROOT::Math::XYZPoint global) { m_global = global; }
-        void setClusterCentreLocal(ROOT::Math::XYZPoint local) { m_local = local; }
+        void setClusterCentre(ROOT::Math::XYZPoint global) { m_global = std::move(global); }
+        void setClusterCentreLocal(ROOT::Math::XYZPoint local) { m_local = std::move(local); }
         void setErrorX(double error) { m_error.SetX(error); }
         void setErrorY(double error) { m_error.SetY(error); }
-        void setError(ROOT::Math::XYVector error) { m_error = error; }
+        void setError(ROOT::Math::XYVector error) { m_error = std::move(error); }
 
         /**
          * @brief Print an ASCII representation of Cluster to the given stream
@@ -97,16 +97,19 @@ namespace corryvreckan {
          */
         void print(std::ostream& out) const override;
 
+        void loadHistory() override;
+        void petrifyHistory() override;
+
     private:
         // Member variables
-        std::vector<TRef> m_pixels;
+        std::vector<PointerWrapper<Pixel>> pixels_;
         double m_column;
         double m_row;
         double m_charge;
         ROOT::Math::XYVector m_error;
-        size_t m_columnWidth;
-        size_t m_rowWidth;
-        bool m_split;
+        size_t m_columnWidth{0};
+        size_t m_rowWidth{0};
+        bool m_split{false};
 
         ROOT::Math::XYZPoint m_local;
         ROOT::Math::XYZPoint m_global;
@@ -115,7 +118,7 @@ namespace corryvreckan {
         std::map<int, bool> m_columnHits;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Cluster, 13)
+        ClassDefOverride(Cluster, 14)
     };
 
     // Vector type declaration

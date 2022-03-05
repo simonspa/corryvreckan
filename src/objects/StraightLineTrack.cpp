@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of StraightLine track object
  *
- * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * @copyright Copyright (c) 2017-2022 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -50,13 +50,13 @@ void StraightLineTrack::calculateChi2() {
     // Get the number of clusters
     // We do have a 2-dimensional offset(x_0,y_0) and slope (dx,dy). Each hit provides two measurements.
     // ndof_ = 2*num_planes - 4 = 2 * (num_planes -2)
-    ndof_ = (static_cast<double>(track_clusters_.size()) - 2.) * 2.;
+    ndof_ = (track_clusters_.size() - 2) * 2;
     chi2_ = 0.;
     chi2ndof_ = 0.;
 
     // Loop over all clusters
     for(auto& cl : track_clusters_) {
-        auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
+        auto* cluster = cl.get();
         if(cluster == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
         }
@@ -69,12 +69,12 @@ void StraightLineTrack::calculateChi2() {
     }
 
     // Store also the chi2/degrees of freedom
-    chi2ndof_ = chi2_ / ndof_;
+    chi2ndof_ = (ndof_ <= 0) ? -1 : (chi2_ / static_cast<double>(ndof_));
 }
 
 void StraightLineTrack::calculateResiduals() {
-    for(auto c : track_clusters_) {
-        auto cluster = dynamic_cast<Cluster*>(c.GetObject());
+    for(const auto& c : track_clusters_) {
+        auto* cluster = c.get();
         // fixme: cluster->global.z() is only an approximation for the plane intersect. Can be fixed after !115
         residual_global_[cluster->detectorID()] = cluster->global() - getIntercept(cluster->global().z());
         if(get_plane(cluster->detectorID()) != nullptr) {
@@ -107,7 +107,7 @@ void StraightLineTrack::fit() {
 
     // Loop over all clusters and fill the matrices
     for(auto& cl : track_clusters_) {
-        auto cluster = dynamic_cast<Cluster*>(cl.GetObject());
+        auto* cluster = cl.get();
         if(cluster == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
         }

@@ -12,11 +12,14 @@
 #define CORRYVRECKAN_DUT_ANALYSIS_H
 
 #include <TCanvas.h>
+#include <TDirectory.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
+
 #include <iostream>
+
 #include "core/module/Module.hpp"
 
 namespace corryvreckan {
@@ -54,14 +57,17 @@ namespace corryvreckan {
         TProfile2D* hPixelRawValueMapAssoc;
 
         TH1F* associatedTracksVersusTime;
-        TH1F *residualsX, *residualsY, *residualsPos;
-        TH2F* residualsPosVsresidualsTime;
 
-        TH1F *residualsX1pix, *residualsY1pix;
-        TH1F *residualsX2pix, *residualsY2pix;
-        TH1F *residualsX3pix, *residualsY3pix;
-        TH1F *residualsX4pix, *residualsY4pix;
-        TH1F *residualsXatLeast5pix, *residualsYatLeast5pix;
+        // local
+        TH2F* residualsPosVsresidualsTime_local;
+        TH1F *residualsX_local, *residualsY_local, *residualsPos_local;
+        std::vector<TH1F*> residualsXclusterColLocal, residualsYclusterRowLocal;
+
+        // global
+        TH2F* residualsPosVsresidualsTime_global;
+        TH1F *residualsX_global, *residualsY_global, *residualsPos_global;
+        std::vector<TH1F*> residualsXclusterColGlobal, residualsYclusterRowGlobal;
+        std::vector<TH1F*> residualsYclusterColGlobal, residualsXclusterRowGlobal;
 
         TH1F* clusterChargeAssoc;
         TH1F* seedChargeAssoc;
@@ -109,6 +115,9 @@ namespace corryvreckan {
         double raw_histo_range_;
         bool correlations_;
         int num_tracks_;
+
+        void createGlobalResidualPlots();
+        void createLocalResidualPlots();
     };
 } // namespace corryvreckan
 

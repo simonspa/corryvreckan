@@ -1,6 +1,6 @@
 /** @file
  *  @brief Interface to the core framework
- *  @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ *  @copyright Copyright (c) 2017-2022 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -133,7 +133,7 @@ void ModuleManager::load_modules() {
             // If library is not loaded then try to load it first from the config
             // directories
             if(global_config.has("library_directories")) {
-                std::vector<std::string> lib_paths = global_config.getPathArray("library_directories", true);
+                auto lib_paths = global_config.getPathArray("library_directories", true);
                 for(auto& lib_path : lib_paths) {
                     std::string full_lib_path = lib_path;
                     full_lib_path += "/";

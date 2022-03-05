@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of clipboard storage
  *
- * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * @copyright Copyright (c) 2017-2022 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -23,7 +23,7 @@ void Clipboard::putEvent(std::shared_ptr<Event> event) {
     if(event_) {
         throw InvalidDataError("Event already defined. Only one module can place an event definition");
     } else {
-        event_ = event;
+        event_ = std::move(event);
     }
 }
 
@@ -63,7 +63,7 @@ std::vector<std::string> Clipboard::listCollections() const {
         line += ": ";
         for(const auto& set : block.second) {
             std::shared_ptr<ObjectVector> collection = std::static_pointer_cast<ObjectVector>(set.second);
-            line += set.first + " (" + collection->size() + ") ";
+            line += set.first + " (" + std::to_string(collection->size()) + ") ";
         }
         line += "\n";
         collections.push_back(line);

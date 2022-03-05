@@ -47,13 +47,16 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint getLocalStart() const { return m_local_start_point; }
         ROOT::Math::XYZPoint getLocalEnd() const { return m_local_end_point; }
 
+        void loadHistory() override{};
+        void petrifyHistory() override{};
+
+        // ROOT I/O class definition - update version number when you change this class!
+        ClassDefOverride(MCParticle, 3);
+
     private:
         int m_particle_id;
         ROOT::Math::XYZPoint m_local_start_point;
         ROOT::Math::XYZPoint m_local_end_point;
-
-        // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(MCParticle, 3)
     };
 
     // Vector type declaration

@@ -3,7 +3,7 @@ CORRYVRECKAN_GLOBAL_MODULE(MODULE_NAME)
 
 # Add source files to library
 CORRYVRECKAN_MODULE_SOURCES(${MODULE_NAME}
-    TrackingSpatial.cpp
+    AnalysisParticleFlux.cpp
 )
 
 # Provide standard install target

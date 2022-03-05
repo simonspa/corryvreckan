@@ -1,6 +1,6 @@
 /** @file
  *  @brief Implementation of the detector model
- *  @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ *  @copyright Copyright (c) 2017-2022 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -61,10 +61,8 @@ void PixelDetector::build_axes(const Configuration& config) {
     // region of interest:
     m_roi = config.getMatrix<int>("roi", std::vector<std::vector<int>>());
 
-    m_maskfile_name = "";
     if(config.has("mask_file")) {
-        m_maskfile_name = config.get<std::string>("mask_file");
-        std::string mask_file = config.getPath("mask_file", true);
+        auto mask_file = config.getPath("mask_file", true);
         LOG(DEBUG) << "Adding mask to detector \"" << config.getName() << "\", reading from " << mask_file;
         maskFile(mask_file);
         process_mask_file();
@@ -193,11 +191,7 @@ void PixelDetector::configure_detector(Configuration& config) const {
 
     // Pixel mask file:
     if(!m_maskfile.empty()) {
-        if(m_maskfile_name.empty()) {
-            config.set("mask_file", m_maskfile);
-        } else {
-            config.set("mask_file", m_maskfile_name);
-        }
+        config.set("mask_file", m_maskfile.string());
     }
 
     // Region-of-interest:
@@ -255,8 +249,9 @@ bool PixelDetector::hasIntercept(const Track* track, double pixelTolerance) cons
     // Chip reaches from -0.5 to nPixels-0.5
     bool intercept = true;
     if(row < pixelTolerance - 0.5 || row > (this->m_nPixels.Y() - pixelTolerance - 0.5) || column < pixelTolerance - 0.5 ||
-       column > (this->m_nPixels.X() - pixelTolerance - 0.5))
+       column > (this->m_nPixels.X() - pixelTolerance - 0.5)) {
         intercept = false;
+    }
 
     return intercept;
 }
@@ -278,8 +273,9 @@ bool PixelDetector::hitMasked(const Track* track, int tolerance) const {
     bool hitmasked = false;
     for(int r = (row - tolerance); r <= (row + tolerance); r++) {
         for(int c = (column - tolerance); c <= (column + tolerance); c++) {
-            if(this->masked(c, r))
+            if(this->masked(c, r)) {
                 hitmasked = true;
+            }
         }
     }
 
@@ -419,7 +415,7 @@ bool PixelDetector::isNeighbor(const std::shared_ptr<Pixel>& neighbor,
                                const std::shared_ptr<Cluster>& cluster,
                                const int neighbor_radius_row,
                                const int neighbor_radius_col) {
-    for(auto pixel : cluster->pixels()) {
+    for(const auto* pixel : cluster->pixels()) {
         int row_distance = abs(pixel->row() - neighbor->row());
         int col_distance = abs(pixel->column() - neighbor->column());
 

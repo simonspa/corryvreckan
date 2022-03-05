@@ -11,6 +11,7 @@
 #define CORRYVRECKAN_CONFIGURATION_H
 
 #include <atomic>
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -91,7 +92,7 @@ namespace corryvreckan {
          * @param name Name of the section header (empty section if not specified)
          * @param path Path to the file containing the configuration (or empty if not stored in a file)
          */
-        explicit Configuration(std::string name = "", std::string path = "");
+        explicit Configuration(std::string name = "", std::filesystem::path path = "");
 
         /// @{
         /**
@@ -157,6 +158,22 @@ namespace corryvreckan {
         template <typename T> std::vector<T> getArray(const std::string& key, const std::vector<T> def) const;
 
         /**
+         * @brief Get values for a key containing a key-value pair map
+         * @param key Key to get map from
+         * @return Map of the key-value pairs listed as key value
+         */
+        template <typename T1, typename T2> std::map<T1, T2> getMap(const std::string& key) const;
+
+        /**
+         * @brief Get values for a key containing a key-value pair map
+         * @param key Key to get values of
+         * @param def Default value map to use if key is not defined
+         * @return Map of the key-value pairs listed as key value
+         */
+        template <typename T1, typename T2>
+        std::map<T1, T2> getMap(const std::string& key, const std::map<T1, T2> def) const;
+
+        /**
          * @brief Get values for a key containing a 2D matrix
          * @param key Key to get values of
          * @return Matrix of values from the requested template parameter
@@ -193,7 +210,7 @@ namespace corryvreckan {
          * @param check_exists If the file should be checked for existence (if yes always returns a canonical path)
          * @return Absolute path to a file
          */
-        std::string getPath(const std::string& key, bool check_exists = false) const;
+        std::filesystem::path getPath(const std::string& key, bool check_exists = false) const;
 
         /**
          * @brief Get absolute path to file with paths relative to the configuration
@@ -202,7 +219,8 @@ namespace corryvreckan {
          * @param check_exists If the file should be checked for existence (if yes always returns a canonical path)
          * @return Absolute path to a file
          */
-        std::string getPathWithExtension(const std::string& key, const std::string& extension, bool check_exists) const;
+        std::filesystem::path
+        getPathWithExtension(const std::string& key, const std::string& extension, bool check_exists) const;
         /**
          * @brief Get array of absolute paths to files with paths relative to the configuration
          * @param key Key to get path of
@@ -210,7 +228,7 @@ namespace corryvreckan {
          * @return List of absolute path to all the requested files
          */
         // TODO [doc] Provide second template parameter to specify the vector type to return it in
-        std::vector<std::string> getPathArray(const std::string& key, bool check_exists = false) const;
+        std::vector<std::filesystem::path> getPathArray(const std::string& key, bool check_exists = false) const;
 
         /**
          * @brief Set value for a key in a given type
@@ -238,6 +256,15 @@ namespace corryvreckan {
         template <typename T> void setArray(const std::string& key, const std::vector<T>& val, bool mark_used = false);
 
         /**
+         * @brief Set map of values for a key in a given type
+         * @param key Key to set values of
+         * @param val Map of values to assign to the key
+         * @param mark_used Flag whether key should be marked as "used" directly
+         */
+        template <typename T1, typename T2>
+        void setMap(const std::string& key, const std::map<T1, T2>& val, bool mark_used = false);
+
+        /**
          * @brief Set matrix of values for a key in a given type
          * @param key Key to set values of
          * @param val List of values to assign to the key
@@ -259,6 +286,14 @@ namespace corryvreckan {
          * @note This marks the default key as "used" automatically
          */
         template <typename T> void setDefaultArray(const std::string& key, const std::vector<T>& val);
+
+        /**
+         * @brief Set default map of values for a key only if it is not defined yet
+         * @param key Key to possible set values of
+         * @param val List of values to assign to the key if the key is not defined yet
+         * @note This marks the default key as "used" automatically
+         */
+        template <typename T1, typename T2> void setDefaultMap(const std::string& key, const std::map<T1, T2>& val);
 
         /**
          * @brief Set default matrix of values for a key only if it is not defined yet
@@ -300,8 +335,7 @@ namespace corryvreckan {
          * @return Absolute path to configuration file or empty if not linked to a file
          * @warning Parameter should be used with care as not all configurations are required to have a file
          */
-        // TODO [doc] Fix name clash with getPath
-        std::string getFilePath() const;
+        std::filesystem::path getFilePath() const;
 
         /**
          * @brief Merge other configuration, only adding keys that are not yet defined in this configuration
@@ -330,7 +364,7 @@ namespace corryvreckan {
          * @param path Path to make absolute (if it is not already absolute)
          * @param canonicalize_path If the path should be canonicalized (throws an error if the path does not exist)
          */
-        std::string path_to_absolute(std::string path, bool canonicalize_path) const;
+        std::filesystem::path path_to_absolute(std::filesystem::path path, bool canonicalize_path) const;
 
         /**
          * @brief Node in a parse tree
@@ -348,7 +382,7 @@ namespace corryvreckan {
         static std::unique_ptr<parse_node> parse_value(std::string str, int depth = 0);
 
         std::string name_;
-        std::string path_;
+        std::filesystem::path path_;
 
         using ConfigMap = std::map<std::string, std::string>;
         ConfigMap config_;

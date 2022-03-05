@@ -225,7 +225,7 @@ namespace corryvreckan {
         TDirectory* directory_{nullptr};
 
         // Configure the reference detector:
-        void setReference(std::shared_ptr<Detector> reference) { m_reference = reference; };
+        void setReference(std::shared_ptr<Detector> reference) { m_reference = std::move(reference); };
         std::shared_ptr<Detector> m_reference;
 
         // List of detectors to act on

@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of config manager
  *
- * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * @copyright Copyright (c) 2017-2022 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -25,7 +25,7 @@ using namespace corryvreckan;
 /**
  * @throws ConfigFileUnavailableError If the main configuration file cannot be accessed
  */
-ConfigManager::ConfigManager(std::string file_name,
+ConfigManager::ConfigManager(std::filesystem::path file_name,
                              std::initializer_list<std::string> global,
                              std::initializer_list<std::string> ignore) {
     // Check if the file exists

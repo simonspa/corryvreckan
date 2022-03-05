@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Set of ROOT utilities for framework integration
- * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2021 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -10,6 +10,7 @@
 #ifndef CORRYVRECKAN_ROOT_H
 #define CORRYVRECKAN_ROOT_H
 
+#include <mutex>
 #include <ostream>
 #include <stdexcept>
 #include <string>
@@ -20,6 +21,7 @@
 #include <Math/EulerAngles.h>
 #include <Math/PositionVector2D.h>
 #include <Math/PositionVector3D.h>
+#include <TProcessID.h>
 #include <TString.h>
 
 #include "core/utils/text.h"
@@ -153,6 +155,22 @@ namespace corryvreckan {
     template <typename T, typename U>
     inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::PositionVector2D<T, U>& vec) {
         return os << "(" << vec.x() << ", " << vec.y() << ")";
+    }
+
+    /**
+     * @brief Lock for TProcessID simultaneous action
+     */
+    inline std::unique_lock<std::mutex> root_process_lock() {
+        static std::mutex process_id_mutex;
+        std::unique_lock<std::mutex> lock(process_id_mutex);
+
+        auto* pids = TProcessID::GetPIDs();
+        for(int i = 0; i < pids->GetEntries(); ++i) {
+            auto* pid_ptr = static_cast<TProcessID*>((*pids)[i]);
+            pid_ptr->Clear();
+        }
+
+        return lock;
     }
 } // namespace corryvreckan
 

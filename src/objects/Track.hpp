@@ -40,7 +40,7 @@ namespace corryvreckan {
          * @param trackModel The name of the track model which should be used
          * @return By param trackModel assigned track model to be used
          */
-        static std::shared_ptr<Track> Factory(std::string trackModel);
+        static std::shared_ptr<Track> Factory(const std::string& trackModel);
 
         /**
          * @brief Add a cluster to the tack, which will be used in the fit
@@ -121,7 +121,7 @@ namespace corryvreckan {
          * @brief Get the ndof for the track fit
          * @return ndof
          */
-        double getNdof() const;
+        size_t getNdof() const;
 
         /**
          * @brief Get the clusters contained in the track fit
@@ -277,33 +277,38 @@ namespace corryvreckan {
             void print(std::ostream& os) const;
 
             // ROOT I/O class definition - update version number when you change this class!
-            ClassDef(Plane, 1);
+            ClassDef(Plane, 2);
+
+            void loadHistory();
+            void petrifyHistory();
 
         private:
             double z_, x_x0_;
             std::string name_;
-            TRef cluster_;
+            PointerWrapper<Cluster> cluster_;
             Transform3D to_local_;
         };
 
-    protected:
+        void loadHistory() override;
+        void petrifyHistory() override;
+
         Plane* get_plane(std::string detetorID);
-        std::vector<TRef> track_clusters_;
-        std::vector<TRef> associated_clusters_;
+        std::vector<PointerWrapper<Cluster>> track_clusters_;
+        std::vector<PointerWrapper<Cluster>> associated_clusters_;
         std::map<std::string, ROOT::Math::XYPoint> residual_local_;
         std::map<std::string, ROOT::Math::XYZPoint> residual_global_;
 
         std::vector<Plane> planes_;
 
-        std::map<std::string, TRef> closest_cluster_;
+        std::map<std::string, PointerWrapper<Cluster>> closest_cluster_;
+        size_t ndof_;
         double chi2_;
-        double ndof_;
         double chi2ndof_;
         bool isFitted_{};
         double momentum_{-1};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Track, 9)
+        ClassDefOverride(Track, 11)
     };
     // Vector type declaration
     using TrackVector = std::vector<std::shared_ptr<Track>>;

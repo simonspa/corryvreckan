@@ -175,6 +175,8 @@ config.get<TYPE>("key")
 config.get<TYPE>("key", default_value)
 // Returns an array of elements of the given type
 config.getArray<TYPE>("key")
+// Returns an map of elements of the given types
+config.getMap<TYPE_1, TYPE_2>("key")
 // Returns a matrix: an array of arrays of elements of the given type
 config.getMatrix<TYPE>("key")
 // Returns an absolute (canonical if it should exist) path to a file, where the second input value determines if the existence of the path is checked
