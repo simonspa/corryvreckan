@@ -39,7 +39,10 @@ namespace corryvreckan {
         // Member variables
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Timestamp, 1)
+        ClassDef(Timestamp, 1);
+
+        void loadHistory() override{};
+        void petrifyHistory() override{};
     };
 
     // Vector type declaration
