@@ -28,10 +28,12 @@ HexagonalPixelDetector::HexagonalPixelDetector(const Configuration& config) : Pi
     if(m_pitch.X() != m_pitch.Y()) {
         throw InvalidValueError(config, "pixel_pitch", "pitch_x != pitch_y is not supported");
     }
+
+    m_height = 2.0 / std::sqrt(3) * m_pitch.X();
 }
 
 // Function to check if a track intercepts with a plane
-bool HexagonalPixelDetector::hasIntercept(const Track* track, double pixelTolerance) const {
+bool HexagonalPixelDetector::hasIntercept(const Track* track, double /*pixelTolerance*/) const {
 
     // First, get the track intercept in global coordinates with the plane
     PositionVector3D<Cartesian3D<double>> globalIntercept = this->getIntercept(track);
@@ -39,19 +41,10 @@ bool HexagonalPixelDetector::hasIntercept(const Track* track, double pixelTolera
     // Convert to local coordinates
     PositionVector3D<Cartesian3D<double>> localIntercept = this->m_globalToLocal * globalIntercept;
 
-    // offset from center
-    double x = localIntercept.X() + 0.5 * (m_nPixels.X() + 0.5) * m_pitch.X();
-    double y = localIntercept.Y() + 0.5 * (3.0 / 4.0 * m_nPixels.Y() + 1.0 / 4.0) * 2.0 / std::sqrt(3) * m_pitch.X();
-
-    x -= 0.5 * m_pitch.X();
-    y -= 0.5 * 2.0 / std::sqrt(3) * m_pitch.X();
-
-    double column = (x - y / std::sqrt(3)) / m_pitch.X();
-    double row = (y * 2.0 / std::sqrt(3)) / m_pitch.Y();
+    // Get the row and column numbers
+    auto hex = getInterceptPixel(localIntercept);
 
     bool intercept = true;
-
-    auto hex = round_to_nearest_hex(column, row);
 
     if(hex.second < 0 || hex.second >= m_nPixels.Y() || hex.first + hex.second / 2 < 0 ||
        hex.first + hex.second / 2 >= m_nPixels.X()) {
@@ -71,8 +64,10 @@ bool HexagonalPixelDetector::hitMasked(const Track* track, int tolerance) const 
     PositionVector3D<Cartesian3D<double>> localIntercept = this->m_globalToLocal * globalIntercept;
 
     // Get the row and column numbers
-    int row = static_cast<int>(floor(this->getRow(localIntercept) + 0.5));
-    int column = static_cast<int>(floor(this->getColumn(localIntercept) + 0.5));
+    auto pos = getInterceptPixel(localIntercept);
+
+    int column = pos.first;
+    int row = pos.second;
 
     // Check if the pixels around this pixel are masked
     bool hitmasked = false;
@@ -88,11 +83,10 @@ bool HexagonalPixelDetector::hitMasked(const Track* track, int tolerance) const 
 
 // Functions to get row and column from local position
 double HexagonalPixelDetector::getRow(const PositionVector3D<Cartesian3D<double>> localPosition) const {
-    double x = localPosition.X() + 0.5 * (m_nPixels.X() + 0.5) * m_pitch.X();
-    double y = localPosition.Y() + 0.5 * (3.0 / 4.0 * m_nPixels.Y() + 1.0 / 4.0) * 2.0 / std::sqrt(3) * m_pitch.X();
+    auto size = getSize();
 
-    x -= 0.5 * m_pitch.X();
-    y -= 0.5 * 2.0 / std::sqrt(3) * m_pitch.X();
+    double x = localPosition.X() + 0.5 * (size.X() - m_pitch.X());
+    double y = localPosition.Y() + 0.5 * (size.Y() - m_height);
 
     double column = (x - y / std::sqrt(3)) / m_pitch.X();
     double row = (y * 2.0 / std::sqrt(3)) / m_pitch.Y();
@@ -101,11 +95,10 @@ double HexagonalPixelDetector::getRow(const PositionVector3D<Cartesian3D<double>
 }
 
 double HexagonalPixelDetector::getColumn(const PositionVector3D<Cartesian3D<double>> localPosition) const {
-    double x = localPosition.X() + 0.5 * (m_nPixels.X() + 0.5) * m_pitch.X();
-    double y = localPosition.Y() + 0.5 * (3.0 / 4.0 * m_nPixels.Y() + 1.0 / 4.0) * 2.0 / std::sqrt(3) * m_pitch.X();
+    auto size = getSize();
 
-    x -= 0.5 * m_pitch.X();
-    y -= 0.5 * 2.0 / std::sqrt(3) * m_pitch.X();
+    double x = localPosition.X() + 0.5 * (size.X() - m_pitch.X());
+    double y = localPosition.Y() + 0.5 * (size.Y() - m_height);
 
     double column = (x - y / std::sqrt(3)) / m_pitch.X();
     double row = (y * 2.0 / std::sqrt(3)) / m_pitch.Y();
@@ -116,16 +109,19 @@ double HexagonalPixelDetector::getColumn(const PositionVector3D<Cartesian3D<doub
 // Function to get local position from row and column
 PositionVector3D<Cartesian3D<double>> HexagonalPixelDetector::getLocalPosition(double column, double row) const {
 
-    double matrix_x = (m_nPixels.X() + 0.5) * m_pitch.X();
-    double matrix_y = (3.0 / 4.0 * m_nPixels.Y() + 1.0 / 4.0) * 2.0 / std::sqrt(3) * m_pitch.X();
+    auto size = getSize();
 
-    // 1/2 pixel offset to properly center the matrix on 0,0
-    matrix_x -= m_pitch.X();
-    matrix_y -= 2.0 / std::sqrt(3) * m_pitch.X();
+    // Offset by 1/2 width/height of matrix and 1/2 pixel to properly center matrix on 0,0
+    double x = 0.5 * (size.X() - m_pitch.X());
+    double y = 0.5 * (size.Y() - m_height);
 
-    return PositionVector3D<Cartesian3D<double>>((1.0 * column + 0.5 * row) * m_pitch.X() - matrix_x / 2.0,
-                                                 (0.0 * column + std::sqrt(3) * 0.5 * row) * m_pitch.Y() - matrix_y / 2.0,
-                                                 0.);
+    return PositionVector3D<Cartesian3D<double>>(
+        (1.0 * column + 0.5 * row) * m_pitch.X() - x, (0.0 * column + std::sqrt(3) * 0.5 * row) * m_pitch.Y() - y, 0.);
+}
+
+// Function to get row and column of pixel
+std::pair<int, int> HexagonalPixelDetector::getInterceptPixel(PositionVector3D<Cartesian3D<double>> localPosition) const {
+    return round_to_nearest_hex(getColumn(localPosition), getRow(localPosition));
 }
 
 // Function to get in-pixel position
@@ -180,7 +176,7 @@ bool HexagonalPixelDetector::isWithinROI(Cluster* cluster) const {
 
 XYVector HexagonalPixelDetector::getSize() const {
     double matrix_x = (m_nPixels.X() + 0.5) * m_pitch.X();
-    double matrix_y = (3.0 / 4.0 * m_nPixels.Y() + 1.0 / 4.0) * 2.0 / std::sqrt(3) * m_pitch.X();
+    double matrix_y = (3.0 / 4.0 * m_nPixels.Y() + 1.0 / 4.0) * m_height;
 
     return XYVector(matrix_x, matrix_y);
 }

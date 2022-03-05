@@ -279,6 +279,9 @@ namespace corryvreckan {
         // Function to get local position from column (x) and row (y) coordinates
         virtual PositionVector3D<Cartesian3D<double>> getLocalPosition(double column, double row) const = 0;
 
+        // Function to get row and column of pixel
+        virtual std::pair<int, int> getInterceptPixel(PositionVector3D<Cartesian3D<double>> localPosition) const = 0;
+
         /**
          * Transformation from local (sensor) coordinates to in-pixel coordinates
          * @param  column Column address ranging from int_column-0.5*pitch to int_column+0.5*pitch

@@ -372,12 +372,15 @@ void AnalysisFASTPIX::initialize() {
 
 bool AnalysisFASTPIX::inRoi(PositionVector3D<Cartesian3D<double>> p) {
     if(roi_inner_) {
-        int col = m_detector->getColumn(p);
-        int row = m_detector->getRow(p);
+        auto hex = m_detector->getInterceptPixel(p);
+        auto pixels = m_detector->nPixels();
+
+        int col = hex.first;
+        int row = hex.second;
 
         col = col + (row - (row & 1)) / 2;
 
-        return col > 0 && col < 15 && row > 0 && row < 3;
+        return col > 0 && col < pixels.X() - 1 && row > 0 && row < pixels.Y() - 1;
     } else {
         return roi_min.X() <= p.X() && roi_min.Y() <= p.Y() && roi_max.X() >= p.X() && roi_max.Y() >= p.Y();
     }

@@ -67,6 +67,9 @@ namespace corryvreckan {
         // Function to get local position from column (x) and row (y) coordinates
         PositionVector3D<Cartesian3D<double>> getLocalPosition(double column, double row) const override;
 
+        // Function to get row and column of pixel
+        std::pair<int, int> getInterceptPixel(PositionVector3D<Cartesian3D<double>> localPosition) const override;
+
         /**
          * Transformation from local (sensor) coordinates to in-pixel coordinates
          * @param  column Column address ranging from int_column-0.5*pitch to int_column+0.5*pitch
@@ -112,16 +115,10 @@ namespace corryvreckan {
         isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) override;
 
     private:
-        // Transformations from axial coordinates to cartesian coordinates
-        const std::array<double, 4> transform_pointy_{std::sqrt(3.0), std::sqrt(3.0) / 2.0, 0.0, 3.0 / 2.0};
-        const std::array<double, 4> transform_flat_{3.0 / 2.0, 0.0, std::sqrt(3.0) / 2.0, std::sqrt(3.0)};
-
-        // Inverse transformations, going from cartesian coordinates to axial coordinates
-        const std::array<double, 4> inv_transform_pointy_{std::sqrt(3.0) / 3.0, -1.0 / 3.0, 0.0, 2.0 / 3.0};
-        const std::array<double, 4> inv_transform_flat_{2.0 / 3.0, 0.0, -1.0 / 3.0, std::sqrt(3.0) / 3.0};
-
         std::pair<int, int> round_to_nearest_hex(double x, double y) const;
         size_t hex_distance(double x1, double y1, double x2, double y2) const;
+
+        double m_height;
     };
 } // namespace corryvreckan
 
