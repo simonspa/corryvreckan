@@ -24,7 +24,7 @@ AnalysisFASTPIX::AnalysisFASTPIX(Configuration& config, std::shared_ptr<Detector
     config_.setDefault<double>("roi_margin_x", 1.0);
     config_.setDefault<double>("roi_margin_y", 0.5);
     config_.setDefault<bool>("use_closest_cluster", true);
-    config_.setDefault<int>("triangle_bins", 15);
+    config_.setDefault<size_t>("triangle_bins", 15);
     config_.setDefault<double>("bin_size", Units::get<double>(2.5, "um"));
     config_.setDefault<double>("hist_scale", 1.75);
     config_.setDefault<bool>("roi_inner", true);
@@ -53,7 +53,7 @@ AnalysisFASTPIX::AnalysisFASTPIX(Configuration& config, std::shared_ptr<Detector
     use_closest_cluster_ = config_.get<bool>("use_closest_cluster");
     roi_min = config.get<ROOT::Math::XYVector>("roi_min");
     roi_max = config.get<ROOT::Math::XYVector>("roi_max");
-    triangle_bins_ = config.get<int>("triangle_bins");
+    triangle_bins_ = config.get<size_t>("triangle_bins");
     bin_size_ = config.get<double>("bin_size");
     hist_scale_ = config.get<double>("hist_scale");
     roi_inner_ = config.get<bool>("roi_inner");
@@ -407,7 +407,7 @@ template <typename T> Int_t AnalysisFASTPIX::fillTriangle(T* hist, double x, dou
         }
     }
 
-    int bin = bin_x * (4 * triangle_bins_ - 1) + bin_y + 1;
+    int bin = bin_x * (4 * static_cast<int>(triangle_bins_) - 1) + bin_y + 1;
     // hist->AddBinContent(bin, val); // Does not work for TH2Poly, TProfile2Poly
     // hist->SetBinContent(bin, hist->GetBinContent(bin)+val); // Does not work for TProfile2Poly
 
@@ -427,7 +427,7 @@ template <typename T> Int_t AnalysisFASTPIX::fillTriangle(T* hist, double x, dou
     // return bin;
 }
 
-int AnalysisFASTPIX::getFlags(std::shared_ptr<Event> event, int trigger) {
+int AnalysisFASTPIX::getFlags(std::shared_ptr<Event> event, size_t trigger) {
     auto tagList = event->tagList();
     auto status = tagList.find(std::string("fp_flags:") + std::to_string(trigger));
     int flags = 3;
@@ -663,7 +663,7 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
     return StatusCode::Success;
 }
 
-void printEfficiency(int total_tracks, int matched_tracks) {
+void AnalysisFASTPIX::printEfficiency(int total_tracks, int matched_tracks) {
     double totalEff = 100 * static_cast<double>(matched_tracks) / (total_tracks > 0 ? total_tracks : 1);
     double lowerEffError = totalEff - 100 * (TEfficiency::ClopperPearson(total_tracks, matched_tracks, 0.683, false));
     double upperEffError = 100 * (TEfficiency::ClopperPearson(total_tracks, matched_tracks, 0.683, true)) - totalEff;

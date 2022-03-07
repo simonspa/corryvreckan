@@ -53,7 +53,8 @@ namespace corryvreckan {
 
     private:
         bool inRoi(PositionVector3D<Cartesian3D<double>>);
-        int getFlags(std::shared_ptr<Event> event, int trigger);
+        int getFlags(std::shared_ptr<Event> event, size_t trigger);
+        static void printEfficiency(int total_tracks, int matched_tracks);
 
         template <typename T> Int_t fillTriangle(T* hist, double x, double y, double val = 1);
 
@@ -80,7 +81,7 @@ namespace corryvreckan {
         ROOT::Math::XYVector roi_min, roi_max;
         double roi_margin_x_;
         double roi_margin_y_;
-        int triangle_bins_;
+        size_t triangle_bins_;
         bool roi_inner_;
 
         double last_timestamp = 0;

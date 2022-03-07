@@ -85,10 +85,7 @@ bool HexagonalPixelDetector::hitMasked(const Track* track, int tolerance) const 
 double HexagonalPixelDetector::getRow(const PositionVector3D<Cartesian3D<double>> localPosition) const {
     auto size = getSize();
 
-    double x = localPosition.X() + 0.5 * (size.X() - m_pitch.X());
     double y = localPosition.Y() + 0.5 * (size.Y() - m_height);
-
-    double column = (x - y / std::sqrt(3)) / m_pitch.X();
     double row = (y * 2.0 / std::sqrt(3)) / m_pitch.Y();
 
     return row;
@@ -99,9 +96,7 @@ double HexagonalPixelDetector::getColumn(const PositionVector3D<Cartesian3D<doub
 
     double x = localPosition.X() + 0.5 * (size.X() - m_pitch.X());
     double y = localPosition.Y() + 0.5 * (size.Y() - m_height);
-
     double column = (x - y / std::sqrt(3)) / m_pitch.X();
-    double row = (y * 2.0 / std::sqrt(3)) / m_pitch.Y();
 
     return column;
 }
@@ -184,11 +179,12 @@ XYVector HexagonalPixelDetector::getSize() const {
 // Check if a pixel touches any of the pixels in a cluster
 bool HexagonalPixelDetector::isNeighbor(const std::shared_ptr<Pixel>& neighbor,
                                         const std::shared_ptr<Cluster>& cluster,
-                                        const int neighbor_radius_row,
+                                        const int /*neighbor_radius_row*/,
                                         const int neighbor_radius_col) {
     for(auto pixel : cluster->pixels()) {
-        // fixme
-        if(hex_distance(pixel->row(), pixel->column(), neighbor->row(), neighbor->column()) <= neighbor_radius_col) {
+        // fixme: take column and row radius into account
+        if(hex_distance(pixel->row(), pixel->column(), neighbor->row(), neighbor->column()) <=
+           static_cast<size_t>(neighbor_radius_col)) {
             return true;
         }
     }
