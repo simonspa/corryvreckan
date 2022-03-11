@@ -38,33 +38,29 @@ void EventLoaderWaveform::initialize() {
 
 StatusCode EventLoaderWaveform::run(const std::shared_ptr<Clipboard>& clipboard) {
 
-    auto reference = get_reference();
-    auto referenceSpidrSignals = clipboard->getData<SpidrSignal>(reference->getName());
+    auto event = clipboard->getEvent();
+    auto triggers = event->triggerList();
 
     WaveformVector deviceData;
 
-    for(const auto& spidr : referenceSpidrSignals) {
-        if(spidr->trigger() == m_triggerNumber) {
-            auto waveform = m_loader->read();
+    for(const auto& trigger : triggers) {
+        if(trigger.first == m_triggerNumber) {
+            auto waveform = m_loader->read(trigger);
             m_triggerNumber++;
 
-            for(const auto& w : waveform) {
-                deviceData.emplace_back(std::make_shared<Waveform>("", spidr->timestamp(), spidr->trigger(), w));
-                LOG(DEBUG) << "Loading waveform for trigger " << spidr->trigger();
-            }
-        } else if(spidr->trigger() > m_triggerNumber) {
-            while(spidr->trigger() > m_triggerNumber) {
+            LOG(DEBUG) << "Loading waveforms for trigger " << trigger.first;
+            deviceData.insert(deviceData.end(), waveform.begin(), waveform.end());
+        } else if(trigger.first > m_triggerNumber) {
+            while(trigger.first > m_triggerNumber) {
                 LOG(DEBUG) << "Skipping waveform for trigger " << m_triggerNumber;
-                auto w = m_loader->read();
+                auto w = m_loader->read(trigger);
                 m_triggerNumber++;
             }
-            auto waveform = m_loader->read();
+            auto waveform = m_loader->read(trigger);
             m_triggerNumber++;
 
-            for(const auto& w : waveform) {
-                deviceData.emplace_back(std::make_shared<Waveform>("", spidr->timestamp(), spidr->trigger(), w));
-                LOG(DEBUG) << "Loading waveform for trigger " << spidr->trigger();
-            }
+            LOG(DEBUG) << "Loading waveforms for trigger " << trigger.first;
+            deviceData.insert(deviceData.end(), waveform.begin(), waveform.end());
         }
     }
 

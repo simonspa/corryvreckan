@@ -18,7 +18,7 @@ namespace corryvreckan {
     public:
         DirectoryLoader(const std::string& dir, std::vector<std::string> ch);
 
-        std::vector<Waveform::waveform_t> read(void);
+        WaveformVector read(std::pair<uint32_t, double> trigger);
         size_t get_segments();
 
         bool end(void);
@@ -26,7 +26,7 @@ namespace corryvreckan {
     private:
         void open_files(void);
         Param read_preamble(const std::filesystem::path& file);
-        std::vector<Waveform::waveform_t> read_segment(size_t s);
+        WaveformVector read_segment(size_t s, std::pair<uint32_t, double> trigger);
         double get_timestamp(size_t s);
 
         std::filesystem::path path;

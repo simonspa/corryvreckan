@@ -1,4 +1,5 @@
 #include "DirectoryLoader.hpp"
+#include "core/utils/log.h"
 
 #include <algorithm>
 #include <cmath>
@@ -14,12 +15,17 @@ DirectoryLoader::DirectoryLoader(const std::string& dir, std::vector<std::string
 void DirectoryLoader::open_files(void) {
     files.clear();
 
+    LOG(INFO) << "Reached waveform block " << count;
+
     for(auto& i : channels) {
         std::filesystem::path p = path / ("data_" + std::to_string(count) + "_" + i + ".dat");
         files.emplace_back(p);
+        LOG(INFO) << "Opening waveform file " << p.filename();
 
         if(files.back().fail()) {
             _end = true;
+            files.clear();
+            LOG(INFO) << "Reached end of waveform data";
             return;
         }
     }
@@ -55,8 +61,8 @@ DirectoryLoader::Param DirectoryLoader::read_preamble(const std::filesystem::pat
     return out;
 }
 
-std::vector<Waveform::waveform_t> DirectoryLoader::read_segment(size_t s) {
-    std::vector<Waveform::waveform_t> out;
+WaveformVector DirectoryLoader::read_segment(size_t s, std::pair<uint32_t, double> trigger) {
+    WaveformVector out;
 
     for(size_t i = 0; i < files.size(); i++) {
         Waveform::waveform_t o;
@@ -66,16 +72,25 @@ std::vector<Waveform::waveform_t> DirectoryLoader::read_segment(size_t s) {
         o.timestamp = get_timestamp(s);
 
         files[i].seekg(static_cast<std::streamoff>(points * 2 * s));
+        if(files[i].rdstate() & (/*std::ifstream::eofbit |*/ std::ifstream::failbit | std::ifstream::badbit)) {
+            LOG(ERROR) << "Error reading data!";
+            break;
+        }
 
         std::vector<int16_t> buffer(points);
         files[i].read(reinterpret_cast<char*>(buffer.data()), static_cast<std::streamsize>(points * 2));
+
+        if(files[i].rdstate() & (/*std::ifstream::eofbit |*/ std::ifstream::failbit | std::ifstream::badbit)) {
+            LOG(ERROR) << "Error reading data!";
+            break;
+        }
 
         o.waveform.resize(points);
 
         std::transform(
             buffer.begin(), buffer.end(), o.waveform.begin(), [&](int16_t j) { return param[i].y0 + j * param[i].dy; });
 
-        out.push_back(o);
+        out.emplace_back(std::make_shared<Waveform>(channels[i], trigger.second, trigger.first, o));
     }
 
     return out;
@@ -85,8 +100,8 @@ size_t DirectoryLoader::get_segments(void) {
     return segments;
 }
 
-std::vector<Waveform::waveform_t> DirectoryLoader::read(void) {
-    auto out = read_segment(segment);
+WaveformVector DirectoryLoader::read(std::pair<uint32_t, double> trigger) {
+    auto out = read_segment(segment, trigger);
     segment++;
 
     if(segment == segments) {
