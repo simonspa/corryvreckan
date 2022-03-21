@@ -20,7 +20,6 @@
 
 using namespace corryvreckan;
 using namespace gbl;
-using namespace Eigen;
 
 // clang-format off
 Eigen::Matrix<double, 5, 6> GblTrack::toGbl = (Eigen::Matrix<double, 5, 6>() << 0., 0., 0., 0., 0., 1.,
