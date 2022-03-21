@@ -96,7 +96,7 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane,
         F(0, 2) = -S[0] / S[2];
         F(1, 2) = -S[1] / S[2];
         F(2, 2) = -S[3] / S[2];
-        Matrix<double, 6, 6> jaco;
+        Jacobian jaco;
 
         jaco << F * R, (-distance / S[2]) * F * R, Matrix3d::Zero(), (1 / S[2]) * F * R;
         jaco(5, 5) = 1; // a future time component
@@ -137,7 +137,7 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane,
 
     // special treatment of first point on trajectory
     if(gblpoints_.empty()) {
-        myjac = Matrix<double, 6, 6>::Identity();
+        myjac = Jacobian::Identity();
         myjac(0, 0) = 1;
         // Adding volume scattering if requested
     } else if(use_volume_scatter_) {

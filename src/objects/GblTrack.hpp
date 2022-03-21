@@ -23,6 +23,7 @@ namespace corryvreckan {
      */
 
     class GblTrack : public Track {
+        using Jacobian = Eigen::Matrix<double, 6, 6>;
 
     public:
         void print(std::ostream& out) const override;
