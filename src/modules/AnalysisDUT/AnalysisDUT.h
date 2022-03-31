@@ -59,7 +59,7 @@ namespace corryvreckan {
         TH1F* associatedTracksVersusTime;
 
         // local
-        TH2F* residualsPosVsresidualsTime_local;
+        TH2F *residualsPosVsresidualsTime_local, *resX_vs_col, *resY_vs_col, *resX_vs_row, *resY_vs_row;
         TH1F *residualsX_local, *residualsY_local, *residualsPos_local;
         std::vector<TH1F*> residualsXclusterColLocal, residualsYclusterRowLocal;
 
