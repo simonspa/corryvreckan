@@ -49,10 +49,10 @@ void EventLoaderMuPixTelescope::initialize() {
     // find the corresponding detetctors:
     for(auto d : get_detectors()) {
         if(typeString_to_typeID.find(d->getType()) != typeString_to_typeID.end()) {
-            LOG(INFO) << "Added detetctor:" << d->getName();
+            LOG(INFO) << "----- Added detetctor:" << d->getName();
             detectors_.push_back(d);
         } else
-            LOG(INFO) << "NOT Added detetctor:" << d->getName();
+            LOG(INFO) << "------ NOT Added detetctor:" << d->getName();
     }
     for(auto detector : detectors_) {
         std::string tag = detector->getName();
@@ -243,7 +243,7 @@ StatusCode EventLoaderMuPixTelescope::read_unsorted(const std::shared_ptr<Clipbo
                            << " and duration: " << Units::display(clipboard->getEvent()->duration(), "us");
                 pixels_.at(t).push_back(pixel);
                 hHitMap.at(names_.at(t))->Fill(pixel.get()->column(), pixel.get()->row());
-                hPixelToT.at(names_.at(t))->Fill(pixel.get()->tot());
+                hPixelToT.at(names_.at(t))->Fill(pixel.get()->raw());
                 // hPixelToT.at(names_.at(t))->Fill(pixel.get()->raw());
                 // display the 10 bit timestamp distribution
                 hTimeStamp.at(names_.at(t))->Fill(fmod((pixel.get()->timestamp() / 8.), pow(2, 10)));
@@ -294,19 +294,19 @@ std::shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint
     // store the ToT information if reasonable
     double tot_timestamp = 8 / refFrequency_ * 125. *
                            // fpga timestamp in 2ns -> go to 8ns, divide by4
-                           ((((corrected_fpgaTime / 4 / 9216) * 9216) + h.tot_raw() * 9));
+                           ((((corrected_fpgaTime / 4 / 9216) * 9216) + h.tot_raw() * bitshift_tot_));
     //                           static_cast<double>(((static_cast<uint>((corrected_fpgaTime >>
     //                           2))/(0x3FF*bitshift_tot_))*(0x3FF*bitshift_tot_) + // here we cannot shift, hence we need to
     //                           multiply...
 
     //                                               ((0x0000003FF & static_cast<uint32_t>(h.tot_raw())) * bitshift_tot_)));
     ts_TS1_ToT["mp10_0"]->Fill(static_cast<double>((static_cast<uint>(px_timestamp / 8 / 9)) & 0x3FF),
-                               (static_cast<double>(static_cast<uint>(tot_timestamp / 8 / 9) & 0x3FF)));
+                               (static_cast<double>(static_cast<uint>(tot_timestamp / 8) & 0x3FF)));
 
     double tot = tot_timestamp - px_timestamp; //+static_cast<double>(timeOffset_.at(tag));
 
-    if(tot < 0)
-        tot += 9216;
+    while(tot < 0)
+        tot += 1024 * bitshift_tot_ * 8 / refFrequency_ * 125.;
 
     // std::cout << "ToT: " << std::hex << (corrected_fpgaTime >> 2) <<"\t" << (int(corrected_fpgaTime/4)%9216) << "\t" <<
     // (((corrected_fpgaTime/4/9216)*9216)+h.tot_raw()*9) <<std::endl;
@@ -316,6 +316,8 @@ std::shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint
 
     //    tot =
     //    double(((((h.tot_raw()/*+1*/)*(8+1))-((h.timestamp_raw()*(0+1))%((uint64_t(-1)&(0x3ff+1))*(8+1))))+((uint64_t(-1)&(0x3ff+1))*(8+1)))%((uint64_t(-1)&(0x3ff+1))*(8+1)))*8.;
+    // std::cout  << names_.at(tag)<<"\t"<< h.column()<<"\t"<< h.row()<<"\t"<< tot<<"\t"<< tot<<"\t"<< px_timestamp<<"\t"<<
+    // corrected_fpgaTime <<std::endl;
     return std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), tot, tot, px_timestamp);
 }
 
@@ -335,6 +337,7 @@ void EventLoaderMuPixTelescope::fillBuffer() {
     }
     while(!buffers_full) {
         if(blockFile_->read_next(tf_)) {
+            //      std::cout << "Reading hit: "<< tf_.timestamp() <<std::endl;
             // no hits in data - can only happen if the zero suppression is switched off, skip the event
             if(tf_.num_hits() == 0) {
                 continue;
@@ -360,7 +363,7 @@ void EventLoaderMuPixTelescope::fillBuffer() {
                 raw_fpga_vs_chip.at(names_.at(tag))->Fill(raw_time, static_cast<double>(corrected_fpgaTime & 0x7FF));
                 chip_delay.at(names_.at(tag))->Fill(static_cast<double>((corrected_fpgaTime & 0x3FF) - raw_time));
                 // if the chip timestamp is smaller than the fpga we have a bit flip on the 11th bit
-                if((corrected_fpgaTime & 0x3FF) < raw_time) {
+                if(((corrected_fpgaTime & 0x3FF) < raw_time)) { // && (corrected_fpgaTime>1024)) {
                     corrected_fpgaTime -= 1024;
                 }
                 raw_fpga_vs_chip_corrected.at(names_.at(tag))
@@ -397,11 +400,15 @@ std::map<std::string, int> EventLoaderMuPixTelescope::typeString_to_typeID = {{"
 
 StatusCode EventLoaderMuPixTelescope::run(const std::shared_ptr<Clipboard>& clipboard) {
     eventNo_++;
+    LOG(WARNING) << "running eventloadermupixtelescope";
+    // std::cout<< "running eventloadermupixtelescope" <<std::endl;
     for(auto t : tags_)
         pixels_.at(t).clear();
     // get the hits
     StatusCode result = (isSorted_ ? read_sorted(clipboard) : read_unsorted(clipboard));
+    LOG(TRACE) << "StatusCode: " << static_cast<int>(result);
     for(auto t : tags_) {
+
         hHitsEvent.at(names_.at(t))->Fill(double(pixels_.at(t).size()));
         counterHits_.at(t) += pixels_.at(t).size();
         if(eventNo_ % 1000 == 0) {

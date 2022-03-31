@@ -99,6 +99,40 @@ void AnalysisDUT::initialize() {
                      (n_timebins_ - 1) / 2. * time_binning_);
     }
 
+    resX_vs_col = new TH2F("res_local_x_col",
+                           "res local x vs col; col; local res",
+                           m_detector->nPixels().X(),
+                           -0.5,
+                           m_detector->nPixels().X() - 0.5,
+                           300,
+                           -150,
+                           150);
+    resY_vs_col = new TH2F("res_local_y_col",
+                           "res local y vs col; col; local res",
+                           m_detector->nPixels().X(),
+                           -0.5,
+                           m_detector->nPixels().X() - 0.5,
+                           300,
+                           -150,
+                           150);
+
+    resX_vs_row = new TH2F("res_local_x_row",
+                           "res local x vs row; row; local res",
+                           m_detector->nPixels().Y(),
+                           -0.5,
+                           m_detector->nPixels().Y() - 0.5,
+                           300,
+                           -150,
+                           150);
+    resY_vs_row = new TH2F("res_local_y_row",
+                           "res local y vs row; row; local res",
+                           m_detector->nPixels().Y(),
+                           -0.5,
+                           m_detector->nPixels().Y() - 0.5,
+                           300,
+                           -150,
+                           150);
+
     hClusterMapAssoc = new TH2F("clusterMapAssoc",
                                 "Map of associated clusters; cluster col; cluster row",
                                 m_detector->nPixels().X(),
@@ -749,6 +783,10 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             double local_pos_diff = sqrt(local_x_distance * local_x_absdistance + local_y_absdistance * local_y_absdistance);
             double local_pos_diff_um = local_pos_diff * 1000.;
 
+            resX_vs_col->Fill(assoc_cluster->column(), local_x_distance_um);
+            resY_vs_col->Fill(assoc_cluster->column(), local_y_distance_um);
+            resX_vs_row->Fill(assoc_cluster->row(), local_x_distance_um);
+            resY_vs_row->Fill(assoc_cluster->row(), local_y_distance_um);
             // Cluster charge normalized to path length in sensor:
             double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
             // FIXME: what does this mean? To my understanding we have the correct charge here already...
