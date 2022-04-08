@@ -120,6 +120,7 @@ StatusCode Clustering4D::run(const std::shared_ptr<Clipboard>& clipboard) {
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());
     if(pixels.empty()) {
         LOG(DEBUG) << "Detector " << m_detector->getName() << " does not have any pixels on the clipboard";
+        clusterMultiplicity->Fill(0);
         return StatusCode::Success;
     }
     LOG(DEBUG) << "Picked up " << pixels.size() << " pixels for device " << m_detector->getName();
