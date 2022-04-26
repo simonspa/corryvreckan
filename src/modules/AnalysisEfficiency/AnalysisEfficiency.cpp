@@ -110,7 +110,8 @@ htimeRes_trackPos_TProfile = new TH2D("timeRes_trackPos_TProfile",
                                                                -pitch_y / 2.,
                                                                pitch_y / 2.,
                                                                -500,
-                                                               500);
+                                                               500,
+                                                               "s"); // standard deviation as the error on a bin, convienent for time resolution
 
     title = m_detector->getName() +
             " Pixel efficiency map (in-pixel ROI);in-pixel x_{track} [#mum];in-pixel y_{track} #mum;#epsilon";
