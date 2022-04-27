@@ -286,11 +286,11 @@ StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
 
         // Loop over reference plane clusters to make correlation plots
         for(auto& refCluster : referenceClusters) {
-            if(m_detector->isDUT()) {
-                dut_corr_.at(static_cast<uint>(cluster->column()))
-                    .at(static_cast<uint>(cluster->row()))
-                    ->Fill(refCluster->column(), refCluster->row());
-            }
+//            if(m_detector->isDUT()) {
+//                dut_corr_.at(static_cast<uint>(cluster->column()))
+//                    .at(static_cast<uint>(cluster->row()))
+//                    ->Fill(refCluster->column(), refCluster->row());
+//            }
             double timeDifference = refCluster->timestamp() - cluster->timestamp();
             // in 40 MHz:
             long long int timeDifferenceInt = static_cast<long long int>(timeDifference / 25);

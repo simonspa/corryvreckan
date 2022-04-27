@@ -595,8 +595,9 @@ void AnalysisEfficiency::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     for(auto x =0; x< htimeDelay_trackPos_TProfile->GetNbinsX();++x){
         for(auto y =0; y< htimeDelay_trackPos_TProfile->GetNbinsY();++y){
         htimeRes_trackPos_TProfile->SetBinContent(x,y,htimeDelay_trackPos_TProfile->GetBinError(x,y));
-        LOG(STATUS) << x <<'\t' << y << "\t" << htimeDelay_trackPos_TProfile->GetBinError(x,y);
+       // LOG(STATUS) << x <<'\t' << y << "\t" << htimeDelay_trackPos_TProfile->GetBinError(x,y);
         }
    }
+    htimeDelay_trackPos_TProfile->Write();
     htimeRes_trackPos_TProfile->Write();
 }
