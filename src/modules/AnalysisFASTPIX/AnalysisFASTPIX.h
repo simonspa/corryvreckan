@@ -56,7 +56,7 @@ namespace corryvreckan {
         int getFlags(std::shared_ptr<Event> event, size_t trigger);
         static void printEfficiency(int total_tracks, int matched_tracks);
 
-        template <typename T> Int_t fillTriangle(T* hist, double x, double y, double val = 1);
+        Int_t fillTriangle(TH2* hist, double x, double y, double val = 1);
 
         TH2F *hitmap, *hitmapIntercept, *hitmapNoIntercept, *hitmapTrigger, *hitmapNoTrigger, *hitmapTimecuts, *hitmapAssoc;
         TH2F *hitmapTriggerAssoc, *hitmapNoTriggerAssoc, *hitmapNoAssoc, *hitmapNoAssocMissing, *hitmapDeadtime,

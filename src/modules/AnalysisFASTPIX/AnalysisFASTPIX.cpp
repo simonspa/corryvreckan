@@ -386,7 +386,7 @@ bool AnalysisFASTPIX::inRoi(PositionVector3D<Cartesian3D<double>> p) {
     }
 }
 
-template <typename T> Int_t AnalysisFASTPIX::fillTriangle(T* hist, double x, double y, double val) {
+Int_t AnalysisFASTPIX::fillTriangle(TH2* hist, double x, double y, double val) {
     double px = pitch / (static_cast<double>(2 * triangle_bins_ + 1) - 1);
     double py = height / (static_cast<double>(4 * triangle_bins_ + 1) - 1);
 
@@ -415,16 +415,7 @@ template <typename T> Int_t AnalysisFASTPIX::fillTriangle(T* hist, double x, dou
     double bx = bin_x * px + px / 2. - pitch / 2.0;
     double by = bin_y * py + py - height / 2.0;
 
-    int i = hist->Fill(bx, by, val);
-
-    if(i < 0 && !std::is_same<T, TProfile2Poly>::value) {
-        LOG(INFO) << "Unbinned entry in " << hist->GetName() << " bin: " << i << " x: " << (x - pitch / 2.0)
-                  << " y: " << (y - height / 2.0) << " bx: " << bx << " by: " << by << " bin_x: " << bin_x
-                  << " bin_y: " << bin_y << " bin: " << bin;
-    }
-
-    return i;
-    // return bin;
+    return hist->Fill(bx, by, val);
 }
 
 int AnalysisFASTPIX::getFlags(std::shared_ptr<Event> event, size_t trigger) {
@@ -591,7 +582,7 @@ StatusCode AnalysisFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
                 // Check decoder status for all triggers in event
                 // This might include efficient triggers if there is more than one in the event
                 for(auto& trigger : triggers) {
-                    const char* labels[] = {"Complete", "Incomplete", "Incomplete (Noise)", "Missing"};
+                    const char* labels[] = {"Complete", "Incomplete", "Undecoded", "Missing"};
 
                     int flags = getFlags(event, trigger.first);
 
