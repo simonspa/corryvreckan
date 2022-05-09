@@ -1,14 +1,15 @@
 # EventLoaderWaveform
 **Maintainer**: Eric Buschmann (eric.buschmann@cern.ch)
-**Module Type**: *DETECTOR* **Detector Type**: *<add types here>*  
+**Module Type**: *DETECTOR*
 **Status**: Immature
 
 ### Description
-This is a demonstrator module only, taking data every detector on the clipboard and plots the pixel hit positions.
-It serves as template to create new modules.
+Loads raw waveforms recorded by an oscilloscope and stores them in the event clipboard. 
+Waveforms are matched to trigger numbers stored in the event.
 
 ### Parameters
-No parameters are used from the configuration file.
+* `input_directory`: Path to the directory containing the data files.
+* `channels`: List of channels for which waveforms should be loaded.
 
 ### Plots produced
 * Histogram of event numbers
@@ -20,5 +21,6 @@ For each detector the following plots are produced:
 ### Usage
 ```toml
 [EventLoaderWaveform]
-
+input_directory = "path/to/directory"
+channels = "ch4"
 ```
