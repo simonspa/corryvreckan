@@ -407,7 +407,7 @@ Int_t AnalysisFASTPIX::fillTriangle(TH2* hist, double x, double y, double val) {
         }
     }
 
-    int bin = bin_x * (4 * static_cast<int>(triangle_bins_) - 1) + bin_y + 1;
+    // int bin = bin_x * (4 * static_cast<int>(triangle_bins_) - 1) + bin_y + 1;
     // hist->AddBinContent(bin, val); // Does not work for TH2Poly, TProfile2Poly
     // hist->SetBinContent(bin, hist->GetBinContent(bin)+val); // Does not work for TProfile2Poly
 

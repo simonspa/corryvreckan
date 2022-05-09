@@ -128,7 +128,7 @@ void EventLoaderFASTPIX::initialize() {
     LOG(INFO) << "Reading file format version " << version;
 
     if(version != 0) {
-        throw ModuleError("Invalid file format version " + std::to_string(version));
+        throw ModuleError("Invalid file format version " + std::to_string(static_cast<unsigned>(version)));
     }
 
     m_inputFile.read(reinterpret_cast<char*>(&m_blockSize), sizeof m_blockSize);
@@ -137,6 +137,8 @@ void EventLoaderFASTPIX::initialize() {
         throw ModuleError("Invalid data block size");
     }
 }
+
+size_t hex_distance(double x1, double y1, double x2, double y2);
 
 size_t hex_distance(double x1, double y1, double x2, double y2) {
     return static_cast<size_t>(std::abs(x1 - x2) + std::abs(y1 - y2) + std::abs(-x1 - y1 + x2 + y2)) / 2;
@@ -158,7 +160,7 @@ bool EventLoaderFASTPIX::loadEvent(PixelVector& deviceData,
 
     uint16_t event_size;
     double event_timestamp;
-    double seed_timestamp;
+    double seed_timestamp = 0;
     uint16_t event_flags;
     uint16_t event_meta;
 
@@ -173,8 +175,10 @@ bool EventLoaderFASTPIX::loadEvent(PixelVector& deviceData,
     LOG(DEBUG) << "Event size: " << event_size;
     LOG(DEBUG) << "Previous event: " << m_prevEvent;
 
-    eventTags.emplace(std::string("fp_flags:") + std::to_string(m_triggerNumber + 1), std::to_string(event_flags));
-    eventTags.emplace(std::string("fp_meta:") + std::to_string(m_triggerNumber + 1), std::to_string(event_meta));
+    eventTags.emplace(std::string("fp_flags:") + std::to_string(m_triggerNumber + 1),
+                      std::to_string(static_cast<unsigned>(event_flags)));
+    eventTags.emplace(std::string("fp_meta:") + std::to_string(m_triggerNumber + 1),
+                      std::to_string(static_cast<unsigned>(event_meta)));
 
     if(!discard) {
         pixels_per_event->Fill(event_size);
@@ -196,7 +200,8 @@ bool EventLoaderFASTPIX::loadEvent(PixelVector& deviceData,
         m_loadedEvents++;
     }
 
-    int seed_col, seed_row;
+    int seed_col = 0;
+    int seed_row = 0;
 
     for(uint16_t i = 0; i < event_size; i++) {
         uint16_t idx;
@@ -223,7 +228,7 @@ bool EventLoaderFASTPIX::loadEvent(PixelVector& deviceData,
                 seed_tot_inner->Fill(tot);
             }
         } else {
-            pixel_distance->Fill(hex_distance(col, row, seed_col, seed_row));
+            pixel_distance->Fill(static_cast<double>(hex_distance(col, row, seed_col, seed_row)));
             pixel_distance_row->Fill(std::abs(row - seed_row));
             pixel_distance_col->Fill(std::abs(col - seed_col));
         }
@@ -452,9 +457,11 @@ void EventLoaderFASTPIX::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     LOG(INFO) << "Missing " << m_missingTriggers << " triggers";
 
     LOG(INFO) << "Complete events: " << m_loadedEvents - m_noiseEvents - m_incompleteEvents << " ("
-              << 100.0 * static_cast<double>((m_loadedEvents - m_noiseEvents - m_incompleteEvents)) / m_loadedEvents << "%)";
-    LOG(INFO) << "Incomplete events: " << m_incompleteEvents << " ("
-              << 100.0 * static_cast<double>(m_incompleteEvents) / m_loadedEvents << "%)";
-    LOG(INFO) << "Noise events: " << m_noiseEvents << " (" << 100.0 * static_cast<double>(m_noiseEvents) / m_loadedEvents
+              << 100.0 * static_cast<double>((m_loadedEvents - m_noiseEvents - m_incompleteEvents)) /
+                     static_cast<double>(m_loadedEvents)
               << "%)";
+    LOG(INFO) << "Incomplete events: " << m_incompleteEvents << " ("
+              << 100.0 * static_cast<double>(m_incompleteEvents) / static_cast<double>(m_loadedEvents) << "%)";
+    LOG(INFO) << "Noise events: " << m_noiseEvents << " ("
+              << 100.0 * static_cast<double>(m_noiseEvents) / static_cast<double>(m_loadedEvents) << "%)";
 }

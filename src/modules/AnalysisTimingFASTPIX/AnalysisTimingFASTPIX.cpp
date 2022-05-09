@@ -14,6 +14,10 @@
 
 using namespace corryvreckan;
 
+double mean(const std::vector<double>& v);
+double rms(const std::vector<double>& v);
+double rms997(const std::vector<double>& v);
+
 double mean(const std::vector<double>& v) {
     double m = 0;
 
@@ -21,20 +25,15 @@ double mean(const std::vector<double>& v) {
         m += i;
     }
 
-    return m / v.size();
+    return m / static_cast<double>(v.size());
 }
 
 double rms(const std::vector<double>& v) {
-    // double mean = std::accumulate(v.begin(), v.end(), 0)/v.size();
     if(v.empty()) {
         return 0;
     }
 
     double m = mean(v);
-
-    /*double out = std::accumulate(v.begin(), v.end(), 0, [mean] (double a, double b) {
-      return a+(mean-b)*(mean-b);
-    });*/
 
     double out = 0;
 
@@ -42,7 +41,7 @@ double rms(const std::vector<double>& v) {
         out += (m - i) * (m - i);
     }
 
-    return std::sqrt(out / v.size());
+    return std::sqrt(out / static_cast<double>(v.size()));
 }
 
 double rms997(const std::vector<double>& v) {
@@ -55,7 +54,7 @@ double rms997(const std::vector<double>& v) {
 
     size_t idx_low = 0;
     size_t idx_high = sorted.size() - 1;
-    size_t points = sorted.size() * (1.0 - 0.997);
+    size_t points = static_cast<size_t>(static_cast<double>(sorted.size()) * (1.0 - 0.997));
 
     double m = mean(sorted);
 
@@ -67,7 +66,8 @@ double rms997(const std::vector<double>& v) {
         }
     }
 
-    std::vector<double> out(sorted.begin() + idx_low, sorted.begin() + idx_high);
+    std::vector<double> out(sorted.begin() + static_cast<long int>(idx_low),
+                            sorted.begin() + static_cast<long int>(idx_high));
 
     return rms(out);
 }
@@ -75,6 +75,8 @@ double rms997(const std::vector<double>& v) {
 struct Cfd {
     double e1, e2, min, cfd_pos;
 };
+
+std::vector<Cfd> find_npeaks(const Waveform::waveform_t& w, double th, double frac);
 
 std::vector<Cfd> find_npeaks(const Waveform::waveform_t& w, double th, double frac) {
     std::vector<size_t> redge;
@@ -124,11 +126,12 @@ std::vector<Cfd> find_npeaks(const Waveform::waveform_t& w, double th, double fr
             }
         }
 
-        double e1 = w.x0 + w.dx * (i.first + (th - w.waveform[i.first]) / (w.waveform[i.first + 1] - w.waveform[i.first]));
-        double e2 =
-            w.x0 + w.dx * (i.second + (th - w.waveform[i.second]) / (w.waveform[i.second + 1] - w.waveform[i.second]));
-        double cfd =
-            w.x0 + w.dx * (cfd_pos + (min * frac - w.waveform[cfd_pos]) / (w.waveform[cfd_pos + 1] - w.waveform[cfd_pos]));
+        double e1 = w.x0 + w.dx * (static_cast<double>(i.first) +
+                                   (th - w.waveform[i.first]) / (w.waveform[i.first + 1] - w.waveform[i.first]));
+        double e2 = w.x0 + w.dx * (static_cast<double>(i.second) +
+                                   (th - w.waveform[i.second]) / (w.waveform[i.second + 1] - w.waveform[i.second]));
+        double cfd = w.x0 + w.dx * (static_cast<double>(cfd_pos) +
+                                    (min * frac - w.waveform[cfd_pos]) / (w.waveform[cfd_pos + 1] - w.waveform[cfd_pos]));
 
         out.emplace_back(Cfd{e1, e2, min, cfd});
     }
@@ -377,7 +380,7 @@ StatusCode AnalysisTimingFASTPIX::run(const std::shared_ptr<Clipboard>& clipboar
                     }
 
                     col = col + (row - (row & 1)) / 2;
-                    int idx = col + row * 16;
+                    // int idx = col + row * 16;
 
                     pixel_col_ = col;
                     pixel_row_ = row;
@@ -435,14 +438,6 @@ StatusCode AnalysisTimingFASTPIX::run(const std::shared_ptr<Clipboard>& clipboar
 
 void AnalysisTimingFASTPIX::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
-    /*for(size_t i = 0; i < 64; i++) {
-        //std::string s1 = std::string("pixel == ") + std::to_string(i);
-        std::string s2 = std::string("pix_") + std::to_string(i);
-        auto f = [=](int idx) { return idx == i; };
-        auto h = df->Filter(f, {"pixel"}).Histo2D({s2.c_str(), "",  700, -0.5, 350.5,  200, -50, 50}, "tot", "dt");
-        h->Write();
-    }*/
-
     timewalk_inpix->Write();
 
     LOG(INFO) << "RMS inner " << rms(dt_inner_hist);
@@ -453,8 +448,8 @@ void AnalysisTimingFASTPIX::finalize(const std::shared_ptr<ReadonlyClipboard>&) 
     LOG(INFO) << "RMS997 outer " << rms997(dt_outer_hist);
     LOG(INFO) << "RMS997 all " << rms997(dt_hist);
 
-    auto px = timewalk2d->ProfileX("timewalk2d_x");
-    auto py = timewalk2d->ProfileY("timewalk2d_y");
+    // auto px = timewalk2d->ProfileX("timewalk2d_x");
+    // auto py = timewalk2d->ProfileY("timewalk2d_y");
 
     timewalkMap->ProjectionXY("resolutionMap", "C=E");
 }
