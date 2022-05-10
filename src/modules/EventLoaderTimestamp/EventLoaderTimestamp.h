@@ -71,10 +71,6 @@ namespace corryvreckan {
         int m_TDCoverflowCounter;
         double m_eventLength;
 
-        long long int m_currentEvent;
-
-        unsigned long long int m_prevTime;
-        bool m_shutterOpen;
         int m_prevTriggerNumber;
         int m_triggerOverflowCounter;
 

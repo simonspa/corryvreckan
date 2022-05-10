@@ -13,9 +13,9 @@ Analysis module for FASTPIX detector.
 * `time_cut_trigger`: Parameter to include telescope tracks around oscilloscope trigger. Defaults to +/-`250ns`.
 * `use_closest_cluster`: If `true` the cluster with the smallest distance to the track is used if a track has more than one associated cluster. If `false`, loop over all associated clusters. Defaults to `true`.
 * `roi_inner`: If `true` all pixels inside the matrix with a one pixel wide border around the edge are included in the ROI. If `false` the ROI is defined as a rectangle with a margin of `roi_margin_x` pixels in x and `roi_margin_y` pixels in y. Defaults to `true`.
-* `roi_margin_x`: Defaluts to `1`.
-* `roi_margin_y`: Defaults to `0.5`.
-* `triangle_bins`: Controls the number of bins in a hexagonal histogram. Each hexagon is split into 6 triangles with `triangle_bins`² bins. Defaults to `15`, i.e. 6*15² = 1350 bins.
+* `roi_margin_x`: Used only when `roi_inner` is `false`. ROI margin on the left and right edge of the matrix in pixels. Defaluts to `1`.
+* `roi_margin_y`: Used only when `roi_inner` is `false`. ROI margin on the top and bottom edge of the matrix in pixels. Defaults to `0.5`.
+* `triangle_bins`: Controls the number of bins in a hexagonal histogram. Each hexagon is split into 6 triangles with `triangle_bins`^2 bins. Defaults to `15`, i.e. 6*15^2 = 1350 bins.
 * `bin_size`: Bin size in 2D hit maps. Defaults to `2.5um`.
 * `hist_scale`: Scales 2D hit maps to `hist_scale` times the width and height of the pixel matrix.  Defaults to `1.75`.
 

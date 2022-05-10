@@ -8,7 +8,6 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include <ROOT/RDataFrame.hxx>
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -33,7 +32,7 @@ namespace corryvreckan {
         /**
          * @brief Constructor for this unique module
          * @param config Configuration object for this module as retrieved from the steering file
-         * @param detectors Vector of pointers to the detectors
+         * @param detector Pointer to the detector
          */
         AnalysisTimingFASTPIX(Configuration& config, std::shared_ptr<Detector> detector);
 
