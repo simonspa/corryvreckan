@@ -94,7 +94,7 @@ void ThreadPool::checkException() {
 
 void ThreadPool::wait() {
     std::unique_lock<std::mutex> lock{run_mutex_};
-    run_condition_.wait(lock, [this]() { return exception_ptr_ != nullptr || (run_cnt_ == 0); });
+    run_condition_.wait(lock, [this]() { return exception_ptr_ != nullptr || (run_cnt_ == 0 || done_ == true); });
 }
 
 /**
@@ -149,8 +149,12 @@ void ThreadPool::worker(size_t min_thread_buffer,
 }
 
 void ThreadPool::destroy() {
+    // Lock run mutex to synchronize with queue
+    std::unique_lock<std::mutex> lock{run_mutex_};
     done_ = true;
     queue_.invalidate();
+    run_condition_.notify_all();
+    lock.unlock();
 
     for(auto& thread : threads_) {
         if(thread.joinable()) {
