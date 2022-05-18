@@ -288,11 +288,12 @@ void EventLoaderEUDAQ2::retrieve_event_tags(const eudaq::EventSPC evt) {
                     std::string name = "tagHist_" + tag_pair.first;
                     std::string title = tag_pair.first + ";tag value;# entries";
 
-                    TDirectory* directory = getROOTDirectory();
-                    if(!directory->cd("tags")) {
-                        TDirectory* tag_dir = directory->mkdir("tags");
-                        tag_dir->cd();
+                    auto* directory = getROOTDirectory();
+                    auto* tagdir = directory->GetDirectory("tags");
+                    if(!tagdir) {
+                        tagdir = directory->mkdir("tags");
                     }
+                    tagdir->cd();
 
                     tagHist[tag_pair.first] = new TH1D(name.c_str(), title.c_str(), 1024, -512.5, 511.5);
                     directory->cd();
@@ -306,10 +307,11 @@ void EventLoaderEUDAQ2::retrieve_event_tags(const eudaq::EventSPC evt) {
                     std::string title = "tag_" + tag_pair.first + ";event / 1000;tag value";
 
                     TDirectory* directory = getROOTDirectory();
-                    if(!directory->cd("tags")) {
-                        TDirectory* tag_dir = directory->mkdir("tags");
-                        tag_dir->cd();
+                    auto* tagdir = directory->GetDirectory("tags");
+                    if(!tagdir) {
+                        tagdir = directory->mkdir("tags");
                     }
+                    tagdir->cd();
 
                     tagProfile[tag_pair.first] = new TProfile(name.c_str(), title.c_str(), 4e5, 0, 100);
                     directory->cd();
