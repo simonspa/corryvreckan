@@ -284,7 +284,7 @@ void EventLoaderEUDAQ2::retrieve_event_tags(const eudaq::EventSPC evt) {
             // Check if histogram exists already, if not: create it
             if(get_tag_histograms_) {
                 if(tagHist.find(tag_pair.first) == tagHist.end()) {
-                    LOG(INFO) << "Found new event tag \"" << tag_pair.first << "\"";
+                    LOG(DEBUG) << "Found new event tag \"" << tag_pair.first << "\"";
                     std::string name = "tagHist_" + tag_pair.first;
                     std::string title = tag_pair.first + ";tag value;# entries";
 
@@ -295,14 +295,14 @@ void EventLoaderEUDAQ2::retrieve_event_tags(const eudaq::EventSPC evt) {
                     }
                     tagdir->cd();
 
-                    tagHist[tag_pair.first] = new TH1D(name.c_str(), title.c_str(), 1024, -512.5, 511.5);
+                    tagHist[tag_pair.first] = new TH1D(name.c_str(), title.c_str(), 10240, -128.5, 127.5);
                     directory->cd();
                 }
                 tagHist[tag_pair.first]->Fill(value);
             }
             if(get_tag_profiles_) {
                 if(tagProfile.find(tag_pair.first) == tagProfile.end()) {
-                    LOG(INFO) << "Found new event tag \"" << tag_pair.first << "\"";
+                    LOG(DEBUG) << "Found new event tag \"" << tag_pair.first << "\"";
                     std::string name = "tagProfile_" + tag_pair.first;
                     std::string title = "tag_" + tag_pair.first + ";event / 1000;tag value";
 
