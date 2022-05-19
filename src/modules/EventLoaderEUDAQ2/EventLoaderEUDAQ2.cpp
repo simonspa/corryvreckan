@@ -24,6 +24,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     config_.setDefault<bool>("get_tag_profiles", false);
     config_.setDefault<bool>("ignore_bore", true);
     config_.setDefault<bool>("veto_triggers", false);
+    config_.setDefault<bool>("sync_by_trigger", false);
     config_.setDefault<double>("skip_time", 0.);
     config_.setDefault<int>("buffer_depth", 0);
     config_.setDefault<int>("shift_triggers", 0);
@@ -42,6 +43,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     buffer_depth_ = config_.get<int>("buffer_depth");
     shift_triggers_ = config_.get<int>("shift_triggers");
     inclusive_ = config_.get<bool>("inclusive");
+    sync_by_trigger_ = config_.get<bool>("sync_by_trigger");
 
     // Set EUDAQ log level to desired value:
     EUDAQ_LOG_LEVEL(config_.get<std::string>("eudaq_loglevel"));
@@ -311,7 +313,7 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
     auto trigger_after_shift = static_cast<uint32_t>(static_cast<int>(evt->GetTriggerN()) + shift_triggers_);
 
     // Check if this event has timestamps available:
-    if(evt->GetTimeBegin() == 0 && evt->GetTimeEnd() == 0) {
+    if(evt->GetTimeBegin() == 0 && evt->GetTimeEnd() == 0 || sync_by_trigger_) {
         LOG(DEBUG) << evt->GetDescription() << ": Event has no timestamp, comparing trigger IDs";
 
         // If there is no event defined yet, there is little we can do:
