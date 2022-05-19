@@ -60,6 +60,8 @@ void ClusteringSpatial::initialize() {
 
     title = ";cluster timestamp [ns]; # events";
     clusterTimes = new TH1F("clusterTimes", title.c_str(), 3e6, 0, 3e9);
+    title = m_detector->getName() + " Cluster multiplicity;clusters;events";
+    clusterMultiplicity = new TH1F("clusterMultiplicity", title.c_str(), 50, -0.5, 49.5);
 }
 
 StatusCode ClusteringSpatial::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -181,6 +183,8 @@ StatusCode ClusteringSpatial::run(const std::shared_ptr<Clipboard>& clipboard) {
 
         deviceClusters.push_back(cluster);
     }
+
+    clusterMultiplicity->Fill(static_cast<double>(deviceClusters.size()));
 
     clipboard->putData(deviceClusters, m_detector->getName());
     LOG(DEBUG) << "Put " << deviceClusters.size() << " clusters on the clipboard for detector " << m_detector->getName()
