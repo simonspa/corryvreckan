@@ -313,7 +313,7 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
     auto trigger_after_shift = static_cast<uint32_t>(static_cast<int>(evt->GetTriggerN()) + shift_triggers_);
 
     // Check if this event has timestamps available:
-    if(evt->GetTimeBegin() == 0 && evt->GetTimeEnd() == 0 || sync_by_trigger_) {
+    if((evt->GetTimeBegin() == 0 && evt->GetTimeEnd() == 0) || sync_by_trigger_) {
         LOG(DEBUG) << evt->GetDescription() << ": Event has no timestamp, comparing trigger IDs";
 
         // If there is no event defined yet, there is little we can do:
