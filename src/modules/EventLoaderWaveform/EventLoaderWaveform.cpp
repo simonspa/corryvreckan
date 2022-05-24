@@ -20,6 +20,12 @@ EventLoaderWaveform::EventLoaderWaveform(Configuration& config, std::shared_ptr<
     m_inputDirectory = config_.getPath("input_directory");
     // m_channels = m_detector->getConfiguration().getArray<std::string>("channels");
     m_channels = config_.getArray<std::string>("channels");
+    m_columns = config_.getArray<int>("columns");
+    m_rows = config_.getArray<int>("rows");
+
+    if(m_channels.size() != m_columns.size() || m_columns.size() != m_rows.size()) {
+        throw InvalidValueError(config, "channels", "Invalid number of channels or pixels.");
+    }
 
     LOG(DEBUG) << "Directory " << m_inputDirectory;
 }
@@ -33,7 +39,7 @@ void EventLoaderWaveform::initialize() {
     // Initialise member variables
     m_eventNumber = 0;
     m_triggerNumber = 1;
-    m_loader = std::make_unique<DirectoryLoader>(m_inputDirectory, m_channels);
+    m_loader = std::make_unique<DirectoryLoader>(m_inputDirectory, m_channels, m_columns, m_rows, m_detector->getName());
 }
 
 StatusCode EventLoaderWaveform::run(const std::shared_ptr<Clipboard>& clipboard) {

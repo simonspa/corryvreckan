@@ -7,8 +7,9 @@
 
 using namespace corryvreckan;
 
-DirectoryLoader::DirectoryLoader(const std::string& dir, std::vector<std::string> ch)
-    : path(dir), channels(ch), segment(0), count(0) {
+DirectoryLoader::DirectoryLoader(
+    const std::string& dir, std::vector<std::string> ch, std::vector<int> col, std::vector<int> row, std::string id)
+    : path(dir), channels(ch), columns(col), rows(row), detectorID(id), segment(0), count(0) {
     open_files();
 }
 
@@ -69,7 +70,6 @@ WaveformVector DirectoryLoader::read_segment(size_t s, std::pair<uint32_t, doubl
 
         o.x0 = param[i].x0;
         o.dx = param[i].dx;
-        o.timestamp = get_timestamp(s);
 
         files[i].seekg(static_cast<std::streamoff>(points * 2 * s));
         if(files[i].rdstate() & (/*std::ifstream::eofbit |*/ std::ifstream::failbit | std::ifstream::badbit)) {
@@ -90,7 +90,7 @@ WaveformVector DirectoryLoader::read_segment(size_t s, std::pair<uint32_t, doubl
         std::transform(
             buffer.begin(), buffer.end(), o.waveform.begin(), [&](int16_t j) { return param[i].y0 + j * param[i].dy; });
 
-        out.emplace_back(std::make_shared<Waveform>(channels[i], trigger.second, trigger.first, o));
+        out.emplace_back(std::make_shared<Waveform>(detectorID, columns[i], rows[i], 0, 0, trigger.second, o));
     }
 
     return out;

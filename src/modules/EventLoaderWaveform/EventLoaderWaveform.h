@@ -55,6 +55,8 @@ namespace corryvreckan {
         // configuration parameters:
         std::string m_inputDirectory;
         std::vector<std::string> m_channels;
+        std::vector<int> m_columns;
+        std::vector<int> m_rows;
 
         std::unique_ptr<DirectoryLoader> m_loader;
 

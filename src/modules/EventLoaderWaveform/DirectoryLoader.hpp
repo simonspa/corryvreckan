@@ -16,7 +16,8 @@ namespace corryvreckan {
         };
 
     public:
-        DirectoryLoader(const std::string& dir, std::vector<std::string> ch);
+        DirectoryLoader(
+            const std::string& dir, std::vector<std::string> ch, std::vector<int> col, std::vector<int> row, std::string id);
 
         WaveformVector read(std::pair<uint32_t, double> trigger);
         size_t get_segments();
@@ -31,6 +32,9 @@ namespace corryvreckan {
 
         std::filesystem::path path;
         std::vector<std::string> channels;
+        std::vector<int> columns;
+        std::vector<int> rows;
+        std::string detectorID;
         std::vector<std::ifstream> files;
         std::ifstream timestamps;
         std::vector<Param> param;
