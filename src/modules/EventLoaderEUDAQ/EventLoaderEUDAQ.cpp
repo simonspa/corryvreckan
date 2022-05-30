@@ -37,7 +37,7 @@ void EventLoaderEUDAQ::initialize() {
         try {
             reader->addFile(file);
         } catch(...) {
-            throw ModuleError("Unable to read input file \"" + file + "\"");
+            throw ModuleError("Unable to read input file \"" + file.string() + "\"");
         }
     }
 

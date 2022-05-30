@@ -96,6 +96,7 @@ In addition, the calibration file of the detector specified in the geometry conf
 * `buffer_depth`: Depth of buffer in which EUDAQ2 `StandardEvents` are timesorted. This algorithm only works for `StandardEvents` with well-defined timestamps. Setting it to `0` disables timesorting. Default is `0`.
 * `shift_triggers`: Shift trigger ID of this device with respect to the IDs stored in the Corryrveckan Event. This allows to correct trigger ID offsets between different devices such as the TLU and MIMOSA26. Note that if using the module `EventDefinitionM26` the same value for `shift_triggers` needs to be passed in both cases. Defaults to `0`.
 * `eudaq_loglevel`: Verbosity level of the EUDAQ logger instance of the converter module. Possible options are, in decreasing severity, `USER`, `ERROR`, `WARN`, `INFO`, `EXTRA` and `DEBUG`. The default level is `ERROR`. Please note that the verbosity can only be changed globally, i.e. when using multiple instances of `EventLoaderEUDAQ2`, the last occurrence will determine the (global) value of this parameter.
+* `sync_by_trigger`: Forces synchronization by trigger number, even if the events come with a time frame.
 
 ### Plots produced
 

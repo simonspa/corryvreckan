@@ -138,7 +138,7 @@ double Track::getChi2ndof() const {
     return chi2ndof_;
 }
 
-double Track::getNdof() const {
+size_t Track::getNdof() const {
     if(!isFitted_) {
         throw RequestParameterBeforeFitError(this, "ndof");
     }

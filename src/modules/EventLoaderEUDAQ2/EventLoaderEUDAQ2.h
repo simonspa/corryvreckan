@@ -112,6 +112,7 @@ namespace corryvreckan {
         bool ignore_bore_{};
         bool veto_triggers_{};
         bool inclusive_{};
+        bool sync_by_trigger_{};
         double skip_time_{};
         Matrix<std::string> adjust_event_times_;
         int buffer_depth_;

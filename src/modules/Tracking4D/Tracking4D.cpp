@@ -382,7 +382,7 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
                 // Now look for the spatially closest cluster on the next plane
                 refTrack.fit();
 
-                PositionVector3D<Cartesian3D<double>> interceptPoint = detector->getIntercept(&refTrack);
+                PositionVector3D<Cartesian3D<double>> interceptPoint = detector->getLocalIntercept(&refTrack);
                 double interceptX = interceptPoint.X();
                 double interceptY = interceptPoint.Y();
 
@@ -390,8 +390,8 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
                     auto newCluster = neighbors[ne].get();
 
                     // Calculate the distance to the previous plane's cluster/intercept
-                    double distanceX = interceptX - newCluster->global().x();
-                    double distanceY = interceptY - newCluster->global().y();
+                    double distanceX = interceptX - newCluster->local().x();
+                    double distanceY = interceptY - newCluster->local().y();
                     double distance = sqrt(distanceX * distanceX + distanceY * distanceY);
 
                     // Check if newCluster lies within ellipse defined by spatial cuts around intercept,
@@ -509,7 +509,8 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
             // sort by chi2:
             LOG_ONCE(WARNING) << "Rejecting tracks with same hits";
             std::sort(tracks.begin(), tracks.end(), [](const shared_ptr<Track> a, const shared_ptr<Track> b) {
-                return (a->getChi2() / a->getNdof()) < (b->getChi2() / b->getNdof());
+                return (a->getChi2() / static_cast<double>(a->getNdof())) <
+                       (b->getChi2() / static_cast<double>(b->getNdof()));
             });
             // remove tracks with hit that is used twice
             auto track1 = tracks.begin();
