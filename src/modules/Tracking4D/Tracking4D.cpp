@@ -382,7 +382,7 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
                 // Now look for the spatially closest cluster on the next plane
                 refTrack.fit();
 
-                PositionVector3D<Cartesian3D<double>> interceptPoint = detector->getIntercept(&refTrack);
+                PositionVector3D<Cartesian3D<double>> interceptPoint = detector->getLocalIntercept(&refTrack);
                 double interceptX = interceptPoint.X();
                 double interceptY = interceptPoint.Y();
 
@@ -390,8 +390,8 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
                     auto newCluster = neighbors[ne].get();
 
                     // Calculate the distance to the previous plane's cluster/intercept
-                    double distanceX = interceptX - newCluster->global().x();
-                    double distanceY = interceptY - newCluster->global().y();
+                    double distanceX = interceptX - newCluster->local().x();
+                    double distanceY = interceptY - newCluster->local().y();
                     double distance = sqrt(distanceX * distanceX + distanceY * distanceY);
 
                     // Check if newCluster lies within ellipse defined by spatial cuts around intercept,
