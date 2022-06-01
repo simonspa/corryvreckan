@@ -184,10 +184,6 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
         // Find the cluster that needs to have its position recalculated
         for(auto& associatedCluster : track->getAssociatedClusters(AlignmentDUTResidual::globalDetector->getName())) {
 
-            if(associatedCluster->detectorID() != AlignmentDUTResidual::globalDetector->getName()) {
-                continue;
-            }
-
             // Get the track intercept with the detector
             auto position = associatedCluster->local();
             auto trackIntercept = AlignmentDUTResidual::globalDetector->getIntercept(track.get());
