@@ -30,9 +30,12 @@ AlignmentTrackChi2::AlignmentTrackChi2(Configuration& config, std::vector<std::s
     config_.setDefault<bool>("align_orientation", true);
     config_.setDefault<size_t>("max_associated_clusters", 1);
     config_.setDefault<double>("max_track_chi2ndof", 10.);
+    config_.setDefault<unsigned int>("workers", std::max(std::thread::hardware_concurrency() - 1, 1u));
 
+    m_workers = config.get<unsigned int>("workers");
     nIterations = config_.get<size_t>("iterations");
     m_pruneTracks = config_.get<bool>("prune_tracks");
+
     m_alignPosition = config_.get<bool>("align_position");
     if(m_alignPosition) {
         LOG(INFO) << "Aligning positions";
@@ -177,11 +180,10 @@ void AlignmentTrackChi2::finalize(const std::shared_ptr<ReadonlyClipboard>& clip
     AlignmentTrackChi2::globalTracks = clipboard->getPersistentData<Track>();
 
     // Create thread pool:
-    auto threads = std::max(std::thread::hardware_concurrency() - 1, 1u);
-    ThreadPool::registerThreadCount(threads);
+    ThreadPool::registerThreadCount(m_workers);
     AlignmentTrackChi2::thread_pool =
-        new ThreadPool(threads,
-                       threads * 1024,
+        new ThreadPool(m_workers,
+                       m_workers * 1024,
                        [log_level = corryvreckan::Log::getReportingLevel(), log_format = corryvreckan::Log::getFormat()]() {
                            // clang-format on
                            // Initialize the threads to the same log level and format as the master setting

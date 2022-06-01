@@ -62,6 +62,7 @@ namespace corryvreckan {
         static std::shared_ptr<Detector> globalDetector;
         static ThreadPool* thread_pool;
 
+        unsigned int m_workers;
         size_t nIterations;
         bool m_pruneTracks;
         bool m_alignPosition;
