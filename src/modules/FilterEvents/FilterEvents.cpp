@@ -27,8 +27,8 @@ void FilterEvents::initialize() {
     max_number_tracks_ = config_.get<unsigned>("max_tracks");
     min_clusters_per_reference_ = config_.get<unsigned>("min_clusters_per_plane");
     max_clusters_per_reference_ = config_.get<unsigned>("max_clusters_per_plane");
-    tag_filters_ = config_.getMap<std::string, std::string>("filter_tags", std::map<std::string, std::string>{});
-    load_tag_filters(tag_filters_);
+    auto tag_filters = config_.getMap<std::string, std::string>("filter_tags", std::map<std::string, std::string>{});
+    load_tag_filters(tag_filters);
 
     hFilter_ = new TH1F("FilteredEvents", "Events filtered;events", 6, 0.5, 6.5);
     hFilter_->GetXaxis()->SetBinLabel(1, "Events");
@@ -108,65 +108,43 @@ void FilterEvents::load_tag_filters(const std::map<std::string, std::string>& ta
                 throw std::invalid_argument("invalid key value : tag range should hold two values in brackets, separated by "
                                             "a semicolon. Check for extra semicolon");
             }
-            // set tag filter type : 0 = range-based filter
-            tag_filter_types_.insert(std::make_pair(tag_name, "range_based"));
-            range_tag_filters_.insert(std::make_pair(tag_name, range_values));
+            // define range-based filtering function
+            double min = range_values.at(0);
+            double max = range_values.at(1);
+            tag_filter_funcs_[tag_name] = [min, max](const std::string& val) {
+                double value = corryvreckan::from_string<double>(val);
+                return !(value < min) && !(max < value);
+            };
         } else {
-            std::vector<std::string> list_values = corryvreckan::split<std::string>(tag_filter, ",");
-            // set tag filter type : 1 = list-based filter
-            tag_filter_types_.insert(std::make_pair(tag_name, "list_based"));
-            list_tag_filters_.insert(std::make_pair(tag_name, list_values));
+            // define list-based filtering function
+            std::vector<std::string> list = corryvreckan::split<std::string>(tag_filter, ",");
+            tag_filter_funcs_[tag_name] = [list](const std::string& val) {
+                return std::find(list.begin(), list.end(), val) != list.end();
+            };
         }
-    }
-}
-
-bool FilterEvents::is_tag_filter_passed(const std::string& tag_name, const std::string& tag_value) {
-    if(tag_filter_types_.at(tag_name) == "range_based") {
-        double value = corryvreckan::from_string<double>(tag_value);
-        // get range values
-        std::vector<double> range_values = range_tag_filters_.at(tag_name);
-        double min_value = range_values.at(0);
-        double max_value = range_values.at(1);
-        if(value > max_value) {
-            LOG(TRACE) << "tag value above maximum";
-            return false;
-        }
-        if(value < min_value) {
-            LOG(TRACE) << "tag value below minimum";
-            return false;
-        }
-        return true;
-    } else if(tag_filter_types_.at(tag_name) == "list_based") {
-        std::vector<std::string> tag_filter_values = list_tag_filters_.at(tag_name);
-        for(const auto& filter_value : tag_filter_values) {
-            if(tag_value == filter_value) {
-                return true;
-            }
-        }
-        LOG(TRACE) << "Tag value different from required";
-        return false;
-    } else {
-        throw std::runtime_error("tag filter type unknown");
     }
 }
 
 bool FilterEvents::filter_tags(const std::shared_ptr<Clipboard>& clipboard) {
     auto event = clipboard->getEvent();
-    for(auto& [tag_name, tag_filter] : tag_filters_) {
+    for(auto& [tag_name, filter_func] : tag_filter_funcs_) {
         try {
             auto tag_value = event->getTag(tag_name);
             if(tag_value.empty()) {
                 return true;
             } else {
-                LOG(TRACE) << "Applying filter " << tag_filter << " to tag " << tag_name << " with value " << tag_value;
-                return !is_tag_filter_passed(tag_name, tag_value);
+                bool is_tag_filter_passed = filter_func(tag_value);
+                if(is_tag_filter_passed) {
+                    LOG(TRACE) << "Event with tag : " << tag_name << " -- value : " << tag_value << " -- PASSED";
+                } else {
+                    LOG(TRACE) << "Event with tag : " << tag_name << " -- value : " << tag_value << " -- REJECTED";
+                }
+                return !is_tag_filter_passed;
             }
         } catch(std::out_of_range& e) {
             throw MissingKeyError(tag_name, config_.getName());
         } catch(std::invalid_argument& e) {
             throw InvalidValueError(config_, "filter_tags", e.what());
-        } catch(std::overflow_error& e) {
-            throw InvalidKeyError(tag_name, config_.getName(), tag_filter, typeid(std::string), e.what());
         }
     }
     return false;

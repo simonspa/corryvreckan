@@ -57,9 +57,7 @@ namespace corryvreckan {
         long unsigned min_number_tracks_{};
         long unsigned min_clusters_per_reference_{};
         long unsigned max_clusters_per_reference_{};
-        std::map<std::string, std::string> tag_filters_{}, tag_filter_types_{};
-        std::map<std::string, std::vector<double>> range_tag_filters_{};
-        std::map<std::string, std::vector<std::string>> list_tag_filters_{};
+        std::map<std::string, std::function<bool(const std::string&)>> tag_filter_funcs_{};
 
         /**
          * @brief Function to filter events based on the number of tracks
@@ -80,14 +78,6 @@ namespace corryvreckan {
          * @param tag_filter_map map of tag filters as strings
          */
         void load_tag_filters(const std::map<std::string, std::string>& tag_filter_map);
-
-        /**
-         * @brief Function to decode cut logic to be applied in tag filtering
-         * @param tag_name to be checked
-         * @param tag_value to be checked
-         * @return true if tag fulfills filter requirements, false otherwise
-         */
-        bool is_tag_filter_passed(const std::string& tag_name, const std::string& tag_value);
 
         /**
          * @brief Function to filter events based on tag requirements
