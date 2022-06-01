@@ -134,11 +134,8 @@ bool FilterEvents::filter_tags(const std::shared_ptr<Clipboard>& clipboard) {
                 return true;
             } else {
                 bool is_tag_filter_passed = filter_func(tag_value);
-                if(is_tag_filter_passed) {
-                    LOG(TRACE) << "Event with tag : " << tag_name << " -- value : " << tag_value << " -- PASSED";
-                } else {
-                    LOG(TRACE) << "Event with tag : " << tag_name << " -- value : " << tag_value << " -- REJECTED";
-                }
+                LOG(TRACE) << "Event with tag : " << tag_name << " -- value : " << tag_value << " -- "
+                           << (is_tag_filter_passed ? "PASSED" : "REJETED");
                 return !is_tag_filter_passed;
             }
         } catch(std::out_of_range& e) {
