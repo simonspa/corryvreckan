@@ -9,68 +9,9 @@
  */
 
 #include "AnalysisTimingFASTPIX.h"
-#include "objects/Timestamp.hpp"
 #include "objects/Waveform.hpp"
 
 using namespace corryvreckan;
-
-double mean(const std::vector<double>& v);
-double rms(const std::vector<double>& v);
-double rms997(const std::vector<double>& v);
-
-double mean(const std::vector<double>& v) {
-    double m = 0;
-
-    for(double i : v) {
-        m += i;
-    }
-
-    return m / static_cast<double>(v.size());
-}
-
-double rms(const std::vector<double>& v) {
-    if(v.empty()) {
-        return 0;
-    }
-
-    double m = mean(v);
-
-    double out = 0;
-
-    for(double i : v) {
-        out += (m - i) * (m - i);
-    }
-
-    return std::sqrt(out / static_cast<double>(v.size()));
-}
-
-double rms997(const std::vector<double>& v) {
-    if(v.empty()) {
-        return 0;
-    }
-
-    std::vector<double> sorted = v;
-    std::sort(sorted.begin(), sorted.end());
-
-    size_t idx_low = 0;
-    size_t idx_high = sorted.size() - 1;
-    size_t points = static_cast<size_t>(static_cast<double>(sorted.size()) * (1.0 - 0.997));
-
-    double m = mean(sorted);
-
-    for(size_t i = 0; i < points; i++) {
-        if(std::abs(sorted[idx_low] - m) > std::abs(sorted[idx_high] - m)) {
-            idx_low++;
-        } else {
-            idx_high--;
-        }
-    }
-
-    std::vector<double> out(sorted.begin() + static_cast<long int>(idx_low),
-                            sorted.begin() + static_cast<long int>(idx_high));
-
-    return rms(out);
-}
 
 struct Cfd {
     double e1, e2, min, cfd_pos;
@@ -135,6 +76,39 @@ std::vector<Cfd> find_npeaks(const Waveform::waveform_t& w, double th, double fr
 
         out.emplace_back(Cfd{e1, e2, min, cfd});
     }
+
+    return out;
+}
+
+std::vector<std::pair<double, double>> find_edges(const Waveform::waveform_t& w, double th);
+
+std::vector<std::pair<double, double>> find_edges(const Waveform::waveform_t& w, double th) {
+    std::vector<double> redge;
+    std::vector<double> fedge;
+
+    for(size_t i = 0; i < w.waveform.size() - 1; i++) {
+        if(w.waveform[i] <= th && w.waveform[i + 1] > th) {
+            redge.push_back(w.x0 +
+                            w.dx * (static_cast<double>(i) + (th - w.waveform[i]) / (w.waveform[i + 1] - w.waveform[i])));
+        }
+
+        if(w.waveform[i] >= th && w.waveform[i + 1] < th) {
+            fedge.push_back(w.x0 +
+                            w.dx * (static_cast<double>(i) + (th - w.waveform[i]) / (w.waveform[i + 1] - w.waveform[i])));
+        }
+    }
+
+    std::vector<std::pair<double, double>> out;
+
+    if(redge.size() != fedge.size()) { // FIXME
+        size_t size = std::min(redge.size(), fedge.size());
+        redge.resize(size);
+        fedge.resize(size);
+    }
+
+    std::transform(redge.begin(), redge.end(), fedge.begin(), std::back_inserter(out), [](const auto a, const auto b) {
+        return std::make_pair(a, b);
+    });
 
     return out;
 }
@@ -228,7 +202,6 @@ template <typename T> Int_t AnalysisTimingFASTPIX::fillTriangle(T* hist, double 
 }
 
 bool AnalysisTimingFASTPIX::inRoi(PositionVector3D<Cartesian3D<double>> p) {
-    // if(roi_inner_) {
     auto hex = m_detector->getInterceptPixel(p);
     auto pixels = m_detector->nPixels();
 
@@ -238,9 +211,6 @@ bool AnalysisTimingFASTPIX::inRoi(PositionVector3D<Cartesian3D<double>> p) {
     col = col + (row - (row & 1)) / 2;
 
     return col > 0 && col < pixels.X() - 1 && row > 0 && row < pixels.Y() - 1;
-    //} else {
-    //    return roi_min.X() <= p.X() && roi_min.Y() <= p.Y() && roi_max.X() >= p.X() && roi_max.Y() >= p.Y();
-    //}
 }
 
 AnalysisTimingFASTPIX::AnalysisTimingFASTPIX(Configuration& config, std::shared_ptr<Detector> detector)
@@ -266,7 +236,7 @@ void AnalysisTimingFASTPIX::initialize() {
     tree->Branch("track_x_inpix", &track_x_inpix_);
     tree->Branch("track_y_inpix", &track_y_inpix_);
 
-    // df = new ROOT::RDataFrame(*tree);
+    m_eventNumber = 0;
 
     pitch = m_detector->getPitch().X();
     height = 2. / std::sqrt(3) * pitch;
@@ -275,16 +245,22 @@ void AnalysisTimingFASTPIX::initialize() {
     pitch *= 1000.0;
     height *= 1000.0;
 
-    timewalk2d = new TH2F("timewalk2d", "timewalk", 700, -0.5, 350.5, 200, -20, 0);
-    timewalk2d_inner = new TH2F("timewalk2d_inner", "timewalk", 700, -0.5, 350.5, 200, -20, 0);
-    timewalk2d_outer = new TH2F("timewalk2d_outer", "timewalk", 700, -0.5, 350.5, 200, -20, 0);
+    timewalk = new TH2F("timewalk", "timewalk (all pixels);ToT [ns];#Deltat [ns];", 700, -0.5, 350.5, 200, -20, 0);
+    timewalk_inner =
+        new TH2F("timewalk_inner", "timewalk (inner pixels);ToT [ns];#Deltat [ns];", 700, -0.5, 350.5, 200, -20, 0);
+    timewalk_outer =
+        new TH2F("timewalk_outer", "timewalk (outer pixels);ToT [ns];#Deltat [ns];", 700, -0.5, 350.5, 200, -20, 0);
 
-    timewalk = new TH1F("timewalk", "timewalk", 1000, -50, 50);
-    timewalk_inner = new TH1F("timewalk_inner", "timewalk", 1000, -50, 50);
-    timewalk_outer = new TH1F("timewalk_outer", "timewalk", 1000, -50, 50);
+    dt_hist = new TH1F("dt", "#Deltat (all pixels);#Deltat [ns];", 1000, -50, 50);
+    dt_inner = new TH1F("dt_inner", "#Deltat (inner pixels);#Deltat [ns];", 1000, -50, 50);
+    dt_outer = new TH1F("dt_outer", "#Deltat (outer pixels);#Deltat [ns];", 1000, -50, 50);
     seedDistance = new TH1F("seedDistance", "seed distance", 100, 0, 100);
     seedStatus = new TH1F("seedStatus", "seed status", 2, 0, 1);
     seedStatus->SetCanExtend(TH1::kAllAxes);
+
+    mcp_amp = new TH1F("mcp_amp", ";Max. Amplitude [V];", 1000, 0, 5);
+    cfd_amp = new TH1F("cfd_amp", ";Max. Amplitude [V];", 1000, 0, 5);
+    cfd_peaks = new TH1F("cfd_peaks", "Peaks", 10, -0.5, 9.5);
 
     hitmapLocal =
         new TH2F("hitmapLocal", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
@@ -295,43 +271,43 @@ void AnalysisTimingFASTPIX::initialize() {
     hitmapLocalOuter =
         new TH2F("hitmapLocalOuter", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
 
-    hitmapLocalInnerCut =
-        new TH2F("hitmapLocalInnerCut", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
-
-    hitmapLocalOuterCut =
-        new TH2F("hitmapLocalOuterCut", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
-
-    hitmapLocalCut =
-        new TH2F("hitmapLocalCut", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5);
-
-    timewalkMap = new TProfile2D(
-        "timewalkMap", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5, "s");
+    dtMap = new TProfile2D("dtMap", "hitmap;x_{track} [#mum];y_{track} [#mum]", 200, -250.5, 249.5, 200, -250.5, 249.5, "s");
 
     std::string title;
     std::string mod_axes = "in-pixel x_{track} [#mum];in-pixel y_{track} [#mum];";
 
-    title = "Mean timewalk map;" + mod_axes + "<Timewalk> [ns]";
-    timewalk_inpix = new TProfile2Poly();
-    timewalk_inpix->SetName("timewalk_inpix");
-    timewalk_inpix->SetTitle(title.c_str());
-    triangle_hist(pitch, timewalk_inpix, triangle_bins_);
+    title = "Mean #Deltat map;" + mod_axes + "<#Deltat> [ns]";
+    dt_inpix = new TProfile2Poly();
+    dt_inpix->SetName("dt_inpix");
+    dt_inpix->SetTitle(title.c_str());
+    triangle_hist(pitch, dt_inpix, triangle_bins_);
 
-    timewalk_inpix->SetErrorOption(kERRORSPREAD);
+    dt_inpix->SetErrorOption(kERRORSPREAD);
 }
 
 StatusCode AnalysisTimingFASTPIX::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     auto waveforms = clipboard->getData<Waveform>("MCP_0");
-    auto timestamps = clipboard->getData<Timestamp>(m_detector->getName());
     auto tracks = clipboard->getData<Track>();
     auto pixels = clipboard->getData<Pixel>(m_detector->getName());
 
-    // LOG(INFO) << waveforms.size() << ' ' << timestamps.size() << ' ' << tracks.size();
+    LOG(DEBUG) << "====== Event: " << m_eventNumber << " ======";
+    LOG(DEBUG) << "Waveforms: " << waveforms.size() << " Pixels: " << pixels.size() << " Tracks: " << tracks.size();
 
-    if(waveforms.size() == 1 && timestamps.size() == 1 && pixels.size() > 0) {
-        auto cfd = find_npeaks(waveforms[0]->waveform(), -0.15, 0.2);
+    if(waveforms.size() == 2 && pixels.size() > 0) {
+        auto mcp_waveform = waveforms[1]->waveform();
 
-        if(cfd.size() == 1) {
+        auto ch1 = find_edges(waveforms[0]->waveform(), 0.1);
+        auto cfd = find_npeaks(mcp_waveform, -0.15, 0.2);
+
+        mcp_amp->Fill(std::fabs(*std::min_element(mcp_waveform.waveform.begin(), mcp_waveform.waveform.end())));
+
+        LOG(DEBUG) << "Peaks: " << cfd.size();
+        cfd_peaks->Fill(static_cast<double>(cfd.size()));
+
+        if(cfd.size() == 1 && ch1.size() > 0) {
+            cfd_amp->Fill(std::fabs(cfd[0].min));
+
             for(const auto& track : tracks) {
                 if(track->getChi2ndof() > chi2_ndof_cut_) {
                     LOG(DEBUG) << " - track discarded due to Chi2/ndof";
@@ -340,10 +316,12 @@ StatusCode AnalysisTimingFASTPIX::run(const std::shared_ptr<Clipboard>& clipboar
 
                 auto fp_seed = pixels[0];
 
+                LOG(DEBUG) << "Clusters: " << track->getAssociatedClusters(m_detector->getName()).size();
+
                 // Loop over all associated DUT clusters:
                 for(auto assoc_cluster : track->getAssociatedClusters(m_detector->getName())) {
-                    // if closest cluster should be used continue if current associated cluster is not the closest one
-                    if(/*use_closest_cluster_ &&*/ track->getClosestCluster(m_detector->getName()) != assoc_cluster) {
+                    // use closest cluster
+                    if(track->getClosestCluster(m_detector->getName()) != assoc_cluster) {
                         continue;
                     }
 
@@ -359,6 +337,7 @@ StatusCode AnalysisTimingFASTPIX::run(const std::shared_ptr<Clipboard>& clipboar
 
                     if(seed->column() != fp_seed->column() || seed->row() != fp_seed->row()) {
                         seedStatus->Fill("unmatched", 1);
+                        LOG(DEBUG) << "Unmatched seed pixel";
                         continue;
                     }
                     seedStatus->Fill("matched", 1);
@@ -370,17 +349,22 @@ StatusCode AnalysisTimingFASTPIX::run(const std::shared_ptr<Clipboard>& clipboar
                     double dist = std::sqrt(xdist * xdist + ydist * ydist) * 1000.0;
 
                     double tot = seed->charge();
-                    double dt = cfd[0].cfd_pos - timestamps[0]->timestamp();
+                    double dt = cfd[0].cfd_pos - ch1.front().first;
 
                     int col = seed->column();
                     int row = seed->row();
 
                     if(std::fabs(dt) > 100.0) {
+                        LOG(INFO) << "dt > 100";
                         continue;
                     }
 
                     col = col + (row - (row & 1)) / 2;
-                    // int idx = col + row * 16;
+                    int idx = col + row * 16;
+
+                    LOG(DEBUG) << " MCP: " << cfd[0].cfd_pos << " FP: " << ch1.front().first << " Dt: " << dt
+                               << " Col: " << col << " Row: " << row << " ToT " << seed->charge() << " Idx: " << idx;
+                    LOG(DEBUG) << "ToT: " << ch1.back().first - ch1.front().first;
 
                     pixel_col_ = col;
                     pixel_row_ = row;
@@ -393,63 +377,38 @@ StatusCode AnalysisTimingFASTPIX::run(const std::shared_ptr<Clipboard>& clipboar
                     track_y_inpix_ = inpixel.Y();
                     tree->Fill();
 
-                    timewalk2d->Fill(tot, dt);
-                    timewalk->Fill(dt);
+                    timewalk->Fill(tot, dt);
+                    dt_hist->Fill(dt);
                     seedDistance->Fill(dist);
 
                     if(inRoi(localIntercept)) {
-                        fillTriangle(timewalk_inpix, xmod_um, ymod_um, dt);
+                        fillTriangle(dt_inpix, xmod_um, ymod_um, dt);
                     }
 
                     hitmapLocal->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
-                    if(tot > 25 && tot < 40) {
-                        hitmapLocalCut->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
-                    }
-
-                    timewalkMap->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0, dt);
-
-                    dt_hist.emplace_back(dt);
+                    dtMap->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0, dt);
 
                     if(col == 0 || col == 15 || row == 0 || row == 3) {
-                        timewalk2d_outer->Fill(tot, dt);
-                        timewalk_outer->Fill(dt);
+                        timewalk_outer->Fill(tot, dt);
+                        dt_outer->Fill(dt);
                         hitmapLocalOuter->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
-                        if(tot > 25 && tot < 40) {
-                            hitmapLocalOuterCut->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
-                        }
-                        dt_outer_hist.emplace_back(dt);
                     } else {
-                        timewalk2d_inner->Fill(tot, dt);
-                        timewalk_inner->Fill(dt);
+                        timewalk_inner->Fill(tot, dt);
+                        dt_inner->Fill(dt);
                         hitmapLocalInner->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
-                        if(tot > 25 && tot < 40) {
-                            hitmapLocalInnerCut->Fill(localIntercept.X() * 1000.0, localIntercept.Y() * 1000.0);
-                        }
-                        dt_inner_hist.emplace_back(dt);
                     }
                 }
             }
         }
     }
 
+    m_eventNumber++;
     // Return value telling analysis to keep running
     return StatusCode::Success;
 }
 
 void AnalysisTimingFASTPIX::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 
-    timewalk_inpix->Write();
-
-    LOG(INFO) << "RMS inner " << rms(dt_inner_hist);
-    LOG(INFO) << "RMS outer " << rms(dt_outer_hist);
-    LOG(INFO) << "RMS all " << rms(dt_hist);
-
-    LOG(INFO) << "RMS997 inner " << rms997(dt_inner_hist);
-    LOG(INFO) << "RMS997 outer " << rms997(dt_outer_hist);
-    LOG(INFO) << "RMS997 all " << rms997(dt_hist);
-
-    // auto px = timewalk2d->ProfileX("timewalk2d_x");
-    // auto py = timewalk2d->ProfileY("timewalk2d_y");
-
-    timewalkMap->ProjectionXY("resolutionMap", "C=E");
+    dt_inpix->Write();
+    dtMap->ProjectionXY("resolutionMap", "C=E");
 }

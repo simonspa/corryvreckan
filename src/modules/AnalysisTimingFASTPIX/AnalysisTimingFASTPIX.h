@@ -55,18 +55,17 @@ namespace corryvreckan {
         template <typename T> Int_t fillTriangle(T* hist, double x, double y, double val = 1);
         bool inRoi(PositionVector3D<Cartesian3D<double>> p);
 
-        TH2F *timewalk2d, *timewalk2d_inner, *timewalk2d_outer;
-        TH1F *timewalk, *timewalk_inner, *timewalk_outer;
+        TH2F *timewalk, *timewalk_inner, *timewalk_outer;
+        TH1F *dt_hist, *dt_inner, *dt_outer;
         TH2F *hitmapLocal, *hitmapLocalInner, *hitmapLocalOuter;
-        TH2F *hitmapLocalCut, *hitmapLocalInnerCut, *hitmapLocalOuterCut;
         TH1F* seedDistance;
         TH1F* seedStatus;
         TTree* tree;
 
-        TProfile2D* timewalkMap;
-        TProfile2Poly* timewalk_inpix;
+        TH1F *mcp_amp, *cfd_amp, *cfd_peaks;
 
-        std::vector<double> dt_hist, dt_inner_hist, dt_outer_hist;
+        TProfile2D* dtMap;
+        TProfile2Poly* dt_inpix;
 
         double chi2_ndof_cut_;
 
@@ -79,6 +78,8 @@ namespace corryvreckan {
         size_t triangle_bins_;
 
         std::shared_ptr<Detector> m_detector;
+
+        size_t m_eventNumber;
     };
 
 } // namespace corryvreckan
