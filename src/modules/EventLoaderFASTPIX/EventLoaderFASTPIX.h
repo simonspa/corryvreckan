@@ -17,7 +17,6 @@
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
 #include "objects/Pixel.hpp"
-#include "objects/Timestamp.hpp"
 #include "objects/Track.hpp"
 
 namespace corryvreckan {
@@ -53,7 +52,6 @@ namespace corryvreckan {
 
     private:
         bool loadEvent(PixelVector& deviceData,
-                       TimestampVector& timestampData,
                        std::map<std::string, std::string>& eventTags,
                        double spidr_timestamp,
                        bool discard = false);
