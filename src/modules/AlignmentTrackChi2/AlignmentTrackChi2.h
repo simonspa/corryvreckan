@@ -20,6 +20,7 @@
 #include <TProfile.h>
 
 #include "core/module/Module.hpp"
+#include "core/utils/ThreadPool.hpp"
 #include "objects/Cluster.hpp"
 #include "objects/Track.hpp"
 
@@ -40,7 +41,6 @@ namespace corryvreckan {
 
     private:
         static void MinimiseTrackChi2(Int_t& npar, Double_t* grad, Double_t& result, Double_t* par, Int_t flag);
-
         // Member variables
         int m_discardedtracks{};
 
@@ -48,7 +48,9 @@ namespace corryvreckan {
         static TrackVector globalTracks;
         static std::shared_ptr<Detector> globalDetector;
         static int detNum;
+        static ThreadPool* thread_pool;
 
+        unsigned int m_workers;
         size_t nIterations;
         bool m_pruneTracks;
         bool m_alignPosition;

@@ -18,6 +18,7 @@ using namespace corryvreckan;
 // Global container declarations
 TrackVector AlignmentDUTResidual::globalTracks;
 std::shared_ptr<Detector> AlignmentDUTResidual::globalDetector;
+ThreadPool* AlignmentDUTResidual::thread_pool;
 
 AlignmentDUTResidual::AlignmentDUTResidual(Configuration& config, std::shared_ptr<Detector> detector)
     : Module(config, detector), m_detector(detector) {
@@ -30,7 +31,9 @@ AlignmentDUTResidual::AlignmentDUTResidual(Configuration& config, std::shared_pt
     config_.setDefault<std::string>("align_orientation_axes", "xyz");
     config_.setDefault<size_t>("max_associated_clusters", 1);
     config_.setDefault<double>("max_track_chi2ndof", 10.);
+    config_.setDefault<unsigned int>("workers", std::max(std::thread::hardware_concurrency() - 1, 1u));
 
+    m_workers = config.get<unsigned int>("workers");
     nIterations = config_.get<size_t>("iterations");
     m_pruneTracks = config_.get<bool>("prune_tracks");
 
@@ -160,6 +163,8 @@ StatusCode AlignmentDUTResidual::run(const std::shared_ptr<Clipboard>& clipboard
 // the associated cluster container on the track (no refitting of the track)
 void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result, Double_t* par, Int_t) {
 
+    static size_t fitIterations = 0;
+
     // Pick up new alignment conditions
     AlignmentDUTResidual::globalDetector->displacement(XYZPoint(par[0], par[1], par[2]));
     AlignmentDUTResidual::globalDetector->rotation(XYZVector(par[3], par[4], par[5]));
@@ -173,15 +178,13 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
 
     LOG(DEBUG) << "Looping over " << AlignmentDUTResidual::globalTracks.size() << " tracks";
 
-    // Loop over all tracks
-    for(auto& track : AlignmentDUTResidual::globalTracks) {
+    std::vector<std::shared_future<double>> result_futures;
+    auto track_refit = [&](auto& track) {
         LOG(TRACE) << "track has chi2 " << track->getChi2();
+        double track_result = 0.;
 
         // Find the cluster that needs to have its position recalculated
         for(auto& associatedCluster : track->getAssociatedClusters(AlignmentDUTResidual::globalDetector->getName())) {
-            if(associatedCluster->detectorID() != AlignmentDUTResidual::globalDetector->getName()) {
-                continue;
-            }
 
             // Get the track intercept with the detector
             auto position = associatedCluster->local();
@@ -209,10 +212,24 @@ void AlignmentDUTResidual::MinimiseResiduals(Int_t&, Double_t*, Double_t& result
             double deltachi2 = (residualX * residualX) / (errorX * errorX) + (residualY * residualY) / (errorY * errorY);
             LOG(TRACE) << "- delta chi2 = " << deltachi2;
             // Add the new residual2
-            result += deltachi2;
+            track_result += deltachi2;
             LOG(TRACE) << "- result is now " << result;
         }
+        return track_result;
+    };
+
+    // Loop over all tracks
+    for(auto& track : AlignmentDUTResidual::globalTracks) {
+        result_futures.push_back(AlignmentDUTResidual::thread_pool->submit(track_refit, track));
     }
+
+    for(auto& result_future : result_futures) {
+        result += result_future.get();
+    }
+
+    LOG_PROGRESS(INFO, "t") << "Refit of " << result_futures.size() << " track, MINUIT iteration " << fitIterations;
+    fitIterations++;
+    AlignmentDUTResidual::thread_pool->wait();
 }
 
 void AlignmentDUTResidual::finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) {
@@ -227,6 +244,18 @@ void AlignmentDUTResidual::finalize(const std::shared_ptr<ReadonlyClipboard>& cl
 
     // Set the global parameters
     AlignmentDUTResidual::globalTracks = clipboard->getPersistentData<Track>();
+
+    // Create thread pool:
+    ThreadPool::registerThreadCount(m_workers);
+    AlignmentDUTResidual::thread_pool =
+        new ThreadPool(m_workers,
+                       m_workers * 1024,
+                       [log_level = corryvreckan::Log::getReportingLevel(), log_format = corryvreckan::Log::getFormat()]() {
+                           // clang-format on
+                           // Initialize the threads to the same log level and format as the master setting
+                           corryvreckan::Log::setReportingLevel(log_level);
+                           corryvreckan::Log::setFormat(log_format);
+                       });
 
     // Set the printout arguments of the fitter
     Double_t arglist[10];

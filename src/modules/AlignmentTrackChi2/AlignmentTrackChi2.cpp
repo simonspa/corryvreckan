@@ -20,6 +20,7 @@ using namespace std;
 TrackVector AlignmentTrackChi2::globalTracks;
 std::shared_ptr<Detector> AlignmentTrackChi2::globalDetector;
 int AlignmentTrackChi2::detNum;
+ThreadPool* AlignmentTrackChi2::thread_pool;
 
 AlignmentTrackChi2::AlignmentTrackChi2(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors)
     : Module(config, std::move(detectors)) {
@@ -29,9 +30,12 @@ AlignmentTrackChi2::AlignmentTrackChi2(Configuration& config, std::vector<std::s
     config_.setDefault<bool>("align_orientation", true);
     config_.setDefault<size_t>("max_associated_clusters", 1);
     config_.setDefault<double>("max_track_chi2ndof", 10.);
+    config_.setDefault<unsigned int>("workers", std::max(std::thread::hardware_concurrency() - 1, 1u));
 
+    m_workers = config.get<unsigned int>("workers");
     nIterations = config_.get<size_t>("iterations");
     m_pruneTracks = config_.get<bool>("prune_tracks");
+
     m_alignPosition = config_.get<bool>("align_position");
     if(m_alignPosition) {
         LOG(INFO) << "Aligning positions";
@@ -94,6 +98,8 @@ StatusCode AlignmentTrackChi2::run(const std::shared_ptr<Clipboard>& clipboard) 
 // it would do nothing!
 void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, Double_t* par, Int_t) {
 
+    static size_t fitIterations = 0;
+    static string detName = "";
     LOG(DEBUG) << AlignmentTrackChi2::globalDetector->displacement() << "' " << globalDetector->rotation();
     // Pick up new alignment conditions
     AlignmentTrackChi2::globalDetector->displacement(
@@ -106,8 +112,8 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
     // The chi2 value to be returned
     result = 0.;
 
-    // Loop over all tracks
-    for(auto& track : AlignmentTrackChi2::globalTracks) {
+    std::vector<std::shared_future<double>> result_futures;
+    auto track_refit = [&](auto& track) {
         // Get all clusters on the track
         auto trackClusters = track->getClusters();
         // Find the cluster that needs to have its position recalculated
@@ -131,12 +137,29 @@ void AlignmentTrackChi2::MinimiseTrackChi2(Int_t&, Double_t*, Double_t& result, 
                              AlignmentTrackChi2::globalDetector->materialBudget(),
                              AlignmentTrackChi2::globalDetector->toLocal());
         LOG(DEBUG) << "Updated transformations for detector " << AlignmentTrackChi2::globalDetector->getName();
+        if(detName != AlignmentTrackChi2::globalDetector->getName()) {
+            detName = AlignmentTrackChi2::globalDetector->getName();
+            fitIterations = 0;
+        }
 
         track->fit();
 
         // Add the new chi2
-        result += track->getChi2();
+        return track->getChi2();
+    };
+
+    // Loop over all tracks
+    for(auto& track : AlignmentTrackChi2::globalTracks) {
+        result_futures.push_back(AlignmentTrackChi2::thread_pool->submit(track_refit, track));
     }
+
+    for(auto& result_future : result_futures) {
+        result += result_future.get();
+    }
+
+    LOG_PROGRESS(INFO, "t") << "Refit of " << result_futures.size() << " track, MINUIT iteration " << fitIterations;
+    fitIterations++;
+    AlignmentTrackChi2::thread_pool->wait();
 }
 
 // ==================================================================
@@ -155,6 +178,18 @@ void AlignmentTrackChi2::finalize(const std::shared_ptr<ReadonlyClipboard>& clip
 
     // Set the global parameters
     AlignmentTrackChi2::globalTracks = clipboard->getPersistentData<Track>();
+
+    // Create thread pool:
+    ThreadPool::registerThreadCount(m_workers);
+    AlignmentTrackChi2::thread_pool =
+        new ThreadPool(m_workers,
+                       m_workers * 1024,
+                       [log_level = corryvreckan::Log::getReportingLevel(), log_format = corryvreckan::Log::getFormat()]() {
+                           // clang-format on
+                           // Initialize the threads to the same log level and format as the master setting
+                           corryvreckan::Log::setReportingLevel(log_level);
+                           corryvreckan::Log::setFormat(log_format);
+                       });
 
     // Set the printout arguments of the fitter
     Double_t arglist[10];
