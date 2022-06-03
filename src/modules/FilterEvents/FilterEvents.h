@@ -57,6 +57,7 @@ namespace corryvreckan {
         long unsigned min_number_tracks_{};
         long unsigned min_clusters_per_reference_{};
         long unsigned max_clusters_per_reference_{};
+        std::map<std::string, std::function<bool(const std::string&)>> tag_filter_funcs_{};
 
         /**
          * @brief Function to filter events based on the number of tracks
@@ -71,6 +72,19 @@ namespace corryvreckan {
          * @return true if number of clusters on one plane is within sopecified range, false otherwise
          */
         bool filter_cluster(const std::shared_ptr<Clipboard>& clipboard);
+
+        /**
+         * @brief Function to load decoded tag filters
+         * @param tag_filter_map map of tag filters as strings
+         */
+        void load_tag_filters(const std::map<std::string, std::string>& tag_filter_map);
+
+        /**
+         * @brief Function to filter events based on tag requirements
+         * @param clipboard with the current event
+         * @return true if tags in configuration fulfill the specified requirements, false otherwise
+         */
+        bool filter_tags(const std::shared_ptr<Clipboard>& clipboard);
     };
 
 } // namespace corryvreckan

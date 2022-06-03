@@ -11,6 +11,7 @@
 #ifndef EventLoaderEUDAQ_H
 #define EventLoaderEUDAQ_H 1
 
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <string>
@@ -40,7 +41,7 @@ namespace corryvreckan {
         std::unique_ptr<SequentialReader> reader;
 
         // Member variables
-        std::vector<std::string> m_filenames{};
+        std::vector<std::filesystem::path> m_filenames{};
         bool m_longID;
 
         std::map<std::string, TH2F*> hitmap;

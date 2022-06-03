@@ -11,6 +11,8 @@
 #include "EventLoaderEUDAQ2.h"
 #include "eudaq/FileReader.hh"
 
+#include <TDirectory.h>
+
 using namespace corryvreckan;
 
 EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Detector> detector)
@@ -24,6 +26,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     config_.setDefault<bool>("get_tag_profiles", false);
     config_.setDefault<bool>("ignore_bore", true);
     config_.setDefault<bool>("veto_triggers", false);
+    config_.setDefault<bool>("sync_by_trigger", false);
     config_.setDefault<double>("skip_time", 0.);
     config_.setDefault<int>("buffer_depth", 0);
     config_.setDefault<int>("shift_triggers", 0);
@@ -42,6 +45,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
     buffer_depth_ = config_.get<int>("buffer_depth");
     shift_triggers_ = config_.get<int>("shift_triggers");
     inclusive_ = config_.get<bool>("inclusive");
+    sync_by_trigger_ = config_.get<bool>("sync_by_trigger");
 
     // Set EUDAQ log level to desired value:
     EUDAQ_LOG_LEVEL(config_.get<std::string>("eudaq_loglevel"));
@@ -64,7 +68,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
         config_.has("calibration_file") ? config_.getPath("calibration_file", true) : detector_->calibrationFile();
     if(!calibration_file.empty()) {
         LOG(DEBUG) << "Forwarding detector calibration file: " << calibration_file;
-        cfg.Set("calibration_file", calibration_file);
+        cfg.Set("calibration_file", calibration_file.string());
     }
 
     // Converting the newly built configuration to a shared pointer of a const configuration object
@@ -260,11 +264,6 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
                 events_decoded_.push(std::const_pointer_cast<eudaq::StandardEvent>(decoded_subevent));
             }
             events_decoded_.push(decoded_event);
-
-            // Read and store tag information:
-            if(get_tag_histograms_ || get_tag_profiles_) {
-                retrieve_event_tags(decoded_event);
-            }
             LOG(DEBUG) << event->GetDescription() << ": decoding succeeded";
         } else {
             LOG(DEBUG) << event->GetDescription() << ": decoding failed";
@@ -287,17 +286,37 @@ void EventLoaderEUDAQ2::retrieve_event_tags(const eudaq::EventSPC evt) {
             // Check if histogram exists already, if not: create it
             if(get_tag_histograms_) {
                 if(tagHist.find(tag_pair.first) == tagHist.end()) {
+                    LOG(DEBUG) << "Found new event tag \"" << tag_pair.first << "\"";
                     std::string name = "tagHist_" + tag_pair.first;
                     std::string title = tag_pair.first + ";tag value;# entries";
-                    tagHist[tag_pair.first] = new TH1D(name.c_str(), title.c_str(), 1024, -512.5, 511.5);
+
+                    auto* directory = getROOTDirectory();
+                    auto* tagdir = directory->GetDirectory("tags");
+                    if(!tagdir) {
+                        tagdir = directory->mkdir("tags");
+                    }
+                    tagdir->cd();
+
+                    tagHist[tag_pair.first] = new TH1D(name.c_str(), title.c_str(), 10240, -128.5, 127.5);
+                    directory->cd();
                 }
                 tagHist[tag_pair.first]->Fill(value);
             }
             if(get_tag_profiles_) {
                 if(tagProfile.find(tag_pair.first) == tagProfile.end()) {
+                    LOG(DEBUG) << "Found new event tag \"" << tag_pair.first << "\"";
                     std::string name = "tagProfile_" + tag_pair.first;
                     std::string title = "tag_" + tag_pair.first + ";event / 1000;tag value";
+
+                    TDirectory* directory = getROOTDirectory();
+                    auto* tagdir = directory->GetDirectory("tags");
+                    if(!tagdir) {
+                        tagdir = directory->mkdir("tags");
+                    }
+                    tagdir->cd();
+
                     tagProfile[tag_pair.first] = new TProfile(name.c_str(), title.c_str(), 4e5, 0, 100);
+                    directory->cd();
                 }
                 tagProfile[tag_pair.first]->Fill(evt->GetEventN() / 1000, value, 1);
             }
@@ -311,7 +330,7 @@ Event::Position EventLoaderEUDAQ2::is_within_event(const std::shared_ptr<Clipboa
     auto trigger_after_shift = static_cast<uint32_t>(static_cast<int>(evt->GetTriggerN()) + shift_triggers_);
 
     // Check if this event has timestamps available:
-    if(evt->GetTimeBegin() == 0 && evt->GetTimeEnd() == 0) {
+    if((evt->GetTimeBegin() == 0 && evt->GetTimeEnd() == 0) || sync_by_trigger_) {
         LOG(DEBUG) << evt->GetDescription() << ": Event has no timestamp, comparing trigger IDs";
 
         // If there is no event defined yet, there is little we can do:
@@ -570,6 +589,12 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
             event_.reset();
             continue;
         }
+
+        // Read and store tag information for this detector:
+        if(get_tag_histograms_ || get_tag_profiles_) {
+            retrieve_event_tags(event_);
+        }
+
         // Check if this event is within the currently defined Corryvreckan event:
         current_position = is_within_event(clipboard, event_);
 

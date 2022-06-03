@@ -13,7 +13,9 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <iostream>
+
 #include "core/module/Module.hpp"
+#include "core/utils/ThreadPool.hpp"
 #include "objects/Cluster.hpp"
 #include "objects/Pixel.hpp"
 #include "objects/Track.hpp"
@@ -58,7 +60,9 @@ namespace corryvreckan {
         // Global container declarations
         static TrackVector globalTracks;
         static std::shared_ptr<Detector> globalDetector;
+        static ThreadPool* thread_pool;
 
+        unsigned int m_workers;
         size_t nIterations;
         bool m_pruneTracks;
         bool m_alignPosition;

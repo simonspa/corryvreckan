@@ -38,18 +38,19 @@ namespace corryvreckan {
         // Functions
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
-	
+
     private:
         static void MinimiseTrackChi2(Int_t& npar, Double_t* grad, Double_t& result, Double_t* par, Int_t flag);
         // Member variables
         int m_discardedtracks{};
-	
-	// Static members
-	static TrackVector globalTracks;
+
+        // Static members
+        static TrackVector globalTracks;
         static std::shared_ptr<Detector> globalDetector;
         static int detNum;
         static ThreadPool* thread_pool;
 
+        unsigned int m_workers;
         size_t nIterations;
         bool m_pruneTracks;
         bool m_alignPosition;

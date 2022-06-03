@@ -80,6 +80,65 @@ namespace corryvreckan {
         return def;
     }
 
+    template <typename T1, typename T2> std::map<T1, T2> Configuration::getMap(const std::string& key) const {
+        try {
+            std::string str = config_.at(key);
+            used_keys_.markUsed(key);
+
+            std::map<T1, T2> map;
+            auto node = parse_value(str);
+            for(auto& child : node->children) {
+                if(child->children.empty()) {
+                    throw std::invalid_argument("map has no key-pair values");
+                }
+
+                // create pairs for final map
+                std::pair<T1, T2> pair;
+                int childId = 0;
+                for(auto& subchild : child->children) {
+                    // child Id == 0 : map key // child Id == 1 : map value
+                    if(childId == 0) {
+                        try {
+                            pair.first = corryvreckan::from_string<T1>(subchild->value);
+                        } catch(std::invalid_argument& e) {
+                            throw InvalidKeyError(key, getName(), subchild->value, typeid(T1), e.what());
+                        } catch(std::overflow_error& e) {
+                            throw InvalidKeyError(key, getName(), subchild->value, typeid(T1), e.what());
+                        }
+                    } else if(childId == 1) {
+                        try {
+                            pair.second = corryvreckan::from_string<T2>(subchild->value);
+                        } catch(std::invalid_argument& e) {
+                            throw InvalidKeyError(key, getName(), subchild->value, typeid(T2), e.what());
+                        } catch(std::overflow_error& e) {
+                            throw InvalidKeyError(key, getName(), subchild->value, typeid(T2), e.what());
+                        }
+                    } else {
+                        throw std::invalid_argument(
+                            "map element id > 1 : map cannot have more than 2 elements [key, value]");
+                    }
+                    childId++;
+                }
+                map.insert(pair);
+            }
+            return map;
+        } catch(std::out_of_range& e) {
+            throw MissingKeyError(key, getName());
+        } catch(std::invalid_argument& e) {
+            throw InvalidKeyError(key, getName(), config_.at(key), typeid(key), e.what());
+        } catch(std::overflow_error& e) {
+            throw InvalidKeyError(key, getName(), config_.at(key), typeid(key), e.what());
+        }
+    }
+
+    template <typename T1, typename T2>
+    std::map<T1, T2> Configuration::getMap(const std::string& key, const std::map<T1, T2> def) const {
+        if(has(key)) {
+            return getMap<T1, T2>(key);
+        }
+        return def;
+    }
+
     /**
      * @throws MissingKeyError If the requested key is not defined
      * @throws InvalidKeyError If the conversion to the requested type did not succeed
@@ -166,6 +225,26 @@ namespace corryvreckan {
         }
     }
 
+    template <typename T1, typename T2>
+    void Configuration::setMap(const std::string& key, const std::map<T1, T2>& val, bool mark_used) {
+        if(val.empty()) {
+            return;
+        }
+
+        std::string str;
+        str += "[";
+        for(auto const& el : val) {
+            str += "[" + corryvreckan::to_string(el.first) + "," + corryvreckan::to_string(el.second) + "],";
+        }
+        str.pop_back();
+        str += "]";
+        config_[key] = str;
+        used_keys_.registerMarker(key);
+        if(mark_used) {
+            used_keys_.markUsed(key);
+        }
+    }
+
     template <typename T> void Configuration::setMatrix(const std::string& key, const Matrix<T>& val, bool mark_used) {
         // NOTE: not the most elegant way to support arrays
         if(val.empty()) {
@@ -200,6 +279,13 @@ namespace corryvreckan {
     template <typename T> void Configuration::setDefaultArray(const std::string& key, const std::vector<T>& val) {
         if(!has(key)) {
             setArray<T>(key, val, true);
+        }
+    }
+
+    template <typename T1, typename T2>
+    void Configuration::setDefaultMap(const std::string& key, const std::map<T1, T2>& val) {
+        if(!has(key)) {
+            setMap<T1, T2>(key, val, true);
         }
     }
 

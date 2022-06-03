@@ -158,6 +158,22 @@ namespace corryvreckan {
         template <typename T> std::vector<T> getArray(const std::string& key, const std::vector<T> def) const;
 
         /**
+         * @brief Get values for a key containing a key-value pair map
+         * @param key Key to get map from
+         * @return Map of the key-value pairs listed as key value
+         */
+        template <typename T1, typename T2> std::map<T1, T2> getMap(const std::string& key) const;
+
+        /**
+         * @brief Get values for a key containing a key-value pair map
+         * @param key Key to get values of
+         * @param def Default value map to use if key is not defined
+         * @return Map of the key-value pairs listed as key value
+         */
+        template <typename T1, typename T2>
+        std::map<T1, T2> getMap(const std::string& key, const std::map<T1, T2> def) const;
+
+        /**
          * @brief Get values for a key containing a 2D matrix
          * @param key Key to get values of
          * @return Matrix of values from the requested template parameter
@@ -240,6 +256,15 @@ namespace corryvreckan {
         template <typename T> void setArray(const std::string& key, const std::vector<T>& val, bool mark_used = false);
 
         /**
+         * @brief Set map of values for a key in a given type
+         * @param key Key to set values of
+         * @param val Map of values to assign to the key
+         * @param mark_used Flag whether key should be marked as "used" directly
+         */
+        template <typename T1, typename T2>
+        void setMap(const std::string& key, const std::map<T1, T2>& val, bool mark_used = false);
+
+        /**
          * @brief Set matrix of values for a key in a given type
          * @param key Key to set values of
          * @param val List of values to assign to the key
@@ -261,6 +286,14 @@ namespace corryvreckan {
          * @note This marks the default key as "used" automatically
          */
         template <typename T> void setDefaultArray(const std::string& key, const std::vector<T>& val);
+
+        /**
+         * @brief Set default map of values for a key only if it is not defined yet
+         * @param key Key to possible set values of
+         * @param val List of values to assign to the key if the key is not defined yet
+         * @note This marks the default key as "used" automatically
+         */
+        template <typename T1, typename T2> void setDefaultMap(const std::string& key, const std::map<T1, T2>& val);
 
         /**
          * @brief Set default matrix of values for a key only if it is not defined yet
