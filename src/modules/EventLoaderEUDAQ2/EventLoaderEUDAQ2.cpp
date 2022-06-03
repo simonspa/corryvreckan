@@ -11,6 +11,8 @@
 #include "EventLoaderEUDAQ2.h"
 #include "eudaq/FileReader.hh"
 
+#include <TDirectory.h>
+
 using namespace corryvreckan;
 
 EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Detector> detector)
@@ -262,11 +264,6 @@ std::shared_ptr<eudaq::StandardEvent> EventLoaderEUDAQ2::get_next_std_event() {
                 events_decoded_.push(std::const_pointer_cast<eudaq::StandardEvent>(decoded_subevent));
             }
             events_decoded_.push(decoded_event);
-
-            // Read and store tag information:
-            if(get_tag_histograms_ || get_tag_profiles_) {
-                retrieve_event_tags(decoded_event);
-            }
             LOG(DEBUG) << event->GetDescription() << ": decoding succeeded";
         } else {
             LOG(DEBUG) << event->GetDescription() << ": decoding failed";
@@ -289,17 +286,37 @@ void EventLoaderEUDAQ2::retrieve_event_tags(const eudaq::EventSPC evt) {
             // Check if histogram exists already, if not: create it
             if(get_tag_histograms_) {
                 if(tagHist.find(tag_pair.first) == tagHist.end()) {
+                    LOG(DEBUG) << "Found new event tag \"" << tag_pair.first << "\"";
                     std::string name = "tagHist_" + tag_pair.first;
                     std::string title = tag_pair.first + ";tag value;# entries";
-                    tagHist[tag_pair.first] = new TH1D(name.c_str(), title.c_str(), 1024, -512.5, 511.5);
+
+                    auto* directory = getROOTDirectory();
+                    auto* tagdir = directory->GetDirectory("tags");
+                    if(!tagdir) {
+                        tagdir = directory->mkdir("tags");
+                    }
+                    tagdir->cd();
+
+                    tagHist[tag_pair.first] = new TH1D(name.c_str(), title.c_str(), 10240, -128.5, 127.5);
+                    directory->cd();
                 }
                 tagHist[tag_pair.first]->Fill(value);
             }
             if(get_tag_profiles_) {
                 if(tagProfile.find(tag_pair.first) == tagProfile.end()) {
+                    LOG(DEBUG) << "Found new event tag \"" << tag_pair.first << "\"";
                     std::string name = "tagProfile_" + tag_pair.first;
                     std::string title = "tag_" + tag_pair.first + ";event / 1000;tag value";
+
+                    TDirectory* directory = getROOTDirectory();
+                    auto* tagdir = directory->GetDirectory("tags");
+                    if(!tagdir) {
+                        tagdir = directory->mkdir("tags");
+                    }
+                    tagdir->cd();
+
                     tagProfile[tag_pair.first] = new TProfile(name.c_str(), title.c_str(), 4e5, 0, 100);
+                    directory->cd();
                 }
                 tagProfile[tag_pair.first]->Fill(evt->GetEventN() / 1000, value, 1);
             }
@@ -572,6 +589,12 @@ StatusCode EventLoaderEUDAQ2::run(const std::shared_ptr<Clipboard>& clipboard) {
             event_.reset();
             continue;
         }
+
+        // Read and store tag information for this detector:
+        if(get_tag_histograms_ || get_tag_profiles_) {
+            retrieve_event_tags(event_);
+        }
+
         // Check if this event is within the currently defined Corryvreckan event:
         current_position = is_within_event(clipboard, event_);
 
