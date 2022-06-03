@@ -19,11 +19,13 @@ void EventFilter::initialize() {
 
     config_.setDefault<unsigned>("minTracks", 0);
     config_.setDefault<unsigned>("maxTracks", 100);
+    config_.setDefault<unsigned>("maxTracks_roi", 1000);
     config_.setDefault<unsigned>("minClusters_per_plane", 0);
     config_.setDefault<unsigned>("maxClusters_per_plane", 100);
 
     minNumberTracks_ = config_.get<unsigned>("minTracks");
     maxNumberTracks_ = config_.get<unsigned>("maxTracks");
+    maxNumberTracksDut_ = config_.get<unsigned>("max_tracks_on_dut");
     minClustersPerReference_ = config_.get<unsigned>("minClusters_per_plane");
     maxClustersPerReference_ = config_.get<unsigned>("maxClusters_per_plane");
 }
@@ -45,8 +47,21 @@ StatusCode EventFilter::run(const std::shared_ptr<Clipboard>& clipboard) {
     // Loop over all reference detectors
     for(auto& detector : get_detectors()) {
         // skip duts and auxilliary
-        if(detector->isAuxiliary() || detector->isDUT()) {
+        if(detector->isAuxiliary()) {
             continue;
+        }
+        if(detector->isDUT()) {
+            if(maxNumberTracksDut_ == 1000) {
+                continue;
+            }
+            uint tracksonDut = 0;
+            for(auto t : clipboard->getData<Track>()) {
+                if(detector->isWithinROI(t.get())) {
+                    tracksonDut++;
+                    if(tracksonDut > maxNumberTracksDut_)
+                        return StatusCode::DeadTime;
+                }
+            }
         }
         std::string det = detector->getName();
         // Check if number of Clusters on plane is within acceptance
@@ -62,6 +77,7 @@ StatusCode EventFilter::run(const std::shared_ptr<Clipboard>& clipboard) {
             return StatusCode::DeadTime;
         }
     }
+
     return StatusCode::Success;
 }
 

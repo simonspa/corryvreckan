@@ -51,6 +51,8 @@ namespace corryvreckan {
     private:
         long unsigned maxNumberTracks_{};
         long unsigned minNumberTracks_{};
+        long unsigned maxNumberTracksDut_{};
+
         long unsigned minClustersPerReference_{};
         long unsigned maxClustersPerReference_{};
         // counter of discarded events
