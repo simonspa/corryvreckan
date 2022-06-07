@@ -77,41 +77,42 @@ void AnalysisEfficiency::initialize() {
                                                    pitch_y / 2.);
     hPixelEfficiencyMap_trackPos->SetDirectory(this->getROOTDirectory());
 
-            title =
+    title =
         m_detector->getName() + "in pixel cluster size map;in-pixel x_{track} [#mum];in-pixel y_{track} #mum;cluster size";
     hclusterSize_trackPos_TProfile = new TProfile2D("clusterSize_trackPos_TProfile",
-                                                           title.c_str(),
-                                                           nbins_x,
-                                                           -pitch_x / 2.,
-                                                           pitch_x / 2.,
-                                                           nbins_y,
-                                                           -pitch_y / 2.,
-                                                           pitch_y / 2.,
-                                                           -500,
-                                                           500);
-    title =
-m_detector->getName() + "in pixel time resolution map;in-pixel x_{track} [#mum];in-pixel y_{track} #mum;#sigma time difference [ns]";
-htimeRes_trackPos_TProfile = new TH2D("timeRes_trackPos_TProfile",
-                                                   title.c_str(),
-                                                   nbins_x,
-                                                   -pitch_x / 2.,
-                                                   pitch_x / 2.,
-                                                   nbins_y,
-                                                   -pitch_y / 2.,
-                                                   pitch_y / 2.);
-    title =
-            m_detector->getName() + "in pixel time difference map;in-pixel x_{track} [#mum];in-pixel y_{track} #mum;time difference: track - cluster [ns]";
-        htimeDelay_trackPos_TProfile = new TProfile2D("timeDelay_trackPos_TProfile",
-                                                               title.c_str(),
-                                                               nbins_x,
-                                                               -pitch_x / 2.,
-                                                               pitch_x / 2.,
-                                                               nbins_y,
-                                                               -pitch_y / 2.,
-                                                               pitch_y / 2.,
-                                                               -500,
-                                                               500,
-                                                               "s"); // standard deviation as the error on a bin, convienent for time resolution
+                                                    title.c_str(),
+                                                    nbins_x,
+                                                    -pitch_x / 2.,
+                                                    pitch_x / 2.,
+                                                    nbins_y,
+                                                    -pitch_y / 2.,
+                                                    pitch_y / 2.,
+                                                    -500,
+                                                    500);
+    title = m_detector->getName() +
+            "in pixel time resolution map;in-pixel x_{track} [#mum];in-pixel y_{track} #mum;#sigma time difference [ns]";
+    htimeRes_trackPos_TProfile = new TH2D("timeRes_trackPos_TProfile",
+                                          title.c_str(),
+                                          nbins_x,
+                                          -pitch_x / 2.,
+                                          pitch_x / 2.,
+                                          nbins_y,
+                                          -pitch_y / 2.,
+                                          pitch_y / 2.);
+    title = m_detector->getName() + "in pixel time difference map;in-pixel x_{track} [#mum];in-pixel y_{track} #mum;time "
+                                    "difference: track - cluster [ns]";
+    htimeDelay_trackPos_TProfile =
+        new TProfile2D("timeDelay_trackPos_TProfile",
+                       title.c_str(),
+                       nbins_x,
+                       -pitch_x / 2.,
+                       pitch_x / 2.,
+                       nbins_y,
+                       -pitch_y / 2.,
+                       pitch_y / 2.,
+                       -500,
+                       500,
+                       "s"); // standard deviation as the error on a bin, convienent for time resolution
 
     title = m_detector->getName() +
             " Pixel efficiency map (in-pixel ROI);in-pixel x_{track} [#mum];in-pixel y_{track} #mum;#epsilon";
@@ -444,8 +445,8 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
                     break; // There cannot be a second pixel within the cluster through which the track goes.
                 }
             }
-            htimeDelay_trackPos_TProfile->Fill(xmod_um, ymod_um, (track->timestamp()-cluster->timestamp()));
-            hclusterSize_trackPos_TProfile->Fill(xmod_um, ymod_um, cluster->size());
+            htimeDelay_trackPos_TProfile->Fill(xmod_um, ymod_um, (track->timestamp() - cluster->timestamp()));
+            hclusterSize_trackPos_TProfile->Fill(xmod_um, ymod_um, static_cast<double>(cluster->size()));
 
             auto clusterLocal = m_detector->globalToLocal(cluster->global());
 
@@ -592,12 +593,12 @@ void AnalysisEfficiency::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
         }
     }
     // do the timing profile:
-    for(auto x =0; x< htimeDelay_trackPos_TProfile->GetNbinsX();++x){
-        for(auto y =0; y< htimeDelay_trackPos_TProfile->GetNbinsY();++y){
-        htimeRes_trackPos_TProfile->SetBinContent(x,y,htimeDelay_trackPos_TProfile->GetBinError(x,y));
-       // LOG(STATUS) << x <<'\t' << y << "\t" << htimeDelay_trackPos_TProfile->GetBinError(x,y);
+    for(auto x = 0; x < htimeDelay_trackPos_TProfile->GetNbinsX(); ++x) {
+        for(auto y = 0; y < htimeDelay_trackPos_TProfile->GetNbinsY(); ++y) {
+            htimeRes_trackPos_TProfile->SetBinContent(x, y, htimeDelay_trackPos_TProfile->GetBinError(x, y));
+            // LOG(STATUS) << x <<'\t' << y << "\t" << htimeDelay_trackPos_TProfile->GetBinError(x,y);
         }
-   }
+    }
     htimeDelay_trackPos_TProfile->Write();
     htimeRes_trackPos_TProfile->Write();
 }
