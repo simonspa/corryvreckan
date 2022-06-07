@@ -19,6 +19,7 @@ void FilterEvents::initialize() {
 
     config_.setDefault<unsigned>("min_tracks", 0);
     config_.setDefault<unsigned>("max_tracks", 100);
+    config_.setDefault<bool>("only_tracks_on_dut", false);
     config_.setDefault<unsigned>("min_clusters_per_plane", 0);
     config_.setDefault<unsigned>("max_clusters_per_plane", 100);
     config_.setDefaultMap<std::string, std::string>("filter_tags", std::map<std::string, std::string>{});
@@ -27,6 +28,13 @@ void FilterEvents::initialize() {
     max_number_tracks_ = config_.get<unsigned>("max_tracks");
     min_clusters_per_reference_ = config_.get<unsigned>("min_clusters_per_plane");
     max_clusters_per_reference_ = config_.get<unsigned>("max_clusters_per_plane");
+    only_tracks_on_dut_ = config_.get<bool>("only_tracks_on_dut");
+
+    if(only_tracks_on_dut_ && get_duts().size() != 1) {
+        LOG(WARNING) << "Multiple DUTs in geometry, only_tracks_on_dut_ forced to true";
+        only_tracks_on_dut_ = false;
+    }
+
     auto tag_filters = config_.getMap<std::string, std::string>("filter_tags", std::map<std::string, std::string>{});
     load_tag_filters(tag_filters);
 
@@ -58,7 +66,18 @@ void FilterEvents::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
 }
 
 bool FilterEvents::filter_tracks(const std::shared_ptr<Clipboard>& clipboard) {
-    auto num_tracks = clipboard->getData<Track>().size();
+    auto tracks = clipboard->getData<Track>();
+    auto num_tracks = tracks.size();
+
+    // check how many tracks are on the dut
+    if(only_tracks_on_dut_) {
+        num_tracks = 0;
+        for(const auto& track : tracks) {
+            if(get_duts().front()->hasIntercept(track.get()))
+                num_tracks++;
+        }
+    }
+
     if(num_tracks > max_number_tracks_) {
         hFilter_->Fill(2); // too many tracks
         LOG(TRACE) << "Number of tracks above maximum";
