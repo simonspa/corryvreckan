@@ -48,9 +48,6 @@ namespace corryvreckan {
 
         // Profile version
         TProfile2D* hPixelEfficiencyMap_trackPos_TProfile;
-        TProfile2D* htimeDelay_trackPos_TProfile;
-        TH2D* htimeRes_trackPos_TProfile;
-        TProfile2D* hclusterSize_trackPos_TProfile;
         TProfile2D* hPixelEfficiencyMap_inPixelROI_trackPos_TProfile;
         TProfile2D* hChipEfficiencyMap_trackPos_TProfile;
         TProfile2D* hPixelEfficiencyMatrix_TProfile;
