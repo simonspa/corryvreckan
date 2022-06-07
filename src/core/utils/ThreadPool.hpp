@@ -2,18 +2,11 @@
  * @file
  * @brief Definition of thread pool for concurrent events
  *
-<<<<<<< HEAD
- * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
- * Intergovernmental Organization or submit itself to any jurisdiction.
-=======
  * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  * SPDX-License-Identifier: MIT
->>>>>>> corry/master
  */
 
 #ifndef CORRY_THREADPOOL_H
@@ -59,7 +52,6 @@ namespace corryvreckan {
             /**
              * @brief Erases the queue and release waiting threads on destruction
              */
-
             ~SafeQueue() { invalidate(); };
 
             /**
@@ -231,7 +223,6 @@ namespace corryvreckan {
         void wait();
 
         /**
-
          * @brief Invalidate all queues and joins all running threads when the pool is destroyed
          */
         void destroy();
@@ -278,7 +269,6 @@ namespace corryvreckan {
         // The queue holds the task functions to be executed by the workers
         using Task = std::unique_ptr<std::packaged_task<void()>>;
         SafeQueue<Task> queue_;
-
         bool with_buffered_{true};
         std::function<void()> finalize_function_{};
 
