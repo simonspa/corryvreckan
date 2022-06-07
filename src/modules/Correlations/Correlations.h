@@ -69,7 +69,6 @@ namespace corryvreckan {
         TH2F* correlationYVsTime;
         TH2F* correlationXYVsTime;
         TH2F* correlationYXVsTime;
-        std::vector<std::vector<TH2F*>> dut_corr_;
         // Parameters which can be set by user
         double time_cut_;
         bool do_time_cut_;

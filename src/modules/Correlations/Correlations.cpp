@@ -221,21 +221,6 @@ void Correlations::initialize() {
     // Timing plots
     title = m_detector->getName() + ": event time;t [s];events";
     eventTimes = new TH1F("eventTimes", title.c_str(), 3000000, -1e-5, 300 - 1e-5);
-    // plots only for the DUT
-    if(m_detector->isDUT()) {
-        TDirectory* directory = getROOTDirectory();
-        TDirectory* local_directory = directory->mkdir("dut");
-        if(local_directory == nullptr) {
-            throw RuntimeError("Cannot create or access local ROOT directory for module " + this->getUniqueName());
-        }
-        local_directory->cd();
-        dut_corr_.resize(4);
-        for(int i = 0; i < 16; ++i) {
-            dut_corr_[i % 4].push_back(new TH2F(
-                ("ifHit" + std::to_string(i)).c_str(), ("ifHit" + std::to_string(i)).c_str(), 1200, 0, 1200, 600, 0, 600));
-        }
-        directory->cd();
-    }
 }
 
 StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -286,11 +271,6 @@ StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
 
         // Loop over reference plane clusters to make correlation plots
         for(auto& refCluster : referenceClusters) {
-//            if(m_detector->isDUT()) {
-//                dut_corr_.at(static_cast<uint>(cluster->column()))
-//                    .at(static_cast<uint>(cluster->row()))
-//                    ->Fill(refCluster->column(), refCluster->row());
-//            }
             double timeDifference = refCluster->timestamp() - cluster->timestamp();
             // in 40 MHz:
             long long int timeDifferenceInt = static_cast<long long int>(timeDifference / 25);
