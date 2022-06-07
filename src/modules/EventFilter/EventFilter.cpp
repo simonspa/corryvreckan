@@ -46,7 +46,7 @@ StatusCode EventFilter::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Loop over all reference detectors
     for(auto& detector : get_detectors()) {
-        // skip duts and auxilliary
+        // skip duts and auxiliary
         if(detector->isAuxiliary()) {
             continue;
         }
