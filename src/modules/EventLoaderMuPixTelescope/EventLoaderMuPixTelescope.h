@@ -8,6 +8,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#ifndef EVENTLOADERMUPIXTELESCOPE_H
+#define EVENTLOADERMUPIXTELESCOPE_H 1
 #include <TH1F.h>
 #include <TH2F.h>
 #include <iostream>
@@ -30,9 +32,10 @@ namespace corryvreckan {
         /**
          * @brief Constructor for this unique module
          * @param config Configuration object for this module as retrieved from the steering file
-         * @param detector Shared pointer to detector of this module
+         * @param detectors Shared pointer to detectors of this module, detectors are assigned via name/tag pairs
          */
-        EventLoaderMuPixTelescope(Configuration& config, std::shared_ptr<Detector> detector);
+        EventLoaderMuPixTelescope(Configuration& config, std::vector<std::shared_ptr<Detector>> detectors);
+        ~EventLoaderMuPixTelescope() {}
 
         /**
          * @brief [Initialise this module]
@@ -48,44 +51,55 @@ namespace corryvreckan {
     private:
         StatusCode read_sorted(const std::shared_ptr<Clipboard>& clipboard);
         StatusCode read_unsorted(const std::shared_ptr<Clipboard>& clipboard);
+
+        std::shared_ptr<Pixel> read_hit(const RawHit& h, uint tag, unsigned long corrected_fpgaTime);
         void fillBuffer();
-        uint tag_{};
+        std::vector<uint> tags_{};
         double prev_event_end_{};
-        int type_{};
+        std::map<uint, int> types_{};
         int eventNo_{};
-        long unsigned counterHits_{};
-        long unsigned removed_{}, stored_{};
+        std::map<uint, long unsigned> counterHits_{};
+        std::map<uint, long unsigned> removed_{}, stored_{};
         uint64_t ts_prev_{0};
         unsigned buffer_depth_{};
         bool eof_{false};
-        double timeOffset_{};
+        std::map<uint, double> timeOffset_{};
+        std::map<uint, std::string> names_{};
         std::string input_file_{};
-        std::shared_ptr<Detector> detector_;
+        std::vector<std::shared_ptr<Detector>> detectors_;
         struct CompareTimeGreater {
             bool operator()(const std::shared_ptr<Pixel>& a, const std::shared_ptr<Pixel>& b) {
                 return a->timestamp() > b->timestamp();
             }
         };
         // Buffer of timesorted pixel hits: (need to use greater here!)
-        std::priority_queue<std::shared_ptr<Pixel>, PixelVector, CompareTimeGreater> pixelbuffer_;
-        PixelVector pixels_{};
+        std::map<uint, std::priority_queue<std::shared_ptr<Pixel>, PixelVector, CompareTimeGreater>> pixelbuffers_;
+        std::map<uint, PixelVector> pixels_{};
         std::string inputDirectory_;
         bool isSorted_;
         int runNumber_;
+        double refFrequency_;
+        bool use_both_timestamps_;
+        uint bitshift_tot_;
         BlockFile* blockFile_;
         TelescopeFrame tf_;
 
         // Histograms
-        TH1F* hPixelToT;
-        TH1F* hTimeStamp;
-        TH1F* hHitsEvent;
-        TH1F* hitsPerkEvent;
-        TH2F* hdiscardedHitmap;
-        TH2F* hHitMap;
-        TH2F* raw_fpga_vs_chip;
-        TH2F* raw_fpga_vs_chip_corrected;
-        TH1F* chip_delay;
+        std::map<std::string, TH1F*> hPixelToT;
+        std::map<std::string, TH1F*> hts_ToT;
+        std::map<std::string, TH2F*> ts_TS1_ToT;
+        std::map<std::string, TH1F*> hTimeStamp;
+        std::map<std::string, TH1F*> hHitsEvent;
+        std::map<std::string, TH1F*> hitsPerkEvent;
+        std::map<std::string, TH2F*> hdiscardedHitmap;
+        std::map<std::string, TH2F*> hHitMap;
+        std::map<std::string, TH2F*> raw_fpga_vs_chip;
+        std::map<std::string, TH2F*> raw_fpga_vs_chip_corrected;
+        std::map<std::string, TH1F*> chip_delay;
+        std::map<std::string, TH2F*> ts1_ts2;
+
         static std::map<std::string, int> typeString_to_typeID;
     };
 
 } // namespace corryvreckan
+#endif // EVENTLOADERMUPIXTELESCOPE_H

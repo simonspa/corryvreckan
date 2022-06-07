@@ -44,7 +44,7 @@ EventDefinitionM26::EventDefinitionM26(Configuration& config, std::vector<std::s
     pivot_max_ = config_.get<int>("pivot_max");
     use_all_mimosa_hits_ = config_.get<bool>("use_all_mimosa_hits");
     pixelated_timing_layer_ = config_.get<bool>("pixelated_timing_layer");
-    LOG(WARNING) << " setting shift to " << Units::get(timeshift_, "us") << ": accepting pivots from  " << pivot_min_
+    LOG(WARNING) << " Setting shift to " << Units::get(timeshift_, "us") << ": accepting pivots from  " << pivot_min_
                  << " to " << pivot_max_;
     add_trigger_ = config_.get<bool>("add_trigger");
     // Set EUDAQ log level to desired value:
@@ -282,6 +282,7 @@ StatusCode EventDefinitionM26::run(const std::shared_ptr<Clipboard>& clipboard) 
             time_trig_stop_prev_ = evtEnd;
             auto event = std::make_shared<Event>(evtBegin, evtEnd);
             clipboard->putEvent(event);
+
             if(add_trigger_) {
                 clipboard->getEvent()->addTrigger(triggerTLU_, static_cast<double>(time_trig));
             }

@@ -30,6 +30,7 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
     config_.setDefault<double>("charge_histo_range", 1000.0);
     config_.setDefault<int>("n_raw_bins", 1000);
     config_.setDefault<double>("raw_histo_range", 1000.0);
+    config_.setDefault<double>("inpixel_bin_size", Units::get<double>(0.5, "um"));
 
     time_cut_frameedge_ = config_.get<double>("time_cut_frameedge");
     spatial_cut_sensoredge_ = config_.get<double>("spatial_cut_sensoredge");
@@ -40,6 +41,7 @@ AnalysisDUT::AnalysisDUT(Configuration& config, std::shared_ptr<Detector> detect
     correlations_ = config_.get<bool>("correlations");
     n_chargebins_ = config_.get<int>("n_charge_bins");
     charge_histo_range_ = config_.get<double>("charge_histo_range");
+    inpixelBinSize_ = config_.get<double>("inpixel_bin_size");
 
     // if no separate raw histo bin settings are given, use the ones specified for the charge
     if(config_.has("n_charge_bins") & !config_.has("n_raw_bins")) {
@@ -98,6 +100,48 @@ void AnalysisDUT::initialize() {
                      -(n_timebins_ + 1) / 2. * time_binning_,
                      (n_timebins_ - 1) / 2. * time_binning_);
     }
+
+    auto title = "local residual x of " + m_detector->getName() + " vs col; column; local residual x" +
+                 m_detector->getName() + "[#mum]";
+    resX_vs_col = new TH2F("residual_local_x_col",
+                           title.c_str(),
+                           m_detector->nPixels().X(),
+                           -0.5,
+                           m_detector->nPixels().X() - 0.5,
+                           300,
+                           -150,
+                           150);
+    title = "local residual y of " + m_detector->getName() + " vs col; column; local residual x" + m_detector->getName() +
+            "[#mum]";
+    resY_vs_col = new TH2F("residual_local_y_col",
+                           title.c_str(),
+                           m_detector->nPixels().X(),
+                           -0.5,
+                           m_detector->nPixels().X() - 0.5,
+                           300,
+                           -150,
+                           150);
+
+    title =
+        "local residual x of " + m_detector->getName() + " vs row; row; local residual x" + m_detector->getName() + "[#mum]";
+    resX_vs_row = new TH2F("resisdual_local_x_row",
+                           title.c_str(),
+                           m_detector->nPixels().Y(),
+                           -0.5,
+                           m_detector->nPixels().Y() - 0.5,
+                           300,
+                           -150,
+                           150);
+    title = "local residual y of " + m_detector->getName() + " vs row; row; local residual x " + m_detector->getName() +
+            "[#mum]";
+    resY_vs_row = new TH2F("residual_local_y_row",
+                           title.c_str(),
+                           m_detector->nPixels().Y(),
+                           -0.5,
+                           m_detector->nPixels().Y() - 0.5,
+                           300,
+                           -150,
+                           150);
 
     hClusterMapAssoc = new TH2F("clusterMapAssoc",
                                 "Map of associated clusters; cluster col; cluster row",
@@ -278,7 +322,7 @@ void AnalysisDUT::initialize() {
     std::string mod_axes = "in-pixel x_{track} [#mum];in-pixel y_{track} [#mum];";
 
     // cut flow histogram
-    std::string title = m_detector->getName() + ": number of tracks discarded by different cuts;cut type;tracks";
+    title = m_detector->getName() + ": number of tracks discarded by different cuts;cut type;tracks";
     hCutHisto = new TH1F("hCutHisto", title.c_str(), 4, 1, 5);
     hCutHisto->GetXaxis()->SetBinLabel(1, "High Chi2");
     hCutHisto->GetXaxis()->SetBinLabel(2, "Outside DUT area");
@@ -583,6 +627,49 @@ void AnalysisDUT::initialize() {
                                    800,
                                    -1000,
                                    1000);
+
+    auto nbins_x = static_cast<int>(std::ceil(m_detector->getPitch().X() / inpixelBinSize_));
+    auto nbins_y = static_cast<int>(std::ceil(m_detector->getPitch().Y() / inpixelBinSize_));
+    if(nbins_x > 1e4 || nbins_y > 1e4) {
+        throw InvalidValueError(config_, "inpixel_bin_size", "Too many bins for in-pixel histograms.");
+    }
+
+    title =
+        m_detector->getName() + "in pixel cluster size map;in-pixel x_{track} [#mum];in-pixel y_{track} #mum;cluster size";
+    hclusterSize_trackPos_TProfile = new TProfile2D("clusterSize_trackPos_TProfile",
+                                                    title.c_str(),
+                                                    nbins_x,
+                                                    -pitch_x / 2.,
+                                                    pitch_x / 2.,
+                                                    nbins_y,
+                                                    -pitch_y / 2.,
+                                                    pitch_y / 2.,
+                                                    -500,
+                                                    500);
+    title = m_detector->getName() +
+            "in pixel time resolution map;in-pixel x_{track} [#mum];in-pixel y_{track} #mum;#sigma time difference [ns]";
+    htimeRes_trackPos_TProfile = new TH2D("timeRes_trackPos_TProfile",
+                                          title.c_str(),
+                                          nbins_x,
+                                          -pitch_x / 2.,
+                                          pitch_x / 2.,
+                                          nbins_y,
+                                          -pitch_y / 2.,
+                                          pitch_y / 2.);
+    title = m_detector->getName() + "in pixel time difference map;in-pixel x_{track} [#mum];in-pixel y_{track} #mum;time "
+                                    "difference: track - cluster [ns]";
+    htimeDelay_trackPos_TProfile =
+        new TProfile2D("timeDelay_trackPos_TProfile",
+                       title.c_str(),
+                       nbins_x,
+                       -pitch_x / 2.,
+                       pitch_x / 2.,
+                       nbins_y,
+                       -pitch_y / 2.,
+                       pitch_y / 2.,
+                       -500,
+                       500,
+                       "s"); // standard deviation as the error on a bin, convienent for time resolution
 }
 
 StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -698,6 +785,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
                 continue;
             }
             has_associated_cluster = true;
+            htimeDelay_trackPos_TProfile->Fill(xmod_um, ymod_um, (track->timestamp() - assoc_cluster->timestamp()));
+            hclusterSize_trackPos_TProfile->Fill(xmod_um, ymod_um, static_cast<double>(assoc_cluster->size()));
 
             hTrackZPosDUT->Fill(track->getState(m_detector->getName()).z());
 
@@ -749,6 +838,10 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             double local_pos_diff = sqrt(local_x_distance * local_x_absdistance + local_y_absdistance * local_y_absdistance);
             double local_pos_diff_um = local_pos_diff * 1000.;
 
+            resX_vs_col->Fill(assoc_cluster->column(), local_x_distance_um);
+            resY_vs_col->Fill(assoc_cluster->column(), local_y_distance_um);
+            resX_vs_row->Fill(assoc_cluster->row(), local_x_distance_um);
+            resY_vs_row->Fill(assoc_cluster->row(), local_y_distance_um);
             // Cluster charge normalized to path length in sensor:
             double norm = 1; // FIXME fabs(cos( turn*wt )) * fabs(cos( tilt*wt ));
             // FIXME: what does this mean? To my understanding we have the correct charge here already...
@@ -891,6 +984,15 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 void AnalysisDUT::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
     hCutHisto->Scale(1 / double(num_tracks_));
     clusterSizeAssocNorm->Scale(1 / clusterSizeAssoc->Integral());
+    // do the timing profile:
+    for(auto x = 0; x < htimeDelay_trackPos_TProfile->GetNbinsX(); ++x) {
+        for(auto y = 0; y < htimeDelay_trackPos_TProfile->GetNbinsY(); ++y) {
+            htimeRes_trackPos_TProfile->SetBinContent(x, y, htimeDelay_trackPos_TProfile->GetBinError(x, y));
+            // LOG(STATUS) << x <<'\t' << y << "\t" << htimeDelay_trackPos_TProfile->GetBinError(x,y);
+        }
+    }
+    htimeDelay_trackPos_TProfile->Write();
+    htimeRes_trackPos_TProfile->Write();
 }
 
 void AnalysisDUT::createGlobalResidualPlots() {

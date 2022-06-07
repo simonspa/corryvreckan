@@ -76,6 +76,7 @@ void AnalysisEfficiency::initialize() {
                                                    -pitch_y / 2.,
                                                    pitch_y / 2.);
     hPixelEfficiencyMap_trackPos->SetDirectory(this->getROOTDirectory());
+
     title = m_detector->getName() +
             " Pixel efficiency map (in-pixel ROI);in-pixel x_{track} [#mum];in-pixel y_{track} #mum;#epsilon";
     hPixelEfficiencyMap_inPixelROI_trackPos_TProfile = new TProfile2D("pixelEfficiencyMap_inPixelROI_trackPos_TProfile",
@@ -214,6 +215,9 @@ void AnalysisEfficiency::initialize() {
     efficiencyRows->SetDirectory(this->getROOTDirectory());
     efficiencyVsTime = new TEfficiency("efficiencyVsTime", "Efficiency vs. time; time [s]; #epsilon", 3000, 0, 3000);
     efficiencyVsTime->SetDirectory(this->getROOTDirectory());
+    efficiencyVsTimeLong =
+        new TEfficiency("efficiencyVsTimeLong", "Efficiency vs. time; time [s]; #epsilon", 3000, 0, 30000);
+    efficiencyVsTimeLong->SetDirectory(this->getROOTDirectory());
     hTrackTimeToPrevHit_matched =
         new TH1D("trackTimeToPrevHit_matched", "trackTimeToPrevHit_matched;time to prev hit [us];# events", 1e6, 0, 1e6);
     hTrackTimeToPrevHit_notmatched = new TH1D(
@@ -299,6 +303,8 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
 
     auto pitch_x = m_detector->getPitch().X();
     auto pitch_y = m_detector->getPitch().Y();
+    // Get the event:
+    auto event = clipboard->getEvent();
 
     // Loop over all tracks
     for(auto& track : tracks) {
@@ -341,9 +347,6 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
             LOG(DEBUG) << " - track close to masked pixel";
             continue;
         }
-
-        // Get the event:
-        auto event = clipboard->getEvent();
 
         // Discard tracks which are very close to the frame edges
         if(fabs(track->timestamp() - event->end()) < m_timeCutFrameEdge) {
@@ -443,7 +446,8 @@ StatusCode AnalysisEfficiency::run(const std::shared_ptr<Clipboard>& clipboard) 
             eTotalEfficiency->Fill(has_associated_cluster, 0); // use 0th bin for total efficiency
             efficiencyColumns->Fill(has_associated_cluster, m_detector->getColumn(localIntercept));
             efficiencyRows->Fill(has_associated_cluster, m_detector->getRow(localIntercept));
-            efficiencyVsTime->Fill(has_associated_cluster, track->timestamp() / 1e9); // convert nanoseconds to seconds
+            efficiencyVsTime->Fill(has_associated_cluster, track->timestamp() / 1e9);     // convert nanoseconds to seconds
+            efficiencyVsTimeLong->Fill(has_associated_cluster, track->timestamp() / 1e9); // convert nanoseconds to seconds
             if(isWithinInPixelROI) {
                 hPixelEfficiencyMap_inPixelROI_trackPos_TProfile->Fill(xmod_um, ymod_um, has_associated_cluster);
                 eTotalEfficiency_inPixelROI->Fill(has_associated_cluster, 0); // use 0th bin for total efficiency

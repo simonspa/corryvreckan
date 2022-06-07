@@ -20,7 +20,7 @@ If a region of interest (ROI) is defined for the detector under investigation, o
 * `n_raw_bins`: Number of bins for pixel raw values in histograms. Defaults to n_charge_bins if not specified.
 * `raw_histo_range`: Axis range for pixel raw values axes in histograms. Defaults to charge_histo_range if not specified.
 * `correlations`: If `true`, correlation plots between all (before and after applying cuts) tracks and all clusters on the DUT (i.e. associated + non-associated) are created. Defaults to `false`.
-
+* `inpixel_bin_size`: The bin size for inpixel plots. Defaults to `500 nm`
 ### Plots produced
 
 For the DUT, the following plots are produced:
@@ -31,6 +31,7 @@ For the DUT, the following plots are produced:
     * Maps of the in-pixel efficiencies in local/global coordinates
     * Maps of matched/non-matched track positions
     * Maps of cluster/seed charge vs. row
+    * Maps of in-pixel time/spatial resolution, mean time delay
 * 1D histograms:
     * Histograms of the cluster size of associated clusters in X/Y
     * Histogram of the charge/raw values of associated clusters

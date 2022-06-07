@@ -54,6 +54,7 @@ namespace corryvreckan {
         TProfile2D* hGlobalEfficiencyMap_trackPos_TProfile;
         TProfile2D* hChipEfficiencyMap_clustPos_TProfile;
         TProfile2D* hGlobalEfficiencyMap_clustPos_TProfile;
+
         // TEfficiency version
         TEfficiency* hPixelEfficiencyMap_trackPos;
         TEfficiency* hChipEfficiencyMap_trackPos;
@@ -66,6 +67,7 @@ namespace corryvreckan {
         TEfficiency* efficiencyColumns;
         TEfficiency* efficiencyRows;
         TEfficiency* efficiencyVsTime;
+        TEfficiency* efficiencyVsTimeLong;
 
         TH1D* hDistanceCluster;
         TH1D* hTimeDiffPrevTrack_assocCluster;
