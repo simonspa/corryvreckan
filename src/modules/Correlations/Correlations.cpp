@@ -271,6 +271,7 @@ StatusCode Correlations::run(const std::shared_ptr<Clipboard>& clipboard) {
 
         // Loop over reference plane clusters to make correlation plots
         for(auto& refCluster : referenceClusters) {
+
             double timeDifference = refCluster->timestamp() - cluster->timestamp();
             // in 40 MHz:
             long long int timeDifferenceInt = static_cast<long long int>(timeDifference / 25);

@@ -12,10 +12,8 @@
 #define CORRELATIONS_H 1
 
 #include <TCanvas.h>
-#include <TDirectory.h>
 #include <TH1F.h>
 #include <TH2F.h>
-
 #include <iostream>
 #include "core/module/Module.hpp"
 #include "objects/Cluster.hpp"
@@ -69,6 +67,7 @@ namespace corryvreckan {
         TH2F* correlationYVsTime;
         TH2F* correlationXYVsTime;
         TH2F* correlationYXVsTime;
+
         // Parameters which can be set by user
         double time_cut_;
         bool do_time_cut_;
