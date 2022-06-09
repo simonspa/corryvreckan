@@ -1,8 +1,8 @@
 /**
  * @file
- * @brief Implementation of module EventFilter
+ * @brief Implementation of module FilterEvents
  *
- * @copyright Copyright (c) 2020 CERN and the Corryvreckan authors.
+ * @copyright Copyright (c) 2022 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -40,8 +40,10 @@ void FilterEvents::initialize() {
 
     hFilter_ = new TH1F("FilteredEvents", "Events filtered;events", 6, 0.5, 6.5);
     hFilter_->GetXaxis()->SetBinLabel(1, "Events");
-    hFilter_->GetXaxis()->SetBinLabel(2, "Too few tracks");
-    hFilter_->GetXaxis()->SetBinLabel(3, "Too many tracks");
+    std::string label = (only_tracks_on_dut_ ? "Too few tracks on dut " : "Too few tracks");
+    hFilter_->GetXaxis()->SetBinLabel(2, label.c_str());
+    label = (only_tracks_on_dut_ ? "Too many tracks on dut " : "Too many tracks");
+    hFilter_->GetXaxis()->SetBinLabel(3, label.c_str());
     hFilter_->GetXaxis()->SetBinLabel(4, "Too few clusters");
     hFilter_->GetXaxis()->SetBinLabel(5, "Too many clusters");
     hFilter_->GetXaxis()->SetBinLabel(6, "Events passed ");
