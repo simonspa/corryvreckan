@@ -37,6 +37,19 @@ namespace corryvreckan {
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
+    public:
+        enum ETrackSelection {
+            kAllTrack,
+            kHighChi2Ndf,
+            kOutsideDUT,
+            kOutsideROI,
+            kCloseToMask,
+            kTimeLimit,
+            kPass,
+            kAssociated,
+            kNSelection
+        };
+
     private:
         std::shared_ptr<Detector> m_detector;
 

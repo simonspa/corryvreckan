@@ -323,11 +323,15 @@ void AnalysisDUT::initialize() {
 
     // cut flow histogram
     title = m_detector->getName() + ": number of tracks discarded by different cuts;cut type;tracks";
-    hCutHisto = new TH1F("hCutHisto", title.c_str(), 4, 1, 5);
-    hCutHisto->GetXaxis()->SetBinLabel(1, "High Chi2");
-    hCutHisto->GetXaxis()->SetBinLabel(2, "Outside DUT area");
-    hCutHisto->GetXaxis()->SetBinLabel(3, "Close to masked pixel");
-    hCutHisto->GetXaxis()->SetBinLabel(4, "Close to frame begin/end");
+    hCutHisto = new TH1F("hCutHisto", title.c_str(), ETrackSelection::kNSelection, 0, ETrackSelection::kNSelection);
+    hCutHisto->GetXaxis()->SetBinLabel(ETrackSelection::kAllTrack + 1, "No cuts");
+    hCutHisto->GetXaxis()->SetBinLabel(ETrackSelection::kHighChi2Ndf + 1, "High Chi2");
+    hCutHisto->GetXaxis()->SetBinLabel(ETrackSelection::kOutsideDUT + 1, "Outside DUT area");
+    hCutHisto->GetXaxis()->SetBinLabel(ETrackSelection::kOutsideROI + 1, "Outside ROI of DUT");
+    hCutHisto->GetXaxis()->SetBinLabel(ETrackSelection::kCloseToMask + 1, "Close to masked pixel");
+    hCutHisto->GetXaxis()->SetBinLabel(ETrackSelection::kTimeLimit + 1, "Close to frame begin/end");
+    hCutHisto->GetXaxis()->SetBinLabel(ETrackSelection::kPass + 1, "Pass all cuts");
+    hCutHisto->GetXaxis()->SetBinLabel(ETrackSelection::kAssociated + 1, "Associated cluster");
 
     title = "Resolution in X;" + mod_axes + "MAD(#Deltax) [#mum]";
     rmsxvsxmym = new TProfile2D("rmsxvsxmym",
@@ -679,6 +683,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Loop over all tracks
     for(auto& track : tracks) {
+        hCutHisto->Fill(ETrackSelection::kAllTrack);
+
         auto globalIntercept = m_detector->getIntercept(track.get());
         auto localIntercept = m_detector->globalToLocal(globalIntercept);
 
@@ -701,7 +707,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         // Cut on the chi2/ndof
         if(track->getChi2ndof() > chi2_ndof_cut_) {
             LOG(DEBUG) << " - track discarded due to Chi2/ndof";
-            hCutHisto->Fill(1);
+            hCutHisto->Fill(ETrackSelection::kHighChi2Ndf);
             num_tracks_++;
             continue;
         }
@@ -719,20 +725,21 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         // Check if it intercepts the DUT
         if(!m_detector->hasIntercept(track.get(), spatial_cut_sensoredge_)) {
             LOG(DEBUG) << " - track outside DUT area";
-            hCutHisto->Fill(2);
+            hCutHisto->Fill(ETrackSelection::kOutsideDUT);
             num_tracks_++;
             continue;
         }
 
         // Check that track is within region of interest using winding number algorithm
         if(!m_detector->isWithinROI(track.get())) {
+            hCutHisto->Fill(ETrackSelection::kOutsideROI);
             continue;
         }
 
         // Check that it doesn't go through/near a masked pixel
         if(m_detector->hitMasked(track.get(), 1.)) {
             LOG(DEBUG) << " - track close to masked pixel";
-            hCutHisto->Fill(3);
+            hCutHisto->Fill(ETrackSelection::kCloseToMask);
             num_tracks_++;
             continue;
         }
@@ -758,7 +765,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             LOG(DEBUG) << " - track close to end of readout frame: "
                        << Units::display(fabs(track->timestamp() - event->end()), {"us", "ns"}) << " at "
                        << Units::display(track->timestamp(), {"us"});
-            hCutHisto->Fill(4);
+            hCutHisto->Fill(ETrackSelection::kTimeLimit);
             num_tracks_++;
             continue;
         } else if(fabs(track->timestamp() - event->start()) < time_cut_frameedge_) {
@@ -766,7 +773,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             LOG(DEBUG) << " - track close to start of readout frame: "
                        << Units::display(fabs(track->timestamp() - event->start()), {"us", "ns"}) << " at "
                        << Units::display(track->timestamp(), {"us"});
-            hCutHisto->Fill(4);
+            hCutHisto->Fill(ETrackSelection::kTimeLimit);
             num_tracks_++;
             continue;
         }
@@ -776,6 +783,7 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
         auto xmod_um = inpixel.X() * 1000.; // convert mm -> um
         auto ymod_um = inpixel.Y() * 1000.; // convert mm -> um
 
+        hCutHisto->Fill(ETrackSelection::kPass);
         // Loop over all associated DUT clusters:
         for(auto assoc_cluster : track->getAssociatedClusters(m_detector->getName())) {
             LOG(DEBUG) << " - Looking at next associated DUT cluster";
@@ -785,6 +793,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
                 continue;
             }
             has_associated_cluster = true;
+            hCutHisto->Fill(ETrackSelection::kAssociated);
+
             htimeDelay_trackPos_TProfile->Fill(xmod_um, ymod_um, (track->timestamp() - assoc_cluster->timestamp()));
             hclusterSize_trackPos_TProfile->Fill(xmod_um, ymod_um, static_cast<double>(assoc_cluster->size()));
 
@@ -982,7 +992,6 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 }
 
 void AnalysisDUT::finalize(const std::shared_ptr<ReadonlyClipboard>&) {
-    hCutHisto->Scale(1 / double(num_tracks_));
     clusterSizeAssocNorm->Scale(1 / clusterSizeAssoc->Integral());
     // do the timing profile:
     for(auto x = 0; x < htimeDelay_trackPos_TProfile->GetNbinsX(); ++x) {
