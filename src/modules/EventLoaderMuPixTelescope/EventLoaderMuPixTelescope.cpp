@@ -388,6 +388,7 @@ void EventLoaderMuPixTelescope::fillBuffer() {
 std::map<std::string, int> EventLoaderMuPixTelescope::typeString_to_typeID = {{"mupix8", MP8_SORTED_TS2},
                                                                               {"mupix9", MP10_SORTED_TS2},
                                                                               {"mupix10", MP10_UNSORTED_GS1_GS2},
+                                                                              {"atlaspix3", AP3_UNSORTED_GS1_GS2},
                                                                               {"run2020v1", R20V1_UNSORTED_GS1_GS2_GS3},
                                                                               {"run2020v2", R20V2_UNSORTED_GS1_GS2_GS3},
                                                                               {"run2020v3", R20V3_UNSORTED_GS1_GS2_GS3},
