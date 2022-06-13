@@ -298,6 +298,11 @@ PositionVector3D<Cartesian3D<double>> PixelDetector::getLocalPosition(double col
                                                  0.);
 }
 
+// Function to get row and column of pixel
+std::pair<int, int> PixelDetector::getInterceptPixel(PositionVector3D<Cartesian3D<double>> localPosition) const {
+    return {floor(getColumn(localPosition) + 0.5), floor(getRow(localPosition) + 0.5)};
+}
+
 // Function to get in-pixel position
 ROOT::Math::XYVector PixelDetector::inPixel(const double column, const double row) const {
     // a pixel ranges from (col-0.5) to (col+0.5)

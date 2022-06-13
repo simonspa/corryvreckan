@@ -16,6 +16,7 @@
 #include "Math/RotationZYX.h"
 
 #include "Detector.hpp"
+#include "HexagonalPixelDetector.hpp"
 #include "core/utils/log.h"
 #include "exceptions.h"
 
@@ -54,6 +55,8 @@ Detector::Detector(const Configuration& config) : m_role(DetectorRole::NONE) {
 
     m_detectorType = config.get<std::string>("type");
     std::transform(m_detectorType.begin(), m_detectorType.end(), m_detectorType.begin(), ::tolower);
+    m_detectorCoordinates = config.get<std::string>("coordinates", "cartesian");
+    std::transform(m_detectorCoordinates.begin(), m_detectorCoordinates.end(), m_detectorCoordinates.begin(), ::tolower);
     m_timeOffset = config.get<double>("time_offset", 0.0);
     if(m_timeOffset > 0.) {
         LOG(TRACE) << "Time offset: " << m_timeOffset;
@@ -78,6 +81,8 @@ std::shared_ptr<Detector> corryvreckan::Detector::factory(const Configuration& c
     std::transform(coordinates.begin(), coordinates.end(), coordinates.begin(), ::tolower);
     if(coordinates == "cartesian") {
         return std::make_shared<PixelDetector>(config);
+    } else if(coordinates == "hexagonal") {
+        return std::make_shared<HexagonalPixelDetector>(config);
     } else {
         throw InvalidValueError(config, "coordinates", "Coordinates can only set to be cartesian now");
     }
@@ -137,6 +142,10 @@ Configuration Detector::getConfiguration() const {
 
     Configuration config(getName());
     config.set("type", m_detectorType);
+
+    if(m_detectorCoordinates != "cartesian") {
+        config.set("coordinates", m_detectorCoordinates);
+    }
 
     // Store the role of the detector
     std::vector<std::string> roles;

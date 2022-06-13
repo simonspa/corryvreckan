@@ -116,6 +116,9 @@ namespace corryvreckan {
         // Function to get local position from column (x) and row (y) coordinates
         PositionVector3D<Cartesian3D<double>> getLocalPosition(double column, double row) const override;
 
+        // Function to get row and column of pixel
+        std::pair<int, int> getInterceptPixel(PositionVector3D<Cartesian3D<double>> localPosition) const override;
+
         /**
          * Transformation from local (sensor) coordinates to in-pixel coordinates
          * @param  column Column address ranging from int_column-0.5*pitch to int_column+0.5*pitch
@@ -177,7 +180,7 @@ namespace corryvreckan {
          */
         bool isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) override;
 
-    private:
+    protected:
         // Initialize coordinate transformations
         void initialise() override;
 

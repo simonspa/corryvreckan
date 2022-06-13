@@ -26,6 +26,7 @@
 #pragma link C++ class corryvreckan::MCParticle + ;
 #pragma link C++ class corryvreckan::Event + ;
 #pragma link C++ class corryvreckan::Track::Plane + ;
+#pragma link C++ class corryvreckan::Waveform + ;
 
 #pragma link C++ class corryvreckan::Object::PointerWrapper < corryvreckan::Pixel> + ;
 #pragma link C++ class corryvreckan::Object::PointerWrapper < corryvreckan::Cluster> + ;
