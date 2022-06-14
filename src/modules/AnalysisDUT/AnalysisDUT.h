@@ -37,6 +37,9 @@ namespace corryvreckan {
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
+    protected:
+        virtual void fillClusterHistograms(const std::shared_ptr<Cluster>& cluster);
+
     public:
         enum ETrackSelection {
             kAllTrack,

@@ -676,6 +676,29 @@ void AnalysisDUT::initialize() {
                        "s"); // standard deviation as the error on a bin, convienent for time resolution
 }
 
+// Associated cluster histograms
+void AnalysisDUT::fillClusterHistograms(const std::shared_ptr<Cluster>& assoc_cluster) {
+    auto seed = assoc_cluster->getSeedPixel();
+
+    auto cluster_charge = assoc_cluster->charge();
+    clusterChargeAssoc->Fill(cluster_charge);
+    seedChargeAssoc->Fill(seed->charge());
+    hClusterChargeMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row(), cluster_charge);
+    hClusterChargeVsColAssoc->Fill(assoc_cluster->column(), cluster_charge);
+    hClusterChargeVsRowAssoc->Fill(assoc_cluster->row(), cluster_charge);
+    hSeedChargeVsColAssoc->Fill(assoc_cluster->column(), seed->charge());
+    hSeedChargeVsRowAssoc->Fill(assoc_cluster->row(), seed->charge());
+    hClusterChargeVsRowAssoc_2D->Fill(assoc_cluster->row(), cluster_charge);
+    hSeedChargeVsRowAssoc_2D->Fill(assoc_cluster->row(), seed->charge());
+
+    // Fill per-pixel histograms
+    for(auto& pixel : assoc_cluster->pixels()) {
+        hHitMapAssoc->Fill(pixel->column(), pixel->row());
+        hPixelRawValueAssoc->Fill(pixel->raw());
+        hPixelRawValueMapAssoc->Fill(pixel->column(), pixel->row(), pixel->raw());
+    }
+}
+
 StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the telescope tracks from the clipboard
@@ -800,25 +823,9 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
             hTrackZPosDUT->Fill(track->getState(m_detector->getName()).z());
 
-            // Fill per-pixel histograms
-            for(auto& pixel : assoc_cluster->pixels()) {
-                hHitMapAssoc->Fill(pixel->column(), pixel->row());
-                hPixelRawValueAssoc->Fill(pixel->raw());
-                hPixelRawValueMapAssoc->Fill(pixel->column(), pixel->row(), pixel->raw());
-            }
-
             // Cluster and Charge Plots
-
+            fillClusterHistograms(std::make_shared<Cluster>(*assoc_cluster));
             auto cluster_charge = assoc_cluster->charge();
-            clusterChargeAssoc->Fill(cluster_charge);
-            seedChargeAssoc->Fill(assoc_cluster->getSeedPixel()->charge());
-            hClusterChargeMapAssoc->Fill(assoc_cluster->column(), assoc_cluster->row(), cluster_charge);
-            hClusterChargeVsColAssoc->Fill(assoc_cluster->column(), cluster_charge);
-            hClusterChargeVsRowAssoc->Fill(assoc_cluster->row(), cluster_charge);
-            hSeedChargeVsColAssoc->Fill(assoc_cluster->column(), assoc_cluster->getSeedPixel()->charge());
-            hSeedChargeVsRowAssoc->Fill(assoc_cluster->row(), assoc_cluster->getSeedPixel()->charge());
-            hClusterChargeVsRowAssoc_2D->Fill(assoc_cluster->row(), cluster_charge);
-            hSeedChargeVsRowAssoc_2D->Fill(assoc_cluster->row(), assoc_cluster->getSeedPixel()->charge());
 
             clusterSizeAssoc->Fill(static_cast<double>(assoc_cluster->size()));
             clusterSizeAssocNorm->Fill(static_cast<double>(assoc_cluster->size()));
