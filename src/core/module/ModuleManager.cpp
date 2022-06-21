@@ -526,7 +526,7 @@ void ModuleManager::run() {
     // Check if we have an event or track limit:
     auto number_of_events = global_config.get<int>("number_of_events", -1);
     auto number_of_tracks = global_config.get<int>("number_of_tracks", -1);
-    auto eventloop_print_freq = global_config.get<int>("print_freq", 100);
+    auto eventloop_print_freq = global_config.get<int>("status_print_frequency", 100);
 
     auto run_time = global_config.get<double>("run_time", static_cast<double>(Units::convert(-1.0, "s")));
 
