@@ -57,6 +57,7 @@ namespace corryvreckan {
         long unsigned min_number_tracks_{};
         long unsigned min_clusters_per_reference_{};
         long unsigned max_clusters_per_reference_{};
+        bool only_tracks_on_dut_{};
         std::map<std::string, std::function<bool(const std::string&)>> tag_filter_funcs_{};
 
         /**
