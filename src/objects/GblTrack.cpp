@@ -303,8 +303,8 @@ void GblTrack::fit() {
     }
 
     // copy the results
-    ndof_ = double(ndf);
-    chi2ndof_ = (ndof_ < 0.0) ? -1 : (chi2_ / ndof_);
+    ndof_ = static_cast<size_t>(ndf);
+    chi2ndof_ = (ndof_ <= 0) ? -1 : (chi2_ / static_cast<double>(ndof_));
     VectorXd localPar(5);
     MatrixXd localCov(5, 5);
     VectorXd gblCorrection(5);
