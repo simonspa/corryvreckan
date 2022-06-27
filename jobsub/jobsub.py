@@ -164,7 +164,7 @@ def loadparamsfromcsv(csvfilename, runs):
                     parameters_csv[cnt-1] = {} # start counting at 0
                     parameters_csv[cnt-1].update(row) # start counting at 0
                 except ValueError: # int conversion error
-                    log.warn("Could not interpret run number on line "+str(filteredfile.linecount)+" in file '"+csvfilename+"'.")
+                    log.warning("Could not interpret run number on line "+str(filteredfile.linecount)+" in file '"+csvfilename+"'.")
                     continue
             if len(missingRuns)==0:
                 log.debug("Found at least one line for each run we were searching for.")
@@ -500,7 +500,7 @@ def main(argv=None):
             steeringStringBase = ireplace("@" + key + "@", parameters[key], steeringStringBase)
         except EOFError:
             if (not key == "conf_file" and not key == "logpath"): # do not warn about default content of config
-                log.warn("Parameter '" + key + "' was not found in configuration template "+args.conf_file)
+                log.warning("Parameter '" + key + "' was not found in configuration template "+args.conf_file)
 
     # CSV table
     log.debug ("Loading csv file (if requested)")
@@ -601,7 +601,7 @@ def main(argv=None):
                                         i_repeat += 1
                                         log.debug("appendix is now '%s'", appendix)
                             except EOFError:
-                                log.warn("Parameter '" + field + "' from the csv file was not found in the template file (already overwritten by config file parameters?)")
+                                log.warning("Parameter '" + field + "' from the csv file was not found in the template file (already overwritten by config file parameters?)")
                     except KeyError:
                         log.warning("Run #" + runnr + " was not found in the specified CSV file - will skip this run! ")
                         continue

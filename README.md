@@ -84,6 +84,7 @@ The following authors, in alphabetical order, have developed or contributed to C
 * Mateus Vicente Barreto Pinto, University Geneva, @mvicente
 * Morag Williams, University of Glasgow/CERN, @williamm
 * Jin Zhang, DESY, @jinz
+* Bong-Hwi Lim, University of Turin, @blim
 
 ## Citations
 The reference paper of Corryvreckan describing the framework and providing an example for a test beam data reconstruction has been published in the *Journal of Instrumentation*.
