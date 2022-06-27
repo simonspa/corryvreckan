@@ -122,7 +122,7 @@ void Tracking4D::initialize() {
 
         local_intersects_[detectorID] = new TH2F("local_intersect",
                                                  "local intersect, col, row",
-                                                 detector->nPixels().Y(),
+                                                 detector->nPixels().X(),
                                                  0,
                                                  detector->nPixels().X(),
                                                  detector->nPixels().Y(),
