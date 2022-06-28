@@ -26,6 +26,15 @@ $ make install
 
 For more detailed installation instructions, please refer to the documentation below.
 
+### Uninstallation
+To uninstall and remove compilation files (e.g. when you want to do a clean recompilation/reinstallation):
+
+```
+$ rm -r build/ lib/ bin/
+```
+
+N.B. This assumes you used the above commands to compile and install. Adjust the paths accordingly if you used a different `build` directory and/or `CMAKE_INSTALL_PREFIX` option.
+
 ## Documentation
 The PDF user manual is automatically compiled by the continuous integration and can be [downloaded here](https://gitlab.cern.ch/corryvreckan/corryvreckan/-/jobs/artifacts/master/raw/public/usermanual/corryvreckan-manual.pdf?job=cmp%3Ausermanual).
 
