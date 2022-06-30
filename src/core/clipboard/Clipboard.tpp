@@ -125,6 +125,11 @@ namespace corryvreckan {
                 data->erase(object_iterator);
             }
         }
+
+        // If we removed all objects, drop the key:
+        if(data->empty()) {
+            storage_element.at(typeid(T)).erase(key);
+        }
     }
 
     template <typename T>
