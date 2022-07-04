@@ -570,6 +570,15 @@ void AnalysisDUT::initialize() {
                  10 * m_detector->nPixels().Y(),
                  -0.5,
                  m_detector->nPixels().Y() - 0.5);
+    hUnassociatedTracksLocalPosition =
+        new TH2F("hUnassociatedTracksLocalPosition",
+                 "Map of not associated track positions (local);local intercept x [px];local intercept y [px]",
+                 10 * m_detector->nPixels().X(),
+                 -0.5,
+                 m_detector->nPixels().X() - 0.5,
+                 10 * m_detector->nPixels().Y(),
+                 -0.5,
+                 m_detector->nPixels().Y() - 0.5);
     hUnassociatedTracksGlobalPosition =
         new TH2F("hUnassociatedTracksGlobalPosition",
                  "Map of not associated track positions (global); global intercept x [mm]; global intercept y [mm]",
@@ -990,6 +999,8 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             hAssociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept), m_detector->getRow(localIntercept));
         }
         if(!has_associated_cluster) {
+            hUnassociatedTracksLocalPosition->Fill(m_detector->getColumn(localIntercept),
+                                                   m_detector->getRow(localIntercept));
             hUnassociatedTracksGlobalPosition->Fill(globalIntercept.X(), globalIntercept.Y());
         }
         num_tracks_++;
