@@ -18,7 +18,6 @@
 #include <TRef.h>
 
 #include "Cluster.hpp"
-#include "core/utils/type.h"
 
 namespace corryvreckan {
 
