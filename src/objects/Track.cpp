@@ -11,6 +11,8 @@
 #include "Track.hpp"
 #include "exceptions.h"
 
+#include "core/utils/type.h"
+
 using namespace corryvreckan;
 
 Track::Plane::Plane(std::string name, double z, double x_x0, Transform3D to_local)
