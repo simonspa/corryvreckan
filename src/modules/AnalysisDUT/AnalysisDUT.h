@@ -39,6 +39,7 @@ namespace corryvreckan {
 
     protected:
         virtual void fillClusterHistograms(const std::shared_ptr<Cluster>& cluster);
+        virtual bool acceptTrackDUT(const std::shared_ptr<Track>& track);
 
     public:
         enum ETrackSelection {

@@ -708,6 +708,32 @@ void AnalysisDUT::fillClusterHistograms(const std::shared_ptr<Cluster>& assoc_cl
     }
 }
 
+// Geometric selection from DUT
+bool AnalysisDUT::acceptTrackDUT(const std::shared_ptr<Track>& track) {
+    // Check if it intercepts the DUT
+    if(!m_detector->hasIntercept(track.get(), spatial_cut_sensoredge_)) {
+        LOG(DEBUG) << " - track outside DUT area";
+        hCutHisto->Fill(ETrackSelection::kOutsideDUT);
+        num_tracks_++;
+        return false;
+    }
+
+    // Check that track is within region of interest using winding number algorithm
+    if(!m_detector->isWithinROI(track.get())) {
+        hCutHisto->Fill(ETrackSelection::kOutsideROI);
+        return false;
+    }
+
+    // Check that it doesn't go through/near a masked pixel
+    if(m_detector->hitMasked(track.get(), 1.)) {
+        LOG(DEBUG) << " - track close to masked pixel";
+        hCutHisto->Fill(ETrackSelection::kCloseToMask);
+        num_tracks_++;
+        return false;
+    }
+    return true;
+}
+
 StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
 
     // Get the telescope tracks from the clipboard
@@ -754,27 +780,9 @@ StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
             track_trackDistance->Fill(1000. * (inter1.x() - inter2.x()), 1000. * (inter1.y() - inter2.y()));
         }
 
-        // Check if it intercepts the DUT
-        if(!m_detector->hasIntercept(track.get(), spatial_cut_sensoredge_)) {
-            LOG(DEBUG) << " - track outside DUT area";
-            hCutHisto->Fill(ETrackSelection::kOutsideDUT);
-            num_tracks_++;
+        // DUT geometry
+        if(!acceptTrackDUT(track))
             continue;
-        }
-
-        // Check that track is within region of interest using winding number algorithm
-        if(!m_detector->isWithinROI(track.get())) {
-            hCutHisto->Fill(ETrackSelection::kOutsideROI);
-            continue;
-        }
-
-        // Check that it doesn't go through/near a masked pixel
-        if(m_detector->hitMasked(track.get(), 1.)) {
-            LOG(DEBUG) << " - track close to masked pixel";
-            hCutHisto->Fill(ETrackSelection::kCloseToMask);
-            num_tracks_++;
-            continue;
-        }
 
         // Fill correlation plots after applying cuts:
         if(correlations_) {
