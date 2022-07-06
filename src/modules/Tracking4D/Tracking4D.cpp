@@ -275,15 +275,15 @@ StatusCode Tracking4D::run(const std::shared_ptr<Clipboard>& clipboard) {
             trees[detector].buildTrees(tempClusters);
 
             // Get first and last detectors with clusters on them:
-            if(!reference_first) {
-                if(std::find(exclude_from_seed_.begin(), exclude_from_seed_.end(), detector->getName()) ==
-                   exclude_from_seed_.end()) {
+            if(std::find(exclude_from_seed_.begin(), exclude_from_seed_.end(), detector->getName()) ==
+               exclude_from_seed_.end()) {
+                if(!reference_first) {
                     reference_first = detector;
-                } else {
-                    LOG(DEBUG) << "Not using " << detector->getName() << " as seed as chosen by config file.";
                 }
+                reference_last = detector;
+            } else {
+                LOG(DEBUG) << "Not using " << detector->getName() << " as seed as chosen by config file.";
             }
-            reference_last = detector;
         }
     }
 
