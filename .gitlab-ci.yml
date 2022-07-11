@@ -254,7 +254,7 @@ cmp:doxygen:
     script:
         - source ../.ci/init_x86_64.sh
         - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
-        - ninja apsq_docs_reference
+        - ninja corry_docs_reference
         - mv doc/reference/html ../public/reference
 
 # Compile LaTeX user manual:

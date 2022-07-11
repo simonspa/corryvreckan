@@ -9,7 +9,7 @@ FIND_PACKAGE(Doxygen)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/reference/Doxyfile" "${DOCS_DOXYGEN_BINARY_DIR}/Doxyfile" @ONLY)
 
 ADD_CUSTOM_TARGET(
-    apsq_docs_reference
+    corry_docs_reference
     COMMAND Doxygen::doxygen "${DOCS_DOXYGEN_BINARY_DIR}/Doxyfile"
     DEPENDS Doxygen::doxygen
     WORKING_DIRECTORY "${DOCS_DOXYGEN_BINARY_DIR}"
