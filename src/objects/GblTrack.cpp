@@ -392,14 +392,14 @@ ROOT::Math::XYZPoint GblTrack::getState(const std::string& detectorID) const {
 }
 
 void GblTrack::set_seed_cluster(const Cluster* cluster) {
-    seed_cluster_ = const_cast<Cluster*>(cluster);
+    seed_cluster_ = PointerWrapper<Cluster>(cluster);
 }
 
 Cluster* GblTrack::get_seed_cluster() const {
-    if(!seed_cluster_.IsValid() || seed_cluster_.GetObject() == nullptr) {
+    if(seed_cluster_.get() == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(Cluster));
     }
-    return dynamic_cast<Cluster*>(seed_cluster_.GetObject());
+    return seed_cluster_.get();
 }
 
 XYZPoint GblTrack::get_position_outside_telescope(double z) const {
