@@ -251,13 +251,11 @@ fmt:codespell:
 cmp:doxygen:
     extends: .doc
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
     script:
-        - cmake -DBUILD_DOCS_ONLY=ON ..
-        - make Corryvreckan-reference
-        - mv reference/html ../public/reference
+        - source ../.ci/init_x86_64.sh
+        - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
+        - ninja apsq_docs_reference
+        - mv doc/reference/html ../public/reference
 
 # Compile LaTeX user manual:
 cmp:usermanual:
