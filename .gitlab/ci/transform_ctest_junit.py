@@ -1,4 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
+# SPDX-FileCopyrightText: 2022 CERN and the Corryvreckan authors
+# SPDX-License-Identifier: MIT
 
 import sys
 import lxml.etree as et
