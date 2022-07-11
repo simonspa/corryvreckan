@@ -110,7 +110,7 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint get_position_outside_telescope(double z) const;
 
         // Member variables
-        TRef seed_cluster_{nullptr};
+        PointerWrapper<Cluster> seed_cluster_{nullptr};
         double scattering_length_volume_{};
         bool use_volume_scatter_{};
 
