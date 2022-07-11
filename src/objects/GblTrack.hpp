@@ -121,7 +121,7 @@ namespace corryvreckan {
         std::map<std::string, unsigned int> plane_to_gblpoint_{};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(GblTrack, 5);
+        ClassDefOverride(GblTrack, 6);
     };
 } // namespace corryvreckan
 
