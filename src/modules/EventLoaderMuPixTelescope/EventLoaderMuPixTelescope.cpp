@@ -26,11 +26,11 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
     config_.setDefault<unsigned>("buffer_depth", 1000);
     config_.setDefault<double>("time_offset", 0.0);
     config_.setDefault<double>("reference_frequency", 125.);
-    config_.setDefault<uint>("bitshift_tot", 9);
+    config_.setDefault<uint>("multiplier_tot", 8);
     config_.setDefault<bool>("use_both_timestamps", false);
 
     use_both_timestamps_ = config_.get<bool>("use_both_timestamps");
-    bitshift_tot_ = config_.get<uint>("bitshift_tot");
+    multiplier_tot_ = config_.get<uint>("multiplier_tot");
     refFrequency_ = config_.get<double>("reference_frequency");
     inputDirectory_ = config_.getPath("input_directory");
     buffer_depth_ = config.get<unsigned>("buffer_depth");
@@ -289,30 +289,23 @@ std::shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint
     double px_timestamp =
         4 / refFrequency_ * 125. * static_cast<double>(((corrected_fpgaTime >> 1) & 0xFFFFFFFFFF800) + time) -
         static_cast<double>(timeOffset_.at(tag));
-    //double px_timestamp_ns = 4 / refFrequency_ * 125. * static_cast<double>(time & ((0x40 << (bitshift_tot_))-1));
 
     hts_ToT["mp10_0"]->Fill(static_cast<double>(h.tot_decoded()));
 
     // store the ToT information if reasonable
     double tot_timestamp = 8 / refFrequency_ * 125. *
                            // fpga timestamp in 2ns -> go to 8ns, divide by4
-                           (static_cast<double>(h.tot_decoded()) * bitshift_tot_);
-    //                           static_cast<double>(((static_cast<uint>((corrected_fpgaTime >>
-    //                           2))/(0x3FF*bitshift_tot_))*(0x3FF*bitshift_tot_) + // here we cannot shift, hence we need to
-    //                           multiply...
+                           (static_cast<double>(h.tot_decoded()) * multiplier_tot_);
 
-    //                                               ((0x0000003FF & static_cast<uint32_t>(h.tot_raw())) * bitshift_tot_)));
     ts_TS1_ToT["mp10_0"]->Fill(static_cast<double>((static_cast<uint>(px_timestamp / 8)) & 0x3FF),
                                (static_cast<double>(static_cast<uint>(tot_timestamp / 8) & 0x3FF)));
 
-    double tot = ((static_cast<double>(h.tot_decoded()) * (bitshift_tot_*2)) - time ) * 4 / refFrequency_ * 125.;
-    //double tot = tot_timestamp
-    //            - px_timestamp; //+static_cast<double>(timeOffset_.at(tag));
+    double tot = ((static_cast<double>(h.tot_decoded()) * (multiplier_tot_*2)) - time ) * 4 / refFrequency_ * 125.;
+
 
     while(tot < 0)
-       tot += static_cast<double>((64 * (bitshift_tot_*2)) & 0x7FF) * 4 / refFrequency_ * 125.;
-    //while(tot > (64 * bitshift_tot_ * 8 / refFrequency_ * 125.))
-    //    tot -= 64 * bitshift_tot_ * 8 / refFrequency_ * 125.;
+       tot += static_cast<double>((64 * (multiplier_tot_*2)) & 0x7FF) * 4 / refFrequency_ * 125.;
+
 
     // std::cout << "ToT: " << std::hex << (corrected_fpgaTime >> 2) <<"\t" << (int(corrected_fpgaTime/4)%9216) << "\t" <<
     // (((corrected_fpgaTime/4/9216)*9216)+h.tot_raw()*9) <<std::endl;
