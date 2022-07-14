@@ -300,23 +300,12 @@ std::shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint
     ts_TS1_ToT["mp10_0"]->Fill(static_cast<double>((static_cast<uint>(px_timestamp / 8)) & 0x3FF),
                                (static_cast<double>(static_cast<uint>(tot_timestamp / 8) & 0x3FF)));
 
-    double tot = ((static_cast<double>(h.tot_decoded()) * (multiplier_tot_*2)) - time ) * 4 / refFrequency_ * 125.;
+    double tot = ((static_cast<double>(h.tot_decoded()) * (multiplier_tot_ * 2)) - time) * 4 / refFrequency_ * 125.;
 
-
+    // catch lapse of ToT time stamp
     while(tot < 0)
-       tot += static_cast<double>((64 * (multiplier_tot_*2)) & 0x7FF) * 4 / refFrequency_ * 125.;
+        tot += static_cast<double>((64 * (multiplier_tot_ * 2)) & 0x7FF) * 4 / refFrequency_ * 125.;
 
-
-    // std::cout << "ToT: " << std::hex << (corrected_fpgaTime >> 2) <<"\t" << (int(corrected_fpgaTime/4)%9216) << "\t" <<
-    // (((corrected_fpgaTime/4/9216)*9216)+h.tot_raw()*9) <<std::endl;
-
-    //    ts_TS1_ToT["mp10_0"]->Fill(static_cast<double>((static_cast<uint>(h.tot_raw())) & 0x3FF),(static_cast<double>(0x3FF
-    //    &static_cast<uint>(time**9))));
-
-    //    tot =
-    //    double(((((h.tot_raw()/*+1*/)*(8+1))-((h.timestamp_raw()*(0+1))%((uint64_t(-1)&(0x3ff+1))*(8+1))))+((uint64_t(-1)&(0x3ff+1))*(8+1)))%((uint64_t(-1)&(0x3ff+1))*(8+1)))*8.;
-    // std::cout  << names_.at(tag)<<"\t"<< h.column()<<"\t"<< h.row()<<"\t"<< tot<<"\t"<< tot<<"\t"<< px_timestamp<<"\t"<<
-    // corrected_fpgaTime <<std::endl;
     return std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), tot, tot, px_timestamp);
 }
 
