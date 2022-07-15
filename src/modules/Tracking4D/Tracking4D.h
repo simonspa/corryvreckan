@@ -88,6 +88,7 @@ namespace corryvreckan {
         bool reject_by_ROI_;
         bool unique_cluster_usage_;
         std::vector<std::string> require_detectors_;
+        std::vector<std::string> exclude_from_seed_;
         std::map<std::shared_ptr<Detector>, double> time_cuts_;
         std::map<std::shared_ptr<Detector>, XYVector> spatial_cuts_;
         std::string timestamp_from_;

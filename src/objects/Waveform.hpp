@@ -49,7 +49,7 @@ namespace corryvreckan {
         waveform_t m_waveform;
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Waveform, 1);
+        ClassDefOverride(Waveform, 1);
 
         void loadHistory() override{};
         void petrifyHistory() override{};
