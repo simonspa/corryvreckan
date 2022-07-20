@@ -1,11 +1,8 @@
 #ifndef CORRYVRECKAN_TRACKINTERCEPT_ANALYSIS_H
 #define CORRYVRECKAN_TRACKINTERCEPT_ANALYSIS_H
 
-#include <TCanvas.h>
 #include <TDirectory.h>
 #include <TH2F.h>
-#include <iostream>
-#include <string>
 #include <vector>
 #include "core/module/Module.hpp"
 
