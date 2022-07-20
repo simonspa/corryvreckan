@@ -4,7 +4,7 @@ AnalysisTrackIntercept
 **Status**: Functional
 
 ### Description
-This module produces 2D histograms of the `x` and `y` coordinates at which reconstructed tracks intercept a given `z`-plane (or `z`-planes). 
+This module produces 2D histograms of the global `x` and `y` coordinates at which reconstructed tracks intercept a given `z`-plane (or `z`-planes). 
 
 ### Parameters
 * `n_bins_x`: Number of bins to be used along the `x` direction.
