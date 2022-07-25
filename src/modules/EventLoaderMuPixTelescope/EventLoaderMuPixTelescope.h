@@ -80,6 +80,13 @@ namespace corryvreckan {
         int runNumber_;
         double refFrequency_;
         bool use_both_timestamps_;
+        uint nbits_ts_;
+        uint nbits_tot_;
+        uint timestamp_mask_;
+        uint timestamp_mask_extended_;
+        uint tot_mask_;
+        uint ckdivend_;
+        uint ckdivend2_;
         uint multiplier_tot_;
         BlockFile* blockFile_;
         TelescopeFrame tf_;

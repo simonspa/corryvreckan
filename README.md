@@ -77,6 +77,7 @@ The following authors, in alphabetical order, have developed or contributed to C
 * Alexander Ferk, CERN, @aferk
 * Adrian Fiergolski, CERN, @afiergol
 * Sejla Hadzic, MPP, @sehadzic
+* Jan Hammerich,University of Liverpool, @jhammeri
 * Adrian Herkert, DESY, @adherker
 * Daniel Hynds, Nikhef, @dhynds
 * Nicolò Jacazio, CERN, @njacazio

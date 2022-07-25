@@ -50,8 +50,10 @@ respect to time. Defaults to `1000`.
 * `use_both_timestamps`: Decide if the the timestamps sampled on positive and
 negative edge are used. This doubles the effective timestamp
 frequency. Defaults to `false`.
-* `multiplier_tot`: Sets the ratio between the hit timestamp period and the ToT timestamp period used to calculate the ToT.
-If both timestamps are generated from the same base clock then $multiplier\_tot = \frac{1+ckdivend2}{1+ckdivend}$. Defaults to `8`.
+* `nbits_timestamp`: Number of bits available for the timestamp. Defaults to `10`.
+* `nbits_tot`: Number of bits available for the tot. Defaults to `6`.
+* `ckdivend`: Clock divider for the timestamp clock. Defaults to `0`.
+* `ckdivend2`: Clock divider for the ToT clock. Defaults to `7`.
 ### Plots produced
 
 For all detectors, the following plots are produced:
