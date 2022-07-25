@@ -300,7 +300,7 @@ std::shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint
         time = ((timestamp_mask_ & h.timestamp_raw()) << 1) + 0x1;
     }
 
-    // incase the ts clock is divided
+    // in case the ts clock is divided
     time *= (ckdivend_ + 1);
 
     ts1_ts2["mp10_0"]->Fill(h.get_ts2(), h.timestamp_raw());
