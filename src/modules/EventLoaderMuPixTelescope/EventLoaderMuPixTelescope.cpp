@@ -33,8 +33,8 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
     config_.setDefault<bool>("use_both_timestamps", false);
 
     use_both_timestamps_ = config_.get<bool>("use_both_timestamps");
-    nbits_ts_ = config_.get<uint>("nbits_timestamp");
-    nbits_tot_ = config_.get<uint>("nbits_tot");
+    nbitsTS_ = config_.get<uint>("nbits_timestamp");
+    nbitsToT_ = config_.get<uint>("nbits_tot");
     ckdivend_ = config_.get<uint>("ckdivend");
     ckdivend2_ = config_.get<uint>("ckdivend2");
     refFrequency_ = config_.get<double>("reference_frequency");
@@ -50,12 +50,15 @@ EventLoaderMuPixTelescope::EventLoaderMuPixTelescope(Configuration& config, std:
     }
 
     // simlifying calculations:
-    multiplier_tot_ = (1 + ckdivend2_) / (1 + ckdivend_) * 2;
+    multiplierToT_ = (1. + static_cast<double>(ckdivend2_)) / (1. + static_cast<double>(ckdivend_)) * 2.;
     // timestamp is calculated with respect to a 4ns base, tot wrt 8ns
-    timestamp_mask_ = ((0x1) << nbits_ts_) - 1; // raw timestamp from data
+    timestampMask_ = ((0x1) << nbitsTS_) - 1; // raw timestamp from data
     // timestamp after shift and 4ns base change
-    timestamp_mask_extended_ = ((0x1) << ((ckdivend_ + 1) * (nbits_ts_ + 1))) - 1;
-    tot_mask_ = ((0x1) << nbits_tot_) - 1;
+    timestampMaskExtended_ = ((0x1) << ((ckdivend_ + 1) * (nbitsTS_ + 1))) - 1;
+    totMask_ = ((0x1) << nbitsToT_) - 1;
+    clockToTime_ = 4. / refFrequency_ * 125.;
+    maxToT_ =
+        static_cast<double>(((totMask_ + 1) * static_cast<uint>(multiplierToT_)) & timestampMaskExtended_) * clockToTime_;
 }
 
 void EventLoaderMuPixTelescope::initialize() {
@@ -293,35 +296,35 @@ std::shared_ptr<Pixel> EventLoaderMuPixTelescope::read_hit(const RawHit& h, uint
     uint16_t time = 0x0;
     // TS can be sampled on both edges - keep this optional
     if((h.get_ts2() == uint16_t(-1)) || (!use_both_timestamps_)) {
-        time = (timestamp_mask_ & h.timestamp_raw()) << 1;
+        time = (timestampMask_ & h.timestamp_raw()) << 1;
     } else if(h.timestamp_raw() > h.get_ts2()) {
-        time = ((timestamp_mask_ & h.timestamp_raw()) << 1);
+        time = ((timestampMask_ & h.timestamp_raw()) << 1);
     } else {
-        time = ((timestamp_mask_ & h.timestamp_raw()) << 1) + 0x1;
+        time = ((timestampMask_ & h.timestamp_raw()) << 1) + 0x1;
     }
 
     // in case the ts clock is divided
     time *= (ckdivend_ + 1);
 
+    double time_shifted = static_cast<double>(time) * static_cast<double>(ckdivend_ + 1);
+
     ts1_ts2["mp10_0"]->Fill(h.get_ts2(), h.timestamp_raw());
-    double px_timestamp =
-        4 / refFrequency_ * 125. * static_cast<double>(((corrected_fpgaTime >> 1) & 0xFFFFFFFFFF800) + time) -
-        static_cast<double>(timeOffset_.at(tag));
+    double px_timestamp = clockToTime_ * (static_cast<double>((corrected_fpgaTime >> 1) & 0xFFFFFFFFFF800) + time_shifted) -
+                          static_cast<double>(timeOffset_.at(tag));
 
     hts_ToT["mp10_0"]->Fill(static_cast<double>(h.tot_decoded()));
 
     // store the ToT information if reasonable
-    double tot_timestamp = 4 / refFrequency_ * 125. * (static_cast<double>(h.tot_decoded()) * multiplier_tot_);
+    double tot_timestamp = clockToTime_ * (static_cast<double>(h.tot_decoded()) * multiplierToT_);
 
-    ts_TS1_ToT["mp10_0"]->Fill(static_cast<double>((static_cast<uint>(px_timestamp / 8)) & timestamp_mask_extended_),
-                               (static_cast<double>(static_cast<uint>(tot_timestamp / 8) & timestamp_mask_extended_)));
+    ts_TS1_ToT["mp10_0"]->Fill(static_cast<double>((static_cast<uint>(px_timestamp / 8)) & timestampMaskExtended_),
+                               (static_cast<double>(static_cast<uint>(tot_timestamp / 8) & timestampMaskExtended_)));
 
-    double tot = tot_timestamp - (static_cast<double>(time) * 4 / refFrequency_ * 125.);
+    double tot = tot_timestamp - (time_shifted * clockToTime_);
 
     // catch lapse of ToT time stamp
     while(tot < 0)
-        tot +=
-            static_cast<double>(((tot_mask_ + 1) * multiplier_tot_) & timestamp_mask_extended_) * 4 / refFrequency_ * 125.;
+        tot += maxToT_;
 
     return std::make_shared<Pixel>(names_.at(tag), h.column(), h.row(), tot, tot, px_timestamp);
 }
