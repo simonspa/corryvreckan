@@ -58,7 +58,6 @@ namespace corryvreckan {
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(MCParticle, 4);
 
-
     private:
         int m_particle_id;
         ROOT::Math::XYZPoint m_local_start_point;
