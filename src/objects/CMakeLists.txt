@@ -51,6 +51,7 @@ ADD_LIBRARY(CorryvreckanObjects SHARED
     Track.cpp
     StraightLineTrack.cpp
     GblTrack.cpp
+    MCParticle.cpp
     Event.cpp
     Multiplet.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx

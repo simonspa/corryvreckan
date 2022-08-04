@@ -42,6 +42,11 @@ namespace corryvreckan {
          */
         static std::type_index getBaseType() { return typeid(MCParticle); }
 
+        /**
+         * @brief Print an ASCII representation of MCParticle to the given stream
+         * @param out Stream to print to
+         */
+        void print(std::ostream &out) const override;
         // Member functions
         int getID() const { return m_particle_id; }
         ROOT::Math::XYZPoint getLocalStart() const { return m_local_start_point; }
@@ -53,11 +58,7 @@ namespace corryvreckan {
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(MCParticle, 4);
 
-        /**
-         * @brief Print an ASCII representation of MCParticle to the given stream
-         * @param out Stream to print to
-         */
-        void print(std::ostream &out) const override;
+
     private:
         int m_particle_id;
         ROOT::Math::XYZPoint m_local_start_point;
