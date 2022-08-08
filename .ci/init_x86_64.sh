@@ -98,5 +98,4 @@ source ${LCG_VIEW} || echo "yes"
 
 if [ -n "${CI}" ] && [ "$(uname)" = "Darwin" ]; then
     source $ROOTSYS/bin/thisroot.sh
-    cd -
 fi
