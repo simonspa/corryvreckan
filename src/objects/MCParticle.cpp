@@ -13,5 +13,5 @@
 using namespace corryvreckan;
 
 void MCParticle::print(std::ostream& out) const {
-    out << "MCPArticle " << this->getID() << "\t" << this->getLocalStart() << "\t" << this->getLocalEnd();
+    out << "MCParticle " << this->getID() << "\t" << this->getLocalStart() << "\t" << this->getLocalEnd();
 }
