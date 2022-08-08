@@ -83,6 +83,7 @@ ENV EUDAQ2_VERSION 2.5.0
 
 # Add layer for EUDAQ2
 ENV EUDAQ2PATH="/opt/eudaq2"
+ENV Peary_DIR="${PEARYPATH}/share/cmake/Modules/"
 RUN mkdir -p ${EUDAQ2PATH}/{src,build} && \
     curl -L -o ${EUDAQ2PATH}/eudaq2.${EUDAQ2_VERSION}.zip \
             https://github.com/eudaq/eudaq/archive/v${EUDAQ2_VERSION}.zip && \
@@ -95,7 +96,6 @@ RUN mkdir -p ${EUDAQ2PATH}/{src,build} && \
           -DUSER_EUDET_BUILD=ON \
           -DUSER_TLU_BUILD=ON \
           -DEUDAQ_INSTALL_PREFIX=../ \
-          -DCMAKE_PREFIX_PATH=${PEARYPATH}/share/cmake/Modules/ \
            ../src/eudaq-${EUDAQ2_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
