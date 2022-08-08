@@ -437,8 +437,8 @@ bool PixelDetector::isNeighbor(const std::shared_ptr<Pixel>& neighbor,
 std::set<std::pair<int, int>> PixelDetector::getNeighbors(const std::shared_ptr<Pixel>& px, const size_t distance) const {
     std::set<std::pair<int, int>> neighbors;
 
-    for(int x = px.column() - static_cast<int>(distance); x <= px.column() + static_cast<int>(distance); x++) {
-        for(int y = idx.row() - static_cast<int>(distance); y <= idx.row() + static_cast<int>(distance); y++) {
+    for(int x = px->column() - static_cast<int>(distance); x <= px->column() + static_cast<int>(distance); x++) {
+        for(int y = px->row() - static_cast<int>(distance); y <= px->row() + static_cast<int>(distance); y++) {
             neighbors.insert({x, y});
         }
     }

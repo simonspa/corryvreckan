@@ -215,16 +215,16 @@ size_t HexagonalPixelDetector::hex_distance(double x1, double y1, double x2, dou
     return static_cast<size_t>(std::abs(x1 - x2) + std::abs(y1 - y2) + std::abs(-x1 - y1 + x2 + y2)) / 2;
 }
 
-std::set<std::pair<int, int>> HexagonalPixelDetector::getNeighbors(const std::shared_ptr<Pixel>& px, const size_t distance) const {
+std::set<std::pair<int, int>> HexagonalPixelDetector::getNeighbors(const std::shared_ptr<Pixel>& px,
+                                                                   const size_t distance) const {
     std::set<std::pair<int, int>> neighbors;
- 
-    for(int x = px.column() - static_cast<int>(distance); x <= px.column() + static_cast<int>(distance); x++) {
-        for(int y = px.row() - static_cast<int>(distance); y <= px.row() + static_cast<int>(distance); y++) {
-            if(hex_distance(px.column(), px.row(), x, y) <= distance) {
+
+    for(int x = px->column() - static_cast<int>(distance); x <= px->column() + static_cast<int>(distance); x++) {
+        for(int y = px->row() - static_cast<int>(distance); y <= px->row() + static_cast<int>(distance); y++) {
+            if(hex_distance(px->column(), px->row(), x, y) <= distance) {
                 neighbors.insert({x, y});
             }
         }
     }
     return neighbors;
-
 }

@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <fstream>
 #include <map>
+#include <set>
 #include <string>
 
 #include <Math/DisplacementVector2D.h>
@@ -348,8 +349,8 @@ namespace corryvreckan {
          * @return true if it fulfills the condition
          * @note users should define their specific clustering method in the detector class
          */
-        virtual bool isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) const = 0;
-
+        virtual bool
+        isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) const = 0;
 
         /**
          * @brief Return a set containing all pixels neighboring the given one with a configurable maximum distance
@@ -361,8 +362,8 @@ namespace corryvreckan {
          *
          * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual std::set<std::pair<int, int>> getNeighbors(const std::shared_ptr<Pixel>& px, const size_t distance) const = 0;
-
+        virtual std::set<std::pair<int, int>> getNeighbors(const std::shared_ptr<Pixel>& px,
+                                                           const size_t distance) const = 0;
 
     protected:
         // Roles of the detector

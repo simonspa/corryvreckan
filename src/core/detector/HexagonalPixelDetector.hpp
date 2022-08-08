@@ -111,8 +111,7 @@ namespace corryvreckan {
          * @note users should define their specific clustering method in the detector class, for pixel detector, the default
          * is 2D clustering
          */
-        bool
-        isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) const override;
+        bool isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) const override;
 
         std::set<std::pair<int, int>> getNeighbors(const std::shared_ptr<Pixel>& px, const size_t distance) const override;
 
