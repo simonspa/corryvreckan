@@ -48,18 +48,13 @@ if [ ! -d "${CVMFS_MOUNT}/cvmfs/sft.cern.ch" ]; then
     echo "No SFT CVMFS repository detected, please make sure it is available."
     exit 1
 fi
-if [ ! -d "${CVMFS_MOUNT}/cvmfs/geant4.cern.ch" ]; then
-    echo "No Geant4 CVMFS repository detected, please make sure it is available."
-    exit 1
-fi
-
 
 # Determine which LCG version to use
 DEFAULT_LCG="LCG_102"
 
-if [ -z ${ALLPIX_LCG_VERSION} ]; then
+if [ -z ${CORRY_LCG_VERSION} ]; then
     echo "No explicit LCG version set, using ${DEFAULT_LCG}."
-    ALLPIX_LCG_VERSION=${DEFAULT_LCG}
+    CORRY_LCG_VERSION=${DEFAULT_LCG}
 fi
 
 # Determine which compiler to use
@@ -98,12 +93,10 @@ export BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
 #     Source dependencies
 #--------------------------------------------------------------------------------
 
-export LCG_VIEW=${SFTREPO}/lcg/views/${ALLPIX_LCG_VERSION}/${BUILD_FLAVOUR}/setup.sh
+export LCG_VIEW=${SFTREPO}/lcg/views/${CORRY_LCG_VERSION}/${BUILD_FLAVOUR}/setup.sh
 source ${LCG_VIEW} || echo "yes"
 
 if [ -n "${CI}" ] && [ "$(uname)" = "Darwin" ]; then
     source $ROOTSYS/bin/thisroot.sh
-    cd $G4INSTALL/bin/
-    source geant4.sh
     cd -
 fi
