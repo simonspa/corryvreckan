@@ -111,8 +111,8 @@ namespace corryvreckan {
          * @note users should define their specific clustering method in the detector class, for pixel detector, the default
          * is 2D clustering
          */
-        virtual bool
-        isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) override;
+        bool
+        isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) const override;
 
     private:
         std::pair<int, int> round_to_nearest_hex(double x, double y) const;

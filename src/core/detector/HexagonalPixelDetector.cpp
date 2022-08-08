@@ -181,7 +181,7 @@ XYVector HexagonalPixelDetector::getSize() const {
 bool HexagonalPixelDetector::isNeighbor(const std::shared_ptr<Pixel>& neighbor,
                                         const std::shared_ptr<Cluster>& cluster,
                                         const int /*neighbor_radius_row*/,
-                                        const int neighbor_radius_col) {
+                                        const int neighbor_radius_col) const {
     for(auto pixel : cluster->pixels()) {
         // fixme: take column and row radius into account
         if(hex_distance(pixel->row(), pixel->column(), neighbor->row(), neighbor->column()) <=
