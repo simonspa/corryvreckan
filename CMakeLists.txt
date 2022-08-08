@@ -200,6 +200,8 @@ FILE(GLOB_RECURSE
      )
 INCLUDE("cmake/clang-cpp-checks.cmake")
 
+INCLUDE("cmake/cmake-checks.cmake")
+
 #########################################
 # Define build targets for Corryvreckan #
 #########################################
