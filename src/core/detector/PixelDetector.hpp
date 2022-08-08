@@ -180,6 +180,8 @@ namespace corryvreckan {
          */
         bool isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) const override;
 
+        std::set<std::pair<int, int>> getNeighbors(const std::shared_ptr<Pixel>& px, const size_t distance) const override;
+
     protected:
         // Initialize coordinate transformations
         void initialise() override;
