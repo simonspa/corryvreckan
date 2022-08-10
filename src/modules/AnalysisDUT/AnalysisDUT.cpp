@@ -490,9 +490,9 @@ void AnalysisDUT::initialize() {
                                   n_timebins_,
                                   -(n_timebins_ + 1) / 2. * time_binning_,
                                   (n_timebins_ - 1) / 2. * time_binning_,
-                                  m_detector->nPixels().X(),
+                                  m_detector->nPixels().Y(),
                                   -0.5,
-                                  m_detector->nPixels().X() - 0.5);
+                                  m_detector->nPixels().Y() - 0.5);
 
     residualsTimeVsSignal =
         new TH2F("residualsTimeVsSignal",
