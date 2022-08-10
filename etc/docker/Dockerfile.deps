@@ -79,7 +79,7 @@ RUN mkdir -p ${PEARYPATH}/{src,build} && \
     rm -rf ${PEARYPATH}/{src,build}
 
 
-ENV EUDAQ2_VERSION 2.5.1
+ENV EUDAQ2_VERSION 2.5.2
 
 # Add layer for EUDAQ2
 ENV EUDAQ2PATH="/opt/eudaq2"
