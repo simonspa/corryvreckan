@@ -203,7 +203,7 @@ fmt:centos7-llvm-format:
 fmt:cc7-llvm-lint:
     extends: .format
     script:
-        - cmake -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_EventLoaderEUDAQ2=ON -DBUILD_EventDefinitionM26=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -Deudaq_DIR=/opt/eudaq2/cmake ..
         - make check-lint 2> /dev/null
     only:
         - schedules
@@ -213,7 +213,7 @@ fmt:cc7-llvm-lint-diff:
     extends: .format
     script:
         - git remote add upstream $REPOSITORY && git fetch upstream
-        - cmake -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DTARGET_REMOTE="upstream" ..
+        - cmake -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_EventLoaderEUDAQ2=ON -DBUILD_EventDefinitionM26=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -Deudaq_DIR=/opt/eudaq2/cmake -DTARGET_REMOTE="upstream" ..
         - make check-lint-diff 2> /dev/null
 
 fmt:cmake-lint:
