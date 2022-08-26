@@ -186,21 +186,25 @@ tst:sim:
     stage: formatting
     needs: []
     dependencies: []
-    extends: .centos7
+    extends: .docker
     variables:
         COMPILER_TYPE: "llvm"
+    before_script:
+        - export CXX=/usr/bin/clang++-12
+        - export PATH=~/.local/bin:$PATH
+        - mkdir -p build/ && cd build/
 
 fmt:centos7-llvm-format:
     extends: .format
     script:
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja check-format
+        - cmake -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - make check-format
 
 fmt:cc7-llvm-lint:
     extends: .format
     script:
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja check-lint 2> /dev/null
+        - cmake -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_EventLoaderEUDAQ2=ON -DBUILD_EventDefinitionM26=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -Deudaq_DIR=/opt/eudaq2/cmake ..
+        - make check-lint 2> /dev/null
     only:
         - schedules
         - tags
@@ -209,23 +213,19 @@ fmt:cc7-llvm-lint-diff:
     extends: .format
     script:
         - git remote add upstream $REPOSITORY && git fetch upstream
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DTARGET_REMOTE="upstream" ..
-        - ninja check-lint-diff 2> /dev/null
+        - cmake -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_EventLoaderEUDAQ2=ON -DBUILD_EventDefinitionM26=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -Deudaq_DIR=/opt/eudaq2/cmake -DTARGET_REMOTE="upstream" ..
+        - make check-lint-diff 2> /dev/null
 
 fmt:cmake-lint:
     extends: .format
     script:
-        - export PATH=$PATH:~/.local/bin
-        - pip install --trusted-host=pypi.org --user cmakelang
-        - cmake -GNinja ..
-        - ninja lint-cmake
+        - cmake ..
+        - make lint-cmake
 
 fmt:codespell:
     extends: .format
     script:
-        - export PATH=~/.local/bin:$PATH
         - cd ../
-        - pip install --trusted-host=pypi.org --user codespell
         - codespell --ignore-words .gitlab/ci/codespell_ignored_words.txt --quiet-level 2 --skip ".git,.gitlab,cmake,3rdparty,*.svg"
 
 
