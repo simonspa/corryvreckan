@@ -669,7 +669,7 @@ void AnalysisDUT::initialize() {
                        pitch_y / 2.,
                        -500,
                        500,
-                       "s"); // standard deviation as the error on a bin, convienent for time resolution
+                       "s"); // standard deviation as the error on a bin, convienient for time resolution
 }
 
 StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {
