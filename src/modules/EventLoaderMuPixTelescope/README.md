@@ -10,7 +10,8 @@ The `EventLoaderMuPixTelescope` supports a list of sensors:
 * MuPix8
 * MuPix9
 * MuPix10
-* all Run2020 sensor
+* ATLASPix3
+* all Run2020 sensors
 * (additional/ older sensors can be added on request)
 
 The detector name in the geometry file is used to determine the tag which identifies the sensor in the datastream:
@@ -46,9 +47,13 @@ issuing the synchronous reset and receiving it. Only used if
 * `buffer_depth`: Depth of the pixel buffer that is used to sort the hits with
 respect to time. Defaults to `1000`.
 * `reference_frequency`: Defines the reference frequency of the FPGA in MHz - defaults to `125`.
-*`use_both_timestamps`: Decide if the the timestamps sampled on positive and
+* `use_both_timestamps`: Decide if the the timestamps sampled on positive and
 negative edge are used. This doubles the effective timestamp
-frequency. Defaults to `true`.
+frequency. Defaults to `false`.
+* `nbits_timestamp`: Number of bits available for the timestamp. Defaults to `10`.
+* `nbits_tot`: Number of bits available for the tot. Defaults to `6`.
+* `ckdivend`: Clock divider for the timestamp clock. Defaults to `0`.
+* `ckdivend2`: Clock divider for the ToT clock. Defaults to `7`.
 ### Plots produced
 
 For all detectors, the following plots are produced:
