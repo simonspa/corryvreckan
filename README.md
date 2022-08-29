@@ -80,6 +80,7 @@ The following authors, in alphabetical order, have developed or contributed to C
 * Adrian Herkert, DESY, @adherker
 * Daniel Hynds, Nikhef, @dhynds
 * Nicolò Jacazio, CERN, @njacazio
+* Callan Jessiman, Carleton University, @cjessima
 * Jens Kroeger, University of Heidelberg/CERN, @jekroege
 * Magnus Mager, CERN, @mmager
 * Keerthi Nakkalil, University Bonn/DESY, @nakkalil
