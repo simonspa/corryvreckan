@@ -279,7 +279,7 @@ cmp:usermanual:
         - schedules@corryvreckan/corryvreckan
     before_script:
         - export CCACHE_DIR=`pwd`/ccache
-        - source .gitlab/ci/init_x86_64.sh
+        - source .ci/init_x86_64.sh
         - mkdir -p public/releases
         - cd build
     script:
