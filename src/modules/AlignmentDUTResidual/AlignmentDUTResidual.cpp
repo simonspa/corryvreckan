@@ -67,14 +67,18 @@ void AlignmentDUTResidual::initialize() {
     residualsXPlot = new TH1F("residualsX", title.c_str(), 1000, -500, 500);
     title = detname + " Residuals Y;y_{track}-y [#mum];events";
     residualsYPlot = new TH1F("residualsY", title.c_str(), 1000, -500, 500);
-    title = detname + " Residual profile dY/X;x [#mum];y_{track}-y [#mum]";
-    profile_dY_X = new TProfile("profile_dY_X", title.c_str(), 1000, -500, 500);
-    title = detname + " Residual profile dY/Y;y [#mum];y_{track}-y [#mum]";
-    profile_dY_Y = new TProfile("profile_dY_Y", title.c_str(), 1000, -500, 500);
-    title = detname + " Residual profile dX/X;x [#mum];x_{track}-x [#mum]";
-    profile_dX_X = new TProfile("profile_dX_X", title.c_str(), 1000, -500, 500);
-    title = detname + " Residual profile dX/y;y [#mum];x_{track}-x [#mum]";
-    profile_dX_Y = new TProfile("profile_dX_Y", title.c_str(), 1000, -500, 500);
+    title = detname + " Residual profile dY/X;column;y_{track}-y [#mum]";
+    profile_dY_X =
+        new TProfile("profile_dY_X", title.c_str(), m_detector->nPixels().x(), -0.5, m_detector->nPixels().x() - 0.5);
+    title = detname + " Residual profile dY/Y;row;y_{track}-y [#mum]";
+    profile_dY_Y =
+        new TProfile("profile_dY_Y", title.c_str(), m_detector->nPixels().y(), -0.5, m_detector->nPixels().y() - 0.5);
+    title = detname + " Residual profile dX/X;column;x_{track}-x [#mum]";
+    profile_dX_X =
+        new TProfile("profile_dX_X", title.c_str(), m_detector->nPixels().x(), -0.5, m_detector->nPixels().x() - 0.5);
+    title = detname + " Residual profile dX/y;row;x_{track}-x [#mum]";
+    profile_dX_Y =
+        new TProfile("profile_dX_Y", title.c_str(), m_detector->nPixels().y(), -0.5, m_detector->nPixels().y() - 0.5);
 }
 
 StatusCode AlignmentDUTResidual::run(const std::shared_ptr<Clipboard>& clipboard) {
@@ -121,6 +125,8 @@ StatusCode AlignmentDUTResidual::run(const std::shared_ptr<Clipboard>& clipboard
         for(auto& associated_cluster : associated_clusters) {
             // Local position of the cluster
             auto position = associated_cluster->local();
+            auto column = associated_cluster->column();
+            auto row = associated_cluster->row();
 
             // Get the track intercept with the detector
             auto trackIntercept = m_detector->getIntercept(track.get());
@@ -133,18 +139,10 @@ StatusCode AlignmentDUTResidual::run(const std::shared_ptr<Clipboard>& clipboard
             // Fill the alignment residual profile plots
             residualsXPlot->Fill(static_cast<double>(Units::convert(residualX, "um")));
             residualsYPlot->Fill(static_cast<double>(Units::convert(residualY, "um")));
-            profile_dY_X->Fill(static_cast<double>(Units::convert(residualY, "um")),
-                               static_cast<double>(Units::convert(position.X(), "um")),
-                               1);
-            profile_dY_Y->Fill(static_cast<double>(Units::convert(residualY, "um")),
-                               static_cast<double>(Units::convert(position.Y(), "um")),
-                               1);
-            profile_dX_X->Fill(static_cast<double>(Units::convert(residualX, "um")),
-                               static_cast<double>(Units::convert(position.X(), "um")),
-                               1);
-            profile_dX_Y->Fill(static_cast<double>(Units::convert(residualX, "um")),
-                               static_cast<double>(Units::convert(position.Y(), "um")),
-                               1);
+            profile_dY_X->Fill(column, static_cast<double>(Units::convert(residualY, "um")), 1);
+            profile_dY_Y->Fill(row, static_cast<double>(Units::convert(residualY, "um")), 1);
+            profile_dX_X->Fill(column, static_cast<double>(Units::convert(residualX, "um")), 1);
+            profile_dX_Y->Fill(row, static_cast<double>(Units::convert(residualX, "um")), 1);
         }
     }
 
