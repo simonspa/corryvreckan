@@ -307,7 +307,7 @@ namespace corryvreckan {
         double momentum_{-1};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Track, 11)
+        ClassDefOverride(Track, 12)
     };
     // Vector type declaration
     using TrackVector = std::vector<std::shared_ptr<Track>>;
