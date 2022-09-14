@@ -534,9 +534,9 @@ void AnalysisDUT::initialize() {
                                   n_timebins_,
                                   -(n_timebins_ + 1) / 2. * time_binning_,
                                   (n_timebins_ - 1) / 2. * time_binning_,
-                                  m_detector->nPixels().X(),
+                                  m_detector->nPixels().Y(),
                                   -0.5,
-                                  m_detector->nPixels().X() - 0.5);
+                                  m_detector->nPixels().Y() - 0.5);
 
     residualsTimeVsSignal =
         new TH2F("residualsTimeVsSignal",
@@ -669,7 +669,7 @@ void AnalysisDUT::initialize() {
                        pitch_y / 2.,
                        -500,
                        500,
-                       "s"); // standard deviation as the error on a bin, convienent for time resolution
+                       "s"); // standard deviation as the error on a bin, convenient for time resolution
 }
 
 StatusCode AnalysisDUT::run(const std::shared_ptr<Clipboard>& clipboard) {

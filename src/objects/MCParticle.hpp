@@ -2,7 +2,7 @@
  * @file
  * @brief Definition of MCParticle object
  *
- * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * @copyright Copyright (c) 2017-2022 CERN and the Corryvreckan authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -42,6 +42,11 @@ namespace corryvreckan {
          */
         static std::type_index getBaseType() { return typeid(MCParticle); }
 
+        /**
+         * @brief Print an ASCII representation of MCParticle to the given stream
+         * @param out Stream to print to
+         */
+        void print(std::ostream& out) const override;
         // Member functions
         int getID() const { return m_particle_id; }
         ROOT::Math::XYZPoint getLocalStart() const { return m_local_start_point; }
@@ -51,7 +56,7 @@ namespace corryvreckan {
         void petrifyHistory() override{};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(MCParticle, 3);
+        ClassDefOverride(MCParticle, 4);
 
     private:
         int m_particle_id;
