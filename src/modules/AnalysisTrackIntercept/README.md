@@ -6,6 +6,8 @@ AnalysisTrackIntercept
 ### Description
 This module produces 2D histograms of the global `x` and `y` coordinates at which reconstructed tracks intercept a given `z`-plane (or `z`-planes). 
 
+NOTE: The `z`-plane that is being intercepted can be arbitrary and does NOT necessarily need to correspond to a DUT or REF plane. This can be useful for quick alignment checks. In case the intercepting plane is set to correspond to a physical detector, please be advised that the additional scattering is consequently NOT taken into account.
+
 ### Parameters
 * `n_bins_x`: Number of bins to be used along the `x` direction.
 * `xmin`, `xmax`: Domain of histogram along the `x` direction.
