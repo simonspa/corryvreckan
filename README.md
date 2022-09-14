@@ -94,6 +94,7 @@ The following authors, in alphabetical order, have developed or contributed to C
 * Annika Vauth, University of Hamburg/DESY, @anvauth
 * Mateus Vicente Barreto Pinto, University Geneva, @mvicente
 * Morag Williams, University of Glasgow/CERN, @williamm
+* Philipp Windischhofer, University of Chicago, @phwindis
 * Jin Zhang, DESY, @jinz
 * Bong-Hwi Lim, University of Turin, @blim
 
