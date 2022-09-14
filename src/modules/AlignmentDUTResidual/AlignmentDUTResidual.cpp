@@ -149,7 +149,7 @@ StatusCode AlignmentDUTResidual::run(const std::shared_ptr<Clipboard>& clipboard
     }
 
     // Store all tracks we want for alignment on the permanent storage:
-    clipboard->putPersistentData(alignmenttracks);
+    clipboard->putPersistentData(alignmenttracks, m_detector->getName());
     // Copy the objects of all associated clusters on the clipboard to persistent storage:
     clipboard->copyToPersistentData(alignmentclusters, m_detector->getName());
 
@@ -243,7 +243,7 @@ void AlignmentDUTResidual::finalize(const std::shared_ptr<ReadonlyClipboard>& cl
     residualFitter->SetFCN(MinimiseResiduals);
 
     // Set the global parameters
-    AlignmentDUTResidual::globalTracks = clipboard->getPersistentData<Track>();
+    AlignmentDUTResidual::globalTracks = clipboard->getPersistentData<Track>(m_detector->getName());
 
     // Create thread pool:
     ThreadPool::registerThreadCount(m_workers);
