@@ -107,9 +107,6 @@ std::vector<Cluster*> Track::getAssociatedClusters(const std::string& detectorID
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
         }
 
-        if(cluster->getDetectorID() != detectorID) {
-            continue;
-        }
         clustervec.emplace_back(cluster);
     }
 
