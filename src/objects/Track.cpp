@@ -78,7 +78,7 @@ void Track::addCluster(const Cluster* cluster) {
     track_clusters_.emplace_back(const_cast<Cluster*>(cluster));
 }
 void Track::addAssociatedCluster(const Cluster* cluster) {
-    associated_clusters_.emplace_back(const_cast<Cluster*>(cluster));
+    associated_clusters_[cluster->getDetectorID()].emplace_back(const_cast<Cluster*>(cluster));
 }
 
 std::vector<Cluster*> Track::getClusters() const {
@@ -97,16 +97,16 @@ std::vector<Cluster*> Track::getClusters() const {
 
 std::vector<Cluster*> Track::getAssociatedClusters(const std::string& detectorID) const {
     std::vector<Cluster*> clustervec;
-    for(const auto& cl : associated_clusters_) {
+    if(associated_clusters_.find(detectorID) == associated_clusters_.end()) {
+        return clustervec;
+    }
+    for(const auto& cl : associated_clusters_.at(detectorID)) {
         auto* cluster = cl.get();
         // Check if reference is valid:
         if(cluster == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(Cluster));
         }
 
-        if(cluster->getDetectorID() != detectorID) {
-            continue;
-        }
         clustervec.emplace_back(cluster);
     }
 
@@ -169,9 +169,14 @@ Cluster* Track::getClosestCluster(const std::string& id) const {
 }
 
 bool Track::isAssociated(Cluster* cluster) const {
-    auto it = find_if(
-        associated_clusters_.begin(), associated_clusters_.end(), [&cluster](auto& cl) { return cl.get() == cluster; });
-    if(it == associated_clusters_.end()) {
+    auto detectorID = cluster->getDetectorID();
+    if(associated_clusters_.find(detectorID) == associated_clusters_.end()) {
+        return false;
+    }
+    auto it = find_if(associated_clusters_.at(detectorID).begin(),
+                      associated_clusters_.at(detectorID).end(),
+                      [&cluster](auto& cl) { return cl.get() == cluster; });
+    if(it == associated_clusters_.at(detectorID).end()) {
         return false;
     }
     return true;
@@ -269,13 +274,17 @@ void Track::loadHistory() {
     std::for_each(planes_.begin(), planes_.end(), [](auto& n) { n.loadHistory(); });
 
     std::for_each(track_clusters_.begin(), track_clusters_.end(), [](auto& n) { n.get(); });
-    std::for_each(associated_clusters_.begin(), associated_clusters_.end(), [](auto& n) { n.get(); });
+    for(auto& [detectorID, associated_clusters_det] : associated_clusters_) {
+        std::for_each(associated_clusters_det.begin(), associated_clusters_det.end(), [](auto& n) { n.get(); });
+    }
     std::for_each(closest_cluster_.begin(), closest_cluster_.end(), [](auto& n) { n.second.get(); });
 }
 void Track::petrifyHistory() {
     std::for_each(planes_.begin(), planes_.end(), [](auto& n) { n.petrifyHistory(); });
 
     std::for_each(track_clusters_.begin(), track_clusters_.end(), [](auto& n) { n.store(); });
-    std::for_each(associated_clusters_.begin(), associated_clusters_.end(), [](auto& n) { n.store(); });
+    for(auto& [detectorID, associated_clusters_det] : associated_clusters_) {
+        std::for_each(associated_clusters_det.begin(), associated_clusters_det.end(), [](auto& n) { n.store(); });
+    }
     std::for_each(closest_cluster_.begin(), closest_cluster_.end(), [](auto& n) { n.second.store(); });
 }
