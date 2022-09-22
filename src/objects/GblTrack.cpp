@@ -78,8 +78,8 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane,
     // add the local track pos for future reference - e.g. dut position:
     local_track_points_[plane->getName()] = ROOT::Math::XYPoint(localPosTrack(0), localPosTrack(1));
 
-    auto prevTan = getRotation(prevToLocal) * globalTangent;
-    auto toTarget = getRotation(plane->getToLocal()) * getRotation(prevToGlobal);
+    Eigen::Vector4d prevTan = getRotation(prevToLocal) * globalTangent;
+    Eigen::Matrix4d toTarget = getRotation(plane->getToLocal()) * getRotation(prevToGlobal);
 
     // lambda Jacobian from one scatter to the next
     auto jac = [](const Eigen::Vector4d& tangent, const Eigen::Matrix4d& target, double distance) {
