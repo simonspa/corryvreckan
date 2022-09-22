@@ -20,7 +20,6 @@
 
 using namespace corryvreckan;
 using namespace gbl;
-using namespace Eigen;
 
 // clang-format off
 Eigen::Matrix<double, 5, 6> GblTrack::toGbl = (Eigen::Matrix<double, 5, 6>() << 0., 0., 0., 0., 0., 1.,
@@ -55,11 +54,11 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane,
                          ROOT::Math::XYZPoint& globalTrackPos,
                          double total_material) {
     // lambda to add plane (not the first one) and air scatterers
-    auto globalTangent = Vector4d(0, 0, 1, 0);
+    auto globalTangent = Eigen::Vector4d(0, 0, 1, 0);
 
     // extract the rotation from an ROOT::Math::Transfrom3D, store it  in 4x4 matrix to match proteus format
     auto getRotation = [](Transform3D in) {
-        Matrix4d t = Matrix4d::Zero();
+        Eigen::Matrix4d t = Eigen::Matrix4d::Zero();
         in.Rotation().GetRotationMatrix(t);
         return t;
     };
@@ -67,8 +66,8 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane,
     // Mapping of parameters in proteus - I would like to get rid of these conversions once it works
     // For now they will stay here as changing this will cause the jacobian setup to be more messy right now
     auto tmp_local = plane->getToLocal() * globalTrackPos;
-    Vector4d localPosTrack = Vector4d{tmp_local.x(), tmp_local.y(), tmp_local.z(), 1};
-    Vector4d localTangent = getRotation(plane->getToLocal()) * globalTangent;
+    auto localPosTrack = Eigen::Vector4d{tmp_local.x(), tmp_local.y(), tmp_local.z(), 1};
+    Eigen::Vector4d localTangent = getRotation(plane->getToLocal()) * globalTangent;
     double dist = localPosTrack[2];
     LOG(TRACE) << "Rotation: " << getRotation(plane->getToLocal());
     LOG(TRACE) << "Local tan before normalization: " << localTangent;
@@ -79,27 +78,27 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane,
     // add the local track pos for future reference - e.g. dut position:
     local_track_points_[plane->getName()] = ROOT::Math::XYPoint(localPosTrack(0), localPosTrack(1));
 
-    Vector4d prevTan = getRotation(prevToLocal) * globalTangent;
-    Matrix4d toTarget = getRotation(plane->getToLocal()) * getRotation(prevToGlobal);
+    Eigen::Vector4d prevTan = getRotation(prevToLocal) * globalTangent;
+    Eigen::Matrix4d toTarget = getRotation(plane->getToLocal()) * getRotation(prevToGlobal);
 
     // lambda Jacobian from one scatter to the next
-    auto jac = [](const Vector4d& tangent, const Matrix4d& target, double distance) {
-        Matrix<double, 4, 3> R;
+    auto jac = [](const Eigen::Vector4d& tangent, const Eigen::Matrix4d& target, double distance) {
+        Eigen::Matrix<double, 4, 3> R;
         R.col(0) = target.col(0);
         R.col(1) = target.col(1);
         R.col(2) = target.col(3);
-        Vector4d S = target * tangent * (1 / tangent[2]);
+        auto S = target * tangent * (1 / tangent[2]);
 
-        Matrix<double, 3, 4> F = Matrix<double, 3, 4>::Zero();
+        Eigen::Matrix<double, 3, 4> F = Eigen::Matrix<double, 3, 4>::Zero();
         F(0, 0) = 1;
         F(1, 1) = 1;
         F(2, 3) = 1;
         F(0, 2) = -S[0] / S[2];
         F(1, 2) = -S[1] / S[2];
         F(2, 2) = -S[3] / S[2];
-        Matrix<double, 6, 6> jaco;
+        Jacobian jaco;
 
-        jaco << F * R, (-distance / S[2]) * F * R, Matrix3d::Zero(), (1 / S[2]) * F * R;
+        jaco << F * R, (-distance / S[2]) * F * R, Eigen::Matrix3d::Zero(), (1 / S[2]) * F * R;
         jaco(5, 5) = 1; // a future time component
         return jaco;
     };
@@ -113,7 +112,7 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane,
 
     // lambda to add a scatterer to a GBLPoint
     auto addScattertoGblPoint = [this, &total_material, &localTangent](GblPoint& point, double material) {
-        Matrix<double, 2, 2> scatter;
+        Eigen::Matrix<double, 2, 2> scatter;
 
         // lambda to calculate the scattering theta, beta2 assumed to be one and the momentum in MeV
         auto scatteringTheta = [this](double mbCurrent, double mbTotal) -> double {
@@ -126,19 +125,19 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane,
             throw TrackError(typeid(GblTrack),
                              "wrong normalization of local slope, should be 1 but is " + std::to_string(localTangent(2)));
         }
-        Vector2d localSlope(localTangent(0), localTangent(1));
+        Eigen::Vector2d localSlope(localTangent(0), localTangent(1));
         auto scale =
             1 / scatteringTheta(material * (1 + localSlope.squaredNorm()), total_material) / (1 + localSlope.squaredNorm());
         scatter(0, 0) = 1 + localSlope(1) * localSlope(1);
         scatter(1, 1) = 1 + localSlope(0) * localSlope(0);
         scatter(0, 1) = scatter(1, 0) = -(localSlope(0) * localSlope(1));
         scatter *= (scale * scale);
-        point.addScatterer(Vector2d::Zero(), scatter);
+        point.addScatterer(Eigen::Vector2d::Zero(), scatter);
     };
 
     // special treatment of first point on trajectory
     if(gblpoints_.empty()) {
-        myjac = Matrix<double, 6, 6>::Identity();
+        myjac = Jacobian::Identity();
         myjac(0, 0) = 1;
         // Adding volume scattering if requested
     } else if(use_volume_scatter_) {
@@ -147,11 +146,11 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane,
         addScattertoGblPoint(pVolume, fabs(dist) / 2. / scattering_length_volume_);
         gblpoints_.push_back(pVolume);
         // We have already rotated to the next local coordinate system
-        myjac = jac(prevTan, Matrix4d::Identity(), frac2 * dist);
+        myjac = jac(prevTan, Eigen::Matrix4d::Identity(), frac2 * dist);
         GblPoint pVolume2(toGbl * myjac * toProt);
         addScattertoGblPoint(pVolume2, fabs(dist) / 2. / scattering_length_volume_);
         gblpoints_.push_back(pVolume2);
-        myjac = jac(prevTan, Matrix4d::Identity(), frac1 * dist);
+        myjac = jac(prevTan, Eigen::Matrix4d::Identity(), frac1 * dist);
     }
     auto transformedJac = toGbl * myjac * toProt;
     GblPoint point(transformedJac);
@@ -160,11 +159,11 @@ void GblTrack::add_plane(std::vector<Plane>::iterator& plane,
     auto addMeasurementtoGblPoint = [&localTangent, &localPosTrack, &globalTrackPos, this](GblPoint& pt,
                                                                                            std::vector<Plane>::iterator& p) {
         auto* cluster = p->getCluster();
-        Vector2d initialResidual;
+        Eigen::Vector2d initialResidual;
         initialResidual(0) = cluster->local().x() - localPosTrack[0];
         initialResidual(1) = cluster->local().y() - localPosTrack[1];
         // Uncertainty of single hit in local coordinates
-        Matrix2d covv = Matrix2d::Identity();
+        Eigen::Matrix2d covv = Eigen::Matrix2d::Identity();
         covv(0, 0) = 1. / cluster->errorX() / cluster->errorX();
         covv(1, 1) = 1. / cluster->errorY() / cluster->errorY();
         pt.addMeasurement(initialResidual, covv);
@@ -305,14 +304,15 @@ void GblTrack::fit() {
     // copy the results
     ndof_ = static_cast<size_t>(ndf);
     chi2ndof_ = (ndof_ <= 0) ? -1 : (chi2_ / static_cast<double>(ndof_));
-    VectorXd localPar(5);
-    MatrixXd localCov(5, 5);
-    VectorXd gblCorrection(5);
-    MatrixXd gblCovariance(5, 5);
-    VectorXd gblResiduals(2);
-    VectorXd gblErrorsMeasurements(2);
-    VectorXd gblErrorsResiduals(2);
-    VectorXd gblDownWeights(2);
+
+    Eigen::VectorXd localPar(5);
+    Eigen::MatrixXd localCov(5, 5);
+    Eigen::VectorXd gblCorrection(5);
+    Eigen::MatrixXd gblCovariance(5, 5);
+    Eigen::VectorXd gblResiduals(2);
+    Eigen::VectorXd gblErrorsMeasurements(2);
+    Eigen::VectorXd gblErrorsResiduals(2);
+    Eigen::VectorXd gblDownWeights(2);
     unsigned int numData = 2;
 
     for(const auto& plane : planes_) {
