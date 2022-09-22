@@ -37,6 +37,23 @@ namespace corryvreckan {
         StatusCode run(const std::shared_ptr<Clipboard>& clipboard) override;
         void finalize(const std::shared_ptr<ReadonlyClipboard>& clipboard) override;
 
+    protected:
+        virtual void fillClusterHistograms(const std::shared_ptr<Cluster>& cluster);
+        virtual bool acceptTrackDUT(const std::shared_ptr<Track>& track);
+
+    public:
+        enum ETrackSelection {
+            kAllTrack,
+            kHighChi2Ndf,
+            kOutsideDUT,
+            kOutsideROI,
+            kCloseToMask,
+            kTimeLimit,
+            kPass,
+            kAssociated,
+            kNSelection
+        };
+
     private:
         std::shared_ptr<Detector> m_detector;
 
@@ -93,6 +110,7 @@ namespace corryvreckan {
         TH2F* residualsTimeVsSignal;
         TH2F* hAssociatedTracksGlobalPosition;
         TH2F* hAssociatedTracksLocalPosition;
+        TH2F* hUnassociatedTracksLocalPosition;
         TH2F* hUnassociatedTracksGlobalPosition;
 
         TH1F* pxTimeMinusSeedTime;
