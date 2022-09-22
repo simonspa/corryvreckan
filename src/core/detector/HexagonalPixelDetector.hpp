@@ -64,6 +64,12 @@ namespace corryvreckan {
 
         double getColumn(PositionVector3D<Cartesian3D<double>> localPosition) const override;
 
+        /**
+         * @brief Checks if a given pixel index lies within the pixel matrix of the detector
+         * @return True if pixel index is within matrix bounds, false otherwise
+         */
+        bool isWithinMatrix(const int col, const int row) const override;
+
         // Function to get local position from column (x) and row (y) coordinates
         PositionVector3D<Cartesian3D<double>> getLocalPosition(double column, double row) const override;
 

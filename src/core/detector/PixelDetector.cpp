@@ -128,6 +128,10 @@ void PixelDetector::process_mask_file() {
     }
 }
 
+bool PixelDetector::isWithinMatrix(const int col, const int row) const {
+    return !(col > nPixels().X() - 1 || row > nPixels().Y() - 1 || col < 0 || row < 0);
+}
+
 void PixelDetector::maskChannel(int chX, int chY) {
     int channelID = chX + m_nPixels.X() * chY;
     m_masked[channelID] = true;

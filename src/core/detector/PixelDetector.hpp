@@ -59,6 +59,12 @@ namespace corryvreckan {
         void SetPostionAndOrientation(const Configuration& config);
 
         /**
+         * @brief Checks if a given pixel index lies within the pixel matrix of the detector
+         * @return True if pixel index is within matrix bounds, false otherwise
+         */
+        bool isWithinMatrix(const int col, const int row) const override;
+
+        /**
          * @brief Update detector position in the world
          * @param displacement Vector with three position coordinates
          */

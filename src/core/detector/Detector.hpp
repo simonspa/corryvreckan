@@ -158,6 +158,12 @@ namespace corryvreckan {
         virtual XYVector getPitch() const = 0;
 
         /**
+         * @brief Checks if a given pixel index lies within the pixel matrix of the detector
+         * @return True if pixel index is within matrix bounds, false otherwise
+         */
+        virtual bool isWithinMatrix(const int col, const int row) const = 0;
+
+        /**
          * @brief Get intrinsic spatial resolution of the detector
          * @return Intrinsic spatial resolution in X and Y
          * @todo: this is designed for PixelDetector, find a proper interface for other Detector type
