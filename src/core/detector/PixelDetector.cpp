@@ -448,6 +448,9 @@ PixelDetector::getNeighbors(const std::shared_ptr<Pixel>& px, const size_t dista
             if(!include_corners && x != px->column() && y != px->row()) {
                 continue;
             }
+            if(!isWithinMatrix(x, y)) {
+                continue;
+            }
             neighbors.insert({x, y});
         }
     }
