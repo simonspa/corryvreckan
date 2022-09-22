@@ -345,10 +345,11 @@ namespace corryvreckan {
 
         /**
          * @brief Get all key value pairs
+         * @param mark_used Boolean to select whether obtained keys should be marked as used or not, defaults to no marking
          * @return List of all key value pairs
          */
         // FIXME Better name for this function
-        std::vector<std::pair<std::string, std::string>> getAll() const;
+        std::vector<std::pair<std::string, std::string>> getAll(bool mark_used = false) const;
 
         /**
          * @brief Obtain all keys which have not been accessed yet
