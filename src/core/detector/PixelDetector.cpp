@@ -434,11 +434,16 @@ bool PixelDetector::isNeighbor(const std::shared_ptr<Pixel>& neighbor,
     return false;
 }
 
-std::set<std::pair<int, int>> PixelDetector::getNeighbors(const std::shared_ptr<Pixel>& px, const size_t distance) const {
+std::set<std::pair<int, int>>
+PixelDetector::getNeighbors(const std::shared_ptr<Pixel>& px, const size_t distance, const bool include_corners) const {
     std::set<std::pair<int, int>> neighbors;
 
     for(int x = px->column() - static_cast<int>(distance); x <= px->column() + static_cast<int>(distance); x++) {
         for(int y = px->row() - static_cast<int>(distance); y <= px->row() + static_cast<int>(distance); y++) {
+            // Check if we have one common coordinate if corners should be excluded:
+            if(!include_corners && x != px->column() && y != px->row()) {
+                continue;
+            }
             neighbors.insert({x, y});
         }
     }

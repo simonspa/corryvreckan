@@ -356,14 +356,15 @@ namespace corryvreckan {
          * @brief Return a set containing all pixels neighboring the given one with a configurable maximum distance
          * @param px        Pixel in question
          * @param distance  Distance for pixels to be considered neighbors
+         * @param include_corners Boolean to select whether pixels only touching via corners should be returned
          * @return Set of neighboring pixel indices, including the initial pixel
          *
          * @note The returned set should always also include the initial pixel indices the neighbors are calculated for
          *
          * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual std::set<std::pair<int, int>> getNeighbors(const std::shared_ptr<Pixel>& px,
-                                                           const size_t distance) const = 0;
+        virtual std::set<std::pair<int, int>>
+        getNeighbors(const std::shared_ptr<Pixel>& px, const size_t distance, const bool include_corners) const = 0;
 
     protected:
         // Roles of the detector
