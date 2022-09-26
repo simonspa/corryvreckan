@@ -59,6 +59,12 @@ namespace corryvreckan {
         void SetPostionAndOrientation(const Configuration& config);
 
         /**
+         * @brief Checks if a given pixel index lies within the pixel matrix of the detector
+         * @return True if pixel index is within matrix bounds, false otherwise
+         */
+        bool isWithinMatrix(const int col, const int row) const override;
+
+        /**
          * @brief Update detector position in the world
          * @param displacement Vector with three position coordinates
          */
@@ -178,7 +184,10 @@ namespace corryvreckan {
          * @note users should define their specific clustering method in the detector class, for pixel detector, the default
          * is 2D clustering
          */
-        bool isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) override;
+        bool isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) const override;
+
+        std::set<std::pair<int, int>>
+        getNeighbors(const std::shared_ptr<Pixel>& px, const size_t distance, const bool include_corners) const override;
 
     protected:
         // Initialize coordinate transformations

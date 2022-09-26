@@ -181,7 +181,7 @@ XYVector HexagonalPixelDetector::getSize() const {
 bool HexagonalPixelDetector::isNeighbor(const std::shared_ptr<Pixel>& neighbor,
                                         const std::shared_ptr<Cluster>& cluster,
                                         const int /*neighbor_radius_row*/,
-                                        const int neighbor_radius_col) {
+                                        const int neighbor_radius_col) const {
     for(auto pixel : cluster->pixels()) {
         // fixme: take column and row radius into account
         if(hex_distance(pixel->row(), pixel->column(), neighbor->row(), neighbor->column()) <=
@@ -209,8 +209,38 @@ std::pair<int, int> HexagonalPixelDetector::round_to_nearest_hex(double x, doubl
     return {q, r};
 }
 
+/*
+ * In an axial-coordinates hexagon grid, simply checking for x and y to be between 0 and number_of_pixels will create
+ * a rhombus which does lack the upper-left pixels and which has surplus pixels at the upper-right corner. We
+ * therefore need to check the allowed range along x as a function of the y coordinate. The integer division by two
+ * ensures we allow for one more x coordinate every other row in y.
+ */
+bool HexagonalPixelDetector::isWithinMatrix(const int x, const int y) const {
+    // Check the valid pixel indices - this depends on the orientation of the axial index coordinate system with respect to
+    // the cartesian local coordinate system, so we need to allow different indices depending on the hexagon orientation:
+    return !(y < 0 || y >= m_nPixels.y() || x < 0 - y / 2 || x >= m_nPixels.x() - y / 2);
+}
+
 // The distance between two hexagons in cubic coordinates is half the Manhattan distance. To use axial coordinates, we have
 // to reconstruct the third coordinate z = - x - y:
 size_t HexagonalPixelDetector::hex_distance(double x1, double y1, double x2, double y2) const {
     return static_cast<size_t>(std::abs(x1 - x2) + std::abs(y1 - y2) + std::abs(-x1 - y1 + x2 + y2)) / 2;
+}
+
+std::set<std::pair<int, int>>
+HexagonalPixelDetector::getNeighbors(const std::shared_ptr<Pixel>& px, const size_t distance, const bool) const {
+    std::set<std::pair<int, int>> neighbors;
+
+    for(int x = px->column() - static_cast<int>(distance); x <= px->column() + static_cast<int>(distance); x++) {
+        for(int y = px->row() - static_cast<int>(distance); y <= px->row() + static_cast<int>(distance); y++) {
+            if(hex_distance(px->column(), px->row(), x, y) <= distance) {
+
+                if(!isWithinMatrix(x, y)) {
+                    continue;
+                }
+                neighbors.insert({x, y});
+            }
+        }
+    }
+    return neighbors;
 }

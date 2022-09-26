@@ -64,6 +64,12 @@ namespace corryvreckan {
 
         double getColumn(PositionVector3D<Cartesian3D<double>> localPosition) const override;
 
+        /**
+         * @brief Checks if a given pixel index lies within the pixel matrix of the detector
+         * @return True if pixel index is within matrix bounds, false otherwise
+         */
+        bool isWithinMatrix(const int col, const int row) const override;
+
         // Function to get local position from column (x) and row (y) coordinates
         PositionVector3D<Cartesian3D<double>> getLocalPosition(double column, double row) const override;
 
@@ -111,8 +117,10 @@ namespace corryvreckan {
          * @note users should define their specific clustering method in the detector class, for pixel detector, the default
          * is 2D clustering
          */
-        virtual bool
-        isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) override;
+        bool isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) const override;
+
+        std::set<std::pair<int, int>>
+        getNeighbors(const std::shared_ptr<Pixel>& px, const size_t distance, const bool include_corners) const override;
 
     private:
         std::pair<int, int> round_to_nearest_hex(double x, double y) const;

@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <fstream>
 #include <map>
+#include <set>
 #include <string>
 
 #include <Math/DisplacementVector2D.h>
@@ -155,6 +156,12 @@ namespace corryvreckan {
          * @todo: this is designed for PixelDetector, find a proper interface for other Detector type
          */
         virtual XYVector getPitch() const = 0;
+
+        /**
+         * @brief Checks if a given pixel index lies within the pixel matrix of the detector
+         * @return True if pixel index is within matrix bounds, false otherwise
+         */
+        virtual bool isWithinMatrix(const int col, const int row) const = 0;
 
         /**
          * @brief Get intrinsic spatial resolution of the detector
@@ -348,7 +355,22 @@ namespace corryvreckan {
          * @return true if it fulfills the condition
          * @note users should define their specific clustering method in the detector class
          */
-        virtual bool isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) = 0;
+        virtual bool
+        isNeighbor(const std::shared_ptr<Pixel>&, const std::shared_ptr<Cluster>&, const int, const int) const = 0;
+
+        /**
+         * @brief Return a set containing all pixels neighboring the given one with a configurable maximum distance
+         * @param px        Pixel in question
+         * @param distance  Distance for pixels to be considered neighbors
+         * @param include_corners Boolean to select whether pixels only touching via corners should be returned
+         * @return Set of neighboring pixel indices, including the initial pixel
+         *
+         * @note The returned set should always also include the initial pixel indices the neighbors are calculated for
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
+         */
+        virtual std::set<std::pair<int, int>>
+        getNeighbors(const std::shared_ptr<Pixel>& px, const size_t distance, const bool include_corners) const = 0;
 
     protected:
         // Roles of the detector
