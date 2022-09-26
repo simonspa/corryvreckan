@@ -58,7 +58,7 @@ EventLoaderEUDAQ2::EventLoaderEUDAQ2(Configuration& config, std::shared_ptr<Dete
 
     // Forward all settings to EUDAQ
     // WARNING: the EUDAQ Configuration class is not very flexible and e.g. booleans have to be passed as 1 and 0.
-    auto configs = config_.getAll();
+    auto configs = config_.getAll(true);
     for(const auto& key : configs) {
         LOG(DEBUG) << "Forwarding key \"" << key.first << " = " << key.second << "\" to EUDAQ converter";
         cfg.Set(key.first, key.second);

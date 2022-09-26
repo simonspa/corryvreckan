@@ -191,7 +191,7 @@ void Configuration::merge(const Configuration& other) {
     }
 }
 
-std::vector<std::pair<std::string, std::string>> Configuration::getAll() const {
+std::vector<std::pair<std::string, std::string>> Configuration::getAll(bool mark_used) const {
     std::vector<std::pair<std::string, std::string>> result;
 
     // Loop over all configuration keys
@@ -199,6 +199,10 @@ std::vector<std::pair<std::string, std::string>> Configuration::getAll() const {
         // Skip internal keys starting with an underscore
         if(!key_value.first.empty() && key_value.first.front() == '_') {
             continue;
+        }
+
+        if(mark_used) {
+            used_keys_.markUsed(key_value.first);
         }
 
         result.emplace_back(key_value);
